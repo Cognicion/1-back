@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Prueba 1-Back</title>
+  <style>
+    body {
+      font-family: Arial;
+      text-align: center;
+      padding-top: 60px;
+      background: #f4f4f4;
+    }
+
+    #letra {
+      font-size: 100px;
+      margin: 40px;
+    }
+
+    button {
+      font-size: 20px;
+      padding: 12px 20px;
+      margin: 10px;
+    }
+
+    #resultado {
+      font-size: 22px;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Prueba 1-Back</h1>
+
+  <div id="letra">?</div>
+
+  <button onclick="iniciar()">Iniciar</button>
+  <button onclick="responder()">Coincide</button>
+
+  <p id="resultado"></p>
+
+  <script>
+    const letras = ["A", "B", "C", "D", "E", "F"];
+    let anterior = null;
+    let actual = null;
+    let puntos = 0;
+    let errores = 0;
+    let ensayo = 0;
+    let maxEnsayos = 20;
+    let esperandoRespuesta = false;
+
+    function iniciar() {
+      puntos = 0;
+      errores = 0;
+      ensayo = 0;
+      anterior = null;
+      actual = null;
+      document.getElementById("resultado").innerText = "";
+      siguienteLetra();
+    }
+
+    function siguienteLetra() {
+      if (ensayo >= maxEnsayos) {
+        document.getElementById("letra").innerText = "Fin";
+        document.getElementById("resultado").innerText =
+          "Puntos: " + puntos + " | Errores: " + errores;
+        return;
+      }
+
+      anterior = actual;
+      actual = letras[Math.floor(Math.random() * letras.length)];
+
+      document.getElementById("letra").innerText = actual;
+      esperandoRespuesta = true;
+      ensayo++;
+
+      setTimeout(() => {
+        if (esperandoRespuesta) {
+          // Si era coincidencia y no respondió, cuenta como error
+          if (actual === anterior) {
+            errores++;
+          }
+          esperandoRespuesta = false;
+          siguienteLetra();
+        }
+      }, 2000);
+    }
+
+    function responder() {
+      if (!esperandoRespuesta) return;
+
+      if (actual === anterior) {
+        puntos++;
+      } else {
+        errores++;
+      }
+
+      esperandoRespuesta = false;
+      siguienteLetra();
+    }
+  </script>
+
+</body>
+</html>
