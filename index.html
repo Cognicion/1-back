@@ -1,30 +1,35 @@
 <!DOCTYPE html>
-<html>
-
+<html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>N Back Visual</title>
+<title>N-Back Visual</title>
 
 <style>
 
 body{
 text-align:center;
 font-family:Arial;
+background:#f5f5f5;
+}
+
+h1{
+margin-top:30px;
 }
 
 #grid{
 display:grid;
-grid-template-columns:repeat(3,100px);
-gap:10px;
+grid-template-columns:repeat(3,120px);
+gap:15px;
 justify-content:center;
-margin-top:40px;
+margin-top:50px;
 }
 
 .cell{
-width:100px;
-height:100px;
-border:2px solid black;
-border-radius:10px;
+width:120px;
+height:120px;
+background:white;
+border:3px solid #333;
+border-radius:15px;
 }
 
 .active{
@@ -32,7 +37,6 @@ background:#2563eb;
 }
 
 </style>
-
 </head>
 
 <body>
@@ -61,7 +65,9 @@ const cells=document.querySelectorAll(".cell");
 
 function mostrar(){
 
-cells.forEach(c=>c.classList.remove("active"));
+cells.forEach(c=>{
+c.classList.remove("active");
+});
 
 let pos=Math.floor(Math.random()*9);
 
@@ -69,10 +75,11 @@ cells[pos].classList.add("active");
 
 }
 
-setInterval(mostrar,1500);
+mostrar();
+
+setInterval(mostrar,1000);
 
 </script>
 
 </body>
-
 </html>
