@@ -11,13 +11,9 @@ body {
   background: #f4f4f4;
 }
 
-h1 {
-  margin-top: 25px;
-}
+h1 { margin-top: 25px; }
 
-.controls {
-  margin: 20px;
-}
+.controls { margin: 20px; }
 
 select, button {
   font-size: 18px;
@@ -41,13 +37,22 @@ select, button {
   border-radius: 15px;
 }
 
-.active {
-  background: #2563eb;
+.active { background: #2563eb; }
+
+#feedback {
+  font-size: 24px;
+  font-weight: bold;
+  margin-top: 20px;
+  min-height: 35px;
 }
+
+.correcto { color: green; }
+.incorrecto { color: red; }
+.info { color: #2563eb; }
 
 #resultado {
   font-size: 18px;
-  margin-top: 20px;
+  margin-top: 15px;
   white-space: pre-line;
 }
 </style>
@@ -82,17 +87,12 @@ select, button {
 </div>
 
 <div id="grid">
-  <div class="cell"></div>
-  <div class="cell"></div>
-  <div class="cell"></div>
-  <div class="cell"></div>
-  <div class="cell"></div>
-  <div class="cell"></div>
-  <div class="cell"></div>
-  <div class="cell"></div>
-  <div class="cell"></div>
+  <div class="cell"></div><div class="cell"></div><div class="cell"></div>
+  <div class="cell"></div><div class="cell"></div><div class="cell"></div>
+  <div class="cell"></div><div class="cell"></div><div class="cell"></div>
 </div>
 
+<div id="feedback"></div>
 <p id="resultado">Presiona iniciar para comenzar.</p>
 
 <script>
@@ -142,6 +142,7 @@ function iniciar() {
 
   generarSecuencias();
 
+  document.getElementById("feedback").innerText = "";
   document.getElementById("resultado").innerText = "Prueba iniciada...";
   mostrarEstimulo();
 }
@@ -186,10 +187,11 @@ function mostrarEstimulo() {
   respondioAudio = false;
   inicioEstimulo = Date.now();
 
+  document.getElementById("feedback").innerText = "";
+
   document.getElementById("resultado").innerText =
     "Ensayo " + (indice + 1) + " de " + maxEnsayos + "\n" +
-    "Presiona A si coincide la posición\n" +
-    "Presiona D si coincide el sonido";
+    "A = posición | D = sonido";
 
   setTimeout(() => {
     evaluarSinRespuesta();
@@ -200,11 +202,9 @@ function mostrarEstimulo() {
 
 function hablar(letra) {
   speechSynthesis.cancel();
-
   let voz = new SpeechSynthesisUtterance(letra);
   voz.lang = "es-MX";
   voz.rate = 0.8;
-  voz.pitch = 1;
   speechSynthesis.speak(voz);
 }
 
@@ -218,6 +218,12 @@ function coincideAudio() {
   return secuenciaAudio[indice] === secuenciaAudio[indice - nivel];
 }
 
+function mostrarFeedback(texto, tipo) {
+  const feedback = document.getElementById("feedback");
+  feedback.innerText = texto;
+  feedback.className = tipo;
+}
+
 function responderVisual() {
   if (respondioVisual || indice >= maxEnsayos) return;
 
@@ -226,8 +232,10 @@ function responderVisual() {
 
   if (coincideVisual()) {
     visualAciertos++;
+    mostrarFeedback("A presionada: posición CORRECTA", "correcto");
   } else {
     visualComision++;
+    mostrarFeedback("A presionada: posición INCORRECTA", "incorrecto");
   }
 }
 
@@ -239,8 +247,10 @@ function responderAudio() {
 
   if (coincideAudio()) {
     audioAciertos++;
+    mostrarFeedback("D presionada: sonido CORRECTO", "correcto");
   } else {
     audioComision++;
+    mostrarFeedback("D presionada: sonido INCORRECTO", "incorrecto");
   }
 }
 
@@ -281,8 +291,10 @@ function finalizar() {
     ? Math.round(trAudio.reduce((a, b) => a + b, 0) / trAudio.length)
     : "Sin respuestas";
 
+  document.getElementById("feedback").innerText = "Prueba terminada";
+  document.getElementById("feedback").className = "info";
+
   document.getElementById("resultado").innerText =
-    "Prueba finalizada\n\n" +
     "Nivel: " + nivel + "-Back\n" +
     "Ensayos: " + maxEnsayos + "\n\n" +
 
