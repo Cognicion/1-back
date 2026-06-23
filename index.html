@@ -1,104 +1,78 @@
 <!DOCTYPE html>
-<html lang="es">
+<html>
+
 <head>
-  <meta charset="UTF-8">
-  <title>Prueba 1-Back</title>
-  <style>
-    body {
-      font-family: Arial;
-      text-align: center;
-      padding-top: 60px;
-      background: #f4f4f4;
-    }
+<meta charset="UTF-8">
+<title>N Back Visual</title>
 
-    #letra {
-      font-size: 100px;
-      margin: 40px;
-    }
+<style>
 
-    button {
-      font-size: 20px;
-      padding: 12px 20px;
-      margin: 10px;
-    }
+body{
+text-align:center;
+font-family:Arial;
+}
 
-    #resultado {
-      font-size: 22px;
-      margin-top: 20px;
-    }
-  </style>
+#grid{
+display:grid;
+grid-template-columns:repeat(3,100px);
+gap:10px;
+justify-content:center;
+margin-top:40px;
+}
+
+.cell{
+width:100px;
+height:100px;
+border:2px solid black;
+border-radius:10px;
+}
+
+.active{
+background:#2563eb;
+}
+
+</style>
+
 </head>
+
 <body>
 
-  <h1>Prueba 1-Back</h1>
+<h1>N-Back Visual</h1>
 
-  <div id="letra">?</div>
+<div id="grid">
 
-  <button onclick="iniciar()">Iniciar</button>
-  <button onclick="responder()">Coincide</button>
+<div class="cell"></div>
+<div class="cell"></div>
+<div class="cell"></div>
 
-  <p id="resultado"></p>
+<div class="cell"></div>
+<div class="cell"></div>
+<div class="cell"></div>
 
-  <script>
-    const letras = ["A", "B", "C", "D", "E", "F"];
-    let anterior = null;
-    let actual = null;
-    let puntos = 0;
-    let errores = 0;
-    let ensayo = 0;
-    let maxEnsayos = 20;
-    let esperandoRespuesta = false;
+<div class="cell"></div>
+<div class="cell"></div>
+<div class="cell"></div>
 
-    function iniciar() {
-      puntos = 0;
-      errores = 0;
-      ensayo = 0;
-      anterior = null;
-      actual = null;
-      document.getElementById("resultado").innerText = "";
-      siguienteLetra();
-    }
+</div>
 
-    function siguienteLetra() {
-      if (ensayo >= maxEnsayos) {
-        document.getElementById("letra").innerText = "Fin";
-        document.getElementById("resultado").innerText =
-          "Puntos: " + puntos + " | Errores: " + errores;
-        return;
-      }
+<script>
 
-      anterior = actual;
-      actual = letras[Math.floor(Math.random() * letras.length)];
+const cells=document.querySelectorAll(".cell");
 
-      document.getElementById("letra").innerText = actual;
-      esperandoRespuesta = true;
-      ensayo++;
+function mostrar(){
 
-      setTimeout(() => {
-        if (esperandoRespuesta) {
-          // Si era coincidencia y no respondió, cuenta como error
-          if (actual === anterior) {
-            errores++;
-          }
-          esperandoRespuesta = false;
-          siguienteLetra();
-        }
-      }, 2000);
-    }
+cells.forEach(c=>c.classList.remove("active"));
 
-    function responder() {
-      if (!esperandoRespuesta) return;
+let pos=Math.floor(Math.random()*9);
 
-      if (actual === anterior) {
-        puntos++;
-      } else {
-        errores++;
-      }
+cells[pos].classList.add("active");
 
-      esperandoRespuesta = false;
-      siguienteLetra();
-    }
-  </script>
+}
+
+setInterval(mostrar,1500);
+
+</script>
 
 </body>
+
 </html>
