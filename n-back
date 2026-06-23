@@ -1,1 +1,635 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dual N-Back</title>
 
+<style>
+body {
+  margin: 0;
+  background: #000;
+  color: white;
+  font-family: Arial, sans-serif;
+  text-align: center;
+  overflow-x: hidden;
+}
+
+#flashLeft, #flashRight {
+  position: fixed;
+  top: 0;
+  width: 50%;
+  height: 100%;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+  z-index: 1;
+}
+
+#flashLeft { left: 0; }
+#flashRight { right: 0; }
+
+.flashCorrect {
+  background: rgba(34, 197, 94, 0.28);
+  opacity: 1 !important;
+}
+
+.flashWrong {
+  background: rgba(239, 68, 68, 0.32);
+  opacity: 1 !important;
+}
+
+.container {
+  position: relative;
+  z-index: 2;
+  padding: 20px 10px 150px;
+}
+
+h1 {
+  margin-bottom: 4px;
+}
+
+.autor {
+  color: #93c5fd;
+  margin-top: 0;
+  font-size: 16px;
+}
+
+.controls {
+  margin: 15px;
+}
+
+select, button {
+  font-size: 18px;
+  padding: 10px;
+  margin: 6px;
+  border-radius: 10px;
+  border: none;
+}
+
+button {
+  cursor: pointer;
+}
+
+.stop {
+  background: #991b1b;
+  color: white;
+}
+
+#grid {
+  display: grid;
+  grid-template-columns: repeat(3, 95px);
+  gap: 12px;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.cell {
+  width: 95px;
+  height: 95px;
+  background: #111;
+  border: 3px solid #777;
+  border-radius: 15px;
+}
+
+.active {
+  background: #2563eb;
+  box-shadow: 0 0 25px #2563eb;
+}
+
+#feedback {
+  font-size: 24px;
+  font-weight: bold;
+  margin-top: 18px;
+  min-height: 35px;
+}
+
+.correcto { color: #22c55e; }
+.incorrecto { color: #ef4444; }
+.info { color: #60a5fa; }
+
+#resultado {
+  font-size: 17px;
+  margin-top: 12px;
+  white-space: pre-line;
+}
+
+#graficas {
+  margin: 25px auto;
+  max-width: 700px;
+  display: none;
+}
+
+.barra-contenedor {
+  background: #222;
+  border-radius: 10px;
+  margin: 12px auto;
+  width: 90%;
+  height: 28px;
+  overflow: hidden;
+  text-align: left;
+}
+
+.barra {
+  height: 100%;
+  line-height: 28px;
+  padding-left: 10px;
+  font-weight: bold;
+  transition: width 0.8s ease;
+}
+
+.verde { background: #22c55e; }
+.rojo { background: #ef4444; }
+.azul { background: #2563eb; }
+.naranja { background: #f97316; }
+
+#mobileControls {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 120px;
+  display: flex;
+  z-index: 20;
+}
+
+#tapLeft, #tapRight {
+  width: 50%;
+  background: rgba(255,255,255,0.06);
+  font-size: 42px;
+  font-weight: bold;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  user-select: none;
+  touch-action: manipulation;
+}
+
+#tapLeft {
+  border-right: 1px solid rgba(255,255,255,0.25);
+}
+
+#tapLeft span, #tapRight span {
+  font-size: 17px;
+  margin-top: 8px;
+  opacity: 0.75;
+}
+#tapLeft span, #tapRight span {
+    font-size: 17px;
+    margin-top: 8px;
+    opacity: 0.75;
+}
+
+/* PEGA AQUÍ */
+
+.icono{
+
+font-size:52px;
+
+line-height:1;
+
+}
+
+.textoBoton{
+
+font-size:18px;
+
+font-weight:bold;
+
+margin-top:8px;
+
+opacity:.8;
+
+letter-spacing:1px;
+
+}
+
+@media (min-width: 700px) {
+
+    #grid {
+        grid-template-columns: repeat(3, 110px);
+    }
+
+}
+@media (min-width: 700px) {
+  #grid {
+    grid-template-columns: repeat(3, 110px);
+  }
+
+  .cell {
+    width: 110px;
+    height: 110px;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<div id="flashLeft"></div>
+<div id="flashRight"></div>
+
+<div class="container">
+
+<h1>Dual N-Back</h1>
+<p class="autor">Dr. Aldo Sandokan Aguilar Valenzuela</p>
+
+<p><b>A</b> = sonido / izquierda | <b>D</b> = posición / derecha</p>
+
+<div class="controls">
+  <label>Nivel:</label>
+  <select id="nivel">
+    <option value="1">1-Back</option>
+    <option value="2">2-Back</option>
+    <option value="3">3-Back</option>
+  </select>
+
+  <label>Tiempo:</label>
+  <select id="tiempo">
+    <option value="1200">1.2 s</option>
+    <option value="1500" selected>1.5 s</option>
+    <option value="2000">2 s</option>
+    <option value="3000">3 s</option>
+  </select>
+
+  <br>
+
+  <button onclick="iniciar()">Iniciar</button>
+  <button class="stop" onclick="detener()">Detener</button>
+</div>
+
+<div id="grid">
+  <div class="cell"></div><div class="cell"></div><div class="cell"></div>
+  <div class="cell"></div><div class="cell"></div><div class="cell"></div>
+  <div class="cell"></div><div class="cell"></div><div class="cell"></div>
+</div>
+
+<div id="feedback"></div>
+<p id="resultado">Presiona iniciar para comenzar.</p>
+
+<div id="graficas">
+  <h2>Gráficas de resultados</h2>
+
+  <h3>Sonido</h3>
+  <div class="barra-contenedor"><div id="barAudioAciertos" class="barra verde"></div></div>
+  <div class="barra-contenedor"><div id="barAudioComision" class="barra rojo"></div></div>
+  <div class="barra-contenedor"><div id="barAudioOmision" class="barra naranja"></div></div>
+
+  <h3>Posición</h3>
+  <div class="barra-contenedor"><div id="barVisualAciertos" class="barra verde"></div></div>
+  <div class="barra-contenedor"><div id="barVisualComision" class="barra rojo"></div></div>
+  <div class="barra-contenedor"><div id="barVisualOmision" class="barra naranja"></div></div>
+</div>
+
+</div>
+
+<div id="mobileControls">
+
+    <div id="tapLeft" onclick="responderAudio()">
+
+        <div class="icono">🎧</div>
+
+        <div class="textoBoton">
+            SONIDO
+        </div>
+
+    </div>
+
+
+    <div id="tapRight" onclick="responderVisual()">
+
+        <div class="icono">⬜</div>
+
+        <div class="textoBoton">
+            POSICIÓN
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+const cells = document.querySelectorAll(".cell");
+const letras = ["1", "2", "3", "4", "5", "6", "7", "8", "9"];
+
+let secuenciaVisual = [];
+let secuenciaAudio = [];
+let indice = 0;
+let nivel = 1;
+let tiempo = 1500;
+let maxEnsayos = 20;
+let pruebaActiva = false;
+let temporizador = null;
+
+let visualAciertos = 0;
+let visualComision = 0;
+let visualOmision = 0;
+
+let audioAciertos = 0;
+let audioComision = 0;
+let audioOmision = 0;
+
+let respondioVisual = false;
+let respondioAudio = false;
+
+let inicioEstimulo = 0;
+let trVisual = [];
+let trAudio = [];
+
+function iniciar() {
+  clearTimeout(temporizador);
+  speechSynthesis.cancel();
+
+  document.getElementById("graficas").style.display = "none";
+
+  nivel = parseInt(document.getElementById("nivel").value);
+  tiempo = parseInt(document.getElementById("tiempo").value);
+
+  secuenciaVisual = [];
+  secuenciaAudio = [];
+  indice = 0;
+  pruebaActiva = true;
+
+  visualAciertos = 0;
+  visualComision = 0;
+  visualOmision = 0;
+
+  audioAciertos = 0;
+  audioComision = 0;
+  audioOmision = 0;
+
+  trVisual = [];
+  trAudio = [];
+
+  generarSecuencias();
+
+  document.getElementById("feedback").innerText = "";
+  document.getElementById("resultado").innerText = "Prueba iniciada...";
+  mostrarEstimulo();
+}
+
+function detener() {
+  pruebaActiva = false;
+  clearTimeout(temporizador);
+  speechSynthesis.cancel();
+
+  cells.forEach(c => c.classList.remove("active"));
+
+  document.getElementById("feedback").innerText = "Prueba detenida";
+  document.getElementById("feedback").className = "info";
+
+  mostrarResultados("Prueba detenida");
+}
+
+function generarSecuencias() {
+  for (let i = 0; i < maxEnsayos; i++) {
+    let posicion;
+    let letra;
+
+    if (i >= nivel && Math.random() < 0.3) {
+      posicion = secuenciaVisual[i - nivel];
+    } else {
+      posicion = Math.floor(Math.random() * 9);
+    }
+
+    if (i >= nivel && Math.random() < 0.3) {
+      letra = secuenciaAudio[i - nivel];
+    } else {
+      letra = letras[Math.floor(Math.random() * letras.length)];
+    }
+
+    secuenciaVisual.push(posicion);
+    secuenciaAudio.push(letra);
+  }
+}
+
+function mostrarEstimulo() {
+  if (!pruebaActiva) return;
+
+  if (indice >= maxEnsayos) {
+    finalizar();
+    return;
+  }
+
+  cells.forEach(c => c.classList.remove("active"));
+
+  let posicionActual = secuenciaVisual[indice];
+  let letraActual = secuenciaAudio[indice];
+
+  cells[posicionActual].classList.add("active");
+  hablar(letraActual);
+
+  respondioVisual = false;
+  respondioAudio = false;
+  inicioEstimulo = Date.now();
+
+  document.getElementById("feedback").innerText = "";
+
+  document.getElementById("resultado").innerText =
+    "Ensayo " + (indice + 1) + " de " + maxEnsayos + "\n" +
+    "A = sonido | D = posición";
+
+  temporizador = setTimeout(() => {
+    evaluarSinRespuesta();
+    indice++;
+    mostrarEstimulo();
+  }, tiempo);
+}
+
+function hablar(letra) {
+  speechSynthesis.cancel();
+
+  let voz = new SpeechSynthesisUtterance(letra);
+  voz.lang = "es-MX";
+  voz.rate = 0.8;
+  voz.pitch = 1;
+
+  speechSynthesis.speak(voz);
+}
+
+function coincideVisual() {
+  if (indice < nivel) return false;
+  return secuenciaVisual[indice] === secuenciaVisual[indice - nivel];
+}
+
+function coincideAudio() {
+  if (indice < nivel) return false;
+  return secuenciaAudio[indice] === secuenciaAudio[indice - nivel];
+}
+
+function mostrarFeedback(texto, tipo) {
+  const feedback = document.getElementById("feedback");
+  feedback.innerText = texto;
+  feedback.className = tipo;
+}
+
+function flashLado(lado, correcto) {
+  let panel = lado === "izquierda"
+    ? document.getElementById("flashLeft")
+    : document.getElementById("flashRight");
+
+  let boton = lado === "izquierda"
+    ? document.getElementById("tapLeft")
+    : document.getElementById("tapRight");
+
+  panel.className = correcto ? "flashCorrect" : "flashWrong";
+
+  boton.style.background = correcto
+    ? "rgba(34,197,94,0.35)"
+    : "rgba(239,68,68,0.35)";
+
+  setTimeout(() => {
+    panel.className = "";
+    boton.style.background = "rgba(255,255,255,0.06)";
+  }, 350);
+}
+
+function responderAudio() {
+  if (!pruebaActiva || respondioAudio || indice >= maxEnsayos) return;
+
+  respondioAudio = true;
+  trAudio.push(Date.now() - inicioEstimulo);
+
+  if (coincideAudio()) {
+    audioAciertos++;
+    mostrarFeedback("A: sonido CORRECTO", "correcto");
+    flashLado("izquierda", true);
+  } else {
+    audioComision++;
+    mostrarFeedback("A: sonido INCORRECTO", "incorrecto");
+    flashLado("izquierda", false);
+  }
+}
+
+function responderVisual() {
+  if (!pruebaActiva || respondioVisual || indice >= maxEnsayos) return;
+
+  respondioVisual = true;
+  trVisual.push(Date.now() - inicioEstimulo);
+
+  if (coincideVisual()) {
+    visualAciertos++;
+    mostrarFeedback("D: posición CORRECTA", "correcto");
+    flashLado("derecha", true);
+  } else {
+    visualComision++;
+    mostrarFeedback("D: posición INCORRECTA", "incorrecto");
+    flashLado("derecha", false);
+  }
+}
+
+function evaluarSinRespuesta() {
+  let huboOmision = false;
+
+  if (!respondioAudio && coincideAudio()) {
+    audioOmision++;
+    flashLado("izquierda", false);
+    huboOmision = true;
+  }
+
+  if (!respondioVisual && coincideVisual()) {
+    visualOmision++;
+    flashLado("derecha", false);
+    huboOmision = true;
+  }
+
+  if (huboOmision) {
+    mostrarFeedback("Omisión: no respondiste una coincidencia", "incorrecto");
+  }
+}
+
+function finalizar() {
+  pruebaActiva = false;
+  cells.forEach(c => c.classList.remove("active"));
+
+  document.getElementById("feedback").innerText = "Prueba terminada";
+  document.getElementById("feedback").className = "info";
+
+  mostrarResultados("Prueba finalizada");
+}
+
+function promedio(lista) {
+  if (lista.length === 0) return "Sin respuestas";
+  return Math.round(lista.reduce((a, b) => a + b, 0) / lista.length);
+}
+
+function mostrarResultados(titulo) {
+  let totalVisual = secuenciaVisual.filter((pos, i) => {
+    return i >= nivel && pos === secuenciaVisual[i - nivel];
+  }).length;
+
+  let totalAudio = secuenciaAudio.filter((letra, i) => {
+    return i >= nivel && letra === secuenciaAudio[i - nivel];
+  }).length;
+
+  let precisionVisual = totalVisual > 0
+    ? ((visualAciertos / totalVisual) * 100).toFixed(1)
+    : 0;
+
+  let precisionAudio = totalAudio > 0
+    ? ((audioAciertos / totalAudio) * 100).toFixed(1)
+    : 0;
+
+  let promedioVisual = promedio(trVisual);
+  let promedioAudio = promedio(trAudio);
+
+  document.getElementById("resultado").innerText =
+    titulo + "\n\n" +
+    "Nivel: " + nivel + "-Back\n" +
+    "Ensayos completados: " + indice + " de " + maxEnsayos + "\n\n" +
+
+    "SONIDO / A / IZQUIERDA\n" +
+    "Coincidencias reales: " + totalAudio + "\n" +
+    "Aciertos: " + audioAciertos + "\n" +
+    "Errores por comisión: " + audioComision + "\n" +
+    "Errores por omisión: " + audioOmision + "\n" +
+    "Precisión sonido: " + precisionAudio + "%\n" +
+    "TR sonido promedio: " + promedioAudio + " ms\n\n" +
+
+    "POSICIÓN / D / DERECHA\n" +
+    "Coincidencias reales: " + totalVisual + "\n" +
+    "Aciertos: " + visualAciertos + "\n" +
+    "Errores por comisión: " + visualComision + "\n" +
+    "Errores por omisión: " + visualOmision + "\n" +
+    "Precisión posición: " + precisionVisual + "%\n" +
+    "TR posición promedio: " + promedioVisual + " ms";
+
+  graficar();
+}
+
+function graficar() {
+  document.getElementById("graficas").style.display = "block";
+
+  let maximo = Math.max(
+    audioAciertos, audioComision, audioOmision,
+    visualAciertos, visualComision, visualOmision,
+    1
+  );
+
+  ponerBarra("barAudioAciertos", audioAciertos, maximo, "Aciertos: ");
+  ponerBarra("barAudioComision", audioComision, maximo, "Comisión: ");
+  ponerBarra("barAudioOmision", audioOmision, maximo, "Omisión: ");
+
+  ponerBarra("barVisualAciertos", visualAciertos, maximo, "Aciertos: ");
+  ponerBarra("barVisualComision", visualComision, maximo, "Comisión: ");
+  ponerBarra("barVisualOmision", visualOmision, maximo, "Omisión: ");
+}
+
+function ponerBarra(id, valor, maximo, texto) {
+  let barra = document.getElementById(id);
+  let ancho = (valor / maximo) * 100;
+  barra.style.width = ancho + "%";
+  barra.innerText = texto + valor;
+}
+
+document.addEventListener("keydown", function(event) {
+  const tecla = event.key.toLowerCase();
+
+  if (tecla === "a") responderAudio();
+  if (tecla === "d") responderVisual();
+});
+</script>
+
+</body>
+</html>
