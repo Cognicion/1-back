@@ -5,37 +5,51 @@
 <title>N-Back Visual</title>
 
 <style>
-
-body{
-text-align:center;
-font-family:Arial;
-background:#f5f5f5;
+body {
+  text-align: center;
+  font-family: Arial, sans-serif;
+  background: #f4f4f4;
 }
 
-h1{
-margin-top:30px;
+h1 {
+  margin-top: 30px;
 }
 
-#grid{
-display:grid;
-grid-template-columns:repeat(3,120px);
-gap:15px;
-justify-content:center;
-margin-top:50px;
+.controls {
+  margin: 20px;
 }
 
-.cell{
-width:120px;
-height:120px;
-background:white;
-border:3px solid #333;
-border-radius:15px;
+select, button {
+  font-size: 18px;
+  padding: 10px;
+  margin: 6px;
 }
 
-.active{
-background:#2563eb;
+#grid {
+  display: grid;
+  grid-template-columns: repeat(3, 120px);
+  gap: 15px;
+  justify-content: center;
+  margin-top: 30px;
 }
 
+.cell {
+  width: 120px;
+  height: 120px;
+  background: white;
+  border: 3px solid #333;
+  border-radius: 15px;
+}
+
+.active {
+  background: #2563eb;
+}
+
+#resultado {
+  font-size: 18px;
+  margin-top: 25px;
+  white-space: pre-line;
+}
 </style>
 </head>
 
@@ -43,42 +57,181 @@ background:#2563eb;
 
 <h1>N-Back Visual</h1>
 
-<div id="grid">
+<div class="controls">
+  <label>Nivel:</label>
+  <select id="nivel">
+    <option value="1">1-Back</option>
+    <option value="2">2-Back</option>
+    <option value="3">3-Back</option>
+  </select>
 
-<div class="cell"></div>
-<div class="cell"></div>
-<div class="cell"></div>
+  <label>Tiempo:</label>
+  <select id="tiempo">
+    <option value="1000">1 segundo</option>
+    <option value="1500">1.5 segundos</option>
+    <option value="2000">2 segundos</option>
+    <option value="3000">3 segundos</option>
+  </select>
 
-<div class="cell"></div>
-<div class="cell"></div>
-<div class="cell"></div>
+  <br>
 
-<div class="cell"></div>
-<div class="cell"></div>
-<div class="cell"></div>
-
+  <button onclick="iniciar()">Iniciar</button>
+  <button onclick="responder()">Coincide</button>
 </div>
 
+<div id="grid">
+  <div class="cell"></div>
+  <div class="cell"></div>
+  <div class="cell"></div>
+  <div class="cell"></div>
+  <div class="cell"></div>
+  <div class="cell"></div>
+  <div class="cell"></div>
+  <div class="cell"></div>
+  <div class="cell"></div>
+</div>
+
+<p id="resultado">Presiona iniciar para comenzar.</p>
+
 <script>
+const cells = document.querySelectorAll(".cell");
 
-const cells=document.querySelectorAll(".cell");
+let secuencia = [];
+let indice = 0;
+let nivel = 1;
+let tiempo = 1500;
+let maxEnsayos = 20;
 
-function mostrar(){
+let aciertos = 0;
+let erroresComision = 0;
+let erroresOmision = 0;
+let correctosNoCoincide = 0;
 
-cells.forEach(c=>{
-c.classList.remove("active");
-});
+let respondio = false;
+let inicioEstimulo = 0;
+let tiemposReaccion = [];
+let intervalo = null;
 
-let pos=Math.floor(Math.random()*9);
+function iniciar() {
+  nivel = parseInt(document.getElementById("nivel").value);
+  tiempo = parseInt(document.getElementById("tiempo").value);
 
-cells[pos].classList.add("active");
+  secuencia = [];
+  indice = 0;
+  aciertos = 0;
+  erroresComision = 0;
+  erroresOmision = 0;
+  correctosNoCoincide = 0;
+  tiemposReaccion = [];
 
+  generarSecuencia();
+
+  document.getElementById("resultado").innerText = "Prueba iniciada...";
+  mostrarEstimulo();
 }
 
-mostrar();
+function generarSecuencia() {
+  for (let i = 0; i < maxEnsayos; i++) {
+    let posicion;
 
-setInterval(mostrar,1000);
+    if (i >= nivel && Math.random() < 0.3) {
+      posicion = secuencia[i - nivel];
+    } else {
+      posicion = Math.floor(Math.random() * 9);
+    }
 
+    secuencia.push(posicion);
+  }
+}
+
+function mostrarEstimulo() {
+  if (indice >= maxEnsayos) {
+    finalizar();
+    return;
+  }
+
+  cells.forEach(c => c.classList.remove("active"));
+
+  const posicionActual = secuencia[indice];
+  cells[posicionActual].classList.add("active");
+
+  respondio = false;
+  inicioEstimulo = Date.now();
+
+  document.getElementById("resultado").innerText =
+    "Ensayo " + (indice + 1) + " de " + maxEnsayos;
+
+  setTimeout(() => {
+    evaluarSinRespuesta();
+    indice++;
+    mostrarEstimulo();
+  }, tiempo);
+}
+
+function esCoincidencia() {
+  if (indice < nivel) {
+    return false;
+  }
+
+  return secuencia[indice] === secuencia[indice - nivel];
+}
+
+function responder() {
+  if (respondio || indice >= maxEnsayos) {
+    return;
+  }
+
+  respondio = true;
+
+  const tiempoReaccion = Date.now() - inicioEstimulo;
+  tiemposReaccion.push(tiempoReaccion);
+
+  if (esCoincidencia()) {
+    aciertos++;
+  } else {
+    erroresComision++;
+  }
+}
+
+function evaluarSinRespuesta() {
+  if (respondio) {
+    return;
+  }
+
+  if (esCoincidencia()) {
+    erroresOmision++;
+  } else {
+    correctosNoCoincide++;
+  }
+}
+
+function finalizar() {
+  cells.forEach(c => c.classList.remove("active"));
+
+  const totalCoincidencias = secuencia.filter((pos, i) => {
+    return i >= nivel && pos === secuencia[i - nivel];
+  }).length;
+
+  const precision = totalCoincidencias > 0
+    ? ((aciertos / totalCoincidencias) * 100).toFixed(1)
+    : 0;
+
+  const promedioTR = tiemposReaccion.length > 0
+    ? Math.round(tiemposReaccion.reduce((a, b) => a + b, 0) / tiemposReaccion.length)
+    : "Sin respuestas";
+
+  document.getElementById("resultado").innerText =
+    "Prueba finalizada\n\n" +
+    "Nivel: " + nivel + "-Back\n" +
+    "Ensayos: " + maxEnsayos + "\n" +
+    "Coincidencias reales: " + totalCoincidencias + "\n" +
+    "Aciertos: " + aciertos + "\n" +
+    "Errores por comisión: " + erroresComision + "\n" +
+    "Errores por omisión: " + erroresOmision + "\n" +
+    "No coincidencias correctas: " + correctosNoCoincide + "\n" +
+    "Precisión: " + precision + "%\n" +
+    "Tiempo de reacción promedio: " + promedioTR + " ms";
+}
 </script>
 
 </body>
