@@ -374,10 +374,16 @@ function iniciar() {
     return;
   }
 
-  // Primero apagamos todas las celdas
+ function mostrarEstimulo() {
+  if (!pruebaActiva) return;
+
+  if (indice >= maxEnsayos) {
+    finalizar();
+    return;
+  }
+
   cells.forEach(c => c.classList.remove("active"));
 
-  // Pequeña pausa para que se note si se repite la misma posición
   setTimeout(() => {
     if (!pruebaActiva) return;
 
@@ -405,8 +411,6 @@ function iniciar() {
 
   }, 250);
 }
-}
-
 function detener() {
   pruebaActiva = false;
   clearTimeout(temporizador);
