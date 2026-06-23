@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>N-Back Visual</title>
+<title>Dual N-Back</title>
 
 <style>
 body {
@@ -12,7 +12,7 @@ body {
 }
 
 h1 {
-  margin-top: 30px;
+  margin-top: 25px;
 }
 
 .controls {
@@ -27,15 +27,15 @@ select, button {
 
 #grid {
   display: grid;
-  grid-template-columns: repeat(3, 120px);
-  gap: 15px;
+  grid-template-columns: repeat(3, 110px);
+  gap: 14px;
   justify-content: center;
-  margin-top: 30px;
+  margin-top: 25px;
 }
 
 .cell {
-  width: 120px;
-  height: 120px;
+  width: 110px;
+  height: 110px;
   background: white;
   border: 3px solid #333;
   border-radius: 15px;
@@ -47,7 +47,7 @@ select, button {
 
 #resultado {
   font-size: 18px;
-  margin-top: 25px;
+  margin-top: 20px;
   white-space: pre-line;
 }
 </style>
@@ -55,7 +55,8 @@ select, button {
 
 <body>
 
-<h1>N-Back Visual</h1>
+<h1>Dual N-Back</h1>
+<p><b>A</b> = coincide posición | <b>D</b> = coincide sonido</p>
 
 <div class="controls">
   <label>Nivel:</label>
@@ -67,16 +68,17 @@ select, button {
 
   <label>Tiempo:</label>
   <select id="tiempo">
-    <option value="1000">1 segundo</option>
-    <option value="1500">1.5 segundos</option>
-    <option value="2000">2 segundos</option>
-    <option value="3000">3 segundos</option>
+    <option value="1200">1.2 s</option>
+    <option value="1500" selected>1.5 s</option>
+    <option value="2000">2 s</option>
+    <option value="3000">3 s</option>
   </select>
 
   <br>
 
   <button onclick="iniciar()">Iniciar</button>
-  <button onclick="responder()">Coincide</button>
+  <button onclick="responderVisual()">A - Posición</button>
+  <button onclick="responderAudio()">D - Sonido</button>
 </div>
 
 <div id="grid">
@@ -95,52 +97,74 @@ select, button {
 
 <script>
 const cells = document.querySelectorAll(".cell");
+const letras = ["A", "B", "C", "D", "E", "F", "G", "H"];
 
-let secuencia = [];
+let secuenciaVisual = [];
+let secuenciaAudio = [];
 let indice = 0;
 let nivel = 1;
 let tiempo = 1500;
 let maxEnsayos = 20;
 
-let aciertos = 0;
-let erroresComision = 0;
-let erroresOmision = 0;
-let correctosNoCoincide = 0;
+let visualAciertos = 0;
+let visualComision = 0;
+let visualOmision = 0;
 
-let respondio = false;
+let audioAciertos = 0;
+let audioComision = 0;
+let audioOmision = 0;
+
+let respondioVisual = false;
+let respondioAudio = false;
+
 let inicioEstimulo = 0;
-let tiemposReaccion = [];
-let intervalo = null;
+let trVisual = [];
+let trAudio = [];
 
 function iniciar() {
   nivel = parseInt(document.getElementById("nivel").value);
   tiempo = parseInt(document.getElementById("tiempo").value);
 
-  secuencia = [];
+  secuenciaVisual = [];
+  secuenciaAudio = [];
   indice = 0;
-  aciertos = 0;
-  erroresComision = 0;
-  erroresOmision = 0;
-  correctosNoCoincide = 0;
-  tiemposReaccion = [];
 
-  generarSecuencia();
+  visualAciertos = 0;
+  visualComision = 0;
+  visualOmision = 0;
+
+  audioAciertos = 0;
+  audioComision = 0;
+  audioOmision = 0;
+
+  trVisual = [];
+  trAudio = [];
+
+  generarSecuencias();
 
   document.getElementById("resultado").innerText = "Prueba iniciada...";
   mostrarEstimulo();
 }
 
-function generarSecuencia() {
+function generarSecuencias() {
   for (let i = 0; i < maxEnsayos; i++) {
     let posicion;
+    let letra;
 
     if (i >= nivel && Math.random() < 0.3) {
-      posicion = secuencia[i - nivel];
+      posicion = secuenciaVisual[i - nivel];
     } else {
       posicion = Math.floor(Math.random() * 9);
     }
 
-    secuencia.push(posicion);
+    if (i >= nivel && Math.random() < 0.3) {
+      letra = secuenciaAudio[i - nivel];
+    } else {
+      letra = letras[Math.floor(Math.random() * letras.length)];
+    }
+
+    secuenciaVisual.push(posicion);
+    secuenciaAudio.push(letra);
   }
 }
 
@@ -152,14 +176,20 @@ function mostrarEstimulo() {
 
   cells.forEach(c => c.classList.remove("active"));
 
-  const posicionActual = secuencia[indice];
-  cells[posicionActual].classList.add("active");
+  let posicionActual = secuenciaVisual[indice];
+  let letraActual = secuenciaAudio[indice];
 
-  respondio = false;
+  cells[posicionActual].classList.add("active");
+  hablar(letraActual);
+
+  respondioVisual = false;
+  respondioAudio = false;
   inicioEstimulo = Date.now();
 
   document.getElementById("resultado").innerText =
-    "Ensayo " + (indice + 1) + " de " + maxEnsayos;
+    "Ensayo " + (indice + 1) + " de " + maxEnsayos + "\n" +
+    "Presiona A si coincide la posición\n" +
+    "Presiona D si coincide el sonido";
 
   setTimeout(() => {
     evaluarSinRespuesta();
@@ -168,70 +198,122 @@ function mostrarEstimulo() {
   }, tiempo);
 }
 
-function esCoincidencia() {
-  if (indice < nivel) {
-    return false;
-  }
+function hablar(letra) {
+  speechSynthesis.cancel();
 
-  return secuencia[indice] === secuencia[indice - nivel];
+  let voz = new SpeechSynthesisUtterance(letra);
+  voz.lang = "es-MX";
+  voz.rate = 0.8;
+  voz.pitch = 1;
+  speechSynthesis.speak(voz);
 }
 
-function responder() {
-  if (respondio || indice >= maxEnsayos) {
-    return;
-  }
+function coincideVisual() {
+  if (indice < nivel) return false;
+  return secuenciaVisual[indice] === secuenciaVisual[indice - nivel];
+}
 
-  respondio = true;
+function coincideAudio() {
+  if (indice < nivel) return false;
+  return secuenciaAudio[indice] === secuenciaAudio[indice - nivel];
+}
 
-  const tiempoReaccion = Date.now() - inicioEstimulo;
-  tiemposReaccion.push(tiempoReaccion);
+function responderVisual() {
+  if (respondioVisual || indice >= maxEnsayos) return;
 
-  if (esCoincidencia()) {
-    aciertos++;
+  respondioVisual = true;
+  trVisual.push(Date.now() - inicioEstimulo);
+
+  if (coincideVisual()) {
+    visualAciertos++;
   } else {
-    erroresComision++;
+    visualComision++;
+  }
+}
+
+function responderAudio() {
+  if (respondioAudio || indice >= maxEnsayos) return;
+
+  respondioAudio = true;
+  trAudio.push(Date.now() - inicioEstimulo);
+
+  if (coincideAudio()) {
+    audioAciertos++;
+  } else {
+    audioComision++;
   }
 }
 
 function evaluarSinRespuesta() {
-  if (respondio) {
-    return;
+  if (!respondioVisual && coincideVisual()) {
+    visualOmision++;
   }
 
-  if (esCoincidencia()) {
-    erroresOmision++;
-  } else {
-    correctosNoCoincide++;
+  if (!respondioAudio && coincideAudio()) {
+    audioOmision++;
   }
 }
 
 function finalizar() {
   cells.forEach(c => c.classList.remove("active"));
 
-  const totalCoincidencias = secuencia.filter((pos, i) => {
-    return i >= nivel && pos === secuencia[i - nivel];
+  let totalVisual = secuenciaVisual.filter((pos, i) => {
+    return i >= nivel && pos === secuenciaVisual[i - nivel];
   }).length;
 
-  const precision = totalCoincidencias > 0
-    ? ((aciertos / totalCoincidencias) * 100).toFixed(1)
+  let totalAudio = secuenciaAudio.filter((letra, i) => {
+    return i >= nivel && letra === secuenciaAudio[i - nivel];
+  }).length;
+
+  let precisionVisual = totalVisual > 0
+    ? ((visualAciertos / totalVisual) * 100).toFixed(1)
     : 0;
 
-  const promedioTR = tiemposReaccion.length > 0
-    ? Math.round(tiemposReaccion.reduce((a, b) => a + b, 0) / tiemposReaccion.length)
+  let precisionAudio = totalAudio > 0
+    ? ((audioAciertos / totalAudio) * 100).toFixed(1)
+    : 0;
+
+  let promedioVisual = trVisual.length > 0
+    ? Math.round(trVisual.reduce((a, b) => a + b, 0) / trVisual.length)
+    : "Sin respuestas";
+
+  let promedioAudio = trAudio.length > 0
+    ? Math.round(trAudio.reduce((a, b) => a + b, 0) / trAudio.length)
     : "Sin respuestas";
 
   document.getElementById("resultado").innerText =
     "Prueba finalizada\n\n" +
     "Nivel: " + nivel + "-Back\n" +
-    "Ensayos: " + maxEnsayos + "\n" +
-    "Coincidencias reales: " + totalCoincidencias + "\n" +
-    "Aciertos: " + aciertos + "\n" +
-    "Errores por comisión: " + erroresComision + "\n" +
-    "Errores por omisión: " + erroresOmision + "\n" +
-    "No coincidencias correctas: " + correctosNoCoincide + "\n" +
-    "Precisión: " + precision + "%\n" +
-    "Tiempo de reacción promedio: " + promedioTR + " ms";
+    "Ensayos: " + maxEnsayos + "\n\n" +
+
+    "VISUAL / POSICIÓN\n" +
+    "Coincidencias reales: " + totalVisual + "\n" +
+    "Aciertos: " + visualAciertos + "\n" +
+    "Errores por comisión: " + visualComision + "\n" +
+    "Errores por omisión: " + visualOmision + "\n" +
+    "Precisión visual: " + precisionVisual + "%\n" +
+    "TR visual promedio: " + promedioVisual + " ms\n\n" +
+
+    "AUDITIVO / SONIDO\n" +
+    "Coincidencias reales: " + totalAudio + "\n" +
+    "Aciertos: " + audioAciertos + "\n" +
+    "Errores por comisión: " + audioComision + "\n" +
+    "Errores por omisión: " + audioOmision + "\n" +
+    "Precisión auditiva: " + precisionAudio + "%\n" +
+    "TR auditivo promedio: " + promedioAudio + " ms";
 }
+
+document.addEventListener("keydown", function(event) {
+  const tecla = event.key.toLowerCase();
+
+  if (tecla === "a") {
+    responderVisual();
+  }
+
+  if (tecla === "d") {
+    responderAudio();
+  }
+});
 </script>
 
 </body>
