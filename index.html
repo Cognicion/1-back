@@ -2,15 +2,17 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Dual N-Back</title>
 
 <style>
 body {
   margin: 0;
-  background: #000000;
+  background: #000;
   color: white;
   font-family: Arial, sans-serif;
   text-align: center;
+  overflow-x: hidden;
 }
 
 #flashLeft, #flashRight {
@@ -33,18 +35,28 @@ body {
 }
 
 .flashWrong {
-  background: rgba(239, 68, 68, 0.28);
+  background: rgba(239, 68, 68, 0.32);
   opacity: 1 !important;
 }
 
 .container {
   position: relative;
   z-index: 2;
-  padding-top: 25px;
+  padding: 20px 10px 150px;
+}
+
+h1 {
+  margin-bottom: 4px;
+}
+
+.autor {
+  color: #93c5fd;
+  margin-top: 0;
+  font-size: 16px;
 }
 
 .controls {
-  margin: 20px;
+  margin: 15px;
 }
 
 select, button {
@@ -66,15 +78,15 @@ button {
 
 #grid {
   display: grid;
-  grid-template-columns: repeat(3, 110px);
-  gap: 14px;
+  grid-template-columns: repeat(3, 95px);
+  gap: 12px;
   justify-content: center;
-  margin-top: 25px;
+  margin-top: 20px;
 }
 
 .cell {
-  width: 110px;
-  height: 110px;
+  width: 95px;
+  height: 95px;
   background: #111;
   border: 3px solid #777;
   border-radius: 15px;
@@ -86,9 +98,9 @@ button {
 }
 
 #feedback {
-  font-size: 26px;
+  font-size: 24px;
   font-weight: bold;
-  margin-top: 20px;
+  margin-top: 18px;
   min-height: 35px;
 }
 
@@ -97,9 +109,82 @@ button {
 .info { color: #60a5fa; }
 
 #resultado {
-  font-size: 18px;
-  margin-top: 15px;
+  font-size: 17px;
+  margin-top: 12px;
   white-space: pre-line;
+}
+
+#graficas {
+  margin: 25px auto;
+  max-width: 700px;
+  display: none;
+}
+
+.barra-contenedor {
+  background: #222;
+  border-radius: 10px;
+  margin: 12px auto;
+  width: 90%;
+  height: 28px;
+  overflow: hidden;
+  text-align: left;
+}
+
+.barra {
+  height: 100%;
+  line-height: 28px;
+  padding-left: 10px;
+  font-weight: bold;
+  transition: width 0.8s ease;
+}
+
+.verde { background: #22c55e; }
+.rojo { background: #ef4444; }
+.azul { background: #2563eb; }
+.naranja { background: #f97316; }
+
+#mobileControls {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 120px;
+  display: flex;
+  z-index: 20;
+}
+
+#tapLeft, #tapRight {
+  width: 50%;
+  background: rgba(255,255,255,0.06);
+  font-size: 42px;
+  font-weight: bold;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  user-select: none;
+  touch-action: manipulation;
+}
+
+#tapLeft {
+  border-right: 1px solid rgba(255,255,255,0.25);
+}
+
+#tapLeft span, #tapRight span {
+  font-size: 17px;
+  margin-top: 8px;
+  opacity: 0.75;
+}
+
+@media (min-width: 700px) {
+  #grid {
+    grid-template-columns: repeat(3, 110px);
+  }
+
+  .cell {
+    width: 110px;
+    height: 110px;
+  }
 }
 </style>
 </head>
@@ -112,6 +197,8 @@ button {
 <div class="container">
 
 <h1>Dual N-Back</h1>
+<p class="autor">Dr. Aldo Sandokan Aguilar Valenzuela</p>
+
 <p><b>A</b> = sonido / izquierda | <b>D</b> = posición / derecha</p>
 
 <div class="controls">
@@ -134,8 +221,6 @@ button {
 
   <button onclick="iniciar()">Iniciar</button>
   <button class="stop" onclick="detener()">Detener</button>
-  <button onclick="responderAudio()">A - Sonido</button>
-  <button onclick="responderVisual()">D - Posición</button>
 </div>
 
 <div id="grid">
@@ -147,6 +232,25 @@ button {
 <div id="feedback"></div>
 <p id="resultado">Presiona iniciar para comenzar.</p>
 
+<div id="graficas">
+  <h2>Gráficas de resultados</h2>
+
+  <h3>Sonido</h3>
+  <div class="barra-contenedor"><div id="barAudioAciertos" class="barra verde"></div></div>
+  <div class="barra-contenedor"><div id="barAudioComision" class="barra rojo"></div></div>
+  <div class="barra-contenedor"><div id="barAudioOmision" class="barra naranja"></div></div>
+
+  <h3>Posición</h3>
+  <div class="barra-contenedor"><div id="barVisualAciertos" class="barra verde"></div></div>
+  <div class="barra-contenedor"><div id="barVisualComision" class="barra rojo"></div></div>
+  <div class="barra-contenedor"><div id="barVisualOmision" class="barra naranja"></div></div>
+</div>
+
+</div>
+
+<div id="mobileControls">
+  <div id="tapLeft" onclick="responderAudio()">A<br><span>SONIDO</span></div>
+  <div id="tapRight" onclick="responderVisual()">D<br><span>POSICIÓN</span></div>
 </div>
 
 <script>
@@ -180,6 +284,8 @@ let trAudio = [];
 function iniciar() {
   clearTimeout(temporizador);
   speechSynthesis.cancel();
+
+  document.getElementById("graficas").style.display = "none";
 
   nivel = parseInt(document.getElementById("nivel").value);
   tiempo = parseInt(document.getElementById("tiempo").value);
@@ -217,12 +323,7 @@ function detener() {
   document.getElementById("feedback").innerText = "Prueba detenida";
   document.getElementById("feedback").className = "info";
 
-  document.getElementById("resultado").innerText =
-    "Ensayos completados: " + indice + " de " + maxEnsayos + "\n\n" +
-    "Sonido - aciertos: " + audioAciertos + "\n" +
-    "Sonido - errores: " + audioComision + "\n" +
-    "Posición - aciertos: " + visualAciertos + "\n" +
-    "Posición - errores: " + visualComision;
+  mostrarResultados("Prueba detenida");
 }
 
 function generarSecuencias() {
@@ -312,10 +413,19 @@ function flashLado(lado, correcto) {
     ? document.getElementById("flashLeft")
     : document.getElementById("flashRight");
 
+  let boton = lado === "izquierda"
+    ? document.getElementById("tapLeft")
+    : document.getElementById("tapRight");
+
   panel.className = correcto ? "flashCorrect" : "flashWrong";
+
+  boton.style.background = correcto
+    ? "rgba(34,197,94,0.35)"
+    : "rgba(239,68,68,0.35)";
 
   setTimeout(() => {
     panel.className = "";
+    boton.style.background = "rgba(255,255,255,0.06)";
   }, 350);
 }
 
@@ -327,11 +437,11 @@ function responderAudio() {
 
   if (coincideAudio()) {
     audioAciertos++;
-    mostrarFeedback("A presionada: sonido CORRECTO", "correcto");
+    mostrarFeedback("A: sonido CORRECTO", "correcto");
     flashLado("izquierda", true);
   } else {
     audioComision++;
-    mostrarFeedback("A presionada: sonido INCORRECTO", "incorrecto");
+    mostrarFeedback("A: sonido INCORRECTO", "incorrecto");
     flashLado("izquierda", false);
   }
 }
@@ -344,22 +454,32 @@ function responderVisual() {
 
   if (coincideVisual()) {
     visualAciertos++;
-    mostrarFeedback("D presionada: posición CORRECTA", "correcto");
+    mostrarFeedback("D: posición CORRECTA", "correcto");
     flashLado("derecha", true);
   } else {
     visualComision++;
-    mostrarFeedback("D presionada: posición INCORRECTA", "incorrecto");
+    mostrarFeedback("D: posición INCORRECTA", "incorrecto");
     flashLado("derecha", false);
   }
 }
 
 function evaluarSinRespuesta() {
-  if (!respondioVisual && coincideVisual()) {
-    visualOmision++;
-  }
+  let huboOmision = false;
 
   if (!respondioAudio && coincideAudio()) {
     audioOmision++;
+    flashLado("izquierda", false);
+    huboOmision = true;
+  }
+
+  if (!respondioVisual && coincideVisual()) {
+    visualOmision++;
+    flashLado("derecha", false);
+    huboOmision = true;
+  }
+
+  if (huboOmision) {
+    mostrarFeedback("Omisión: no respondiste una coincidencia", "incorrecto");
   }
 }
 
@@ -367,6 +487,18 @@ function finalizar() {
   pruebaActiva = false;
   cells.forEach(c => c.classList.remove("active"));
 
+  document.getElementById("feedback").innerText = "Prueba terminada";
+  document.getElementById("feedback").className = "info";
+
+  mostrarResultados("Prueba finalizada");
+}
+
+function promedio(lista) {
+  if (lista.length === 0) return "Sin respuestas";
+  return Math.round(lista.reduce((a, b) => a + b, 0) / lista.length);
+}
+
+function mostrarResultados(titulo) {
   let totalVisual = secuenciaVisual.filter((pos, i) => {
     return i >= nivel && pos === secuenciaVisual[i - nivel];
   }).length;
@@ -383,20 +515,13 @@ function finalizar() {
     ? ((audioAciertos / totalAudio) * 100).toFixed(1)
     : 0;
 
-  let promedioVisual = trVisual.length > 0
-    ? Math.round(trVisual.reduce((a, b) => a + b, 0) / trVisual.length)
-    : "Sin respuestas";
-
-  let promedioAudio = trAudio.length > 0
-    ? Math.round(trAudio.reduce((a, b) => a + b, 0) / trAudio.length)
-    : "Sin respuestas";
-
-  document.getElementById("feedback").innerText = "Prueba terminada";
-  document.getElementById("feedback").className = "info";
+  let promedioVisual = promedio(trVisual);
+  let promedioAudio = promedio(trAudio);
 
   document.getElementById("resultado").innerText =
+    titulo + "\n\n" +
     "Nivel: " + nivel + "-Back\n" +
-    "Ensayos: " + maxEnsayos + "\n\n" +
+    "Ensayos completados: " + indice + " de " + maxEnsayos + "\n\n" +
 
     "SONIDO / A / IZQUIERDA\n" +
     "Coincidencias reales: " + totalAudio + "\n" +
@@ -413,6 +538,33 @@ function finalizar() {
     "Errores por omisión: " + visualOmision + "\n" +
     "Precisión posición: " + precisionVisual + "%\n" +
     "TR posición promedio: " + promedioVisual + " ms";
+
+  graficar();
+}
+
+function graficar() {
+  document.getElementById("graficas").style.display = "block";
+
+  let maximo = Math.max(
+    audioAciertos, audioComision, audioOmision,
+    visualAciertos, visualComision, visualOmision,
+    1
+  );
+
+  ponerBarra("barAudioAciertos", audioAciertos, maximo, "Aciertos: ");
+  ponerBarra("barAudioComision", audioComision, maximo, "Comisión: ");
+  ponerBarra("barAudioOmision", audioOmision, maximo, "Omisión: ");
+
+  ponerBarra("barVisualAciertos", visualAciertos, maximo, "Aciertos: ");
+  ponerBarra("barVisualComision", visualComision, maximo, "Comisión: ");
+  ponerBarra("barVisualOmision", visualOmision, maximo, "Omisión: ");
+}
+
+function ponerBarra(id, valor, maximo, texto) {
+  let barra = document.getElementById(id);
+  let ancho = (valor / maximo) * 100;
+  barra.style.width = ancho + "%";
+  barra.innerText = texto + valor;
 }
 
 document.addEventListener("keydown", function(event) {
