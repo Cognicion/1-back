@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Panel médico</title>
+
+<style>
+body{
+    background:#080808;
+    color:white;
+    font-family:Arial, Helvetica, sans-serif;
+    padding:40px;
+}
+
+.contenedor{
+    max-width:1000px;
+    margin:auto;
+    background:#161616;
+    border:1px solid #333;
+    border-radius:25px;
+    padding:40px;
+}
+
+input, textarea{
+    width:100%;
+    margin-bottom:20px;
+    padding:15px;
+    border-radius:12px;
+    border:1px solid #444;
+    background:#0d0d0d;
+    color:white;
+    font-size:16px;
+}
+
+textarea{
+    height:130px;
+    resize:vertical;
+}
+
+button{
+    padding:14px 25px;
+    border:none;
+    border-radius:30px;
+    background:white;
+    color:black;
+    cursor:pointer;
+}
+</style>
+</head>
+
+<body>
+
+<div class="contenedor">
+
+<h1>👨‍⚕️ Nota médica</h1>
+
+<label>UID del paciente</label>
+<input id="uidPaciente" placeholder="Pega aquí el UID del paciente">
+
+<label>Diagnóstico visible para paciente</label>
+<input id="diagnostico" placeholder="Ej. Trastorno por déficit de atención e hiperactividad">
+
+<label>Tratamiento visible para paciente</label>
+<textarea id="tratamiento" placeholder="Medicamentos actuales"></textarea>
+
+<label>Médico tratante visible para paciente</label>
+<input id="medico" placeholder="Dr. Aldo Sandokan Aguilar Valenzuela">
+
+<label>Última consulta visible para paciente</label>
+<input id="ultimaConsulta" type="date">
+
+<hr>
+
+<h2>Nota interna médica</h2>
+
+<label>Subjetivo</label>
+<textarea id="subjetivo"></textarea>
+
+<label>Examen mental / Objetivo</label>
+<textarea id="objetivo"></textarea>
+
+<label>Análisis clínico</label>
+<textarea id="analisis"></textarea>
+
+<label>Plan</label>
+<textarea id="plan"></textarea>
+
+<button onclick="guardarNotaMedica()">
+Guardar nota médica
+</button>
+
+</div>
+
+<script type="module" src="firebase.js"></script>
+
+</body>
+</html>
