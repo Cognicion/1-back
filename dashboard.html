@@ -2,41 +2,165 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Dashboard</title>
+<title>Cognición</title>
+
+<style>
+body{
+    margin:0;
+    font-family: Arial, Helvetica, sans-serif;
+    background:#0b0b0b;
+    color:white;
+}
+
+header{
+    padding:28px 60px;
+    border-bottom:1px solid #222;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
+
+.logo{
+    font-size:28px;
+    font-weight:bold;
+    letter-spacing:1px;
+}
+
+.hero{
+    padding:90px 60px;
+    background:linear-gradient(120deg,#000,#1a1a1a);
+}
+
+.hero h1{
+    font-size:58px;
+    margin:0;
+    font-weight:300;
+}
+
+.hero h2{
+    font-size:26px;
+    font-weight:300;
+    color:#d0d0d0;
+}
+
+.contenedor{
+    padding:50px 60px;
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+    gap:24px;
+}
+
+.tarjeta{
+    background:#151515;
+    border:1px solid #2a2a2a;
+    padding:30px;
+    border-radius:18px;
+    transition:0.3s;
+}
+
+.tarjeta:hover{
+    transform:translateY(-6px);
+    border-color:#aaa;
+    background:#1f1f1f;
+}
+
+.tarjeta h3{
+    font-size:26px;
+    margin-top:0;
+    font-weight:300;
+}
+
+.tarjeta p{
+    color:#b8b8b8;
+    line-height:1.5;
+}
+
+button{
+    background:white;
+    color:black;
+    border:none;
+    padding:13px 22px;
+    border-radius:30px;
+    font-size:15px;
+    cursor:pointer;
+}
+
+button:hover{
+    background:#cfcfcf;
+}
+
+.boton-secundario{
+    background:transparent;
+    color:white;
+    border:1px solid #777;
+}
+
+.boton-secundario:hover{
+    background:white;
+    color:black;
+}
+
+footer{
+    padding:30px 60px;
+    color:#777;
+    border-top:1px solid #222;
+}
+</style>
+
 </head>
 
 <body>
 
-<h1>🧠 Cognición</h1>
+<header>
+    <div class="logo">🧠 Cognición</div>
 
-<h2 id="bienvenida">Cargando...</h2>
+    <button class="boton-secundario" onclick="cerrarSesion()">
+        Cerrar sesión
+    </button>
+</header>
 
-<button onclick="window.location.href='nback.html'">
-N-Back
-</button>
-<h2>📊 Resultados</h2>
+<section class="hero">
+    <h1>Rehabilitación cognitiva</h1>
+    <h2 id="bienvenida">Cargando...</h2>
+</section>
 
-<button>
-Ver progreso
-</button>
+<section class="contenedor">
 
-<br><br>
+    <div class="tarjeta">
+        <h3>N-Back</h3>
+        <p>Ejercicio para memoria de trabajo, atención y velocidad de respuesta.</p>
+        <button onclick="window.location.href='nback.html'">
+            Iniciar
+        </button>
+    </div>
 
-<h2>📋 Escalas</h2>
+    <div class="tarjeta">
+        <h3>Resultados</h3>
+        <p>Consulta el progreso del paciente, aciertos, errores y tiempo de reacción.</p>
+        <button>
+            Ver progreso
+        </button>
+    </div>
 
-<button>
-PHQ-9
-</button>
+    <div class="tarjeta">
+        <h3>Escalas clínicas</h3>
+        <p>Aplicación de PHQ-9, GAD-7 e instrumentos de seguimiento.</p>
+        <button>
+            PHQ-9
+        </button>
 
-<button>
-GAD-7
-</button>
+        <br><br>
 
-<br><br>
+        <button class="boton-secundario">
+            GAD-7
+        </button>
+    </div>
 
-<button onclick="cerrarSesion()">
-Cerrar sesión
-</button>
+</section>
+
+<footer>
+    Cognición · Plataforma de rehabilitación cognitiva
+</footer>
 
 <script type="module" src="firebase.js"></script>
 
