@@ -121,7 +121,48 @@ window.guardarNotaMedica = async function() {
 };
 
 onAuthStateChanged(auth, async (user) => {
+if (window.location.pathname.includes("pacientes.html")) {
+  if (!user) {
+    window.location.href = "login.html";
+    return;
+  }
 
+  const refUsuario = doc(db, "usuarios", user.uid);
+  const snap = await getDoc(refUsuario);
+
+  if (!snap.exists() || snap.data().rol !== "medico") {
+    alert("Acceso restringido al personal médico");
+    window.location.href = "dashboard.html";
+    return;
+  }
+
+  const lista = document.getElementById("listaPacientes");
+
+  lista.innerHTML = "";
+
+  const q = query(
+    collection(db, "usuarios"),
+    where("rol", "==", "paciente")
+  );
+
+  const pacientes = await getDocs(q);
+
+  pacientes.forEach((paciente) => {
+    const datos = paciente.data();
+
+    lista.innerHTML += `
+      <div class="tarjeta">
+        <div class="nombre">${datos.nombre || "Sin nombre"}</div>
+        <div class="info">${datos.email || "Sin correo"}</div>
+        <div class="info">Diagnóstico: ${datos.diagnostico || "Sin diagnóstico registrado"}</div>
+
+        <button onclick="window.location.href='paciente.html?id=${paciente.id}'">
+          Abrir expediente
+        </button>
+      </div>
+    `;
+  });
+}
   if (window.location.pathname.includes("dashboard.html")) {
     if (!user) {
       window.location.href = "login.html";
