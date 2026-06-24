@@ -191,4 +191,35 @@ pacientes.forEach((paciente) => {
 
   }
 
+  onAuthStateChanged(auth, async (user) => {
+  if (window.location.pathname.includes("expediente.html")) {
+    if (!user) {
+      window.location.href = "login.html";
+      return;
+    }
+
+    const refUsuario = doc(db, "usuarios", user.uid);
+    const snap = await getDoc(refUsuario);
+
+    if (snap.exists()) {
+      const datos = snap.data();
+
+      document.getElementById("nombre").innerText =
+        datos.nombre || "Sin nombre registrado";
+
+      document.getElementById("diagnostico").innerText =
+        datos.diagnostico || "Sin diagnóstico registrado";
+
+      document.getElementById("tratamiento").innerText =
+        datos.tratamiento || "Sin tratamiento registrado";
+
+      document.getElementById("medicoTratante").innerText =
+        datos.medicoTratante || "Sin médico tratante registrado";
+
+      document.getElementById("ultimaConsulta").innerText =
+        datos.ultimaConsulta || "Sin fecha registrada";
+    }
+  }
+});
+
 });
