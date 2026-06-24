@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Panel médico</title>
+
+<style>
+body{
+    margin:0;
+    background:#080808;
+    color:white;
+    font-family:Arial, Helvetica, sans-serif;
+}
+
+.contenedor{
+    max-width:1100px;
+    margin:auto;
+    padding:80px 40px;
+}
+
+h1{
+    font-size:52px;
+    font-weight:300;
+}
+
+.grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+    gap:28px;
+    margin-top:40px;
+}
+
+.tarjeta{
+    background:#161616;
+    border:1px solid #333;
+    border-radius:26px;
+    padding:35px;
+    min-height:220px;
+}
+
+.tarjeta h2{
+    font-size:30px;
+}
+
+.tarjeta p{
+    color:#aaa;
+    line-height:1.5;
+}
+
+button{
+    margin-top:20px;
+    padding:14px 25px;
+    border-radius:30px;
+    border:none;
+    background:white;
+    color:black;
+    cursor:pointer;
+}
+</style>
+</head>
+
+<body>
+
+<div class="contenedor">
+
+<h1>Panel médico</h1>
+
+<div class="grid">
+
+    <div class="tarjeta">
+        <h2>➕ Nuevo paciente</h2>
+        <p>Registrar datos generales, antecedentes e historia clínica inicial.</p>
+        <button onclick="window.location.href='nuevo-paciente.html'">
+            Crear paciente
+        </button>
+    </div>
+
+    <div class="tarjeta">
+        <h2>📁 Pacientes</h2>
+        <p>Ver catálogo de pacientes, abrir expediente, notas, estudios y evolución.</p>
+        <button onclick="window.location.href='pacientes.html'">
+            Ver pacientes
+        </button>
+    </div>
+
+</div>
+
+</div>
+
+<script type="module" src="firebase.js"></script>
+
+</body>
+</html>
