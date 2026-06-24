@@ -248,35 +248,63 @@ async function cargarHistorial(uidPaciente){
 
         const datos = nota.data();
 
-        contenedor.innerHTML += `
+        const fecha = new Date(datos.fecha);
 
-        <div style="
-        background:#0d0d0d;
-        border:1px solid #333;
-        border-radius:20px;
-        padding:25px;
-        margin-bottom:20px;
-        ">
+const fechaTexto = fecha.toLocaleDateString("es-MX");
 
-        <h3>${datos.fecha.substring(0,10)}</h3>
+const horaTexto = fecha.toLocaleTimeString("es-MX", {
+  hour: "2-digit",
+  minute: "2-digit"
+});
 
-        <p><b>Médico:</b> ${datos.autor}</p>
+contenedor.innerHTML += `
 
-        <p><b>Subjetivo:</b><br>
-        ${datos.subjetivo}</p>
+<details style="
+background:#0d0d0d;
+border:1px solid #333;
+border-radius:20px;
+padding:22px;
+margin-bottom:20px;
+">
 
-        <p><b>Objetivo:</b><br>
-        ${datos.objetivo}</p>
+<summary style="
+cursor:pointer;
+font-size:18px;
+font-weight:bold;
+outline:none;
+">
 
-        <p><b>Análisis:</b><br>
-        ${datos.analisis}</p>
+${fechaTexto} · ${horaTexto} · ${datos.autor}
 
-        <p><b>Plan:</b><br>
-        ${datos.plan}</p>
+</summary>
 
-        </div>
+<div style="margin-top:20px;">
 
-        `;
+<p>
+<b>Subjetivo:</b><br>
+${datos.subjetivo}
+</p>
+
+<p>
+<b>Objetivo:</b><br>
+${datos.objetivo}
+</p>
+
+<p>
+<b>Análisis:</b><br>
+${datos.analisis}
+</p>
+
+<p>
+<b>Plan:</b><br>
+${datos.plan}
+</p>
+
+</div>
+
+</details>
+
+`;
 
     });
 
