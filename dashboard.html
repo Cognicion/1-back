@@ -2,97 +2,140 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Cognición Dr. Aldo Sandokan Aguilar Valenzuela </title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cognición</title>
 
 <style>
+*{
+    box-sizing:border-box;
+}
+
 body{
     margin:0;
-    font-family: Arial, Helvetica, sans-serif;
-    background:#0b0b0b;
+    font-family:Arial, Helvetica, sans-serif;
+    background:
+        radial-gradient(circle at top left, #1f2937, transparent 35%),
+        linear-gradient(135deg, #030303, #111111);
     color:white;
+    min-height:100vh;
 }
 
 header{
-    padding:28px 60px;
-    border-bottom:1px solid #222;
+    padding:28px 7%;
     display:flex;
     justify-content:space-between;
     align-items:center;
+    border-bottom:1px solid rgba(255,255,255,0.12);
+    backdrop-filter:blur(12px);
 }
 
 .logo{
     font-size:28px;
-    font-weight:bold;
     letter-spacing:1px;
+    font-weight:600;
 }
 
 .hero{
-    padding:90px 60px;
-    background:linear-gradient(120deg,#000,#1a1a1a);
+    padding:90px 7% 60px;
+}
+
+.hero .etiqueta{
+    color:#b8b8b8;
+    letter-spacing:4px;
+    font-size:13px;
+    text-transform:uppercase;
+    margin-bottom:18px;
 }
 
 .hero h1{
-    font-size:58px;
-    margin:0;
+    font-size:64px;
     font-weight:300;
+    margin:0;
+    line-height:1.05;
 }
 
 .hero h2{
-    font-size:26px;
+    font-size:24px;
     font-weight:300;
-    color:#d0d0d0;
+    color:#cfcfcf;
+    margin-top:24px;
 }
 
-.contenedor{
-    padding:50px 60px;
+.panel{
+    padding:20px 7% 70px;
     display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
-    gap:24px;
+    grid-template-columns:repeat(auto-fit, minmax(260px, 1fr));
+    gap:26px;
 }
 
 .tarjeta{
-    background:#151515;
-    border:1px solid #2a2a2a;
-    padding:30px;
-    border-radius:18px;
-    transition:0.3s;
+    min-height:260px;
+    padding:32px;
+    border-radius:26px;
+    background:rgba(255,255,255,0.07);
+    border:1px solid rgba(255,255,255,0.14);
+    box-shadow:0 20px 60px rgba(0,0,0,0.35);
+    backdrop-filter:blur(18px);
+    transition:0.35s ease;
+    position:relative;
+    overflow:hidden;
+}
+
+.tarjeta::before{
+    content:"";
+    position:absolute;
+    top:0;
+    left:0;
+    width:100%;
+    height:3px;
+    background:linear-gradient(90deg, transparent, #d6d6d6, transparent);
+    opacity:0.6;
 }
 
 .tarjeta:hover{
-    transform:translateY(-6px);
-    border-color:#aaa;
-    background:#1f1f1f;
+    transform:translateY(-8px);
+    background:rgba(255,255,255,0.11);
+    border-color:rgba(255,255,255,0.32);
+}
+
+.icono{
+    font-size:38px;
+    margin-bottom:22px;
 }
 
 .tarjeta h3{
-    font-size:26px;
-    margin-top:0;
+    font-size:30px;
     font-weight:300;
+    margin:0 0 14px;
 }
 
 .tarjeta p{
-    color:#b8b8b8;
-    line-height:1.5;
+    color:#c0c0c0;
+    line-height:1.6;
+    font-size:16px;
 }
 
 button{
-    background:white;
-    color:black;
+    margin-top:18px;
+    padding:14px 24px;
+    border-radius:999px;
     border:none;
-    padding:13px 22px;
-    border-radius:30px;
+    background:white;
+    color:#050505;
     font-size:15px;
     cursor:pointer;
+    transition:0.25s;
 }
 
 button:hover{
-    background:#cfcfcf;
+    background:#d8d8d8;
+    transform:scale(1.03);
 }
 
 .boton-secundario{
     background:transparent;
     color:white;
-    border:1px solid #777;
+    border:1px solid rgba(255,255,255,0.45);
 }
 
 .boton-secundario:hover{
@@ -100,13 +143,64 @@ button:hover{
     color:black;
 }
 
+.stats{
+    display:flex;
+    gap:18px;
+    margin-top:24px;
+    flex-wrap:wrap;
+}
+
+.stat{
+    background:rgba(255,255,255,0.08);
+    border:1px solid rgba(255,255,255,0.12);
+    padding:16px 20px;
+    border-radius:18px;
+    min-width:130px;
+}
+
+.stat strong{
+    font-size:26px;
+    font-weight:300;
+}
+
+.stat span{
+    display:block;
+    color:#aaa;
+    font-size:13px;
+    margin-top:6px;
+}
+
 footer{
-    padding:30px 60px;
+    padding:28px 7%;
     color:#777;
-    border-top:1px solid #222;
+    border-top:1px solid rgba(255,255,255,0.1);
+}
+
+@media(max-width:700px){
+    header{
+        padding:22px;
+        flex-direction:column;
+        gap:18px;
+        align-items:flex-start;
+    }
+
+    .hero{
+        padding:60px 22px 35px;
+    }
+
+    .hero h1{
+        font-size:42px;
+    }
+
+    .hero h2{
+        font-size:20px;
+    }
+
+    .panel{
+        padding:20px 22px 50px;
+    }
 }
 </style>
-
 </head>
 
 <body>
@@ -120,50 +214,87 @@ footer{
 </header>
 
 <section class="hero">
-    <h1>Rehabilitación cognitiva</h1>
+    <div class="etiqueta">Plataforma clínica digital</div>
+
+    <h1>Rehabilitación cognitiva<br>de precisión</h1>
+
     <h2 id="bienvenida">Cargando...</h2>
+
+    <div class="stats">
+        <div class="stat">
+            <strong>0</strong>
+            <span>Sesiones</span>
+        </div>
+
+        <div class="stat">
+            <strong>--</strong>
+            <span>Acierto promedio</span>
+        </div>
+
+        <div class="stat">
+            <strong>-- ms</strong>
+            <span>TR promedio</span>
+        </div>
+    </div>
 </section>
 
-<section class="contenedor">
+<section class="panel">
 
     <div class="tarjeta">
+        <div class="icono">🧩</div>
         <h3>N-Back</h3>
-        <p>Ejercicio para memoria de trabajo, atención y velocidad de respuesta.</p>
+        <p>
+            Entrenamiento de memoria de trabajo, atención sostenida y control ejecutivo.
+        </p>
         <button onclick="window.location.href='nback.html'">
-            Iniciar
+            Iniciar sesión
         </button>
     </div>
 
     <div class="tarjeta">
+        <div class="icono">📊</div>
         <h3>Resultados</h3>
-        <p>Consulta el progreso del paciente, aciertos, errores y tiempo de reacción.</p>
+        <p>
+            Visualiza evolución, errores de comisión, errores de omisión y tiempo de reacción.
+        </p>
         <button>
             Ver progreso
         </button>
     </div>
 
     <div class="tarjeta">
+        <div class="icono">📋</div>
         <h3>Escalas clínicas</h3>
-        <p>Aplicación de PHQ-9, GAD-7 e instrumentos de seguimiento.</p>
+        <p>
+            Aplicación y seguimiento de instrumentos clínicos como PHQ-9, GAD-7 e ISI.
+        </p>
         <button>
             PHQ-9
         </button>
-
-        <br><br>
 
         <button class="boton-secundario">
             GAD-7
         </button>
     </div>
 
+    <div class="tarjeta">
+        <div class="icono">👨‍⚕️</div>
+        <h3>Panel médico</h3>
+        <p>
+            Próximamente: revisión de pacientes, notas clínicas y reportes de evolución.
+        </p>
+        <button class="boton-secundario">
+            Próximamente
+        </button>
+    </div>
+
 </section>
 
 <footer>
-    Cognición · Plataforma de rehabilitación cognitiva
+    Cognición · Plataforma cognitiva · Dr. Aldo Sandokan Aguilar Valenzuela
 </footer>
 
 <script type="module" src="firebase.js"></script>
 
 </body>
 </html>
- 
