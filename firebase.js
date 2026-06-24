@@ -15,7 +15,10 @@ import {
   getDoc,
   updateDoc,
   addDoc,
-  collection
+  collection,
+  getDocs,
+  query,
+  where
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -165,6 +168,26 @@ onAuthStateChanged(auth, async (user) => {
       window.location.href = "dashboard.html";
 
     }
+
+    const selector = document.getElementById("uidPaciente");
+
+const q = query(
+  collection(db, "usuarios"),
+  where("rol", "==", "paciente")
+);
+
+const pacientes = await getDocs(q);
+
+pacientes.forEach((paciente) => {
+  const datosPaciente = paciente.data();
+
+  const opcion = document.createElement("option");
+
+  opcion.value = paciente.id;
+  opcion.textContent = datosPaciente.nombre;
+
+  selector.appendChild(opcion);
+});
 
   }
 
