@@ -3,13 +3,16 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/fireba
 import {
   getAuth,
   createUserWithEmailAndPassword,
-  signInWithEmailAndPassword
+  signInWithEmailAndPassword,
+  onAuthStateChanged,
+  signOut
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 import {
   getFirestore,
   doc,
-  setDoc
+  setDoc,
+  getDoc
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -22,76 +25,44 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-
 const auth = getAuth(app);
 const db = getFirestore(app);
 
 window.registrarUsuario = async function() {
+  const nombre = document.getElementById("nombre").value;
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
 
-    const nombre = document.getElementById("nombre").value;
-    const email = document.getElementById("email").value;
-    const password = document.getElementById("password").value;
+  try {
+    const cred = await createUserWithEmailAndPassword(auth, email, password);
 
-    try{
+    await setDoc(doc(db, "usuarios", cred.user.uid), {
+      nombre: nombre,
+      email: email,
+      rol: "paciente",
+      fechaRegistro: new Date().toISOString()
+    });
 
-        const cred = await createUserWithEmailAndPassword(
-            auth,
-            email,
-            password
-        );
+    alert("Usuario creado correctamente");
+    window.location.href = "dashboard.html";
 
-        await setDoc(
-            doc(db,"usuarios",cred.user.uid),
-            {
-                nombre:nombre,
-                email:email,
-                rol:"paciente",
-                fechaRegistro:new Date().toISOString()
-            }
-        );
+  } catch(error) {
+    alert(error.message);
+  }
+};
 
-        alert("Usuario creado correctamente");
+window.iniciarSesion = async function() {
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
 
-        window.location.href="dashboard.html";
+  try {
+    await signInWithEmailAndPassword(auth, email, password);
+    window.location.href = "dashboard.html";
 
-    }catch(error){
-
-        alert(error.message);
-
-    }
-
-}
-
-window.iniciarSesion = async function(){
-
-    const email = document.getElementById("email").value;
-    const password = document.getElementById("password").value;
-
-    try{
-
-        await signInWithEmailAndPassword(
-            auth,
-            email,
-            password
-        );
-
-        window.location.href="dashboard.html";
-
-    }catch(error){
-
-        alert(error.message);
-
-    }
-
-}
-import {
-  onAuthStateChanged,
-  signOut
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-
-import {
-  getDoc
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+  } catch(error) {
+    alert(error.message);
+  }
+};
 
 onAuthStateChanged(auth, async (user) => {
   if (window.location.pathname.includes("dashboard.html")) {
@@ -103,8 +74,7 @@ onAuthStateChanged(auth, async (user) => {
         document.getElementById("bienvenida").innerText =
           "Bienvenido, " + snap.data().nombre;
       } else {
-        document.getElementById("bienvenida").innerText =
-          "Bienvenido";
+        document.getElementById("bienvenida").innerText = "Bienvenido";
       }
 
     } else {
@@ -116,8 +86,4 @@ onAuthStateChanged(auth, async (user) => {
 window.cerrarSesion = async function() {
   await signOut(auth);
   window.location.href = "login.html";
-}
-import {
-  onAuthStateChanged,
-  signOut
-}
+};
