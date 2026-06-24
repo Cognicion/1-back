@@ -1,1 +1,71 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Pacientes</title>
 
+<style>
+body{
+    margin:0;
+    background:#080808;
+    color:white;
+    font-family:Arial, Helvetica, sans-serif;
+}
+
+.contenedor{
+    max-width:1100px;
+    margin:auto;
+    padding:60px 40px;
+}
+
+h1{
+    font-size:48px;
+    font-weight:300;
+}
+
+.tarjeta{
+    background:#161616;
+    border:1px solid #333;
+    border-radius:25px;
+    padding:30px;
+    margin-bottom:20px;
+}
+
+.nombre{
+    font-size:26px;
+    font-weight:bold;
+}
+
+.info{
+    color:#aaa;
+    margin-top:8px;
+}
+
+button{
+    margin-top:18px;
+    padding:13px 24px;
+    border:none;
+    border-radius:30px;
+    background:white;
+    color:black;
+    cursor:pointer;
+}
+</style>
+</head>
+
+<body>
+
+<div class="contenedor">
+
+<h1>📁 Pacientes</h1>
+
+<div id="listaPacientes">
+    <p style="color:#999;">Cargando pacientes...</p>
+</div>
+
+</div>
+
+<script type="module" src="firebase.js"></script>
+
+</body>
+</html>
