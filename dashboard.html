@@ -30,9 +30,21 @@ header{
 }
 
 .logo{
-    font-size:28px;
-    letter-spacing:1px;
+    display:flex;
+    flex-direction:column;
+}
+
+.titulo{
+    font-size:42px;
     font-weight:600;
+    color:white;
+}
+
+.autores{
+    margin-top:6px;
+    font-size:14px;
+    color:#9ca3af;
+    letter-spacing:1px;
 }
 
 .hero{
@@ -206,7 +218,19 @@ footer{
 <body>
 
 <header>
-    <div class="logo">🧠 Cognición Dr. Aldo Sandokan Dra. Ruth Tzompa</div>
+    <div class="logo">
+
+    <div class="titulo">
+        🧠 Cognición
+    </div>
+
+    <div class="autores">
+        Dr. Aldo Sandokan Aguilar Valenzuela
+        <br>
+        Dra. Ruth Tzompa
+    </div>
+
+</div>
 
     <button class="boton-secundario" onclick="cerrarSesion()">
         Cerrar sesión
