@@ -113,6 +113,8 @@ window.guardarNotaMedica = async function() {
 
     alert("Nota médica guardada correctamente");
 
+    cargarHistorial(uidPaciente);
+    
   } catch(error) {
     alert("Error: " + error.message);
   }
