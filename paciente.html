@@ -1,1 +1,84 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Expediente médico</title>
 
+<style>
+body{
+    margin:0;
+    background:#080808;
+    color:white;
+    font-family:Arial, Helvetica, sans-serif;
+}
+
+.contenedor{
+    max-width:1100px;
+    margin:auto;
+    padding:60px 40px;
+}
+
+h1{
+    font-size:48px;
+    font-weight:300;
+}
+
+.tarjeta{
+    background:#161616;
+    border:1px solid #333;
+    border-radius:25px;
+    padding:30px;
+    margin-bottom:20px;
+}
+
+button{
+    margin-right:10px;
+    margin-top:18px;
+    padding:13px 24px;
+    border:none;
+    border-radius:30px;
+    background:white;
+    color:black;
+    cursor:pointer;
+}
+</style>
+</head>
+
+<body>
+
+<div class="contenedor">
+
+<h1 id="nombrePaciente">Cargando paciente...</h1>
+
+<div class="tarjeta">
+    <h2>Resumen</h2>
+    <p id="diagnostico">Diagnóstico: Cargando...</p>
+    <p id="tratamiento">Tratamiento: Cargando...</p>
+</div>
+
+<div class="tarjeta">
+    <h2>Expediente médico</h2>
+
+    <button onclick="abrirNota()">
+        Notas médicas
+    </button>
+
+    <button>
+        Historia clínica
+    </button>
+
+    <button>
+        Estudios
+    </button>
+
+    <button>
+        Tratamiento
+    </button>
+</div>
+
+</div>
+
+<script type="module" src="js/firebase.js"></script>
+
+</body>
+</html>
