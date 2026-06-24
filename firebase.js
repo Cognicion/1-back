@@ -113,18 +113,59 @@ window.guardarNotaMedica = async function() {
       ultimaConsulta: ultimaConsulta
     });
 
-    await addDoc(collection(db, "usuarios", uidPaciente, "notasMedicas"), {
+        await addDoc(collection(db, "usuarios", uidPaciente, "notasMedicas"), {
+
       fecha: new Date().toISOString(),
       autor: medico,
       subjetivo: subjetivo,
       objetivo: objetivo,
       analisis: analisis,
       plan: plan
+
     });
 
     alert("Nota médica guardada correctamente");
 
   } catch(error) {
-    alert("Error: " + error.message);
+
+    alert(error.message);
+
   }
+
 };
+
+onAuthStateChanged(auth, async (user) => {
+
+  if (window.location.pathname.includes("medico.html")) {
+
+    if (!user) {
+
+      window.location.href = "login.html";
+      return;
+
+    }
+
+    const refUsuario = doc(db, "usuarios", user.uid);
+
+    const snap = await getDoc(refUsuario);
+
+    if (!snap.exists()) {
+
+      window.location.href = "login.html";
+      return;
+
+    }
+
+    const datos = snap.data();
+
+    if (datos.rol !== "medico") {
+
+      alert("Acceso restringido al personal médico");
+
+      window.location.href = "dashboard.html";
+
+    }
+
+  }
+
+});
