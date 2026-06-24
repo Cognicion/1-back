@@ -117,3 +117,7 @@ window.cerrarSesion = async function() {
   await signOut(auth);
   window.location.href = "login.html";
 }
+import {
+  onAuthStateChanged,
+  signOut
+}
