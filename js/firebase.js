@@ -225,6 +225,36 @@ if (window.location.pathname.includes("pacientes.html")) {
 });
   }
 
+if (window.location.pathname.includes("paciente.html")) {
+  if (!user) {
+    window.location.href = "login.html";
+    return;
+  }
+
+  const parametros = new URLSearchParams(window.location.search);
+  const uidPaciente = parametros.get("id");
+
+  const refPaciente = doc(db, "usuarios", uidPaciente);
+  const snapPaciente = await getDoc(refPaciente);
+
+  if (snapPaciente.exists()) {
+    const datos = snapPaciente.data();
+
+    document.getElementById("nombrePaciente").innerText =
+      datos.nombre || "Paciente sin nombre";
+
+    document.getElementById("diagnostico").innerText =
+      "Diagnóstico: " + (datos.diagnostico || "Sin diagnóstico registrado");
+
+    document.getElementById("tratamiento").innerText =
+      "Tratamiento: " + (datos.tratamiento || "Sin tratamiento registrado");
+
+    window.abrirNota = function() {
+      window.location.href = "nota.html?id=" + uidPaciente;
+    };
+  }
+}
+  
   if (window.location.pathname.includes("expediente.html")) {
     if (!user) {
       window.location.href = "login.html";
