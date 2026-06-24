@@ -70,26 +70,6 @@ window.iniciarSesion = async function() {
   }
 };
 
-onAuthStateChanged(auth, async (user) => {
-  if (window.location.pathname.includes("dashboard.html")) {
-    if (user) {
-      const refUsuario = doc(db, "usuarios", user.uid);
-      const snap = await getDoc(refUsuario);
-
-      if (snap.exists()) {
-        document.getElementById("bienvenida").innerText =
-          "Bienvenido, " + snap.data().nombre;
-      } else {
-        document.getElementById("bienvenida").innerText =
-          "Bienvenido";
-      }
-
-    } else {
-      window.location.href = "login.html";
-    }
-  }
-});
-
 window.cerrarSesion = async function() {
   await signOut(auth);
   window.location.href = "login.html";
@@ -97,6 +77,11 @@ window.cerrarSesion = async function() {
 
 window.guardarNotaMedica = async function() {
   const uidPaciente = document.getElementById("uidPaciente").value;
+
+  if (!uidPaciente) {
+    alert("Selecciona un paciente");
+    return;
+  }
 
   const diagnostico = document.getElementById("diagnostico").value;
   const tratamiento = document.getElementById("tratamiento").value;
@@ -116,82 +101,83 @@ window.guardarNotaMedica = async function() {
       ultimaConsulta: ultimaConsulta
     });
 
-        await addDoc(collection(db, "usuarios", uidPaciente, "notasMedicas"), {
-
+    await addDoc(collection(db, "usuarios", uidPaciente, "notasMedicas"), {
       fecha: new Date().toISOString(),
       autor: medico,
       subjetivo: subjetivo,
       objetivo: objetivo,
       analisis: analisis,
       plan: plan
-
     });
 
     alert("Nota médica guardada correctamente");
 
   } catch(error) {
-
-    alert(error.message);
-
+    alert("Error: " + error.message);
   }
-
 };
 
 onAuthStateChanged(auth, async (user) => {
 
-  if (window.location.pathname.includes("medico.html")) {
-
+  if (window.location.pathname.includes("dashboard.html")) {
     if (!user) {
-
       window.location.href = "login.html";
       return;
-
     }
 
     const refUsuario = doc(db, "usuarios", user.uid);
+    const snap = await getDoc(refUsuario);
 
+    if (snap.exists()) {
+      document.getElementById("bienvenida").innerText =
+        "Bienvenido, " + snap.data().nombre;
+    } else {
+      document.getElementById("bienvenida").innerText = "Bienvenido";
+    }
+  }
+
+  if (window.location.pathname.includes("medico.html")) {
+    if (!user) {
+      window.location.href = "login.html";
+      return;
+    }
+
+    const refUsuario = doc(db, "usuarios", user.uid);
     const snap = await getDoc(refUsuario);
 
     if (!snap.exists()) {
-
       window.location.href = "login.html";
       return;
-
     }
 
     const datos = snap.data();
 
     if (datos.rol !== "medico") {
-
       alert("Acceso restringido al personal médico");
-
       window.location.href = "dashboard.html";
-
+      return;
     }
 
     const selector = document.getElementById("uidPaciente");
 
-const q = query(
-  collection(db, "usuarios"),
-  where("rol", "==", "paciente")
-);
+    const q = query(
+      collection(db, "usuarios"),
+      where("rol", "==", "paciente")
+    );
 
-const pacientes = await getDocs(q);
+    const pacientes = await getDocs(q);
 
-pacientes.forEach((paciente) => {
-  const datosPaciente = paciente.data();
+    pacientes.forEach((paciente) => {
+      const datosPaciente = paciente.data();
+      const opcion = document.createElement("option");
 
-  const opcion = document.createElement("option");
+      opcion.value = paciente.id;
+      opcion.textContent = datosPaciente.nombre;
 
-  opcion.value = paciente.id;
-  opcion.textContent = datosPaciente.nombre;
-
-  selector.appendChild(opcion);
-});
-
+      selector.appendChild(opcion);
+    });
   }
 
-  onAuthStateChanged(auth, async (user) => {
   if (window.location.pathname.includes("expediente.html")) {
     if (!user) {
       window.location.href = "login.html";
@@ -220,5 +206,5 @@ pacientes.forEach((paciente) => {
         datos.ultimaConsulta || "Sin fecha registrada";
     }
   }
-});
 
+});
