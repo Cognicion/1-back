@@ -20,6 +20,10 @@ onAuthStateChanged(auth, async (user) => {
   const parametros = new URLSearchParams(window.location.search);
   uidPaciente = parametros.get("id");
 
+  await cargarDatosPaciente();
+});
+
+async function cargarDatosPaciente() {
   const datos = await obtenerUsuario(uidPaciente);
 
   if (!datos) {
@@ -31,39 +35,90 @@ onAuthStateChanged(auth, async (user) => {
   document.getElementById("nombrePaciente").innerText =
     datos.nombre || "Paciente sin nombre";
 
+  document.getElementById("correoPaciente").innerText =
+    datos.email || "Sin correo";
+
   document.getElementById("diagnostico").innerText =
-    "Diagnóstico: " + (datos.diagnostico || "Sin diagnóstico registrado");
+    datos.diagnostico || "Sin diagnóstico registrado";
 
   document.getElementById("tratamiento").innerText =
-    "Tratamiento: " + (datos.tratamiento || "Sin tratamiento registrado");
+    datos.tratamiento || "Sin tratamiento registrado";
 
-  window.abrirNota = function() {
-    window.location.href = "nota.html?id=" + uidPaciente;
-  };
-});
+  document.getElementById("medicoTratante").innerText =
+    datos.medicoTratante || "Sin médico tratante";
+
+  document.getElementById("ultimaConsulta").innerText =
+    datos.ultimaConsulta || "Sin fecha";
+
+  document.getElementById("telefonoPaciente").innerText =
+    datos.telefono || "Sin teléfono";
+}
 
 window.editarNombrePaciente = async function() {
-
-  const nuevoNombre = prompt(
-    "Escribe el nuevo nombre del paciente:"
-  );
+  const nuevoNombre = prompt("Nuevo nombre:");
 
   if (!nuevoNombre) return;
 
-  try {
+  await actualizarUsuario(uidPaciente, {
+    nombre: nuevoNombre
+  });
 
-    await actualizarUsuario(uidPaciente, {
-      nombre: nuevoNombre
-    });
+  await cargarDatosPaciente();
 
-    document.getElementById("nombrePaciente").innerText = nuevoNombre;
+  alert("Nombre actualizado");
+};
 
-    alert("Nombre actualizado correctamente");
+window.editarDatosPaciente = async function() {
+  const datos = await obtenerUsuario(uidPaciente);
 
-  } catch(error) {
+  const nuevoTelefono = prompt(
+    "Teléfono:",
+    datos.telefono || ""
+  );
 
-    alert(error.message);
+  if (nuevoTelefono === null) return;
 
-  }
+  const nuevoDiagnostico = prompt(
+    "Diagnóstico:",
+    datos.diagnostico || ""
+  );
 
+  if (nuevoDiagnostico === null) return;
+
+  const nuevoTratamiento = prompt(
+    "Tratamiento:",
+    datos.tratamiento || ""
+  );
+
+  if (nuevoTratamiento === null) return;
+
+  const nuevoMedico = prompt(
+    "Médico tratante:",
+    datos.medicoTratante || ""
+  );
+
+  if (nuevoMedico === null) return;
+
+  const nuevaConsulta = prompt(
+    "Última consulta:",
+    datos.ultimaConsulta || ""
+  );
+
+  if (nuevaConsulta === null) return;
+
+  await actualizarUsuario(uidPaciente, {
+    telefono: nuevoTelefono,
+    diagnostico: nuevoDiagnostico,
+    tratamiento: nuevoTratamiento,
+    medicoTratante: nuevoMedico,
+    ultimaConsulta: nuevaConsulta
+  });
+
+  await cargarDatosPaciente();
+
+  alert("Datos actualizados");
+};
+
+window.abrirNota = function() {
+  window.location.href = "nota.html?id=" + uidPaciente;
 };
