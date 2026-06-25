@@ -36,7 +36,13 @@ onAuthStateChanged(auth, async (user) => {
         <div class="nombre">${datos.nombre || "Sin nombre"}</div>
         <div class="info">${datos.email || "Sin correo"}</div>
         <div class="info">
-          Diagnóstico: ${datos.diagnostico || "Sin diagnóstico registrado"}
+          Diagnóstico: ${datos.diagnostico || "Sin diagnóstico registrado"
+                       
+                       
+      if(datos.estado === "suspendido"){
+      return;
+}                 
+                       }
         </div>
 
         <button onclick="window.location.href='paciente.html?id=${paciente.id}'">
