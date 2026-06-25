@@ -74,3 +74,17 @@ export async function crearPacienteProvisional(datos){
     );
 
 }
+
+export async function solicitarEliminacionPaciente(uid, solicitadoPor){
+
+    await updateDoc(
+        doc(db,"usuarios",uid),
+        {
+            estado:"suspendido",
+            eliminacionSolicitada:true,
+            fechaSolicitudEliminacion:new Date().toISOString(),
+            solicitadoPor:solicitadoPor
+        }
+    );
+
+}
