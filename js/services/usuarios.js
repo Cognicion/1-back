@@ -8,7 +8,8 @@ import {
     collection,
     getDocs,
     query,
-    where
+    where,
+    addDoc
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 
@@ -56,6 +57,20 @@ export async function crearUsuario(uid,datos){
     await setDoc(
         doc(db,"usuarios",uid),
         datos
+    );
+
+}
+
+export async function crearPacienteProvisional(datos){
+
+    return await addDoc(
+        collection(db,"usuarios"),
+        {
+            ...datos,
+            rol:"paciente",
+            tieneCuenta:false,
+            fechaCreacion:new Date().toISOString()
+        }
     );
 
 }
