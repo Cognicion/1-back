@@ -1,4 +1,4 @@
-import { auth, db } from "./firebase.js";
+import { auth } from "./firebase.js";
 
 import {
   onAuthStateChanged,
@@ -6,9 +6,8 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 import {
-  doc,
-  getDoc
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+  obtenerUsuario
+} from "./services/usuarios.js";
 
 onAuthStateChanged(auth, async (user) => {
   if (!user) {
@@ -16,12 +15,9 @@ onAuthStateChanged(auth, async (user) => {
     return;
   }
 
-  const refUsuario = doc(db, "usuarios", user.uid);
-  const snap = await getDoc(refUsuario);
+  const datos = await obtenerUsuario(user.uid);
 
-  if (snap.exists()) {
-    const datos = snap.data();
-
+  if (datos) {
     document.getElementById("bienvenida").innerText =
       "Bienvenido, " + datos.nombre;
   } else {
