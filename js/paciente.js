@@ -5,8 +5,11 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 import {
-  obtenerUsuario
+  obtenerUsuario,
+  actualizarUsuario
 } from "./services/usuarios.js";
+
+let uidPaciente = "";
 
 onAuthStateChanged(auth, async (user) => {
   if (!user) {
@@ -15,7 +18,7 @@ onAuthStateChanged(auth, async (user) => {
   }
 
   const parametros = new URLSearchParams(window.location.search);
-  const uidPaciente = parametros.get("id");
+  uidPaciente = parametros.get("id");
 
   const datos = await obtenerUsuario(uidPaciente);
 
@@ -38,3 +41,29 @@ onAuthStateChanged(auth, async (user) => {
     window.location.href = "nota.html?id=" + uidPaciente;
   };
 });
+
+window.editarNombrePaciente = async function() {
+
+  const nuevoNombre = prompt(
+    "Escribe el nuevo nombre del paciente:"
+  );
+
+  if (!nuevoNombre) return;
+
+  try {
+
+    await actualizarUsuario(uidPaciente, {
+      nombre: nuevoNombre
+    });
+
+    document.getElementById("nombrePaciente").innerText = nuevoNombre;
+
+    alert("Nombre actualizado correctamente");
+
+  } catch(error) {
+
+    alert(error.message);
+
+  }
+
+};
