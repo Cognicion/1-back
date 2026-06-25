@@ -5,11 +5,18 @@
 <title>Expediente médico</title>
 
 <style>
+*{
+    box-sizing:border-box;
+}
+
 body{
     margin:0;
-    background:#080808;
+    background:
+        radial-gradient(circle at top left,#1f2937,transparent 35%),
+        linear-gradient(135deg,#030303,#101010);
     color:white;
     font-family:Arial, Helvetica, sans-serif;
+    min-height:100vh;
 }
 
 .layout{
@@ -19,73 +26,144 @@ body{
 }
 
 .sidebar{
-    background:#111;
-    border-right:1px solid #333;
-    padding:30px;
+    background:rgba(255,255,255,0.04);
+    border-right:1px solid rgba(255,255,255,0.12);
+    padding:34px 26px;
+    backdrop-filter:blur(16px);
 }
 
 .sidebar h2{
+    font-size:26px;
     font-weight:300;
-    margin-bottom:30px;
+    margin:0 0 30px;
 }
 
 .menu button{
     width:100%;
     display:block;
     margin-bottom:14px;
-    padding:14px 18px;
-    border-radius:14px;
-    border:1px solid #333;
-    background:#181818;
+    padding:15px 18px;
+    border-radius:16px;
+    border:1px solid rgba(255,255,255,0.14);
+    background:rgba(255,255,255,0.06);
     color:white;
     text-align:left;
     cursor:pointer;
+    transition:0.25s;
 }
 
 .menu button:hover{
     background:white;
     color:black;
+    transform:translateX(5px);
 }
 
 .contenido{
-    padding:50px;
+    padding:58px 6%;
 }
 
 h1{
-    font-size:44px;
+    font-size:52px;
     font-weight:300;
+    margin:0 0 8px;
+}
+
+.subtitulo{
+    color:#9ca3af;
+    margin-bottom:26px;
+}
+
+.acciones{
+    display:flex;
+    gap:12px;
+    flex-wrap:wrap;
+    margin-bottom:26px;
+}
+
+button{
+    padding:13px 22px;
+    border:none;
+    border-radius:999px;
+    background:white;
+    color:black;
+    cursor:pointer;
+    transition:0.25s;
+}
+
+button:hover{
+    transform:scale(1.03);
+    background:#d8d8d8;
+}
+
+.boton-secundario{
+    background:transparent;
+    color:white;
+    border:1px solid rgba(255,255,255,0.35);
+}
+
+.boton-secundario:hover{
+    background:white;
+    color:black;
 }
 
 .tarjeta{
-    background:#161616;
-    border:1px solid #333;
-    border-radius:25px;
-    padding:30px;
+    background:rgba(255,255,255,0.07);
+    border:1px solid rgba(255,255,255,0.14);
+    border-radius:28px;
+    padding:34px;
     margin-bottom:24px;
+    box-shadow:0 20px 60px rgba(0,0,0,0.35);
+    backdrop-filter:blur(18px);
+}
+
+.tarjeta h2{
+    margin-top:0;
+    font-size:28px;
+    font-weight:300;
 }
 
 .grid{
     display:grid;
     grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
-    gap:20px;
+    gap:24px;
+}
+
+.dato{
+    padding:18px;
+    border-radius:18px;
+    background:rgba(0,0,0,0.25);
+    border:1px solid rgba(255,255,255,0.08);
 }
 
 .dato label{
-    color:#999;
+    color:#9ca3af;
     display:block;
-    margin-bottom:6px;
+    margin-bottom:8px;
+    font-size:14px;
 }
 
 .dato div{
-    font-size:20px;
+    font-size:19px;
+    line-height:1.4;
 }
 
 @media(max-width:800px){
     .layout{
         grid-template-columns:1fr;
     }
+
+    .sidebar{
+        border-right:none;
+        border-bottom:1px solid rgba(255,255,255,0.12);
+    }
+
+    h1{
+        font-size:38px;
+    }
 }
 </style>
+
+    
 </head>
 
 <body>
