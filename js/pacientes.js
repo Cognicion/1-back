@@ -31,18 +31,18 @@ onAuthStateChanged(auth, async (user) => {
   pacientes.forEach((paciente) => {
     const datos = paciente.data();
 
+    if (datos.estado === "suspendido") {
+      return;
+    }
+
     lista.innerHTML += `
       <div class="tarjeta">
         <div class="nombre">${datos.nombre || "Sin nombre"}</div>
+
         <div class="info">${datos.email || "Sin correo"}</div>
+
         <div class="info">
-          Diagnóstico: ${datos.diagnostico || "Sin diagnóstico registrado"
-                       
-                       
-      if(datos.estado === "suspendido"){
-      return;
-}                 
-                       }
+          Diagnóstico: ${datos.diagnostico || "Sin diagnóstico registrado"}
         </div>
 
         <button onclick="window.location.href='paciente.html?id=${paciente.id}'">
