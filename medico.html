@@ -1,93 +1,123 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<title>Panel médico</title>
-
-<style>
-body{
-    margin:0;
-    background:#080808;
-    color:white;
-    font-family:Arial, Helvetica, sans-serif;
-}
-
-.contenedor{
-    max-width:1100px;
-    margin:auto;
-    padding:80px 40px;
-}
-
-h1{
-    font-size:52px;
-    font-weight:300;
-}
-
-.grid{
-    display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
-    gap:28px;
-    margin-top:40px;
-}
-
-.tarjeta{
-    background:#161616;
-    border:1px solid #333;
-    border-radius:26px;
-    padding:35px;
-    min-height:220px;
-}
-
-.tarjeta h2{
-    font-size:30px;
-}
-
-.tarjeta p{
-    color:#aaa;
-    line-height:1.5;
-}
-
-button{
-    margin-top:20px;
-    padding:14px 25px;
-    border-radius:30px;
-    border:none;
-    background:white;
-    color:black;
-    cursor:pointer;
-}
-</style>
+  <meta charset="UTF-8">
+  <title>Panel Médico | Cognición</title>
+  <link rel="stylesheet" href="css/medico.css">
 </head>
 
 <body>
 
-<div class="contenedor">
+<header class="header-medico">
+  <h1>Panel Médico</h1>
+  <p>Base de operación clínica de Cognición</p>
+</header>
 
-<h1>Panel médico</h1>
+<main class="contenedor">
 
-<div class="grid">
+  <div class="grid-principal">
 
-    <div class="tarjeta">
-        <h2>➕ Nuevo paciente</h2>
-        <p>Registrar datos generales, antecedentes e historia clínica inicial.</p>
-        <button onclick="window.location.href='nuevo-paciente.html'">
-            Crear paciente
-        </button>
-    </div>
+    <aside class="card perfil-medico">
+      <div class="avatar" id="avatarMedico">M</div>
 
-    <div class="tarjeta">
-        <h2>📁 Pacientes</h2>
-        <p>Ver catálogo de pacientes, abrir expediente, notas, estudios y evolución.</p>
-        <button onclick="window.location.href='pacientes.html'">
-            Ver pacientes
-        </button>
-    </div>
+      <h2 id="nombreMedico">Cargando...</h2>
 
-</div>
+      <div class="dato">
+        <span>Rol</span>
+        Médico
+      </div>
 
-</div>
+      <div class="dato">
+        <span>Correo</span>
+        <span id="correoMedico">---</span>
+      </div>
 
-<script type="module" src="js/firebase.js"></script>
+      <div class="dato">
+        <span>Unidad</span>
+        Hospital / Consulta
+      </div>
+
+      <button class="boton" onclick="window.location.href='dashboard.html'">
+        Volver al inicio
+      </button>
+    </aside>
+
+    <section>
+
+      <div class="estadisticas">
+        <div class="stat">
+          <h3 id="totalPacientes">0</h3>
+          <p>Pacientes</p>
+        </div>
+
+        <div class="stat">
+          <h3 id="pacientesActivos">0</h3>
+          <p>Activos</p>
+        </div>
+
+        <div class="stat">
+          <h3 id="pacientesPendientes">0</h3>
+          <p>Pendientes</p>
+        </div>
+
+        <div class="stat">
+          <h3 id="expedientesHoy">0</h3>
+          <p>Notas hoy</p>
+        </div>
+      </div>
+
+      <div class="card seccion">
+        <h2>Pacientes</h2>
+
+        <div class="barra-acciones">
+          <input 
+            type="text" 
+            id="buscadorPacientes" 
+            placeholder="Buscar paciente por nombre..."
+          >
+
+          <button onclick="window.location.href='registro.html'">
+            Añadir paciente
+          </button>
+        </div>
+
+        <div id="listaPacientes" class="lista-pacientes">
+          Cargando pacientes...
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="panel-secundario">
+
+    <section class="card seccion">
+      <h2>Resumen operativo</h2>
+      <ul class="lista-simple">
+        <li>Pacientes ordenados automáticamente por nombre.</li>
+        <li>Acceso rápido al expediente clínico.</li>
+        <li>Estadísticas actualizadas desde Firestore.</li>
+        <li>Preparado para agregar pruebas cognitivas y gráficas.</li>
+      </ul>
+    </section>
+
+    <section class="card seccion">
+      <h2>Próximas funciones</h2>
+      <ul class="lista-simple">
+        <li>Alertas clínicas.</li>
+        <li>Resultados de N-Back por paciente.</li>
+        <li>Gráficas de evolución.</li>
+        <li>Perfil médico editable.</li>
+        <li>Exportación de notas en PDF.</li>
+      </ul>
+    </section>
+
+  </div>
+
+</main>
+
+<script type="module" src="js/medico.js"></script>
 
 </body>
 </html>
