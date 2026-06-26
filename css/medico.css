@@ -1,0 +1,201 @@
+body {
+  margin: 0;
+  font-family: Arial, Helvetica, sans-serif;
+  background: #0f172a;
+  color: #e5e7eb;
+}
+
+.header-medico {
+  padding: 24px 40px;
+  background: #020617;
+  border-bottom: 1px solid #1e293b;
+}
+
+.header-medico h1 {
+  margin: 0;
+  font-size: 28px;
+}
+
+.header-medico p {
+  margin: 6px 0 0;
+  color: #94a3b8;
+}
+
+.contenedor {
+  padding: 30px 40px;
+}
+
+.grid-principal {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 24px;
+}
+
+.card {
+  background: #111827;
+  border: 1px solid #1f2937;
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.25);
+}
+
+.perfil-medico h2,
+.seccion h2 {
+  margin-top: 0;
+}
+
+.avatar {
+  width: 86px;
+  height: 86px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #38bdf8, #6366f1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 34px;
+  font-weight: bold;
+  margin-bottom: 16px;
+}
+
+.dato {
+  margin: 10px 0;
+  color: #cbd5e1;
+}
+
+.dato span {
+  color: #94a3b8;
+  display: block;
+  font-size: 13px;
+}
+
+.estadisticas {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.stat {
+  background: #020617;
+  border: 1px solid #1e293b;
+  border-radius: 14px;
+  padding: 18px;
+}
+
+.stat h3 {
+  margin: 0;
+  font-size: 28px;
+  color: #38bdf8;
+}
+
+.stat p {
+  margin: 8px 0 0;
+  color: #94a3b8;
+}
+
+.barra-acciones {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.barra-acciones input {
+  flex: 1;
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid #334155;
+  background: #020617;
+  color: white;
+}
+
+.barra-acciones button,
+.boton {
+  padding: 12px 16px;
+  border: none;
+  border-radius: 10px;
+  background: #2563eb;
+  color: white;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.barra-acciones button:hover,
+.boton:hover {
+  background: #1d4ed8;
+}
+
+.lista-pacientes {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 14px;
+}
+
+.paciente-card {
+  background: #020617;
+  border: 1px solid #1e293b;
+  border-radius: 14px;
+  padding: 16px;
+}
+
+.paciente-card h3 {
+  margin: 0 0 8px;
+  font-size: 17px;
+}
+
+.paciente-card p {
+  margin: 5px 0;
+  color: #94a3b8;
+  font-size: 14px;
+}
+
+.estado-activo {
+  color: #22c55e;
+  font-weight: bold;
+}
+
+.estado-pendiente {
+  color: #facc15;
+  font-weight: bold;
+}
+
+.acciones-paciente {
+  margin-top: 12px;
+  display: flex;
+  gap: 8px;
+}
+
+.acciones-paciente a {
+  text-decoration: none;
+  font-size: 13px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: #1e293b;
+  color: #e5e7eb;
+}
+
+.panel-secundario {
+  margin-top: 24px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+.lista-simple {
+  padding-left: 18px;
+  color: #cbd5e1;
+}
+
+@media (max-width: 900px) {
+  .grid-principal,
+  .panel-secundario {
+    grid-template-columns: 1fr;
+  }
+
+  .estadisticas {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .contenedor {
+    padding: 20px;
+  }
+}
