@@ -1,1 +1,85 @@
+.navbar-medico{
 
+display:flex;
+
+justify-content:space-between;
+
+align-items:center;
+
+padding:18px 30px;
+
+background:#020617;
+
+border-bottom:1px solid #1e293b;
+
+position:sticky;
+
+top:0;
+
+z-index:1000;
+
+}
+
+.logo{
+
+font-size:22px;
+
+font-weight:bold;
+
+color:white;
+
+}
+
+.menu{
+
+display:flex;
+
+gap:12px;
+
+align-items:center;
+
+}
+
+.menu a{
+
+text-decoration:none;
+
+color:white;
+
+padding:10px 14px;
+
+border-radius:8px;
+
+background:#1e293b;
+
+transition:.2s;
+
+}
+
+.menu a:hover{
+
+background:#2563eb;
+
+}
+
+.menu button{
+
+background:#374151;
+
+color:white;
+
+border:none;
+
+padding:10px 14px;
+
+border-radius:8px;
+
+cursor:pointer;
+
+}
+
+.menu button:hover{
+
+background:#2563eb;
+
+}
