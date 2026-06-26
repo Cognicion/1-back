@@ -95,23 +95,16 @@ function mostrarPacientes(pacientes) {
   pacientes.forEach((paciente) => {
     const nombre = paciente.nombre || "Paciente sin nombre";
     const edad = paciente.edad || "No registrada";
-    const correo = paciente.email || paciente.correo || "Sin correo";
-    const estado = paciente.estado || "activo";
-
-    const claseEstado =
-      estado === "pendiente" ? "estado-pendiente" : "estado-activo";
 
     lista.innerHTML += `
-      <div class="paciente-card">
-        <h3>${nombre}</h3>
-        <p>Edad: ${edad}</p>
-        <p>Correo: ${correo}</p>
-        <p>Estado: <span class="${claseEstado}">${estado}</span></p>
+      <div class="fila-paciente">
+        <a href="paciente.html?id=${paciente.id}" class="nombre-paciente">
+          ${nombre}
+        </a>
 
-        <div class="acciones-paciente">
-          <a href="expediente.html?id=${paciente.id}">Expediente</a>
-          <a href="nback.html?id=${paciente.id}">N-Back</a>
-        </div>
+        <span class="edad-paciente">
+          ${edad} años
+        </span>
       </div>
     `;
   });
