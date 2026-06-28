@@ -3,72 +3,242 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Cognición (en obra negra) </title>
+
+<title>Cognición | Plataforma Clínica</title>
 
 <style>
-body{
-    margin:0;
-    font-family:Arial, sans-serif;
-    background:#f2f6fa;
-    text-align:center;
+* {
+    box-sizing: border-box;
 }
 
-header{
-    background:#0f4c81;
-    color:white;
-    padding:30px;
+body {
+    margin: 0;
+    font-family: Arial, Helvetica, sans-serif;
+    background: #eef4f8;
+    color: #1f2937;
 }
 
-h1{
-    margin:0;
-    font-size:32px;
+header {
+    background: linear-gradient(135deg, #0f4c81, #12385c);
+    color: white;
+    padding: 36px 24px 95px;
+    text-align: center;
 }
 
-.subtitulo{
-    margin-top:10px;
-    opacity:0.9;
+.logo {
+    font-size: 42px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    margin: 0;
 }
 
-.contenedor{
-    max-width:800px;
-    margin:auto;
-    padding:40px 20px;
+.subtitulo {
+    margin-top: 10px;
+    font-size: 17px;
+    color: #dceeff;
 }
 
-.tarjeta{
-    background:white;
-    border-radius:20px;
-    padding:30px;
-    box-shadow:0 5px 20px rgba(0,0,0,0.15);
+.autor {
+    margin-top: 8px;
+    font-size: 13px;
+    opacity: 0.9;
 }
 
-.tarjeta h2{
-    color:#0f4c81;
+.version {
+    display: inline-block;
+    margin-top: 18px;
+    padding: 7px 14px;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.15);
+    font-size: 13px;
 }
 
-.boton{
-    display:block;
-    width:250px;
-    margin:25px auto;
-    padding:18px;
-    font-size:22px;
-    border:none;
-    border-radius:15px;
-    background:#2b7de9;
-    color:white;
-    text-decoration:none;
-    transition:0.3s;
+main {
+    max-width: 1100px;
+    margin: -60px auto 0;
+    padding: 0 22px 40px;
 }
 
-.boton:hover{
-    transform:scale(1.05);
-    background:#1767d1;
+.bienvenida {
+    background: white;
+    border-radius: 26px;
+    padding: 42px 36px;
+    box-shadow: 0 20px 45px rgba(15, 76, 129, 0.18);
+    text-align: center;
 }
 
-footer{
-    margin-top:40px;
-    color:#666;
-    font-size:14px;
+.bienvenida h2 {
+    margin: 0;
+    color: #0f4c81;
+    font-size: 30px;
+}
+
+.bienvenida p {
+    max-width: 680px;
+    margin: 18px auto 30px;
+    line-height: 1.6;
+    color: #4b5563;
+    font-size: 16px;
+}
+
+.boton-login {
+    display: inline-block;
+    background: #2563eb;
+    color: white;
+    text-decoration: none;
+    padding: 17px 42px;
+    border-radius: 16px;
+    font-size: 18px;
+    font-weight: 700;
+    transition: 0.2s;
+}
+
+.boton-login:hover {
+    background: #1d4ed8;
+    transform: translateY(-2px);
+}
+
+.modulos {
+    margin-top: 28px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 18px;
+}
+
+.modulo {
+    background: white;
+    border-radius: 20px;
+    padding: 24px 20px;
+    box-shadow: 0 10px 28px rgba(0,0,0,0.08);
+    min-height: 170px;
+}
+
+.icono {
+    font-size: 32px;
+    margin-bottom: 10px;
+}
+
+.modulo h3 {
+    margin: 8px 0;
+    color: #0f4c81;
+    font-size: 18px;
+}
+
+.modulo p {
+    margin: 0;
+    color: #5b6673;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.estado {
+    display: inline-block;
+    margin-top: 14px;
+    padding: 5px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.disponible {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.proximamente {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.normativa {
+    margin-top: 28px;
+    background: #102a43;
+    color: white;
+    border-radius: 22px;
+    padding: 30px;
+}
+
+.normativa h2 {
+    margin-top: 0;
+    font-size: 24px;
+}
+
+.normativa p {
+    color: #dbeafe;
+    line-height: 1.6;
+    max-width: 850px;
+}
+
+.lista-normativa {
+    margin-top: 20px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+}
+
+.item {
+    background: rgba(255,255,255,0.09);
+    padding: 16px;
+    border-radius: 16px;
+    font-size: 14px;
+}
+
+footer {
+    text-align: center;
+    padding: 30px 20px 40px;
+    color: #6b7280;
+    font-size: 13px;
+}
+
+.footer-links {
+    margin-bottom: 14px;
+}
+
+.footer-links a {
+    color: #0f4c81;
+    text-decoration: none;
+    margin: 0 10px;
+}
+
+.footer-links a:hover {
+    text-decoration: underline;
+}
+
+@media (max-width: 900px) {
+    .modulos {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .lista-normativa {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 600px) {
+    header {
+        padding: 32px 18px 80px;
+    }
+
+    .logo {
+        font-size: 34px;
+    }
+
+    .bienvenida {
+        padding: 32px 22px;
+    }
+
+    .modulos {
+        grid-template-columns: 1fr;
+    }
+
+    .boton-login {
+        width: 100%;
+    }
+
+    .footer-links a {
+        display: block;
+        margin: 8px 0;
+    }
 }
 </style>
 </head>
@@ -76,31 +246,84 @@ footer{
 <body>
 
 <header>
-    <h1>Cognición (en obra negra)</h1>
-    <div class="subtitulo">
-        Dr. Aldo Sandokan Aguilar Valenzuela
-    </div>
+    <h1 class="logo">Cognición</h1>
+    <div class="subtitulo">Sistema integral de rehabilitación cognitiva y expediente clínico</div>
+    <div class="autor">Dr. Aldo Sandokan Aguilar Valenzuela</div>
+    <div class="version">Versión Alpha 0.1</div>
 </header>
 
-<div class="contenedor">
+<main>
 
-    <div class="tarjeta">
+    <section class="bienvenida">
+        <h2>Bienvenido a Cognición</h2>
 
-        <h2>Rehabilitación</h2>
+        <p>
+            Plataforma clínica desarrollada para apoyar la evaluación, rehabilitación cognitiva,
+            seguimiento de pacientes y elaboración de expediente clínico electrónico en salud mental.
+        </p>
 
-        <a class="boton" href="login.html">
-    Iniciar sesión
-            <a class="boton" href="nback.html">
-    N-Back
+        <a class="boton-login" href="login.html">Iniciar sesión</a>
+    </section>
 
-        </a>
+    <section class="modulos">
 
-    </div>
+        <div class="modulo">
+            <div class="icono">📋</div>
+            <h3>Expediente clínico</h3>
+            <p>Registro estructurado de información clínica, notas médicas y seguimiento del paciente.</p>
+            <span class="estado disponible">Disponible</span>
+        </div>
 
-</div>
+        <div class="modulo">
+            <div class="icono">🧠</div>
+            <h3>Rehabilitación cognitiva</h3>
+            <p>Herramientas para ejercicios cognitivos, entrenamiento y evaluación neuropsicológica.</p>
+            <span class="estado disponible">Disponible</span>
+        </div>
+
+        <div class="modulo">
+            <div class="icono">🤖</div>
+            <h3>Sofía IA</h3>
+            <p>Asistente clínica en desarrollo para apoyo en análisis, redacción y estadística médica.</p>
+            <span class="estado proximamente">Próximamente</span>
+        </div>
+
+        <div class="modulo">
+            <div class="icono">📊</div>
+            <h3>Estadística clínica</h3>
+            <p>Análisis de resultados, evolución clínica y datos de rehabilitación cognitiva.</p>
+            <span class="estado proximamente">Próximamente</span>
+        </div>
+
+    </section>
+
+    <section class="normativa">
+        <h2>Marco clínico y normativo</h2>
+
+        <p>
+            Cognición está pensada como una plataforma orientada al registro clínico ordenado,
+            la trazabilidad de la atención y la documentación médica conforme a principios del
+            expediente clínico electrónico.
+        </p>
+
+        <div class="lista-normativa">
+            <div class="item">Basada en criterios de la NOM-004-SSA3-2012</div>
+            <div class="item">Diseñada para notas clínicas estructuradas</div>
+            <div class="item">Aviso de privacidad en desarrollo</div>
+        </div>
+    </section>
+
+</main>
 
 <footer>
-    © 2026 - Plataforma de Cognición por Dr. Aldo Sandokan Aguilar Valenzuela
+    <div class="footer-links">
+        <a href="#">Aviso de privacidad</a>
+        <a href="#">Términos y condiciones</a>
+        <a href="#">Marco normativo</a>
+        <a href="#">Contacto</a>
+    </div>
+
+    © 2026 Cognición · Plataforma desarrollada por Dr. Aldo Sandokan Aguilar Valenzuela
 </footer>
 
 </body>
