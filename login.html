@@ -2,32 +2,332 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Login</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Iniciar sesión | Cognición</title>
+
+<style>
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, Helvetica, sans-serif;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #eaf2fb, #dbeafe);
+    color: #1f2937;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+}
+
+.login-container {
+    width: 100%;
+    max-width: 1000px;
+    min-height: 600px;
+    background: white;
+    border-radius: 30px;
+    overflow: hidden;
+    display: grid;
+    grid-template-columns: 1.1fr 0.9fr;
+    box-shadow: 0 25px 60px rgba(15, 76, 129, 0.22);
+}
+
+.login-info {
+    background: linear-gradient(135deg, #0f4c81, #12385c);
+    color: white;
+    padding: 54px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.logo {
+    font-size: 38px;
+    font-weight: 800;
+    margin: 0;
+}
+
+.subtitulo {
+    margin-top: 10px;
+    color: #dbeafe;
+    font-size: 16px;
+}
+
+.frase {
+    margin-top: 70px;
+}
+
+.frase h2 {
+    font-size: 34px;
+    line-height: 1.2;
+    margin: 0 0 18px;
+}
+
+.frase p {
+    color: #e0f2fe;
+    line-height: 1.6;
+    font-size: 16px;
+}
+
+.lista {
+    margin-top: 32px;
+    display: grid;
+    gap: 14px;
+}
+
+.lista div {
+    background: rgba(255,255,255,0.12);
+    padding: 14px 16px;
+    border-radius: 16px;
+    font-size: 14px;
+}
+
+.version {
+    font-size: 13px;
+    color: #cfe8ff;
+}
+
+.login-form {
+    padding: 54px 46px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.login-form h1 {
+    color: #0f4c81;
+    font-size: 32px;
+    margin: 0 0 10px;
+}
+
+.descripcion {
+    color: #6b7280;
+    margin: 0 0 32px;
+    line-height: 1.5;
+}
+
+.campo {
+    margin-bottom: 20px;
+    text-align: left;
+}
+
+.campo label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 700;
+    color: #374151;
+    font-size: 14px;
+}
+
+.campo input {
+    width: 100%;
+    padding: 15px 16px;
+    border: 1px solid #cbd5e1;
+    border-radius: 14px;
+    font-size: 16px;
+    outline: none;
+    transition: 0.2s;
+}
+
+.campo input:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
+}
+
+.boton-login {
+    width: 100%;
+    border: none;
+    background: #2563eb;
+    color: white;
+    padding: 16px;
+    border-radius: 15px;
+    font-size: 17px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: 0.2s;
+    margin-top: 8px;
+}
+
+.boton-login:hover {
+    background: #1d4ed8;
+    transform: translateY(-2px);
+}
+
+.enlaces {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+    gap: 12px;
+    font-size: 14px;
+}
+
+.enlaces a {
+    color: #0f4c81;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.enlaces a:hover {
+    text-decoration: underline;
+}
+
+.seguridad {
+    margin-top: 30px;
+    padding: 16px;
+    background: #f1f5f9;
+    border-radius: 16px;
+    color: #475569;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.regresar {
+    position: fixed;
+    top: 22px;
+    left: 22px;
+    color: #0f4c81;
+    text-decoration: none;
+    font-weight: 700;
+    background: white;
+    padding: 10px 16px;
+    border-radius: 999px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+}
+
+.regresar:hover {
+    background: #f8fafc;
+}
+
+@media (max-width: 850px) {
+    body {
+        align-items: flex-start;
+    }
+
+    .login-container {
+        grid-template-columns: 1fr;
+        min-height: auto;
+    }
+
+    .login-info {
+        padding: 36px 28px;
+    }
+
+    .frase {
+        margin-top: 36px;
+    }
+
+    .login-form {
+        padding: 36px 28px;
+    }
+
+    .regresar {
+        position: static;
+        display: inline-block;
+        margin-bottom: 18px;
+    }
+}
+
+@media (max-width: 500px) {
+    body {
+        padding: 16px;
+    }
+
+    .logo {
+        font-size: 32px;
+    }
+
+    .frase h2 {
+        font-size: 28px;
+    }
+
+    .enlaces {
+        flex-direction: column;
+        text-align: center;
+    }
+}
+</style>
 </head>
 
 <body>
 
-<h1>Iniciar sesión</h1>
+<a href="index.html" class="regresar">← Inicio</a>
 
-<input id="email" type="email" placeholder="Correo">
+<div class="login-container">
 
-<br><br>
+    <section class="login-info">
+        <div>
+            <h2 class="logo">Cognición</h2>
+            <div class="subtitulo">Sistema Integral de Salud Mental</div>
 
-<input id="password" type="password" placeholder="Contraseña">
+            <div class="frase">
+                <h2>Bienvenido nuevamente</h2>
+                <p>
+                    Accede a tus herramientas clínicas, expediente electrónico,
+                    rehabilitación cognitiva y módulos de seguimiento.
+                </p>
+            </div>
 
-<br><br>
+            <div class="lista">
+                <div>📋 Expediente clínico estructurado</div>
+                <div>🧠 Rehabilitación cognitiva</div>
+                <div>🔒 Acceso protegido con Firebase</div>
+                <div>📊 Estadística clínica en desarrollo</div>
+            </div>
+        </div>
 
-<button onclick="iniciarSesion()">
-Entrar
-</button>
+        <div class="version">
+            Versión Alpha 0.1 · Cognición 2026
+        </div>
+    </section>
 
-<br><br>
+    <section class="login-form">
+        <h1>Iniciar sesión</h1>
 
-<a href="registro.html">
-Crear cuenta
-</a>
+        <p class="descripcion">
+            Ingresa con tu cuenta para continuar.
+        </p>
 
-<script type="module" src="js/auth.js"></script>
+        <form>
+            <div class="campo">
+                <label for="email">Correo electrónico</label>
+                <input 
+                    type="email" 
+                    id="email" 
+                    placeholder="correo@ejemplo.com" 
+                    autocomplete="email"
+                    required>
+            </div>
+
+            <div class="campo">
+                <label for="password">Contraseña</label>
+                <input 
+                    type="password" 
+                    id="password" 
+                    placeholder="Ingresa tu contraseña" 
+                    autocomplete="current-password"
+                    required>
+            </div>
+
+            <button class="boton-login" type="submit">
+                Entrar
+            </button>
+        </form>
+
+        <div class="enlaces">
+            <a href="registro.html">Crear cuenta</a>
+            <a href="#">¿Olvidaste tu contraseña?</a>
+        </div>
+
+        <div class="seguridad">
+            🔐 Plataforma protegida mediante autenticación de Firebase.
+            El acceso está diseñado para preservar la confidencialidad de la información clínica.
+        </div>
+    </section>
+
+</div>
 
 </body>
 </html>
