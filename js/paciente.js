@@ -150,3 +150,15 @@ window.solicitarEliminarPaciente = async function(){
   }
 
 };
+
+window.abrirHistoriaClinica = function() {
+    const parametros = new URLSearchParams(window.location.search);
+    const uidPaciente = parametros.get("id");
+
+    if (!uidPaciente) {
+        alert("No se encontró el ID del paciente.");
+        return;
+    }
+
+    window.location.href = `historia.html?id=${uidPaciente}`;
+};

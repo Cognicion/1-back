@@ -1,0 +1,15 @@
+:root {
+    --fondo: #05070a;
+    --panel: rgba(12, 16, 24, 0.88);
+    --panel-oscuro: rgba(8, 12, 20, 0.92);
+    --texto: #f8fafc;
+    --texto-suave: #94a3b8;
+    --azul: #2563eb;
+    --azul-claro: #38bdf8;
+    --cyan: #00b4d8;
+    --borde: rgba(148, 163, 184, 0.2);
+}
+
+* {
+    box-sizing: border-box;
+}

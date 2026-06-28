@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Historia clínica | Cognición</title>
+
+<link rel="stylesheet" href="css/theme.css">
+<link rel="stylesheet" href="css/historia.css">
+</head>
+
+<body>
+
+<a href="medico.html" class="regresar">← Panel médico</a>
+
+<main class="historia-layout">
+
+    <aside class="historia-sidebar">
+        <h1>Cognición</h1>
+        <p>Historia clínica</p>
+
+        <button class="tab activo" data-seccion="ficha">📋 Ficha</button>
+        <button class="tab" data-seccion="antecedentes">👨‍👩‍👧 Antecedentes</button>
+        <button class="tab" data-seccion="psiquiatria">🧠 Psiquiatría</button>
+        <button class="tab" data-seccion="sustancias">💊 Sustancias</button>
+        <button class="tab" data-seccion="padecimiento">📝 Padecimiento actual</button>
+        <button class="tab" data-seccion="mental">🔎 Exploración mental</button>
+        <button class="tab" data-seccion="diagnostico">🩺 Diagnóstico</button>
+        <button class="tab" data-seccion="plan">📌 Plan</button>
+
+        <button class="boton-secundario" onclick="descargarHistoriaPDF()">
+            Descargar PDF
+        </button>
+    </aside>
+
+    <section class="historia-contenido">
+
+        <header class="historia-header">
+            <div>
+                <h2 id="nombrePaciente">Historia clínica</h2>
+                <p id="datosPaciente">Paciente seleccionado</p>
+            </div>
+
+            <button class="boton-principal" onclick="guardarHistoria()">
+                Guardar historia
+            </button>
+        </header>
+
+        <form id="formHistoria">
+
+            <section class="seccion activa" id="ficha">
+                <h3>Ficha de identificación</h3>
+
+                <label>Escolaridad</label>
+                <input id="escolaridad">
+
+                <label>Ocupación</label>
+                <input id="ocupacion">
+
+                <label>Estado civil</label>
+                <input id="estadoCivil">
+
+                <label>Religión</label>
+                <input id="religion">
+            </section>
+
+            <section class="seccion" id="antecedentes">
+                <h3>Antecedentes</h3>
+
+                <label>Antecedentes heredofamiliares</label>
+                <textarea id="ahf"></textarea>
+
+                <label>Antecedentes personales patológicos</label>
+                <textarea id="app"></textarea>
+
+                <label>Antecedentes personales no patológicos</label>
+                <textarea id="apnp"></textarea>
+            </section>
+
+            <section class="seccion" id="psiquiatria">
+                <h3>Antecedentes psiquiátricos</h3>
+
+                <label>Diagnósticos previos</label>
+                <textarea id="diagnosticosPrevios"></textarea>
+
+                <label>Tratamientos previos</label>
+                <textarea id="tratamientosPrevios"></textarea>
+
+                <label>Hospitalizaciones previas</label>
+                <textarea id="hospitalizaciones"></textarea>
+
+                <label>Intentos suicidas / autolesiones</label>
+                <textarea id="riesgoPrevio"></textarea>
+            </section>
+
+            <section class="seccion" id="sustancias">
+                <h3>Consumo de sustancias</h3>
+
+                <label>Tabaco</label>
+                <textarea id="tabaco"></textarea>
+
+                <label>Alcohol</label>
+                <textarea id="alcohol"></textarea>
+
+                <label>Otras sustancias</label>
+                <textarea id="otrasSustancias"></textarea>
+            </section>
+
+            <section class="seccion" id="padecimiento">
+                <h3>Padecimiento actual</h3>
+
+                <label>Padecimiento actual</label>
+                <textarea id="padecimientoActual"></textarea>
+            </section>
+
+            <section class="seccion" id="mental">
+                <h3>Exploración mental</h3>
+
+                <label>Apariencia y conducta</label>
+                <textarea id="apariencia"></textarea>
+
+                <label>Lenguaje</label>
+                <textarea id="lenguaje"></textarea>
+
+                <label>Estado de ánimo y afecto</label>
+                <textarea id="afecto"></textarea>
+
+                <label>Pensamiento</label>
+                <textarea id="pensamiento"></textarea>
+
+                <label>Sensopercepción</label>
+                <textarea id="sensopercepcion"></textarea>
+
+                <label>Funciones cognitivas</label>
+                <textarea id="cognicion"></textarea>
+
+                <label>Juicio e insight</label>
+                <textarea id="juicio"></textarea>
+            </section>
+
+            <section class="seccion" id="diagnostico">
+                <h3>Diagnóstico</h3>
+
+                <label>Diagnóstico clínico</label>
+                <textarea id="diagnosticoClinico"></textarea>
+
+                <label>CIE-10 / DSM-5</label>
+                <input id="codigoDiagnostico">
+            </section>
+
+            <section class="seccion" id="plan">
+                <h3>Plan terapéutico</h3>
+
+                <label>Tratamiento farmacológico</label>
+                <textarea id="tratamientoFarmacologico"></textarea>
+
+                <label>Psicoterapia / rehabilitación</label>
+                <textarea id="psicoterapia"></textarea>
+
+                <label>Plan de seguimiento</label>
+                <textarea id="seguimiento"></textarea>
+            </section>
+
+        </form>
+
+    </section>
+
+</main>
+
+<script type="module" src="js/historia.js"></script>
+
+</body>
+</html>
