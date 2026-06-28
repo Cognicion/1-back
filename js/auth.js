@@ -52,3 +52,41 @@ window.cerrarSesion = async function() {
   await signOut(auth);
   window.location.href = "login.html";
 };
+
+window.recuperarPassword = async function() {
+
+  const email = document.getElementById("email").value.trim();
+
+  if (!email) {
+    alert("Ingresa tu correo electrónico.");
+    return;
+  }
+
+  try {
+
+    await sendPasswordResetEmail(auth, email);
+
+    alert("Se envió un enlace para restablecer tu contraseña a tu correo electrónico.");
+
+    window.location.href = "login.html";
+
+  } catch(error) {
+
+    console.error(error);
+
+    if (error.code === "auth/user-not-found") {
+
+      alert("No existe una cuenta registrada con ese correo.");
+
+    } else if (error.code === "auth/invalid-email") {
+
+      alert("El correo electrónico no es válido.");
+
+    } else {
+
+      alert("No fue posible enviar el correo de recuperación.");
+    }
+
+  }
+
+};
