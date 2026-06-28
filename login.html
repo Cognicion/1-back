@@ -15,8 +15,11 @@ body {
     margin: 0;
     font-family: Arial, Helvetica, sans-serif;
     min-height: 100vh;
-    background: linear-gradient(135deg, #eaf2fb, #dbeafe);
-    color: #1f2937;
+    background:
+        radial-gradient(circle at top left, rgba(43,125,233,0.22), transparent 32%),
+        radial-gradient(circle at bottom right, rgba(0,212,255,0.12), transparent 30%),
+        linear-gradient(135deg, #05070a, #0b0f17 45%, #111827);
+    color: #f8fafc;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -25,18 +28,24 @@ body {
 
 .login-container {
     width: 100%;
-    max-width: 1000px;
-    min-height: 600px;
-    background: white;
+    max-width: 1050px;
+    min-height: 620px;
+    background: rgba(12, 16, 24, 0.88);
     border-radius: 30px;
     overflow: hidden;
     display: grid;
     grid-template-columns: 1.1fr 0.9fr;
-    box-shadow: 0 25px 60px rgba(15, 76, 129, 0.22);
+    border: 1px solid rgba(148, 163, 184, 0.20);
+    box-shadow:
+        0 0 40px rgba(37, 99, 235, 0.20),
+        0 30px 80px rgba(0,0,0,0.65);
+    backdrop-filter: blur(18px);
 }
 
 .login-info {
-    background: linear-gradient(135deg, #0f4c81, #12385c);
+    background:
+        linear-gradient(135deg, rgba(15, 76, 129, 0.92), rgba(4, 7, 12, 0.96)),
+        radial-gradient(circle at top, rgba(56,189,248,0.25), transparent 40%);
     color: white;
     padding: 54px;
     display: flex;
@@ -45,15 +54,16 @@ body {
 }
 
 .logo {
-    font-size: 38px;
-    font-weight: 800;
+    font-size: 42px;
+    font-weight: 900;
     margin: 0;
+    letter-spacing: 1px;
 }
 
 .subtitulo {
     margin-top: 10px;
-    color: #dbeafe;
-    font-size: 16px;
+    color: #bfdbfe;
+    font-size: 15px;
 }
 
 .frase {
@@ -67,9 +77,9 @@ body {
 }
 
 .frase p {
-    color: #e0f2fe;
+    color: #dbeafe;
     line-height: 1.6;
-    font-size: 16px;
+    font-size: 15px;
 }
 
 .lista {
@@ -79,7 +89,8 @@ body {
 }
 
 .lista div {
-    background: rgba(255,255,255,0.12);
+    background: rgba(255,255,255,0.10);
+    border: 1px solid rgba(255,255,255,0.12);
     padding: 14px 16px;
     border-radius: 16px;
     font-size: 14px;
@@ -87,7 +98,7 @@ body {
 
 .version {
     font-size: 13px;
-    color: #cfe8ff;
+    color: #93c5fd;
 }
 
 .login-form {
@@ -95,16 +106,17 @@ body {
     display: flex;
     flex-direction: column;
     justify-content: center;
+    background: rgba(8, 12, 20, 0.92);
 }
 
 .login-form h1 {
-    color: #0f4c81;
+    color: #eaf4ff;
     font-size: 32px;
     margin: 0 0 10px;
 }
 
 .descripcion {
-    color: #6b7280;
+    color: #94a3b8;
     margin: 0 0 32px;
     line-height: 1.5;
 }
@@ -118,42 +130,49 @@ body {
     display: block;
     margin-bottom: 8px;
     font-weight: 700;
-    color: #374151;
+    color: #dbeafe;
     font-size: 14px;
 }
 
 .campo input {
     width: 100%;
     padding: 15px 16px;
-    border: 1px solid #cbd5e1;
+    border: 1px solid rgba(148, 163, 184, 0.25);
     border-radius: 14px;
-    font-size: 16px;
+    font-size: 15px;
     outline: none;
     transition: 0.2s;
+    background: rgba(15, 23, 42, 0.95);
+    color: white;
+}
+
+.campo input::placeholder {
+    color: #64748b;
 }
 
 .campo input:focus {
-    border-color: #2563eb;
-    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
+    border-color: #38bdf8;
+    box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.12);
 }
 
 .boton-login {
     width: 100%;
     border: none;
-    background: #2563eb;
+    background: linear-gradient(135deg, #2563eb, #00b4d8);
     color: white;
     padding: 16px;
     border-radius: 15px;
     font-size: 17px;
-    font-weight: 700;
+    font-weight: 800;
     cursor: pointer;
     transition: 0.2s;
     margin-top: 8px;
+    box-shadow: 0 0 22px rgba(37, 99, 235, 0.45);
 }
 
 .boton-login:hover {
-    background: #1d4ed8;
     transform: translateY(-2px);
+    box-shadow: 0 0 28px rgba(56, 189, 248, 0.55);
 }
 
 .enlaces {
@@ -165,9 +184,9 @@ body {
 }
 
 .enlaces a {
-    color: #0f4c81;
+    color: #38bdf8;
     text-decoration: none;
-    font-weight: 600;
+    font-weight: 700;
 }
 
 .enlaces a:hover {
@@ -177,28 +196,37 @@ body {
 .seguridad {
     margin-top: 30px;
     padding: 16px;
-    background: #f1f5f9;
+    background: rgba(15, 23, 42, 0.95);
+    border: 1px solid rgba(148, 163, 184, 0.18);
     border-radius: 16px;
-    color: #475569;
+    color: #cbd5e1;
     font-size: 13px;
     line-height: 1.5;
+}
+
+.mensaje-error {
+    color: #f87171;
+    font-size: 13px;
+    margin-top: 14px;
+    text-align: center;
 }
 
 .regresar {
     position: fixed;
     top: 22px;
     left: 22px;
-    color: #0f4c81;
+    color: #eaf4ff;
     text-decoration: none;
     font-weight: 700;
-    background: white;
+    background: rgba(15, 23, 42, 0.88);
+    border: 1px solid rgba(148, 163, 184, 0.25);
     padding: 10px 16px;
     border-radius: 999px;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.35);
 }
 
 .regresar:hover {
-    background: #f8fafc;
+    background: rgba(30, 41, 59, 0.95);
 }
 
 @media (max-width: 850px) {
@@ -290,7 +318,7 @@ body {
             Ingresa con tu cuenta para continuar.
         </p>
 
-        <form>
+        <form id="loginForm">
             <div class="campo">
                 <label for="email">Correo electrónico</label>
                 <input 
@@ -314,6 +342,8 @@ body {
             <button class="boton-login" type="submit">
                 Entrar
             </button>
+
+            <p id="mensajeError" class="mensaje-error"></p>
         </form>
 
         <div class="enlaces">
@@ -328,6 +358,43 @@ body {
     </section>
 
 </div>
+
+<script type="module">
+import { auth } from "./firebase.js";
+
+import {
+    signInWithEmailAndPassword
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+const loginForm = document.getElementById("loginForm");
+const mensajeError = document.getElementById("mensajeError");
+
+loginForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const email = document.getElementById("email").value.trim();
+    const password = document.getElementById("password").value;
+
+    mensajeError.textContent = "";
+
+    try {
+        await signInWithEmailAndPassword(auth, email, password);
+        window.location.href = "dashboard.html";
+    } catch (error) {
+        console.error(error);
+
+        if (error.code === "auth/invalid-credential") {
+            mensajeError.textContent = "Correo o contraseña incorrectos.";
+        } else if (error.code === "auth/user-not-found") {
+            mensajeError.textContent = "No existe una cuenta con ese correo.";
+        } else if (error.code === "auth/wrong-password") {
+            mensajeError.textContent = "Contraseña incorrecta.";
+        } else {
+            mensajeError.textContent = "No se pudo iniciar sesión. Intenta nuevamente.";
+        }
+    }
+});
+</script>
 
 </body>
 </html>
