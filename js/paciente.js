@@ -51,6 +51,9 @@ async function cargarDatosPaciente() {
   document.getElementById("ultimaConsulta").innerText =
     datos.ultimaConsulta || "Sin fecha";
 
+document.getElementById("proximaConsulta").textContent =
+    datos.proximaConsulta || "Sin programar";
+
   document.getElementById("telefonoPaciente").innerText =
     datos.telefono || "Sin teléfono";
 }

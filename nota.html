@@ -4,48 +4,10 @@
 <meta charset="UTF-8">
 <title>Panel médico</title>
 
-<style>
-body{
-    background:#080808;
-    color:white;
-    font-family:Arial, Helvetica, sans-serif;
-    padding:40px;
-}
+<link rel="stylesheet" href="css/theme.css">
+<link rel="stylesheet" href="css/nota.css">
 
-.contenedor{
-    max-width:1000px;
-    margin:auto;
-    background:#161616;
-    border:1px solid #333;
-    border-radius:25px;
-    padding:40px;
-}
 
-input, textarea, select{
-    width:100%;
-    margin-bottom:20px;
-    padding:15px;
-    border-radius:12px;
-    border:1px solid #444;
-    background:#0d0d0d;
-    color:white;
-    font-size:16px;
-}
-
-textarea{
-    height:130px;
-    resize:vertical;
-}
-
-button{
-    padding:14px 25px;
-    border:none;
-    border-radius:30px;
-    background:white;
-    color:black;
-    cursor:pointer;
-}
-</style>
 </head>
 
 <body>
@@ -54,15 +16,19 @@ button{
 
 <h1>👨‍⚕️ Nota médica</h1>
 
-<label>Seleccionar paciente</label>
-    
-<select id="uidPaciente">
+<div id="bloqueSelectorPaciente">
 
-<option value="">
-Seleccionar paciente
-</option>
+    <label>Seleccionar paciente</label>
+        
+    <select id="uidPaciente">
 
-</select>
+        <option value="">
+            Seleccionar paciente
+        </option>
+
+    </select>
+
+</div>
 
 <label>Diagnóstico visible para paciente</label>
 <input id="diagnostico" placeholder="Ej. Trastorno por déficit de atención e hiperactividad">
@@ -75,6 +41,9 @@ Seleccionar paciente
 
 <label>Última consulta visible para paciente</label>
 <input id="ultimaConsulta" type="date">
+
+<label>Próxima consulta visible para paciente</label>
+<input id="proximaConsulta" type="date">
 
 <hr>
 
@@ -96,6 +65,10 @@ Seleccionar paciente
 Guardar nota médica
 </button>
 
+<button class="boton-pdf" onclick="generarPDFNota()">
+    Descargar nota en PDF
+</button>
+
 <hr style="margin-top:40px; margin-bottom:30px;">
 
 <h2>📋 Historial de notas</h2>
@@ -113,4 +86,15 @@ No hay notas registradas
 <script type="module" src="js/nota.js"></script>
 
 </body>
+
+<div class="barra-superior">
+    <button class="boton-secundario" onclick="regresarDesdeNota()">
+        ← Regresar
+    </button>
+
+    <button class="boton-secundario" onclick="window.location.href='dashboard.html'">
+        Inicio
+    </button>
+</div>
+
 </html>

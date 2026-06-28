@@ -35,11 +35,17 @@ onAuthStateChanged(auth, async (user) => {
   uidPacienteActual = parametros.get("id");
 
   if (uidPacienteActual) {
-    await cargarPaciente(uidPacienteActual);
-    await cargarHistorial(uidPacienteActual);
-  } else {
-    await cargarListaPacientes();
+  const bloqueSelector = document.getElementById("bloqueSelectorPaciente");
+
+  if (bloqueSelector) {
+    bloqueSelector.style.display = "none";
   }
+
+  await cargarPaciente(uidPacienteActual);
+  await cargarHistorial(uidPacienteActual);
+} else {
+  await cargarListaPacientes();
+}
 });
 
 async function cargarListaPacientes() {
@@ -76,11 +82,13 @@ async function cargarPaciente(uidPaciente) {
   const tratamiento = document.getElementById("tratamiento");
   const medico = document.getElementById("medico");
   const ultimaConsulta = document.getElementById("ultimaConsulta");
+  const proximaConsulta = document.getElementById("proximaConsulta");
 
   if (diagnostico) diagnostico.value = datos.diagnostico || "";
   if (tratamiento) tratamiento.value = datos.tratamiento || "";
   if (medico) medico.value = datos.medicoTratante || "";
   if (ultimaConsulta) ultimaConsulta.value = datos.ultimaConsulta || "";
+  if (proximaConsulta) proximaConsulta.value = datos.proximaConsulta || "";
 }
 
 window.guardarNotaMedica = async function() {
@@ -97,6 +105,7 @@ window.guardarNotaMedica = async function() {
   const tratamiento = document.getElementById("tratamiento").value;
   const medico = document.getElementById("medico").value;
   const ultimaConsulta = document.getElementById("ultimaConsulta").value;
+  const proximaConsulta = document.getElementById("proximaConsulta").value;
 
   const subjetivo = document.getElementById("subjetivo").value;
   const objetivo = document.getElementById("objetivo").value;
@@ -108,16 +117,21 @@ window.guardarNotaMedica = async function() {
       diagnostico,
       tratamiento,
       medicoTratante: medico,
-      ultimaConsulta
-    });
+      ultimaConsulta,
+      proximaConsulta
+      });
 
     await guardarNota(uidPaciente, {
       autor: medico,
       subjetivo,
       objetivo,
       analisis,
-      plan
-    });
+      plan,
+      diagnostico,
+      tratamiento,
+      ultimaConsulta,
+      proximaConsulta
+});
 
     alert("Nota médica guardada correctamente");
 
@@ -192,3 +206,14 @@ async function cargarHistorial(uidPaciente) {
     `;
   });
 }
+window.regresarDesdeNota = function() {
+  if (uidPacienteActual) {
+    window.location.href = `paciente.html?id=${uidPacienteActual}`;
+  } else {
+    window.location.href = "medico.html";
+  }
+};
+
+window.generarPDFNota = function() {
+  window.print();
+};
