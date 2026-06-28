@@ -318,7 +318,7 @@ body {
             Ingresa con tu cuenta para continuar.
         </p>
 
-        <form id="loginForm">
+        <form onsubmit="iniciarSesion(); return false;">
             <div class="campo">
                 <label for="email">Correo electrónico</label>
                 <input 
@@ -399,5 +399,7 @@ import { auth } from "./js/firebase.js";
     
 </script>
 
+<script type="module" src="./js/auth.js"></script>
+    
 </body>
 </html>
