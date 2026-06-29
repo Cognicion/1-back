@@ -88,3 +88,11 @@ export async function solicitarEliminacionPaciente(uid, solicitadoPor){
     );
 
 }
+
+export function medicoPuedeVer(uidMedico, paciente) {
+  if (!paciente || !uidMedico) return false;
+
+  if (paciente.medicoTratanteUid === uidMedico) return true;
+
+  return paciente.permisos?.[uidMedico]?.lectura === true;
+}

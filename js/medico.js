@@ -1,4 +1,10 @@
+import {
+  medicoPuedeVer
+} from "./services/usuarios.js";
+
 import { auth, db } from "./firebase.js";
+
+
 
 import {
   onAuthStateChanged
@@ -20,7 +26,7 @@ onAuthStateChanged(auth, async (user) => {
   }
 
   await cargarPerfilMedico(user);
-  await cargarPacientes();
+  await cargarPacientes(user.uid);
 
   document
     .getElementById("buscadorPacientes")
@@ -53,7 +59,7 @@ async function cargarPerfilMedico(user) {
   }
 }
 
-async function cargarPacientes() {
+async function cargarPacientes(uidMedico) {
   const lista = document.getElementById("listaPacientes");
   lista.innerHTML = "Cargando pacientes...";
 
@@ -65,7 +71,7 @@ async function cargarPacientes() {
   snapshot.forEach((docPaciente) => {
     const datos = docPaciente.data();
 
-    if (datos.rol === "paciente") {
+    if (datos.rol === "paciente" && medicoPuedeVer(uidMedico, datos)) {
       pacientesGlobal.push({
         id: docPaciente.id,
         ...datos
