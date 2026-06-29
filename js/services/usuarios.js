@@ -89,10 +89,21 @@ export async function solicitarEliminacionPaciente(uid, solicitadoPor){
 
 }
 
-export function medicoPuedeVer(uidMedico, paciente) {
-  if (!paciente || !uidMedico) return false;
+export async function medicoPuedeVer(uidMedico, pacienteId) {
 
-  if (paciente.medicoTratanteUid === uidMedico) return true;
+    if (!uidMedico || !pacienteId) return false;
 
-  return paciente.permisos?.[uidMedico]?.lectura === true;
+    const permisoRef = doc(
+        db,
+        "usuarios",
+        pacienteId,
+        "permisosMedicos",
+        uidMedico
+    );
+
+    const permisoSnap = await getDoc(permisoRef);
+
+    if (!permisoSnap.exists()) return false;
+
+    return permisoSnap.data().lectura === true;
 }

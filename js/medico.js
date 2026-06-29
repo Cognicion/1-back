@@ -26,6 +26,9 @@ onAuthStateChanged(auth, async (user) => {
   }
 
   await cargarPerfilMedico(user);
+
+  console.log("UID del médico:", user.uid);
+
   await cargarPacientes(user.uid);
 
   document
@@ -68,19 +71,23 @@ async function cargarPacientes(uidMedico) {
 
   pacientesGlobal = [];
 
-  snapshot.forEach((docPaciente) => {
+  for (const docPaciente of snapshot.docs) {
     const datos = docPaciente.data();
 
-    if (
-  datos.rol === "paciente" &&
-  datos.medicoTratanteUid === uidMedico
-        ) {
+    if (datos.rol !== "paciente") continue;
+
+    const puedeVer = await medicoPuedeVer(
+      uidMedico,
+      docPaciente.id
+    );
+
+    if (puedeVer) {
       pacientesGlobal.push({
         id: docPaciente.id,
         ...datos
       });
     }
-  });
+  }
 
   pacientesGlobal.sort((a, b) => {
     const nombreA = (a.nombre || "").toLowerCase();
