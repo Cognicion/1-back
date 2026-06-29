@@ -6,6 +6,7 @@ import { medicoPuedeVer, obtenerUsuario } from "./services/usuarios.js";
 let datos = [];
 let columnas = [];
 let ultimoResultado = [];
+let tiposVariables = {};
 
 const entrada = document.getElementById("entradaDatos");
 const archivo = document.getElementById("archivoDatos");
@@ -13,6 +14,8 @@ const resumenDatos = document.getElementById("resumenDatos");
 const resultados = document.getElementById("resultados");
 const variableY = document.getElementById("variableY");
 const variableX = document.getElementById("variableX");
+const tiposVariablesContenedor = document.getElementById("tiposVariables");
+const recomendacionAnalisis = document.getElementById("recomendacionAnalisis");
 
 onAuthStateChanged(auth, async (user) => {
   if (!user) {
@@ -129,6 +132,10 @@ function aplicarFiltro(filas) {
 }
 
 function llenarSelects() {
+  const seleccionY = variableY.value;
+  const seleccionX = variableX.value;
+  sincronizarTiposVariables();
+
   [variableY, variableX].forEach((select) => {
     select.innerHTML = "";
     columnas.forEach((col) => {
@@ -138,6 +145,151 @@ function llenarSelects() {
       select.appendChild(opcion);
     });
   });
+
+  variableY.value = columnas.includes(seleccionY) ? seleccionY : columnaSugerida(["cuantitativa", "ordinal", "binaria"]) || columnas[0] || "";
+  variableX.value = columnas.includes(seleccionX) ? seleccionX : columnaSugerida(["nominal", "binaria"], variableY.value) || columnas.find((col) => col !== variableY.value) || columnas[0] || "";
+  renderizarTiposVariables();
+  actualizarRecomendacion();
+}
+
+function columnaSugerida(tipos, evitar = "") {
+  return columnas.find((col) => col !== evitar && tipos.includes(tiposVariables[col]));
+}
+
+function sincronizarTiposVariables() {
+  const siguientes = {};
+  columnas.forEach((col) => {
+    siguientes[col] = tiposVariables[col] || detectarTipoVariable(col);
+  });
+  tiposVariables = siguientes;
+}
+
+function detectarTipoVariable(col) {
+  const lista = valores(col).map((x) => String(x).trim()).filter(Boolean);
+  if (!lista.length) return "texto";
+
+  const unicos = new Set(lista);
+  const numerosValidos = lista.map((x) => Number(x)).filter((x) => !Number.isNaN(x));
+  const todosNumericos = numerosValidos.length === lista.length;
+  const fechasValidas = lista.filter((x) => !Number.isNaN(new Date(x).getTime()));
+  const todosFecha = fechasValidas.length === lista.length && lista.some((x) => /\d{4}-\d{1,2}-\d{1,2}/.test(x));
+
+  if (todosFecha) return "fecha";
+  if (unicos.size === 2) return "binaria";
+  if (todosNumericos) {
+    const todosEnteros = numerosValidos.every((x) => Number.isInteger(x));
+    if (todosEnteros && unicos.size <= 7) return "ordinal";
+    return "cuantitativa";
+  }
+  if (unicos.size <= Math.max(10, Math.ceil(Math.sqrt(lista.length) * 2))) return "nominal";
+  return "texto";
+}
+
+function descripcionTipo(tipo) {
+  const textos = {
+    cuantitativa: "Numero continuo o escala: edad, puntaje, dias, dosis.",
+    ordinal: "Categorias con orden: leve, moderado, severo; o puntajes cortos.",
+    nominal: "Categorias sin orden: sexo, diagnostico, unidad, grupo.",
+    binaria: "Dos valores: si/no, 0/1, presente/ausente, control/tratamiento.",
+    fecha: "Fecha clinica: nacimiento, consulta, ingreso, seguimiento.",
+    texto: "Texto libre: notas, nombres, observaciones largas."
+  };
+  return textos[tipo] || textos.texto;
+}
+
+function escaparHTML(valor) {
+  return String(valor)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+function renderizarTiposVariables() {
+  if (!tiposVariablesContenedor) return;
+
+  if (!columnas.length) {
+    tiposVariablesContenedor.innerHTML = "<p class=\"ayuda\">Carga datos para clasificar las variables.</p>";
+    return;
+  }
+
+  const opciones = ["cuantitativa", "ordinal", "nominal", "binaria", "fecha", "texto"];
+  tiposVariablesContenedor.innerHTML = `
+    <table>
+      <thead>
+        <tr>
+          <th>Variable</th>
+          <th>Tipo</th>
+          <th>Valores validos</th>
+          <th>Guia rapida</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${columnas.map((col) => {
+          const tipo = tiposVariables[col] || detectarTipoVariable(col);
+          const validos = valores(col).length;
+          return `
+            <tr>
+              <td><strong>${escaparHTML(col)}</strong></td>
+              <td>
+                <select data-tipo-variable="${escaparHTML(col)}">
+                  ${opciones.map((op) => `<option value="${op}" ${op === tipo ? "selected" : ""}>${op}</option>`).join("")}
+                </select>
+              </td>
+              <td>${validos} / ${datos.length}</td>
+              <td class="tipo-descripcion">${descripcionTipo(tipo)}</td>
+            </tr>
+          `;
+        }).join("")}
+      </tbody>
+    </table>
+  `;
+
+  tiposVariablesContenedor.querySelectorAll("[data-tipo-variable]").forEach((select) => {
+    select.addEventListener("change", () => {
+      const col = select.dataset.tipoVariable;
+      tiposVariables[col] = select.value;
+      renderizarTiposVariables();
+      actualizarRecomendacion();
+    });
+  });
+}
+
+function actualizarRecomendacion() {
+  if (!recomendacionAnalisis) return;
+  if (!columnas.length || !datos.length) {
+    recomendacionAnalisis.textContent = "Carga datos para recibir una recomendacion.";
+    return;
+  }
+
+  const y = variableY.value;
+  const x = variableX.value;
+  const tipoY = tiposVariables[y] || detectarTipoVariable(y);
+  const tipoX = tiposVariables[x] || detectarTipoVariable(x);
+  const gruposX = x ? new Set(valores(x)).size : 0;
+
+  let texto = `Variable principal: ${y} (${tipoY}).`;
+
+  if (!x || x === y) {
+    texto += " Empieza con Descriptivos si es numerica, o Frecuencias si es categorica.";
+  } else if (["cuantitativa", "ordinal"].includes(tipoY) && ["nominal", "binaria"].includes(tipoX)) {
+    texto += gruposX <= 2
+      ? ` Como ${x} tiene ${gruposX} grupos, usa t de Student para comparar promedios y Grafica de barras para revisar la distribucion.`
+      : ` Como ${x} tiene varios grupos, empieza con descriptivos por grupo y grafica de barras; despues conviene agregar ANOVA si necesitas comparaciones formales.`;
+  } else if (["cuantitativa", "ordinal"].includes(tipoY) && ["cuantitativa", "ordinal"].includes(tipoX)) {
+    texto += ` Con ${x} tambien numerica, usa Correlacion, Regresion lineal y Dispersion.`;
+  } else if (["nominal", "binaria"].includes(tipoY) && ["nominal", "binaria"].includes(tipoX)) {
+    texto += " Usa Tabla cruzada y Chi cuadrada; si ambas son binarias tambien puedes usar Riesgo relativo / OR.";
+  } else if (tipoY === "binaria" && ["cuantitativa", "ordinal"].includes(tipoX)) {
+    texto += " Si tienes un punto de corte, usa Sensibilidad / especificidad con el umbral diagnostico.";
+  } else if (tipoY === "fecha") {
+    texto += " Las fechas sirven mejor para seguimiento, tiempos entre eventos o filtros; conviertelas a dias si quieres analizarlas numericamente.";
+  } else {
+    texto += " Revisa frecuencias primero y confirma que las columnas esten clasificadas correctamente.";
+  }
+
+  recomendacionAnalisis.textContent = texto;
 }
 
 function numeros(col) {
@@ -470,5 +622,8 @@ document.querySelectorAll("[data-analisis]").forEach((btn) => {
 });
 document.getElementById("btnExportarCSV").addEventListener("click", () => exportar("csv"));
 document.getElementById("btnExportarJSON").addEventListener("click", () => exportar("json"));
+variableY.addEventListener("change", actualizarRecomendacion);
+variableX.addEventListener("change", actualizarRecomendacion);
+document.getElementById("filtroTexto").addEventListener("change", cargarDatos);
 
 cargarDatos();

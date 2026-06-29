@@ -36,6 +36,33 @@ tratamiento,47,18,1</textarea>
     <div id="resumenDatos" class="mini"></div>
   </section>
 
+  <section class="card guia-card">
+    <div class="guia-header">
+      <div>
+        <h2>Guia para principiantes</h2>
+        <p class="ayuda">El programa detecta el tipo de cada variable y te sugiere el analisis mas util segun lo que selecciones.</p>
+      </div>
+      <span class="etiqueta-guia">Modo guiado</span>
+    </div>
+    <ol class="pasos">
+      <li>Carga pacientes autorizados o pega una tabla con encabezados.</li>
+      <li>Revisa los tipos de variable y corrige alguno si el sistema se equivoca.</li>
+      <li>Elige una variable principal: por ejemplo edad, PHQ-9, diagnostico o respuesta.</li>
+      <li>Elige una variable X o grupo si quieres comparar dos columnas.</li>
+      <li>Lee la recomendacion y ejecuta el analisis o grafica sugerida.</li>
+      <li>Exporta los resultados cuando ya esten listos para tu nota o reporte.</li>
+    </ol>
+    <div id="recomendacionAnalisis" class="recomendacion">
+      Carga datos para recibir una recomendacion.
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Tipos de variable</h2>
+    <p class="ayuda">Puedes dejar la deteccion automatica o ajustar cada columna. Esto ayuda a elegir entre frecuencias, comparaciones, correlaciones y pruebas diagnosticas.</p>
+    <div id="tiposVariables" class="tipos-variables"></div>
+  </section>
+
   <section class="card">
     <h2>Analisis</h2>
     <div class="grid-controles">
