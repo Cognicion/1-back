@@ -5,6 +5,7 @@ import {
     getDoc,
     setDoc,
     updateDoc,
+    deleteDoc,
     collection,
     getDocs,
     query,
@@ -111,9 +112,142 @@ export async function medicoPuedeVer(uidMedico, pacienteId) {
         uidMedico
     );
 
+
+    
     const permisoSnap = await getDoc(permisoRef);
 
     if (!permisoSnap.exists()) return false;
 
     return permisoSnap.data().lectura === true;
+}
+
+export function permisosPorRol(tipoPermiso) {
+    const permisos = {
+        tratante: {
+            lectura: true,
+            agregarNotas: true,
+            editarPaciente: true,
+            administrarPermisos: true,
+            rolPermiso: "tratante"
+        },
+        colaborador: {
+            lectura: true,
+            agregarNotas: true,
+            editarPaciente: false,
+            administrarPermisos: false,
+            rolPermiso: "colaborador"
+        },
+        estudiante: {
+            lectura: true,
+            agregarNotas: false,
+            editarPaciente: false,
+            administrarPermisos: false,
+            rolPermiso: "estudiante"
+        }
+    };
+
+    return permisos[tipoPermiso] || permisos.estudiante;
+}
+
+export async function otorgarPermisoMedico(pacienteId, uidMedicoDestino, tipoPermiso, otorgadoPor) {
+    const permisoRef = doc(
+        db,
+        "usuarios",
+        pacienteId,
+        "permisosMedicos",
+        uidMedicoDestino
+    );
+
+    await setDoc(permisoRef, {
+        ...permisosPorRol(tipoPermiso),
+        fechaOtorgamiento: new Date().toISOString(),
+        otorgadoPor: otorgadoPor
+    });
+}
+
+export async function buscarMedicoPorCorreo(correo) {
+    const q = query(
+        collection(db, "usuarios"),
+        where("email", "==", correo),
+        where("rol", "==", "medico")
+    );
+
+    const snap = await getDocs(q);
+
+    if (snap.empty) return null;
+
+    const docMedico = snap.docs[0];
+
+    return {
+        uid: docMedico.id,
+        ...docMedico.data()
+    };
+}
+
+export async function obtenerPermisoMedico(pacienteId, uidMedico) {
+    const permisoRef = doc(
+        db,
+        "usuarios",
+        pacienteId,
+        "permisosMedicos",
+        uidMedico
+    );
+
+    const snap = await getDoc(permisoRef);
+
+    if (!snap.exists()) return null;
+
+    return snap.data();
+}
+
+export async function listarPermisosMedicos(pacienteId) {
+    const ref = collection(
+        db,
+        "usuarios",
+        pacienteId,
+        "permisosMedicos"
+    );
+
+    const snap = await getDocs(ref);
+
+    return snap.docs.map((docPermiso) => ({
+        uid: docPermiso.id,
+        ...docPermiso.data()
+    }));
+}
+
+export async function cambiarRolPermisoMedico(
+    pacienteId,
+    uidMedico,
+    nuevoRol,
+    modificadoPor
+) {
+    const permisoRef = doc(
+        db,
+        "usuarios",
+        pacienteId,
+        "permisosMedicos",
+        uidMedico
+    );
+
+    await updateDoc(permisoRef, {
+        ...permisosPorRol(nuevoRol),
+        fechaModificacion: new Date().toISOString(),
+        modificadoPor
+    });
+}
+
+export async function revocarPermisoMedico(
+    pacienteId,
+    uidMedico
+) {
+    const permisoRef = doc(
+        db,
+        "usuarios",
+        pacienteId,
+        "permisosMedicos",
+        uidMedico
+    );
+
+    await deleteDoc(permisoRef);
 }

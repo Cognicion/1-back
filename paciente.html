@@ -1,118 +1,133 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<title>Expediente médico</title>
-<link rel="stylesheet" href="css/theme.css">
-<link rel="stylesheet" href="css/paciente.css">
-
-
-    <body>
-
-
+  <meta charset="UTF-8">
+  <title>Expediente médico</title>
+  <link rel="stylesheet" href="css/theme.css">
+  <link rel="stylesheet" href="css/paciente.css">
 </head>
 
 <body>
 
+<div class="topbar">
+  <button class="btn-secundario" onclick="window.location.href='medico.html'">
+    ← Pacientes
+  </button>
+
+  <button class="btn-secundario" onclick="window.location.href='dashboard.html'">
+    🏠 Inicio
+  </button>
+</div>
+
 <div class="layout">
 
-<aside class="sidebar">
+  <aside class="sidebar">
     <h2>Expediente</h2>
 
     <div class="menu">
-        <button onclick="mostrarResumen()">Resumen</button>
-        <button onclick="abrirNota()">Notas</button>
-        <button onclick="abrirHistoriaClinica()">
-        Historia clínica
-        </button>
-        <button>Estudios</button>
-        <button>Tratamiento</button>
+      <button onclick="mostrarResumen()">Resumen</button>
+      <button onclick="abrirNota()">Notas</button>
+      <button onclick="abrirHistoriaClinica()">Historia clínica</button>
+      <button>Estudios</button>
+      <button>Tratamiento</button>
+      <button onclick="mostrarPermisos()">Permisos</button>
     </div>
-</aside>
+  </aside>
 
-<main class="contenido">
+  <main class="contenido">
 
-<h1 id="nombrePaciente">Cargando paciente...</h1>
+    <h1 id="nombrePaciente">Cargando paciente...</h1>
 
-<button onclick="editarNombrePaciente()">
-✏️ Editar nombre
-</button>    
+    <button onclick="editarNombrePaciente()">✏️ Editar nombre</button>
 
-<button style="background:#8b0000; color:white;"
-onclick="solicitarEliminarPaciente()">
-Suspender / solicitar eliminación
-</button>
-    
-<button onclick="editarDatosPaciente()">
-✏️ Editar datos generales
-</button>
-    
-<div class="tarjeta">
-    <h2>Datos generales</h2>
+    <button style="background:#8b0000; color:white;" onclick="solicitarEliminarPaciente()">
+      Suspender / solicitar eliminación
+    </button>
 
-    <div class="grid">
-        <div class="dato">
+    <button onclick="editarDatosPaciente()">✏️ Editar datos generales</button>
+
+    <section id="seccionResumen">
+      <div class="tarjeta">
+        <h2>Datos generales</h2>
+
+        <div class="grid">
+          <div class="dato">
             <label>Correo</label>
             <div id="correoPaciente">Cargando...</div>
-        </div>
+          </div>
 
-        <div class="dato">
+          <div class="dato">
             <label>Diagnóstico</label>
             <div id="diagnostico">Cargando...</div>
-        </div>
+          </div>
 
-        <div class="dato">
+          <div class="dato">
             <label>Tratamiento</label>
             <div id="tratamiento">Cargando...</div>
-        </div>
+          </div>
 
-        <div class="dato">
+          <div class="dato">
             <label>Médico tratante</label>
             <div id="medicoTratante">Cargando...</div>
-        </div>
+          </div>
 
-        <div class="dato">
+          <div class="dato">
             <label>Última consulta</label>
             <div id="ultimaConsulta">Cargando...</div>
-        </div>
+          </div>
 
-        <div class="dato-card">
+          <div class="dato-card">
             <span>Próxima consulta</span>
             <strong id="proximaConsulta">Sin programar</strong>
-        </div>
+          </div>
 
-        <div class="dato">
+          <div class="dato">
             <label>Teléfono</label>
             <div id="telefonoPaciente">Cargando...</div>
+          </div>
         </div>
-    </div>
-</div>
+      </div>
+    </section>
 
-</main>
+    <section id="seccionPermisos" style="display:none;">
+      <div class="tarjeta">
+        <h2>🔐 Permisos del expediente</h2>
+
+        <div class="grid">
+          <div class="dato">
+            <label>Correo del médico</label>
+            <input id="correoMedicoPermiso" type="email" placeholder="medico@correo.com">
+          </div>
+
+          <div class="dato">
+            <label>Rol</label>
+            <select id="rolPermisoMedico">
+              <option value="colaborador">Colaborador</option>
+              <option value="tratante">Tratante</option>
+              <option value="estudiante">Estudiante</option>
+            </select>
+          </div>
+        </div>
+
+        <button onclick="agregarPermisoMedico()">
+          Agregar médico
+        </button>
+
+        <hr>
+
+        <h3>Médicos con acceso</h3>
+
+        <div id="listaPermisosMedicos">
+          Cargando permisos...
+        </div>
+      </div>
+    </section>
+
+  </main>
 
 </div>
 
 <script type="module" src="js/paciente.js"></script>
 
-    
 </body>
-
-<div class="topbar">
-
-    <button class="btn-secundario"
-        onclick="window.location.href='medico.html'">
-
-        ← Pacientes
-
-    </button>
-
-    <button class="btn-secundario"
-        onclick="window.location.href='dashboard.html'">
-
-        🏠 Inicio
-
-    </button>
-
-</div>
-
 </html>
