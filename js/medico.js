@@ -25,11 +25,13 @@ onAuthStateChanged(auth, async (user) => {
     return;
   }
 
-  await cargarPerfilMedico(user);
+  const accesoPermitido = await cargarPerfilMedico(user);
+
+  if (!accesoPermitido) return;
 
   console.log("UID del médico:", user.uid);
 
-  await cargarPacientes(user.uid);
+await cargarPacientes(user.uid);
 
   document
     .getElementById("buscadorPacientes")
@@ -50,16 +52,22 @@ async function cargarPerfilMedico(user) {
     const datos = snapUsuario.data();
 
     if (datos.rol !== "medico") {
-      alert("Acceso restringido al personal médico");
-      window.location.href = "dashboard.html";
-      return;
-    }
+      alert("Acceso restringido al personal médico.");
+      await auth.signOut();
+      window.location.href = "login.html";
+    return false;
+  }
 
     document.getElementById("nombreMedico").textContent =
       datos.nombre || "Médico sin nombre";
   } else {
-    document.getElementById("nombreMedico").textContent = "Médico";
-  }
+  alert("Tu cuenta no está registrada en Cognición.");
+  await auth.signOut();
+  window.location.href = "login.html";
+  return false;
+}
+
+return true;
 }
 
 async function cargarPacientes(uidMedico) {
