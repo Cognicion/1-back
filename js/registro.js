@@ -13,6 +13,8 @@ import {
   getDocs
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
+const VERSION_AVISO_PRIVACIDAD = "beta-2026-06-29";
+
 const btnCrearCuenta = document.getElementById("btnCrearCuenta");
 
 btnCrearCuenta.addEventListener("click", async () => {
@@ -20,10 +22,16 @@ btnCrearCuenta.addEventListener("click", async () => {
   const email = document.getElementById("email").value.trim().toLowerCase();
   const correoMedico = document.getElementById("correoMedico").value.trim().toLowerCase();
   const password = document.getElementById("password").value;
+  const aceptaAviso = document.getElementById("aceptaAviso").checked;
   const mensaje = document.getElementById("mensaje");
 
   if (!nombre || !email || !correoMedico || !password) {
     mensaje.textContent = "Completa todos los campos.";
+    return;
+  }
+
+  if (!aceptaAviso) {
+    mensaje.textContent = "Debes aceptar el Aviso de Privacidad para crear tu cuenta.";
     return;
   }
 
@@ -61,6 +69,7 @@ btnCrearCuenta.addEventListener("click", async () => {
     );
 
     const uidPaciente = credencial.user.uid;
+    const fechaActual = new Date().toISOString();
 
     await setDoc(doc(db, "usuarios", uidPaciente), {
       nombre,
@@ -73,7 +82,11 @@ btnCrearCuenta.addEventListener("click", async () => {
       medicoTratanteUid: uidMedico,
       medicoTratante: datosMedico.nombre || correoMedico,
 
-      fechaCreacion: new Date().toISOString()
+      aceptoAvisoPrivacidad: true,
+      fechaAceptacionAviso: fechaActual,
+      versionAvisoPrivacidad: VERSION_AVISO_PRIVACIDAD,
+
+      fechaCreacion: fechaActual
     });
 
     await setDoc(
@@ -84,7 +97,7 @@ btnCrearCuenta.addEventListener("click", async () => {
         editarPaciente: true,
         administrarPermisos: true,
         rolPermiso: "tratante",
-        fechaOtorgamiento: new Date().toISOString(),
+        fechaOtorgamiento: fechaActual,
         otorgadoPor: uidPaciente
       }
     );
