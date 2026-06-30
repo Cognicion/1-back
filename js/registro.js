@@ -13,6 +13,8 @@ import {
   getDocs
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
+import { registrarEventoAuditoria } from "./services/auditoria.js";
+
 const VERSION_AVISO_PRIVACIDAD = "beta-2026-06-29";
 
 const btnCrearCuenta = document.getElementById("btnCrearCuenta");
@@ -102,6 +104,29 @@ btnCrearCuenta.addEventListener("click", async () => {
       }
     );
 
+    try {
+  await registrarEventoAuditoria({
+    accion: "crear_cuenta_paciente",
+    modulo: "Registro",
+    descripcion: "Se creó una cuenta de paciente y se aceptó el Aviso de Privacidad.",
+    usuarioUid: uidPaciente,
+    usuarioNombre: nombre,
+    usuarioRol: "paciente",
+    pacienteUid: uidPaciente,
+    pacienteNombre: nombre,
+    exito: true,
+    detalles: {
+      medicoTratanteUid: uidMedico,
+      medicoTratante: datosMedico.nombre || correoMedico,
+      versionAvisoPrivacidad: VERSION_AVISO_PRIVACIDAD
+    }
+  });
+} catch (errorAuditoria) {
+  console.error("No se pudo registrar la auditoría:", errorAuditoria);
+}
+
+    mensaje.textContent = "Cuenta creada correctamente.";
+    window.location.href = "dashboard.html";  
     mensaje.textContent = "Cuenta creada correctamente.";
     window.location.href = "dashboard.html";
 
@@ -115,7 +140,11 @@ btnCrearCuenta.addEventListener("click", async () => {
     } else if (error.code === "auth/weak-password") {
       mensaje.textContent = "Contraseña demasiado débil.";
     } else {
-      mensaje.textContent = "Error al crear la cuenta.";
+      console.error(error);
+
+    mensaje.textContent = error.message;
+
+    alert(error.message);
     }
   }
 });
