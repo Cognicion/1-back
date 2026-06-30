@@ -127,8 +127,6 @@ btnCrearCuenta.addEventListener("click", async () => {
 
     mensaje.textContent = "Cuenta creada correctamente.";
     window.location.href = "dashboard.html";  
-    mensaje.textContent = "Cuenta creada correctamente.";
-    window.location.href = "dashboard.html";
 
   } catch (error) {
     console.error(error);

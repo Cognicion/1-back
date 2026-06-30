@@ -25,9 +25,9 @@ body {
 }
 
 .logo-header {
-  width: 66px;
-  height: 66px;
-  object-fit: cover;
+  width: 76px;
+  height: 76px;
+  object-fit: contain;
   border-radius: 14px;
   border: 1px solid rgba(125,211,252,0.28);
   box-shadow: 0 0 22px rgba(56,189,248,0.18);
@@ -90,6 +90,11 @@ body {
 .perfil-medico h2 {
   font-size: 20px;
   line-height: 1.25;
+}
+
+.perfil-medico .boton {
+  width: 100%;
+  margin-top: 10px;
 }
 
 .dato {

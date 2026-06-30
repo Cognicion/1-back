@@ -3,12 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Cognicion | Salud mental digital</title>
+<title>Cognicion | Plataforma cientifica en salud mental</title>
 <link rel="icon" type="image/png" href="assets/favicon-cognicion.png">
 <style>
 :root {
   --bg: #030711;
+  --bg-2: #07111f;
   --panel: rgba(9, 14, 24, 0.72);
+  --panel-2: rgba(15, 23, 42, 0.58);
   --line: rgba(148, 163, 184, 0.16);
   --text: #f8fafc;
   --muted: #9aa7bb;
@@ -26,9 +28,9 @@ body {
   font-family: Inter, Arial, Helvetica, sans-serif;
   color: var(--text);
   background:
-    radial-gradient(circle at 50% -15%, rgba(78,163,255,0.26), transparent 34%),
-    radial-gradient(circle at 85% 22%, rgba(49,216,255,0.10), transparent 26%),
-    linear-gradient(180deg, #030711 0%, #050914 58%, #07111d 100%);
+    radial-gradient(circle at 78% 12%, rgba(49,216,255,0.14), transparent 28%),
+    radial-gradient(circle at 30% -10%, rgba(78,163,255,0.22), transparent 34%),
+    linear-gradient(180deg, var(--bg) 0%, #050914 56%, var(--bg-2) 100%);
   overflow-x: hidden;
 }
 
@@ -41,28 +43,36 @@ body::before {
     linear-gradient(rgba(255,255,255,0.026) 1px, transparent 1px),
     linear-gradient(90deg, rgba(255,255,255,0.022) 1px, transparent 1px);
   background-size: 64px 64px;
-  mask-image: linear-gradient(to bottom, black, transparent 70%);
+  mask-image: linear-gradient(to bottom, black, transparent 72%);
 }
+
+a { color: inherit; }
 
 .nav {
   position: sticky;
   top: 0;
-  z-index: 10;
+  z-index: 20;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 24px;
-  padding: 18px clamp(20px, 6vw, 76px);
+  padding: 14px clamp(20px, 6vw, 78px);
   border-bottom: 1px solid rgba(255,255,255,0.07);
-  background: rgba(3,7,17,0.74);
+  background: rgba(3,7,17,0.72);
   backdrop-filter: blur(18px);
 }
 
-.nav-brand {
-  font-size: 13px;
-  letter-spacing: 0.28em;
-  color: #dbeafe;
-  font-weight: 800;
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.brand img {
+  width: 134px;
+  height: auto;
+  display: block;
 }
 
 .nav-links {
@@ -89,66 +99,60 @@ body::before {
 }
 
 .hero {
-  min-height: calc(100vh - 76px);
-  display: grid;
-  place-items: center;
-  padding: 62px 22px 76px;
   position: relative;
+  width: min(1180px, 100%);
+  min-height: calc(100vh - 74px);
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: minmax(0, 1.08fr) minmax(340px, 0.92fr);
+  gap: 38px;
+  align-items: center;
+  padding: 84px 24px 64px;
 }
 
-.hero::after {
-  content: "";
-  position: absolute;
-  width: min(720px, 88vw);
-  height: 1px;
-  top: 34%;
-  left: 50%;
-  transform: translateX(-50%);
-  background: linear-gradient(90deg, transparent, rgba(125,211,252,0.34), transparent);
-  opacity: 0.8;
+.hero-copy {
+  animation: fadeUp 0.7s ease both;
 }
 
-.hero-inner {
-  width: min(1040px, 100%);
-  text-align: center;
-  animation: fadeUp 0.75s ease both;
-}
-
-.logo-oficial {
-  width: min(560px, 78vw);
+.hero-logo {
+  width: min(270px, 58vw);
   height: auto;
   display: block;
-  margin: 0 auto 34px;
+  margin: 0 0 26px;
+  opacity: 0.94;
+  filter: drop-shadow(0 0 28px rgba(78,163,255,0.14));
 }
 
 .eyebrow {
+  display: inline-flex;
+  margin-bottom: 18px;
   color: #7dd3fc;
   font-size: 12px;
-  letter-spacing: 0.24em;
+  letter-spacing: 0.22em;
   text-transform: uppercase;
-  margin-bottom: 18px;
+  font-weight: 800;
 }
 
 h1 {
-  max-width: 940px;
-  margin: 0 auto;
-  font-size: clamp(42px, 7vw, 82px);
+  margin: 0;
+  max-width: 800px;
+  font-size: clamp(44px, 6.4vw, 84px);
   line-height: 0.98;
-  letter-spacing: -0.045em;
-  font-weight: 780;
+  letter-spacing: -0.052em;
+  font-weight: 800;
 }
 
 .subtitulo {
-  max-width: 780px;
-  margin: 24px auto 0;
+  max-width: 760px;
+  margin: 24px 0 0;
   color: var(--muted);
-  font-size: clamp(17px, 2.4vw, 22px);
-  line-height: 1.55;
+  font-size: clamp(17px, 2vw, 21px);
+  line-height: 1.62;
 }
 
 .acciones {
   display: flex;
-  justify-content: center;
+  align-items: center;
   gap: 14px;
   flex-wrap: wrap;
   margin-top: 34px;
@@ -158,7 +162,6 @@ h1 {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 150px;
   min-height: 48px;
   padding: 13px 20px;
   border-radius: 999px;
@@ -170,7 +173,7 @@ h1 {
 .btn-primary {
   color: white;
   background: linear-gradient(135deg, #2563eb, #00d4ff);
-  box-shadow: 0 0 34px rgba(0,212,255,0.24);
+  box-shadow: 0 0 34px rgba(0,212,255,0.22);
 }
 
 .btn-secondary {
@@ -179,13 +182,173 @@ h1 {
   background: rgba(15,23,42,0.58);
 }
 
+.link-secondary {
+  color: #93c5fd;
+  text-decoration: none;
+  font-weight: 800;
+}
+
 .btn:hover {
   transform: translateY(-2px);
   box-shadow: 0 0 36px rgba(78,163,255,0.22);
 }
 
+.science-visual {
+  position: relative;
+  min-height: 520px;
+  display: grid;
+  place-items: center;
+  isolation: isolate;
+  animation: fadeUp 0.9s ease both;
+}
+
+.science-visual::before {
+  content: "";
+  position: absolute;
+  width: min(470px, 92vw);
+  aspect-ratio: 1;
+  border: 1px solid rgba(125,211,252,0.16);
+  border-radius: 50%;
+  background:
+    radial-gradient(circle, rgba(56,189,248,0.16), transparent 58%),
+    conic-gradient(from 90deg, transparent, rgba(78,163,255,0.28), transparent 38%);
+  filter: blur(0.2px);
+  opacity: 0.95;
+  z-index: -1;
+}
+
+.orbital {
+  position: relative;
+  width: min(430px, 86vw);
+  aspect-ratio: 1;
+  border: 1px solid rgba(148,163,184,0.20);
+  border-radius: 50%;
+  background:
+    linear-gradient(rgba(125,211,252,0.18), rgba(125,211,252,0.18)) 50% 50% / 1px 72% no-repeat,
+    linear-gradient(90deg, rgba(125,211,252,0.18), rgba(125,211,252,0.18)) 50% 50% / 72% 1px no-repeat,
+    rgba(2, 6, 23, 0.24);
+  box-shadow: inset 0 0 70px rgba(56,189,248,0.08), 0 0 70px rgba(14,165,233,0.16);
+}
+
+.brain {
+  position: absolute;
+  inset: 29%;
+  border: 2px solid rgba(226,242,255,0.88);
+  border-radius: 46% 46% 42% 42%;
+  box-shadow: 0 0 30px rgba(226,242,255,0.10);
+}
+
+.brain::before,
+.brain::after {
+  content: "";
+  position: absolute;
+  top: 10%;
+  bottom: 10%;
+  width: 44%;
+  border: 2px solid rgba(226,242,255,0.75);
+  border-radius: 50%;
+}
+
+.brain::before { left: 5%; }
+.brain::after { right: 5%; }
+
+.ecg {
+  position: absolute;
+  left: 62%;
+  top: 44%;
+  width: 42%;
+  height: 48px;
+  background: linear-gradient(90deg, transparent 0 10%, #2dd4bf 10% 22%, transparent 22% 100%);
+  clip-path: polygon(0 52%, 18% 52%, 25% 12%, 34% 86%, 44% 48%, 56% 48%, 62% 32%, 70% 64%, 78% 50%, 100% 50%);
+  filter: drop-shadow(0 0 14px rgba(45,212,191,0.48));
+}
+
+.nodes {
+  position: absolute;
+  left: 12%;
+  top: 28%;
+  width: 28%;
+  height: 48%;
+}
+
+.nodes span {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #7dd3fc;
+  box-shadow: 0 0 18px rgba(125,211,252,0.7);
+}
+
+.nodes span:nth-child(1) { left: 10%; top: 4%; }
+.nodes span:nth-child(2) { left: 38%; top: 18%; }
+.nodes span:nth-child(3) { left: 18%; top: 40%; }
+.nodes span:nth-child(4) { left: 52%; top: 58%; }
+.nodes span:nth-child(5) { left: 31%; top: 82%; }
+
+.nodes::before {
+  content: "";
+  position: absolute;
+  inset: 8% 20% 10% 15%;
+  border-left: 1px solid rgba(125,211,252,0.48);
+  border-top: 1px solid rgba(125,211,252,0.48);
+  transform: skewY(28deg);
+}
+
+.stats-mini {
+  position: absolute;
+  right: 13%;
+  bottom: 18%;
+  display: flex;
+  gap: 8px;
+  align-items: end;
+  height: 72px;
+}
+
+.stats-mini span {
+  width: 12px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #7dd3fc, #2563eb);
+  opacity: 0.78;
+}
+
+.stats-mini span:nth-child(1) { height: 26px; }
+.stats-mini span:nth-child(2) { height: 42px; }
+.stats-mini span:nth-child(3) { height: 61px; }
+.stats-mini span:nth-child(4) { height: 36px; }
+
+.capabilities {
+  width: min(1180px, 100%);
+  margin: 0 auto;
+  padding: 0 24px 44px;
+}
+
+.cap-strip {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  background: rgba(9,14,24,0.58);
+  overflow: hidden;
+  box-shadow: 0 18px 54px rgba(0,0,0,0.22);
+}
+
+.cap-strip span {
+  min-height: 82px;
+  display: grid;
+  place-items: center;
+  padding: 14px;
+  color: #dbeafe;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 800;
+  border-right: 1px solid var(--line);
+}
+
+.cap-strip span:last-child { border-right: none; }
+
 .section {
-  padding: 28px 22px 88px;
+  padding: 66px 24px;
 }
 
 .section-inner {
@@ -194,9 +357,9 @@ h1 {
 }
 
 .section h2 {
-  margin: 0 0 22px;
-  font-size: clamp(30px, 4vw, 48px);
-  letter-spacing: -0.03em;
+  margin: 0 0 24px;
+  font-size: clamp(30px, 4vw, 50px);
+  letter-spacing: -0.035em;
 }
 
 .features {
@@ -206,12 +369,12 @@ h1 {
 }
 
 .feature-card {
-  min-height: 178px;
+  min-height: 188px;
   padding: 22px;
   border: 1px solid var(--line);
   border-radius: 22px;
   background:
-    linear-gradient(180deg, rgba(255,255,255,0.055), rgba(255,255,255,0.022)),
+    linear-gradient(180deg, rgba(255,255,255,0.055), rgba(255,255,255,0.018)),
     var(--panel);
   box-shadow: 0 18px 54px rgba(0,0,0,0.25);
   transition: transform 0.22s ease, border-color 0.22s ease, background 0.22s ease;
@@ -224,12 +387,17 @@ h1 {
   background: rgba(15,23,42,0.72);
 }
 
-.feature-card span {
+.icon {
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(125,211,252,0.24);
+  border-radius: 13px;
   color: #7dd3fc;
-  font-size: 12px;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  font-weight: 800;
+  background: rgba(56,189,248,0.08);
+  font-size: 13px;
+  font-weight: 900;
 }
 
 .feature-card h3 {
@@ -237,14 +405,58 @@ h1 {
   font-size: 20px;
 }
 
-.feature-card p {
+.feature-card p,
+.philosophy p {
   margin: 0;
   color: var(--muted);
-  line-height: 1.55;
+  line-height: 1.62;
 }
 
+.philosophy {
+  border: 1px solid var(--line);
+  border-radius: 28px;
+  padding: clamp(24px, 5vw, 44px);
+  background:
+    radial-gradient(circle at top right, rgba(49,216,255,0.12), transparent 35%),
+    rgba(9,14,24,0.64);
+  box-shadow: 0 20px 64px rgba(0,0,0,0.22);
+}
+
+.timeline {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 24px;
+}
+
+.timeline span {
+  position: relative;
+  min-height: 72px;
+  display: grid;
+  place-items: center;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  color: #dbeafe;
+  background: rgba(15,23,42,0.50);
+  text-align: center;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.timeline span::after {
+  content: "";
+  position: absolute;
+  right: -10px;
+  width: 10px;
+  height: 1px;
+  background: rgba(125,211,252,0.32);
+}
+
+.timeline span:last-child::after { display: none; }
+
 footer {
-  padding: 28px 22px 46px;
+  padding: 30px 22px 48px;
   color: #64748b;
   text-align: center;
   border-top: 1px solid rgba(255,255,255,0.07);
@@ -261,11 +473,55 @@ footer {
   }
 }
 
-@media (max-width: 820px) {
+@media (max-width: 980px) {
+  .hero {
+    grid-template-columns: 1fr;
+    min-height: auto;
+    padding-top: 56px;
+  }
+
+  .science-visual {
+    min-height: 360px;
+  }
+
+  .hero-copy {
+    text-align: center;
+  }
+
+  .hero-logo {
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .subtitulo {
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .acciones {
+    justify-content: center;
+  }
+
+  .cap-strip,
+  .features,
+  .timeline {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .cap-strip span:nth-child(even) {
+    border-right: none;
+  }
+}
+
+@media (max-width: 720px) {
   .nav {
     position: static;
     display: grid;
     justify-items: center;
+  }
+
+  .brand img {
+    width: 116px;
   }
 
   .nav-links {
@@ -274,17 +530,23 @@ footer {
     gap: 12px 16px;
   }
 
-  .hero {
-    min-height: auto;
-    padding-top: 48px;
-  }
-
-  .logo-oficial {
-    width: min(420px, 86vw);
-  }
-
-  .features {
+  .cap-strip,
+  .features,
+  .timeline {
     grid-template-columns: 1fr;
+  }
+
+  .cap-strip span {
+    border-right: none;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .cap-strip span:last-child {
+    border-bottom: none;
+  }
+
+  .timeline span::after {
+    display: none;
   }
 }
 </style>
@@ -292,7 +554,9 @@ footer {
 
 <body>
 <nav class="nav">
-  <div class="nav-brand">COGNICION</div>
+  <a class="brand" href="#inicio" aria-label="Cognicion inicio">
+    <img src="assets/logo-cognicion.png" alt="Cognicion">
+  </a>
   <div class="nav-links">
     <a href="#inicio">Inicio</a>
     <a href="#caracteristicas">Caracteristicas</a>
@@ -304,60 +568,98 @@ footer {
 
 <main id="inicio">
   <section class="hero">
-    <div class="hero-inner">
-      <img class="logo-oficial" src="assets/logo-cognicion.png" alt="Cognicion">
-      <div class="eyebrow">Ciencia · Evidencia · Salud mental</div>
-      <h1>La nueva generacion del expediente clinico en salud mental.</h1>
-      <p class="subtitulo">Expediente clinico · Evaluacion · Rehabilitacion Cognitiva · Investigacion Clinica.</p>
+    <div class="hero-copy">
+      <img class="hero-logo" src="assets/logo-cognicion.png" alt="Cognicion">
+      <span class="eyebrow">PLATAFORMA CIENTIFICA EN SALUD MENTAL</span>
+      <h1>Todo lo que la salud mental necesita. En una sola plataforma.</h1>
+      <p class="subtitulo">Cognicion integra expediente clinico, evaluacion clinica, rehabilitacion cognitiva, investigacion, analisis estadistico e inteligencia artificial en un ecosistema disenado para profesionales de la salud mental.</p>
       <div class="acciones">
         <a class="btn btn-primary" href="login.html">Iniciar sesion</a>
         <a class="btn btn-secondary" href="registro.html">Crear cuenta</a>
+        <a class="link-secondary" href="#caracteristicas">Explorar plataforma</a>
       </div>
+    </div>
+
+    <div class="science-visual" aria-hidden="true">
+      <div class="orbital">
+        <div class="brain"></div>
+        <div class="nodes">
+          <span></span><span></span><span></span><span></span><span></span>
+        </div>
+        <div class="ecg"></div>
+        <div class="stats-mini"><span></span><span></span><span></span><span></span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="capabilities" aria-label="Capacidades principales">
+    <div class="cap-strip">
+      <span>Expediente clinico electronico</span>
+      <span>Evaluacion clinica</span>
+      <span>Rehabilitacion cognitiva</span>
+      <span>Investigacion clinica</span>
+      <span>Analisis estadistico</span>
+      <span>IA clinica</span>
     </div>
   </section>
 
   <section id="caracteristicas" class="section">
     <div class="section-inner">
-      <h2>¿Por que Cognicion?</h2>
+      <h2>Un ecosistema completo</h2>
       <div class="features">
         <article class="feature-card">
-          <span>01</span>
-          <h3>Expediente clinico electronico</h3>
-          <p>Registro organizado de datos, diagnosticos, tratamientos, notas medicas y seguimiento longitudinal.</p>
+          <div class="icon">EC</div>
+          <h3>Expediente Clinico</h3>
+          <p>Registro organizado de pacientes, diagnosticos, tratamientos, notas medicas y evolucion longitudinal.</p>
         </article>
         <article class="feature-card">
-          <span>02</span>
-          <h3>Escalas y evaluaciones</h3>
-          <p>Base para integrar instrumentos clinicos, mediciones seriadas y reportes de evolucion.</p>
+          <div class="icon">EV</div>
+          <h3>Evaluacion Clinica</h3>
+          <p>Aplicacion de escalas, instrumentos clinicos y mediciones seriadas para seguimiento objetivo.</p>
         </article>
         <article class="feature-card">
-          <span>03</span>
-          <h3>Analisis estadistico</h3>
+          <div class="icon">RC</div>
+          <h3>Rehabilitacion Cognitiva</h3>
+          <p>Modulos orientados a entrenamiento, evaluacion neuropsicologica y continuidad terapeutica.</p>
+        </article>
+        <article class="feature-card">
+          <div class="icon">IN</div>
+          <h3>Investigacion</h3>
+          <p>Organizacion de datos clinicos para protocolos, analisis y generacion de evidencia.</p>
+        </article>
+        <article class="feature-card">
+          <div class="icon">ST</div>
+          <h3>Estadistica</h3>
           <p>Herramientas descriptivas, inferenciales y graficas para investigacion y toma de decisiones.</p>
         </article>
         <article class="feature-card">
-          <span>04</span>
-          <h3>Rehabilitacion cognitiva</h3>
-          <p>Modulo orientado a entrenamiento, evaluacion neuropsicologica y ejercicios de seguimiento.</p>
-        </article>
-        <article class="feature-card">
-          <span>05</span>
-          <h3>Seguimiento integral</h3>
-          <p>Agenda, citas, recordatorios, evolucion clinica y continuidad del cuidado en un mismo entorno.</p>
-        </article>
-        <article class="feature-card">
-          <span>06</span>
-          <h3>IA clinica</h3>
-          <p>Proximamente: apoyo para analisis, redaccion clinica, investigacion y exploracion de datos.</p>
+          <div class="icon">IA</div>
+          <h3>Inteligencia Artificial</h3>
+          <p>Asistencia futura para analisis clinico, redaccion medica, exploracion de datos y apoyo a la investigacion.</p>
         </article>
       </div>
     </div>
   </section>
 
   <section id="investigacion" class="section">
+    <div class="section-inner philosophy">
+      <h2>Nuestra filosofia</h2>
+      <p>La salud mental necesita herramientas que conecten la practica clinica con la evidencia cientifica. Cognicion nace para integrar datos clinicos, evaluacion objetiva, investigacion y tecnologia en un entorno claro, seguro y util para profesionales.</p>
+    </div>
+  </section>
+
+  <section class="section">
     <div class="section-inner">
-      <h2>Investigacion clinica integrada</h2>
-      <p class="subtitulo">Cognicion esta pensada para unir practica clinica, medicion objetiva y analisis de datos sin perder claridad ni trazabilidad.</p>
+      <h2>Vision de desarrollo</h2>
+      <div class="timeline">
+        <span>Expediente</span>
+        <span>Escalas</span>
+        <span>Rehabilitacion</span>
+        <span>Estadistica</span>
+        <span>Sofia IA</span>
+        <span>Hospitales</span>
+        <span>Investigacion multicentrica</span>
+      </div>
     </div>
   </section>
 </main>

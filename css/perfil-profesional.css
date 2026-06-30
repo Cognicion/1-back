@@ -31,10 +31,10 @@ body.bloqueado main { display: none; }
 }
 
 .marca img {
-  width: 72px;
-  height: 72px;
+  width: 82px;
+  height: 82px;
   border-radius: 16px;
-  object-fit: cover;
+  object-fit: contain;
   border: 1px solid rgba(125,211,252,0.28);
   box-shadow: 0 0 24px rgba(56,189,248,0.18);
 }

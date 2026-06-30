@@ -97,6 +97,10 @@ async function cargarPacientesDelMedico() {
     const puedeVer = await medicoPuedeVer(user.uid, docPaciente.id);
     if (!puedeVer) continue;
 
+    const snapTratamientos = await getDocs(collection(db, "usuarios", docPaciente.id, "tratamientos"));
+    const tratamientos = snapTratamientos.docs.map((docTratamiento) => docTratamiento.data());
+    const snapEstudios = await getDocs(collection(db, "usuarios", docPaciente.id, "estudios"));
+
     filas.push({
       id: docPaciente.id,
       nombre: paciente.nombre || "",
@@ -107,7 +111,10 @@ async function cargarPacientesDelMedico() {
       catalogo: paciente.diagnostico?.catalogo || paciente.diagnosticoCatalogoVisible || "auto",
       ultimaConsulta: paciente.ultimaConsulta || "",
       proximaConsulta: paciente.proximaConsulta || "",
-      tieneTratamiento: paciente.tratamiento ? 1 : 0,
+      tieneTratamiento: tratamientos.some((t) => (t.estado || "activo") === "activo") || paciente.tratamiento ? 1 : 0,
+      tratamientosActivos: tratamientos.filter((t) => (t.estado || "activo") === "activo").length,
+      tratamientosSuspendidos: tratamientos.filter((t) => t.estado === "suspendido").length,
+      estudiosRegistrados: snapEstudios.size,
       numDiagnosticos: Array.isArray(paciente.historialDiagnosticos) ? paciente.historialDiagnosticos.length : (paciente.diagnostico ? 1 : 0)
     });
   }
@@ -735,6 +742,7 @@ function exportar(tipo) {
 }
 
 document.getElementById("btnCargar").addEventListener("click", cargarDatos);
+document.getElementById("btnUsarPanelMedico")?.addEventListener("click", cargarPacientesDelMedico);
 document.getElementById("btnPacientesMedico").addEventListener("click", cargarPacientesDelMedico);
 document.getElementById("btnEjemplo").addEventListener("click", () => {
   entrada.value = `grupo,edad,phq9,gad7,respuesta,enfermedad

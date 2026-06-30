@@ -40,7 +40,6 @@ onAuthStateChanged(auth, async (user) => {
   console.log("UID del médico:", user.uid);
 
   await cargarPacientes(user.uid);
-  await cargarAgendaMedico(user.uid);
 
   const buscador = document.getElementById("buscadorPacientes");
 
@@ -80,38 +79,6 @@ async function cargarPerfilMedico(user) {
     datos.nombre || "Médico sin nombre";
 
   return true;
-}
-
-async function cargarAgendaMedico(uidMedico) {
-  const contenedor = document.getElementById("agendaPanelMedico");
-  if (!contenedor) return;
-
-  const snap = await getDocs(collection(db, "usuarios", uidMedico, "agenda"));
-  const hoy = new Date();
-  hoy.setHours(0, 0, 0, 0);
-
-  const citas = snap.docs
-    .map((docAgenda) => ({ id: docAgenda.id, ...docAgenda.data() }))
-    .filter((cita) => {
-      if (!cita.fecha) return false;
-      const fecha = new Date(`${cita.fecha}T00:00:00`);
-      return fecha >= hoy && cita.estado !== "atendida";
-    })
-    .sort((a, b) => `${a.fecha || ""} ${a.hora || ""}`.localeCompare(`${b.fecha || ""} ${b.hora || ""}`))
-    .slice(0, 6);
-
-  if (!citas.length) {
-    contenedor.innerHTML = "<p class=\"texto-suave\">No hay citas proximas programadas.</p>";
-    return;
-  }
-
-  contenedor.innerHTML = citas.map((cita) => `
-    <article class="cita-panel">
-      <strong>${cita.pacienteNombre || "Paciente"}</strong>
-      <span>${cita.fecha || ""} ${cita.hora || ""} · ${cita.tipo || "Consulta"}</span>
-      ${cita.seguimiento ? `<small>${cita.seguimiento}</small>` : ""}
-    </article>
-  `).join("");
 }
 
 async function cargarPacientes(uidMedico) {

@@ -2,31 +2,42 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Registro | Cognición</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Crear cuenta | Cognicion</title>
+  <link rel="icon" type="image/png" href="assets/favicon-cognicion.png">
   <link rel="stylesheet" href="css/theme.css">
   <link rel="stylesheet" href="css/registro.css">
 </head>
 
 <body>
+<main class="auth-shell">
+  <section class="auth-copy">
+    <img class="auth-logo" src="assets/favicon-cognicion.png" alt="Cognicion">
+    <span>PLATAFORMA CIENTIFICA EN SALUD MENTAL</span>
+    <h1>Crear cuenta en Cognicion</h1>
+    <p>Accede a tu espacio de seguimiento, tratamiento, escalas clinicas y herramientas de autocuidado conectadas con tu medico tratante.</p>
+    <div class="beneficios">
+      <div>Seguimiento diario</div>
+      <div>Escalas clinicas</div>
+      <div>Resultados para tu medico</div>
+    </div>
+  </section>
 
-<div class="auth-container">
-  <div class="auth-card">
-
-    <h1>Crear cuenta</h1>
-    <p>Registro de paciente en Cognición</p>
+  <section class="auth-card">
+    <h2>Registro de paciente</h2>
+    <p>Tu medico debe estar registrado para vincular tu expediente.</p>
 
     <input id="nombre" type="text" placeholder="Nombre completo">
-    <input id="email" type="email" placeholder="Correo electrónico">
-    <input id="correoMedico" type="email" placeholder="Correo del médico tratante">
-    <input id="password" type="password" placeholder="Contraseña">
+    <input id="email" type="email" placeholder="Correo electronico">
+    <input id="correoMedico" type="email" placeholder="Correo del medico tratante">
+    <input id="password" type="password" placeholder="Contrasena">
 
     <label class="checkbox-legal">
       <input type="checkbox" id="aceptaAviso">
-
-      He leído y acepto el
-      <a href="aviso-privacidad.html" target="_blank">
-        Aviso de Privacidad
-      </a>
+      <span>
+        He leido y acepto el
+        <a href="aviso-privacidad.html" target="_blank">Aviso de Privacidad</a>
+      </span>
     </label>
 
     <button id="btnCrearCuenta" type="button">Crear cuenta</button>
@@ -36,11 +47,9 @@
     </button>
 
     <p id="mensaje"></p>
-
-  </div>
-</div>
+  </section>
+</main>
 
 <script type="module" src="js/registro.js"></script>
-
 </body>
 </html>

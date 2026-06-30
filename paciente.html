@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Expediente médico</title>
+  <title>Expediente medico</title>
   <link rel="stylesheet" href="css/theme.css">
   <link rel="icon" type="image/png" href="assets/favicon-cognicion.png">
   <link rel="stylesheet" href="css/paciente.css">
@@ -11,14 +11,14 @@
 <body>
 
 <div class="topbar">
-  <img class="logo-mini" src="assets/logo-cognicion.png" alt="Cognicion">
+  <img class="logo-mini" src="assets/favicon-cognicion.png" alt="Cognicion">
 
   <button class="btn-secundario" onclick="window.location.href='medico.html'">
-    ← Pacientes
+    Pacientes
   </button>
 
   <button class="btn-secundario" onclick="window.location.href='dashboard.html'">
-    🏠 Inicio
+    Inicio
   </button>
 </div>
 
@@ -30,9 +30,12 @@
     <div class="menu">
       <button onclick="mostrarResumen()">Resumen</button>
       <button onclick="abrirNota()">Notas</button>
-      <button onclick="abrirHistoriaClinica()">Historia clínica</button>
-      <button>Estudios</button>
-      <button>Tratamiento</button>
+      <button onclick="mostrarNotasRapidas()">Nota rapida</button>
+      <button onclick="abrirHistoriaClinica()">Historia clinica</button>
+      <button onclick="mostrarEstudios()">Estudios</button>
+      <button onclick="mostrarTratamiento()">Tratamiento</button>
+      <button onclick="mostrarResultadosEscalas()">Resultados</button>
+      <button onclick="previsualizarMiSalud()">Ver Mi Salud</button>
       <button onclick="mostrarPermisos()">Permisos</button>
     </div>
   </aside>
@@ -41,10 +44,10 @@
 
     <h1 id="nombrePaciente">Cargando paciente...</h1>
 
-    <button onclick="editarNombrePaciente()">✏️ Editar nombre</button>
+    <button onclick="editarNombrePaciente()">Editar nombre</button>
 
     <button style="background:#8b0000; color:white;" onclick="solicitarEliminarPaciente()">
-      Suspender / solicitar eliminación
+      Suspender / solicitar eliminacion
     </button>
 
     <button class="oculto" onclick="editarDatosPaciente()">Editar datos generales</button>
@@ -70,32 +73,32 @@
           </div>
 
           <div class="dato diagnosticos-lista">
-            <label>Diagnósticos</label>
+            <label>Diagnosticos</label>
             <div id="diagnostico">Cargando...</div>
           </div>
 
           <div class="dato">
-            <label>Tratamiento <button class="boton-editar-dato" onclick="editarCampoPaciente('tratamiento', 'Tratamiento', 'textarea')">Editar</button></label>
+            <label>Tratamiento <button class="boton-editar-dato" onclick="mostrarTratamiento()">Abrir panel</button></label>
             <div id="tratamiento">Cargando...</div>
           </div>
 
           <div class="dato">
-            <label>Médico tratante <button class="boton-editar-dato" onclick="editarCampoPaciente('medicoTratante', 'Medico tratante', 'text')">Editar</button></label>
+            <label>Medico tratante <button class="boton-editar-dato" onclick="editarCampoPaciente('medicoTratante', 'Medico tratante', 'text')">Editar</button></label>
             <div id="medicoTratante">Cargando...</div>
           </div>
 
           <div class="dato">
-            <label>Última consulta <button class="boton-editar-dato" onclick="editarCampoPaciente('ultimaConsulta', 'Ultima consulta', 'date')">Editar</button></label>
+            <label>Ultima consulta <button class="boton-editar-dato" onclick="editarCampoPaciente('ultimaConsulta', 'Ultima consulta', 'date')">Editar</button></label>
             <div id="ultimaConsulta">Cargando...</div>
           </div>
 
           <div class="dato-card">
-            <span>Próxima consulta <button class="boton-editar-dato" onclick="editarCampoPaciente('proximaConsulta', 'Proxima consulta', 'date')">Editar</button></span>
+            <span>Proxima consulta <button class="boton-editar-dato" onclick="editarCampoPaciente('proximaConsulta', 'Proxima consulta', 'date')">Editar</button></span>
             <strong id="proximaConsulta">Sin programar</strong>
           </div>
 
           <div class="dato">
-            <label>Teléfono <button class="boton-editar-dato" onclick="editarCampoPaciente('telefono', 'Telefono', 'text')">Editar</button></label>
+            <label>Telefono <button class="boton-editar-dato" onclick="editarCampoPaciente('telefono', 'Telefono', 'text')">Editar</button></label>
             <div id="telefonoPaciente">Cargando...</div>
           </div>
         </div>
@@ -104,11 +107,11 @@
 
     <section id="seccionPermisos" style="display:none;">
       <div class="tarjeta">
-        <h2>🔐 Permisos del expediente</h2>
+        <h2>Permisos del expediente</h2>
 
         <div class="grid">
           <div class="dato">
-            <label>Correo del médico</label>
+            <label>Correo del medico</label>
             <input id="correoMedicoPermiso" type="email" placeholder="medico@correo.com">
           </div>
 
@@ -122,17 +125,123 @@
           </div>
         </div>
 
-        <button onclick="agregarPermisoMedico()">
-          Agregar médico
-        </button>
+        <button onclick="agregarPermisoMedico()">Agregar medico</button>
 
         <hr>
 
-        <h3>Médicos con acceso</h3>
+        <h3>Medicos con acceso</h3>
 
         <div id="listaPermisosMedicos">
           Cargando permisos...
         </div>
+      </div>
+    </section>
+
+    <section id="seccionResultadosEscalas" style="display:none;">
+      <div class="tarjeta">
+        <h2>Resultados de escalas</h2>
+        <p class="texto-suave">Resultados enviados por el paciente desde Mi Salud.</p>
+        <div id="resultadosEscalasExpediente" class="resultados-escalas">
+          Cargando resultados...
+        </div>
+      </div>
+    </section>
+
+    <section id="seccionTratamiento" style="display:none;">
+      <div class="tarjeta">
+        <div class="panel-header">
+          <div>
+            <h2>Tratamiento</h2>
+            <p class="texto-suave">Registro farmacologico y clinico vinculado con Mi Salud.</p>
+          </div>
+          <button id="limpiarTratamiento" type="button" class="boton-secundario">Nuevo tratamiento</button>
+        </div>
+
+        <input id="tratamientoId" type="hidden">
+        <div class="form-grid">
+          <label>Medicamento<input id="tratamientoMedicamento" placeholder="Ej. Sertralina"></label>
+          <label>Dosis<input id="tratamientoDosis" placeholder="Ej. 50 mg"></label>
+          <label>Frecuencia<input id="tratamientoFrecuencia" placeholder="Ej. cada 24 horas"></label>
+          <label>Via<input id="tratamientoVia" placeholder="Ej. oral"></label>
+          <label>Fecha de inicio<input id="tratamientoFechaInicio" type="date"></label>
+          <label>Estado
+            <select id="tratamientoEstado">
+              <option value="activo">Activo</option>
+              <option value="suspendido">Suspendido</option>
+            </select>
+          </label>
+          <label>Fecha de suspension<input id="tratamientoFechaSuspension" type="date"></label>
+          <label>Motivo de suspension<input id="tratamientoMotivoSuspension" placeholder="Ej. efectos adversos"></label>
+        </div>
+        <label>Observaciones clinicas
+          <textarea id="tratamientoObservaciones" placeholder="Respuesta, tolerancia, indicaciones y comentarios clinicos."></textarea>
+        </label>
+        <div class="form-actions">
+          <button id="guardarTratamiento" type="button">Guardar tratamiento</button>
+        </div>
+      </div>
+
+      <div class="panel-doble">
+        <div class="tarjeta">
+          <h2>Tratamientos activos</h2>
+          <div id="tratamientosActivos" class="panel-lista">Cargando tratamientos...</div>
+        </div>
+        <div class="tarjeta">
+          <h2>Tratamientos suspendidos</h2>
+          <div id="tratamientosSuspendidos" class="panel-lista">Cargando tratamientos...</div>
+        </div>
+      </div>
+    </section>
+
+    <section id="seccionEstudios" style="display:none;">
+      <div class="tarjeta">
+        <div class="panel-header">
+          <div>
+            <h2>Estudios</h2>
+            <p class="texto-suave">Historial cronologico de estudios clinicos, gabinete y laboratorio.</p>
+          </div>
+          <button id="limpiarEstudio" type="button" class="boton-secundario">Nuevo estudio</button>
+        </div>
+
+        <input id="estudioId" type="hidden">
+        <div class="form-grid">
+          <label>Nombre del estudio<input id="estudioNombre" placeholder="Ej. Biometria hematica"></label>
+          <label>Tipo de estudio<input id="estudioTipo" placeholder="Laboratorio, imagen, neuropsicologico"></label>
+          <label>Fecha<input id="estudioFecha" type="date"></label>
+          <label>Enlace o archivo<input id="estudioEnlace" placeholder="URL del archivo si existe"></label>
+        </div>
+        <label>Resultado / resumen
+          <textarea id="estudioResultado" placeholder="Resumen clinico del resultado."></textarea>
+        </label>
+        <label>Observaciones
+          <textarea id="estudioObservaciones" placeholder="Comentarios, indicaciones o seguimiento."></textarea>
+        </label>
+        <div class="form-actions">
+          <button id="guardarEstudio" type="button">Guardar estudio</button>
+        </div>
+      </div>
+
+      <div class="tarjeta">
+        <h2>Historial de estudios</h2>
+        <div id="listaEstudios" class="panel-lista">Cargando estudios...</div>
+      </div>
+    </section>
+
+    <section id="seccionNotasRapidas" style="display:none;">
+      <div class="tarjeta">
+        <h2>Nota rapida</h2>
+        <p class="texto-suave">Observacion breve del medico, guardada sin sustituir notas medicas completas.</p>
+        <label>Observacion
+          <textarea id="notaRapidaTexto" placeholder="Escribe una observacion breve del seguimiento."></textarea>
+        </label>
+        <div class="form-actions">
+          <button id="guardarNotaRapida" type="button">Guardar nota rapida</button>
+        </div>
+      </div>
+
+      <div class="tarjeta">
+        <h2>Historial de notas rapidas</h2>
+        <div id="historialNotasRapidas" class="panel-lista">Cargando notas...</div>
       </div>
     </section>
 

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Biblioteca clinica | Cognicion</title>
+<link rel="icon" type="image/png" href="assets/favicon-cognicion.png">
+<link rel="stylesheet" href="css/biblioteca.css">
+</head>
+<body class="bloqueado">
+<header class="header">
+  <div class="marca">
+    <img src="assets/favicon-cognicion.png" alt="Cognicion">
+    <div>
+      <h1>Biblioteca clinica</h1>
+      <p>Vademecum, diagnosticos CIE, criterios orientativos y psicoeducacion.</p>
+    </div>
+  </div>
+  <nav>
+    <button onclick="window.location.href='medico.html'">Panel medico</button>
+    <button onclick="window.location.href='dashboard.html'">Inicio</button>
+  </nav>
+</header>
+
+<main class="layout">
+  <section class="card buscador">
+    <input id="buscadorBiblioteca" placeholder="Buscar diagnostico, medicamento, criterio o tema psicoeducativo...">
+  </section>
+
+  <section class="tabs">
+    <button data-tab="diagnosticos" class="activo">Diagnosticos</button>
+    <button data-tab="vademecum">Vademecum</button>
+    <button data-tab="psicoeducacion">Psicoeducacion</button>
+  </section>
+
+  <section id="panelBiblioteca" class="grid"></section>
+</main>
+
+<script type="module" src="js/biblioteca.js"></script>
+</body>
+</html>

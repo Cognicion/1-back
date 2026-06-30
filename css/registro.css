@@ -1,35 +1,93 @@
 body {
   margin: 0;
   min-height: 100vh;
-  background: #0f172a;
-  color: white;
-  font-family: Arial, sans-serif;
+  font-family: Arial, Helvetica, sans-serif;
+  color: #f8fafc;
+  background:
+    radial-gradient(circle at 18% 12%, rgba(78,163,255,0.22), transparent 30%),
+    radial-gradient(circle at 80% 80%, rgba(0,212,255,0.12), transparent 26%),
+    linear-gradient(135deg, #030711, #07111f);
 }
 
-.auth-container {
+.auth-shell {
   min-height: 100vh;
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 460px;
+  gap: 42px;
   align-items: center;
-  justify-content: center;
-  padding: 24px;
+  width: min(1120px, 100%);
+  margin: 0 auto;
+  padding: 34px 24px;
+}
+
+.auth-copy {
+  animation: cognicionFadeUp .55s ease both;
+}
+
+.auth-logo {
+  width: 112px;
+  height: 112px;
+  object-fit: contain;
+  filter: drop-shadow(0 0 28px rgba(78,163,255,0.22));
+  margin-bottom: 22px;
+}
+
+.auth-copy span {
+  color: #7dd3fc;
+  letter-spacing: .22em;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.auth-copy h1 {
+  max-width: 620px;
+  margin: 18px 0;
+  font-size: clamp(42px, 6vw, 72px);
+  line-height: .98;
+  letter-spacing: -.045em;
+}
+
+.auth-copy p {
+  max-width: 620px;
+  color: #aab4c3;
+  font-size: 18px;
+  line-height: 1.65;
+}
+
+.beneficios {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 26px;
+}
+
+.beneficios div {
+  padding: 10px 13px;
+  border: 1px solid rgba(125,211,252,.22);
+  border-radius: 999px;
+  background: rgba(15,23,42,.58);
+  color: #dbeafe;
+  font-size: 13px;
+  font-weight: 800;
 }
 
 .auth-card {
-  width: 100%;
-  max-width: 420px;
-  background: #111827;
-  border: 1px solid #1f2937;
-  border-radius: 18px;
+  background: rgba(15, 18, 25, 0.88);
+  border: 1px solid rgba(255,255,255,0.10);
+  border-radius: 28px;
   padding: 32px;
+  box-shadow: 0 0 35px rgba(78,163,255,0.10), 0 18px 50px rgba(0,0,0,0.38);
+  backdrop-filter: blur(18px);
 }
 
-.auth-card h1 {
+.auth-card h2 {
   margin: 0 0 8px;
-  font-size: 32px;
+  font-size: 30px;
 }
 
 .auth-card p {
   color: #9ca3af;
+  line-height: 1.5;
 }
 
 input {
@@ -37,9 +95,9 @@ input {
   box-sizing: border-box;
   margin-top: 14px;
   padding: 14px;
-  border-radius: 10px;
-  border: 1px solid #334155;
-  background: #020617;
+  border-radius: 14px;
+  border: 1px solid rgba(148,163,184,0.25);
+  background: rgba(2,6,23,.82);
   color: white;
   font-size: 15px;
 }
@@ -49,15 +107,20 @@ button {
   margin-top: 16px;
   padding: 14px;
   border: none;
-  border-radius: 10px;
-  background: #2563eb;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #2563eb, #00d4ff);
   color: white;
   font-weight: bold;
   cursor: pointer;
 }
 
+button:hover {
+  box-shadow: 0 0 28px rgba(0,212,255,0.28);
+}
+
 .btn-secundario {
-  background: #374151;
+  background: rgba(15,23,42,.88);
+  border: 1px solid rgba(148,163,184,.24);
 }
 
 #mensaje {
@@ -66,26 +129,46 @@ button {
   text-align: center;
 }
 
-.checkbox-legal{
-    display:flex;
-    align-items:flex-start;
-    gap:10px;
-    margin:18px 0;
-    font-size:14px;
-    color:#94a3b8;
-    line-height:1.5;
+.checkbox-legal {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 18px 0;
+  font-size: 14px;
+  color: #94a3b8;
+  line-height: 1.5;
 }
 
-.checkbox-legal input{
-    margin-top:3px;
-    transform:scale(1.15);
+.checkbox-legal input {
+  width: auto;
+  margin-top: 3px;
+  transform: scale(1.15);
 }
 
-.checkbox-legal a{
-    color:#38bdf8;
-    text-decoration:none;
+.checkbox-legal a {
+  color: #38bdf8;
+  text-decoration: none;
 }
 
-.checkbox-legal a:hover{
-    text-decoration:underline;
+.checkbox-legal a:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 900px) {
+  .auth-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .auth-copy {
+    text-align: center;
+  }
+
+  .auth-copy p {
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .beneficios {
+    justify-content: center;
+  }
 }
