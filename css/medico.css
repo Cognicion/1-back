@@ -19,6 +19,18 @@ body {
   background: rgba(5, 6, 8, 0.72);
   border-bottom: 1px solid rgba(255,255,255,0.08);
   backdrop-filter: blur(12px);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.logo-header {
+  width: 66px;
+  height: 66px;
+  object-fit: cover;
+  border-radius: 14px;
+  border: 1px solid rgba(125,211,252,0.28);
+  box-shadow: 0 0 22px rgba(56,189,248,0.18);
 }
 
 .header-medico h1 {
@@ -116,6 +128,38 @@ body {
   margin: 6px 0 0;
   color: #94a3b8;
   font-size: 14px;
+}
+
+.seccion-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+.agenda-panel {
+  display: grid;
+  gap: 10px;
+}
+
+.cita-panel {
+  display: grid;
+  gap: 5px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(148,163,184,0.16);
+  background: rgba(8,12,20,0.68);
+}
+
+.cita-panel strong {
+  color: #e0f2fe;
+}
+
+.cita-panel span,
+.cita-panel small,
+.texto-suave {
+  color: #94a3b8;
 }
 
 .barra-acciones {
@@ -472,4 +516,8 @@ body.bloqueado aside {
 .tabla-pacientes.redimensionando * {
   cursor: col-resize;
   user-select: none;
+}
+
+#btnAdmin {
+    display: none;
 }

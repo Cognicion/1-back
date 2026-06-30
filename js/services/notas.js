@@ -3,9 +3,12 @@ import { db } from "../firebase.js";
 import {
   collection,
   addDoc,
+  doc,
   getDocs,
   query,
-  orderBy
+  orderBy,
+  updateDoc,
+  arrayUnion
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 export async function guardarNota(uidPaciente, datosNota) {
@@ -25,4 +28,15 @@ export async function obtenerHistorialNotas(uidPaciente) {
   );
 
   return await getDocs(q);
+}
+
+export async function actualizarNota(uidPaciente, notaId, datosEdicion) {
+  await updateDoc(
+    doc(db, "usuarios", uidPaciente, "notasMedicas", notaId),
+    {
+      notaEditada: datosEdicion,
+      ediciones: arrayUnion(datosEdicion),
+      fechaUltimaEdicion: new Date().toISOString()
+    }
+  );
 }

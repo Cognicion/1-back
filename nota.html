@@ -5,6 +5,7 @@
 <title>Panel médico</title>
 
 <link rel="stylesheet" href="css/theme.css">
+<link rel="icon" type="image/png" href="assets/favicon-cognicion.png">
 <link rel="stylesheet" href="css/nota.css">
 
 
@@ -13,6 +14,8 @@
 <body>
 
 <div class="contenedor">
+
+<img class="logo-nota" src="assets/logo-cognicion.png" alt="Cognicion">
 
 <h1>👨‍⚕️ Nota médica</h1>
 
@@ -103,6 +106,18 @@
 
 <h2>Nota interna médica</h2>
 
+<label>Tipo de nota</label>
+<select id="tipoNota">
+    <option value="completa">Nota completa</option>
+    <option value="rapida">Nota rapida</option>
+</select>
+
+<div id="bloqueNotaRapida" class="bloque-nota-rapida oculto">
+    <label>Nota rapida</label>
+    <textarea id="notaRapida" placeholder="Resumen breve de evolucion, indicaciones o seguimiento"></textarea>
+</div>
+
+<div id="bloqueNotaCompleta">
 <label>Subjetivo</label>
 <textarea id="subjetivo"></textarea>
 
@@ -114,9 +129,14 @@
 
 <label>Plan</label>
 <textarea id="plan"></textarea>
+</div>
 
 <button onclick="guardarNotaMedica()">
 Guardar nota médica
+</button>
+
+<button id="btnCancelarEdicion" class="boton-secundario oculto" onclick="cancelarEdicionNota()">
+Cancelar edicion
 </button>
 
 <button class="boton-pdf" onclick="generarPDFNota()">

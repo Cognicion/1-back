@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Mi Salud | Cognición</title>
+  <link rel="stylesheet" href="css/mi-salud.css">
+</head>
+
+<body>
+
+<header class="header">
+  <div>
+    <h1>Mi Salud</h1>
+    <p>Tu espacio personal de seguimiento</p>
+  </div>
+
+  <nav>
+    <a href="dashboard.html">Inicio</a>
+    <a href="index.html">Página principal</a>
+  </nav>
+</header>
+
+<main class="contenedor">
+
+  <section class="grid">
+
+    <div class="card principal">
+      <h2>Hola, <span id="nombrePaciente">paciente</span></h2>
+      <p id="resumenSalud">Aquí verás un resumen de tu seguimiento.</p>
+    </div>
+
+    <div class="card">
+      <h3>Próxima cita</h3>
+      <p id="proximaCita">Sin cita registrada.</p>
+    </div>
+
+    <div class="card">
+      <h3>Tratamiento actual</h3>
+      <ul id="listaTratamiento">
+        <li>Sin tratamiento registrado.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h3>Registro de hoy</h3>
+
+      <label for="animo">Estado de ánimo</label>
+      <select id="animo">
+        <option value="">Seleccionar</option>
+        <option value="Muy bien">Muy bien</option>
+        <option value="Bien">Bien</option>
+        <option value="Regular">Regular</option>
+        <option value="Mal">Mal</option>
+        <option value="Muy mal">Muy mal</option>
+      </select>
+
+      <label for="ansiedad">Ansiedad del 0 al 10</label>
+      <input type="number" id="ansiedad" min="0" max="10">
+
+      <label for="sueno">Horas de sueño</label>
+      <input type="number" id="sueno" min="0" max="24">
+
+      <label for="comentario">Comentario</label>
+      <textarea id="comentario" placeholder="¿Cómo te sentiste hoy?"></textarea>
+
+      <button id="guardarRegistro">Guardar registro</button>
+    </div>
+
+    <div class="card">
+      <h3>Metas de la semana</h3>
+      <ul id="listaMetas">
+        <li>Sin metas asignadas.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h3>Material para ti</h3>
+      <ul>
+        <li><a href="#">¿Qué es la ansiedad?</a></li>
+        <li><a href="#">Higiene del sueño</a></li>
+        <li><a href="#">Adherencia al tratamiento</a></li>
+      </ul>
+    </div>
+
+  </section>
+
+</main>
+
+<script type="module" src="mi-salud.js"></script>
+</body>
+</html>

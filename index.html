@@ -3,415 +3,367 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>Cognición | Inicio</title>
-
+<title>Cognicion | Salud mental digital</title>
+<link rel="icon" type="image/png" href="assets/favicon-cognicion.png">
 <style>
-* {
-    box-sizing: border-box;
+:root {
+  --bg: #030711;
+  --panel: rgba(9, 14, 24, 0.72);
+  --line: rgba(148, 163, 184, 0.16);
+  --text: #f8fafc;
+  --muted: #9aa7bb;
+  --blue: #4ea3ff;
+  --cyan: #31d8ff;
 }
 
-:root {
-    --fondo: #050608;
-    --panel: rgba(15, 18, 25, 0.88);
-    --panel-2: rgba(20, 24, 33, 0.92);
-    --borde: rgba(255,255,255,0.10);
-    --texto: #f8fafc;
-    --texto-suave: #aab4c3;
-    --azul: #4ea3ff;
-    --cyan: #00d4ff;
-    --verde: #22c55e;
-    --amarillo: #facc15;
-}
+* { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
 
 body {
-    margin: 0;
-    font-family: Arial, Helvetica, sans-serif;
-    background:
-        radial-gradient(circle at top, rgba(78,163,255,0.22), transparent 32%),
-        radial-gradient(circle at bottom right, rgba(0,212,255,0.13), transparent 28%),
-        linear-gradient(135deg, #050608, #080b10 50%, #0e1520);
-    color: var(--texto);
-    min-height: 100vh;
+  margin: 0;
+  min-height: 100vh;
+  font-family: Inter, Arial, Helvetica, sans-serif;
+  color: var(--text);
+  background:
+    radial-gradient(circle at 50% -15%, rgba(78,163,255,0.26), transparent 34%),
+    radial-gradient(circle at 85% 22%, rgba(49,216,255,0.10), transparent 26%),
+    linear-gradient(180deg, #030711 0%, #050914 58%, #07111d 100%);
+  overflow-x: hidden;
 }
 
-header {
-    padding: 52px 22px 120px;
-    text-align: center;
-    position: relative;
-    overflow: hidden;
-    border-bottom: 1px solid rgba(255,255,255,0.08);
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(rgba(255,255,255,0.026) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.022) 1px, transparent 1px);
+  background-size: 64px 64px;
+  mask-image: linear-gradient(to bottom, black, transparent 70%);
 }
 
-header::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background:
-        linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
-    background-size: 42px 42px;
-    mask-image: linear-gradient(to bottom, black, transparent);
-    pointer-events: none;
+.nav {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 18px clamp(20px, 6vw, 76px);
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+  background: rgba(3,7,17,0.74);
+  backdrop-filter: blur(18px);
 }
 
-.logo {
-    margin: 0;
-    font-size: 46px;
-    font-weight: 900;
-    letter-spacing: 2px;
-    color: white;
-    text-shadow: 0 0 24px rgba(78,163,255,0.45);
+.nav-brand {
+  font-size: 13px;
+  letter-spacing: 0.28em;
+  color: #dbeafe;
+  font-weight: 800;
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+}
+
+.nav-links a {
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 14px;
+  transition: color 0.2s ease;
+}
+
+.nav-links a:hover { color: #e0f2fe; }
+
+.nav-login {
+  padding: 10px 15px;
+  border: 1px solid rgba(125,211,252,0.28);
+  border-radius: 999px;
+  color: #e0f2fe !important;
+  background: rgba(56,189,248,0.08);
+}
+
+.hero {
+  min-height: calc(100vh - 76px);
+  display: grid;
+  place-items: center;
+  padding: 62px 22px 76px;
+  position: relative;
+}
+
+.hero::after {
+  content: "";
+  position: absolute;
+  width: min(720px, 88vw);
+  height: 1px;
+  top: 34%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(90deg, transparent, rgba(125,211,252,0.34), transparent);
+  opacity: 0.8;
+}
+
+.hero-inner {
+  width: min(1040px, 100%);
+  text-align: center;
+  animation: fadeUp 0.75s ease both;
+}
+
+.logo-oficial {
+  width: min(560px, 78vw);
+  height: auto;
+  display: block;
+  margin: 0 auto 34px;
+}
+
+.eyebrow {
+  color: #7dd3fc;
+  font-size: 12px;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  margin-bottom: 18px;
+}
+
+h1 {
+  max-width: 940px;
+  margin: 0 auto;
+  font-size: clamp(42px, 7vw, 82px);
+  line-height: 0.98;
+  letter-spacing: -0.045em;
+  font-weight: 780;
 }
 
 .subtitulo {
-    margin-top: 12px;
-    color: var(--texto-suave);
-    font-size: 15px;
+  max-width: 780px;
+  margin: 24px auto 0;
+  color: var(--muted);
+  font-size: clamp(17px, 2.4vw, 22px);
+  line-height: 1.55;
 }
 
-.autor {
-    margin-top: 8px;
-    color: #dbeafe;
-    font-size: 12px;
-    opacity: 0.8;
+.acciones {
+  display: flex;
+  justify-content: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-top: 34px;
 }
 
-.version {
-    display: inline-block;
-    margin-top: 20px;
-    padding: 8px 16px;
-    border-radius: 999px;
-    background: rgba(78,163,255,0.12);
-    border: 1px solid rgba(78,163,255,0.28);
-    color: #bfdbfe;
-    font-size: 12px;
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 150px;
+  min-height: 48px;
+  padding: 13px 20px;
+  border-radius: 999px;
+  text-decoration: none;
+  font-weight: 800;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
 }
 
-main {
-    max-width: 1120px;
-    margin: -70px auto 0;
-    padding: 0 22px 44px;
-    position: relative;
-    z-index: 2;
+.btn-primary {
+  color: white;
+  background: linear-gradient(135deg, #2563eb, #00d4ff);
+  box-shadow: 0 0 34px rgba(0,212,255,0.24);
 }
 
-.bienvenida {
-    background: var(--panel);
-    border: 1px solid var(--borde);
-    border-radius: 28px;
-    padding: 48px 34px;
-    text-align: center;
-    box-shadow:
-        0 0 40px rgba(78,163,255,0.16),
-        0 25px 80px rgba(0,0,0,0.55);
-    backdrop-filter: blur(18px);
+.btn-secondary {
+  color: #e0f2fe;
+  border: 1px solid rgba(148,163,184,0.24);
+  background: rgba(15,23,42,0.58);
 }
 
-.bienvenida h2 {
-    margin: 0;
-    color: white;
-    font-size: 32px;
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0 36px rgba(78,163,255,0.22);
 }
 
-.bienvenida p {
-    max-width: 720px;
-    margin: 18px auto 32px;
-    color: var(--texto-suave);
-    line-height: 1.7;
-    font-size: 15px;
+.section {
+  padding: 28px 22px 88px;
 }
 
-.boton-login {
-    display: inline-block;
-    background: linear-gradient(135deg, #2563eb, var(--cyan));
-    color: white;
-    text-decoration: none;
-    padding: 16px 48px;
-    border-radius: 16px;
-    font-size: 17px;
-    font-weight: 800;
-    transition: 0.25s;
-    box-shadow: 0 0 28px rgba(0,212,255,0.28);
+.section-inner {
+  width: min(1120px, 100%);
+  margin: 0 auto;
 }
 
-.boton-login:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 0 40px rgba(0,212,255,0.45);
+.section h2 {
+  margin: 0 0 22px;
+  font-size: clamp(30px, 4vw, 48px);
+  letter-spacing: -0.03em;
 }
 
-.modulos {
-    margin-top: 26px;
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 18px;
+.features {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
 }
 
-.modulo {
-    background: var(--panel-2);
-    border: 1px solid var(--borde);
-    border-radius: 22px;
-    padding: 24px 20px;
-    min-height: 190px;
-    box-shadow: 0 18px 45px rgba(0,0,0,0.35);
-    transition: 0.25s;
-    position: relative;
-    overflow: hidden;
+.feature-card {
+  min-height: 178px;
+  padding: 22px;
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.055), rgba(255,255,255,0.022)),
+    var(--panel);
+  box-shadow: 0 18px 54px rgba(0,0,0,0.25);
+  transition: transform 0.22s ease, border-color 0.22s ease, background 0.22s ease;
+  animation: fadeUp 0.75s ease both;
 }
 
-.modulo::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: radial-gradient(circle at top left, rgba(78,163,255,0.14), transparent 42%);
-    opacity: 0;
-    transition: 0.25s;
+.feature-card:hover {
+  transform: translateY(-5px);
+  border-color: rgba(125,211,252,0.34);
+  background: rgba(15,23,42,0.72);
 }
 
-.modulo:hover {
-    transform: translateY(-6px);
-    border-color: rgba(78,163,255,0.35);
-    box-shadow: 0 0 36px rgba(78,163,255,0.15);
+.feature-card span {
+  color: #7dd3fc;
+  font-size: 12px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  font-weight: 800;
 }
 
-.modulo:hover::before {
-    opacity: 1;
+.feature-card h3 {
+  margin: 18px 0 10px;
+  font-size: 20px;
 }
 
-.icono {
-    font-size: 30px;
-    margin-bottom: 12px;
-    position: relative;
-    z-index: 1;
-}
-
-.modulo h3 {
-    margin: 8px 0;
-    color: #dbeafe;
-    font-size: 17px;
-    position: relative;
-    z-index: 1;
-}
-
-.modulo p {
-    margin: 0;
-    color: var(--texto-suave);
-    font-size: 13px;
-    line-height: 1.6;
-    position: relative;
-    z-index: 1;
-}
-
-.estado {
-    display: inline-block;
-    margin-top: 16px;
-    padding: 6px 11px;
-    border-radius: 999px;
-    font-size: 11px;
-    font-weight: bold;
-    position: relative;
-    z-index: 1;
-}
-
-.disponible {
-    background: rgba(34,197,94,0.15);
-    color: #86efac;
-    border: 1px solid rgba(34,197,94,0.25);
-}
-
-.proximamente {
-    background: rgba(250,204,21,0.14);
-    color: #fde68a;
-    border: 1px solid rgba(250,204,21,0.25);
-}
-
-.normativa {
-    margin-top: 26px;
-    background: var(--panel);
-    border-radius: 24px;
-    padding: 32px;
-    border: 1px solid var(--borde);
-    box-shadow:
-        0 0 35px rgba(78,163,255,0.10),
-        0 18px 50px rgba(0,0,0,0.38);
-    backdrop-filter: blur(18px);
-}
-
-.normativa h2 {
-    margin: 0 0 16px;
-    color: white;
-    font-size: 24px;
-}
-
-.normativa p {
-    color: var(--texto-suave);
-    line-height: 1.7;
-    margin: 0;
-}
-
-.lista-normativa {
-    margin-top: 22px;
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 14px;
-}
-
-.item {
-    background: rgba(255,255,255,0.05);
-    border: 1px solid var(--borde);
-    padding: 16px;
-    border-radius: 16px;
-    font-size: 13px;
-    color: #dbeafe;
+.feature-card p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.55;
 }
 
 footer {
-    text-align: center;
-    padding: 32px 20px 44px;
-    color: #8f9bad;
-    font-size: 13px;
+  padding: 28px 22px 46px;
+  color: #64748b;
+  text-align: center;
+  border-top: 1px solid rgba(255,255,255,0.07);
 }
 
-.footer-links {
-    margin-bottom: 14px;
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-.footer-links a {
-    color: var(--azul);
-    text-decoration: none;
-    margin: 0 10px;
-    font-weight: 700;
-}
+@media (max-width: 820px) {
+  .nav {
+    position: static;
+    display: grid;
+    justify-items: center;
+  }
 
-.footer-links a:hover {
-    color: var(--cyan);
-}
+  .nav-links {
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 12px 16px;
+  }
 
-@media (max-width: 900px) {
-    .modulos {
-        grid-template-columns: repeat(2, 1fr);
-    }
+  .hero {
+    min-height: auto;
+    padding-top: 48px;
+  }
 
-    .lista-normativa {
-        grid-template-columns: 1fr;
-    }
-}
+  .logo-oficial {
+    width: min(420px, 86vw);
+  }
 
-@media (max-width: 600px) {
-    header {
-        padding: 38px 18px 95px;
-    }
-
-    .logo {
-        font-size: 36px;
-    }
-
-    .bienvenida {
-        padding: 34px 22px;
-    }
-
-    .bienvenida h2 {
-        font-size: 26px;
-    }
-
-    .modulos {
-        grid-template-columns: 1fr;
-    }
-
-    .boton-login {
-        width: 100%;
-    }
-
-    .footer-links a {
-        display: block;
-        margin: 8px 0;
-    }
+  .features {
+    grid-template-columns: 1fr;
+  }
 }
 </style>
 </head>
 
 <body>
+<nav class="nav">
+  <div class="nav-brand">COGNICION</div>
+  <div class="nav-links">
+    <a href="#inicio">Inicio</a>
+    <a href="#caracteristicas">Caracteristicas</a>
+    <a href="#investigacion">Investigacion</a>
+    <a href="#contacto">Contacto</a>
+    <a class="nav-login" href="login.html">Iniciar sesion</a>
+  </div>
+</nav>
 
-<header>
-    <h1 class="logo">Cognición</h1>
-    <div class="subtitulo">Sistema integral de rehabilitación cognitiva y expediente clínico</div>
-    <div class="autor">Dr. Aldo Sandokan Aguilar Valenzuela</div>
-    <div class="version">Versión Alpha 0.1</div>
-</header>
+<main id="inicio">
+  <section class="hero">
+    <div class="hero-inner">
+      <img class="logo-oficial" src="assets/logo-cognicion.png" alt="Cognicion">
+      <div class="eyebrow">Ciencia · Evidencia · Salud mental</div>
+      <h1>La nueva generacion del expediente clinico en salud mental.</h1>
+      <p class="subtitulo">Expediente clinico · Evaluacion · Rehabilitacion Cognitiva · Investigacion Clinica.</p>
+      <div class="acciones">
+        <a class="btn btn-primary" href="login.html">Iniciar sesion</a>
+        <a class="btn btn-secondary" href="registro.html">Crear cuenta</a>
+      </div>
+    </div>
+  </section>
 
-<main>
+  <section id="caracteristicas" class="section">
+    <div class="section-inner">
+      <h2>¿Por que Cognicion?</h2>
+      <div class="features">
+        <article class="feature-card">
+          <span>01</span>
+          <h3>Expediente clinico electronico</h3>
+          <p>Registro organizado de datos, diagnosticos, tratamientos, notas medicas y seguimiento longitudinal.</p>
+        </article>
+        <article class="feature-card">
+          <span>02</span>
+          <h3>Escalas y evaluaciones</h3>
+          <p>Base para integrar instrumentos clinicos, mediciones seriadas y reportes de evolucion.</p>
+        </article>
+        <article class="feature-card">
+          <span>03</span>
+          <h3>Analisis estadistico</h3>
+          <p>Herramientas descriptivas, inferenciales y graficas para investigacion y toma de decisiones.</p>
+        </article>
+        <article class="feature-card">
+          <span>04</span>
+          <h3>Rehabilitacion cognitiva</h3>
+          <p>Modulo orientado a entrenamiento, evaluacion neuropsicologica y ejercicios de seguimiento.</p>
+        </article>
+        <article class="feature-card">
+          <span>05</span>
+          <h3>Seguimiento integral</h3>
+          <p>Agenda, citas, recordatorios, evolucion clinica y continuidad del cuidado en un mismo entorno.</p>
+        </article>
+        <article class="feature-card">
+          <span>06</span>
+          <h3>IA clinica</h3>
+          <p>Proximamente: apoyo para analisis, redaccion clinica, investigacion y exploracion de datos.</p>
+        </article>
+      </div>
+    </div>
+  </section>
 
-    <section class="bienvenida">
-        <h2>Bienvenido a Cognición</h2>
-
-        <p>
-            Plataforma clínica desarrollada para evaluación, rehabilitación cognitiva,
-            seguimiento de pacientes y elaboración de expediente clínico electrónico en salud mental.
-        </p>
-
-        <a class="boton-login" href="login.html">Iniciar sesión</a>
-    </section>
-
-    <section class="modulos">
-
-        <div class="modulo">
-            <div class="icono">📋</div>
-            <h3>Expediente clínico</h3>
-            <p>Registro estructurado de información clínica, notas médicas y seguimiento del paciente.</p>
-            <span class="estado disponible">Disponible</span>
-        </div>
-
-        <div class="modulo">
-            <div class="icono">🧠</div>
-            <h3>Rehabilitación cognitiva</h3>
-            <p>Herramientas para ejercicios cognitivos, entrenamiento y evaluación neuropsicológica.</p>
-            <span class="estado disponible">Disponible</span>
-        </div>
-
-        <div class="modulo">
-            <div class="icono">🤖</div>
-            <h3>Sofía IA</h3>
-            <p>Asistente clínica en desarrollo para apoyo en análisis, redacción y estadística médica.</p>
-            <span class="estado proximamente">Próximamente</span>
-        </div>
-
-        <div class="modulo">
-            <div class="icono">📊</div>
-            <h3>Estadística clínica</h3>
-            <p>Análisis de resultados, evolución clínica y datos de rehabilitación cognitiva.</p>
-            <span class="estado proximamente">Próximamente</span>
-        </div>
-
-    </section>
-
-    <section class="normativa">
-        <h2>Marco clínico y normativo</h2>
-
-        <p>
-            Cognición está pensada como una plataforma orientada al registro clínico ordenado,
-            la trazabilidad de la atención y la documentación médica conforme a principios del
-            expediente clínico electrónico.
-        </p>
-
-        <div class="lista-normativa">
-            <div class="item">Basada en criterios de la NOM-004-SSA3-2012</div>
-            <div class="item">Diseñada para notas clínicas estructuradas</div>
-            <div class="item">Aviso de privacidad en desarrollo</div>
-        </div>
-    </section>
-
+  <section id="investigacion" class="section">
+    <div class="section-inner">
+      <h2>Investigacion clinica integrada</h2>
+      <p class="subtitulo">Cognicion esta pensada para unir practica clinica, medicion objetiva y analisis de datos sin perder claridad ni trazabilidad.</p>
+    </div>
+  </section>
 </main>
 
-<footer>
-    <div class="footer-links">
-        <a href="#">Aviso de privacidad</a>
-        <a href="#">Términos y condiciones</a>
-        <a href="#">Marco normativo</a>
-        <a href="#">Contacto</a>
-    </div>
-
-    © 2026 Cognición · Plataforma desarrollada por Dr. Aldo Sandokan Aguilar Valenzuela
+<footer id="contacto">
+  Cognicion · Ciencia · Evidencia · Salud mental
 </footer>
-
 </body>
 </html>

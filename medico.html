@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>Panel Médico | Cognición</title>
+  <link rel="icon" type="image/png" href="assets/favicon-cognicion.png">
   <link rel="stylesheet" href="css/medico.css">
 </head>
 
@@ -10,8 +11,11 @@
 
 <body class="bloqueado">
 <header class="header-medico">
+  <img class="logo-header" src="assets/logo-cognicion.png" alt="Cognicion">
+  <div>
   <h1>Panel Médico</h1>
   <p>Base de operación clínica de Cognición</p>
+  </div>
 </header>
 
 <main class="contenedor">
@@ -90,6 +94,13 @@
   <span class="celda-tabla">Diagnóstico <button class="resizer" data-col="--col-diagnostico" aria-label="Ajustar columna Diagnóstico"></button></span>
   <span class="celda-tabla">Última consulta <button class="resizer" data-col="--col-ultima" aria-label="Ajustar columna Última consulta"></button></span>
   <span class="celda-tabla">Próxima consulta <button class="resizer" data-col="--col-proxima" aria-label="Ajustar columna Próxima consulta"></button></span>
+
+    <button
+    id="btnAdmin"
+    onclick="window.location.href='admin.html'">
+    Centro de Control
+    </button>
+
 </div>
 
   <div id="listaPacientes" class="lista-pacientes">
@@ -111,6 +122,16 @@
             <h3>Diagnósticos principales</h3>
             <canvas id="graficaDiagnosticos" height="180"></canvas>
           </div>
+        </div>
+      </div>
+
+      <div class="card seccion agenda-medico">
+        <div class="seccion-header">
+          <h2>Agenda</h2>
+          <button onclick="window.location.href='agenda.html'">Abrir agenda completa</button>
+        </div>
+        <div id="agendaPanelMedico" class="agenda-panel">
+          Cargando agenda...
         </div>
       </div>
 

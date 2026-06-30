@@ -20,6 +20,16 @@ body{
     backdrop-filter:blur(18px);
 }
 
+.logo-nota {
+    width:72px;
+    height:72px;
+    object-fit:cover;
+    border-radius:16px;
+    border:1px solid rgba(125,211,252,0.28);
+    box-shadow:0 0 22px rgba(56,189,248,0.18);
+    margin-bottom:14px;
+}
+
 h1,
 h2,
 h3{
@@ -77,6 +87,23 @@ button{
 
 button:hover{
     box-shadow:0 0 28px rgba(0,212,255,0.28);
+}
+
+.oculto {
+    display: none !important;
+}
+
+.version-nota {
+    border: 1px solid rgba(148,163,184,0.18);
+    border-radius: 18px;
+    padding: 16px;
+    margin: 14px 0;
+    background: rgba(15,23,42,0.55);
+}
+
+.version-nota h4 {
+    margin: 0 0 12px;
+    color: #7dd3fc;
 }
 
 .barra-superior {

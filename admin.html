@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Administración | Cognición</title>
+  <link rel="stylesheet" href="css/theme.css">
+  <link rel="stylesheet" href="css/admin.css">
+</head>
+
+<body class="bloqueado">
+
+<header class="admin-header">
+  <div>
+    <h1>Panel de Administración</h1>
+    <p>Supervisión general de Cognición</p>
+  </div>
+
+  <button onclick="window.location.href='medico.html'">
+    Volver al panel médico
+  </button>
+</header>
+
+<main class="admin-contenedor">
+
+  <section class="grid-resumen">
+    <div class="card">
+      <h3>Usuarios</h3>
+      <p id="totalUsuarios">—</p>
+    </div>
+
+    <div class="card">
+      <h3>Pacientes</h3>
+      <p id="totalPacientes">—</p>
+    </div>
+
+    <div class="card">
+      <h3>Médicos</h3>
+      <p id="totalMedicos">—</p>
+    </div>
+
+    <div class="card">
+      <h3>Eventos de auditoría</h3>
+      <p id="totalAuditoria">—</p>
+    </div>
+  </section>
+
+  <section class="card tabla-card">
+    <h2>Bitácora de auditoría</h2>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Fecha</th>
+          <th>Usuario</th>
+          <th>Rol</th>
+          <th>Módulo</th>
+          <th>Acción</th>
+          <th>Paciente</th>
+          <th>Resultado</th>
+        </tr>
+      </thead>
+      <tbody id="tablaAuditoria">
+        <tr>
+          <td colspan="7">Cargando auditoría...</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+</main>
+
+<script type="module" src="js/admin.js"></script>
+
+</body>
+</html>

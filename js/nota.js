@@ -15,11 +15,14 @@ import {
 
 import {
   guardarNota,
-  obtenerHistorialNotas
+  obtenerHistorialNotas,
+  actualizarNota
 } from "./services/notas.js";
 
 let uidPacienteActual = null;
 let diagnosticosSeleccionados = [];
+let notaEditandoId = null;
+let notasHistorial = {};
 
 const buscadorDiagnostico = document.getElementById("buscadorDiagnostico");
 const resultadosCIE10 = document.getElementById("resultadosCIE10");
@@ -231,6 +234,84 @@ function textoDiagnosticos() {
     .join("\n");
 }
 
+const tipoNota = document.getElementById("tipoNota");
+const bloqueNotaRapida = document.getElementById("bloqueNotaRapida");
+const bloqueNotaCompleta = document.getElementById("bloqueNotaCompleta");
+const btnCancelarEdicion = document.getElementById("btnCancelarEdicion");
+
+function sincronizarTipoNota() {
+  const esRapida = tipoNota?.value === "rapida";
+  bloqueNotaRapida?.classList.toggle("oculto", !esRapida);
+  bloqueNotaCompleta?.classList.toggle("oculto", esRapida);
+}
+
+tipoNota?.addEventListener("change", sincronizarTipoNota);
+sincronizarTipoNota();
+
+function leerFormularioNota() {
+  return {
+    tipoNota: tipoNota?.value || "completa",
+    notaRapida: document.getElementById("notaRapida")?.value || "",
+    subjetivo: document.getElementById("subjetivo").value,
+    objetivo: document.getElementById("objetivo").value,
+    analisis: document.getElementById("analisis").value,
+    plan: document.getElementById("plan").value
+  };
+}
+
+function llenarFormularioNota(datos) {
+  if (tipoNota) tipoNota.value = datos.tipoNota || (datos.notaRapida ? "rapida" : "completa");
+  document.getElementById("notaRapida").value = datos.notaRapida || "";
+  document.getElementById("subjetivo").value = datos.subjetivo || "";
+  document.getElementById("objetivo").value = datos.objetivo || "";
+  document.getElementById("analisis").value = datos.analisis || "";
+  document.getElementById("plan").value = datos.plan || "";
+  sincronizarTipoNota();
+}
+
+function limpiarFormularioNota() {
+  notaEditandoId = null;
+  llenarFormularioNota({ tipoNota: "completa" });
+  btnCancelarEdicion?.classList.add("oculto");
+}
+
+window.cancelarEdicionNota = function() {
+  limpiarFormularioNota();
+};
+
+function bloqueContenidoNota(datos, titulo) {
+  const esRapida = datos.tipoNota === "rapida" || datos.notaRapida;
+  return `
+    <div class="version-nota">
+      <h4>${titulo}</h4>
+      ${esRapida ? `<p><b>Nota rapida:</b><br>${escaparHTML(datos.notaRapida || "")}</p>` : `
+        <p><b>Subjetivo:</b><br>${escaparHTML(datos.subjetivo || "")}</p>
+        <p><b>Objetivo:</b><br>${escaparHTML(datos.objetivo || "")}</p>
+        <p><b>Analisis:</b><br>${escaparHTML(datos.analisis || "")}</p>
+        <p><b>Plan:</b><br>${escaparHTML(datos.plan || "")}</p>
+      `}
+    </div>
+  `;
+}
+
+window.editarNotaDesdeHistorial = function(notaId) {
+  const datos = notasHistorial[notaId];
+  if (!datos) return;
+  notaEditandoId = notaId;
+  llenarFormularioNota(datos.notaEditada || datos);
+  btnCancelarEdicion?.classList.remove("oculto");
+  document.getElementById("tipoNota")?.scrollIntoView({ behavior: "smooth", block: "center" });
+};
+
+function escaparHTML(valor) {
+  return String(valor || "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
 onAuthStateChanged(auth, async (user) => {
   if (!user) {
     window.location.href = "login.html";
@@ -355,10 +436,7 @@ window.guardarNotaMedica = async function() {
   const ultimaConsulta = document.getElementById("ultimaConsulta").value;
   const proximaConsulta = document.getElementById("proximaConsulta").value;
 
-  const subjetivo = document.getElementById("subjetivo").value;
-  const objetivo = document.getElementById("objetivo").value;
-  const analisis = document.getElementById("analisis").value;
-  const plan = document.getElementById("plan").value;
+  const datosNotaClinica = leerFormularioNota();
   const catalogoVisible = diagnosticoCatalogoVisible?.value || "auto";
 
   try {
@@ -373,12 +451,9 @@ window.guardarNotaMedica = async function() {
       proximaConsulta
     });
 
-    await guardarNota(uidPaciente, {
+    const notaPayload = {
       autor: medico,
-      subjetivo,
-      objetivo,
-      analisis,
-      plan,
+      ...datosNotaClinica,
       diagnostico,
       diagnosticoCatalogoVisible: catalogoVisible,
       diagnosticos: diagnosticosSeleccionados,
@@ -386,9 +461,19 @@ window.guardarNotaMedica = async function() {
       tratamiento,
       ultimaConsulta,
       proximaConsulta
-    });
+    };
 
-    alert("Nota médica guardada correctamente");
+    if (notaEditandoId) {
+      await actualizarNota(uidPaciente, notaEditandoId, {
+        ...notaPayload,
+        fechaEdicion: new Date().toISOString()
+      });
+    } else {
+      await guardarNota(uidPaciente, notaPayload);
+    }
+
+    alert(notaEditandoId ? "Edicion guardada sin borrar la nota original" : "Nota medica guardada correctamente");
+    limpiarFormularioNota();
 
     await cargarHistorial(uidPaciente);
 
@@ -403,6 +488,7 @@ async function cargarHistorial(uidPaciente) {
   if (!contenedor) return;
 
   contenedor.innerHTML = "";
+  notasHistorial = {};
 
   const notas = await obtenerHistorialNotas(uidPaciente);
 
@@ -417,6 +503,7 @@ async function cargarHistorial(uidPaciente) {
 
   notas.forEach((nota) => {
     const datos = nota.data();
+    notasHistorial[nota.id] = datos;
 
     const fecha = new Date(datos.fecha);
 
@@ -463,13 +550,13 @@ async function cargarHistorial(uidPaciente) {
             ${diagnosticosTexto}
           </p>
 
-          <p><b>Subjetivo:</b><br>${datos.subjetivo || ""}</p>
+          ${bloqueContenidoNota(datos, "Nota original")}
 
-          <p><b>Objetivo:</b><br>${datos.objetivo || ""}</p>
+          ${datos.notaEditada ? bloqueContenidoNota(datos.notaEditada, "Version editada") : ""}
 
-          <p><b>Análisis:</b><br>${datos.analisis || ""}</p>
-
-          <p><b>Plan:</b><br>${datos.plan || ""}</p>
+          <button type="button" class="boton-secundario" onclick="editarNotaDesdeHistorial('${nota.id}')">
+            Editar esta nota
+          </button>
 
         </div>
 

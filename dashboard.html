@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Cognición</title>
+<link rel="icon" type="image/png" href="assets/favicon-cognicion.png">
 
 <style>
 *{
@@ -31,6 +32,21 @@ header{
 }
 
 .logo{
+    display:flex;
+    align-items:center;
+    gap:16px;
+}
+
+.logo img{
+    width:72px;
+    height:72px;
+    object-fit:cover;
+    border-radius:16px;
+    border:1px solid rgba(125,211,252,0.28);
+    box-shadow:0 0 24px rgba(56,189,248,0.18);
+}
+
+.logo-texto{
     display:flex;
     flex-direction:column;
 }
@@ -219,6 +235,8 @@ footer{
 
 <header>
     <div class="logo">
+    <img src="assets/logo-cognicion.png" alt="Cognicion">
+    <div class="logo-texto">
 
     <div class="titulo">
         🧠 Cognición
@@ -234,6 +252,7 @@ footer{
         Dr. Vier
     </div>
 
+</div>
 </div>
 
     <button class="boton-secundario" onclick="cerrarSesion()">
@@ -298,6 +317,40 @@ footer{
         </p>
         <button onclick="window.location.href='estadistica.html'">
             Abrir estadística
+        </button>
+    </div>
+
+    <div class="tarjeta">
+        <div class="icono">CAL</div>
+        <h3>Agenda</h3>
+        <p>
+            Calendario medico, citas, recordatorios y seguimiento de pacientes autorizados.
+        </p>
+        <button onclick="window.location.href='agenda.html'">
+            Abrir agenda
+        </button>
+    </div>
+
+    <div class="tarjeta">
+        <div class="icono">ID</div>
+        <h3>Perfil profesional</h3>
+        <p>
+            Tarjeta de presentacion del medico con fotografia, especialidad, institucion, cedulas y contacto.
+        </p>
+        <button onclick="window.location.href='perfil-profesional.html'">
+            Editar perfil
+        </button>
+    </div>
+
+    <div class="tarjeta">
+        <div class="icono">SALUD</div>
+        <h3>Mi Salud</h3>
+        <p>
+            Consulta tu tratamiento, registra cómo te sientes,
+            revisa tus metas y da seguimiento a tu evolución.
+        </p>
+        <button onclick="window.location.href='mi-salud.html'">
+            Abrir módulo
         </button>
     </div>
 

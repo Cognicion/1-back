@@ -14,6 +14,46 @@
     box-sizing: border-box;
 }
 
+body::before{
+    content:"";
+    position:fixed;
+    inset:0;
+    pointer-events:none;
+    background:
+        linear-gradient(rgba(255,255,255,.022) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.018) 1px, transparent 1px);
+    background-size:64px 64px;
+    mask-image:linear-gradient(to bottom, black, transparent 72%);
+    opacity:.55;
+    z-index:-1;
+}
+
+.card,
+.tarjeta,
+.seccion,
+.contenido,
+.sidebar,
+.contenedor{
+    animation:cognicionFadeUp .55s ease both;
+}
+
+.card:hover,
+.tarjeta:hover,
+.seccion:hover{
+    transition:transform .22s ease, border-color .22s ease, box-shadow .22s ease;
+}
+
+@keyframes cognicionFadeUp{
+    from{
+        opacity:0;
+        transform:translateY(12px);
+    }
+    to{
+        opacity:1;
+        transform:translateY(0);
+    }
+}
+
 /* =====================================
    COMPONENTES GLOBALES
 ===================================== */

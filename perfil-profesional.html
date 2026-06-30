@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Perfil profesional | Cognicion</title>
+<link rel="icon" type="image/png" href="assets/favicon-cognicion.png">
+<link rel="stylesheet" href="css/perfil-profesional.css">
+</head>
+<body class="bloqueado">
+<header class="header">
+  <div class="marca">
+    <img src="assets/logo-cognicion.png" alt="Cognicion">
+    <div>
+      <h1>Perfil profesional</h1>
+      <p>Tarjeta de presentacion, fotografia, cedulas y contacto.</p>
+    </div>
+  </div>
+  <nav>
+    <button onclick="window.location.href='dashboard.html'">Inicio</button>
+    <button onclick="window.location.href='medico.html'">Panel medico</button>
+  </nav>
+</header>
+
+<main class="layout">
+  <section class="card">
+    <h2>Datos profesionales</h2>
+    <form id="formPerfil" class="formulario">
+      <label>Nombre profesional
+        <input id="nombrePerfil" required>
+      </label>
+      <label>Fotografia URL
+        <input id="fotoPerfil" placeholder="https://...">
+      </label>
+      <label>Especialidad
+        <input id="especialidadPerfil" placeholder="Psiquiatria, Psicologia clinica...">
+      </label>
+      <label>Institucion
+        <input id="institucionPerfil" placeholder="Hospital, clinica o consulta">
+      </label>
+      <label>Cedula profesional
+        <input id="cedulaPerfil">
+      </label>
+      <label>Cedula de especialidad
+        <input id="cedulaEspecialidadPerfil">
+      </label>
+      <label>Telefono de contacto
+        <input id="telefonoPerfil">
+      </label>
+      <label>Correo de contacto
+        <input id="correoPerfil" type="email">
+      </label>
+      <label class="campo-amplio">Descripcion breve
+        <textarea id="descripcionPerfil" placeholder="Enfoque clinico, poblacion que atiende, areas de interes"></textarea>
+      </label>
+      <button type="submit">Guardar perfil</button>
+    </form>
+  </section>
+
+  <section class="card tarjeta-preview">
+    <h2>Tarjeta de presentacion</h2>
+    <div class="tarjeta-medico">
+      <div class="foto" id="fotoPreview">DR</div>
+      <div>
+        <h3 id="nombrePreview">Cargando...</h3>
+        <p id="especialidadPreview">Especialidad</p>
+        <div class="linea"><span>Institucion</span><strong id="institucionPreview">---</strong></div>
+        <div class="linea"><span>Cedula</span><strong id="cedulaPreview">---</strong></div>
+        <div class="linea"><span>Contacto</span><strong id="contactoPreview">---</strong></div>
+        <p id="descripcionPreview" class="descripcion"></p>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script type="module" src="js/perfil-profesional.js"></script>
+</body>
+</html>

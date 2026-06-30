@@ -23,6 +23,16 @@ body
     display:flex;
     gap:10px;
     z-index:1000;
+    align-items:center;
+}
+
+.logo-mini{
+    width:58px;
+    height:58px;
+    object-fit:cover;
+    border-radius:12px;
+    border:1px solid rgba(125,211,252,0.28);
+    box-shadow:0 0 18px rgba(56,189,248,0.18);
 }
 
 .btn-secundario{

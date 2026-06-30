@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agenda | Cognicion</title>
+<link rel="icon" type="image/png" href="assets/favicon-cognicion.png">
+<link rel="stylesheet" href="css/agenda.css">
+</head>
+<body class="bloqueado">
+<header class="header">
+  <div class="marca">
+    <img src="assets/logo-cognicion.png" alt="Cognicion">
+    <div>
+      <h1>Agenda clinica</h1>
+      <p>Calendario, citas, recordatorios y seguimiento de pacientes.</p>
+    </div>
+  </div>
+  <nav>
+    <button onclick="window.location.href='dashboard.html'">Inicio</button>
+    <button onclick="window.location.href='medico.html'">Panel medico</button>
+  </nav>
+</header>
+
+<main class="layout">
+  <section class="card agenda-hero">
+    <div>
+      <h2 id="tituloMes">Calendario</h2>
+      <p class="ayuda">Organiza consultas, pendientes clinicos y fechas de seguimiento.</p>
+    </div>
+    <div class="acciones">
+      <button id="mesAnterior">Mes anterior</button>
+      <button id="mesActual">Hoy</button>
+      <button id="mesSiguiente">Mes siguiente</button>
+    </div>
+  </section>
+
+  <section class="grid-dos">
+    <div class="card">
+      <h2>Nueva cita</h2>
+      <form id="formCita" class="formulario">
+        <label>Paciente
+          <select id="pacienteCita" required></select>
+        </label>
+        <label>Fecha
+          <input id="fechaCita" type="date" required>
+        </label>
+        <label>Hora
+          <input id="horaCita" type="time" required>
+        </label>
+        <label>Tipo
+          <select id="tipoCita">
+            <option>Consulta</option>
+            <option>Seguimiento</option>
+            <option>Primera vez</option>
+            <option>Rehabilitacion cognitiva</option>
+            <option>Entrega de resultados</option>
+          </select>
+        </label>
+        <label>Recordatorio
+          <input id="recordatorioCita" placeholder="Ej. confirmar 24 h antes">
+        </label>
+        <label>Seguimiento
+          <input id="seguimientoCita" placeholder="Ej. revisar PHQ-9 y adherencia">
+        </label>
+        <label class="campo-amplio">Notas
+          <textarea id="notasCita" placeholder="Objetivo clinico o indicaciones breves"></textarea>
+        </label>
+        <button type="submit">Guardar cita</button>
+      </form>
+    </div>
+
+    <div class="card">
+      <h2>Proximas citas</h2>
+      <div id="listaCitas" class="lista-citas">Cargando agenda...</div>
+    </div>
+  </section>
+
+  <section class="card">
+    <div id="calendario" class="calendario"></div>
+  </section>
+</main>
+
+<script type="module" src="js/agenda.js"></script>
+</body>
+</html>
