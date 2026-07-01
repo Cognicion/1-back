@@ -93,8 +93,26 @@
             placeholder="Buscar paciente por nombre..."
           >
 
+          <select id="ordenPacientes" aria-label="Ordenar pacientes">
+            <option value="nombre_asc">Orden alfabetico A-Z</option>
+            <option value="nombre_desc">Orden alfabetico Z-A</option>
+            <option value="registro_desc">Fecha de registro: recientes primero</option>
+            <option value="registro_asc">Fecha de registro: antiguos primero</option>
+            <option value="ultima_desc">Ultima consulta: recientes primero</option>
+            <option value="ultima_asc">Ultima consulta: antiguos primero</option>
+            <option value="proxima_asc">Proxima consulta: mas cercana</option>
+            <option value="proxima_desc">Proxima consulta: mas lejana</option>
+            <option value="atencion_asc">Atencion en: A-Z</option>
+          </select>
+
         <button onclick="window.location.href='nuevo-paciente.html'">
           Nuevo paciente
+        </button>
+
+        <button
+          id="btnAdmin"
+          onclick="window.location.href='admin.html'">
+          Centro de Control
         </button>
         </div>
 
@@ -103,15 +121,10 @@
   <div class="encabezado-pacientes">
   <span class="celda-tabla">Nombre <button class="resizer" data-col="--col-nombre" aria-label="Ajustar columna Nombre"></button></span>
   <span class="celda-tabla">Edad <button class="resizer" data-col="--col-edad" aria-label="Ajustar columna Edad"></button></span>
+  <span class="celda-tabla">Atención en <button class="resizer" data-col="--col-atencion" aria-label="Ajustar columna Atención en"></button></span>
   <span class="celda-tabla">Diagnóstico <button class="resizer" data-col="--col-diagnostico" aria-label="Ajustar columna Diagnóstico"></button></span>
   <span class="celda-tabla">Última consulta <button class="resizer" data-col="--col-ultima" aria-label="Ajustar columna Última consulta"></button></span>
   <span class="celda-tabla">Próxima consulta <button class="resizer" data-col="--col-proxima" aria-label="Ajustar columna Próxima consulta"></button></span>
-
-    <button
-    id="btnAdmin"
-    onclick="window.location.href='admin.html'">
-    Centro de Control
-    </button>
 
 </div>
 

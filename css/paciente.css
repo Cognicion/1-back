@@ -459,6 +459,30 @@ textarea{
   border:1px solid rgba(248,113,113,0.35);
 }
 
+.escala-asignable .registro-top {
+  align-items:center;
+}
+
+.switch-linea {
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  margin:0;
+  padding:7px 10px;
+  border-radius:999px;
+  border:1px solid rgba(56,189,248,0.24);
+  background:rgba(8,12,20,0.72);
+  color:#bfdbfe;
+  font-size:12px;
+  font-weight:800;
+}
+
+.switch-linea input {
+  width:auto;
+  margin:0;
+  accent-color:#38bdf8;
+}
+
 @media(max-width:900px){
   .form-grid,
   .panel-doble{

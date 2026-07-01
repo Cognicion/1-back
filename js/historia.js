@@ -31,6 +31,19 @@ function calcularEdad(fechaNacimiento) {
   return edad >= 0 ? edad : "";
 }
 
+function obtenerFechaNacimiento(paciente = {}) {
+  const institucional = paciente.datosInstitucionales || {};
+  return (
+    paciente.fechaNacimiento ||
+    institucional.fechaNacimiento ||
+    paciente.fecha_nacimiento ||
+    paciente.fechaDeNacimiento ||
+    paciente.fechaNac ||
+    paciente.nacimiento ||
+    ""
+  );
+}
+
 onAuthStateChanged(auth, async (user) => {
   if (!user) {
     window.location.href = "login.html";
@@ -61,7 +74,7 @@ async function cargarPaciente() {
     paciente.nombre || "Paciente";
 
   document.getElementById("datosPaciente").textContent =
-    `${calcularEdad(paciente.fechaNacimiento) || paciente.edad || ""} anos`;
+    `${calcularEdad(obtenerFechaNacimiento(paciente)) || ""} anos`;
 }
 
 async function cargarHistoria() {

@@ -73,6 +73,19 @@ function calcularEdad(fechaNacimiento) {
   return edad >= 0 ? edad : "";
 }
 
+function obtenerFechaNacimiento(paciente = {}) {
+  const institucional = paciente.datosInstitucionales || {};
+  return (
+    paciente.fechaNacimiento ||
+    institucional.fechaNacimiento ||
+    paciente.fecha_nacimiento ||
+    paciente.fechaDeNacimiento ||
+    paciente.fechaNac ||
+    paciente.nacimiento ||
+    ""
+  );
+}
+
 function diagnosticoPrincipalTexto(paciente) {
   const dx = paciente.diagnostico ||
     (Array.isArray(paciente.historialDiagnosticos)
@@ -107,7 +120,7 @@ async function cargarPacientesDelMedico() {
     filas.push({
       id: docPaciente.id,
       nombre: paciente.nombre || "",
-      edad: calcularEdad(paciente.fechaNacimiento) || Number(paciente.edad) || "",
+      edad: calcularEdad(obtenerFechaNacimiento(paciente)) || "",
       sexo: paciente.sexo || "",
       estado: paciente.estado || "activo",
       diagnostico: diagnosticoPrincipalTexto(paciente),

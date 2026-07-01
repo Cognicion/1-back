@@ -169,11 +169,13 @@ body {
 
 .barra-acciones {
   display: flex;
+  flex-wrap: wrap;
   gap: 10px;
   margin-bottom: 14px;
 }
 
-.barra-acciones input {
+.barra-acciones input,
+.barra-acciones select {
   min-width: 0;
   flex: 1;
   padding: 10px 12px;
@@ -182,6 +184,10 @@ body {
   background: rgba(15,23,42,0.95);
   color: white;
   font-size: 12px;
+}
+
+.barra-acciones select {
+  flex: 0 1 280px;
 }
 
 .barra-acciones button,
@@ -314,13 +320,14 @@ body {
 }
 
 .tabla-pacientes {
-  --col-nombre: 165px;
+  --col-nombre: 280px;
   --col-edad: 88px;
-  --col-diagnostico: 345px;
+  --col-atencion: 118px;
+  --col-diagnostico: 470px;
   --col-ultima: 125px;
   --col-proxima: 235px;
   --tabla-min-width: calc(
-    var(--col-nombre) + var(--col-edad) + var(--col-diagnostico) +
+    var(--col-nombre) + var(--col-edad) + var(--col-atencion) + var(--col-diagnostico) +
     var(--col-ultima) + var(--col-proxima)
   );
   margin-top: 14px;
@@ -340,6 +347,7 @@ body {
   grid-template-columns:
     var(--col-nombre)
     var(--col-edad)
+    var(--col-atencion)
     var(--col-diagnostico)
     var(--col-ultima)
     minmax(var(--col-proxima), 1fr);
@@ -409,6 +417,30 @@ body {
   text-overflow: ellipsis;
 }
 
+.atencion-columna {
+  color: #7dd3fc;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
+.selector-atencion {
+  width: 100%;
+  min-width: 0;
+  padding: 6px 8px;
+  border-radius: 9px;
+  border: 1px solid rgba(56, 189, 248, 0.22);
+  background: rgba(8, 12, 20, 0.86);
+  color: #7dd3fc;
+  font-size: 11px;
+  font-weight: 800;
+  outline: none;
+}
+
+.selector-atencion:focus {
+  border-color: rgba(125, 211, 252, 0.72);
+  box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.16);
+}
+
 .paciente-vacio {
   color: #64748b;
   font-style: italic;
@@ -434,7 +466,7 @@ body.bloqueado aside {
 
 .diagnostico-texto {
   display: block;
-  max-height: 18px;
+  max-height: 7.5em;
   overflow: hidden;
   cursor: pointer;
   white-space: normal;

@@ -292,6 +292,54 @@ a { color: #60a5fa; }
   margin-top: 4px;
 }
 
+.resultado-item p {
+  color: #cbd5e1;
+  line-height: 1.5;
+  margin: 10px 0 0;
+}
+
+.resultado-item button {
+  margin-top: 12px;
+  padding: 9px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+}
+
+.tarea-item.completada {
+  border-color: rgba(34, 197, 94, 0.28);
+  background: rgba(22, 101, 52, 0.18);
+}
+
+.diario-card {
+  grid-row: span 2;
+}
+
+.opcion-privacidad {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 12px;
+  padding: 11px 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(56,189,248,0.18);
+  background: rgba(8,12,20,0.54);
+  color: #dbeafe;
+  font-weight: 700;
+}
+
+.opcion-privacidad input {
+  width: auto;
+  accent-color: #38bdf8;
+}
+
+.diario-lista {
+  margin-top: 16px;
+}
+
+.diario-item span {
+  color: #7dd3fc;
+}
+
 .biblioteca-paciente {
   display: grid;
   gap: 12px;

@@ -11,7 +11,8 @@ import {
   collection,
   getDocs,
   doc,
-  getDoc
+  getDoc,
+  updateDoc
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const ADMIN_UID = "NQ0CU5PSDBUgVrk56sjPEVhOs2D3";
@@ -19,6 +20,34 @@ const ADMIN_UID = "NQ0CU5PSDBUgVrk56sjPEVhOs2D3";
 iniciarMonitoreoSesion("Panel medico");
 
 let pacientesGlobal = [];
+let ordenPacientesActual = "nombre_asc";
+
+const INSTITUCIONES_ATENCION = {
+  privado: {
+    etiqueta: "Privado",
+    tipoPaciente: "privada",
+    institucionPaciente: "",
+    servicioInstitucional: ""
+  },
+  hpfba: {
+    etiqueta: "HPFBA",
+    tipoPaciente: "institucion",
+    institucionPaciente: "Hospital Psiquiatrico Fray Bernardino Alvarez",
+    servicioInstitucional: "Observacion"
+  },
+  hpijnn: {
+    etiqueta: "HPIJNN",
+    tipoPaciente: "institucion",
+    institucionPaciente: "Hospital Psiquiatrico Infantil Juan N. Navarro",
+    servicioInstitucional: ""
+  },
+  otra: {
+    etiqueta: "Otra...",
+    tipoPaciente: "institucion",
+    institucionPaciente: "Otra institucion",
+    servicioInstitucional: ""
+  }
+};
 
 onAuthStateChanged(auth, async (user) => {
   if (!user) {
@@ -48,6 +77,16 @@ onAuthStateChanged(auth, async (user) => {
 
   if (buscador) {
     buscador.addEventListener("input", filtrarPacientes);
+  }
+
+  const selectorOrden = document.getElementById("ordenPacientes");
+
+  if (selectorOrden) {
+    selectorOrden.value = ordenPacientesActual;
+    selectorOrden.addEventListener("change", () => {
+      ordenPacientesActual = selectorOrden.value;
+      filtrarPacientes();
+    });
   }
 });
 
@@ -90,6 +129,9 @@ async function cargarPacientes(uidMedico) {
 
   const refPacientes = collection(db, "usuarios");
   const snapshot = await getDocs(refPacientes);
+  const siguienteExpedienteCognicion = crearGeneradorExpedienteCognicion(
+    snapshot.docs.map((documento) => documento.data())
+  );
 
   pacientesGlobal = [];
 
@@ -101,6 +143,25 @@ async function cargarPacientes(uidMedico) {
     const puedeVer = await medicoPuedeVer(uidMedico, docPaciente.id);
 
     if (puedeVer) {
+      const expedienteCognicionActual = obtenerExpedienteCognicion(datos);
+
+      if (!expedienteCognicionActual) {
+        const expedienteCognicion = siguienteExpedienteCognicion();
+        try {
+          await updateDoc(doc(db, "usuarios", docPaciente.id), {
+            expedienteCognicion,
+            "datosInstitucionales.expedienteCognicion": expedienteCognicion
+          });
+          datos.expedienteCognicion = expedienteCognicion;
+          datos.datosInstitucionales = {
+            ...(datos.datosInstitucionales || {}),
+            expedienteCognicion
+          };
+        } catch (error) {
+          console.warn("No se pudo asignar expediente Cognicion:", error);
+        }
+      }
+
       pacientesGlobal.push({
         id: docPaciente.id,
         ...datos
@@ -108,13 +169,7 @@ async function cargarPacientes(uidMedico) {
     }
   }
 
-  pacientesGlobal.sort((a, b) => {
-    const nombreA = (a.nombre || "").toLowerCase();
-    const nombreB = (b.nombre || "").toLowerCase();
-    return nombreA.localeCompare(nombreB);
-  });
-
-  mostrarPacientes(pacientesGlobal);
+  mostrarPacientes(ordenarPacientes(pacientesGlobal));
   calcularEstadisticas(pacientesGlobal);
   renderizarGraficasMedico(pacientesGlobal);
 }
@@ -214,6 +269,152 @@ function calcularEdad(fechaNacimiento) {
   return edad >= 0 ? edad : "";
 }
 
+function obtenerFechaNacimiento(paciente = {}) {
+  const institucional = paciente.datosInstitucionales || {};
+  return (
+    paciente.fechaNacimiento ||
+    institucional.fechaNacimiento ||
+    paciente.fecha_nacimiento ||
+    paciente.fechaDeNacimiento ||
+    paciente.fechaNac ||
+    paciente.nacimiento ||
+    ""
+  );
+}
+
+function obtenerExpedienteCognicion(paciente = {}) {
+  const institucional = paciente.datosInstitucionales || {};
+  return paciente.expedienteCognicion || institucional.expedienteCognicion || "";
+}
+
+function crearGeneradorExpedienteCognicion(pacientes = []) {
+  const anio = String(new Date().getFullYear()).slice(-2);
+  let consecutivoMayor = 999;
+
+  pacientes.forEach((paciente) => {
+    const expediente = obtenerExpedienteCognicion(paciente);
+    const coincidencia = /^C(\d+)-(\d{2})$/.exec(expediente);
+
+    if (!coincidencia || coincidencia[2] !== anio) return;
+
+    consecutivoMayor = Math.max(consecutivoMayor, Number(coincidencia[1]));
+  });
+
+  return function siguienteExpedienteCognicion() {
+    consecutivoMayor += 1;
+    return `C${consecutivoMayor}-${anio}`;
+  };
+}
+
+function obtenerAtencionEn(paciente = {}) {
+  return INSTITUCIONES_ATENCION[obtenerClaveAtencion(paciente)]?.etiqueta || "Otra...";
+}
+
+function obtenerClaveAtencion(paciente = {}) {
+  const institucional = paciente.datosInstitucionales || {};
+  const tipoPaciente = String(paciente.tipoPaciente || institucional.tipoPaciente || "").toLowerCase();
+  const institucion = String(
+    paciente.institucionPaciente ||
+    paciente.institucion ||
+    institucional.institucionPaciente ||
+    institucional.institucion ||
+    ""
+  ).trim();
+
+  if (tipoPaciente === "privada" || (!institucion && tipoPaciente !== "institucion")) {
+    return "privado";
+  }
+
+  const texto = institucion.toLowerCase();
+
+  if (
+    texto.includes("fray") ||
+    texto.includes("bernardino") ||
+    texto.includes("hpfba")
+  ) {
+    return "hpfba";
+  }
+
+  if (
+    texto.includes("juan n navarro") ||
+    texto.includes("juan n. navarro") ||
+    texto.includes("navarro") ||
+    texto.includes("hpijnn") ||
+    texto.includes("hpij")
+  ) {
+    return "hpijnn";
+  }
+
+  return "otra";
+}
+
+function opcionesAtencionHTML(claveActual) {
+  return Object.entries(INSTITUCIONES_ATENCION)
+    .map(([clave, datos]) => `
+      <option value="${clave}" ${clave === claveActual ? "selected" : ""}>
+        ${datos.etiqueta}
+      </option>
+    `)
+    .join("");
+}
+
+function fechaOrdenable(valor) {
+  if (!valor) return null;
+  const fecha = new Date(valor);
+  return Number.isNaN(fecha.getTime()) ? null : fecha.getTime();
+}
+
+function obtenerFechaRegistro(paciente = {}) {
+  return paciente.fechaCreacion ||
+    paciente.fechaRegistro ||
+    paciente.creadoEn ||
+    paciente.fechaAlta ||
+    "";
+}
+
+function ordenarPacientes(pacientes) {
+  const lista = [...pacientes];
+
+  const compararTexto = (a, b, obtener) =>
+    String(obtener(a) || "").localeCompare(String(obtener(b) || ""), "es", { sensitivity: "base" });
+
+  const compararFecha = (a, b, obtener, direccion = "desc") => {
+    const fechaA = fechaOrdenable(obtener(a));
+    const fechaB = fechaOrdenable(obtener(b));
+    if (fechaA === null && fechaB === null) return compararTexto(a, b, (p) => p.nombre);
+    if (fechaA === null) return 1;
+    if (fechaB === null) return -1;
+    if (fechaA === fechaB) return compararTexto(a, b, (p) => p.nombre);
+    return direccion === "asc" ? fechaA - fechaB : fechaB - fechaA;
+  };
+
+  lista.sort((a, b) => {
+    switch (ordenPacientesActual) {
+      case "nombre_desc":
+        return compararTexto(b, a, (p) => p.nombre);
+      case "registro_desc":
+        return compararFecha(a, b, obtenerFechaRegistro, "desc");
+      case "registro_asc":
+        return compararFecha(a, b, obtenerFechaRegistro, "asc");
+      case "ultima_desc":
+        return compararFecha(a, b, (p) => p.ultimaConsulta, "desc");
+      case "ultima_asc":
+        return compararFecha(a, b, (p) => p.ultimaConsulta, "asc");
+      case "proxima_asc":
+        return compararFecha(a, b, (p) => p.proximaConsulta, "asc");
+      case "proxima_desc":
+        return compararFecha(a, b, (p) => p.proximaConsulta, "desc");
+      case "atencion_asc":
+        return compararTexto(a, b, obtenerAtencionEn);
+      case "nombre_asc":
+      default:
+        return compararTexto(a, b, (p) => p.nombre);
+    }
+  });
+
+  return lista;
+}
+
 function mostrarPacientes(pacientes) {
   const lista = document.getElementById("listaPacientes");
   lista.innerHTML = "";
@@ -229,8 +430,9 @@ function mostrarPacientes(pacientes) {
 
   pacientes.forEach((paciente) => {
     const nombre = paciente.nombre || "Paciente sin nombre";
-    const edadValor = calcularEdad(paciente.fechaNacimiento) || paciente.edad;
-    const edad = edadValor ? `${edadValor} años` : "No registrada";
+    const edadValor = calcularEdad(obtenerFechaNacimiento(paciente));
+    const edad = edadValor ? `${edadValor} a\u00f1os` : "No registrada";
+    const claveAtencion = obtenerClaveAtencion(paciente);
     const diagnosticos = obtenerDiagnosticosPaciente(paciente);
     const diagnosticoPrincipal = formatearDiagnostico(diagnosticos.principal);
     const diagnosticosSecundarios = diagnosticos.secundarios
@@ -253,6 +455,11 @@ function mostrarPacientes(pacientes) {
       <a class="fila-paciente" href="paciente.html?id=${paciente.id}">
         <span class="paciente-nombre">${nombre}</span>
         <span class="paciente-dato">${edad}</span>
+        <span class="paciente-dato atencion-columna">
+          <select class="selector-atencion" data-paciente-id="${paciente.id}" aria-label="Atencion en">
+            ${opcionesAtencionHTML(claveAtencion)}
+          </select>
+        </span>
         <span class="paciente-dato diagnostico-columna">
         <span class="diagnostico-texto">
           <span class="diagnostico-principal">${diagnosticoPrincipal}</span>
@@ -272,10 +479,12 @@ function filtrarPacientes() {
 
   const filtrados = pacientesGlobal.filter((paciente) => {
     const nombre = (paciente.nombre || "").toLowerCase();
-    return nombre.includes(texto);
+    const atencion = obtenerAtencionEn(paciente).toLowerCase();
+    const diagnostico = formatearDiagnostico(obtenerDiagnosticosPaciente(paciente).principal).toLowerCase();
+    return [nombre, atencion, diagnostico].some((valor) => valor.includes(texto));
   });
 
-  mostrarPacientes(filtrados);
+  mostrarPacientes(ordenarPacientes(filtrados));
 }
 
 function calcularEstadisticas(pacientes) {
@@ -355,6 +564,12 @@ function renderizarGraficasMedico(pacientes) {
 }
 
 document.addEventListener("click", (e) => {
+  if (e.target.closest(".selector-atencion")) {
+    e.preventDefault();
+    e.stopPropagation();
+    return;
+  }
+
   const diagnosticoColumna = e.target.closest(".diagnostico-columna");
 
   if (!diagnosticoColumna) return;
@@ -369,6 +584,75 @@ document.addEventListener("click", (e) => {
 
   diagnosticoTexto.classList.toggle("expandido");
 
+});
+
+["pointerdown", "mousedown", "mouseup", "touchstart", "keydown"].forEach((evento) => {
+  document.addEventListener(evento, (e) => {
+    if (!e.target.closest(".selector-atencion")) return;
+
+    e.stopPropagation();
+  }, true);
+});
+
+document.addEventListener("change", async (e) => {
+  const selector = e.target.closest(".selector-atencion");
+  if (!selector) return;
+
+  e.preventDefault();
+  e.stopPropagation();
+
+  const pacienteId = selector.dataset.pacienteId;
+  const clave = selector.value;
+  const institucion = INSTITUCIONES_ATENCION[clave];
+  const paciente = pacientesGlobal.find((item) => item.id === pacienteId);
+  const claveAnterior = paciente ? obtenerClaveAtencion(paciente) : "privado";
+
+  if (!pacienteId || !institucion) return;
+
+  let institucionPaciente = institucion.institucionPaciente;
+  let servicioInstitucional = institucion.servicioInstitucional;
+
+  if (clave === "otra") {
+    const captura = prompt("Nombre de la institucion:", paciente?.institucionPaciente || paciente?.datosInstitucionales?.institucionPaciente || "");
+    if (captura === null) {
+      selector.value = claveAnterior;
+      return;
+    }
+    institucionPaciente = captura.trim() || "Otra institucion";
+    servicioInstitucional = paciente?.servicioInstitucional || paciente?.datosInstitucionales?.servicioInstitucional || "";
+  }
+
+  try {
+    await updateDoc(doc(db, "usuarios", pacienteId), {
+      tipoPaciente: institucion.tipoPaciente,
+      institucionPaciente,
+      institucion: institucionPaciente,
+      servicioInstitucional,
+      servicio: servicioInstitucional,
+      "datosInstitucionales.tipoPaciente": institucion.tipoPaciente,
+      "datosInstitucionales.institucionPaciente": institucionPaciente,
+      "datosInstitucionales.servicioInstitucional": servicioInstitucional
+    });
+
+    if (paciente) {
+      paciente.tipoPaciente = institucion.tipoPaciente;
+      paciente.institucionPaciente = institucionPaciente;
+      paciente.institucion = institucionPaciente;
+      paciente.servicioInstitucional = servicioInstitucional;
+      paciente.servicio = servicioInstitucional;
+      paciente.datosInstitucionales = {
+        ...(paciente.datosInstitucionales || {}),
+        tipoPaciente: institucion.tipoPaciente,
+        institucionPaciente,
+        servicioInstitucional
+      };
+    }
+
+    filtrarPacientes();
+  } catch (error) {
+    selector.value = claveAnterior;
+    alert("No se pudo actualizar la institucion: " + error.message);
+  }
 });
 
 let columnaActual = null;

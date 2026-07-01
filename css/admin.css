@@ -164,6 +164,167 @@ pre {
   font-weight: bold;
 }
 
+.lista-pacientes-admin {
+  display: grid;
+  gap: 14px;
+  margin-top: 18px;
+}
+
+.paciente-admin-card {
+  border: 1px solid #1f2937;
+  border-radius: 16px;
+  background: #0b1120;
+  overflow: hidden;
+}
+
+.usuario-admin-card {
+  display: grid;
+  grid-template-columns: minmax(240px, 1fr) minmax(180px, 260px) auto;
+  gap: 16px;
+  align-items: start;
+  padding: 16px;
+  border: 1px solid #1f2937;
+  border-radius: 16px;
+  background: #0b1120;
+}
+
+.usuario-admin-card h3 {
+  margin: 0;
+  color: #e5e7eb;
+}
+
+.usuario-admin-card p {
+  margin: 6px 0;
+  color: #cbd5e1;
+  font-size: 14px;
+}
+
+.usuario-admin-card small {
+  display: block;
+  color: #94a3b8;
+  overflow-wrap: anywhere;
+}
+
+.usuario-admin-rol label {
+  display: block;
+  margin-bottom: 6px;
+  color: #93c5fd;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.usuario-admin-rol select {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid #334155;
+  background: #020617;
+  color: #e5e7eb;
+}
+
+.usuario-admin-rol small {
+  margin-top: 6px;
+}
+
+.paciente-admin-resumen {
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) minmax(260px, 1.4fr) auto;
+  gap: 16px;
+  align-items: start;
+  padding: 16px;
+}
+
+.paciente-admin-resumen h3 {
+  margin: 0;
+  color: #e5e7eb;
+}
+
+.paciente-admin-resumen p {
+  margin: 6px 0;
+  color: #cbd5e1;
+  font-size: 14px;
+}
+
+.paciente-admin-resumen small,
+.admin-muted {
+  color: #94a3b8;
+  overflow-wrap: anywhere;
+}
+
+.paciente-admin-meta {
+  display: grid;
+  gap: 6px;
+}
+
+.paciente-admin-meta span {
+  padding: 7px 9px;
+  border-radius: 10px;
+  background: #020617;
+  border: 1px solid #1f2937;
+  color: #cbd5e1;
+  font-size: 13px;
+}
+
+.paciente-admin-acciones {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.paciente-admin-acciones button,
+.nota-admin-item button,
+.tabla-header button {
+  border: none;
+  border-radius: 10px;
+  padding: 9px 12px;
+  background: #2563eb;
+  color: white;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+button:disabled,
+select:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.boton-peligro {
+  background: #b91c1c !important;
+}
+
+.boton-peligro:hover {
+  background: #dc2626 !important;
+}
+
+.notas-admin-lista {
+  display: grid;
+  gap: 10px;
+  padding: 0 16px 16px;
+}
+
+.nota-admin-item {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 14px;
+  align-items: start;
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid #1f2937;
+  background: #020617;
+}
+
+.nota-admin-item strong {
+  color: #bfdbfe;
+}
+
+.nota-admin-item p {
+  margin: 8px 0 0;
+  color: #e5e7eb;
+  line-height: 1.35;
+}
+
 @media (max-width: 1100px) {
   .grid-resumen,
   .filtros-auditoria {
@@ -172,5 +333,15 @@ pre {
 
   .tabla-header {
     display: grid;
+  }
+
+  .usuario-admin-card,
+  .paciente-admin-resumen,
+  .nota-admin-item {
+    grid-template-columns: 1fr;
+  }
+
+  .paciente-admin-acciones {
+    justify-content: flex-start;
   }
 }

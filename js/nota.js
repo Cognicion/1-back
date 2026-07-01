@@ -1,13 +1,23 @@
-import { auth } from "./firebase.js";
+import { auth, db } from "./firebase.js";
 import { registrarEventoAuditoria } from "./services/auditoria.js";
 import { iniciarMonitoreoSesion } from "./services/sesion.js";
 import { CIE10 } from "./data/cie10.js";
 import { CIE11 } from "./data/cie11.js";
 import { MEDICAMENTOS } from "./data/medicamentos.js";
+import { ESCALAS_PSIQUIATRICAS, interpretarEscala } from "./data/escalasPsiquiatricas.js";
 
 import {
   onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+import {
+  doc,
+  getDoc,
+  collection,
+  addDoc,
+  serverTimestamp,
+  setDoc
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 import {
   obtenerUsuario,
@@ -32,6 +42,7 @@ let notasHistorial = {};
 let notasHistorialOrdenadas = [];
 let historiaClinicaActual = {};
 let pacienteActualDatos = {};
+let uidMedicoActual = "";
 
 iniciarMonitoreoSesion("Nota medica");
 
@@ -147,6 +158,122 @@ if (buscadorMedicamento && resultadosMedicamentos) {
 
   sincronizarDiagnosticosObservacion();
 }
+
+function configurarPanelEscalaNota() {
+  const selector = document.getElementById("selectorEscalaNota");
+  const botonGuardar = document.getElementById("guardarEscalaNota");
+
+  if (!selector) return;
+
+  selector.innerHTML = ESCALAS_PSIQUIATRICAS
+    .map((escala) => `<option value="${escala.id}">${escala.nombre} - ${escala.area}</option>`)
+    .join("");
+
+  selector.addEventListener("change", renderizarEscalaNotaSeleccionada);
+  botonGuardar?.addEventListener("click", guardarEscalaDesdeNota);
+  renderizarEscalaNotaSeleccionada();
+}
+
+function escalaNotaActual() {
+  const id = document.getElementById("selectorEscalaNota")?.value;
+  return ESCALAS_PSIQUIATRICAS.find((escala) => escala.id === id) || ESCALAS_PSIQUIATRICAS[0];
+}
+
+function renderizarEscalaNotaSeleccionada() {
+  const escala = escalaNotaActual();
+  const descripcion = document.getElementById("descripcionEscalaNota");
+  const items = document.getElementById("itemsEscalaNota");
+  if (!escala || !descripcion || !items) return;
+
+  descripcion.innerHTML = `
+    <strong>${escaparHTML(escala.nombre)}</strong> - ${escaparHTML(escala.area)}<br>
+    ${escaparHTML(escala.descripcion)}<br>
+    <small>Rango: ${escaparHTML(escala.rango)}. Resultado integrado al expediente.</small>
+  `;
+
+  items.innerHTML = escala.items.map((item, index) => `
+    <div class="item-escala-nota">
+      <label>${index + 1}. ${escaparHTML(item)}
+        <select data-item-escala-nota="${index}">
+          <option value="">Seleccionar</option>
+          ${escala.opciones
+            .map((opcion, i) => `<option value="${escala.valores[i]}">${escaparHTML(opcion)}</option>`)
+            .join("")}
+        </select>
+      </label>
+    </div>
+  `).join("");
+}
+
+async function guardarEscalaDesdeNota() {
+  const selectorPaciente = document.getElementById("uidPaciente");
+  const uidPaciente = uidPacienteActual || selectorPaciente?.value;
+
+  if (!uidPaciente) {
+    alert("Selecciona un paciente antes de guardar la escala.");
+    return;
+  }
+
+  const escala = escalaNotaActual();
+  if (!escala) return;
+
+  const selects = [...document.querySelectorAll("[data-item-escala-nota]")];
+  const respuestas = selects.map((select, index) => ({
+    item: escala.items[index],
+    valor: select.value === "" ? null : Number(select.value),
+    respuesta: select.options[select.selectedIndex]?.textContent || ""
+  }));
+
+  if (respuestas.some((respuesta) => respuesta.valor === null)) {
+    alert("Responde todos los reactivos de la escala.");
+    return;
+  }
+
+  const puntaje = respuestas.reduce((total, respuesta) => total + respuesta.valor, 0);
+  const interpretacion = interpretarEscala(escala, puntaje);
+  const usuario = auth.currentUser;
+  const medicoActual = usuario ? await obtenerUsuario(usuario.uid) : null;
+  const pacienteActual = await obtenerUsuario(uidPaciente);
+
+  await addDoc(collection(db, "usuarios", uidPaciente, "resultadosEscalas"), {
+    escalaId: escala.id,
+    escalaNombre: escala.nombre,
+    area: escala.area,
+    puntaje,
+    rango: escala.rango,
+    interpretacion,
+    respuestas,
+    origen: "nota_medica",
+    aplicadoPorMedico: true,
+    visiblePaciente: false,
+    creadoPor: usuario?.uid || "",
+    creadoEn: serverTimestamp(),
+    fechaISO: new Date().toISOString()
+  });
+
+  await registrarEventoAuditoria({
+    accion: "guardar_escala_desde_nota",
+    modulo: "Nota medica",
+    descripcion: "El medico aplico una escala clinica desde la nota.",
+    usuarioUid: usuario?.uid || "",
+    usuarioNombre: medicoActual?.nombre || usuario?.email || "",
+    usuarioRol: medicoActual?.rol || "",
+    pacienteUid: uidPaciente,
+    pacienteNombre: pacienteActual?.nombre || "",
+    exito: true,
+    detalles: {
+      escalaId: escala.id,
+      escalaNombre: escala.nombre,
+      puntaje,
+      interpretacion
+    }
+  });
+
+  alert(`Escala guardada: ${escala.nombre} = ${puntaje} (${interpretacion})`);
+  renderizarEscalaNotaSeleccionada();
+}
+
+configurarPanelEscalaNota();
 
 function agregarDiagnostico(dx) {
   const yaExiste = diagnosticosSeleccionados.some(
@@ -414,7 +541,14 @@ function llenarFormularioObservacionFray(datos = {}) {
 function datosInstitucionalesPaciente(paciente = {}) {
   const institucional = paciente.datosInstitucionales || {};
   const fray = paciente.frayObservacion || {};
-  const fechaNacimiento = paciente.fechaNacimiento || institucional.fechaNacimiento || "";
+  const fechaNacimiento =
+    paciente.fechaNacimiento ||
+    institucional.fechaNacimiento ||
+    paciente.fecha_nacimiento ||
+    paciente.fechaDeNacimiento ||
+    paciente.fechaNac ||
+    paciente.nacimiento ||
+    "";
 
   return {
     nombrePaciente: paciente.nombre || institucional.nombrePaciente || "",
@@ -424,7 +558,7 @@ function datosInstitucionalesPaciente(paciente = {}) {
     cama: paciente.cama || institucional.cama || "",
     expediente: paciente.expediente || paciente.numeroExpediente || institucional.expediente || "",
     fechaNacimiento,
-    edad: calcularEdadDesdeFecha(fechaNacimiento) || paciente.edad || institucional.edad || "",
+    edad: calcularEdadDesdeFecha(fechaNacimiento) || "",
     sexo: paciente.sexo || institucional.sexo || "",
     genero: paciente.genero || paciente.identidadGenero || institucional.genero || "",
     alergias: paciente.alergias || institucional.alergias || "",
@@ -534,6 +668,67 @@ window.cancelarEdicionNota = function() {
   limpiarFormularioNota();
 };
 
+function referenciaBorradoresMedico() {
+  if (!uidMedicoActual) return null;
+  return doc(db, "usuarios", uidMedicoActual, "borradoresMedico", "notasGenerales");
+}
+
+async function cargarBorradoresMedico() {
+  const texto = document.getElementById("borradoresMedicoTexto");
+  const estado = document.getElementById("estadoBorradoresMedico");
+  const ref = referenciaBorradoresMedico();
+
+  if (!texto || !ref) return;
+
+  const snap = await getDoc(ref);
+  texto.value = snap.exists() ? snap.data().contenido || "" : "";
+  if (estado) estado.textContent = snap.exists() ? "Guardado" : "Sin guardar";
+}
+
+window.abrirBorradoresMedico = function() {
+  const fondo = document.getElementById("fondoBorradoresMedico");
+  const panel = document.getElementById("panelBorradoresMedico");
+
+  fondo?.classList.remove("oculto");
+  panel?.classList.add("abierto");
+  panel?.setAttribute("aria-hidden", "false");
+  document.getElementById("borradoresMedicoTexto")?.focus();
+};
+
+window.cerrarBorradoresMedico = function() {
+  const fondo = document.getElementById("fondoBorradoresMedico");
+  const panel = document.getElementById("panelBorradoresMedico");
+
+  panel?.classList.remove("abierto");
+  panel?.setAttribute("aria-hidden", "true");
+
+  window.setTimeout(() => {
+    if (!panel?.classList.contains("abierto")) {
+      fondo?.classList.add("oculto");
+    }
+  }, 220);
+};
+
+window.guardarBorradoresMedico = async function() {
+  const texto = document.getElementById("borradoresMedicoTexto");
+  const estado = document.getElementById("estadoBorradoresMedico");
+  const ref = referenciaBorradoresMedico();
+
+  if (!texto || !ref) {
+    alert("No se pudo identificar al medico para guardar el borrador.");
+    return;
+  }
+
+  if (estado) estado.textContent = "Guardando...";
+
+  await setDoc(ref, {
+    contenido: texto.value,
+    fechaActualizacion: serverTimestamp()
+  }, { merge: true });
+
+  if (estado) estado.textContent = "Guardado";
+};
+
 function bloqueContenidoNota(datos, titulo) {
   const esRapida = datos.tipoNota === "rapida" || datos.notaRapida;
   return `
@@ -558,6 +753,34 @@ window.editarNotaDesdeHistorial = function(notaId) {
   document.getElementById("tipoNota")?.scrollIntoView({ behavior: "smooth", block: "center" });
 };
 
+function cargarDatosNotaComoBorrador(notaId, opciones = {}) {
+  const datosNota = notasHistorial[notaId];
+
+  if (!datosNota) {
+    alert("No se encontro la nota seleccionada.");
+    return;
+  }
+
+  const datos = datosNota.notaEditada || datosNota;
+  const formatoActual = formatoNota?.value || "cognicion";
+  llenarFormularioNota({
+    ...datos,
+    formatoNota: opciones.mantenerFormatoActual
+      ? formatoActual
+      : datos.formatoNota || formatoActual
+  });
+
+  notaEditandoId = null;
+  btnCancelarEdicion?.classList.add("oculto");
+  sincronizarFormatoNota();
+  document.getElementById("tipoNota")?.scrollIntoView({ behavior: "smooth", block: "center" });
+}
+
+window.cargarNotaComoBorrador = function(notaId) {
+  cargarDatosNotaComoBorrador(notaId);
+  alert("Nota cargada como borrador. Al guardar se creara una nota nueva.");
+};
+
 window.cargarNotaPreviaEnFormulario = function() {
   const previa = notasHistorialOrdenadas.find((nota) => nota?.datos);
 
@@ -566,16 +789,7 @@ window.cargarNotaPreviaEnFormulario = function() {
     return;
   }
 
-  const datos = previa.datos.notaEditada || previa.datos;
-  const formatoActual = formatoNota?.value || "cognicion";
-  llenarFormularioNota({
-    ...datos,
-    formatoNota: formatoActual
-  });
-
-  notaEditandoId = null;
-  btnCancelarEdicion?.classList.add("oculto");
-  sincronizarFormatoNota();
+  cargarDatosNotaComoBorrador(previa.id, { mantenerFormatoActual: true });
   alert("Datos de la nota previa cargados. Se guardara como una nota nueva.");
 };
 
@@ -601,6 +815,13 @@ onAuthStateChanged(auth, async (user) => {
     window.location.href = "dashboard.html";
     return;
   }
+
+  uidMedicoActual = user.uid;
+  await cargarBorradoresMedico();
+  document.getElementById("borradoresMedicoTexto")?.addEventListener("input", () => {
+    const estado = document.getElementById("estadoBorradoresMedico");
+    if (estado) estado.textContent = "Cambios sin guardar";
+  });
 
   const parametros = new URLSearchParams(window.location.search);
   uidPacienteActual = parametros.get("id");
@@ -882,9 +1103,15 @@ async function cargarHistorial(uidPaciente) {
 
           ${datos.notaEditada ? bloqueContenidoNota(datos.notaEditada, "Version editada") : ""}
 
-          <button type="button" class="boton-secundario" onclick="editarNotaDesdeHistorial('${nota.id}')">
-            Editar esta nota
-          </button>
+          <div class="acciones-historial-nota">
+            <button type="button" class="boton-secundario" onclick="cargarNotaComoBorrador('${nota.id}')">
+              Usar como borrador
+            </button>
+
+            <button type="button" class="boton-secundario" onclick="editarNotaDesdeHistorial('${nota.id}')">
+              Editar esta nota
+            </button>
+          </div>
 
         </div>
 
@@ -1076,7 +1303,7 @@ async function htmlWordFrayObservacion() {
           <style>
     @page WordSection1 {
       size: 21.59cm 27.94cm;
-      margin: 1.27cm 1.27cm 1.27cm 1.27cm;
+      margin: 36.0pt 36.0pt 36.0pt 36.0pt;
     }
 
     div.WordSection1 {
@@ -1100,15 +1327,34 @@ async function htmlWordFrayObservacion() {
         .logo-fray { width: 58px; }
         h1 { text-align: center; font-size: 11.5pt; color: #7b7b7b; margin: 8pt 0 12pt; text-transform: uppercase; letter-spacing: .2pt; }
         h2 { font-size: 9.5pt; margin: 10pt 0 3pt; text-align: left; text-transform: uppercase; }
-        p { margin: 5pt 0; line-height: 1.25; text-align: left; }
+        p { margin: 0; mso-margin-top-alt: 0cm; mso-margin-bottom-alt: 0cm; line-height: 1.0; mso-line-height-rule: exactly; text-align: left; }
         .identificacion { font-size: 8.6pt; line-height: 1.35; margin: 2pt 0 7pt; }
         .identificacion b { font-weight: 700; }
         table { width: 100%; border-collapse: collapse; margin: 3pt 0 8pt; }
         th, td { border: 1px solid #222; padding: 4pt; vertical-align: top; text-align: left; }
         .tabla-vitales { width: auto; table-layout: auto; margin: 3pt 0 8pt; }
-        .tabla-vitales th { text-align: center; font-size: 7.2pt; font-weight: 700; white-space: nowrap; padding: 3pt 5pt; }
-        .tabla-vitales td { text-align: center; font-size: 8pt; white-space: nowrap; padding: 3pt 5pt; }
-        .tabla-texto td { min-height: 42pt; line-height: 1.32; text-align: left; }
+        .tabla-vitales th,
+        .tabla-vitales td {
+          text-align: center;
+          white-space: nowrap;
+          padding: 2pt 5pt;
+          margin: 0;
+          mso-margin-top-alt: 0cm;
+          mso-margin-bottom-alt: 0cm;
+          line-height: 1.0;
+          mso-line-height-rule: exactly;
+        }
+        .tabla-vitales th { font-size: 7.2pt; font-weight: 700; }
+        .tabla-vitales td { font-size: 8pt; }
+        .tabla-vitales th p,
+        .tabla-vitales td p {
+          margin: 0;
+          mso-margin-top-alt: 0cm;
+          mso-margin-bottom-alt: 0cm;
+          line-height: 1.0;
+          mso-line-height-rule: exactly;
+        }
+        .tabla-texto td { min-height: 42pt; line-height: 1.0; text-align: left; }
         .tabla-diagnosticos-word th { font-size: 8.5pt; text-align: left; }
         .tabla-diagnosticos-word th:first-child,
         .tabla-diagnosticos-word td:first-child { width: 86%; }

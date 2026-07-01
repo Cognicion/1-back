@@ -1,8 +1,13 @@
-import { auth } from "./firebase.js";
+import { auth, db } from "./firebase.js";
 
 import {
   onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+import {
+  collection,
+  getDocs
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 import {
   obtenerUsuario,
@@ -32,6 +37,28 @@ function calcularEdad(fechaNacimiento) {
   return edad >= 0 ? edad : "";
 }
 
+function obtenerExpedienteCognicion(paciente = {}) {
+  const institucional = paciente.datosInstitucionales || {};
+  return paciente.expedienteCognicion || institucional.expedienteCognicion || "";
+}
+
+async function generarExpedienteCognicion() {
+  const anio = String(new Date().getFullYear()).slice(-2);
+  const snap = await getDocs(collection(db, "usuarios"));
+  let consecutivoMayor = 999;
+
+  snap.forEach((docPaciente) => {
+    const expediente = obtenerExpedienteCognicion(docPaciente.data());
+    const coincidencia = /^C(\d+)-(\d{2})$/.exec(expediente);
+
+    if (!coincidencia || coincidencia[2] !== anio) return;
+
+    consecutivoMayor = Math.max(consecutivoMayor, Number(coincidencia[1]));
+  });
+
+  return `C${consecutivoMayor + 1}-${anio}`;
+}
+
 onAuthStateChanged(auth, async (user) => {
   if (!user) {
     window.location.href = "login.html";
@@ -58,11 +85,12 @@ window.guardarPacienteNuevo = async function() {
   const genero = document.getElementById("genero")?.value || "";
   const alergias = document.getElementById("alergias")?.value || "";
   const diasEstancia = document.getElementById("diasEstancia")?.value || "";
+  const expedienteCognicion = await generarExpedienteCognicion();
 
   const paciente = {
     nombre: document.getElementById("nombre").value,
+    expedienteCognicion,
     fechaNacimiento,
-    edad: "",
     sexo: document.getElementById("sexo").value,
     genero,
     curp: document.getElementById("curp").value,
@@ -83,13 +111,13 @@ window.guardarPacienteNuevo = async function() {
     diasEstancia,
     datosInstitucionales: {
       nombrePaciente: document.getElementById("nombre").value,
+      expedienteCognicion,
       tipoPaciente,
       institucionPaciente,
       servicioInstitucional,
       expediente,
       cama,
       fechaNacimiento,
-      edad: "",
       sexo: document.getElementById("sexo").value,
       genero,
       alergias,

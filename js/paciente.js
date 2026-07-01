@@ -1,4 +1,5 @@
-import { auth, db } from "./firebase.js";
+﻿import { auth, db } from "./firebase.js";
+import { ESCALAS_PSIQUIATRICAS } from "./data/escalasPsiquiatricas.js";
 import { registrarEventoAuditoria } from "./services/auditoria.js";
 import { iniciarMonitoreoSesion } from "./services/sesion.js";
 
@@ -9,9 +10,16 @@ import {
 import {
   collection,
   getDocs,
+  doc,
+  setDoc,
+  addDoc,
+  updateDoc,
+  deleteDoc,
+  serverTimestamp,
   query,
   orderBy,
-  limit
+  limit,
+  deleteField
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 import {
@@ -48,6 +56,7 @@ let uidPaciente = "";
 let datosPacienteActual = null;
 let tratamientosCache = [];
 let estudiosCache = [];
+let escalasAsignadasCache = new Map();
 
 iniciarMonitoreoSesion("Expediente paciente");
 
@@ -101,6 +110,19 @@ function calcularEdad(fechaNacimiento) {
   }
 
   return edad >= 0 ? edad : "";
+}
+
+function obtenerFechaNacimiento(datos = {}) {
+  const institucional = datos.datosInstitucionales || {};
+  return (
+    datos.fechaNacimiento ||
+    institucional.fechaNacimiento ||
+    datos.fecha_nacimiento ||
+    datos.fechaDeNacimiento ||
+    datos.fechaNac ||
+    datos.nacimiento ||
+    ""
+  );
 }
 
 function formatearFecha(fecha) {
@@ -224,15 +246,37 @@ async function cargarDatosPaciente() {
   document.getElementById("correoPaciente").innerText =
     datos.email || "Sin correo";
 
-  const edadCalculada = calcularEdad(datos.fechaNacimiento);
+  document.getElementById("expedienteCognicionPaciente").innerText =
+    datos.expedienteCognicion ||
+    datos.datosInstitucionales?.expedienteCognicion ||
+    "Sin expediente";
+
+  const fechaNacimiento = obtenerFechaNacimiento(datos);
+  const edadCalculada = calcularEdad(fechaNacimiento);
+
+  const edadVisible = edadCalculada !== "" && edadCalculada !== null && edadCalculada !== undefined
+  ? edadCalculada
+  : "";
 
   document.getElementById("fechaNacimientoPaciente").innerText =
-    formatearFecha(datos.fechaNacimiento);
+  formatearFecha(fechaNacimiento);
 
   document.getElementById("edadPaciente").innerText =
-    edadCalculada || datos.edad
-      ? `${edadCalculada || datos.edad} años`
-      : "No registrada";
+  edadVisible !== "" && edadVisible !== null && edadVisible !== undefined
+    ? `${edadVisible} a\u00f1os`
+    : "No registrada";
+
+  if (fechaNacimiento && datos.fechaNacimiento !== fechaNacimiento) {
+    await actualizarUsuario(uidPaciente, {
+      fechaNacimiento,
+      edad: deleteField(),
+      "datosInstitucionales.edad": deleteField()
+    });
+    datos.fechaNacimiento = fechaNacimiento;
+    delete datos.edad;
+    if (datos.datosInstitucionales) delete datos.datosInstitucionales.edad;
+    datosPacienteActual = datos;
+  }
 
   renderizarDiagnosticos(datos);
 
@@ -240,7 +284,7 @@ async function cargarDatosPaciente() {
     datos.tratamiento || "Sin tratamiento registrado";
 
   document.getElementById("medicoTratante").innerText =
-    datos.medicoTratante || "Sin médico tratante";
+    datos.medicoTratante || "Sin mÃ©dico tratante";
 
   document.getElementById("ultimaConsulta").innerText =
     datos.ultimaConsulta || "Sin fecha";
@@ -249,7 +293,7 @@ async function cargarDatosPaciente() {
     datos.proximaConsulta || "Sin programar";
 
   document.getElementById("telefonoPaciente").innerText =
-    datos.telefono || "Sin teléfono";
+    datos.telefono || "Sin tel\u00e9fono";
 
   document.getElementById("tipoPaciente").innerText =
     datos.tipoPaciente === "institucion" ? "Paciente de institucion" : "Consulta privada";
@@ -295,6 +339,8 @@ window.mostrarResultadosEscalas = async function() {
   ocultarSecciones();
   document.getElementById("seccionResultadosEscalas").style.display = "block";
   await cargarResultadosEscalasPaciente();
+  await cargarEscalasAsignablesPaciente();
+  await cargarTareasMiSaludMedico();
 };
 
 window.mostrarTratamiento = async function() {
@@ -340,7 +386,7 @@ async function cargarResultadosEscalasPaciente() {
         <article class="resultado-escala-card">
           <div>
             <strong>${r.escalaNombre || "Escala"}</strong>
-            <span>${r.area || ""} · ${fecha}</span>
+            <span>${r.area || ""} Â· ${fecha}</span>
           </div>
           <div class="resultado-puntaje">${r.puntaje} / ${r.rango || ""}</div>
           <p>${r.interpretacion || "Sin interpretacion"}</p>
@@ -353,6 +399,167 @@ async function cargarResultadosEscalasPaciente() {
   }
 }
 
+async function cargarEscalasAsignablesPaciente() {
+  const contenedor = document.getElementById("listaEscalasAsignables");
+  if (!contenedor) return;
+  contenedor.textContent = "Cargando escalas...";
+
+  try {
+    const snap = await getDocs(collection(db, "usuarios", uidPaciente, "escalasAsignadas"));
+    escalasAsignadasCache = new Map(snap.docs.map((docEscala) => [docEscala.id, docEscala.data()]));
+
+    contenedor.innerHTML = ESCALAS_PSIQUIATRICAS.map((escala) => {
+      const asignada = escalasAsignadasCache.get(escala.id);
+      const visible = asignada?.visiblePaciente === true;
+      return `
+        <article class="registro-card escala-asignable">
+          <div class="registro-top">
+            <div>
+              <strong>${escaparHTML(escala.nombre)}</strong>
+              <span>${escaparHTML(escala.area || "")}</span>
+            </div>
+            <label class="switch-linea">
+              <input type="checkbox" data-escala-visible="${escala.id}" ${visible ? "checked" : ""}>
+              Visible
+            </label>
+          </div>
+          <p>${escaparHTML(escala.descripcion || "Sin descripcion")}</p>
+        </article>
+      `;
+    }).join("");
+
+    document.querySelectorAll("[data-escala-visible]").forEach((control) => {
+      control.addEventListener("change", () => actualizarVisibilidadEscala(control));
+    });
+  } catch (error) {
+    console.error("Error al cargar escalas asignables:", error);
+    contenedor.textContent = "No se pudieron cargar las escalas.";
+  }
+}
+
+async function actualizarVisibilidadEscala(control) {
+  const escalaId = control.dataset.escalaVisible;
+  const escala = ESCALAS_PSIQUIATRICAS.find((item) => item.id === escalaId);
+  if (!escala) return;
+
+  const visiblePaciente = control.checked;
+
+  await setDoc(doc(db, "usuarios", uidPaciente, "escalasAsignadas", escalaId), {
+    escalaId,
+    escalaNombre: escala.nombre,
+    area: escala.area || "",
+    visiblePaciente,
+    actualizadoPor: auth.currentUser?.uid || "",
+    actualizadoEn: serverTimestamp(),
+    fechaISO: new Date().toISOString()
+  }, { merge: true });
+
+  await registrarAccionExpediente({
+    accion: visiblePaciente ? "activar_escala_mi_salud" : "ocultar_escala_mi_salud",
+    descripcion: visiblePaciente
+      ? "El medico hizo visible una escala en Mi Salud."
+      : "El medico oculto una escala en Mi Salud.",
+    detalles: {
+      escalaId,
+      escalaNombre: escala.nombre
+    }
+  });
+}
+
+async function guardarTareaMiSaludPaciente() {
+  const titulo = valorCampo("tareaMiSaludTitulo").trim();
+  const indicaciones = valorCampo("tareaMiSaludIndicaciones").trim();
+  const fechaLimite = valorCampo("tareaMiSaludFecha");
+
+  if (!titulo) {
+    alert("Escribe la tarea que quieres asignar.");
+    return;
+  }
+
+  await addDoc(collection(db, "usuarios", uidPaciente, "tareasMiSalud"), {
+    titulo,
+    indicaciones,
+    fechaLimite,
+    estado: "pendiente",
+    visiblePaciente: true,
+    creadoPor: auth.currentUser?.uid || "",
+    creadoEn: serverTimestamp(),
+    fechaISO: new Date().toISOString()
+  });
+
+  await registrarAccionExpediente({
+    accion: "asignar_tarea_mi_salud",
+    descripcion: "El medico asigno una tarea en Mi Salud.",
+    detalles: {
+      titulo,
+      fechaLimite
+    }
+  });
+
+  ponerValor("tareaMiSaludTitulo", "");
+  ponerValor("tareaMiSaludIndicaciones", "");
+  ponerValor("tareaMiSaludFecha", "");
+  await cargarTareasMiSaludMedico();
+}
+
+async function cargarTareasMiSaludMedico() {
+  const contenedor = document.getElementById("listaTareasMiSaludMedico");
+  if (!contenedor) return;
+  contenedor.textContent = "Cargando tareas...";
+
+  try {
+    const q = query(
+      collection(db, "usuarios", uidPaciente, "tareasMiSalud"),
+      orderBy("fechaISO", "desc"),
+      limit(30)
+    );
+    const snap = await getDocs(q);
+
+    if (snap.empty) {
+      contenedor.innerHTML = "<p>Aun no hay tareas asignadas.</p>";
+      return;
+    }
+
+    contenedor.innerHTML = snap.docs.map((docTarea) => {
+      const tarea = docTarea.data();
+      return `
+        <article class="registro-card">
+          <div class="registro-top">
+            <div>
+              <strong>${escaparHTML(tarea.titulo || "Tarea")}</strong>
+              <span>${escaparHTML(tarea.fechaLimite ? `Limite: ${tarea.fechaLimite}` : "Sin fecha limite")}</span>
+            </div>
+            <span class="estado-badge ${tarea.estado === "completada" ? "activo" : ""}">${escaparHTML(tarea.estado || "pendiente")}</span>
+          </div>
+          ${tarea.indicaciones ? `<p>${escaparHTML(tarea.indicaciones)}</p>` : ""}
+          <div class="registro-actions">
+            <button type="button" class="boton-peligro" data-eliminar-tarea-mi-salud="${docTarea.id}">Eliminar</button>
+          </div>
+        </article>
+      `;
+    }).join("");
+
+    document.querySelectorAll("[data-eliminar-tarea-mi-salud]").forEach((boton) => {
+      boton.addEventListener("click", () => eliminarTareaMiSaludPaciente(boton.dataset.eliminarTareaMiSalud));
+    });
+  } catch (error) {
+    console.error("Error al cargar tareas de Mi Salud:", error);
+    contenedor.textContent = "No se pudieron cargar las tareas.";
+  }
+}
+
+async function eliminarTareaMiSaludPaciente(tareaId) {
+  if (!confirm("Eliminar esta tarea de Mi Salud?")) return;
+
+  await deleteDoc(doc(db, "usuarios", uidPaciente, "tareasMiSalud", tareaId));
+  await registrarAccionExpediente({
+    accion: "eliminar_tarea_mi_salud",
+    descripcion: "El medico elimino una tarea de Mi Salud.",
+    detalles: { tareaId }
+  });
+  await cargarTareasMiSaludMedico();
+}
+
 async function cargarPermisosMedicos() {
   const contenedor = document.getElementById("listaPermisosMedicos");
   contenedor.innerHTML = "Cargando permisos...";
@@ -361,7 +568,7 @@ async function cargarPermisosMedicos() {
 
   if (permisos.length === 0) {
     contenedor.innerHTML = `
-      <p>No hay médicos con permisos registrados.</p>
+      <p>No hay mÃ©dicos con permisos registrados.</p>
     `;
     return;
   }
@@ -413,14 +620,14 @@ window.agregarPermisoMedico = async function() {
   const rol = document.getElementById("rolPermisoMedico").value;
 
   if (!correo) {
-    alert("Escribe el correo del médico.");
+    alert("Escribe el correo del mÃ©dico.");
     return;
   }
 
   const medico = await buscarMedicoPorCorreo(correo);
 
   if (!medico) {
-    alert("No se encontró un médico registrado con ese correo.");
+    alert("No se encontrÃ³ un mÃ©dico registrado con ese correo.");
     return;
   }
 
@@ -454,7 +661,7 @@ window.cambiarRolPermiso = async function(uidMedico) {
 };
 
 window.revocarPermiso = async function(uidMedico) {
-  const confirmar = confirm("¿Seguro que deseas revocar el acceso de este médico?");
+  const confirmar = confirm("Â¿Seguro que deseas revocar el acceso de este mÃ©dico?");
 
   if (!confirmar) return;
 
@@ -482,7 +689,7 @@ window.editarNombrePaciente = async function() {
 window.editarDatosPaciente = async function() {
   const datos = await obtenerUsuario(uidPaciente);
 
-  const nuevoTelefono = prompt("Teléfono:", datos.telefono || "");
+  const nuevoTelefono = prompt("Tel\u00e9fono:", datos.telefono || "");
   if (nuevoTelefono === null) return;
 
   const nuevaFechaNacimiento = prompt(
@@ -491,28 +698,21 @@ window.editarDatosPaciente = async function() {
   );
   if (nuevaFechaNacimiento === null) return;
 
-  const nuevaEdad = prompt(
-    "Edad (opcional, se usa solo si no hay fecha de nacimiento):",
-    datos.edad || ""
-  );
-  if (nuevaEdad === null) return;
-
-  const nuevoDiagnostico = prompt("Diagnóstico:", datos.diagnostico || "");
+  const nuevoDiagnostico = prompt("DiagnÃ³stico:", datos.diagnostico || "");
   if (nuevoDiagnostico === null) return;
 
   const nuevoTratamiento = prompt("Tratamiento:", datos.tratamiento || "");
   if (nuevoTratamiento === null) return;
 
-  const nuevoMedico = prompt("Médico tratante:", datos.medicoTratante || "");
+  const nuevoMedico = prompt("MÃ©dico tratante:", datos.medicoTratante || "");
   if (nuevoMedico === null) return;
 
-  const nuevaConsulta = prompt("Última consulta:", datos.ultimaConsulta || "");
+  const nuevaConsulta = prompt("Ãšltima consulta:", datos.ultimaConsulta || "");
   if (nuevaConsulta === null) return;
 
   await actualizarUsuario(uidPaciente, {
     telefono: nuevoTelefono,
     fechaNacimiento: nuevaFechaNacimiento,
-    edad: nuevaFechaNacimiento ? "" : nuevaEdad,
     diagnostico: nuevoDiagnostico,
     tratamiento: nuevoTratamiento,
     medicoTratante: nuevoMedico,
@@ -525,8 +725,15 @@ window.editarDatosPaciente = async function() {
 };
 
 window.editarCampoPaciente = async function(campo, etiqueta, tipo = "text") {
+  if (campo === "edad") {
+    alert("La edad se calcula automaticamente a partir de la fecha de nacimiento. Edita la fecha de nacimiento para actualizarla.");
+    return;
+  }
+
   const datos = datosPacienteActual || await obtenerUsuario(uidPaciente);
-  const valorActual = datos?.[campo] || "";
+  const valorActual = campo === "fechaNacimiento"
+    ? obtenerFechaNacimiento(datos)
+    : datos?.[campo] || "";
   const etiquetaCampo = etiqueta || campo;
   let nuevoValor = null;
 
@@ -553,7 +760,6 @@ window.editarCampoPaciente = async function(campo, etiqueta, tipo = "text") {
     "expediente",
     "cama",
     "fechaNacimiento",
-    "edad",
     "sexo",
     "genero",
     "alergias",
@@ -561,44 +767,20 @@ window.editarCampoPaciente = async function(campo, etiqueta, tipo = "text") {
   ]);
 
   if (campo === "fechaNacimiento") {
-    if (nuevoValor && datos?.edad) {
-      const confirmar = confirm(
-        "Ya existe una edad capturada. Al guardar una fecha de nacimiento, esa edad se borrara y se calculara automaticamente. ¿Continuar?"
-      );
-      if (!confirmar) return;
-    }
-
-    actualizacion.edad = "";
-  }
-
-  if (campo === "edad") {
-    if (nuevoValor && datos?.fechaNacimiento) {
-      const confirmar = confirm(
-        "Ya existe una fecha de nacimiento. Al capturar edad, la fecha de nacimiento se borrara y la edad dejara de calcularse automaticamente. ¿Continuar?"
-      );
-      if (!confirmar) return;
-    }
-
-    if (nuevoValor) {
-      actualizacion.fechaNacimiento = "";
-    }
+    actualizacion.edad = deleteField();
   }
 
   if (camposInstitucionales.has(campo)) {
-    actualizacion.datosInstitucionales = {
+    const datosInstitucionales = {
       ...(datos?.datosInstitucionales || {}),
       [campo]: nuevoValor
     };
+    delete datosInstitucionales.edad;
+    actualizacion.datosInstitucionales = datosInstitucionales;
 
     if (campo === "institucionPaciente") actualizacion.institucion = nuevoValor;
     if (campo === "servicioInstitucional") actualizacion.servicio = nuevoValor;
     if (campo === "expediente") actualizacion.numeroExpediente = nuevoValor;
-    if (campo === "fechaNacimiento") {
-      actualizacion.datosInstitucionales.edad = "";
-    }
-    if (campo === "edad" && nuevoValor) {
-      actualizacion.datosInstitucionales.fechaNacimiento = "";
-    }
   }
 
   await actualizarUsuario(uidPaciente, actualizacion);
@@ -635,7 +817,7 @@ window.previsualizarMiSalud = function() {
 
 window.solicitarEliminarPaciente = async function() {
   const confirmar = confirm(
-    "¿Deseas suspender este paciente y solicitar eliminación al administrador?"
+    "Â¿Deseas suspender este paciente y solicitar eliminaciÃ³n al administrador?"
   );
 
   if (!confirmar) return;
@@ -646,7 +828,7 @@ window.solicitarEliminarPaciente = async function() {
       auth.currentUser.uid
     );
 
-    alert("Paciente suspendido. Eliminación pendiente de autorización.");
+    alert("Paciente suspendido. EliminaciÃ³n pendiente de autorizaciÃ³n.");
 
     window.location.href = "medico.html";
   } catch (error) {
@@ -656,7 +838,7 @@ window.solicitarEliminarPaciente = async function() {
 
 window.abrirHistoriaClinica = function() {
   if (!uidPaciente) {
-    alert("No se encontró el ID del paciente.");
+    alert("No se encontrÃ³ el ID del paciente.");
     return;
   }
 
@@ -762,12 +944,12 @@ function renderizarTratamiento(t) {
       <div class="registro-top">
         <div>
           <strong>${escaparHTML(t.medicamento || "Medicamento")}</strong>
-          <span>${escaparHTML([t.dosis, t.frecuencia, t.via].filter(Boolean).join(" · ") || "Sin indicacion completa")}</span>
+          <span>${escaparHTML([t.dosis, t.frecuencia, t.via].filter(Boolean).join(" Â· ") || "Sin indicacion completa")}</span>
         </div>
         <span class="estado-badge ${t.estado === "suspendido" ? "suspendido" : "activo"}">${escaparHTML(t.estado || "activo")}</span>
       </div>
       <p><b>Inicio:</b> ${escaparHTML(formatearFecha(t.fechaInicio) || "Sin fecha")}</p>
-      ${t.estado === "suspendido" ? `<p><b>Suspension:</b> ${escaparHTML(formatearFecha(t.fechaSuspension))} · ${escaparHTML(t.motivoSuspension || "Sin motivo registrado")}</p>` : ""}
+      ${t.estado === "suspendido" ? `<p><b>Suspension:</b> ${escaparHTML(formatearFecha(t.fechaSuspension))} Â· ${escaparHTML(t.motivoSuspension || "Sin motivo registrado")}</p>` : ""}
       ${t.observaciones ? `<p>${escaparHTML(t.observaciones)}</p>` : ""}
       <div class="registro-actions">
         <button type="button" data-editar-tratamiento="${t.id}">Editar</button>
@@ -911,7 +1093,7 @@ function renderizarEstudio(estudio) {
       <div class="registro-top">
         <div>
           <strong>${escaparHTML(estudio.nombre || "Estudio")}</strong>
-          <span>${escaparHTML(estudio.tipo || "Sin tipo")} · ${escaparHTML(formatearFecha(estudio.fecha))}</span>
+          <span>${escaparHTML(estudio.tipo || "Sin tipo")} Â· ${escaparHTML(formatearFecha(estudio.fecha))}</span>
         </div>
       </div>
       ${estudio.resultado ? `<p><b>Resultado:</b> ${escaparHTML(estudio.resultado)}</p>` : ""}
@@ -1025,6 +1207,7 @@ document.getElementById("limpiarTratamiento")?.addEventListener("click", limpiar
 document.getElementById("guardarEstudio")?.addEventListener("click", guardarEstudioPaciente);
 document.getElementById("limpiarEstudio")?.addEventListener("click", limpiarFormularioEstudio);
 document.getElementById("guardarNotaRapida")?.addEventListener("click", guardarNotaRapidaPaciente);
+document.getElementById("guardarTareaMiSalud")?.addEventListener("click", guardarTareaMiSaludPaciente);
 
 async function registrarAccionExpediente({ accion, descripcion, detalles = {} }) {
   const usuario = auth.currentUser;
@@ -1046,3 +1229,4 @@ async function registrarAccionExpediente({ accion, descripcion, detalles = {} })
     detalles
   });
 }
+

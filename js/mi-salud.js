@@ -13,6 +13,7 @@ import {
   getDoc,
   collection,
   addDoc,
+  updateDoc,
   serverTimestamp,
   getDocs,
   query,
@@ -23,6 +24,8 @@ import {
 let usuarioActual = null;
 let uidSeguimiento = null;
 let modoVistaPrevia = false;
+let rolActual = "";
+let escalasDisponibles = [];
 
 iniciarMonitoreoSesion("Mi Salud");
 
@@ -80,13 +83,17 @@ onAuthStateChanged(auth, async (user) => {
     }
 
     document.body.classList.remove("bloqueado");
-    await cargarMiSalud(uidSeguimiento, datosSeguimiento, datos.rol);
-    configurarEscalas();
+    rolActual = datos.rol || "";
+    await cargarMiSalud(uidSeguimiento, datosSeguimiento, rolActual);
+    await configurarEscalas();
     await cargarResultadosEscalas(uidSeguimiento);
     await cargarUltimoRegistro(uidSeguimiento);
+    await cargarTareasMiSalud(uidSeguimiento);
+    await cargarDiarioPersonal(uidSeguimiento);
 
     document.getElementById("guardarRegistro")?.addEventListener("click", guardarRegistroDiario);
     document.getElementById("guardarEscala")?.addEventListener("click", guardarResultadoEscala);
+    document.getElementById("guardarDiario")?.addEventListener("click", guardarDiarioPersonal);
   } catch (error) {
     console.error("Error al cargar Mi Salud:", error);
     alert("Ocurrio un error al cargar Mi Salud.");
@@ -113,14 +120,32 @@ async function cargarMiSalud(uid, datosUsuario, rolActual) {
   if (modoVistaPrevia) {
     document.getElementById("guardarRegistro")?.setAttribute("disabled", "disabled");
     document.getElementById("guardarEscala")?.setAttribute("disabled", "disabled");
+    document.getElementById("guardarDiario")?.setAttribute("disabled", "disabled");
+    document.getElementById("diarioTexto")?.setAttribute("disabled", "disabled");
+    document.getElementById("diarioVisibleMedico")?.setAttribute("disabled", "disabled");
   }
 }
 
-function configurarEscalas() {
+async function configurarEscalas() {
   const selector = document.getElementById("selectorEscala");
   if (!selector) return;
 
-  selector.innerHTML = ESCALAS_PSIQUIATRICAS
+  escalasDisponibles = await obtenerEscalasDisponibles();
+
+  if (!escalasDisponibles.length) {
+    selector.innerHTML = `<option value="">Sin escalas visibles</option>`;
+    selector.disabled = true;
+    document.getElementById("guardarEscala")?.setAttribute("disabled", "disabled");
+    const descripcion = document.getElementById("descripcionEscala");
+    const items = document.getElementById("itemsEscala");
+    if (descripcion) descripcion.textContent = "Aun no hay escalas activadas por tu medico.";
+    if (items) items.innerHTML = "";
+    return;
+  }
+
+  selector.disabled = modoVistaPrevia;
+  document.getElementById("guardarEscala")?.toggleAttribute("disabled", modoVistaPrevia);
+  selector.innerHTML = escalasDisponibles
     .map((escala) => `<option value="${escala.id}">${escala.nombre} - ${escala.area}</option>`)
     .join("");
 
@@ -130,7 +155,23 @@ function configurarEscalas() {
 
 function escalaActual() {
   const id = document.getElementById("selectorEscala")?.value;
-  return ESCALAS_PSIQUIATRICAS.find((escala) => escala.id === id) || ESCALAS_PSIQUIATRICAS[0];
+  return escalasDisponibles.find((escala) => escala.id === id) || escalasDisponibles[0];
+}
+
+async function obtenerEscalasDisponibles() {
+  if (rolActual === "medico" && !modoVistaPrevia) {
+    return ESCALAS_PSIQUIATRICAS;
+  }
+
+  const snap = await getDocs(collection(db, "usuarios", uidSeguimiento, "escalasAsignadas"));
+  const visibles = new Set(
+    snap.docs
+      .map((docEscala) => docEscala.data())
+      .filter((escala) => escala.visiblePaciente === true)
+      .map((escala) => escala.escalaId)
+  );
+
+  return ESCALAS_PSIQUIATRICAS.filter((escala) => visibles.has(escala.id));
 }
 
 function renderizarEscalaSeleccionada() {
@@ -217,6 +258,58 @@ async function guardarResultadoEscala() {
   alert(`Resultado guardado: ${escala.nombre} = ${puntaje} (${interpretacion})`);
   renderizarEscalaSeleccionada();
   await cargarResultadosEscalas(uidSeguimiento);
+}
+
+async function cargarTareasMiSalud(uid) {
+  const contenedor = document.getElementById("listaTareasMiSalud");
+  if (!contenedor) return;
+
+  try {
+    const q = query(
+      collection(db, "usuarios", uid, "tareasMiSalud"),
+      orderBy("fechaISO", "desc"),
+      limit(20)
+    );
+    const snap = await getDocs(q);
+    const tareas = snap.docs
+      .map((docTarea) => ({ id: docTarea.id, ...docTarea.data() }))
+      .filter((tarea) => tarea.visiblePaciente !== false);
+
+    if (!tareas.length) {
+      contenedor.textContent = "Sin tareas asignadas.";
+      return;
+    }
+
+    contenedor.innerHTML = tareas.map((tarea) => `
+      <article class="resultado-item tarea-item ${tarea.estado === "completada" ? "completada" : ""}">
+        <strong>${escaparHTML(tarea.titulo || "Tarea")}</strong>
+        <span>${escaparHTML(tarea.fechaLimite ? `Limite: ${tarea.fechaLimite}` : "Sin fecha limite")}</span>
+        ${tarea.indicaciones ? `<p>${escaparHTML(tarea.indicaciones)}</p>` : ""}
+        <button type="button" data-completar-tarea="${tarea.id}" ${modoVistaPrevia || tarea.estado === "completada" ? "disabled" : ""}>
+          ${tarea.estado === "completada" ? "Completada" : "Marcar como completada"}
+        </button>
+      </article>
+    `).join("");
+
+    document.querySelectorAll("[data-completar-tarea]").forEach((boton) => {
+      boton.addEventListener("click", () => completarTareaMiSalud(boton.dataset.completarTarea));
+    });
+  } catch (error) {
+    console.error("Error al cargar tareas:", error);
+    contenedor.textContent = "No se pudieron cargar las tareas.";
+  }
+}
+
+async function completarTareaMiSalud(tareaId) {
+  if (modoVistaPrevia) return;
+
+  await updateDoc(doc(db, "usuarios", uidSeguimiento, "tareasMiSalud", tareaId), {
+    estado: "completada",
+    completadaEn: serverTimestamp(),
+    completadaFechaISO: new Date().toISOString()
+  });
+
+  await cargarTareasMiSalud(uidSeguimiento);
 }
 
 async function cargarTratamiento(uid) {
@@ -431,6 +524,96 @@ async function guardarRegistroDiario() {
   }
 }
 
+async function guardarDiarioPersonal() {
+  if (modoVistaPrevia) {
+    alert("La vista previa del medico es de solo lectura.");
+    return;
+  }
+
+  const texto = obtenerValor("diarioTexto").trim();
+  const visibleMedico = document.getElementById("diarioVisibleMedico")?.checked === true;
+
+  if (!texto) {
+    alert("Escribe una entrada para tu diario.");
+    return;
+  }
+
+  try {
+    await addDoc(collection(db, "usuarios", uidSeguimiento, "diarioPersonal"), {
+      texto,
+      visibleMedico,
+      creadoPor: usuarioActual.uid,
+      creadoEn: serverTimestamp(),
+      fechaISO: new Date().toISOString()
+    });
+
+    const datosUsuario = await obtenerUsuario(usuarioActual.uid);
+    await registrarEventoAuditoria({
+      accion: "guardar_diario_personal",
+      modulo: "Mi Salud",
+      descripcion: visibleMedico
+        ? "El paciente guardo una entrada de diario visible para su medico."
+        : "El paciente guardo una entrada privada de diario.",
+      usuarioUid: usuarioActual.uid,
+      usuarioNombre: datosUsuario?.nombre || usuarioActual.email || "",
+      usuarioRol: datosUsuario?.rol || "",
+      pacienteUid: uidSeguimiento,
+      pacienteNombre: datosUsuario?.nombre || "",
+      exito: true,
+      detalles: {
+        visibleMedico,
+        longitudTexto: texto.length
+      }
+    });
+
+    limpiarCampo("diarioTexto");
+    const privacidad = document.getElementById("diarioVisibleMedico");
+    if (privacidad) privacidad.checked = false;
+    await cargarDiarioPersonal(uidSeguimiento);
+  } catch (error) {
+    console.error("Error al guardar diario:", error);
+    alert("No se pudo guardar la entrada del diario.");
+  }
+}
+
+async function cargarDiarioPersonal(uid) {
+  const contenedor = document.getElementById("listaDiarioPersonal");
+  if (!contenedor) return;
+
+  try {
+    const q = query(
+      collection(db, "usuarios", uid, "diarioPersonal"),
+      orderBy("fechaISO", "desc"),
+      limit(12)
+    );
+    const snap = await getDocs(q);
+    const entradas = snap.docs
+      .map((docEntrada) => ({ id: docEntrada.id, ...docEntrada.data() }))
+      .filter((entrada) => !modoVistaPrevia || entrada.visibleMedico === true);
+
+    if (!entradas.length) {
+      contenedor.textContent = modoVistaPrevia
+        ? "No hay entradas compartidas con el medico."
+        : "Sin entradas registradas.";
+      return;
+    }
+
+    contenedor.innerHTML = entradas.map((entrada) => {
+      const fecha = entrada.fechaISO ? new Date(entrada.fechaISO).toLocaleString("es-MX") : "Sin fecha";
+      return `
+        <article class="resultado-item diario-item">
+          <strong>${escaparHTML(fecha)}</strong>
+          <span>${entrada.visibleMedico ? "Visible para tu medico" : "Privado"}</span>
+          <p>${escaparHTML(entrada.texto || "")}</p>
+        </article>
+      `;
+    }).join("");
+  } catch (error) {
+    console.error("Error al cargar diario:", error);
+    contenedor.textContent = "No se pudo cargar el diario.";
+  }
+}
+
 function agregarItem(lista, texto) {
   const li = document.createElement("li");
   li.textContent = texto;
@@ -450,4 +633,13 @@ function obtenerValor(id) {
 function limpiarCampo(id) {
   const elemento = document.getElementById(id);
   if (elemento) elemento.value = "";
+}
+
+function escaparHTML(valor) {
+  return String(valor ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
 }

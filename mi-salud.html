@@ -97,13 +97,36 @@
       </div>
     </div>
 
+    <div class="card">
+      <h3>Tareas asignadas</h3>
+      <div id="listaTareasMiSalud" class="resultados-lista">
+        Sin tareas asignadas.
+      </div>
+    </div>
+
     <div class="card escala-card">
       <h3>Escalas clinicas</h3>
-      <p class="ayuda">Responde una escala. El resultado quedara disponible para tu medico en el expediente.</p>
+      <p class="ayuda">Tu medico activara aqui las escalas que considere necesarias para tu seguimiento.</p>
       <select id="selectorEscala"></select>
       <div id="descripcionEscala" class="descripcion-escala"></div>
       <div id="itemsEscala" class="items-escala"></div>
       <button id="guardarEscala">Guardar resultado</button>
+    </div>
+
+    <div class="card diario-card">
+      <h3>Mi diario</h3>
+      <p class="ayuda">Este espacio es tuyo. Puedes decidir si cada entrada sera visible para tu medico.</p>
+      <label>Entrada
+        <textarea id="diarioTexto" placeholder="Escribe lo que quieras registrar hoy."></textarea>
+      </label>
+      <label class="opcion-privacidad">
+        <input id="diarioVisibleMedico" type="checkbox">
+        Compartir esta entrada con mi medico
+      </label>
+      <button id="guardarDiario">Guardar en mi diario</button>
+      <div id="listaDiarioPersonal" class="resultados-lista diario-lista">
+        Sin entradas registradas.
+      </div>
     </div>
 
     <div class="card">

@@ -52,6 +52,53 @@
   <section class="card tabla-card">
     <div class="tabla-header">
       <div>
+        <h2>Usuarios y roles</h2>
+        <p>Administracion global de cuentas registradas en Firestore: cambio de rol y eliminacion de perfil.</p>
+      </div>
+      <button id="btnActualizarUsuariosAdmin">Actualizar usuarios</button>
+    </div>
+
+    <div class="filtros-auditoria">
+      <input id="filtroUsuariosAdmin" placeholder="Buscar nombre, correo, UID o rol">
+      <select id="filtroUsuariosRol">
+        <option value="">Todos los roles</option>
+        <option value="paciente">Pacientes</option>
+        <option value="medico">Medicos</option>
+        <option value="admin">Admin</option>
+      </select>
+    </div>
+
+    <div id="listaUsuariosAdmin" class="lista-pacientes-admin">
+      <p>Cargando usuarios...</p>
+    </div>
+  </section>
+
+  <section class="card tabla-card">
+    <div class="tabla-header">
+      <div>
+        <h2>Pacientes y notas</h2>
+        <p>Vista administrativa global de pacientes, notas medicas y acciones de eliminacion controlada.</p>
+      </div>
+      <button id="btnActualizarPacientesAdmin">Actualizar pacientes</button>
+    </div>
+
+    <div class="filtros-auditoria">
+      <input id="filtroPacientesAdmin" placeholder="Buscar paciente, correo, medico o diagnostico">
+      <select id="filtroPacientesEstado">
+        <option value="">Todos los estados</option>
+        <option value="activo">Activos</option>
+        <option value="suspendido">Suspendidos</option>
+      </select>
+    </div>
+
+    <div id="listaPacientesAdmin" class="lista-pacientes-admin">
+      <p>Cargando pacientes...</p>
+    </div>
+  </section>
+
+  <section class="card tabla-card">
+    <div class="tabla-header">
+      <div>
         <h2>Bitacora de auditoria</h2>
         <p>Actividad de medicos y pacientes: sesiones, modulos, notas, agenda, expediente y cambios clinicos relevantes.</p>
       </div>

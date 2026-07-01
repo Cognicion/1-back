@@ -19,7 +19,36 @@
     <button class="boton-secundario" onclick="window.location.href='dashboard.html'">
         Inicio
     </button>
+
+    <button class="boton-secundario" onclick="abrirBorradoresMedico()">
+        Borradores
+    </button>
 </div>
+
+<div id="fondoBorradoresMedico" class="fondo-borradores-medico oculto" onclick="cerrarBorradoresMedico()"></div>
+
+<section id="panelBorradoresMedico" class="panel-borradores-medico" aria-hidden="true">
+    <div class="panel-borradores-header">
+        <div>
+            <span>Borradores generales</span>
+            <small>Notas privadas del medico, visibles en todos los pacientes.</small>
+        </div>
+        <button type="button" class="boton-cerrar-panel" onclick="cerrarBorradoresMedico()">Cerrar</button>
+    </div>
+
+    <textarea
+        id="borradoresMedicoTexto"
+        class="borradores-medico-texto"
+        placeholder="Ideas, pendientes, frases clinicas, recordatorios o borradores generales..."
+    ></textarea>
+
+    <div class="panel-borradores-acciones">
+        <span id="estadoBorradoresMedico">Sin guardar</span>
+        <button type="button" class="boton-secundario" onclick="guardarBorradoresMedico()">
+            Guardar
+        </button>
+    </div>
+</section>
 
 <div class="contenedor">
 
@@ -33,6 +62,23 @@
         <option value="">Seleccionar paciente</option>
     </select>
 </div>
+
+<section class="panel-escala-nota">
+    <div class="panel-escala-header">
+        <div>
+            <h3>Aplicar escala</h3>
+            <p>Registrar resultado clínico del paciente desde la nota.</p>
+        </div>
+    </div>
+
+    <label for="selectorEscalaNota">Escala</label>
+    <select id="selectorEscalaNota"></select>
+    <div id="descripcionEscalaNota" class="descripcion-escala-nota"></div>
+    <div id="itemsEscalaNota" class="items-escala-nota"></div>
+    <button id="guardarEscalaNota" type="button">
+        Guardar escala
+    </button>
+</section>
 
 <label for="buscadorDiagnostico">Diagnostico visible para paciente (CIE-10)</label>
 <input

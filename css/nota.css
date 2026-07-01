@@ -106,6 +106,15 @@ button:hover{
     color: #7dd3fc;
 }
 
+.version-nota p {
+    margin: 0;
+    line-height: 1.15;
+}
+
+.version-nota p + p {
+    margin-top: 6px;
+}
+
 .barra-superior {
     position: fixed;
     top: 20px;
@@ -127,6 +136,103 @@ button:hover{
 
 .boton-secundario:hover {
     background: rgba(56, 189, 248, 0.15);
+}
+
+.acciones-historial-nota {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 16px;
+}
+
+.fondo-borradores-medico {
+    position: fixed;
+    inset: 0;
+    z-index: 180;
+    background: rgba(2, 6, 23, 0.58);
+    backdrop-filter: blur(8px);
+    animation: aparecerFondoBorradores 0.22s ease both;
+}
+
+.panel-borradores-medico {
+    position: fixed;
+    top: 84px;
+    left: 20px;
+    z-index: 190;
+    width: min(420px, calc(100vw - 40px));
+    max-height: calc(100vh - 110px);
+    display: grid;
+    grid-template-rows: auto minmax(260px, 1fr) auto;
+    gap: 14px;
+    padding: 18px;
+    border-radius: 22px;
+    border: 1px solid rgba(125, 211, 252, 0.28);
+    background:
+        radial-gradient(circle at top left, rgba(56, 189, 248, 0.14), transparent 34%),
+        rgba(8, 12, 20, 0.96);
+    box-shadow: 0 24px 70px rgba(0, 0, 0, 0.48), 0 0 30px rgba(56, 189, 248, 0.12);
+    transform: translateX(-28px) scale(0.98);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.22s ease, transform 0.22s ease;
+}
+
+.panel-borradores-medico.abierto {
+    transform: translateX(0) scale(1);
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.panel-borradores-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.panel-borradores-header span {
+    display: block;
+    color: #eaf4ff;
+    font-weight: 800;
+}
+
+.panel-borradores-header small {
+    display: block;
+    margin-top: 4px;
+    color: #94a3b8;
+    line-height: 1.35;
+}
+
+.boton-cerrar-panel {
+    flex: 0 0 auto;
+    padding: 8px 12px;
+    border-radius: 999px;
+    background: rgba(15, 23, 42, 0.9);
+    border: 1px solid rgba(148, 163, 184, 0.25);
+}
+
+.borradores-medico-texto {
+    min-height: 280px;
+    height: 46vh;
+    margin: 0;
+    line-height: 1.18;
+}
+
+.panel-borradores-acciones {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.panel-borradores-acciones span {
+    color: #94a3b8;
+    font-size: 13px;
+}
+
+@keyframes aparecerFondoBorradores {
+    from { opacity: 0; }
+    to { opacity: 1; }
 }
 
 .boton-pdf {
@@ -158,6 +264,69 @@ button:hover{
     color: #94a3b8;
     font-size: 13px;
     line-height: 1.5;
+}
+
+.panel-escala-nota {
+    float: right;
+    width: min(360px, 100%);
+    margin: 0 0 22px 24px;
+    padding: 18px;
+    border-radius: 22px;
+    border: 1px solid rgba(56,189,248,0.24);
+    background:
+        radial-gradient(circle at top right, rgba(56,189,248,0.13), transparent 38%),
+        rgba(8,12,20,0.72);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.04), 0 18px 50px rgba(0,0,0,0.22);
+}
+
+.panel-escala-header h3 {
+    margin: 0 0 6px;
+    color: #e0f2fe;
+}
+
+.panel-escala-header p,
+.descripcion-escala-nota {
+    margin: 0;
+    color: #94a3b8;
+    font-size: 13px;
+    line-height: 1.45;
+}
+
+.descripcion-escala-nota {
+    margin: 10px 0 12px;
+}
+
+.descripcion-escala-nota strong {
+    color: #7dd3fc;
+}
+
+.items-escala-nota {
+    display: grid;
+    gap: 10px;
+    max-height: 420px;
+    overflow: auto;
+    padding-right: 4px;
+}
+
+.item-escala-nota {
+    padding: 11px;
+    border-radius: 16px;
+    border: 1px solid rgba(148,163,184,0.16);
+    background: rgba(15,23,42,0.48);
+}
+
+.item-escala-nota label {
+    margin: 0;
+    line-height: 1.35;
+}
+
+.item-escala-nota select {
+    margin: 8px 0 0;
+}
+
+.panel-escala-nota button {
+    width: 100%;
+    margin-top: 14px;
 }
 
 .bloque-observacion {
@@ -306,6 +475,7 @@ button:hover{
     }
 
     .barra-superior,
+    .panel-escala-nota,
     button,
     select,
     #bloqueSelectorPaciente,
@@ -418,6 +588,12 @@ button:hover{
 }
 
 @media (max-width: 800px) {
+  .panel-escala-nota {
+    float: none;
+    width: 100%;
+    margin: 0 0 22px;
+  }
+
   .grid-diagnosticos {
     grid-template-columns: 1fr;
   }

@@ -63,12 +63,17 @@
           </div>
 
           <div class="dato">
+            <label>Expediente Cognicion</label>
+            <div id="expedienteCognicionPaciente">Sin expediente</div>
+          </div>
+
+          <div class="dato">
             <label>Fecha de nacimiento <button class="boton-editar-dato" onclick="editarCampoPaciente('fechaNacimiento', 'Fecha de nacimiento', 'date')">Editar</button></label>
             <div id="fechaNacimientoPaciente">Sin registro</div>
           </div>
 
           <div class="dato">
-            <label>Edad <button class="boton-editar-dato" onclick="editarCampoPaciente('edad', 'Edad', 'number')">Editar</button></label>
+            <label>Edad</label>
             <div id="edadPaciente">No registrada</div>
           </div>
 
@@ -188,6 +193,35 @@
         <p class="texto-suave">Resultados enviados por el paciente desde Mi Salud.</p>
         <div id="resultadosEscalasExpediente" class="resultados-escalas">
           Cargando resultados...
+        </div>
+      </div>
+
+      <div class="panel-doble">
+        <div class="tarjeta">
+          <h2>Escalas visibles en Mi Salud</h2>
+          <p class="texto-suave">El paciente solo vera las escalas que actives aqui.</p>
+          <div id="listaEscalasAsignables" class="panel-lista">Cargando escalas...</div>
+        </div>
+
+        <div class="tarjeta">
+          <div class="panel-header">
+            <div>
+              <h2>Tareas para Mi Salud</h2>
+              <p class="texto-suave">Indicaciones breves que apareceran en el panel del paciente.</p>
+            </div>
+          </div>
+
+          <div class="form-grid">
+            <label>Tarea<input id="tareaMiSaludTitulo" placeholder="Ej. Registrar estado de animo diario"></label>
+            <label>Fecha limite<input id="tareaMiSaludFecha" type="date"></label>
+          </div>
+          <label>Indicaciones
+            <textarea id="tareaMiSaludIndicaciones" placeholder="Describe la tarea de forma clara y breve."></textarea>
+          </label>
+          <div class="form-actions">
+            <button id="guardarTareaMiSalud" type="button">Asignar tarea</button>
+          </div>
+          <div id="listaTareasMiSaludMedico" class="panel-lista">Cargando tareas...</div>
         </div>
       </div>
     </section>
