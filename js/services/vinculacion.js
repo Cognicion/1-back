@@ -21,6 +21,7 @@ const SUBCOLECCIONES_USUARIO = [
   "escalasAsignadas",
   "tareasMiSalud",
   "diarioPersonal",
+  "apuntesMedico",
   "borradoresMedico"
 ];
 

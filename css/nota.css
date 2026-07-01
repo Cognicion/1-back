@@ -159,10 +159,10 @@ button:hover{
     top: 84px;
     left: 20px;
     z-index: 190;
-    width: min(420px, calc(100vw - 40px));
+    width: min(860px, calc(100vw - 40px));
     max-height: calc(100vh - 110px);
     display: grid;
-    grid-template-rows: auto minmax(260px, 1fr) auto;
+    grid-template-rows: auto minmax(360px, 1fr) auto;
     gap: 14px;
     padding: 18px;
     border-radius: 22px;
@@ -213,9 +213,81 @@ button:hover{
 
 .borradores-medico-texto {
     min-height: 280px;
-    height: 46vh;
+    height: 100%;
     margin: 0;
     line-height: 1.18;
+}
+
+.apuntes-layout {
+    display: grid;
+    grid-template-columns: 280px minmax(0, 1fr);
+    gap: 14px;
+    min-height: 360px;
+}
+
+.apuntes-lista-panel,
+.apunte-editor-panel {
+    min-height: 0;
+}
+
+.apuntes-lista-panel {
+    display: grid;
+    grid-template-rows: auto auto minmax(0, 1fr);
+    gap: 10px;
+}
+
+.apuntes-lista-panel input,
+.apunte-editor-panel input {
+    margin: 0;
+}
+
+.lista-apuntes-medico {
+    display: grid;
+    align-content: start;
+    gap: 8px;
+    overflow: auto;
+    padding-right: 4px;
+}
+
+.apunte-lista-item {
+    display: grid;
+    gap: 4px;
+    width: 100%;
+    margin: 0;
+    padding: 11px 12px;
+    border-radius: 14px;
+    border: 1px solid rgba(148,163,184,0.18);
+    background: rgba(15,23,42,0.62);
+    color: #dbeafe;
+    text-align: left;
+}
+
+.apunte-lista-item.activo {
+    border-color: rgba(56,189,248,0.48);
+    background: rgba(56,189,248,0.14);
+}
+
+.apunte-lista-item strong {
+    font-size: 13px;
+    color: #eaf4ff;
+}
+
+.apunte-lista-item span,
+.apuntes-vacio {
+    color: #94a3b8;
+    font-size: 12px;
+    line-height: 1.35;
+}
+
+.apunte-editor-panel {
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr);
+    gap: 10px;
+}
+
+.boton-peligro-suave {
+    border-color: rgba(248,113,113,0.35);
+    color: #fecaca;
 }
 
 .panel-borradores-acciones {
@@ -588,6 +660,16 @@ button:hover{
 }
 
 @media (max-width: 800px) {
+  .apuntes-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .panel-borradores-medico {
+    left: 12px;
+    right: 12px;
+    width: auto;
+  }
+
   .panel-escala-nota {
     float: none;
     width: 100%;

@@ -15,6 +15,11 @@ import {
   getDoc,
   collection,
   addDoc,
+  getDocs,
+  updateDoc,
+  deleteDoc,
+  query,
+  orderBy,
   serverTimestamp,
   setDoc
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
@@ -43,6 +48,7 @@ let notasHistorialOrdenadas = [];
 let historiaClinicaActual = {};
 let pacienteActualDatos = {};
 let uidMedicoActual = "";
+let apuntesMedicoCache = [];
 
 iniciarMonitoreoSesion("Nota medica");
 
@@ -668,21 +674,59 @@ window.cancelarEdicionNota = function() {
   limpiarFormularioNota();
 };
 
-function referenciaBorradoresMedico() {
+function referenciaApuntesMedico() {
   if (!uidMedicoActual) return null;
-  return doc(db, "usuarios", uidMedicoActual, "borradoresMedico", "notasGenerales");
+  return collection(db, "usuarios", uidMedicoActual, "apuntesMedico");
+}
+
+async function migrarBorradorLegacySiExiste() {
+  if (!uidMedicoActual) return;
+
+  const refLegacy = doc(db, "usuarios", uidMedicoActual, "borradoresMedico", "notasGenerales");
+  const snapLegacy = await getDoc(refLegacy);
+
+  if (!snapLegacy.exists() || !snapLegacy.data().contenido) return;
+
+  const refApuntes = referenciaApuntesMedico();
+  if (!refApuntes) return;
+
+  await addDoc(refApuntes, {
+    titulo: "Borrador general",
+    contenido: snapLegacy.data().contenido || "",
+    fechaCreacion: new Date().toISOString(),
+    fechaActualizacion: new Date().toISOString(),
+    migradoDesdeBorrador: true
+  });
+
+  await deleteDoc(refLegacy);
 }
 
 async function cargarBorradoresMedico() {
-  const texto = document.getElementById("borradoresMedicoTexto");
   const estado = document.getElementById("estadoBorradoresMedico");
-  const ref = referenciaBorradoresMedico();
+  const ref = referenciaApuntesMedico();
 
-  if (!texto || !ref) return;
+  if (!ref) return;
+  if (estado) estado.textContent = "Cargando...";
 
-  const snap = await getDoc(ref);
-  texto.value = snap.exists() ? snap.data().contenido || "" : "";
-  if (estado) estado.textContent = snap.exists() ? "Guardado" : "Sin guardar";
+  await migrarBorradorLegacySiExiste();
+
+  const qApuntes = query(ref, orderBy("fechaActualizacion", "desc"));
+  const snap = await getDocs(qApuntes);
+
+  apuntesMedicoCache = snap.docs.map((docApunte) => ({
+    id: docApunte.id,
+    ...docApunte.data()
+  }));
+
+  renderizarListaApuntes();
+
+  if (apuntesMedicoCache.length > 0) {
+    seleccionarApunteMedico(apuntesMedicoCache[0].id);
+  } else {
+    nuevoApunteMedico();
+  }
+
+  if (estado) estado.textContent = apuntesMedicoCache.length ? "Guardado" : "Sin apuntes";
 }
 
 window.abrirBorradoresMedico = function() {
@@ -692,7 +736,7 @@ window.abrirBorradoresMedico = function() {
   fondo?.classList.remove("oculto");
   panel?.classList.add("abierto");
   panel?.setAttribute("aria-hidden", "false");
-  document.getElementById("borradoresMedicoTexto")?.focus();
+  document.getElementById("buscadorApuntesMedico")?.focus();
 };
 
 window.cerrarBorradoresMedico = function() {
@@ -711,23 +755,102 @@ window.cerrarBorradoresMedico = function() {
 
 window.guardarBorradoresMedico = async function() {
   const texto = document.getElementById("borradoresMedicoTexto");
+  const titulo = document.getElementById("apunteMedicoTitulo");
+  const id = document.getElementById("apunteMedicoId")?.value;
   const estado = document.getElementById("estadoBorradoresMedico");
-  const ref = referenciaBorradoresMedico();
+  const ref = referenciaApuntesMedico();
 
   if (!texto || !ref) {
-    alert("No se pudo identificar al medico para guardar el borrador.");
+    alert("No se pudo identificar al medico para guardar el apunte.");
     return;
   }
 
   if (estado) estado.textContent = "Guardando...";
 
-  await setDoc(ref, {
+  const payload = {
+    titulo: titulo?.value.trim() || "Sin titulo",
     contenido: texto.value,
-    fechaActualizacion: serverTimestamp()
-  }, { merge: true });
+    fechaActualizacion: new Date().toISOString(),
+    fechaActualizacionServidor: serverTimestamp()
+  };
+
+  if (id) {
+    await updateDoc(doc(db, "usuarios", uidMedicoActual, "apuntesMedico", id), payload);
+  } else {
+    const nuevo = await addDoc(ref, {
+      ...payload,
+      fechaCreacion: new Date().toISOString()
+    });
+    document.getElementById("apunteMedicoId").value = nuevo.id;
+  }
 
   if (estado) estado.textContent = "Guardado";
+  await cargarBorradoresMedico();
 };
+
+window.nuevoApunteMedico = function() {
+  document.getElementById("apunteMedicoId").value = "";
+  document.getElementById("apunteMedicoTitulo").value = "";
+  document.getElementById("borradoresMedicoTexto").value = "";
+  const estado = document.getElementById("estadoBorradoresMedico");
+  if (estado) estado.textContent = "Nuevo apunte";
+  document.getElementById("apunteMedicoTitulo")?.focus();
+};
+
+window.seleccionarApunteMedico = function(id) {
+  const apunte = apuntesMedicoCache.find((item) => item.id === id);
+  if (!apunte) return;
+
+  document.getElementById("apunteMedicoId").value = apunte.id;
+  document.getElementById("apunteMedicoTitulo").value = apunte.titulo || "";
+  document.getElementById("borradoresMedicoTexto").value = apunte.contenido || "";
+  const estado = document.getElementById("estadoBorradoresMedico");
+  if (estado) estado.textContent = "Guardado";
+  renderizarListaApuntes();
+};
+
+window.eliminarApunteMedicoActual = async function() {
+  const id = document.getElementById("apunteMedicoId")?.value;
+  if (!id) {
+    nuevoApunteMedico();
+    return;
+  }
+
+  if (!confirm("Eliminar este apunte?")) return;
+
+  await deleteDoc(doc(db, "usuarios", uidMedicoActual, "apuntesMedico", id));
+  await cargarBorradoresMedico();
+};
+
+function renderizarListaApuntes() {
+  const lista = document.getElementById("listaApuntesMedico");
+  const buscador = document.getElementById("buscadorApuntesMedico");
+  const activo = document.getElementById("apunteMedicoId")?.value;
+  if (!lista) return;
+
+  const textoBusqueda = (buscador?.value || "").trim().toLowerCase();
+  const filtrados = apuntesMedicoCache.filter((apunte) => {
+    const titulo = (apunte.titulo || "").toLowerCase();
+    const contenido = (apunte.contenido || "").toLowerCase();
+    return !textoBusqueda || titulo.includes(textoBusqueda) || contenido.includes(textoBusqueda);
+  });
+
+  if (!filtrados.length) {
+    lista.innerHTML = `<p class="apuntes-vacio">No se encontraron apuntes.</p>`;
+    return;
+  }
+
+  lista.innerHTML = filtrados.map((apunte) => `
+    <button
+      type="button"
+      class="apunte-lista-item ${apunte.id === activo ? "activo" : ""}"
+      onclick="seleccionarApunteMedico('${apunte.id}')"
+    >
+      <strong>${escaparHTML(apunte.titulo || "Sin titulo")}</strong>
+      <span>${escaparHTML((apunte.contenido || "").slice(0, 90))}</span>
+    </button>
+  `).join("");
+}
 
 function bloqueContenidoNota(datos, titulo) {
   const esRapida = datos.tipoNota === "rapida" || datos.notaRapida;
@@ -822,6 +945,12 @@ onAuthStateChanged(auth, async (user) => {
     const estado = document.getElementById("estadoBorradoresMedico");
     if (estado) estado.textContent = "Cambios sin guardar";
   });
+  document.getElementById("apunteMedicoTitulo")?.addEventListener("input", () => {
+    const estado = document.getElementById("estadoBorradoresMedico");
+    if (estado) estado.textContent = "Cambios sin guardar";
+    renderizarListaApuntes();
+  });
+  document.getElementById("buscadorApuntesMedico")?.addEventListener("input", renderizarListaApuntes);
 
   const parametros = new URLSearchParams(window.location.search);
   uidPacienteActual = parametros.get("id");

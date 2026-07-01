@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mis apuntes | Cognicion</title>
+  <link rel="icon" type="image/png" href="assets/favicon-cognicion.png">
+  <link rel="stylesheet" href="css/apuntes.css">
+</head>
+
+<body class="bloqueado">
+  <header class="topbar-apuntes">
+    <div>
+      <h1>Mis apuntes</h1>
+      <p>Apuntes privados del medico, disponibles en todas las notas.</p>
+    </div>
+    <nav>
+      <a href="nota.html">Notas</a>
+      <a href="dashboard.html">Inicio</a>
+    </nav>
+  </header>
+
+  <main class="apuntes-shell">
+    <aside class="apuntes-sidebar">
+      <input id="buscadorApuntes" placeholder="Buscar por titulo o texto...">
+      <button id="nuevoApunte" type="button">Nuevo apunte</button>
+      <div id="listaApuntes" class="lista-apuntes">Cargando apuntes...</div>
+    </aside>
+
+    <section class="apuntes-editor">
+      <input id="apunteId" type="hidden">
+      <input id="apunteTitulo" placeholder="Titulo del apunte">
+      <textarea id="apunteContenido" placeholder="Escribe tus apuntes, ideas clinicas o borradores..."></textarea>
+      <div class="acciones-apuntes">
+        <span id="estadoApuntes">Sin guardar</span>
+        <button id="guardarApunte" type="button">Guardar</button>
+        <button id="eliminarApunte" type="button" class="boton-peligro">Eliminar</button>
+      </div>
+    </section>
+  </main>
+
+  <script type="module" src="js/apuntes.js"></script>
+</body>
+</html>

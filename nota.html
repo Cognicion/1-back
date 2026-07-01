@@ -21,7 +21,11 @@
     </button>
 
     <button class="boton-secundario" onclick="abrirBorradoresMedico()">
-        Borradores
+        Mis apuntes
+    </button>
+
+    <button class="boton-secundario" onclick="window.location.href='apuntes.html'">
+        Página de apuntes
     </button>
 </div>
 
@@ -30,22 +34,39 @@
 <section id="panelBorradoresMedico" class="panel-borradores-medico" aria-hidden="true">
     <div class="panel-borradores-header">
         <div>
-            <span>Borradores generales</span>
-            <small>Notas privadas del medico, visibles en todos los pacientes.</small>
+            <span>Mis apuntes</span>
+            <small>Apuntes privados del medico, disponibles en todos los pacientes.</small>
         </div>
         <button type="button" class="boton-cerrar-panel" onclick="cerrarBorradoresMedico()">Cerrar</button>
     </div>
 
-    <textarea
-        id="borradoresMedicoTexto"
-        class="borradores-medico-texto"
-        placeholder="Ideas, pendientes, frases clinicas, recordatorios o borradores generales..."
-    ></textarea>
+    <div class="apuntes-layout">
+        <aside class="apuntes-lista-panel">
+            <input id="buscadorApuntesMedico" placeholder="Buscar por titulo o texto...">
+            <button type="button" class="boton-secundario" onclick="nuevoApunteMedico()">Nuevo apunte</button>
+            <div id="listaApuntesMedico" class="lista-apuntes-medico">
+                Cargando apuntes...
+            </div>
+        </aside>
+
+        <section class="apunte-editor-panel">
+            <input id="apunteMedicoId" type="hidden">
+            <input id="apunteMedicoTitulo" placeholder="Titulo del apunte">
+            <textarea
+                id="borradoresMedicoTexto"
+                class="borradores-medico-texto"
+                placeholder="Ideas, pendientes, frases clinicas, recordatorios o borradores generales..."
+            ></textarea>
+        </section>
+    </div>
 
     <div class="panel-borradores-acciones">
         <span id="estadoBorradoresMedico">Sin guardar</span>
         <button type="button" class="boton-secundario" onclick="guardarBorradoresMedico()">
             Guardar
+        </button>
+        <button type="button" class="boton-secundario boton-peligro-suave" onclick="eliminarApunteMedicoActual()">
+            Eliminar
         </button>
     </div>
 </section>
