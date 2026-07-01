@@ -302,6 +302,40 @@ button:hover{
     font-size: 13px;
 }
 
+.lista-notas-flotantes-nota {
+    display: grid;
+    gap: 10px;
+    overflow: auto;
+    min-height: 0;
+    padding-right: 4px;
+}
+
+.nota-flotante-nota {
+    border: 1px solid rgba(56,189,248,0.24);
+    border-radius: 16px;
+    background: rgba(8,12,20,0.78);
+    overflow: hidden;
+}
+
+.nota-flotante-nota summary {
+    cursor: pointer;
+    padding: 12px 14px;
+    color: #eaf4ff;
+    font-weight: 800;
+    list-style: none;
+}
+
+.nota-flotante-nota summary::-webkit-details-marker {
+    display: none;
+}
+
+.nota-flotante-nota p {
+    margin: 0;
+    padding: 0 14px 14px;
+    color: #cbd5e1;
+    line-height: 1.5;
+}
+
 @keyframes aparecerFondoBorradores {
     from { opacity: 0; }
     to { opacity: 1; }

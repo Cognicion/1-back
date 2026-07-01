@@ -24,6 +24,10 @@
         Mis apuntes
     </button>
 
+    <button class="boton-secundario" onclick="abrirNotasFlotantesPaciente()">
+        Notas flotantes
+    </button>
+
     <button class="boton-secundario" onclick="window.location.href='apuntes.html'">
         Página de apuntes
     </button>
@@ -68,6 +72,22 @@
         <button type="button" class="boton-secundario boton-peligro-suave" onclick="eliminarApunteMedicoActual()">
             Eliminar
         </button>
+    </div>
+</section>
+
+<div id="fondoNotasFlotantesPaciente" class="fondo-borradores-medico oculto" onclick="cerrarNotasFlotantesPaciente()"></div>
+
+<section id="panelNotasFlotantesPaciente" class="panel-borradores-medico panel-notas-flotantes-paciente" aria-hidden="true">
+    <div class="panel-borradores-header">
+        <div>
+            <span>Notas flotantes del paciente</span>
+            <small>Apuntes vivos del expediente, editables desde el panel del paciente.</small>
+        </div>
+        <button type="button" class="boton-cerrar-panel" onclick="cerrarNotasFlotantesPaciente()">Cerrar</button>
+    </div>
+
+    <div id="listaNotasFlotantesNota" class="lista-notas-flotantes-nota">
+        Selecciona un paciente para cargar sus notas flotantes.
     </div>
 </section>
 

@@ -239,6 +239,9 @@ function ocultarSecciones() {
     "seccionResultadosEscalas",
     "seccionTratamiento",
     "seccionDiagnosticos",
+    "seccionCarpetas",
+    "seccionNotasFlotantes",
+    "seccionInterconsulta",
     "seccionEstudios",
     "seccionNotasRapidas"
   ].forEach((id) => {
@@ -401,7 +404,7 @@ function renderizarPanelDiagnosticos() {
         <div class="registro-actions">
           ${esPrincipal ? "" : `<button type="button" data-principal-diagnostico="${index}">Marcar principal</button>`}
           <button type="button" data-reemplazar-diagnostico="${index}">Cambiar por catalogo</button>
-          <button type="button" data-editar-diagnostico="${index}">Ajustar texto</button>
+          <button type="button" data-editar-diagnostico="${index}">Editar codigo/texto</button>
           <button type="button" class="boton-peligro" data-quitar-diagnostico="${index}">Quitar</button>
         </div>
       </article>
@@ -580,6 +583,25 @@ window.mostrarDiagnosticos = function() {
   document.getElementById("seccionDiagnosticos").style.display = "block";
   renderizarPanelDiagnosticos();
   renderizarResultadosBusquedaDiagnosticos();
+};
+
+window.mostrarCarpetas = async function() {
+  ocultarSecciones();
+  document.getElementById("seccionCarpetas").style.display = "block";
+  await cargarCarpetasPaciente();
+};
+
+window.mostrarNotasFlotantes = async function() {
+  ocultarSecciones();
+  document.getElementById("seccionNotasFlotantes").style.display = "block";
+  await cargarNotasFlotantesPaciente();
+};
+
+window.mostrarInterconsulta = async function() {
+  ocultarSecciones();
+  document.getElementById("seccionInterconsulta").style.display = "block";
+  ponerValor("interconsultaFecha", new Date().toISOString().slice(0, 10));
+  await cargarInterconsultasPaciente();
 };
 
 window.mostrarEstudios = async function() {
@@ -1129,7 +1151,13 @@ async function guardarHistorialDiagnosticos(historial, principal = null) {
 
   await actualizarUsuario(uidPaciente, {
     diagnostico: diagnosticoPrincipal || deleteField(),
-    historialDiagnosticos: limpio
+    historialDiagnosticos: limpio,
+    datosClinicosResumen: {
+      ...(datosPacienteActual?.datosClinicosResumen || {}),
+      diagnostico: diagnosticoPrincipal || null,
+      historialDiagnosticos: limpio,
+      fechaActualizacionDiagnosticos: new Date().toISOString()
+    }
   });
 
   datosPacienteActual = {
@@ -1216,13 +1244,24 @@ async function editarDiagnosticoPaciente(index) {
 
   if (!diagnostico) return;
 
-  const texto = prompt("Texto del diagnostico:", diagnostico.texto || diagnostico.nombre || "");
+  const catalogo = prompt("Catalogo:", diagnostico.catalogo || "CIE-10");
+  if (catalogo === null) return;
+
+  const codigo = prompt("Codigo diagnostico:", diagnostico.codigo || "");
+  if (codigo === null) return;
+
+  const nombre = prompt("Nombre diagnostico:", diagnostico.nombre || diagnostico.texto || "");
+  if (nombre === null) return;
+
+  const texto = prompt("Texto visible del diagnostico:", diagnostico.texto || diagnostico.nombre || "");
   if (texto === null) return;
 
   const actualizado = {
     ...diagnostico,
-    nombre: texto.trim() || diagnostico.nombre,
-    texto: texto.trim() || diagnostico.texto || diagnostico.nombre,
+    catalogo: catalogo.trim() || diagnostico.catalogo || "Manual",
+    codigo: codigo.trim(),
+    nombre: nombre.trim() || texto.trim() || diagnostico.nombre,
+    texto: texto.trim() || nombre.trim() || diagnostico.texto || diagnostico.nombre,
     fechaSeleccion: diagnostico.fechaSeleccion || new Date().toISOString()
   };
 
@@ -1243,6 +1282,44 @@ async function editarDiagnosticoPaciente(index) {
     }
   });
 
+  await cargarDatosPaciente();
+}
+
+async function agregarDiagnosticoManualPaciente() {
+  const catalogo = valorCampo("diagnosticoManualCatalogo") || "Manual";
+  const codigo = valorCampo("diagnosticoManualCodigo");
+  const nombre = valorCampo("diagnosticoManualNombre");
+  const texto = valorCampo("diagnosticoManualTexto") || nombre;
+
+  if (!codigo && !texto) {
+    alert("Escribe al menos un codigo o un texto diagnostico.");
+    return;
+  }
+
+  const diagnostico = normalizarDiagnostico({
+    catalogo,
+    codigo,
+    nombre: nombre || texto || codigo,
+    texto: texto || nombre || codigo,
+    manual: true
+  }, catalogo);
+
+  const historial = obtenerHistorialDiagnosticos();
+  const nuevoHistorial = [...historial, diagnostico];
+  const debeSerPrincipal = !datosPacienteActual?.diagnostico;
+
+  await guardarHistorialDiagnosticos(nuevoHistorial, debeSerPrincipal ? diagnostico : datosPacienteActual?.diagnostico);
+
+  await registrarAccionExpediente({
+    accion: "agregar_diagnostico_manual",
+    descripcion: "El medico agrego un diagnostico manual al expediente.",
+    detalles: {
+      diagnostico: formatearDiagnostico(diagnostico),
+      catalogo
+    }
+  });
+
+  ["diagnosticoManualCodigo", "diagnosticoManualNombre", "diagnosticoManualTexto"].forEach((id) => ponerValor(id, ""));
   await cargarDatosPaciente();
 }
 
@@ -1270,6 +1347,326 @@ async function quitarDiagnosticoPaciente(index) {
   });
 
   await cargarDatosPaciente();
+}
+
+async function cargarCarpetasPaciente() {
+  const selector = document.getElementById("selectorCarpetasPaciente");
+  const lista = document.getElementById("listaCarpetasPaciente");
+  if (!selector || !lista) return;
+
+  const uidMedico = auth.currentUser?.uid;
+  const carpetasAsignadas = Array.isArray(datosPacienteActual?.carpetas)
+    ? datosPacienteActual.carpetas
+    : [];
+
+  selector.innerHTML = `<option value="">Seleccionar carpeta</option>`;
+
+  if (uidMedico) {
+    const snap = await getDocs(query(collection(db, "usuarios", uidMedico, "carpetasPacientes"), orderBy("nombre", "asc")));
+    snap.forEach((docCarpeta) => {
+      const carpeta = docCarpeta.data();
+      selector.innerHTML += `<option value="${escaparHTML(carpeta.nombre || "")}">${escaparHTML(carpeta.nombre || "Sin nombre")}</option>`;
+    });
+  }
+
+  lista.innerHTML = carpetasAsignadas.length
+    ? carpetasAsignadas.map((nombre) => `
+      <article class="registro-card">
+        <div class="registro-top">
+          <strong>${escaparHTML(nombre)}</strong>
+          <button type="button" class="boton-peligro" data-quitar-carpeta="${escaparHTML(nombre)}">Quitar</button>
+        </div>
+      </article>
+    `).join("")
+    : "<p>Este paciente aun no esta en carpetas.</p>";
+
+  lista.querySelectorAll("[data-quitar-carpeta]").forEach((boton) => {
+    boton.addEventListener("click", () => quitarCarpetaPaciente(boton.dataset.quitarCarpeta));
+  });
+}
+
+async function asignarCarpetaPorNombre(nombre) {
+  const carpeta = String(nombre || "").trim();
+  if (!carpeta) {
+    alert("Escribe o selecciona una carpeta.");
+    return;
+  }
+
+  const uidMedico = auth.currentUser?.uid;
+  if (uidMedico) {
+    await setDoc(doc(db, "usuarios", uidMedico, "carpetasPacientes", carpeta.toLowerCase().replace(/\s+/g, "-")), {
+      nombre: carpeta,
+      fechaActualizacion: new Date().toISOString()
+    }, { merge: true });
+  }
+
+  const actuales = Array.isArray(datosPacienteActual?.carpetas) ? datosPacienteActual.carpetas : [];
+  const carpetas = Array.from(new Set([...actuales, carpeta]));
+
+  await actualizarUsuario(uidPaciente, { carpetas });
+  datosPacienteActual = { ...(datosPacienteActual || {}), carpetas };
+  ponerValor("nuevaCarpetaPaciente", "");
+
+  await registrarAccionExpediente({
+    accion: "asignar_carpeta_paciente",
+    descripcion: "El medico asigno el paciente a una carpeta.",
+    detalles: { carpeta }
+  });
+
+  await cargarCarpetasPaciente();
+}
+
+async function quitarCarpetaPaciente(nombre) {
+  const carpeta = String(nombre || "").trim();
+  const actuales = Array.isArray(datosPacienteActual?.carpetas) ? datosPacienteActual.carpetas : [];
+  const carpetas = actuales.filter((item) => item !== carpeta);
+  await actualizarUsuario(uidPaciente, { carpetas });
+  datosPacienteActual = { ...(datosPacienteActual || {}), carpetas };
+  await cargarCarpetasPaciente();
+}
+
+async function cargarNotasFlotantesPaciente() {
+  const lista = document.getElementById("listaNotasFlotantesPaciente");
+  if (!lista) return;
+
+  const snap = await getDocs(query(collection(db, "usuarios", uidPaciente, "notasFlotantes"), orderBy("fechaActualizacion", "desc")));
+
+  if (snap.empty) {
+    lista.innerHTML = "<p>No hay notas flotantes registradas.</p>";
+    return;
+  }
+
+  lista.innerHTML = snap.docs.map((docNota) => {
+    const nota = docNota.data();
+    const abierta = nota.contraida ? "" : " open";
+    return `
+      <details class="nota-flotante-card"${abierta}>
+        <summary>
+          <strong>${escaparHTML(nota.titulo || "Nota flotante")}</strong>
+          <span>${nota.contraida ? "Contraida" : "Visible"}</span>
+        </summary>
+        <p>${escaparHTML(nota.texto || "").replace(/\n/g, "<br>")}</p>
+        <div class="registro-actions">
+          <button type="button" data-editar-nota-flotante="${docNota.id}">Editar</button>
+          <button type="button" class="boton-peligro" data-eliminar-nota-flotante="${docNota.id}">Eliminar</button>
+        </div>
+      </details>
+    `;
+  }).join("");
+
+  lista.querySelectorAll("[data-editar-nota-flotante]").forEach((boton) => {
+    boton.addEventListener("click", () => editarNotaFlotantePaciente(boton.dataset.editarNotaFlotante));
+  });
+
+  lista.querySelectorAll("[data-eliminar-nota-flotante]").forEach((boton) => {
+    boton.addEventListener("click", () => eliminarNotaFlotantePaciente(boton.dataset.eliminarNotaFlotante));
+  });
+}
+
+async function guardarNotaFlotantePaciente() {
+  const id = valorCampo("notaFlotanteId");
+  const titulo = valorCampo("notaFlotanteTitulo") || "Nota flotante";
+  const texto = valorCampo("notaFlotanteTexto");
+  const contraida = valorCampo("notaFlotanteContraida") === "true";
+
+  if (!texto) {
+    alert("Escribe el contenido de la nota flotante.");
+    return;
+  }
+
+  const payload = {
+    titulo,
+    texto,
+    contraida,
+    medicoUid: auth.currentUser?.uid || "",
+    fechaActualizacion: new Date().toISOString()
+  };
+
+  if (id) {
+    await updateDoc(doc(db, "usuarios", uidPaciente, "notasFlotantes", id), payload);
+  } else {
+    await addDoc(collection(db, "usuarios", uidPaciente, "notasFlotantes"), {
+      ...payload,
+      fechaCreacion: new Date().toISOString()
+    });
+  }
+
+  limpiarNotaFlotantePaciente();
+  await cargarNotasFlotantesPaciente();
+}
+
+function limpiarNotaFlotantePaciente() {
+  ponerValor("notaFlotanteId", "");
+  ponerValor("notaFlotanteTitulo", "");
+  ponerValor("notaFlotanteTexto", "");
+  ponerValor("notaFlotanteContraida", "false");
+}
+
+async function editarNotaFlotantePaciente(id) {
+  const snap = await getDocs(query(collection(db, "usuarios", uidPaciente, "notasFlotantes"), orderBy("fechaActualizacion", "desc")));
+  const docNota = snap.docs.find((item) => item.id === id);
+  if (!docNota) return;
+  const nota = docNota.data();
+  ponerValor("notaFlotanteId", id);
+  ponerValor("notaFlotanteTitulo", nota.titulo || "");
+  ponerValor("notaFlotanteTexto", nota.texto || "");
+  ponerValor("notaFlotanteContraida", nota.contraida ? "true" : "false");
+  document.getElementById("notaFlotanteTitulo")?.scrollIntoView({ behavior: "smooth", block: "center" });
+}
+
+async function eliminarNotaFlotantePaciente(id) {
+  if (!confirm("Eliminar esta nota flotante?")) return;
+  await deleteDoc(doc(db, "usuarios", uidPaciente, "notasFlotantes", id));
+  await cargarNotasFlotantesPaciente();
+}
+
+function datosInterconsultaFormulario() {
+  return {
+    formato: valorCampo("interconsultaFormato") || "cognicion",
+    servicio: valorCampo("interconsultaServicio"),
+    prioridad: valorCampo("interconsultaPrioridad") || "ordinaria",
+    fecha: valorCampo("interconsultaFecha") || new Date().toISOString().slice(0, 10),
+    motivo: valorCampo("interconsultaMotivo"),
+    resumen: valorCampo("interconsultaResumen"),
+    pregunta: valorCampo("interconsultaPregunta"),
+    pacienteNombre: datosPacienteActual?.nombre || "",
+    expediente: datosPacienteActual?.expediente || datosPacienteActual?.numeroExpediente || "",
+    cama: datosPacienteActual?.cama || "",
+    diagnostico: formatearDiagnostico(datosPacienteActual?.diagnostico),
+    medicoSolicitante: datosPacienteActual?.medicoTratante || ""
+  };
+}
+
+async function guardarInterconsultaPaciente() {
+  const datos = datosInterconsultaFormulario();
+  if (!datos.servicio || !datos.motivo) {
+    alert("Indica el servicio solicitado y el motivo de interconsulta.");
+    return;
+  }
+
+  await addDoc(collection(db, "usuarios", uidPaciente, "interconsultas"), {
+    ...datos,
+    medicoUid: auth.currentUser?.uid || "",
+    fechaCreacion: new Date().toISOString()
+  });
+
+  await registrarAccionExpediente({
+    accion: "solicitar_interconsulta",
+    descripcion: "El medico registro una solicitud de interconsulta.",
+    detalles: { servicio: datos.servicio, formato: datos.formato }
+  });
+
+  await cargarInterconsultasPaciente();
+  alert("Interconsulta guardada.");
+}
+
+async function cargarInterconsultasPaciente() {
+  const lista = document.getElementById("listaInterconsultasPaciente");
+  if (!lista) return;
+
+  const snap = await getDocs(query(collection(db, "usuarios", uidPaciente, "interconsultas"), orderBy("fechaCreacion", "desc")));
+
+  lista.innerHTML = snap.empty
+    ? "<p>No hay interconsultas registradas.</p>"
+    : snap.docs.map((docInterconsulta) => {
+      const item = docInterconsulta.data();
+      return `
+        <article class="registro-card">
+          <div class="registro-top">
+            <strong>${escaparHTML(item.servicio || "Interconsulta")}</strong>
+            <span class="estado-badge">${escaparHTML(item.formato || "cognicion")}</span>
+          </div>
+          <p>${escaparHTML(item.motivo || "")}</p>
+          <small>${escaparHTML(item.fecha || "")} · ${escaparHTML(item.prioridad || "")}</small>
+        </article>
+      `;
+    }).join("");
+}
+
+async function recursoDataUriPaciente(ruta) {
+  const respuesta = await fetch(ruta);
+  const blob = await respuesta.blob();
+  return await new Promise((resolve, reject) => {
+    const lector = new FileReader();
+    lector.onloadend = () => resolve(lector.result);
+    lector.onerror = reject;
+    lector.readAsDataURL(blob);
+  });
+}
+
+async function htmlInterconsultaWord(datos) {
+  const logoSalud = datos.formato === "fray"
+    ? await recursoDataUriPaciente("assets/fray-observacion-salud-conasama-stack.png")
+    : "";
+  const logoFray = datos.formato === "fray"
+    ? await recursoDataUriPaciente("assets/fray-observacion-image2.png")
+    : "";
+
+  const encabezadoFray = `
+    <table style="width:100%; border-collapse:collapse; margin-bottom:8pt;">
+      <tr>
+        <td style="width:30%;"><img src="${logoSalud}" style="width:118px;"></td>
+        <td style="width:40%; text-align:center; font-weight:bold;">
+          SECRETARIA DE SALUD<br>
+          COMISION NACIONAL DE SALUD MENTAL Y ADICCIONES<br>
+          HOSPITAL PSIQUIATRICO "FRAY BERNARDINO ALVAREZ"
+        </td>
+        <td style="width:30%; text-align:right;"><img src="${logoFray}" style="width:58px;"></td>
+      </tr>
+    </table>
+    <hr style="border:0; border-top:1px dashed #777;">
+  `;
+
+  const encabezadoCognicion = `<h1>Cognicion · Solicitud de interconsulta</h1>`;
+
+  return `
+    <html>
+      <head>
+        <meta charset="UTF-8">
+        <style>
+          @page WordSection1 { size: 21.59cm 27.94cm; margin: 1.27cm; }
+          div.WordSection1 { page: WordSection1; }
+          body { font-family: Arial, sans-serif; font-size: 10pt; color: #111; }
+          h1 { text-align:center; font-size: 13pt; text-transform: uppercase; }
+          h2 { font-size: 10pt; margin: 10pt 0 4pt; }
+          p { margin: 0; line-height: 1.1; }
+          table.datos { width:100%; border-collapse: collapse; margin: 8pt 0; }
+          table.datos td { border: 1px solid #777; padding: 4pt; vertical-align: top; }
+        </style>
+      </head>
+      <body>
+        <div class="WordSection1">
+          ${datos.formato === "fray" ? encabezadoFray : encabezadoCognicion}
+          <h1>Solicitud de interconsulta</h1>
+          <table class="datos">
+            <tr><td><b>Paciente:</b> ${escaparHTML(datos.pacienteNombre)}</td><td><b>Expediente:</b> ${escaparHTML(datos.expediente)}</td><td><b>Cama:</b> ${escaparHTML(datos.cama)}</td></tr>
+            <tr><td><b>Servicio solicitado:</b> ${escaparHTML(datos.servicio)}</td><td><b>Prioridad:</b> ${escaparHTML(datos.prioridad)}</td><td><b>Fecha:</b> ${escaparHTML(datos.fecha)}</td></tr>
+            <tr><td colspan="3"><b>Diagnostico:</b> ${escaparHTML(datos.diagnostico)}</td></tr>
+          </table>
+          <h2>Motivo de interconsulta</h2><p>${escaparHTML(datos.motivo).replace(/\n/g, "<br>")}</p>
+          <h2>Resumen clinico</h2><p>${escaparHTML(datos.resumen).replace(/\n/g, "<br>")}</p>
+          <h2>Pregunta clinica</h2><p>${escaparHTML(datos.pregunta).replace(/\n/g, "<br>")}</p>
+          <h2>Medico solicitante</h2><p>${escaparHTML(datos.medicoSolicitante)}</p>
+        </div>
+      </body>
+    </html>
+  `;
+}
+
+async function descargarInterconsultaPaciente() {
+  const datos = datosInterconsultaFormulario();
+  const html = await htmlInterconsultaWord(datos);
+  const blob = new Blob(["\ufeff", html], {
+    type: "application/msword;charset=utf-8"
+  });
+  const url = URL.createObjectURL(blob);
+  const enlace = document.createElement("a");
+  enlace.href = url;
+  enlace.download = `Interconsulta_${datos.formato}_${(datos.pacienteNombre || "paciente").replace(/\s+/g, "_")}_${datos.fecha}.doc`;
+  document.body.appendChild(enlace);
+  enlace.click();
+  enlace.remove();
+  URL.revokeObjectURL(url);
 }
 
 window.abrirNota = function() {
@@ -1477,7 +1874,13 @@ async function sincronizarResumenTratamiento() {
   ).filter(Boolean).join("\n");
 
   await actualizarUsuario(uidPaciente, {
-    tratamiento: resumen
+    tratamiento: resumen,
+    datosClinicosResumen: {
+      ...(datosPacienteActual?.datosClinicosResumen || {}),
+      tratamientoActivo: resumen,
+      tratamientosActivos: activos,
+      fechaActualizacionTratamiento: new Date().toISOString()
+    }
   });
 
   const tratamiento = document.getElementById("tratamiento");
@@ -1735,6 +2138,13 @@ document.getElementById("diagnosticoCatalogo")?.addEventListener("change", () =>
   ponerValor("diagnosticoBusqueda", "");
   renderizarResultadosBusquedaDiagnosticos();
 });
+document.getElementById("agregarDiagnosticoManual")?.addEventListener("click", agregarDiagnosticoManualPaciente);
+document.getElementById("crearCarpetaPaciente")?.addEventListener("click", () => asignarCarpetaPorNombre(valorCampo("nuevaCarpetaPaciente")));
+document.getElementById("asignarCarpetaPaciente")?.addEventListener("click", () => asignarCarpetaPorNombre(valorCampo("selectorCarpetasPaciente")));
+document.getElementById("guardarNotaFlotante")?.addEventListener("click", guardarNotaFlotantePaciente);
+document.getElementById("nuevaNotaFlotante")?.addEventListener("click", limpiarNotaFlotantePaciente);
+document.getElementById("guardarInterconsulta")?.addEventListener("click", guardarInterconsultaPaciente);
+document.getElementById("descargarInterconsulta")?.addEventListener("click", descargarInterconsultaPaciente);
 document.getElementById("cerrarIngresoPaciente")?.addEventListener("click", cerrarSelectorIngresoPaciente);
 document.getElementById("guardarIngresoPaciente")?.addEventListener("click", guardarIngresoPacienteDesdeModal);
 document.getElementById("limpiarIngresoPaciente")?.addEventListener("click", limpiarIngresoPacienteDesdeModal);

@@ -763,6 +763,60 @@ window.cerrarBorradoresMedico = function() {
   }, 220);
 };
 
+async function cargarNotasFlotantesParaNota() {
+  const contenedor = document.getElementById("listaNotasFlotantesNota");
+  const uidPaciente = uidPacienteActual || document.getElementById("uidPaciente")?.value;
+
+  if (!contenedor) return;
+
+  if (!uidPaciente) {
+    contenedor.textContent = "Selecciona un paciente para cargar sus notas flotantes.";
+    return;
+  }
+
+  contenedor.textContent = "Cargando notas flotantes...";
+  const snap = await getDocs(query(collection(db, "usuarios", uidPaciente, "notasFlotantes"), orderBy("fechaActualizacion", "desc")));
+
+  if (snap.empty) {
+    contenedor.innerHTML = `<p class="apuntes-vacio">Este paciente no tiene notas flotantes.</p>`;
+    return;
+  }
+
+  contenedor.innerHTML = snap.docs.map((docNota) => {
+    const nota = docNota.data();
+    return `
+      <details class="nota-flotante-nota"${nota.contraida ? "" : " open"}>
+        <summary>${escaparHTML(nota.titulo || "Nota flotante")}</summary>
+        <p>${escaparHTML(nota.texto || "").replace(/\n/g, "<br>")}</p>
+      </details>
+    `;
+  }).join("");
+}
+
+window.abrirNotasFlotantesPaciente = async function() {
+  const fondo = document.getElementById("fondoNotasFlotantesPaciente");
+  const panel = document.getElementById("panelNotasFlotantesPaciente");
+
+  fondo?.classList.remove("oculto");
+  panel?.classList.add("abierto");
+  panel?.setAttribute("aria-hidden", "false");
+  await cargarNotasFlotantesParaNota();
+};
+
+window.cerrarNotasFlotantesPaciente = function() {
+  const fondo = document.getElementById("fondoNotasFlotantesPaciente");
+  const panel = document.getElementById("panelNotasFlotantesPaciente");
+
+  panel?.classList.remove("abierto");
+  panel?.setAttribute("aria-hidden", "true");
+
+  window.setTimeout(() => {
+    if (!panel?.classList.contains("abierto")) {
+      fondo?.classList.add("oculto");
+    }
+  }, 220);
+};
+
 window.guardarBorradoresMedico = async function() {
   const texto = document.getElementById("borradoresMedicoTexto");
   const titulo = document.getElementById("apunteMedicoTitulo");
@@ -1027,6 +1081,8 @@ async function cargarPaciente(uidPaciente) {
 
   if (Array.isArray(datos.historialDiagnosticos)) {
     diagnosticosSeleccionados = datos.historialDiagnosticos;
+  } else if (Array.isArray(datos.datosClinicosResumen?.historialDiagnosticos)) {
+    diagnosticosSeleccionados = datos.datosClinicosResumen.historialDiagnosticos;
   } else if (typeof datos.diagnostico === "object" && datos.diagnostico !== null) {
     diagnosticosSeleccionados = [datos.diagnostico];
   } else if (typeof datos.diagnostico === "string" && datos.diagnostico.trim() !== "") {
@@ -1056,7 +1112,7 @@ async function cargarPaciente(uidPaciente) {
     cie10Nombre.value = dxActual?.nombre || "";
   }
 
-  if (tratamiento) tratamiento.value = datos.tratamiento || "";
+  if (tratamiento) tratamiento.value = datos.tratamiento || datos.datosClinicosResumen?.tratamientoActivo || datos.datosClinicosResumen?.tratamientoHistoria || "";
   if (medico) medico.value = datos.medicoTratante || "";
   if (ultimaConsulta) ultimaConsulta.value = datos.ultimaConsulta || "";
   if (proximaConsulta) proximaConsulta.value = datos.proximaConsulta || "";
@@ -1066,6 +1122,7 @@ async function cargarPaciente(uidPaciente) {
 
   aplicarDatosInstitucionalesPaciente(datos);
   aplicarHistoriaClinicaObservacion(historiaClinicaActual);
+  cargarNotasFlotantesParaNota();
 
   const institucion = `${datos.institucionPaciente || datos.institucion || ""}`.toLowerCase();
   const esPacienteFray = datos.tipoPaciente === "institucion" && institucion.includes("fray");

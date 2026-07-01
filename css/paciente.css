@@ -635,6 +635,45 @@ textarea{
   text-align:center;
 }
 
+.nota-flotante-card {
+  border: 1px solid rgba(56,189,248,0.22);
+  border-radius: 18px;
+  background: rgba(8,12,20,0.66);
+  padding: 0;
+  overflow: hidden;
+}
+
+.nota-flotante-card summary {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  cursor: pointer;
+  padding: 14px 16px;
+  list-style: none;
+}
+
+.nota-flotante-card summary::-webkit-details-marker {
+  display: none;
+}
+
+.nota-flotante-card summary span {
+  color: #7dd3fc;
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.nota-flotante-card p {
+  margin: 0;
+  padding: 0 16px 14px;
+  color: #dbeafe;
+  line-height: 1.55;
+}
+
+.nota-flotante-card .registro-actions {
+  padding: 0 16px 16px;
+}
+
 @media(max-width:900px){
   .form-grid,
   .panel-doble{

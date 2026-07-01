@@ -17,6 +17,7 @@ import {
 } from "./services/historias.js";
 
 let uidPaciente = null;
+let pacienteActual = {};
 
 iniciarMonitoreoSesion("Historia clinica");
 
@@ -69,6 +70,7 @@ onAuthStateChanged(auth, async (user) => {
 async function cargarPaciente() {
   const paciente = await obtenerUsuario(uidPaciente);
   if (!paciente) return;
+  pacienteActual = paciente;
 
   document.getElementById("nombrePaciente").textContent =
     paciente.nombre || "Paciente";
@@ -79,9 +81,21 @@ async function cargarPaciente() {
 
 async function cargarHistoria() {
   const historia = await obtenerHistoriaClinica(uidPaciente);
-  if (!historia.exists()) return;
+  const raiz = {
+    tipoPaciente: pacienteActual.tipoPaciente || pacienteActual.datosInstitucionales?.tipoPaciente || "privada",
+    institucionPaciente: pacienteActual.institucionPaciente || pacienteActual.institucion || pacienteActual.datosInstitucionales?.institucionPaciente || "",
+    servicioInstitucional: pacienteActual.servicioInstitucional || pacienteActual.servicio || pacienteActual.datosInstitucionales?.servicioInstitucional || "",
+    expediente: pacienteActual.expediente || pacienteActual.numeroExpediente || pacienteActual.datosInstitucionales?.expediente || "",
+    cama: pacienteActual.cama || pacienteActual.datosInstitucionales?.cama || "",
+    sexo: pacienteActual.sexo || pacienteActual.datosInstitucionales?.sexo || "",
+    genero: pacienteActual.genero || pacienteActual.identidadGenero || pacienteActual.datosInstitucionales?.genero || "",
+    alergias: pacienteActual.alergias || pacienteActual.datosInstitucionales?.alergias || "",
+    diagnosticoClinico: pacienteActual.datosClinicosResumen?.diagnostico?.texto || pacienteActual.diagnostico?.texto || pacienteActual.diagnostico || "",
+    codigoDiagnostico: pacienteActual.datosClinicosResumen?.diagnostico?.codigo || pacienteActual.diagnostico?.codigo || "",
+    tratamientoFarmacologico: pacienteActual.datosClinicosResumen?.tratamientoActivo || pacienteActual.tratamiento || ""
+  };
 
-  const datos = historia.data();
+  const datos = historia.exists() ? { ...raiz, ...historia.data() } : raiz;
 
   Object.keys(datos).forEach((campo) => {
     const elemento = document.getElementById(campo);
@@ -126,6 +140,13 @@ window.guardarHistoria = async () => {
       sexo: datos.sexo || "",
       genero: datos.genero || "",
       alergias: datos.alergias || ""
+    },
+    datosClinicosResumen: {
+      ...(pacienteActual?.datosClinicosResumen || {}),
+      diagnosticoManualHistoria: datos.diagnosticoClinico || "",
+      codigoDiagnosticoHistoria: datos.codigoDiagnostico || "",
+      tratamientoHistoria: datos.tratamientoFarmacologico || "",
+      fechaActualizacionHistoria: new Date().toISOString()
     }
   });
 

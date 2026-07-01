@@ -35,6 +35,9 @@
       <button onclick="mostrarEstudios()">Estudios</button>
       <button onclick="mostrarTratamiento()">Tratamiento</button>
       <button onclick="mostrarDiagnosticos()">Diagnosticos</button>
+      <button onclick="mostrarCarpetas()">Carpetas</button>
+      <button onclick="mostrarNotasFlotantes()">Notas flotantes</button>
+      <button onclick="mostrarInterconsulta()">Interconsulta</button>
       <button onclick="mostrarResultadosEscalas()">Resultados</button>
       <button onclick="previsualizarMiSalud()">Ver Mi Salud</button>
       <button onclick="mostrarPermisos()">Permisos</button>
@@ -292,9 +295,118 @@
       </div>
 
       <div class="tarjeta">
+        <h2>Diagnostico manual</h2>
+        <p class="texto-suave">Usalo cuando el diagnostico aun no este en el catalogo o necesites un texto clinico personalizado.</p>
+        <div class="form-grid">
+          <label>Catalogo
+            <select id="diagnosticoManualCatalogo">
+              <option value="Manual">Manual</option>
+              <option value="CIE-10">CIE-10</option>
+              <option value="CIE-11">CIE-11</option>
+            </select>
+          </label>
+          <label>Codigo<input id="diagnosticoManualCodigo" placeholder="Ej. F19.5"></label>
+          <label>Nombre<input id="diagnosticoManualNombre" placeholder="Nombre diagnostico"></label>
+        </div>
+        <label>Texto visible
+          <textarea id="diagnosticoManualTexto" placeholder="Texto diagnostico completo o especificador clinico."></textarea>
+        </label>
+        <div class="form-actions">
+          <button id="agregarDiagnosticoManual" type="button">Agregar diagnostico manual</button>
+        </div>
+      </div>
+
+      <div class="tarjeta">
         <h2>Diagnosticos registrados</h2>
         <p class="texto-suave">El diagnostico principal es el que aparece en el panel medico.</p>
         <div id="panelDiagnosticosPaciente" class="panel-lista">Cargando diagnosticos...</div>
+      </div>
+    </section>
+
+    <section id="seccionCarpetas" style="display:none;">
+      <div class="tarjeta">
+        <h2>Carpetas del paciente</h2>
+        <p class="texto-suave">Agrupa pacientes por servicio, protocolo, institucion o flujo de trabajo.</p>
+        <div class="form-grid">
+          <label>Nueva carpeta<input id="nuevaCarpetaPaciente" placeholder="Ej. Observacion HPFBA"></label>
+          <label>Carpeta existente<select id="selectorCarpetasPaciente"></select></label>
+        </div>
+        <div class="form-actions">
+          <button id="crearCarpetaPaciente" type="button">Crear y asignar</button>
+          <button id="asignarCarpetaPaciente" type="button" class="boton-secundario">Asignar seleccionada</button>
+        </div>
+      </div>
+      <div class="tarjeta">
+        <h2>Carpetas asignadas</h2>
+        <div id="listaCarpetasPaciente" class="panel-lista">Cargando carpetas...</div>
+      </div>
+    </section>
+
+    <section id="seccionNotasFlotantes" style="display:none;">
+      <div class="tarjeta">
+        <h2>Notas flotantes del paciente</h2>
+        <p class="texto-suave">Notas vivas, editables indefinidamente. Tambien aparecen en la pagina de notas medicas.</p>
+        <input id="notaFlotanteId" type="hidden">
+        <div class="form-grid">
+          <label>Titulo<input id="notaFlotanteTitulo" placeholder="Ej. Pendiente familiar"></label>
+          <label>Estado
+            <select id="notaFlotanteContraida">
+              <option value="false">Mostrar abierta</option>
+              <option value="true">Mostrar contraida</option>
+            </select>
+          </label>
+        </div>
+        <label>Contenido
+          <textarea id="notaFlotanteTexto" placeholder="Apunte clinico breve, pendiente o recordatorio."></textarea>
+        </label>
+        <div class="form-actions">
+          <button id="guardarNotaFlotante" type="button">Guardar nota flotante</button>
+          <button id="nuevaNotaFlotante" type="button" class="boton-secundario">Nueva</button>
+        </div>
+      </div>
+      <div class="tarjeta">
+        <h2>Notas guardadas</h2>
+        <div id="listaNotasFlotantesPaciente" class="panel-lista">Cargando notas...</div>
+      </div>
+    </section>
+
+    <section id="seccionInterconsulta" style="display:none;">
+      <div class="tarjeta">
+        <h2>Solicitud de interconsulta</h2>
+        <p class="texto-suave">Genera una solicitud en formato Cognicion o institucional Fray Bernardino.</p>
+        <div class="form-grid">
+          <label>Formato
+            <select id="interconsultaFormato">
+              <option value="cognicion">Cognicion</option>
+              <option value="fray">Fray Bernardino</option>
+            </select>
+          </label>
+          <label>Servicio solicitado<input id="interconsultaServicio" placeholder="Ej. Medicina interna"></label>
+          <label>Prioridad
+            <select id="interconsultaPrioridad">
+              <option value="ordinaria">Ordinaria</option>
+              <option value="urgente">Urgente</option>
+            </select>
+          </label>
+          <label>Fecha<input id="interconsultaFecha" type="date"></label>
+        </div>
+        <label>Motivo de interconsulta
+          <textarea id="interconsultaMotivo"></textarea>
+        </label>
+        <label>Resumen clinico
+          <textarea id="interconsultaResumen"></textarea>
+        </label>
+        <label>Pregunta clinica
+          <textarea id="interconsultaPregunta"></textarea>
+        </label>
+        <div class="form-actions">
+          <button id="guardarInterconsulta" type="button">Guardar solicitud</button>
+          <button id="descargarInterconsulta" type="button" class="boton-secundario">Descargar formato</button>
+        </div>
+      </div>
+      <div class="tarjeta">
+        <h2>Historial de interconsultas</h2>
+        <div id="listaInterconsultasPaciente" class="panel-lista">Cargando interconsultas...</div>
       </div>
     </section>
 
