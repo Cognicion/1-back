@@ -135,6 +135,167 @@ button:hover{
     color: white;
 }
 
+.boton-word-fray {
+    margin-left: 10px;
+    background: linear-gradient(135deg, #0f766e, #22d3ee);
+    color: white;
+    border: 1px solid rgba(125,211,252,0.28);
+    box-shadow: 0 0 22px rgba(34,211,238,0.14);
+}
+
+.selector-formato-nota {
+    margin: 24px 0;
+    padding: 18px;
+    border-radius: 20px;
+    border: 1px solid rgba(56,189,248,0.24);
+    background:
+        radial-gradient(circle at top right, rgba(56,189,248,0.12), transparent 36%),
+        rgba(8,12,20,0.55);
+}
+
+.ayuda-formato {
+    margin: -4px 0 0;
+    color: #94a3b8;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.bloque-observacion {
+    display: grid;
+    gap: 16px;
+    margin: 22px 0 30px;
+    padding: 18px;
+    border-radius: 24px;
+    border: 1px solid rgba(125,211,252,0.20);
+    background:
+        linear-gradient(145deg, rgba(15,23,42,0.78), rgba(8,12,20,0.72)),
+        rgba(15,18,25,0.78);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.04), 0 18px 50px rgba(0,0,0,0.24);
+}
+
+.observacion-seccion {
+    border-radius: 18px;
+    border: 1px solid rgba(148,163,184,0.16);
+    background: rgba(2,6,23,0.38);
+    overflow: hidden;
+}
+
+.observacion-seccion h3,
+.firmas-extra summary {
+    margin: 0;
+    cursor: pointer;
+    padding: 15px 16px;
+    color: #dbeafe;
+    font-weight: 900;
+    letter-spacing: 0.02em;
+    background: rgba(15,23,42,0.62);
+}
+
+.observacion-seccion h3,
+.firmas-extra[open] summary {
+    border-bottom: 1px solid rgba(148,163,184,0.16);
+    color: #7dd3fc;
+}
+
+.observacion-clinica {
+    padding-bottom: 16px;
+}
+
+.observacion-clinica .ayuda-formato {
+    padding: 0 16px;
+    margin-top: 12px;
+}
+
+.grid-clinica-fray {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+    padding: 16px 16px 0;
+}
+
+.grid-clinica-fray label {
+    margin: 0;
+}
+
+.grid-clinica-fray textarea {
+    min-height: 160px;
+}
+
+.grid-clinica-fray label:nth-child(1),
+.grid-clinica-fray label:nth-child(5) {
+    grid-column: 1 / -1;
+}
+
+.bloque-observacion .tabla-diagnosticos {
+    margin-left: 16px;
+    margin-right: 16px;
+}
+
+.grid-observacion,
+.grid-vitales {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+    padding: 16px;
+}
+
+.grid-observacion label,
+.grid-vitales label {
+    margin: 0;
+}
+
+.campo-vital {
+    padding: 12px;
+    border-radius: 16px;
+    border: 1px solid rgba(56,189,248,0.16);
+    background: rgba(15,23,42,0.42);
+}
+
+.tabla-diagnosticos {
+    margin-top: 18px;
+    margin-bottom: 18px;
+    padding: 16px;
+    border-radius: 18px;
+    border: 1px solid rgba(125,211,252,0.18);
+    background: rgba(2,6,23,0.44);
+}
+
+.tabla-diagnosticos-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    margin-bottom: 12px;
+}
+
+.tabla-diagnosticos h3 {
+    margin: 0;
+    color: #e0f2fe;
+}
+
+.diagnosticos-word-lista table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.diagnosticos-word-lista th,
+.diagnosticos-word-lista td {
+    padding: 10px;
+    border-bottom: 1px solid rgba(148,163,184,0.16);
+    text-align: left;
+}
+
+.diagnosticos-word-lista th {
+    color: #7dd3fc;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+.seccion-firmas input {
+    font-weight: 700;
+}
+
 @media print {
 
     body {
@@ -259,5 +420,15 @@ button:hover{
 @media (max-width: 800px) {
   .grid-diagnosticos {
     grid-template-columns: 1fr;
+  }
+
+  .grid-observacion,
+  .grid-vitales,
+  .grid-clinica-fray {
+    grid-template-columns: 1fr;
+  }
+
+  .tabla-diagnosticos-header {
+    display: grid;
   }
 }

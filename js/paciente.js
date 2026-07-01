@@ -250,6 +250,33 @@ async function cargarDatosPaciente() {
 
   document.getElementById("telefonoPaciente").innerText =
     datos.telefono || "Sin teléfono";
+
+  document.getElementById("tipoPaciente").innerText =
+    datos.tipoPaciente === "institucion" ? "Paciente de institucion" : "Consulta privada";
+
+  document.getElementById("institucionPaciente").innerText =
+    datos.institucionPaciente || datos.institucion || "Sin institucion";
+
+  document.getElementById("servicioInstitucional").innerText =
+    datos.servicioInstitucional || datos.servicio || "Sin servicio";
+
+  document.getElementById("expedientePaciente").innerText =
+    datos.expediente || datos.numeroExpediente || "Sin expediente";
+
+  document.getElementById("camaPaciente").innerText =
+    datos.cama || "Sin cama";
+
+  document.getElementById("sexoPaciente").innerText =
+    datos.sexo || "Sin registro";
+
+  document.getElementById("generoPaciente").innerText =
+    datos.genero || datos.identidadGenero || "Sin registro";
+
+  document.getElementById("alergiasPaciente").innerText =
+    datos.alergias || "Sin registro";
+
+  document.getElementById("diasEstanciaPaciente").innerText =
+    datos.diasEstancia || datos.datosInstitucionales?.diasEstancia || "Sin registro";
 }
 
 window.mostrarResumen = function() {
@@ -465,7 +492,7 @@ window.editarDatosPaciente = async function() {
   if (nuevaFechaNacimiento === null) return;
 
   const nuevaEdad = prompt(
-    "Edad manual (opcional, se usa si no hay fecha de nacimiento):",
+    "Edad (opcional, se usa solo si no hay fecha de nacimiento):",
     datos.edad || ""
   );
   if (nuevaEdad === null) return;
@@ -485,7 +512,7 @@ window.editarDatosPaciente = async function() {
   await actualizarUsuario(uidPaciente, {
     telefono: nuevoTelefono,
     fechaNacimiento: nuevaFechaNacimiento,
-    edad: nuevaEdad,
+    edad: nuevaFechaNacimiento ? "" : nuevaEdad,
     diagnostico: nuevoDiagnostico,
     tratamiento: nuevoTratamiento,
     medicoTratante: nuevoMedico,
@@ -519,9 +546,59 @@ window.editarCampoPaciente = async function(campo, etiqueta, tipo = "text") {
     [campo]: nuevoValor
   };
 
+  const camposInstitucionales = new Set([
+    "tipoPaciente",
+    "institucionPaciente",
+    "servicioInstitucional",
+    "expediente",
+    "cama",
+    "fechaNacimiento",
+    "edad",
+    "sexo",
+    "genero",
+    "alergias",
+    "diasEstancia"
+  ]);
+
   if (campo === "fechaNacimiento") {
-    const edadCalculada = calcularEdad(nuevoValor);
-    actualizacion.edad = edadCalculada || datos?.edad || "";
+    if (nuevoValor && datos?.edad) {
+      const confirmar = confirm(
+        "Ya existe una edad capturada. Al guardar una fecha de nacimiento, esa edad se borrara y se calculara automaticamente. ¿Continuar?"
+      );
+      if (!confirmar) return;
+    }
+
+    actualizacion.edad = "";
+  }
+
+  if (campo === "edad") {
+    if (nuevoValor && datos?.fechaNacimiento) {
+      const confirmar = confirm(
+        "Ya existe una fecha de nacimiento. Al capturar edad, la fecha de nacimiento se borrara y la edad dejara de calcularse automaticamente. ¿Continuar?"
+      );
+      if (!confirmar) return;
+    }
+
+    if (nuevoValor) {
+      actualizacion.fechaNacimiento = "";
+    }
+  }
+
+  if (camposInstitucionales.has(campo)) {
+    actualizacion.datosInstitucionales = {
+      ...(datos?.datosInstitucionales || {}),
+      [campo]: nuevoValor
+    };
+
+    if (campo === "institucionPaciente") actualizacion.institucion = nuevoValor;
+    if (campo === "servicioInstitucional") actualizacion.servicio = nuevoValor;
+    if (campo === "expediente") actualizacion.numeroExpediente = nuevoValor;
+    if (campo === "fechaNacimiento") {
+      actualizacion.datosInstitucionales.edad = "";
+    }
+    if (campo === "edad" && nuevoValor) {
+      actualizacion.datosInstitucionales.fechaNacimiento = "";
+    }
   }
 
   await actualizarUsuario(uidPaciente, actualizacion);

@@ -21,10 +21,17 @@ import {
   actualizarNota
 } from "./services/notas.js";
 
+import {
+  obtenerHistoriaClinica
+} from "./services/historias.js";
+
 let uidPacienteActual = null;
 let diagnosticosSeleccionados = [];
 let notaEditandoId = null;
 let notasHistorial = {};
+let notasHistorialOrdenadas = [];
+let historiaClinicaActual = {};
+let pacienteActualDatos = {};
 
 iniciarMonitoreoSesion("Nota medica");
 
@@ -137,6 +144,8 @@ if (buscadorMedicamento && resultadosMedicamentos) {
       resultadosMedicamentos.appendChild(item);
     });
   });
+
+  sincronizarDiagnosticosObservacion();
 }
 
 function agregarDiagnostico(dx) {
@@ -173,6 +182,7 @@ function renderizarDiagnosticosSeleccionados() {
   if (!contenedor) return;
 
   contenedor.innerHTML = "";
+  sincronizarDiagnosticosObservacion();
 
   if (diagnosticosSeleccionados.length === 0) {
     contenedor.innerHTML = `
@@ -238,10 +248,48 @@ function textoDiagnosticos() {
     .join("\n");
 }
 
+function calcularEdadDesdeFecha(fechaNacimiento) {
+  if (!fechaNacimiento) return "";
+  const nacimiento = new Date(`${fechaNacimiento}T00:00:00`);
+  if (Number.isNaN(nacimiento.getTime())) return "";
+  const hoy = new Date();
+  let edad = hoy.getFullYear() - nacimiento.getFullYear();
+  const mes = hoy.getMonth() - nacimiento.getMonth();
+  if (mes < 0 || (mes === 0 && hoy.getDate() < nacimiento.getDate())) edad -= 1;
+  return edad >= 0 ? String(edad) : "";
+}
+
 const tipoNota = document.getElementById("tipoNota");
 const bloqueNotaRapida = document.getElementById("bloqueNotaRapida");
 const bloqueNotaCompleta = document.getElementById("bloqueNotaCompleta");
 const btnCancelarEdicion = document.getElementById("btnCancelarEdicion");
+const formatoNota = document.getElementById("formatoNota");
+const bloqueObservacionFray = document.getElementById("bloqueObservacionFray");
+const btnSincronizarDxObs = document.getElementById("btnSincronizarDxObs");
+
+const camposObservacionFray = {
+  tipoNota: "obsTipoNota",
+  fechaNota: "obsFechaNota",
+  horaNota: "obsHoraNota",
+  presionArterial: "obsPresionArterial",
+  temperatura: "obsTemperatura",
+  frecuenciaCardiaca: "obsFrecuenciaCardiaca",
+  frecuenciaRespiratoria: "obsFrecuenciaRespiratoria",
+  saturacionO2: "obsSaturacionO2",
+  peso: "obsPeso",
+  talla: "obsTalla",
+  imc: "obsIMC",
+  exploracionFisicaNeurologica: "obsExploracionFisicaNeurologica",
+  resultadosEstudios: "obsResultadosEstudios",
+  pronostico: "obsPronostico",
+  destino: "obsDestino",
+  medicoAdscrito: "obsMedicoAdscrito",
+  cedulaAdscrito: "obsCedulaAdscrito",
+  medicoR3: "obsMedicoR3",
+  cedulaR3: "obsCedulaR3",
+  medicoR2: "obsMedicoR2",
+  cedulaR2: "obsCedulaR2"
+};
 
 function sincronizarTipoNota() {
   const esRapida = tipoNota?.value === "rapida";
@@ -252,8 +300,208 @@ function sincronizarTipoNota() {
 tipoNota?.addEventListener("change", sincronizarTipoNota);
 sincronizarTipoNota();
 
-function leerFormularioNota() {
+function valorCampo(id) {
+  return document.getElementById(id)?.value || "";
+}
+
+function asignarValor(id, valor) {
+  const campo = document.getElementById(id);
+  if (campo) campo.value = valor || "";
+}
+
+function esFormatoFray() {
+  return formatoNota?.value?.startsWith("fray_observacion") || false;
+}
+
+function sincronizarFormatoNota() {
+  bloqueObservacionFray?.classList.remove("oculto");
+
+  if (formatoNota?.value?.startsWith("fray_observacion")) {
+    const tipoInstitucional = formatoNota.value.includes("evolucion") ? "evolucion" : "ingreso";
+    asignarValor("obsTipoNota", tipoInstitucional);
+  }
+
+  if (!valorCampo("obsFechaNota")) asignarValor("obsFechaNota", new Date().toISOString().slice(0, 10));
+  if (!valorCampo("obsHoraNota")) {
+    const ahora = new Date();
+    asignarValor("obsHoraNota", `${String(ahora.getHours()).padStart(2, "0")}:${String(ahora.getMinutes()).padStart(2, "0")}`);
+  }
+  sincronizarDiagnosticosObservacion();
+}
+
+formatoNota?.addEventListener("change", sincronizarFormatoNota);
+btnSincronizarDxObs?.addEventListener("click", sincronizarDiagnosticosObservacion);
+
+function diagnosticosCIE10Observacion() {
+  return diagnosticosSeleccionados
+    .filter((dx) => (dx.catalogo || "CIE-10") === "CIE-10")
+    .map((dx) => ({
+      codigo: dx.codigo || "",
+      diagnostico: dx.nombre || dx.texto || "",
+      texto: dx.texto || `${dx.codigo || ""} - ${dx.nombre || ""}`.trim()
+    }));
+}
+
+function sincronizarDiagnosticosObservacion() {
+  const contenedor = document.getElementById("obsDiagnosticosLista");
+  if (!contenedor) return;
+
+  const diagnosticos = diagnosticosCIE10Observacion();
+
+  if (diagnosticos.length === 0) {
+    contenedor.innerHTML = "<p>Sin diagnosticos CIE-10 sincronizados.</p>";
+    return;
+  }
+
+  contenedor.innerHTML = `
+    <table>
+      <thead>
+        <tr>
+          <th>Codigo</th>
+          <th>Diagnostico</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${diagnosticos.map((dx) => `
+          <tr>
+            <td>${escaparHTML(dx.codigo)}</td>
+            <td>${escaparHTML(dx.diagnostico)}</td>
+          </tr>
+        `).join("")}
+      </tbody>
+    </table>
+  `;
+}
+
+function leerFormularioObservacionFray() {
+  const datos = Object.entries(camposObservacionFray).reduce((salida, [clave, id]) => {
+    salida[clave] = valorCampo(id);
+    return salida;
+  }, {});
+  const administrativos = datosInstitucionalesPaciente(pacienteActualDatos || {});
+
   return {
+    nombrePaciente: administrativos.nombrePaciente,
+    servicio: administrativos.servicioInstitucional || "Observacion",
+    cama: administrativos.cama,
+    expediente: administrativos.expediente,
+    fechaNacimiento: administrativos.fechaNacimiento,
+    edad: administrativos.edad,
+    sexo: administrativos.sexo,
+    genero: administrativos.genero,
+    alergias: administrativos.alergias,
+    diasEstancia: administrativos.diasEstancia || "",
+    ...datos,
+    motivoAtencion: valorCampo("subjetivo"),
+    examenMental: valorCampo("objetivo"),
+    planTerapeutico: valorCampo("plan"),
+    comentarioAnalisis: valorCampo("analisis"),
+    diagnosticosCIE10: diagnosticosCIE10Observacion(),
+    preparadoParaWord: true,
+    plantillaSugerida: datos.tipoNota === "evolucion"
+      ? "fray_observacion_evolucion"
+      : "fray_observacion_ingreso"
+  };
+}
+
+function llenarFormularioObservacionFray(datos = {}) {
+  Object.entries(camposObservacionFray).forEach(([clave, id]) => {
+    asignarValor(id, datos[clave] || "");
+  });
+  sincronizarDiagnosticosObservacion();
+}
+
+function datosInstitucionalesPaciente(paciente = {}) {
+  const institucional = paciente.datosInstitucionales || {};
+  const fray = paciente.frayObservacion || {};
+  const fechaNacimiento = paciente.fechaNacimiento || institucional.fechaNacimiento || "";
+
+  return {
+    nombrePaciente: paciente.nombre || institucional.nombrePaciente || "",
+    tipoPaciente: paciente.tipoPaciente || institucional.tipoPaciente || "privada",
+    institucionPaciente: paciente.institucionPaciente || paciente.institucion || institucional.institucionPaciente || "",
+    servicioInstitucional: paciente.servicioInstitucional || paciente.servicio || institucional.servicioInstitucional || "",
+    cama: paciente.cama || institucional.cama || "",
+    expediente: paciente.expediente || paciente.numeroExpediente || institucional.expediente || "",
+    fechaNacimiento,
+    edad: calcularEdadDesdeFecha(fechaNacimiento) || paciente.edad || institucional.edad || "",
+    sexo: paciente.sexo || institucional.sexo || "",
+    genero: paciente.genero || paciente.identidadGenero || institucional.genero || "",
+    alergias: paciente.alergias || institucional.alergias || "",
+    diasEstancia: paciente.diasEstancia || institucional.diasEstancia || "",
+    medicoAdscrito: fray.medicoAdscrito || paciente.medicoTratante || "",
+    cedulaAdscrito: fray.cedulaAdscrito || "",
+    medicoR3: fray.medicoR3 || "",
+    cedulaR3: fray.cedulaR3 || "",
+    medicoR2: fray.medicoR2 || "",
+    cedulaR2: fray.cedulaR2 || ""
+  };
+}
+
+function aplicarDatosInstitucionalesPaciente(paciente = {}) {
+  const datos = datosInstitucionalesPaciente(paciente);
+
+  if (!valorCampo("obsMedicoAdscrito")) asignarValor("obsMedicoAdscrito", datos.medicoAdscrito);
+  if (!valorCampo("obsCedulaAdscrito")) asignarValor("obsCedulaAdscrito", datos.cedulaAdscrito);
+  if (!valorCampo("obsMedicoR3")) asignarValor("obsMedicoR3", datos.medicoR3);
+  if (!valorCampo("obsCedulaR3")) asignarValor("obsCedulaR3", datos.cedulaR3);
+  if (!valorCampo("obsMedicoR2")) asignarValor("obsMedicoR2", datos.medicoR2);
+  if (!valorCampo("obsCedulaR2")) asignarValor("obsCedulaR2", datos.cedulaR2);
+}
+
+function aplicarHistoriaClinicaObservacion(historia = {}) {
+  if (!valorCampo("subjetivo")) asignarValor("subjetivo", historia.padecimientoActual || "");
+  if (!valorCampo("objetivo")) {
+    const examenMental = [
+      historia.apariencia ? `Apariencia y conducta: ${historia.apariencia}` : "",
+      historia.lenguaje ? `Lenguaje: ${historia.lenguaje}` : "",
+      historia.afecto ? `Estado de animo y afecto: ${historia.afecto}` : "",
+      historia.pensamiento ? `Pensamiento: ${historia.pensamiento}` : "",
+      historia.sensopercepcion ? `Sensopercepcion: ${historia.sensopercepcion}` : "",
+      historia.cognicion ? `Funciones cognitivas: ${historia.cognicion}` : "",
+      historia.juicio ? `Juicio e insight: ${historia.juicio}` : ""
+    ].filter(Boolean).join("\n");
+    asignarValor("objetivo", examenMental);
+  }
+  if (!valorCampo("plan")) {
+    asignarValor("plan", [
+      historia.tratamientoFarmacologico,
+      historia.psicoterapia,
+      historia.seguimiento
+    ].filter(Boolean).join("\n"));
+  }
+  if (!valorCampo("analisis")) asignarValor("analisis", historia.diagnosticoClinico || "");
+}
+
+function datosPersistentesDesdeObservacion(observacion = {}) {
+  return {
+    frayObservacion: {
+      medicoAdscrito: observacion.medicoAdscrito || "",
+      cedulaAdscrito: observacion.cedulaAdscrito || "",
+      medicoR3: observacion.medicoR3 || "",
+      cedulaR3: observacion.cedulaR3 || "",
+      medicoR2: observacion.medicoR2 || "",
+      cedulaR2: observacion.cedulaR2 || ""
+    }
+  };
+}
+
+function leerFormularioNota() {
+  const formato = formatoNota?.value || "cognicion";
+  const observacionFray = esFormatoFray()
+    ? leerFormularioObservacionFray()
+    : leerFormularioObservacionFray();
+
+  return {
+    formatoNota: formato,
+    formatoInstitucional: esFormatoFray() ? "fray_bernardino_observacion" : "",
+    exportacionWord: {
+      habilitada: esFormatoFray(),
+      formato,
+      plantillaSugerida: observacionFray.plantillaSugerida || "",
+      fuenteDatos: "observacionFray"
+    },
+    observacionFray,
     tipoNota: tipoNota?.value || "completa",
     notaRapida: document.getElementById("notaRapida")?.value || "",
     subjetivo: document.getElementById("subjetivo").value,
@@ -264,13 +512,16 @@ function leerFormularioNota() {
 }
 
 function llenarFormularioNota(datos) {
+  if (formatoNota) formatoNota.value = datos.formatoNota || "cognicion";
   if (tipoNota) tipoNota.value = datos.tipoNota || (datos.notaRapida ? "rapida" : "completa");
   document.getElementById("notaRapida").value = datos.notaRapida || "";
   document.getElementById("subjetivo").value = datos.subjetivo || "";
   document.getElementById("objetivo").value = datos.objetivo || "";
   document.getElementById("analisis").value = datos.analisis || "";
   document.getElementById("plan").value = datos.plan || "";
+  llenarFormularioObservacionFray(datos.observacionFray || {});
   sincronizarTipoNota();
+  sincronizarFormatoNota();
 }
 
 function limpiarFormularioNota() {
@@ -305,6 +556,27 @@ window.editarNotaDesdeHistorial = function(notaId) {
   llenarFormularioNota(datos.notaEditada || datos);
   btnCancelarEdicion?.classList.remove("oculto");
   document.getElementById("tipoNota")?.scrollIntoView({ behavior: "smooth", block: "center" });
+};
+
+window.cargarNotaPreviaEnFormulario = function() {
+  const previa = notasHistorialOrdenadas.find((nota) => nota?.datos);
+
+  if (!previa) {
+    alert("No hay una nota previa para cargar.");
+    return;
+  }
+
+  const datos = previa.datos.notaEditada || previa.datos;
+  const formatoActual = formatoNota?.value || "cognicion";
+  llenarFormularioNota({
+    ...datos,
+    formatoNota: formatoActual
+  });
+
+  notaEditandoId = null;
+  btnCancelarEdicion?.classList.add("oculto");
+  sincronizarFormatoNota();
+  alert("Datos de la nota previa cargados. Se guardara como una nota nueva.");
 };
 
 function escaparHTML(valor) {
@@ -376,6 +648,15 @@ async function cargarPaciente(uidPaciente) {
   const datos = await obtenerUsuario(uidPaciente);
 
   if (!datos) return;
+  pacienteActualDatos = datos;
+
+  try {
+    const historiaSnap = await obtenerHistoriaClinica(uidPaciente);
+    historiaClinicaActual = historiaSnap.exists() ? historiaSnap.data() : {};
+  } catch (error) {
+    console.warn("No se pudo cargar historia clinica para la nota:", error);
+    historiaClinicaActual = {};
+  }
 
   const tratamiento = document.getElementById("tratamiento");
   const medico = document.getElementById("medico");
@@ -422,6 +703,17 @@ async function cargarPaciente(uidPaciente) {
   if (diagnosticoCatalogoVisible) {
     diagnosticoCatalogoVisible.value = datos.diagnosticoCatalogoVisible || "auto";
   }
+
+  aplicarDatosInstitucionalesPaciente(datos);
+  aplicarHistoriaClinicaObservacion(historiaClinicaActual);
+
+  const institucion = `${datos.institucionPaciente || datos.institucion || ""}`.toLowerCase();
+  const esPacienteFray = datos.tipoPaciente === "institucion" && institucion.includes("fray");
+  if (esPacienteFray && formatoNota?.value === "cognicion") {
+    formatoNota.value = "fray_observacion_evolucion";
+  }
+
+  sincronizarFormatoNota();
 }
 
 window.guardarNotaMedica = async function() {
@@ -444,6 +736,10 @@ window.guardarNotaMedica = async function() {
   const catalogoVisible = diagnosticoCatalogoVisible?.value || "auto";
 
   try {
+    const datosPersistentesInstitucionales = esFormatoFray()
+      ? datosPersistentesDesdeObservacion(datosNotaClinica.observacionFray)
+      : {};
+
     await actualizarUsuario(uidPaciente, {
       diagnostico,
       diagnosticoCatalogoVisible: catalogoVisible,
@@ -452,7 +748,8 @@ window.guardarNotaMedica = async function() {
       tratamiento,
       medicoTratante: medico,
       ultimaConsulta,
-      proximaConsulta
+      proximaConsulta,
+      ...datosPersistentesInstitucionales
     });
 
     const notaPayload = {
@@ -495,6 +792,8 @@ window.guardarNotaMedica = async function() {
       detalles: {
         notaId: notaEditandoId || "",
         tipoNota: datosNotaClinica.tipoNota || "",
+        formatoNota: datosNotaClinica.formatoNota || "cognicion",
+        formatoInstitucional: datosNotaClinica.formatoInstitucional || "",
         diagnosticos: diagnosticosSeleccionados.map((dx) => dx.codigo || dx.nombre || dx.texto || "")
       }
     });
@@ -516,6 +815,7 @@ async function cargarHistorial(uidPaciente) {
 
   contenedor.innerHTML = "";
   notasHistorial = {};
+  notasHistorialOrdenadas = [];
 
   const notas = await obtenerHistorialNotas(uidPaciente);
 
@@ -531,6 +831,7 @@ async function cargarHistorial(uidPaciente) {
   notas.forEach((nota) => {
     const datos = nota.data();
     notasHistorial[nota.id] = datos;
+    notasHistorialOrdenadas.push({ id: nota.id, datos });
 
     const fecha = new Date(datos.fecha);
 
@@ -590,6 +891,12 @@ async function cargarHistorial(uidPaciente) {
       </details>
     `;
   });
+
+  notasHistorialOrdenadas.sort((a, b) => {
+    const fechaA = new Date(a.datos?.fecha || 0).getTime();
+    const fechaB = new Date(b.datos?.fecha || 0).getTime();
+    return fechaB - fechaA;
+  });
 }
 
 window.regresarDesdeNota = function() {
@@ -602,4 +909,260 @@ window.regresarDesdeNota = function() {
 
 window.generarPDFNota = function() {
   window.print();
+};
+
+function textoWord(valor) {
+  return escaparHTML(valor || "").replace(/\n/g, "<br>");
+}
+
+function filaWord(etiqueta, valor) {
+  return `
+    <tr>
+      <th>${textoWord(etiqueta)}</th>
+      <td>${textoWord(valor)}</td>
+    </tr>
+  `;
+}
+
+function seccionWord(titulo, contenido) {
+  return `
+    <h2>${textoWord(titulo)}</h2>
+    ${contenido}
+  `;
+}
+
+function tablaCamposWord(filas) {
+  return `<table>${filas.join("")}</table>`;
+}
+
+function nombreArchivoWordFray(datos) {
+  const paciente = (datos.nombrePaciente || pacienteActualDatos.nombre || document.getElementById("uidPaciente")?.selectedOptions?.[0]?.textContent || "paciente")
+    .trim()
+    .replace(/[\\/:*?"<>|]+/g, "")
+    .replace(/\s+/g, "_");
+  const tipo = datos.tipoNota === "evolucion" ? "evolucion" : "ingreso";
+  const fecha = datos.fechaNota || new Date().toISOString().slice(0, 10);
+  return `Fray_Observacion_${tipo}_${paciente}_${fecha}.doc`;
+}
+
+function formatoFechaFray(fecha) {
+  if (!fecha) return "";
+  const partes = fecha.split("-");
+  if (partes.length !== 3) return fecha;
+  return `${partes[2]}/${partes[1]}/${partes[0]}`;
+}
+
+function tituloNotaFray(tipo) {
+  return tipo === "evolucion"
+    ? "NOTA DE EVOLUCION AL SERVICIO DE OBSERVACION"
+    : "NOTA DE INGRESO AL SERVICIO DE OBSERVACION";
+}
+
+function bloqueWordFray(titulo, contenido) {
+  return `
+    <h2>${textoWord(titulo)}</h2>
+    <table class="tabla-texto">
+      <tr><td>${textoWord(contenido)}</td></tr>
+    </table>
+  `;
+}
+
+async function recursoDataUri(ruta) {
+  try {
+    const respuesta = await fetch(ruta);
+    if (!respuesta.ok) throw new Error("No se pudo leer el recurso");
+    const blob = await respuesta.blob();
+    return await new Promise((resolve, reject) => {
+      const lector = new FileReader();
+      lector.onloadend = () => resolve(lector.result);
+      lector.onerror = reject;
+      lector.readAsDataURL(blob);
+    });
+  } catch (error) {
+    console.warn("No se pudo incrustar imagen en Word:", ruta, error);
+    return ruta;
+  }
+}
+
+async function htmlWordFrayObservacion() {
+  sincronizarDiagnosticosObservacion();
+
+  const logoSalud = await recursoDataUri("assets/fray-observacion-salud-conasama-stack.png");
+  const logoFray = await recursoDataUri("assets/fray-observacion-image2.png");
+  const datos = leerFormularioObservacionFray();
+  const datosCognicion = leerFormularioNota();
+  const diagnosticos = datos.diagnosticosCIE10.length
+    ? datos.diagnosticosCIE10
+    : diagnosticosSeleccionados.map((dx) => ({
+        codigo: dx.codigo || "",
+        diagnostico: dx.nombre || dx.texto || ""
+      }));
+
+  const tablaDiagnosticos = diagnosticos.length
+    ? `
+      <table class="tabla-diagnosticos-word">
+        <thead>
+          <tr><th>DIAGNOSTICO</th><th>CIE-10</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>${diagnosticos.map((dx) => textoWord(dx.diagnostico)).join("<br>")}</td>
+            <td>${diagnosticos.map((dx) => textoWord(dx.codigo)).join("<br>")}</td>
+          </tr>
+        </tbody>
+      </table>
+    `
+    : "<p>Sin diagnosticos CIE-10 registrados.</p>";
+
+  const exploracionFisicaNeurologica = datos.exploracionFisicaNeurologica || "";
+
+  const vitales = `
+    <table class="tabla-vitales">
+      <thead>
+        <tr>
+          <th>Presion arterial</th>
+          <th>Temperatura</th>
+          <th>Frecuencia cardiaca</th>
+          <th>Frecuencia respiratoria</th>
+          <th>SatO2</th>
+          <th>Peso</th>
+          <th>Talla</th>
+          <th>IMC</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>${textoWord(datos.presionArterial)}</td>
+          <td>${textoWord(datos.temperatura)}</td>
+          <td>${textoWord(datos.frecuenciaCardiaca)}</td>
+          <td>${textoWord(datos.frecuenciaRespiratoria)}</td>
+          <td>${textoWord(datos.saturacionO2)}</td>
+          <td>${textoWord(datos.peso)}</td>
+          <td>${textoWord(datos.talla)}</td>
+          <td>${textoWord(datos.imc)}</td>
+        </tr>
+      </tbody>
+    </table>
+  `;
+
+  const firmas = `
+    <table class="tabla-firmas">
+      <tr>
+        <td>${textoWord(datos.medicoAdscrito)}<br>Medico adscrito<br>Ced. Prof. ${textoWord(datos.cedulaAdscrito)}</td>
+        <td>${textoWord(datos.medicoR3)}<br>Medico residente de 3er ano<br>Ced. Prof. ${textoWord(datos.cedulaR3)}</td>
+        <td>${textoWord(datos.medicoR2)}<br>Medico residente de 2o ano<br>Ced. Prof. ${textoWord(datos.cedulaR2)}</td>
+      </tr>
+    </table>
+  `;
+
+  return `
+    <!DOCTYPE html>
+    <html xmlns:o="urn:schemas-microsoft-com:office:office"
+          xmlns:w="urn:schemas-microsoft-com:office:word"
+          xmlns="http://www.w3.org/TR/REC-html40">
+    <head>
+      <meta charset="UTF-8">
+      <title>Nota Observacion Fray Bernardino</title>
+      <style>
+        @page { margin: 1.27cm; }
+        body { font-family: Arial, sans-serif; font-size: 9pt; color: #111; }
+        .encabezado { width: 100%; table-layout: fixed; border-collapse: collapse; margin: 0 0 8pt; border-bottom: 1px dashed #777; }
+        .encabezado td { border: none; vertical-align: middle; padding: 0 0 4pt; }
+        .encabezado-logo-izq { width: 24%; text-align: left; }
+        .encabezado-centro { width: 62%; text-align: center; font-weight: 700; font-size: 11pt; line-height: 1.12; text-transform: uppercase; white-space: nowrap; }
+        .encabezado-logo-der { width: 14%; text-align: right; }
+        .logo-salud { width: 118px; }
+        .logo-fray { width: 58px; }
+        h1 { text-align: center; font-size: 11.5pt; color: #7b7b7b; margin: 8pt 0 12pt; text-transform: uppercase; letter-spacing: .2pt; }
+        h2 { font-size: 9.5pt; margin: 10pt 0 3pt; text-align: left; text-transform: uppercase; }
+        p { margin: 5pt 0; line-height: 1.25; text-align: left; }
+        .identificacion { font-size: 8.6pt; line-height: 1.35; margin: 2pt 0 7pt; }
+        .identificacion b { font-weight: 700; }
+        table { width: 100%; border-collapse: collapse; margin: 3pt 0 8pt; }
+        th, td { border: 1px solid #222; padding: 4pt; vertical-align: top; text-align: left; }
+        .tabla-vitales { width: auto; table-layout: auto; margin: 3pt 0 8pt; }
+        .tabla-vitales th { text-align: center; font-size: 7.2pt; font-weight: 700; white-space: nowrap; padding: 3pt 5pt; }
+        .tabla-vitales td { text-align: center; font-size: 8pt; white-space: nowrap; padding: 3pt 5pt; }
+        .tabla-texto td { min-height: 42pt; line-height: 1.32; text-align: left; }
+        .tabla-diagnosticos-word th { font-size: 8.5pt; text-align: left; }
+        .tabla-diagnosticos-word th:first-child,
+        .tabla-diagnosticos-word td:first-child { width: 86%; }
+        .tabla-diagnosticos-word th:last-child,
+        .tabla-diagnosticos-word td:last-child { width: 14%; }
+        .pronostico-destino { margin-top: 6pt; }
+        .tabla-firmas td { border: none; width: 33.33%; text-align: center; height: 48pt; vertical-align: bottom; font-size: 8.5pt; }
+      </style>
+    </head>
+    <body>
+      <table class="encabezado">
+        <tr>
+          <td class="encabezado-logo-izq"><img class="logo-salud" src="${logoSalud}"></td>
+          <td class="encabezado-centro">
+            SECRETARIA DE SALUD<br>
+            COMISION NACIONAL DE SALUD MENTAL Y ADICCIONES<br>
+            HOSPITAL PSIQUIATRICO "FRAY BERNARDINO ALVAREZ"
+          </td>
+          <td class="encabezado-logo-der"><img class="logo-fray" src="${logoFray}"></td>
+        </tr>
+      </table>
+
+      <h1>${tituloNotaFray(datos.tipoNota)}</h1>
+
+      <p class="identificacion">
+        <b>Nombre del paciente:</b> ${textoWord(datos.nombrePaciente || pacienteActualDatos.nombre)}
+        &nbsp;&nbsp; <b>Fecha de nacimiento:</b> ${textoWord(formatoFechaFray(datos.fechaNacimiento))}
+        &nbsp;&nbsp; <b>Edad:</b> ${textoWord(datos.edad)} ANOS
+        &nbsp;&nbsp; <b>Cama:</b> ${textoWord(datos.cama)}
+        &nbsp;&nbsp; <b>Expediente:</b> ${textoWord(datos.expediente)}
+        &nbsp;&nbsp; <b>Sexo:</b> ${textoWord(datos.sexo)}
+        <br>
+        <b>Genero:</b> ${textoWord(datos.genero)}
+        &nbsp;&nbsp; <b>Servicio:</b> ${textoWord(datos.servicio || "OBSERVACION")}
+        &nbsp;&nbsp; <b>Alergias:</b> ${textoWord(datos.alergias)}
+        &nbsp;&nbsp; <b>Fecha:</b> ${textoWord(formatoFechaFray(datos.fechaNota))}
+        &nbsp;&nbsp; <b>Hora:</b> ${textoWord(datos.horaNota)} H
+        &nbsp;&nbsp; <b>Dias estancia:</b> ${textoWord(datos.diasEstancia)}
+      </p>
+
+      ${vitales}
+      ${bloqueWordFray("MOTIVO DE ATENCION / ACTUALIZACION DEL CUADRO CLINICO", datos.motivoAtencion || datosCognicion.subjetivo)}
+      ${bloqueWordFray("EXPLORACION FISICA Y NEUROLOGICA", exploracionFisicaNeurologica)}
+      ${bloqueWordFray("EXAMEN MENTAL", datos.examenMental || datosCognicion.objetivo)}
+      ${bloqueWordFray("RESULTADOS RELEVANTES DE LOS ESTUDIOS DE DIAGNOSTICO", datos.resultadosEstudios)}
+      <h2>DIAGNOSTICOS DE ACUERDO A CIE-10 (PRIMARIO Y COMORBILIDADES)</h2>
+      ${tablaDiagnosticos}
+      ${bloqueWordFray("PLAN TERAPEUTICO (MEDIDAS GENERALES Y TRATAMIENTO FARMACOLOGICO)", datos.planTerapeutico || datosCognicion.plan)}
+      ${bloqueWordFray("COMENTARIO Y/O ANALISIS CLINICO Y FUNDAMENTACION DIAGNOSTICA Y TERAPEUTICA", datos.comentarioAnalisis || datosCognicion.analisis)}
+      <p class="pronostico-destino"><b>PRONOSTICO:</b> ${textoWord(datos.pronostico)}</p>
+      <p class="pronostico-destino"><b>DESTINO:</b> ${textoWord(datos.destino)}</p>
+      <h2>NOMBRE, FIRMA Y CEDULA PROFESIONAL DEL MEDICO QUE REALIZA Y SUPERVISA:</h2>
+      ${firmas}
+    </body>
+    </html>
+  `;
+}
+
+window.descargarNotaFrayObservacion = async function() {
+  const datos = leerFormularioObservacionFray();
+  const html = await htmlWordFrayObservacion();
+  const blob = new Blob(["\ufeff", html], {
+    type: "application/msword;charset=utf-8"
+  });
+  const url = URL.createObjectURL(blob);
+  const enlace = document.createElement("a");
+  enlace.href = url;
+  enlace.download = nombreArchivoWordFray(datos);
+  document.body.appendChild(enlace);
+  enlace.click();
+  enlace.remove();
+  URL.revokeObjectURL(url);
+};
+
+window.descargarNotaSeleccionada = async function() {
+  if (esFormatoFray()) {
+    await window.descargarNotaFrayObservacion();
+    return;
+  }
+
+  window.generarPDFNota();
 };

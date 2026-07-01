@@ -50,18 +50,51 @@ onAuthStateChanged(auth, async (user) => {
 
 window.guardarPacienteNuevo = async function() {
   const fechaNacimiento = document.getElementById("fechaNacimiento").value;
+  const tipoPaciente = document.getElementById("tipoPaciente")?.value || "privada";
+  const institucionPaciente = document.getElementById("institucionPaciente")?.value || "";
+  const servicioInstitucional = document.getElementById("servicioInstitucional")?.value || "";
+  const expediente = document.getElementById("expediente")?.value || "";
+  const cama = document.getElementById("cama")?.value || "";
+  const genero = document.getElementById("genero")?.value || "";
+  const alergias = document.getElementById("alergias")?.value || "";
+  const diasEstancia = document.getElementById("diasEstancia")?.value || "";
 
   const paciente = {
     nombre: document.getElementById("nombre").value,
     fechaNacimiento,
-    edad: calcularEdad(fechaNacimiento),
+    edad: "",
     sexo: document.getElementById("sexo").value,
+    genero,
     curp: document.getElementById("curp").value,
     telefono: document.getElementById("telefono").value,
     email: document.getElementById("email").value,
     estadoCivil: document.getElementById("estadoCivil").value,
     escolaridad: document.getElementById("escolaridad").value,
     ocupacion: document.getElementById("ocupacion").value,
+    tipoPaciente,
+    institucionPaciente,
+    institucion: institucionPaciente,
+    servicioInstitucional,
+    servicio: servicioInstitucional,
+    expediente,
+    numeroExpediente: expediente,
+    cama,
+    alergias,
+    diasEstancia,
+    datosInstitucionales: {
+      nombrePaciente: document.getElementById("nombre").value,
+      tipoPaciente,
+      institucionPaciente,
+      servicioInstitucional,
+      expediente,
+      cama,
+      fechaNacimiento,
+      edad: "",
+      sexo: document.getElementById("sexo").value,
+      genero,
+      alergias,
+      diasEstancia
+    },
     medicoTratante: document.getElementById("medicoTratante").value,
     diagnostico: document.getElementById("diagnostico").value,
     ultimaConsulta: document.getElementById("ultimaConsulta").value,

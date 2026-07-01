@@ -7,7 +7,8 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 import {
-  obtenerUsuario
+  obtenerUsuario,
+  actualizarUsuario
 } from "./services/usuarios.js";
 
 import {
@@ -18,6 +19,17 @@ import {
 let uidPaciente = null;
 
 iniciarMonitoreoSesion("Historia clinica");
+
+function calcularEdad(fechaNacimiento) {
+  if (!fechaNacimiento) return "";
+  const nacimiento = new Date(`${fechaNacimiento}T00:00:00`);
+  if (Number.isNaN(nacimiento.getTime())) return "";
+  const hoy = new Date();
+  let edad = hoy.getFullYear() - nacimiento.getFullYear();
+  const mes = hoy.getMonth() - nacimiento.getMonth();
+  if (mes < 0 || (mes === 0 && hoy.getDate() < nacimiento.getDate())) edad -= 1;
+  return edad >= 0 ? edad : "";
+}
 
 onAuthStateChanged(auth, async (user) => {
   if (!user) {
@@ -49,7 +61,7 @@ async function cargarPaciente() {
     paciente.nombre || "Paciente";
 
   document.getElementById("datosPaciente").textContent =
-    `${paciente.edad || ""} anos`;
+    `${calcularEdad(paciente.fechaNacimiento) || paciente.edad || ""} anos`;
 }
 
 async function cargarHistoria() {
@@ -77,9 +89,36 @@ window.guardarHistoria = async () => {
 
   await guardarHistoriaClinica(uidPaciente, datos);
 
+  const pacienteActual = await obtenerUsuario(uidPaciente);
+
+  await actualizarUsuario(uidPaciente, {
+    tipoPaciente: datos.tipoPaciente || "privada",
+    institucionPaciente: datos.institucionPaciente || "",
+    institucion: datos.institucionPaciente || "",
+    servicioInstitucional: datos.servicioInstitucional || "",
+    servicio: datos.servicioInstitucional || "",
+    expediente: datos.expediente || "",
+    numeroExpediente: datos.expediente || "",
+    cama: datos.cama || "",
+    sexo: datos.sexo || "",
+    genero: datos.genero || "",
+    alergias: datos.alergias || "",
+    datosInstitucionales: {
+      ...(pacienteActual?.datosInstitucionales || {}),
+      tipoPaciente: datos.tipoPaciente || "privada",
+      institucionPaciente: datos.institucionPaciente || "",
+      servicioInstitucional: datos.servicioInstitucional || "",
+      expediente: datos.expediente || "",
+      cama: datos.cama || "",
+      sexo: datos.sexo || "",
+      genero: datos.genero || "",
+      alergias: datos.alergias || ""
+    }
+  });
+
   const usuario = auth.currentUser;
   const medico = usuario ? await obtenerUsuario(usuario.uid) : null;
-  const paciente = await obtenerUsuario(uidPaciente);
+  const paciente = pacienteActual || await obtenerUsuario(uidPaciente);
 
   await registrarEventoAuditoria({
     accion: "guardar_historia_clinica",

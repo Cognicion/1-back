@@ -2,43 +2,43 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Panel médico</title>
+<title>Nota medica | Cognicion</title>
 
 <link rel="stylesheet" href="css/theme.css">
 <link rel="icon" type="image/png" href="assets/favicon-cognicion.png">
 <link rel="stylesheet" href="css/nota.css">
-
-
 </head>
 
 <body>
+
+<div class="barra-superior">
+    <button class="boton-secundario" onclick="regresarDesdeNota()">
+        Regresar
+    </button>
+
+    <button class="boton-secundario" onclick="window.location.href='dashboard.html'">
+        Inicio
+    </button>
+</div>
 
 <div class="contenedor">
 
 <img class="logo-nota" src="assets/favicon-cognicion.png" alt="Cognicion">
 
-<h1>👨‍⚕️ Nota médica</h1>
+<h1>Nota medica</h1>
 
 <div id="bloqueSelectorPaciente">
-
     <label>Seleccionar paciente</label>
-        
     <select id="uidPaciente">
-
-        <option value="">
-            Seleccionar paciente
-        </option>
-
+        <option value="">Seleccionar paciente</option>
     </select>
-
 </div>
 
-<label for="buscadorDiagnostico">Diagnóstico visible para paciente (CIE-10)</label>
-
+<label for="buscadorDiagnostico">Diagnostico visible para paciente (CIE-10)</label>
 <input
     id="buscadorDiagnostico"
     type="text"
-    placeholder="Buscar por código o diagnóstico. Ej. F33.2 o depresivo"
+    placeholder="Buscar por codigo o diagnostico. Ej. F33.2 o depresivo"
     autocomplete="off"
 >
 
@@ -47,7 +47,7 @@
 <input type="hidden" id="cie10Codigo">
 <input type="hidden" id="cie10Nombre">
 
-<h3>Diagnósticos seleccionados</h3>
+<h3>Diagnosticos seleccionados</h3>
 <div class="grid-diagnosticos">
     <div>
         <label for="buscadorCIE10">Diagnostico CIE-10</label>
@@ -81,8 +81,6 @@
 
 <div id="diagnosticosSeleccionados"></div>
 
-
-
 <label>Tratamiento visible para paciente</label>
 <input
     id="buscadorMedicamento"
@@ -93,18 +91,50 @@
 <div id="resultadosMedicamentos"></div>
 <textarea id="tratamiento" placeholder="Medicamentos actuales"></textarea>
 
-<label>Médico tratante visible para paciente</label>
+<label>Medico tratante visible para paciente</label>
 <input id="medico" placeholder="Dr. Aldo Sandokan Aguilar Valenzuela">
 
-<label>Última consulta visible para paciente</label>
+<label>Ultima consulta visible para paciente</label>
 <input id="ultimaConsulta" type="date">
 
-<label>Próxima consulta visible para paciente</label>
+<label>Proxima consulta visible para paciente</label>
 <input id="proximaConsulta" type="date">
 
 <hr>
 
-<h2>Nota interna médica</h2>
+<input id="obsTipoNota" type="hidden" value="evolucion">
+<input id="obsFechaNota" type="hidden">
+<input id="obsHoraNota" type="hidden">
+
+<section id="bloqueObservacionFray" class="bloque-observacion">
+    <div class="observacion-seccion">
+        <h3>Signos vitales y somatometria</h3>
+        <div class="grid-vitales">
+            <label class="campo-vital">Presion arterial <input id="obsPresionArterial" placeholder="Ej. 120/80 mmHg"></label>
+            <label class="campo-vital">Temperatura <input id="obsTemperatura" placeholder="Ej. 36.5 C"></label>
+            <label class="campo-vital">Frecuencia cardiaca <input id="obsFrecuenciaCardiaca" placeholder="lpm"></label>
+            <label class="campo-vital">Frecuencia respiratoria <input id="obsFrecuenciaRespiratoria" placeholder="rpm"></label>
+            <label class="campo-vital">Saturacion O2 <input id="obsSaturacionO2" placeholder="%"></label>
+            <label class="campo-vital">Peso <input id="obsPeso" placeholder="kg"></label>
+            <label class="campo-vital">Talla <input id="obsTalla" placeholder="m"></label>
+            <label class="campo-vital">IMC <input id="obsIMC"></label>
+        </div>
+    </div>
+
+    <details class="observacion-seccion firmas-extra">
+        <summary>Firmas y residentes</summary>
+        <div class="grid-observacion seccion-firmas">
+            <label>Medico adscrito <input id="obsMedicoAdscrito"></label>
+            <label>Cedula medico adscrito <input id="obsCedulaAdscrito"></label>
+            <label>Medico residente R3 <input id="obsMedicoR3"></label>
+            <label>Cedula R3 <input id="obsCedulaR3"></label>
+            <label>Medico residente R2 <input id="obsMedicoR2"></label>
+            <label>Cedula R2 <input id="obsCedulaR2"></label>
+        </div>
+    </details>
+</section>
+
+<h2>Nota interna medica</h2>
 
 <label>Tipo de nota</label>
 <select id="tipoNota">
@@ -112,63 +142,86 @@
     <option value="rapida">Nota rapida</option>
 </select>
 
+<button id="btnCargarNotaPrevia" type="button" class="boton-secundario" onclick="cargarNotaPreviaEnFormulario()">
+    Cargar datos de nota previa
+</button>
+
 <div id="bloqueNotaRapida" class="bloque-nota-rapida oculto">
     <label>Nota rapida</label>
     <textarea id="notaRapida" placeholder="Resumen breve de evolucion, indicaciones o seguimiento"></textarea>
 </div>
 
 <div id="bloqueNotaCompleta">
-<label>Subjetivo</label>
-<textarea id="subjetivo"></textarea>
+    <label>Subjetivo / Padecimiento actual o evolucion</label>
+    <textarea id="subjetivo"></textarea>
 
-<label>Examen mental / Objetivo</label>
-<textarea id="objetivo"></textarea>
+    <label>Exploracion fisica y neurologica</label>
+    <textarea id="obsExploracionFisicaNeurologica"></textarea>
 
-<label>Análisis clínico</label>
-<textarea id="analisis"></textarea>
+    <label>Objetivo / Examen mental</label>
+    <textarea id="objetivo"></textarea>
 
-<label>Plan</label>
-<textarea id="plan"></textarea>
+    <label>Resultados relevantes de estudios diagnosticos</label>
+    <textarea id="obsResultadosEstudios"></textarea>
+
+    <div class="tabla-diagnosticos">
+        <div class="tabla-diagnosticos-header">
+            <h3>Diagnosticos CIE-10</h3>
+            <button id="btnSincronizarDxObs" type="button" class="boton-secundario">Sincronizar diagnosticos</button>
+        </div>
+        <div id="obsDiagnosticosLista" class="diagnosticos-word-lista">
+            Sin diagnosticos CIE-10 sincronizados.
+        </div>
+    </div>
+
+    <label>Analisis clinico</label>
+    <textarea id="analisis"></textarea>
+
+    <label>Plan</label>
+    <textarea id="plan"></textarea>
+
+    <label>Pronostico</label>
+    <textarea id="obsPronostico"></textarea>
+
+    <label>Destino</label>
+    <input id="obsDestino">
 </div>
 
+<section class="selector-formato-nota">
+    <label for="formatoNota">Formato de descarga</label>
+    <select id="formatoNota">
+        <option value="cognicion">PDF Cognicion</option>
+        <option value="fray_observacion_ingreso">Fray Bernardino - Observacion - Nota de ingreso</option>
+        <option value="fray_observacion_evolucion">Fray Bernardino - Observacion - Nota de evolucion</option>
+    </select>
+    <p class="ayuda-formato">
+        La nota se captura una sola vez en Cognicion. Este selector solo cambia el formato de descarga.
+    </p>
+</section>
+
 <button onclick="guardarNotaMedica()">
-Guardar nota médica
+Guardar nota medica
 </button>
 
 <button id="btnCancelarEdicion" class="boton-secundario oculto" onclick="cancelarEdicionNota()">
 Cancelar edicion
 </button>
 
-<button class="boton-pdf" onclick="generarPDFNota()">
-    Descargar nota en PDF
+<button id="btnDescargarNota" class="boton-pdf" onclick="descargarNotaSeleccionada()">
+    Descargar nota
 </button>
 
 <hr style="margin-top:40px; margin-bottom:30px;">
 
-<h2>📋 Historial de notas</h2>
+<h2>Historial de notas</h2>
 
 <div id="historialNotas">
-
-<p style="color:#999;">
-No hay notas registradas
-</p>
-
+    <p style="color:#999;">No hay notas registradas</p>
 </div>
-    
+
 </div>
 
 <script type="module" src="js/nota.js"></script>
 
 </body>
-
-<div class="barra-superior">
-    <button class="boton-secundario" onclick="regresarDesdeNota()">
-        ← Regresar
-    </button>
-
-    <button class="boton-secundario" onclick="window.location.href='dashboard.html'">
-        Inicio
-    </button>
-</div>
-
 </html>

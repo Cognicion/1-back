@@ -79,6 +79,16 @@ btnCrearCuenta.addEventListener("click", async () => {
       rol: "paciente",
       tieneCuenta: true,
       estado: "activo",
+      tipoPaciente: "privada",
+      datosInstitucionales: {
+        tipoPaciente: "privada",
+        institucionPaciente: "",
+        servicioInstitucional: "",
+        expediente: "",
+        cama: "",
+        alergias: "",
+        diasEstancia: ""
+      },
 
       creadoPor: uidMedico,
       medicoTratanteUid: uidMedico,
