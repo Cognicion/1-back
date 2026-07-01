@@ -364,7 +364,7 @@ async function cargarTratamiento(uid) {
 
     medicamentos.forEach((med) => {
       const li = document.createElement("li");
-      const indicacion = [med.dosis, med.frecuencia, med.via].filter(Boolean).join(" · ");
+      const indicacion = formatearIndicacionTratamiento(med, false);
       li.innerHTML = `<strong>${med.medicamento || "Medicamento"}</strong> - ${indicacion || "Sin indicacion completa"}`;
       lista.appendChild(li);
     });
@@ -372,6 +372,57 @@ async function cargarTratamiento(uid) {
     console.error("Error al cargar tratamiento:", error);
     lista.innerHTML = "<li>Aun no hay tratamiento registrado.</li>";
   }
+}
+
+function limpiarPuntoFinal(texto = "") {
+  return String(texto).trim().replace(/[.\s]+$/, "");
+}
+
+function asegurarPunto(texto = "") {
+  const limpio = String(texto).trim();
+  if (!limpio) return "";
+  return /[.!?]$/.test(limpio) ? limpio : `${limpio}.`;
+}
+
+function formatearHorariosTratamiento(horarios = "") {
+  const limpio = String(horarios).trim();
+  if (!limpio) return "";
+
+  if (/^(a\s+las|alrededor\s+de|por\s+la|en\s+la)/i.test(limpio)) {
+    return limpio;
+  }
+
+  const multiples = limpio
+    .split(/[,;]/)
+    .map((h) => h.trim())
+    .filter(Boolean);
+
+  if (multiples.length > 1) {
+    return `a las ${multiples.join(", ")}`;
+  }
+
+  return `a las ${limpio}`;
+}
+
+function formatearIndicacionTratamiento(t = {}, incluirMedicamento = true) {
+  const medicamento = incluirMedicamento ? asegurarPunto(t.medicamento || "") : "";
+  const via = limpiarPuntoFinal(t.via || "");
+  const frecuencia = limpiarPuntoFinal(t.frecuencia || "");
+  const dosis = limpiarPuntoFinal(t.dosis || "");
+  const horarios = formatearHorariosTratamiento(t.horarios || "");
+
+  const tomar = [via, frecuencia].filter(Boolean).join(" ");
+  const partes = [];
+
+  if (medicamento) partes.push(medicamento);
+  if (tomar) partes.push(asegurarPunto(`Tomar ${tomar}`));
+  if (dosis || horarios) partes.push(asegurarPunto([dosis, horarios].filter(Boolean).join(" ")));
+
+  if (!partes.length && !incluirMedicamento) {
+    return [t.dosis, t.frecuencia, t.via, t.horarios].filter(Boolean).join(" · ");
+  }
+
+  return partes.join(" ");
 }
 
 async function cargarMetas(uid) {

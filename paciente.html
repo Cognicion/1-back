@@ -263,8 +263,17 @@
         <div class="form-grid">
           <label>Medicamento<input id="tratamientoMedicamento" placeholder="Ej. Sertralina"></label>
           <label>Dosis<input id="tratamientoDosis" placeholder="Ej. 50 mg"></label>
-          <label>Frecuencia<input id="tratamientoFrecuencia" placeholder="Ej. cada 24 horas"></label>
-          <label>Via<input id="tratamientoVia" placeholder="Ej. oral"></label>
+          <label>Veces al dia<input id="tratamientoFrecuencia" placeholder="Ej. 1 vez al dia"></label>
+          <label>Via<input id="tratamientoVia" placeholder="Ej. via oral" list="opcionesViaTratamiento"></label>
+          <datalist id="opcionesViaTratamiento">
+            <option value="via oral"></option>
+            <option value="via sublingual"></option>
+            <option value="via intramuscular"></option>
+            <option value="via intravenosa"></option>
+            <option value="via topica"></option>
+            <option value="via inhalada"></option>
+          </datalist>
+          <label>Horarios<input id="tratamientoHorarios" placeholder="Ej. 08:00"></label>
           <label>Fecha de inicio<input id="tratamientoFechaInicio" type="date"></label>
           <label>Estado
             <select id="tratamientoEstado">

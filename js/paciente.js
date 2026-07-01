@@ -856,6 +856,7 @@ function datosFormularioTratamiento() {
     dosis: valorCampo("tratamientoDosis"),
     frecuencia: valorCampo("tratamientoFrecuencia"),
     via: valorCampo("tratamientoVia"),
+    horarios: valorCampo("tratamientoHorarios"),
     fechaInicio: valorCampo("tratamientoFechaInicio"),
     estado: valorCampo("tratamientoEstado") || "activo",
     fechaSuspension: valorCampo("tratamientoFechaSuspension"),
@@ -872,6 +873,7 @@ function limpiarFormularioTratamiento() {
     "tratamientoDosis",
     "tratamientoFrecuencia",
     "tratamientoVia",
+    "tratamientoHorarios",
     "tratamientoFechaInicio",
     "tratamientoFechaSuspension",
     "tratamientoMotivoSuspension",
@@ -944,12 +946,13 @@ async function cargarTratamientosPaciente() {
 }
 
 function renderizarTratamiento(t) {
+  const indicacion = formatearIndicacionTratamiento(t, false);
   return `
     <article class="registro-card">
       <div class="registro-top">
         <div>
           <strong>${escaparHTML(t.medicamento || "Medicamento")}</strong>
-          <span>${escaparHTML([t.dosis, t.frecuencia, t.via].filter(Boolean).join(" Â· ") || "Sin indicacion completa")}</span>
+          <span>${escaparHTML(indicacion || "Sin indicacion completa")}</span>
         </div>
         <span class="estado-badge ${t.estado === "suspendido" ? "suspendido" : "activo"}">${escaparHTML(t.estado || "activo")}</span>
       </div>
@@ -983,6 +986,7 @@ function editarTratamientoPaciente(id) {
   ponerValor("tratamientoDosis", t.dosis);
   ponerValor("tratamientoFrecuencia", t.frecuencia);
   ponerValor("tratamientoVia", t.via);
+  ponerValor("tratamientoHorarios", t.horarios);
   ponerValor("tratamientoFechaInicio", t.fechaInicio);
   ponerValor("tratamientoEstado", t.estado || "activo");
   ponerValor("tratamientoFechaSuspension", t.fechaSuspension);
@@ -1009,7 +1013,7 @@ async function eliminarTratamientoPaciente(id) {
 async function sincronizarResumenTratamiento() {
   const activos = tratamientosCache.filter((t) => (t.estado || "activo") === "activo");
   const resumen = activos.map((t) =>
-    [t.medicamento, t.dosis, t.frecuencia].filter(Boolean).join(" ")
+    formatearIndicacionTratamiento(t, true)
   ).filter(Boolean).join("\n");
 
   await actualizarUsuario(uidPaciente, {
@@ -1018,6 +1022,57 @@ async function sincronizarResumenTratamiento() {
 
   const tratamiento = document.getElementById("tratamiento");
   if (tratamiento) tratamiento.innerText = resumen || "Sin tratamiento registrado";
+}
+
+function limpiarPuntoFinal(texto = "") {
+  return String(texto).trim().replace(/[.\s]+$/, "");
+}
+
+function asegurarPunto(texto = "") {
+  const limpio = String(texto).trim();
+  if (!limpio) return "";
+  return /[.!?]$/.test(limpio) ? limpio : `${limpio}.`;
+}
+
+function formatearHorariosTratamiento(horarios = "") {
+  const limpio = String(horarios).trim();
+  if (!limpio) return "";
+
+  if (/^(a\s+las|alrededor\s+de|por\s+la|en\s+la)/i.test(limpio)) {
+    return limpio;
+  }
+
+  const multiples = limpio
+    .split(/[,;]/)
+    .map((h) => h.trim())
+    .filter(Boolean);
+
+  if (multiples.length > 1) {
+    return `a las ${multiples.join(", ")}`;
+  }
+
+  return `a las ${limpio}`;
+}
+
+function formatearIndicacionTratamiento(t = {}, incluirMedicamento = true) {
+  const medicamento = incluirMedicamento ? asegurarPunto(t.medicamento || "") : "";
+  const via = limpiarPuntoFinal(t.via || "");
+  const frecuencia = limpiarPuntoFinal(t.frecuencia || "");
+  const dosis = limpiarPuntoFinal(t.dosis || "");
+  const horarios = formatearHorariosTratamiento(t.horarios || "");
+
+  const tomar = [via, frecuencia].filter(Boolean).join(" ");
+  const partes = [];
+
+  if (medicamento) partes.push(medicamento);
+  if (tomar) partes.push(asegurarPunto(`Tomar ${tomar}`));
+  if (dosis || horarios) partes.push(asegurarPunto([dosis, horarios].filter(Boolean).join(" ")));
+
+  if (!partes.length && !incluirMedicamento) {
+    return [t.dosis, t.frecuencia, t.via, t.horarios].filter(Boolean).join(" · ");
+  }
+
+  return partes.join(" ");
 }
 
 function datosFormularioEstudio() {
