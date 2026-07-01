@@ -351,7 +351,9 @@ function normalizarDiagnostico(diagnostico = {}, catalogoFallback = "CIE-10") {
     nombre,
     texto: diagnostico.texto || nombre,
     catalogo,
-    fechaSeleccion: diagnostico.fechaSeleccion || new Date().toISOString()
+    fechaSeleccion: diagnostico.fechaSeleccion || new Date().toISOString(),
+    manual: diagnostico.manual === true,
+    agregadoManual: diagnostico.agregadoManual === true
   };
 }
 
@@ -397,7 +399,10 @@ function renderizarResultadosBusquedaDiagnosticos() {
   contenedor.innerHTML = diagnosticosCatalogoActual.length
     ? diagnosticosCatalogoActual.map((dx, index) => `
       <button type="button" class="diagnostico-opcion" data-agregar-diagnostico="${index}">
-        <strong>${escaparHTML(dx.catalogo)} ${escaparHTML(dx.codigo)}</strong>
+        <strong>
+          ${escaparHTML(dx.catalogo)} ${escaparHTML(dx.codigo)}
+          ${dx.agregadoManual ? '<em class="diagnostico-manual-badge">Agregado manualmente</em>' : ""}
+        </strong>
         <span>${escaparHTML(dx.nombre)}</span>
       </button>
     `).join("")

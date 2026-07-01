@@ -53,6 +53,121 @@ let notasFlotantesPacienteCache = [];
 
 iniciarMonitoreoSesion("Nota medica");
 
+const CLAVE_ALTURAS_NOTA = "cognicion_nota_alturas_secciones";
+const camposNotaRedimensionables = [
+  "tratamiento",
+  "notaRapida",
+  "subjetivo",
+  "obsExploracionFisicaNeurologica",
+  "objetivo",
+  "obsResultadosEstudios",
+  "analisis",
+  "plan",
+  "obsPronostico"
+];
+
+function cargarAlturasNota() {
+  try {
+    const guardado = localStorage.getItem(CLAVE_ALTURAS_NOTA);
+    const datos = guardado ? JSON.parse(guardado) : {};
+    return datos && typeof datos === "object" ? datos : {};
+  } catch (error) {
+    console.warn("No se pudieron cargar las alturas de la nota", error);
+    return {};
+  }
+}
+
+function guardarAlturaNota(clave, altura) {
+  const alturas = cargarAlturasNota();
+  alturas[clave] = Math.max(80, Math.round(altura));
+  localStorage.setItem(CLAVE_ALTURAS_NOTA, JSON.stringify(alturas));
+}
+
+function crearSeparadorVertical(clave, objetivo, minimo = 80) {
+  const separador = document.createElement("div");
+  separador.className = "separador-vertical-nota";
+  separador.setAttribute("role", "separator");
+  separador.setAttribute("aria-orientation", "horizontal");
+  separador.title = "Arrastrar para ajustar altura";
+
+  separador.addEventListener("pointerdown", (evento) => {
+    evento.preventDefault();
+    const inicioY = evento.clientY;
+    const altoInicial = objetivo.getBoundingClientRect().height;
+    separador.setPointerCapture(evento.pointerId);
+    document.body.classList.add("ajustando-seccion-nota");
+
+    const mover = (movimiento) => {
+      const nuevoAlto = Math.max(minimo, altoInicial + movimiento.clientY - inicioY);
+      objetivo.style.height = `${nuevoAlto}px`;
+    };
+
+    const terminar = (final) => {
+      guardarAlturaNota(clave, objetivo.getBoundingClientRect().height);
+      document.body.classList.remove("ajustando-seccion-nota");
+      separador.releasePointerCapture(final.pointerId);
+      separador.removeEventListener("pointermove", mover);
+      separador.removeEventListener("pointerup", terminar);
+      separador.removeEventListener("pointercancel", terminar);
+    };
+
+    separador.addEventListener("pointermove", mover);
+    separador.addEventListener("pointerup", terminar);
+    separador.addEventListener("pointercancel", terminar);
+  });
+
+  return separador;
+}
+
+function envolverCampoRedimensionable(campo, clave, alturaGuardada) {
+  if (!campo || campo.closest(".seccion-nota-redimensionable")) return;
+
+  const etiqueta = campo.previousElementSibling?.tagName === "LABEL"
+    ? campo.previousElementSibling
+    : null;
+  const seccion = document.createElement("section");
+  seccion.className = "seccion-nota-redimensionable";
+  seccion.dataset.seccionNota = clave;
+
+  const referencia = etiqueta || campo;
+  referencia.parentNode.insertBefore(seccion, referencia);
+  if (etiqueta) seccion.appendChild(etiqueta);
+  seccion.appendChild(campo);
+
+  if (alturaGuardada) campo.style.height = `${alturaGuardada}px`;
+  seccion.appendChild(crearSeparadorVertical(clave, campo, 80));
+}
+
+function prepararPanelRedimensionable(panel, clave, alturaGuardada) {
+  if (!panel || panel.dataset.redimensionNota === "true") return;
+  panel.dataset.redimensionNota = "true";
+  panel.classList.add("panel-nota-redimensionable");
+
+  if (alturaGuardada) panel.style.height = `${alturaGuardada}px`;
+  panel.appendChild(crearSeparadorVertical(clave, panel, 110));
+}
+
+function configurarSeccionesRedimensionablesNota() {
+  const alturas = cargarAlturasNota();
+
+  camposNotaRedimensionables.forEach((id) => {
+    envolverCampoRedimensionable(
+      document.getElementById(id),
+      `campo:${id}`,
+      alturas[`campo:${id}`]
+    );
+  });
+
+  document.querySelectorAll("#bloqueObservacionFray > .observacion-seccion, #bloqueObservacionFray > details.observacion-seccion")
+    .forEach((panel, index) => prepararPanelRedimensionable(panel, `observacion:${index}`, alturas[`observacion:${index}`]));
+
+  prepararPanelRedimensionable(
+    document.querySelector("#bloqueNotaCompleta .tabla-diagnosticos"),
+    "panel:diagnosticos-cie10",
+    alturas["panel:diagnosticos-cie10"]
+  );
+}
+
 const buscadorDiagnostico = document.getElementById("buscadorDiagnostico");
 const resultadosCIE10 = document.getElementById("resultadosCIE10");
 const cie10Codigo = document.getElementById("cie10Codigo");
@@ -110,7 +225,10 @@ function configurarBuscadorCatalogo(input, contenedor, catalogo, nombreCatalogo)
       .forEach((dx) => {
         const item = document.createElement("div");
         item.classList.add("resultado-cie10");
-        item.innerHTML = `<strong>${dx.codigo}</strong> <span>${nombreCatalogo}</span> - ${dx.nombre}`;
+        const etiquetaManual = dx.agregadoManual
+          ? `<em class="diagnostico-manual-badge">Agregado manualmente</em>`
+          : "";
+        item.innerHTML = `<strong>${dx.codigo}</strong> <span>${nombreCatalogo}</span> ${etiquetaManual} - ${dx.nombre}`;
         item.addEventListener("click", () => {
           agregarDiagnostico({ ...dx, catalogo: nombreCatalogo });
           input.value = "";
@@ -142,9 +260,12 @@ if (buscadorDiagnostico && resultadosCIE10 && cie10Codigo && cie10Nombre) {
     resultados.forEach((dx) => {
       const item = document.createElement("div");
       item.classList.add("resultado-cie10");
+      const etiquetaManual = dx.agregadoManual
+        ? `<em class="diagnostico-manual-badge">Agregado manualmente</em>`
+        : "";
 
       item.innerHTML = `
-        <strong>${dx.codigo}</strong> <span>${dx.catalogo}</span> - ${dx.nombre}
+        <strong>${dx.codigo}</strong> <span>${dx.catalogo}</span> ${etiquetaManual} - ${dx.nombre}
       `;
 
       item.addEventListener("click", () => {
@@ -306,6 +427,7 @@ async function guardarEscalaDesdeNota() {
 }
 
 configurarPanelEscalaNota();
+configurarSeccionesRedimensionablesNota();
 
 function agregarDiagnostico(dx) {
   const yaExiste = diagnosticosSeleccionados.some(
