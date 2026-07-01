@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Asistente de Respiracion | Cognicion</title>
+  <link rel="icon" type="image/png" href="assets/favicon-cognicion.png">
+  <link rel="stylesheet" href="css/respiracion.css">
+</head>
+
+<body>
+  <div class="universo" aria-hidden="true">
+    <div class="capa-neblina capa-neblina-a"></div>
+    <div class="capa-neblina capa-neblina-b"></div>
+    <div class="capa-ondas capa-ondas-a"></div>
+    <div class="capa-ondas capa-ondas-b"></div>
+    <div id="particulasRespiracion" class="particulas-respiracion"></div>
+  </div>
+
+  <header class="portal-header">
+    <a class="nav-link" href="mi-salud.html">Mi Salud</a>
+    <a class="nav-link" href="dashboard.html">Dashboard</a>
+  </header>
+
+  <main class="experiencia-respiracion">
+    <section class="estado-respiracion" aria-live="polite">
+      <span class="subtitulo">PATRON 4-2-6-2</span>
+      <h1 id="faseActual" class="fase-palabra">INHALA</h1>
+      <p id="instruccionFase">Sigue la orbita luminosa.</p>
+    </section>
+
+    <section class="orbita-wrap" aria-label="Guia visual de respiracion">
+      <div id="circuloRespiracion" class="circulo-respiracion fase-inhala">
+        <div id="estelaRespiracion" class="estela-respiracion"></div>
+        <div id="pelotaRespiracion" class="pelota-respiracion"></div>
+        <div class="nucleo-respiracion">
+          <span id="tiempoRestante">4</span>
+          <small>segundos</small>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel-inferior">
+      <div class="lecturas">
+        <div>
+          <span>Ciclos</span>
+          <strong id="ciclosCompletados">0</strong>
+        </div>
+        <div>
+          <span>Sonido</span>
+          <strong id="estadoSonido">Apagado</strong>
+        </div>
+      </div>
+
+      <div class="controles">
+        <button id="btnIniciar" type="button">Iniciar</button>
+        <button id="btnPausar" type="button">Pausar</button>
+        <button id="btnReiniciar" type="button">Reiniciar</button>
+        <button id="btnSonido" type="button">Sonido off</button>
+        <button id="btnAmbiente" type="button">Ambiente off</button>
+      </div>
+
+      <label class="volumen-control">
+        <span>Volumen</span>
+        <input id="controlVolumen" type="range" min="0" max="1" step="0.01" value="0.55">
+      </label>
+    </section>
+  </main>
+
+  <script src="respiracion.js"></script>
+</body>
+</html>

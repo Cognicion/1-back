@@ -37,11 +37,39 @@
     </div>
   </section>
 
+  <section id="vinculacionCuentaCard" class="vinculacion-cuenta-card">
+    <div>
+      <span class="etiqueta">VINCULACION CLINICA</span>
+      <h3>Codigo para mi medico</h3>
+      <p>Genera un codigo temporal para que tu medico vincule esta cuenta con un expediente previo.</p>
+    </div>
+    <button id="btnGenerarCodigoMedico" type="button">Generar codigo</button>
+    <strong id="codigoPacienteMedico">Sin codigo generado</strong>
+  </section>
+
   <section class="grid-metricas">
     <div class="mini-card"><span>Animo reciente</span><strong id="animoReciente">--</strong></div>
     <div class="mini-card"><span>Ansiedad reciente</span><strong id="ansiedadReciente">--</strong></div>
     <div class="mini-card"><span>Sueno reciente</span><strong id="suenoReciente">--</strong></div>
     <div class="mini-card"><span>Escalas realizadas</span><strong id="totalEscalas">0</strong></div>
+  </section>
+
+  <section class="herramientas-salud">
+    <div class="section-heading">
+      <span class="etiqueta">AUTOCUIDADO GUIADO</span>
+      <h3>Mis herramientas y actividades</h3>
+    </div>
+
+    <article class="herramienta-card" onclick="window.location.href='respiracion.html'">
+      <div class="icono-respiracion" aria-hidden="true">
+        <span></span>
+      </div>
+      <div>
+        <h4>Asistente de Respiración</h4>
+        <p>Sigue una guía visual para regular tu respiración.</p>
+      </div>
+      <button type="button">Abrir</button>
+    </article>
   </section>
 
   <section class="grid">

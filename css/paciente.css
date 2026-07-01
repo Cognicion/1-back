@@ -483,6 +483,19 @@ textarea{
   accent-color:#38bdf8;
 }
 
+.codigo-vinculacion {
+  margin-top:14px;
+  padding:14px 16px;
+  border-radius:16px;
+  border:1px solid rgba(56,189,248,0.28);
+  background:rgba(8,12,20,0.72);
+  color:#7dd3fc;
+  font-size:20px;
+  font-weight:900;
+  letter-spacing:0.12em;
+  text-align:center;
+}
+
 @media(max-width:900px){
   .form-grid,
   .panel-doble{

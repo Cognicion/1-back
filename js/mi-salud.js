@@ -3,6 +3,7 @@ import { ESCALAS_PSIQUIATRICAS, interpretarEscala } from "./data/escalasPsiquiat
 import { medicoPuedeVer, obtenerUsuario } from "./services/usuarios.js";
 import { registrarEventoAuditoria } from "./services/auditoria.js";
 import { iniciarMonitoreoSesion } from "./services/sesion.js";
+import { crearCodigoPacienteParaMedico } from "./services/vinculacion.js";
 
 import {
   onAuthStateChanged
@@ -94,6 +95,7 @@ onAuthStateChanged(auth, async (user) => {
     document.getElementById("guardarRegistro")?.addEventListener("click", guardarRegistroDiario);
     document.getElementById("guardarEscala")?.addEventListener("click", guardarResultadoEscala);
     document.getElementById("guardarDiario")?.addEventListener("click", guardarDiarioPersonal);
+    document.getElementById("btnGenerarCodigoMedico")?.addEventListener("click", generarCodigoParaMedico);
   } catch (error) {
     console.error("Error al cargar Mi Salud:", error);
     alert("Ocurrio un error al cargar Mi Salud.");
@@ -118,11 +120,43 @@ async function cargarMiSalud(uid, datosUsuario, rolActual) {
   await cargarProximaCita(uid, datosUsuario);
 
   if (modoVistaPrevia) {
+    document.getElementById("vinculacionCuentaCard")?.classList.add("oculto");
     document.getElementById("guardarRegistro")?.setAttribute("disabled", "disabled");
     document.getElementById("guardarEscala")?.setAttribute("disabled", "disabled");
     document.getElementById("guardarDiario")?.setAttribute("disabled", "disabled");
     document.getElementById("diarioTexto")?.setAttribute("disabled", "disabled");
     document.getElementById("diarioVisibleMedico")?.setAttribute("disabled", "disabled");
+  }
+}
+
+async function generarCodigoParaMedico() {
+  if (modoVistaPrevia || !usuarioActual) return;
+
+  const contenedor = document.getElementById("codigoPacienteMedico");
+  const boton = document.getElementById("btnGenerarCodigoMedico");
+
+  try {
+    if (boton) boton.textContent = "Generando...";
+    const codigo = await crearCodigoPacienteParaMedico(usuarioActual.uid);
+    if (contenedor) contenedor.textContent = codigo;
+
+    const datosUsuario = await obtenerUsuario(usuarioActual.uid);
+    await registrarEventoAuditoria({
+      accion: "generar_codigo_paciente_para_medico",
+      modulo: "Mi Salud",
+      descripcion: "El paciente genero un codigo para vincular su cuenta con un expediente medico previo.",
+      usuarioUid: usuarioActual.uid,
+      usuarioNombre: datosUsuario?.nombre || usuarioActual.email || "",
+      usuarioRol: datosUsuario?.rol || "",
+      pacienteUid: usuarioActual.uid,
+      pacienteNombre: datosUsuario?.nombre || "",
+      exito: true,
+      detalles: { codigo }
+    });
+  } catch (error) {
+    alert("No se pudo generar el codigo: " + error.message);
+  } finally {
+    if (boton) boton.textContent = "Generar codigo";
   }
 }
 

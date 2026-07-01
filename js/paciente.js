@@ -52,6 +52,11 @@ import {
   listarNotasRapidas
 } from "./services/notasRapidas.js";
 
+import {
+  crearCodigoExpedienteParaPaciente,
+  vincularExpedienteConCodigoPaciente
+} from "./services/vinculacion.js";
+
 let uidPaciente = "";
 let datosPacienteActual = null;
 let tratamientosCache = [];
@@ -1208,6 +1213,61 @@ document.getElementById("guardarEstudio")?.addEventListener("click", guardarEstu
 document.getElementById("limpiarEstudio")?.addEventListener("click", limpiarFormularioEstudio);
 document.getElementById("guardarNotaRapida")?.addEventListener("click", guardarNotaRapidaPaciente);
 document.getElementById("guardarTareaMiSalud")?.addEventListener("click", guardarTareaMiSaludPaciente);
+document.getElementById("btnGenerarCodigoPaciente")?.addEventListener("click", generarCodigoVinculacionDesdeMedico);
+document.getElementById("btnVincularCodigoPaciente")?.addEventListener("click", vincularCuentaPacienteDesdeMedico);
+
+async function generarCodigoVinculacionDesdeMedico() {
+  const contenedor = document.getElementById("codigoVinculacionMedico");
+  if (!auth.currentUser || !uidPaciente) return;
+
+  try {
+    const codigo = await crearCodigoExpedienteParaPaciente(uidPaciente, auth.currentUser.uid);
+    if (contenedor) contenedor.textContent = codigo;
+
+    await registrarAccionExpediente({
+      accion: "generar_codigo_vinculacion_paciente",
+      descripcion: "El medico genero un codigo para vincular el expediente con la cuenta del paciente.",
+      detalles: { codigo }
+    });
+  } catch (error) {
+    alert("No se pudo generar el codigo: " + error.message);
+  }
+}
+
+async function vincularCuentaPacienteDesdeMedico() {
+  const input = document.getElementById("codigoPacienteParaMedico");
+  const codigo = input?.value.trim().toUpperCase();
+
+  if (!codigo) {
+    alert("Escribe el codigo entregado por el paciente.");
+    return;
+  }
+
+  if (!confirm("Vincular este expediente con la cuenta del paciente?")) return;
+
+  try {
+    const resultado = await vincularExpedienteConCodigoPaciente(
+      codigo,
+      uidPaciente,
+      auth.currentUser?.uid || ""
+    );
+
+    await registrarAccionExpediente({
+      accion: "vincular_expediente_con_cuenta_paciente",
+      descripcion: "El medico vinculo un expediente previo con una cuenta de paciente.",
+      detalles: {
+        codigo,
+        pacienteCuentaUid: resultado.pacienteUid,
+        expedientePrevioUid: resultado.expedientePrevioUid
+      }
+    });
+
+    alert("Cuenta vinculada correctamente.");
+    window.location.href = `paciente.html?id=${resultado.pacienteUid}`;
+  } catch (error) {
+    alert("No se pudo vincular la cuenta: " + error.message);
+  }
+}
 
 async function registrarAccionExpediente({ accion, descripcion, detalles = {} }) {
   const usuario = auth.currentUser;

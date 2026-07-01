@@ -13,6 +13,8 @@ body {
 
 body.bloqueado main { display: none; }
 
+.oculto { display: none !important; }
+
 body.modo-preview::before {
   content: "Vista previa medica de paciente";
   position: fixed;
@@ -150,6 +152,43 @@ body.modo-preview::before {
   margin: 20px 0;
 }
 
+.vinculacion-cuenta-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(180px, auto);
+  gap: 16px;
+  align-items: center;
+  margin: 20px 0;
+  padding: 18px;
+  border-radius: 22px;
+  border: 1px solid rgba(125,211,252,0.18);
+  background: rgba(8,12,20,0.58);
+  box-shadow: 0 0 35px rgba(78,163,255,0.08), 0 18px 50px rgba(0,0,0,0.22);
+}
+
+.vinculacion-cuenta-card h3,
+.vinculacion-cuenta-card p {
+  margin: 6px 0 0;
+}
+
+.vinculacion-cuenta-card p {
+  color: #aab4c3;
+  line-height: 1.5;
+}
+
+.vinculacion-cuenta-card button {
+  margin: 0;
+}
+
+.vinculacion-cuenta-card strong {
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(56,189,248,0.24);
+  background: rgba(2,6,23,.78);
+  color: #7dd3fc;
+  letter-spacing: 0.08em;
+  text-align: center;
+}
+
 .mini-card {
   padding: 18px;
 }
@@ -159,6 +198,91 @@ body.modo-preview::before {
   margin-top: 8px;
   font-size: 28px;
 }
+
+.herramientas-salud {
+  margin: 20px 0;
+  padding: 22px;
+  border: 1px solid rgba(255,255,255,0.10);
+  border-radius: 24px;
+  background:
+    radial-gradient(circle at top right, rgba(56,189,248,0.12), transparent 34%),
+    rgba(15, 18, 25, 0.82);
+  box-shadow: 0 0 35px rgba(78,163,255,0.08), 0 18px 50px rgba(0,0,0,0.24);
+}
+
+.section-heading {
+  margin-bottom: 16px;
+}
+
+.section-heading h3 {
+  margin: 8px 0 0;
+  font-size: 24px;
+}
+
+.herramienta-card {
+  display: grid;
+  grid-template-columns: 74px minmax(0, 1fr) auto;
+  gap: 16px;
+  align-items: center;
+  padding: 16px;
+  border-radius: 20px;
+  border: 1px solid rgba(125,211,252,0.22);
+  background: rgba(8,12,20,0.64);
+  cursor: pointer;
+  transition: transform .22s ease, border-color .22s ease, background .22s ease;
+}
+
+.herramienta-card:hover {
+  transform: translateY(-3px);
+  border-color: rgba(56,189,248,0.46);
+  background: rgba(15,23,42,0.86);
+}
+
+.herramienta-card h4 {
+  margin: 0 0 6px;
+  color: #e0f2fe;
+  font-size: 19px;
+}
+
+.herramienta-card p {
+  margin: 0;
+  color: #aab4c3;
+  line-height: 1.5;
+}
+
+.herramienta-card button {
+  margin: 0;
+  pointer-events: none;
+}
+
+.icono-respiracion {
+  position: relative;
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  border: 1px solid rgba(125,211,252,0.55);
+  background:
+    radial-gradient(circle, rgba(56,189,248,0.20), transparent 58%),
+    rgba(2,6,23,0.72);
+  box-shadow: inset 0 0 20px rgba(56,189,248,0.16), 0 0 24px rgba(56,189,248,0.14);
+}
+
+.icono-respiracion::before,
+.icono-respiracion::after,
+.icono-respiracion span {
+  content: "";
+  position: absolute;
+  inset: 50% auto auto 50%;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 1px solid rgba(125,211,252,0.55);
+  transform: translate(-50%, -50%);
+}
+
+.icono-respiracion::before { transform: translate(-82%, -50%); }
+.icono-respiracion::after { transform: translate(-18%, -50%); }
+.icono-respiracion span { transform: translate(-50%, -24%); }
 
 .grid {
   display: grid;
@@ -362,6 +486,7 @@ a { color: #60a5fa; }
   .hero-paciente,
   .grid,
   .grid-metricas,
+  .vinculacion-cuenta-card,
   .grid-form {
     grid-template-columns: 1fr;
   }
@@ -369,5 +494,17 @@ a { color: #60a5fa; }
   .header {
     display: grid;
     align-items: start;
+  }
+
+  .herramienta-card {
+    grid-template-columns: 1fr;
+  }
+
+  .herramienta-card button {
+    width: 100%;
+  }
+
+  .vinculacion-cuenta-card button {
+    width: 100%;
   }
 }

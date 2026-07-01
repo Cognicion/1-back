@@ -139,6 +139,7 @@ async function cargarPacientes(uidMedico) {
     const datos = docPaciente.data();
 
     if (datos.rol !== "paciente") continue;
+    if (datos.estado === "vinculado") continue;
 
     const puedeVer = await medicoPuedeVer(uidMedico, docPaciente.id);
 

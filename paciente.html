@@ -185,6 +185,29 @@
           Cargando permisos...
         </div>
       </div>
+
+      <div class="tarjeta">
+        <h2>Vinculacion de cuenta</h2>
+        <p class="texto-suave">
+          Usa estos codigos para conectar este expediente con la cuenta real del paciente sin perder notas ni informacion clinica.
+        </p>
+
+        <div class="panel-doble">
+          <div>
+            <h3>Codigo para el paciente</h3>
+            <p class="texto-suave">El paciente puede usarlo al crear su cuenta.</p>
+            <button id="btnGenerarCodigoPaciente" type="button">Generar codigo</button>
+            <div id="codigoVinculacionMedico" class="codigo-vinculacion">Sin codigo generado.</div>
+          </div>
+
+          <div>
+            <h3>Codigo entregado por el paciente</h3>
+            <p class="texto-suave">Introduce el codigo que el paciente genero desde Mi Salud.</p>
+            <input id="codigoPacienteParaMedico" placeholder="COG-XXXX-XXXX">
+            <button id="btnVincularCodigoPaciente" type="button">Vincular cuenta</button>
+          </div>
+        </div>
+      </div>
     </section>
 
     <section id="seccionResultadosEscalas" style="display:none;">
