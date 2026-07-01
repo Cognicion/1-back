@@ -83,6 +83,7 @@ textarea{
 
 .seccion-nota-redimensionable label {
     margin-top: 0;
+    margin-bottom: 8px;
 }
 
 .seccion-nota-redimensionable textarea {
@@ -94,17 +95,56 @@ textarea{
 .panel-nota-redimensionable {
     position: relative;
     min-height: 110px;
-    padding-bottom: 14px;
+    padding-bottom: 18px;
     overflow: auto;
+}
+
+.controles-tamano-nota {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    justify-content: flex-end;
+    margin: 0 0 8px;
+}
+
+.panel-nota-redimensionable > .controles-tamano-nota {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    padding: 8px 12px 2px;
+    background: linear-gradient(180deg, rgba(2,6,23,0.96), rgba(2,6,23,0.72));
+}
+
+.controles-tamano-nota button {
+    min-width: 38px;
+    margin: 0;
+    padding: 7px 10px;
+    border-radius: 999px;
+    border: 1px solid rgba(125, 211, 252, 0.28);
+    background: rgba(15, 23, 42, 0.92);
+    color: #dbeafe;
+    font-size: 12px;
+    line-height: 1;
+}
+
+.controles-tamano-nota button[data-accion="contraer"],
+.controles-tamano-nota button[data-accion="reiniciar"] {
+    min-width: 78px;
+}
+
+.seccion-contraida textarea,
+.seccion-contraida.panel-nota-redimensionable {
+    opacity: 0.74;
 }
 
 .separador-vertical-nota {
     position: absolute;
     left: 14px;
     right: 14px;
-    bottom: 4px;
-    height: 10px;
+    bottom: 3px;
+    height: 18px;
     cursor: ns-resize;
+    touch-action: none;
     border-radius: 999px;
     background:
         linear-gradient(90deg, transparent, rgba(56,189,248,0.62), transparent),
@@ -118,8 +158,8 @@ textarea{
     position: absolute;
     left: 50%;
     top: 50%;
-    width: 48px;
-    height: 3px;
+    width: 68px;
+    height: 4px;
     border-radius: 999px;
     transform: translate(-50%, -50%);
     background: rgba(125, 211, 252, 0.92);
@@ -858,6 +898,7 @@ button:hover{
     #bloqueSelectorPaciente,
     #historialNotas,
     .separador-vertical-nota,
+    .controles-tamano-nota,
     h2:last-of-type {
         display: none !important;
     }
@@ -1096,6 +1137,19 @@ button:hover{
 }
 
 @media (max-width: 800px) {
+  .controles-tamano-nota {
+    justify-content: stretch;
+  }
+
+  .controles-tamano-nota button {
+    flex: 1 1 74px;
+    min-height: 38px;
+  }
+
+  .separador-vertical-nota {
+    height: 26px;
+  }
+
   .notas-flotantes-costado {
     top: auto;
     right: 12px;

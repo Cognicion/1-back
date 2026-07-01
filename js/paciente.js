@@ -1866,16 +1866,202 @@ async function htmlInterconsultaWord(datos) {
   `;
 }
 
+function fechaHoraZipActual() {
+  const fecha = new Date();
+  const horaDos = (
+    (fecha.getHours() << 11) |
+    (fecha.getMinutes() << 5) |
+    Math.floor(fecha.getSeconds() / 2)
+  );
+  const fechaDos = (
+    ((fecha.getFullYear() - 1980) << 9) |
+    ((fecha.getMonth() + 1) << 5) |
+    fecha.getDate()
+  );
+  return { horaDos, fechaDos };
+}
+
+let tablaCrc32 = null;
+
+function obtenerTablaCrc32() {
+  if (tablaCrc32) return tablaCrc32;
+  tablaCrc32 = new Uint32Array(256);
+  for (let i = 0; i < 256; i += 1) {
+    let c = i;
+    for (let j = 0; j < 8; j += 1) {
+      c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1;
+    }
+    tablaCrc32[i] = c >>> 0;
+  }
+  return tablaCrc32;
+}
+
+function crc32(bytes) {
+  const tabla = obtenerTablaCrc32();
+  let crc = 0xffffffff;
+  for (const byte of bytes) {
+    crc = tabla[(crc ^ byte) & 0xff] ^ (crc >>> 8);
+  }
+  return (crc ^ 0xffffffff) >>> 0;
+}
+
+function escribirUint16(buffer, offset, valor) {
+  buffer[offset] = valor & 0xff;
+  buffer[offset + 1] = (valor >>> 8) & 0xff;
+}
+
+function escribirUint32(buffer, offset, valor) {
+  buffer[offset] = valor & 0xff;
+  buffer[offset + 1] = (valor >>> 8) & 0xff;
+  buffer[offset + 2] = (valor >>> 16) & 0xff;
+  buffer[offset + 3] = (valor >>> 24) & 0xff;
+}
+
+function unirBytes(partes, total) {
+  const salida = new Uint8Array(total);
+  let offset = 0;
+  partes.forEach((parte) => {
+    salida.set(parte, offset);
+    offset += parte.length;
+  });
+  return salida;
+}
+
+function crearZipSinCompresion(archivos) {
+  const encoder = new TextEncoder();
+  const { horaDos, fechaDos } = fechaHoraZipActual();
+  const partes = [];
+  const centrales = [];
+  let offset = 0;
+
+  archivos.forEach((archivo) => {
+    const nombre = encoder.encode(archivo.nombre);
+    const contenido = typeof archivo.contenido === "string"
+      ? encoder.encode(archivo.contenido)
+      : archivo.contenido;
+    const crc = crc32(contenido);
+    const local = new Uint8Array(30 + nombre.length);
+
+    escribirUint32(local, 0, 0x04034b50);
+    escribirUint16(local, 4, 20);
+    escribirUint16(local, 6, 0);
+    escribirUint16(local, 8, 0);
+    escribirUint16(local, 10, horaDos);
+    escribirUint16(local, 12, fechaDos);
+    escribirUint32(local, 14, crc);
+    escribirUint32(local, 18, contenido.length);
+    escribirUint32(local, 22, contenido.length);
+    escribirUint16(local, 26, nombre.length);
+    escribirUint16(local, 28, 0);
+    local.set(nombre, 30);
+
+    partes.push(local, contenido);
+
+    const central = new Uint8Array(46 + nombre.length);
+    escribirUint32(central, 0, 0x02014b50);
+    escribirUint16(central, 4, 20);
+    escribirUint16(central, 6, 20);
+    escribirUint16(central, 8, 0);
+    escribirUint16(central, 10, 0);
+    escribirUint16(central, 12, horaDos);
+    escribirUint16(central, 14, fechaDos);
+    escribirUint32(central, 16, crc);
+    escribirUint32(central, 20, contenido.length);
+    escribirUint32(central, 24, contenido.length);
+    escribirUint16(central, 28, nombre.length);
+    escribirUint16(central, 30, 0);
+    escribirUint16(central, 32, 0);
+    escribirUint16(central, 34, 0);
+    escribirUint16(central, 36, 0);
+    escribirUint32(central, 38, 0);
+    escribirUint32(central, 42, offset);
+    central.set(nombre, 46);
+    centrales.push(central);
+
+    offset += local.length + contenido.length;
+  });
+
+  const inicioCentral = offset;
+  centrales.forEach((central) => {
+    partes.push(central);
+    offset += central.length;
+  });
+
+  const fin = new Uint8Array(22);
+  escribirUint32(fin, 0, 0x06054b50);
+  escribirUint16(fin, 4, 0);
+  escribirUint16(fin, 6, 0);
+  escribirUint16(fin, 8, archivos.length);
+  escribirUint16(fin, 10, archivos.length);
+  escribirUint32(fin, 12, offset - inicioCentral);
+  escribirUint32(fin, 16, inicioCentral);
+  escribirUint16(fin, 20, 0);
+  partes.push(fin);
+  offset += fin.length;
+
+  return unirBytes(partes, offset);
+}
+
+function crearDocxDesdeHtml(html) {
+  const documentXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
+  <w:body>
+    <w:altChunk r:id="htmlChunk"/>
+    <w:sectPr>
+      <w:pgSz w:w="12240" w:h="15840"/>
+      <w:pgMar w:top="1440" w:right="1440" w:bottom="1440" w:left="1440" w:header="720" w:footer="720" w:gutter="0"/>
+    </w:sectPr>
+  </w:body>
+</w:document>`;
+
+  const archivos = [
+    {
+      nombre: "[Content_Types].xml",
+      contenido: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
+  <Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
+  <Default Extension="xml" ContentType="application/xml"/>
+  <Default Extension="html" ContentType="text/html"/>
+  <Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>
+</Types>`
+    },
+    {
+      nombre: "_rels/.rels",
+      contenido: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+  <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/>
+</Relationships>`
+    },
+    {
+      nombre: "word/document.xml",
+      contenido: documentXml
+    },
+    {
+      nombre: "word/_rels/document.xml.rels",
+      contenido: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+  <Relationship Id="htmlChunk" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/aFChunk" Target="afchunk.html"/>
+</Relationships>`
+    },
+    {
+      nombre: "word/afchunk.html",
+      contenido: `\ufeff${html}`
+    }
+  ];
+
+  return new Blob([crearZipSinCompresion(archivos)], {
+    type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+  });
+}
+
 async function descargarInterconsultaPaciente() {
   const datos = datosInterconsultaFormulario();
   const html = await htmlInterconsultaWord(datos);
-  const blob = new Blob(["\ufeff", html], {
-    type: "application/msword;charset=utf-8"
-  });
+  const blob = crearDocxDesdeHtml(html);
   const url = URL.createObjectURL(blob);
   const enlace = document.createElement("a");
   enlace.href = url;
-  enlace.download = `Interconsulta_${datos.formato}_${(datos.pacienteNombre || "paciente").replace(/\s+/g, "_")}_${datos.fecha}.doc`;
+  enlace.download = `Interconsulta_${datos.formato}_${(datos.pacienteNombre || "paciente").replace(/\s+/g, "_")}_${datos.fecha}.docx`;
   document.body.appendChild(enlace);
   enlace.click();
   enlace.remove();

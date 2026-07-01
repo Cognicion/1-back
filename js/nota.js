@@ -83,6 +83,74 @@ function guardarAlturaNota(clave, altura) {
   localStorage.setItem(CLAVE_ALTURAS_NOTA, JSON.stringify(alturas));
 }
 
+function guardarEstadoSeccionNota(clave, cambios = {}) {
+  const alturas = cargarAlturasNota();
+  alturas[clave] = {
+    ...(typeof alturas[clave] === "object" ? alturas[clave] : { altura: alturas[clave] }),
+    ...cambios
+  };
+  localStorage.setItem(CLAVE_ALTURAS_NOTA, JSON.stringify(alturas));
+}
+
+function alturaGuardadaSeccion(valor) {
+  if (typeof valor === "number") return valor;
+  if (valor && typeof valor === "object") return valor.altura;
+  return null;
+}
+
+function estaContraidaSeccion(valor) {
+  return Boolean(valor && typeof valor === "object" && valor.contraida);
+}
+
+function aplicarAlturaSeccionNota(clave, objetivo, altura, minimo = 80) {
+  const alto = Math.max(minimo, Math.round(altura));
+  objetivo.style.height = `${alto}px`;
+  guardarEstadoSeccionNota(clave, { altura: alto, contraida: false });
+  objetivo.closest(".seccion-nota-redimensionable, .panel-nota-redimensionable")?.classList.remove("seccion-contraida");
+}
+
+function alternarContraerSeccionNota(clave, objetivo, minimo = 80) {
+  const contenedor = objetivo.closest(".seccion-nota-redimensionable, .panel-nota-redimensionable");
+  const contraida = !contenedor?.classList.contains("seccion-contraida");
+  if (contraida) {
+    guardarEstadoSeccionNota(clave, {
+      altura: Math.max(minimo, Math.round(objetivo.getBoundingClientRect().height)),
+      contraida: true
+    });
+    objetivo.style.height = `${minimo}px`;
+    contenedor?.classList.add("seccion-contraida");
+    return;
+  }
+
+  const estado = cargarAlturasNota()[clave];
+  aplicarAlturaSeccionNota(clave, objetivo, alturaGuardadaSeccion(estado) || 130, minimo);
+}
+
+function crearControlesTactilesSeccion(clave, objetivo, minimo = 80, alturaBase = 130) {
+  const controles = document.createElement("div");
+  controles.className = "controles-tamano-nota";
+  controles.innerHTML = `
+    <button type="button" data-accion="menos" title="Hacer mas pequeno">-</button>
+    <button type="button" data-accion="mas" title="Hacer mas grande">+</button>
+    <button type="button" data-accion="contraer" title="Contraer o expandir">Contraer</button>
+    <button type="button" data-accion="reiniciar" title="Restablecer tamano">Reiniciar</button>
+  `;
+
+  controles.addEventListener("click", (evento) => {
+    const boton = evento.target.closest("button");
+    if (!boton) return;
+    const actual = objetivo.getBoundingClientRect().height;
+    const accion = boton.dataset.accion;
+
+    if (accion === "menos") aplicarAlturaSeccionNota(clave, objetivo, actual - 48, minimo);
+    if (accion === "mas") aplicarAlturaSeccionNota(clave, objetivo, actual + 48, minimo);
+    if (accion === "contraer") alternarContraerSeccionNota(clave, objetivo, minimo);
+    if (accion === "reiniciar") aplicarAlturaSeccionNota(clave, objetivo, alturaBase, minimo);
+  });
+
+  return controles;
+}
+
 function crearSeparadorVertical(clave, objetivo, minimo = 80) {
   const separador = document.createElement("div");
   separador.className = "separador-vertical-nota";
@@ -100,10 +168,14 @@ function crearSeparadorVertical(clave, objetivo, minimo = 80) {
     const mover = (movimiento) => {
       const nuevoAlto = Math.max(minimo, altoInicial + movimiento.clientY - inicioY);
       objetivo.style.height = `${nuevoAlto}px`;
+      objetivo.closest(".seccion-nota-redimensionable, .panel-nota-redimensionable")?.classList.remove("seccion-contraida");
     };
 
     const terminar = (final) => {
-      guardarAlturaNota(clave, objetivo.getBoundingClientRect().height);
+      guardarEstadoSeccionNota(clave, {
+        altura: objetivo.getBoundingClientRect().height,
+        contraida: false
+      });
       document.body.classList.remove("ajustando-seccion-nota");
       separador.releasePointerCapture(final.pointerId);
       separador.removeEventListener("pointermove", mover);
@@ -132,9 +204,15 @@ function envolverCampoRedimensionable(campo, clave, alturaGuardada) {
   const referencia = etiqueta || campo;
   referencia.parentNode.insertBefore(seccion, referencia);
   if (etiqueta) seccion.appendChild(etiqueta);
+  seccion.appendChild(crearControlesTactilesSeccion(clave, campo, 80, 130));
   seccion.appendChild(campo);
 
-  if (alturaGuardada) campo.style.height = `${alturaGuardada}px`;
+  const altura = alturaGuardadaSeccion(alturaGuardada);
+  if (altura) campo.style.height = `${altura}px`;
+  if (estaContraidaSeccion(alturaGuardada)) {
+    seccion.classList.add("seccion-contraida");
+    campo.style.height = "80px";
+  }
   seccion.appendChild(crearSeparadorVertical(clave, campo, 80));
 }
 
@@ -143,7 +221,13 @@ function prepararPanelRedimensionable(panel, clave, alturaGuardada) {
   panel.dataset.redimensionNota = "true";
   panel.classList.add("panel-nota-redimensionable");
 
-  if (alturaGuardada) panel.style.height = `${alturaGuardada}px`;
+  panel.appendChild(crearControlesTactilesSeccion(clave, panel, 110, 180));
+  const altura = alturaGuardadaSeccion(alturaGuardada);
+  if (altura) panel.style.height = `${altura}px`;
+  if (estaContraidaSeccion(alturaGuardada)) {
+    panel.classList.add("seccion-contraida");
+    panel.style.height = "110px";
+  }
   panel.appendChild(crearSeparadorVertical(clave, panel, 110));
 }
 
@@ -1893,6 +1977,185 @@ function textoWord(valor) {
   return escaparHTML(valor || "").replace(/\n/g, "<br>");
 }
 
+function fechaHoraZipNotaActual() {
+  const fecha = new Date();
+  return {
+    horaDos: (fecha.getHours() << 11) | (fecha.getMinutes() << 5) | Math.floor(fecha.getSeconds() / 2),
+    fechaDos: ((fecha.getFullYear() - 1980) << 9) | ((fecha.getMonth() + 1) << 5) | fecha.getDate()
+  };
+}
+
+let tablaCrc32Nota = null;
+
+function obtenerTablaCrc32Nota() {
+  if (tablaCrc32Nota) return tablaCrc32Nota;
+  tablaCrc32Nota = new Uint32Array(256);
+  for (let i = 0; i < 256; i += 1) {
+    let c = i;
+    for (let j = 0; j < 8; j += 1) {
+      c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1;
+    }
+    tablaCrc32Nota[i] = c >>> 0;
+  }
+  return tablaCrc32Nota;
+}
+
+function crc32Nota(bytes) {
+  const tabla = obtenerTablaCrc32Nota();
+  let crc = 0xffffffff;
+  for (const byte of bytes) {
+    crc = tabla[(crc ^ byte) & 0xff] ^ (crc >>> 8);
+  }
+  return (crc ^ 0xffffffff) >>> 0;
+}
+
+function escribirUint16Nota(buffer, offset, valor) {
+  buffer[offset] = valor & 0xff;
+  buffer[offset + 1] = (valor >>> 8) & 0xff;
+}
+
+function escribirUint32Nota(buffer, offset, valor) {
+  buffer[offset] = valor & 0xff;
+  buffer[offset + 1] = (valor >>> 8) & 0xff;
+  buffer[offset + 2] = (valor >>> 16) & 0xff;
+  buffer[offset + 3] = (valor >>> 24) & 0xff;
+}
+
+function unirBytesNota(partes, total) {
+  const salida = new Uint8Array(total);
+  let offset = 0;
+  partes.forEach((parte) => {
+    salida.set(parte, offset);
+    offset += parte.length;
+  });
+  return salida;
+}
+
+function crearZipNotaSinCompresion(archivos) {
+  const encoder = new TextEncoder();
+  const { horaDos, fechaDos } = fechaHoraZipNotaActual();
+  const partes = [];
+  const centrales = [];
+  let offset = 0;
+
+  archivos.forEach((archivo) => {
+    const nombre = encoder.encode(archivo.nombre);
+    const contenido = typeof archivo.contenido === "string"
+      ? encoder.encode(archivo.contenido)
+      : archivo.contenido;
+    const crc = crc32Nota(contenido);
+    const local = new Uint8Array(30 + nombre.length);
+
+    escribirUint32Nota(local, 0, 0x04034b50);
+    escribirUint16Nota(local, 4, 20);
+    escribirUint16Nota(local, 6, 0);
+    escribirUint16Nota(local, 8, 0);
+    escribirUint16Nota(local, 10, horaDos);
+    escribirUint16Nota(local, 12, fechaDos);
+    escribirUint32Nota(local, 14, crc);
+    escribirUint32Nota(local, 18, contenido.length);
+    escribirUint32Nota(local, 22, contenido.length);
+    escribirUint16Nota(local, 26, nombre.length);
+    escribirUint16Nota(local, 28, 0);
+    local.set(nombre, 30);
+    partes.push(local, contenido);
+
+    const central = new Uint8Array(46 + nombre.length);
+    escribirUint32Nota(central, 0, 0x02014b50);
+    escribirUint16Nota(central, 4, 20);
+    escribirUint16Nota(central, 6, 20);
+    escribirUint16Nota(central, 8, 0);
+    escribirUint16Nota(central, 10, 0);
+    escribirUint16Nota(central, 12, horaDos);
+    escribirUint16Nota(central, 14, fechaDos);
+    escribirUint32Nota(central, 16, crc);
+    escribirUint32Nota(central, 20, contenido.length);
+    escribirUint32Nota(central, 24, contenido.length);
+    escribirUint16Nota(central, 28, nombre.length);
+    escribirUint16Nota(central, 30, 0);
+    escribirUint16Nota(central, 32, 0);
+    escribirUint16Nota(central, 34, 0);
+    escribirUint16Nota(central, 36, 0);
+    escribirUint32Nota(central, 38, 0);
+    escribirUint32Nota(central, 42, offset);
+    central.set(nombre, 46);
+    centrales.push(central);
+    offset += local.length + contenido.length;
+  });
+
+  const inicioCentral = offset;
+  centrales.forEach((central) => {
+    partes.push(central);
+    offset += central.length;
+  });
+
+  const fin = new Uint8Array(22);
+  escribirUint32Nota(fin, 0, 0x06054b50);
+  escribirUint16Nota(fin, 4, 0);
+  escribirUint16Nota(fin, 6, 0);
+  escribirUint16Nota(fin, 8, archivos.length);
+  escribirUint16Nota(fin, 10, archivos.length);
+  escribirUint32Nota(fin, 12, offset - inicioCentral);
+  escribirUint32Nota(fin, 16, inicioCentral);
+  escribirUint16Nota(fin, 20, 0);
+  partes.push(fin);
+  offset += fin.length;
+
+  return unirBytesNota(partes, offset);
+}
+
+function crearDocxNotaDesdeHtml(html) {
+  const documentXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
+  <w:body>
+    <w:altChunk r:id="htmlChunk"/>
+    <w:sectPr>
+      <w:pgSz w:w="12240" w:h="15840"/>
+      <w:pgMar w:top="720" w:right="720" w:bottom="720" w:left="720" w:header="720" w:footer="720" w:gutter="0"/>
+    </w:sectPr>
+  </w:body>
+</w:document>`;
+
+  const archivos = [
+    {
+      nombre: "[Content_Types].xml",
+      contenido: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
+  <Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
+  <Default Extension="xml" ContentType="application/xml"/>
+  <Default Extension="html" ContentType="text/html"/>
+  <Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>
+</Types>`
+    },
+    {
+      nombre: "_rels/.rels",
+      contenido: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+  <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/>
+</Relationships>`
+    },
+    {
+      nombre: "word/document.xml",
+      contenido: documentXml
+    },
+    {
+      nombre: "word/_rels/document.xml.rels",
+      contenido: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+  <Relationship Id="htmlChunk" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/aFChunk" Target="afchunk.html"/>
+</Relationships>`
+    },
+    {
+      nombre: "word/afchunk.html",
+      contenido: `\ufeff${html}`
+    }
+  ];
+
+  return new Blob([crearZipNotaSinCompresion(archivos)], {
+    type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+  });
+}
+
 function filaWord(etiqueta, valor) {
   return `
     <tr>
@@ -1924,7 +2187,7 @@ function nombreArchivoWordFray(datos) {
       ? "evolucion"
       : "ingreso";
   const fecha = datos.fechaNota || new Date().toISOString().slice(0, 10);
-  return `Fray_Observacion_${tipo}_${paciente}_${fecha}.doc`;
+  return `Fray_Observacion_${tipo}_${paciente}_${fecha}.docx`;
 }
 
 function formatoFechaFray(fecha) {
@@ -2181,9 +2444,7 @@ async function htmlWordFrayObservacion() {
 window.descargarNotaFrayObservacion = async function() {
   const datos = leerFormularioObservacionFray();
   const html = await htmlWordFrayObservacion();
-  const blob = new Blob(["\ufeff", html], {
-    type: "application/msword;charset=utf-8"
-  });
+  const blob = crearDocxNotaDesdeHtml(html);
   const url = URL.createObjectURL(blob);
   const enlace = document.createElement("a");
   enlace.href = url;
