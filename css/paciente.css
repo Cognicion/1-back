@@ -501,6 +501,103 @@ textarea{
   border:1px solid rgba(248,113,113,0.35);
 }
 
+.modal-ingreso {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  background: rgba(2, 6, 23, 0.64);
+  backdrop-filter: blur(8px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.18s ease;
+}
+
+.modal-ingreso.abierto {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.panel-ingreso {
+  width: min(330px, 100%);
+  padding: 18px;
+  border: 1px solid rgba(56, 189, 248, 0.28);
+  border-radius: 18px;
+  background: rgba(8, 12, 20, 0.98);
+  box-shadow: 0 22px 70px rgba(0,0,0,0.44), 0 0 26px rgba(56,189,248,0.12);
+  transform: translateY(10px) scale(0.98);
+  transition: transform 0.18s ease;
+}
+
+.modal-ingreso.abierto .panel-ingreso {
+  transform: translateY(0) scale(1);
+}
+
+.panel-ingreso-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.panel-ingreso-header p {
+  margin: 0 0 4px;
+  color: #38bdf8;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.panel-ingreso-header h3 {
+  margin: 0;
+  color: #f8fafc;
+  font-size: 18px;
+}
+
+.panel-ingreso-header button {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border-radius: 999px;
+  border: 1px solid rgba(148,163,184,0.22);
+  background: rgba(15,23,42,0.92);
+  color: #dbeafe;
+}
+
+.panel-ingreso label {
+  display: block;
+  margin-top: 12px;
+  color: #94a3b8;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.panel-ingreso input {
+  margin-top: 7px;
+}
+
+.panel-ingreso small {
+  display: block;
+  margin-top: 10px;
+  color: #7c8da6;
+  font-size: 12px;
+}
+
+.acciones-ingreso {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.acciones-ingreso button {
+  margin-top: 0;
+}
+
 .escala-asignable .registro-top {
   align-items:center;
 }

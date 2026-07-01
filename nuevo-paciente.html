@@ -82,6 +82,99 @@ button{
 button:hover{
     box-shadow:0 0 28px rgba(0,212,255,0.28);
 }
+
+.input-accion{
+    display:flex;
+    gap:8px;
+}
+
+.input-accion input{
+    flex:1;
+}
+
+.input-accion button{
+    margin-top:0;
+    white-space:nowrap;
+}
+
+.modal-ingreso{
+    position:fixed;
+    inset:0;
+    z-index:80;
+    display:grid;
+    place-items:center;
+    padding:18px;
+    background:rgba(2,6,23,0.64);
+    backdrop-filter:blur(8px);
+    opacity:0;
+    pointer-events:none;
+    transition:opacity .18s ease;
+}
+
+.modal-ingreso.abierto{
+    opacity:1;
+    pointer-events:auto;
+}
+
+.panel-ingreso{
+    width:min(330px,100%);
+    padding:18px;
+    border:1px solid rgba(56,189,248,.28);
+    border-radius:18px;
+    background:rgba(8,12,20,.98);
+    box-shadow:0 22px 70px rgba(0,0,0,.44), 0 0 26px rgba(56,189,248,.12);
+}
+
+.panel-ingreso-header{
+    display:flex;
+    justify-content:space-between;
+    gap:12px;
+    margin-bottom:14px;
+}
+
+.panel-ingreso-header p{
+    margin:0 0 4px;
+    color:#38bdf8;
+    font-size:10px;
+    font-weight:900;
+    letter-spacing:.16em;
+    text-transform:uppercase;
+}
+
+.panel-ingreso-header h3{
+    margin:0;
+}
+
+.panel-ingreso-header button{
+    width:32px;
+    height:32px;
+    padding:0;
+    margin-top:0;
+    border-radius:999px;
+    background:rgba(15,23,42,.92);
+}
+
+.panel-ingreso label{
+    margin-top:12px;
+}
+
+.panel-ingreso small{
+    display:block;
+    margin-top:10px;
+    color:#7c8da6;
+    font-size:12px;
+}
+
+.acciones-ingreso{
+    display:flex;
+    justify-content:flex-end;
+    gap:10px;
+    margin-top:16px;
+}
+
+.acciones-ingreso button{
+    margin-top:0;
+}
 </style>
 </head>
 
@@ -180,7 +273,10 @@ button:hover{
 
     <div>
         <label>Fecha y hora de ingreso</label>
-        <input id="fechaIngreso" placeholder="DD/MM/AAAA HH:mm">
+        <div class="input-accion">
+            <input id="fechaIngreso" placeholder="DD/MM/AAAA HH:mm" readonly>
+            <button type="button" id="abrirIngresoNuevo">Elegir</button>
+        </div>
     </div>
 
     <div>
@@ -231,6 +327,33 @@ Guardar paciente
 
 </div>
 
+</div>
+
+<div id="modalIngresoNuevo" class="modal-ingreso" aria-hidden="true">
+    <div class="panel-ingreso" role="dialog" aria-modal="true" aria-labelledby="tituloIngresoNuevo">
+        <div class="panel-ingreso-header">
+            <div>
+                <p>Fecha de ingreso</p>
+                <h3 id="tituloIngresoNuevo">Seleccionar ingreso</h3>
+            </div>
+            <button type="button" id="cerrarIngresoNuevo" aria-label="Cerrar selector">×</button>
+        </div>
+
+        <label>Dia
+            <input id="ingresoNuevoFecha" type="date">
+        </label>
+
+        <label>Hora
+            <input id="ingresoNuevoHora" type="time">
+        </label>
+
+        <small>Si no seleccionas hora, se tomara el inicio del dia.</small>
+
+        <div class="acciones-ingreso">
+            <button type="button" id="limpiarIngresoNuevo">Limpiar</button>
+            <button type="button" id="guardarIngresoNuevo">Aplicar</button>
+        </div>
+    </div>
 </div>
 
 <script type="module" src="js/nuevoPaciente.js"></script>

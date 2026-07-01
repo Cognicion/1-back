@@ -55,6 +55,54 @@ function normalizarFechaIngreso(valor = "") {
   return `${anio}-${mes.padStart(2, "0")}-${dia.padStart(2, "0")}T${hora.padStart(2, "0")}:${minuto}`;
 }
 
+function formatearIngresoVisible(fecha, hora = "") {
+  if (!fecha) return "";
+
+  const [anio, mes, dia] = fecha.split("-");
+  if (!anio || !mes || !dia) return fecha;
+
+  return hora ? `${dia}/${mes}/${anio} ${hora}` : `${dia}/${mes}/${anio}`;
+}
+
+function abrirSelectorIngresoNuevo() {
+  const modal = document.getElementById("modalIngresoNuevo");
+  if (!modal) return;
+
+  modal.classList.add("abierto");
+  modal.setAttribute("aria-hidden", "false");
+}
+
+function cerrarSelectorIngresoNuevo() {
+  const modal = document.getElementById("modalIngresoNuevo");
+  if (!modal) return;
+
+  modal.classList.remove("abierto");
+  modal.setAttribute("aria-hidden", "true");
+}
+
+function aplicarIngresoNuevo() {
+  const fecha = document.getElementById("ingresoNuevoFecha")?.value || "";
+  const hora = document.getElementById("ingresoNuevoHora")?.value || "";
+
+  if (!fecha) {
+    alert("Selecciona el dia de ingreso.");
+    return;
+  }
+
+  document.getElementById("fechaIngreso").value = formatearIngresoVisible(fecha, hora);
+  cerrarSelectorIngresoNuevo();
+}
+
+function limpiarIngresoNuevo() {
+  const input = document.getElementById("fechaIngreso");
+  if (input) input.value = "";
+  const fecha = document.getElementById("ingresoNuevoFecha");
+  const hora = document.getElementById("ingresoNuevoHora");
+  if (fecha) fecha.value = "";
+  if (hora) hora.value = "";
+  cerrarSelectorIngresoNuevo();
+}
+
 async function generarExpedienteCognicion() {
   const anio = String(new Date().getFullYear()).slice(-2);
   const snap = await getDocs(collection(db, "usuarios"));
@@ -86,6 +134,14 @@ onAuthStateChanged(auth, async (user) => {
     alert("Acceso restringido al personal médico");
     window.location.href = "dashboard.html";
   }
+});
+
+document.getElementById("abrirIngresoNuevo")?.addEventListener("click", abrirSelectorIngresoNuevo);
+document.getElementById("cerrarIngresoNuevo")?.addEventListener("click", cerrarSelectorIngresoNuevo);
+document.getElementById("guardarIngresoNuevo")?.addEventListener("click", aplicarIngresoNuevo);
+document.getElementById("limpiarIngresoNuevo")?.addEventListener("click", limpiarIngresoNuevo);
+document.getElementById("modalIngresoNuevo")?.addEventListener("click", (e) => {
+  if (e.target.id === "modalIngresoNuevo") cerrarSelectorIngresoNuevo();
 });
 
 window.guardarPacienteNuevo = async function() {

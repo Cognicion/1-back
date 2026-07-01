@@ -158,6 +158,14 @@ function normalizarFechaIngreso(valor = "") {
   return `${anio}-${mes.padStart(2, "0")}-${dia.padStart(2, "0")}T${hora.padStart(2, "0")}:${minuto}`;
 }
 
+function partesFechaIngreso(valor = "") {
+  const normalizada = normalizarFechaIngreso(valor);
+  if (!normalizada) return { fecha: "", hora: "" };
+
+  const [fecha, hora = ""] = normalizada.split("T");
+  return { fecha, hora };
+}
+
 function parsearFechaIngreso(fechaIngreso) {
   if (!fechaIngreso) return null;
 
@@ -955,6 +963,11 @@ window.editarCampoPaciente = async function(campo, etiqueta, tipo = "text") {
     return;
   }
 
+  if (campo === "fechaIngreso") {
+    window.abrirSelectorIngresoPaciente();
+    return;
+  }
+
   const datos = datosPacienteActual || await obtenerUsuario(uidPaciente);
   const valorActual = campo === "fechaNacimiento"
     ? obtenerFechaNacimiento(datos)
@@ -1019,6 +1032,70 @@ window.editarCampoPaciente = async function(campo, etiqueta, tipo = "text") {
   await actualizarUsuario(uidPaciente, actualizacion);
   await cargarDatosPaciente();
 };
+
+window.abrirSelectorIngresoPaciente = async function() {
+  const modal = document.getElementById("modalIngresoPaciente");
+  const inputFecha = document.getElementById("ingresoPacienteFecha");
+  const inputHora = document.getElementById("ingresoPacienteHora");
+  if (!modal || !inputFecha || !inputHora) return;
+
+  const datos = datosPacienteActual || await obtenerUsuario(uidPaciente);
+  const partes = partesFechaIngreso(obtenerFechaIngreso(datos));
+
+  inputFecha.value = partes.fecha;
+  inputHora.value = partes.hora;
+  modal.classList.add("abierto");
+  modal.setAttribute("aria-hidden", "false");
+};
+
+function cerrarSelectorIngresoPaciente() {
+  const modal = document.getElementById("modalIngresoPaciente");
+  if (!modal) return;
+
+  modal.classList.remove("abierto");
+  modal.setAttribute("aria-hidden", "true");
+}
+
+async function guardarIngresoPacienteDesdeModal() {
+  const fecha = document.getElementById("ingresoPacienteFecha")?.value || "";
+  const hora = document.getElementById("ingresoPacienteHora")?.value || "00:00";
+
+  if (!fecha) {
+    alert("Selecciona el dia de ingreso.");
+    return;
+  }
+
+  const datos = datosPacienteActual || await obtenerUsuario(uidPaciente);
+  const fechaIngreso = `${fecha}T${hora || "00:00"}`;
+  const datosInstitucionales = {
+    ...(datos?.datosInstitucionales || {}),
+    fechaIngreso
+  };
+
+  await actualizarUsuario(uidPaciente, {
+    fechaIngreso,
+    datosInstitucionales
+  });
+
+  cerrarSelectorIngresoPaciente();
+  await cargarDatosPaciente();
+}
+
+async function limpiarIngresoPacienteDesdeModal() {
+  const datos = datosPacienteActual || await obtenerUsuario(uidPaciente);
+  const datosInstitucionales = {
+    ...(datos?.datosInstitucionales || {}),
+    fechaIngreso: ""
+  };
+
+  await actualizarUsuario(uidPaciente, {
+    fechaIngreso: "",
+    datosInstitucionales
+  });
+
+  cerrarSelectorIngresoPaciente();
+  await cargarDatosPaciente();
+}
 
 window.marcarDiagnosticoPrincipal = async function(index) {
   const datos = await obtenerUsuario(uidPaciente);
@@ -1657,6 +1734,12 @@ document.getElementById("diagnosticoBusqueda")?.addEventListener("input", render
 document.getElementById("diagnosticoCatalogo")?.addEventListener("change", () => {
   ponerValor("diagnosticoBusqueda", "");
   renderizarResultadosBusquedaDiagnosticos();
+});
+document.getElementById("cerrarIngresoPaciente")?.addEventListener("click", cerrarSelectorIngresoPaciente);
+document.getElementById("guardarIngresoPaciente")?.addEventListener("click", guardarIngresoPacienteDesdeModal);
+document.getElementById("limpiarIngresoPaciente")?.addEventListener("click", limpiarIngresoPacienteDesdeModal);
+document.getElementById("modalIngresoPaciente")?.addEventListener("click", (e) => {
+  if (e.target.id === "modalIngresoPaciente") cerrarSelectorIngresoPaciente();
 });
 
 async function generarCodigoVinculacionDesdeMedico() {

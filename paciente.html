@@ -134,7 +134,7 @@
           </div>
 
           <div class="dato">
-            <label>Fecha de ingreso <button class="boton-editar-dato" onclick="editarCampoPaciente('fechaIngreso', 'Fecha y hora de ingreso', 'datetime')">Editar</button></label>
+            <label>Fecha de ingreso <button class="boton-editar-dato" onclick="abrirSelectorIngresoPaciente()">Editar</button></label>
             <div id="fechaIngresoPaciente">Sin registro</div>
           </div>
 
@@ -407,6 +407,33 @@
 
   </main>
 
+</div>
+
+<div id="modalIngresoPaciente" class="modal-ingreso" aria-hidden="true">
+  <div class="panel-ingreso" role="dialog" aria-modal="true" aria-labelledby="tituloIngresoPaciente">
+    <div class="panel-ingreso-header">
+      <div>
+        <p>Fecha de ingreso</p>
+        <h3 id="tituloIngresoPaciente">Seleccionar ingreso</h3>
+      </div>
+      <button type="button" id="cerrarIngresoPaciente" aria-label="Cerrar selector">×</button>
+    </div>
+
+    <label>Dia
+      <input id="ingresoPacienteFecha" type="date">
+    </label>
+
+    <label>Hora
+      <input id="ingresoPacienteHora" type="time">
+    </label>
+
+    <small>Si no seleccionas hora, se tomara el inicio del dia.</small>
+
+    <div class="acciones-ingreso">
+      <button type="button" id="limpiarIngresoPaciente" class="boton-secundario">Quitar fecha</button>
+      <button type="button" id="guardarIngresoPaciente">Guardar</button>
+    </div>
+  </div>
 </div>
 
 <script type="module" src="js/paciente.js"></script>
