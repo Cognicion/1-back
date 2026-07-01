@@ -137,6 +137,11 @@
           </div>
 
           <div class="dato">
+            <label>CURP <button class="boton-editar-dato" onclick="editarCampoPaciente('curp', 'CURP', 'text')">Editar</button></label>
+            <div id="curpPaciente">Sin registro</div>
+          </div>
+
+          <div class="dato">
             <label>Fecha de ingreso <button class="boton-editar-dato" onclick="abrirSelectorIngresoPaciente()">Editar</button></label>
             <div id="fechaIngresoPaciente">Sin registro</div>
           </div>
@@ -164,6 +169,21 @@
           <div class="dato">
             <label>Alergias <button class="boton-editar-dato" onclick="editarCampoPaciente('alergias', 'Alergias', 'textarea')">Editar</button></label>
             <div id="alergiasPaciente">Sin registro</div>
+          </div>
+
+          <div class="dato">
+            <label>Peso <button class="boton-editar-dato" onclick="editarCampoPaciente('peso', 'Peso', 'text')">Editar</button></label>
+            <div id="pesoPaciente">Sin registro</div>
+          </div>
+
+          <div class="dato">
+            <label>Talla <button class="boton-editar-dato" onclick="editarCampoPaciente('talla', 'Talla', 'text')">Editar</button></label>
+            <div id="tallaPaciente">Sin registro</div>
+          </div>
+
+          <div class="dato">
+            <label>Perimetro abdominal <button class="boton-editar-dato" onclick="editarCampoPaciente('perimetroAbdominal', 'Perimetro abdominal', 'text')">Editar</button></label>
+            <div id="perimetroAbdominalPaciente">Sin registro</div>
           </div>
 
           <div class="dato">
@@ -381,7 +401,8 @@
               <option value="fray">Fray Bernardino</option>
             </select>
           </label>
-          <label>Servicio solicitado<input id="interconsultaServicio" placeholder="Ej. Medicina interna"></label>
+          <label>Servicio solicitante<input id="interconsultaServicioSolicitante" placeholder="Ej. Observacion"></label>
+          <label>Servicio interconsultante<input id="interconsultaServicio" placeholder="Ej. Medicina interna"></label>
           <label>Prioridad
             <select id="interconsultaPrioridad">
               <option value="ordinaria">Ordinaria</option>
@@ -389,6 +410,14 @@
             </select>
           </label>
           <label>Fecha<input id="interconsultaFecha" type="date"></label>
+          <label>Hora<input id="interconsultaHora" type="time"></label>
+          <label>CURP<input id="interconsultaCurp"></label>
+          <label>Peso<input id="interconsultaPeso" placeholder="kg"></label>
+          <label>Talla<input id="interconsultaTalla" placeholder="m"></label>
+          <label>Perimetro abdominal<input id="interconsultaPerimetroAbdominal" placeholder="cm"></label>
+          <label>Sospecha diagnostica<input id="interconsultaSospechaDiagnostica"></label>
+          <label>Medico solicitante<input id="interconsultaMedicoSolicitante"></label>
+          <label>Cedula profesional<input id="interconsultaCedulaSolicitante"></label>
         </div>
         <label>Motivo de interconsulta
           <textarea id="interconsultaMotivo"></textarea>

@@ -49,6 +49,7 @@ let historiaClinicaActual = {};
 let pacienteActualDatos = {};
 let uidMedicoActual = "";
 let apuntesMedicoCache = [];
+let notasFlotantesPacienteCache = [];
 
 iniciarMonitoreoSesion("Nota medica");
 
@@ -347,6 +348,104 @@ function renderizarDiagnosticosSeleccionados() {
   });
 }
 
+function renderizarDiagnosticosSeleccionadosEditable() {
+  const contenedor = document.getElementById("diagnosticosSeleccionados");
+
+  if (!contenedor) return;
+
+  contenedor.innerHTML = `
+    <div class="diagnostico-manual-nota">
+      <div>
+        <strong>Diagnostico manual</strong>
+        <small>Agrega un diagnostico sin buscarlo en catalogo, o usa esta area para un especificador clinico.</small>
+      </div>
+      <button type="button" class="boton-secundario" onclick="agregarDiagnosticoManualNota()">
+        Agregar diagnostico manual
+      </button>
+    </div>
+  `;
+  sincronizarDiagnosticosObservacion();
+
+  if (diagnosticosSeleccionados.length === 0) {
+    contenedor.innerHTML += `<p style="color:#999;">No hay diagnosticos seleccionados</p>`;
+    return;
+  }
+
+  ["CIE-10", "CIE-11", "Manual"].forEach((catalogo) => {
+    const diagnosticos = diagnosticosSeleccionados
+      .map((dx, index) => ({ ...dx, index }))
+      .filter((dx) => (dx.catalogo || "CIE-10") === catalogo);
+
+    if (diagnosticos.length === 0) return;
+
+    contenedor.innerHTML += `<h4 class="diagnostico-catalogo-titulo">${catalogo}</h4>`;
+
+    diagnosticos.forEach((dx) => {
+      contenedor.innerHTML += `
+        <article class="diagnostico-item diagnostico-editable-nota">
+          <div class="diagnostico-editable-header">
+            <strong>${escaparHTML(dx.catalogo || "CIE-10")} ${escaparHTML(dx.codigo || "")}</strong>
+            <button type="button" onclick="eliminarDiagnostico(${dx.index})">
+              Eliminar diagnostico
+            </button>
+          </div>
+
+          <div class="diagnostico-editable-grid">
+            <label>Catalogo
+              <select data-dx-index="${dx.index}" data-dx-campo="catalogo" onchange="actualizarDiagnosticoSeleccionado(this)">
+                <option value="CIE-10" ${(dx.catalogo || "CIE-10") === "CIE-10" ? "selected" : ""}>CIE-10</option>
+                <option value="CIE-11" ${(dx.catalogo || "CIE-10") === "CIE-11" ? "selected" : ""}>CIE-11</option>
+                <option value="Manual" ${(dx.catalogo || "CIE-10") === "Manual" ? "selected" : ""}>Manual</option>
+              </select>
+            </label>
+            <label>Codigo
+              <input value="${escaparHTML(dx.codigo || "")}" data-dx-index="${dx.index}" data-dx-campo="codigo" oninput="actualizarDiagnosticoSeleccionado(this)">
+            </label>
+            <label>Nombre
+              <input value="${escaparHTML(dx.nombre || "")}" data-dx-index="${dx.index}" data-dx-campo="nombre" oninput="actualizarDiagnosticoSeleccionado(this)">
+            </label>
+          </div>
+
+          <label>Texto visible y exportable
+            <textarea data-dx-index="${dx.index}" data-dx-campo="texto" oninput="actualizarDiagnosticoSeleccionado(this)">${escaparHTML(dx.texto || "")}</textarea>
+          </label>
+        </article>
+      `;
+    });
+  });
+}
+
+renderizarDiagnosticosSeleccionados = renderizarDiagnosticosSeleccionadosEditable;
+
+window.actualizarDiagnosticoSeleccionado = function(campo) {
+  const index = Number(campo.dataset.dxIndex);
+  const nombreCampo = campo.dataset.dxCampo;
+
+  if (!Number.isInteger(index) || !nombreCampo || !diagnosticosSeleccionados[index]) return;
+
+  diagnosticosSeleccionados[index] = {
+    ...diagnosticosSeleccionados[index],
+    [nombreCampo]: campo.value,
+    editadoManual: true,
+    fechaEdicionManual: new Date().toISOString()
+  };
+
+  sincronizarDiagnosticosObservacion();
+};
+
+window.agregarDiagnosticoManualNota = function() {
+  diagnosticosSeleccionados.push({
+    codigo: "",
+    nombre: "Diagnostico manual",
+    catalogo: "Manual",
+    texto: "Diagnostico manual",
+    manual: true,
+    fechaSeleccion: new Date().toISOString()
+  });
+
+  renderizarDiagnosticosSeleccionados();
+};
+
 window.eliminarDiagnostico = function(index) {
   const confirmar = confirm("¿Eliminar diagnóstico?");
 
@@ -416,12 +515,15 @@ const camposObservacionFray = {
   resultadosEstudios: "obsResultadosEstudios",
   pronostico: "obsPronostico",
   destino: "obsDestino",
-  medicoAdscrito: "obsMedicoAdscrito",
-  cedulaAdscrito: "obsCedulaAdscrito",
-  medicoR3: "obsMedicoR3",
-  cedulaR3: "obsCedulaR3",
-  medicoR2: "obsMedicoR2",
-  cedulaR2: "obsCedulaR2"
+  firma1Nombre: "obsFirma1Nombre",
+  firma1Cargo: "obsFirma1Cargo",
+  firma1Cedula: "obsFirma1Cedula",
+  firma2Nombre: "obsFirma2Nombre",
+  firma2Cargo: "obsFirma2Cargo",
+  firma2Cedula: "obsFirma2Cedula",
+  firma3Nombre: "obsFirma3Nombre",
+  firma3Cargo: "obsFirma3Cargo",
+  firma3Cedula: "obsFirma3Cedula"
 };
 
 function sincronizarTipoNota() {
@@ -441,6 +543,36 @@ function asignarValor(id, valor) {
   const campo = document.getElementById(id);
   if (campo) campo.value = valor || "";
 }
+
+function numeroClinico(valor) {
+  const limpio = String(valor || "")
+    .replace(",", ".")
+    .replace(/[^\d.]/g, "");
+  const numero = Number(limpio);
+  return Number.isFinite(numero) ? numero : null;
+}
+
+function calcularIMCNota() {
+  const peso = numeroClinico(valorCampo("obsPeso"));
+  const talla = numeroClinico(valorCampo("obsTalla"));
+  const campoIMC = document.getElementById("obsIMC");
+
+  if (!campoIMC) return "";
+
+  if (!peso || !talla || talla <= 0) {
+    campoIMC.value = "";
+    return "";
+  }
+
+  const imc = peso / (talla * talla);
+  const imcTexto = imc.toFixed(2);
+  campoIMC.value = imcTexto;
+  return imcTexto;
+}
+
+["obsPeso", "obsTalla"].forEach((id) => {
+  document.getElementById(id)?.addEventListener("input", calcularIMCNota);
+});
 
 function esFormatoFray() {
   return formatoNota?.value?.startsWith("fray_observacion") || false;
@@ -515,6 +647,7 @@ function sincronizarDiagnosticosObservacion() {
 }
 
 function leerFormularioObservacionFray() {
+  calcularIMCNota();
   const datos = Object.entries(camposObservacionFray).reduce((salida, [clave, id]) => {
     salida[clave] = valorCampo(id);
     return salida;
@@ -548,9 +681,23 @@ function leerFormularioObservacionFray() {
 }
 
 function llenarFormularioObservacionFray(datos = {}) {
+  const datosCompatibles = {
+    ...datos,
+    firma1Nombre: datos.firma1Nombre || datos.medicoAdscrito || "",
+    firma1Cargo: datos.firma1Cargo || (datos.medicoAdscrito ? "Medico adscrito" : ""),
+    firma1Cedula: datos.firma1Cedula || datos.cedulaAdscrito || "",
+    firma2Nombre: datos.firma2Nombre || datos.medicoR3 || "",
+    firma2Cargo: datos.firma2Cargo || (datos.medicoR3 ? "Medico residente de 3er ano" : ""),
+    firma2Cedula: datos.firma2Cedula || datos.cedulaR3 || "",
+    firma3Nombre: datos.firma3Nombre || datos.medicoR2 || "",
+    firma3Cargo: datos.firma3Cargo || (datos.medicoR2 ? "Medico residente de 2o ano" : ""),
+    firma3Cedula: datos.firma3Cedula || datos.cedulaR2 || ""
+  };
+
   Object.entries(camposObservacionFray).forEach(([clave, id]) => {
-    asignarValor(id, datos[clave] || "");
+    asignarValor(id, datosCompatibles[clave] || "");
   });
+  calcularIMCNota();
   sincronizarDiagnosticosObservacion();
 }
 
@@ -579,24 +726,33 @@ function datosInstitucionalesPaciente(paciente = {}) {
     genero: paciente.genero || paciente.identidadGenero || institucional.genero || "",
     alergias: paciente.alergias || institucional.alergias || "",
     diasEstancia: paciente.diasEstancia || institucional.diasEstancia || "",
-    medicoAdscrito: fray.medicoAdscrito || paciente.medicoTratante || "",
-    cedulaAdscrito: fray.cedulaAdscrito || "",
-    medicoR3: fray.medicoR3 || "",
-    cedulaR3: fray.cedulaR3 || "",
-    medicoR2: fray.medicoR2 || "",
-    cedulaR2: fray.cedulaR2 || ""
+    firma1Nombre: fray.firma1Nombre || fray.medicoAdscrito || paciente.medicoTratante || "",
+    firma1Cargo: fray.firma1Cargo || (fray.medicoAdscrito || paciente.medicoTratante ? "Medico adscrito" : ""),
+    firma1Cedula: fray.firma1Cedula || fray.cedulaAdscrito || "",
+    firma2Nombre: fray.firma2Nombre || fray.medicoR3 || "",
+    firma2Cargo: fray.firma2Cargo || (fray.medicoR3 ? "Medico residente de 3er ano" : ""),
+    firma2Cedula: fray.firma2Cedula || fray.cedulaR3 || "",
+    firma3Nombre: fray.firma3Nombre || fray.medicoR2 || "",
+    firma3Cargo: fray.firma3Cargo || (fray.medicoR2 ? "Medico residente de 2o ano" : ""),
+    firma3Cedula: fray.firma3Cedula || fray.cedulaR2 || ""
   };
 }
 
 function aplicarDatosInstitucionalesPaciente(paciente = {}) {
   const datos = datosInstitucionalesPaciente(paciente);
 
-  if (!valorCampo("obsMedicoAdscrito")) asignarValor("obsMedicoAdscrito", datos.medicoAdscrito);
-  if (!valorCampo("obsCedulaAdscrito")) asignarValor("obsCedulaAdscrito", datos.cedulaAdscrito);
-  if (!valorCampo("obsMedicoR3")) asignarValor("obsMedicoR3", datos.medicoR3);
-  if (!valorCampo("obsCedulaR3")) asignarValor("obsCedulaR3", datos.cedulaR3);
-  if (!valorCampo("obsMedicoR2")) asignarValor("obsMedicoR2", datos.medicoR2);
-  if (!valorCampo("obsCedulaR2")) asignarValor("obsCedulaR2", datos.cedulaR2);
+  if (!valorCampo("obsPeso")) asignarValor("obsPeso", paciente.peso || paciente.signosVitales?.peso || paciente.datosInstitucionales?.peso || "");
+  if (!valorCampo("obsTalla")) asignarValor("obsTalla", paciente.talla || paciente.signosVitales?.talla || paciente.datosInstitucionales?.talla || "");
+  calcularIMCNota();
+  if (!valorCampo("obsFirma1Nombre")) asignarValor("obsFirma1Nombre", datos.firma1Nombre);
+  if (!valorCampo("obsFirma1Cargo")) asignarValor("obsFirma1Cargo", datos.firma1Cargo);
+  if (!valorCampo("obsFirma1Cedula")) asignarValor("obsFirma1Cedula", datos.firma1Cedula);
+  if (!valorCampo("obsFirma2Nombre")) asignarValor("obsFirma2Nombre", datos.firma2Nombre);
+  if (!valorCampo("obsFirma2Cargo")) asignarValor("obsFirma2Cargo", datos.firma2Cargo);
+  if (!valorCampo("obsFirma2Cedula")) asignarValor("obsFirma2Cedula", datos.firma2Cedula);
+  if (!valorCampo("obsFirma3Nombre")) asignarValor("obsFirma3Nombre", datos.firma3Nombre);
+  if (!valorCampo("obsFirma3Cargo")) asignarValor("obsFirma3Cargo", datos.firma3Cargo);
+  if (!valorCampo("obsFirma3Cedula")) asignarValor("obsFirma3Cedula", datos.firma3Cedula);
 }
 
 function aplicarHistoriaClinicaObservacion(historia = {}) {
@@ -626,12 +782,15 @@ function aplicarHistoriaClinicaObservacion(historia = {}) {
 function datosPersistentesDesdeObservacion(observacion = {}) {
   return {
     frayObservacion: {
-      medicoAdscrito: observacion.medicoAdscrito || "",
-      cedulaAdscrito: observacion.cedulaAdscrito || "",
-      medicoR3: observacion.medicoR3 || "",
-      cedulaR3: observacion.cedulaR3 || "",
-      medicoR2: observacion.medicoR2 || "",
-      cedulaR2: observacion.cedulaR2 || ""
+      firma1Nombre: observacion.firma1Nombre || "",
+      firma1Cargo: observacion.firma1Cargo || "",
+      firma1Cedula: observacion.firma1Cedula || "",
+      firma2Nombre: observacion.firma2Nombre || "",
+      firma2Cargo: observacion.firma2Cargo || "",
+      firma2Cedula: observacion.firma2Cedula || "",
+      firma3Nombre: observacion.firma3Nombre || "",
+      firma3Cargo: observacion.firma3Cargo || "",
+      firma3Cedula: observacion.firma3Cedula || ""
     }
   };
 }
@@ -771,27 +930,131 @@ async function cargarNotasFlotantesParaNota() {
 
   if (!uidPaciente) {
     contenedor.textContent = "Selecciona un paciente para cargar sus notas flotantes.";
+    notasFlotantesPacienteCache = [];
     return;
   }
 
   contenedor.textContent = "Cargando notas flotantes...";
   const snap = await getDocs(query(collection(db, "usuarios", uidPaciente, "notasFlotantes"), orderBy("fechaActualizacion", "desc")));
+  notasFlotantesPacienteCache = snap.docs.map((docNota) => ({
+    id: docNota.id,
+    ...docNota.data()
+  }));
 
-  if (snap.empty) {
+  renderizarNotasFlotantesEnNota();
+}
+
+function renderizarNotasFlotantesEnNota() {
+  const contenedor = document.getElementById("listaNotasFlotantesNota");
+  const activa = document.getElementById("notaFlotanteNotaId")?.value || "";
+  if (!contenedor) return;
+
+  if (!notasFlotantesPacienteCache.length) {
     contenedor.innerHTML = `<p class="apuntes-vacio">Este paciente no tiene notas flotantes.</p>`;
     return;
   }
 
-  contenedor.innerHTML = snap.docs.map((docNota) => {
-    const nota = docNota.data();
+  contenedor.innerHTML = notasFlotantesPacienteCache.map((nota) => {
     return `
-      <details class="nota-flotante-nota"${nota.contraida ? "" : " open"}>
+      <details class="nota-flotante-nota ${nota.id === activa ? "activa" : ""}"${nota.contraida ? "" : " open"}>
         <summary>${escaparHTML(nota.titulo || "Nota flotante")}</summary>
         <p>${escaparHTML(nota.texto || "").replace(/\n/g, "<br>")}</p>
+        <div class="acciones-nota-flotante-nota">
+          <button type="button" class="boton-secundario" onclick="seleccionarNotaFlotanteDesdeNota('${nota.id}')">
+            Editar
+          </button>
+        </div>
       </details>
     `;
   }).join("");
 }
+
+function uidPacienteParaNotaFlotante() {
+  return uidPacienteActual || document.getElementById("uidPaciente")?.value || "";
+}
+
+window.nuevaNotaFlotanteDesdeNota = function() {
+  ["notaFlotanteNotaId", "notaFlotanteNotaTitulo", "notaFlotanteNotaTexto"].forEach((id) => {
+    const campo = document.getElementById(id);
+    if (campo) campo.value = "";
+  });
+  const contraida = document.getElementById("notaFlotanteNotaContraida");
+  if (contraida) contraida.value = "false";
+  const estado = document.getElementById("estadoNotasFlotantesNota");
+  if (estado) estado.textContent = "Nueva nota";
+  renderizarNotasFlotantesEnNota();
+};
+
+window.seleccionarNotaFlotanteDesdeNota = function(id) {
+  const nota = notasFlotantesPacienteCache.find((item) => item.id === id);
+  if (!nota) return;
+
+  document.getElementById("notaFlotanteNotaId").value = nota.id;
+  document.getElementById("notaFlotanteNotaTitulo").value = nota.titulo || "";
+  document.getElementById("notaFlotanteNotaTexto").value = nota.texto || "";
+  document.getElementById("notaFlotanteNotaContraida").value = nota.contraida ? "true" : "false";
+  const estado = document.getElementById("estadoNotasFlotantesNota");
+  if (estado) estado.textContent = "Editando";
+  renderizarNotasFlotantesEnNota();
+};
+
+window.guardarNotaFlotanteDesdeNota = async function() {
+  const uidPaciente = uidPacienteParaNotaFlotante();
+  const id = document.getElementById("notaFlotanteNotaId")?.value || "";
+  const titulo = document.getElementById("notaFlotanteNotaTitulo")?.value.trim() || "Nota flotante";
+  const texto = document.getElementById("notaFlotanteNotaTexto")?.value.trim() || "";
+  const contraida = document.getElementById("notaFlotanteNotaContraida")?.value === "true";
+  const estado = document.getElementById("estadoNotasFlotantesNota");
+
+  if (!uidPaciente) {
+    alert("Selecciona un paciente para guardar una nota flotante.");
+    return;
+  }
+
+  if (!texto) {
+    alert("Escribe el contenido de la nota flotante.");
+    return;
+  }
+
+  if (estado) estado.textContent = "Guardando...";
+
+  const payload = {
+    titulo,
+    texto,
+    contraida,
+    medicoUid: auth.currentUser?.uid || "",
+    fechaActualizacion: new Date().toISOString()
+  };
+
+  if (id) {
+    await updateDoc(doc(db, "usuarios", uidPaciente, "notasFlotantes", id), payload);
+  } else {
+    const nueva = await addDoc(collection(db, "usuarios", uidPaciente, "notasFlotantes"), {
+      ...payload,
+      fechaCreacion: new Date().toISOString()
+    });
+    document.getElementById("notaFlotanteNotaId").value = nueva.id;
+  }
+
+  if (estado) estado.textContent = "Guardado";
+  await cargarNotasFlotantesParaNota();
+};
+
+window.eliminarNotaFlotanteDesdeNota = async function() {
+  const uidPaciente = uidPacienteParaNotaFlotante();
+  const id = document.getElementById("notaFlotanteNotaId")?.value || "";
+
+  if (!uidPaciente || !id) {
+    alert("Selecciona una nota flotante para eliminar.");
+    return;
+  }
+
+  if (!confirm("Eliminar esta nota flotante?")) return;
+
+  await deleteDoc(doc(db, "usuarios", uidPaciente, "notasFlotantes", id));
+  window.nuevaNotaFlotanteDesdeNota();
+  await cargarNotasFlotantesParaNota();
+};
 
 window.abrirNotasFlotantesPaciente = async function() {
   const fondo = document.getElementById("fondoNotasFlotantesPaciente");
@@ -1509,9 +1772,9 @@ async function htmlWordFrayObservacion() {
   const firmas = `
     <table class="tabla-firmas">
       <tr>
-        <td>${textoWord(datos.medicoAdscrito)}<br>Medico adscrito<br>Ced. Prof. ${textoWord(datos.cedulaAdscrito)}</td>
-        <td>${textoWord(datos.medicoR3)}<br>Medico residente de 3er ano<br>Ced. Prof. ${textoWord(datos.cedulaR3)}</td>
-        <td>${textoWord(datos.medicoR2)}<br>Medico residente de 2o ano<br>Ced. Prof. ${textoWord(datos.cedulaR2)}</td>
+        <td>${textoWord(datos.firma1Nombre)}<br>${textoWord(datos.firma1Cargo)}<br>Ced. Prof. ${textoWord(datos.firma1Cedula)}</td>
+        <td>${textoWord(datos.firma2Nombre)}<br>${textoWord(datos.firma2Cargo)}<br>Ced. Prof. ${textoWord(datos.firma2Cedula)}</td>
+        <td>${textoWord(datos.firma3Nombre)}<br>${textoWord(datos.firma3Cargo)}<br>Ced. Prof. ${textoWord(datos.firma3Cedula)}</td>
       </tr>
     </table>
   `;

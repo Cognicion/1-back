@@ -310,11 +310,40 @@ button:hover{
     padding-right: 4px;
 }
 
+.notas-flotantes-editor {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 150px;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.notas-flotantes-editor textarea {
+    grid-column: 1 / -1;
+    min-height: 140px;
+    margin: 0;
+}
+
+.notas-flotantes-editor input,
+.notas-flotantes-editor select {
+    margin: 0;
+}
+
+.notas-flotantes-separador {
+    height: 1px;
+    margin: 14px 0;
+    background: rgba(148, 163, 184, 0.16);
+}
+
 .nota-flotante-nota {
     border: 1px solid rgba(56,189,248,0.24);
     border-radius: 16px;
     background: rgba(8,12,20,0.78);
     overflow: hidden;
+}
+
+.nota-flotante-nota.activa {
+    border-color: rgba(56,189,248,0.72);
+    box-shadow: 0 0 22px rgba(56,189,248,0.14);
 }
 
 .nota-flotante-nota summary {
@@ -334,6 +363,14 @@ button:hover{
     padding: 0 14px 14px;
     color: #cbd5e1;
     line-height: 1.5;
+}
+
+.acciones-nota-flotante-nota {
+    padding: 0 14px 14px;
+}
+
+.acciones-nota-flotante-nota button {
+    margin: 0;
 }
 
 @keyframes aparecerFondoBorradores {
@@ -752,6 +789,67 @@ button:hover{
   text-transform: uppercase;
 }
 
+.diagnostico-manual-nota {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  align-items: center;
+  margin: 14px 0;
+  padding: 14px;
+  border-radius: 16px;
+  border: 1px solid rgba(56,189,248,0.22);
+  background: rgba(8,12,20,0.68);
+}
+
+.diagnostico-manual-nota strong {
+  display: block;
+  color: #eaf4ff;
+}
+
+.diagnostico-manual-nota small {
+  display: block;
+  margin-top: 4px;
+  color: #94a3b8;
+}
+
+.diagnostico-editable-nota {
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+  border-radius: 16px;
+  border: 1px solid rgba(56,189,248,0.18);
+  background: rgba(15,23,42,0.58);
+}
+
+.diagnostico-editable-header,
+.diagnostico-editable-grid {
+  display: grid;
+  gap: 10px;
+}
+
+.diagnostico-editable-header {
+  grid-template-columns: 1fr auto;
+  align-items: center;
+}
+
+.diagnostico-editable-grid {
+  grid-template-columns: 140px minmax(110px, 0.6fr) minmax(180px, 1fr);
+}
+
+.diagnostico-editable-nota label {
+  margin: 0;
+}
+
+.diagnostico-editable-nota input,
+.diagnostico-editable-nota select,
+.diagnostico-editable-nota textarea {
+  margin-top: 6px;
+}
+
+.diagnostico-editable-nota textarea {
+  min-height: 74px;
+}
+
 @media (max-width: 800px) {
   .apuntes-layout {
     grid-template-columns: 1fr;
@@ -781,5 +879,11 @@ button:hover{
 
   .tabla-diagnosticos-header {
     display: grid;
+  }
+
+  .diagnostico-manual-nota,
+  .diagnostico-editable-header,
+  .diagnostico-editable-grid {
+    grid-template-columns: 1fr;
   }
 }
