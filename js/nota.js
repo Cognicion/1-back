@@ -450,8 +450,16 @@ function sincronizarFormatoNota() {
   bloqueObservacionFray?.classList.remove("oculto");
 
   if (formatoNota?.value?.startsWith("fray_observacion")) {
-    const tipoInstitucional = formatoNota.value.includes("evolucion") ? "evolucion" : "ingreso";
+    const tipoInstitucional = formatoNota.value.includes("envio_piso")
+      ? "envio_piso"
+      : formatoNota.value.includes("evolucion")
+        ? "evolucion"
+        : "ingreso";
     asignarValor("obsTipoNota", tipoInstitucional);
+
+    if (tipoInstitucional === "envio_piso" && !valorCampo("obsDestino")) {
+      asignarValor("obsDestino", "Se envia a piso de hospitalizacion continua");
+    }
   }
 
   if (!valorCampo("obsFechaNota")) asignarValor("obsFechaNota", new Date().toISOString().slice(0, 10));
@@ -531,9 +539,11 @@ function leerFormularioObservacionFray() {
     comentarioAnalisis: valorCampo("analisis"),
     diagnosticosCIE10: diagnosticosCIE10Observacion(),
     preparadoParaWord: true,
-    plantillaSugerida: datos.tipoNota === "evolucion"
-      ? "fray_observacion_evolucion"
-      : "fray_observacion_ingreso"
+    plantillaSugerida: datos.tipoNota === "envio_piso"
+      ? "fray_observacion_envio_piso"
+      : datos.tipoNota === "evolucion"
+        ? "fray_observacion_evolucion"
+        : "fray_observacion_ingreso"
   };
 }
 
@@ -1296,7 +1306,11 @@ function nombreArchivoWordFray(datos) {
     .trim()
     .replace(/[\\/:*?"<>|]+/g, "")
     .replace(/\s+/g, "_");
-  const tipo = datos.tipoNota === "evolucion" ? "evolucion" : "ingreso";
+  const tipo = datos.tipoNota === "envio_piso"
+    ? "envio_hospitalizacion_continua"
+    : datos.tipoNota === "evolucion"
+      ? "evolucion"
+      : "ingreso";
   const fecha = datos.fechaNota || new Date().toISOString().slice(0, 10);
   return `Fray_Observacion_${tipo}_${paciente}_${fecha}.doc`;
 }
@@ -1309,6 +1323,7 @@ function formatoFechaFray(fecha) {
 }
 
 function tituloNotaFray(tipo) {
+  if (tipo === "envio_piso") return "NOTA DE ENVIO A HOSPITALIZACION CONTINUA";
   return tipo === "evolucion"
     ? "NOTA DE EVOLUCION AL SERVICIO DE OBSERVACION"
     : "NOTA DE INGRESO AL SERVICIO DE OBSERVACION";
