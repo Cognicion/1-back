@@ -364,6 +364,14 @@ function parsearFechaIngreso(fechaIngreso) {
   if (!fechaIngreso) return null;
 
   const valor = String(fechaIngreso);
+
+  const fechaLatina = /^(\d{1,2})\/(\d{1,2})\/(\d{4})(?:\s+(\d{1,2}):(\d{2}))?$/.exec(valor.trim());
+  if (fechaLatina) {
+    const [, dia, mes, anio, hora = "00", minuto = "00"] = fechaLatina;
+    const fecha = new Date(`${anio}-${mes.padStart(2, "0")}-${dia.padStart(2, "0")}T${hora.padStart(2, "0")}:${minuto}`);
+    return Number.isNaN(fecha.getTime()) ? null : fecha;
+  }
+
   const fecha = valor.includes("T")
     ? new Date(valor)
     : new Date(`${valor}T00:00:00`);

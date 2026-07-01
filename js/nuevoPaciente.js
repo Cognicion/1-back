@@ -42,6 +42,19 @@ function obtenerExpedienteCognicion(paciente = {}) {
   return paciente.expedienteCognicion || institucional.expedienteCognicion || "";
 }
 
+function normalizarFechaIngreso(valor = "") {
+  const limpio = String(valor).trim();
+  if (!limpio) return "";
+
+  if (/^\d{4}-\d{2}-\d{2}/.test(limpio)) return limpio;
+
+  const coincidencia = /^(\d{1,2})\/(\d{1,2})\/(\d{4})(?:\s+(\d{1,2}):(\d{2}))?$/.exec(limpio);
+  if (!coincidencia) return limpio;
+
+  const [, dia, mes, anio, hora = "00", minuto = "00"] = coincidencia;
+  return `${anio}-${mes.padStart(2, "0")}-${dia.padStart(2, "0")}T${hora.padStart(2, "0")}:${minuto}`;
+}
+
 async function generarExpedienteCognicion() {
   const anio = String(new Date().getFullYear()).slice(-2);
   const snap = await getDocs(collection(db, "usuarios"));
@@ -82,7 +95,7 @@ window.guardarPacienteNuevo = async function() {
   const servicioInstitucional = document.getElementById("servicioInstitucional")?.value || "";
   const expediente = document.getElementById("expediente")?.value || "";
   const cama = document.getElementById("cama")?.value || "";
-  const fechaIngreso = document.getElementById("fechaIngreso")?.value || "";
+  const fechaIngreso = normalizarFechaIngreso(document.getElementById("fechaIngreso")?.value || "");
   const genero = document.getElementById("genero")?.value || "";
   const alergias = document.getElementById("alergias")?.value || "";
   const diasEstancia = document.getElementById("diasEstancia")?.value || "";

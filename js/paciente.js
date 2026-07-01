@@ -145,6 +145,19 @@ function obtenerFechaIngreso(datos = {}) {
   );
 }
 
+function normalizarFechaIngreso(valor = "") {
+  const limpio = String(valor).trim();
+  if (!limpio) return "";
+
+  if (/^\d{4}-\d{2}-\d{2}/.test(limpio)) return limpio;
+
+  const coincidencia = /^(\d{1,2})\/(\d{1,2})\/(\d{4})(?:\s+(\d{1,2}):(\d{2}))?$/.exec(limpio);
+  if (!coincidencia) return limpio;
+
+  const [, dia, mes, anio, hora = "00", minuto = "00"] = coincidencia;
+  return `${anio}-${mes.padStart(2, "0")}-${dia.padStart(2, "0")}T${hora.padStart(2, "0")}:${minuto}`;
+}
+
 function parsearFechaIngreso(fechaIngreso) {
   if (!fechaIngreso) return null;
 
@@ -956,7 +969,7 @@ window.editarCampoPaciente = async function(campo, etiqueta, tipo = "text") {
   } else if (tipo === "date") {
     nuevoValor = prompt(`${etiquetaCampo} (AAAA-MM-DD):`, valorActual);
   } else if (tipo === "datetime") {
-    nuevoValor = prompt(`${etiquetaCampo} (AAAA-MM-DDTHH:mm):`, valorActual);
+    nuevoValor = prompt(`${etiquetaCampo} (DD/MM/AAAA HH:mm):`, formatearFecha(valorActual));
   } else if (tipo === "number") {
     nuevoValor = prompt(`${etiquetaCampo}:`, valorActual);
   } else {
@@ -964,6 +977,7 @@ window.editarCampoPaciente = async function(campo, etiqueta, tipo = "text") {
   }
 
   if (nuevoValor === null) return;
+  if (campo === "fechaIngreso") nuevoValor = normalizarFechaIngreso(nuevoValor);
 
   const actualizacion = {
     [campo]: nuevoValor
