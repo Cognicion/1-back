@@ -1,5 +1,7 @@
 ﻿import { auth, db } from "./firebase.js";
 import { ESCALAS_PSIQUIATRICAS } from "./data/escalasPsiquiatricas.js";
+import { CIE10 } from "./data/cie10.js";
+import { CIE11 } from "./data/cie11.js";
 import { registrarEventoAuditoria } from "./services/auditoria.js";
 import { iniciarMonitoreoSesion } from "./services/sesion.js";
 
@@ -62,6 +64,8 @@ let datosPacienteActual = null;
 let tratamientosCache = [];
 let estudiosCache = [];
 let escalasAsignadasCache = new Map();
+let diagnosticosCatalogoActual = [];
+let diagnosticoReemplazoIndex = null;
 
 iniciarMonitoreoSesion("Expediente paciente");
 
@@ -130,6 +134,32 @@ function obtenerFechaNacimiento(datos = {}) {
   );
 }
 
+function obtenerFechaIngreso(datos = {}) {
+  const institucional = datos.datosInstitucionales || {};
+  return (
+    datos.fechaIngreso ||
+    institucional.fechaIngreso ||
+    datos.fecha_ingreso ||
+    datos.ingreso ||
+    ""
+  );
+}
+
+function calcularDiasEstancia(fechaIngreso) {
+  if (!fechaIngreso) return "";
+
+  const ingreso = new Date(`${fechaIngreso}T00:00:00`);
+  if (Number.isNaN(ingreso.getTime())) return "";
+
+  const hoy = new Date();
+  const hoyLocal = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate());
+  const diferencia = hoyLocal.getTime() - ingreso.getTime();
+
+  if (diferencia < 0) return "";
+
+  return Math.floor(diferencia / 86400000) + 1;
+}
+
 function formatearFecha(fecha) {
   if (!fecha) return "Sin registro";
 
@@ -163,6 +193,7 @@ function ocultarSecciones() {
     "seccionPermisos",
     "seccionResultadosEscalas",
     "seccionTratamiento",
+    "seccionDiagnosticos",
     "seccionEstudios",
     "seccionNotasRapidas"
   ].forEach((id) => {
@@ -220,6 +251,132 @@ function renderizarDiagnosticos(datos) {
 
     linea.append(texto, acciones);
     diagnosticoDiv.appendChild(linea);
+  });
+}
+
+function normalizarDiagnostico(diagnostico = {}, catalogoFallback = "CIE-10") {
+  if (typeof diagnostico === "string") {
+    return {
+      codigo: "",
+      nombre: diagnostico,
+      texto: diagnostico,
+      catalogo: catalogoFallback,
+      fechaSeleccion: new Date().toISOString()
+    };
+  }
+
+  const catalogo = diagnostico.catalogo || catalogoFallback;
+  const nombre = diagnostico.nombre || diagnostico.texto || diagnostico.descripcion || "";
+
+  return {
+    codigo: diagnostico.codigo || "",
+    nombre,
+    texto: diagnostico.texto || nombre,
+    catalogo,
+    fechaSeleccion: diagnostico.fechaSeleccion || new Date().toISOString()
+  };
+}
+
+function obtenerHistorialDiagnosticos(datos = datosPacienteActual || {}) {
+  const historial = Array.isArray(datos.historialDiagnosticos)
+    ? datos.historialDiagnosticos
+    : [];
+
+  if (historial.length) return historial.map((dx) => normalizarDiagnostico(dx, dx.catalogo || "CIE-10"));
+
+  return datos.diagnostico
+    ? [normalizarDiagnostico(datos.diagnostico, datos.diagnostico?.catalogo || "CIE-10")]
+    : [];
+}
+
+function obtenerCatalogoDiagnostico() {
+  const catalogo = document.getElementById("diagnosticoCatalogo")?.value || "CIE-10";
+  return catalogo === "CIE-11" ? CIE11 : CIE10;
+}
+
+function renderizarResultadosBusquedaDiagnosticos() {
+  const contenedor = document.getElementById("resultadosBusquedaDiagnosticos");
+  const buscador = document.getElementById("diagnosticoBusqueda");
+  const catalogoSeleccionado = document.getElementById("diagnosticoCatalogo")?.value || "CIE-10";
+
+  if (!contenedor || !buscador) return;
+
+  const texto = buscador.value.trim().toLowerCase();
+
+  if (!texto) {
+    contenedor.textContent = diagnosticoReemplazoIndex === null
+      ? "Escribe para buscar en el catalogo."
+      : "Busca el diagnostico que sustituira al seleccionado.";
+    return;
+  }
+
+  diagnosticosCatalogoActual = obtenerCatalogoDiagnostico()
+    .filter((dx) => `${dx.codigo} ${dx.nombre}`.toLowerCase().includes(texto))
+    .slice(0, 18)
+    .map((dx) => normalizarDiagnostico(dx, catalogoSeleccionado));
+
+  contenedor.innerHTML = diagnosticosCatalogoActual.length
+    ? diagnosticosCatalogoActual.map((dx, index) => `
+      <button type="button" class="diagnostico-opcion" data-agregar-diagnostico="${index}">
+        <strong>${escaparHTML(dx.catalogo)} ${escaparHTML(dx.codigo)}</strong>
+        <span>${escaparHTML(dx.nombre)}</span>
+      </button>
+    `).join("")
+    : "<p>No se encontraron resultados en el catalogo seleccionado.</p>";
+
+  contenedor.querySelectorAll("[data-agregar-diagnostico]").forEach((boton) => {
+    boton.addEventListener("click", () => agregarDiagnosticoPaciente(Number(boton.dataset.agregarDiagnostico)));
+  });
+}
+
+function renderizarPanelDiagnosticos() {
+  const contenedor = document.getElementById("panelDiagnosticosPaciente");
+  if (!contenedor) return;
+
+  const historial = obtenerHistorialDiagnosticos();
+  const principal = datosPacienteActual?.diagnostico || historial[historial.length - 1] || "";
+  const clavePrincipal = claveDiagnostico(principal);
+
+  if (!historial.length) {
+    contenedor.innerHTML = "<p>Aun no hay diagnosticos registrados.</p>";
+    return;
+  }
+
+  contenedor.innerHTML = historial.map((dx, index) => {
+    const esPrincipal = claveDiagnostico(dx) === clavePrincipal;
+    return `
+      <article class="registro-card diagnostico-card">
+        <div class="registro-top">
+          <div>
+            <strong>${escaparHTML(dx.catalogo || "CIE")} ${escaparHTML(dx.codigo || "")}</strong>
+            <span>${escaparHTML(dx.nombre || dx.texto || "Diagnostico")}</span>
+          </div>
+          <span class="diagnostico-principal-badge">${esPrincipal ? "Principal" : "Secundario"}</span>
+        </div>
+        <div class="registro-actions">
+          ${esPrincipal ? "" : `<button type="button" data-principal-diagnostico="${index}">Marcar principal</button>`}
+          <button type="button" data-reemplazar-diagnostico="${index}">Cambiar por catalogo</button>
+          <button type="button" data-editar-diagnostico="${index}">Ajustar texto</button>
+          <button type="button" class="boton-peligro" data-quitar-diagnostico="${index}">Quitar</button>
+        </div>
+      </article>
+    `;
+  }).join("");
+
+  contenedor.querySelectorAll("[data-principal-diagnostico]").forEach((boton) => {
+    boton.addEventListener("click", () => window.marcarDiagnosticoPrincipal(Number(boton.dataset.principalDiagnostico)));
+  });
+
+  contenedor.querySelectorAll("[data-editar-diagnostico]").forEach((boton) => {
+    boton.addEventListener("click", () => editarDiagnosticoPaciente(Number(boton.dataset.editarDiagnostico)));
+  });
+
+  contenedor.querySelectorAll("[data-reemplazar-diagnostico]").forEach((boton) => {
+    boton.addEventListener("click", () => prepararReemplazoDiagnostico(Number(boton.dataset.reemplazarDiagnostico)));
+  });
+
+  contenedor.querySelectorAll("[data-quitar-diagnostico]").forEach((boton) => {
+    boton.addEventListener("click", () => quitarDiagnosticoPaciente(Number(boton.dataset.quitarDiagnostico)));
   });
 }
 
@@ -284,6 +441,7 @@ async function cargarDatosPaciente() {
   }
 
   renderizarDiagnosticos(datos);
+  renderizarPanelDiagnosticos();
 
   document.getElementById("tratamiento").innerText =
     datos.tratamiento || "Sin tratamiento registrado";
@@ -315,6 +473,12 @@ async function cargarDatosPaciente() {
   document.getElementById("camaPaciente").innerText =
     datos.cama || "Sin cama";
 
+  const fechaIngreso = obtenerFechaIngreso(datos);
+  const diasEstancia = calcularDiasEstancia(fechaIngreso);
+
+  document.getElementById("fechaIngresoPaciente").innerText =
+    formatearFecha(fechaIngreso);
+
   document.getElementById("sexoPaciente").innerText =
     datos.sexo || "Sin registro";
 
@@ -325,7 +489,7 @@ async function cargarDatosPaciente() {
     datos.alergias || "Sin registro";
 
   document.getElementById("diasEstanciaPaciente").innerText =
-    datos.diasEstancia || datos.datosInstitucionales?.diasEstancia || "Sin registro";
+    diasEstancia ? `${diasEstancia} dia${diasEstancia === 1 ? "" : "s"}` : "Sin registro";
 }
 
 window.mostrarResumen = function() {
@@ -352,6 +516,13 @@ window.mostrarTratamiento = async function() {
   ocultarSecciones();
   document.getElementById("seccionTratamiento").style.display = "block";
   await cargarTratamientosPaciente();
+};
+
+window.mostrarDiagnosticos = function() {
+  ocultarSecciones();
+  document.getElementById("seccionDiagnosticos").style.display = "block";
+  renderizarPanelDiagnosticos();
+  renderizarResultadosBusquedaDiagnosticos();
 };
 
 window.mostrarEstudios = async function() {
@@ -738,7 +909,9 @@ window.editarCampoPaciente = async function(campo, etiqueta, tipo = "text") {
   const datos = datosPacienteActual || await obtenerUsuario(uidPaciente);
   const valorActual = campo === "fechaNacimiento"
     ? obtenerFechaNacimiento(datos)
-    : datos?.[campo] || "";
+    : campo === "fechaIngreso"
+      ? obtenerFechaIngreso(datos)
+      : datos?.[campo] || datos?.datosInstitucionales?.[campo] || "";
   const etiquetaCampo = etiqueta || campo;
   let nuevoValor = null;
 
@@ -764,6 +937,7 @@ window.editarCampoPaciente = async function(campo, etiqueta, tipo = "text") {
     "servicioInstitucional",
     "expediente",
     "cama",
+    "fechaIngreso",
     "fechaNacimiento",
     "sexo",
     "genero",
@@ -794,9 +968,7 @@ window.editarCampoPaciente = async function(campo, etiqueta, tipo = "text") {
 
 window.marcarDiagnosticoPrincipal = async function(index) {
   const datos = await obtenerUsuario(uidPaciente);
-  const historial = Array.isArray(datos?.historialDiagnosticos)
-    ? datos.historialDiagnosticos
-    : [];
+  const historial = obtenerHistorialDiagnosticos(datos);
 
   const diagnostico = historial[index];
 
@@ -809,8 +981,165 @@ window.marcarDiagnosticoPrincipal = async function(index) {
     diagnostico
   });
 
+  await registrarAccionExpediente({
+    accion: "cambiar_diagnostico_principal",
+    descripcion: "El medico cambio el diagnostico principal del expediente.",
+    detalles: {
+      diagnostico: formatearDiagnostico(diagnostico)
+    }
+  });
+
   await cargarDatosPaciente();
 };
+
+async function guardarHistorialDiagnosticos(historial, principal = null) {
+  const limpio = historial.map((dx) => normalizarDiagnostico(dx, dx.catalogo || "CIE-10"));
+  const diagnosticoPrincipal = principal || limpio[limpio.length - 1] || "";
+
+  await actualizarUsuario(uidPaciente, {
+    diagnostico: diagnosticoPrincipal || deleteField(),
+    historialDiagnosticos: limpio
+  });
+
+  datosPacienteActual = {
+    ...(datosPacienteActual || {}),
+    diagnostico: diagnosticoPrincipal,
+    historialDiagnosticos: limpio
+  };
+}
+
+async function agregarDiagnosticoPaciente(index) {
+  const diagnostico = diagnosticosCatalogoActual[index];
+  if (!diagnostico) return;
+
+  const historial = obtenerHistorialDiagnosticos();
+
+  if (diagnosticoReemplazoIndex !== null) {
+    const anterior = historial[diagnosticoReemplazoIndex];
+    if (!anterior) {
+      diagnosticoReemplazoIndex = null;
+      return;
+    }
+
+    historial[diagnosticoReemplazoIndex] = diagnostico;
+
+    const principalActual = datosPacienteActual?.diagnostico || anterior;
+    const principal = claveDiagnostico(principalActual) === claveDiagnostico(anterior)
+      ? diagnostico
+      : principalActual;
+
+    await guardarHistorialDiagnosticos(historial, principal);
+
+    await registrarAccionExpediente({
+      accion: "cambiar_diagnostico",
+      descripcion: "El medico cambio un diagnostico usando el catalogo diagnostico.",
+      detalles: {
+        anterior: formatearDiagnostico(anterior),
+        nuevo: formatearDiagnostico(diagnostico),
+        catalogo: diagnostico.catalogo
+      }
+    });
+
+    diagnosticoReemplazoIndex = null;
+    ponerValor("diagnosticoBusqueda", "");
+    await cargarDatosPaciente();
+    renderizarResultadosBusquedaDiagnosticos();
+    return;
+  }
+
+  const existe = historial.some((dx) => claveDiagnostico(dx) === claveDiagnostico(diagnostico));
+
+  if (existe) {
+    alert("Ese diagnostico ya esta registrado.");
+    return;
+  }
+
+  const nuevoHistorial = [...historial, diagnostico];
+  const debeSerPrincipal = !datosPacienteActual?.diagnostico;
+  await guardarHistorialDiagnosticos(nuevoHistorial, debeSerPrincipal ? diagnostico : datosPacienteActual?.diagnostico);
+
+  await registrarAccionExpediente({
+    accion: "agregar_diagnostico",
+    descripcion: "El medico agrego un diagnostico al expediente.",
+    detalles: {
+      diagnostico: formatearDiagnostico(diagnostico),
+      catalogo: diagnostico.catalogo
+    }
+  });
+
+  ponerValor("diagnosticoBusqueda", "");
+  await cargarDatosPaciente();
+  renderizarResultadosBusquedaDiagnosticos();
+}
+
+function prepararReemplazoDiagnostico(index) {
+  diagnosticoReemplazoIndex = index;
+  ponerValor("diagnosticoBusqueda", "");
+  document.getElementById("diagnosticoBusqueda")?.focus();
+  renderizarResultadosBusquedaDiagnosticos();
+}
+
+async function editarDiagnosticoPaciente(index) {
+  const historial = obtenerHistorialDiagnosticos();
+  const diagnostico = historial[index];
+
+  if (!diagnostico) return;
+
+  const texto = prompt("Texto del diagnostico:", diagnostico.texto || diagnostico.nombre || "");
+  if (texto === null) return;
+
+  const actualizado = {
+    ...diagnostico,
+    nombre: texto.trim() || diagnostico.nombre,
+    texto: texto.trim() || diagnostico.texto || diagnostico.nombre,
+    fechaSeleccion: diagnostico.fechaSeleccion || new Date().toISOString()
+  };
+
+  historial[index] = actualizado;
+
+  const principalActual = datosPacienteActual?.diagnostico || historial[historial.length - 1] || "";
+  const principal = claveDiagnostico(principalActual) === claveDiagnostico(diagnostico)
+    ? actualizado
+    : principalActual;
+
+  await guardarHistorialDiagnosticos(historial, principal);
+
+  await registrarAccionExpediente({
+    accion: "editar_diagnostico",
+    descripcion: "El medico cambio el texto de un diagnostico del expediente.",
+    detalles: {
+      diagnostico: formatearDiagnostico(actualizado)
+    }
+  });
+
+  await cargarDatosPaciente();
+}
+
+async function quitarDiagnosticoPaciente(index) {
+  const historial = obtenerHistorialDiagnosticos();
+  const diagnostico = historial[index];
+
+  if (!diagnostico) return;
+  if (!confirm("Quitar este diagnostico del expediente?")) return;
+
+  const nuevoHistorial = historial.filter((_, i) => i !== index);
+  const principalActual = datosPacienteActual?.diagnostico || historial[historial.length - 1] || "";
+  const principal = claveDiagnostico(principalActual) === claveDiagnostico(diagnostico)
+    ? nuevoHistorial[nuevoHistorial.length - 1] || null
+    : principalActual;
+
+  await guardarHistorialDiagnosticos(nuevoHistorial, principal);
+
+  await registrarAccionExpediente({
+    accion: "quitar_diagnostico",
+    descripcion: "El medico quito un diagnostico del expediente.",
+    detalles: {
+      diagnostico: formatearDiagnostico(diagnostico)
+    }
+  });
+
+  await cargarDatosPaciente();
+}
 
 window.abrirNota = function() {
   window.location.href = "nota.html?id=" + uidPaciente;
@@ -1270,6 +1599,11 @@ document.getElementById("guardarNotaRapida")?.addEventListener("click", guardarN
 document.getElementById("guardarTareaMiSalud")?.addEventListener("click", guardarTareaMiSaludPaciente);
 document.getElementById("btnGenerarCodigoPaciente")?.addEventListener("click", generarCodigoVinculacionDesdeMedico);
 document.getElementById("btnVincularCodigoPaciente")?.addEventListener("click", vincularCuentaPacienteDesdeMedico);
+document.getElementById("diagnosticoBusqueda")?.addEventListener("input", renderizarResultadosBusquedaDiagnosticos);
+document.getElementById("diagnosticoCatalogo")?.addEventListener("change", () => {
+  ponerValor("diagnosticoBusqueda", "");
+  renderizarResultadosBusquedaDiagnosticos();
+});
 
 async function generarCodigoVinculacionDesdeMedico() {
   const contenedor = document.getElementById("codigoVinculacionMedico");

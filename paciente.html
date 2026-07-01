@@ -34,6 +34,7 @@
       <button onclick="abrirHistoriaClinica()">Historia clinica</button>
       <button onclick="mostrarEstudios()">Estudios</button>
       <button onclick="mostrarTratamiento()">Tratamiento</button>
+      <button onclick="mostrarDiagnosticos()">Diagnosticos</button>
       <button onclick="mostrarResultadosEscalas()">Resultados</button>
       <button onclick="previsualizarMiSalud()">Ver Mi Salud</button>
       <button onclick="mostrarPermisos()">Permisos</button>
@@ -133,6 +134,11 @@
           </div>
 
           <div class="dato">
+            <label>Fecha de ingreso <button class="boton-editar-dato" onclick="editarCampoPaciente('fechaIngreso', 'Fecha de ingreso', 'date')">Editar</button></label>
+            <div id="fechaIngresoPaciente">Sin registro</div>
+          </div>
+
+          <div class="dato">
             <label>Sexo <button class="boton-editar-dato" onclick="editarCampoPaciente('sexo', 'Sexo', 'text')">Editar</button></label>
             <div id="sexoPaciente">Sin registro</div>
           </div>
@@ -148,7 +154,7 @@
           </div>
 
           <div class="dato">
-            <label>Dias de estancia <button class="boton-editar-dato" onclick="editarCampoPaciente('diasEstancia', 'Dias de estancia', 'text')">Editar</button></label>
+            <label>Dias de estancia</label>
             <div id="diasEstanciaPaciente">Sin registro</div>
           </div>
         </div>
@@ -246,6 +252,39 @@
           </div>
           <div id="listaTareasMiSaludMedico" class="panel-lista">Cargando tareas...</div>
         </div>
+      </div>
+    </section>
+
+    <section id="seccionDiagnosticos" style="display:none;">
+      <div class="tarjeta">
+        <div class="panel-header">
+          <div>
+            <h2>Diagnosticos</h2>
+            <p class="texto-suave">Agrega, cambia o retira diagnosticos usando los catalogos diagnosticos de Cognicion.</p>
+          </div>
+        </div>
+
+        <div class="form-grid">
+          <label>Catalogo
+            <select id="diagnosticoCatalogo">
+              <option value="CIE-10">CIE-10</option>
+              <option value="CIE-11">CIE-11</option>
+            </select>
+          </label>
+          <label>Buscar diagnostico
+            <input id="diagnosticoBusqueda" placeholder="Codigo o nombre del diagnostico">
+          </label>
+        </div>
+
+        <div id="resultadosBusquedaDiagnosticos" class="diagnostico-resultados">
+          Escribe para buscar en el catalogo.
+        </div>
+      </div>
+
+      <div class="tarjeta">
+        <h2>Diagnosticos registrados</h2>
+        <p class="texto-suave">El diagnostico principal es el que aparece en el panel medico.</p>
+        <div id="panelDiagnosticosPaciente" class="panel-lista">Cargando diagnosticos...</div>
       </div>
     </section>
 

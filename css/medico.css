@@ -444,13 +444,16 @@ body {
 .tabla-pacientes {
   --col-cama: 82px;
   --col-nombre: 280px;
+  --col-ingreso: 112px;
+  --col-estancia: 92px;
   --col-edad: 88px;
   --col-atencion: 118px;
   --col-diagnostico: 470px;
   --col-ultima: 125px;
   --col-proxima: 235px;
   --tabla-min-width: calc(
-    var(--col-cama) + var(--col-nombre) + var(--col-edad) + var(--col-atencion) + var(--col-diagnostico) +
+    var(--col-cama) + var(--col-nombre) + var(--col-ingreso) + var(--col-estancia) +
+    var(--col-edad) + var(--col-atencion) + var(--col-diagnostico) +
     var(--col-ultima) + var(--col-proxima)
   );
   margin-top: 14px;
@@ -470,6 +473,8 @@ body {
   grid-template-columns:
     var(--col-cama)
     var(--col-nombre)
+    var(--col-ingreso)
+    var(--col-estancia)
     var(--col-edad)
     var(--col-atencion)
     var(--col-diagnostico)

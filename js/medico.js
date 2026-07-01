@@ -21,7 +21,9 @@ iniciarMonitoreoSesion("Panel medico");
 
 let pacientesGlobal = [];
 let ordenPacientesActual = "nombre_asc";
-let filtrosAtencionActuales = new Set(["hospitalizados", "privado", "hpfba", "hpijnn", "otra"]);
+const FILTROS_ATENCION_DEFAULT = ["hospitalizados", "privado", "hpfba", "hpijnn", "otra"];
+const STORAGE_FILTROS_ATENCION = "cognicion.medico.filtrosAtencion";
+let filtrosAtencionActuales = cargarPreferenciasFiltroAtencion();
 
 const INSTITUCIONES_ATENCION = {
   privado: {
@@ -297,6 +299,41 @@ function obtenerCamaPaciente(paciente = {}) {
   );
 }
 
+function obtenerFechaIngreso(paciente = {}) {
+  const institucional = paciente.datosInstitucionales || {};
+  return (
+    paciente.fechaIngreso ||
+    institucional.fechaIngreso ||
+    paciente.fecha_ingreso ||
+    paciente.ingreso ||
+    ""
+  );
+}
+
+function formatearFechaCorta(fecha) {
+  if (!fecha) return "Sin registro";
+
+  const partes = String(fecha).split("-");
+  if (partes.length !== 3) return fecha;
+
+  return `${partes[2]}/${partes[1]}/${partes[0]}`;
+}
+
+function calcularDiasEstancia(fechaIngreso) {
+  if (!fechaIngreso) return "";
+
+  const ingreso = new Date(`${fechaIngreso}T00:00:00`);
+  if (Number.isNaN(ingreso.getTime())) return "";
+
+  const hoy = new Date();
+  const hoyLocal = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate());
+  const diferencia = hoyLocal.getTime() - ingreso.getTime();
+
+  if (diferencia < 0) return "";
+
+  return Math.floor(diferencia / 86400000) + 1;
+}
+
 function obtenerExpedienteCognicion(paciente = {}) {
   const institucional = paciente.datosInstitucionales || {};
   return paciente.expedienteCognicion || institucional.expedienteCognicion || "";
@@ -404,6 +441,24 @@ function ordenarPacientes(pacientes) {
   const compararTexto = (a, b, obtener) =>
     String(obtener(a) || "").localeCompare(String(obtener(b) || ""), "es", { sensitivity: "base" });
 
+  const compararNatural = (a, b, obtener, direccion = "asc") => {
+    const valorA = String(obtener(a) || "").trim();
+    const valorB = String(obtener(b) || "").trim();
+    const sinA = !valorA || valorA === "Sin cama";
+    const sinB = !valorB || valorB === "Sin cama";
+
+    if (sinA && sinB) return compararTexto(a, b, (p) => p.nombre);
+    if (sinA) return 1;
+    if (sinB) return -1;
+
+    const resultado = valorA.localeCompare(valorB, "es", {
+      numeric: true,
+      sensitivity: "base"
+    });
+
+    return direccion === "desc" ? -resultado : resultado;
+  };
+
   const compararFecha = (a, b, obtener, direccion = "desc") => {
     const fechaA = fechaOrdenable(obtener(a));
     const fechaB = fechaOrdenable(obtener(b));
@@ -418,6 +473,10 @@ function ordenarPacientes(pacientes) {
     switch (ordenPacientesActual) {
       case "nombre_desc":
         return compararTexto(b, a, (p) => p.nombre);
+      case "cama_asc":
+        return compararNatural(a, b, obtenerCamaPaciente, "asc");
+      case "cama_desc":
+        return compararNatural(a, b, obtenerCamaPaciente, "desc");
       case "registro_desc":
         return compararFecha(a, b, obtenerFechaRegistro, "desc");
       case "registro_asc":
@@ -457,6 +516,12 @@ function mostrarPacientes(pacientes) {
   pacientes.forEach((paciente) => {
     const nombre = paciente.nombre || "Paciente sin nombre";
     const cama = obtenerCamaPaciente(paciente);
+    const fechaIngresoRaw = obtenerFechaIngreso(paciente);
+    const fechaIngreso = formatearFechaCorta(fechaIngresoRaw);
+    const diasEstanciaValor = calcularDiasEstancia(fechaIngresoRaw);
+    const diasEstancia = diasEstanciaValor
+      ? `${diasEstanciaValor} d\u00eda${diasEstanciaValor === 1 ? "" : "s"}`
+      : "Sin registro";
     const edadValor = calcularEdad(obtenerFechaNacimiento(paciente));
     const edad = edadValor ? `${edadValor} a\u00f1os` : "No registrada";
     const claveAtencion = obtenerClaveAtencion(paciente);
@@ -482,6 +547,8 @@ function mostrarPacientes(pacientes) {
       <a class="fila-paciente" href="paciente.html?id=${paciente.id}">
         <span class="paciente-dato cama-columna">${cama}</span>
         <span class="paciente-nombre">${nombre}</span>
+        <span class="paciente-dato">${fechaIngreso}</span>
+        <span class="paciente-dato">${diasEstancia}</span>
         <span class="paciente-dato">${edad}</span>
         <span class="paciente-dato atencion-columna">
           <select class="selector-atencion" data-paciente-id="${paciente.id}" aria-label="Atencion en">
@@ -515,12 +582,40 @@ function filtrarPacientes() {
 
     const nombre = (paciente.nombre || "").toLowerCase();
     const cama = obtenerCamaPaciente(paciente).toLowerCase();
+    const fechaIngreso = formatearFechaCorta(obtenerFechaIngreso(paciente)).toLowerCase();
     const atencion = obtenerAtencionEn(paciente).toLowerCase();
     const diagnostico = formatearDiagnostico(obtenerDiagnosticosPaciente(paciente).principal).toLowerCase();
-    return [nombre, cama, atencion, diagnostico].some((valor) => valor.includes(texto));
+    return [nombre, cama, fechaIngreso, atencion, diagnostico].some((valor) => valor.includes(texto));
   });
 
   mostrarPacientes(ordenarPacientes(filtrados));
+}
+
+function cargarPreferenciasFiltroAtencion() {
+  try {
+    const guardado = localStorage.getItem(STORAGE_FILTROS_ATENCION);
+    if (!guardado) return new Set(FILTROS_ATENCION_DEFAULT);
+
+    const filtros = JSON.parse(guardado);
+    if (!Array.isArray(filtros)) return new Set(FILTROS_ATENCION_DEFAULT);
+
+    const validos = filtros.filter((filtro) => FILTROS_ATENCION_DEFAULT.includes(filtro));
+    return new Set(validos);
+  } catch (error) {
+    console.warn("No se pudieron cargar las preferencias de pacientes:", error);
+    return new Set(FILTROS_ATENCION_DEFAULT);
+  }
+}
+
+function guardarPreferenciasFiltroAtencion() {
+  try {
+    localStorage.setItem(
+      STORAGE_FILTROS_ATENCION,
+      JSON.stringify([...filtrosAtencionActuales])
+    );
+  } catch (error) {
+    console.warn("No se pudieron guardar las preferencias de pacientes:", error);
+  }
 }
 
 function actualizarTextoFiltroAtencion() {
@@ -570,6 +665,7 @@ function aplicarFiltroAtencionDesdeModal() {
   filtrosAtencionActuales = new Set(
     [...document.querySelectorAll(".filtro-atencion-check:checked")].map((check) => check.value)
   );
+  guardarPreferenciasFiltroAtencion();
   actualizarTextoFiltroAtencion();
   filtrarPacientes();
   cerrarFiltroAtencion();
