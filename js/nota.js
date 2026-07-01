@@ -1076,7 +1076,7 @@ async function cargarPaciente(uidPaciente) {
   sincronizarFormatoNota();
 }
 
-window.guardarNotaMedica = async function() {
+async function guardarNotaMedicaConEstado(estadoNota = "definitiva") {
   const selector = document.getElementById("uidPaciente");
   const uidPaciente = uidPacienteActual || selector?.value;
 
@@ -1084,6 +1084,8 @@ window.guardarNotaMedica = async function() {
     alert("Selecciona un paciente");
     return;
   }
+
+  const esBorrador = estadoNota === "borrador";
 
   const diagnostico = diagnosticoActual();
 
@@ -1114,6 +1116,10 @@ window.guardarNotaMedica = async function() {
 
     const notaPayload = {
       autor: medico,
+      estadoNota,
+      esBorrador,
+      fechaGuardadoBorrador: esBorrador ? new Date().toISOString() : "",
+      fechaNotaDefinitiva: esBorrador ? "" : new Date().toISOString(),
       ...datosNotaClinica,
       diagnostico,
       diagnosticoCatalogoVisible: catalogoVisible,
@@ -1138,11 +1144,17 @@ window.guardarNotaMedica = async function() {
     const pacienteActual = await obtenerUsuario(uidPaciente);
 
     await registrarEventoAuditoria({
-      accion: notaEditandoId ? "editar_nota_medica" : "crear_nota_medica",
+      accion: notaEditandoId
+        ? (esBorrador ? "editar_borrador_nota_medica" : "editar_nota_medica_definitiva")
+        : (esBorrador ? "crear_borrador_nota_medica" : "crear_nota_medica_definitiva"),
       modulo: "Nota medica",
       descripcion: notaEditandoId
-        ? "El medico edito una nota medica sin borrar la original."
-        : "El medico creo una nota medica.",
+        ? (esBorrador
+          ? "El medico guardo cambios como borrador sin borrar la nota original."
+          : "El medico guardo una nota definitiva sin borrar la nota original.")
+        : (esBorrador
+          ? "El medico guardo una nota medica como borrador."
+          : "El medico creo una nota medica definitiva."),
       usuarioUid: usuario?.uid || "",
       usuarioNombre: medicoActual?.nombre || usuario?.email || medico || "",
       usuarioRol: medicoActual?.rol || "",
@@ -1151,6 +1163,8 @@ window.guardarNotaMedica = async function() {
       exito: true,
       detalles: {
         notaId: notaEditandoId || "",
+        estadoNota,
+        esBorrador,
         tipoNota: datosNotaClinica.tipoNota || "",
         formatoNota: datosNotaClinica.formatoNota || "cognicion",
         formatoInstitucional: datosNotaClinica.formatoInstitucional || "",
@@ -1158,7 +1172,11 @@ window.guardarNotaMedica = async function() {
       }
     });
 
-    alert(notaEditandoId ? "Edicion guardada sin borrar la nota original" : "Nota medica guardada correctamente");
+    if (esBorrador) {
+      alert(notaEditandoId ? "Borrador actualizado sin borrar la nota original" : "Borrador guardado correctamente");
+    } else {
+      alert(notaEditandoId ? "Nota definitiva guardada sin borrar la nota original" : "Nota definitiva guardada correctamente");
+    }
     limpiarFormularioNota();
 
     await cargarHistorial(uidPaciente);
@@ -1166,6 +1184,18 @@ window.guardarNotaMedica = async function() {
   } catch(error) {
     alert("Error: " + error.message);
   }
+}
+
+window.guardarBorradorNota = function() {
+  guardarNotaMedicaConEstado("borrador");
+};
+
+window.guardarNotaDefinitiva = function() {
+  guardarNotaMedicaConEstado("definitiva");
+};
+
+window.guardarNotaMedica = function() {
+  guardarNotaMedicaConEstado("definitiva");
 };
 
 async function cargarHistorial(uidPaciente) {
@@ -1201,6 +1231,9 @@ async function cargarHistorial(uidPaciente) {
       hour: "2-digit",
       minute: "2-digit"
     });
+    const notaVigente = datos.notaEditada || datos;
+    const estadoNota = notaVigente.estadoNota || (notaVigente.esBorrador ? "borrador" : "definitiva");
+    const estadoTexto = estadoNota === "borrador" ? "Borrador" : "Definitiva";
 
     let diagnosticosTexto = "";
 
@@ -1229,7 +1262,7 @@ async function cargarHistorial(uidPaciente) {
           font-weight:bold;
           outline:none;
         ">
-          ${fechaTexto} · ${horaTexto} · ${datos.autor || "Sin médico"}
+          ${fechaTexto} · ${horaTexto} · ${datos.autor || "Sin médico"} · ${estadoTexto}
         </summary>
 
         <div style="margin-top:20px;">

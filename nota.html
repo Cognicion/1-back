@@ -84,14 +84,16 @@
     </select>
 </div>
 
-<section class="panel-escala-nota">
-    <div class="panel-escala-header">
+<details class="panel-escala-nota">
+    <summary class="panel-escala-header panel-escala-summary">
         <div>
             <h3>Aplicar escala</h3>
             <p>Registrar resultado clínico del paciente desde la nota.</p>
         </div>
-    </div>
+        <span class="indicador-panel-escala">Abrir</span>
+    </summary>
 
+    <div class="panel-escala-contenido">
     <label for="selectorEscalaNota">Escala</label>
     <select id="selectorEscalaNota"></select>
     <div id="descripcionEscalaNota" class="descripcion-escala-nota"></div>
@@ -99,7 +101,8 @@
     <button id="guardarEscalaNota" type="button">
         Guardar escala
     </button>
-</section>
+    </div>
+</details>
 
 <label for="buscadorDiagnostico">Diagnostico visible para paciente (CIE-10)</label>
 <input
@@ -267,9 +270,15 @@
     </p>
 </section>
 
-<button onclick="guardarNotaMedica()">
-Guardar nota medica
-</button>
+<div class="acciones-guardado-nota">
+    <button type="button" class="boton-secundario" onclick="guardarBorradorNota()">
+        Guardar borrador
+    </button>
+
+    <button type="button" onclick="guardarNotaDefinitiva()">
+        Guardar nota definitiva
+    </button>
+</div>
 
 <button id="btnCancelarEdicion" class="boton-secundario oculto" onclick="cancelarEdicionNota()">
 Cancelar edicion
