@@ -283,6 +283,17 @@ function obtenerFechaNacimiento(paciente = {}) {
   );
 }
 
+function obtenerCamaPaciente(paciente = {}) {
+  const institucional = paciente.datosInstitucionales || {};
+  return (
+    paciente.cama ||
+    institucional.cama ||
+    paciente.numeroCama ||
+    institucional.numeroCama ||
+    "Sin cama"
+  );
+}
+
 function obtenerExpedienteCognicion(paciente = {}) {
   const institucional = paciente.datosInstitucionales || {};
   return paciente.expedienteCognicion || institucional.expedienteCognicion || "";
@@ -431,6 +442,7 @@ function mostrarPacientes(pacientes) {
 
   pacientes.forEach((paciente) => {
     const nombre = paciente.nombre || "Paciente sin nombre";
+    const cama = obtenerCamaPaciente(paciente);
     const edadValor = calcularEdad(obtenerFechaNacimiento(paciente));
     const edad = edadValor ? `${edadValor} a\u00f1os` : "No registrada";
     const claveAtencion = obtenerClaveAtencion(paciente);
@@ -454,6 +466,7 @@ function mostrarPacientes(pacientes) {
 
     lista.innerHTML += `
       <a class="fila-paciente" href="paciente.html?id=${paciente.id}">
+        <span class="paciente-dato cama-columna">${cama}</span>
         <span class="paciente-nombre">${nombre}</span>
         <span class="paciente-dato">${edad}</span>
         <span class="paciente-dato atencion-columna">
@@ -480,9 +493,10 @@ function filtrarPacientes() {
 
   const filtrados = pacientesGlobal.filter((paciente) => {
     const nombre = (paciente.nombre || "").toLowerCase();
+    const cama = obtenerCamaPaciente(paciente).toLowerCase();
     const atencion = obtenerAtencionEn(paciente).toLowerCase();
     const diagnostico = formatearDiagnostico(obtenerDiagnosticosPaciente(paciente).principal).toLowerCase();
-    return [nombre, atencion, diagnostico].some((valor) => valor.includes(texto));
+    return [nombre, cama, atencion, diagnostico].some((valor) => valor.includes(texto));
   });
 
   mostrarPacientes(ordenarPacientes(filtrados));
