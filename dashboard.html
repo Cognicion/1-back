@@ -112,6 +112,17 @@ header {
     line-height: 1.35;
 }
 
+.brand-slogan {
+    max-width: 920px;
+    margin-top: 8px;
+    color: #c7d2e2;
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: clamp(0.88rem, 1.15vw, 1.02rem);
+    font-style: italic;
+    line-height: 1.42;
+    text-wrap: balance;
+}
+
 .logout-button,
 .primary-button,
 .secondary-button,
@@ -505,17 +516,6 @@ footer {
     text-transform: uppercase;
 }
 
-.footer-slogan {
-    max-width: 880px;
-    margin: 0;
-    color: #c7d2e2;
-    font-family: Georgia, "Times New Roman", serif;
-    font-size: clamp(1rem, 1.8vw, 1.28rem);
-    font-style: italic;
-    line-height: 1.65;
-    text-wrap: balance;
-}
-
 @keyframes pageIn {
     from {
         opacity: 0;
@@ -591,7 +591,7 @@ footer {
             <div>
                 <div class="brand-name">COGNICIÓN</div>
                 <div class="brand-subtitle">Tecnologia clinica para una medicina mas precisa, mas humana y basada en evidencia.</div>
-            </div>
+                <p class="brand-slogan">Así como la cognición integra múltiples procesos mentales para comprender al individuo, el PROYECTO COGNICIÓN integra expediente clínico, inteligencia artificial y herramientas clínicas para comprender al paciente, apoyar al profesional de la salud y contribuir a una medicina más precisa, humana y basada en evidencia.</p></div>
         </div>
 
         <button class="logout-button" onclick="cerrarSesion()">Cerrar sesion</button>
@@ -811,8 +811,7 @@ footer {
 
 <footer>
     <div class="app-shell dashboard-footer">
-        <div class="footer-signature">Cognicion &middot; Ciencia &middot; Evidencia &middot; Medicina humana</div>
-        <p class="footer-slogan">Asi como la cognicion integra multiples procesos mentales para comprender al individuo, Cognicion integra multiples herramientas tecnologicas para comprender al paciente.</p>
+        <div class="footer-signature">Cognición &middot; Ciencia &middot; Evidencia &middot; Medicina humana</div>
     </div>
 </footer>
 
