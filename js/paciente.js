@@ -2004,7 +2004,14 @@ async function encabezadoFrayPacienteHTML() {
           COMISION NACIONAL DE SALUD MENTAL Y ADICCIONES<br>
           HOSPITAL PSIQUIATRICO "FRAY BERNARDINO ALVAREZ"
         </td>
-        <td class="encabezado-logo-der"><img class="logo-fray" src="${logoFray}"></td>
+        <td class="encabezado-logo-der">
+          <img
+            class="logo-fray"
+            src="${logoFray}"
+            style="width:1.53cm;height:auto;"
+            width="58"
+          >
+        </td>
       </tr>
     </table>
   `;
@@ -2266,17 +2273,64 @@ async function htmlIndicacionesWord(datos) {
   });
 
   return `
-    <html>
-      <head>
-        <meta charset="UTF-8">
-        <style>
-          ${estilosFrayPacienteHTML()}
-          .tabla-indicaciones th:first-child,
-          .tabla-indicaciones td:first-child { width: 22%; text-align: center; }
-          .tabla-indicaciones td:last-child { width: 78%; }
-        </style>
-      </head>
-      <body>
+    <!DOCTYPE html>
+    <html xmlns:o="urn:schemas-microsoft-com:office:office"
+          xmlns:w="urn:schemas-microsoft-com:office:word"
+          xmlns="http://www.w3.org/TR/REC-html40">
+    <head>
+          <meta charset="UTF-8">
+          <title>Indicaciones Fray Bernardino</title>
+          <!--[if gte mso 9]>
+          <xml>
+            <w:WordDocument>
+              <w:View>Print</w:View>
+              <w:Zoom>100</w:Zoom>
+              <w:DoNotOptimizeForBrowser/>
+            </w:WordDocument>
+          </xml>
+          <![endif]-->
+          
+          <style>
+    @page WordSection1 {
+      size: 21.59cm 27.94cm;
+      margin: 36.0pt 36.0pt 36.0pt 36.0pt;
+    }
+
+    div.WordSection1 {
+      page: WordSection1;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      font-size: 9pt;
+      color: #111;
+      margin: 0;
+      padding: 0;
+    }
+
+        .encabezado { width: 100%; table-layout: fixed; border-collapse: collapse; margin: 0 0 8pt; border-bottom: 1px dashed #777; }
+        .encabezado td { border: none; vertical-align: middle; padding: 0 0 4pt; }
+        .encabezado-logo-izq { width: 20%; text-align: left; }
+        .encabezado-centro { width: 62%; text-align: center; font-weight: 700; font-size: 11pt; line-height: 1.12; text-transform: uppercase; white-space: nowrap; }
+        .encabezado-logo-der { width: 14%; text-align: right; }
+        .logo-salud { width: 118px; }
+        .logo-fray { width: 58px; }
+        h1 { text-align: center; font-size: 11.5pt; color: #7b7b7b; margin: 8pt 0 12pt; text-transform: uppercase; letter-spacing: .2pt; }
+        h2 { font-size: 9.5pt; margin: 10pt 0 3pt; text-align: left; text-transform: uppercase; }
+        p { margin: 0; mso-margin-top-alt: 0cm; mso-margin-bottom-alt: 0cm; line-height: 1.0; mso-line-height-rule: exactly; text-align: left; }
+        .identificacion { font-size: 8.6pt; line-height: 1.35; margin: 2pt 0 7pt; }
+        .identificacion b { font-weight: 700; }
+        table { width: 100%; border-collapse: collapse; margin: 3pt 0 8pt; }
+        th, td { border: 1px solid #222; padding: 4pt; vertical-align: top; text-align: left; font-size: 8.8pt; }
+        th { text-align: center; font-weight: 700; }
+        .tabla-indicaciones th:first-child,
+        .tabla-indicaciones td:first-child { width: 22%; text-align: center; }
+        .tabla-indicaciones td:last-child { width: 78%; }
+        .contenido-largo { min-height: 110pt; line-height: 1.08; text-align: left; }
+        .firma-tabla td { border: none; width: 33.33%; height: 46pt; text-align: center; vertical-align: bottom; font-size: 8.5pt; }
+      </style>
+    </head>
+    <body>
         <div class="WordSection1">
           ${datos.formato === "fray" ? encabezadoFray : encabezadoCognicion}
           <h1>INDICACIONES MEDICAS</h1>
@@ -2310,11 +2364,13 @@ async function descargarIndicacionesPaciente() {
   }
 
   const html = await htmlIndicacionesWord(datos);
-  const blob = crearDocxDesdeHtml(html);
+  const blob = new Blob(["\ufeff", html], {
+    type: "application/msword;charset=utf-8"
+  });
   const url = URL.createObjectURL(blob);
   const enlace = document.createElement("a");
   enlace.href = url;
-  enlace.download = `Indicaciones_${datos.formato}_${(datos.pacienteNombre || "paciente").replace(/\s+/g, "_")}_${datos.fecha}.docx`;
+  enlace.download = `Indicaciones_${datos.formato}_${(datos.pacienteNombre || "paciente").replace(/\s+/g, "_")}_${datos.fecha}.doc`;
   document.body.appendChild(enlace);
   enlace.click();
   enlace.remove();
