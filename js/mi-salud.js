@@ -12,6 +12,7 @@ import {
 import {
   doc,
   getDoc,
+  setDoc,
   collection,
   addDoc,
   updateDoc,
@@ -90,11 +91,14 @@ onAuthStateChanged(auth, async (user) => {
     await cargarResultadosEscalas(uidSeguimiento);
     await cargarUltimoRegistro(uidSeguimiento);
     await cargarTareasMiSalud(uidSeguimiento);
+    await cargarTareasDiariasMiSalud(uidSeguimiento);
+    await cargarCalendarioMiSalud(uidSeguimiento);
     await cargarDiarioPersonal(uidSeguimiento);
 
     document.getElementById("guardarRegistro")?.addEventListener("click", guardarRegistroDiario);
     document.getElementById("guardarEscala")?.addEventListener("click", guardarResultadoEscala);
     document.getElementById("guardarDiario")?.addEventListener("click", guardarDiarioPersonal);
+    document.getElementById("guardarTareasDiarias")?.addEventListener("click", guardarTareasDiariasMiSalud);
     document.getElementById("btnGenerarCodigoMedico")?.addEventListener("click", generarCodigoParaMedico);
   } catch (error) {
     console.error("Error al cargar Mi Salud:", error);
@@ -344,6 +348,142 @@ async function completarTareaMiSalud(tareaId) {
   });
 
   await cargarTareasMiSalud(uidSeguimiento);
+}
+
+const TAREAS_DIARIAS_MI_SALUD = {
+  movimiento: "Movimiento",
+  medicamento: "Medicamento",
+  respiracion: "Respiracion",
+  sueno: "Higiene del sueno"
+};
+
+function fechaLocalISO(fecha = new Date()) {
+  const anio = fecha.getFullYear();
+  const mes = `${fecha.getMonth() + 1}`.padStart(2, "0");
+  const dia = `${fecha.getDate()}`.padStart(2, "0");
+  return `${anio}-${mes}-${dia}`;
+}
+
+function formatearFechaCorta(fechaISO = "") {
+  const [anio, mes, dia] = String(fechaISO).split("-");
+  return anio && mes && dia ? `${dia}-${mes}-${anio}` : fechaISO;
+}
+
+function checksTareasDiarias() {
+  return [...document.querySelectorAll("[data-tarea-diaria]")];
+}
+
+async function cargarTareasDiariasMiSalud(uid) {
+  const fecha = fechaLocalISO();
+  try {
+    const snap = await getDoc(doc(db, "usuarios", uid, "tareasDiariasMiSalud", fecha));
+    const completadas = snap.exists() ? snap.data().completadas || {} : {};
+
+    checksTareasDiarias().forEach((check) => {
+      check.checked = Boolean(completadas[check.dataset.tareaDiaria]);
+      check.disabled = modoVistaPrevia;
+    });
+
+    const boton = document.getElementById("guardarTareasDiarias");
+    if (boton) boton.disabled = modoVistaPrevia;
+  } catch (error) {
+    console.error("Error al cargar tareas diarias:", error);
+  }
+}
+
+async function guardarTareasDiariasMiSalud() {
+  if (modoVistaPrevia) {
+    alert("La vista previa del medico es de solo lectura.");
+    return;
+  }
+
+  const fecha = fechaLocalISO();
+  const completadas = {};
+
+  checksTareasDiarias().forEach((check) => {
+    completadas[check.dataset.tareaDiaria] = check.checked;
+  });
+
+  await setDoc(doc(db, "usuarios", uidSeguimiento, "tareasDiariasMiSalud", fecha), {
+    fecha,
+    completadas,
+    total: Object.keys(TAREAS_DIARIAS_MI_SALUD).length,
+    completadasTotal: Object.values(completadas).filter(Boolean).length,
+    actualizadoEn: serverTimestamp()
+  }, { merge: true });
+
+  await cargarCalendarioMiSalud(uidSeguimiento);
+  alert("Tareas diarias guardadas.");
+}
+
+function fechaRegistroDiario(registro = {}) {
+  if (registro.fecha) return registro.fecha;
+  if (registro.creadoEn?.toDate) return fechaLocalISO(registro.creadoEn.toDate());
+  if (registro.fechaISO) return fechaLocalISO(new Date(registro.fechaISO));
+  return "";
+}
+
+async function cargarCalendarioMiSalud(uid) {
+  const contenedor = document.getElementById("calendarioMiSalud");
+  if (!contenedor) return;
+
+  contenedor.textContent = "Cargando calendario...";
+
+  try {
+    const [snapTareas, snapRegistros] = await Promise.all([
+      getDocs(query(collection(db, "usuarios", uid, "tareasDiariasMiSalud"), orderBy("fecha", "desc"), limit(35))),
+      getDocs(query(collection(db, "pacientes", uid, "registrosDiarios"), orderBy("creadoEn", "desc"), limit(35)))
+    ]);
+
+    const dias = new Map();
+
+    snapTareas.docs.forEach((docDia) => {
+      const datos = docDia.data();
+      const fecha = datos.fecha || docDia.id;
+      dias.set(fecha, {
+        ...(dias.get(fecha) || {}),
+        fecha,
+        tareas: datos
+      });
+    });
+
+    snapRegistros.docs.forEach((docRegistro) => {
+      const registro = docRegistro.data();
+      const fecha = fechaRegistroDiario(registro);
+      if (!fecha) return;
+      dias.set(fecha, {
+        ...(dias.get(fecha) || {}),
+        fecha,
+        registro
+      });
+    });
+
+    const ordenados = [...dias.values()]
+      .sort((a, b) => b.fecha.localeCompare(a.fecha))
+      .slice(0, 21);
+
+    if (!ordenados.length) {
+      contenedor.textContent = "Aun no hay datos para mostrar.";
+      return;
+    }
+
+    contenedor.innerHTML = ordenados.map((dia) => {
+      const completadas = dia.tareas?.completadasTotal || 0;
+      const total = dia.tareas?.total || Object.keys(TAREAS_DIARIAS_MI_SALUD).length;
+      const registro = dia.registro;
+      return `
+        <article class="dia-mi-salud ${registro ? "con-registro" : ""}">
+          <strong>${formatearFechaCorta(dia.fecha)}</strong>
+          <span>${completadas}/${total} tareas</span>
+          <small>${registro?.animo ? `Animo: ${escaparHTML(registro.animo)}` : "Sin registro diario"}</small>
+          ${registro?.ansiedad !== null && registro?.ansiedad !== undefined ? `<small>Ansiedad: ${registro.ansiedad}/10</small>` : ""}
+        </article>
+      `;
+    }).join("");
+  } catch (error) {
+    console.error("Error al cargar calendario Mi Salud:", error);
+    contenedor.textContent = "No se pudo cargar el calendario.";
+  }
 }
 
 async function cargarTratamiento(uid) {
@@ -603,6 +743,7 @@ async function guardarRegistroDiario() {
     limpiarCampo("energia");
     limpiarCampo("comentario");
     await cargarUltimoRegistro(uidSeguimiento);
+    await cargarCalendarioMiSalud(uidSeguimiento);
   } catch (error) {
     console.error("Error al guardar registro:", error);
     alert("No se pudo guardar el registro.");

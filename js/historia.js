@@ -45,6 +45,37 @@ function obtenerFechaNacimiento(paciente = {}) {
   );
 }
 
+function valorInstitucional(paciente = {}, campo, alternos = []) {
+  const institucional = paciente.datosInstitucionales || {};
+  const claves = [campo, ...alternos];
+
+  for (const clave of claves) {
+    const valor = paciente[clave] ?? institucional[clave];
+    if (valor !== undefined && valor !== null && String(valor).trim() !== "") {
+      return valor;
+    }
+  }
+
+  return "";
+}
+
+function inferirTipoPaciente(paciente = {}) {
+  const tipoGuardado = valorInstitucional(paciente, "tipoPaciente");
+  if (tipoGuardado) return tipoGuardado;
+
+  const institucion = valorInstitucional(paciente, "institucionPaciente", ["institucion"]);
+  return institucion ? "institucion" : "privada";
+}
+
+function campoConRespaldo(datos = {}, paciente = {}, campo, alternos = []) {
+  const valorFormulario = datos[campo];
+  if (valorFormulario !== undefined && valorFormulario !== null && String(valorFormulario).trim() !== "") {
+    return valorFormulario;
+  }
+
+  return valorInstitucional(paciente, campo, alternos);
+}
+
 onAuthStateChanged(auth, async (user) => {
   if (!user) {
     window.location.href = "login.html";
@@ -82,14 +113,14 @@ async function cargarPaciente() {
 async function cargarHistoria() {
   const historia = await obtenerHistoriaClinica(uidPaciente);
   const raiz = {
-    tipoPaciente: pacienteActual.tipoPaciente || pacienteActual.datosInstitucionales?.tipoPaciente || "privada",
-    institucionPaciente: pacienteActual.institucionPaciente || pacienteActual.institucion || pacienteActual.datosInstitucionales?.institucionPaciente || "",
-    servicioInstitucional: pacienteActual.servicioInstitucional || pacienteActual.servicio || pacienteActual.datosInstitucionales?.servicioInstitucional || "",
-    expediente: pacienteActual.expediente || pacienteActual.numeroExpediente || pacienteActual.datosInstitucionales?.expediente || "",
-    cama: pacienteActual.cama || pacienteActual.datosInstitucionales?.cama || "",
-    sexo: pacienteActual.sexo || pacienteActual.datosInstitucionales?.sexo || "",
-    genero: pacienteActual.genero || pacienteActual.identidadGenero || pacienteActual.datosInstitucionales?.genero || "",
-    alergias: pacienteActual.alergias || pacienteActual.datosInstitucionales?.alergias || "",
+    tipoPaciente: inferirTipoPaciente(pacienteActual),
+    institucionPaciente: valorInstitucional(pacienteActual, "institucionPaciente", ["institucion"]),
+    servicioInstitucional: valorInstitucional(pacienteActual, "servicioInstitucional", ["servicio"]),
+    expediente: valorInstitucional(pacienteActual, "expediente", ["numeroExpediente"]),
+    cama: valorInstitucional(pacienteActual, "cama"),
+    sexo: valorInstitucional(pacienteActual, "sexo"),
+    genero: valorInstitucional(pacienteActual, "genero", ["identidadGenero"]),
+    alergias: valorInstitucional(pacienteActual, "alergias"),
     diagnosticoClinico: pacienteActual.datosClinicosResumen?.diagnostico?.texto || pacienteActual.diagnostico?.texto || pacienteActual.diagnostico || "",
     codigoDiagnostico: pacienteActual.datosClinicosResumen?.diagnostico?.codigo || pacienteActual.diagnostico?.codigo || "",
     tratamientoFarmacologico: pacienteActual.datosClinicosResumen?.tratamientoActivo || pacienteActual.tratamiento || ""
@@ -110,36 +141,44 @@ window.guardarHistoria = async () => {
   }
 
   const datos = {};
-  document.querySelectorAll("input, textarea").forEach((campo) => {
+  document.querySelectorAll("input, textarea, select").forEach((campo) => {
     datos[campo.id] = campo.value;
   });
 
   await guardarHistoriaClinica(uidPaciente, datos);
 
   const pacienteActual = await obtenerUsuario(uidPaciente);
+  const tipoPaciente = datos.tipoPaciente || inferirTipoPaciente(pacienteActual);
+  const institucionPaciente = campoConRespaldo(datos, pacienteActual, "institucionPaciente", ["institucion"]);
+  const servicioInstitucional = campoConRespaldo(datos, pacienteActual, "servicioInstitucional", ["servicio"]);
+  const expediente = campoConRespaldo(datos, pacienteActual, "expediente", ["numeroExpediente"]);
+  const cama = campoConRespaldo(datos, pacienteActual, "cama");
+  const sexo = campoConRespaldo(datos, pacienteActual, "sexo");
+  const genero = campoConRespaldo(datos, pacienteActual, "genero", ["identidadGenero"]);
+  const alergias = campoConRespaldo(datos, pacienteActual, "alergias");
 
   await actualizarUsuario(uidPaciente, {
-    tipoPaciente: datos.tipoPaciente || "privada",
-    institucionPaciente: datos.institucionPaciente || "",
-    institucion: datos.institucionPaciente || "",
-    servicioInstitucional: datos.servicioInstitucional || "",
-    servicio: datos.servicioInstitucional || "",
-    expediente: datos.expediente || "",
-    numeroExpediente: datos.expediente || "",
-    cama: datos.cama || "",
-    sexo: datos.sexo || "",
-    genero: datos.genero || "",
-    alergias: datos.alergias || "",
+    tipoPaciente,
+    institucionPaciente,
+    institucion: institucionPaciente,
+    servicioInstitucional,
+    servicio: servicioInstitucional,
+    expediente,
+    numeroExpediente: expediente,
+    cama,
+    sexo,
+    genero,
+    alergias,
     datosInstitucionales: {
       ...(pacienteActual?.datosInstitucionales || {}),
-      tipoPaciente: datos.tipoPaciente || "privada",
-      institucionPaciente: datos.institucionPaciente || "",
-      servicioInstitucional: datos.servicioInstitucional || "",
-      expediente: datos.expediente || "",
-      cama: datos.cama || "",
-      sexo: datos.sexo || "",
-      genero: datos.genero || "",
-      alergias: datos.alergias || ""
+      tipoPaciente,
+      institucionPaciente,
+      servicioInstitucional,
+      expediente,
+      cama,
+      sexo,
+      genero,
+      alergias
     },
     datosClinicosResumen: {
       ...(pacienteActual?.datosClinicosResumen || {}),

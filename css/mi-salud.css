@@ -372,6 +372,51 @@ a { color: #60a5fa; }
   width: auto;
 }
 
+.calendario-salud-card {
+  grid-column: span 2;
+}
+
+.calendario-mi-salud {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.dia-mi-salud {
+  min-height: 112px;
+  padding: 12px;
+  border-radius: 16px;
+  border: 1px solid rgba(148,163,184,0.16);
+  background: rgba(8,12,20,0.58);
+  display: grid;
+  align-content: start;
+  gap: 6px;
+}
+
+.dia-mi-salud.con-registro {
+  border-color: rgba(56,189,248,0.34);
+  background:
+    radial-gradient(circle at top right, rgba(56,189,248,0.14), transparent 46%),
+    rgba(8,12,20,0.72);
+}
+
+.dia-mi-salud strong {
+  color: #e0f2fe;
+  font-size: 13px;
+}
+
+.dia-mi-salud span {
+  color: #7dd3fc;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.dia-mi-salud small {
+  color: #aab4c3;
+  line-height: 1.35;
+}
+
 .descripcion-escala {
   margin-top: 12px;
   color: #aab4c3;
@@ -489,6 +534,14 @@ a { color: #60a5fa; }
   .vinculacion-cuenta-card,
   .grid-form {
     grid-template-columns: 1fr;
+  }
+
+  .calendario-salud-card {
+    grid-column: auto;
+  }
+
+  .calendario-mi-salud {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .header {

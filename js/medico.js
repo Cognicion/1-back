@@ -987,7 +987,7 @@ function obtenerClaveAtencion(paciente = {}) {
     ""
   ).trim();
 
-  if (tipoPaciente === "privada" || (!institucion && tipoPaciente !== "institucion")) {
+  if (!institucion && (tipoPaciente === "privada" || tipoPaciente !== "institucion")) {
     return "privado";
   }
 
@@ -1537,14 +1537,103 @@ function contarPor(pacientes, obtenerClave) {
   }, {});
 }
 
-function diagnosticoCorto(paciente) {
-  const diagnosticos = obtenerDiagnosticosPaciente(paciente);
-  const dx = diagnosticos.principal;
+function etiquetaDiagnosticoGrafica(dx) {
+  if (!dx) return "";
+  if (typeof dx === "string") return dx.trim().slice(0, 36);
 
-  if (!dx) return "Sin diagnóstico";
-  if (typeof dx === "string") return dx.slice(0, 28);
+  const codigo = dx.codigo || "";
+  const nombre = dx.nombre || dx.texto || "";
+  const etiqueta = codigo && nombre
+    ? `${codigo} ${nombre}`
+    : (codigo || nombre || "");
 
-  return (dx.codigo || dx.nombre || dx.texto || "Sin diagnóstico").slice(0, 28);
+  return etiqueta.trim().slice(0, 36);
+}
+
+function diagnosticosParaGrafica(paciente = {}) {
+  const acumulados = [];
+
+  if (Array.isArray(paciente.historialDiagnosticos)) {
+    acumulados.push(...paciente.historialDiagnosticos);
+  }
+
+  if (Array.isArray(paciente.diagnosticos)) {
+    acumulados.push(...paciente.diagnosticos);
+  }
+
+  if (paciente.diagnostico) {
+    acumulados.push(paciente.diagnostico);
+  }
+
+  const vistos = new Set();
+  return acumulados.filter((dx) => {
+    const clave = claveDiagnostico(dx);
+    if (!clave || vistos.has(clave)) return false;
+    vistos.add(clave);
+    return true;
+  });
+}
+
+function contarDiagnosticosTodos(pacientes = []) {
+  return pacientes.reduce((conteo, paciente) => {
+    const diagnosticos = diagnosticosParaGrafica(paciente);
+
+    if (!diagnosticos.length) {
+      conteo["Sin diagnóstico"] = (conteo["Sin diagnóstico"] || 0) + 1;
+      return conteo;
+    }
+
+    diagnosticos.forEach((dx) => {
+      const etiqueta = etiquetaDiagnosticoGrafica(dx) || "Sin diagnóstico";
+      conteo[etiqueta] = (conteo[etiqueta] || 0) + 1;
+    });
+
+    return conteo;
+  }, {});
+}
+
+function etiquetaMedicamentoGrafica(valor = "") {
+  const texto = String(valor || "").trim();
+  if (!texto) return "";
+
+  const antesDeComa = texto.split(",")[0]?.trim();
+  const antesDePunto = texto.split(".")[0]?.trim();
+  const etiqueta = antesDeComa || antesDePunto || texto;
+
+  return etiqueta.slice(0, 36);
+}
+
+function tratamientosActivosPaciente(paciente = {}) {
+  const resumen = paciente.datosClinicosResumen || {};
+
+  if (Array.isArray(resumen.tratamientosActivos)) {
+    return resumen.tratamientosActivos.filter((t) => (t.estado || "activo") === "activo");
+  }
+
+  if (Array.isArray(paciente.tratamientosActivos)) {
+    return paciente.tratamientosActivos.filter((t) => (t.estado || "activo") === "activo");
+  }
+
+  if (Array.isArray(paciente.tratamientos)) {
+    return paciente.tratamientos.filter((t) => (t.estado || "activo") === "activo");
+  }
+
+  const textoResumen = resumen.tratamientoActivo || paciente.tratamiento || "";
+  return textoResumen
+    ? String(textoResumen).split(/\n+/).map((medicamento) => ({ medicamento }))
+    : [];
+}
+
+function contarMedicamentosIndicados(pacientes = []) {
+  return pacientes.reduce((conteo, paciente) => {
+    tratamientosActivosPaciente(paciente).forEach((tratamiento) => {
+      const etiqueta = etiquetaMedicamentoGrafica(tratamiento.medicamento || tratamiento.texto || tratamiento);
+      if (!etiqueta) return;
+      conteo[etiqueta] = (conteo[etiqueta] || 0) + 1;
+    });
+
+    return conteo;
+  }, {});
 }
 
 function dibujarBarras(canvasId, conteo) {
@@ -1574,6 +1663,13 @@ function dibujarBarras(canvasId, conteo) {
   const max = Math.max(...entradas.map(([, v]) => v), 1);
 
   ctx.font = "12px Arial";
+
+  if (!entradas.length) {
+    ctx.fillStyle = "#94a3b8";
+    ctx.fillText("Sin datos registrados", 8, 32);
+    return;
+  }
+
   entradas.forEach(([label, valor], i) => {
     const y = 18 + i * (barH + separacion);
     const barW = Math.max(2, (width - 150) * valor / max);
@@ -1589,8 +1685,8 @@ function dibujarBarras(canvasId, conteo) {
 }
 
 function renderizarGraficasMedico(pacientes) {
-  dibujarBarras("graficaEstados", contarPor(pacientes, (p) => p.estado || "Activo"));
-  dibujarBarras("graficaDiagnosticos", contarPor(pacientes, diagnosticoCorto));
+  dibujarBarras("graficaDiagnosticos", contarDiagnosticosTodos(pacientes));
+  dibujarBarras("graficaMedicamentos", contarMedicamentosIndicados(pacientes));
 }
 
 document.addEventListener("click", (e) => {

@@ -196,12 +196,27 @@ button:hover{
     display:block;
 }
 
+.datos-generales-grid{
+    display:grid;
+    grid-template-columns:repeat(3, minmax(210px, 1fr));
+    gap:12px 18px;
+    align-items:start;
+}
+
 .dato,
 .dato-card{
     padding:14px 0;
     border-bottom:1px solid rgba(148,163,184,0.14);
     background:transparent;
     border-radius:0;
+}
+
+.datos-generales-grid .dato{
+    min-width:0;
+    padding:12px 14px;
+    border:1px solid rgba(148,163,184,0.12);
+    border-radius:16px;
+    background:rgba(8,12,20,0.34);
 }
 
 .dato:last-child,
@@ -261,6 +276,11 @@ button:hover{
     display:grid;
     grid-template-columns:repeat(2, minmax(0, 1fr));
     gap:20px;
+}
+
+.datos-generales-grid .consultas-en-linea,
+.datos-generales-grid .diagnosticos-lista{
+    grid-column:span 2;
 }
 
 .consultas-en-linea > div {
@@ -957,8 +977,14 @@ textarea{
 @media(max-width:900px){
   .form-grid,
   .panel-doble,
-  .consultas-en-linea{
+  .consultas-en-linea,
+  .datos-generales-grid{
     grid-template-columns:1fr;
+  }
+
+  .datos-generales-grid .consultas-en-linea,
+  .datos-generales-grid .diagnosticos-lista{
+    grid-column:auto;
   }
 
   .campo-catalogo-inline {

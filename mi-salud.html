@@ -117,11 +117,20 @@
       <ul id="listaMetas">
         <li>Sin metas asignadas.</li>
       </ul>
-      <div class="habitos">
-        <label><input type="checkbox"> Caminar o moverse 10 minutos</label>
-        <label><input type="checkbox"> Tomar medicamento segun indicacion</label>
-        <label><input type="checkbox"> Practicar respiracion 3 minutos</label>
-        <label><input type="checkbox"> Evitar pantallas antes de dormir</label>
+      <div class="habitos" id="tareasDiariasMiSalud">
+        <label><input type="checkbox" data-tarea-diaria="movimiento"> Caminar o moverse 10 minutos</label>
+        <label><input type="checkbox" data-tarea-diaria="medicamento"> Tomar medicamento segun indicacion</label>
+        <label><input type="checkbox" data-tarea-diaria="respiracion"> Practicar respiracion 3 minutos</label>
+        <label><input type="checkbox" data-tarea-diaria="sueno"> Evitar pantallas antes de dormir</label>
+      </div>
+      <button id="guardarTareasDiarias" type="button">Guardar tareas de hoy</button>
+    </div>
+
+    <div class="card calendario-salud-card">
+      <h3>Calendario Mi Salud</h3>
+      <p class="ayuda">Resumen de registros diarios y tareas completadas.</p>
+      <div id="calendarioMiSalud" class="calendario-mi-salud">
+        Cargando calendario...
       </div>
     </div>
 

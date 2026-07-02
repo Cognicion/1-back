@@ -69,6 +69,7 @@ let escalasAsignadasCache = new Map();
 let diagnosticosCatalogoActual = [];
 let diagnosticoReemplazoIndex = null;
 let intervaloEstanciaPaciente = null;
+let campoFechaIngresoModal = "fechaIngreso";
 let textoIndicacionesEditado = false;
 let apuntesMedicoPacienteCache = [];
 let catalogoMedicosFirmasIndicacionesCache = [];
@@ -282,6 +283,17 @@ function obtenerFechaIngreso(datos = {}) {
   );
 }
 
+function obtenerUltimoIngreso(datos = {}) {
+  const institucional = datos.datosInstitucionales || {};
+  return (
+    datos.ultimoIngreso ||
+    institucional.ultimoIngreso ||
+    datos.fechaUltimoIngreso ||
+    institucional.fechaUltimoIngreso ||
+    ""
+  );
+}
+
 function normalizarFechaIngreso(valor = "") {
   const limpio = String(valor).trim();
   if (!limpio) return "";
@@ -373,7 +385,7 @@ function formatearFecha(fecha) {
   const partes = soloFecha.split("-");
   if (partes.length !== 3) return fecha;
 
-  return hora ? `${partes[2]}/${partes[1]}/${partes[0]} ${hora}` : `${partes[2]}/${partes[1]}/${partes[0]}`;
+  return hora ? `${partes[2]}-${partes[1]}-${partes[0]} ${hora}` : `${partes[2]}-${partes[1]}-${partes[0]}`;
 }
 
 function escaparHTML(valor) {
@@ -1063,10 +1075,10 @@ async function cargarDatosPaciente() {
     datos.medicoTratante || "Sin mÃ©dico tratante";
 
   document.getElementById("ultimaConsulta").innerText =
-    datos.ultimaConsulta || "Sin fecha";
+    formatearFecha(datos.ultimaConsulta) || "Sin fecha";
 
   document.getElementById("proximaConsulta").textContent =
-    datos.proximaConsulta || "Sin programar";
+    datos.proximaConsulta ? formatearFecha(datos.proximaConsulta) : "Sin programar";
 
   document.getElementById("telefonoPaciente").innerText =
     datos.telefono || "Sin tel\u00e9fono";
@@ -1091,6 +1103,9 @@ async function cargarDatosPaciente() {
 
   actualizarEstanciaPaciente(datos);
   iniciarActualizacionEstanciaPaciente();
+
+  document.getElementById("ultimoIngresoPaciente").innerText =
+    formatearFecha(obtenerUltimoIngreso(datos));
 
   document.getElementById("medicoAdscritoEncargadoPaciente").innerText =
     datos.medicoAdscritoEncargado ||
@@ -1574,6 +1589,11 @@ window.editarCampoPaciente = async function(campo, etiqueta, tipo = "text") {
     return;
   }
 
+  if (campo === "ultimoIngreso") {
+    window.abrirSelectorUltimoIngresoPaciente();
+    return;
+  }
+
   const datos = datosPacienteActual || await obtenerUsuario(uidPaciente);
   const valorActual = campo === "fechaNacimiento"
     ? obtenerFechaNacimiento(datos)
@@ -1610,6 +1630,7 @@ window.editarCampoPaciente = async function(campo, etiqueta, tipo = "text") {
     "cama",
     "curp",
     "fechaIngreso",
+    "ultimoIngreso",
     "medicoAdscritoEncargado",
     "residenteEncargado",
     "fechaNacimiento",
@@ -1649,19 +1670,33 @@ window.editarCampoPaciente = async function(campo, etiqueta, tipo = "text") {
   await cargarDatosPaciente();
 };
 
-window.abrirSelectorIngresoPaciente = async function() {
+async function abrirSelectorFechaPaciente(campo = "fechaIngreso") {
   const modal = document.getElementById("modalIngresoPaciente");
   const inputFecha = document.getElementById("ingresoPacienteFecha");
   const inputHora = document.getElementById("ingresoPacienteHora");
+  const titulo = document.getElementById("tituloIngresoPaciente");
+  const subtitulo = modal?.querySelector(".panel-ingreso-header p");
   if (!modal || !inputFecha || !inputHora) return;
 
+  campoFechaIngresoModal = campo;
   const datos = datosPacienteActual || await obtenerUsuario(uidPaciente);
-  const partes = partesFechaIngreso(obtenerFechaIngreso(datos));
+  const valor = campo === "ultimoIngreso" ? obtenerUltimoIngreso(datos) : obtenerFechaIngreso(datos);
+  const partes = partesFechaIngreso(valor);
 
   inputFecha.value = partes.fecha;
   inputHora.value = partes.hora;
+  if (titulo) titulo.textContent = campo === "ultimoIngreso" ? "Seleccionar ultimo ingreso" : "Seleccionar ingreso";
+  if (subtitulo) subtitulo.textContent = campo === "ultimoIngreso" ? "Ultimo ingreso" : "Fecha de ingreso";
   modal.classList.add("abierto");
   modal.setAttribute("aria-hidden", "false");
+}
+
+window.abrirSelectorIngresoPaciente = function() {
+  abrirSelectorFechaPaciente("fechaIngreso");
+};
+
+window.abrirSelectorUltimoIngresoPaciente = function() {
+  abrirSelectorFechaPaciente("ultimoIngreso");
 };
 
 function cerrarSelectorIngresoPaciente() {
@@ -1682,20 +1717,21 @@ async function guardarIngresoPacienteDesdeModal() {
   }
 
   const datos = datosPacienteActual || await obtenerUsuario(uidPaciente);
+  const campo = campoFechaIngresoModal === "ultimoIngreso" ? "ultimoIngreso" : "fechaIngreso";
   const fechaIngreso = `${fecha}T${hora || "00:00"}`;
   const datosInstitucionales = {
     ...(datos?.datosInstitucionales || {}),
-    fechaIngreso
+    [campo]: fechaIngreso
   };
 
   await actualizarUsuario(uidPaciente, {
-    fechaIngreso,
+    [campo]: fechaIngreso,
     datosInstitucionales
   });
 
   datosPacienteActual = {
     ...(datosPacienteActual || datos || {}),
-    fechaIngreso,
+    [campo]: fechaIngreso,
     datosInstitucionales
   };
   actualizarEstanciaPaciente(datosPacienteActual);
@@ -1705,19 +1741,20 @@ async function guardarIngresoPacienteDesdeModal() {
 
 async function limpiarIngresoPacienteDesdeModal() {
   const datos = datosPacienteActual || await obtenerUsuario(uidPaciente);
+  const campo = campoFechaIngresoModal === "ultimoIngreso" ? "ultimoIngreso" : "fechaIngreso";
   const datosInstitucionales = {
     ...(datos?.datosInstitucionales || {}),
-    fechaIngreso: ""
+    [campo]: ""
   };
 
   await actualizarUsuario(uidPaciente, {
-    fechaIngreso: "",
+    [campo]: "",
     datosInstitucionales
   });
 
   datosPacienteActual = {
     ...(datosPacienteActual || datos || {}),
-    fechaIngreso: "",
+    [campo]: "",
     datosInstitucionales
   };
   actualizarEstanciaPaciente(datosPacienteActual);

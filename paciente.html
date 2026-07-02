@@ -102,7 +102,7 @@
       <div class="tarjeta">
         <h2>Datos generales <button class="boton-editar-dato" onclick="editarCampoPaciente('nombre', 'Nombre', 'text')">Editar nombre</button></h2>
 
-        <div class="grid">
+        <div class="grid datos-generales-grid">
           <div class="dato">
             <label>Correo <button class="boton-editar-dato" onclick="editarCampoPaciente('email', 'Correo', 'text')">Editar</button></label>
             <div id="correoPaciente">Cargando...</div>
@@ -132,6 +132,11 @@
               <label>Dias de estancia</label>
               <div id="diasEstanciaPaciente">Sin registro</div>
             </div>
+          </div>
+
+          <div class="dato">
+            <label>Ultimo ingreso <button class="boton-editar-dato" onclick="abrirSelectorUltimoIngresoPaciente()">Editar</button></label>
+            <div id="ultimoIngresoPaciente">Sin registro</div>
           </div>
 
           <div class="dato diagnosticos-lista">
