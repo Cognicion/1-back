@@ -178,7 +178,21 @@
         <button id="btnPausarDictado" type="button" class="boton-secundario">Pausar dictado</button>
         <button id="btnLimpiarDictado" type="button" class="boton-secundario">Limpiar dictado</button>
         <button id="btnInsertarDictado" type="button">Insertar en nota</button>
+        <button id="btnGenerarNotaAutomatica" type="button" class="boton-secundario">Generar nota automática</button>
     </div>
+
+    <section id="panelNotaAutomatica" class="nota-automatica-panel oculto" aria-live="polite">
+        <div class="nota-automatica-header">
+            <div>
+                <span class="dictado-clinico-etiqueta">Sugerencias por reglas locales</span>
+                <h3>Nota automática preliminar</h3>
+                <p>Revise, modifique o elimine cada sugerencia antes de guardar.</p>
+            </div>
+            <button id="btnAceptarTodosDxAutomaticos" type="button" class="boton-secundario">Aceptar diagnósticos sugeridos</button>
+        </div>
+        <div id="riesgosNotaAutomatica" class="riesgos-nota-automatica"></div>
+        <div id="diagnosticosNotaAutomatica" class="diagnosticos-nota-automatica"></div>
+    </section>
 </section>
 
 <label for="buscadorDiagnostico">Diagnostico visible para paciente (CIE-10)</label>

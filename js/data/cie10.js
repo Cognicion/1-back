@@ -458,5 +458,17 @@ export const CIE10 = [
   { codigo: "I64", nombre: "Accidente vascular encefalico agudo, no especificado como hemorragico o isquemico" },
   { codigo: "I67", nombre: "Otras enfermedades cerebrovasculares" },
   { codigo: "I69", nombre: "Secuelas de enfermedad cerebrovascular" },
-  { codigo: "I95", nombre: "Hipotension" }
+  { codigo: "I95", nombre: "Hipotension" },
+
+  // Ampliacion psiquiatrica para sugerencias clinicas automatizadas
+  { codigo: "F22.0", nombre: "Trastorno de ideas delirantes" },
+  { codigo: "F23.0", nombre: "Trastorno psicotico agudo polimorfo sin sintomas de esquizofrenia" },
+  { codigo: "F23.1", nombre: "Trastorno psicotico agudo polimorfo con sintomas de esquizofrenia" },
+  { codigo: "F23.2", nombre: "Trastorno psicotico agudo de tipo esquizofrenico" },
+  { codigo: "F51.0", nombre: "Insomnio no organico" },
+  { codigo: "F51.5", nombre: "Pesadillas" },
+  { codigo: "F91.0", nombre: "Trastorno disocial limitado al contexto familiar" },
+  { codigo: "F91.1", nombre: "Trastorno disocial en ninos no socializados" },
+  { codigo: "F91.2", nombre: "Trastorno disocial en ninos socializados" },
+  { codigo: "F92.0", nombre: "Trastorno disocial depresivo" }
 ];

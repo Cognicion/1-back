@@ -5,6 +5,7 @@ import { CIE10 } from "./data/cie10.js";
 import { CIE11 } from "./data/cie11.js";
 import { MEDICAMENTOS } from "./data/medicamentos.js";
 import { ESCALAS_PSIQUIATRICAS, interpretarEscala } from "./data/escalasPsiquiatricas.js";
+import { generarNotaAutomatica } from "./services/notaAutomatica.js";
 
 import {
   onAuthStateChanged
@@ -51,6 +52,7 @@ let uidMedicoActual = "";
 let apuntesMedicoCache = [];
 let notasFlotantesPacienteCache = [];
 let catalogoMedicosFirmasCache = [];
+let diagnosticosAutomaticosSugeridos = [];
 
 iniciarMonitoreoSesion("Nota medica");
 
@@ -542,6 +544,153 @@ function agregarDiagnostico(dx) {
   renderizarDiagnosticosSeleccionados();
 }
 
+function anexarTextoGenerado(id, texto, titulo = "Sugerencia automatica") {
+  const campo = document.getElementById(id);
+  const limpio = String(texto || "").trim();
+  if (!campo || !limpio) return;
+
+  campo.value = campo.value.trim()
+    ? `${campo.value.trim()}\n\n--- ${titulo} ---\n${limpio}`
+    : limpio;
+  campo.dispatchEvent(new Event("input", { bubbles: true }));
+}
+
+function textoRiesgosAutomaticos(riesgos = []) {
+  if (!riesgos.length) return "";
+  return riesgos.map((riesgo) =>
+    `${riesgo.tipo} (${riesgo.severidad}): ${riesgo.marcadores.join(", ")}`
+  ).join("\n");
+}
+
+function renderizarDiagnosticosAutomaticos() {
+  const panel = document.getElementById("panelNotaAutomatica");
+  const contenedor = document.getElementById("diagnosticosNotaAutomatica");
+  const riesgos = document.getElementById("riesgosNotaAutomatica");
+  if (!panel || !contenedor || !riesgos) return;
+
+  panel.classList.remove("oculto");
+
+  riesgos.innerHTML = diagnosticosAutomaticosSugeridos.riesgos?.length
+    ? `
+      <strong>Riesgos detectados</strong>
+      ${diagnosticosAutomaticosSugeridos.riesgos.map((riesgo) => `
+        <p>${escaparHTML(riesgo.tipo)} · ${escaparHTML(riesgo.severidad)} · ${escaparHTML(riesgo.marcadores.join(", "))}</p>
+      `).join("")}
+    `
+    : "<p>No se detectaron datos de alarma directos por reglas. Esto no sustituye la exploracion clinica.</p>";
+
+  const sugeridos = diagnosticosAutomaticosSugeridos.diagnosticos || [];
+  contenedor.innerHTML = sugeridos.length
+    ? sugeridos.map((dx, index) => `
+      <article class="diagnostico-automatico-card">
+        <div>
+          <span class="badge-sugerido">${escaparHTML(dx.certeza || "sugerido")}</span>
+          <strong>${escaparHTML(dx.codigo || "")}</strong>
+        </div>
+        <label>Codigo
+          <input value="${escaparHTML(dx.codigo || "")}" data-dx-auto="${index}" data-campo-auto="codigo">
+        </label>
+        <label>Diagnostico
+          <input value="${escaparHTML(dx.nombre || "")}" data-dx-auto="${index}" data-campo-auto="nombre">
+        </label>
+        <label>Motivo de sugerencia
+          <textarea data-dx-auto="${index}" data-campo-auto="razon">${escaparHTML(dx.razon || "")}</textarea>
+        </label>
+        <div class="diagnostico-automatico-acciones">
+          <button type="button" class="boton-secundario" data-aceptar-dx-auto="${index}">Aceptar</button>
+          <button type="button" class="boton-secundario boton-peligro-suave" data-eliminar-dx-auto="${index}">Eliminar</button>
+        </div>
+      </article>
+    `).join("")
+    : "<p>No se generaron diagnosticos CIE-10 sugeridos con las reglas actuales.</p>";
+
+  contenedor.querySelectorAll("[data-dx-auto]").forEach((campo) => {
+    campo.addEventListener("input", () => {
+      const index = Number(campo.dataset.dxAuto);
+      const nombreCampo = campo.dataset.campoAuto;
+      if (!diagnosticosAutomaticosSugeridos.diagnosticos?.[index]) return;
+      diagnosticosAutomaticosSugeridos.diagnosticos[index][nombreCampo] = campo.value;
+      const dx = diagnosticosAutomaticosSugeridos.diagnosticos[index];
+      dx.texto = `${dx.codigo || ""}${dx.codigo && dx.nombre ? " - " : ""}${dx.nombre || ""}`.trim();
+    });
+  });
+
+  contenedor.querySelectorAll("[data-aceptar-dx-auto]").forEach((boton) => {
+    boton.addEventListener("click", () => aceptarDiagnosticoAutomatico(Number(boton.dataset.aceptarDxAuto)));
+  });
+
+  contenedor.querySelectorAll("[data-eliminar-dx-auto]").forEach((boton) => {
+    boton.addEventListener("click", () => {
+      diagnosticosAutomaticosSugeridos.diagnosticos.splice(Number(boton.dataset.eliminarDxAuto), 1);
+      renderizarDiagnosticosAutomaticos();
+    });
+  });
+}
+
+function aceptarDiagnosticoAutomatico(index) {
+  const dx = diagnosticosAutomaticosSugeridos.diagnosticos?.[index];
+  if (!dx) return;
+
+  const yaExiste = diagnosticosSeleccionados.some((item) =>
+    item.codigo === dx.codigo && (item.catalogo || "CIE-10") === "CIE-10"
+  );
+
+  if (!yaExiste) {
+    diagnosticosSeleccionados.push({
+      codigo: dx.codigo || "",
+      nombre: dx.nombre || "",
+      catalogo: "CIE-10",
+      texto: dx.texto || `${dx.codigo || ""}${dx.codigo && dx.nombre ? " - " : ""}${dx.nombre || ""}`.trim(),
+      sugerido: true,
+      certeza: dx.certeza || "sugerido",
+      razon: dx.razon || "",
+      fechaSeleccion: new Date().toISOString()
+    });
+  }
+
+  diagnosticosAutomaticosSugeridos.diagnosticos.splice(index, 1);
+  renderizarDiagnosticosSeleccionados();
+  renderizarDiagnosticosAutomaticos();
+}
+
+function aceptarTodosDiagnosticosAutomaticos() {
+  const total = diagnosticosAutomaticosSugeridos.diagnosticos?.length || 0;
+  for (let i = total - 1; i >= 0; i -= 1) aceptarDiagnosticoAutomatico(i);
+}
+
+function aplicarNotaAutomatica() {
+  const texto = document.getElementById("textoDictadoClinico")?.value.trim() || "";
+  if (!texto) {
+    alert("Primero dicta o escribe texto en el area de dictado clinico.");
+    return;
+  }
+
+  const confirmado = confirm("La nota automatica es solo una sugerencia por reglas locales. Revise y corrija todo antes de guardar.");
+  if (!confirmado) return;
+
+  const generada = generarNotaAutomatica(texto);
+  anexarTextoGenerado("subjetivo", generada.padecimientoActual, "Padecimiento actual sugerido");
+  anexarTextoGenerado("objetivo", generada.exploracionMental, "Exploracion mental sugerida");
+  anexarTextoGenerado("analisis", generada.comentarioClinico, "Comentario clinico sugerido");
+  anexarTextoGenerado("plan", generada.planSugerido, "Plan terapeutico sugerido");
+
+  if (generada.cie10Sugeridos?.length) {
+    const impresion = generada.cie10Sugeridos
+      .map((dx) => `${dx.codigo} - ${dx.nombre} (${dx.certeza || "sugerido"}). ${dx.razon || ""}`.trim())
+      .join("\n");
+    anexarTextoGenerado("analisis", `Impresion diagnostica sugerida:\n${impresion}`, "Impresion diagnostica sugerida");
+  }
+
+  const riesgos = textoRiesgosAutomaticos(generada.riesgosDetectados);
+  if (riesgos) anexarTextoGenerado("analisis", `Datos de alarma o riesgo detectados:\n${riesgos}`, "Riesgo sugerido");
+
+  diagnosticosAutomaticosSugeridos = {
+    diagnosticos: generada.cie10Sugeridos || [],
+    riesgos: generada.riesgosDetectados || []
+  };
+  renderizarDiagnosticosAutomaticos();
+}
+
 function renderizarDiagnosticosSeleccionados() {
   const contenedor = document.getElementById("diagnosticosSeleccionados");
 
@@ -646,6 +795,9 @@ function renderizarDiagnosticosSeleccionadosEditable() {
 }
 
 renderizarDiagnosticosSeleccionados = renderizarDiagnosticosSeleccionadosEditable;
+
+document.getElementById("btnGenerarNotaAutomatica")?.addEventListener("click", aplicarNotaAutomatica);
+document.getElementById("btnAceptarTodosDxAutomaticos")?.addEventListener("click", aceptarTodosDiagnosticosAutomaticos);
 
 window.actualizarDiagnosticoSeleccionado = function(campo) {
   const index = Number(campo.dataset.dxIndex);

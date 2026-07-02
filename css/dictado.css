@@ -106,6 +106,100 @@
   opacity: 0.55;
 }
 
+.nota-automatica-panel {
+  margin-top: 18px;
+  padding: 16px;
+  border: 1px solid rgba(125, 211, 252, 0.18);
+  border-radius: 16px;
+  background: rgba(2, 6, 23, 0.48);
+}
+
+.nota-automatica-panel.oculto {
+  display: none;
+}
+
+.nota-automatica-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 14px;
+}
+
+.nota-automatica-header h3 {
+  margin: 0 0 6px;
+  color: #e0f2fe;
+}
+
+.nota-automatica-header p,
+.riesgos-nota-automatica p {
+  margin: 0;
+  color: #a9b8cc;
+}
+
+.riesgos-nota-automatica {
+  display: grid;
+  gap: 6px;
+  margin-bottom: 14px;
+  padding: 12px;
+  border-radius: 12px;
+  background: rgba(15, 23, 42, 0.76);
+  border: 1px solid rgba(250, 204, 21, 0.18);
+}
+
+.riesgos-nota-automatica strong {
+  color: #fde68a;
+}
+
+.diagnosticos-nota-automatica {
+  display: grid;
+  gap: 12px;
+}
+
+.diagnostico-automatico-card {
+  display: grid;
+  grid-template-columns: 120px minmax(110px, 0.6fr) minmax(180px, 1fr);
+  gap: 10px;
+  align-items: end;
+  padding: 14px;
+  border: 1px solid rgba(56, 189, 248, 0.18);
+  border-radius: 14px;
+  background: rgba(15, 23, 42, 0.78);
+}
+
+.diagnostico-automatico-card label {
+  display: grid;
+  gap: 7px;
+  color: #94a3b8;
+  font-size: 0.82rem;
+}
+
+.diagnostico-automatico-card textarea {
+  min-height: 70px;
+}
+
+.diagnostico-automatico-card label:nth-of-type(3),
+.diagnostico-automatico-acciones {
+  grid-column: 1 / -1;
+}
+
+.badge-sugerido {
+  display: inline-flex;
+  margin-bottom: 8px;
+  padding: 5px 8px;
+  border-radius: 999px;
+  background: rgba(14, 165, 233, 0.13);
+  color: #7dd3fc;
+  font-size: 0.72rem;
+  font-weight: 900;
+}
+
+.diagnostico-automatico-acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
 @media (max-width: 720px) {
   .dictado-clinico-card {
     padding: 18px;
@@ -121,5 +215,11 @@
 
   .dictado-clinico-acciones button {
     width: 100%;
+  }
+
+  .nota-automatica-header,
+  .diagnostico-automatico-card {
+    grid-template-columns: 1fr;
+    flex-direction: column;
   }
 }
