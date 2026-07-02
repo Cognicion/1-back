@@ -14,6 +14,7 @@ import {
   getDoc,
   updateDoc,
   setDoc,
+  deleteDoc,
   query,
   orderBy
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
@@ -29,6 +30,8 @@ const STORAGE_ORDEN_PACIENTES = "cognicion.medico.ordenPacientes";
 let ordenPacientesActual = cargarPreferenciaOrdenPacientes();
 const STORAGE_FILTRO_CARPETA = "cognicion.medico.filtroCarpeta";
 let filtroCarpetaActual = cargarPreferenciaFiltroCarpeta();
+const STORAGE_CARPETAS_VISIBLES = "cognicion.medico.carpetasVisibles";
+let carpetasVisiblesInline = cargarPreferenciaCarpetasVisibles();
 const FILTROS_ATENCION_DEFAULT = ["hospitalizados", "privado", "hpfba", "hpijnn", "otra"];
 const STORAGE_FILTROS_ATENCION = "cognicion.medico.filtrosAtencion";
 let filtrosAtencionActuales = cargarPreferenciasFiltroAtencion();
@@ -203,6 +206,8 @@ async function cargarCarpetasMedico(uidMedico = uidMedicoActual) {
 
   renderizarSelectorFiltroCarpetas();
   renderizarListaCarpetasMedico();
+  renderizarOpcionesCarpetasVisibles();
+  renderizarCarpetasInlineMedico();
 }
 
 function renderizarSelectorFiltroCarpetas() {
@@ -233,10 +238,15 @@ function renderizarListaCarpetasMedico() {
       obtenerCarpetasPaciente(paciente).includes(carpeta)
     ).length;
     return `
-      <button type="button" class="carpeta-chip-medico" data-filtro-carpeta="${escaparHTML(carpeta)}">
-        <span>${escaparHTML(carpeta)}</span>
-        <small>${total}</small>
-      </button>
+      <div class="carpeta-chip-medico">
+        <button type="button" class="carpeta-chip-abrir" data-filtro-carpeta="${escaparHTML(carpeta)}">
+          <span>${escaparHTML(carpeta)}</span>
+          <small>${total}</small>
+        </button>
+        <button type="button" class="carpeta-chip-editar" data-editar-carpeta="${escaparHTML(carpeta)}">
+          Editar
+        </button>
+      </div>
     `;
   }).join("");
 
@@ -248,6 +258,236 @@ function renderizarListaCarpetasMedico() {
       actualizarTextoCarpetasPacientes();
       filtrarPacientes();
       cerrarCarpetasPacientes();
+    });
+  });
+
+  lista.querySelectorAll("[data-editar-carpeta]").forEach((boton) => {
+    boton.addEventListener("click", () => {
+      editarNombreCarpetaMedico(boton.dataset.editarCarpeta || "");
+    });
+  });
+}
+
+async function editarNombreCarpetaMedico(nombreActual = "") {
+  const actual = nombreActual.trim();
+  if (!actual || !uidMedicoActual) return;
+
+  const nuevoNombre = prompt("Nuevo nombre de la carpeta:", actual)?.trim() || "";
+  if (!nuevoNombre || nuevoNombre === actual) return;
+
+  if (carpetasMedico.some((carpeta) => carpeta.toLowerCase() === nuevoNombre.toLowerCase() && carpeta !== actual)) {
+    alert("Ya existe una carpeta con ese nombre.");
+    return;
+  }
+
+  const idAnterior = slugCarpeta(actual);
+  const idNuevo = slugCarpeta(nuevoNombre);
+
+  try {
+    await setDoc(doc(db, "usuarios", uidMedicoActual, "carpetasPacientes", idNuevo), {
+      nombre: nuevoNombre,
+      fechaActualizacion: new Date().toISOString(),
+      renombradaDesde: actual
+    }, { merge: true });
+
+    if (idNuevo !== idAnterior) {
+      await deleteDoc(doc(db, "usuarios", uidMedicoActual, "carpetasPacientes", idAnterior));
+    }
+
+    const pacientesPorActualizar = pacientesGlobal.filter((paciente) =>
+      obtenerCarpetasPaciente(paciente).includes(actual)
+    );
+
+    await Promise.all(pacientesPorActualizar.map(async (paciente) => {
+      const carpetas = obtenerCarpetasPaciente(paciente).map((carpeta) =>
+        carpeta === actual ? nuevoNombre : carpeta
+      );
+      await updateDoc(doc(db, "usuarios", paciente.id), { carpetas });
+      paciente.carpetas = carpetas;
+    }));
+
+    if (filtroCarpetaActual === actual) {
+      filtroCarpetaActual = nuevoNombre;
+      guardarPreferenciaFiltroCarpeta();
+    }
+
+    if (carpetasVisiblesInline !== null && carpetasVisiblesInline.has(actual)) {
+      carpetasVisiblesInline.delete(actual);
+      carpetasVisiblesInline.add(nuevoNombre);
+      guardarPreferenciaCarpetasVisibles();
+    }
+
+    await cargarCarpetasMedico(uidMedicoActual);
+    actualizarTextoCarpetasPacientes();
+    filtrarPacientes();
+  } catch (error) {
+    alert("No se pudo editar la carpeta: " + error.message);
+  }
+}
+
+function cargarPreferenciaCarpetasVisibles() {
+  try {
+    const guardado = localStorage.getItem(STORAGE_CARPETAS_VISIBLES);
+    if (!guardado) return null;
+
+    const carpetas = JSON.parse(guardado);
+    return Array.isArray(carpetas) ? new Set(carpetas) : null;
+  } catch (error) {
+    console.warn("No se pudo cargar la preferencia de carpetas visibles:", error);
+    return null;
+  }
+}
+
+function guardarPreferenciaCarpetasVisibles() {
+  try {
+    if (carpetasVisiblesInline === null) {
+      localStorage.removeItem(STORAGE_CARPETAS_VISIBLES);
+      return;
+    }
+
+    localStorage.setItem(STORAGE_CARPETAS_VISIBLES, JSON.stringify([...carpetasVisiblesInline]));
+  } catch (error) {
+    console.warn("No se pudo guardar la preferencia de carpetas visibles:", error);
+  }
+}
+
+function carpetaInlineVisible(carpeta = "") {
+  return carpetasVisiblesInline === null || carpetasVisiblesInline.has(carpeta);
+}
+
+function carpetasInlineDisponibles() {
+  return carpetasMedico.filter(carpetaInlineVisible);
+}
+
+function renderizarOpcionesCarpetasVisibles() {
+  const contenedor = document.getElementById("opcionesCarpetasVisibles");
+  if (!contenedor) return;
+
+  const opciones = [
+    ...carpetasMedico.map((carpeta) => ({ valor: carpeta, etiqueta: carpeta })),
+    { valor: "__sin_carpeta__", etiqueta: "Sin carpeta" }
+  ];
+
+  if (opciones.length === 0) {
+    contenedor.innerHTML = `<p>Sin carpetas creadas.</p>`;
+    return;
+  }
+
+  contenedor.innerHTML = opciones.map((opcion) => `
+    <label class="opcion-carpeta-visible">
+      <input
+        type="checkbox"
+        class="carpeta-visible-check"
+        value="${escaparHTML(opcion.valor)}"
+        ${carpetaInlineVisible(opcion.valor) ? "checked" : ""}
+      >
+      <span>${escaparHTML(opcion.etiqueta)}</span>
+    </label>
+  `).join("");
+}
+
+function aplicarChecksCarpetasVisibles() {
+  const checks = [...document.querySelectorAll(".carpeta-visible-check")];
+  carpetasVisiblesInline = new Set(
+    checks
+      .filter((check) => check.checked)
+      .map((check) => check.value)
+  );
+
+  if (!filtroCarpetaActual || carpetaInlineVisible(filtroCarpetaActual)) {
+    guardarPreferenciaCarpetasVisibles();
+    renderizarCarpetasInlineMedico();
+    return;
+  }
+
+  filtroCarpetaActual = "";
+  guardarPreferenciaFiltroCarpeta();
+  guardarPreferenciaCarpetasVisibles();
+  actualizarTextoCarpetasPacientes();
+  renderizarSelectorFiltroCarpetas();
+  renderizarCarpetasInlineMedico();
+  filtrarPacientes();
+}
+
+function marcarTodasCarpetasVisibles() {
+  carpetasVisiblesInline = null;
+  guardarPreferenciaCarpetasVisibles();
+  renderizarOpcionesCarpetasVisibles();
+  renderizarCarpetasInlineMedico();
+}
+
+function ocultarTodasCarpetasVisibles() {
+  carpetasVisiblesInline = new Set();
+  if (filtroCarpetaActual) {
+    filtroCarpetaActual = "";
+    guardarPreferenciaFiltroCarpeta();
+    actualizarTextoCarpetasPacientes();
+    filtrarPacientes();
+  }
+  guardarPreferenciaCarpetasVisibles();
+  renderizarOpcionesCarpetasVisibles();
+  renderizarCarpetasInlineMedico();
+}
+
+function totalPacientesEnCarpeta(carpeta = "") {
+  if (carpeta === "__sin_carpeta__") {
+    return pacientesGlobal.filter((paciente) => obtenerCarpetasPaciente(paciente).length === 0).length;
+  }
+
+  if (!carpeta) return pacientesGlobal.length;
+
+  return pacientesGlobal.filter((paciente) =>
+    obtenerCarpetasPaciente(paciente).includes(carpeta)
+  ).length;
+}
+
+function abrirCarpetaDesdeLista(carpeta = "") {
+  filtroCarpetaActual = carpeta;
+  guardarPreferenciaFiltroCarpeta();
+  renderizarSelectorFiltroCarpetas();
+  actualizarTextoCarpetasPacientes();
+  renderizarCarpetasInlineMedico();
+  filtrarPacientes();
+}
+
+function renderizarCarpetasInlineMedico() {
+  const contenedor = document.getElementById("carpetasPacientesInline");
+  if (!contenedor) return;
+
+  const carpetas = [
+    { valor: "", etiqueta: "Todos", total: totalPacientesEnCarpeta("") },
+    ...carpetasInlineDisponibles().map((carpeta) => ({
+      valor: carpeta,
+      etiqueta: carpeta,
+      total: totalPacientesEnCarpeta(carpeta)
+    })),
+    ...(carpetaInlineVisible("__sin_carpeta__")
+      ? [{ valor: "__sin_carpeta__", etiqueta: "Sin carpeta", total: totalPacientesEnCarpeta("__sin_carpeta__") }]
+      : [])
+  ];
+
+  contenedor.innerHTML = carpetas.map((carpeta) => {
+    const activa = filtroCarpetaActual === carpeta.valor;
+    return `
+      <button
+        type="button"
+        class="carpeta-inline-medico ${activa ? "activa" : ""}"
+        data-carpeta-inline="${escaparHTML(carpeta.valor)}"
+        title="Doble clic para abrir ${escaparHTML(carpeta.etiqueta)}"
+      >
+        <span>${escaparHTML(carpeta.etiqueta)}</span>
+        <small>${carpeta.total}</small>
+      </button>
+    `;
+  }).join("");
+
+  contenedor.querySelectorAll("[data-carpeta-inline]").forEach((boton) => {
+    boton.addEventListener("dblclick", () => {
+      abrirCarpetaDesdeLista(boton.dataset.carpetaInline || "");
+    });
+
+    boton.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") abrirCarpetaDesdeLista(boton.dataset.carpetaInline || "");
     });
   });
 }
@@ -280,10 +520,15 @@ async function crearCarpetaMedico() {
   }, { merge: true });
 
   if (input) input.value = "";
+  if (carpetasVisiblesInline !== null) {
+    carpetasVisiblesInline.add(nombre);
+    guardarPreferenciaCarpetasVisibles();
+  }
   filtroCarpetaActual = nombre;
   guardarPreferenciaFiltroCarpeta();
   await cargarCarpetasMedico(uidMedicoActual);
   actualizarTextoCarpetasPacientes();
+  renderizarCarpetasInlineMedico();
   filtrarPacientes();
 }
 
@@ -315,6 +560,7 @@ function actualizarTextoCarpetasPacientes() {
   } else {
     boton.textContent = `Carpeta: ${filtroCarpetaActual}`;
   }
+  renderizarCarpetasInlineMedico();
 }
 
 function abrirCarpetasPacientes() {
@@ -323,6 +569,7 @@ function abrirCarpetasPacientes() {
 
   renderizarSelectorFiltroCarpetas();
   renderizarListaCarpetasMedico();
+  renderizarOpcionesCarpetasVisibles();
   sincronizarFiltroColumnaCarpeta();
   modal.classList.add("abierto");
   modal.setAttribute("aria-hidden", "false");
@@ -374,11 +621,17 @@ function inicializarCarpetasPacientes() {
   document.getElementById("crearCarpetaMedico")?.addEventListener("click", crearCarpetaMedico);
   document.getElementById("aplicarFiltroCarpetaMedico")?.addEventListener("click", aplicarFiltroCarpetaDesdeModal);
   document.getElementById("mostrarColumnaCarpetaMedico")?.addEventListener("change", alternarColumnaCarpetaDesdeFiltro);
+  document.getElementById("opcionesCarpetasVisibles")?.addEventListener("change", (e) => {
+    if (e.target.closest(".carpeta-visible-check")) aplicarChecksCarpetasVisibles();
+  });
+  document.getElementById("mostrarTodasCarpetasInline")?.addEventListener("click", marcarTodasCarpetasVisibles);
+  document.getElementById("ocultarTodasCarpetasInline")?.addEventListener("click", ocultarTodasCarpetasVisibles);
   document.getElementById("limpiarFiltroCarpetaMedico")?.addEventListener("click", () => {
     filtroCarpetaActual = "";
     guardarPreferenciaFiltroCarpeta();
     renderizarSelectorFiltroCarpetas();
     actualizarTextoCarpetasPacientes();
+    renderizarCarpetasInlineMedico();
     filtrarPacientes();
     cerrarCarpetasPacientes();
   });
@@ -436,6 +689,7 @@ async function cargarPacientes(uidMedico) {
 
   filtrarPacientes();
   renderizarListaCarpetasMedico();
+  renderizarCarpetasInlineMedico();
   calcularEstadisticas(pacientesGlobal);
   renderizarGraficasMedico(pacientesGlobal);
 }
@@ -1351,6 +1605,7 @@ document.addEventListener("change", async (e) => {
       }
 
       renderizarListaCarpetasMedico();
+      renderizarCarpetasInlineMedico();
       filtrarPacientes();
     } catch (error) {
       selectorCarpeta.value = anterior;

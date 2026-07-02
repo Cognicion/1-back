@@ -226,6 +226,19 @@
                 <span>Mostrar columna Carpeta en la lista de pacientes</span>
               </label>
 
+              <div class="bloque-carpetas-visibles">
+                <div class="carpetas-visibles-header">
+                  <p class="etiqueta-filtro-atencion">Carpetas visibles en el panel</p>
+                  <div class="acciones-carpetas-visibles">
+                    <button type="button" id="mostrarTodasCarpetasInline" class="boton-mini-carpeta">Todas</button>
+                    <button type="button" id="ocultarTodasCarpetasInline" class="boton-mini-carpeta">Ninguna</button>
+                  </div>
+                </div>
+                <div id="opcionesCarpetasVisibles" class="opciones-carpetas-visibles">
+                  Sin carpetas creadas.
+                </div>
+              </div>
+
               <div>
                 <p class="etiqueta-filtro-atencion">Carpetas existentes</p>
                 <div id="listaCarpetasMedico" class="lista-carpetas-medico">Sin carpetas creadas.</div>
@@ -236,6 +249,16 @@
               <button type="button" id="limpiarFiltroCarpetaMedico" class="boton-secundario-filtro">Ver todos</button>
               <button type="button" id="aplicarFiltroCarpetaMedico">Aplicar</button>
             </div>
+          </div>
+        </div>
+
+        <div class="carpetas-lista-pacientes" aria-label="Carpetas de pacientes">
+          <div class="carpetas-lista-header">
+            <span>Carpetas</span>
+            <small>Doble clic para abrir</small>
+          </div>
+          <div id="carpetasPacientesInline" class="carpetas-inline-medico">
+            Cargando carpetas...
           </div>
         </div>
 
