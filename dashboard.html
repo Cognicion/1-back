@@ -3,425 +3,778 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Cognición</title>
+<title>COGNICIÓN | Dashboard medico</title>
 <link rel="icon" type="image/png" href="assets/favicon-cognicion.png">
 
 <style>
-*{
-    box-sizing:border-box;
+:root {
+    --bg: #05070b;
+    --panel: rgba(12, 17, 26, 0.72);
+    --panel-strong: rgba(16, 23, 36, 0.86);
+    --line: rgba(148, 163, 184, 0.16);
+    --line-blue: rgba(56, 189, 248, 0.22);
+    --text: #eef4fb;
+    --muted: #9aa8ba;
+    --soft: #c7d2e2;
+    --blue: #38bdf8;
+    --blue-deep: #2563eb;
+    --green: #5eead4;
+    --shadow: 0 24px 80px rgba(0, 0, 0, 0.26);
+    --radius: 24px;
 }
 
-body{
-    margin:0;
-    font-family:Arial, Helvetica, sans-serif;
+* {
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    margin: 0;
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+    color: var(--text);
     background:
-        radial-gradient(circle at top, rgba(78,163,255,0.22), transparent 32%),
-        radial-gradient(circle at bottom right, rgba(0,212,255,0.13), transparent 28%),
-        linear-gradient(135deg, #050608, #080b10 50%, #0e1520);
-    color:#f8fafc;
-    min-height:100vh;
+        radial-gradient(circle at 18% 0%, rgba(56, 189, 248, 0.16), transparent 34%),
+        radial-gradient(circle at 90% 8%, rgba(37, 99, 235, 0.13), transparent 30%),
+        linear-gradient(180deg, #030508 0%, #07101a 45%, #05070b 100%);
+    min-height: 100vh;
+    animation: pageIn 0.55s ease both;
 }
 
-header{
-    padding:28px 7%;
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    border-bottom:1px solid rgba(255,255,255,0.08);
-    backdrop-filter:blur(12px);
+body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background-image:
+        linear-gradient(rgba(148, 163, 184, 0.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(148, 163, 184, 0.035) 1px, transparent 1px);
+    background-size: 44px 44px;
+    mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.9), transparent 78%);
 }
 
-.logo{
-    display:flex;
-    align-items:center;
-    gap:16px;
+button {
+    border: 0;
+    cursor: pointer;
+    font: inherit;
 }
 
-.logo img{
-    width:72px;
-    height:72px;
-    object-fit:contain;
-    border-radius:16px;
-    border:1px solid rgba(125,211,252,0.28);
-    box-shadow:0 0 24px rgba(56,189,248,0.18);
+.app-shell {
+    width: min(1440px, calc(100% - 64px));
+    margin: 0 auto;
 }
 
-.logo-texto{
-    display:flex;
-    flex-direction:column;
+header {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    border-bottom: 1px solid var(--line);
+    background: rgba(5, 7, 11, 0.72);
+    backdrop-filter: blur(22px);
 }
 
-.titulo{
-    font-size:30px;
-    font-weight:800;
-    color:#e5e7eb;
+.topbar {
+    min-height: 96px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
 }
 
-.autores{
-    margin-top:6px;
-    max-width:720px;
-    font-size:13px;
-    color:#9ca3af;
-    line-height:1.45;
-    letter-spacing:0.2px;
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 16px;
 }
 
-.hero{
-    padding:90px 7% 60px;
+.brand img {
+    width: 64px;
+    height: 64px;
+    object-fit: contain;
+    border-radius: 18px;
+    border: 1px solid var(--line-blue);
+    box-shadow: 0 0 34px rgba(56, 189, 248, 0.15);
 }
 
-.hero .etiqueta{
-    color:#b8b8b8;
-    letter-spacing:4px;
-    font-size:13px;
-    text-transform:uppercase;
-    margin-bottom:18px;
+.brand-name {
+    font-size: 1.55rem;
+    font-weight: 780;
+    letter-spacing: 0;
 }
 
-.hero h1{
-    font-size:64px;
-    font-weight:300;
-    margin:0;
-    line-height:1.05;
+.brand-subtitle {
+    margin-top: 4px;
+    color: var(--muted);
+    font-size: 0.92rem;
 }
 
-.hero h2{
-    font-size:24px;
-    font-weight:300;
-    color:#cfcfcf;
-    margin-top:24px;
+.logout-button,
+.primary-button,
+.secondary-button,
+.ghost-button {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 0 18px;
+    border-radius: 999px;
+    transition: transform 0.22s ease, border-color 0.22s ease, background 0.22s ease, box-shadow 0.22s ease;
 }
 
-.panel{
-    padding:20px 7% 70px;
-    display:grid;
-    grid-template-columns:repeat(auto-fit, minmax(260px, 1fr));
-    gap:26px;
+.logout-button,
+.secondary-button,
+.ghost-button {
+    color: var(--soft);
+    background: rgba(15, 23, 42, 0.64);
+    border: 1px solid var(--line);
 }
 
-.tarjeta{
-    min-height:260px;
-    padding:32px;
-    border-radius:14px;
-    background:rgba(20, 24, 33, 0.92);
-    border:1px solid rgba(255,255,255,0.10);
-    box-shadow:0 18px 45px rgba(0,0,0,0.35);
-    backdrop-filter:blur(18px);
-    transition:0.35s ease;
-    position:relative;
-    overflow:hidden;
+.primary-button {
+    color: #effcff;
+    background: linear-gradient(135deg, rgba(37, 99, 235, 0.92), rgba(6, 182, 212, 0.86));
+    box-shadow: 0 16px 40px rgba(8, 145, 178, 0.18);
 }
 
-.tarjeta::before{
-    content:"";
-    position:absolute;
-    top:0;
-    left:0;
-    width:100%;
-    height:3px;
-    background:linear-gradient(90deg, transparent, #38bdf8, transparent);
-    opacity:0.6;
+.logout-button:hover,
+.primary-button:hover,
+.secondary-button:hover,
+.ghost-button:hover {
+    transform: translateY(-2px);
+    border-color: rgba(125, 211, 252, 0.42);
+    box-shadow: 0 18px 50px rgba(8, 145, 178, 0.14);
 }
 
-.tarjeta:hover{
-    transform:translateY(-8px);
-    background:rgba(30,41,59,0.98);
-    border-color:rgba(56,189,248,0.45);
+.hero {
+    padding: 80px 0 34px;
 }
 
-.icono{
-    font-size:38px;
-    margin-bottom:22px;
+.hero-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.12fr) minmax(340px, 0.88fr);
+    gap: 28px;
+    align-items: stretch;
 }
 
-.tarjeta h3{
-    font-size:30px;
-    font-weight:300;
-    margin:0 0 14px;
+.hero-copy {
+    min-height: 420px;
+    padding: 56px;
+    border: 1px solid var(--line);
+    border-radius: 32px;
+    background:
+        linear-gradient(135deg, rgba(15, 23, 42, 0.82), rgba(8, 13, 23, 0.58)),
+        radial-gradient(circle at 84% 18%, rgba(56, 189, 248, 0.14), transparent 30%);
+    box-shadow: var(--shadow);
+    position: relative;
+    overflow: hidden;
 }
 
-.tarjeta p{
-    color:#c0c0c0;
-    line-height:1.6;
-    font-size:16px;
+.hero-copy::after {
+    content: "";
+    position: absolute;
+    right: -80px;
+    bottom: -120px;
+    width: 360px;
+    height: 360px;
+    border-radius: 999px;
+    border: 1px solid rgba(56, 189, 248, 0.16);
+    box-shadow: inset 0 0 70px rgba(56, 189, 248, 0.06);
 }
 
-button{
-    margin-top:18px;
-    padding:14px 24px;
-    border-radius:9px;
-    border:none;
-    background:linear-gradient(135deg, #2563eb, #00d4ff);
-    color:white;
-    font-size:15px;
-    cursor:pointer;
-    transition:0.25s;
+.eyebrow,
+.section-kicker,
+.badge {
+    color: #7dd3fc;
+    font-size: 0.74rem;
+    font-weight: 760;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
 }
 
-button:hover{
-    box-shadow:0 0 28px rgba(0,212,255,0.28);
+.hero h1 {
+    margin: 18px 0 0;
+    font-size: clamp(3.3rem, 7vw, 7.2rem);
+    line-height: 0.92;
+    letter-spacing: 0;
 }
 
-.boton-secundario{
-    background:rgba(15, 18, 25, 0.88);
-    color:#e5e7eb;
-    border:1px solid rgba(56,189,248,0.28);
+.hero-subtitle {
+    max-width: 720px;
+    margin: 28px 0 0;
+    color: #cbd5e1;
+    font-size: clamp(1.05rem, 1.4vw, 1.32rem);
+    line-height: 1.65;
 }
 
-.boton-secundario:hover{
-    background:rgba(56,189,248,0.12);
-    color:#e0f2fe;
+#bienvenida {
+    margin: 36px 0 0;
+    font-size: 1.34rem;
+    font-weight: 720;
+    color: #f8fafc;
 }
 
-.stats{
-    display:flex;
-    gap:18px;
-    margin-top:24px;
-    flex-wrap:wrap;
+.clinical-phrase {
+    margin-top: 12px;
+    color: var(--muted);
+    font-size: 1rem;
 }
 
-.stat{
-    background:rgba(255,255,255,0.05);
-    border:1px solid rgba(255,255,255,0.10);
-    padding:16px 20px;
-    border-radius:18px;
-    min-width:130px;
+.medical-scope {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 28px;
 }
 
-.stat strong{
-    font-size:26px;
-    font-weight:300;
+.medical-scope span {
+    display: inline-flex;
+    align-items: center;
+    min-height: 34px;
+    padding: 0 13px;
+    border: 1px solid rgba(125, 211, 252, 0.16);
+    border-radius: 999px;
+    background: rgba(9, 14, 24, 0.48);
+    color: #cbd5e1;
+    font-size: 0.82rem;
+    font-weight: 720;
 }
 
-.stat span{
-    display:block;
-    color:#aaa;
-    font-size:13px;
-    margin-top:6px;
+.hero-side {
+    display: grid;
+    gap: 16px;
 }
 
-footer{
-    padding:28px 7%;
-    color:#777;
-    border-top:1px solid rgba(255,255,255,0.1);
+.info-card {
+    padding: 26px;
+    border-radius: var(--radius);
+    border: 1px solid var(--line);
+    background: rgba(9, 14, 24, 0.68);
+    box-shadow: 0 18px 50px rgba(0, 0, 0, 0.18);
+    transition: transform 0.22s ease, border-color 0.22s ease, background 0.22s ease;
 }
 
-@media(max-width:700px){
-    header{
-        padding:22px;
-        flex-direction:column;
-        gap:18px;
-        align-items:flex-start;
+.info-card:hover,
+.module-card:hover,
+.activity-card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(125, 211, 252, 0.34);
+    background: rgba(15, 23, 42, 0.78);
+}
+
+.info-card h3,
+.activity-card h3,
+.module-card h3 {
+    margin: 12px 0 8px;
+    font-size: 1.18rem;
+}
+
+.info-card p,
+.activity-card p,
+.module-card p,
+.section-description {
+    margin: 0;
+    color: var(--muted);
+    line-height: 1.58;
+}
+
+.activity-center,
+.quick-actions,
+.dashboard-section {
+    padding: 28px 0;
+}
+
+.activity-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 18px;
+}
+
+.activity-card {
+    min-height: 250px;
+    padding: 28px;
+    border-radius: var(--radius);
+    border: 1px solid var(--line);
+    background: var(--panel);
+    transition: transform 0.22s ease, border-color 0.22s ease, background 0.22s ease;
+}
+
+.activity-list {
+    display: grid;
+    gap: 10px;
+    margin-top: 18px;
+}
+
+.activity-list span {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 14px;
+    border: 1px solid rgba(148, 163, 184, 0.12);
+    border-radius: 14px;
+    color: #dbeafe;
+    background: rgba(15, 23, 42, 0.42);
+}
+
+.quick-actions-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.quick-action {
+    min-height: 108px;
+    padding: 20px;
+    border-radius: 22px;
+    border: 1px solid var(--line);
+    color: #eef4fb;
+    background: rgba(9, 14, 24, 0.7);
+    text-align: left;
+    transition: transform 0.22s ease, border-color 0.22s ease, background 0.22s ease;
+}
+
+.quick-action strong {
+    display: block;
+    margin-top: 10px;
+    font-size: 1.08rem;
+}
+
+.quick-action:hover {
+    transform: translateY(-4px);
+    border-color: rgba(94, 234, 212, 0.32);
+    background: rgba(15, 23, 42, 0.82);
+}
+
+.section-heading {
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+    gap: 24px;
+    margin-bottom: 18px;
+}
+
+.section-heading h2 {
+    margin: 8px 0 0;
+    font-size: clamp(1.6rem, 2.5vw, 2.4rem);
+}
+
+.module-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 18px;
+}
+
+.module-card {
+    min-height: 300px;
+    display: flex;
+    flex-direction: column;
+    padding: 28px;
+    border-radius: var(--radius);
+    border: 1px solid var(--line);
+    background:
+        linear-gradient(180deg, rgba(15, 23, 42, 0.78), rgba(10, 15, 24, 0.72));
+    transition: transform 0.22s ease, border-color 0.22s ease, background 0.22s ease;
+}
+
+.module-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.module-icon {
+    width: 58px;
+    height: 58px;
+    display: grid;
+    place-items: center;
+    border-radius: 18px;
+    color: #dff8ff;
+    font-size: 1.55rem;
+    background: rgba(56, 189, 248, 0.1);
+    border: 1px solid rgba(56, 189, 248, 0.16);
+}
+
+.badge {
+    padding: 7px 10px;
+    border-radius: 999px;
+    background: rgba(56, 189, 248, 0.1);
+    border: 1px solid rgba(56, 189, 248, 0.18);
+    letter-spacing: 0.08em;
+}
+
+.module-card h3 {
+    margin-top: 28px;
+    font-size: 1.38rem;
+}
+
+.module-card .card-actions {
+    margin-top: auto;
+    padding-top: 28px;
+}
+
+footer {
+    margin-top: 42px;
+    padding: 34px 0 48px;
+    color: #7f8da3;
+    border-top: 1px solid var(--line);
+}
+
+@keyframes pageIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@media (max-width: 1180px) {
+    .hero-grid,
+    .activity-grid,
+    .module-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
-    .hero{
-        padding:60px 22px 35px;
+    .quick-actions-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 760px) {
+    .app-shell {
+        width: min(100% - 32px, 1440px);
     }
 
-    .hero h1{
-        font-size:42px;
+    .topbar,
+    .section-heading {
+        align-items: flex-start;
+        flex-direction: column;
     }
 
-    .hero h2{
-        font-size:20px;
+    .hero {
+        padding-top: 44px;
     }
 
-    .panel{
-        padding:20px 22px 50px;
+    .hero-grid,
+    .activity-grid,
+    .module-grid,
+    .quick-actions-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .hero-copy {
+        min-height: 0;
+        padding: 34px 24px;
+        border-radius: 26px;
+    }
+
+    .brand img {
+        width: 54px;
+        height: 54px;
+    }
+
+    .module-card,
+    .activity-card,
+    .info-card {
+        min-height: 0;
+        padding: 22px;
     }
 }
 </style>
+  <link rel="stylesheet" href="css/reportes.css">
 </head>
 
 <body>
-
 <header>
-    <div class="logo">
-    <img src="assets/favicon-cognicion.png" alt="Cognicion">
-    <div class="logo-texto">
+    <div class="app-shell topbar">
+        <div class="brand">
+            <img src="assets/favicon-cognicion.png" alt="Cognición">
+            <div>
+                <div class="brand-name">COGNICIÓN</div>
+                <div class="brand-subtitle">Ciencia, evidencia y medicina humana.</div>
+            </div>
+        </div>
 
-    <div class="titulo">
-        🧠 Cognición
+        <button class="logout-button" onclick="cerrarSesion()">Cerrar sesion</button>
     </div>
-
-    <div class="autores">
-        Así como la cognición integra múltiples procesos mentales para comprender al individuo, Cognición integra múltiples herramientas tecnológicas para comprender al paciente.
-    </div>
-
-</div>
-</div>
-
-    <button class="boton-secundario" onclick="cerrarSesion()">
-        Cerrar sesión
-    </button>
 </header>
 
-<section class="hero">
-    <div class="etiqueta">Plataforma clínica digital</div>
+<main class="app-shell">
+    <section class="hero">
+        <div class="hero-grid">
+            <div class="hero-copy">
+                <div class="eyebrow">Plataforma medica digital</div>
+                <h1>COGNICIÓN</h1>
+                <p class="hero-subtitle">
+                    Tecnologia clinica para una medicina mas precisa, mas humana y basada en evidencia.
+                </p>
+                <div class="medical-scope" aria-label="Alcance medico de Cognición">
+                    <span>Psiquiatria</span>
+                    <span>Medicina interna</span>
+                    <span>Medicina general</span>
+                    <span>Psicologia</span>
+                    <span>Especialidades medicas</span>
+                </div>
+                <h2 id="bienvenida">Cargando...</h2>
+                <p id="fraseClinica" class="clinical-phrase">La evidencia guia las decisiones clinicas.</p>
+            </div>
 
-    <h1>Psiquiatría y Psicología<br>de precisión</h1>
+            <aside class="hero-side" aria-label="Panel superior">
+                <article class="info-card">
+                    <span class="badge">Actividad</span>
+                    <h3>Actividad reciente</h3>
+                    <p>Consulta tus ultimos movimientos.</p>
+                </article>
+                <article class="info-card">
+                    <span class="badge">Cuidado</span>
+                    <h3>Seguimiento medico</h3>
+                    <p>Visualiza evolucion, tratamientos, mediciones y herramientas utilizadas.</p>
+                </article>
+                <article class="info-card">
+                    <span class="badge">HealthTech</span>
+                    <h3>Herramientas disponibles</h3>
+                    <p>Explora modulos clinicos, analiticos, educativos y de acompanamiento.</p>
+                </article>
+            </aside>
+        </div>
+    </section>
 
-    <h2 id="bienvenida">Cargando...</h2>
-
-    <div class="stats">
-        <div class="stat">
-            <strong>0</strong>
-            <span>Sesiones</span>
+    <section class="activity-center" aria-labelledby="actividadTitulo">
+        <div class="section-heading">
+            <div>
+                <span class="section-kicker">Centro de actividad</span>
+                <h2 id="actividadTitulo">Tu espacio de trabajo</h2>
+            </div>
+            <p class="section-description">Accesos pensados para retomar trabajo medico sin friccion.</p>
         </div>
 
-        <div class="stat">
-            <strong>--</strong>
-            <span>Acierto promedio</span>
+        <div class="activity-grid">
+            <article class="activity-card">
+                <span class="badge">Continuar</span>
+                <h3>Continuar</h3>
+                <p>Modulo utilizado recientemente.</p>
+                <div class="card-actions">
+                    <button class="primary-button" onclick="window.location.href='medico.html'">Continuar</button>
+                </div>
+            </article>
+
+            <article class="activity-card">
+                <span class="badge">Hoy</span>
+                <h3>Recomendado para hoy</h3>
+                <p>Sugerencias clinicas iniciales.</p>
+                <div class="activity-list">
+                    <span>Consultar expediente</span>
+                    <span>Revisar evolucion</span>
+                    <span>Aplicar escala clinica</span>
+                    <span>Analizar seguimiento</span>
+                </div>
+            </article>
+
+            <article class="activity-card">
+                <span class="badge">Novedades</span>
+                <h3>Nuevas funciones llegaran proximamente</h3>
+                <div class="activity-list">
+                    <span>IA clinica</span>
+                    <span>Telemedicina</span>
+                    <span>Generacion automatica de notas</span>
+                    <span>Laboratorio e imagen</span>
+                </div>
+            </article>
         </div>
+    </section>
 
-        <div class="stat">
-            <strong>-- ms</strong>
-            <span>TR promedio</span>
+    <nav class="quick-actions" aria-label="Acciones principales">
+        <div class="quick-actions-grid">
+            <button class="quick-action" onclick="document.getElementById('atencion-clinica').scrollIntoView()">
+                <span>+</span>
+                <strong>Atencion clinica</strong>
+            </button>
+            <button class="quick-action" onclick="document.getElementById('rehabilitacion-cognitiva').scrollIntoView()">
+                <span>+</span>
+                <strong>Rehabilitacion cognitiva</strong>
+            </button>
+            <button class="quick-action" onclick="document.getElementById('paciente').scrollIntoView()">
+                <span>+</span>
+                <strong>Seguimiento</strong>
+            </button>
+            <button class="quick-action" onclick="document.getElementById('recursos').scrollIntoView()">
+                <span>+</span>
+                <strong>Recursos</strong>
+            </button>
         </div>
-    </div>
-</section>
+    </nav>
 
-<section class="panel">
+    <section id="atencion-clinica" class="dashboard-section" data-roles="medico admin">
+        <div class="section-heading">
+            <div>
+                <span class="section-kicker">Atencion medica</span>
+                <h2>Practica clinica, expediente y seguimiento</h2>
+            </div>
+        </div>
+        <div class="module-grid">
+            <article class="module-card">
+                <div class="module-top">
+                    <div class="module-icon">+</div>
+                    <span class="badge">Medico</span>
+                </div>
+                <h3>Panel Medico</h3>
+                <p>Revision de pacientes, notas clinicas, agenda, biblioteca, tratamientos y reportes de evolucion.</p>
+                <div class="card-actions">
+                    <button class="primary-button" onclick="window.location.href='medico.html'">Abrir panel</button>
+                </div>
+            </article>
 
-    <div class="tarjeta">
-        <div class="icono">🧩</div>
-        <h3>N-Back</h3>
-        <p>
-            Entrenamiento de memoria de trabajo, atención sostenida y control ejecutivo.
-        </p>
-        <button onclick="window.location.href='nback.html'">
-            Iniciar sesión
-        </button>
-    </div>
+            <article class="module-card">
+                <div class="module-top">
+                    <div class="module-icon">+</div>
+                    <span class="badge">Disponible</span>
+                </div>
+                <h3>Expediente</h3>
+                <p>Informacion medica, diagnosticos, tratamiento, estudios y seguimiento longitudinal.</p>
+                <div class="card-actions">
+                    <button class="secondary-button" onclick="window.location.href='expediente.html'">Abrir expediente</button>
+                </div>
+            </article>
 
-    <div class="tarjeta">
-        <div class="icono">📊</div>
-        <h3>Resultados</h3>
-        <p>
-            Visualiza evolución, errores de comisión, errores de omisión y tiempo de reacción.
-        </p>
-        <button onclick="window.location.href='estadistica.html'">
-            Ver progreso
-        </button>
-    </div>
+            <article class="module-card">
+                <div class="module-top">
+                    <div class="module-icon">+</div>
+                    <span class="badge">Medico</span>
+                </div>
+                <h3>Estadistica clinica</h3>
+                <p>Analiza pacientes autorizados, variables medicas, diagnosticos, tratamientos, tablas, pruebas y graficas.</p>
+                <div class="card-actions">
+                    <button class="secondary-button" onclick="window.location.href='estadistica.html'">Abrir estadistica</button>
+                </div>
+            </article>
+        </div>
+    </section>
 
-    <div class="tarjeta">
-        <div class="icono">📈</div>
-        <h3>Estadística clínica</h3>
-        <p>
-            Analiza pacientes autorizados, variables clínicas, diagnósticos, tablas, pruebas y gráficas.
-        </p>
-        <button onclick="window.location.href='estadistica.html'">
-            Abrir estadística
-        </button>
-    </div>
+    <section id="paciente" class="dashboard-section" data-roles="paciente medico admin">
+        <div class="section-heading">
+            <div>
+                <span class="section-kicker">Paciente</span>
+                <h2>Acompanamiento, autocuidado y seguimiento</h2>
+            </div>
+        </div>
+        <div class="module-grid">
+            <article class="module-card">
+                <div class="module-top">
+                    <div class="module-icon">+</div>
+                    <span class="badge">Paciente</span>
+                </div>
+                <h3>Mi Salud</h3>
+                <p>Consulta tratamiento, registra estado diario, revisa metas y da seguimiento a tu salud.</p>
+                <div class="card-actions">
+                    <button class="primary-button" onclick="window.location.href='mi-salud.html'">Abrir modulo</button>
+                </div>
+            </article>
 
-    <div class="tarjeta">
-        <div class="icono">SALUD</div>
-        <h3>Mi Salud</h3>
-        <p>
-            Consulta tu tratamiento, registra cómo te sientes,
-            revisa tus metas y da seguimiento a tu evolución.
-        </p>
-        <button onclick="window.location.href='mi-salud.html'">
-            Abrir módulo
-        </button>
-    </div>
+            <article class="module-card">
+                <div class="module-top">
+                    <div class="module-icon">+</div>
+                    <span class="badge">Clinico</span>
+                </div>
+                <h3>Escalas</h3>
+                <p>Aplicacion y seguimiento de instrumentos clinicos para evaluar sintomas, funcionalidad y evolucion.</p>
+                <div class="card-actions">
+                    <button class="secondary-button" onclick="window.location.href='estadistica.html'">Abrir escalas</button>
+                </div>
+            </article>
 
-    <div class="tarjeta">
-        <div class="icono">RESP</div>
-        <h3>Asistente de Respiración</h3>
-        <p>
-            Guía visual breve para regular la respiración con un patrón 4-2-6-2.
-        </p>
-        <button onclick="window.location.href='respiracion.html'">
-            Abrir
-        </button>
-    </div>
+            <article class="module-card">
+                <div class="module-top">
+                    <div class="module-icon">+</div>
+                    <span class="badge">Nuevo</span>
+                </div>
+                <h3>Respiracion</h3>
+                <p>Guia visual inmersiva para regular la respiracion con una experiencia tranquila y enfocada.</p>
+                <div class="card-actions">
+                    <button class="secondary-button" onclick="window.location.href='respiracion.html'">Abrir</button>
+                </div>
+            </article>
+        </div>
+    </section>
 
- <div class="tarjeta">
-        <div class="icono">📖</div>
-        <h3>Psicoeducación</h3>
-        <p>
-            Información y recomendaciones sobre el padecimiento (Proximamente...) 
-        </p>
-        <button>
-            Para pacientes
-        </button>
-         <button class="boton-secundario">
-            Para familiares
-        </button>
-    </div>
-    
-    <div class="tarjeta">
-        <div class="icono">📖</div>
-        <h3>Lecturas</h3>
-        <p>
-            Lecturas recomendadas sobre su padecimiento.
-        </p>
-        <button>
-            Leer
-        </button>
-    </div>
-    
-    <div class="tarjeta">
-        <div class="icono">📋</div>
-        <h3>Escalas clínicas</h3>
-        <p>
-            Aplicación y seguimiento de instrumentos clínicos como PHQ-9, GAD-7 e ISI.
-        </p>
-        <button onclick="window.location.href='estadistica.html'">
-            PHQ-9
-        </button>
+    <section id="rehabilitacion-cognitiva" class="dashboard-section" data-roles="paciente medico admin">
+        <div class="section-heading">
+            <div>
+                <span class="section-kicker">Rehabilitacion cognitiva</span>
+                <h2>Entrenamiento y evolucion</h2>
+            </div>
+        </div>
+        <div class="module-grid">
+            <article class="module-card">
+                <div class="module-top">
+                    <div class="module-icon">+</div>
+                    <span class="badge">Disponible</span>
+                </div>
+                <h3>Ejercicios de rehabilitacion cognitiva</h3>
+                <p>Entrena memoria de trabajo, atencion, velocidad de procesamiento y funciones ejecutivas mediante ejercicios disenados para fortalecer el rendimiento cognitivo.</p>
+                <div class="card-actions">
+                    <button class="primary-button" onclick="window.location.href='nback.html'">Iniciar ejercicio</button>
+                </div>
+            </article>
 
-        <button class="boton-secundario" onclick="window.location.href='estadistica.html'">
-            GAD-7
-        </button>
-    </div>
+            <article class="module-card">
+                <div class="module-top">
+                    <div class="module-icon">+</div>
+                    <span class="badge">Evolucion</span>
+                </div>
+                <h3>Resultados / Evolucion</h3>
+                <p>Visualiza desempeno, errores, tiempos de reaccion y cambios a lo largo del seguimiento.</p>
+                <div class="card-actions">
+                    <button class="secondary-button" onclick="window.location.href='estadistica.html'">Ver progreso</button>
+                </div>
+            </article>
+        </div>
+    </section>
 
-    <div class="tarjeta">
+    <section id="recursos" class="dashboard-section" data-roles="paciente medico admin">
+        <div class="section-heading">
+            <div>
+                <span class="section-kicker">Recursos</span>
+                <h2>Conocimiento clinico y apoyo</h2>
+            </div>
+        </div>
+        <div class="module-grid">
+            <article class="module-card">
+                <div class="module-top">
+                    <div class="module-icon">+</div>
+                    <span class="badge">Proximamente</span>
+                </div>
+                <h3>Psicoeducacion</h3>
+                <p>Informacion y recomendaciones basadas en evidencia para pacientes y familiares.</p>
+                <div class="card-actions">
+                    <button class="ghost-button">Para pacientes</button>
+                </div>
+            </article>
 
-<div class="icono">👨‍⚕️</div>
-
-<h3>Panel médico</h3>
-
-<p>
-Revisión de pacientes, notas clínicas y reportes de evolución.
-</p>
-
-<button class="boton-secundario"
-onclick="window.location.href='medico.html'">
-
-Abrir panel
-
-</button>
-
-</div>
-    
-<div class="tarjeta">
-
-    <div class="icono">📁</div>
-
-    <h3>Expediente</h3>
-
-    <p>
-        Información clínica, diagnóstico,
-        tratamiento y seguimiento.
-    </p>
-
-    <button onclick="window.location.href='expediente.html'">
-        Abrir expediente
-    </button>
-
-</div>
-    
-</section>
+            <article class="module-card">
+                <div class="module-top">
+                    <div class="module-icon">+</div>
+                    <span class="badge">Proximamente</span>
+                </div>
+                <h3>Lecturas</h3>
+                <p>Lecturas recomendadas sobre salud, evaluacion clinica, autocuidado y acompanamiento terapeutico.</p>
+                <div class="card-actions">
+                    <button class="ghost-button">Leer</button>
+                </div>
+            </article>
+        </div>
+    </section>
+</main>
 
 <footer>
-    Cognición · Plataforma cognitiva
+    <div class="app-shell">Cognición · Ciencia · Evidencia · Medicina humana</div>
 </footer>
 
 <script type="module" src="js/dashboard.js"></script>
-
+  <script type="module" src="js/reportes.js"></script>
 </body>
 </html>

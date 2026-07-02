@@ -5,6 +5,7 @@
   <title>Administracion | Cognicion</title>
   <link rel="stylesheet" href="css/theme.css">
   <link rel="stylesheet" href="css/admin.css">
+  <link rel="stylesheet" href="css/reportes.css">
 </head>
 
 <body class="bloqueado">
@@ -99,6 +100,37 @@
   <section class="card tabla-card">
     <div class="tabla-header">
       <div>
+        <h2>Reportes, peticiones y sugerencias</h2>
+        <p>Mensajes enviados desde el boton flotante global de Cognicion.</p>
+      </div>
+      <button id="btnActualizarReportesAdmin">Actualizar reportes</button>
+    </div>
+
+    <div class="filtros-auditoria">
+      <input id="filtroReportesAdmin" placeholder="Buscar por mensaje, usuario, pagina o titulo">
+      <select id="filtroReportesEstado">
+        <option value="">Todos los estados</option>
+        <option value="nuevo">Nuevo</option>
+        <option value="en_revision">En revision</option>
+        <option value="resuelto">Resuelto</option>
+      </select>
+      <select id="filtroReportesTipo">
+        <option value="">Todos los tipos</option>
+        <option value="problema">Problemas</option>
+        <option value="sugerencia">Sugerencias</option>
+        <option value="peticion_personal">Peticiones personales</option>
+        <option value="nueva_funcionalidad">Nuevas funcionalidades</option>
+      </select>
+    </div>
+
+    <div id="listaReportesAdmin" class="lista-reportes-admin">
+      <p>Cargando reportes...</p>
+    </div>
+  </section>
+
+  <section class="card tabla-card">
+    <div class="tabla-header">
+      <div>
         <h2>Bitacora de auditoria</h2>
         <p>Actividad de medicos y pacientes: sesiones, modulos, notas, agenda, expediente y cambios clinicos relevantes.</p>
       </div>
@@ -148,5 +180,6 @@
 
 <script type="module" src="js/admin.js"></script>
 
+  <script type="module" src="js/reportes.js"></script>
 </body>
 </html>

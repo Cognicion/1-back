@@ -1,6 +1,10 @@
 import { auth, db } from "./firebase.js";
 import { iniciarMonitoreoSesion } from "./services/sesion.js";
 import { registrarEventoAuditoria, resumenError } from "./services/auditoria.js";
+import {
+  actualizarEstadoReporteUsuario,
+  listarReportesUsuarios
+} from "./services/reportes.js";
 
 import {
   onAuthStateChanged
@@ -24,6 +28,7 @@ const LIMITE_EVENTOS = 250;
 let eventosAuditoria = [];
 let pacientesAdmin = [];
 let usuariosAdmin = [];
+let reportesUsuariosAdmin = [];
 let notasPorPaciente = {};
 let adminActual = null;
 
@@ -71,6 +76,7 @@ onAuthStateChanged(auth, async (user) => {
   await cargarResumen();
   await cargarUsuariosAdmin();
   await cargarPacientesAdmin();
+  await cargarReportesUsuariosAdmin();
   await cargarAuditoria();
 });
 
@@ -84,6 +90,7 @@ function configurarFiltros() {
     await cargarResumen();
     await cargarUsuariosAdmin();
     await cargarPacientesAdmin();
+    await cargarReportesUsuariosAdmin();
     await cargarAuditoria();
   });
 
@@ -100,6 +107,13 @@ function configurarFiltros() {
   });
 
   document.getElementById("btnActualizarPacientesAdmin")?.addEventListener("click", cargarPacientesAdmin);
+
+  ["filtroReportesAdmin", "filtroReportesEstado", "filtroReportesTipo"].forEach((id) => {
+    document.getElementById(id)?.addEventListener("input", renderizarReportesUsuariosAdmin);
+    document.getElementById(id)?.addEventListener("change", renderizarReportesUsuariosAdmin);
+  });
+
+  document.getElementById("btnActualizarReportesAdmin")?.addEventListener("click", cargarReportesUsuariosAdmin);
 }
 
 async function cargarResumen() {
@@ -540,6 +554,112 @@ async function registrarAuditoriaAdmin(accion, descripcion, opciones = {}) {
     detalles: opciones.detalles || {}
   });
 }
+
+async function cargarReportesUsuariosAdmin() {
+  const contenedor = document.getElementById("listaReportesAdmin");
+  if (contenedor) contenedor.innerHTML = "<p>Cargando reportes...</p>";
+
+  try {
+    reportesUsuariosAdmin = await listarReportesUsuarios();
+    renderizarReportesUsuariosAdmin();
+  } catch (error) {
+    if (contenedor) {
+      contenedor.innerHTML = `<p class="admin-muted">No se pudieron cargar los reportes: ${escaparHTML(error.message)}</p>`;
+    }
+  }
+}
+
+function renderizarReportesUsuariosAdmin() {
+  const contenedor = document.getElementById("listaReportesAdmin");
+  if (!contenedor) return;
+
+  const texto = normalizar(document.getElementById("filtroReportesAdmin")?.value || "");
+  const estado = document.getElementById("filtroReportesEstado")?.value || "";
+  const tipo = document.getElementById("filtroReportesTipo")?.value || "";
+
+  const reportes = reportesUsuariosAdmin.filter((reporte) => {
+    const coincideTexto = !texto || normalizar([
+      reporte.titulo,
+      reporte.mensaje,
+      reporte.usuarioEmail,
+      reporte.usuarioNombre,
+      reporte.usuarioUid,
+      reporte.pagina,
+      reporte.url
+    ].join(" ")).includes(texto);
+
+    const coincideEstado = !estado || (reporte.estado || "nuevo") === estado;
+    const coincideTipo = !tipo || reporte.tipo === tipo;
+    return coincideTexto && coincideEstado && coincideTipo;
+  });
+
+  if (!reportes.length) {
+    contenedor.innerHTML = "<p class=\"admin-muted\">No hay reportes con esos filtros.</p>";
+    return;
+  }
+
+  contenedor.innerHTML = reportes.map((reporte) => {
+    const fecha = reporte.fechaCreacion?.toDate
+      ? reporte.fechaCreacion.toDate().toLocaleString("es-MX")
+      : reporte.fechaISO
+        ? new Date(reporte.fechaISO).toLocaleString("es-MX")
+        : "Sin fecha";
+
+    const usuario = reporte.usuarioNombre || reporte.usuarioEmail || reporte.usuarioUid || "Usuario no identificado";
+    const estadoReporte = reporte.estado || "nuevo";
+
+    return `
+      <article class="reporte-admin-card">
+        <div class="reporte-admin-top">
+          <span class="reporte-admin-tipo">${escaparHTML(etiquetaTipoReporte(reporte.tipo))}</span>
+          <span class="reporte-admin-estado estado-${escaparHTML(estadoReporte)}">${escaparHTML(estadoReporte)}</span>
+        </div>
+        <h3>${escaparHTML(reporte.titulo || "Sin titulo")}</h3>
+        <p>${escaparHTML(reporte.mensaje || "Sin descripcion")}</p>
+        <div class="reporte-admin-meta">
+          <span>${escaparHTML(fecha)}</span>
+          <span>${escaparHTML(usuario)}</span>
+          <span>${escaparHTML(reporte.pagina || "Sin pagina")}</span>
+        </div>
+        <div class="reporte-admin-acciones">
+          <select id="estado-reporte-${escaparHTML(reporte.id)}">
+            ${opcionEstadoReporte("nuevo", estadoReporte)}
+            ${opcionEstadoReporte("en_revision", estadoReporte)}
+            ${opcionEstadoReporte("resuelto", estadoReporte)}
+          </select>
+          <button type="button" onclick="cambiarEstadoReporteAdmin('${reporte.id}')">Actualizar estado</button>
+        </div>
+      </article>
+    `;
+  }).join("");
+}
+
+function etiquetaTipoReporte(tipo) {
+  const etiquetas = {
+    problema: "Problema",
+    sugerencia: "Sugerencia",
+    peticion_personal: "Peticion personal",
+    nueva_funcionalidad: "Nueva funcionalidad"
+  };
+
+  return etiquetas[tipo] || "Reporte";
+}
+
+function opcionEstadoReporte(valor, actual) {
+  return `<option value="${valor}" ${valor === actual ? "selected" : ""}>${valor}</option>`;
+}
+
+window.cambiarEstadoReporteAdmin = async function(reporteId) {
+  const selector = document.getElementById(`estado-reporte-${reporteId}`);
+  const estado = selector?.value || "nuevo";
+
+  try {
+    await actualizarEstadoReporteUsuario(reporteId, estado);
+    await cargarReportesUsuariosAdmin();
+  } catch (error) {
+    alert("No se pudo actualizar el reporte: " + error.message);
+  }
+};
 
 async function cargarAuditoria() {
   const qAuditoria = query(

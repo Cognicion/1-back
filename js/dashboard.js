@@ -13,6 +13,23 @@ import { iniciarMonitoreoSesion } from "./services/sesion.js";
 
 iniciarMonitoreoSesion("Dashboard");
 
+const frasesClinicas = [
+  "La evidencia guia mejores decisiones clinicas.",
+  "Cada paciente requiere una mirada integral.",
+  "Los datos clinicos tambien deben servir al cuidado humano.",
+  "La precision medica empieza con informacion clara.",
+  "El seguimiento transforma datos en cuidado."
+];
+
+function mostrarFraseClinicaAleatoria() {
+  const frase = document.getElementById("fraseClinica");
+  if (!frase) return;
+  const indice = Math.floor(Math.random() * frasesClinicas.length);
+  frase.innerText = frasesClinicas[indice];
+}
+
+mostrarFraseClinicaAleatoria();
+
 onAuthStateChanged(auth, async (user) => {
   if (!user) {
     window.location.href = "login.html";

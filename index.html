@@ -1,9 +1,9 @@
-gi<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Cognicion | Plataforma cientifica en salud mental</title>
+<title>COGNICIÓN | Tecnologia clinica basada en evidencia</title>
 <link rel="icon" type="image/png" href="assets/favicon-cognicion.png">
 <style>
 :root {
@@ -136,18 +136,19 @@ a { color: inherit; }
 h1 {
   margin: 0;
   max-width: 800px;
-  font-size: clamp(44px, 6.4vw, 84px);
-  line-height: 0.98;
-  letter-spacing: -0.052em;
+  font-size: clamp(56px, 9vw, 116px);
+  line-height: 0.9;
+  letter-spacing: -0.045em;
   font-weight: 800;
+  text-transform: uppercase;
 }
 
 .subtitulo {
-  max-width: 760px;
+  max-width: 660px;
   margin: 24px 0 0;
   color: var(--muted);
-  font-size: clamp(17px, 2vw, 21px);
-  line-height: 1.62;
+  font-size: clamp(17px, 1.7vw, 20px);
+  line-height: 1.52;
 }
 
 .acciones {
@@ -156,6 +157,23 @@ h1 {
   gap: 14px;
   flex-wrap: wrap;
   margin-top: 34px;
+}
+
+.scope-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 28px;
+}
+
+.scope-strip span {
+  padding: 9px 12px;
+  border: 1px solid rgba(125,211,252,0.18);
+  border-radius: 999px;
+  background: rgba(9,14,24,0.5);
+  color: #cbd5e1;
+  font-size: 12px;
+  font-weight: 700;
 }
 
 .btn {
@@ -550,12 +568,13 @@ footer {
   }
 }
 </style>
+  <link rel="stylesheet" href="css/reportes.css">
 </head>
 
 <body>
 <nav class="nav">
-  <a class="brand" href="#inicio" aria-label="Cognicion inicio">
-    <img src="assets/logo-cognicion.png" alt="Cognicion">
+  <a class="brand" href="#inicio" aria-label="Cognición inicio">
+    <img src="assets/logo-cognicion.png" alt="Cognición">
   </a>
   <div class="nav-links">
     <a href="#inicio">Inicio</a>
@@ -569,10 +588,17 @@ footer {
 <main id="inicio">
   <section class="hero">
     <div class="hero-copy">
-      <img class="hero-logo" src="assets/logo-cognicion.png" alt="Cognicion">
-      <span class="eyebrow">PLATAFORMA CIENTIFICA EN SALUD MENTAL</span>
-      <h1>Todo lo que la salud mental necesita. En una sola plataforma.</h1>
-      <p class="subtitulo">Cognicion integra expediente clinico, evaluacion clinica, rehabilitacion cognitiva, investigacion, analisis estadistico e inteligencia artificial en un ecosistema disenado para profesionales de la salud mental.</p>
+      <img class="hero-logo" src="assets/logo-cognicion.png" alt="Cognición">
+      <span class="eyebrow">PLATAFORMA MEDICA BASADA EN EVIDENCIA</span>
+      <h1>COGNICIÓN</h1>
+      <p class="subtitulo">Tecnologia clinica para una medicina mas precisa, mas humana y basada en evidencia.</p>
+      <div class="scope-strip" aria-label="Areas de aplicacion">
+        <span>Psiquiatria</span>
+        <span>Medicina interna</span>
+        <span>Medicina general</span>
+        <span>Psicologia</span>
+        <span>Especialidades medicas</span>
+      </div>
       <div class="acciones">
         <a class="btn btn-primary" href="login.html">Iniciar sesion</a>
         <a class="btn btn-secondary" href="registro.html">Crear cuenta</a>
@@ -596,10 +622,10 @@ footer {
     <div class="cap-strip">
       <span>Expediente clinico electronico</span>
       <span>Evaluacion clinica</span>
+      <span>Seguimiento medico</span>
       <span>Rehabilitacion cognitiva</span>
       <span>Investigacion clinica</span>
       <span>Analisis estadistico</span>
-      <span>IA clinica</span>
     </div>
   </section>
 
@@ -644,7 +670,7 @@ footer {
   <section id="investigacion" class="section">
     <div class="section-inner philosophy">
       <h2>Nuestra filosofia</h2>
-      <p>La salud mental necesita herramientas que conecten la practica clinica con la evidencia cientifica. Cognicion nace para integrar datos clinicos, evaluacion objetiva, investigacion y tecnologia en un entorno claro, seguro y util para profesionales.</p>
+      <p>La medicina necesita herramientas que conecten la practica clinica con la evidencia cientifica. Cognicion integra datos, evaluacion, seguimiento, investigacion y tecnologia en un entorno claro, seguro y util para profesionales, con una fortaleza especial en salud mental.</p>
     </div>
   </section>
 
@@ -665,7 +691,8 @@ footer {
 </main>
 
 <footer id="contacto">
-  Cognicion · Ciencia · Evidencia · Salud mental
+  Cognición · Ciencia · Evidencia · Medicina humana
 </footer>
+  <script type="module" src="js/reportes.js"></script>
 </body>
 </html>

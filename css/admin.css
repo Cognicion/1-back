@@ -325,6 +325,97 @@ select:disabled {
   line-height: 1.35;
 }
 
+.lista-reportes-admin {
+  display: grid;
+  gap: 14px;
+  margin-top: 18px;
+}
+
+.reporte-admin-card {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid #1f2937;
+  border-radius: 16px;
+  background:
+    linear-gradient(135deg, rgba(14, 165, 233, 0.08), transparent 36%),
+    #0b1120;
+}
+
+.reporte-admin-top,
+.reporte-admin-meta,
+.reporte-admin-acciones {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.reporte-admin-card h3 {
+  margin: 0;
+  color: #e5e7eb;
+}
+
+.reporte-admin-card p {
+  margin: 0;
+  color: #cbd5e1;
+  font-size: 14px;
+  line-height: 1.45;
+  white-space: pre-wrap;
+}
+
+.reporte-admin-tipo,
+.reporte-admin-estado,
+.reporte-admin-meta span {
+  padding: 7px 10px;
+  border: 1px solid #1f2937;
+  border-radius: 999px;
+  background: #020617;
+  color: #93c5fd;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.reporte-admin-estado.estado-nuevo {
+  color: #67e8f9;
+}
+
+.reporte-admin-estado.estado-en_revision {
+  color: #fde68a;
+}
+
+.reporte-admin-estado.estado-resuelto {
+  color: #86efac;
+}
+
+.reporte-admin-meta span {
+  color: #94a3b8;
+  font-weight: 500;
+}
+
+.reporte-admin-acciones {
+  justify-content: flex-end;
+}
+
+.reporte-admin-acciones select {
+  min-width: 160px;
+  padding: 10px 12px;
+  border: 1px solid #334155;
+  border-radius: 12px;
+  background: #020617;
+  color: #e5e7eb;
+}
+
+.reporte-admin-acciones button {
+  border: none;
+  border-radius: 10px;
+  padding: 9px 12px;
+  background: #2563eb;
+  color: white;
+  cursor: pointer;
+  font-weight: 700;
+}
+
 @media (max-width: 1100px) {
   .grid-resumen,
   .filtros-auditoria {
