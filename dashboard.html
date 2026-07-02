@@ -106,8 +106,10 @@ header {
 
 .brand-subtitle {
     margin-top: 4px;
+    max-width: 560px;
     color: var(--muted);
     font-size: 0.92rem;
+    line-height: 1.35;
 }
 
 .logout-button,
@@ -285,6 +287,10 @@ header {
     padding: 28px 0;
 }
 
+.activity-center {
+    padding-top: 38px;
+}
+
 .activity-grid {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -415,11 +421,99 @@ header {
     padding-top: 28px;
 }
 
+.module-note {
+    display: block;
+    margin-top: 10px;
+    color: #7f8da3;
+    font-size: 0.82rem;
+}
+
+.proximamente-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 2147482600;
+    display: grid;
+    place-items: center;
+    padding: 22px;
+    background:
+        radial-gradient(circle at 65% 22%, rgba(56, 189, 248, 0.16), transparent 34%),
+        rgba(2, 6, 23, 0.74);
+    backdrop-filter: blur(16px);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.22s ease;
+}
+
+.proximamente-overlay.abierto {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.proximamente-modal {
+    width: min(560px, calc(100vw - 32px));
+    padding: 30px;
+    border: 1px solid rgba(125, 211, 252, 0.24);
+    border-radius: 28px;
+    background:
+        linear-gradient(145deg, rgba(15, 23, 42, 0.96), rgba(5, 10, 18, 0.98)),
+        #0b1120;
+    box-shadow: 0 34px 90px rgba(0, 0, 0, 0.48), 0 0 50px rgba(56, 189, 248, 0.12);
+    transform: translateY(16px) scale(0.98);
+    transition: transform 0.24s ease;
+}
+
+.proximamente-overlay.abierto .proximamente-modal {
+    transform: translateY(0) scale(1);
+}
+
+.proximamente-modal h2 {
+    margin: 10px 0 8px;
+    font-size: clamp(1.8rem, 4vw, 2.5rem);
+}
+
+.proximamente-modal p {
+    margin: 0;
+    color: var(--muted);
+    line-height: 1.6;
+}
+
+.proximamente-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 24px;
+}
+
 footer {
     margin-top: 42px;
     padding: 34px 0 48px;
     color: #7f8da3;
     border-top: 1px solid var(--line);
+}
+
+.dashboard-footer {
+    display: grid;
+    justify-items: center;
+    gap: 12px;
+    text-align: center;
+}
+
+.footer-signature {
+    color: #8fa2bd;
+    font-size: 0.88rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.footer-slogan {
+    max-width: 880px;
+    margin: 0;
+    color: #c7d2e2;
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: clamp(1rem, 1.8vw, 1.28rem);
+    font-style: italic;
+    line-height: 1.65;
+    text-wrap: balance;
 }
 
 @keyframes pageIn {
@@ -496,7 +590,7 @@ footer {
             <img src="assets/favicon-cognicion.png" alt="Cognición">
             <div>
                 <div class="brand-name">COGNICIÓN</div>
-                <div class="brand-subtitle">Ciencia, evidencia y medicina humana.</div>
+                <div class="brand-subtitle">Tecnologia clinica para una medicina mas precisa, mas humana y basada en evidencia.</div>
             </div>
         </div>
 
@@ -505,84 +599,42 @@ footer {
 </header>
 
 <main class="app-shell">
-    <section class="hero">
-        <div class="hero-grid">
-            <div class="hero-copy">
-                <div class="eyebrow">Plataforma medica digital</div>
-                <h1>COGNICIÓN</h1>
-                <p class="hero-subtitle">
-                    Tecnologia clinica para una medicina mas precisa, mas humana y basada en evidencia.
-                </p>
-                <div class="medical-scope" aria-label="Alcance medico de Cognición">
-                    <span>Psiquiatria</span>
-                    <span>Medicina interna</span>
-                    <span>Medicina general</span>
-                    <span>Psicologia</span>
-                    <span>Especialidades medicas</span>
-                </div>
-                <h2 id="bienvenida">Cargando...</h2>
-                <p id="fraseClinica" class="clinical-phrase">La evidencia guia las decisiones clinicas.</p>
-            </div>
-
-            <aside class="hero-side" aria-label="Panel superior">
-                <article class="info-card">
-                    <span class="badge">Actividad</span>
-                    <h3>Actividad reciente</h3>
-                    <p>Consulta tus ultimos movimientos.</p>
-                </article>
-                <article class="info-card">
-                    <span class="badge">Cuidado</span>
-                    <h3>Seguimiento medico</h3>
-                    <p>Visualiza evolucion, tratamientos, mediciones y herramientas utilizadas.</p>
-                </article>
-                <article class="info-card">
-                    <span class="badge">HealthTech</span>
-                    <h3>Herramientas disponibles</h3>
-                    <p>Explora modulos clinicos, analiticos, educativos y de acompanamiento.</p>
-                </article>
-            </aside>
-        </div>
-    </section>
-
     <section class="activity-center" aria-labelledby="actividadTitulo">
         <div class="section-heading">
             <div>
                 <span class="section-kicker">Centro de actividad</span>
                 <h2 id="actividadTitulo">Tu espacio de trabajo</h2>
+                <p id="bienvenida" class="clinical-phrase">Cargando...</p>
             </div>
-            <p class="section-description">Accesos pensados para retomar trabajo medico sin friccion.</p>
+            <p class="section-description">Accesos pensados para retomar tu trabajo medico sin friccion.</p>
         </div>
 
         <div class="activity-grid">
             <article class="activity-card">
-                <span class="badge">Continuar</span>
-                <h3>Continuar</h3>
-                <p>Modulo utilizado recientemente.</p>
+                <span class="badge">Principal</span>
+                <h3>Mi Salud</h3>
+                <p>Consulta tratamiento, evolucion clinica, seguimiento, agenda y herramientas de acompanamiento.</p>
                 <div class="card-actions">
-                    <button class="primary-button" onclick="window.location.href='medico.html'">Continuar</button>
+                    <button class="primary-button" onclick="window.location.href='mi-salud.html'">Abrir modulo</button>
                 </div>
             </article>
 
             <article class="activity-card">
-                <span class="badge">Hoy</span>
-                <h3>Recomendado para hoy</h3>
-                <p>Sugerencias clinicas iniciales.</p>
-                <div class="activity-list">
-                    <span>Consultar expediente</span>
-                    <span>Revisar evolucion</span>
-                    <span>Aplicar escala clinica</span>
-                    <span>Analizar seguimiento</span>
+                <span class="badge">Medico</span>
+                <h3>Panel Medico</h3>
+                <p>Gestiona pacientes, notas clinicas, agenda, tratamientos, biblioteca y reportes de evolucion.</p>
+                <div class="card-actions">
+                    <button class="secondary-button" onclick="window.location.href='medico.html'">Abrir panel</button>
                 </div>
             </article>
 
             <article class="activity-card">
-                <span class="badge">Novedades</span>
-                <h3>Nuevas funciones llegaran proximamente</h3>
-                <div class="activity-list">
-                    <span>IA clinica</span>
-                    <span>Telemedicina</span>
-                    <span>Generacion automatica de notas</span>
-                    <span>Laboratorio e imagen</span>
+                <span class="badge">En desarrollo Alfa</span>
+                <h3>SOFIA</h3>
+                <p>Asistente clinico con inteligencia artificial para redaccion, orientacion medica, dictado por voz y tareas administrativas.</p>
+                <small class="module-note">SOFIA no sustituye el juicio clinico.</small>
+                <div class="card-actions">
+                    <button class="secondary-button" onclick="mostrarProximamente('SOFIA', 'SOFIA esta en desarrollo Alfa. Estamos preparando un asistente clinico para apoyar redaccion, orientacion medica, dictado por voz y tareas administrativas sin sustituir el juicio clinico.')">Abrir SOFIA</button>
                 </div>
             </article>
         </div>
@@ -632,18 +684,6 @@ footer {
             <article class="module-card">
                 <div class="module-top">
                     <div class="module-icon">+</div>
-                    <span class="badge">Disponible</span>
-                </div>
-                <h3>Expediente</h3>
-                <p>Informacion medica, diagnosticos, tratamiento, estudios y seguimiento longitudinal.</p>
-                <div class="card-actions">
-                    <button class="secondary-button" onclick="window.location.href='expediente.html'">Abrir expediente</button>
-                </div>
-            </article>
-
-            <article class="module-card">
-                <div class="module-top">
-                    <div class="module-icon">+</div>
                     <span class="badge">Medico</span>
                 </div>
                 <h3>Estadistica clinica</h3>
@@ -663,18 +703,6 @@ footer {
             </div>
         </div>
         <div class="module-grid">
-            <article class="module-card">
-                <div class="module-top">
-                    <div class="module-icon">+</div>
-                    <span class="badge">Paciente</span>
-                </div>
-                <h3>Mi Salud</h3>
-                <p>Consulta tratamiento, registra estado diario, revisa metas y da seguimiento a tu salud.</p>
-                <div class="card-actions">
-                    <button class="primary-button" onclick="window.location.href='mi-salud.html'">Abrir modulo</button>
-                </div>
-            </article>
-
             <article class="module-card">
                 <div class="module-top">
                     <div class="module-icon">+</div>
@@ -729,7 +757,7 @@ footer {
                 <h3>Resultados / Evolucion</h3>
                 <p>Visualiza desempeno, errores, tiempos de reaccion y cambios a lo largo del seguimiento.</p>
                 <div class="card-actions">
-                    <button class="secondary-button" onclick="window.location.href='estadistica.html'">Ver progreso</button>
+                    <button class="secondary-button" onclick="mostrarProximamente('Proximamente', 'Estamos desarrollando este modulo para visualizar evolucion clinica, resultados de rehabilitacion cognitiva, graficas de progreso e indicadores de seguimiento.')">Ver progreso</button>
                 </div>
             </article>
         </div>
@@ -751,7 +779,7 @@ footer {
                 <h3>Psicoeducacion</h3>
                 <p>Informacion y recomendaciones basadas en evidencia para pacientes y familiares.</p>
                 <div class="card-actions">
-                    <button class="ghost-button">Para pacientes</button>
+                    <button class="ghost-button" onclick="mostrarProximamente('Proximamente', 'Biblioteca de recursos para pacientes, familiares y profesionales de la salud.')">Para pacientes</button>
                 </div>
             </article>
 
@@ -763,15 +791,29 @@ footer {
                 <h3>Lecturas</h3>
                 <p>Lecturas recomendadas sobre salud, evaluacion clinica, autocuidado y acompanamiento terapeutico.</p>
                 <div class="card-actions">
-                    <button class="ghost-button">Leer</button>
+                    <button class="ghost-button" onclick="mostrarProximamente('Proximamente', 'Biblioteca cientifica con guias clinicas, articulos, consensos y material academico.')">Leer</button>
                 </div>
             </article>
         </div>
     </section>
 </main>
 
+<div id="proximamenteOverlay" class="proximamente-overlay" aria-hidden="true">
+    <section class="proximamente-modal" role="dialog" aria-modal="true" aria-labelledby="proximamenteTitulo">
+        <span class="badge">Modulo no disponible</span>
+        <h2 id="proximamenteTitulo">Proximamente</h2>
+        <p id="proximamenteDescripcion">Estamos desarrollando este modulo.</p>
+        <div class="proximamente-actions">
+            <button class="primary-button" type="button" onclick="cerrarProximamente()">Volver al Dashboard</button>
+        </div>
+    </section>
+</div>
+
 <footer>
-    <div class="app-shell">Cognición · Ciencia · Evidencia · Medicina humana</div>
+    <div class="app-shell dashboard-footer">
+        <div class="footer-signature">Cognicion &middot; Ciencia &middot; Evidencia &middot; Medicina humana</div>
+        <p class="footer-slogan">Asi como la cognicion integra multiples procesos mentales para comprender al individuo, Cognicion integra multiples herramientas tecnologicas para comprender al paciente.</p>
+    </div>
 </footer>
 
 <script type="module" src="js/dashboard.js"></script>

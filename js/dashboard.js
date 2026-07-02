@@ -30,6 +30,33 @@ function mostrarFraseClinicaAleatoria() {
 
 mostrarFraseClinicaAleatoria();
 
+window.mostrarProximamente = function(titulo = "Proximamente", descripcion = "Estamos desarrollando este modulo.") {
+  const overlay = document.getElementById("proximamenteOverlay");
+  const tituloElemento = document.getElementById("proximamenteTitulo");
+  const descripcionElemento = document.getElementById("proximamenteDescripcion");
+
+  if (tituloElemento) tituloElemento.textContent = titulo;
+  if (descripcionElemento) descripcionElemento.textContent = descripcion;
+  overlay?.classList.add("abierto");
+  overlay?.setAttribute("aria-hidden", "false");
+};
+
+window.cerrarProximamente = function() {
+  const overlay = document.getElementById("proximamenteOverlay");
+  overlay?.classList.remove("abierto");
+  overlay?.setAttribute("aria-hidden", "true");
+};
+
+document.getElementById("proximamenteOverlay")?.addEventListener("click", (evento) => {
+  if (evento.target.id === "proximamenteOverlay") {
+    window.cerrarProximamente();
+  }
+});
+
+document.addEventListener("keydown", (evento) => {
+  if (evento.key === "Escape") window.cerrarProximamente();
+});
+
 onAuthStateChanged(auth, async (user) => {
   if (!user) {
     window.location.href = "login.html";
