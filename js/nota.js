@@ -674,12 +674,7 @@ function aplicarNotaAutomatica() {
   anexarTextoGenerado("analisis", generada.comentarioClinico, "Comentario clinico sugerido");
   anexarTextoGenerado("plan", generada.planSugerido, "Plan terapeutico sugerido");
 
-  if (generada.cie10Sugeridos?.length) {
-    const impresion = generada.cie10Sugeridos
-      .map((dx) => `${dx.codigo} - ${dx.nombre} (${dx.certeza || "sugerido"}). ${dx.razon || ""}`.trim())
-      .join("\n");
-    anexarTextoGenerado("analisis", `Impresion diagnostica sugerida:\n${impresion}`, "Impresion diagnostica sugerida");
-  }
+  anexarTextoGenerado("analisis", generada.impresionDiagnostica, "Impresion diagnostica sugerida");
 
   const riesgos = textoRiesgosAutomaticos(generada.riesgosDetectados);
   if (riesgos) anexarTextoGenerado("analisis", `Datos de alarma o riesgo detectados:\n${riesgos}`, "Riesgo sugerido");
