@@ -12,7 +12,10 @@ import {
   getDocs,
   doc,
   getDoc,
-  updateDoc
+  updateDoc,
+  setDoc,
+  query,
+  orderBy
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const ADMIN_UID = "NQ0CU5PSDBUgVrk56sjPEVhOs2D3";
@@ -20,8 +23,12 @@ const ADMIN_UID = "NQ0CU5PSDBUgVrk56sjPEVhOs2D3";
 iniciarMonitoreoSesion("Panel medico");
 
 let pacientesGlobal = [];
+let uidMedicoActual = "";
+let carpetasMedico = [];
 const STORAGE_ORDEN_PACIENTES = "cognicion.medico.ordenPacientes";
 let ordenPacientesActual = cargarPreferenciaOrdenPacientes();
+const STORAGE_FILTRO_CARPETA = "cognicion.medico.filtroCarpeta";
+let filtroCarpetaActual = cargarPreferenciaFiltroCarpeta();
 const FILTROS_ATENCION_DEFAULT = ["hospitalizados", "privado", "hpfba", "hpijnn", "otra"];
 const STORAGE_FILTROS_ATENCION = "cognicion.medico.filtrosAtencion";
 let filtrosAtencionActuales = cargarPreferenciasFiltroAtencion();
@@ -29,6 +36,7 @@ let filtrosAtencionActuales = cargarPreferenciasFiltroAtencion();
 const COLUMNAS_PACIENTES = [
   { key: "cama", label: "Cama", cssVar: "--col-cama" },
   { key: "nombre", label: "Nombre", cssVar: "--col-nombre", obligatoria: true },
+  { key: "carpeta", label: "Carpeta", cssVar: "--col-carpeta" },
   { key: "ingreso", label: "Ingreso", cssVar: "--col-ingreso" },
   { key: "estancia", label: "Estancia", cssVar: "--col-estancia" },
   { key: "edad", label: "Edad", cssVar: "--col-edad" },
@@ -41,6 +49,7 @@ const COLUMNAS_PACIENTES = [
 ];
 const COLUMNAS_PACIENTES_DEFAULT = COLUMNAS_PACIENTES.map((columna) => columna.key);
 const STORAGE_COLUMNAS_PACIENTES = "cognicion.medico.columnasPacientes";
+const STORAGE_COLUMNAS_PACIENTES_VERSION = "cognicion.medico.columnasPacientes.version";
 let columnasPacientesVisibles = cargarPreferenciasColumnasPacientes();
 
 const INSTITUCIONES_ATENCION = {
@@ -81,6 +90,7 @@ onAuthStateChanged(auth, async (user) => {
   if (!accesoPermitido) return;
 
   document.body.classList.remove("bloqueado");
+  uidMedicoActual = user.uid;
 
   // Mostrar el botón del Centro de Control solo al administrador
   const btnAdmin = document.getElementById("btnAdmin");
@@ -111,7 +121,9 @@ onAuthStateChanged(auth, async (user) => {
 
   inicializarFiltroAtencion();
   inicializarColumnasPacientes();
+  inicializarCarpetasPacientes();
 
+  await cargarCarpetasMedico(user.uid);
   await cargarPacientes(user.uid);
 });
 
@@ -146,6 +158,209 @@ async function cargarPerfilMedico(user) {
     datos.nombre || "Médico sin nombre";
 
   return true;
+}
+
+function escaparHTML(valor) {
+  return String(valor || "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+function slugCarpeta(nombre = "") {
+  return String(nombre || "sin-carpeta")
+    .trim()
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "") || "sin-carpeta";
+}
+
+function obtenerCarpetasPaciente(paciente = {}) {
+  return Array.isArray(paciente.carpetas)
+    ? paciente.carpetas.filter(Boolean)
+    : [];
+}
+
+function obtenerCarpetaPrincipal(paciente = {}) {
+  return obtenerCarpetasPaciente(paciente)[0] || "";
+}
+
+async function cargarCarpetasMedico(uidMedico = uidMedicoActual) {
+  if (!uidMedico) return;
+
+  const snap = await getDocs(query(
+    collection(db, "usuarios", uidMedico, "carpetasPacientes"),
+    orderBy("nombre", "asc")
+  ));
+
+  carpetasMedico = snap.docs
+    .map((docCarpeta) => docCarpeta.data()?.nombre || "")
+    .filter(Boolean);
+
+  renderizarSelectorFiltroCarpetas();
+  renderizarListaCarpetasMedico();
+}
+
+function renderizarSelectorFiltroCarpetas() {
+  const selector = document.getElementById("filtroCarpetaMedico");
+  if (!selector) return;
+
+  selector.innerHTML = `
+    <option value="">Todas las carpetas</option>
+    <option value="__sin_carpeta__">Sin carpeta</option>
+    ${carpetasMedico.map((carpeta) => `
+      <option value="${escaparHTML(carpeta)}">${escaparHTML(carpeta)}</option>
+    `).join("")}
+  `;
+  selector.value = filtroCarpetaActual;
+}
+
+function renderizarListaCarpetasMedico() {
+  const lista = document.getElementById("listaCarpetasMedico");
+  if (!lista) return;
+
+  if (carpetasMedico.length === 0) {
+    lista.innerHTML = "<p>Sin carpetas creadas.</p>";
+    return;
+  }
+
+  lista.innerHTML = carpetasMedico.map((carpeta) => {
+    const total = pacientesGlobal.filter((paciente) =>
+      obtenerCarpetasPaciente(paciente).includes(carpeta)
+    ).length;
+    return `
+      <button type="button" class="carpeta-chip-medico" data-filtro-carpeta="${escaparHTML(carpeta)}">
+        <span>${escaparHTML(carpeta)}</span>
+        <small>${total}</small>
+      </button>
+    `;
+  }).join("");
+
+  lista.querySelectorAll("[data-filtro-carpeta]").forEach((boton) => {
+    boton.addEventListener("click", () => {
+      filtroCarpetaActual = boton.dataset.filtroCarpeta || "";
+      guardarPreferenciaFiltroCarpeta();
+      renderizarSelectorFiltroCarpetas();
+      actualizarTextoCarpetasPacientes();
+      filtrarPacientes();
+      cerrarCarpetasPacientes();
+    });
+  });
+}
+
+function opcionesCarpetasHTML(seleccionada = "") {
+  return `
+    <option value="" ${!seleccionada ? "selected" : ""}>Sin carpeta</option>
+    ${carpetasMedico.map((carpeta) => `
+      <option value="${escaparHTML(carpeta)}" ${carpeta === seleccionada ? "selected" : ""}>
+        ${escaparHTML(carpeta)}
+      </option>
+    `).join("")}
+  `;
+}
+
+async function crearCarpetaMedico() {
+  const input = document.getElementById("nuevaCarpetaMedico");
+  const nombre = input?.value?.trim() || "";
+
+  if (!nombre) {
+    alert("Escribe el nombre de la carpeta.");
+    return;
+  }
+
+  if (!uidMedicoActual) return;
+
+  await setDoc(doc(db, "usuarios", uidMedicoActual, "carpetasPacientes", slugCarpeta(nombre)), {
+    nombre,
+    fechaActualizacion: new Date().toISOString()
+  }, { merge: true });
+
+  if (input) input.value = "";
+  filtroCarpetaActual = nombre;
+  guardarPreferenciaFiltroCarpeta();
+  await cargarCarpetasMedico(uidMedicoActual);
+  actualizarTextoCarpetasPacientes();
+  filtrarPacientes();
+}
+
+function cargarPreferenciaFiltroCarpeta() {
+  try {
+    return localStorage.getItem(STORAGE_FILTRO_CARPETA) || "";
+  } catch (error) {
+    console.warn("No se pudo cargar el filtro de carpeta:", error);
+    return "";
+  }
+}
+
+function guardarPreferenciaFiltroCarpeta() {
+  try {
+    localStorage.setItem(STORAGE_FILTRO_CARPETA, filtroCarpetaActual);
+  } catch (error) {
+    console.warn("No se pudo guardar el filtro de carpeta:", error);
+  }
+}
+
+function actualizarTextoCarpetasPacientes() {
+  const boton = document.getElementById("btnCarpetasPacientes");
+  if (!boton) return;
+
+  if (!filtroCarpetaActual) {
+    boton.textContent = "Carpetas";
+  } else if (filtroCarpetaActual === "__sin_carpeta__") {
+    boton.textContent = "Carpeta: sin carpeta";
+  } else {
+    boton.textContent = `Carpeta: ${filtroCarpetaActual}`;
+  }
+}
+
+function abrirCarpetasPacientes() {
+  const modal = document.getElementById("modalCarpetasPacientes");
+  if (!modal) return;
+
+  renderizarSelectorFiltroCarpetas();
+  renderizarListaCarpetasMedico();
+  modal.classList.add("abierto");
+  modal.setAttribute("aria-hidden", "false");
+}
+
+function cerrarCarpetasPacientes() {
+  const modal = document.getElementById("modalCarpetasPacientes");
+  if (!modal) return;
+
+  modal.classList.remove("abierto");
+  modal.setAttribute("aria-hidden", "true");
+}
+
+function aplicarFiltroCarpetaDesdeModal() {
+  filtroCarpetaActual = document.getElementById("filtroCarpetaMedico")?.value || "";
+  guardarPreferenciaFiltroCarpeta();
+  actualizarTextoCarpetasPacientes();
+  filtrarPacientes();
+  cerrarCarpetasPacientes();
+}
+
+function inicializarCarpetasPacientes() {
+  actualizarTextoCarpetasPacientes();
+
+  document.getElementById("btnCarpetasPacientes")?.addEventListener("click", abrirCarpetasPacientes);
+  document.getElementById("cerrarCarpetasPacientes")?.addEventListener("click", cerrarCarpetasPacientes);
+  document.getElementById("crearCarpetaMedico")?.addEventListener("click", crearCarpetaMedico);
+  document.getElementById("aplicarFiltroCarpetaMedico")?.addEventListener("click", aplicarFiltroCarpetaDesdeModal);
+  document.getElementById("limpiarFiltroCarpetaMedico")?.addEventListener("click", () => {
+    filtroCarpetaActual = "";
+    guardarPreferenciaFiltroCarpeta();
+    renderizarSelectorFiltroCarpetas();
+    actualizarTextoCarpetasPacientes();
+    filtrarPacientes();
+    cerrarCarpetasPacientes();
+  });
+  document.getElementById("modalCarpetasPacientes")?.addEventListener("click", (e) => {
+    if (e.target.id === "modalCarpetasPacientes") cerrarCarpetasPacientes();
+  });
 }
 
 async function cargarPacientes(uidMedico) {
@@ -196,6 +411,7 @@ async function cargarPacientes(uidMedico) {
   }
 
   filtrarPacientes();
+  renderizarListaCarpetasMedico();
   calcularEstadisticas(pacientesGlobal);
   renderizarGraficasMedico(pacientesGlobal);
 }
@@ -615,11 +831,17 @@ function mostrarPacientes(pacientes) {
     const proximaConsulta = paciente.proximaConsulta || "Sin programar";
     const medicoAdscrito = obtenerMedicoAdscritoEncargado(paciente);
     const residente = obtenerResidenteEncargado(paciente);
+    const carpetaPrincipal = obtenerCarpetaPrincipal(paciente);
 
     lista.innerHTML += `
       <a class="fila-paciente" href="paciente.html?id=${paciente.id}">
         <span class="paciente-dato cama-columna" data-col-key="cama">${cama}</span>
         <span class="paciente-nombre" data-col-key="nombre">${nombre}</span>
+        <span class="paciente-dato carpeta-columna" data-col-key="carpeta">
+          <select class="selector-carpeta" data-paciente-id="${paciente.id}" aria-label="Carpeta">
+            ${opcionesCarpetasHTML(carpetaPrincipal)}
+          </select>
+        </span>
         <span class="paciente-dato" data-col-key="ingreso">${fechaIngreso}</span>
         <span class="paciente-dato" data-col-key="estancia">${diasEstancia}</span>
         <span class="paciente-dato" data-col-key="edad">${edad}</span>
@@ -650,6 +872,13 @@ function filtrarPacientes() {
   const texto = buscador ? buscador.value.toLowerCase() : "";
 
   const filtrados = pacientesGlobal.filter((paciente) => {
+    const carpetasPaciente = obtenerCarpetasPaciente(paciente);
+    const coincideCarpeta = !filtroCarpetaActual ||
+      (filtroCarpetaActual === "__sin_carpeta__" && carpetasPaciente.length === 0) ||
+      carpetasPaciente.includes(filtroCarpetaActual);
+
+    if (!coincideCarpeta) return false;
+
     const categoriasAtencion = obtenerCategoriasAtencion(paciente);
     const coincideFiltroAtencion = [...categoriasAtencion].some((categoria) =>
       filtrosAtencionActuales.has(categoria)
@@ -663,8 +892,9 @@ function filtrarPacientes() {
     const medicoAdscrito = obtenerMedicoAdscritoEncargado(paciente).toLowerCase();
     const residente = obtenerResidenteEncargado(paciente).toLowerCase();
     const atencion = obtenerAtencionEn(paciente).toLowerCase();
+    const carpeta = obtenerCarpetaPrincipal(paciente).toLowerCase();
     const diagnostico = formatearDiagnostico(obtenerDiagnosticosPaciente(paciente).principal).toLowerCase();
-    return [nombre, cama, fechaIngreso, medicoAdscrito, residente, atencion, diagnostico].some((valor) => valor.includes(texto));
+    return [nombre, cama, fechaIngreso, medicoAdscrito, residente, atencion, carpeta, diagnostico].some((valor) => valor.includes(texto));
   });
 
   mostrarPacientes(ordenarPacientes(filtrados));
@@ -726,6 +956,11 @@ function cargarPreferenciasColumnasPacientes() {
     const visibles = columnas.filter((columna) => clavesValidas.has(columna));
 
     if (!visibles.includes("nombre")) visibles.push("nombre");
+    if (localStorage.getItem(STORAGE_COLUMNAS_PACIENTES_VERSION) !== "carpetas-v1") {
+      if (!visibles.includes("carpeta")) visibles.push("carpeta");
+      localStorage.setItem(STORAGE_COLUMNAS_PACIENTES_VERSION, "carpetas-v1");
+      localStorage.setItem(STORAGE_COLUMNAS_PACIENTES, JSON.stringify(visibles));
+    }
 
     return new Set(visibles.length ? visibles : COLUMNAS_PACIENTES_DEFAULT);
   } catch (error) {
@@ -958,6 +1193,7 @@ function inicializarFiltroAtencion() {
     if (e.key === "Escape") {
       cerrarFiltroAtencion();
       cerrarColumnasPacientes();
+      cerrarCarpetasPacientes();
     }
   });
 }
@@ -1039,7 +1275,7 @@ function renderizarGraficasMedico(pacientes) {
 }
 
 document.addEventListener("click", (e) => {
-  if (e.target.closest(".selector-atencion")) {
+  if (e.target.closest(".selector-atencion, .selector-carpeta")) {
     e.preventDefault();
     e.stopPropagation();
     return;
@@ -1063,13 +1299,42 @@ document.addEventListener("click", (e) => {
 
 ["pointerdown", "mousedown", "mouseup", "touchstart", "keydown"].forEach((evento) => {
   document.addEventListener(evento, (e) => {
-    if (!e.target.closest(".selector-atencion")) return;
+    if (!e.target.closest(".selector-atencion, .selector-carpeta")) return;
 
     e.stopPropagation();
   }, true);
 });
 
 document.addEventListener("change", async (e) => {
+  const selectorCarpeta = e.target.closest(".selector-carpeta");
+  if (selectorCarpeta) {
+    e.preventDefault();
+    e.stopPropagation();
+
+    const pacienteId = selectorCarpeta.dataset.pacienteId;
+    const carpeta = selectorCarpeta.value;
+    const paciente = pacientesGlobal.find((item) => item.id === pacienteId);
+    const anterior = paciente ? obtenerCarpetaPrincipal(paciente) : "";
+
+    if (!pacienteId) return;
+
+    try {
+      const carpetas = carpeta ? [carpeta] : [];
+      await updateDoc(doc(db, "usuarios", pacienteId), { carpetas });
+
+      if (paciente) {
+        paciente.carpetas = carpetas;
+      }
+
+      renderizarListaCarpetasMedico();
+      filtrarPacientes();
+    } catch (error) {
+      selectorCarpeta.value = anterior;
+      alert("No se pudo mover el paciente de carpeta: " + error.message);
+    }
+    return;
+  }
+
   const selector = e.target.closest(".selector-atencion");
   if (!selector) return;
 

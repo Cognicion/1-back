@@ -69,10 +69,22 @@ let escalasAsignadasCache = new Map();
 let diagnosticosCatalogoActual = [];
 let diagnosticoReemplazoIndex = null;
 let intervaloEstanciaPaciente = null;
+let textoIndicacionesEditado = false;
+let apuntesMedicoPacienteCache = [];
+let catalogoMedicosFirmasIndicacionesCache = [];
+let indicacionesPacienteCache = [];
 const CLAVE_CATALOGO_MANUAL = "cognicion_catalogo_diagnosticos_manual";
 let catalogoManualDiagnosticos = cargarCatalogoManualDiagnosticos();
 const CLAVE_MEDICAMENTOS_MANUALES = "cognicion_catalogo_medicamentos_manual";
 let catalogoManualMedicamentos = cargarCatalogoManualMedicamentos();
+const CLAVE_CATALOGOS_INDICACIONES = "cognicion_catalogos_indicaciones";
+const CATALOGOS_INDICACIONES_DEFAULT = {
+  dieta: ["NORMAL", "BLANDA", "LIQUIDA", "HIPOSODICA", "DIABETICA"],
+  alergias: ["Negadas", "No conocidas"],
+  riesgoCaida: ["BAJO", "MEDIO", "ALTO"],
+  vigilancia: ["RIESGO SUICIDA", "RIESGO HETEROAGRESIVO", "RIESGO DE FUGA", "RIESGO DE AUTOLESION"]
+};
+let catalogosIndicaciones = cargarCatalogosIndicaciones();
 
 iniciarMonitoreoSesion("Expediente paciente");
 
@@ -123,6 +135,67 @@ function catalogoMedicamentosTratamiento() {
     ...MEDICAMENTOS_PRESENTACIONES,
     ...catalogoManualMedicamentos
   ];
+}
+
+function cargarCatalogosIndicaciones() {
+  try {
+    const guardado = localStorage.getItem(CLAVE_CATALOGOS_INDICACIONES);
+    const datos = guardado ? JSON.parse(guardado) : {};
+
+    return Object.fromEntries(
+      Object.entries(CATALOGOS_INDICACIONES_DEFAULT).map(([clave, valores]) => [
+        clave,
+        Array.from(new Set([...(Array.isArray(datos[clave]) ? datos[clave] : []), ...valores]))
+      ])
+    );
+  } catch (error) {
+    console.warn("No se pudieron cargar los catalogos de indicaciones", error);
+    return { ...CATALOGOS_INDICACIONES_DEFAULT };
+  }
+}
+
+function guardarCatalogosIndicaciones() {
+  localStorage.setItem(CLAVE_CATALOGOS_INDICACIONES, JSON.stringify(catalogosIndicaciones));
+}
+
+function renderizarCatalogosIndicaciones() {
+  const mapas = {
+    dieta: "catalogoIndicacionesDieta",
+    alergias: "catalogoIndicacionesAlergias",
+    riesgoCaida: "catalogoIndicacionesRiesgoCaida",
+    vigilancia: "catalogoIndicacionesVigilancia"
+  };
+
+  Object.entries(mapas).forEach(([clave, id]) => {
+    const lista = document.getElementById(id);
+    if (!lista) return;
+
+    lista.innerHTML = (catalogosIndicaciones[clave] || [])
+      .map((valor) => `<option value="${escaparHTML(valor)}"></option>`)
+      .join("");
+  });
+}
+
+function agregarValorCatalogoIndicaciones(clave, inputId) {
+  const valor = valorCampo(inputId).trim();
+
+  if (!valor) {
+    alert("Escribe un valor para agregarlo al catalogo.");
+    return;
+  }
+
+  const actuales = catalogosIndicaciones[clave] || [];
+  const existe = actuales.some((item) => item.toLowerCase() === valor.toLowerCase());
+
+  if (!existe) {
+    catalogosIndicaciones[clave] = [...actuales, valor].sort((a, b) =>
+      a.localeCompare(b, "es", { sensitivity: "base" })
+    );
+    guardarCatalogosIndicaciones();
+    renderizarCatalogosIndicaciones();
+  }
+
+  alert("Valor agregado al catalogo.");
 }
 
 function formatearDiagnostico(diagnostico) {
@@ -312,6 +385,254 @@ function ponerValor(id, valor) {
   const campo = document.getElementById(id);
   if (campo) campo.value = valor || "";
 }
+
+function normalizarTextoBusqueda(valor = "") {
+  return String(valor || "")
+    .trim()
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+}
+
+function referenciaCatalogoMedicosFirmasIndicaciones() {
+  const uidMedico = auth.currentUser?.uid;
+  if (!uidMedico) return null;
+  return collection(db, "usuarios", uidMedico, "catalogoMedicosFirmas");
+}
+
+function renderizarCatalogoMedicosFirmasIndicaciones() {
+  const datalist = document.getElementById("catalogoMedicosFirmasIndicaciones");
+  if (!datalist) return;
+
+  datalist.innerHTML = catalogoMedicosFirmasIndicacionesCache
+    .map((medico) => {
+      const detalle = [medico.cargo, medico.cedula ? `Ced. ${medico.cedula}` : ""]
+        .filter(Boolean)
+        .join(" · ");
+      return `<option value="${escaparHTML(medico.nombre || "")}" label="${escaparHTML(detalle)}"></option>`;
+    })
+    .join("");
+}
+
+async function cargarCatalogoMedicosFirmasIndicaciones() {
+  const ref = referenciaCatalogoMedicosFirmasIndicaciones();
+  if (!ref) return;
+
+  const snap = await getDocs(query(ref, orderBy("nombre")));
+  catalogoMedicosFirmasIndicacionesCache = snap.docs.map((docMedico) => ({
+    id: docMedico.id,
+    ...docMedico.data()
+  }));
+
+  renderizarCatalogoMedicosFirmasIndicaciones();
+}
+
+function buscarMedicoFirmaIndicacionesPorNombre(nombre) {
+  const clave = normalizarTextoBusqueda(nombre);
+  if (!clave) return null;
+
+  return catalogoMedicosFirmasIndicacionesCache.find((medico) =>
+    normalizarTextoBusqueda(medico.nombre) === clave
+  ) || null;
+}
+
+function aplicarMedicoFirmaIndicaciones(numeroFirma, medico) {
+  if (!medico) return;
+
+  ponerValor(`indicacionesFirma${numeroFirma}Nombre`, medico.nombre || "");
+  ponerValor(`indicacionesFirma${numeroFirma}Cargo`, medico.cargo || "");
+  ponerValor(`indicacionesFirma${numeroFirma}Cedula`, medico.cedula || "");
+}
+
+async function guardarMedicoFirmaIndicaciones(numeroFirma) {
+  const uidMedico = auth.currentUser?.uid;
+  const ref = referenciaCatalogoMedicosFirmasIndicaciones();
+  const nombre = valorCampo(`indicacionesFirma${numeroFirma}Nombre`);
+  const cargo = valorCampo(`indicacionesFirma${numeroFirma}Cargo`);
+  const cedula = valorCampo(`indicacionesFirma${numeroFirma}Cedula`);
+
+  if (!ref || !uidMedico) {
+    alert("No se pudo identificar al medico para guardar el catalogo.");
+    return;
+  }
+
+  if (!nombre) {
+    alert("Escribe el nombre del medico antes de agregarlo al catalogo.");
+    return;
+  }
+
+  const existente = buscarMedicoFirmaIndicacionesPorNombre(nombre);
+  const payload = {
+    nombre,
+    cargo,
+    cedula,
+    actualizadoEn: serverTimestamp()
+  };
+
+  if (existente?.id) {
+    const confirmar = confirm("Este medico ya existe en el catalogo. ¿Deseas actualizar cargo y cedula?");
+    if (!confirmar) return;
+    await updateDoc(doc(db, "usuarios", uidMedico, "catalogoMedicosFirmas", existente.id), payload);
+  } else {
+    await addDoc(ref, {
+      ...payload,
+      creadoEn: serverTimestamp()
+    });
+  }
+
+  await cargarCatalogoMedicosFirmasIndicaciones();
+  alert("Medico agregado al catalogo de firmas.");
+}
+
+function referenciaApuntesMedicoPaciente() {
+  const uidMedico = auth.currentUser?.uid;
+  if (!uidMedico) return null;
+  return collection(db, "usuarios", uidMedico, "apuntesMedico");
+}
+
+function ponerEstadoApuntesPaciente(texto) {
+  const estado = document.getElementById("estadoApuntesMedicoPaciente");
+  if (estado) estado.textContent = texto;
+}
+
+async function cargarApuntesMedicoPaciente() {
+  const lista = document.getElementById("listaApuntesMedicoPaciente");
+  const ref = referenciaApuntesMedicoPaciente();
+
+  if (!lista || !ref) return;
+
+  lista.textContent = "Cargando apuntes...";
+
+  const snap = await getDocs(query(ref, orderBy("fechaActualizacion", "desc")));
+  apuntesMedicoPacienteCache = snap.docs.map((docApunte) => ({
+    id: docApunte.id,
+    ...docApunte.data()
+  }));
+
+  renderizarListaApuntesMedicoPaciente();
+
+  if (apuntesMedicoPacienteCache.length && !valorCampo("apunteMedicoPacienteId")) {
+    seleccionarApunteMedicoPaciente(apuntesMedicoPacienteCache[0].id);
+  } else if (!apuntesMedicoPacienteCache.length) {
+    nuevoApunteMedicoPaciente();
+  }
+}
+
+function renderizarListaApuntesMedicoPaciente() {
+  const lista = document.getElementById("listaApuntesMedicoPaciente");
+  const busqueda = (document.getElementById("buscadorApuntesPaciente")?.value || "").trim().toLowerCase();
+  const activo = valorCampo("apunteMedicoPacienteId");
+
+  if (!lista) return;
+
+  const filtrados = apuntesMedicoPacienteCache.filter((apunte) => {
+    const titulo = (apunte.titulo || "").toLowerCase();
+    const contenido = (apunte.contenido || "").toLowerCase();
+    return !busqueda || titulo.includes(busqueda) || contenido.includes(busqueda);
+  });
+
+  if (!filtrados.length) {
+    lista.innerHTML = `<p class="apuntes-vacio-paciente">No se encontraron apuntes.</p>`;
+    return;
+  }
+
+  lista.innerHTML = filtrados.map((apunte) => `
+    <button type="button" class="apunte-paciente-item ${apunte.id === activo ? "activo" : ""}" data-apunte-paciente="${apunte.id}">
+      <strong>${escaparHTML(apunte.titulo || "Apunte sin titulo")}</strong>
+      <span>${escaparHTML((apunte.contenido || "").slice(0, 92))}</span>
+    </button>
+  `).join("");
+
+  lista.querySelectorAll("[data-apunte-paciente]").forEach((boton) => {
+    boton.addEventListener("click", () => seleccionarApunteMedicoPaciente(boton.dataset.apuntePaciente));
+  });
+}
+
+function seleccionarApunteMedicoPaciente(id) {
+  const apunte = apuntesMedicoPacienteCache.find((item) => item.id === id);
+  if (!apunte) return;
+
+  ponerValor("apunteMedicoPacienteId", apunte.id);
+  ponerValor("apunteMedicoPacienteTitulo", apunte.titulo || "");
+  ponerValor("apunteMedicoPacienteContenido", apunte.contenido || "");
+  ponerEstadoApuntesPaciente("Guardado");
+  renderizarListaApuntesMedicoPaciente();
+}
+
+window.nuevoApunteMedicoPaciente = function() {
+  ponerValor("apunteMedicoPacienteId", "");
+  ponerValor("apunteMedicoPacienteTitulo", "");
+  ponerValor("apunteMedicoPacienteContenido", "");
+  ponerEstadoApuntesPaciente("Nuevo apunte");
+  renderizarListaApuntesMedicoPaciente();
+};
+
+window.guardarApunteMedicoPaciente = async function() {
+  const ref = referenciaApuntesMedicoPaciente();
+  const id = valorCampo("apunteMedicoPacienteId");
+  const titulo = valorCampo("apunteMedicoPacienteTitulo") || "Apunte sin titulo";
+  const contenido = valorCampo("apunteMedicoPacienteContenido");
+
+  if (!ref) return;
+
+  if (!contenido) {
+    alert("Escribe el contenido del apunte.");
+    return;
+  }
+
+  const payload = {
+    titulo,
+    contenido,
+    fechaActualizacion: new Date().toISOString()
+  };
+
+  if (id) {
+    await updateDoc(doc(db, "usuarios", auth.currentUser.uid, "apuntesMedico", id), payload);
+  } else {
+    await addDoc(ref, {
+      ...payload,
+      fechaCreacion: new Date().toISOString()
+    });
+  }
+
+  await cargarApuntesMedicoPaciente();
+  ponerEstadoApuntesPaciente("Guardado");
+};
+
+window.eliminarApunteMedicoPaciente = async function() {
+  const id = valorCampo("apunteMedicoPacienteId");
+
+  if (!id) {
+    nuevoApunteMedicoPaciente();
+    return;
+  }
+
+  if (!confirm("Eliminar este apunte?")) return;
+
+  await deleteDoc(doc(db, "usuarios", auth.currentUser.uid, "apuntesMedico", id));
+  nuevoApunteMedicoPaciente();
+  await cargarApuntesMedicoPaciente();
+};
+
+window.abrirApuntesMedicoPaciente = async function() {
+  document.getElementById("fondoApuntesMedicoPaciente")?.classList.remove("oculto");
+  const panel = document.getElementById("panelApuntesMedicoPaciente");
+  if (panel) {
+    panel.classList.add("abierto");
+    panel.setAttribute("aria-hidden", "false");
+  }
+
+  await cargarApuntesMedicoPaciente();
+};
+
+window.cerrarApuntesMedicoPaciente = function() {
+  document.getElementById("fondoApuntesMedicoPaciente")?.classList.add("oculto");
+  const panel = document.getElementById("panelApuntesMedicoPaciente");
+  if (panel) {
+    panel.classList.remove("abierto");
+    panel.setAttribute("aria-hidden", "true");
+  }
+};
 
 function configurarCatalogoMedicamentosTratamiento() {
   const lista = document.getElementById("catalogoMedicamentosPsiquiatricos");
@@ -829,7 +1150,11 @@ window.mostrarInterconsulta = async function() {
 window.mostrarIndicaciones = async function() {
   ocultarSecciones();
   document.getElementById("seccionIndicaciones").style.display = "block";
+  renderizarCatalogosIndicaciones();
+  await cargarCatalogoMedicosFirmasIndicaciones();
+  await asegurarTratamientosCache();
   autollenarIndicaciones();
+  renderizarMedicamentosIndicaciones();
   await cargarIndicacionesPaciente();
 };
 
@@ -2109,9 +2434,22 @@ async function htmlInterconsultaWord(datos) {
   });
 
   return `
-    <html>
+    <!DOCTYPE html>
+    <html xmlns:o="urn:schemas-microsoft-com:office:office"
+          xmlns:w="urn:schemas-microsoft-com:office:word"
+          xmlns="http://www.w3.org/TR/REC-html40">
       <head>
         <meta charset="UTF-8">
+        <title>Interconsulta Fray Bernardino</title>
+        <!--[if gte mso 9]>
+        <xml>
+          <w:WordDocument>
+            <w:View>Print</w:View>
+            <w:Zoom>100</w:Zoom>
+            <w:DoNotOptimizeForBrowser/>
+          </w:WordDocument>
+        </xml>
+        <![endif]-->
         <style>
           ${estilosFrayPacienteHTML()}
         </style>
@@ -2144,13 +2482,28 @@ function datosIndicacionesFormulario() {
   const paciente = datosPacienteActual || {};
   const base = datosIdentificacionInstitucionalPaciente(paciente);
   const ahora = new Date();
+  const medicamentosActivos = medicamentosActivosIndicaciones();
+  const indicacionesGeneradas = construirTextoIndicaciones(medicamentosActivos);
+  const indicaciones = textoIndicacionesEditado
+    ? valorCampo("indicacionesTexto")
+    : indicacionesGeneradas;
+
+  if (!textoIndicacionesEditado) ponerValor("indicacionesTexto", indicacionesGeneradas);
 
   return {
     formato: valorCampo("indicacionesFormato") || "fray",
     servicio: valorCampo("indicacionesServicio") || base.servicio || "Observacion",
     fecha: valorCampo("indicacionesFecha") || ahora.toISOString().slice(0, 10),
     hora: valorCampo("indicacionesHora") || ahora.toTimeString().slice(0, 5),
-    indicaciones: valorCampo("indicacionesTexto"),
+    dieta: valorCampo("indicacionesDieta"),
+    cuidados: valorCampo("indicacionesCuidados"),
+    alergiasIndicaciones: valorCampo("indicacionesAlergias"),
+    riesgoCaida: valorCampo("indicacionesRiesgoCaida"),
+    vigilancia: valorCampo("indicacionesVigilancia"),
+    notaMedicamentos: valorCampo("indicacionesNotaMedicamentos"),
+    medicamentos: medicamentosActivos,
+    eventualidades: valorCampo("indicacionesEventualidades"),
+    indicaciones,
     pacienteNombre: base.nombrePaciente,
     fechaNacimiento: base.fechaNacimiento,
     edad: base.edad,
@@ -2179,6 +2532,62 @@ function datosIndicacionesFormulario() {
   };
 }
 
+async function asegurarTratamientosCache() {
+  if (!uidPaciente) return;
+
+  try {
+    tratamientosCache = await listarTratamientos(uidPaciente);
+  } catch (error) {
+    console.warn("No se pudieron cargar tratamientos para indicaciones:", error);
+  }
+}
+
+function medicamentosActivosIndicaciones() {
+  return tratamientosCache
+    .filter((t) => (t.estado || "activo") === "activo")
+    .map((t) => formatearIndicacionTratamiento(t, true))
+    .filter(Boolean);
+}
+
+function construirTextoIndicaciones(medicamentos = medicamentosActivosIndicaciones()) {
+  const dieta = valorCampo("indicacionesDieta") || "NORMAL";
+  const cuidados = valorCampo("indicacionesCuidados") || "Signos vitales por turno y cuidados generales por enfermeria";
+  const alergias = valorCampo("indicacionesAlergias") || "Negadas";
+  const riesgoCaida = valorCampo("indicacionesRiesgoCaida") || "MEDIO";
+  const vigilancia = valorCampo("indicacionesVigilancia") || "RIESGO SUICIDA";
+  const notaMedicamentos = valorCampo("indicacionesNotaMedicamentos") || "EN CASO DE NEGATIVISMO, ADMINISTRAR MOLIDOS Y DISUELTOS";
+  const eventualidades = valorCampo("indicacionesEventualidades") || "Reportar Eventualidades";
+  const listaMedicamentos = medicamentos.length
+    ? medicamentos.map((medicamento) => `-${medicamento}`).join("\n")
+    : "-Sin medicamentos activos registrados.";
+
+  return [
+    `1. Dieta ${dieta}`,
+    `2. ${cuidados}`,
+    `3. Alergias: ${alergias}`,
+    `4. Riesgo de caida: ${riesgoCaida}`,
+    `5. Vigilancia por: ${vigilancia}`,
+    `6. Medicamentos${notaMedicamentos ? ` (${notaMedicamentos})` : ""}`,
+    listaMedicamentos,
+    `7. ${eventualidades}`
+  ].join("\n");
+}
+
+function actualizarTextoIndicaciones() {
+  ponerValor("indicacionesTexto", construirTextoIndicaciones());
+  textoIndicacionesEditado = false;
+}
+
+function renderizarMedicamentosIndicaciones() {
+  const contenedor = document.getElementById("listaMedicamentosIndicaciones");
+  if (!contenedor) return;
+
+  const medicamentos = medicamentosActivosIndicaciones();
+  contenedor.innerHTML = medicamentos.length
+    ? medicamentos.map((medicamento) => `<p>${escaparHTML(medicamento)}</p>`).join("")
+    : "<p>Sin medicamentos activos registrados.</p>";
+}
+
 function autollenarIndicaciones() {
   const paciente = datosPacienteActual || {};
   const base = datosIdentificacionInstitucionalPaciente(paciente);
@@ -2187,6 +2596,13 @@ function autollenarIndicaciones() {
     indicacionesServicio: base.servicio || "Observacion",
     indicacionesFecha: ahora.toISOString().slice(0, 10),
     indicacionesHora: ahora.toTimeString().slice(0, 5),
+    indicacionesDieta: "NORMAL",
+    indicacionesCuidados: "Signos vitales por turno y cuidados generales por enfermeria",
+    indicacionesAlergias: base.alergias || "Negadas",
+    indicacionesRiesgoCaida: "MEDIO",
+    indicacionesVigilancia: "RIESGO SUICIDA",
+    indicacionesNotaMedicamentos: "EN CASO DE NEGATIVISMO, ADMINISTRAR MOLIDOS Y DISUELTOS",
+    indicacionesEventualidades: "Reportar Eventualidades",
     indicacionesFirma1Nombre: paciente.medicoAdscritoEncargado || paciente.medicoTratante || medicoActualDatos.nombre || "",
     indicacionesFirma1Cargo: paciente.medicoAdscritoEncargado || paciente.medicoTratante || medicoActualDatos.nombre ? "Medico adscrito" : "",
     indicacionesFirma1Cedula: medicoActualDatos.cedula || medicoActualDatos.cedulaProfesional || "",
@@ -2201,12 +2617,7 @@ function autollenarIndicaciones() {
 
   const texto = document.getElementById("indicacionesTexto");
   if (texto && !texto.value.trim()) {
-    texto.value = [
-      "Cuidados generales de enfermeria y signos vitales por turno.",
-      base.alergias ? `Alergias: ${base.alergias}.` : "Alergias: negadas o no conocidas.",
-      "Medicamentos:",
-      "Reportar eventualidades."
-    ].join("\n");
+    actualizarTextoIndicaciones();
   }
 }
 
@@ -2239,11 +2650,14 @@ async function cargarIndicacionesPaciente() {
   if (!lista) return;
 
   const snap = await getDocs(query(collection(db, "usuarios", uidPaciente, "indicaciones"), orderBy("fechaCreacion", "desc")));
+  indicacionesPacienteCache = snap.docs.map((docIndicacion) => ({
+    id: docIndicacion.id,
+    ...docIndicacion.data()
+  }));
 
-  lista.innerHTML = snap.empty
+  lista.innerHTML = indicacionesPacienteCache.length === 0
     ? "<p>No hay indicaciones registradas.</p>"
-    : snap.docs.map((docIndicaciones) => {
-      const item = docIndicaciones.data();
+    : indicacionesPacienteCache.map((item) => {
       return `
         <article class="registro-card">
           <div class="registro-top">
@@ -2252,9 +2666,50 @@ async function cargarIndicacionesPaciente() {
           </div>
           <p>${escaparHTML(item.indicaciones || "").replace(/\n/g, "<br>")}</p>
           <small>${escaparHTML(item.fecha || "")} · ${escaparHTML(item.hora || "")}</small>
+          <div class="registro-actions">
+            <button type="button" data-cargar-indicacion-borrador="${item.id}">Cargar como borrador</button>
+          </div>
         </article>
       `;
     }).join("");
+
+  lista.querySelectorAll("[data-cargar-indicacion-borrador]").forEach((boton) => {
+    boton.addEventListener("click", () => cargarIndicacionComoBorrador(boton.dataset.cargarIndicacionBorrador));
+  });
+}
+
+function cargarIndicacionComoBorrador(id) {
+  const indicacion = indicacionesPacienteCache.find((item) => item.id === id);
+  if (!indicacion) return;
+
+  const campos = {
+    indicacionesFormato: indicacion.formato || "fray",
+    indicacionesServicio: indicacion.servicio || "",
+    indicacionesFecha: new Date().toISOString().slice(0, 10),
+    indicacionesHora: new Date().toTimeString().slice(0, 5),
+    indicacionesDieta: indicacion.dieta || "",
+    indicacionesCuidados: indicacion.cuidados || "",
+    indicacionesAlergias: indicacion.alergiasIndicaciones || indicacion.alergias || "",
+    indicacionesRiesgoCaida: indicacion.riesgoCaida || "",
+    indicacionesVigilancia: indicacion.vigilancia || "",
+    indicacionesNotaMedicamentos: indicacion.notaMedicamentos || "",
+    indicacionesEventualidades: indicacion.eventualidades || "",
+    indicacionesTexto: indicacion.indicaciones || "",
+    indicacionesFirma1Nombre: indicacion.firmas?.[0]?.nombre || "",
+    indicacionesFirma1Cargo: indicacion.firmas?.[0]?.cargo || "",
+    indicacionesFirma1Cedula: indicacion.firmas?.[0]?.cedula || "",
+    indicacionesFirma2Nombre: indicacion.firmas?.[1]?.nombre || "",
+    indicacionesFirma2Cargo: indicacion.firmas?.[1]?.cargo || "",
+    indicacionesFirma2Cedula: indicacion.firmas?.[1]?.cedula || "",
+    indicacionesFirma3Nombre: indicacion.firmas?.[2]?.nombre || "",
+    indicacionesFirma3Cargo: indicacion.firmas?.[2]?.cargo || "",
+    indicacionesFirma3Cedula: indicacion.firmas?.[2]?.cedula || ""
+  };
+
+  Object.entries(campos).forEach(([campo, valor]) => ponerValor(campo, valor));
+  textoIndicacionesEditado = true;
+  renderizarMedicamentosIndicaciones();
+  document.getElementById("indicacionesFormato")?.scrollIntoView({ behavior: "smooth", block: "center" });
 }
 
 async function htmlIndicacionesWord(datos) {
@@ -2520,7 +2975,7 @@ function crearDocxDesdeHtml(html) {
     <w:altChunk r:id="htmlChunk"/>
     <w:sectPr>
       <w:pgSz w:w="12240" w:h="15840"/>
-      <w:pgMar w:top="1440" w:right="1440" w:bottom="1440" w:left="1440" w:header="720" w:footer="720" w:gutter="0"/>
+      <w:pgMar w:top="720" w:right="720" w:bottom="720" w:left="720" w:header="360" w:footer="360" w:gutter="0"/>
     </w:sectPr>
   </w:body>
 </w:document>`;
@@ -2680,6 +3135,10 @@ async function guardarTratamientoPaciente() {
   limpiarFormularioTratamiento();
   await cargarTratamientosPaciente();
   await sincronizarResumenTratamiento();
+  renderizarMedicamentosIndicaciones();
+  if (document.getElementById("seccionIndicaciones")?.style.display !== "none") {
+    actualizarTextoIndicaciones();
+  }
   alert("Tratamiento guardado.");
 }
 
@@ -2775,6 +3234,10 @@ async function eliminarTratamientoPaciente(id) {
   });
   await cargarTratamientosPaciente();
   await sincronizarResumenTratamiento();
+  renderizarMedicamentosIndicaciones();
+  if (document.getElementById("seccionIndicaciones")?.style.display !== "none") {
+    actualizarTextoIndicaciones();
+  }
 }
 
 async function sincronizarResumenTratamiento() {
@@ -3057,12 +3520,55 @@ document.getElementById("diagnosticoCatalogo")?.addEventListener("change", () =>
 document.getElementById("agregarDiagnosticoManual")?.addEventListener("click", agregarDiagnosticoManualPaciente);
 document.getElementById("crearCarpetaPaciente")?.addEventListener("click", () => asignarCarpetaPorNombre(valorCampo("nuevaCarpetaPaciente")));
 document.getElementById("asignarCarpetaPaciente")?.addEventListener("click", () => asignarCarpetaPorNombre(valorCampo("selectorCarpetasPaciente")));
+document.getElementById("buscadorApuntesPaciente")?.addEventListener("input", renderizarListaApuntesMedicoPaciente);
+document.getElementById("apunteMedicoPacienteTitulo")?.addEventListener("input", () => ponerEstadoApuntesPaciente("Cambios sin guardar"));
+document.getElementById("apunteMedicoPacienteContenido")?.addEventListener("input", () => ponerEstadoApuntesPaciente("Cambios sin guardar"));
 document.getElementById("guardarNotaFlotante")?.addEventListener("click", guardarNotaFlotantePaciente);
 document.getElementById("nuevaNotaFlotante")?.addEventListener("click", limpiarNotaFlotantePaciente);
 document.getElementById("guardarInterconsulta")?.addEventListener("click", guardarInterconsultaPaciente);
 document.getElementById("descargarInterconsulta")?.addEventListener("click", descargarInterconsultaPaciente);
 document.getElementById("guardarIndicaciones")?.addEventListener("click", guardarIndicacionesPaciente);
 document.getElementById("descargarIndicaciones")?.addEventListener("click", descargarIndicacionesPaciente);
+document.getElementById("actualizarTextoIndicaciones")?.addEventListener("click", actualizarTextoIndicaciones);
+document.getElementById("indicacionesTexto")?.addEventListener("input", () => {
+  textoIndicacionesEditado = true;
+});
+[
+  "indicacionesDieta",
+  "indicacionesCuidados",
+  "indicacionesAlergias",
+  "indicacionesRiesgoCaida",
+  "indicacionesVigilancia",
+  "indicacionesNotaMedicamentos",
+  "indicacionesEventualidades"
+].forEach((id) => {
+  document.getElementById(id)?.addEventListener("input", () => {
+    if (!textoIndicacionesEditado) actualizarTextoIndicaciones();
+  });
+});
+document.getElementById("actualizarMedicamentosIndicaciones")?.addEventListener("click", async () => {
+  await asegurarTratamientosCache();
+  renderizarMedicamentosIndicaciones();
+  actualizarTextoIndicaciones();
+});
+document.querySelectorAll("[data-catalogo-indicaciones]").forEach((boton) => {
+  boton.addEventListener("click", () => {
+    agregarValorCatalogoIndicaciones(
+      boton.dataset.catalogoIndicaciones,
+      boton.dataset.inputCatalogo
+    );
+  });
+});
+document.querySelectorAll("[data-firma-indicaciones-nombre]").forEach((campo) => {
+  campo.addEventListener("change", () => {
+    const numeroFirma = campo.dataset.firmaIndicacionesNombre;
+    const medico = buscarMedicoFirmaIndicacionesPorNombre(campo.value);
+    if (medico) aplicarMedicoFirmaIndicaciones(numeroFirma, medico);
+  });
+});
+document.querySelectorAll("[data-guardar-medico-indicaciones]").forEach((boton) => {
+  boton.addEventListener("click", () => guardarMedicoFirmaIndicaciones(boton.dataset.guardarMedicoIndicaciones));
+});
 document.getElementById("cerrarIngresoPaciente")?.addEventListener("click", cerrarSelectorIngresoPaciente);
 document.getElementById("guardarIngresoPaciente")?.addEventListener("click", guardarIngresoPacienteDesdeModal);
 document.getElementById("limpiarIngresoPaciente")?.addEventListener("click", limpiarIngresoPacienteDesdeModal);

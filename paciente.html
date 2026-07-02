@@ -20,7 +20,47 @@
   <button class="btn-secundario" onclick="window.location.href='dashboard.html'">
     Inicio
   </button>
+
+  <button class="btn-secundario" onclick="abrirApuntesMedicoPaciente()">
+    Mis apuntes
+  </button>
 </div>
+
+<button class="boton-apuntes-flotante" type="button" onclick="abrirApuntesMedicoPaciente()">
+  Mis apuntes
+</button>
+
+<div id="fondoApuntesMedicoPaciente" class="fondo-apuntes-paciente oculto" onclick="cerrarApuntesMedicoPaciente()"></div>
+
+<section id="panelApuntesMedicoPaciente" class="panel-apuntes-paciente" aria-hidden="true">
+  <div class="panel-apuntes-header">
+    <div>
+      <span>Mis apuntes</span>
+      <small>Apuntes privados del medico, disponibles en todos los pacientes.</small>
+    </div>
+    <button type="button" class="boton-cerrar-panel" onclick="cerrarApuntesMedicoPaciente()">Cerrar</button>
+  </div>
+
+  <div class="apuntes-paciente-layout">
+    <aside class="apuntes-paciente-lista">
+      <input id="buscadorApuntesPaciente" placeholder="Buscar por titulo o texto...">
+      <button type="button" class="boton-secundario" onclick="nuevoApunteMedicoPaciente()">Nuevo apunte</button>
+      <div id="listaApuntesMedicoPaciente" class="lista-apuntes-paciente">Cargando apuntes...</div>
+    </aside>
+
+    <section class="apuntes-paciente-editor">
+      <input id="apunteMedicoPacienteId" type="hidden">
+      <input id="apunteMedicoPacienteTitulo" placeholder="Titulo del apunte">
+      <textarea id="apunteMedicoPacienteContenido" placeholder="Escribe apuntes, ideas clinicas o borradores generales..."></textarea>
+      <div class="panel-apuntes-acciones">
+        <span id="estadoApuntesMedicoPaciente">Sin guardar</span>
+        <button type="button" class="boton-secundario" onclick="guardarApunteMedicoPaciente()">Guardar</button>
+        <button type="button" class="boton-secundario" onclick="nuevoApunteMedicoPaciente()">Nuevo</button>
+        <button type="button" class="boton-secundario boton-peligro-suave" onclick="eliminarApunteMedicoPaciente()">Eliminar</button>
+      </div>
+    </section>
+  </div>
+</section>
 
 <div class="layout">
 
@@ -35,6 +75,7 @@
       <button onclick="mostrarEstudios()">Estudios</button>
       <button onclick="mostrarTratamiento()">Tratamiento</button>
       <button onclick="mostrarDiagnosticos()">Diagnosticos</button>
+      <button onclick="abrirApuntesMedicoPaciente()">Mis apuntes</button>
       <button onclick="mostrarCarpetas()">Carpetas</button>
       <button onclick="mostrarNotasFlotantes()">Notas flotantes</button>
       <button onclick="mostrarInterconsulta()">Interconsulta</button>
@@ -299,6 +340,7 @@
             <h2>Diagnosticos</h2>
             <p class="texto-suave">Agrega, cambia o retira diagnosticos usando los catalogos diagnosticos de Cognicion.</p>
           </div>
+          <button type="button" class="boton-secundario" onclick="abrirApuntesMedicoPaciente()">Mis apuntes</button>
         </div>
 
         <div class="form-grid">
@@ -449,8 +491,13 @@
 
     <section id="seccionIndicaciones" style="display:none;">
       <div class="tarjeta">
-        <h2>Indicaciones medicas</h2>
-        <p class="texto-suave">Registra indicaciones por paciente y descargalas en formato institucional Fray Bernardino.</p>
+        <div class="panel-header">
+          <div>
+            <h2>Indicaciones medicas</h2>
+            <p class="texto-suave">Registra indicaciones por paciente y descargalas en formato institucional Fray Bernardino.</p>
+          </div>
+          <button type="button" class="boton-secundario" onclick="abrirApuntesMedicoPaciente()">Mis apuntes</button>
+        </div>
 
         <div class="form-grid">
           <label>Formato
@@ -464,18 +511,97 @@
           <label>Hora<input id="indicacionesHora" type="time"></label>
         </div>
 
-        <label>Indicaciones
-          <textarea id="indicacionesTexto" placeholder="Dieta, cuidados generales, vigilancia, riesgo de caida, alergias, medicamentos y reportar eventualidades."></textarea>
+        <div class="bloque-indicaciones-estructuradas">
+          <h3>Indicaciones estructuradas</h3>
+          <p class="texto-suave">Los medicamentos activos se toman del panel de Tratamiento.</p>
+
+          <div class="form-grid">
+            <label>1. Dieta
+              <div class="campo-catalogo-inline">
+                <input id="indicacionesDieta" list="catalogoIndicacionesDieta" placeholder="Ej. NORMAL">
+                <button type="button" class="boton-mini-catalogo" data-catalogo-indicaciones="dieta" data-input-catalogo="indicacionesDieta">Agregar</button>
+              </div>
+              <datalist id="catalogoIndicacionesDieta"></datalist>
+            </label>
+
+            <label>2. Signos vitales y cuidados
+              <input id="indicacionesCuidados" placeholder="Ej. Signos vitales por turno y cuidados generales por enfermeria">
+            </label>
+
+            <label>3. Alergias
+              <div class="campo-catalogo-inline">
+                <input id="indicacionesAlergias" list="catalogoIndicacionesAlergias" placeholder="Ej. Negadas">
+                <button type="button" class="boton-mini-catalogo" data-catalogo-indicaciones="alergias" data-input-catalogo="indicacionesAlergias">Agregar</button>
+              </div>
+              <datalist id="catalogoIndicacionesAlergias"></datalist>
+            </label>
+
+            <label>4. Riesgo de caida
+              <div class="campo-catalogo-inline">
+                <input id="indicacionesRiesgoCaida" list="catalogoIndicacionesRiesgoCaida" placeholder="Ej. MEDIO">
+                <button type="button" class="boton-mini-catalogo" data-catalogo-indicaciones="riesgoCaida" data-input-catalogo="indicacionesRiesgoCaida">Agregar</button>
+              </div>
+              <datalist id="catalogoIndicacionesRiesgoCaida"></datalist>
+            </label>
+
+            <label>5. Vigilancia por
+              <div class="campo-catalogo-inline">
+                <input id="indicacionesVigilancia" list="catalogoIndicacionesVigilancia" placeholder="Ej. RIESGO SUICIDA">
+                <button type="button" class="boton-mini-catalogo" data-catalogo-indicaciones="vigilancia" data-input-catalogo="indicacionesVigilancia">Agregar</button>
+              </div>
+              <datalist id="catalogoIndicacionesVigilancia"></datalist>
+            </label>
+
+            <label>6. Nota de medicamentos
+              <input id="indicacionesNotaMedicamentos" placeholder="Ej. EN CASO DE NEGATIVISMO, ADMINISTRAR MOLIDOS Y DISUELTOS">
+            </label>
+          </div>
+
+          <div class="indicaciones-medicamentos-activos">
+            <div class="registro-top">
+              <strong>Medicamentos activos vinculados</strong>
+              <button id="actualizarMedicamentosIndicaciones" type="button" class="boton-secundario">Actualizar</button>
+            </div>
+            <div id="listaMedicamentosIndicaciones" class="panel-lista compacta">Sin medicamentos activos.</div>
+          </div>
+
+          <label>7. Cierre / eventualidades
+            <input id="indicacionesEventualidades" placeholder="Ej. Reportar Eventualidades">
+          </label>
+        </div>
+
+        <label>Indicaciones generadas
+          <textarea id="indicacionesTexto" placeholder="Aqui se arma automaticamente el texto de indicaciones. Puedes ajustarlo antes de guardar o descargar."></textarea>
         </label>
+        <div class="form-actions">
+          <button id="actualizarTextoIndicaciones" type="button" class="boton-secundario">Actualizar texto</button>
+        </div>
+
+        <datalist id="catalogoMedicosFirmasIndicaciones"></datalist>
 
         <div class="form-grid firmas-indicaciones">
-          <label>Firma campo 1 - Nombre<input id="indicacionesFirma1Nombre"></label>
+          <label>Firma campo 1 - Nombre
+            <div class="campo-catalogo-inline">
+              <input id="indicacionesFirma1Nombre" list="catalogoMedicosFirmasIndicaciones" data-firma-indicaciones-nombre="1">
+              <button type="button" class="boton-mini-catalogo" data-guardar-medico-indicaciones="1">Agregar</button>
+            </div>
+          </label>
           <label>Firma campo 1 - Cargo<input id="indicacionesFirma1Cargo" placeholder="Ej. Medico adscrito de urgencias"></label>
           <label>Firma campo 1 - Cedula<input id="indicacionesFirma1Cedula"></label>
-          <label>Firma campo 2 - Nombre<input id="indicacionesFirma2Nombre"></label>
+          <label>Firma campo 2 - Nombre
+            <div class="campo-catalogo-inline">
+              <input id="indicacionesFirma2Nombre" list="catalogoMedicosFirmasIndicaciones" data-firma-indicaciones-nombre="2">
+              <button type="button" class="boton-mini-catalogo" data-guardar-medico-indicaciones="2">Agregar</button>
+            </div>
+          </label>
           <label>Firma campo 2 - Cargo<input id="indicacionesFirma2Cargo" placeholder="Ej. Medico residente de 3er ano"></label>
           <label>Firma campo 2 - Cedula<input id="indicacionesFirma2Cedula"></label>
-          <label>Firma campo 3 - Nombre<input id="indicacionesFirma3Nombre"></label>
+          <label>Firma campo 3 - Nombre
+            <div class="campo-catalogo-inline">
+              <input id="indicacionesFirma3Nombre" list="catalogoMedicosFirmasIndicaciones" data-firma-indicaciones-nombre="3">
+              <button type="button" class="boton-mini-catalogo" data-guardar-medico-indicaciones="3">Agregar</button>
+            </div>
+          </label>
           <label>Firma campo 3 - Cargo<input id="indicacionesFirma3Cargo" placeholder="Ej. Medico residente de 2do ano"></label>
           <label>Firma campo 3 - Cedula<input id="indicacionesFirma3Cedula"></label>
         </div>
@@ -500,6 +626,7 @@
             <p class="texto-suave">Registro farmacologico y clinico vinculado con Mi Salud.</p>
           </div>
           <button id="limpiarTratamiento" type="button" class="boton-secundario">Nuevo tratamiento</button>
+          <button type="button" class="boton-secundario" onclick="abrirApuntesMedicoPaciente()">Mis apuntes</button>
         </div>
 
         <input id="tratamientoId" type="hidden">
@@ -520,6 +647,7 @@
              </datalist>
           <label>Veces al dia<input id="tratamientoFrecuencia" placeholder="Ej. 1 vez al dia"></label>
           <label>Dosis/horario<input id="tratamientoDosis" placeholder="Ej. 1 tableta a las 08:00"></label>
+          <label>Horarios<input id="tratamientoHorarios" placeholder="Ej. 08:00, 22:00"></label>
           <label>Fecha de inicio<input id="tratamientoFechaInicio" type="date"></label>
           <label>Estado
             <select id="tratamientoEstado">

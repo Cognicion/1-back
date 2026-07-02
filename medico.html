@@ -119,6 +119,10 @@
             Mostrar Columnas...
           </button>
 
+          <button type="button" id="btnCarpetasPacientes" class="boton-filtro-atencion">
+            Carpetas
+          </button>
+
         <button onclick="window.location.href='nuevo-paciente.html'">
           Nuevo paciente
         </button>
@@ -191,11 +195,51 @@
           </div>
         </div>
 
+        <div id="modalCarpetasPacientes" class="modal-filtro-atencion" aria-hidden="true">
+          <div class="panel-filtro-atencion panel-carpetas-pacientes" role="dialog" aria-modal="true" aria-labelledby="tituloCarpetasPacientes">
+            <div class="encabezado-filtro-atencion">
+              <div>
+                <p class="etiqueta-filtro-atencion">Organizacion de pacientes</p>
+                <h3 id="tituloCarpetasPacientes">Carpetas</h3>
+              </div>
+              <button type="button" id="cerrarCarpetasPacientes" class="cerrar-filtro-atencion" aria-label="Cerrar carpetas">×</button>
+            </div>
+
+            <div class="carpetas-panel-cuerpo">
+              <label class="campo-carpeta-medico">
+                Nueva carpeta
+                <div class="input-carpeta-medico">
+                  <input id="nuevaCarpetaMedico" placeholder="Ej. Observacion HPFBA">
+                  <button type="button" id="crearCarpetaMedico">Crear</button>
+                </div>
+              </label>
+
+              <label class="campo-carpeta-medico">
+                Mostrar carpeta
+                <select id="filtroCarpetaMedico">
+                  <option value="">Todas las carpetas</option>
+                </select>
+              </label>
+
+              <div>
+                <p class="etiqueta-filtro-atencion">Carpetas existentes</p>
+                <div id="listaCarpetasMedico" class="lista-carpetas-medico">Sin carpetas creadas.</div>
+              </div>
+            </div>
+
+            <div class="acciones-filtro-atencion">
+              <button type="button" id="limpiarFiltroCarpetaMedico" class="boton-secundario-filtro">Ver todos</button>
+              <button type="button" id="aplicarFiltroCarpetaMedico">Aplicar</button>
+            </div>
+          </div>
+        </div>
+
         <div class="tabla-pacientes">
 
   <div class="encabezado-pacientes">
   <span class="celda-tabla">Cama <button class="resizer" data-col="--col-cama" aria-label="Ajustar columna Cama"></button></span>
   <span class="celda-tabla">Nombre <button class="resizer" data-col="--col-nombre" aria-label="Ajustar columna Nombre"></button></span>
+  <span class="celda-tabla">Carpeta <button class="resizer" data-col="--col-carpeta" aria-label="Ajustar columna Carpeta"></button></span>
   <span class="celda-tabla">Ingreso <button class="resizer" data-col="--col-ingreso" aria-label="Ajustar columna Fecha de ingreso"></button></span>
   <span class="celda-tabla">Estancia <button class="resizer" data-col="--col-estancia" aria-label="Ajustar columna Dias de estancia"></button></span>
   <span class="celda-tabla">Edad <button class="resizer" data-col="--col-edad" aria-label="Ajustar columna Edad"></button></span>

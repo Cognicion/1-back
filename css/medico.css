@@ -242,6 +242,78 @@ body {
   overflow: hidden;
 }
 
+.panel-carpetas-pacientes {
+  width: min(520px, 100%);
+}
+
+.carpetas-panel-cuerpo {
+  display: grid;
+  gap: 14px;
+  padding: 16px 18px;
+}
+
+.campo-carpeta-medico {
+  display: grid;
+  gap: 8px;
+  color: #94a3b8;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.input-carpeta-medico {
+  display: flex;
+  gap: 8px;
+}
+
+.input-carpeta-medico input,
+.campo-carpeta-medico select {
+  width: 100%;
+  min-width: 0;
+  padding: 10px 12px;
+  border-radius: 13px;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  background: rgba(15, 23, 42, 0.92);
+  color: #f8fafc;
+}
+
+.input-carpeta-medico button {
+  flex: 0 0 auto;
+  padding: 9px 13px;
+  border: none;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #2563eb, #00d4ff);
+  color: white;
+  font-weight: 800;
+}
+
+.lista-carpetas-medico {
+  display: grid;
+  gap: 8px;
+}
+
+.lista-carpetas-medico p {
+  margin: 0;
+  color: #94a3b8;
+}
+
+.carpeta-chip-medico {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 13px;
+  border: 1px solid rgba(56, 189, 248, 0.18);
+  background: rgba(15, 23, 42, 0.72);
+  color: #dbeafe;
+  cursor: pointer;
+}
+
+.carpeta-chip-medico small {
+  color: #38bdf8;
+  font-weight: 900;
+}
+
 .modal-filtro-atencion.abierto .panel-filtro-atencion {
   transform: translateY(0) scale(1);
 }
@@ -444,6 +516,7 @@ body {
 .tabla-pacientes {
   --col-cama: 82px;
   --col-nombre: 280px;
+  --col-carpeta: 150px;
   --col-ingreso: 112px;
   --col-estancia: 92px;
   --col-edad: 88px;
@@ -454,7 +527,7 @@ body {
   --col-adscrito: 170px;
   --col-residente: 170px;
   --tabla-min-width: calc(
-    var(--col-cama) + var(--col-nombre) + var(--col-ingreso) + var(--col-estancia) +
+    var(--col-cama) + var(--col-nombre) + var(--col-carpeta) + var(--col-ingreso) + var(--col-estancia) +
     var(--col-edad) + var(--col-atencion) + var(--col-diagnostico) +
     var(--col-ultima) + var(--col-proxima) + var(--col-adscrito) + var(--col-residente)
   );
@@ -475,6 +548,7 @@ body {
   grid-template-columns:
     var(--col-cama)
     var(--col-nombre)
+    var(--col-carpeta)
     var(--col-ingreso)
     var(--col-estancia)
     var(--col-edad)
@@ -578,6 +652,24 @@ body {
   font-size: 11px;
   font-weight: 800;
   outline: none;
+}
+
+.selector-carpeta {
+  width: 100%;
+  min-width: 0;
+  padding: 6px 8px;
+  border-radius: 9px;
+  border: 1px solid rgba(125, 211, 252, 0.20);
+  background: rgba(8, 12, 20, 0.86);
+  color: #dbeafe;
+  font-size: 11px;
+  font-weight: 800;
+  outline: none;
+}
+
+.selector-carpeta:focus {
+  border-color: rgba(125, 211, 252, 0.72);
+  box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.16);
 }
 
 .selector-atencion:focus {

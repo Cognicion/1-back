@@ -716,6 +716,156 @@ textarea{
   accent-color: #38bdf8;
 }
 
+.boton-apuntes-flotante {
+  position: fixed;
+  right: 22px;
+  bottom: 22px;
+  z-index: 95;
+  border: 1px solid rgba(125, 211, 252, 0.32);
+  border-radius: 999px;
+  background: linear-gradient(135deg, #2563eb, #00d4ff);
+  color: #fff;
+  font-weight: 900;
+  padding: 12px 18px;
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.36), 0 0 24px rgba(56, 189, 248, 0.22);
+  cursor: pointer;
+}
+
+.fondo-apuntes-paciente {
+  position: fixed;
+  inset: 0;
+  z-index: 130;
+  background: rgba(2, 6, 23, 0.62);
+  backdrop-filter: blur(8px);
+}
+
+.panel-apuntes-paciente {
+  position: fixed;
+  top: 22px;
+  right: 22px;
+  bottom: 22px;
+  z-index: 140;
+  width: min(960px, calc(100vw - 44px));
+  padding: 18px;
+  border: 1px solid rgba(56, 189, 248, 0.24);
+  border-radius: 24px;
+  background:
+    radial-gradient(circle at top right, rgba(56, 189, 248, 0.13), transparent 32%),
+    rgba(8, 12, 20, 0.96);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.46), 0 0 35px rgba(56, 189, 248, 0.12);
+  transform: translateX(24px) scale(0.98);
+  opacity: 0;
+  pointer-events: none;
+  transition: transform 0.22s ease, opacity 0.22s ease;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 16px;
+}
+
+.panel-apuntes-paciente.abierto {
+  transform: translateX(0) scale(1);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.panel-apuntes-header,
+.panel-apuntes-acciones {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.panel-apuntes-header span {
+  display: block;
+  color: #e5eefb;
+  font-size: 18px;
+  font-weight: 900;
+}
+
+.panel-apuntes-header small,
+.panel-apuntes-acciones span,
+.apuntes-vacio-paciente {
+  color: #94a3b8;
+}
+
+.boton-cerrar-panel {
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.74);
+  color: #e5eefb;
+  padding: 9px 13px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.boton-peligro-suave {
+  border-color: rgba(248, 113, 113, 0.34);
+  color: #fecaca;
+}
+
+.apuntes-paciente-layout {
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 300px minmax(0, 1fr);
+  gap: 14px;
+}
+
+.apuntes-paciente-lista,
+.apuntes-paciente-editor {
+  min-height: 0;
+  display: grid;
+  gap: 10px;
+}
+
+.apuntes-paciente-lista {
+  grid-template-rows: auto auto minmax(0, 1fr);
+}
+
+.lista-apuntes-paciente {
+  min-height: 0;
+  overflow: auto;
+  display: grid;
+  align-content: start;
+  gap: 8px;
+}
+
+.apuntes-paciente-editor {
+  grid-template-rows: auto minmax(0, 1fr) auto;
+}
+
+.apunte-paciente-item {
+  text-align: left;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  border-radius: 14px;
+  background: rgba(15, 23, 42, 0.68);
+  color: #dbeafe;
+  padding: 10px 12px;
+  cursor: pointer;
+}
+
+.apunte-paciente-item.activo {
+  border-color: rgba(56, 189, 248, 0.56);
+  box-shadow: 0 0 18px rgba(56, 189, 248, 0.12);
+}
+
+.apunte-paciente-item strong,
+.apunte-paciente-item span {
+  display: block;
+}
+
+.apunte-paciente-item span {
+  margin-top: 5px;
+  color: #94a3b8;
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.apuntes-paciente-editor textarea {
+  min-height: 280px;
+  resize: vertical;
+}
+
 .ayuda-catalogo-medicamento {
   display: none;
   margin-top: 6px;
@@ -736,11 +886,72 @@ textarea{
   min-height: 92px;
 }
 
+.bloque-indicaciones-estructuradas {
+  margin: 18px 0;
+  padding: 16px;
+  border: 1px solid rgba(56, 189, 248, 0.18);
+  border-radius: 16px;
+  background: rgba(15, 23, 42, 0.48);
+}
+
+.bloque-indicaciones-estructuradas h3 {
+  margin: 0 0 6px;
+  color: #e5eefb;
+}
+
+.campo-catalogo-inline {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.boton-mini-catalogo {
+  border: 1px solid rgba(125, 211, 252, 0.30);
+  border-radius: 11px;
+  background: rgba(14, 165, 233, 0.14);
+  color: #7dd3fc;
+  font-size: 12px;
+  font-weight: 800;
+  padding: 8px 10px;
+  cursor: pointer;
+}
+
+.indicaciones-medicamentos-activos {
+  margin: 16px 0;
+  padding: 14px;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  border-radius: 14px;
+  background: rgba(2, 6, 23, 0.34);
+}
+
+.panel-lista.compacta {
+  margin-top: 10px;
+  gap: 6px;
+}
+
+.panel-lista.compacta p {
+  margin: 0;
+}
+
 @media(max-width:900px){
   .form-grid,
   .panel-doble,
   .consultas-en-linea{
     grid-template-columns:1fr;
+  }
+
+  .campo-catalogo-inline {
+    grid-template-columns: 1fr;
+  }
+
+  .panel-apuntes-paciente {
+    inset: 12px;
+    width: auto;
+  }
+
+  .apuntes-paciente-layout {
+    grid-template-columns: 1fr;
   }
 
   .panel-header{
