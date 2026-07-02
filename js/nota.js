@@ -777,6 +777,58 @@ function calcularEdadDesdeFecha(fechaNacimiento) {
   return edad >= 0 ? String(edad) : "";
 }
 
+function normalizarFechaIngresoNota(valor = "") {
+  if (!valor) return "";
+  if (typeof valor.toDate === "function") {
+    const fecha = valor.toDate();
+    return Number.isNaN(fecha.getTime()) ? "" : fecha.toISOString().slice(0, 16);
+  }
+  if (valor instanceof Date) {
+    return Number.isNaN(valor.getTime()) ? "" : valor.toISOString().slice(0, 16);
+  }
+
+  const limpio = String(valor).trim();
+
+  if (!limpio) return "";
+  if (/^\d{4}-\d{2}-\d{2}$/.test(limpio)) return `${limpio}T00:00`;
+  if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(limpio)) return limpio.slice(0, 16);
+
+  const partes = limpio.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})(?:\s+(\d{1,2}):(\d{2}))?$/);
+  if (partes) {
+    const [, dia, mes, anio, hora = "00", minuto = "00"] = partes;
+    return `${anio}-${mes.padStart(2, "0")}-${dia.padStart(2, "0")}T${hora.padStart(2, "0")}:${minuto}`;
+  }
+
+  return limpio;
+}
+
+function parsearFechaIngresoNota(valor = "") {
+  const normalizada = normalizarFechaIngresoNota(valor);
+  if (!normalizada) return null;
+
+  const fecha = normalizada.includes("T")
+    ? new Date(normalizada)
+    : new Date(`${normalizada}T00:00`);
+
+  return Number.isNaN(fecha.getTime()) ? null : fecha;
+}
+
+function calcularEstanciaDesdeIngresoNota(fechaIngreso = "") {
+  const ingreso = parsearFechaIngresoNota(fechaIngreso);
+  if (!ingreso) return "";
+
+  const diferencia = Date.now() - ingreso.getTime();
+  if (diferencia < 0) return "";
+
+  const horasTotales = Math.floor(diferencia / (1000 * 60 * 60));
+  const dias = Math.floor(horasTotales / 24);
+  const horas = horasTotales % 24;
+
+  if (dias > 0 && horas > 0) return `${dias} d ${horas} h`;
+  if (dias > 0) return `${dias} d`;
+  return `${horas} h`;
+}
+
 const tipoNota = document.getElementById("tipoNota");
 const bloqueNotaRapida = document.getElementById("bloqueNotaRapida");
 const bloqueNotaCompleta = document.getElementById("bloqueNotaCompleta");
@@ -1105,6 +1157,16 @@ function datosInstitucionalesPaciente(paciente = {}) {
     paciente.fechaNac ||
     paciente.nacimiento ||
     "";
+  const fechaIngreso =
+    paciente.fechaIngreso ||
+    institucional.fechaIngreso ||
+    paciente.fecha_ingreso ||
+    paciente.ingreso ||
+    "";
+  const diasEstancia =
+    paciente.diasEstancia ||
+    institucional.diasEstancia ||
+    calcularEstanciaDesdeIngresoNota(fechaIngreso);
 
   return {
     nombrePaciente: paciente.nombre || institucional.nombrePaciente || "",
@@ -1118,7 +1180,8 @@ function datosInstitucionalesPaciente(paciente = {}) {
     sexo: paciente.sexo || institucional.sexo || "",
     genero: paciente.genero || paciente.identidadGenero || institucional.genero || "",
     alergias: paciente.alergias || institucional.alergias || "",
-    diasEstancia: paciente.diasEstancia || institucional.diasEstancia || "",
+    fechaIngreso,
+    diasEstancia,
     firma1Nombre: fray.firma1Nombre || fray.medicoAdscrito || paciente.medicoTratante || "",
     firma1Cargo: fray.firma1Cargo || (fray.medicoAdscrito || paciente.medicoTratante ? "Medico adscrito" : ""),
     firma1Cedula: fray.firma1Cedula || fray.cedulaAdscrito || "",
@@ -2235,6 +2298,7 @@ function crearDocxNotaDesdeHtml(html) {
   <Default Extension="xml" ContentType="application/xml"/>
   <Default Extension="html" ContentType="text/html"/>
   <Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>
+  <Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/>
 </Types>`
     },
     {
@@ -2253,7 +2317,28 @@ function crearDocxNotaDesdeHtml(html) {
       contenido: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
   <Relationship Id="htmlChunk" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/aFChunk" Target="afchunk.html"/>
+  <Relationship Id="styles" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>
 </Relationships>`
+    },
+    {
+      nombre: "word/styles.xml",
+      contenido: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+  <w:docDefaults>
+    <w:pPrDefault>
+      <w:pPr>
+        <w:spacing w:before="0" w:after="0" w:line="240" w:lineRule="auto"/>
+      </w:pPr>
+    </w:pPrDefault>
+  </w:docDefaults>
+  <w:style w:type="paragraph" w:default="1" w:styleId="Normal">
+    <w:name w:val="Normal"/>
+    <w:qFormat/>
+    <w:pPr>
+      <w:spacing w:before="0" w:after="0" w:line="240" w:lineRule="auto"/>
+    </w:pPr>
+  </w:style>
+</w:styles>`
     },
     {
       nombre: "word/afchunk.html",
@@ -2456,11 +2541,31 @@ async function htmlWordFrayObservacion() {
         .logo-fray { width: 58px; }
         h1 { text-align: center; font-size: 11.5pt; color: #7b7b7b; margin: 8pt 0 12pt; text-transform: uppercase; letter-spacing: .2pt; }
         h2 { font-size: 9.5pt; margin: 10pt 0 3pt; text-align: left; text-transform: uppercase; }
-        p { margin: 0; mso-margin-top-alt: 0cm; mso-margin-bottom-alt: 0cm; line-height: 1.0; mso-line-height-rule: exactly; text-align: left; }
+        p {
+          margin: 0;
+          margin-top: 0;
+          margin-bottom: 0;
+          mso-margin-top-alt: 0cm;
+          mso-margin-bottom-alt: 0cm;
+          mso-para-margin: 0cm;
+          mso-para-margin-top: 0cm;
+          mso-para-margin-bottom: 0cm;
+          line-height: 1.0;
+          mso-line-height-rule: exactly;
+          text-align: left;
+        }
         .identificacion { font-size: 8.6pt; line-height: 1.35; margin: 2pt 0 7pt; }
         .identificacion b { font-weight: 700; }
         table { width: 100%; border-collapse: collapse; margin: 3pt 0 8pt; }
-        th, td { border: 1px solid #222; padding: 4pt; vertical-align: top; text-align: left; }
+        th, td {
+          border: 1px solid #222;
+          padding: 4pt;
+          vertical-align: top;
+          text-align: left;
+          mso-margin-top-alt: 0cm;
+          mso-margin-bottom-alt: 0cm;
+          mso-para-margin: 0cm;
+        }
         .tabla-vitales { width: auto; table-layout: auto; margin: 2pt 0 6pt; }
         .tabla-vitales th,
         .tabla-vitales td {
@@ -2478,8 +2583,13 @@ async function htmlWordFrayObservacion() {
         .tabla-vitales th p,
         .tabla-vitales td p {
           margin: 0;
+          margin-top: 0;
+          margin-bottom: 0;
           mso-margin-top-alt: 0cm;
           mso-margin-bottom-alt: 0cm;
+          mso-para-margin: 0cm;
+          mso-para-margin-top: 0cm;
+          mso-para-margin-bottom: 0cm;
           line-height: 1.0;
           mso-line-height-rule: exactly;
         }
@@ -2523,8 +2633,7 @@ async function htmlWordFrayObservacion() {
         &nbsp;&nbsp; <b>Cama:</b> ${textoWord(datos.cama)}
         &nbsp;&nbsp; <b>Expediente:</b> ${textoWord(datos.expediente)}
         &nbsp;&nbsp; <b>Sexo:</b> ${textoWord(datos.sexo)}
-        <br>
-        <b>Genero:</b> ${textoWord(datos.genero)}
+        &nbsp;&nbsp; <b>Genero:</b> ${textoWord(datos.genero)}
         &nbsp;&nbsp; <b>Servicio:</b> ${textoWord(datos.servicio || "OBSERVACION")}
         &nbsp;&nbsp; <b>Alergias:</b> ${textoWord(datos.alergias)}
         &nbsp;&nbsp; <b>Fecha:</b> ${textoWord(formatoFechaFray(datos.fechaNota))}
