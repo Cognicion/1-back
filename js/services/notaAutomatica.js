@@ -45,7 +45,7 @@ const REGLAS_SINTOMAS = {
 const RIESGO_SUICIDA_TERMINOS = {
   bajo: ["ideas de muerte", "desesperanza", "pensamientos de muerte"],
   moderado: ["ideas suicidas", "ideacion suicida", "conducta suicida", "amenaza suicida", "gesto suicida", "autolesiones"],
-  alto: ["plan suicida", "intento suicida", "intento suicidio", "intento de suicidio", "intento autolitico", "acto suicida", "arma blanca", "cutter", "cuter", "cúter", "arrojarse"],
+  alto: ["plan suicida", "ideacion suicida con plan", "ideación suicida con plan", "con plan", "intento suicida", "intento suicidio", "intento de suicidio", "intento autolitico", "acto suicida", "arma blanca", "cutter", "cuter", "cúter", "arrojarse"],
   muyAlto: ["intento frustrado", "abortado por terceros", "fue impedido", "fue rescatado", "intento saltar", "intento saltó", "salto", "saltó", "vias del metro", "vías del metro"]
 };
 
@@ -269,6 +269,7 @@ function posprocesarDatos(datos) {
   }
   if (datos.tratamientoPrevio.texto) {
     datos.tratamientoPrevio.texto = datos.tratamientoPrevio.texto.replace(/^tratamiento previo\s*(?:[:\-]\s*)?/i, "").replace(/[.]+$/, "");
+    datos.tratamientoPrevio.texto = datos.tratamientoPrevio.texto.replace(/^con\s+/i, "");
   }
   if (datos.estresores.texto) {
     datos.estresores.texto = datos.estresores.texto.replace(/^posterior a\s+/i, "");
@@ -279,6 +280,7 @@ function posprocesarDatos(datos) {
   if (datos.conductaSuicida.texto) {
     const indice = normalizar(datos.conductaSuicida.texto).lastIndexOf("conducta suicida");
     if (indice > 0) datos.conductaSuicida.texto = limpiarTexto(datos.conductaSuicida.texto.slice(indice)).replace(/^conducta suicida\s*[:\-]\s*/i, "");
+    datos.conductaSuicida.texto = datos.conductaSuicida.texto.replace(/^refiere\s+/i, "");
   }
 }
 
@@ -420,10 +422,20 @@ export function sugerirDiagnosticos(sintomas = {}, riesgos = []) {
 
   if (haySustancias) {
     const texto = sintomas.sustancias.join(" ");
+    let sustanciasDetectadas = 0;
     if (texto.includes("alcohol")) agregarDx(diagnosticos, "F10.1", "Consumo de alcohol referido.", "Diagnostico probable");
-    if (texto.includes("cannabis") || texto.includes("marihuana")) agregarDx(diagnosticos, "F12.1", "Consumo de cannabinoides referido.", "Diagnostico probable");
-    if (texto.includes("cristal") || texto.includes("metanfetamina") || texto.includes("cocaina")) agregarDx(diagnosticos, "F15.1", "Consumo de estimulantes referido.", "Diagnostico probable");
-    agregarDx(diagnosticos, "F19.1", "A descartar policonsumo o trastorno inducido por sustancias segun temporalidad.", "Diagnostico diferencial");
+    if (texto.includes("alcohol")) sustanciasDetectadas += 1;
+    if (texto.includes("cannabis") || texto.includes("marihuana")) {
+      agregarDx(diagnosticos, "F12.1", "Consumo de cannabinoides referido.", "Diagnostico probable");
+      sustanciasDetectadas += 1;
+    }
+    if (texto.includes("cristal") || texto.includes("metanfetamina") || texto.includes("cocaina")) {
+      agregarDx(diagnosticos, "F15.1", "Consumo de estimulantes referido.", "Diagnostico probable");
+      sustanciasDetectadas += 1;
+    }
+    if (sustanciasDetectadas > 1) {
+      agregarDx(diagnosticos, "F19.1", "A descartar policonsumo o trastorno inducido por sustancias segun temporalidad.", "Diagnostico diferencial");
+    }
   }
 
   return diagnosticos;
