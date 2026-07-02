@@ -658,6 +658,32 @@ function aceptarTodosDiagnosticosAutomaticos() {
   for (let i = total - 1; i >= 0; i -= 1) aceptarDiagnosticoAutomatico(i);
 }
 
+function obtenerIdentificacionPaciente() {
+  const institucional = pacienteActualDatos?.datosInstitucionales || {};
+  const historia = historiaClinicaActual || {};
+  const fechaNacimiento =
+    pacienteActualDatos?.fechaNacimiento ||
+    institucional.fechaNacimiento ||
+    pacienteActualDatos?.fecha_nacimiento ||
+    pacienteActualDatos?.fechaDeNacimiento ||
+    pacienteActualDatos?.fechaNac ||
+    pacienteActualDatos?.nacimiento ||
+    "";
+  const edadCalculada = calcularEdadDesdeFecha(fechaNacimiento);
+
+  return {
+    nombreCompleto: pacienteActualDatos?.nombreCompleto || pacienteActualDatos?.nombre || institucional.nombrePaciente || "",
+    sexo: pacienteActualDatos?.sexo || institucional.sexo || historia.sexo || "",
+    fechaNacimiento,
+    edad: edadCalculada ? Number(edadCalculada) : null,
+    escolaridad: pacienteActualDatos?.escolaridad || historia.escolaridad || institucional.escolaridad || "",
+    estadoCivil: pacienteActualDatos?.estadoCivil || historia.estadoCivil || institucional.estadoCivil || "",
+    ocupacion: pacienteActualDatos?.ocupacion || historia.ocupacion || institucional.ocupacion || "",
+    religion: pacienteActualDatos?.religion || historia.religion || institucional.religion || "",
+    medicoTratante: pacienteActualDatos?.medicoTratante || institucional.medicoTratante || historia.medicoTratante || ""
+  };
+}
+
 function aplicarNotaAutomatica() {
   const texto = document.getElementById("textoDictadoClinico")?.value.trim() || "";
   if (!texto) {
@@ -668,7 +694,7 @@ function aplicarNotaAutomatica() {
   const confirmado = confirm("La nota automatica es solo una sugerencia por reglas locales. Revise y corrija todo antes de guardar.");
   if (!confirmado) return;
 
-  const generada = generarNotaAutomatica(texto);
+  const generada = generarNotaAutomatica(texto, obtenerIdentificacionPaciente());
   anexarTextoGenerado("subjetivo", generada.padecimientoActual, "Padecimiento actual sugerido");
   anexarTextoGenerado("objetivo", generada.exploracionMental, "Exploracion mental sugerida");
   anexarTextoGenerado("analisis", generada.comentarioClinico, "Comentario clinico sugerido");

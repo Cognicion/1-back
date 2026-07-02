@@ -144,6 +144,76 @@ function extraerPorRegex(texto, regex) {
   return limpiarTexto(texto.match(regex)?.[1] || "");
 }
 
+function primerValor(...valores) {
+  return valores.find((valor) => valor !== undefined && valor !== null && String(valor).trim() !== "") || "";
+}
+
+function calcularEdad(fechaNacimiento) {
+  if (!fechaNacimiento) return null;
+  const textoFecha = String(fechaNacimiento).trim();
+  let fecha = null;
+
+  if (/^\d{4}-\d{2}-\d{2}/.test(textoFecha)) {
+    fecha = new Date(`${textoFecha.slice(0, 10)}T00:00:00`);
+  } else if (/^\d{2}[-/]\d{2}[-/]\d{4}$/.test(textoFecha)) {
+    const [dia, mes, anio] = textoFecha.split(/[-/]/);
+    fecha = new Date(`${anio}-${mes}-${dia}T00:00:00`);
+  } else {
+    fecha = new Date(textoFecha);
+  }
+
+  if (Number.isNaN(fecha?.getTime())) return null;
+  const hoy = new Date();
+  let edad = hoy.getFullYear() - fecha.getFullYear();
+  const mes = hoy.getMonth() - fecha.getMonth();
+  if (mes < 0 || (mes === 0 && hoy.getDate() < fecha.getDate())) edad -= 1;
+  return edad >= 0 ? edad : null;
+}
+
+function normalizarIdentificacionPaciente(datosPaciente = {}, identificacionDictado = {}) {
+  const institucional = datosPaciente.datosInstitucionales || {};
+  const historia = datosPaciente.historiaClinica || {};
+  const fechaNacimiento = primerValor(
+    datosPaciente.fechaNacimiento,
+    institucional.fechaNacimiento,
+    datosPaciente.fecha_nacimiento,
+    datosPaciente.fechaDeNacimiento,
+    datosPaciente.fechaNac,
+    datosPaciente.nacimiento,
+    identificacionDictado.fechaNacimiento
+  );
+  const edadCalculada = calcularEdad(fechaNacimiento);
+  const edad = edadCalculada ?? (identificacionDictado.edad || null);
+  const nombreCompleto = primerValor(datosPaciente.nombreCompleto, datosPaciente.nombre, institucional.nombrePaciente, identificacionDictado.nombreCompleto);
+  const sexo = primerValor(datosPaciente.sexo, institucional.sexo, historia.sexo, identificacionDictado.sexo);
+  const escolaridad = primerValor(datosPaciente.escolaridad, historia.escolaridad, institucional.escolaridad, identificacionDictado.escolaridad);
+  const estadoCivil = primerValor(datosPaciente.estadoCivil, historia.estadoCivil, institucional.estadoCivil, identificacionDictado.estadoCivil);
+  const ocupacion = primerValor(datosPaciente.ocupacion, historia.ocupacion, institucional.ocupacion, identificacionDictado.ocupacion);
+  const religion = primerValor(datosPaciente.religion, historia.religion, institucional.religion, identificacionDictado.religion);
+  const medicoTratante = primerValor(datosPaciente.medicoTratante, institucional.medicoTratante, historia.medicoTratante, identificacionDictado.medicoTratante);
+
+  return {
+    nombreCompleto,
+    sexo,
+    fechaNacimiento,
+    edad,
+    escolaridad,
+    estadoCivil,
+    ocupacion,
+    religion,
+    medicoTratante,
+    texto: unirUnico([
+      nombreCompleto,
+      sexo,
+      edad !== null && edad !== "" ? `${edad} anos` : "",
+      escolaridad,
+      estadoCivil,
+      ocupacion,
+      religion
+    ])
+  };
+}
+
 function crearDatosVacios() {
   return {
     identificacion: {},
@@ -229,13 +299,20 @@ function extraerIdentificacion(texto, datos) {
   const edad = t.match(/\b(\d{1,3})\s*(anos|anios|años)\b/i)?.[1] || "";
   const sexo = t.match(/\b(femenino|masculino|mujer|hombre|varon)\b/i)?.[1] || "";
   const escolaridad = extraerPorRegex(t, /\bescolaridad\s*(?:de)?\s*([^.;,]+)/i);
+  const estadoCivil = extraerPorRegex(t, /\bestado civil\s*(?:de)?\s*([^.;,]+)/i);
   const ocupacion = extraerPorRegex(t, /\bocupacion\s*(?:de)?\s*([^.;,]+)/i);
+  const religion = extraerPorRegex(t, /\breligion\s*(?:de)?\s*([^.;,]+)/i);
   datos.identificacion = {
-    edad,
+    nombreCompleto: "",
     sexo,
+    fechaNacimiento: "",
+    edad: edad ? Number(edad) : null,
     escolaridad,
+    estadoCivil,
     ocupacion,
-    texto: unirUnico([edad ? `${edad} anos` : "", sexo, escolaridad, ocupacion])
+    religion,
+    medicoTratante: "",
+    texto: unirUnico([edad ? `${edad} anos` : "", sexo, escolaridad, estadoCivil, ocupacion, religion])
   };
 }
 
@@ -315,13 +392,15 @@ export function detectarRiesgoSuicida(textoDictado = "") {
   }];
 }
 
-export function extraerDatosClinicos(textoDictado = "") {
+export function extraerDatosClinicos(textoDictado = "", datosPaciente = {}) {
   const datos = crearDatosVacios();
   const texto = limpiarTexto(textoDictado);
   datos.fuente.textoOriginal = texto;
+  datos.identificacion = normalizarIdentificacionPaciente(datosPaciente, {});
   if (!texto) return datos;
 
   extraerIdentificacion(texto, datos);
+  datos.identificacion = normalizarIdentificacionPaciente(datosPaciente, datos.identificacion);
   extraerSecciones(texto, datos);
   clasificarFrases(texto, datos);
   extraerTemporalidad(texto, datos);
@@ -347,8 +426,12 @@ export function extraerDatosClinicos(textoDictado = "") {
   return datos;
 }
 
-export function estructurarTextoClinico(textoDictado = "") {
-  const datos = extraerDatosClinicos(textoDictado);
+export function crearBaseHechosClinicos(datosPaciente = {}, textoDictado = "") {
+  return extraerDatosClinicos(textoDictado, datosPaciente);
+}
+
+export function estructurarTextoClinico(textoDictado = "", datosPaciente = {}) {
+  const datos = crearBaseHechosClinicos(datosPaciente, textoDictado);
   return {
     fichaIdentificacion: datos.identificacion.texto || "",
     antecedentesPsiquiatricos: datos.antecedentesPsiquiatricos.texto || "",
@@ -482,8 +565,8 @@ export function generarPlanSugerido(diagnosticos = [], riesgos = [], sintomas = 
   return plan.join("\n");
 }
 
-export function generarNotaAutomatica(textoDictado = "") {
-  const datosClinicos = extraerDatosClinicos(textoDictado);
+export function generarNotaAutomatica(textoDictado = "", datosPaciente = {}) {
+  const datosClinicos = crearBaseHechosClinicos(datosPaciente, textoDictado);
   const textoAnalisis = [textoDictado, JSON.stringify(datosClinicos)].join(" ");
   const sintomas = detectarSintomas(textoAnalisis);
   const riesgosDetectados = detectarRiesgoSuicida(textoAnalisis);
@@ -497,7 +580,7 @@ export function generarNotaAutomatica(textoDictado = "") {
 
   return {
     datosClinicos,
-    estructuraClinica: estructurarTextoClinico(textoDictado),
+    estructuraClinica: estructurarTextoClinico(textoDictado, datosPaciente),
     padecimientoActual: generarPadecimientoActual(datosClinicos),
     exploracionMental: generarExploracionMental(datosClinicos),
     comentarioClinico: generarComentarioClinico(datosClinicos),
