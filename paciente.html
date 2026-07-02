@@ -669,18 +669,34 @@
             <option value="via topica"></option>
             <option value="via inhalada"></option>
              </datalist>
-          <label>Veces al dia<input id="tratamientoFrecuencia" placeholder="Ej. 1 vez al dia"></label>
+          <label>Veces al dia
+            <input
+              id="tratamientoFrecuencia"
+              placeholder="Ej. 1 vez al dia"
+              list="opcionesFrecuenciaTratamiento"
+            >
+          </label>
+          <datalist id="opcionesFrecuenciaTratamiento">
+            <option value="1 vez al dia"></option>
+            <option value="2 veces al dia"></option>
+            <option value="3 veces al dia"></option>
+            <option value="4 veces al dia"></option>
+          </datalist>
           <label>Dosis/horario<input id="tratamientoDosis" placeholder="Ej. 1 tableta a las 08:00"></label>
           <label>Horarios<input id="tratamientoHorarios" placeholder="Ej. 08:00, 22:00"></label>
           <label>Fecha de inicio<input id="tratamientoFechaInicio" type="date"></label>
-          <label>Cantidad total al día</label>
-          <input type="number"
-            id="cantidadTotalDia"
-            min="0"
-            step="0.5"
-            placeholder="Ej. 2"
-          />
-          const cantidadTotalDia = Number(document.getElementById("cantidadTotalDia").value);
+          <label>Cantidad total al dia
+            <input
+              type="number"
+              id="cantidadTotalDia"
+              min="0"
+              step="0.5"
+              placeholder="Ej. 2"
+            >
+          </label>
+          <label>Dosis total al dia
+            <input id="tratamientoDosisTotalDia" placeholder="Se calcula automaticamente" readonly>
+          </label>
           
           <label>Estado
             <select id="tratamientoEstado">

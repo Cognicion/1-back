@@ -784,6 +784,8 @@ body {
   --col-edad: 88px;
   --col-atencion: 118px;
   --col-diagnostico: 470px;
+  --col-medicamento: 250px;
+  --col-dosis-dia: 120px;
   --col-ultima: 125px;
   --col-proxima: 235px;
   --col-adscrito: 170px;
@@ -791,6 +793,7 @@ body {
   --tabla-min-width: calc(
     var(--col-cama) + var(--col-nombre) + var(--col-ingreso) + var(--col-estancia) +
     var(--col-edad) + var(--col-atencion) + var(--col-diagnostico) +
+    var(--col-medicamento) + var(--col-dosis-dia) +
     var(--col-ultima) + var(--col-proxima) + var(--col-adscrito) + var(--col-residente) +
     var(--col-carpeta)
   );
@@ -816,6 +819,8 @@ body {
     var(--col-edad)
     var(--col-atencion)
     var(--col-diagnostico)
+    var(--col-medicamento)
+    var(--col-dosis-dia)
     var(--col-ultima)
     var(--col-proxima)
     var(--col-adscrito)
@@ -868,6 +873,29 @@ body {
 
 .columna-oculta {
   display: none !important;
+}
+
+.medicamento-columna,
+.dosis-dia-columna {
+  display: grid;
+  align-content: start;
+  gap: 6px;
+  color: #cbd5e1;
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.medicamento-columna span,
+.dosis-dia-columna span {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dosis-dia-columna {
+  color: #7dd3fc;
+  font-weight: 800;
 }
 
 .fila-paciente:hover {

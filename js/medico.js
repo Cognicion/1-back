@@ -26,6 +26,7 @@ iniciarMonitoreoSesion("Panel medico");
 let pacientesGlobal = [];
 let uidMedicoActual = "";
 let carpetasMedico = [];
+let ultimaRecargaPacientes = 0;
 const STORAGE_ORDEN_PACIENTES = "cognicion.medico.ordenPacientes";
 let ordenPacientesActual = cargarPreferenciaOrdenPacientes();
 const STORAGE_FILTRO_CARPETA = "cognicion.medico.filtroCarpeta";
@@ -44,6 +45,8 @@ const COLUMNAS_PACIENTES = [
   { key: "edad", label: "Edad", cssVar: "--col-edad" },
   { key: "atencion", label: "Atencion en", cssVar: "--col-atencion" },
   { key: "diagnostico", label: "Diagnostico", cssVar: "--col-diagnostico" },
+  { key: "medicamento", label: "Medicamento", cssVar: "--col-medicamento" },
+  { key: "dosisDia", label: "Dosis/dia", cssVar: "--col-dosis-dia" },
   { key: "ultima", label: "Ultima consulta", cssVar: "--col-ultima" },
   { key: "proxima", label: "Proxima consulta", cssVar: "--col-proxima" },
   { key: "adscrito", label: "Adscrito", cssVar: "--col-adscrito" },
@@ -128,6 +131,22 @@ onAuthStateChanged(auth, async (user) => {
 
   await cargarCarpetasMedico(user.uid);
   await cargarPacientes(user.uid);
+});
+
+async function refrescarPacientesSiCorresponde() {
+  if (!uidMedicoActual || document.hidden) return;
+  if (Date.now() - ultimaRecargaPacientes < 2500) return;
+
+  try {
+    await cargarPacientes(uidMedicoActual, { silencioso: true });
+  } catch (error) {
+    console.warn("No se pudo refrescar el panel medico:", error);
+  }
+}
+
+window.addEventListener("focus", refrescarPacientesSiCorresponde);
+document.addEventListener("visibilitychange", () => {
+  if (!document.hidden) refrescarPacientesSiCorresponde();
 });
 
 async function cargarPerfilMedico(user) {
@@ -657,9 +676,9 @@ function inicializarCarpetasPacientes() {
   });
 }
 
-async function cargarPacientes(uidMedico) {
+async function cargarPacientes(uidMedico, opciones = {}) {
   const lista = document.getElementById("listaPacientes");
-  lista.innerHTML = "Cargando pacientes...";
+  if (!opciones.silencioso && lista) lista.innerHTML = "Cargando pacientes...";
 
   const refPacientes = collection(db, "usuarios");
   const snapshot = await getDocs(refPacientes);
@@ -708,7 +727,7 @@ async function cargarPacientes(uidMedico) {
   renderizarListaCarpetasMedico();
   renderizarCarpetasInlineMedico();
   calcularEstadisticas(pacientesGlobal);
-  renderizarGraficasMedico(pacientesGlobal);
+  ultimaRecargaPacientes = Date.now();
 }
 
 function formatearDiagnostico(diagnostico) {
@@ -861,6 +880,74 @@ function obtenerResidenteEncargado(paciente = {}) {
     institucional.medicoResidente ||
     "Sin registro"
   );
+}
+
+function numeroDesdeTextoMedicamento(valor = "") {
+  const texto = String(valor || "").trim().replace(",", ".");
+  const fraccion = texto.match(/(\d+(?:\.\d+)?)\s*\/\s*(\d+(?:\.\d+)?)/);
+  if (fraccion) {
+    const numerador = Number(fraccion[1]);
+    const denominador = Number(fraccion[2]);
+    return denominador ? numerador / denominador : 0;
+  }
+
+  const numero = texto.match(/\d+(?:\.\d+)?/);
+  return numero ? Number(numero[0]) : 0;
+}
+
+function calcularDosisTotalDiaMedicamento(t = {}) {
+  if (t.dosisTotalDia || t.dosisDia) return t.dosisTotalDia || t.dosisDia;
+
+  const presentacion = String(t.medicamento || "").match(/(\d+(?:[.,]\d+)?)\s*(mg|mcg|\u00b5g|g|ml|ui|u)\b/i);
+  const cantidades = [...String(t.dosis || "").matchAll(/(\d+\s*\/\s*\d+|\d+(?:[.,]\d+)?)\s*(?:tabletas?|tabs?|comprimidos?|capsulas?|caps?|gotas?|ampolletas?|ml|mg|mg\.|capsula|tableta)\b/gi)]
+    .map((match) => numeroDesdeTextoMedicamento(match[1]))
+    .filter((valor) => valor > 0);
+  const textoFrecuencia = String(t.frecuencia || "").toLowerCase();
+  const veces =
+    numeroDesdeTextoMedicamento(textoFrecuencia) ||
+    (textoFrecuencia.includes("cada 24") ? 1 : 0) ||
+    (textoFrecuencia.includes("cada 12") ? 2 : 0) ||
+    (textoFrecuencia.includes("cada 8") ? 3 : 0) ||
+    (textoFrecuencia.includes("cada 6") ? 4 : 0);
+  const cantidadManual = Number(String(t.cantidadTotalDia || "").replace(",", "."));
+
+  let cantidadTotal = Number.isFinite(cantidadManual) && cantidadManual > 0 ? cantidadManual : 0;
+  if (!cantidadTotal && cantidades.length > 1) cantidadTotal = cantidades.reduce((total, valor) => total + valor, 0);
+  if (!cantidadTotal && cantidades.length === 1 && veces > 0) cantidadTotal = cantidades[0] * veces;
+  if (!cantidadTotal && cantidades.length === 1) cantidadTotal = cantidades[0];
+  if (!cantidadTotal) return "";
+
+  if (!presentacion) return `${cantidadTotal} unidad${cantidadTotal === 1 ? "" : "es"}/dia`;
+
+  const total = cantidadTotal * Number(presentacion[1].replace(",", "."));
+  const redondeado = Number.isInteger(total) ? total : Number(total.toFixed(2));
+  return `${redondeado} ${presentacion[2].replace("\u00b5g", "mcg")}/dia`;
+}
+
+function obtenerResumenMedicamentosDosisDia(paciente = {}) {
+  const tratamientos = tratamientosActivosPaciente(paciente);
+  const resumen = paciente.datosClinicosResumen || {};
+  const dosisResumen = Array.isArray(resumen.medicamentosDosisDia)
+    ? resumen.medicamentosDosisDia
+    : [];
+
+  if (!tratamientos.length && dosisResumen.length) {
+    return {
+      medicamentos: dosisResumen
+        .map((item) => etiquetaMedicamentoGrafica(item?.medicamento || item))
+        .filter(Boolean),
+      dosis: dosisResumen.map((item) => item.dosisDia).filter(Boolean)
+    };
+  }
+
+  return {
+    medicamentos: tratamientos
+      .map((t) => t.medicamento || t.texto || "")
+      .filter(Boolean),
+    dosis: tratamientos
+      .map(calcularDosisTotalDiaMedicamento)
+      .filter(Boolean)
+  };
 }
 
 function formatearFechaCorta(fecha) {
@@ -1127,6 +1214,13 @@ function mostrarPacientes(pacientes) {
     const medicoAdscrito = obtenerMedicoAdscritoEncargado(paciente);
     const residente = obtenerResidenteEncargado(paciente);
     const carpetaPrincipal = obtenerCarpetaPrincipal(paciente);
+    const resumenMedicamentos = obtenerResumenMedicamentosDosisDia(paciente);
+    const medicamentosHtml = resumenMedicamentos.medicamentos.length
+      ? resumenMedicamentos.medicamentos.map((med) => `<span>${escaparHTML(med)}</span>`).join("")
+      : "<span>Sin medicamento</span>";
+    const dosisDiaHtml = resumenMedicamentos.dosis.length
+      ? resumenMedicamentos.dosis.map((dosis) => `<span>${escaparHTML(dosis)}</span>`).join("")
+      : "<span>Sin registro</span>";
 
     lista.innerHTML += `
       <a class="fila-paciente" href="paciente.html?id=${paciente.id}">
@@ -1146,6 +1240,8 @@ function mostrarPacientes(pacientes) {
           ${secundariosHtml}
         </span>
         </span>
+        <span class="paciente-dato medicamento-columna" data-col-key="medicamento">${medicamentosHtml}</span>
+        <span class="paciente-dato dosis-dia-columna" data-col-key="dosisDia">${dosisDiaHtml}</span>
         <span class="paciente-dato" data-col-key="ultima">${ultimaConsulta}</span>
         <span class="paciente-dato" data-col-key="proxima">${proximaConsulta}</span>
         <span class="paciente-dato" data-col-key="adscrito">${medicoAdscrito}</span>
@@ -1189,10 +1285,15 @@ function filtrarPacientes() {
     const atencion = obtenerAtencionEn(paciente).toLowerCase();
     const carpeta = obtenerCarpetaPrincipal(paciente).toLowerCase();
     const diagnostico = formatearDiagnostico(obtenerDiagnosticosPaciente(paciente).principal).toLowerCase();
-    return [nombre, cama, fechaIngreso, medicoAdscrito, residente, atencion, carpeta, diagnostico].some((valor) => valor.includes(texto));
+    const resumenMedicamentos = obtenerResumenMedicamentosDosisDia(paciente);
+    const medicamentos = resumenMedicamentos.medicamentos.join(" ").toLowerCase();
+    const dosisDia = resumenMedicamentos.dosis.join(" ").toLowerCase();
+    return [nombre, cama, fechaIngreso, medicoAdscrito, residente, atencion, carpeta, diagnostico, medicamentos, dosisDia].some((valor) => valor.includes(texto));
   });
 
-  mostrarPacientes(ordenarPacientes(filtrados));
+  const ordenados = ordenarPacientes(filtrados);
+  mostrarPacientes(ordenados);
+  renderizarGraficasMedico(ordenados);
 }
 
 function cargarPreferenciaOrdenPacientes() {
@@ -1251,9 +1352,11 @@ function cargarPreferenciasColumnasPacientes() {
     const visibles = columnas.filter((columna) => clavesValidas.has(columna));
 
     if (!visibles.includes("nombre")) visibles.push("nombre");
-    if (localStorage.getItem(STORAGE_COLUMNAS_PACIENTES_VERSION) !== "carpetas-v1") {
+    if (localStorage.getItem(STORAGE_COLUMNAS_PACIENTES_VERSION) !== "tratamiento-dosis-v1") {
       if (!visibles.includes("carpeta")) visibles.push("carpeta");
-      localStorage.setItem(STORAGE_COLUMNAS_PACIENTES_VERSION, "carpetas-v1");
+      if (!visibles.includes("medicamento")) visibles.push("medicamento");
+      if (!visibles.includes("dosisDia")) visibles.push("dosisDia");
+      localStorage.setItem(STORAGE_COLUMNAS_PACIENTES_VERSION, "tratamiento-dosis-v1");
       localStorage.setItem(STORAGE_COLUMNAS_PACIENTES, JSON.stringify(visibles));
     }
 
@@ -1523,8 +1626,10 @@ function etiquetaDiagnosticoGrafica(dx) {
   if (!dx) return "";
   if (typeof dx === "string") return dx.trim().slice(0, 36);
 
+  if (typeof dx !== "object") return String(dx || "").trim().slice(0, 36);
+
   const codigo = dx.codigo || "";
-  const nombre = dx.nombre || dx.texto || "";
+  const nombre = dx.nombre || dx.texto || dx.descripcion || dx.diagnostico || "";
   const etiqueta = codigo && nombre
     ? `${codigo} ${nombre}`
     : (codigo || nombre || "");
@@ -1575,8 +1680,21 @@ function contarDiagnosticosTodos(pacientes = []) {
 }
 
 function etiquetaMedicamentoGrafica(valor = "") {
-  const texto = String(valor || "").trim();
+  const crudo = (valor && typeof valor === "object")
+    ? (
+      valor.medicamento ||
+      valor.nombre ||
+      valor.texto ||
+      valor.descripcion ||
+      valor.principioActivo ||
+      valor.presentacion ||
+      ""
+    )
+    : valor;
+
+  const texto = String(crudo || "").trim();
   if (!texto) return "";
+  if (texto === "[object Object]") return "";
 
   const antesDeComa = texto.split(",")[0]?.trim();
   const antesDePunto = texto.split(".")[0]?.trim();
@@ -1588,16 +1706,24 @@ function etiquetaMedicamentoGrafica(valor = "") {
 function tratamientosActivosPaciente(paciente = {}) {
   const resumen = paciente.datosClinicosResumen || {};
 
+  const limpiar = (lista = []) => lista
+    .filter((t) => t && (typeof t !== "object" || (t.estado || "activo") === "activo"))
+    .map((t) => {
+      if (typeof t === "string") return { medicamento: t };
+      return t;
+    })
+    .filter((t) => etiquetaMedicamentoGrafica(t));
+
   if (Array.isArray(resumen.tratamientosActivos)) {
-    return resumen.tratamientosActivos.filter((t) => (t.estado || "activo") === "activo");
+    return limpiar(resumen.tratamientosActivos);
   }
 
   if (Array.isArray(paciente.tratamientosActivos)) {
-    return paciente.tratamientosActivos.filter((t) => (t.estado || "activo") === "activo");
+    return limpiar(paciente.tratamientosActivos);
   }
 
   if (Array.isArray(paciente.tratamientos)) {
-    return paciente.tratamientos.filter((t) => (t.estado || "activo") === "activo");
+    return limpiar(paciente.tratamientos);
   }
 
   const textoResumen = resumen.tratamientoActivo || paciente.tratamiento || "";
@@ -1609,7 +1735,7 @@ function tratamientosActivosPaciente(paciente = {}) {
 function contarMedicamentosIndicados(pacientes = []) {
   return pacientes.reduce((conteo, paciente) => {
     tratamientosActivosPaciente(paciente).forEach((tratamiento) => {
-      const etiqueta = etiquetaMedicamentoGrafica(tratamiento.medicamento || tratamiento.texto || tratamiento);
+      const etiqueta = etiquetaMedicamentoGrafica(tratamiento);
       if (!etiqueta) return;
       conteo[etiqueta] = (conteo[etiqueta] || 0) + 1;
     });

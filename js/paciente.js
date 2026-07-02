@@ -657,6 +657,7 @@ window.eliminarApunteMedicoPaciente = async function() {
 };
 
 window.abrirApuntesMedicoPaciente = async function() {
+  moverPanelApuntesPacienteAlBody();
   document.getElementById("fondoApuntesMedicoPaciente")?.classList.remove("oculto");
   const panel = document.getElementById("panelApuntesMedicoPaciente");
   if (panel) {
@@ -675,6 +676,18 @@ window.cerrarApuntesMedicoPaciente = function() {
     panel.setAttribute("aria-hidden", "true");
   }
 };
+
+function moverPanelApuntesPacienteAlBody() {
+  [
+    "fondoApuntesMedicoPaciente",
+    "panelApuntesMedicoPaciente"
+  ].forEach((id) => {
+    const elemento = document.getElementById(id);
+    if (elemento && elemento.parentElement !== document.body) {
+      document.body.appendChild(elemento);
+    }
+  });
+}
 
 function configurarCatalogoMedicamentosTratamiento() {
   const lista = document.getElementById("catalogoMedicamentosPsiquiatricos");
@@ -3162,12 +3175,15 @@ window.abrirHistoriaClinica = function() {
 };
 
 function datosFormularioTratamiento() {
+  actualizarDosisTotalDiaTratamiento();
   return {
     medicamento: valorCampo("tratamientoMedicamento"),
     dosis: valorCampo("tratamientoDosis"),
     frecuencia: valorCampo("tratamientoFrecuencia"),
     via: valorCampo("tratamientoVia"),
     horarios: valorCampo("tratamientoHorarios"),
+    cantidadTotalDia: valorCampo("cantidadTotalDia"),
+    dosisTotalDia: valorCampo("tratamientoDosisTotalDia"),
     fechaInicio: valorCampo("tratamientoFechaInicio"),
     estado: valorCampo("tratamientoEstado") || "activo",
     fechaSuspension: valorCampo("tratamientoFechaSuspension"),
@@ -3185,11 +3201,15 @@ function limpiarFormularioTratamiento() {
     "tratamientoFrecuencia",
     "tratamientoVia",
     "tratamientoHorarios",
+    "cantidadTotalDia",
+    "tratamientoDosisTotalDia",
     "tratamientoFechaInicio",
     "tratamientoFechaSuspension",
     "tratamientoMotivoSuspension",
     "tratamientoObservaciones"
   ].forEach((id) => ponerValor(id, ""));
+  const campoCantidad = document.getElementById("cantidadTotalDia");
+  if (campoCantidad) campoCantidad.dataset.auto = "";
   ponerValor("tratamientoEstado", "activo");
 }
 
@@ -3262,6 +3282,7 @@ async function cargarTratamientosPaciente() {
 
 function renderizarTratamiento(t) {
   const indicacion = formatearIndicacionTratamiento(t, false);
+  const dosisTotalDia = t.dosisTotalDia || calcularDosisTotalDiaTratamiento(t).texto || "";
   return `
     <article class="registro-card">
       <div class="registro-top">
@@ -3272,6 +3293,7 @@ function renderizarTratamiento(t) {
         <span class="estado-badge ${t.estado === "suspendido" ? "suspendido" : "activo"}">${escaparHTML(t.estado || "activo")}</span>
       </div>
       <p><b>Inicio:</b> ${escaparHTML(formatearFecha(t.fechaInicio) || "Sin fecha")}</p>
+      ${dosisTotalDia ? `<p><b>Dosis total al dia:</b> ${escaparHTML(dosisTotalDia)}</p>` : ""}
       ${t.estado === "suspendido" ? `<p><b>Suspension:</b> ${escaparHTML(formatearFecha(t.fechaSuspension))} Â· ${escaparHTML(t.motivoSuspension || "Sin motivo registrado")}</p>` : ""}
       ${t.observaciones ? `<p>${escaparHTML(t.observaciones)}</p>` : ""}
       <div class="registro-actions">
@@ -3302,6 +3324,10 @@ function editarTratamientoPaciente(id) {
   ponerValor("tratamientoFrecuencia", t.frecuencia);
   ponerValor("tratamientoVia", t.via);
   ponerValor("tratamientoHorarios", t.horarios);
+  ponerValor("cantidadTotalDia", t.cantidadTotalDia);
+  ponerValor("tratamientoDosisTotalDia", t.dosisTotalDia);
+  const campoCantidad = document.getElementById("cantidadTotalDia");
+  if (campoCantidad) campoCantidad.dataset.auto = "false";
   ponerValor("tratamientoFechaInicio", t.fechaInicio);
   ponerValor("tratamientoEstado", t.estado || "activo");
   ponerValor("tratamientoFechaSuspension", t.fechaSuspension);
@@ -3341,12 +3367,115 @@ async function sincronizarResumenTratamiento() {
       ...(datosPacienteActual?.datosClinicosResumen || {}),
       tratamientoActivo: resumen,
       tratamientosActivos: activos,
+      medicamentosDosisDia: activos.map((t) => ({
+        medicamento: t.medicamento || "",
+        dosisDia: t.dosisTotalDia || calcularDosisTotalDiaTratamiento(t).texto || "",
+        cantidadTotalDia: t.cantidadTotalDia || ""
+      })),
       fechaActualizacionTratamiento: new Date().toISOString()
     }
   });
 
   const tratamiento = document.getElementById("tratamiento");
   if (tratamiento) tratamiento.innerText = resumen || "Sin tratamiento registrado";
+}
+
+function numeroDesdeTexto(valor = "") {
+  const texto = String(valor || "").trim().replace(",", ".");
+  const fraccion = texto.match(/(\d+(?:\.\d+)?)\s*\/\s*(\d+(?:\.\d+)?)/);
+  if (fraccion) {
+    const numerador = Number(fraccion[1]);
+    const denominador = Number(fraccion[2]);
+    return denominador ? numerador / denominador : 0;
+  }
+
+  const numero = texto.match(/\d+(?:\.\d+)?/);
+  return numero ? Number(numero[0]) : 0;
+}
+
+function obtenerVecesPorDia(frecuencia = "") {
+  const texto = String(frecuencia || "").toLowerCase();
+  const numero = numeroDesdeTexto(texto);
+  if (numero > 0) return numero;
+  if (texto.includes("cada 24")) return 1;
+  if (texto.includes("cada 12")) return 2;
+  if (texto.includes("cada 8")) return 3;
+  if (texto.includes("cada 6")) return 4;
+  return 0;
+}
+
+function extraerPresentacionMedicamento(medicamento = "") {
+  const match = String(medicamento || "").match(/(\d+(?:[.,]\d+)?)\s*(mg|mcg|\u00b5g|g|ml|ui|u)\b/i);
+  if (!match) return null;
+  return {
+    valor: Number(match[1].replace(",", ".")),
+    unidad: match[2].replace("\u00b5g", "mcg")
+  };
+}
+
+function extraerCantidadesDosis(dosis = "") {
+  const texto = String(dosis || "");
+  const matches = [...texto.matchAll(/(\d+\s*\/\s*\d+|\d+(?:[.,]\d+)?)\s*(?:tabletas?|tabs?|comprimidos?|capsulas?|caps?|gotas?|ampolletas?|ml|mg|mg\.|capsula|tableta)\b/gi)];
+  return matches.map((match) => numeroDesdeTexto(match[1])).filter((valor) => valor > 0);
+}
+
+function calcularDosisTotalDiaTratamiento(t = {}) {
+  const presentacion = extraerPresentacionMedicamento(t.medicamento || "");
+  const cantidades = extraerCantidadesDosis(t.dosis || "");
+  const veces = obtenerVecesPorDia(t.frecuencia || "");
+  const cantidadManual = Number(String(t.cantidadTotalDia || "").replace(",", "."));
+
+  let cantidadTotal = Number.isFinite(cantidadManual) && cantidadManual > 0 ? cantidadManual : 0;
+
+  if (!cantidadTotal && cantidades.length > 1) {
+    cantidadTotal = cantidades.reduce((total, valor) => total + valor, 0);
+  } else if (!cantidadTotal && cantidades.length === 1 && veces > 0) {
+    cantidadTotal = cantidades[0] * veces;
+  } else if (!cantidadTotal && cantidades.length === 1) {
+    cantidadTotal = cantidades[0];
+  } else if (!cantidadTotal && veces > 0) {
+    cantidadTotal = veces;
+  }
+
+  if (!cantidadTotal) return { cantidadTotal: "", texto: "" };
+
+  if (presentacion?.valor) {
+    const total = cantidadTotal * presentacion.valor;
+    const totalRedondeado = Number.isInteger(total) ? total : Number(total.toFixed(2));
+    return {
+      cantidadTotal,
+      texto: `${totalRedondeado} ${presentacion.unidad}/dia`
+    };
+  }
+
+  return {
+    cantidadTotal,
+    texto: `${cantidadTotal} unidad${cantidadTotal === 1 ? "" : "es"}/dia`
+  };
+}
+
+function actualizarDosisTotalDiaTratamiento(evento = null) {
+  const campoCantidad = document.getElementById("cantidadTotalDia");
+
+  if (evento?.target?.id === "cantidadTotalDia" && campoCantidad) {
+    campoCantidad.dataset.auto = "false";
+  } else if (campoCantidad?.dataset.auto === "true") {
+    ponerValor("cantidadTotalDia", "");
+  }
+
+  const calculo = calcularDosisTotalDiaTratamiento({
+    medicamento: valorCampo("tratamientoMedicamento"),
+    dosis: valorCampo("tratamientoDosis"),
+    frecuencia: valorCampo("tratamientoFrecuencia"),
+    cantidadTotalDia: valorCampo("cantidadTotalDia")
+  });
+
+  if (!valorCampo("cantidadTotalDia") && calculo.cantidadTotal) {
+    ponerValor("cantidadTotalDia", calculo.cantidadTotal);
+    if (campoCantidad) campoCantidad.dataset.auto = "true";
+  }
+
+  ponerValor("tratamientoDosisTotalDia", calculo.texto);
 }
 
 function limpiarPuntoFinal(texto = "") {
@@ -3591,10 +3720,21 @@ async function cargarNotasRapidasPaciente() {
 
 document.getElementById("guardarTratamiento")?.addEventListener("click", guardarTratamientoPaciente);
 document.getElementById("limpiarTratamiento")?.addEventListener("click", limpiarFormularioTratamiento);
+[
+  "tratamientoMedicamento",
+  "tratamientoDosis",
+  "tratamientoFrecuencia",
+  "cantidadTotalDia"
+].forEach((id) => {
+  document.getElementById(id)?.addEventListener("input", actualizarDosisTotalDiaTratamiento);
+  document.getElementById(id)?.addEventListener("change", actualizarDosisTotalDiaTratamiento);
+});
 document.getElementById("abrirMedicamentoManual")?.addEventListener("click", abrirMedicamentoManual);
 document.getElementById("cerrarMedicamentoManual")?.addEventListener("click", cerrarMedicamentoManual);
 document.getElementById("cancelarMedicamentoManual")?.addEventListener("click", cerrarMedicamentoManual);
 document.getElementById("guardarMedicamentoManual")?.addEventListener("click", guardarMedicamentoManual);
+document.querySelector("#panelApuntesMedicoPaciente .boton-cerrar-panel")?.addEventListener("click", window.cerrarApuntesMedicoPaciente);
+document.getElementById("fondoApuntesMedicoPaciente")?.addEventListener("click", window.cerrarApuntesMedicoPaciente);
 document.getElementById("guardarEstudio")?.addEventListener("click", guardarEstudioPaciente);
 document.getElementById("limpiarEstudio")?.addEventListener("click", limpiarFormularioEstudio);
 document.getElementById("guardarNotaRapida")?.addEventListener("click", guardarNotaRapidaPaciente);
