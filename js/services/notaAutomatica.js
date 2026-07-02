@@ -75,6 +75,57 @@ const CLAVES_CATEGORIA = {
   exploracionMental: ["alerta", "orientado", "desorientado", "cooperador", "lenguaje", "afecto", "pensamiento", "juicio", "introspeccion", "sensopercepcion", "psicomotricidad"]
 };
 
+const EQUIVALENCIAS_COLOQUIALES = {
+  depresion: [
+    ["ya no disfruto nada", "anhedonia"],
+    ["no disfruto nada", "anhedonia"],
+    ["no quiero levantarme", "apatia/abulia"],
+    ["casi no duermo", "insomnio"],
+    ["me despierto como a las cuatro", "insomnio terminal"],
+    ["me despierto a las cuatro", "insomnio terminal"],
+    ["como muy poco", "hiporexia"],
+    ["soy una carga", "culpa/minusvalia"],
+    ["me vio llorando", "llanto"]
+  ],
+  riesgo: [
+    ["pense en tomarme las pastillas", "ideacion suicida con plan por sobredosis medicamentosa"],
+    ["pensé en tomarme las pastillas", "ideacion suicida con plan por sobredosis medicamentosa"],
+    ["pastillas de mi mama", "metodo especifico por sobredosis medicamentosa"],
+    ["pastillas de mi mamá", "metodo especifico por sobredosis medicamentosa"],
+    ["mi hermana las guardo", "restriccion de medios por familiar"],
+    ["mi hermana las guardó", "restriccion de medios por familiar"],
+    ["ya no podia dejarme sola", "necesidad de supervision por riesgo"],
+    ["ya no podía dejarme sola", "necesidad de supervision por riesgo"]
+  ],
+  protectores: [
+    ["viene mi hermana conmigo", "Acompanamiento por hermana"],
+    ["mi hermana me trajo", "Red de apoyo familiar"],
+    ["mi hermana las guardo", "Restriccion de medios por familiar"],
+    ["mi hermana las guardó", "Restriccion de medios por familiar"]
+  ]
+};
+
+const SINTOMAS_NEGADOS_CANONICOS = {
+  psicosis: [
+    ["voces", "alucinaciones auditivas"],
+    ["escuchado voces", "alucinaciones auditivas"],
+    ["visto cosas", "alteraciones sensoperceptivas"],
+    ["cosas que otros no ven", "alteraciones sensoperceptivas"],
+    ["delirios", "ideas delirantes"]
+  ],
+  mania: [
+    ["mucha energia", "hiperenergia"],
+    ["sin dormir", "disminucion de necesidad de dormir"],
+    ["gastando mucho dinero", "gasto excesivo"]
+  ],
+  sustancias: [
+    ["drogas", "consumo de drogas"],
+    ["cristal", "consumo de estimulantes"],
+    ["cannabis", "consumo de cannabis"],
+    ["marihuana", "consumo de cannabis"]
+  ]
+};
+
 function normalizar(texto = "") {
   return String(texto || "")
     .toLowerCase()
@@ -108,12 +159,31 @@ function estaNegado(texto, indice) {
   return /(niega|negando|sin|no presenta|no refiere|no se observan|no se identifican|descarta)\s+([\w\s,;:.]{0,28})$/.test(contexto);
 }
 
+function estaNegadoDespues(texto, indice, termino = "") {
+  const despues = texto.slice(indice + termino.length, indice + termino.length + 120);
+  const respuestaNegativa = /\b(no|no doctor|no doctora|nunca|para nada|nada de eso)\b/.test(despues);
+  const respuestaAfirmativaAntes = /\b(si|sí|claro|bastante|mucho)\b/.test(despues.split(/\b(no|no doctor|no doctora|nunca|para nada|nada de eso)\b/)[0] || "");
+  return respuestaNegativa && !respuestaAfirmativaAntes;
+}
+
 function contiene(texto, terminos = []) {
   return terminos.filter((termino) => {
     const terminoNormalizado = normalizar(termino);
     let indice = texto.indexOf(terminoNormalizado);
     while (indice !== -1) {
-      if (!estaNegado(texto, indice)) return true;
+      if (!estaNegado(texto, indice) && !estaNegadoDespues(texto, indice, terminoNormalizado)) return true;
+      indice = texto.indexOf(terminoNormalizado, indice + terminoNormalizado.length);
+    }
+    return false;
+  });
+}
+
+function contieneNegado(texto, terminos = []) {
+  return terminos.filter((termino) => {
+    const terminoNormalizado = normalizar(termino);
+    let indice = texto.indexOf(terminoNormalizado);
+    while (indice !== -1) {
+      if (estaNegado(texto, indice) || estaNegadoDespues(texto, indice, terminoNormalizado)) return true;
       indice = texto.indexOf(terminoNormalizado, indice + terminoNormalizado.length);
     }
     return false;
@@ -121,7 +191,7 @@ function contiene(texto, terminos = []) {
 }
 
 function dividirEnFrases(texto = "") {
-  return limpiarTexto(texto)
+  return limpiarTexto(texto.replace(/[…]+/g, ". "))
     .split(/(?<=[.;!?])\s+|\n+/)
     .map((frase) => frase.trim())
     .filter(Boolean);
@@ -231,6 +301,11 @@ function crearDatosVacios() {
       maniformes: {},
       sustancias: {}
     },
+    sintomasNegados: {
+      psicosis: [],
+      mania: [],
+      sustancias: []
+    },
     consumoSustancias: {},
     conductaSuicida: {},
     factoresProtectores: {},
@@ -274,8 +349,10 @@ function extraerSecciones(texto, datos) {
 function clasificarFrases(texto, datos) {
   dividirEnFrases(texto).forEach((frase) => {
     const f = normalizar(frase);
+    if (/^(hola|dime|ok|que|qué|como|cómo|por que|por qué|has|haz|vienes|consumes|llegaste|y te)\b/.test(f)) return;
     Object.entries(CLAVES_CATEGORIA).forEach(([campo, claves]) => {
       if (!contiene(f, claves).length || !datos[campo]) return;
+      if (campo === "tratamientoPrevio" && /tomarme las pastillas|pastillas de mi mama|pastillas de mi mamá/.test(f)) return;
       asignarTexto(datos[campo], "texto", frase);
     });
 
@@ -286,7 +363,8 @@ function clasificarFrases(texto, datos) {
     if (contiene(f, REGLAS_SINTOMAS.ansiedad).length) asignarTexto(datos.sintomas.ansiosos, "texto", frase);
     if (contiene(f, REGLAS_SINTOMAS.psicosis).length) asignarTexto(datos.sintomas.psicoticos, "texto", frase);
     if (contiene(f, REGLAS_SINTOMAS.mania).length) asignarTexto(datos.sintomas.maniformes, "texto", frase);
-    if (contiene(f, REGLAS_SINTOMAS.sustancias).length) {
+    const sustanciasFrase = contiene(f, REGLAS_SINTOMAS.sustancias);
+    if (sustanciasFrase.length && !(sustanciasFrase.every((item) => item === "alcohol") && consumoAlcoholNoProblematico(f))) {
       asignarTexto(datos.sintomas.sustancias, "texto", frase);
       asignarTexto(datos.consumoSustancias, "texto", frase);
     }
@@ -347,6 +425,7 @@ function posprocesarDatos(datos) {
   if (datos.tratamientoPrevio.texto) {
     datos.tratamientoPrevio.texto = datos.tratamientoPrevio.texto.replace(/^tratamiento previo\s*(?:[:\-]\s*)?/i, "").replace(/[.]+$/, "");
     datos.tratamientoPrevio.texto = datos.tratamientoPrevio.texto.replace(/^con\s+/i, "");
+    datos.tratamientoPrevio.texto = datos.tratamientoPrevio.texto.replace(/^si\s+/i, "");
   }
   if (datos.estresores.texto) {
     datos.estresores.texto = datos.estresores.texto.replace(/^posterior a\s+/i, "");
@@ -363,9 +442,60 @@ function posprocesarDatos(datos) {
 
 export function detectarSintomas(textoDictado = "") {
   const texto = normalizar(textoDictado);
-  return Object.fromEntries(
+  const sintomas = Object.fromEntries(
     Object.entries(REGLAS_SINTOMAS).map(([grupo, terminos]) => [grupo, contiene(texto, terminos)])
   );
+  Object.entries(EQUIVALENCIAS_COLOQUIALES).forEach(([grupo, equivalencias]) => {
+    if (grupo === "riesgo" || grupo === "protectores") return;
+    equivalencias.forEach(([frase, marcador]) => {
+      if (texto.includes(normalizar(frase)) && !sintomas[grupo]?.includes(marcador)) {
+        sintomas[grupo] = [...(sintomas[grupo] || []), marcador];
+      }
+    });
+  });
+  if (consumoAlcoholNoProblematico(texto)) {
+    sintomas.sustancias = (sintomas.sustancias || []).filter((item) => item !== "alcohol");
+  }
+  return sintomas;
+}
+
+function detectarSintomasNegados(textoDictado = "") {
+  const texto = normalizar(textoDictado);
+  return Object.fromEntries(
+    Object.entries(SINTOMAS_NEGADOS_CANONICOS).map(([grupo, pares]) => {
+      const negados = pares
+        .filter(([frase]) => contieneNegado(texto, [frase]).length)
+        .map(([, etiqueta]) => etiqueta);
+      return [grupo, [...new Set(negados)]];
+    })
+  );
+}
+
+function consumoAlcoholNoProblematico(texto = "") {
+  return contiene(texto, [
+    "alcohol casi nada",
+    "alcohol ocasional",
+    "una cerveza de vez en cuando",
+    "consumo social",
+    "niega consumo problematico",
+    "sin datos de dependencia",
+    "sin datos de uso perjudicial"
+  ]).length > 0;
+}
+
+function consumoAlcoholProblematico(texto = "") {
+  return contiene(texto, [
+    "consumo frecuente",
+    "consumo diario",
+    "perdida de control",
+    "problemas familiares por consumo",
+    "problemas laborales por consumo",
+    "intoxicaciones repetidas",
+    "abstinencia",
+    "craving",
+    "dependencia",
+    "consumo pese a consecuencias"
+  ]).length > 0;
 }
 
 function riesgoDesdeMarcadores(marcadoresPorNivel) {
@@ -381,6 +511,14 @@ export function detectarRiesgoSuicida(textoDictado = "") {
   const marcadoresPorNivel = Object.fromEntries(
     Object.entries(RIESGO_SUICIDA_TERMINOS).map(([nivel, terminos]) => [nivel, contiene(texto, terminos)])
   );
+  EQUIVALENCIAS_COLOQUIALES.riesgo.forEach(([frase, marcador]) => {
+    if (texto.includes(normalizar(frase)) && !marcadoresPorNivel.alto.includes(marcador)) {
+      marcadoresPorNivel.alto.push(marcador);
+    }
+  });
+  if (texto.includes("tomarme las pastillas") && !marcadoresPorNivel.alto.includes("ideacion suicida con plan por sobredosis medicamentosa")) {
+    marcadoresPorNivel.alto.push("ideacion suicida con plan por sobredosis medicamentosa");
+  }
   const nivel = riesgoDesdeMarcadores(marcadoresPorNivel);
   if (nivel === "Sin riesgo") return [];
 
@@ -407,6 +545,10 @@ export function extraerDatosClinicos(textoDictado = "", datosPaciente = {}) {
   extraerAdherenciaYRecaidas(texto, datos);
 
   const sintomas = detectarSintomas(texto);
+  datos.sintomasNegados = detectarSintomasNegados(texto);
+  if (consumoAlcoholNoProblematico(texto)) {
+    datos.consumoSustancias.noProblematico = "alcohol ocasional sin datos de uso perjudicial";
+  }
   datos.sintomas.depresivos.marcadores = sintomas.depresion;
   datos.sintomas.ansiosos.marcadores = sintomas.ansiedad;
   datos.sintomas.psicoticos.marcadores = sintomas.psicosis;
@@ -421,6 +563,19 @@ export function extraerDatosClinicos(textoDictado = "", datosPaciente = {}) {
   const riesgos = detectarRiesgoSuicida(texto);
   datos.riesgoSuicida = riesgos[0] || datos.riesgoSuicida;
   if (riesgos[0]) datos.conductaSuicida.marcadores = riesgos[0].marcadores;
+  EQUIVALENCIAS_COLOQUIALES.protectores.forEach(([frase, marcador]) => {
+    if (texto.includes(normalizar(frase))) {
+      asignarTexto(datos.factoresProtectores, "texto", marcador);
+    }
+  });
+  EQUIVALENCIAS_COLOQUIALES.riesgo.forEach(([frase, marcador]) => {
+    if (texto.includes(normalizar(frase))) {
+      asignarTexto(datos.conductaSuicida, "texto", marcador);
+    }
+  });
+  if (texto.includes("tomarme las pastillas")) {
+    asignarTexto(datos.conductaSuicida, "texto", "ideacion suicida con plan por sobredosis medicamentosa");
+  }
 
   posprocesarDatos(datos);
   return datos;
@@ -567,9 +722,8 @@ export function generarPlanSugerido(diagnosticos = [], riesgos = [], sintomas = 
 
 export function generarNotaAutomatica(textoDictado = "", datosPaciente = {}) {
   const datosClinicos = crearBaseHechosClinicos(datosPaciente, textoDictado);
-  const textoAnalisis = [textoDictado, JSON.stringify(datosClinicos)].join(" ");
-  const sintomas = detectarSintomas(textoAnalisis);
-  const riesgosDetectados = detectarRiesgoSuicida(textoAnalisis);
+  const sintomas = detectarSintomas(textoDictado);
+  const riesgosDetectados = detectarRiesgoSuicida(textoDictado);
   const diagnosticosSugeridos = sugerirDiagnosticos(sintomas, riesgosDetectados);
   const impresion = generarDiagnosticosDiferenciales({
     diagnosticos: diagnosticosSugeridos,

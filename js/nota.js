@@ -549,8 +549,11 @@ function anexarTextoGenerado(id, texto, titulo = "Sugerencia automatica") {
   const limpio = String(texto || "").trim();
   if (!campo || !limpio) return;
 
-  campo.value = campo.value.trim()
-    ? `${campo.value.trim()}\n\n--- ${titulo} ---\n${limpio}`
+  const encabezado = `--- ${titulo} ---`;
+  const patron = new RegExp(`\\n?\\n?--- ${titulo.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")} ---[\\s\\S]*?(?=\\n\\n--- |$)`, "g");
+  const previo = campo.value.replace(patron, "").trim();
+  campo.value = previo
+    ? `${previo}\n\n${encabezado}\n${limpio}`
     : limpio;
   campo.dispatchEvent(new Event("input", { bubbles: true }));
 }
@@ -697,13 +700,15 @@ function aplicarNotaAutomatica() {
   const generada = generarNotaAutomatica(texto, obtenerIdentificacionPaciente());
   anexarTextoGenerado("subjetivo", generada.padecimientoActual, "Padecimiento actual sugerido");
   anexarTextoGenerado("objetivo", generada.exploracionMental, "Exploracion mental sugerida");
-  anexarTextoGenerado("analisis", generada.comentarioClinico, "Comentario clinico sugerido");
   anexarTextoGenerado("plan", generada.planSugerido, "Plan terapeutico sugerido");
 
-  anexarTextoGenerado("analisis", generada.impresionDiagnostica, "Impresion diagnostica sugerida");
-
   const riesgos = textoRiesgosAutomaticos(generada.riesgosDetectados);
-  if (riesgos) anexarTextoGenerado("analisis", `Datos de alarma o riesgo detectados:\n${riesgos}`, "Riesgo sugerido");
+  const analisisAutomatico = [
+    `Comentario clinico:\n${generada.comentarioClinico || ""}`,
+    `Impresion diagnostica sugerida:\n${generada.impresionDiagnostica || ""}`,
+    riesgos ? `Riesgo sugerido:\n${riesgos}` : ""
+  ].filter((bloque) => bloque.trim()).join("\n\n");
+  anexarTextoGenerado("analisis", analisisAutomatico, "Analisis automatico sugerido");
 
   diagnosticosAutomaticosSugeridos = {
     diagnosticos: generada.cie10Sugeridos || [],

@@ -99,6 +99,8 @@ export const PLANTILLAS_PADECIMIENTO = {
 
     if (datos.consumoSustancias?.texto) {
       partes.push(`Respecto al consumo de sustancias, se reporta ${sinPuntoFinal(datos.consumoSustancias.texto)}.`);
+    } else if (datos.consumoSustancias?.noProblematico) {
+      partes.push(`Respecto al consumo, se reporta ${sinPuntoFinal(datos.consumoSustancias.noProblematico)}.`);
     }
 
     if (datos.factoresProtectores?.texto) {
@@ -134,9 +136,7 @@ export const PLANTILLAS_COMENTARIO = {
       ? `Durante la valoracion no se identifican datos suficientes para integrar ${negativos.join(", ")} con la informacion disponible.`
       : "";
 
-    const diagnostico = datos.impresionDiagnostica?.texto
-      ? `Por lo anterior, se considera ${datos.impresionDiagnostica.texto}, quedando sujeto a integracion diagnostica definitiva mediante evolucion clinica, entrevista psiquiatrica completa y juicio clinico del medico tratante.`
-      : "Por lo anterior, la impresion diagnostica permanece como preliminar y sujeta a integracion mediante evolucion clinica, entrevista psiquiatrica completa y juicio clinico del medico tratante.";
+    const diagnostico = "Por lo anterior, la impresion diagnostica permanece como sugerida y sujeta a integracion definitiva mediante evolucion clinica, entrevista psiquiatrica completa y juicio clinico del medico tratante.";
 
     return unir([primera, riesgo, segunda, diagnostico], " ");
   }
@@ -144,14 +144,28 @@ export const PLANTILLAS_COMENTARIO = {
 
 export const PLANTILLAS_EXPLORACION_MENTAL = {
   observacionFray(datos = {}) {
-    if (datos.exploracionMental?.texto) return datos.exploracionMental.texto;
-
-    const partes = [];
-    if (datos.sintomas?.depresivos?.marcadores?.length) partes.push(`Afecto/estado de animo: datos compatibles con hipotimia o sintomatologia depresiva (${datos.sintomas.depresivos.marcadores.join(", ")}).`);
+    const partes = ["Exploracion mental sugerida a corroborar:"];
+    if (datos.exploracionMental?.texto) partes.push(`Observacion registrada en dictado: ${datos.exploracionMental.texto}`);
+    if (datos.sintomas?.depresivos?.marcadores?.length) partes.push(`Afecto/estado de animo: datos referidos compatibles con hipotimia, anhedonia, alteraciones neurovegetativas y sintomatologia depresiva (${datos.sintomas.depresivos.marcadores.join(", ")}).`);
     if (datos.sintomas?.ansiosos?.marcadores?.length) partes.push(`Ansiedad: manifestaciones ansiosas referidas (${datos.sintomas.ansiosos.marcadores.join(", ")}).`);
-    if (datos.sintomas?.psicoticos?.marcadores?.length) partes.push(`Pensamiento/sensopercepcion: posibles sintomas psicoticos a corroborar (${datos.sintomas.psicoticos.marcadores.join(", ")}).`);
-    if (datos.sintomas?.maniformes?.marcadores?.length) partes.push(`Actividad/lenguaje: datos de activacion afectiva a descartar (${datos.sintomas.maniformes.marcadores.join(", ")}).`);
-    if (datos.riesgoSuicida?.nivel && datos.riesgoSuicida.nivel !== "Sin riesgo") partes.push(`Riesgo: datos de conducta suicida con nivel ${datos.riesgoSuicida.nivel.toLowerCase()} segun reglas locales.`);
+    if (datos.riesgoSuicida?.nivel && datos.riesgoSuicida.nivel !== "Sin riesgo") partes.push(`Pensamiento/riesgo: refiere conducta suicida con nivel ${datos.riesgoSuicida.nivel.toLowerCase()} segun reglas locales.`);
+    if (datos.sintomas?.psicoticos?.marcadores?.length) {
+      partes.push(`Sensopercepcion/pensamiento: posibles sintomas psicoticos a corroborar (${datos.sintomas.psicoticos.marcadores.join(", ")}).`);
+    } else if (datos.sintomasNegados?.psicosis?.length) {
+      partes.push(`Sensopercepcion: niega ${datos.sintomasNegados.psicosis.join(", ")}.`);
+    }
+    if (datos.sintomas?.maniformes?.marcadores?.length) {
+      partes.push(`Activacion afectiva: datos maniformes a corroborar (${datos.sintomas.maniformes.marcadores.join(", ")}).`);
+    } else if (datos.sintomasNegados?.mania?.length) {
+      partes.push(`Activacion afectiva: niega ${datos.sintomasNegados.mania.join(", ")}.`);
+    }
+    if (datos.sintomas?.sustancias?.marcadores?.length) {
+      partes.push(`Consumo: datos referidos de consumo (${datos.sintomas.sustancias.marcadores.join(", ")}).`);
+    } else if (datos.consumoSustancias?.noProblematico) {
+      partes.push(`Consumo: ${datos.consumoSustancias.noProblematico}.`);
+    } else if (datos.sintomasNegados?.sustancias?.length) {
+      partes.push(`Consumo: niega ${datos.sintomasNegados.sustancias.join(", ")}.`);
+    }
     return partes.join("\n");
   }
 };
