@@ -1201,16 +1201,22 @@ async function cargarDatosPaciente() {
     datos.genero || datos.identidadGenero || "Sin registro";
 
   document.getElementById("alergiasPaciente").innerText =
-    datos.alergias || "Sin registro";
+    datos.alergias || datos.datosInstitucionales?.alergias || "Sin registro";
+
+  document.getElementById("tipoSangrePaciente").innerText =
+    datos.tipoSangre || datos.datosInstitucionales?.tipoSangre || "Sin registro";
 
   document.getElementById("pesoPaciente").innerText =
-    datos.peso || datos.signosVitales?.peso || "Sin registro";
+    datos.peso || datos.signosVitales?.peso || datos.somatometria?.peso || datos.datosInstitucionales?.peso || "Sin registro";
 
   document.getElementById("tallaPaciente").innerText =
-    datos.talla || datos.signosVitales?.talla || "Sin registro";
+    datos.talla || datos.signosVitales?.talla || datos.somatometria?.talla || datos.datosInstitucionales?.talla || "Sin registro";
 
   document.getElementById("perimetroAbdominalPaciente").innerText =
-    datos.perimetroAbdominal || datos.signosVitales?.perimetroAbdominal || "Sin registro";
+    datos.perimetroAbdominal || datos.signosVitales?.perimetroAbdominal || datos.somatometria?.perimetroAbdominal || datos.datosInstitucionales?.perimetroAbdominal || "Sin registro";
+
+  document.getElementById("imcPaciente").innerText =
+    datos.imc || datos.signosVitales?.imc || datos.somatometria?.imc || datos.datosInstitucionales?.imc || "Sin registro";
 
   actualizarEstanciaPaciente(datos);
 }
@@ -1726,8 +1732,10 @@ window.editarCampoPaciente = async function(campo, etiqueta, tipo = "text") {
     "sexo",
     "genero",
     "alergias",
+    "tipoSangre",
     "peso",
     "talla",
+    "imc",
     "perimetroAbdominal",
     "diasEstancia"
   ]);
@@ -1747,10 +1755,25 @@ window.editarCampoPaciente = async function(campo, etiqueta, tipo = "text") {
     if (campo === "institucionPaciente") actualizacion.institucion = nuevoValor;
     if (campo === "servicioInstitucional") actualizacion.servicio = nuevoValor;
     if (campo === "expediente") actualizacion.numeroExpediente = nuevoValor;
-    if (["peso", "talla", "perimetroAbdominal"].includes(campo)) {
+    if (["peso", "talla", "imc", "perimetroAbdominal"].includes(campo)) {
+      const pesoBase = campo === "peso" ? nuevoValor : (datos?.peso || datos?.signosVitales?.peso || datos?.somatometria?.peso || datos?.datosInstitucionales?.peso || "");
+      const tallaBase = campo === "talla" ? nuevoValor : (datos?.talla || datos?.signosVitales?.talla || datos?.somatometria?.talla || datos?.datosInstitucionales?.talla || "");
+      const pesoNumero = numeroDesdeTexto(pesoBase);
+      const tallaNumero = numeroDesdeTexto(tallaBase);
+      const imcCalculado = pesoNumero && tallaNumero ? (pesoNumero / (tallaNumero * tallaNumero)).toFixed(2) : "";
+      if (imcCalculado && campo !== "imc") {
+        actualizacion.imc = imcCalculado;
+        datosInstitucionales.imc = imcCalculado;
+      }
       actualizacion.signosVitales = {
         ...(datos?.signosVitales || {}),
-        [campo]: nuevoValor
+        [campo]: nuevoValor,
+        ...(imcCalculado && campo !== "imc" ? { imc: imcCalculado } : {})
+      };
+      actualizacion.somatometria = {
+        ...(datos?.somatometria || {}),
+        [campo]: nuevoValor,
+        ...(imcCalculado && campo !== "imc" ? { imc: imcCalculado } : {})
       };
     }
   }

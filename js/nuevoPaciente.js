@@ -79,6 +79,29 @@ function sincronizarEdadConFecha(origen = "fecha") {
   ponerAyudaEdad(`Edad calculada automaticamente: ${edadCalculada} anos.`);
 }
 
+function numeroClinico(valor = "") {
+  const numero = Number(String(valor).replace(",", "."));
+  return Number.isFinite(numero) && numero > 0 ? numero : null;
+}
+
+function calcularIMCNuevoPaciente() {
+  const peso = numeroClinico(document.getElementById("peso")?.value || "");
+  const talla = numeroClinico(document.getElementById("talla")?.value || "");
+  const campoIMC = document.getElementById("imc");
+
+  if (!campoIMC) return "";
+
+  if (!peso || !talla) {
+    campoIMC.value = "";
+    return "";
+  }
+
+  const imc = peso / (talla * talla);
+  const imcTexto = imc.toFixed(2);
+  campoIMC.value = imcTexto;
+  return imcTexto;
+}
+
 function obtenerExpedienteCognicion(paciente = {}) {
   const institucional = paciente.datosInstitucionales || {};
   return paciente.expedienteCognicion || institucional.expedienteCognicion || "";
@@ -185,6 +208,10 @@ document.getElementById("limpiarIngresoNuevo")?.addEventListener("click", limpia
 document.getElementById("fechaNacimiento")?.addEventListener("change", () => sincronizarEdadConFecha("fecha"));
 document.getElementById("edadManual")?.addEventListener("change", () => sincronizarEdadConFecha("edad"));
 document.getElementById("edadManual")?.addEventListener("blur", () => sincronizarEdadConFecha("edad"));
+["peso", "talla"].forEach((id) => {
+  document.getElementById(id)?.addEventListener("input", calcularIMCNuevoPaciente);
+  document.getElementById(id)?.addEventListener("change", calcularIMCNuevoPaciente);
+});
 document.getElementById("modalIngresoNuevo")?.addEventListener("click", (e) => {
   if (e.target.id === "modalIngresoNuevo") cerrarSelectorIngresoNuevo();
 });
@@ -201,8 +228,25 @@ window.guardarPacienteNuevo = async function() {
   const fechaIngreso = normalizarFechaIngreso(document.getElementById("fechaIngreso")?.value || "");
   const genero = document.getElementById("genero")?.value || "";
   const alergias = document.getElementById("alergias")?.value || "";
+  const tipoSangre = document.getElementById("tipoSangre")?.value || "";
+  const peso = document.getElementById("peso")?.value || "";
+  const talla = document.getElementById("talla")?.value || "";
+  const imc = calcularIMCNuevoPaciente();
+  const perimetroAbdominal = document.getElementById("perimetroAbdominal")?.value || "";
   const diasEstancia = document.getElementById("diasEstancia")?.value || "";
   const expedienteCognicion = await generarExpedienteCognicion();
+  const signosVitales = {
+    peso,
+    talla,
+    imc,
+    perimetroAbdominal
+  };
+  const somatometria = {
+    peso,
+    talla,
+    imc,
+    perimetroAbdominal
+  };
 
   const paciente = {
     nombre: document.getElementById("nombre").value,
@@ -227,6 +271,13 @@ window.guardarPacienteNuevo = async function() {
     cama,
     fechaIngreso,
     alergias,
+    tipoSangre,
+    peso,
+    talla,
+    imc,
+    perimetroAbdominal,
+    signosVitales,
+    somatometria,
     diasEstancia,
     datosInstitucionales: {
       nombrePaciente: document.getElementById("nombre").value,
@@ -242,6 +293,11 @@ window.guardarPacienteNuevo = async function() {
       sexo: document.getElementById("sexo").value,
       genero,
       alergias,
+      tipoSangre,
+      peso,
+      talla,
+      imc,
+      perimetroAbdominal,
       diasEstancia
     },
     medicoTratante: document.getElementById("medicoTratante").value,

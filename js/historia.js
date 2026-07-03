@@ -47,10 +47,12 @@ function obtenerFechaNacimiento(paciente = {}) {
 
 function valorInstitucional(paciente = {}, campo, alternos = []) {
   const institucional = paciente.datosInstitucionales || {};
+  const signosVitales = paciente.signosVitales || {};
+  const somatometria = paciente.somatometria || {};
   const claves = [campo, ...alternos];
 
   for (const clave of claves) {
-    const valor = paciente[clave] ?? institucional[clave];
+    const valor = paciente[clave] ?? institucional[clave] ?? signosVitales[clave] ?? somatometria[clave];
     if (valor !== undefined && valor !== null && String(valor).trim() !== "") {
       return valor;
     }
@@ -74,6 +76,19 @@ function campoConRespaldo(datos = {}, paciente = {}, campo, alternos = []) {
   }
 
   return valorInstitucional(paciente, campo, alternos);
+}
+
+function numeroClinico(valor = "") {
+  const numero = Number(String(valor).replace(",", "."));
+  return Number.isFinite(numero) && numero > 0 ? numero : null;
+}
+
+function calcularIMCHistoria() {
+  const peso = numeroClinico(document.getElementById("peso")?.value || "");
+  const talla = numeroClinico(document.getElementById("talla")?.value || "");
+  const campoIMC = document.getElementById("imc");
+  if (!campoIMC || !peso || !talla) return;
+  campoIMC.value = (peso / (talla * talla)).toFixed(2);
 }
 
 onAuthStateChanged(auth, async (user) => {
@@ -121,6 +136,11 @@ async function cargarHistoria() {
     sexo: valorInstitucional(pacienteActual, "sexo"),
     genero: valorInstitucional(pacienteActual, "genero", ["identidadGenero"]),
     alergias: valorInstitucional(pacienteActual, "alergias"),
+    tipoSangre: valorInstitucional(pacienteActual, "tipoSangre"),
+    peso: valorInstitucional(pacienteActual, "peso"),
+    talla: valorInstitucional(pacienteActual, "talla"),
+    imc: valorInstitucional(pacienteActual, "imc"),
+    perimetroAbdominal: valorInstitucional(pacienteActual, "perimetroAbdominal"),
     diagnosticoClinico: pacienteActual.datosClinicosResumen?.diagnostico?.texto || pacienteActual.diagnostico?.texto || pacienteActual.diagnostico || "",
     codigoDiagnostico: pacienteActual.datosClinicosResumen?.diagnostico?.codigo || pacienteActual.diagnostico?.codigo || "",
     tratamientoFarmacologico: pacienteActual.datosClinicosResumen?.tratamientoActivo || pacienteActual.tratamiento || ""
@@ -132,6 +152,7 @@ async function cargarHistoria() {
     const elemento = document.getElementById(campo);
     if (elemento) elemento.value = datos[campo];
   });
+  if (!datos.imc) calcularIMCHistoria();
 }
 
 window.guardarHistoria = async () => {
@@ -141,6 +162,7 @@ window.guardarHistoria = async () => {
   }
 
   const datos = {};
+  calcularIMCHistoria();
   document.querySelectorAll("input, textarea, select").forEach((campo) => {
     datos[campo.id] = campo.value;
   });
@@ -156,6 +178,11 @@ window.guardarHistoria = async () => {
   const sexo = campoConRespaldo(datos, pacienteActual, "sexo");
   const genero = campoConRespaldo(datos, pacienteActual, "genero", ["identidadGenero"]);
   const alergias = campoConRespaldo(datos, pacienteActual, "alergias");
+  const tipoSangre = campoConRespaldo(datos, pacienteActual, "tipoSangre");
+  const peso = campoConRespaldo(datos, pacienteActual, "peso");
+  const talla = campoConRespaldo(datos, pacienteActual, "talla");
+  const imc = campoConRespaldo(datos, pacienteActual, "imc");
+  const perimetroAbdominal = campoConRespaldo(datos, pacienteActual, "perimetroAbdominal");
 
   await actualizarUsuario(uidPaciente, {
     tipoPaciente,
@@ -169,6 +196,11 @@ window.guardarHistoria = async () => {
     sexo,
     genero,
     alergias,
+    tipoSangre,
+    peso,
+    talla,
+    imc,
+    perimetroAbdominal,
     datosInstitucionales: {
       ...(pacienteActual?.datosInstitucionales || {}),
       tipoPaciente,
@@ -178,7 +210,26 @@ window.guardarHistoria = async () => {
       cama,
       sexo,
       genero,
-      alergias
+      alergias,
+      tipoSangre,
+      peso,
+      talla,
+      imc,
+      perimetroAbdominal
+    },
+    signosVitales: {
+      ...(pacienteActual?.signosVitales || {}),
+      peso,
+      talla,
+      imc,
+      perimetroAbdominal
+    },
+    somatometria: {
+      ...(pacienteActual?.somatometria || {}),
+      peso,
+      talla,
+      imc,
+      perimetroAbdominal
     },
     datosClinicosResumen: {
       ...(pacienteActual?.datosClinicosResumen || {}),
@@ -228,4 +279,9 @@ tabs.forEach((tab) => {
     const seccion = document.getElementById(tab.dataset.seccion);
     if (seccion) seccion.classList.add("activa");
   });
+});
+
+["peso", "talla"].forEach((id) => {
+  document.getElementById(id)?.addEventListener("input", calcularIMCHistoria);
+  document.getElementById(id)?.addEventListener("change", calcularIMCHistoria);
 });
