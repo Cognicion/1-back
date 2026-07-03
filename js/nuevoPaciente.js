@@ -37,6 +37,48 @@ function calcularEdad(fechaNacimiento) {
   return edad >= 0 ? edad : "";
 }
 
+function valorEdadManual() {
+  return document.getElementById("edadManual")?.value.trim() || "";
+}
+
+function ponerAyudaEdad(texto = "Si no hay fecha de nacimiento, puedes escribirla manualmente.") {
+  const ayuda = document.getElementById("ayudaEdad");
+  if (ayuda) ayuda.textContent = texto;
+}
+
+function sincronizarEdadConFecha(origen = "fecha") {
+  const fechaInput = document.getElementById("fechaNacimiento");
+  const edadInput = document.getElementById("edadManual");
+  if (!fechaInput || !edadInput) return;
+
+  const fechaNacimiento = fechaInput.value;
+  const edadCalculada = calcularEdad(fechaNacimiento);
+  const edadEscrita = Number(edadInput.value);
+  const tieneEdadEscrita = edadInput.value.trim() !== "" && Number.isFinite(edadEscrita);
+
+  if (!fechaNacimiento) {
+    ponerAyudaEdad("Edad manual. Si agregas fecha de nacimiento, se validara la coincidencia.");
+    return;
+  }
+
+  if (edadCalculada === "") {
+    ponerAyudaEdad("No se pudo calcular la edad con esa fecha.");
+    return;
+  }
+
+  if (tieneEdadEscrita && edadEscrita !== Number(edadCalculada)) {
+    alert("La edad escrita no coincide con la fecha de nacimiento. Se borrara la fecha de nacimiento y se conservara la edad manual.");
+    fechaInput.value = "";
+    ponerAyudaEdad("Edad manual conservada. La fecha de nacimiento fue borrada por no coincidir.");
+    return;
+  }
+
+  if (origen === "fecha" || !tieneEdadEscrita) {
+    edadInput.value = edadCalculada;
+  }
+  ponerAyudaEdad(`Edad calculada automaticamente: ${edadCalculada} anos.`);
+}
+
 function obtenerExpedienteCognicion(paciente = {}) {
   const institucional = paciente.datosInstitucionales || {};
   return paciente.expedienteCognicion || institucional.expedienteCognicion || "";
@@ -140,12 +182,17 @@ document.getElementById("abrirIngresoNuevo")?.addEventListener("click", abrirSel
 document.getElementById("cerrarIngresoNuevo")?.addEventListener("click", cerrarSelectorIngresoNuevo);
 document.getElementById("guardarIngresoNuevo")?.addEventListener("click", aplicarIngresoNuevo);
 document.getElementById("limpiarIngresoNuevo")?.addEventListener("click", limpiarIngresoNuevo);
+document.getElementById("fechaNacimiento")?.addEventListener("change", () => sincronizarEdadConFecha("fecha"));
+document.getElementById("edadManual")?.addEventListener("change", () => sincronizarEdadConFecha("edad"));
+document.getElementById("edadManual")?.addEventListener("blur", () => sincronizarEdadConFecha("edad"));
 document.getElementById("modalIngresoNuevo")?.addEventListener("click", (e) => {
   if (e.target.id === "modalIngresoNuevo") cerrarSelectorIngresoNuevo();
 });
 
 window.guardarPacienteNuevo = async function() {
+  sincronizarEdadConFecha("guardar");
   const fechaNacimiento = document.getElementById("fechaNacimiento").value;
+  const edadManual = !fechaNacimiento ? valorEdadManual() : "";
   const tipoPaciente = document.getElementById("tipoPaciente")?.value || "privada";
   const institucionPaciente = document.getElementById("institucionPaciente")?.value || "";
   const servicioInstitucional = document.getElementById("servicioInstitucional")?.value || "";
@@ -161,6 +208,7 @@ window.guardarPacienteNuevo = async function() {
     nombre: document.getElementById("nombre").value,
     expedienteCognicion,
     fechaNacimiento,
+    edadManual,
     sexo: document.getElementById("sexo").value,
     genero,
     curp: document.getElementById("curp").value,
@@ -190,6 +238,7 @@ window.guardarPacienteNuevo = async function() {
       cama,
       fechaIngreso,
       fechaNacimiento,
+      edadManual,
       sexo: document.getElementById("sexo").value,
       genero,
       alergias,

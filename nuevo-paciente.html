@@ -63,6 +63,14 @@ input, select, textarea{
     font-size:14px;
 }
 
+.ayuda-campo{
+    display:block;
+    margin-top:7px;
+    color:#7c8da6;
+    font-size:12px;
+    line-height:1.35;
+}
+
 textarea{
     min-height:120px;
     resize:vertical;
@@ -197,6 +205,12 @@ button:hover{
     <div>
         <label>Fecha de nacimiento</label>
         <input id="fechaNacimiento" type="date">
+    </div>
+
+    <div>
+        <label>Edad</label>
+        <input id="edadManual" type="number" min="0" max="130" placeholder="Se calcula automaticamente">
+        <small id="ayudaEdad" class="ayuda-campo">Si no hay fecha de nacimiento, puedes escribirla manualmente.</small>
     </div>
 
     <div>

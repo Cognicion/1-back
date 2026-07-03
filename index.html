@@ -188,7 +188,8 @@ h1 {
   border-radius: 999px;
   text-decoration: none;
   font-weight: 800;
-  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  transform: translateY(0) scale(1);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease, filter 0.2s ease;
 }
 
 .btn-primary {
@@ -204,14 +205,29 @@ h1 {
 }
 
 .link-secondary {
+  display: inline-flex;
+  align-items: center;
   color: #93c5fd;
   text-decoration: none;
   font-weight: 800;
+  transform: translateY(0) scale(1);
+  transition: transform 0.2s ease, color 0.2s ease, text-shadow 0.2s ease;
 }
 
 .btn:hover {
-  transform: translateY(-2px);
+  transform: translateY(-3px) scale(1.04);
   box-shadow: 0 0 36px rgba(78,163,255,0.22);
+}
+
+.btn-primary:hover {
+  filter: brightness(1.12);
+  box-shadow: 0 0 44px rgba(0,212,255,0.42), 0 12px 34px rgba(37,99,235,0.25);
+}
+
+.link-secondary:hover {
+  color: #e0f2fe;
+  transform: translateY(-2px) scale(1.06);
+  text-shadow: 0 0 18px rgba(125,211,252,0.62);
 }
 
 .science-visual {
