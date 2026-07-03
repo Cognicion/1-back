@@ -201,9 +201,12 @@ function slugCarpeta(nombre = "") {
     .replace(/^-+|-+$/g, "") || "sin-carpeta";
 }
 
-function obtenerCarpetasPaciente(paciente = {}) {
-  return Array.isArray(paciente.carpetas)
-    ? paciente.carpetas.filter(Boolean)
+function obtenerCarpetasPaciente(paciente = {}, uidMedico = uidMedicoActual) {
+  const carpetasPorMedico = paciente.carpetasPorMedico || {};
+  const carpetasDelMedico = uidMedico ? carpetasPorMedico[uidMedico] : [];
+
+  return Array.isArray(carpetasDelMedico)
+    ? carpetasDelMedico.filter(Boolean)
     : [];
 }
 
@@ -321,8 +324,13 @@ async function editarNombreCarpetaMedico(nombreActual = "") {
       const carpetas = obtenerCarpetasPaciente(paciente).map((carpeta) =>
         carpeta === actual ? nuevoNombre : carpeta
       );
-      await updateDoc(doc(db, "usuarios", paciente.id), { carpetas });
-      paciente.carpetas = carpetas;
+      await updateDoc(doc(db, "usuarios", paciente.id), {
+        [`carpetasPorMedico.${uidMedicoActual}`]: carpetas
+      });
+      paciente.carpetasPorMedico = {
+        ...(paciente.carpetasPorMedico || {}),
+        [uidMedicoActual]: carpetas
+      };
     }));
 
     if (filtroCarpetaActual === actual) {
@@ -1843,10 +1851,15 @@ document.addEventListener("change", async (e) => {
 
     try {
       const carpetas = carpeta ? [carpeta] : [];
-      await updateDoc(doc(db, "usuarios", pacienteId), { carpetas });
+      await updateDoc(doc(db, "usuarios", pacienteId), {
+        [`carpetasPorMedico.${uidMedicoActual}`]: carpetas
+      });
 
       if (paciente) {
-        paciente.carpetas = carpetas;
+        paciente.carpetasPorMedico = {
+          ...(paciente.carpetasPorMedico || {}),
+          [uidMedicoActual]: carpetas
+        };
       }
 
       renderizarListaCarpetasMedico();
