@@ -790,12 +790,13 @@ body {
   --col-proxima: 235px;
   --col-adscrito: 170px;
   --col-residente: 170px;
+  --col-archivo: 118px;
   --tabla-min-width: calc(
     var(--col-cama) + var(--col-nombre) + var(--col-ingreso) + var(--col-estancia) +
     var(--col-edad) + var(--col-atencion) + var(--col-diagnostico) +
     var(--col-medicamento) + var(--col-dosis-dia) +
     var(--col-ultima) + var(--col-proxima) + var(--col-adscrito) + var(--col-residente) +
-    var(--col-carpeta)
+    var(--col-carpeta) + var(--col-archivo)
   );
   margin-top: 14px;
   width: 100%;
@@ -825,7 +826,8 @@ body {
     var(--col-proxima)
     var(--col-adscrito)
     var(--col-residente)
-    minmax(var(--col-carpeta), 1fr);
+    var(--col-carpeta)
+    minmax(var(--col-archivo), 1fr);
   align-items: stretch;
   width: max(100%, var(--tabla-min-width));
 }
@@ -961,6 +963,42 @@ body {
 .selector-carpeta:focus {
   border-color: rgba(125, 211, 252, 0.72);
   box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.16);
+}
+
+.archivo-columna {
+  justify-content: center;
+}
+
+.boton-archivo-paciente {
+  width: 100%;
+  min-width: 0;
+  padding: 7px 9px;
+  border-radius: 10px;
+  border: 1px solid rgba(125, 211, 252, 0.24);
+  background: rgba(2, 6, 23, 0.72);
+  color: #7dd3fc;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease, color 0.18s ease;
+}
+
+.boton-archivo-paciente:hover {
+  transform: translateY(-1px);
+  border-color: rgba(56, 189, 248, 0.62);
+  background: rgba(14, 165, 233, 0.14);
+  color: #e0f2fe;
+}
+
+.boton-archivo-paciente.restaurar {
+  color: #bbf7d0;
+  border-color: rgba(74, 222, 128, 0.28);
+}
+
+.boton-filtro-atencion.activo {
+  border-color: rgba(56, 189, 248, 0.65);
+  box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.18), 0 14px 28px rgba(14, 165, 233, 0.12);
 }
 
 .selector-atencion:focus {

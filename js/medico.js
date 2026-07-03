@@ -36,6 +36,7 @@ let carpetasVisiblesInline = cargarPreferenciaCarpetasVisibles();
 const FILTROS_ATENCION_DEFAULT = ["hospitalizados", "privado", "hpfba", "hpijnn", "otra"];
 const STORAGE_FILTROS_ATENCION = "cognicion.medico.filtrosAtencion";
 let filtrosAtencionActuales = cargarPreferenciasFiltroAtencion();
+let mostrarPacientesArchivados = false;
 
 const COLUMNAS_PACIENTES = [
   { key: "cama", label: "Cama", cssVar: "--col-cama" },
@@ -51,7 +52,8 @@ const COLUMNAS_PACIENTES = [
   { key: "proxima", label: "Proxima consulta", cssVar: "--col-proxima" },
   { key: "adscrito", label: "Adscrito", cssVar: "--col-adscrito" },
   { key: "residente", label: "Residente", cssVar: "--col-residente" },
-  { key: "carpeta", label: "Carpeta", cssVar: "--col-carpeta" }
+  { key: "carpeta", label: "Carpeta", cssVar: "--col-carpeta" },
+  { key: "archivo", label: "Archivo", cssVar: "--col-archivo" }
 ];
 const COLUMNAS_PACIENTES_DEFAULT = COLUMNAS_PACIENTES.map((columna) => columna.key);
 const STORAGE_COLUMNAS_PACIENTES = "cognicion.medico.columnasPacientes";
@@ -130,6 +132,7 @@ onAuthStateChanged(auth, async (user) => {
   inicializarFiltroAtencion();
   inicializarColumnasPacientes();
   inicializarCarpetasPacientes();
+  inicializarPacientesArchivados();
 
   await cargarCarpetasMedico(user.uid);
   await cargarPacientes(user.uid);
@@ -766,7 +769,7 @@ async function cargarPacientes(uidMedico, opciones = {}) {
   filtrarPacientes();
   renderizarListaCarpetasMedico();
   renderizarCarpetasInlineMedico();
-  calcularEstadisticas(pacientesGlobal);
+  calcularEstadisticas(pacientesGlobal.filter((paciente) => !pacienteArchivadoParaMedico(paciente)));
   ultimaRecargaPacientes = Date.now();
 }
 
@@ -1222,6 +1225,66 @@ function deduplicarPacientes(pacientes = []) {
   });
 }
 
+function pacienteArchivadoParaMedico(paciente) {
+  if (!paciente || !uidMedicoActual) return false;
+  return Boolean(paciente.archivadoPorMedico?.[uidMedicoActual]);
+}
+
+function actualizarTextoPacientesArchivados() {
+  const boton = document.getElementById("btnPacientesArchivados");
+  if (!boton) return;
+
+  boton.textContent = mostrarPacientesArchivados ? "Ver activos" : "Ver archivados";
+  boton.classList.toggle("activo", mostrarPacientesArchivados);
+}
+
+function inicializarPacientesArchivados() {
+  const boton = document.getElementById("btnPacientesArchivados");
+  if (!boton) return;
+
+  actualizarTextoPacientesArchivados();
+  boton.addEventListener("click", () => {
+    mostrarPacientesArchivados = !mostrarPacientesArchivados;
+    actualizarTextoPacientesArchivados();
+    filtrarPacientes();
+  });
+}
+
+async function alternarArchivoPaciente(pacienteId, archivar) {
+  if (!pacienteId || !uidMedicoActual) return;
+
+  const paciente = pacientesGlobal.find((item) => item.id === pacienteId);
+  const nombre = paciente?.nombre || "este paciente";
+  const mensaje = archivar
+    ? `¿Archivar a ${nombre}? Podrás verlo después en "Ver archivados".`
+    : `¿Restaurar a ${nombre} a la lista activa?`;
+
+  if (!confirm(mensaje)) return;
+
+  const fechaArchivo = new Date().toISOString();
+
+  await updateDoc(doc(db, "usuarios", pacienteId), {
+    [`archivadoPorMedico.${uidMedicoActual}`]: archivar,
+    [`archivadoPorMedicoFecha.${uidMedicoActual}`]: fechaArchivo
+  });
+
+  if (paciente) {
+    paciente.archivadoPorMedico = {
+      ...(paciente.archivadoPorMedico || {}),
+      [uidMedicoActual]: archivar
+    };
+    paciente.archivadoPorMedicoFecha = {
+      ...(paciente.archivadoPorMedicoFecha || {}),
+      [uidMedicoActual]: fechaArchivo
+    };
+  }
+
+  filtrarPacientes();
+  renderizarListaCarpetasMedico();
+  renderizarCarpetasInlineMedico();
+  calcularEstadisticas(pacientesGlobal.filter((item) => !pacienteArchivadoParaMedico(item)));
+}
+
 function mostrarPacientes(pacientes) {
   const lista = document.getElementById("listaPacientes");
   lista.innerHTML = "";
@@ -1265,6 +1328,9 @@ function mostrarPacientes(pacientes) {
     const medicoAdscrito = obtenerMedicoAdscritoEncargado(paciente);
     const residente = obtenerResidenteEncargado(paciente);
     const carpetaPrincipal = obtenerCarpetaPrincipal(paciente);
+    const archivado = pacienteArchivadoParaMedico(paciente);
+    const textoArchivo = archivado ? "Restaurar" : "Archivar";
+    const tituloArchivo = archivado ? "Restaurar paciente a lista activa" : "Archivar paciente";
     const resumenMedicamentos = obtenerResumenMedicamentosDosisDia(paciente);
     const medicamentosHtml = resumenMedicamentos.medicamentos.length
       ? resumenMedicamentos.medicamentos.map((med) => `<span>${escaparHTML(med)}</span>`).join("")
@@ -1302,6 +1368,16 @@ function mostrarPacientes(pacientes) {
             ${opcionesCarpetasHTML(carpetaPrincipal)}
           </select>
         </span>
+        <span class="paciente-dato archivo-columna" data-col-key="archivo">
+          <button
+            type="button"
+            class="boton-archivo-paciente ${archivado ? "restaurar" : ""}"
+            data-paciente-id="${paciente.id}"
+            data-archivar="${archivado ? "false" : "true"}"
+            aria-label="${tituloArchivo}">
+            ${textoArchivo}
+          </button>
+        </span>
       </a>
     `;
   });
@@ -1316,6 +1392,8 @@ function filtrarPacientes() {
   const texto = buscador ? buscador.value.toLowerCase() : "";
 
   const filtrados = pacientesGlobal.filter((paciente) => {
+    if (pacienteArchivadoParaMedico(paciente) !== mostrarPacientesArchivados) return false;
+
     const carpetasPaciente = obtenerCarpetasPaciente(paciente);
     const coincideCarpeta = !filtroCarpetaActual ||
       (filtroCarpetaActual === "__sin_carpeta__" && carpetasPaciente.length === 0) ||
@@ -1405,11 +1483,12 @@ function cargarPreferenciasColumnasPacientes() {
     const visibles = columnas.filter((columna) => clavesValidas.has(columna));
 
     if (!visibles.includes("nombre")) visibles.push("nombre");
-    if (localStorage.getItem(STORAGE_COLUMNAS_PACIENTES_VERSION) !== "tratamiento-dosis-v1") {
+    if (localStorage.getItem(STORAGE_COLUMNAS_PACIENTES_VERSION) !== "archivo-v1") {
       if (!visibles.includes("carpeta")) visibles.push("carpeta");
       if (!visibles.includes("medicamento")) visibles.push("medicamento");
       if (!visibles.includes("dosisDia")) visibles.push("dosisDia");
-      localStorage.setItem(STORAGE_COLUMNAS_PACIENTES_VERSION, "tratamiento-dosis-v1");
+      if (!visibles.includes("archivo")) visibles.push("archivo");
+      localStorage.setItem(STORAGE_COLUMNAS_PACIENTES_VERSION, "archivo-v1");
       localStorage.setItem(STORAGE_COLUMNAS_PACIENTES, JSON.stringify(visibles));
     }
 
@@ -1851,6 +1930,19 @@ function renderizarGraficasMedico(pacientes) {
 }
 
 document.addEventListener("click", (e) => {
+  const botonArchivo = e.target.closest(".boton-archivo-paciente");
+  if (botonArchivo) {
+    e.preventDefault();
+    e.stopPropagation();
+    alternarArchivoPaciente(
+      botonArchivo.dataset.pacienteId,
+      botonArchivo.dataset.archivar === "true"
+    ).catch((error) => {
+      alert("No se pudo actualizar el archivo del paciente: " + error.message);
+    });
+    return;
+  }
+
   if (e.target.closest(".selector-atencion, .selector-carpeta")) {
     e.preventDefault();
     e.stopPropagation();
@@ -1875,7 +1967,7 @@ document.addEventListener("click", (e) => {
 
 ["pointerdown", "mousedown", "mouseup", "touchstart", "keydown"].forEach((evento) => {
   document.addEventListener(evento, (e) => {
-    if (!e.target.closest(".selector-atencion, .selector-carpeta")) return;
+    if (!e.target.closest(".selector-atencion, .selector-carpeta, .boton-archivo-paciente")) return;
 
     e.stopPropagation();
   }, true);
