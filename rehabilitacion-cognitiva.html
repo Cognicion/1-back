@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>COGNICION | Rehabilitacion Cognitiva</title>
+<link rel="icon" type="image/png" href="assets/favicon-cognicion.png">
+<link rel="stylesheet" href="css/rehabilitacion-cognitiva.css">
+<link rel="stylesheet" href="css/reportes.css">
+</head>
+
+<body>
+<div class="intro-rehabilitacion" id="introRehabilitacion" aria-live="polite">
+  <div class="intro-neblina"></div>
+  <div class="intro-luz"></div>
+  <div class="intro-particulas" aria-hidden="true">
+    <span></span><span></span><span></span><span></span><span></span><span></span>
+    <span></span><span></span><span></span><span></span><span></span><span></span>
+  </div>
+  <div class="intro-contenido">
+    <p class="intro-kicker">Activando funciones cognitivas...</p>
+    <h1>Bienvenido a Rehabilitaci&oacute;n Cognitiva</h1>
+  </div>
+  <button class="intro-saltar" id="saltarIntro" type="button">Saltar intro</button>
+</div>
+
+<header class="topbar-rehabilitacion">
+  <a class="marca-rehabilitacion" href="dashboard.html" aria-label="Volver al dashboard">
+    <img src="assets/favicon-cognicion.png" alt="COGNICION">
+    <div>
+      <strong>COGNICI&Oacute;N</strong>
+      <span>Ciencia, evidencia y medicina humana.</span>
+    </div>
+  </a>
+
+  <nav class="nav-rehabilitacion" aria-label="Navegacion principal">
+    <a href="dashboard.html">Dashboard</a>
+    <a href="#actividades">Actividades</a>
+    <a href="#tamizajes">Tamizajes</a>
+    <button id="verIntro" type="button">Ver intro nuevamente</button>
+  </nav>
+</header>
+
+<main class="rehabilitacion-shell">
+  <section class="hero-rehabilitacion">
+    <div class="hero-copy">
+      <span class="kicker">Espacio mental activo</span>
+      <h1>Rehabilitaci&oacute;n Cognitiva</h1>
+      <p class="hero-subtitulo">Ejercicios dise&ntilde;ados para estimular atenci&oacute;n, memoria, velocidad de procesamiento, flexibilidad mental y funciones ejecutivas.</p>
+      <p class="hero-frase">Cognici&oacute;n no solo registra informaci&oacute;n cl&iacute;nica: tambi&eacute;n puede convertirse en una herramienta activa de entrenamiento y recuperaci&oacute;n.</p>
+      <div class="hero-acciones">
+        <a class="boton-principal" href="#actividades">Explorar actividades</a>
+        <a class="boton-secundario" href="nback.html">Entrenar 1-Back</a>
+      </div>
+    </div>
+
+    <aside class="hero-orbita" aria-hidden="true">
+      <div class="orbita orbita-uno"></div>
+      <div class="orbita orbita-dos"></div>
+      <div class="nucleo-cognitivo">RC</div>
+      <span class="punto punto-a"></span>
+      <span class="punto punto-b"></span>
+      <span class="punto punto-c"></span>
+    </aside>
+  </section>
+
+  <section class="bloque-rehabilitacion explicacion">
+    <div>
+      <span class="kicker">Fundamento cl&iacute;nico</span>
+      <h2>&iquest;Qu&eacute; es la rehabilitaci&oacute;n cognitiva?</h2>
+      <p>La rehabilitaci&oacute;n cognitiva es un conjunto de estrategias y ejercicios orientados a estimular, preservar o recuperar funciones mentales como la memoria, la atenci&oacute;n, el lenguaje, la planificaci&oacute;n y la velocidad de procesamiento. Puede utilizarse como apoyo en pacientes con depresi&oacute;n, ansiedad, TDAH, deterioro cognitivo, trastornos psic&oacute;ticos, da&ntilde;o neurol&oacute;gico, envejecimiento, consumo de sustancias o dificultades funcionales cotidianas.</p>
+    </div>
+    <aside class="aviso-clinico">
+      Este m&oacute;dulo no sustituye una valoraci&oacute;n neuropsicol&oacute;gica ni una consulta m&eacute;dica. Los resultados deben interpretarse dentro del contexto cl&iacute;nico.
+    </aside>
+  </section>
+
+  <section class="bloque-rehabilitacion" id="tamizajes">
+    <div class="seccion-titulo">
+      <span class="kicker">Evaluaci&oacute;n</span>
+      <h2>Escalas y tamizajes cognitivos</h2>
+      <p>Organizador cl&iacute;nico para ubicar instrumentos de evaluaci&oacute;n cognitiva que podr&aacute;n integrarse posteriormente.</p>
+    </div>
+
+    <div class="grid-tamizajes" id="gridTamizajes"></div>
+
+    <p class="nota-derechos">Algunas escalas tienen restricciones de uso, derechos de autor o requieren aplicaci&oacute;n cl&iacute;nica supervisada. Por ahora, esta secci&oacute;n funciona como organizador cl&iacute;nico y mapa de evaluaci&oacute;n.</p>
+  </section>
+
+  <section class="bloque-rehabilitacion" id="actividades">
+    <div class="seccion-titulo">
+      <span class="kicker">Entrenamiento</span>
+      <h2>Actividades disponibles</h2>
+      <p>Filtra por dominio cognitivo o busca por nombre de actividad.</p>
+    </div>
+
+    <div class="barra-filtros">
+      <label class="buscador-actividad">
+        <span>Buscar actividad</span>
+        <input id="buscadorActividad" type="search" placeholder="Ej. memoria, Stroop, lenguaje...">
+      </label>
+      <div class="filtros-dominios" id="filtrosDominios" aria-label="Filtros por funcion cognitiva"></div>
+    </div>
+
+    <div class="grid-actividades" id="gridActividades"></div>
+    <p class="sin-resultados" id="sinResultados">No se encontraron ejercicios para esta b&uacute;squeda.</p>
+  </section>
+
+  <section class="bloque-rehabilitacion progreso">
+    <div class="seccion-titulo">
+      <span class="kicker">Evoluci&oacute;n</span>
+      <h2>Seguimiento de progreso</h2>
+      <p>En futuras versiones, Cognici&oacute;n podr&aacute; mostrar evoluci&oacute;n por dominio cognitivo y sugerir ejercicios personalizados seg&uacute;n el desempe&ntilde;o del usuario.</p>
+    </div>
+
+    <div class="grid-progreso">
+      <article><strong>Sesiones realizadas</strong><span>Pr&oacute;ximamente</span></article>
+      <article><strong>Mejor tiempo de reacci&oacute;n</strong><span>Pr&oacute;ximamente</span></article>
+      <article><strong>Precisi&oacute;n promedio</strong><span>Pr&oacute;ximamente</span></article>
+      <article><strong>Funci&oacute;n m&aacute;s entrenada</strong><span>Pr&oacute;ximamente</span></article>
+      <article><strong>&Uacute;ltima actividad realizada</strong><span>Pr&oacute;ximamente</span></article>
+    </div>
+  </section>
+</main>
+
+<div class="toast-rehabilitacion" id="toastRehabilitacion" role="status" aria-live="polite"></div>
+
+<script type="module" src="js/rehabilitacion-cognitiva.js"></script>
+<script type="module" src="js/reportes.js"></script>
+</body>
+</html>
