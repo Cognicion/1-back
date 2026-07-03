@@ -63,6 +63,19 @@ input, select, textarea{
     font-size:14px;
 }
 
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="time"]::-webkit-calendar-picker-indicator{
+    cursor:pointer;
+    filter:invert(1) brightness(2.4);
+    opacity:.95;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator:hover,
+input[type="time"]::-webkit-calendar-picker-indicator:hover{
+    opacity:1;
+    filter:invert(1) brightness(3);
+}
+
 .ayuda-campo{
     display:block;
     margin-top:7px;
@@ -384,7 +397,7 @@ Guardar paciente
         </label>
 
         <label>Hora
-            <input id="ingresoNuevoHora" type="time">
+            <input id="ingresoNuevoHora" type="time" lang="en-GB" step="60">
         </label>
 
         <small>Si no seleccionas hora, se tomara el inicio del dia.</small>

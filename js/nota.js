@@ -2243,7 +2243,8 @@ async function cargarHistorial(uidPaciente) {
 
     const horaTexto = fecha.toLocaleTimeString("es-MX", {
       hour: "2-digit",
-      minute: "2-digit"
+      minute: "2-digit",
+      hour12: false
     });
     const notaVigente = datos.notaEditada || datos;
     const estadoNota = notaVigente.estadoNota || (notaVigente.esBorrador ? "borrador" : "definitiva");

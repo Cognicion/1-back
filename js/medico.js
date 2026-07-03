@@ -133,10 +133,28 @@ onAuthStateChanged(auth, async (user) => {
   inicializarColumnasPacientes();
   inicializarCarpetasPacientes();
   inicializarPacientesArchivados();
+  inicializarPanelMedicoColapsable();
 
   await cargarCarpetasMedico(user.uid);
   await cargarPacientes(user.uid);
 });
+
+function inicializarPanelMedicoColapsable() {
+  const botonContraer = document.getElementById("contraerPanelMedico");
+  const botonExpandir = document.getElementById("expandirPanelMedico");
+  const claseContraida = "panel-medico-contraido";
+
+  document.body.classList.remove(claseContraida);
+
+  const actualizarEstado = (contraido) => {
+    document.body.classList.toggle(claseContraida, contraido);
+    botonContraer?.setAttribute("aria-expanded", String(!contraido));
+    botonExpandir?.setAttribute("aria-hidden", String(!contraido));
+  };
+
+  botonContraer?.addEventListener("click", () => actualizarEstado(true));
+  botonExpandir?.addEventListener("click", () => actualizarEstado(false));
+}
 
 async function refrescarPacientesSiCorresponde() {
   if (!uidMedicoActual || document.hidden) return;
@@ -691,6 +709,7 @@ function alternarColumnaCarpetaDesdeFiltro() {
 function inicializarCarpetasPacientes() {
   moverModalesPacienteAlBody();
   actualizarTextoCarpetasPacientes();
+  inicializarCarpetasInlineColapsables();
 
   document.getElementById("btnCarpetasPacientes")?.addEventListener("click", abrirCarpetasPacientes);
   document.getElementById("cerrarCarpetasPacientes")?.addEventListener("click", cerrarCarpetasPacientes);
@@ -713,6 +732,21 @@ function inicializarCarpetasPacientes() {
   });
   document.getElementById("modalCarpetasPacientes")?.addEventListener("click", (e) => {
     if (e.target.id === "modalCarpetasPacientes") cerrarCarpetasPacientes();
+  });
+}
+
+function inicializarCarpetasInlineColapsables() {
+  const contenedor = document.querySelector(".carpetas-lista-pacientes");
+  const boton = document.getElementById("alternarCarpetasInline");
+  if (!contenedor || !boton) return;
+
+  contenedor.classList.remove("carpetas-contraidas");
+  boton.setAttribute("aria-expanded", "true");
+
+  boton.addEventListener("click", () => {
+    const contraidas = contenedor.classList.toggle("carpetas-contraidas");
+    boton.setAttribute("aria-expanded", String(!contraidas));
+    boton.setAttribute("aria-label", contraidas ? "Expandir carpetas" : "Contraer carpetas");
   });
 }
 

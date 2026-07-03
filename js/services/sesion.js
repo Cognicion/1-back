@@ -12,22 +12,12 @@ export function iniciarMonitoreoSesion(modulo, opciones = {}) {
   let datosUsuario = null;
   let ultimoMovimiento = Date.now();
   let inactividadRegistrada = false;
-  let moduloRegistrado = false;
 
   onAuthStateChanged(auth, async (user) => {
     usuario = user;
     if (!user) return;
 
     datosUsuario = await obtenerUsuario(user.uid);
-
-    if (!moduloRegistrado) {
-      moduloRegistrado = true;
-      await registrarSesion({
-        accion: "abrir_modulo",
-        modulo,
-        descripcion: `El usuario abrio el modulo ${modulo}.`
-      });
-    }
   });
 
   const marcarActividad = () => {
@@ -44,16 +34,6 @@ export function iniciarMonitoreoSesion(modulo, opciones = {}) {
 
   EVENTOS_ACTIVIDAD.forEach((evento) => {
     window.addEventListener(evento, marcarActividad, { passive: true });
-  });
-
-  document.addEventListener("visibilitychange", () => {
-    registrarSesion({
-      accion: document.hidden ? "pagina_oculta" : "pagina_visible",
-      modulo,
-      descripcion: document.hidden
-        ? `El usuario dejo de ver el modulo ${modulo}.`
-        : `El usuario regreso al modulo ${modulo}.`
-    });
   });
 
   window.setInterval(() => {

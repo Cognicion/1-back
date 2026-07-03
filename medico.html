@@ -24,6 +24,15 @@
   <div class="grid-principal">
 
     <aside class="card perfil-medico">
+      <button
+        type="button"
+        id="contraerPanelMedico"
+        class="boton-contraer-panel"
+        aria-label="Contraer panel médico"
+        aria-expanded="true">
+        ‹
+      </button>
+
       <div class="avatar" id="avatarMedico">M</div>
 
       <h2 id="nombreMedico">Cargando...</h2>
@@ -63,6 +72,15 @@
         Biblioteca clinica
       </button>
     </aside>
+
+    <button
+      type="button"
+      id="expandirPanelMedico"
+      class="pestana-panel-medico"
+      aria-label="Expandir panel médico">
+      <span>›</span>
+      <small>Panel</small>
+    </button>
 
     <section>
 
@@ -260,7 +278,17 @@
         <div class="carpetas-lista-pacientes" aria-label="Carpetas de pacientes">
           <div class="carpetas-lista-header">
             <span>Carpetas</span>
-            <small>Clic para abrir</small>
+            <div class="acciones-carpetas-inline">
+              <small>Clic para abrir</small>
+              <button
+                type="button"
+                id="alternarCarpetasInline"
+                class="boton-contraer-carpetas"
+                aria-label="Contraer carpetas"
+                aria-expanded="true">
+                ˄
+              </button>
+            </div>
           </div>
           <div id="carpetasPacientesInline" class="carpetas-inline-medico">
             Cargando carpetas...

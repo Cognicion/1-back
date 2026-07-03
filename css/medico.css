@@ -52,12 +52,116 @@ body {
   display: grid;
   grid-template-columns: 224px minmax(0, 1fr);
   gap: 20px;
+  transition: grid-template-columns 0.38s cubic-bezier(0.2, 0.8, 0.2, 1), gap 0.38s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 .grid-principal > section,
 .card,
 .seccion {
   min-width: 0;
+}
+
+.perfil-medico {
+  position: relative;
+  overflow: hidden;
+  transform-origin: left center;
+  transition:
+    transform 0.38s cubic-bezier(0.2, 0.8, 0.2, 1),
+    opacity 0.28s ease,
+    filter 0.38s ease,
+    box-shadow 0.28s ease;
+}
+
+.boton-contraer-panel {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 30px;
+  height: 30px;
+  display: inline-grid;
+  place-items: center;
+  border-radius: 999px;
+  border: 1px solid rgba(125, 211, 252, 0.22);
+  background: rgba(2, 6, 23, 0.68);
+  color: #bfdbfe;
+  font-size: 1.25rem;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: 0 10px 26px rgba(2, 132, 199, 0.10);
+  transition: transform 0.2s ease, background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+  z-index: 2;
+}
+
+.boton-contraer-panel:hover {
+  transform: translateX(-2px);
+  border-color: rgba(56, 189, 248, 0.58);
+  background: rgba(14, 165, 233, 0.14);
+  color: #f8fafc;
+}
+
+.pestana-panel-medico {
+  position: fixed;
+  left: 0;
+  top: 176px;
+  z-index: 60;
+  min-width: 38px;
+  min-height: 108px;
+  display: grid;
+  place-items: center;
+  gap: 4px;
+  padding: 12px 8px;
+  border: 1px solid rgba(56, 189, 248, 0.34);
+  border-left: none;
+  border-radius: 0 16px 16px 0;
+  background:
+    linear-gradient(180deg, rgba(14, 165, 233, 0.22), rgba(37, 99, 235, 0.14)),
+    rgba(2, 6, 23, 0.86);
+  color: #e0f2fe;
+  box-shadow: 0 20px 46px rgba(14, 165, 233, 0.18);
+  backdrop-filter: blur(14px);
+  cursor: pointer;
+  opacity: 0;
+  transform: translateX(-110%) scale(0.96);
+  pointer-events: none;
+  transition:
+    opacity 0.28s ease,
+    transform 0.38s cubic-bezier(0.2, 0.8, 0.2, 1),
+    box-shadow 0.2s ease;
+}
+
+.pestana-panel-medico span {
+  font-size: 1.35rem;
+  line-height: 1;
+}
+
+.pestana-panel-medico small {
+  writing-mode: vertical-rl;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-size: 0.62rem;
+  font-weight: 800;
+}
+
+.pestana-panel-medico:hover {
+  box-shadow: 0 24px 58px rgba(14, 165, 233, 0.26);
+}
+
+body.panel-medico-contraido .grid-principal {
+  grid-template-columns: 0 minmax(0, 1fr);
+  gap: 0;
+}
+
+body.panel-medico-contraido .perfil-medico {
+  opacity: 0;
+  transform: translateX(-118%) scale(0.98);
+  filter: blur(2px);
+  pointer-events: none;
+}
+
+body.panel-medico-contraido .pestana-panel-medico {
+  opacity: 1;
+  transform: translateX(0) scale(1);
+  pointer-events: auto;
 }
 
 .card {
@@ -236,6 +340,12 @@ body {
   border-radius: 16px;
   background: rgba(8, 12, 20, 0.55);
   overflow: hidden;
+  transition:
+    padding 0.28s ease,
+    margin 0.28s ease,
+    border-color 0.28s ease,
+    background 0.28s ease,
+    box-shadow 0.28s ease;
 }
 
 .carpetas-lista-header {
@@ -257,6 +367,38 @@ body {
   letter-spacing: 0.04em;
 }
 
+.acciones-carpetas-inline {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.boton-contraer-carpetas {
+  width: 28px;
+  height: 28px;
+  display: inline-grid;
+  place-items: center;
+  border-radius: 999px;
+  border: 1px solid rgba(125, 211, 252, 0.22);
+  background: rgba(2, 6, 23, 0.72);
+  color: #e0f2fe;
+  font-size: 0.95rem;
+  line-height: 1;
+  cursor: pointer;
+  transition:
+    transform 0.22s ease,
+    border-color 0.22s ease,
+    background 0.22s ease,
+    box-shadow 0.22s ease;
+}
+
+.boton-contraer-carpetas:hover {
+  transform: translateY(-1px);
+  border-color: rgba(56, 189, 248, 0.62);
+  background: rgba(14, 165, 233, 0.14);
+  box-shadow: 0 10px 22px rgba(14, 165, 233, 0.12);
+}
+
 .carpetas-inline-medico {
   display: flex;
   flex-wrap: wrap;
@@ -265,6 +407,34 @@ body {
   min-height: 38px;
   color: #94a3b8;
   font-size: 12px;
+  max-height: 180px;
+  opacity: 1;
+  transform: translateY(0);
+  transition:
+    max-height 0.34s cubic-bezier(0.2, 0.8, 0.2, 1),
+    opacity 0.24s ease,
+    transform 0.3s ease,
+    min-height 0.28s ease;
+}
+
+.carpetas-lista-pacientes.carpetas-contraidas {
+  gap: 0;
+  padding-block: 10px;
+  border-color: rgba(56, 189, 248, 0.08);
+  background: rgba(8, 12, 20, 0.38);
+}
+
+.carpetas-lista-pacientes.carpetas-contraidas .carpetas-inline-medico {
+  max-height: 0;
+  min-height: 0;
+  opacity: 0;
+  transform: translateY(-8px);
+  pointer-events: none;
+}
+
+.carpetas-lista-pacientes.carpetas-contraidas .boton-contraer-carpetas {
+  transform: rotate(180deg);
+  color: #7dd3fc;
 }
 
 .carpeta-inline-grupo {
@@ -760,6 +930,10 @@ body {
   .grid-principal,
   .panel-secundario {
     grid-template-columns: 1fr;
+  }
+
+  body.panel-medico-contraido .grid-principal {
+    grid-template-columns: 0 minmax(0, 1fr);
   }
 
   .estadisticas {

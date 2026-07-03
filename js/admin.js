@@ -24,6 +24,11 @@ import {
 
 const ADMIN_UID = "NQ0CU5PSDBUgVrk56sjPEVhOs2D3";
 const LIMITE_EVENTOS = 250;
+const ACCIONES_AUDITORIA_OCULTAS = new Set([
+  "abrir_modulo",
+  "pagina_oculta",
+  "pagina_visible"
+]);
 
 let eventosAuditoria = [];
 let pacientesAdmin = [];
@@ -57,6 +62,10 @@ const SUBCOLECCIONES_USUARIO_MEDICO = [
 ];
 
 iniciarMonitoreoSesion("Panel administracion");
+
+function eventoAuditoriaVisible(evento = {}) {
+  return !ACCIONES_AUDITORIA_OCULTAS.has(evento.accion);
+}
 
 onAuthStateChanged(auth, async (user) => {
   if (!user) {
@@ -124,6 +133,7 @@ async function cargarResumen() {
   let totalPacientes = 0;
   let totalMedicos = 0;
   let totalInactividad = 0;
+  let totalAuditoriaVisible = 0;
 
   snapUsuarios.forEach((docUsuario) => {
     totalUsuarios++;
@@ -133,13 +143,16 @@ async function cargarResumen() {
   });
 
   snapAuditoria.forEach((docEvento) => {
-    if (docEvento.data().accion === "sesion_inactiva") totalInactividad++;
+    const evento = docEvento.data();
+    if (!eventoAuditoriaVisible(evento)) return;
+    totalAuditoriaVisible++;
+    if (evento.accion === "sesion_inactiva") totalInactividad++;
   });
 
   ponerTexto("totalUsuarios", totalUsuarios);
   ponerTexto("totalPacientes", totalPacientes);
   ponerTexto("totalMedicos", totalMedicos);
-  ponerTexto("totalAuditoria", snapAuditoria.size);
+  ponerTexto("totalAuditoria", totalAuditoriaVisible);
   ponerTexto("totalInactividad", totalInactividad);
 }
 
@@ -669,10 +682,12 @@ async function cargarAuditoria() {
   );
 
   const snap = await getDocs(qAuditoria);
-  eventosAuditoria = snap.docs.map((docEvento) => ({
-    id: docEvento.id,
-    ...docEvento.data()
-  }));
+  eventosAuditoria = snap.docs
+    .map((docEvento) => ({
+      id: docEvento.id,
+      ...docEvento.data()
+    }))
+    .filter(eventoAuditoriaVisible);
 
   llenarFiltroModulos();
   renderizarAuditoria();
