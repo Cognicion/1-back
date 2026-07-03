@@ -55,18 +55,19 @@ function sincronizarEdadConFecha(origen = "fecha") {
   const edadCalculada = calcularEdad(fechaNacimiento);
   const edadEscrita = Number(edadInput.value);
   const tieneEdadEscrita = edadInput.value.trim() !== "" && Number.isFinite(edadEscrita);
+  const fechaCompleta = /^\d{4}-\d{2}-\d{2}$/.test(fechaNacimiento);
 
   if (!fechaNacimiento) {
     ponerAyudaEdad("Edad manual. Si agregas fecha de nacimiento, se validara la coincidencia.");
     return;
   }
 
-  if (edadCalculada === "") {
+  if (!fechaCompleta || edadCalculada === "") {
     ponerAyudaEdad("No se pudo calcular la edad con esa fecha.");
     return;
   }
 
-  if (tieneEdadEscrita && edadEscrita !== Number(edadCalculada)) {
+  if ((origen === "edad" || origen === "guardar") && tieneEdadEscrita && edadEscrita !== Number(edadCalculada)) {
     alert("La edad escrita no coincide con la fecha de nacimiento. Se borrara la fecha de nacimiento y se conservara la edad manual.");
     fechaInput.value = "";
     ponerAyudaEdad("Edad manual conservada. La fecha de nacimiento fue borrada por no coincidir.");
@@ -205,6 +206,7 @@ document.getElementById("abrirIngresoNuevo")?.addEventListener("click", abrirSel
 document.getElementById("cerrarIngresoNuevo")?.addEventListener("click", cerrarSelectorIngresoNuevo);
 document.getElementById("guardarIngresoNuevo")?.addEventListener("click", aplicarIngresoNuevo);
 document.getElementById("limpiarIngresoNuevo")?.addEventListener("click", limpiarIngresoNuevo);
+document.getElementById("fechaNacimiento")?.addEventListener("input", () => sincronizarEdadConFecha("fecha"));
 document.getElementById("fechaNacimiento")?.addEventListener("change", () => sincronizarEdadConFecha("fecha"));
 document.getElementById("edadManual")?.addEventListener("change", () => sincronizarEdadConFecha("edad"));
 document.getElementById("edadManual")?.addEventListener("blur", () => sincronizarEdadConFecha("edad"));

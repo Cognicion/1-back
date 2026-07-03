@@ -28,6 +28,7 @@ const TIPOS_REPORTE = [
   }
 ];
 
+const STORAGE_REPORTE_CONTRAIDO = "cognicion.reporteGlobal.contraido";
 let usuarioActual = null;
 let tipoSeleccionado = TIPOS_REPORTE[0].valor;
 
@@ -42,10 +43,18 @@ function inicializarReporteGlobal() {
 
   const raiz = document.createElement("div");
   raiz.id = "reporteGlobalWidget";
+  if (localStorage.getItem(STORAGE_REPORTE_CONTRAIDO) === "1") {
+    raiz.classList.add("reporte-widget-contraido");
+  }
   raiz.innerHTML = `
     <button class="reporte-float-btn" type="button" aria-haspopup="dialog" aria-controls="reporteGlobalModal">
       <span>Reportar</span>
       <small>problema o sugerencia</small>
+    </button>
+
+    <button class="reporte-contraer-btn" type="button" aria-label="Contraer o mostrar boton de reportes">
+      <span class="reporte-contraer-abierto">&gt;</span>
+      <span class="reporte-contraer-cerrado">&lt;</span>
     </button>
 
     <div class="reporte-overlay" id="reporteGlobalOverlay" aria-hidden="true">
@@ -95,6 +104,7 @@ function inicializarReporteGlobal() {
 
 function conectarEventosReporte(raiz) {
   const botonAbrir = raiz.querySelector(".reporte-float-btn");
+  const botonContraer = raiz.querySelector(".reporte-contraer-btn");
   const overlay = raiz.querySelector(".reporte-overlay");
   const modal = raiz.querySelector(".reporte-modal");
   const botonCerrar = raiz.querySelector(".reporte-cerrar");
@@ -104,6 +114,7 @@ function conectarEventosReporte(raiz) {
   const mensaje = raiz.querySelector("#reporteMensaje");
 
   botonAbrir?.addEventListener("click", () => abrirModalReporte(overlay, mensaje));
+  botonContraer?.addEventListener("click", () => alternarReporteContraido(raiz));
   botonCerrar?.addEventListener("click", () => cerrarModalReporte(overlay));
 
   overlay?.addEventListener("click", (evento) => {
@@ -171,6 +182,12 @@ function conectarEventosReporte(raiz) {
       cerrarModalReporte(overlay);
     }
   });
+}
+
+function alternarReporteContraido(raiz) {
+  const contraido = !raiz.classList.contains("reporte-widget-contraido");
+  raiz.classList.toggle("reporte-widget-contraido", contraido);
+  localStorage.setItem(STORAGE_REPORTE_CONTRAIDO, contraido ? "1" : "0");
 }
 
 function abrirModalReporte(overlay, primerCampo) {

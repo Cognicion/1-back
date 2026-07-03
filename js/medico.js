@@ -97,6 +97,8 @@ onAuthStateChanged(auth, async (user) => {
 
   document.body.classList.remove("bloqueado");
   uidMedicoActual = user.uid;
+  filtroCarpetaActual = cargarPreferenciaFiltroCarpeta();
+  carpetasVisiblesInline = cargarPreferenciaCarpetasVisibles();
 
   // Mostrar el botón del Centro de Control solo al administrador
   const btnAdmin = document.getElementById("btnAdmin");
@@ -191,6 +193,10 @@ function escaparHTML(valor) {
     .replace(/'/g, "&#039;");
 }
 
+function claveStorageMedico(base) {
+  return uidMedicoActual ? `${base}.${uidMedicoActual}` : base;
+}
+
 function slugCarpeta(nombre = "") {
   return String(nombre || "sin-carpeta")
     .trim()
@@ -205,13 +211,35 @@ function obtenerCarpetasPaciente(paciente = {}, uidMedico = uidMedicoActual) {
   const carpetasPorMedico = paciente.carpetasPorMedico || {};
   const carpetasDelMedico = uidMedico ? carpetasPorMedico[uidMedico] : [];
 
-  return Array.isArray(carpetasDelMedico)
-    ? carpetasDelMedico.filter(Boolean)
-    : [];
+  if (Array.isArray(carpetasDelMedico)) {
+    return carpetasDelMedico.filter(Boolean);
+  }
+
+  if (typeof carpetasDelMedico === "string" && carpetasDelMedico.trim()) {
+    return [carpetasDelMedico.trim()];
+  }
+
+  const carpetaLegacy = paciente.carpetaMedico || paciente.carpetaPaciente || paciente.carpeta || "";
+  return carpetaLegacy ? [carpetaLegacy] : [];
 }
 
 function obtenerCarpetaPrincipal(paciente = {}) {
   return obtenerCarpetasPaciente(paciente)[0] || "";
+}
+
+function sincronizarCarpetasDesdePacientes() {
+  const existentes = new Set(carpetasMedico.map((carpeta) => carpeta.toLowerCase()));
+
+  pacientesGlobal.forEach((paciente) => {
+    obtenerCarpetasPaciente(paciente).forEach((carpeta) => {
+      const nombre = String(carpeta || "").trim();
+      if (!nombre || existentes.has(nombre.toLowerCase())) return;
+      carpetasMedico.push(nombre);
+      existentes.add(nombre.toLowerCase());
+    });
+  });
+
+  carpetasMedico.sort((a, b) => a.localeCompare(b, "es", { sensitivity: "base" }));
 }
 
 async function cargarCarpetasMedico(uidMedico = uidMedicoActual) {
@@ -354,7 +382,7 @@ async function editarNombreCarpetaMedico(nombreActual = "") {
 
 function cargarPreferenciaCarpetasVisibles() {
   try {
-    const guardado = localStorage.getItem(STORAGE_CARPETAS_VISIBLES);
+    const guardado = localStorage.getItem(claveStorageMedico(STORAGE_CARPETAS_VISIBLES));
     if (!guardado) return null;
 
     const carpetas = JSON.parse(guardado);
@@ -367,12 +395,13 @@ function cargarPreferenciaCarpetasVisibles() {
 
 function guardarPreferenciaCarpetasVisibles() {
   try {
+    const clave = claveStorageMedico(STORAGE_CARPETAS_VISIBLES);
     if (carpetasVisiblesInline === null) {
-      localStorage.removeItem(STORAGE_CARPETAS_VISIBLES);
+      localStorage.removeItem(clave);
       return;
     }
 
-    localStorage.setItem(STORAGE_CARPETAS_VISIBLES, JSON.stringify([...carpetasVisiblesInline]));
+    localStorage.setItem(clave, JSON.stringify([...carpetasVisiblesInline]));
   } catch (error) {
     console.warn("No se pudo guardar la preferencia de carpetas visibles:", error);
   }
@@ -564,7 +593,7 @@ async function crearCarpetaMedico() {
 
 function cargarPreferenciaFiltroCarpeta() {
   try {
-    return localStorage.getItem(STORAGE_FILTRO_CARPETA) || "";
+    return localStorage.getItem(claveStorageMedico(STORAGE_FILTRO_CARPETA)) || "";
   } catch (error) {
     console.warn("No se pudo cargar el filtro de carpeta:", error);
     return "";
@@ -573,7 +602,7 @@ function cargarPreferenciaFiltroCarpeta() {
 
 function guardarPreferenciaFiltroCarpeta() {
   try {
-    localStorage.setItem(STORAGE_FILTRO_CARPETA, filtroCarpetaActual);
+    localStorage.setItem(claveStorageMedico(STORAGE_FILTRO_CARPETA), filtroCarpetaActual);
   } catch (error) {
     console.warn("No se pudo guardar el filtro de carpeta:", error);
   }
@@ -731,6 +760,9 @@ async function cargarPacientes(uidMedico, opciones = {}) {
     }
   }
 
+  sincronizarCarpetasDesdePacientes();
+  renderizarSelectorFiltroCarpetas();
+  renderizarOpcionesCarpetasVisibles();
   filtrarPacientes();
   renderizarListaCarpetasMedico();
   renderizarCarpetasInlineMedico();
@@ -1180,11 +1212,22 @@ function ordenarPacientes(pacientes) {
   return lista;
 }
 
+function deduplicarPacientes(pacientes = []) {
+  const vistos = new Set();
+  return pacientes.filter((paciente) => {
+    const clave = paciente.id || `${paciente.nombre || ""}-${obtenerFechaNacimiento(paciente) || ""}-${obtenerCamaPaciente(paciente) || ""}`;
+    if (vistos.has(clave)) return false;
+    vistos.add(clave);
+    return true;
+  });
+}
+
 function mostrarPacientes(pacientes) {
   const lista = document.getElementById("listaPacientes");
   lista.innerHTML = "";
+  const pacientesUnicos = deduplicarPacientes(pacientes);
 
-  if (pacientes.length === 0) {
+  if (pacientesUnicos.length === 0) {
     lista.innerHTML = `
       <p class="paciente-vacio">
         No hay pacientes registrados.
@@ -1193,7 +1236,7 @@ function mostrarPacientes(pacientes) {
     return;
   }
 
-  pacientes.forEach((paciente) => {
+  const filas = pacientesUnicos.map((paciente) => {
     const nombre = paciente.nombre || "Paciente sin nombre";
     const cama = obtenerCamaPaciente(paciente);
     const fechaIngresoRaw = obtenerFechaIngreso(paciente);
@@ -1230,7 +1273,7 @@ function mostrarPacientes(pacientes) {
       ? resumenMedicamentos.dosis.map((dosis) => `<span>${escaparHTML(dosis)}</span>`).join("")
       : "<span>Sin registro</span>";
 
-    lista.innerHTML += `
+    return `
       <a class="fila-paciente" href="paciente.html?id=${paciente.id}">
         <span class="paciente-dato cama-columna" data-col-key="cama">${cama}</span>
         <span class="paciente-nombre" data-col-key="nombre">${nombre}</span>
@@ -1262,6 +1305,8 @@ function mostrarPacientes(pacientes) {
       </a>
     `;
   });
+
+  lista.innerHTML = filas.join("");
 
   aplicarColumnasPacientes();
 }
@@ -1299,7 +1344,7 @@ function filtrarPacientes() {
     return [nombre, cama, fechaIngreso, medicoAdscrito, residente, atencion, carpeta, diagnostico, medicamentos, dosisDia].some((valor) => valor.includes(texto));
   });
 
-  const ordenados = ordenarPacientes(filtrados);
+  const ordenados = deduplicarPacientes(ordenarPacientes(filtrados));
   mostrarPacientes(ordenados);
   renderizarGraficasMedico(ordenados);
 }

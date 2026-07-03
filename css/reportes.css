@@ -1,12 +1,14 @@
 .reporte-float-btn {
   position: fixed;
-  right: 22px;
+  right: 18px;
   bottom: 22px;
   z-index: 2147482000;
   display: grid;
   gap: 1px;
-  min-width: 168px;
-  padding: 12px 16px;
+  width: 142px;
+  min-width: 142px;
+  min-height: 54px;
+  padding: 9px 13px;
   border: 1px solid rgba(74, 195, 255, 0.42);
   border-radius: 18px;
   background:
@@ -18,7 +20,7 @@
   font: inherit;
   text-align: left;
   transform: translateZ(0);
-  transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+  transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease, right 220ms ease;
 }
 
 .reporte-float-btn:hover {
@@ -30,11 +32,62 @@
 .reporte-float-btn span {
   font-weight: 800;
   letter-spacing: 0.01em;
+  font-size: 13px;
 }
 
 .reporte-float-btn small {
   color: rgba(240, 249, 255, 0.82);
-  font-size: 11px;
+  font-size: 10px;
+  line-height: 1.2;
+}
+
+.reporte-contraer-btn {
+  position: fixed;
+  right: 18px;
+  bottom: 84px;
+  z-index: 2147482001;
+  width: 30px;
+  height: 30px;
+  border: 1px solid rgba(74, 195, 255, 0.38);
+  border-radius: 999px;
+  background: rgba(2, 6, 23, 0.86);
+  color: #dff7ff;
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.28);
+  cursor: pointer;
+  transition: transform 180ms ease, right 220ms ease, background 180ms ease;
+}
+
+.reporte-contraer-btn:hover {
+  transform: translateY(-1px);
+  background: rgba(14, 36, 61, 0.94);
+}
+
+.reporte-contraer-cerrado {
+  display: none;
+}
+
+.reporte-widget-contraido .reporte-float-btn {
+  right: -104px;
+  width: 142px;
+  min-width: 142px;
+  border-radius: 18px 0 0 18px;
+}
+
+.reporte-widget-contraido .reporte-float-btn span,
+.reporte-widget-contraido .reporte-float-btn small {
+  opacity: 0;
+}
+
+.reporte-widget-contraido .reporte-contraer-btn {
+  right: 6px;
+}
+
+.reporte-widget-contraido .reporte-contraer-abierto {
+  display: none;
+}
+
+.reporte-widget-contraido .reporte-contraer-cerrado {
+  display: inline;
 }
 
 .reporte-overlay {
@@ -227,10 +280,20 @@
 
 @media (max-width: 720px) {
   .reporte-float-btn {
-    right: 14px;
+    right: 12px;
     bottom: 14px;
-    min-width: 132px;
-    padding: 10px 13px;
+    width: 128px;
+    min-width: 128px;
+    padding: 9px 12px;
+  }
+
+  .reporte-contraer-btn {
+    right: 12px;
+    bottom: 74px;
+  }
+
+  .reporte-widget-contraido .reporte-float-btn {
+    right: -92px;
   }
 
   .reporte-opciones {
