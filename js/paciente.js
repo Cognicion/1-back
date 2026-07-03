@@ -74,6 +74,8 @@ let textoIndicacionesEditado = false;
 let apuntesMedicoPacienteCache = [];
 let catalogoMedicosFirmasIndicacionesCache = [];
 let indicacionesPacienteCache = [];
+let medicamentosRecetaActual = [];
+let estudiosSolicitudActual = [];
 const CLAVE_CATALOGO_MANUAL = "cognicion_catalogo_diagnosticos_manual";
 let catalogoManualDiagnosticos = cargarCatalogoManualDiagnosticos();
 const CLAVE_MEDICAMENTOS_MANUALES = "cognicion_catalogo_medicamentos_manual";
@@ -93,6 +95,46 @@ const CATALOGOS_INDICACIONES_DEFAULT = {
   vigilancia: ["RIESGO SUICIDA", "RIESGO HETEROAGRESIVO", "RIESGO DE FUGA", "RIESGO DE AUTOLESION"]
 };
 let catalogosIndicaciones = cargarCatalogosIndicaciones();
+const CATALOGO_SOLICITUD_ESTUDIOS = {
+  laboratorio: [
+    "Biometria hematica completa",
+    "Quimica sanguinea",
+    "Glucosa",
+    "Urea",
+    "Creatinina",
+    "Electrolitos sericos",
+    "Sodio",
+    "Potasio",
+    "Cloro",
+    "Calcio",
+    "Pruebas de funcion hepatica",
+    "Perfil de lipidos",
+    "Hemoglobina glucosilada",
+    "Examen general de orina",
+    "Prueba de embarazo",
+    "Perfil tiroideo",
+    "TSH",
+    "T4 libre",
+    "Vitamina B12",
+    "Acido folico",
+    "Niveles sericos de litio",
+    "Niveles sericos de valproato",
+    "Prolactina",
+    "VIH",
+    "VDRL",
+    "Toxicologico en orina"
+  ],
+  imagen: [
+    "TAC simple de craneo",
+    "TAC contrastada de craneo",
+    "Resonancia magnetica de encefalo",
+    "Electroencefalograma",
+    "Radiografia de torax",
+    "Ultrasonido abdominal",
+    "Electrocardiograma",
+    "Ecocardiograma"
+  ]
+};
 
 iniciarMonitoreoSesion("Expediente paciente");
 
@@ -745,6 +787,25 @@ function configurarCatalogoMedicamentosTratamiento() {
   });
 }
 
+function configurarCatalogoMedicamentosReceta() {
+  const lista = document.getElementById("catalogoMedicamentosReceta");
+  if (!lista) return;
+
+  const renderizar = () => {
+    lista.innerHTML = catalogoMedicamentosTratamiento()
+      .map((medicamento) => `
+        <option
+          value="${escaparHTML(medicamento.texto)}"
+          label="${escaparHTML(`${medicamento.agregadoManual ? "Agregado manualmente · " : ""}${medicamento.clase || "Medicamento"}`)}"
+        ></option>
+      `)
+      .join("");
+  };
+
+  renderizar();
+  document.addEventListener("catalogoMedicamentosActualizado", renderizar);
+}
+
 function abrirMedicamentoManual() {
   const modal = document.getElementById("modalMedicamentoManual");
   if (!modal) return;
@@ -825,6 +886,7 @@ function ocultarSecciones() {
     "seccionNotasFlotantes",
     "seccionInterconsulta",
     "seccionIndicaciones",
+    "seccionReceta",
     "seccionEstudios",
     "seccionNotasRapidas"
   ].forEach((id) => {
@@ -1216,9 +1278,23 @@ window.mostrarIndicaciones = async function() {
   await cargarIndicacionesPaciente();
 };
 
+window.mostrarReceta = async function() {
+  ocultarSecciones();
+  document.getElementById("seccionReceta").style.display = "block";
+  if (!valorCampo("recetaFecha")) ponerValor("recetaFecha", fechaISOHoy());
+  await cargarTratamientoActivoEnReceta();
+};
+
 window.mostrarEstudios = async function() {
   ocultarSecciones();
   document.getElementById("seccionEstudios").style.display = "block";
+  if (!valorCampo("solicitudEstudioFecha")) ponerValor("solicitudEstudioFecha", fechaISOHoy());
+  if (!valorCampo("solicitudEstudioSolicita")) {
+    ponerValor("solicitudEstudioSolicita", medicoActualDatos?.nombre || datosPacienteActual?.medicoTratante || "");
+  }
+  configurarSolicitudEstudios();
+  renderizarListaSolicitudEstudios();
+  actualizarPreviewSolicitudEstudios();
   await cargarEstudiosPaciente();
 };
 
@@ -3530,6 +3606,412 @@ function formatearIndicacionTratamiento(t = {}, incluirMedicamento = true) {
 }
 
 configurarCatalogoMedicamentosTratamiento();
+configurarCatalogoMedicamentosReceta();
+
+function fechaISOHoy() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function obtenerNombrePacienteActual() {
+  return datosPacienteActual?.nombre || document.getElementById("nombrePaciente")?.textContent || "Paciente";
+}
+
+function datosRecetaActual() {
+  const fecha = valorCampo("recetaFecha") || fechaISOHoy();
+  return {
+    formato: valorCampo("recetaFormato") || "cognicion",
+    fecha,
+    pacienteNombre: obtenerNombrePacienteActual(),
+    edad: calcularEdad(obtenerFechaNacimiento(datosPacienteActual || {})),
+    fechaNacimiento: obtenerFechaNacimiento(datosPacienteActual || {}),
+    sexo: datosPacienteActual?.sexo || datosPacienteActual?.datosInstitucionales?.sexo || "",
+    expediente: datosPacienteActual?.expedienteCognicion || datosPacienteActual?.datosInstitucionales?.expedienteCognicion || datosPacienteActual?.expediente || "",
+    medico: medicoActualDatos?.nombre || datosPacienteActual?.medicoTratante || "Medico tratante",
+    cedula: medicoActualDatos?.cedula || medicoActualDatos?.cedulaProfesional || "",
+    institucion: datosPacienteActual?.institucionPaciente || datosPacienteActual?.institucion || "",
+    medicamentos: medicamentosRecetaActual,
+    observaciones: valorCampo("recetaObservaciones"),
+    vigencia: valorCampo("recetaVigencia")
+  };
+}
+
+function renderizarMedicamentosReceta() {
+  const contenedor = document.getElementById("listaMedicamentosReceta");
+  if (!contenedor) return;
+
+  contenedor.innerHTML = medicamentosRecetaActual.length
+    ? medicamentosRecetaActual.map((medicamento, index) => `
+      <article class="medicamento-receta-item">
+        <div>
+          <strong>${escaparHTML(medicamento.medicamento || "Medicamento")}</strong>
+          <span>${escaparHTML(medicamento.indicacion || "Sin indicacion")}</span>
+        </div>
+        <button type="button" class="boton-peligro-suave" data-quitar-medicamento-receta="${index}">Quitar</button>
+      </article>
+    `).join("")
+    : "<p>Sin medicamentos seleccionados.</p>";
+
+  contenedor.querySelectorAll("[data-quitar-medicamento-receta]").forEach((boton) => {
+    boton.addEventListener("click", () => {
+      medicamentosRecetaActual.splice(Number(boton.dataset.quitarMedicamentoReceta), 1);
+      renderizarMedicamentosReceta();
+      actualizarPreviewReceta();
+    });
+  });
+}
+
+function htmlRecetaPreview(datos = datosRecetaActual()) {
+  const medicamentos = datos.medicamentos?.length
+    ? datos.medicamentos.map((item, index) => `
+      <li>
+        <strong>${escaparHTML(item.medicamento)}</strong>
+        <span>${escaparHTML(item.indicacion || "")}</span>
+      </li>
+    `).join("")
+    : "<li><span>Sin medicamentos seleccionados.</span></li>";
+
+  return `
+    <div class="receta-marca">COGNICION</div>
+    <div class="receta-encabezado">
+      <div>
+        <h2>Receta medica</h2>
+        <p>Tecnologia clinica para una medicina mas precisa, humana y basada en evidencia.</p>
+      </div>
+      <span>${escaparHTML(formatearFecha(datos.fecha) || datos.fecha)}</span>
+    </div>
+
+    <div class="receta-datos">
+      <p><b>Paciente:</b> ${escaparHTML(datos.pacienteNombre)}</p>
+      <p><b>Edad:</b> ${datos.edad !== "" ? escaparHTML(`${datos.edad} anos`) : "No registrada"}</p>
+      <p><b>Sexo:</b> ${escaparHTML(datos.sexo || "No registrado")}</p>
+      <p><b>Expediente:</b> ${escaparHTML(datos.expediente || "No registrado")}</p>
+    </div>
+
+    <h3>Prescripcion</h3>
+    <ol class="receta-medicamentos">${medicamentos}</ol>
+
+    ${datos.observaciones ? `<h3>Observaciones</h3><p>${escaparHTML(datos.observaciones)}</p>` : ""}
+    ${datos.vigencia ? `<p class="receta-vigencia">${escaparHTML(datos.vigencia)}</p>` : ""}
+
+    <div class="receta-firma">
+      <span></span>
+      <strong>${escaparHTML(datos.medico)}</strong>
+      <small>${datos.cedula ? `Ced. Prof. ${escaparHTML(datos.cedula)}` : "Cedula profesional"}</small>
+    </div>
+  `;
+}
+
+function actualizarPreviewReceta() {
+  const preview = document.getElementById("recetaPreview");
+  if (!preview) return;
+  preview.innerHTML = htmlRecetaPreview();
+}
+
+function agregarMedicamentoReceta() {
+  const medicamento = valorCampo("recetaMedicamentoCatalogo");
+  const indicacion = valorCampo("recetaIndicacionManual");
+
+  if (!medicamento && !indicacion) {
+    alert("Escribe o selecciona un medicamento.");
+    return;
+  }
+
+  medicamentosRecetaActual.push({
+    medicamento: medicamento || "Medicamento no especificado",
+    indicacion
+  });
+
+  ponerValor("recetaMedicamentoCatalogo", "");
+  ponerValor("recetaIndicacionManual", "");
+  renderizarMedicamentosReceta();
+  actualizarPreviewReceta();
+}
+
+async function cargarTratamientoActivoEnReceta() {
+  await asegurarTratamientosCache();
+  const activos = tratamientosCache.filter((t) => (t.estado || "activo") === "activo");
+  medicamentosRecetaActual = activos.map((t) => ({
+    medicamento: t.medicamento || "Medicamento",
+    indicacion: formatearIndicacionTratamiento(t, false)
+  }));
+  renderizarMedicamentosReceta();
+  actualizarPreviewReceta();
+}
+
+async function guardarRecetaPaciente() {
+  const datos = datosRecetaActual();
+  if (!datos.medicamentos.length) {
+    alert("Agrega al menos un medicamento a la receta.");
+    return;
+  }
+
+  await addDoc(collection(db, "usuarios", uidPaciente, "recetas"), {
+    ...datos,
+    creadoPor: auth.currentUser?.uid || "",
+    creadoEn: serverTimestamp()
+  });
+
+  await registrarAccionExpediente({
+    accion: "crear_receta",
+    descripcion: "El medico genero una receta medica.",
+    detalles: {
+      formato: datos.formato,
+      medicamentos: datos.medicamentos.length
+    }
+  });
+
+  alert("Receta guardada.");
+}
+
+function descargarRecetaPaciente() {
+  const datos = datosRecetaActual();
+  if (!datos.medicamentos.length) {
+    alert("Agrega al menos un medicamento a la receta.");
+    return;
+  }
+
+  const html = `<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Receta ${escaparHTML(datos.pacienteNombre)}</title>
+<style>
+  body{margin:0;background:#eef6ff;font-family:Arial,Helvetica,sans-serif;color:#0f172a;}
+  .hoja{width:760px;min-height:980px;margin:32px auto;padding:48px;background:white;border-radius:22px;box-shadow:0 22px 70px rgba(15,23,42,.18),0 0 0 1px rgba(14,165,233,.14);}
+  .receta-marca{color:#0284c7;font-weight:900;letter-spacing:.22em;font-size:12px;margin-bottom:18px;}
+  .receta-encabezado{display:flex;justify-content:space-between;gap:22px;border-bottom:2px solid #dbeafe;padding-bottom:18px;margin-bottom:22px;}
+  h2{margin:0;color:#082f49;font-size:30px;} h3{margin:24px 0 10px;color:#0369a1;font-size:14px;text-transform:uppercase;letter-spacing:.12em;}
+  p{line-height:1.45;} .receta-datos{display:grid;grid-template-columns:1fr 1fr;gap:8px 20px;background:#f8fbff;border:1px solid #dbeafe;border-radius:16px;padding:14px 16px;}
+  .receta-datos p{margin:0;} .receta-medicamentos{padding-left:22px;} .receta-medicamentos li{margin:0 0 14px;} .receta-medicamentos strong{display:block;color:#0f172a;} .receta-medicamentos span{display:block;margin-top:4px;}
+  .receta-vigencia{margin-top:20px;color:#475569;} .receta-firma{margin-top:80px;text-align:center;margin-left:auto;width:280px;} .receta-firma span{display:block;border-top:1px solid #0f172a;margin-bottom:8px;} .receta-firma strong,.receta-firma small{display:block;}
+  @media print{body{background:white}.hoja{width:auto;min-height:auto;margin:0;box-shadow:none;border-radius:0}}
+</style>
+</head>
+<body><main class="hoja">${htmlRecetaPreview(datos)}</main></body>
+</html>`;
+
+  const blob = new Blob([html], { type: "text/html;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const enlace = document.createElement("a");
+  enlace.href = url;
+  enlace.download = `Receta_${(datos.pacienteNombre || "paciente").replace(/\s+/g, "_")}_${datos.fecha}.html`;
+  document.body.appendChild(enlace);
+  enlace.click();
+  enlace.remove();
+  URL.revokeObjectURL(url);
+}
+
+function configurarSolicitudEstudios() {
+  const categoria = document.getElementById("solicitudEstudioCategoria");
+  const estudio = document.getElementById("solicitudEstudioNombre");
+  if (!categoria || !estudio) return;
+
+  const renderizarOpciones = () => {
+    const tipo = categoria.value || "laboratorio";
+    estudio.innerHTML = (CATALOGO_SOLICITUD_ESTUDIOS[tipo] || [])
+      .map((nombre) => `<option value="${escaparHTML(nombre)}">${escaparHTML(nombre)}</option>`)
+      .join("");
+    actualizarPreviewSolicitudEstudios();
+  };
+
+  categoria.addEventListener("change", renderizarOpciones);
+  renderizarOpciones();
+}
+
+function datosSolicitudEstudiosActual() {
+  const fecha = valorCampo("solicitudEstudioFecha") || fechaISOHoy();
+  return {
+    formato: valorCampo("solicitudEstudioFormato") || "cognicion",
+    fecha,
+    pacienteNombre: obtenerNombrePacienteActual(),
+    edad: calcularEdad(obtenerFechaNacimiento(datosPacienteActual || {})),
+    fechaNacimiento: obtenerFechaNacimiento(datosPacienteActual || {}),
+    sexo: datosPacienteActual?.sexo || datosPacienteActual?.datosInstitucionales?.sexo || "",
+    expediente:
+      datosPacienteActual?.expedienteCognicion ||
+      datosPacienteActual?.datosInstitucionales?.expedienteCognicion ||
+      datosPacienteActual?.expediente ||
+      datosPacienteActual?.numeroExpediente ||
+      "",
+    cama: datosPacienteActual?.cama || datosPacienteActual?.datosInstitucionales?.cama || "",
+    institucion: datosPacienteActual?.institucionPaciente || datosPacienteActual?.institucion || "",
+    prioridad: valorCampo("solicitudEstudioPrioridad") || "Ordinaria",
+    motivo: valorCampo("solicitudEstudioMotivo"),
+    solicita: valorCampo("solicitudEstudioSolicita") || medicoActualDatos?.nombre || datosPacienteActual?.medicoTratante || "Medico solicitante",
+    cedula: medicoActualDatos?.cedula || medicoActualDatos?.cedulaProfesional || "",
+    estudios: estudiosSolicitudActual
+  };
+}
+
+function renderizarListaSolicitudEstudios() {
+  const contenedor = document.getElementById("listaSolicitudEstudios");
+  if (!contenedor) return;
+
+  contenedor.innerHTML = estudiosSolicitudActual.length
+    ? estudiosSolicitudActual.map((item, index) => `
+      <article class="medicamento-receta-item">
+        <div>
+          <strong>${escaparHTML(item.nombre)}</strong>
+          <span>${escaparHTML(item.categoria === "imagen" ? "Imagen" : "Laboratorio")}</span>
+        </div>
+        <button type="button" class="boton-peligro-suave" data-quitar-estudio-solicitud="${index}">Quitar</button>
+      </article>
+    `).join("")
+    : "<p>Sin estudios agregados.</p>";
+
+  contenedor.querySelectorAll("[data-quitar-estudio-solicitud]").forEach((boton) => {
+    boton.addEventListener("click", () => {
+      estudiosSolicitudActual.splice(Number(boton.dataset.quitarEstudioSolicitud), 1);
+      renderizarListaSolicitudEstudios();
+      actualizarPreviewSolicitudEstudios();
+    });
+  });
+}
+
+function htmlSolicitudEstudiosPreview(datos = datosSolicitudEstudiosActual()) {
+  const estudios = datos.estudios?.length
+    ? datos.estudios.map((item) => `
+      <li>
+        <strong>${escaparHTML(item.nombre)}</strong>
+        <span>${escaparHTML(item.categoria === "imagen" ? "Imagen" : "Laboratorio")}</span>
+      </li>
+    `).join("")
+    : "<li><span>Sin estudios solicitados.</span></li>";
+
+  return `
+    <img class="solicitud-logo" src="assets/favicon-cognicion.png" alt="Cognicion">
+    <div class="receta-marca">COGNICION</div>
+    <div class="receta-encabezado">
+      <div>
+        <h2>Solicitud de estudios</h2>
+        <p>Formato ${escaparHTML(datos.formato)} · ${escaparHTML(datos.prioridad)}</p>
+      </div>
+      <span>${escaparHTML(formatearFecha(datos.fecha) || datos.fecha)}</span>
+    </div>
+
+    <div class="receta-datos">
+      <p><b>Paciente:</b> ${escaparHTML(datos.pacienteNombre)}</p>
+      <p><b>Edad:</b> ${datos.edad !== "" ? escaparHTML(`${datos.edad} anos`) : "No registrada"}</p>
+      <p><b>Sexo:</b> ${escaparHTML(datos.sexo || "No registrado")}</p>
+      <p><b>Expediente:</b> ${escaparHTML(datos.expediente || "No registrado")}</p>
+      <p><b>Cama:</b> ${escaparHTML(datos.cama || "No registrada")}</p>
+      <p><b>Institucion:</b> ${escaparHTML(datos.institucion || "No registrada")}</p>
+    </div>
+
+    <h3>Estudios solicitados</h3>
+    <ol class="receta-medicamentos">${estudios}</ol>
+
+    ${datos.motivo ? `<h3>Indicacion clinica</h3><p>${escaparHTML(datos.motivo)}</p>` : ""}
+
+    <div class="receta-firma">
+      <span></span>
+      <strong>${escaparHTML(datos.solicita)}</strong>
+      <small>${datos.cedula ? `Ced. Prof. ${escaparHTML(datos.cedula)}` : "Quien solicita"}</small>
+    </div>
+  `;
+}
+
+function actualizarPreviewSolicitudEstudios() {
+  const preview = document.getElementById("solicitudEstudiosPreview");
+  if (!preview) return;
+  preview.innerHTML = htmlSolicitudEstudiosPreview();
+}
+
+function agregarEstudioSolicitud() {
+  const categoria = valorCampo("solicitudEstudioCategoria") || "laboratorio";
+  const nombre = valorCampo("solicitudEstudioNombre");
+
+  if (!nombre) {
+    alert("Selecciona un estudio.");
+    return;
+  }
+
+  const existe = estudiosSolicitudActual.some((item) =>
+    item.categoria === categoria && item.nombre.toLowerCase() === nombre.toLowerCase()
+  );
+
+  if (!existe) {
+    estudiosSolicitudActual.push({ categoria, nombre });
+  }
+
+  renderizarListaSolicitudEstudios();
+  actualizarPreviewSolicitudEstudios();
+}
+
+function limpiarSolicitudEstudios() {
+  estudiosSolicitudActual = [];
+  ponerValor("solicitudEstudioMotivo", "");
+  ponerValor("solicitudEstudioPrioridad", "Ordinaria");
+  ponerValor("solicitudEstudioFecha", fechaISOHoy());
+  ponerValor("solicitudEstudioSolicita", medicoActualDatos?.nombre || datosPacienteActual?.medicoTratante || "");
+  renderizarListaSolicitudEstudios();
+  actualizarPreviewSolicitudEstudios();
+}
+
+async function guardarSolicitudEstudios() {
+  const datos = datosSolicitudEstudiosActual();
+  if (!datos.estudios.length) {
+    alert("Agrega al menos un estudio a la solicitud.");
+    return;
+  }
+
+  await addDoc(collection(db, "usuarios", uidPaciente, "solicitudesEstudios"), {
+    ...datos,
+    creadoPor: auth.currentUser?.uid || "",
+    creadoEn: serverTimestamp()
+  });
+
+  await registrarAccionExpediente({
+    accion: "crear_solicitud_estudios",
+    descripcion: "El medico genero una solicitud de estudios.",
+    detalles: {
+      formato: datos.formato,
+      estudios: datos.estudios.length,
+      prioridad: datos.prioridad
+    }
+  });
+
+  alert("Solicitud de estudios guardada.");
+}
+
+function descargarSolicitudEstudios() {
+  const datos = datosSolicitudEstudiosActual();
+  if (!datos.estudios.length) {
+    alert("Agrega al menos un estudio a la solicitud.");
+    return;
+  }
+
+  const html = `<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Solicitud de estudios ${escaparHTML(datos.pacienteNombre)}</title>
+<style>
+  body{margin:0;background:#eef6ff;font-family:Arial,Helvetica,sans-serif;color:#0f172a;}
+  .hoja{position:relative;width:760px;min-height:980px;margin:32px auto;padding:48px;background:white;border-radius:22px;box-shadow:0 22px 70px rgba(15,23,42,.18),0 0 0 1px rgba(14,165,233,.14);}
+  .solicitud-logo{position:absolute;top:34px;right:38px;width:54px;height:54px;object-fit:contain;}
+  .receta-marca{color:#0284c7;font-weight:900;letter-spacing:.22em;font-size:12px;margin-bottom:18px;}
+  .receta-encabezado{display:flex;justify-content:space-between;gap:80px;border-bottom:2px solid #dbeafe;padding-bottom:18px;margin-bottom:22px;}
+  h2{margin:0;color:#082f49;font-size:30px;} h3{margin:24px 0 10px;color:#0369a1;font-size:14px;text-transform:uppercase;letter-spacing:.12em;}
+  p{line-height:1.45;} .receta-datos{display:grid;grid-template-columns:1fr 1fr;gap:8px 20px;background:#f8fbff;border:1px solid #dbeafe;border-radius:16px;padding:14px 16px;}
+  .receta-datos p{margin:0;} .receta-medicamentos{padding-left:22px;} .receta-medicamentos li{margin:0 0 14px;} .receta-medicamentos strong{display:block;color:#0f172a;} .receta-medicamentos span{display:block;margin-top:4px;color:#475569;}
+  .receta-firma{margin-top:90px;text-align:center;margin-left:auto;width:280px;} .receta-firma span{display:block;border-top:1px solid #0f172a;margin-bottom:8px;} .receta-firma strong,.receta-firma small{display:block;}
+  @media print{body{background:white}.hoja{width:auto;min-height:auto;margin:0;box-shadow:none;border-radius:0}}
+</style>
+</head>
+<body><main class="hoja">${htmlSolicitudEstudiosPreview(datos)}</main></body>
+</html>`;
+
+  const blob = new Blob([html], { type: "text/html;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const enlace = document.createElement("a");
+  enlace.href = url;
+  enlace.download = `Solicitud_estudios_${(datos.pacienteNombre || "paciente").replace(/\s+/g, "_")}_${datos.fecha}.html`;
+  document.body.appendChild(enlace);
+  enlace.click();
+  enlace.remove();
+  URL.revokeObjectURL(url);
+}
 
 function datosFormularioEstudio() {
   return {
@@ -3737,6 +4219,22 @@ document.querySelector("#panelApuntesMedicoPaciente .boton-cerrar-panel")?.addEv
 document.getElementById("fondoApuntesMedicoPaciente")?.addEventListener("click", window.cerrarApuntesMedicoPaciente);
 document.getElementById("guardarEstudio")?.addEventListener("click", guardarEstudioPaciente);
 document.getElementById("limpiarEstudio")?.addEventListener("click", limpiarFormularioEstudio);
+document.getElementById("agregarEstudioSolicitud")?.addEventListener("click", agregarEstudioSolicitud);
+document.getElementById("limpiarSolicitudEstudios")?.addEventListener("click", limpiarSolicitudEstudios);
+document.getElementById("guardarSolicitudEstudios")?.addEventListener("click", guardarSolicitudEstudios);
+document.getElementById("descargarSolicitudEstudios")?.addEventListener("click", descargarSolicitudEstudios);
+[
+  "solicitudEstudioFormato",
+  "solicitudEstudioFecha",
+  "solicitudEstudioCategoria",
+  "solicitudEstudioNombre",
+  "solicitudEstudioMotivo",
+  "solicitudEstudioPrioridad",
+  "solicitudEstudioSolicita"
+].forEach((id) => {
+  document.getElementById(id)?.addEventListener("input", actualizarPreviewSolicitudEstudios);
+  document.getElementById(id)?.addEventListener("change", actualizarPreviewSolicitudEstudios);
+});
 document.getElementById("guardarNotaRapida")?.addEventListener("click", guardarNotaRapidaPaciente);
 document.getElementById("guardarTareaMiSalud")?.addEventListener("click", guardarTareaMiSaludPaciente);
 document.getElementById("btnGenerarCodigoPaciente")?.addEventListener("click", generarCodigoVinculacionDesdeMedico);
@@ -3779,6 +4277,18 @@ document.getElementById("actualizarMedicamentosIndicaciones")?.addEventListener(
   await asegurarTratamientosCache();
   renderizarMedicamentosIndicaciones();
   actualizarTextoIndicaciones();
+});
+document.getElementById("agregarMedicamentoReceta")?.addEventListener("click", agregarMedicamentoReceta);
+document.getElementById("actualizarTratamientoReceta")?.addEventListener("click", cargarTratamientoActivoEnReceta);
+document.getElementById("guardarRecetaPaciente")?.addEventListener("click", guardarRecetaPaciente);
+document.getElementById("descargarRecetaPaciente")?.addEventListener("click", descargarRecetaPaciente);
+[
+  "recetaFecha",
+  "recetaVigencia",
+  "recetaObservaciones"
+].forEach((id) => {
+  document.getElementById(id)?.addEventListener("input", actualizarPreviewReceta);
+  document.getElementById(id)?.addEventListener("change", actualizarPreviewReceta);
 });
 document.querySelectorAll("[data-catalogo-indicaciones]").forEach((boton) => {
   boton.addEventListener("click", () => {

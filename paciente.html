@@ -81,6 +81,7 @@
       <button onclick="mostrarNotasFlotantes()">Notas flotantes</button>
       <button onclick="mostrarInterconsulta()">Interconsulta</button>
       <button onclick="mostrarIndicaciones()">Indicaciones</button>
+      <button onclick="mostrarReceta()">Receta</button>
       <button onclick="mostrarResultadosEscalas()">Resultados</button>
       <button onclick="previsualizarMiSalud()">Ver Mi Salud</button>
       <button onclick="mostrarPermisos()">Permisos</button>
@@ -729,7 +730,142 @@
       </div>
     </section>
 
+    <section id="seccionReceta" style="display:none;">
+      <div class="tarjeta">
+        <div class="panel-header">
+          <div>
+            <h2>Receta medica</h2>
+            <p class="texto-suave">Genera una receta a partir del tratamiento activo o agrega medicamentos manualmente.</p>
+          </div>
+          <button type="button" class="boton-secundario" onclick="abrirApuntesMedicoPaciente()">Mis apuntes</button>
+        </div>
+
+        <div class="form-grid">
+          <label>Formato de receta
+            <select id="recetaFormato">
+              <option value="cognicion">Cognicion - Receta general</option>
+            </select>
+          </label>
+          <label>Fecha
+            <input id="recetaFecha" type="date">
+          </label>
+          <label>Vigencia / indicacion administrativa
+            <input id="recetaVigencia" placeholder="Ej. Receta vigente por 30 dias">
+          </label>
+          <label>Medicamento del catalogo
+            <input id="recetaMedicamentoCatalogo" list="catalogoMedicamentosReceta" placeholder="Buscar medicamento o escribir libremente">
+            <datalist id="catalogoMedicamentosReceta"></datalist>
+          </label>
+          <label>Indicacion del medicamento
+            <input id="recetaIndicacionManual" placeholder="Ej. Tomar via oral 1 vez al dia. 1 tableta a las 08:00">
+          </label>
+        </div>
+
+        <div class="form-actions">
+          <button id="agregarMedicamentoReceta" type="button" class="boton-secundario">Agregar medicamento</button>
+          <button id="actualizarTratamientoReceta" type="button" class="boton-secundario">Cargar tratamiento activo</button>
+        </div>
+
+        <div class="panel-doble receta-layout">
+          <div class="tarjeta receta-subtarjeta">
+            <h2>Medicamentos de la receta</h2>
+            <div id="listaMedicamentosReceta" class="panel-lista compacta">Sin medicamentos seleccionados.</div>
+          </div>
+
+          <div class="receta-preview-wrap">
+            <div id="recetaPreview" class="receta-preview">
+              <div class="receta-marca">COGNICION</div>
+              <h2>Receta medica</h2>
+              <p>Selecciona medicamentos para generar la vista previa.</p>
+            </div>
+          </div>
+        </div>
+
+        <label>Observaciones
+          <textarea id="recetaObservaciones" placeholder="Indicaciones generales, medidas no farmacologicas o comentarios clinicos."></textarea>
+        </label>
+
+        <div class="form-actions">
+          <button id="guardarRecetaPaciente" type="button">Guardar receta</button>
+          <button id="descargarRecetaPaciente" type="button" class="boton-secundario">Descargar receta</button>
+        </div>
+      </div>
+    </section>
+
     <section id="seccionEstudios" style="display:none;">
+      <div class="tarjeta">
+        <div class="panel-header">
+          <div>
+            <h2>Solicitar estudios</h2>
+            <p class="texto-suave">Genera una solicitud de laboratorio o imagen con datos del paciente y medico solicitante.</p>
+          </div>
+          <button type="button" class="boton-secundario" onclick="abrirApuntesMedicoPaciente()">Mis apuntes</button>
+        </div>
+
+        <div class="form-grid">
+          <label>Formato de solicitud
+            <select id="solicitudEstudioFormato">
+              <option value="cognicion">Cognicion - Solicitud general</option>
+            </select>
+          </label>
+          <label>Fecha
+            <input id="solicitudEstudioFecha" type="date">
+          </label>
+          <label>Categoria
+            <select id="solicitudEstudioCategoria">
+              <option value="laboratorio">Laboratorio</option>
+              <option value="imagen">Imagen</option>
+            </select>
+          </label>
+          <label>Estudio a solicitar
+            <select id="solicitudEstudioNombre"></select>
+          </label>
+        </div>
+
+        <label>Indicacion clinica / motivo
+          <textarea id="solicitudEstudioMotivo" placeholder="Ej. Valoracion inicial, seguimiento metabolico, descartar patologia organica, control farmacologico."></textarea>
+        </label>
+
+        <div class="form-grid">
+          <label>Prioridad
+            <select id="solicitudEstudioPrioridad">
+              <option value="Ordinaria">Ordinaria</option>
+              <option value="Urgente">Urgente</option>
+              <option value="Preferente">Preferente</option>
+            </select>
+          </label>
+          <label>Quien solicita
+            <input id="solicitudEstudioSolicita" placeholder="Medico solicitante">
+          </label>
+        </div>
+
+        <div class="form-actions">
+          <button id="agregarEstudioSolicitud" type="button" class="boton-secundario">Agregar estudio</button>
+          <button id="limpiarSolicitudEstudios" type="button" class="boton-secundario">Limpiar solicitud</button>
+        </div>
+
+        <div class="panel-doble receta-layout">
+          <div class="tarjeta receta-subtarjeta">
+            <h2>Estudios solicitados</h2>
+            <div id="listaSolicitudEstudios" class="panel-lista compacta">Sin estudios agregados.</div>
+          </div>
+
+          <div class="receta-preview-wrap">
+            <div id="solicitudEstudiosPreview" class="receta-preview solicitud-estudio-preview">
+              <img class="solicitud-logo" src="assets/favicon-cognicion.png" alt="Cognicion">
+              <div class="receta-marca">COGNICION</div>
+              <h2>Solicitud de estudios</h2>
+              <p>Agrega estudios para generar la vista previa.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button id="guardarSolicitudEstudios" type="button">Guardar solicitud</button>
+          <button id="descargarSolicitudEstudios" type="button" class="boton-secundario">Descargar solicitud</button>
+        </div>
+      </div>
+
       <div class="tarjeta">
         <div class="panel-header">
           <div>

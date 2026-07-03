@@ -85,7 +85,8 @@ a { color: inherit; }
   color: var(--muted);
   text-decoration: none;
   font-size: 14px;
-  transition: color 0.2s ease;
+  transform: translateY(0) scale(1);
+  transition: color 0.2s ease, transform 0.2s ease, text-shadow 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease, background 0.2s ease;
 }
 
 .nav-links a:hover { color: #e0f2fe; }
@@ -96,6 +97,50 @@ a { color: inherit; }
   border-radius: 999px;
   color: #e0f2fe !important;
   background: rgba(56,189,248,0.08);
+}
+
+.nav-login:hover {
+  transform: translateY(-2px) scale(1.06);
+  border-color: rgba(125,211,252,0.72);
+  background: rgba(56,189,248,0.16);
+  box-shadow: 0 0 28px rgba(0,212,255,0.30), 0 10px 26px rgba(37,99,235,0.20);
+  text-shadow: 0 0 16px rgba(224,242,254,0.72);
+}
+
+.scroll-top-btn {
+  position: fixed;
+  left: 22px;
+  bottom: 22px;
+  z-index: 50;
+  width: 46px;
+  height: 46px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(125,211,252,0.28);
+  border-radius: 999px;
+  background: rgba(6,12,22,0.72);
+  color: #e0f2fe;
+  text-decoration: none;
+  font-size: 22px;
+  font-weight: 900;
+  box-shadow: 0 16px 42px rgba(0,0,0,0.35), 0 0 24px rgba(56,189,248,0.12);
+  backdrop-filter: blur(14px);
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(12px) scale(0.96);
+  transition: opacity 0.22s ease, transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+}
+
+.scroll-top-btn.visible {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0) scale(1);
+}
+
+.scroll-top-btn:hover {
+  transform: translateY(-3px) scale(1.08);
+  border-color: rgba(125,211,252,0.70);
+  box-shadow: 0 0 34px rgba(0,212,255,0.34), 0 18px 42px rgba(0,0,0,0.38);
 }
 
 .hero {
@@ -567,6 +612,11 @@ footer {
     gap: 12px 16px;
   }
 
+  .scroll-top-btn {
+    left: 14px;
+    bottom: 14px;
+  }
+
   .cap-strip,
   .features,
   .timeline {
@@ -712,6 +762,22 @@ footer {
 <footer id="contacto">
   Cognición · Ciencia · Evidencia · Medicina humana
 </footer>
+<a id="scrollTopIndex" class="scroll-top-btn" href="#inicio" aria-label="Volver al inicio">↑</a>
+<script>
+  (() => {
+    const botonSubir = document.getElementById("scrollTopIndex");
+    const actualizarBotonSubir = () => {
+      if (!botonSubir) return;
+      botonSubir.classList.toggle("visible", window.scrollY > 420);
+    };
+    window.addEventListener("scroll", actualizarBotonSubir, { passive: true });
+    botonSubir?.addEventListener("click", (evento) => {
+      evento.preventDefault();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+    actualizarBotonSubir();
+  })();
+</script>
   <script type="module" src="js/reportes.js"></script>
 </body>
 </html>
