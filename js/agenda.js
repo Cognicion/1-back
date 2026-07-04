@@ -36,8 +36,8 @@ onAuthStateChanged(auth, async (user) => {
   }
 
   const usuario = await obtenerUsuario(user.uid);
-  if (!usuario || usuario.rol !== "medico") {
-    alert("Agenda disponible solo para medicos.");
+  if (!usuario || !["medico", "psicologo"].includes(usuario.rol)) {
+    alert("Agenda disponible solo para personal clinico.");
     window.location.href = "dashboard.html";
     return;
   }

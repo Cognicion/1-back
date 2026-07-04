@@ -44,7 +44,7 @@ body.bloqueado header {
 
 .grid-resumen {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(6, 1fr);
   gap: 20px;
   margin-bottom: 24px;
 }
@@ -142,6 +142,108 @@ body.bloqueado header {
   border: 1px solid #334155;
   background: #020617;
   color: #e5e7eb;
+}
+
+.panel-codigos-medico {
+  display: grid;
+  grid-template-columns: minmax(260px, 1fr) minmax(220px, 320px);
+  gap: 16px;
+  margin: 20px 0;
+}
+
+.panel-codigos-medico > div {
+  padding: 16px;
+  border: 1px solid rgba(56, 189, 248, 0.18);
+  border-radius: 16px;
+  background: rgba(2, 6, 23, 0.55);
+}
+
+.panel-codigos-medico button {
+  border: 0;
+  border-radius: 12px;
+  padding: 12px 16px;
+  color: #fff;
+  font-weight: 800;
+  cursor: pointer;
+  background: linear-gradient(135deg, #2563eb, #06b6d4);
+}
+
+.panel-codigos-medico strong,
+.panel-codigos-medico span {
+  display: block;
+}
+
+.panel-codigos-medico span {
+  margin-top: 8px;
+  color: #cbd5e1;
+}
+
+.codigo-medico-generado {
+  margin: 14px 0 0;
+  padding: 12px;
+  border: 1px dashed rgba(125, 211, 252, 0.28);
+  border-radius: 12px;
+  color: #93c5fd;
+  font-size: 15px;
+  overflow-wrap: anywhere;
+}
+
+.codigo-medico-generado.activo {
+  color: #e0f2fe;
+  background: rgba(14, 165, 233, 0.12);
+}
+
+.lista-codigos-medico {
+  display: grid;
+  gap: 12px;
+}
+
+.codigo-medico-card {
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) minmax(170px, 260px);
+  gap: 16px;
+  padding: 14px 16px;
+  border: 1px solid #1f2937;
+  border-radius: 16px;
+  background: #0b1120;
+}
+
+.codigo-medico-card strong {
+  color: #f8fafc;
+  letter-spacing: .08em;
+}
+
+.codigo-medico-card small {
+  display: block;
+  margin-top: 6px;
+  color: #94a3b8;
+}
+
+.estado-codigo {
+  display: inline-flex;
+  width: fit-content;
+  padding: 7px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.estado-codigo.vigente {
+  color: #bbf7d0;
+  background: rgba(34, 197, 94, .14);
+  border: 1px solid rgba(34, 197, 94, .28);
+}
+
+.estado-codigo.usado {
+  color: #bfdbfe;
+  background: rgba(37, 99, 235, .16);
+  border: 1px solid rgba(96, 165, 250, .28);
+}
+
+.estado-codigo.expirado {
+  color: #fecaca;
+  background: rgba(239, 68, 68, .13);
+  border: 1px solid rgba(239, 68, 68, .26);
 }
 
 table {
@@ -260,6 +362,10 @@ pre {
 
 .usuario-admin-meta .rol-medico {
   color: #67e8f9;
+}
+
+.usuario-admin-meta .rol-psicologo {
+  color: #c4b5fd;
 }
 
 .usuario-admin-meta .rol-admin {

@@ -2128,8 +2128,8 @@ onAuthStateChanged(auth, async (user) => {
 
   const usuario = await obtenerUsuario(user.uid);
 
-  if (!usuario || usuario.rol !== "medico") {
-    alert("Acceso restringido al personal médico");
+  if (!usuario || !["medico", "psicologo"].includes(usuario.rol)) {
+    alert("Acceso restringido al personal clinico");
     window.location.href = "dashboard.html";
     return;
   }

@@ -74,7 +74,7 @@
       <button onclick="mostrarNotasRapidas()">Nota rapida</button>
       <button onclick="abrirHistoriaClinica()">Historia clinica</button>
       <button onclick="mostrarEstudios()">Estudios</button>
-      <button onclick="mostrarTratamiento()">Tratamiento</button>
+      <button id="btnTratamientoPaciente" onclick="mostrarTratamiento()">Tratamiento</button>
       <button onclick="mostrarDiagnosticos()">Diagnosticos</button>
       <button onclick="abrirApuntesMedicoPaciente()">Mis apuntes</button>
       <button onclick="mostrarCarpetas()">Carpetas</button>
@@ -116,7 +116,7 @@
           </div>
 
           <div class="dato">
-            <label>Fecha de nacimiento <button class="boton-editar-dato" onclick="editarCampoPaciente('fechaNacimiento', 'Fecha de nacimiento', 'date')">Editar</button></label>
+            <label>Fecha de nacimiento <button class="boton-editar-dato" onclick="abrirSelectorFechaNacimientoPaciente()">Editar</button></label>
             <div id="fechaNacimientoPaciente">Sin registro</div>
           </div>
 
@@ -136,7 +136,7 @@
             </div>
           </div>
 
-          <div class="dato">
+          <div class="dato campo-institucional-paciente">
             <label>Ultimo ingreso <button class="boton-editar-dato" onclick="abrirSelectorUltimoIngresoPaciente()">Editar</button></label>
             <div id="ultimoIngresoPaciente">Sin registro</div>
           </div>
@@ -146,7 +146,7 @@
             <div id="diagnostico">Cargando...</div>
           </div>
 
-          <div class="dato">
+          <div id="datoResumenTratamiento" class="dato">
             <label>Tratamiento <button class="boton-editar-dato" onclick="mostrarTratamiento()">Abrir panel</button></label>
             <div id="tratamiento">Cargando...</div>
           </div>
@@ -173,26 +173,26 @@
           </div>
 
           <div class="dato">
-            <label>Tipo de paciente <button class="boton-editar-dato" onclick="editarCampoPaciente('tipoPaciente', 'Tipo de paciente: privada o institucion', 'text')">Editar</button></label>
+            <label>Tipo de paciente <button class="boton-editar-dato" onclick="editarTipoPaciente()">Editar</button></label>
             <div id="tipoPaciente">Consulta privada</div>
           </div>
 
-          <div class="dato">
+          <div class="dato campo-institucional-paciente">
             <label>Institucion <button class="boton-editar-dato" onclick="editarCampoPaciente('institucionPaciente', 'Institucion', 'text')">Editar</button></label>
             <div id="institucionPaciente">Sin institucion</div>
           </div>
 
-          <div class="dato">
+          <div class="dato campo-institucional-paciente">
             <label>Servicio institucional <button class="boton-editar-dato" onclick="editarCampoPaciente('servicioInstitucional', 'Servicio institucional', 'text')">Editar</button></label>
             <div id="servicioInstitucional">Sin servicio</div>
           </div>
 
-          <div class="dato">
+          <div class="dato campo-institucional-paciente">
             <label>Expediente institucional <button class="boton-editar-dato" onclick="editarCampoPaciente('expediente', 'Expediente institucional', 'text')">Editar</button></label>
             <div id="expedientePaciente">Sin expediente</div>
           </div>
 
-          <div class="dato">
+          <div class="dato campo-institucional-paciente">
             <label>Cama <button class="boton-editar-dato" onclick="editarCampoPaciente('cama', 'Cama', 'text')">Editar</button></label>
             <div id="camaPaciente">Sin cama</div>
           </div>
@@ -972,11 +972,11 @@
       <input id="ingresoPacienteFecha" type="date">
     </label>
 
-    <label>Hora
+    <label id="grupoHoraIngresoPaciente">Hora
       <input id="ingresoPacienteHora" type="time" lang="en-GB" step="60">
     </label>
 
-    <small>Si no seleccionas hora, se tomara el inicio del dia.</small>
+    <small id="ayudaIngresoPaciente">Si no seleccionas hora, se tomara el inicio del dia.</small>
 
     <div class="acciones-ingreso">
       <button type="button" id="limpiarIngresoPaciente" class="boton-secundario">Quitar fecha</button>

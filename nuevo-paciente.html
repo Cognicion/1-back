@@ -118,6 +118,14 @@ button:hover{
     white-space:nowrap;
 }
 
+.campo-condicional-oculto{
+    display:none !important;
+}
+
+.campo-tipo-manual{
+    margin-top:10px;
+}
+
 .modal-ingreso{
     position:fixed;
     inset:0;
@@ -274,32 +282,35 @@ button:hover{
     <div>
         <label>Tipo de paciente</label>
         <select id="tipoPaciente">
-            <option value="privada">Consulta privada</option>
-            <option value="institucion">Paciente de institucion</option>
+            <option value="privada">Privado</option>
+            <option value="institucion">Institucional</option>
+            <option value="clinica">Clinica</option>
+            <option value="otro">Otro...</option>
         </select>
+        <input id="tipoPacienteManual" class="campo-tipo-manual campo-condicional-oculto" placeholder="Especificar tipo de paciente">
     </div>
 
-    <div>
+    <div class="campo-institucional-nuevo">
         <label>Institucion</label>
         <input id="institucionPaciente" placeholder="Ej. Hospital Psiquiatrico Fray Bernardino Alvarez">
     </div>
 
-    <div>
+    <div class="campo-institucional-nuevo">
         <label>Servicio institucional</label>
         <input id="servicioInstitucional" placeholder="Ej. Observacion">
     </div>
 
-    <div>
+    <div class="campo-institucional-nuevo">
         <label>Expediente institucional</label>
         <input id="expediente">
     </div>
 
-    <div>
+    <div class="campo-institucional-nuevo">
         <label>Cama</label>
         <input id="cama">
     </div>
 
-    <div>
+    <div class="campo-institucional-nuevo">
         <label>Fecha y hora de ingreso</label>
         <div class="input-accion">
             <input id="fechaIngreso" placeholder="DD/MM/AAAA HH:mm" readonly>

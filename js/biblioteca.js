@@ -22,8 +22,8 @@ onAuthStateChanged(auth, async (user) => {
   }
 
   const usuario = await obtenerUsuario(user.uid);
-  if (!usuario || usuario.rol !== "medico") {
-    alert("Biblioteca disponible solo para medicos.");
+  if (!usuario || !["medico", "psicologo"].includes(usuario.rol)) {
+    alert("Biblioteca disponible solo para personal clinico.");
     window.location.href = "dashboard.html";
     return;
   }

@@ -63,8 +63,8 @@ onAuthStateChanged(auth, async (user) => {
     let datosSeguimiento = datos;
 
     if (modoVistaPrevia) {
-      if (datos.rol !== "medico") {
-        alert("La vista previa de Mi Salud es solo para medicos.");
+      if (!["medico", "psicologo"].includes(datos.rol)) {
+        alert("La vista previa de Mi Salud es solo para personal clinico.");
         window.location.href = "dashboard.html";
         return;
       }

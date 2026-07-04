@@ -10,7 +10,9 @@ import {
   collection,
   query,
   where,
-  getDocs
+  getDocs,
+  getDoc,
+  updateDoc
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 import { registrarEventoAuditoria } from "./services/auditoria.js";
@@ -19,15 +21,169 @@ import { vincularCuentaConCodigoMedico } from "./services/vinculacion.js";
 const VERSION_AVISO_PRIVACIDAD = "beta-2026-06-29";
 
 const btnCrearCuenta = document.getElementById("btnCrearCuenta");
+let tipoCuentaSeleccionada = "paciente";
+
+function configurarTipoCuenta() {
+  const titulo = document.getElementById("tituloRegistro");
+  const descripcion = document.getElementById("descripcionRegistro");
+  const camposPaciente = document.getElementById("camposPacienteRegistro");
+  const camposMedico = document.getElementById("camposMedicoRegistro");
+
+  document.querySelectorAll("[data-tipo-cuenta]").forEach((boton) => {
+    boton.addEventListener("click", () => {
+      tipoCuentaSeleccionada = boton.dataset.tipoCuenta || "paciente";
+
+      document.querySelectorAll("[data-tipo-cuenta]").forEach((item) => {
+        item.classList.toggle("activo", item === boton);
+      });
+
+      const esMedico = tipoCuentaSeleccionada === "medico";
+      camposPaciente?.classList.toggle("oculto", esMedico);
+      camposMedico?.classList.toggle("oculto", !esMedico);
+
+      if (titulo) titulo.textContent = esMedico ? "Registro de medico" : "Registro de paciente";
+      if (descripcion) {
+        descripcion.textContent = esMedico
+          ? "Ingresa el codigo de autorizacion generado por un administrador."
+          : "Tu medico debe estar registrado para vincular tu expediente.";
+      }
+    });
+  });
+}
+
+function normalizarCodigo(codigo = "") {
+  return String(codigo || "").trim().toUpperCase().replace(/\s+/g, "");
+}
+
+async function validarCodigoAutorizacionMedico(codigo) {
+  const codigoNormalizado = normalizarCodigo(codigo);
+  if (!codigoNormalizado) throw new Error("Ingresa el codigo de autorizacion medico.");
+
+  const codigoRef = doc(db, "codigosAutorizacionMedico", codigoNormalizado);
+  const codigoSnap = await getDoc(codigoRef);
+
+  if (!codigoSnap.exists()) throw new Error("El codigo de autorizacion no existe.");
+
+  const datosCodigo = codigoSnap.data();
+  const expiraEn = datosCodigo.expiraEn ? new Date(datosCodigo.expiraEn) : null;
+
+  if (datosCodigo.usado) throw new Error("El codigo de autorizacion ya fue utilizado.");
+  if (!expiraEn || Number.isNaN(expiraEn.getTime()) || expiraEn.getTime() < Date.now()) {
+    throw new Error("El codigo de autorizacion expiro. Solicita uno nuevo al administrador.");
+  }
+
+  return { codigo: codigoNormalizado, ref: codigoRef, datos: datosCodigo };
+}
+
+async function crearCuentaMedico({ nombre, email, password, codigoAutorizacion, aceptaAviso, mensaje }) {
+  if (!nombre || !email || !password || !codigoAutorizacion) {
+    mensaje.textContent = "Completa nombre, correo, contrasena y codigo de autorizacion.";
+    return;
+  }
+
+  if (!aceptaAviso) {
+    mensaje.textContent = "Debes aceptar el Aviso de Privacidad para crear tu cuenta.";
+    return;
+  }
+
+  if (password.length < 6) {
+    mensaje.textContent = "La contrasena debe tener al menos 6 caracteres.";
+    return;
+  }
+
+  mensaje.textContent = "Validando codigo de autorizacion...";
+  const autorizacion = await validarCodigoAutorizacionMedico(codigoAutorizacion);
+
+  mensaje.textContent = "Creando cuenta de medico...";
+  const credencial = await createUserWithEmailAndPassword(auth, email, password);
+  const uidMedico = credencial.user.uid;
+  const fechaActual = new Date().toISOString();
+
+  await setDoc(doc(db, "usuarios", uidMedico), {
+    nombre,
+    email,
+    rol: "medico",
+    tieneCuenta: true,
+    estado: "activo",
+    unidad: "",
+    especialidad: "",
+    institucion: "",
+    cedula: "",
+    aceptoAvisoPrivacidad: true,
+    fechaAceptacionAviso: fechaActual,
+    versionAvisoPrivacidad: VERSION_AVISO_PRIVACIDAD,
+    fechaCreacion: fechaActual,
+    creadoConCodigoAutorizacion: autorizacion.codigo,
+    autorizadoPorAdminUid: autorizacion.datos.creadoPorUid || ""
+  });
+
+  await updateDoc(autorizacion.ref, {
+    usado: true,
+    usadoPorUid: uidMedico,
+    usadoPorEmail: email,
+    usadoPorNombre: nombre,
+    usadoEn: fechaActual
+  });
+
+  try {
+    await registrarEventoAuditoria({
+      accion: "crear_cuenta_medico_codigo_admin",
+      modulo: "Registro",
+      descripcion: "Se creo una cuenta de medico con codigo de autorizacion generado por admin.",
+      usuarioUid: uidMedico,
+      usuarioNombre: nombre,
+      usuarioRol: "medico",
+      exito: true,
+      detalles: {
+        codigoAutorizacion: autorizacion.codigo,
+        versionAvisoPrivacidad: VERSION_AVISO_PRIVACIDAD
+      }
+    });
+  } catch (errorAuditoria) {
+    console.error("No se pudo registrar la auditoria:", errorAuditoria);
+  }
+
+  mensaje.textContent = "Cuenta de medico creada correctamente.";
+  window.location.href = "dashboard.html";
+}
+
+configurarTipoCuenta();
 
 btnCrearCuenta.addEventListener("click", async () => {
   const nombre = document.getElementById("nombre").value.trim();
   const email = document.getElementById("email").value.trim().toLowerCase();
   const correoMedico = document.getElementById("correoMedico").value.trim().toLowerCase();
   const codigoVinculacion = document.getElementById("codigoVinculacion").value.trim().toUpperCase();
+  const codigoAutorizacion = document.getElementById("codigoAutorizacionMedico").value.trim().toUpperCase();
   const password = document.getElementById("password").value;
   const aceptaAviso = document.getElementById("aceptaAviso").checked;
   const mensaje = document.getElementById("mensaje");
+
+  if (tipoCuentaSeleccionada === "medico") {
+    try {
+      await crearCuentaMedico({
+        nombre,
+        email,
+        password,
+        codigoAutorizacion,
+        aceptaAviso,
+        mensaje
+      });
+    } catch (error) {
+      console.error(error);
+      if (error.code === "auth/email-already-in-use") {
+        mensaje.textContent = "Ese correo ya esta registrado.";
+      } else if (error.code === "auth/invalid-email") {
+        mensaje.textContent = "Correo invalido.";
+      } else if (error.code === "auth/weak-password") {
+        mensaje.textContent = "Contrasena demasiado debil.";
+      } else {
+        mensaje.textContent = error.message;
+        alert(error.message);
+      }
+    }
+    return;
+  }
 
   if (!nombre || !email || (!correoMedico && !codigoVinculacion) || !password) {
     mensaje.textContent = "Completa nombre, correo, contrasena y correo medico o codigo de vinculacion.";

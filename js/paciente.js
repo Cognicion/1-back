@@ -68,6 +68,7 @@ import {
 let uidPaciente = "";
 let datosPacienteActual = null;
 let medicoActualDatos = {};
+let rolUsuarioActual = "";
 let tratamientosCache = [];
 let estudiosCache = [];
 let escalasAsignadasCache = new Map();
@@ -1093,9 +1094,46 @@ onAuthStateChanged(auth, async (user) => {
   const parametros = new URLSearchParams(window.location.search);
   uidPaciente = parametros.get("id");
   medicoActualDatos = await obtenerUsuario(user.uid) || {};
+  rolUsuarioActual = medicoActualDatos.rol || "";
+  aplicarRestriccionesRolExpediente();
 
   await cargarDatosPaciente();
 });
+
+function usuarioEsPsicologo() {
+  return rolUsuarioActual === "psicologo";
+}
+
+function aplicarRestriccionesRolExpediente() {
+  const ocultarTratamiento = usuarioEsPsicologo();
+  document.getElementById("btnTratamientoPaciente")?.classList.toggle("oculto", ocultarTratamiento);
+  document.getElementById("datoResumenTratamiento")?.classList.toggle("oculto", ocultarTratamiento);
+  document.getElementById("seccionTratamiento")?.classList.toggle("oculto", ocultarTratamiento);
+}
+
+function normalizarTipoPaciente(valor = "") {
+  return String(valor || "").trim().toLowerCase();
+}
+
+function esTipoPacienteInstitucional(valor = "") {
+  const tipo = normalizarTipoPaciente(valor);
+  return tipo === "institucion" || tipo === "institucional" || tipo === "paciente de institucion";
+}
+
+function etiquetaTipoPaciente(valor = "") {
+  const tipo = normalizarTipoPaciente(valor);
+  if (tipo === "privada" || tipo === "privado" || tipo === "consulta privada") return "Privado";
+  if (esTipoPacienteInstitucional(valor)) return "Institucional";
+  if (tipo === "clinica" || tipo === "clínica") return "Clinica";
+  return String(valor || "").trim() || "Privado";
+}
+
+function actualizarVisibilidadCamposInstitucionalesPaciente(datos = datosPacienteActual || {}) {
+  const mostrar = esTipoPacienteInstitucional(datos?.tipoPaciente || datos?.datosInstitucionales?.tipoPaciente);
+  document.querySelectorAll(".campo-institucional-paciente").forEach((campo) => {
+    campo.classList.toggle("oculto", !mostrar);
+  });
+}
 
 async function cargarDatosPaciente() {
   const datos = await obtenerUsuario(uidPaciente);
@@ -1164,7 +1202,7 @@ async function cargarDatosPaciente() {
     datos.telefono || "Sin tel\u00e9fono";
 
   document.getElementById("tipoPaciente").innerText =
-    datos.tipoPaciente === "institucion" ? "Paciente de institucion" : "Consulta privada";
+    etiquetaTipoPaciente(datos.tipoPaciente || datos.datosInstitucionales?.tipoPaciente);
 
   document.getElementById("institucionPaciente").innerText =
     datos.institucionPaciente || datos.institucion || "Sin institucion";
@@ -1224,6 +1262,7 @@ async function cargarDatosPaciente() {
     datos.imc || datos.signosVitales?.imc || datos.somatometria?.imc || datos.datosInstitucionales?.imc || "Sin registro";
 
   actualizarEstanciaPaciente(datos);
+  actualizarVisibilidadCamposInstitucionalesPaciente(datos);
 }
 
 window.mostrarResumen = function() {
@@ -1247,6 +1286,12 @@ window.mostrarResultadosEscalas = async function() {
 };
 
 window.mostrarTratamiento = async function() {
+  if (usuarioEsPsicologo()) {
+    alert("El apartado de tratamiento no esta disponible para el rol Psicologo.");
+    mostrarResumen();
+    return;
+  }
+
   ocultarSecciones();
   document.getElementById("seccionTratamiento").style.display = "block";
   await cargarTratamientosPaciente();
@@ -1668,12 +1713,6 @@ window.editarDatosPaciente = async function() {
   const nuevoTelefono = prompt("Tel\u00e9fono:", datos.telefono || "");
   if (nuevoTelefono === null) return;
 
-  const nuevaFechaNacimiento = prompt(
-    "Fecha de nacimiento (AAAA-MM-DD):",
-    datos.fechaNacimiento || ""
-  );
-  if (nuevaFechaNacimiento === null) return;
-
   const nuevoDiagnostico = prompt("DiagnÃ³stico:", datos.diagnostico || "");
   if (nuevoDiagnostico === null) return;
 
@@ -1688,7 +1727,6 @@ window.editarDatosPaciente = async function() {
 
   await actualizarUsuario(uidPaciente, {
     telefono: nuevoTelefono,
-    fechaNacimiento: nuevaFechaNacimiento,
     diagnostico: nuevoDiagnostico,
     tratamiento: nuevoTratamiento,
     medicoTratante: nuevoMedico,
@@ -1700,6 +1738,84 @@ window.editarDatosPaciente = async function() {
   alert("Datos actualizados");
 };
 
+window.editarTipoPaciente = async function() {
+  const datos = datosPacienteActual || await obtenerUsuario(uidPaciente) || {};
+  const valorActual = datos.tipoPaciente || datos.datosInstitucionales?.tipoPaciente || "privada";
+  const tipoNormalizado = normalizarTipoPaciente(valorActual);
+  const opcionesBase = ["privada", "institucion", "clinica"];
+  const valorSelect = opcionesBase.includes(tipoNormalizado) || tipoNormalizado === "institucional"
+    ? (esTipoPacienteInstitucional(valorActual) ? "institucion" : tipoNormalizado)
+    : "otro";
+
+  document.getElementById("modalTipoPaciente")?.remove();
+
+  const modal = document.createElement("div");
+  modal.id = "modalTipoPaciente";
+  modal.style.cssText = "position:fixed;inset:0;z-index:120;display:grid;place-items:center;background:rgba(2,6,23,.68);backdrop-filter:blur(8px);padding:18px;";
+  modal.innerHTML = `
+    <section style="width:min(380px,100%);border:1px solid rgba(56,189,248,.28);border-radius:18px;background:rgba(8,12,20,.98);box-shadow:0 22px 70px rgba(0,0,0,.44);padding:18px;">
+      <div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-bottom:14px;">
+        <div>
+          <p style="margin:0 0 4px;color:#38bdf8;font-size:10px;font-weight:900;letter-spacing:.16em;text-transform:uppercase;">Datos generales</p>
+          <h3 style="margin:0;">Tipo de paciente</h3>
+        </div>
+        <button type="button" data-cerrar-tipo-paciente style="margin:0;width:32px;height:32px;padding:0;border-radius:999px;">x</button>
+      </div>
+      <label style="display:block;margin-bottom:8px;color:#94a3b8;font-weight:700;">Seleccionar tipo</label>
+      <select id="modalTipoPacienteSelect" style="width:100%;padding:11px;border-radius:14px;background:#0f172a;color:#fff;border:1px solid rgba(148,163,184,.28);">
+        <option value="privada">Privado</option>
+        <option value="institucion">Institucional</option>
+        <option value="clinica">Clinica</option>
+        <option value="otro">Otro...</option>
+      </select>
+      <input id="modalTipoPacienteManual" placeholder="Especificar tipo de paciente" style="width:100%;margin-top:10px;padding:11px;border-radius:14px;background:#0f172a;color:#fff;border:1px solid rgba(148,163,184,.28);">
+      <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:16px;">
+        <button type="button" data-cerrar-tipo-paciente>Cancelar</button>
+        <button type="button" id="guardarTipoPacienteModal">Guardar</button>
+      </div>
+    </section>
+  `;
+
+  document.body.appendChild(modal);
+
+  const selector = document.getElementById("modalTipoPacienteSelect");
+  const manual = document.getElementById("modalTipoPacienteManual");
+
+  selector.value = valorSelect;
+  manual.value = valorSelect === "otro" ? String(valorActual || "") : "";
+
+  const actualizarManual = () => {
+    manual.style.display = selector.value === "otro" ? "block" : "none";
+  };
+
+  actualizarManual();
+  selector.addEventListener("change", actualizarManual);
+
+  modal.querySelectorAll("[data-cerrar-tipo-paciente]").forEach((boton) => {
+    boton.addEventListener("click", () => modal.remove());
+  });
+
+  document.getElementById("guardarTipoPacienteModal")?.addEventListener("click", async () => {
+    const tipoPaciente = selector.value === "otro"
+      ? (manual.value.trim() || "otro")
+      : selector.value;
+
+    const datosInstitucionales = {
+      ...(datos.datosInstitucionales || {}),
+      tipoPaciente
+    };
+
+    await actualizarUsuario(uidPaciente, {
+      tipoPaciente,
+      datosInstitucionales
+    });
+
+    modal.remove();
+    await cargarDatosPaciente();
+    alert("Tipo de paciente actualizado");
+  });
+};
+
 window.editarCampoPaciente = async function(campo, etiqueta, tipo = "text") {
   if (campo === "edad") {
     alert("La edad se calcula automaticamente a partir de la fecha de nacimiento. Edita la fecha de nacimiento para actualizarla.");
@@ -1708,6 +1824,11 @@ window.editarCampoPaciente = async function(campo, etiqueta, tipo = "text") {
 
   if (campo === "fechaIngreso") {
     window.abrirSelectorIngresoPaciente();
+    return;
+  }
+
+  if (campo === "fechaNacimiento") {
+    window.abrirSelectorFechaNacimientoPaciente();
     return;
   }
 
@@ -1815,17 +1936,42 @@ async function abrirSelectorFechaPaciente(campo = "fechaIngreso") {
   const inputHora = document.getElementById("ingresoPacienteHora");
   const titulo = document.getElementById("tituloIngresoPaciente");
   const subtitulo = modal?.querySelector(".panel-ingreso-header p");
+  const grupoHora = document.getElementById("grupoHoraIngresoPaciente");
+  const ayuda = document.getElementById("ayudaIngresoPaciente");
   if (!modal || !inputFecha || !inputHora) return;
 
   campoFechaIngresoModal = campo;
   const datos = datosPacienteActual || await obtenerUsuario(uidPaciente);
-  const valor = campo === "ultimoIngreso" ? obtenerUltimoIngreso(datos) : obtenerFechaIngreso(datos);
+  const valor = campo === "fechaNacimiento"
+    ? obtenerFechaNacimiento(datos)
+    : campo === "ultimoIngreso"
+      ? obtenerUltimoIngreso(datos)
+      : obtenerFechaIngreso(datos);
   const partes = partesFechaIngreso(valor);
+  const esNacimiento = campo === "fechaNacimiento";
 
   inputFecha.value = partes.fecha;
-  inputHora.value = partes.hora;
-  if (titulo) titulo.textContent = campo === "ultimoIngreso" ? "Seleccionar ultimo ingreso" : "Seleccionar ingreso";
-  if (subtitulo) subtitulo.textContent = campo === "ultimoIngreso" ? "Ultimo ingreso" : "Fecha de ingreso";
+  inputHora.value = esNacimiento ? "" : partes.hora;
+  if (titulo) {
+    titulo.textContent = esNacimiento
+      ? "Seleccionar fecha de nacimiento"
+      : campo === "ultimoIngreso"
+        ? "Seleccionar ultimo ingreso"
+        : "Seleccionar ingreso";
+  }
+  if (subtitulo) {
+    subtitulo.textContent = esNacimiento
+      ? "Fecha de nacimiento"
+      : campo === "ultimoIngreso"
+        ? "Ultimo ingreso"
+        : "Fecha de ingreso";
+  }
+  grupoHora?.classList.toggle("oculto", esNacimiento);
+  if (ayuda) {
+    ayuda.textContent = esNacimiento
+      ? "Selecciona la fecha en formato DD-MM-AAAA."
+      : "Si no seleccionas hora, se tomara el inicio del dia.";
+  }
   modal.classList.add("abierto");
   modal.setAttribute("aria-hidden", "false");
 }
@@ -1836,6 +1982,10 @@ window.abrirSelectorIngresoPaciente = function() {
 
 window.abrirSelectorUltimoIngresoPaciente = function() {
   abrirSelectorFechaPaciente("ultimoIngreso");
+};
+
+window.abrirSelectorFechaNacimientoPaciente = function() {
+  abrirSelectorFechaPaciente("fechaNacimiento");
 };
 
 function cerrarSelectorIngresoPaciente() {
@@ -1851,52 +2001,68 @@ async function guardarIngresoPacienteDesdeModal() {
   const hora = document.getElementById("ingresoPacienteHora")?.value || "00:00";
 
   if (!fecha) {
-    alert("Selecciona el dia de ingreso.");
+    alert(campoFechaIngresoModal === "fechaNacimiento" ? "Selecciona la fecha de nacimiento." : "Selecciona el dia de ingreso.");
     return;
   }
 
   const datos = datosPacienteActual || await obtenerUsuario(uidPaciente);
-  const campo = campoFechaIngresoModal === "ultimoIngreso" ? "ultimoIngreso" : "fechaIngreso";
-  const fechaIngreso = `${fecha}T${hora || "00:00"}`;
+  const campo = campoFechaIngresoModal === "fechaNacimiento"
+    ? "fechaNacimiento"
+    : campoFechaIngresoModal === "ultimoIngreso"
+      ? "ultimoIngreso"
+      : "fechaIngreso";
+  const fechaIngreso = campo === "fechaNacimiento" ? fecha : `${fecha}T${hora || "00:00"}`;
   const datosInstitucionales = {
     ...(datos?.datosInstitucionales || {}),
     [campo]: fechaIngreso
   };
+  if (campo === "fechaNacimiento") delete datosInstitucionales.edad;
 
-  await actualizarUsuario(uidPaciente, {
+  const actualizacion = {
     [campo]: fechaIngreso,
     datosInstitucionales
-  });
+  };
+  if (campo === "fechaNacimiento") actualizacion.edad = deleteField();
+
+  await actualizarUsuario(uidPaciente, actualizacion);
 
   datosPacienteActual = {
     ...(datosPacienteActual || datos || {}),
     [campo]: fechaIngreso,
     datosInstitucionales
   };
-  actualizarEstanciaPaciente(datosPacienteActual);
+  if (campo !== "fechaNacimiento") actualizarEstanciaPaciente(datosPacienteActual);
   cerrarSelectorIngresoPaciente();
   await cargarDatosPaciente();
 }
 
 async function limpiarIngresoPacienteDesdeModal() {
   const datos = datosPacienteActual || await obtenerUsuario(uidPaciente);
-  const campo = campoFechaIngresoModal === "ultimoIngreso" ? "ultimoIngreso" : "fechaIngreso";
+  const campo = campoFechaIngresoModal === "fechaNacimiento"
+    ? "fechaNacimiento"
+    : campoFechaIngresoModal === "ultimoIngreso"
+      ? "ultimoIngreso"
+      : "fechaIngreso";
   const datosInstitucionales = {
     ...(datos?.datosInstitucionales || {}),
     [campo]: ""
   };
+  if (campo === "fechaNacimiento") delete datosInstitucionales.edad;
 
-  await actualizarUsuario(uidPaciente, {
+  const actualizacion = {
     [campo]: "",
     datosInstitucionales
-  });
+  };
+  if (campo === "fechaNacimiento") actualizacion.edad = deleteField();
+
+  await actualizarUsuario(uidPaciente, actualizacion);
 
   datosPacienteActual = {
     ...(datosPacienteActual || datos || {}),
     [campo]: "",
     datosInstitucionales
   };
-  actualizarEstanciaPaciente(datosPacienteActual);
+  if (campo !== "fechaNacimiento") actualizarEstanciaPaciente(datosPacienteActual);
   cerrarSelectorIngresoPaciente();
   await cargarDatosPaciente();
 }

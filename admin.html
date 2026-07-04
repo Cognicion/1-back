@@ -43,6 +43,11 @@
     </div>
 
     <div class="card">
+      <h3>Psicologos</h3>
+      <p id="totalPsicologos">-</p>
+    </div>
+
+    <div class="card">
       <h3>Eventos de auditoria</h3>
       <p id="totalAuditoria">-</p>
     </div>
@@ -50,6 +55,32 @@
     <div class="card">
       <h3>Sesiones inactivas</h3>
       <p id="totalInactividad">-</p>
+    </div>
+  </section>
+
+  <section class="card tabla-card">
+    <div class="tabla-header">
+      <div>
+        <h2>Codigos de autorizacion medica</h2>
+        <p>Genera codigos de un solo uso para crear cuentas de medico. Cada codigo expira en 24 horas.</p>
+      </div>
+      <button id="btnActualizarCodigosMedico">Actualizar codigos</button>
+    </div>
+
+    <div class="panel-codigos-medico">
+      <div>
+        <button type="button" id="btnGenerarCodigoMedico">Generar codigo medico</button>
+        <p id="codigoMedicoGenerado" class="codigo-medico-generado">Sin codigo generado en esta sesion.</p>
+      </div>
+      <div>
+        <strong>Reglas</strong>
+        <span>Duracion maxima: 24 horas</span>
+        <span>Uso: una sola vez</span>
+      </div>
+    </div>
+
+    <div id="listaCodigosMedicoAdmin" class="lista-codigos-medico">
+      <p>Cargando codigos...</p>
     </div>
   </section>
 
@@ -66,6 +97,7 @@
       <span>Total: <strong id="usuariosVistaTotal">-</strong></span>
       <span>Pacientes: <strong id="usuariosVistaPacientes">-</strong></span>
       <span>Medicos: <strong id="usuariosVistaMedicos">-</strong></span>
+      <span>Psicologos: <strong id="usuariosVistaPsicologos">-</strong></span>
       <span>Admin: <strong id="usuariosVistaAdmin">-</strong></span>
     </div>
 
@@ -75,6 +107,7 @@
         <option value="">Todos los roles</option>
         <option value="paciente">Pacientes</option>
         <option value="medico">Medicos</option>
+        <option value="psicologo">Psicologos</option>
         <option value="admin">Admin</option>
       </select>
     </div>
@@ -152,6 +185,7 @@
       <select id="filtroRol">
         <option value="">Todos los roles</option>
         <option value="medico">Medicos</option>
+        <option value="psicologo">Psicologos</option>
         <option value="paciente">Pacientes</option>
         <option value="admin">Admin</option>
       </select>

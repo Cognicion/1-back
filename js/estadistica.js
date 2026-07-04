@@ -10,6 +10,7 @@ let datos = [];
 let columnas = [];
 let ultimoResultado = [];
 let tiposVariables = {};
+let usuarioActual = null;
 
 const entrada = document.getElementById("entradaDatos");
 const archivo = document.getElementById("archivoDatos");
@@ -20,6 +21,10 @@ const variableX = document.getElementById("variableX");
 const tiposVariablesContenedor = document.getElementById("tiposVariables");
 const recomendacionAnalisis = document.getElementById("recomendacionAnalisis");
 
+function usuarioTieneAccesoTotal() {
+  return usuarioActual?.rol === "admin";
+}
+
 onAuthStateChanged(auth, async (user) => {
   if (!user) {
     window.location.href = "login.html";
@@ -27,9 +32,10 @@ onAuthStateChanged(auth, async (user) => {
   }
 
   const usuario = await obtenerUsuario(user.uid);
+  usuarioActual = usuario;
 
-  if (!usuario || usuario.rol !== "medico") {
-    alert("Acceso restringido al personal medico.");
+  if (!usuario || !["admin", "medico", "psicologo"].includes(usuario.rol)) {
+    alert("Acceso restringido al personal clinico.");
     window.location.href = "dashboard.html";
     return;
   }
@@ -101,7 +107,9 @@ async function cargarPacientesDelMedico() {
   const user = auth.currentUser;
   if (!user) return;
 
-  resultados.textContent = "Cargando pacientes autorizados...";
+  resultados.textContent = usuarioTieneAccesoTotal()
+    ? "Cargando todos los pacientes..."
+    : "Cargando pacientes autorizados...";
 
   const snapshot = await getDocs(collection(db, "usuarios"));
   const filas = [];
@@ -110,7 +118,7 @@ async function cargarPacientesDelMedico() {
     const paciente = docPaciente.data();
     if (paciente.rol !== "paciente") continue;
 
-    const puedeVer = await medicoPuedeVer(user.uid, docPaciente.id);
+    const puedeVer = usuarioTieneAccesoTotal() || await medicoPuedeVer(user.uid, docPaciente.id);
     if (!puedeVer) continue;
 
     const snapTratamientos = await getDocs(collection(db, "usuarios", docPaciente.id, "tratamientos"));
@@ -142,7 +150,9 @@ async function cargarPacientesDelMedico() {
     ...datos.map((fila) => columnas.map((col) => fila[col]).join(","))
   ].join("\n");
   llenarSelects();
-  resumenDatos.textContent = `${datos.length} pacientes autorizados cargados desde Firestore.`;
+  resumenDatos.textContent = usuarioTieneAccesoTotal()
+    ? `${datos.length} pacientes cargados desde Firestore.`
+    : `${datos.length} pacientes autorizados cargados desde Firestore.`;
   resultados.textContent = "Datos clinicos cargados. Selecciona un analisis o grafica.";
   dibujarGraficasAutomaticas();
 }

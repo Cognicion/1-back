@@ -18,6 +18,7 @@ import {
   query,
   orderBy,
   limit,
+  setDoc,
   updateDoc,
   where
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
@@ -34,6 +35,7 @@ let eventosAuditoria = [];
 let pacientesAdmin = [];
 let usuariosAdmin = [];
 let reportesUsuariosAdmin = [];
+let codigosMedicoAdmin = [];
 let notasPorPaciente = {};
 let adminActual = null;
 
@@ -83,6 +85,7 @@ onAuthStateChanged(auth, async (user) => {
   document.body.classList.remove("bloqueado");
   configurarFiltros();
   await cargarResumen();
+  await cargarCodigosMedicoAdmin();
   await cargarUsuariosAdmin();
   await cargarPacientesAdmin();
   await cargarReportesUsuariosAdmin();
@@ -107,6 +110,7 @@ function configurarFiltros() {
   document.getElementById("btnActualizarAuditoria")?.addEventListener("click", async () => {
     await cargarResumen();
     await cargarUsuariosAdmin();
+    await cargarCodigosMedicoAdmin();
     await cargarPacientesAdmin();
     await cargarReportesUsuariosAdmin();
     await cargarAuditoria();
@@ -132,6 +136,131 @@ function configurarFiltros() {
   });
 
   document.getElementById("btnActualizarReportesAdmin")?.addEventListener("click", cargarReportesUsuariosAdmin);
+
+  document.getElementById("btnGenerarCodigoMedico")?.addEventListener("click", generarCodigoMedicoAdmin);
+  document.getElementById("btnActualizarCodigosMedico")?.addEventListener("click", cargarCodigosMedicoAdmin);
+}
+
+function generarCodigoAutorizacionMedico() {
+  const segmentos = [];
+  const alfabeto = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  const valores = new Uint32Array(12);
+  crypto.getRandomValues(valores);
+
+  for (let i = 0; i < 3; i++) {
+    let segmento = "";
+    for (let j = 0; j < 4; j++) {
+      segmento += alfabeto[valores[i * 4 + j] % alfabeto.length];
+    }
+    segmentos.push(segmento);
+  }
+
+  return segmentos.join("-");
+}
+
+async function generarCodigoMedicoAdmin() {
+  const salida = document.getElementById("codigoMedicoGenerado");
+  const ahora = new Date();
+  const expira = new Date(ahora.getTime() + 24 * 60 * 60 * 1000);
+  const codigo = generarCodigoAutorizacionMedico();
+
+  try {
+    await setDoc(doc(db, "codigosAutorizacionMedico", codigo), {
+      codigo,
+      tipo: "medico",
+      usado: false,
+      creadoEn: ahora.toISOString(),
+      expiraEn: expira.toISOString(),
+      creadoPorUid: adminActual?.uid || "",
+      creadoPorEmail: adminActual?.email || ""
+    });
+
+    if (salida) {
+      salida.textContent = codigo;
+      salida.classList.add("activo");
+    }
+
+    await registrarAuditoriaAdmin("generar_codigo_autorizacion_medico", "El administrador genero un codigo de autorizacion para medico.", {
+      detalles: { codigo, expiraEn: expira.toISOString() }
+    });
+
+    await cargarCodigosMedicoAdmin();
+  } catch (error) {
+    await registrarAuditoriaAdmin("error_generar_codigo_autorizacion_medico", "Error al generar codigo de autorizacion para medico.", {
+      exito: false,
+      detalles: { error: resumenError(error) }
+    });
+    alert("No se pudo generar el codigo: " + error.message);
+  }
+}
+
+async function cargarCodigosMedicoAdmin() {
+  const contenedor = document.getElementById("listaCodigosMedicoAdmin");
+  if (contenedor) contenedor.innerHTML = "<p>Cargando codigos...</p>";
+
+  const qCodigos = query(
+    collection(db, "codigosAutorizacionMedico"),
+    orderBy("creadoEn", "desc"),
+    limit(40)
+  );
+
+  const snap = await getDocs(qCodigos);
+  codigosMedicoAdmin = snap.docs.map((docCodigo) => ({
+    id: docCodigo.id,
+    ...docCodigo.data()
+  }));
+
+  renderizarCodigosMedicoAdmin();
+}
+
+function estadoCodigoMedico(codigo = {}) {
+  if (codigo.usado) return { texto: "Usado", clase: "usado" };
+  const expira = codigo.expiraEn ? new Date(codigo.expiraEn) : null;
+  if (!expira || Number.isNaN(expira.getTime())) return { texto: "Sin expiracion", clase: "expirado" };
+  if (expira.getTime() < Date.now()) return { texto: "Expirado", clase: "expirado" };
+  return { texto: "Vigente", clase: "vigente" };
+}
+
+function formatearFechaAdmin(valor) {
+  if (!valor) return "Sin fecha";
+  const fecha = typeof valor?.toDate === "function" ? valor.toDate() : new Date(valor);
+  if (Number.isNaN(fecha.getTime())) return String(valor);
+  return fecha.toLocaleString("es-MX", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false
+  });
+}
+
+function renderizarCodigosMedicoAdmin() {
+  const contenedor = document.getElementById("listaCodigosMedicoAdmin");
+  if (!contenedor) return;
+
+  if (!codigosMedicoAdmin.length) {
+    contenedor.innerHTML = "<p>No hay codigos generados todavia.</p>";
+    return;
+  }
+
+  contenedor.innerHTML = codigosMedicoAdmin.map((codigo) => {
+    const estado = estadoCodigoMedico(codigo);
+    return `
+      <article class="codigo-medico-card">
+        <div>
+          <strong>${escaparHTML(codigo.codigo || codigo.id)}</strong>
+          <small>Creado: ${escaparHTML(formatearFechaAdmin(codigo.creadoEn))}</small>
+          <small>Expira: ${escaparHTML(formatearFechaAdmin(codigo.expiraEn))}</small>
+        </div>
+        <div>
+          <span class="estado-codigo ${estado.clase}">${estado.texto}</span>
+          ${codigo.usadoPorEmail ? `<small>Usado por: ${escaparHTML(codigo.usadoPorEmail)}</small>` : ""}
+          ${codigo.usadoEn ? `<small>Uso: ${escaparHTML(formatearFechaAdmin(codigo.usadoEn))}</small>` : ""}
+        </div>
+      </article>
+    `;
+  }).join("");
 }
 
 async function cargarResumen() {
@@ -141,6 +270,7 @@ async function cargarResumen() {
   let totalUsuarios = 0;
   let totalPacientes = 0;
   let totalMedicos = 0;
+  let totalPsicologos = 0;
   let totalInactividad = 0;
   let totalAuditoriaVisible = 0;
 
@@ -149,6 +279,7 @@ async function cargarResumen() {
     const datos = docUsuario.data();
     if (datos.rol === "paciente") totalPacientes++;
     if (datos.rol === "medico") totalMedicos++;
+    if (datos.rol === "psicologo") totalPsicologos++;
   });
 
   snapAuditoria.forEach((docEvento) => {
@@ -161,6 +292,7 @@ async function cargarResumen() {
   ponerTexto("totalUsuarios", totalUsuarios);
   ponerTexto("totalPacientes", totalPacientes);
   ponerTexto("totalMedicos", totalMedicos);
+  ponerTexto("totalPsicologos", totalPsicologos);
   ponerTexto("totalAuditoria", totalAuditoriaVisible);
   ponerTexto("totalInactividad", totalInactividad);
 }
@@ -228,6 +360,7 @@ function renderizarUsuariosAdmin() {
           <select id="rol-${escaparHTML(usuario.id)}" ${esAdminActual ? "disabled" : ""}>
             ${opcionRol("paciente", rolActual)}
             ${opcionRol("medico", rolActual)}
+            ${opcionRol("psicologo", rolActual)}
             ${opcionRol("admin", rolActual)}
           </select>
           ${esAdminActual ? "<small>Administrador principal protegido.</small>" : ""}
@@ -250,6 +383,7 @@ function actualizarResumenUsuariosVista(usuarios = []) {
   ponerTexto("usuariosVistaTotal", usuarios.length);
   ponerTexto("usuariosVistaPacientes", usuarios.filter((usuario) => usuario.rol === "paciente").length);
   ponerTexto("usuariosVistaMedicos", usuarios.filter((usuario) => usuario.rol === "medico").length);
+  ponerTexto("usuariosVistaPsicologos", usuarios.filter((usuario) => usuario.rol === "psicologo").length);
   ponerTexto("usuariosVistaAdmin", usuarios.filter((usuario) => usuario.rol === "admin").length);
 }
 
@@ -257,6 +391,7 @@ function etiquetaRolUsuario(rol = "") {
   const etiquetas = {
     paciente: "Paciente",
     medico: "Medico",
+    psicologo: "Psicologo",
     admin: "Admin",
     sin_rol: "Sin rol"
   };
@@ -374,7 +509,7 @@ async function eliminarUsuarioConDatos(uidUsuario, usuario = {}) {
 
   const resumen = {};
 
-  if (usuario.rol === "medico") {
+  if (usuario.rol === "medico" || usuario.rol === "psicologo") {
     for (const nombreColeccion of SUBCOLECCIONES_USUARIO_MEDICO) {
       resumen[nombreColeccion] = await eliminarDocumentosColeccion(
         collection(db, "usuarios", uidUsuario, nombreColeccion)

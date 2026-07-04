@@ -99,7 +99,7 @@ onAuthStateChanged(auth, async (user) => {
 
   const usuario = await obtenerUsuario(user.uid);
 
-  if (!usuario || usuario.rol !== "medico") {
+  if (!usuario || !["medico", "psicologo"].includes(usuario.rol)) {
     alert("Acceso restringido");
     window.location.href = "dashboard.html";
     return;

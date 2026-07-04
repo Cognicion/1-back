@@ -103,6 +103,31 @@ function calcularIMCNuevoPaciente() {
   return imcTexto;
 }
 
+function obtenerTipoPacienteNuevo() {
+  const selector = document.getElementById("tipoPaciente");
+  const manual = document.getElementById("tipoPacienteManual");
+  const valor = selector?.value || "privada";
+
+  if (valor === "otro") {
+    return manual?.value.trim() || "otro";
+  }
+
+  return valor;
+}
+
+function actualizarVistaTipoPacienteNuevo() {
+  const selector = document.getElementById("tipoPaciente");
+  const manual = document.getElementById("tipoPacienteManual");
+  const esInstitucional = selector?.value === "institucion";
+  const esOtro = selector?.value === "otro";
+
+  document.querySelectorAll(".campo-institucional-nuevo").forEach((campo) => {
+    campo.classList.toggle("campo-condicional-oculto", !esInstitucional);
+  });
+
+  manual?.classList.toggle("campo-condicional-oculto", !esOtro);
+}
+
 function obtenerExpedienteCognicion(paciente = {}) {
   const institucional = paciente.datosInstitucionales || {};
   return paciente.expedienteCognicion || institucional.expedienteCognicion || "";
@@ -196,8 +221,8 @@ onAuthStateChanged(auth, async (user) => {
 
   const usuario = await obtenerUsuario(user.uid);
 
-  if (!usuario || usuario.rol !== "medico") {
-    alert("Acceso restringido al personal médico");
+  if (!usuario || !["medico", "psicologo"].includes(usuario.rol)) {
+    alert("Acceso restringido al personal clinico");
     window.location.href = "dashboard.html";
   }
 });
@@ -210,6 +235,8 @@ document.getElementById("fechaNacimiento")?.addEventListener("input", () => sinc
 document.getElementById("fechaNacimiento")?.addEventListener("change", () => sincronizarEdadConFecha("fecha"));
 document.getElementById("edadManual")?.addEventListener("change", () => sincronizarEdadConFecha("edad"));
 document.getElementById("edadManual")?.addEventListener("blur", () => sincronizarEdadConFecha("edad"));
+document.getElementById("tipoPaciente")?.addEventListener("change", actualizarVistaTipoPacienteNuevo);
+actualizarVistaTipoPacienteNuevo();
 ["peso", "talla"].forEach((id) => {
   document.getElementById(id)?.addEventListener("input", calcularIMCNuevoPaciente);
   document.getElementById(id)?.addEventListener("change", calcularIMCNuevoPaciente);
@@ -222,12 +249,13 @@ window.guardarPacienteNuevo = async function() {
   sincronizarEdadConFecha("guardar");
   const fechaNacimiento = document.getElementById("fechaNacimiento").value;
   const edadManual = !fechaNacimiento ? valorEdadManual() : "";
-  const tipoPaciente = document.getElementById("tipoPaciente")?.value || "privada";
-  const institucionPaciente = document.getElementById("institucionPaciente")?.value || "";
-  const servicioInstitucional = document.getElementById("servicioInstitucional")?.value || "";
-  const expediente = document.getElementById("expediente")?.value || "";
-  const cama = document.getElementById("cama")?.value || "";
-  const fechaIngreso = normalizarFechaIngreso(document.getElementById("fechaIngreso")?.value || "");
+  const tipoPaciente = obtenerTipoPacienteNuevo();
+  const esInstitucional = tipoPaciente === "institucion";
+  const institucionPaciente = esInstitucional ? document.getElementById("institucionPaciente")?.value || "" : "";
+  const servicioInstitucional = esInstitucional ? document.getElementById("servicioInstitucional")?.value || "" : "";
+  const expediente = esInstitucional ? document.getElementById("expediente")?.value || "" : "";
+  const cama = esInstitucional ? document.getElementById("cama")?.value || "" : "";
+  const fechaIngreso = esInstitucional ? normalizarFechaIngreso(document.getElementById("fechaIngreso")?.value || "") : "";
   const genero = document.getElementById("genero")?.value || "";
   const alergias = document.getElementById("alergias")?.value || "";
   const tipoSangre = document.getElementById("tipoSangre")?.value || "";

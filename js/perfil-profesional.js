@@ -30,8 +30,8 @@ onAuthStateChanged(auth, async (user) => {
   }
 
   const usuario = await obtenerUsuario(user.uid);
-  if (!usuario || usuario.rol !== "medico") {
-    alert("Perfil profesional disponible solo para medicos.");
+  if (!usuario || !["medico", "psicologo"].includes(usuario.rol)) {
+    alert("Perfil profesional disponible solo para personal clinico.");
     window.location.href = "dashboard.html";
     return;
   }

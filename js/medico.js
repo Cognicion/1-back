@@ -192,8 +192,8 @@ async function cargarPerfilMedico(user) {
 
   const datos = snapUsuario.data();
 
-  if (datos.rol !== "medico") {
-    alert("Acceso restringido al personal médico.");
+  if (!["medico", "psicologo"].includes(datos.rol)) {
+    alert("Acceso restringido al personal clinico.");
     await auth.signOut();
     window.location.href = "login.html";
     return false;

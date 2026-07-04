@@ -25,13 +25,27 @@
   </section>
 
   <section class="auth-card">
-    <h2>Registro de paciente</h2>
-    <p>Tu medico debe estar registrado para vincular tu expediente.</p>
+    <h2 id="tituloRegistro">Registro de paciente</h2>
+    <p id="descripcionRegistro">Tu medico debe estar registrado para vincular tu expediente.</p>
+
+    <div class="tipo-cuenta-registro" role="group" aria-label="Tipo de cuenta">
+      <button type="button" class="activo" data-tipo-cuenta="paciente">Cuenta de paciente</button>
+      <button type="button" data-tipo-cuenta="medico">Cuenta de medico</button>
+    </div>
 
     <input id="nombre" type="text" placeholder="Nombre completo">
     <input id="email" type="email" placeholder="Correo electronico">
-    <input id="correoMedico" type="email" placeholder="Correo del medico tratante">
-    <input id="codigoVinculacion" type="text" placeholder="Codigo de vinculacion del expediente (opcional)">
+
+    <div id="camposPacienteRegistro">
+      <input id="correoMedico" type="email" placeholder="Correo del medico tratante">
+      <input id="codigoVinculacion" type="text" placeholder="Codigo de vinculacion del expediente (opcional)">
+    </div>
+
+    <div id="camposMedicoRegistro" class="oculto">
+      <input id="codigoAutorizacionMedico" type="text" placeholder="Codigo de autorizacion generado por admin">
+      <small class="nota-registro">Los codigos medicos duran 24 horas y solo pueden usarse una vez.</small>
+    </div>
+
     <input id="password" type="password" placeholder="Contrasena">
 
     <label class="checkbox-legal">
