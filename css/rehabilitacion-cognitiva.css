@@ -831,3 +831,204 @@ button {
   color: #a7b5ca;
   font-size: 0.86rem;
 }
+
+.panel-tamizaje-cognitivo {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  display: grid;
+  place-items: center;
+  padding: 22px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.24s ease;
+}
+
+.panel-tamizaje-cognitivo.abierto {
+  pointer-events: auto;
+  opacity: 1;
+}
+
+.panel-tamizaje-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(2, 6, 23, 0.72);
+  backdrop-filter: blur(14px);
+}
+
+.panel-tamizaje-card {
+  position: relative;
+  width: min(940px, 100%);
+  max-height: min(86vh, 920px);
+  overflow: auto;
+  padding: 24px;
+  border: 1px solid rgba(125, 211, 252, 0.26);
+  border-radius: 28px;
+  background:
+    radial-gradient(circle at 90% 0%, rgba(14, 165, 233, 0.16), transparent 34%),
+    rgba(6, 12, 24, 0.94);
+  box-shadow: 0 34px 120px rgba(0, 0, 0, 0.52);
+  transform: translateY(12px) scale(0.98);
+  transition: transform 0.24s ease;
+}
+
+.panel-tamizaje-cognitivo.abierto .panel-tamizaje-card {
+  transform: translateY(0) scale(1);
+}
+
+.panel-tamizaje-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+
+.panel-tamizaje-header span {
+  color: #7dd3fc;
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.panel-tamizaje-header h2 {
+  margin: 6px 0 8px;
+  font-size: clamp(1.7rem, 4vw, 2.8rem);
+}
+
+.panel-tamizaje-header p,
+.aviso-tamizaje-cognitivo p {
+  margin: 0 0 8px;
+  color: #a7b5ca;
+  line-height: 1.55;
+}
+
+.cerrar-tamizaje {
+  width: auto;
+  flex: 0 0 auto;
+}
+
+.aviso-tamizaje-cognitivo {
+  margin: 12px 0 18px;
+  padding: 14px;
+  border: 1px solid rgba(251, 191, 36, 0.24);
+  border-radius: 18px;
+  background: rgba(113, 63, 18, 0.18);
+}
+
+.aviso-tamizaje-cognitivo strong {
+  color: #fde68a;
+}
+
+.form-tamizaje-cognitivo {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.item-tamizaje-cognitivo,
+.observaciones-tamizaje {
+  display: grid;
+  gap: 7px;
+  padding: 12px;
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  border-radius: 18px;
+  background: rgba(15, 23, 42, 0.56);
+}
+
+.item-tamizaje-cognitivo span,
+.observaciones-tamizaje {
+  color: #dbeafe;
+  font-weight: 700;
+}
+
+.item-tamizaje-cognitivo input,
+.item-tamizaje-cognitivo select,
+.observaciones-tamizaje textarea {
+  width: 100%;
+  border: 1px solid rgba(125, 211, 252, 0.18);
+  border-radius: 13px;
+  padding: 11px 12px;
+  color: #eef6ff;
+  background: rgba(2, 6, 23, 0.48);
+  outline: none;
+}
+
+.item-tamizaje-cognitivo input:focus,
+.item-tamizaje-cognitivo select:focus,
+.observaciones-tamizaje textarea:focus {
+  border-color: rgba(56, 189, 248, 0.64);
+  box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.12);
+}
+
+.item-tamizaje-cognitivo small {
+  color: #7dd3fc;
+}
+
+.item-tamizaje-cognitivo .campo-error,
+.item-tamizaje-cognitivo input.campo-error,
+.item-tamizaje-cognitivo select.campo-error {
+  border-color: rgba(248, 113, 113, 0.8);
+  box-shadow: 0 0 0 3px rgba(248, 113, 113, 0.12);
+}
+
+.observaciones-tamizaje {
+  margin-top: 14px;
+}
+
+.observaciones-tamizaje textarea {
+  min-height: 90px;
+  resize: vertical;
+}
+
+.resultado-tamizaje-cognitivo {
+  margin-top: 14px;
+  padding: 15px;
+  border: 1px solid rgba(56, 189, 248, 0.24);
+  border-radius: 18px;
+  background: rgba(8, 47, 73, 0.25);
+}
+
+.resultado-tamizaje-cognitivo strong {
+  color: #e0f2fe;
+}
+
+.resultado-tamizaje-cognitivo p {
+  margin: 8px 0 0;
+  color: #cbd5e1;
+}
+
+.acciones-tamizaje-cognitivo {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 16px;
+}
+
+.acciones-tamizaje-cognitivo button {
+  width: auto;
+}
+
+@media (max-width: 760px) {
+  .panel-tamizaje-cognitivo {
+    padding: 12px;
+  }
+  .panel-tamizaje-card {
+    border-radius: 22px;
+    padding: 18px;
+  }
+  .panel-tamizaje-header {
+    flex-direction: column;
+  }
+  .form-tamizaje-cognitivo {
+    grid-template-columns: 1fr;
+  }
+  .acciones-tamizaje-cognitivo {
+    flex-direction: column;
+  }
+  .acciones-tamizaje-cognitivo button,
+  .cerrar-tamizaje {
+    width: 100%;
+  }
+}

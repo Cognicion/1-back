@@ -1,5 +1,10 @@
 ﻿import { auth } from "./firebase.js";
-import { ESCALAS_COGNITIVAS } from "./data/escalasCognitivas.js";
+import {
+  ESCALAS_COGNITIVAS,
+  calcularPuntajeEscalaCognitiva,
+  interpretarEscalaCognitiva,
+  obtenerPuntajesDominioCognitivo
+} from "./data/escalasCognitivas.js";
 
 import {
   onAuthStateChanged
@@ -138,6 +143,7 @@ document.addEventListener("DOMContentLoaded", () => {
   renderizarFiltros();
   renderizarActividades();
   configurarBusqueda();
+  asegurarPanelTamizajeCognitivo();
 });
 
 onAuthStateChanged(auth, (user) => {
@@ -187,22 +193,187 @@ function renderizarTamizajes() {
         ${item.evalua.map((dominio) => `<li>${dominio}</li>`).join("")}
       </ul>
       <p class="texto-tamizaje-mini">${item.poblacionSugerida || "Aplicacion clinica supervisada."}</p>
-      <button type="button" data-ficha-tamizaje="${item.id}">Ver ficha</button>
+      <button type="button" data-ficha-tamizaje="${item.id}">${item.requiereInstrumentoOficial ? "Capturar puntajes" : "Aplicar"}</button>
     </article>
   `).join("");
 
   grid.querySelectorAll("[data-ficha-tamizaje]").forEach((boton) => {
-    boton.addEventListener("click", () => {
-      const escala = tamizajes.find((item) => item.id === boton.dataset.fichaTamizaje);
-      if (!escala) return;
-      const aviso = escala.requiereInstrumentoOficial
-        ? `${escala.titulo}: usa el instrumento oficial y captura aqui los puntajes por dominio desde nota o expediente.`
-        : `${escala.titulo}: disponible para registro clinico desde nota o expediente.`;
-      mostrarToast(aviso);
-    });
+    boton.addEventListener("click", () => abrirTamizajeCognitivo(boton.dataset.fichaTamizaje));
   });
 }
 
+let escalaCognitivaActual = null;
+
+function asegurarPanelTamizajeCognitivo() {
+  if (document.getElementById("panelTamizajeCognitivo")) return;
+  const panel = document.createElement("section");
+  panel.id = "panelTamizajeCognitivo";
+  panel.className = "panel-tamizaje-cognitivo";
+  panel.setAttribute("aria-hidden", "true");
+  panel.innerHTML = `
+    <div class="panel-tamizaje-overlay" data-cerrar-tamizaje="true"></div>
+    <div class="panel-tamizaje-card" role="dialog" aria-modal="true" aria-labelledby="tituloTamizajeCognitivo">
+      <div class="panel-tamizaje-header">
+        <div>
+          <span id="subtituloTamizajeCognitivo">Tamizaje cognitivo</span>
+          <h2 id="tituloTamizajeCognitivo">Escala</h2>
+          <p id="descripcionTamizajeCognitivo"></p>
+        </div>
+        <button type="button" class="cerrar-tamizaje" data-cerrar-tamizaje="true">Cerrar</button>
+      </div>
+      <div id="avisoTamizajeCognitivo" class="aviso-tamizaje-cognitivo"></div>
+      <form id="formTamizajeCognitivo" class="form-tamizaje-cognitivo"></form>
+      <label class="observaciones-tamizaje">Observaciones clinicas
+        <textarea id="observacionesTamizajeCognitivo" placeholder="Observaciones, conducta durante la prueba, cooperacion, factores que puedan afectar el resultado."></textarea>
+      </label>
+      <div class="resultado-tamizaje-cognitivo" id="resultadoTamizajeCognitivo">
+        <strong>Resultado</strong>
+        <p>Captura los puntajes y calcula el resultado.</p>
+      </div>
+      <div class="acciones-tamizaje-cognitivo">
+        <button type="button" id="calcularTamizajeCognitivo">Calcular</button>
+        <button type="button" id="limpiarTamizajeCognitivo" class="boton-secundario">Limpiar</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(panel);
+  panel.querySelectorAll("[data-cerrar-tamizaje]").forEach((control) => control.addEventListener("click", cerrarTamizajeCognitivo));
+  document.getElementById("calcularTamizajeCognitivo")?.addEventListener("click", calcularTamizajeCognitivoActual);
+  document.getElementById("limpiarTamizajeCognitivo")?.addEventListener("click", limpiarTamizajeCognitivoActual);
+  document.addEventListener("keydown", (evento) => {
+    if (evento.key === "Escape" && panel.classList.contains("abierto")) cerrarTamizajeCognitivo();
+  });
+}
+
+function abrirTamizajeCognitivo(idEscala) {
+  asegurarPanelTamizajeCognitivo();
+  escalaCognitivaActual = ESCALAS_COGNITIVAS.find((escala) => escala.id === idEscala) || null;
+  if (!escalaCognitivaActual) return;
+
+  document.getElementById("subtituloTamizajeCognitivo").textContent = escalaCognitivaActual.subtitulo || escalaCognitivaActual.area || "Tamizaje cognitivo";
+  document.getElementById("tituloTamizajeCognitivo").textContent = escalaCognitivaActual.nombre;
+  document.getElementById("descripcionTamizajeCognitivo").textContent = escalaCognitivaActual.descripcion || "";
+  document.getElementById("avisoTamizajeCognitivo").innerHTML = construirAvisoTamizaje(escalaCognitivaActual);
+  document.getElementById("observacionesTamizajeCognitivo").value = "";
+  document.getElementById("resultadoTamizajeCognitivo").innerHTML = `<strong>Resultado</strong><p>Captura los puntajes y calcula el resultado.</p>`;
+  renderizarFormularioTamizaje(escalaCognitivaActual);
+
+  const panel = document.getElementById("panelTamizajeCognitivo");
+  panel?.classList.add("abierto");
+  panel?.setAttribute("aria-hidden", "false");
+}
+
+function cerrarTamizajeCognitivo() {
+  const panel = document.getElementById("panelTamizajeCognitivo");
+  panel?.classList.remove("abierto");
+  panel?.setAttribute("aria-hidden", "true");
+}
+
+function construirAvisoTamizaje(escala) {
+  const oficial = escala.requiereInstrumentoOficial
+    ? `<p><strong>Instrumento oficial:</strong> use el material autorizado y capture aqui el puntaje por dominio. No se reproducen items protegidos.</p>`
+    : "";
+  const limitaciones = escala.limitaciones ? `<p><strong>Limitaciones:</strong> ${escaparHTML(escala.limitaciones)}</p>` : "";
+  const instrucciones = escala.instrucciones ? `<p><strong>Aplicacion:</strong> ${escaparHTML(escala.instrucciones)}</p>` : "";
+  return `${oficial}${instrucciones}${limitaciones}<p>Los resultados apoyan el juicio clinico y no sustituyen valoracion medica o neuropsicologica.</p>`;
+}
+
+function renderizarFormularioTamizaje(escala) {
+  const form = document.getElementById("formTamizajeCognitivo");
+  if (!form) return;
+  form.innerHTML = (escala.items || []).map((item, index) => {
+    if (item.tipo === "select") {
+      const opciones = (item.opciones || []).map((opcion, opcionIndex) => {
+        const valor = item.valores?.[opcionIndex] ?? opcion.valor ?? opcion;
+        const texto = opcion.texto ?? opcion;
+        return `<option value="${escaparHTML(valor)}">${escaparHTML(texto)} (${escaparHTML(valor)})</option>`;
+      }).join("");
+      return `
+        <label class="item-tamizaje-cognitivo">
+          <span>${escaparHTML(item.texto || `Item ${index + 1}`)}</span>
+          <select data-item-tamizaje="${index}">${opciones}</select>
+          <small>${escaparHTML(item.dominio || "")}</small>
+        </label>
+      `;
+    }
+    return `
+      <label class="item-tamizaje-cognitivo">
+        <span>${escaparHTML(item.texto || `Item ${index + 1}`)}</span>
+        <input type="number" data-item-tamizaje="${index}" min="${item.min ?? 0}" max="${item.max ?? ""}" step="${item.step || 1}" placeholder="${item.min ?? 0}-${item.max ?? ""}">
+        <small>${escaparHTML(item.dominio || "")} ${item.max !== undefined ? `· max ${escaparHTML(item.max)}` : ""}</small>
+      </label>
+    `;
+  }).join("");
+}
+
+function leerRespuestasTamizaje(escala) {
+  const respuestas = [];
+  let valido = true;
+  document.querySelectorAll("[data-item-tamizaje]").forEach((control) => {
+    const index = Number(control.dataset.itemTamizaje);
+    const item = escala.items[index];
+    const valor = Number(control.value || 0);
+    const min = Number(item.min ?? 0);
+    const max = item.max !== undefined ? Number(item.max) : null;
+
+    if (Number.isNaN(valor) || valor < min || (max !== null && valor > max)) {
+      control.classList.add("campo-error");
+      valido = false;
+    } else {
+      control.classList.remove("campo-error");
+    }
+
+    respuestas.push({
+      item: item.texto || `Item ${index + 1}`,
+      dominio: item.dominio || "",
+      respuesta: control.tagName === "SELECT" ? control.selectedOptions[0]?.textContent || String(valor) : String(valor),
+      valor
+    });
+  });
+  return { respuestas, valido };
+}
+
+function calcularTamizajeCognitivoActual() {
+  if (!escalaCognitivaActual) return;
+  const { respuestas, valido } = leerRespuestasTamizaje(escalaCognitivaActual);
+  if (!valido) {
+    mostrarToast("Revisa los campos marcados: hay puntajes fuera de rango.");
+    return;
+  }
+
+  const puntaje = calcularPuntajeEscalaCognitiva(escalaCognitivaActual, respuestas);
+  const interpretacion = interpretarEscalaCognitiva(escalaCognitivaActual, puntaje, respuestas);
+  const dominios = obtenerPuntajesDominioCognitivo(respuestas);
+  const dominiosTexto = Object.entries(dominios).map(([dominio, valor]) => `${dominio}: ${valor}`).join(" · ");
+  const maximo = escalaCognitivaActual.puntajeMaximo ? `/${escalaCognitivaActual.puntajeMaximo}` : "";
+  const observaciones = document.getElementById("observacionesTamizajeCognitivo")?.value.trim() || "";
+
+  document.getElementById("resultadoTamizajeCognitivo").innerHTML = `
+    <strong>${escaparHTML(escalaCognitivaActual.nombre)}: ${escaparHTML(puntaje)}${escaparHTML(maximo)}</strong>
+    <p>${escaparHTML(interpretacion)}</p>
+    ${dominiosTexto ? `<p><strong>Dominios:</strong> ${escaparHTML(dominiosTexto)}</p>` : ""}
+    ${observaciones ? `<p><strong>Observaciones:</strong> ${escaparHTML(observaciones)}</p>` : ""}
+  `;
+}
+
+function limpiarTamizajeCognitivoActual() {
+  document.querySelectorAll("[data-item-tamizaje]").forEach((control) => {
+    control.value = "";
+    control.classList.remove("campo-error");
+  });
+  const observaciones = document.getElementById("observacionesTamizajeCognitivo");
+  if (observaciones) observaciones.value = "";
+  document.getElementById("resultadoTamizajeCognitivo").innerHTML = `<strong>Resultado</strong><p>Captura los puntajes y calcula el resultado.</p>`;
+}
+
+function escaparHTML(valor) {
+  return String(valor ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
 function renderizarFiltros() {
   const contenedor = document.getElementById("filtrosDominios");
   if (!contenedor) return;
@@ -293,5 +464,3 @@ function mostrarToast(mensaje) {
     toast.classList.remove("visible");
   }, 2800);
 }
-
-
