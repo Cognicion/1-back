@@ -1,4 +1,4 @@
-﻿import { auth, db } from "./firebase.js";
+import { auth, db } from "./firebase.js";
 
 import {
   onAuthStateChanged,
@@ -72,6 +72,7 @@ onAuthStateChanged(auth, async (user) => {
   }
 
   const datos = await obtenerUsuario(user.uid);
+  const rolUsuario = String(datos?.rol || "").toLowerCase().trim();
 
   if (datos) {
     document.getElementById("bienvenida").innerText =
@@ -80,6 +81,8 @@ onAuthStateChanged(auth, async (user) => {
     document.getElementById("bienvenida").innerText =
       "Bienvenido";
   }
+
+  await cargarAvisosDashboard(rolUsuario, user.uid);
 });
 
 window.cerrarSesion = async function() {
@@ -110,13 +113,18 @@ function escaparHTML(valor) {
 }
 
 function avisoVisibleParaUsuario(aviso = {}, rol = "", uid = "") {
-  const tipo = aviso.destinatarioTipo || aviso.destinatarioRol || aviso.rolDestino || "todos";
-  if (tipo === "usuario" || aviso.destinatarioRol === "usuario") {
-    return aviso.destinatarioUid === uid;
-  }
-  if (tipo === "todos") return true;
-  if (tipo === "personal_salud") return ["medico", "psicologo"].includes(rol) || rol === "admin";
-  return tipo === rol;
+  const rolNormalizado = String(rol || "").toLowerCase().trim();
+  const tipo = String(aviso.destinatarioTipo || aviso.destinatarioRol || aviso.rolDestino || "todos").toLowerCase().trim();
+  const uidDestino = aviso.destinatarioUid || aviso.uidDestino || aviso.usuarioDestinoUid || "";
+
+  if (rolNormalizado === "admin") return true;
+  if (tipo === "usuario") return uidDestino === uid;
+  if (["todos", "todos_los_usuarios", "global"].includes(tipo)) return true;
+  if (["personal_salud", "medicos_psicologos", "medico_psicologo"].includes(tipo)) return ["medico", "psicologo"].includes(rolNormalizado);
+  if (tipo === "medicos") return rolNormalizado === "medico";
+  if (tipo === "psicologos") return rolNormalizado === "psicologo";
+  if (tipo === "pacientes") return rolNormalizado === "paciente";
+  return tipo === rolNormalizado;
 }
 
 function textoDestinatarioAvisoDashboard(aviso = {}) {
@@ -154,7 +162,7 @@ async function cargarAvisosDashboard(rolUsuario, uidUsuario) {
       <article class="aviso-dashboard-item">
         <strong>${escaparHTML(aviso.titulo || "Aviso")}</strong>
         <p>${escaparHTML(aviso.mensaje || aviso.descripcion || "")}</p>
-        <span class="aviso-dashboard-meta">${escaparHTML(textoDestinatarioAvisoDashboard(aviso))} · ${escaparHTML(aviso.creadoEn || "")}</span>
+        <span class="aviso-dashboard-meta">${escaparHTML(textoDestinatarioAvisoDashboard(aviso))} Â· ${escaparHTML(aviso.creadoEn || "")}</span>
       </article>
     `).join("");
   } catch (error) {
