@@ -1,9 +1,17 @@
-import { auth } from "./firebase.js";
+﻿import { auth, db } from "./firebase.js";
 
 import {
   onAuthStateChanged,
   signOut
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+import {
+  collection,
+  getDocs,
+  limit,
+  orderBy,
+  query
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 import {
   obtenerUsuario
@@ -91,3 +99,49 @@ window.cerrarSesion = async function() {
   await signOut(auth);
   window.location.href = "login.html";
 };
+
+function escaparHTML(valor) {
+  return String(valor || "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+function avisoVisibleParaRol(aviso = {}, rol = "") {
+  const destino = aviso.destinatarioRol || aviso.rolDestino || "todos";
+  return destino === "todos" || destino === rol || (destino === "personal_salud" && ["medico", "psicologo", "admin"].includes(rol));
+}
+
+async function cargarAvisosDashboard(rolUsuario) {
+  const contenedor = document.getElementById("listaAvisosDashboard");
+  if (!contenedor) return;
+  contenedor.innerHTML = "<p>Cargando avisos...</p>";
+
+  try {
+    const qAvisos = query(collection(db, "avisosGlobales"), orderBy("creadoEn", "desc"), limit(30));
+    const snap = await getDocs(qAvisos);
+    const avisos = snap.docs
+      .map((docAviso) => ({ id: docAviso.id, ...docAviso.data() }))
+      .filter((aviso) => aviso.activo !== false && avisoVisibleParaRol(aviso, rolUsuario))
+      .slice(0, 6);
+
+    if (!avisos.length) {
+      contenedor.innerHTML = `<article class="aviso-dashboard-item"><strong>Sin avisos nuevos</strong><p>Cuando haya comunicados o notificaciones relevantes apareceran aqui.</p></article>`;
+      return;
+    }
+
+    contenedor.innerHTML = avisos.map((aviso) => `
+      <article class="aviso-dashboard-item">
+        <strong>${escaparHTML(aviso.titulo || "Aviso")}</strong>
+        <p>${escaparHTML(aviso.mensaje || aviso.descripcion || "")}</p>
+        <span class="aviso-dashboard-meta">${escaparHTML(aviso.destinatarioRol || "todos")} · ${escaparHTML(aviso.creadoEn || "")}</span>
+      </article>
+    `).join("");
+  } catch (error) {
+    console.error("Error al cargar avisos:", error);
+    contenedor.innerHTML = `<article class="aviso-dashboard-item"><strong>Avisos no disponibles</strong><p>No se pudieron cargar los avisos por el momento.</p></article>`;
+  }
+}
+

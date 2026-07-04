@@ -1,4 +1,4 @@
-import { auth, db } from "./firebase.js";
+﻿import { auth, db } from "./firebase.js";
 import { iniciarMonitoreoSesion } from "./services/sesion.js";
 import { registrarEventoAuditoria, resumenError } from "./services/auditoria.js";
 import {
@@ -36,6 +36,7 @@ let pacientesAdmin = [];
 let usuariosAdmin = [];
 let reportesUsuariosAdmin = [];
 let codigosMedicoAdmin = [];
+let avisosGlobalesAdmin = [];
 let notasPorPaciente = {};
 let adminActual = null;
 
@@ -89,6 +90,7 @@ onAuthStateChanged(auth, async (user) => {
   await cargarUsuariosAdmin();
   await cargarPacientesAdmin();
   await cargarReportesUsuariosAdmin();
+  await cargarAvisosAdmin();
   await cargarAuditoria();
 });
 
@@ -113,6 +115,7 @@ function configurarFiltros() {
     await cargarCodigosMedicoAdmin();
     await cargarPacientesAdmin();
     await cargarReportesUsuariosAdmin();
+    await cargarAvisosAdmin();
     await cargarAuditoria();
   });
 
@@ -137,10 +140,100 @@ function configurarFiltros() {
 
   document.getElementById("btnActualizarReportesAdmin")?.addEventListener("click", cargarReportesUsuariosAdmin);
 
+  document.getElementById("btnPublicarAvisoAdmin")?.addEventListener("click", publicarAvisoAdmin);
+  document.getElementById("btnActualizarAvisosAdmin")?.addEventListener("click", cargarAvisosAdmin);
+
   document.getElementById("btnGenerarCodigoMedico")?.addEventListener("click", generarCodigoMedicoAdmin);
   document.getElementById("btnActualizarCodigosMedico")?.addEventListener("click", cargarCodigosMedicoAdmin);
 }
 
+async function publicarAvisoAdmin() {
+  const titulo = document.getElementById("avisoAdminTitulo")?.value.trim() || "";
+  const mensaje = document.getElementById("avisoAdminMensaje")?.value.trim() || "";
+  const destinatarioRol = document.getElementById("avisoAdminDestino")?.value || "todos";
+
+  if (!titulo || !mensaje) {
+    alert("Escribe titulo y mensaje del aviso.");
+    return;
+  }
+
+  const idAviso = `aviso_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+  const ahora = new Date().toISOString();
+
+  await setDoc(doc(db, "avisosGlobales", idAviso), {
+    idAviso,
+    titulo,
+    mensaje,
+    destinatarioRol,
+    activo: true,
+    creadoPorUid: adminActual?.uid || "",
+    creadoPorEmail: adminActual?.email || "",
+    creadoEn: ahora,
+    actualizadoEn: ahora
+  });
+
+  document.getElementById("avisoAdminTitulo").value = "";
+  document.getElementById("avisoAdminMensaje").value = "";
+
+  await registrarAuditoriaAdmin("publicar_aviso_global", "El administrador publico un aviso global.", {
+    detalles: { idAviso, destinatarioRol, titulo }
+  });
+  await cargarAvisosAdmin();
+}
+
+async function cargarAvisosAdmin() {
+  const contenedor = document.getElementById("listaAvisosAdmin");
+  if (contenedor) contenedor.innerHTML = "<p>Cargando avisos...</p>";
+
+  try {
+    const qAvisos = query(collection(db, "avisosGlobales"), orderBy("creadoEn", "desc"), limit(80));
+    const snap = await getDocs(qAvisos);
+    avisosGlobalesAdmin = snap.docs.map((docAviso) => ({ id: docAviso.id, ...docAviso.data() }));
+    renderizarAvisosAdmin();
+  } catch (error) {
+    console.error("Error al cargar avisos:", error);
+    if (contenedor) contenedor.innerHTML = "<p>No se pudieron cargar los avisos.</p>";
+  }
+}
+
+function renderizarAvisosAdmin() {
+  const contenedor = document.getElementById("listaAvisosAdmin");
+  if (!contenedor) return;
+
+  if (!avisosGlobalesAdmin.length) {
+    contenedor.innerHTML = "<p>No hay avisos publicados.</p>";
+    return;
+  }
+
+  contenedor.innerHTML = avisosGlobalesAdmin.map((aviso) => `
+    <article class="reporte-admin-card">
+      <div class="reporte-admin-top">
+        <div>
+          <strong>${escaparHTML(aviso.titulo || "Aviso")}</strong>
+          <span>${escaparHTML(aviso.destinatarioRol || "todos")} · ${escaparHTML(aviso.creadoEn || "")}</span>
+        </div>
+        <span class="estado-reporte ${aviso.activo === false ? "cerrado" : "nuevo"}">${aviso.activo === false ? "Oculto" : "Activo"}</span>
+      </div>
+      <p>${escaparHTML(aviso.mensaje || "")}</p>
+      <div class="acciones-reporte-admin">
+        <button type="button" data-toggle-aviso-admin="${escaparHTML(aviso.id)}" data-activo="${aviso.activo === false ? "true" : "false"}">
+          ${aviso.activo === false ? "Reactivar" : "Ocultar"}
+        </button>
+      </div>
+    </article>
+  `).join("");
+
+  contenedor.querySelectorAll("[data-toggle-aviso-admin]").forEach((boton) => {
+    boton.addEventListener("click", async () => {
+      await updateDoc(doc(db, "avisosGlobales", boton.dataset.toggleAvisoAdmin), {
+        activo: boton.dataset.activo === "true",
+        actualizadoEn: new Date().toISOString(),
+        actualizadoPorUid: adminActual?.uid || ""
+      });
+      await cargarAvisosAdmin();
+    });
+  });
+}
 function generarCodigoAutorizacionMedico() {
   const segmentos = [];
   const alfabeto = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
@@ -1004,3 +1097,4 @@ function escaparHTML(valor) {
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#039;");
 }
+

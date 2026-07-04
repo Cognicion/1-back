@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>COGNICIÓN | Dashboard medico</title>
+<title>COGNICIÃ“N | Dashboard medico</title>
 <link rel="icon" type="image/png" href="assets/favicon-cognicion.png">
 
 <style>
@@ -591,6 +591,74 @@ footer {
         padding: 22px;
     }
 }
+
+.avisos-dashboard {
+    width: min(720px, 100%);
+    margin-top: 28px;
+    padding: 18px;
+    border: 1px solid rgba(125, 211, 252, 0.18);
+    border-radius: 22px;
+    background: linear-gradient(135deg, rgba(15, 23, 42, 0.76), rgba(8, 47, 73, 0.34));
+    box-shadow: 0 18px 60px rgba(2, 8, 23, 0.28);
+    backdrop-filter: blur(18px);
+}
+
+.avisos-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 12px;
+}
+
+.avisos-header strong {
+    display: block;
+    color: #eef6ff;
+    font-size: 1rem;
+}
+
+.ghost-button.mini {
+    width: auto;
+    min-height: 34px;
+    padding: 8px 12px;
+    font-size: 0.82rem;
+}
+
+.lista-avisos-dashboard {
+    display: grid;
+    gap: 10px;
+    max-height: 190px;
+    overflow: auto;
+    padding-right: 4px;
+}
+
+.aviso-dashboard-item {
+    padding: 12px 14px;
+    border: 1px solid rgba(148, 163, 184, 0.14);
+    border-radius: 16px;
+    background: rgba(2, 6, 23, 0.38);
+}
+
+.aviso-dashboard-item strong {
+    display: block;
+    color: #e0f2fe;
+    margin-bottom: 4px;
+}
+
+.aviso-dashboard-item p {
+    margin: 0;
+    color: #b6c4d7;
+    line-height: 1.45;
+}
+
+.aviso-dashboard-meta {
+    display: block;
+    margin-top: 8px;
+    color: #7dd3fc;
+    font-size: 0.76rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
 </style>
   <link rel="stylesheet" href="css/reportes.css">
   <!-- dashboard-deploy: 2026-07-02 18:22:52 -06:00 -->
@@ -620,20 +688,18 @@ footer {
                 <h2 id="bienvenida">Cargando...</h2>
                 <p id="fraseClinica" class="clinical-phrase">La evidencia gu&iacute;a mejores decisiones cl&iacute;nicas.</p>
 
-                <div class="hero-stats" aria-label="Resumen del dashboard">
-                    <article class="hero-stat">
-                        <strong>Actividad cl&iacute;nica</strong>
-                        <span>Accesos recientes y herramientas utilizadas.</span>
-                    </article>
-                    <article class="hero-stat">
-                        <strong>Seguimiento</strong>
-                        <span>Escalas, evoluci&oacute;n y registros relevantes.</span>
-                    </article>
-                    <article class="hero-stat">
-                        <strong>Herramientas</strong>
-                        <span>M&oacute;dulos disponibles para pacientes y m&eacute;dicos.</span>
-                    </article>
-                </div>
+                <section class="avisos-dashboard" aria-label="Avisos y notificaciones">
+                    <div class="avisos-header">
+                        <div>
+                            <span class="section-kicker">Avisos</span>
+                            <strong>Notificaciones y comunicados</strong>
+                        </div>
+                        <button type="button" class="ghost-button mini" onclick="window.location.href='foro.html'">Abrir foro</button>
+                    </div>
+                    <div id="listaAvisosDashboard" class="lista-avisos-dashboard">
+                        <p>Cargando avisos...</p>
+                    </div>
+                </section>
             </div>
         </div>
     </section>
@@ -719,6 +785,17 @@ footer {
                     <button class="primary-button" onclick="window.location.href='respiracion.html'">Abrir asistente</button>
                 </div>
             </article>
+            <article class="module-card">
+                <div class="module-top">
+                    <div class="module-icon">FORO</div>
+                    <span class="badge">Nuevo</span>
+                </div>
+                <h3>Foro Cognici&oacute;n</h3>
+                <p>Espacios de comunicaci&oacute;n para pacientes y profesionales, organizados por rol y comunidad.</p>
+                <div class="card-actions">
+                    <button class="primary-button" onclick="window.location.href='foro.html'">Abrir foro</button>
+                </div>
+            </article>
 
             <article class="module-card">
                 <div class="module-top">
@@ -792,3 +869,4 @@ footer {
   <script type="module" src="js/reportes.js"></script>
 </body>
 </html>
+

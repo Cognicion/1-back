@@ -804,3 +804,30 @@ button {
     font-size: clamp(2.65rem, 15vw, 4rem);
   }
 }
+
+.estado-tamizaje {
+  display: inline-flex;
+  width: fit-content;
+  margin: 0 0 4px;
+  padding: 6px 10px;
+  border: 1px solid rgba(125, 211, 252, 0.24);
+  border-radius: 999px;
+  color: #bae6fd;
+  background: rgba(8, 47, 73, 0.42);
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.estado-tamizaje.oficial {
+  color: #fde68a;
+  border-color: rgba(251, 191, 36, 0.28);
+  background: rgba(113, 63, 18, 0.28);
+}
+
+.texto-tamizaje-mini {
+  min-height: 42px;
+  color: #a7b5ca;
+  font-size: 0.86rem;
+}

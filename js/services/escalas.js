@@ -32,14 +32,17 @@ export function crearResumenEscala(registro) {
   const fecha = formatearFechaEscala(registro.fechaAplicacion || registro.fechaISO);
   const nombre = registro.nombreEscala || registro.escalaNombre || "Escala";
   const puntaje = registro.puntajeTotal ?? registro.puntaje ?? "";
+  const maximo = registro.puntajeMaximo ?? registro.maximo ?? "";
   const interpretacion = registro.interpretacion || "Sin interpretacion";
   const observaciones = registro.observaciones || registro.observacionesOpcionales || "";
+  const dominios = registro.dominiosAlterados || registro.dominiosEvaluados || [];
 
   return [
     `Escala aplicada: ${nombre}`,
     `Fecha: ${fecha}`,
-    `Puntaje total: ${puntaje}`,
+    `Puntaje total: ${puntaje}${maximo ? `/${maximo}` : ""}`,
     `Interpretacion: ${interpretacion}`,
+    Array.isArray(dominios) && dominios.length ? `Dominios evaluados: ${dominios.join(", ")}` : "",
     observaciones ? `Observaciones: ${observaciones}` : ""
   ].filter(Boolean).join("\n");
 }
@@ -74,10 +77,17 @@ export function normalizarEscalaAplicada(id, datos = {}) {
     fechaAplicacion,
     origen: datos.origen || "modulo_escalas",
     puntajeTotal: datos.puntajeTotal ?? datos.puntaje ?? 0,
+    puntajeMaximo: datos.puntajeMaximo ?? datos.maximo ?? "",
+    dominiosEvaluados: datos.dominiosEvaluados || [],
+    puntajesPorDominio: datos.puntajesPorDominio || {},
     rango: datos.rango || "",
     interpretacion: datos.interpretacion || "",
     respuestasPorItem: datos.respuestasPorItem || datos.respuestas || [],
     observaciones: datos.observaciones || datos.observacionesOpcionales || "",
+    observacionesClinicas: datos.observacionesClinicas || datos.observaciones || datos.observacionesOpcionales || "",
+    recomendaciones: datos.recomendaciones || "",
+    visibilidadPaciente: datos.visibilidadPaciente ?? datos.visiblePaciente ?? false,
+    visibleDesdePaciente: datos.visibleDesdePaciente ?? datos.visiblePaciente ?? false,
     idNota: datos.idNota || "",
     medicoNombre: datos.medicoNombre || datos.usuarioNombre || "",
     raw: datos
@@ -105,9 +115,16 @@ export async function guardarEscalaAplicada(idPaciente, registro) {
     escalaNombre: registro.nombreEscala,
     area: registro.tipoEscala,
     puntaje: registro.puntajeTotal,
+    puntajeMaximo: registro.puntajeMaximo ?? "",
+    dominiosEvaluados: registro.dominiosEvaluados || [],
+    puntajesPorDominio: registro.puntajesPorDominio || {},
     rango: registro.rango,
     interpretacion: registro.interpretacion,
     respuestas: registro.respuestasPorItem,
+    observaciones: registro.observaciones || registro.observacionesClinicas || "",
+    recomendaciones: registro.recomendaciones || "",
+    visibilidadPaciente: registro.visibilidadPaciente ?? false,
+    visibleDesdePaciente: registro.visibleDesdePaciente ?? false,
     origen: registro.origen,
     creadoPor: registro.uidMedico || "",
     creadoEn: serverTimestamp(),

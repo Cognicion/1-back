@@ -1,4 +1,5 @@
-import { auth } from "./firebase.js";
+﻿import { auth } from "./firebase.js";
+import { ESCALAS_COGNITIVAS } from "./data/escalasCognitivas.js";
 
 import {
   onAuthStateChanged
@@ -16,50 +17,18 @@ const dominios = [
   "Visuoespacial"
 ];
 
-const tamizajes = [
-  {
-    icono: "Mo",
-    titulo: "MoCA",
-    nombre: "Montreal Cognitive Assessment.",
-    uso: "Tamizaje de deterioro cognitivo leve.",
-    evalua: ["Atencion", "Memoria", "Lenguaje", "Funciones ejecutivas", "Visuoespacialidad", "Orientacion"]
-  },
-  {
-    icono: "MM",
-    titulo: "MMSE / Mini-Mental",
-    nombre: "Mini-Mental State Examination.",
-    uso: "Tamizaje cognitivo general.",
-    evalua: ["Orientacion", "Registro", "Atencion", "Calculo", "Recuerdo", "Lenguaje"]
-  },
-  {
-    icono: "MC",
-    titulo: "Mini-Cog",
-    nombre: "Tamizaje cognitivo breve.",
-    uso: "Tamizaje breve para deterioro cognitivo.",
-    evalua: ["Memoria inmediata", "Recuerdo diferido", "Reloj / funcion visuoespacial"]
-  },
-  {
-    icono: "ACE",
-    titulo: "ACE-III",
-    nombre: "Addenbrooke's Cognitive Examination III.",
-    uso: "Evaluacion cognitiva mas amplia.",
-    evalua: ["Atencion", "Memoria", "Fluencia verbal", "Lenguaje", "Habilidades visuoespaciales"]
-  },
-  {
-    icono: "TM",
-    titulo: "Trail Making Test",
-    nombre: "Prueba de trazado.",
-    uso: "Evaluacion de atencion, velocidad y flexibilidad cognitiva.",
-    evalua: ["Velocidad de procesamiento", "Atencion sostenida", "Flexibilidad mental", "Control ejecutivo"]
-  },
-  {
-    icono: "FAB",
-    titulo: "FAB",
-    nombre: "Frontal Assessment Battery.",
-    uso: "Tamizaje de funciones frontales.",
-    evalua: ["Conceptualizacion", "Flexibilidad mental", "Programacion motora", "Control inhibitorio", "Autonomia frontal"]
-  }
-];
+const tamizajes = ESCALAS_COGNITIVAS.map((escala) => ({
+  id: escala.id,
+  icono: escala.nombre.replace(/[^A-Za-z0-9]/g, "").slice(0, 3).toUpperCase(),
+  titulo: escala.nombre,
+  nombre: escala.subtitulo || escala.area || "Tamizaje cognitivo",
+  uso: escala.descripcion,
+  evalua: escala.dominiosEvaluados || [],
+  requiereInstrumentoOficial: escala.requiereInstrumentoOficial,
+  puntajeMaximo: escala.puntajeMaximo,
+  poblacionSugerida: escala.poblacionSugerida,
+  limitaciones: escala.limitaciones || []
+}));
 
 const actividades = [
   {
@@ -208,18 +177,29 @@ function renderizarTamizajes() {
   grid.innerHTML = tamizajes.map((item) => `
     <article class="tarjeta-tamizaje">
       <div class="tarjeta-icono">${item.icono}</div>
+      <div class="estado-tamizaje ${item.requiereInstrumentoOficial ? "oficial" : "disponible"}">
+        ${item.requiereInstrumentoOficial ? "Captura con instrumento oficial" : "Disponible"}
+      </div>
       <h3>${item.titulo}</h3>
       <small>${item.nombre}</small>
       <p>${item.uso}</p>
       <ul>
         ${item.evalua.map((dominio) => `<li>${dominio}</li>`).join("")}
       </ul>
-      <button type="button" data-proximamente="${item.titulo}">Proximamente</button>
+      <p class="texto-tamizaje-mini">${item.poblacionSugerida || "Aplicacion clinica supervisada."}</p>
+      <button type="button" data-ficha-tamizaje="${item.id}">Ver ficha</button>
     </article>
   `).join("");
 
-  grid.querySelectorAll("[data-proximamente]").forEach((boton) => {
-    boton.addEventListener("click", () => mostrarToast(`${boton.dataset.proximamente} estara disponible en una version posterior.`));
+  grid.querySelectorAll("[data-ficha-tamizaje]").forEach((boton) => {
+    boton.addEventListener("click", () => {
+      const escala = tamizajes.find((item) => item.id === boton.dataset.fichaTamizaje);
+      if (!escala) return;
+      const aviso = escala.requiereInstrumentoOficial
+        ? `${escala.titulo}: usa el instrumento oficial y captura aqui los puntajes por dominio desde nota o expediente.`
+        : `${escala.titulo}: disponible para registro clinico desde nota o expediente.`;
+      mostrarToast(aviso);
+    });
   });
 }
 
@@ -313,3 +293,5 @@ function mostrarToast(mensaje) {
     toast.classList.remove("visible");
   }, 2800);
 }
+
+

@@ -5,6 +5,12 @@ import { CIE10 } from "./data/cie10.js";
 import { CIE11 } from "./data/cie11.js";
 import { MEDICAMENTOS } from "./data/medicamentos.js";
 import { ESCALAS_PSIQUIATRICAS, interpretarEscala } from "./data/escalasPsiquiatricas.js";
+import {
+  ESCALAS_COGNITIVAS,
+  calcularPuntajeEscalaCognitiva,
+  interpretarEscalaCognitiva,
+  obtenerPuntajesDominioCognitivo
+} from "./data/escalasCognitivas.js";
 import { generarNotaAutomatica } from "./services/notaAutomatica.js";
 import {
   calcularPuntajeEscala,
@@ -64,6 +70,11 @@ let catalogoMedicosFirmasCache = [];
 let diagnosticosAutomaticosSugeridos = [];
 let escalasPreviasNotaCache = [];
 let escalasAplicadasPendientesNota = [];
+
+const ESCALAS_NOTA = [
+  ...ESCALAS_PSIQUIATRICAS.map((escala) => ({ ...escala, tipoEscala: "psiquiatrica" })),
+  ...ESCALAS_COGNITIVAS
+];
 
 iniciarMonitoreoSesion("Nota medica");
 
@@ -420,9 +431,14 @@ function configurarPanelEscalaNota() {
 
   if (!selector) return;
 
-  selector.innerHTML = ESCALAS_PSIQUIATRICAS
-    .map((escala) => `<option value="${escala.id}">${escala.nombre} - ${escala.area}</option>`)
-    .join("");
+  selector.innerHTML = `
+    <optgroup label="Escalas clinicas">
+      ${ESCALAS_PSIQUIATRICAS.map((escala) => `<option value="${escala.id}">${escala.nombre} - ${escala.area}</option>`).join("")}
+    </optgroup>
+    <optgroup label="Escalas y tamizajes cognitivos">
+      ${ESCALAS_COGNITIVAS.map((escala) => `<option value="${escala.id}">${escala.nombre} - ${escala.subtitulo || escala.area}</option>`).join("")}
+    </optgroup>
+  `;
 
   selector.addEventListener("change", renderizarEscalaNotaSeleccionada);
   botonGuardar?.addEventListener("click", guardarEscalaDesdeNota);
@@ -435,7 +451,7 @@ function configurarPanelEscalaNota() {
 
 function escalaNotaActual() {
   const id = document.getElementById("selectorEscalaNota")?.value;
-  return ESCALAS_PSIQUIATRICAS.find((escala) => escala.id === id) || ESCALAS_PSIQUIATRICAS[0];
+  return ESCALAS_NOTA.find((escala) => escala.id === id) || ESCALAS_NOTA[0];
 }
 
 function renderizarEscalaNotaSeleccionada() {
@@ -444,20 +460,59 @@ function renderizarEscalaNotaSeleccionada() {
   const items = document.getElementById("itemsEscalaNota");
   if (!escala || !descripcion || !items) return;
 
-  const intro = escala.introduccion ? `<p>${escaparHTML(escala.introduccion)}</p>` : "";
+  const intro = escala.introduccion || escala.instrucciones
+    ? `<p>${escaparHTML(escala.introduccion || escala.instrucciones)}</p>`
+    : "";
+  const limitaciones = escala.limitaciones
+    ? `<p class="advertencia-escala-nota">${escaparHTML(escala.limitaciones)}</p>`
+    : "";
+  const oficial = escala.requiereInstrumentoOficial
+    ? `<p class="advertencia-escala-nota">Este instrumento requiere material oficial o aplicacion clinica supervisada. Cognicion solo captura puntajes estructurados.</p>`
+    : "";
   const consideraciones = Array.isArray(escala.consideraciones) && escala.consideraciones.length
     ? `<div class="consideraciones-escala-nota"><strong>Consideraciones clinicas</strong><ul>${escala.consideraciones.map((item) => `<li>${escaparHTML(item)}</li>`).join("")}</ul></div>`
     : "";
 
   descripcion.innerHTML = `
-    <strong>${escaparHTML(escala.nombre)}</strong> - ${escaparHTML(escala.area)}<br>
+    <strong>${escaparHTML(escala.nombre)}</strong> - ${escaparHTML(escala.subtitulo || escala.area)}<br>
     ${escaparHTML(escala.descripcion)}<br>
     <small>Rango: ${escaparHTML(escala.rango)}. Resultado integrado al expediente.</small>
     ${intro}
+    ${oficial}
+    ${limitaciones}
     ${consideraciones}
   `;
 
   items.innerHTML = escala.items.map((item, index) => {
+    if (item.tipo === "numero") {
+      return `
+        <div class="item-escala-nota">
+          <label>${index + 1}. ${escaparHTML(textoItemEscala(item))}
+            <input data-item-escala-nota="${index}" type="number" min="${item.min ?? 0}" max="${item.max ?? ""}" step="1" placeholder="${item.min ?? 0}-${item.max ?? ""}">
+          </label>
+          <small>${escaparHTML(item.dominio || "")}${item.max !== undefined ? ` · Maximo ${escaparHTML(item.max)}` : ""}</small>
+        </div>
+      `;
+    }
+
+    if (item.tipo === "select") {
+      const opciones = (item.opciones || []).map((texto, opcionIndex) => ({
+        texto,
+        valor: Number(item.valores?.[opcionIndex] ?? opcionIndex)
+      }));
+      return `
+        <div class="item-escala-nota">
+          <label>${index + 1}. ${escaparHTML(textoItemEscala(item))}
+            <select data-item-escala-nota="${index}">
+              <option value="">Seleccionar</option>
+              ${opciones.map((opcion) => `<option value="${opcion.valor}">${escaparHTML(opcion.texto)}</option>`).join("")}
+            </select>
+          </label>
+          <small>${escaparHTML(item.dominio || "")}</small>
+        </div>
+      `;
+    }
+
     const opciones = obtenerOpcionesItemEscala(escala, item);
     return `
       <div class="item-escala-nota">
@@ -484,20 +539,48 @@ async function guardarEscalaDesdeNota() {
   const escala = escalaNotaActual();
   if (!escala) return;
 
-  const selects = [...document.querySelectorAll("[data-item-escala-nota]")];
-  const respuestas = selects.map((select, index) => ({
-    item: textoItemEscala(escala.items[index]),
-    valor: select.value === "" ? null : Number(select.value),
-    respuesta: select.options[select.selectedIndex]?.textContent || ""
-  }));
+  const controles = [...document.querySelectorAll("[data-item-escala-nota]")];
+  const respuestas = controles.map((control, index) => {
+    const item = escala.items[index];
+    const valor = control.value === "" ? null : Number(control.value);
+    const respuesta = control.tagName === "SELECT"
+      ? control.options[control.selectedIndex]?.textContent || ""
+      : control.value;
+
+    return {
+      item: textoItemEscala(item),
+      dominio: item?.dominio || "",
+      valor,
+      respuesta
+    };
+  });
 
   if (respuestas.some((respuesta) => respuesta.valor === null)) {
     alert("Responde todos los reactivos de la escala.");
     return;
   }
 
-  const puntaje = calcularPuntajeEscala(respuestas);
-  const interpretacion = interpretarEscala(escala, puntaje);
+  const esCognitiva = escala.tipoEscala === "cognitiva";
+  const fueraDeRango = respuestas.some((respuesta, index) => {
+    const item = escala.items[index] || {};
+    if (item.tipo !== "numero") return false;
+    if (item.min !== undefined && respuesta.valor < item.min) return true;
+    if (item.max !== undefined && respuesta.valor > item.max) return true;
+    return false;
+  });
+
+  if (fueraDeRango) {
+    alert("Revisa los puntajes: hay valores fuera del rango permitido para la escala.");
+    return;
+  }
+
+  const puntaje = esCognitiva
+    ? calcularPuntajeEscalaCognitiva(escala, respuestas)
+    : calcularPuntajeEscala(respuestas);
+  const interpretacion = esCognitiva
+    ? interpretarEscalaCognitiva(escala, puntaje, respuestas)
+    : interpretarEscala(escala, puntaje);
+  const puntajesPorDominio = esCognitiva ? obtenerPuntajesDominioCognitivo(respuestas) : {};
   const usuario = auth.currentUser;
   const medicoActual = usuario ? await obtenerUsuario(usuario.uid) : null;
   const pacienteActual = await obtenerUsuario(uidPaciente);
@@ -509,21 +592,30 @@ async function guardarEscalaDesdeNota() {
     idEscalaAplicada,
     escalaId: escala.id,
     uidMedico: usuario?.uid || "",
+    uidProfesional: usuario?.uid || "",
+    rolProfesional: medicoActual?.rol || "",
     nombrePaciente: pacienteActual?.nombre || "",
     nombreEscala: escala.nombre,
-    tipoEscala: escala.area,
+    tipoEscala: esCognitiva ? "cognitiva" : escala.area,
     fechaAplicacion,
     origen: "nota_clinica",
     puntajeTotal: puntaje,
+    puntajeMaximo: escala.puntajeMaximo ?? "",
+    dominiosEvaluados: escala.dominiosEvaluados || [],
+    puntajesPorDominio,
     rango: escala.rango,
     interpretacion,
     respuestasPorItem: respuestas,
     observaciones,
+    observacionesClinicas: observaciones,
     observacionesOpcionales: observaciones,
+    recomendaciones: esCognitiva ? generarRecomendacionesCognitivas(puntajesPorDominio, escala) : "",
     idNota: notaEditandoId || "",
     medicoNombre: medicoActual?.nombre || usuario?.email || "",
     aplicadoPorMedico: true,
     visiblePaciente: false,
+    visibilidadPaciente: false,
+    visibleDesdePaciente: false,
   });
 
   if (!notaEditandoId) {
@@ -535,6 +627,7 @@ async function guardarEscalaDesdeNota() {
     nombreEscala: escala.nombre,
     fechaAplicacion,
     puntajeTotal: puntaje,
+    puntajeMaximo: escala.puntajeMaximo ?? "",
     interpretacion,
     observaciones
   }), idEscalaAplicada);
@@ -561,6 +654,30 @@ async function guardarEscalaDesdeNota() {
   renderizarEscalaNotaSeleccionada();
   const observacionesCampo = document.getElementById("observacionesEscalaNota");
   if (observacionesCampo) observacionesCampo.value = "";
+}
+
+function generarRecomendacionesCognitivas(puntajesPorDominio = {}, escala = {}) {
+  const respuestas = [];
+  const dominios = Object.keys(puntajesPorDominio);
+
+  if (dominios.some((dominio) => /atencion/i.test(dominio))) {
+    respuestas.push("Considerar ejercicios de atencion sostenida/selectiva y velocidad de respuesta.");
+  }
+  if (dominios.some((dominio) => /memoria|recuerdo/i.test(dominio))) {
+    respuestas.push("Considerar ejercicios de memoria de trabajo, aprendizaje verbal y evocacion.");
+  }
+  if (dominios.some((dominio) => /ejecutiv|flexibilidad|inhib/i.test(dominio))) {
+    respuestas.push("Considerar tareas de planificacion, flexibilidad cognitiva e inhibicion.");
+  }
+  if (dominios.some((dominio) => /visuo|reloj|espacial/i.test(dominio))) {
+    respuestas.push("Considerar tareas visuoespaciales, copia, rutas visuales y organizacion perceptual.");
+  }
+  if (dominios.some((dominio) => /lenguaje|fluencia/i.test(dominio))) {
+    respuestas.push("Considerar ejercicios de fluidez verbal, denominacion y acceso lexico.");
+  }
+
+  respuestas.push(`Recomendacion orientativa basada en ${escala.nombre || "tamizaje cognitivo"}; integrar con entrevista y valoracion clinica.`);
+  return respuestas.join(" ");
 }
 
 function insertarResumenEscalaEnNota(resumen, idEscalaAplicada = "") {
@@ -649,22 +766,28 @@ function renderizarEscalasPreviasNota() {
 
 function renderizarTarjetaEscalaPreviaNota(escala) {
   const respuestas = (escala.respuestasPorItem || []).map((respuesta) => `
-    <li><strong>${escaparHTML(respuesta.item || "")}</strong><span>${escaparHTML(respuesta.respuesta || "")} (${respuesta.valor ?? ""})</span></li>
+    <li><strong>${escaparHTML(respuesta.item || "")}</strong><span>${escaparHTML(respuesta.respuesta || "")} (${respuesta.valor ?? ""}) ${respuesta.dominio ? `· ${escaparHTML(respuesta.dominio)}` : ""}</span></li>
   `).join("");
+  const puntajesDominio = escala.puntajesPorDominio && Object.keys(escala.puntajesPorDominio).length
+    ? `<p><strong>Puntajes por dominio:</strong> ${escaparHTML(Object.entries(escala.puntajesPorDominio).map(([dominio, valor]) => `${dominio}: ${valor}`).join(" · "))}</p>`
+    : "";
+  const maximo = escala.puntajeMaximo ? `/${escaparHTML(escala.puntajeMaximo)}` : "";
 
   return `
     <details class="escala-previa-card">
       <summary>
         <span>${escaparHTML(formatearFechaEscala(escala.fechaAplicacion))}</span>
         <strong>${escaparHTML(escala.nombreEscala)}</strong>
-        <em>${escaparHTML(String(escala.puntajeTotal))} - ${escaparHTML(escala.interpretacion || "")}</em>
+        <em>${escaparHTML(String(escala.puntajeTotal))}${maximo} - ${escaparHTML(escala.interpretacion || "")}</em>
       </summary>
       <div class="escala-previa-detalle">
         <p><strong>Origen:</strong> ${escaparHTML(escala.origen || "")}</p>
         <p><strong>Medico:</strong> ${escaparHTML(escala.medicoNombre || escala.uidMedico || "Sin registro")}</p>
         <p><strong>Fecha y hora:</strong> ${escaparHTML(formatearFechaEscala(escala.fechaAplicacion, true))}</p>
+        ${puntajesDominio}
         <ul>${respuestas || "<li>Sin respuestas registradas.</li>"}</ul>
         <p><strong>Observaciones:</strong> ${escaparHTML(escala.observaciones || "Sin observaciones")}</p>
+        ${escala.recomendaciones ? `<p><strong>Recomendaciones:</strong> ${escaparHTML(escala.recomendaciones)}</p>` : ""}
         <div class="acciones-escala-previa">
           <button type="button" data-copiar-escala-previa="${escaparHTML(escala.idEscalaAplicada)}">Copiar resumen</button>
           <button type="button" data-insertar-escala-previa="${escaparHTML(escala.idEscalaAplicada)}">Insertar en nota</button>

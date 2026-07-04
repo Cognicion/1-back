@@ -1,0 +1,59 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Foro | Cognicion</title>
+  <link rel="icon" type="image/png" href="assets/favicon-cognicion.png">
+  <link rel="stylesheet" href="css/theme.css">
+  <link rel="stylesheet" href="css/foro.css">
+  <link rel="stylesheet" href="css/reportes.css">
+</head>
+<body>
+  <header class="foro-header">
+    <div class="foro-brand">
+      <img src="assets/favicon-cognicion.png" alt="Cognicion">
+      <div>
+        <h1>Foro Cognicion</h1>
+        <p>Comunicacion clinica y comunitaria organizada por rol.</p>
+      </div>
+    </div>
+    <button type="button" onclick="window.location.href='dashboard.html'">Volver al Dashboard</button>
+  </header>
+
+  <main class="foro-shell">
+    <section class="foro-hero">
+      <span>Comunidad Cognicion</span>
+      <h2>Espacios de comunicacion</h2>
+      <p>Comparte avisos, dudas generales y seguimiento entre usuarios. Evita publicar datos sensibles innecesarios.</p>
+    </section>
+
+    <section id="selectorForos" class="foro-tabs" aria-label="Salas de foro"></section>
+
+    <section class="foro-panel">
+      <div class="foro-panel-header">
+        <div>
+          <span id="foroSalaBadge">Sala</span>
+          <h2 id="foroSalaTitulo">Cargando...</h2>
+          <p id="foroSalaDescripcion">Selecciona una sala.</p>
+        </div>
+      </div>
+
+      <form id="formForoMensaje" class="foro-form">
+        <label>Titulo
+          <input id="foroTituloMensaje" placeholder="Ej. Duda sobre seguimiento">
+        </label>
+        <label>Mensaje
+          <textarea id="foroTextoMensaje" placeholder="Escribe tu mensaje. No compartas informacion sensible si no es necesario."></textarea>
+        </label>
+        <button type="submit">Publicar</button>
+      </form>
+
+      <div id="listaMensajesForo" class="foro-lista">Cargando mensajes...</div>
+    </section>
+  </main>
+
+  <script type="module" src="js/foro.js"></script>
+  <script type="module" src="js/reportes.js"></script>
+</body>
+</html>

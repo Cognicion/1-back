@@ -1219,3 +1219,21 @@ textarea{
     flex-direction:column;
   }
 }
+
+.resultado-visibilidad {
+  justify-self: end;
+  width: fit-content;
+  margin-top: 8px;
+}
+
+.badge-visibilidad {
+  display: inline-flex;
+  width: fit-content;
+  padding: 6px 10px;
+  border: 1px solid rgba(125, 211, 252, 0.22);
+  border-radius: 999px;
+  color: #bae6fd;
+  background: rgba(8, 47, 73, 0.32);
+  font-size: 0.78rem;
+  font-weight: 800;
+}

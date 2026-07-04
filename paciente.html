@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
@@ -83,6 +83,7 @@
       <button onclick="mostrarIndicaciones()">Indicaciones</button>
       <button onclick="mostrarReceta()">Receta</button>
       <button onclick="mostrarResultadosEscalas()">Escalas</button>
+      <button onclick="mostrarRehabilitacionCognitivaPaciente()">Rehabilitación cognitiva</button>
       <button onclick="previsualizarMiSalud()">Ver Mi Salud</button>
       <button onclick="mostrarPermisos()">Permisos</button>
     </div>
@@ -429,6 +430,31 @@
       </div>
     </section>
 
+    <section id="seccionRehabilitacionCognitivaPaciente" style="display:none;">
+      <div class="tarjeta">
+        <div class="panel-header">
+          <div>
+            <h2>Rehabilitación cognitiva</h2>
+            <p class="texto-suave">Perfil cognitivo, tamizajes aplicados y actividades orientativas para seguimiento clínico.</p>
+          </div>
+          <button type="button" class="boton-secundario" onclick="abrirNota()">Aplicar escala cognitiva</button>
+        </div>
+        <div id="perfilCognitivoPaciente" class="panel-lista">Cargando perfil cognitivo...</div>
+      </div>
+
+      <div class="panel-doble">
+        <div class="tarjeta">
+          <h2>Historial cognitivo</h2>
+          <div id="historialCognitivoPaciente" class="resultados-escalas">Cargando resultados...</div>
+        </div>
+        <div class="tarjeta">
+          <h2>Actividades recomendadas</h2>
+          <p class="texto-suave">Recomendaciones orientativas segun dominios evaluados. No sustituyen valoracion neuropsicologica.</p>
+          <div id="recomendacionesCognitivasPaciente" class="panel-lista">Cargando recomendaciones...</div>
+        </div>
+      </div>
+    </section>
+
     <section id="seccionNotasFlotantes" style="display:none;">
       <div class="tarjeta">
         <h2>Notas flotantes del paciente</h2>
@@ -723,7 +749,7 @@
           <textarea id="tratamientoObservaciones" placeholder="Respuesta, tolerancia, indicaciones y comentarios clinicos."></textarea>
         </label>
         <div class="form-actions">
-          <button id="abrirMedicamentoManual" type="button" class="boton-secundario">Añadir medicamento al catálogo</button>
+          <button id="abrirMedicamentoManual" type="button" class="boton-secundario">AÃ±adir medicamento al catÃ¡logo</button>
           <button id="guardarTratamiento" type="button">Guardar tratamiento</button>
         </div>
       </div>
@@ -935,24 +961,24 @@
   <div class="panel-ingreso panel-medicamento-manual" role="dialog" aria-modal="true" aria-labelledby="tituloMedicamentoManual">
     <div class="panel-ingreso-header">
       <div>
-        <p>Catálogo farmacológico</p>
-        <h3 id="tituloMedicamentoManual">Añadir medicamento manual</h3>
+        <p>CatÃ¡logo farmacolÃ³gico</p>
+        <h3 id="tituloMedicamentoManual">AÃ±adir medicamento manual</h3>
       </div>
-      <button id="cerrarMedicamentoManual" type="button" aria-label="Cerrar">×</button>
+      <button id="cerrarMedicamentoManual" type="button" aria-label="Cerrar">Ã—</button>
     </div>
 
     <div class="form-grid">
       <label>Medicamento<input id="medicamentoManualNombre" placeholder="Ej. Sertralina"></label>
-      <label>Presentación<input id="medicamentoManualPresentacion" placeholder="Ej. tabletas de 50 mg"></label>
+      <label>PresentaciÃ³n<input id="medicamentoManualPresentacion" placeholder="Ej. tabletas de 50 mg"></label>
       <label>Clase<input id="medicamentoManualClase" placeholder="Ej. ISRS"></label>
       <label>Dosis habitual<input id="medicamentoManualDosisHabitual" placeholder="Ej. 50-200 mg/dia"></label>
     </div>
-    <label>Notas clínicas
+    <label>Notas clÃ­nicas
       <textarea id="medicamentoManualNotas" placeholder="Indicaciones, vigilancia o comentarios breves."></textarea>
     </label>
 
     <div class="panel-ingreso-actions">
-      <button id="guardarMedicamentoManual" type="button">Guardar en catálogo</button>
+      <button id="guardarMedicamentoManual" type="button">Guardar en catÃ¡logo</button>
       <button id="cancelarMedicamentoManual" type="button" class="boton-secundario">Cancelar</button>
     </div>
   </div>
@@ -965,7 +991,7 @@
         <p>Fecha de ingreso</p>
         <h3 id="tituloIngresoPaciente">Seleccionar ingreso</h3>
       </div>
-      <button type="button" id="cerrarIngresoPaciente" aria-label="Cerrar selector">×</button>
+      <button type="button" id="cerrarIngresoPaciente" aria-label="Cerrar selector">Ã—</button>
     </div>
 
     <label>Dia
@@ -990,3 +1016,6 @@
   <script type="module" src="js/reportes.js"></script>
 </body>
 </html>
+
+
+

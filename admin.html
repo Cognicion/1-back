@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
@@ -140,6 +140,41 @@
     </div>
   </section>
 
+  <section class="card tabla-card" id="seccionAvisosAdmin">
+    <div class="tabla-header">
+      <div>
+        <h2>Avisos y notificaciones globales</h2>
+        <p>Publica comunicados visibles en el Dashboard segun el tipo de usuario.</p>
+      </div>
+      <button id="btnActualizarAvisosAdmin" type="button">Actualizar avisos</button>
+    </div>
+
+    <div class="form-admin-grid">
+      <label>Titulo
+        <input id="avisoAdminTitulo" placeholder="Ej. Mantenimiento programado">
+      </label>
+      <label>Visible para
+        <select id="avisoAdminDestino">
+          <option value="todos">Todos los usuarios</option>
+          <option value="paciente">Pacientes</option>
+          <option value="medico">Medicos</option>
+          <option value="psicologo">Psicologos</option>
+          <option value="personal_salud">Medicos, psicologos y admin</option>
+          <option value="admin">Admin</option>
+        </select>
+      </label>
+    </div>
+    <label class="campo-admin-amplio">Mensaje
+      <textarea id="avisoAdminMensaje" placeholder="Escribe el aviso que se mostrara en el Dashboard."></textarea>
+    </label>
+    <div class="acciones-admin-inline">
+      <button id="btnPublicarAvisoAdmin" type="button">Publicar aviso</button>
+    </div>
+
+    <div id="listaAvisosAdmin" class="lista-reportes-admin">
+      <p>Cargando avisos...</p>
+    </div>
+  </section>
   <section class="card tabla-card">
     <div class="tabla-header">
       <div>
@@ -227,3 +262,4 @@
   <script type="module" src="js/reportes.js"></script>
 </body>
 </html>
+

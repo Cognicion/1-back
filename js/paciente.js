@@ -1,5 +1,6 @@
 ﻿import { auth, db } from "./firebase.js";
 import { ESCALAS_PSIQUIATRICAS } from "./data/escalasPsiquiatricas.js";
+import { ESCALAS_COGNITIVAS } from "./data/escalasCognitivas.js";
 import {
   crearResumenEscala,
   formatearFechaEscala,
@@ -886,6 +887,7 @@ function ocultarSecciones() {
     "seccionResumen",
     "seccionPermisos",
     "seccionResultadosEscalas",
+    "seccionRehabilitacionCognitivaPaciente",
     "seccionTratamiento",
     "seccionDiagnosticos",
     "seccionCarpetas",
@@ -1374,6 +1376,7 @@ async function cargarResultadosEscalasPaciente() {
     }
 
     contenedor.innerHTML = escalas.map((r) => renderizarEscalaHistorialPaciente(r)).join("");
+    enlazarControlesHistorialEscalas(contenedor, escalas);
     contenedor.querySelectorAll("[data-copiar-resumen-escala]").forEach((boton) => {
       boton.addEventListener("click", async () => {
         const escala = escalas.find((item) => item.idEscalaAplicada === boton.dataset.copiarResumenEscala);
@@ -1389,12 +1392,24 @@ async function cargarResultadosEscalasPaciente() {
 }
 
 function renderizarEscalaHistorialPaciente(escala) {
+  const maximo = escala.puntajeMaximo ? ` / ${escaparHTML(escala.puntajeMaximo)}` : escala.rango ? ` / ${escaparHTML(escala.rango)}` : "";
   const respuestas = (escala.respuestasPorItem || []).map((respuesta) => `
     <li>
       <strong>${escaparHTML(respuesta.item || "")}</strong>
-      <span>${escaparHTML(respuesta.respuesta || "")} (${respuesta.valor ?? ""})</span>
+      <span>${escaparHTML(respuesta.respuesta || "")} (${respuesta.valor ?? ""})${respuesta.dominio ? ` - ${escaparHTML(respuesta.dominio)}` : ""}</span>
     </li>
   `).join("");
+  const dominios = escala.puntajesPorDominio && Object.keys(escala.puntajesPorDominio).length
+    ? `<p><strong>Puntajes por dominio:</strong> ${escaparHTML(Object.entries(escala.puntajesPorDominio).map(([dominio, valor]) => `${dominio}: ${valor}`).join("; "))}</p>`
+    : "";
+  const puedeCambiarVisibilidad = ["medico", "psicologo", "admin"].includes(rolUsuarioActual);
+  const visible = escala.visibilidadPaciente === true || escala.visibleDesdePaciente === true;
+  const controlVisibilidad = puedeCambiarVisibilidad ? `
+    <label class="switch-linea resultado-visibilidad">
+      <input type="checkbox" data-visible-resultado-escala="${escaparHTML(escala.idEscalaAplicada)}" ${visible ? "checked" : ""}>
+      Visible para paciente
+    </label>
+  ` : `<span class="badge-visibilidad">${visible ? "Visible para paciente" : "Oculta para paciente"}</span>`;
 
   return `
     <details class="resultado-escala-card resultado-escala-collapsible">
@@ -1403,13 +1418,16 @@ function renderizarEscalaHistorialPaciente(escala) {
           <strong>${escaparHTML(escala.nombreEscala || "Escala")}</strong>
           <span>${escaparHTML(escala.tipoEscala || "")} - ${escaparHTML(formatearFechaEscala(escala.fechaAplicacion))} - ${escaparHTML(escala.origen || "")}</span>
         </div>
-        <div class="resultado-puntaje">${escaparHTML(String(escala.puntajeTotal ?? ""))} / ${escaparHTML(escala.rango || "")}</div>
+        <div class="resultado-puntaje">${escaparHTML(String(escala.puntajeTotal ?? ""))}${maximo}</div>
         <p>${escaparHTML(escala.interpretacion || "Sin interpretacion")}</p>
+        ${controlVisibilidad}
       </summary>
       <div class="resultado-escala-detalle">
-        <p><strong>Medico aplicador:</strong> ${escaparHTML(escala.medicoNombre || escala.uidMedico || "Sin registro")}</p>
+        <p><strong>Profesional aplicador:</strong> ${escaparHTML(escala.medicoNombre || escala.uidProfesional || escala.uidMedico || "Sin registro")}</p>
         <p><strong>Fecha y hora:</strong> ${escaparHTML(formatearFechaEscala(escala.fechaAplicacion, true))}</p>
-        <p><strong>Observaciones:</strong> ${escaparHTML(escala.observaciones || "Sin observaciones")}</p>
+        <p><strong>Observaciones:</strong> ${escaparHTML(escala.observacionesClinicas || escala.observaciones || "Sin observaciones")}</p>
+        ${dominios}
+        ${escala.recomendaciones ? `<p><strong>Recomendaciones:</strong> ${escaparHTML(escala.recomendaciones)}</p>` : ""}
         <ul>${respuestas || "<li>Sin respuestas registradas.</li>"}</ul>
         <div class="resultado-escala-acciones">
           <button type="button" data-copiar-resumen-escala="${escaparHTML(escala.idEscalaAplicada)}">Copiar resumen clinico</button>
@@ -1420,6 +1438,140 @@ function renderizarEscalaHistorialPaciente(escala) {
   `;
 }
 
+function enlazarControlesHistorialEscalas(contenedor, escalas) {
+  contenedor.querySelectorAll("[data-visible-resultado-escala]").forEach((control) => {
+    control.addEventListener("change", async () => {
+      const escala = escalas.find((item) => item.idEscalaAplicada === control.dataset.visibleResultadoEscala);
+      await actualizarVisibilidadResultadoEscala(control.dataset.visibleResultadoEscala, control.checked, escala);
+    });
+  });
+}
+
+async function actualizarVisibilidadResultadoEscala(idEscalaAplicada, visible, escala = {}) {
+  if (!idEscalaAplicada) return;
+  const datos = {
+    visibilidadPaciente: visible,
+    visibleDesdePaciente: visible,
+    actualizadoPor: auth.currentUser?.uid || "",
+    updatedAt: serverTimestamp()
+  };
+
+  await setDoc(doc(db, "usuarios", uidPaciente, "escalasAplicadas", idEscalaAplicada), datos, { merge: true });
+  await setDoc(doc(db, "usuarios", uidPaciente, "resultadosEscalas", idEscalaAplicada), datos, { merge: true });
+
+  await registrarAccionExpediente({
+    accion: visible ? "hacer_visible_resultado_escala" : "ocultar_resultado_escala",
+    descripcion: visible
+      ? "El profesional hizo visible un resultado de escala para el paciente."
+      : "El profesional oculto un resultado de escala para el paciente.",
+    detalles: {
+      idEscalaAplicada,
+      nombreEscala: escala?.nombreEscala || ""
+    }
+  });
+}
+window.mostrarRehabilitacionCognitivaPaciente = async function() {
+  ocultarSecciones();
+  const seccion = document.getElementById("seccionRehabilitacionCognitivaPaciente");
+  if (seccion) seccion.style.display = "block";
+  await cargarRehabilitacionCognitivaPaciente();
+};
+
+async function cargarRehabilitacionCognitivaPaciente() {
+  const perfil = document.getElementById("perfilCognitivoPaciente");
+  const historial = document.getElementById("historialCognitivoPaciente");
+  const recomendaciones = document.getElementById("recomendacionesCognitivasPaciente");
+  if (perfil) perfil.textContent = "Cargando perfil cognitivo...";
+  if (historial) historial.textContent = "Cargando resultados...";
+  if (recomendaciones) recomendaciones.textContent = "Cargando recomendaciones...";
+
+  try {
+    const escalas = await listarEscalasAplicadas(uidPaciente, 120);
+    const cognitivas = escalas.filter((escala) => String(escala.tipoEscala || "").toLowerCase() === "cognitiva");
+
+    if (!cognitivas.length) {
+      if (perfil) perfil.innerHTML = `<p>No hay tamizajes cognitivos aplicados todavía.</p>`;
+      if (historial) historial.innerHTML = `<p>Aplica una escala cognitiva desde nota clínica o desde el módulo de rehabilitación cognitiva.</p>`;
+      if (recomendaciones) recomendaciones.innerHTML = renderizarRecomendacionesCognitivas([]);
+      return;
+    }
+
+    const ultima = cognitivas[0];
+    const dominios = consolidarDominiosCognitivos(cognitivas);
+
+    if (perfil) {
+      perfil.innerHTML = `
+        <article class="registro-card">
+          <div class="registro-top">
+            <div>
+              <strong>${escaparHTML(cognitivas.length)} tamizaje(s) cognitivo(s)</strong>
+              <span>Ultima aplicacion: ${escaparHTML(formatearFechaEscala(ultima.fechaAplicacion, true))}</span>
+            </div>
+            <span class="badge-visibilidad">${escaparHTML(ultima.nombreEscala || "Escala")}</span>
+          </div>
+          <p>${escaparHTML(ultima.interpretacion || "Sin interpretacion registrada")}</p>
+          <p><strong>Dominios registrados:</strong> ${escaparHTML(dominios.map((item) => item.dominio).join(", ") || "Sin dominios capturados")}</p>
+        </article>
+      `;
+    }
+
+    if (historial) {
+      historial.innerHTML = cognitivas.map((escala) => renderizarEscalaHistorialPaciente(escala)).join("");
+      enlazarControlesHistorialEscalas(historial, cognitivas);
+      historial.querySelectorAll("[data-copiar-resumen-escala]").forEach((boton) => {
+        boton.addEventListener("click", async () => {
+          const escala = cognitivas.find((item) => item.idEscalaAplicada === boton.dataset.copiarResumenEscala);
+          if (!escala) return;
+          await navigator.clipboard?.writeText(crearResumenEscala(escala));
+          alert("Resumen de escala copiado.");
+        });
+      });
+    }
+
+    if (recomendaciones) recomendaciones.innerHTML = renderizarRecomendacionesCognitivas(dominios);
+  } catch (error) {
+    console.error("Error al cargar rehabilitacion cognitiva del paciente:", error);
+    if (perfil) perfil.textContent = "No se pudo cargar el perfil cognitivo.";
+    if (historial) historial.textContent = "No se pudo cargar el historial cognitivo.";
+    if (recomendaciones) recomendaciones.textContent = "No se pudieron cargar recomendaciones.";
+  }
+}
+
+function consolidarDominiosCognitivos(escalas = []) {
+  const conteo = new Map();
+  escalas.forEach((escala) => {
+    const dominios = escala.puntajesPorDominio || {};
+    Object.entries(dominios).forEach(([dominio, valor]) => {
+      const actual = conteo.get(dominio) || { dominio, aplicaciones: 0, puntaje: 0 };
+      actual.aplicaciones += 1;
+      actual.puntaje += Number(valor || 0);
+      conteo.set(dominio, actual);
+    });
+    (escala.dominiosEvaluados || []).forEach((dominio) => {
+      if (!conteo.has(dominio)) conteo.set(dominio, { dominio, aplicaciones: 1, puntaje: 0 });
+    });
+  });
+  return Array.from(conteo.values()).sort((a, b) => b.aplicaciones - a.aplicaciones || a.dominio.localeCompare(b.dominio));
+}
+
+function renderizarRecomendacionesCognitivas(dominios = []) {
+  const mapa = {
+    "Atencion": "Ejercicios de atencion sostenida/selectiva, busqueda visual y Go/No-Go.",
+    "Memoria": "Ejercicios de evocacion, aprendizaje verbal, memoria visual y memoria de trabajo.",
+    "Funciones ejecutivas": "Planificacion, flexibilidad cognitiva, inhibicion y tareas tipo Stroop/Trail Making.",
+    "Lenguaje": "Fluidez verbal, denominacion supervisada y ejercicios de acceso lexico.",
+    "Velocidad de procesamiento": "Tareas breves cronometradas con registro de precision y tiempo de reaccion.",
+    "Visuoespacial": "Copia de figuras, reloj, rutas visuales y memoria espacial tipo Corsi.",
+    "Cognicion social": "Reconocimiento emocional y ejercicios de interpretacion de claves sociales."
+  };
+  const claves = dominios.length ? dominios.map((item) => item.dominio) : ["Atencion", "Memoria", "Funciones ejecutivas"];
+  return claves.slice(0, 6).map((dominio) => `
+    <article class="registro-card">
+      <strong>${escaparHTML(dominio)}</strong>
+      <p>${escaparHTML(mapa[dominio] || "Seleccionar actividades de rehabilitacion segun entrevista clinica y desempeño observado.")}</p>
+    </article>
+  `).join("");
+}
 async function cargarEscalasAsignablesPaciente() {
   const contenedor = document.getElementById("listaEscalasAsignables");
   if (!contenedor) return;
@@ -1429,7 +1581,12 @@ async function cargarEscalasAsignablesPaciente() {
     const snap = await getDocs(collection(db, "usuarios", uidPaciente, "escalasAsignadas"));
     escalasAsignadasCache = new Map(snap.docs.map((docEscala) => [docEscala.id, docEscala.data()]));
 
-    contenedor.innerHTML = ESCALAS_PSIQUIATRICAS.map((escala) => {
+    const escalasAsignables = [
+      ...ESCALAS_PSIQUIATRICAS.map((escala) => ({ ...escala, tipoAsignable: "psiquiatrica" })),
+      ...ESCALAS_COGNITIVAS.map((escala) => ({ ...escala, area: "Cognitiva", descripcion: escala.descripcion, tipoAsignable: "cognitiva" }))
+    ];
+
+    contenedor.innerHTML = escalasAsignables.map((escala) => {
       const asignada = escalasAsignadasCache.get(escala.id);
       const visible = asignada?.visiblePaciente === true;
       return `
@@ -1460,7 +1617,10 @@ async function cargarEscalasAsignablesPaciente() {
 
 async function actualizarVisibilidadEscala(control) {
   const escalaId = control.dataset.escalaVisible;
-  const escala = ESCALAS_PSIQUIATRICAS.find((item) => item.id === escalaId);
+  const escala = [
+    ...ESCALAS_PSIQUIATRICAS,
+    ...ESCALAS_COGNITIVAS.map((item) => ({ ...item, area: "Cognitiva" }))
+  ].find((item) => item.id === escalaId);
   if (!escala) return;
 
   const visiblePaciente = control.checked;
@@ -4615,4 +4775,7 @@ async function registrarAccionExpediente({ accion, descripcion, detalles = {} })
     detalles
   });
 }
+
+
+
 
