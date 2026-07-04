@@ -647,3 +647,78 @@ select:disabled {
     grid-template-columns: 1fr;
   }
 }
+
+.admin-section-nav {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 20px 0;
+  padding: 12px;
+  border: 1px solid rgba(125, 211, 252, 0.16);
+  border-radius: 20px;
+  background: rgba(2, 8, 23, 0.78);
+  backdrop-filter: blur(18px);
+}
+
+.admin-section-nav button {
+  width: auto;
+  border: 1px solid rgba(125, 211, 252, 0.18);
+  border-radius: 999px;
+  padding: 10px 14px;
+  color: #cbd5e1;
+  background: rgba(15, 23, 42, 0.64);
+}
+
+.admin-section-nav button.activo,
+.admin-section-nav button:hover {
+  color: #02111f;
+  border-color: rgba(125, 211, 252, 0.66);
+  background: linear-gradient(135deg, #38bdf8, #60a5fa);
+  box-shadow: 0 14px 34px rgba(14, 165, 233, 0.18);
+}
+
+.admin-section {
+  animation: adminSectionIn 0.24s ease both;
+}
+
+@keyframes adminSectionIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.usuario-reciente-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 14px 16px;
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  border-radius: 16px;
+  background: rgba(15, 23, 42, 0.58);
+}
+
+.usuario-reciente-card strong,
+.usuario-reciente-card span,
+.usuario-reciente-card small {
+  display: block;
+}
+
+.usuario-reciente-card span {
+  margin-top: 4px;
+  color: #94a3b8;
+}
+
+.usuario-reciente-card small {
+  color: #7dd3fc;
+  white-space: nowrap;
+}
+
+@media (max-width: 760px) {
+  .usuario-reciente-card {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}

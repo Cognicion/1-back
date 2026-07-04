@@ -109,12 +109,30 @@ function escaparHTML(valor) {
     .replace(/'/g, "&#039;");
 }
 
-function avisoVisibleParaRol(aviso = {}, rol = "") {
-  const destino = aviso.destinatarioRol || aviso.rolDestino || "todos";
-  return destino === "todos" || destino === rol || (destino === "personal_salud" && ["medico", "psicologo", "admin"].includes(rol));
+function avisoVisibleParaUsuario(aviso = {}, rol = "", uid = "") {
+  const tipo = aviso.destinatarioTipo || aviso.destinatarioRol || aviso.rolDestino || "todos";
+  if (tipo === "usuario" || aviso.destinatarioRol === "usuario") {
+    return aviso.destinatarioUid === uid;
+  }
+  if (tipo === "todos") return true;
+  if (tipo === "personal_salud") return ["medico", "psicologo"].includes(rol) || rol === "admin";
+  return tipo === rol;
 }
 
-async function cargarAvisosDashboard(rolUsuario) {
+function textoDestinatarioAvisoDashboard(aviso = {}) {
+  if (aviso.destinatarioTipo === "usuario" || aviso.destinatarioRol === "usuario") return "personal";
+  const destino = aviso.destinatarioTipo || aviso.destinatarioRol || "todos";
+  const mapa = {
+    todos: "todos",
+    paciente: "pacientes",
+    medico: "medicos",
+    psicologo: "psicologos",
+    personal_salud: "medicos y psicologos"
+  };
+  return mapa[destino] || destino;
+}
+
+async function cargarAvisosDashboard(rolUsuario, uidUsuario) {
   const contenedor = document.getElementById("listaAvisosDashboard");
   if (!contenedor) return;
   contenedor.innerHTML = "<p>Cargando avisos...</p>";
@@ -124,7 +142,7 @@ async function cargarAvisosDashboard(rolUsuario) {
     const snap = await getDocs(qAvisos);
     const avisos = snap.docs
       .map((docAviso) => ({ id: docAviso.id, ...docAviso.data() }))
-      .filter((aviso) => aviso.activo !== false && avisoVisibleParaRol(aviso, rolUsuario))
+      .filter((aviso) => aviso.activo !== false && avisoVisibleParaUsuario(aviso, rolUsuario, uidUsuario))
       .slice(0, 6);
 
     if (!avisos.length) {
@@ -136,7 +154,7 @@ async function cargarAvisosDashboard(rolUsuario) {
       <article class="aviso-dashboard-item">
         <strong>${escaparHTML(aviso.titulo || "Aviso")}</strong>
         <p>${escaparHTML(aviso.mensaje || aviso.descripcion || "")}</p>
-        <span class="aviso-dashboard-meta">${escaparHTML(aviso.destinatarioRol || "todos")} · ${escaparHTML(aviso.creadoEn || "")}</span>
+        <span class="aviso-dashboard-meta">${escaparHTML(textoDestinatarioAvisoDashboard(aviso))} · ${escaparHTML(aviso.creadoEn || "")}</span>
       </article>
     `).join("");
   } catch (error) {
@@ -144,4 +162,5 @@ async function cargarAvisosDashboard(rolUsuario) {
     contenedor.innerHTML = `<article class="aviso-dashboard-item"><strong>Avisos no disponibles</strong><p>No se pudieron cargar los avisos por el momento.</p></article>`;
   }
 }
+
 

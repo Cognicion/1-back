@@ -95,14 +95,7 @@ onAuthStateChanged(auth, async (user) => {
 });
 
 function configurarFiltros() {
-  document.querySelectorAll("[data-scroll-admin]").forEach((boton) => {
-    boton.addEventListener("click", () => {
-      document.getElementById(boton.dataset.scrollAdmin)?.scrollIntoView({
-        behavior: "smooth",
-        block: "start"
-      });
-    });
-  });
+  configurarNavegacionCentroControl();
 
   ["filtroAuditoria", "filtroRol", "filtroModulo", "filtroResultado"].forEach((id) => {
     document.getElementById(id)?.addEventListener("input", renderizarAuditoria);
@@ -125,6 +118,7 @@ function configurarFiltros() {
   });
 
   document.getElementById("btnActualizarUsuariosAdmin")?.addEventListener("click", cargarUsuariosAdmin);
+  document.getElementById("btnActualizarUsuariosRecientesAdmin")?.addEventListener("click", cargarUsuariosAdmin);
 
   ["filtroPacientesAdmin", "filtroPacientesEstado"].forEach((id) => {
     document.getElementById(id)?.addEventListener("input", renderizarPacientesAdmin);
@@ -150,21 +144,33 @@ function configurarFiltros() {
 async function publicarAvisoAdmin() {
   const titulo = document.getElementById("avisoAdminTitulo")?.value.trim() || "";
   const mensaje = document.getElementById("avisoAdminMensaje")?.value.trim() || "";
-  const destinatarioRol = document.getElementById("avisoAdminDestino")?.value || "todos";
+  const destinatarioTipo = document.getElementById("avisoAdminDestino")?.value || "todos";
+  const destinatarioUid = document.getElementById("avisoAdminUsuario")?.value || "";
+  const usuarioDestino = usuariosAdmin.find((usuario) => usuario.id === destinatarioUid);
 
   if (!titulo || !mensaje) {
     alert("Escribe titulo y mensaje del aviso.");
     return;
   }
 
+  if (destinatarioTipo === "usuario" && !usuarioDestino) {
+    alert("Selecciona el usuario destinatario.");
+    return;
+  }
+
   const idAviso = `aviso_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
   const ahora = new Date().toISOString();
+  const destinatarioRol = destinatarioTipo === "usuario" ? "usuario" : destinatarioTipo;
 
   await setDoc(doc(db, "avisosGlobales", idAviso), {
     idAviso,
     titulo,
     mensaje,
+    destinatarioTipo,
     destinatarioRol,
+    destinatarioUid: destinatarioTipo === "usuario" ? destinatarioUid : "",
+    destinatarioNombre: destinatarioTipo === "usuario" ? (usuarioDestino.nombre || usuarioDestino.email || destinatarioUid) : "",
+    destinatarioRolUsuario: destinatarioTipo === "usuario" ? (usuarioDestino.rol || "") : "",
     activo: true,
     creadoPorUid: adminActual?.uid || "",
     creadoPorEmail: adminActual?.email || "",
@@ -176,7 +182,7 @@ async function publicarAvisoAdmin() {
   document.getElementById("avisoAdminMensaje").value = "";
 
   await registrarAuditoriaAdmin("publicar_aviso_global", "El administrador publico un aviso global.", {
-    detalles: { idAviso, destinatarioRol, titulo }
+    detalles: { idAviso, destinatarioRol, destinatarioTipo, destinatarioUid, titulo }
   });
   await cargarAvisosAdmin();
 }
@@ -196,6 +202,21 @@ async function cargarAvisosAdmin() {
   }
 }
 
+function textoDestinatarioAviso(aviso = {}) {
+  if (aviso.destinatarioTipo === "usuario" || aviso.destinatarioRol === "usuario") {
+    return `Usuario: ${aviso.destinatarioNombre || aviso.destinatarioUid || "sin seleccionar"}`;
+  }
+  const mapa = {
+    todos: "Todos los usuarios",
+    paciente: "Todos los pacientes",
+    medico: "Todos los medicos",
+    psicologo: "Todos los psicologos",
+    personal_salud: "Todos los medicos y psicologos",
+    admin: "Admin"
+  };
+  return mapa[aviso.destinatarioRol || aviso.destinatarioTipo] || "Todos los usuarios";
+}
+
 function renderizarAvisosAdmin() {
   const contenedor = document.getElementById("listaAvisosAdmin");
   if (!contenedor) return;
@@ -210,7 +231,7 @@ function renderizarAvisosAdmin() {
       <div class="reporte-admin-top">
         <div>
           <strong>${escaparHTML(aviso.titulo || "Aviso")}</strong>
-          <span>${escaparHTML(aviso.destinatarioRol || "todos")} · ${escaparHTML(aviso.creadoEn || "")}</span>
+          <span>${escaparHTML(textoDestinatarioAviso(aviso))} · ${escaparHTML(aviso.creadoEn || "")}</span>
         </div>
         <span class="estado-reporte ${aviso.activo === false ? "cerrado" : "nuevo"}">${aviso.activo === false ? "Oculto" : "Activo"}</span>
       </div>
@@ -233,6 +254,27 @@ function renderizarAvisosAdmin() {
       await cargarAvisosAdmin();
     });
   });
+}
+function configurarNavegacionCentroControl() {
+  document.querySelectorAll("[data-admin-section]").forEach((boton) => {
+    boton.addEventListener("click", () => mostrarSeccionAdmin(boton.dataset.adminSection));
+  });
+  mostrarSeccionAdmin("seccionUsuariosRecientes");
+}
+
+function mostrarSeccionAdmin(idSeccion) {
+  document.querySelectorAll(".admin-section").forEach((seccion) => {
+    seccion.style.display = seccion.id === idSeccion ? "block" : "none";
+  });
+  document.querySelectorAll("[data-admin-section]").forEach((boton) => {
+    boton.classList.toggle("activo", boton.dataset.adminSection === idSeccion);
+  });
+}
+
+function actualizarCampoUsuarioAviso() {
+  const destino = document.getElementById("avisoAdminDestino")?.value || "todos";
+  const campo = document.getElementById("campoAvisoUsuarioAdmin");
+  if (campo) campo.style.display = destino === "usuario" ? "grid" : "none";
 }
 function generarCodigoAutorizacionMedico() {
   const segmentos = [];
@@ -403,8 +445,55 @@ async function cargarUsuariosAdmin() {
     .sort((a, b) => (a.nombre || a.email || "").localeCompare(b.nombre || b.email || ""));
 
   renderizarUsuariosAdmin();
+  renderizarUsuariosRecientesAdmin();
+  poblarUsuariosAvisosAdmin();
+  actualizarCampoUsuarioAviso();
 }
 
+function fechaUsuarioRegistro(usuario = {}) {
+  const valor = usuario.creadoEn || usuario.createdAt || usuario.fechaRegistro || usuario.registradoEn || usuario.fechaCreacion || "";
+  if (valor?.toDate) return valor.toDate();
+  if (typeof valor === "object" && typeof valor.seconds === "number") return new Date(valor.seconds * 1000);
+  const fecha = valor ? new Date(valor) : null;
+  return fecha && !Number.isNaN(fecha.getTime()) ? fecha : null;
+}
+
+function textoFechaUsuarioRegistro(usuario = {}) {
+  const fecha = fechaUsuarioRegistro(usuario);
+  return fecha ? fecha.toLocaleString("es-MX", { dateStyle: "short", timeStyle: "short", hour12: false }) : "Sin fecha registrada";
+}
+
+function renderizarUsuariosRecientesAdmin() {
+  const contenedor = document.getElementById("listaUsuariosRecientesAdmin");
+  if (!contenedor) return;
+  const recientes = [...usuariosAdmin]
+    .sort((a, b) => (fechaUsuarioRegistro(b)?.getTime() || 0) - (fechaUsuarioRegistro(a)?.getTime() || 0))
+    .slice(0, 12);
+
+  if (!recientes.length) {
+    contenedor.innerHTML = "<p>No hay usuarios registrados.</p>";
+    return;
+  }
+
+  contenedor.innerHTML = recientes.map((usuario) => `
+    <article class="usuario-reciente-card">
+      <div>
+        <strong>${escaparHTML(usuario.nombre || usuario.email || "Sin nombre")}</strong>
+        <span>${escaparHTML(usuario.email || "Sin correo")} · ${escaparHTML(usuario.rol || "sin rol")}</span>
+      </div>
+      <small>${escaparHTML(textoFechaUsuarioRegistro(usuario))}</small>
+    </article>
+  `).join("");
+}
+
+function poblarUsuariosAvisosAdmin() {
+  const selector = document.getElementById("avisoAdminUsuario");
+  if (!selector) return;
+  const usuarios = [...usuariosAdmin].sort((a, b) => (a.nombre || a.email || "").localeCompare(b.nombre || b.email || ""));
+  selector.innerHTML = `<option value="">Seleccionar usuario...</option>` + usuarios.map((usuario) => `
+    <option value="${escaparHTML(usuario.id)}">${escaparHTML(usuario.nombre || usuario.email || usuario.id)} · ${escaparHTML(usuario.rol || "sin rol")}</option>
+  `).join("");
+}
 function renderizarUsuariosAdmin() {
   const contenedor = document.getElementById("listaUsuariosAdmin");
   if (!contenedor) return;
@@ -1097,4 +1186,5 @@ function escaparHTML(valor) {
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#039;");
 }
+
 

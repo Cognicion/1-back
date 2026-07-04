@@ -27,7 +27,7 @@
     <div class="card">
       <h3>Usuarios</h3>
       <p id="totalUsuarios">-</p>
-      <button type="button" class="boton-card-admin" data-scroll-admin="seccionUsuariosRegistrados">
+      <button type="button" class="boton-card-admin" data-admin-section="seccionUsuariosRegistrados">
         Ver usuarios registrados
       </button>
     </div>
@@ -58,37 +58,75 @@
     </div>
   </section>
 
-  <section class="card tabla-card">
+  <nav class="admin-section-nav" aria-label="Secciones del centro de control">
+    <button type="button" class="activo" data-admin-section="seccionUsuariosRecientes">Ultimos usuarios</button>
+    <button type="button" data-admin-section="seccionAvisosAdmin">Avisos Dashboard</button>
+    <button type="button" data-admin-section="seccionUsuariosRegistrados">Usuarios registrados</button>
+    <button type="button" data-admin-section="seccionPacientesAdmin">Pacientes y notas</button>
+    <button type="button" data-admin-section="seccionReportesAdmin">Reportes</button>
+    <button type="button" data-admin-section="seccionAuditoriaAdmin">Auditoria</button>
+    <button type="button" data-admin-section="seccionCodigosAdmin">Codigos medicos</button>
+  </nav>
+
+  <section id="seccionUsuariosRecientes" class="card tabla-card admin-section">
     <div class="tabla-header">
       <div>
-        <h2>Codigos de autorizacion medica</h2>
-        <p>Genera codigos de un solo uso para crear cuentas de medico. Cada codigo expira en 24 horas.</p>
+        <h2>Ultimos usuarios registrados</h2>
+        <p>Vista rapida de las cuentas mas recientes creadas en Cognicion.</p>
       </div>
-      <button id="btnActualizarCodigosMedico">Actualizar codigos</button>
+      <button id="btnActualizarUsuariosRecientesAdmin" type="button">Actualizar usuarios</button>
     </div>
-
-    <div class="panel-codigos-medico">
-      <div>
-        <button type="button" id="btnGenerarCodigoMedico">Generar codigo medico</button>
-        <p id="codigoMedicoGenerado" class="codigo-medico-generado">Sin codigo generado en esta sesion.</p>
-      </div>
-      <div>
-        <strong>Reglas</strong>
-        <span>Duracion maxima: 24 horas</span>
-        <span>Uso: una sola vez</span>
-      </div>
-    </div>
-
-    <div id="listaCodigosMedicoAdmin" class="lista-codigos-medico">
-      <p>Cargando codigos...</p>
+    <div id="listaUsuariosRecientesAdmin" class="lista-pacientes-admin">
+      <p>Cargando usuarios recientes...</p>
     </div>
   </section>
 
-  <section id="seccionUsuariosRegistrados" class="card tabla-card">
+  <section id="seccionAvisosAdmin" class="card tabla-card admin-section">
+    <div class="tabla-header">
+      <div>
+        <h2>Avisos y notificaciones globales</h2>
+        <p>Publica comunicados visibles en el Dashboard segun usuario o tipo de usuario.</p>
+      </div>
+      <button id="btnActualizarAvisosAdmin" type="button">Actualizar avisos</button>
+    </div>
+
+    <div class="form-admin-grid">
+      <label>Titulo
+        <input id="avisoAdminTitulo" placeholder="Ej. Mantenimiento programado">
+      </label>
+      <label>Visible para
+        <select id="avisoAdminDestino">
+          <option value="usuario">Para tal usuario</option>
+          <option value="todos">Para todos los usuarios</option>
+          <option value="paciente">Para todos los pacientes</option>
+          <option value="medico">Para todos los medicos</option>
+          <option value="psicologo">Para todos los psicologos</option>
+          <option value="personal_salud">Para todos los medicos y psicologos</option>
+        </select>
+      </label>
+      <label id="campoAvisoUsuarioAdmin">Usuario destinatario
+        <select id="avisoAdminUsuario">
+          <option value="">Cargando usuarios...</option>
+        </select>
+      </label>
+    </div>
+    <label class="campo-admin-amplio">Mensaje
+      <textarea id="avisoAdminMensaje" placeholder="Escribe el aviso que se mostrara en el Dashboard."></textarea>
+    </label>
+    <div class="acciones-admin-inline">
+      <button id="btnPublicarAvisoAdmin" type="button">Publicar aviso</button>
+    </div>
+
+    <div id="listaAvisosAdmin" class="lista-reportes-admin">
+      <p>Cargando avisos...</p>
+    </div>
+  </section>
+
+  <section id="seccionUsuariosRegistrados" class="card tabla-card admin-section">
     <div class="tabla-header">
       <div>
         <h2>Usuarios registrados</h2>
-        <p>Vista global de pacientes, medicos y administradores registrados en Cognicion.</p>
+        <p>Vista global de pacientes, medicos, psicologos y administradores registrados en Cognicion.</p>
       </div>
       <button id="btnActualizarUsuariosAdmin">Actualizar usuarios</button>
     </div>
@@ -117,7 +155,7 @@
     </div>
   </section>
 
-  <section class="card tabla-card">
+  <section id="seccionPacientesAdmin" class="card tabla-card admin-section">
     <div class="tabla-header">
       <div>
         <h2>Pacientes y notas</h2>
@@ -140,42 +178,7 @@
     </div>
   </section>
 
-  <section class="card tabla-card" id="seccionAvisosAdmin">
-    <div class="tabla-header">
-      <div>
-        <h2>Avisos y notificaciones globales</h2>
-        <p>Publica comunicados visibles en el Dashboard segun el tipo de usuario.</p>
-      </div>
-      <button id="btnActualizarAvisosAdmin" type="button">Actualizar avisos</button>
-    </div>
-
-    <div class="form-admin-grid">
-      <label>Titulo
-        <input id="avisoAdminTitulo" placeholder="Ej. Mantenimiento programado">
-      </label>
-      <label>Visible para
-        <select id="avisoAdminDestino">
-          <option value="todos">Todos los usuarios</option>
-          <option value="paciente">Pacientes</option>
-          <option value="medico">Medicos</option>
-          <option value="psicologo">Psicologos</option>
-          <option value="personal_salud">Medicos, psicologos y admin</option>
-          <option value="admin">Admin</option>
-        </select>
-      </label>
-    </div>
-    <label class="campo-admin-amplio">Mensaje
-      <textarea id="avisoAdminMensaje" placeholder="Escribe el aviso que se mostrara en el Dashboard."></textarea>
-    </label>
-    <div class="acciones-admin-inline">
-      <button id="btnPublicarAvisoAdmin" type="button">Publicar aviso</button>
-    </div>
-
-    <div id="listaAvisosAdmin" class="lista-reportes-admin">
-      <p>Cargando avisos...</p>
-    </div>
-  </section>
-  <section class="card tabla-card">
+  <section id="seccionReportesAdmin" class="card tabla-card admin-section">
     <div class="tabla-header">
       <div>
         <h2>Reportes, peticiones y sugerencias</h2>
@@ -206,7 +209,7 @@
     </div>
   </section>
 
-  <section class="card tabla-card">
+  <section id="seccionAuditoriaAdmin" class="card tabla-card admin-section">
     <div class="tabla-header">
       <div>
         <h2>Bitacora de auditoria</h2>
@@ -255,11 +258,36 @@
     </table>
   </section>
 
+  <section id="seccionCodigosAdmin" class="card tabla-card admin-section">
+    <div class="tabla-header">
+      <div>
+        <h2>Codigos de autorizacion medica</h2>
+        <p>Genera codigos de un solo uso para crear cuentas de medico. Cada codigo expira en 24 horas.</p>
+      </div>
+      <button id="btnActualizarCodigosMedico">Actualizar codigos</button>
+    </div>
+
+    <div class="panel-codigos-medico">
+      <div>
+        <button type="button" id="btnGenerarCodigoMedico">Generar codigo medico</button>
+        <p id="codigoMedicoGenerado" class="codigo-medico-generado">Sin codigo generado en esta sesion.</p>
+      </div>
+      <div>
+        <strong>Reglas</strong>
+        <span>Duracion maxima: 24 horas</span>
+        <span>Uso: una sola vez</span>
+      </div>
+    </div>
+
+    <div id="listaCodigosMedicoAdmin" class="lista-codigos-medico">
+      <p>Cargando codigos...</p>
+    </div>
+  </section>
+
 </main>
 
 <script type="module" src="js/admin.js"></script>
-
-  <script type="module" src="js/reportes.js"></script>
+<script type="module" src="js/reportes.js"></script>
 </body>
 </html>
 
