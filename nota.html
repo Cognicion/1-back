@@ -133,6 +133,12 @@
     </select>
 </div>
 
+<div class="acciones-escalas-nota">
+    <button id="abrirEscalasPreviasNota" type="button" class="boton-secundario">
+        Escalas previas
+    </button>
+</div>
+
 <details class="panel-escala-nota">
     <summary class="panel-escala-header panel-escala-summary">
         <div>
@@ -147,11 +153,34 @@
     <select id="selectorEscalaNota"></select>
     <div id="descripcionEscalaNota" class="descripcion-escala-nota"></div>
     <div id="itemsEscalaNota" class="items-escala-nota"></div>
+    <label for="observacionesEscalaNota">Observaciones opcionales</label>
+    <textarea id="observacionesEscalaNota" class="observaciones-escala-nota" placeholder="Observaciones clinicas de la aplicacion, si existen."></textarea>
     <button id="guardarEscalaNota" type="button">
         Guardar escala
     </button>
     </div>
 </details>
+
+<aside id="panelEscalasPreviasNota" class="panel-escalas-previas-nota" aria-hidden="true">
+    <div class="panel-escalas-previas-contenido">
+        <div class="panel-escalas-previas-header">
+            <div>
+                <span>Historial clinico</span>
+                <h3>Escalas previas</h3>
+            </div>
+            <button id="cerrarEscalasPreviasNota" type="button" aria-label="Cerrar escalas previas">x</button>
+        </div>
+        <div class="panel-escalas-previas-filtros">
+            <input id="buscarEscalasPreviasNota" type="search" placeholder="Buscar por nombre de escala">
+            <select id="filtrarEscalasPreviasNota">
+                <option value="">Todas las areas</option>
+            </select>
+        </div>
+        <div id="listaEscalasPreviasNota" class="lista-escalas-previas-nota">
+            Selecciona un paciente para ver escalas previas.
+        </div>
+    </div>
+</aside>
 
 <section class="dictado-clinico-card" aria-labelledby="tituloDictadoClinico">
     <div class="dictado-clinico-header">

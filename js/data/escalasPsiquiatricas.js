@@ -319,6 +319,120 @@ export const ESCALAS_PSIQUIATRICAS = [
       "Tiempo ocupado por compulsiones.",
       "Interferencia/malestar por compulsiones."
     ]
+  },
+  {
+    id: "ciwa_ar",
+    nombre: "CIWA-Ar",
+    area: "Abstinencia alcoholica",
+    descripcion: "Evaluacion de la gravedad del sindrome de abstinencia alcoholica.",
+    introduccion: "La CIWA-Ar ayuda a cuantificar la intensidad de la abstinencia alcoholica y orientar la vigilancia clinica. Debe interpretarse junto con signos vitales, comorbilidades, riesgo de delirium, convulsiones y juicio medico.",
+    rango: "0-67",
+    consideraciones: [
+      "Valorar riesgo de delirium tremens, crisis convulsivas, deshidratacion y alteraciones hidroelectroliticas.",
+      "El puntaje no sustituye la exploracion fisica, el estado mental ni la valoracion medica.",
+      "Repetir de forma seriada si el paciente se encuentra en periodo de riesgo."
+    ],
+    puntosCorte: [
+      { max: 9, texto: "Abstinencia leve o minima" },
+      { max: 18, texto: "Abstinencia moderada" },
+      { max: 67, texto: "Abstinencia grave; requiere valoracion estrecha" }
+    ],
+    items: [
+      {
+        texto: "Nausea y vomito.",
+        opciones: ["Ausente", "Leve", "2", "3", "Intermitente", "5", "6", "Nausea constante o vomito repetido"],
+        valores: [0, 1, 2, 3, 4, 5, 6, 7]
+      },
+      {
+        texto: "Temblor.",
+        opciones: ["Ausente", "No visible, pero palpable", "2", "3", "Moderado con brazos extendidos", "5", "6", "Severo incluso sin extender brazos"],
+        valores: [0, 1, 2, 3, 4, 5, 6, 7]
+      },
+      {
+        texto: "Sudoracion paroxistica.",
+        opciones: ["Ausente", "Sudoracion apenas perceptible", "2", "3", "Sudoracion facial", "5", "6", "Sudoracion profusa"],
+        valores: [0, 1, 2, 3, 4, 5, 6, 7]
+      },
+      {
+        texto: "Ansiedad.",
+        opciones: ["Sin ansiedad", "Leve", "2", "3", "Moderada", "5", "6", "Equivalente a panico agudo"],
+        valores: [0, 1, 2, 3, 4, 5, 6, 7]
+      },
+      {
+        texto: "Agitacion.",
+        opciones: ["Actividad normal", "Leve inquietud", "2", "3", "Moderadamente inquieto", "5", "6", "Se mueve constantemente"],
+        valores: [0, 1, 2, 3, 4, 5, 6, 7]
+      },
+      {
+        texto: "Alteraciones tactiles.",
+        opciones: ["Ausentes", "Muy leves", "Leves", "Moderadas", "Moderadamente severas", "Severas", "Muy severas", "Alucinaciones tactiles continuas"],
+        valores: [0, 1, 2, 3, 4, 5, 6, 7]
+      },
+      {
+        texto: "Alteraciones auditivas.",
+        opciones: ["Ausentes", "Muy leves", "Leves", "Moderadas", "Moderadamente severas", "Severas", "Muy severas", "Alucinaciones auditivas continuas"],
+        valores: [0, 1, 2, 3, 4, 5, 6, 7]
+      },
+      {
+        texto: "Alteraciones visuales.",
+        opciones: ["Ausentes", "Muy leves", "Leves", "Moderadas", "Moderadamente severas", "Severas", "Muy severas", "Alucinaciones visuales continuas"],
+        valores: [0, 1, 2, 3, 4, 5, 6, 7]
+      },
+      {
+        texto: "Cefalea o plenitud cefalica.",
+        opciones: ["Ausente", "Muy leve", "Leve", "Moderada", "Moderadamente severa", "Severa", "Muy severa", "Extremadamente severa"],
+        valores: [0, 1, 2, 3, 4, 5, 6, 7]
+      },
+      {
+        texto: "Orientacion y obnubilacion del sensorio.",
+        opciones: ["Orientado y puede hacer calculos seriados", "No puede hacer calculos seriados", "Desorientado en fecha por menos de 2 dias", "Desorientado en fecha por mas de 2 dias", "Desorientado en lugar o persona"],
+        valores: [0, 1, 2, 3, 4]
+      }
+    ]
+  },
+  {
+    id: "ciwa_b",
+    nombre: "CIWA-B",
+    area: "Abstinencia benzodiacepinica",
+    descripcion: "Evaluacion de la gravedad de la abstinencia por benzodiacepinas.",
+    introduccion: "La CIWA-B organiza sintomas frecuentes de abstinencia por benzodiacepinas. Es una herramienta de apoyo y debe interpretarse en conjunto con dosis previa, vida media del farmaco, tiempo de consumo, comorbilidades, riesgo convulsivo y juicio clinico.",
+    rango: "0-88",
+    opciones: ["Ausente", "Leve", "Moderado", "Severo", "Muy severo"],
+    valores: [0, 1, 2, 3, 4],
+    consideraciones: [
+      "La retirada de benzodiacepinas debe individualizarse y evitar suspensiones bruscas en pacientes con dependencia.",
+      "Vigilar convulsiones, delirium, descompensacion psiquiatrica, ideacion suicida y sintomas autonomicos intensos.",
+      "La escala apoya el seguimiento, pero no sustituye la decision clinica ni protocolos institucionales."
+    ],
+    puntosCorte: [
+      { max: 20, texto: "Abstinencia leve o sintomas bajos" },
+      { max: 40, texto: "Abstinencia moderada" },
+      { max: 88, texto: "Abstinencia severa; requiere valoracion estrecha" }
+    ],
+    items: [
+      "Ansiedad o nerviosismo.",
+      "Irritabilidad.",
+      "Inquietud o agitacion.",
+      "Sensacion de panico.",
+      "Animo bajo o disforia.",
+      "Dificultad para conciliar o mantener el sueno.",
+      "Pesadillas o sueno no reparador.",
+      "Fatiga o debilidad.",
+      "Dificultad para concentrarse.",
+      "Alteraciones de memoria.",
+      "Temblor.",
+      "Sudoracion.",
+      "Palpitaciones o taquicardia referida.",
+      "Nausea, vomito o malestar gastrointestinal.",
+      "Perdida de apetito.",
+      "Cefalea.",
+      "Dolor, rigidez o espasmos musculares.",
+      "Parestesias, hormigueo o sensacion de quemazon.",
+      "Hipersensibilidad a luz, sonido o tacto.",
+      "Mareo o inestabilidad.",
+      "Despersonalizacion, desrealizacion o sensacion de irrealidad.",
+      "Alteraciones perceptivas o confusionales."
+    ]
   }
 ];
 

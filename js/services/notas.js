@@ -12,13 +12,14 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 export async function guardarNota(uidPaciente, datosNota) {
-  await addDoc(
+  const referencia = await addDoc(
     collection(db, "usuarios", uidPaciente, "notasMedicas"),
     {
       ...datosNota,
       fecha: new Date().toISOString()
     }
   );
+  return referencia.id;
 }
 
 export async function obtenerHistorialNotas(uidPaciente) {

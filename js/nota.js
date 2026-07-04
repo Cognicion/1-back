@@ -6,6 +6,15 @@ import { CIE11 } from "./data/cie11.js";
 import { MEDICAMENTOS } from "./data/medicamentos.js";
 import { ESCALAS_PSIQUIATRICAS, interpretarEscala } from "./data/escalasPsiquiatricas.js";
 import { generarNotaAutomatica } from "./services/notaAutomatica.js";
+import {
+  calcularPuntajeEscala,
+  crearResumenEscala,
+  formatearFechaEscala,
+  guardarEscalaAplicada,
+  listarEscalasAplicadas,
+  obtenerOpcionesItemEscala,
+  textoItemEscala
+} from "./services/escalas.js";
 
 import {
   onAuthStateChanged
@@ -53,6 +62,8 @@ let apuntesMedicoCache = [];
 let notasFlotantesPacienteCache = [];
 let catalogoMedicosFirmasCache = [];
 let diagnosticosAutomaticosSugeridos = [];
+let escalasPreviasNotaCache = [];
+let escalasAplicadasPendientesNota = [];
 
 iniciarMonitoreoSesion("Nota medica");
 
@@ -402,6 +413,10 @@ if (buscadorMedicamento && resultadosMedicamentos) {
 function configurarPanelEscalaNota() {
   const selector = document.getElementById("selectorEscalaNota");
   const botonGuardar = document.getElementById("guardarEscalaNota");
+  const botonPrevias = document.getElementById("abrirEscalasPreviasNota");
+  const botonCerrarPrevias = document.getElementById("cerrarEscalasPreviasNota");
+  const buscadorPrevias = document.getElementById("buscarEscalasPreviasNota");
+  const filtroPrevias = document.getElementById("filtrarEscalasPreviasNota");
 
   if (!selector) return;
 
@@ -411,6 +426,10 @@ function configurarPanelEscalaNota() {
 
   selector.addEventListener("change", renderizarEscalaNotaSeleccionada);
   botonGuardar?.addEventListener("click", guardarEscalaDesdeNota);
+  botonPrevias?.addEventListener("click", abrirPanelEscalasPreviasNota);
+  botonCerrarPrevias?.addEventListener("click", cerrarPanelEscalasPreviasNota);
+  buscadorPrevias?.addEventListener("input", renderizarEscalasPreviasNota);
+  filtroPrevias?.addEventListener("change", renderizarEscalasPreviasNota);
   renderizarEscalaNotaSeleccionada();
 }
 
@@ -425,24 +444,32 @@ function renderizarEscalaNotaSeleccionada() {
   const items = document.getElementById("itemsEscalaNota");
   if (!escala || !descripcion || !items) return;
 
+  const intro = escala.introduccion ? `<p>${escaparHTML(escala.introduccion)}</p>` : "";
+  const consideraciones = Array.isArray(escala.consideraciones) && escala.consideraciones.length
+    ? `<div class="consideraciones-escala-nota"><strong>Consideraciones clinicas</strong><ul>${escala.consideraciones.map((item) => `<li>${escaparHTML(item)}</li>`).join("")}</ul></div>`
+    : "";
+
   descripcion.innerHTML = `
     <strong>${escaparHTML(escala.nombre)}</strong> - ${escaparHTML(escala.area)}<br>
     ${escaparHTML(escala.descripcion)}<br>
     <small>Rango: ${escaparHTML(escala.rango)}. Resultado integrado al expediente.</small>
+    ${intro}
+    ${consideraciones}
   `;
 
-  items.innerHTML = escala.items.map((item, index) => `
-    <div class="item-escala-nota">
-      <label>${index + 1}. ${escaparHTML(item)}
-        <select data-item-escala-nota="${index}">
-          <option value="">Seleccionar</option>
-          ${escala.opciones
-            .map((opcion, i) => `<option value="${escala.valores[i]}">${escaparHTML(opcion)}</option>`)
-            .join("")}
-        </select>
-      </label>
-    </div>
-  `).join("");
+  items.innerHTML = escala.items.map((item, index) => {
+    const opciones = obtenerOpcionesItemEscala(escala, item);
+    return `
+      <div class="item-escala-nota">
+        <label>${index + 1}. ${escaparHTML(textoItemEscala(item))}
+          <select data-item-escala-nota="${index}">
+            <option value="">Seleccionar</option>
+            ${opciones.map((opcion) => `<option value="${opcion.valor}">${escaparHTML(opcion.texto)}</option>`).join("")}
+          </select>
+        </label>
+      </div>
+    `;
+  }).join("");
 }
 
 async function guardarEscalaDesdeNota() {
@@ -459,7 +486,7 @@ async function guardarEscalaDesdeNota() {
 
   const selects = [...document.querySelectorAll("[data-item-escala-nota]")];
   const respuestas = selects.map((select, index) => ({
-    item: escala.items[index],
+    item: textoItemEscala(escala.items[index]),
     valor: select.value === "" ? null : Number(select.value),
     respuesta: select.options[select.selectedIndex]?.textContent || ""
   }));
@@ -469,27 +496,48 @@ async function guardarEscalaDesdeNota() {
     return;
   }
 
-  const puntaje = respuestas.reduce((total, respuesta) => total + respuesta.valor, 0);
+  const puntaje = calcularPuntajeEscala(respuestas);
   const interpretacion = interpretarEscala(escala, puntaje);
   const usuario = auth.currentUser;
   const medicoActual = usuario ? await obtenerUsuario(usuario.uid) : null;
   const pacienteActual = await obtenerUsuario(uidPaciente);
+  const observaciones = document.getElementById("observacionesEscalaNota")?.value?.trim() || "";
+  const idEscalaAplicada = doc(collection(db, "usuarios", uidPaciente, "escalasAplicadas")).id;
+  const fechaAplicacion = new Date().toISOString();
 
-  await addDoc(collection(db, "usuarios", uidPaciente, "resultadosEscalas"), {
+  await guardarEscalaAplicada(uidPaciente, {
+    idEscalaAplicada,
     escalaId: escala.id,
-    escalaNombre: escala.nombre,
-    area: escala.area,
-    puntaje,
+    uidMedico: usuario?.uid || "",
+    nombrePaciente: pacienteActual?.nombre || "",
+    nombreEscala: escala.nombre,
+    tipoEscala: escala.area,
+    fechaAplicacion,
+    origen: "nota_clinica",
+    puntajeTotal: puntaje,
     rango: escala.rango,
     interpretacion,
-    respuestas,
-    origen: "nota_medica",
+    respuestasPorItem: respuestas,
+    observaciones,
+    observacionesOpcionales: observaciones,
+    idNota: notaEditandoId || "",
+    medicoNombre: medicoActual?.nombre || usuario?.email || "",
     aplicadoPorMedico: true,
     visiblePaciente: false,
-    creadoPor: usuario?.uid || "",
-    creadoEn: serverTimestamp(),
-    fechaISO: new Date().toISOString()
   });
+
+  if (!notaEditandoId) {
+    escalasAplicadasPendientesNota.push(idEscalaAplicada);
+  }
+
+  insertarResumenEscalaEnNota(crearResumenEscala({
+    idEscalaAplicada,
+    nombreEscala: escala.nombre,
+    fechaAplicacion,
+    puntajeTotal: puntaje,
+    interpretacion,
+    observaciones
+  }), idEscalaAplicada);
 
   await registrarEventoAuditoria({
     accion: "guardar_escala_desde_nota",
@@ -511,6 +559,132 @@ async function guardarEscalaDesdeNota() {
 
   alert(`Escala guardada: ${escala.nombre} = ${puntaje} (${interpretacion})`);
   renderizarEscalaNotaSeleccionada();
+  const observacionesCampo = document.getElementById("observacionesEscalaNota");
+  if (observacionesCampo) observacionesCampo.value = "";
+}
+
+function insertarResumenEscalaEnNota(resumen, idEscalaAplicada = "") {
+  const campoAnalisis = document.getElementById("analisis");
+  if (!campoAnalisis || !resumen) return;
+
+  if (campoAnalisis.value.includes(resumen)) return;
+
+  campoAnalisis.value = [campoAnalisis.value.trim(), resumen].filter(Boolean).join("\n\n");
+}
+
+async function vincularEscalasPendientesANota(uidPaciente, idNota) {
+  if (!uidPaciente || !idNota || !escalasAplicadasPendientesNota.length) return;
+
+  const idsUnicos = [...new Set(escalasAplicadasPendientesNota)];
+  await Promise.all(idsUnicos.flatMap((idEscalaAplicada) => [
+    setDoc(doc(db, "usuarios", uidPaciente, "escalasAplicadas", idEscalaAplicada), { idNota }, { merge: true }),
+    setDoc(doc(db, "usuarios", uidPaciente, "resultadosEscalas", idEscalaAplicada), { idNota }, { merge: true })
+  ]));
+
+  escalasAplicadasPendientesNota = [];
+}
+
+async function abrirPanelEscalasPreviasNota() {
+  const selectorPaciente = document.getElementById("uidPaciente");
+  const uidPaciente = uidPacienteActual || selectorPaciente?.value;
+  const panel = document.getElementById("panelEscalasPreviasNota");
+  const lista = document.getElementById("listaEscalasPreviasNota");
+  if (!panel || !lista) return;
+
+  panel.classList.add("abierto");
+  panel.setAttribute("aria-hidden", "false");
+  lista.textContent = "Cargando escalas previas...";
+
+  if (!uidPaciente) {
+    lista.textContent = "Selecciona un paciente para consultar escalas previas.";
+    return;
+  }
+
+  escalasPreviasNotaCache = await listarEscalasAplicadas(uidPaciente, 80);
+  poblarFiltroEscalasPreviasNota();
+  renderizarEscalasPreviasNota();
+}
+
+function cerrarPanelEscalasPreviasNota() {
+  const panel = document.getElementById("panelEscalasPreviasNota");
+  if (!panel) return;
+  panel.classList.remove("abierto");
+  panel.setAttribute("aria-hidden", "true");
+}
+
+function poblarFiltroEscalasPreviasNota() {
+  const filtro = document.getElementById("filtrarEscalasPreviasNota");
+  if (!filtro) return;
+  const valorActual = filtro.value;
+  const tipos = [...new Set(escalasPreviasNotaCache.map((escala) => escala.tipoEscala).filter(Boolean))].sort();
+  filtro.innerHTML = `<option value="">Todas las areas</option>${tipos.map((tipo) => `<option value="${escaparHTML(tipo)}">${escaparHTML(tipo)}</option>`).join("")}`;
+  filtro.value = tipos.includes(valorActual) ? valorActual : "";
+}
+
+function renderizarEscalasPreviasNota() {
+  const lista = document.getElementById("listaEscalasPreviasNota");
+  if (!lista) return;
+
+  const texto = (document.getElementById("buscarEscalasPreviasNota")?.value || "").trim().toLowerCase();
+  const tipo = document.getElementById("filtrarEscalasPreviasNota")?.value || "";
+  const escalas = escalasPreviasNotaCache.filter((escala) => {
+    const coincideTexto = !texto || (escala.nombreEscala || "").toLowerCase().includes(texto);
+    const coincideTipo = !tipo || escala.tipoEscala === tipo;
+    return coincideTexto && coincideTipo;
+  });
+
+  if (!escalas.length) {
+    lista.textContent = "No hay escalas para mostrar con esos filtros.";
+    return;
+  }
+
+  lista.innerHTML = escalas.map((escala) => renderizarTarjetaEscalaPreviaNota(escala)).join("");
+  lista.querySelectorAll("[data-copiar-escala-previa]").forEach((boton) => {
+    boton.addEventListener("click", () => copiarResumenEscalaPrevia(boton.dataset.copiarEscalaPrevia));
+  });
+  lista.querySelectorAll("[data-insertar-escala-previa]").forEach((boton) => {
+    boton.addEventListener("click", () => insertarEscalaPreviaEnNota(boton.dataset.insertarEscalaPrevia));
+  });
+}
+
+function renderizarTarjetaEscalaPreviaNota(escala) {
+  const respuestas = (escala.respuestasPorItem || []).map((respuesta) => `
+    <li><strong>${escaparHTML(respuesta.item || "")}</strong><span>${escaparHTML(respuesta.respuesta || "")} (${respuesta.valor ?? ""})</span></li>
+  `).join("");
+
+  return `
+    <details class="escala-previa-card">
+      <summary>
+        <span>${escaparHTML(formatearFechaEscala(escala.fechaAplicacion))}</span>
+        <strong>${escaparHTML(escala.nombreEscala)}</strong>
+        <em>${escaparHTML(String(escala.puntajeTotal))} - ${escaparHTML(escala.interpretacion || "")}</em>
+      </summary>
+      <div class="escala-previa-detalle">
+        <p><strong>Origen:</strong> ${escaparHTML(escala.origen || "")}</p>
+        <p><strong>Medico:</strong> ${escaparHTML(escala.medicoNombre || escala.uidMedico || "Sin registro")}</p>
+        <p><strong>Fecha y hora:</strong> ${escaparHTML(formatearFechaEscala(escala.fechaAplicacion, true))}</p>
+        <ul>${respuestas || "<li>Sin respuestas registradas.</li>"}</ul>
+        <p><strong>Observaciones:</strong> ${escaparHTML(escala.observaciones || "Sin observaciones")}</p>
+        <div class="acciones-escala-previa">
+          <button type="button" data-copiar-escala-previa="${escaparHTML(escala.idEscalaAplicada)}">Copiar resumen</button>
+          <button type="button" data-insertar-escala-previa="${escaparHTML(escala.idEscalaAplicada)}">Insertar en nota</button>
+        </div>
+      </div>
+    </details>
+  `;
+}
+
+async function copiarResumenEscalaPrevia(idEscalaAplicada) {
+  const escala = escalasPreviasNotaCache.find((item) => item.idEscalaAplicada === idEscalaAplicada);
+  if (!escala) return;
+  await navigator.clipboard?.writeText(crearResumenEscala(escala));
+  alert("Resumen copiado al portapapeles.");
+}
+
+function insertarEscalaPreviaEnNota(idEscalaAplicada) {
+  const escala = escalasPreviasNotaCache.find((item) => item.idEscalaAplicada === idEscalaAplicada);
+  if (!escala) return;
+  insertarResumenEscalaEnNota(crearResumenEscala(escala), `previa-${idEscalaAplicada}`);
 }
 
 configurarPanelEscalaNota();
@@ -1469,6 +1643,7 @@ function llenarFormularioNota(datos) {
 
 function limpiarFormularioNota() {
   notaEditandoId = null;
+  escalasAplicadasPendientesNota = [];
   llenarFormularioNota({ tipoNota: "completa" });
   btnCancelarEdicion?.classList.add("oculto");
 }
@@ -1890,6 +2065,7 @@ window.editarNotaDesdeHistorial = function(notaId) {
   const datos = notasHistorial[notaId];
   if (!datos) return;
   notaEditandoId = notaId;
+  escalasAplicadasPendientesNota = [];
   llenarFormularioNota(datos.notaEditada || datos);
   btnCancelarEdicion?.classList.remove("oculto");
   document.getElementById("tipoNota")?.scrollIntoView({ behavior: "smooth", block: "center" });
@@ -2144,13 +2320,16 @@ async function guardarNotaMedicaConEstado(estadoNota = "definitiva") {
       proximaConsulta
     };
 
+    let idNotaGuardada = notaEditandoId || "";
+
     if (notaEditandoId) {
       await actualizarNota(uidPaciente, notaEditandoId, {
         ...notaPayload,
         fechaEdicion: new Date().toISOString()
       });
     } else {
-      await guardarNota(uidPaciente, notaPayload);
+      idNotaGuardada = await guardarNota(uidPaciente, notaPayload);
+      await vincularEscalasPendientesANota(uidPaciente, idNotaGuardada);
     }
 
     const usuario = auth.currentUser;
@@ -2176,7 +2355,7 @@ async function guardarNotaMedicaConEstado(estadoNota = "definitiva") {
       pacienteNombre: pacienteActual?.nombre || "",
       exito: true,
       detalles: {
-        notaId: notaEditandoId || "",
+        notaId: idNotaGuardada || "",
         estadoNota,
         esBorrador,
         tipoNota: datosNotaClinica.tipoNota || "",

@@ -1,5 +1,13 @@
-import { auth, db } from "./firebase.js";
+﻿import { auth, db } from "./firebase.js";
 import { ESCALAS_PSIQUIATRICAS, interpretarEscala } from "./data/escalasPsiquiatricas.js";
+import {
+  calcularPuntajeEscala,
+  formatearFechaEscala,
+  guardarEscalaAplicada,
+  listarEscalasAplicadas,
+  obtenerOpcionesItemEscala,
+  textoItemEscala
+} from "./services/escalas.js";
 import { medicoPuedeVer, obtenerUsuario } from "./services/usuarios.js";
 import { registrarEventoAuditoria } from "./services/auditoria.js";
 import { iniciarMonitoreoSesion } from "./services/sesion.js";
@@ -218,22 +226,32 @@ function renderizarEscalaSeleccionada() {
   const items = document.getElementById("itemsEscala");
   if (!escala || !descripcion || !items) return;
 
+  const intro = escala.introduccion ? `<p>${escala.introduccion}</p>` : "";
+  const consideraciones = Array.isArray(escala.consideraciones) && escala.consideraciones.length
+    ? `<div class="consideraciones-escala"><strong>Consideraciones clinicas</strong><ul>${escala.consideraciones.map((item) => `<li>${item}</li>`).join("")}</ul></div>`
+    : "";
+
   descripcion.innerHTML = `
     <strong>${escala.nombre}</strong> - ${escala.area}<br>
     ${escala.descripcion}<br>
     <small>Rango: ${escala.rango}. Esto no sustituye valoracion clinica.</small>
+    ${intro}
+    ${consideraciones}
   `;
 
-  items.innerHTML = escala.items.map((item, index) => `
-    <div class="item-escala">
-      <label>${index + 1}. ${item}
-        <select data-item-escala="${index}" ${modoVistaPrevia ? "disabled" : ""}>
-          <option value="">Seleccionar</option>
-          ${escala.opciones.map((opcion, i) => `<option value="${escala.valores[i]}">${opcion}</option>`).join("")}
-        </select>
-      </label>
-    </div>
-  `).join("");
+  items.innerHTML = escala.items.map((item, index) => {
+    const opciones = obtenerOpcionesItemEscala(escala, item);
+    return `
+      <div class="item-escala">
+        <label>${index + 1}. ${textoItemEscala(item)}
+          <select data-item-escala="${index}" ${modoVistaPrevia ? "disabled" : ""}>
+            <option value="">Seleccionar</option>
+            ${opciones.map((opcion) => `<option value="${opcion.valor}">${opcion.texto}</option>`).join("")}
+          </select>
+        </label>
+      </div>
+    `;
+  }).join("");
 }
 
 async function guardarResultadoEscala() {
@@ -247,7 +265,7 @@ async function guardarResultadoEscala() {
 
   const selects = [...document.querySelectorAll("[data-item-escala]")];
   const respuestas = selects.map((select, index) => ({
-    item: escala.items[index],
+    item: textoItemEscala(escala.items[index]),
     valor: select.value === "" ? null : Number(select.value),
     respuesta: select.options[select.selectedIndex]?.textContent || ""
   }));
@@ -257,23 +275,28 @@ async function guardarResultadoEscala() {
     return;
   }
 
-  const puntaje = respuestas.reduce((total, r) => total + r.valor, 0);
+  const puntaje = calcularPuntajeEscala(respuestas);
   const interpretacion = interpretarEscala(escala, puntaje);
-
-  await addDoc(collection(db, "usuarios", uidSeguimiento, "resultadosEscalas"), {
-    escalaId: escala.id,
-    escalaNombre: escala.nombre,
-    area: escala.area,
-    puntaje,
-    rango: escala.rango,
-    interpretacion,
-    respuestas,
-    creadoEn: serverTimestamp(),
-    fechaISO: new Date().toISOString()
-  });
-
   const datosUsuario = await obtenerUsuario(usuarioActual.uid);
   const datosPaciente = await obtenerUsuario(uidSeguimiento);
+  const fechaAplicacion = new Date().toISOString();
+
+  await guardarEscalaAplicada(uidSeguimiento, {
+    escalaId: escala.id,
+    uidMedico: usuarioActual.uid,
+    nombrePaciente: datosPaciente?.nombre || "",
+    nombreEscala: escala.nombre,
+    tipoEscala: escala.area,
+    fechaAplicacion,
+    origen: "modulo_escalas",
+    puntajeTotal: puntaje,
+    rango: escala.rango,
+    interpretacion,
+    respuestasPorItem: respuestas,
+    observaciones: "",
+    observacionesOpcionales: "",
+    idNota: ""
+  });
 
   await registrarEventoAuditoria({
     accion: "guardar_resultado_escala",
@@ -559,7 +582,7 @@ function formatearIndicacionTratamiento(t = {}, incluirMedicamento = true) {
   if (dosis || horarios) partes.push(asegurarPunto([dosis, horarios].filter(Boolean).join(" ")));
 
   if (!partes.length && !incluirMedicamento) {
-    return [t.dosis, t.frecuencia, t.via, t.horarios].filter(Boolean).join(" · ");
+    return [t.dosis, t.frecuencia, t.via, t.horarios].filter(Boolean).join(" Â· ");
   }
 
   return partes.join(" ");
@@ -627,7 +650,7 @@ async function cargarProximaCita(uid, datosUsuario) {
     }
 
     const cita = citas[0];
-    ponerTexto("proximaCita", `${cita.fecha || ""} ${cita.hora || ""} · ${cita.tipo || "Consulta"}`);
+    ponerTexto("proximaCita", `${cita.fecha || ""} ${cita.hora || ""} Â· ${cita.tipo || "Consulta"}`);
   } catch (error) {
     console.error("Error al cargar proxima cita:", error);
     ponerTexto("proximaCita", "No hay proxima cita registrada.");
@@ -639,30 +662,21 @@ async function cargarResultadosEscalas(uid) {
   if (!contenedor) return;
 
   try {
-    const q = query(
-      collection(db, "usuarios", uid, "resultadosEscalas"),
-      orderBy("fechaISO", "desc"),
-      limit(8)
-    );
-    const snap = await getDocs(q);
+    const escalas = await listarEscalasAplicadas(uid, 8);
 
-    ponerTexto("totalEscalas", String(snap.size));
+    ponerTexto("totalEscalas", String(escalas.length));
 
-    if (snap.empty) {
+    if (!escalas.length) {
       contenedor.textContent = "Sin resultados registrados.";
       return;
     }
 
-    contenedor.innerHTML = snap.docs.map((docResultado) => {
-      const r = docResultado.data();
-      const fecha = r.fechaISO ? new Date(r.fechaISO).toLocaleDateString("es-MX") : "";
-      return `
-        <div class="resultado-item">
-          <strong>${r.escalaNombre || "Escala"}: ${r.puntaje} / ${r.rango || ""}</strong>
-          <span>${r.interpretacion || ""} · ${fecha}</span>
-        </div>
-      `;
-    }).join("");
+    contenedor.innerHTML = escalas.map((r) => `
+      <div class="resultado-item">
+        <strong>${r.nombreEscala || "Escala"}: ${r.puntajeTotal} / ${r.rango || ""}</strong>
+        <span>${r.interpretacion || ""} - ${formatearFechaEscala(r.fechaAplicacion)}</span>
+      </div>
+    `).join("");
   } catch (error) {
     console.error("Error al cargar resultados:", error);
     contenedor.textContent = "No se pudieron cargar los resultados.";
@@ -869,3 +883,4 @@ function escaparHTML(valor) {
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#039;");
 }
+

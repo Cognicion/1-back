@@ -1,6 +1,10 @@
 let reconocimiento = null;
 let dictadoActivo = false;
 let textoBaseDictado = "";
+let reinicioDictadoTimer = null;
+let actualizandoTextareaDictado = false;
+let ultimoResultadoDictado = 0;
+let reconocimientoIniciado = false;
 
 function obtenerSpeechRecognition() {
   return window.SpeechRecognition || window.webkitSpeechRecognition || null;
@@ -28,10 +32,95 @@ function unirTextoClinico(textoActual = "", textoNuevo = "") {
   return `${actual}\n\n${nuevo}`;
 }
 
+function unirFragmentoDictado(textoActual = "", textoNuevo = "") {
+  const actual = textoActual.trim();
+  const nuevo = textoNuevo.trim();
+
+  if (!actual) return nuevo;
+  if (!nuevo) return actual;
+
+  const separador = /[\n.!?:;]$/.test(actual) ? " " : ". ";
+  return `${actual}${separador}${nuevo}`;
+}
+
+function elegirMejorAlternativa(resultado) {
+  const alternativas = Array.from(resultado || []);
+  if (!alternativas.length) return "";
+
+  const mejor = alternativas.reduce((seleccionada, actual) => {
+    const confianzaActual = Number(actual.confidence || 0);
+    const confianzaSeleccionada = Number(seleccionada.confidence || 0);
+    return confianzaActual > confianzaSeleccionada ? actual : seleccionada;
+  }, alternativas[0]);
+
+  return mejor?.transcript || "";
+}
+
 function normalizarFragmentoDictado(fragmento = "") {
-  return String(fragmento || "")
+  const texto = String(fragmento || "")
+    .replace(/\bcoma\b/gi, ",")
+    .replace(/\bpunto y coma\b/gi, ";")
+    .replace(/\bdos puntos\b/gi, ":")
+    .replace(/\bpunto aparte\b/gi, ".\n")
+    .replace(/\bnueva linea\b/gi, "\n")
+    .replace(/\bnuevo renglon\b/gi, "\n")
+    .replace(/\bpunto\b/gi, ".")
+    .replace(/\binterrogacion\b/gi, "?")
+    .replace(/\bsigno de interrogacion\b/gi, "?")
+    .replace(/\bideacion suicida\b/gi, "ideacion suicida")
+    .replace(/\bbenzodiazepina(s)?\b/gi, "benzodiacepina$1")
+    .replace(/\bbenzodiacepina s\b/gi, "benzodiacepinas")
+    .replace(/\bciwa ar\b/gi, "CIWA-Ar")
+    .replace(/\bciwa b\b/gi, "CIWA-B")
+    .replace(/\bcie diez\b/gi, "CIE-10")
+    .replace(/\bcie once\b/gi, "CIE-11")
     .replace(/\s+/g, " ")
+    .replace(/\s+([,.;:?])/g, "$1")
+    .replace(/([,.;:?])([^\s\n])/g, "$1 $2")
+    .replace(/\.{2,}/g, ".")
+    .replace(/,{2,}/g, ",")
     .trim();
+
+  return corregirCapitalizacionDictado(texto);
+}
+
+function corregirCapitalizacionDictado(texto = "") {
+  return texto.replace(/(^|[.!?\n]\s+)([a-záéíóúñ])/g, (coincidencia, inicio, letra) => {
+    return `${inicio}${letra.toUpperCase()}`;
+  });
+}
+
+function escribirTextareaDictado(valor = "") {
+  const textarea = obtenerElemento("textoDictadoClinico");
+  if (!textarea) return;
+
+  actualizandoTextareaDictado = true;
+  textarea.value = valor;
+  textarea.dispatchEvent(new Event("input", { bubbles: true }));
+  actualizandoTextareaDictado = false;
+}
+
+function limpiarTimerReinicioDictado() {
+  if (reinicioDictadoTimer) {
+    clearTimeout(reinicioDictadoTimer);
+    reinicioDictadoTimer = null;
+  }
+}
+
+function iniciarReconocimientoInterno() {
+  if (!reconocimiento || !dictadoActivo) return;
+
+  limpiarTimerReinicioDictado();
+
+  try {
+    reconocimiento.start();
+    reconocimientoIniciado = true;
+    actualizarEstadoDictado("Escuchando...", "escuchando");
+  } catch (error) {
+    reinicioDictadoTimer = setTimeout(() => {
+      if (dictadoActivo) iniciarReconocimientoInterno();
+    }, 450);
+  }
 }
 
 export function navegadorSoportaDictado() {
@@ -49,49 +138,74 @@ export function iniciarDictado() {
 
   if (!textarea) return;
 
+  if (dictadoActivo && reconocimientoIniciado) {
+    actualizarEstadoDictado("Escuchando...", "escuchando");
+    return;
+  }
+
   if (!reconocimiento) {
     const SpeechRecognition = obtenerSpeechRecognition();
     reconocimiento = new SpeechRecognition();
     reconocimiento.lang = "es-MX";
     reconocimiento.continuous = true;
     reconocimiento.interimResults = true;
+    reconocimiento.maxAlternatives = 3;
 
     reconocimiento.onresult = (evento) => {
       let textoFinal = "";
       let textoInterino = "";
+      ultimoResultadoDictado = Date.now();
 
       for (let i = evento.resultIndex; i < evento.results.length; i += 1) {
-        const fragmento = normalizarFragmentoDictado(evento.results[i][0]?.transcript || "");
+        const fragmento = normalizarFragmentoDictado(elegirMejorAlternativa(evento.results[i]));
         if (!fragmento) continue;
 
         if (evento.results[i].isFinal) {
-          textoFinal = unirTextoClinico(textoFinal, fragmento);
+          textoFinal = unirFragmentoDictado(textoFinal, fragmento);
         } else {
-          textoInterino = unirTextoClinico(textoInterino, fragmento);
+          textoInterino = unirFragmentoDictado(textoInterino, fragmento);
         }
       }
 
       if (textoFinal) {
-        textoBaseDictado = unirTextoClinico(textoBaseDictado || textarea.value, textoFinal);
+        textoBaseDictado = unirFragmentoDictado(textoBaseDictado || textarea.value, textoFinal);
       }
 
-      textarea.value = unirTextoClinico(textoBaseDictado, textoInterino);
-      textarea.dispatchEvent(new Event("input", { bubbles: true }));
+      escribirTextareaDictado(unirTextoClinico(textoBaseDictado, textoInterino));
     };
 
-    reconocimiento.onerror = () => {
-      actualizarEstadoDictado("Dictado detenido", "detenido");
-      dictadoActivo = false;
+    reconocimiento.onerror = (evento) => {
+      const tipoError = evento?.error || "";
+
+      if (["no-speech", "network"].includes(tipoError)) {
+        actualizarEstadoDictado("Sin voz detectada, sigo escuchando...", "escuchando");
+        return;
+      }
+
+      if (tipoError === "aborted" && dictadoActivo) {
+        actualizarEstadoDictado("Reiniciando dictado...", "escuchando");
+        return;
+      }
+
+      if (["not-allowed", "service-not-allowed", "audio-capture"].includes(tipoError)) {
+        actualizarEstadoDictado("Dictado detenido: revise permisos del microfono", "detenido");
+        dictadoActivo = false;
+        reconocimientoIniciado = false;
+        return;
+      }
+
+      actualizarEstadoDictado("Dictado interrumpido, intentando continuar...", "escuchando");
     };
 
     reconocimiento.onend = () => {
+      reconocimientoIniciado = false;
+
       if (dictadoActivo) {
-        try {
-          reconocimiento.start();
-        } catch (error) {
-          dictadoActivo = false;
-          actualizarEstadoDictado("Dictado detenido", "detenido");
-        }
+        const tiempoDesdeResultado = Date.now() - ultimoResultadoDictado;
+        const demora = tiempoDesdeResultado < 600 ? 450 : 250;
+        actualizarEstadoDictado("Escuchando... reiniciando", "escuchando");
+        limpiarTimerReinicioDictado();
+        reinicioDictadoTimer = setTimeout(iniciarReconocimientoInterno, demora);
       } else {
         actualizarEstadoDictado("Dictado pausado", "pausado");
       }
@@ -100,17 +214,13 @@ export function iniciarDictado() {
 
   textoBaseDictado = textarea.value;
   dictadoActivo = true;
-  actualizarEstadoDictado("Escuchando...", "escuchando");
-
-  try {
-    reconocimiento.start();
-  } catch (error) {
-    actualizarEstadoDictado("Escuchando...", "escuchando");
-  }
+  ultimoResultadoDictado = Date.now();
+  iniciarReconocimientoInterno();
 }
 
 export function pausarDictado() {
   dictadoActivo = false;
+  limpiarTimerReinicioDictado();
 
   if (reconocimiento) {
     try {
@@ -121,6 +231,7 @@ export function pausarDictado() {
   }
 
   textoBaseDictado = obtenerElemento("textoDictadoClinico")?.value || "";
+  reconocimientoIniciado = false;
   actualizarEstadoDictado("Dictado pausado", "pausado");
 }
 
@@ -180,6 +291,11 @@ export function inicializarDictadoClinico() {
   pausar.addEventListener("click", pausarDictado);
   limpiar.addEventListener("click", limpiarDictado);
   insertar.addEventListener("click", insertarDictadoEnNota);
+
+  obtenerElemento("textoDictadoClinico")?.addEventListener("input", (evento) => {
+    if (actualizandoTextareaDictado) return;
+    textoBaseDictado = evento.target.value || "";
+  });
 
   if (!navegadorSoportaDictado()) {
     actualizarEstadoDictado("Dictado no disponible en este navegador", "no-disponible");

@@ -27,6 +27,9 @@
     <div class="card">
       <h3>Usuarios</h3>
       <p id="totalUsuarios">-</p>
+      <button type="button" class="boton-card-admin" data-scroll-admin="seccionUsuariosRegistrados">
+        Ver usuarios registrados
+      </button>
     </div>
 
     <div class="card">
@@ -50,13 +53,20 @@
     </div>
   </section>
 
-  <section class="card tabla-card">
+  <section id="seccionUsuariosRegistrados" class="card tabla-card">
     <div class="tabla-header">
       <div>
-        <h2>Usuarios y roles</h2>
-        <p>Administracion global de cuentas registradas en Firestore: cambio de rol y eliminacion de perfil.</p>
+        <h2>Usuarios registrados</h2>
+        <p>Vista global de pacientes, medicos y administradores registrados en Cognicion.</p>
       </div>
       <button id="btnActualizarUsuariosAdmin">Actualizar usuarios</button>
+    </div>
+
+    <div class="usuarios-admin-resumen">
+      <span>Total: <strong id="usuariosVistaTotal">-</strong></span>
+      <span>Pacientes: <strong id="usuariosVistaPacientes">-</strong></span>
+      <span>Medicos: <strong id="usuariosVistaMedicos">-</strong></span>
+      <span>Admin: <strong id="usuariosVistaAdmin">-</strong></span>
     </div>
 
     <div class="filtros-auditoria">

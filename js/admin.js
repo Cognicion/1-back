@@ -90,6 +90,15 @@ onAuthStateChanged(auth, async (user) => {
 });
 
 function configurarFiltros() {
+  document.querySelectorAll("[data-scroll-admin]").forEach((boton) => {
+    boton.addEventListener("click", () => {
+      document.getElementById(boton.dataset.scrollAdmin)?.scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+      });
+    });
+  });
+
   ["filtroAuditoria", "filtroRol", "filtroModulo", "filtroResultado"].forEach((id) => {
     document.getElementById(id)?.addEventListener("input", renderizarAuditoria);
     document.getElementById(id)?.addEventListener("change", renderizarAuditoria);
@@ -190,6 +199,8 @@ function renderizarUsuariosAdmin() {
     return coincideTexto && coincideRol;
   });
 
+  actualizarResumenUsuariosVista(usuarios);
+
   if (!usuarios.length) {
     contenedor.innerHTML = "<p>No hay usuarios con esos filtros.</p>";
     return;
@@ -205,6 +216,11 @@ function renderizarUsuariosAdmin() {
           <h3>${escaparHTML(usuario.nombre || usuario.email || "Usuario sin nombre")}</h3>
           <p>${escaparHTML(usuario.email || "Sin correo")}</p>
           <small>UID: ${escaparHTML(usuario.id)}</small>
+          <div class="usuario-admin-meta">
+            <span class="rol-${escaparHTML(rolActual)}">${escaparHTML(etiquetaRolUsuario(rolActual))}</span>
+            <span>Registro: ${escaparHTML(fechaUsuarioAdmin(usuario))}</span>
+            <span>Unidad: ${escaparHTML(usuario.unidad || usuario.institucion || "Sin unidad")}</span>
+          </div>
         </div>
 
         <div class="usuario-admin-rol">
@@ -228,6 +244,44 @@ function renderizarUsuariosAdmin() {
       </article>
     `;
   }).join("");
+}
+
+function actualizarResumenUsuariosVista(usuarios = []) {
+  ponerTexto("usuariosVistaTotal", usuarios.length);
+  ponerTexto("usuariosVistaPacientes", usuarios.filter((usuario) => usuario.rol === "paciente").length);
+  ponerTexto("usuariosVistaMedicos", usuarios.filter((usuario) => usuario.rol === "medico").length);
+  ponerTexto("usuariosVistaAdmin", usuarios.filter((usuario) => usuario.rol === "admin").length);
+}
+
+function etiquetaRolUsuario(rol = "") {
+  const etiquetas = {
+    paciente: "Paciente",
+    medico: "Medico",
+    admin: "Admin",
+    sin_rol: "Sin rol"
+  };
+  return etiquetas[rol] || rol || "Sin rol";
+}
+
+function fechaUsuarioAdmin(usuario = {}) {
+  const valor = usuario.createdAt ||
+    usuario.creadoEn ||
+    usuario.fechaRegistro ||
+    usuario.fechaCreacion ||
+    usuario.fechaAlta ||
+    usuario.registradoEn ||
+    "";
+  if (!valor) return "Sin fecha";
+  const fecha = typeof valor?.toDate === "function" ? valor.toDate() : new Date(valor);
+  if (Number.isNaN(fecha.getTime())) return String(valor);
+  return fecha.toLocaleString("es-MX", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false
+  });
 }
 
 function opcionRol(rol, rolActual) {

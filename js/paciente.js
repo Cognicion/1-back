@@ -1,5 +1,10 @@
 ﻿import { auth, db } from "./firebase.js";
 import { ESCALAS_PSIQUIATRICAS } from "./data/escalasPsiquiatricas.js";
+import {
+  crearResumenEscala,
+  formatearFechaEscala,
+  listarEscalasAplicadas
+} from "./services/escalas.js";
 import { MEDICAMENTOS_PRESENTACIONES } from "./data/medicamentos.js";
 import { CIE10 } from "./data/cie10.js";
 import { CIE11 } from "./data/cie11.js";
@@ -1316,36 +1321,58 @@ async function cargarResultadosEscalasPaciente() {
   contenedor.innerHTML = "Cargando resultados...";
 
   try {
-    const q = query(
-      collection(db, "usuarios", uidPaciente, "resultadosEscalas"),
-      orderBy("fechaISO", "desc"),
-      limit(20)
-    );
-    const snap = await getDocs(q);
+    const escalas = await listarEscalasAplicadas(uidPaciente, 80);
 
-    if (snap.empty) {
+    if (!escalas.length) {
       contenedor.innerHTML = "<p>No hay resultados de escalas registrados.</p>";
       return;
     }
 
-    contenedor.innerHTML = snap.docs.map((docResultado) => {
-      const r = docResultado.data();
-      const fecha = r.fechaISO ? new Date(r.fechaISO).toLocaleString("es-MX") : "Sin fecha";
-      return `
-        <article class="resultado-escala-card">
-          <div>
-            <strong>${r.escalaNombre || "Escala"}</strong>
-            <span>${r.area || ""} Â· ${fecha}</span>
-          </div>
-          <div class="resultado-puntaje">${r.puntaje} / ${r.rango || ""}</div>
-          <p>${r.interpretacion || "Sin interpretacion"}</p>
-        </article>
-      `;
-    }).join("");
+    contenedor.innerHTML = escalas.map((r) => renderizarEscalaHistorialPaciente(r)).join("");
+    contenedor.querySelectorAll("[data-copiar-resumen-escala]").forEach((boton) => {
+      boton.addEventListener("click", async () => {
+        const escala = escalas.find((item) => item.idEscalaAplicada === boton.dataset.copiarResumenEscala);
+        if (!escala) return;
+        await navigator.clipboard?.writeText(crearResumenEscala(escala));
+        alert("Resumen de escala copiado.");
+      });
+    });
   } catch (error) {
     console.error("Error al cargar escalas:", error);
     contenedor.innerHTML = "<p>No se pudieron cargar los resultados.</p>";
   }
+}
+
+function renderizarEscalaHistorialPaciente(escala) {
+  const respuestas = (escala.respuestasPorItem || []).map((respuesta) => `
+    <li>
+      <strong>${escaparHTML(respuesta.item || "")}</strong>
+      <span>${escaparHTML(respuesta.respuesta || "")} (${respuesta.valor ?? ""})</span>
+    </li>
+  `).join("");
+
+  return `
+    <details class="resultado-escala-card resultado-escala-collapsible">
+      <summary>
+        <div>
+          <strong>${escaparHTML(escala.nombreEscala || "Escala")}</strong>
+          <span>${escaparHTML(escala.tipoEscala || "")} - ${escaparHTML(formatearFechaEscala(escala.fechaAplicacion))} - ${escaparHTML(escala.origen || "")}</span>
+        </div>
+        <div class="resultado-puntaje">${escaparHTML(String(escala.puntajeTotal ?? ""))} / ${escaparHTML(escala.rango || "")}</div>
+        <p>${escaparHTML(escala.interpretacion || "Sin interpretacion")}</p>
+      </summary>
+      <div class="resultado-escala-detalle">
+        <p><strong>Medico aplicador:</strong> ${escaparHTML(escala.medicoNombre || escala.uidMedico || "Sin registro")}</p>
+        <p><strong>Fecha y hora:</strong> ${escaparHTML(formatearFechaEscala(escala.fechaAplicacion, true))}</p>
+        <p><strong>Observaciones:</strong> ${escaparHTML(escala.observaciones || "Sin observaciones")}</p>
+        <ul>${respuestas || "<li>Sin respuestas registradas.</li>"}</ul>
+        <div class="resultado-escala-acciones">
+          <button type="button" data-copiar-resumen-escala="${escaparHTML(escala.idEscalaAplicada)}">Copiar resumen clinico</button>
+          <button type="button" disabled>Exportar PDF proximamente</button>
+        </div>
+      </div>
+    </details>
+  `;
 }
 
 async function cargarEscalasAsignablesPaciente() {
