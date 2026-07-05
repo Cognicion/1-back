@@ -192,13 +192,12 @@ async function cargarPerfilMedico(user) {
 
   const datos = snapUsuario.data();
 
-  if (!["medico", "psicologo"].includes(datos.rol)) {
-    alert("Acceso restringido al personal clinico.");
+  if (!["medico", "psicologo", "admin"].includes(datos.rol)) {
+    alert("Acceso restringido al personal clínico.");
     await auth.signOut();
     window.location.href = "login.html";
     return false;
   }
-
   document.getElementById("nombreMedico").textContent =
     datos.nombre || "Médico sin nombre";
 
