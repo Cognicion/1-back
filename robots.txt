@@ -1,0 +1,21 @@
+User-agent: *
+
+Allow: /
+
+Disallow: /dashboard.html
+Disallow: /login.html
+Disallow: /registro.html
+Disallow: /admin.html
+Disallow: /paciente.html
+Disallow: /pacientes.html
+Disallow: /nota.html
+Disallow: /expediente.html
+Disallow: /estadistica.html
+Disallow: /medico.html
+Disallow: /mi-salud.html
+Disallow: /agenda.html
+Disallow: /perfil-profesional.html
+Disallow: /nuevo-paciente.html
+Disallow: /recuperar.html
+
+Sitemap: https://cognicionlabs.com/sitemap.xml
