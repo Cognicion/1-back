@@ -185,8 +185,10 @@ btnCrearCuenta.addEventListener("click", async () => {
     return;
   }
 
+
+
   if (!nombre || !email || (!correoMedico && !codigoVinculacion) || !password) {
-    mensaje.textContent = "Completa nombre, correo, contrasena y correo medico o codigo de vinculacion.";
+      mensaje.textContent = "Completa nombre, correo, contrasena y correo medico o codigo de vinculacion.";
     return;
   }
 
