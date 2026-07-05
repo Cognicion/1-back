@@ -103,8 +103,14 @@ window.cerrarSesion = async function() {
 };
 
 window.recuperarPassword = async function() {
+  const emailInput = document.getElementById("email");
 
-  const email = document.getElementById("email").value.trim();
+  if (!emailInput) {
+    alert("No se encontró el campo de correo.");
+    return;
+  }
+
+  const email = emailInput.value.trim();
 
   if (!email) {
     alert("Ingresa tu correo electrónico.");
@@ -112,27 +118,28 @@ window.recuperarPassword = async function() {
   }
 
   try {
-
     await sendPasswordResetEmail(auth, email);
 
-    await registrarEventoAuditoria({
-      accion: "solicitar_recuperacion_password",
-      modulo: "Autenticacion",
-      descripcion: "Se solicito recuperacion de contrasena.",
-      usuarioUid: "",
-      usuarioNombre: email,
-      usuarioRol: "",
-      exito: true,
-      detalles: { email }
-    });
+    try {
+      await registrarEventoAuditoria({
+        accion: "solicitar_recuperacion_password",
+        modulo: "Autenticacion",
+        descripcion: "Se solicito recuperacion de contrasena.",
+        usuarioUid: "",
+        usuarioNombre: email,
+        usuarioRol: "",
+        exito: true,
+        detalles: { email }
+      });
+    } catch (errorAuditoria) {
+      console.warn("No se pudo registrar auditoria de recuperacion:", errorAuditoria);
+    }
 
     alert("Se envió un enlace para restablecer tu contraseña a tu correo electrónico.");
-
     window.location.href = "login.html";
 
-  } catch(error) {
-
-    console.error(error);
+  } catch (error) {
+    console.error("Error al enviar correo de recuperación:", error);
 
     try {
       await registrarEventoAuditoria({
@@ -149,9 +156,22 @@ window.recuperarPassword = async function() {
         }
       });
     } catch (errorAuditoria) {
-      console.warn("No se pudo registrar auditoria de recuperacion:", errorAuditoria);
+      console.warn("No se pudo registrar auditoria de recuperacion fallida:", errorAuditoria);
     }
 
+    if (error.code === "auth/user-not-found") {
+      alert("No existe una cuenta registrada con ese correo.");
+    } else if (error.code === "auth/invalid-email") {
+      alert("El correo electrónico no es válido.");
+    } else if (error.code === "auth/too-many-requests") {
+      alert("Demasiados intentos. Intenta más tarde.");
+    } else if (error.code === "auth/network-request-failed") {
+      alert("Error de conexión. Revisa tu internet.");
+    } else {
+      alert("No fue posible enviar el correo de recuperación.");
+    }
+  }
+};
     if (error.code === "auth/user-not-found") {
 
       alert("No existe una cuenta registrada con ese correo.");
