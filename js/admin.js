@@ -103,11 +103,7 @@ function configurarFiltros() {
   });
 
   document.getElementById("btnActualizarAuditoria")?.addEventListener("click", async () => {
-   try {
-      await cargarResumen();
-    } catch (error) {
-      console.error("Error en cargarResumen:", error);
-}
+    await cargarResumen();
     await cargarUsuariosAdmin();
     await cargarCodigosMedicoAdmin();
     await cargarPacientesAdmin();
