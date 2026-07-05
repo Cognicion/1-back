@@ -42,10 +42,11 @@ window.iniciarSesion = async function() {
   const email = document.getElementById("email").value;
   const password = document.getElementById("password").value;
 
-  try {
-    const cred = await signInWithEmailAndPassword(auth, email, password);
-    const datos = await obtenerUsuario(cred.user.uid);
+try {
+  const cred = await signInWithEmailAndPassword(auth, email, password);
+  const datos = await obtenerUsuario(cred.user.uid);
 
+  try {
     await registrarEventoAuditoria({
       accion: "inicio_sesion",
       modulo: "Autenticacion",
@@ -56,30 +57,33 @@ window.iniciarSesion = async function() {
       exito: true,
       detalles: { email }
     });
-
-    window.location.href = "dashboard.html";
-
-  } catch(error) {
-    try {
-      await registrarEventoAuditoria({
-        accion: "inicio_sesion_fallido",
-        modulo: "Autenticacion",
-        descripcion: "Intento fallido de inicio de sesion.",
-        usuarioUid: "",
-        usuarioNombre: email,
-        usuarioRol: "",
-        exito: false,
-        detalles: {
-          email,
-          error: resumenError(error)
-        }
-      });
-    } catch (errorAuditoria) {
-      console.warn("No se pudo registrar el intento fallido:", errorAuditoria);
-    }
-
-    alert(error.message);
+  } catch (errorAuditoria) {
+    console.warn("No se pudo registrar auditoria de inicio de sesion:", errorAuditoria);
   }
+
+  window.location.href = "dashboard.html";
+
+} catch(error) {
+  try {
+    await registrarEventoAuditoria({
+      accion: "inicio_sesion_fallido",
+      modulo: "Autenticacion",
+      descripcion: "Intento fallido de inicio de sesion.",
+      usuarioUid: "",
+      usuarioNombre: email,
+      usuarioRol: "",
+      exito: false,
+      detalles: {
+        email,
+        error: resumenError(error)
+      }
+    });
+  } catch (errorAuditoria) {
+    console.warn("No se pudo registrar el intento fallido:", errorAuditoria);
+  }
+
+  alert(error.message);
+}
 };
 
 window.cerrarSesion = async function() {
