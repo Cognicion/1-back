@@ -17,11 +17,11 @@ onAuthStateChanged(auth, async (user) => {
 
   const usuario = await obtenerUsuario(user.uid);
 
-  if (!usuario || !["medico", "psicologo"].includes(usuario.rol)) {
-    alert("Acceso restringido al personal clinico");
-    window.location.href = "dashboard.html";
-    return;
-  }
+  if (!usuario || !["medico", "psicologo", "admin"].includes(usuario.rol)) {
+  alert("Acceso restringido al personal clinico");
+  window.location.href = "dashboard.html";
+  return;
+}
 
   const lista = document.getElementById("listaPacientes");
   lista.innerHTML = "";

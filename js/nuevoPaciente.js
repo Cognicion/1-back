@@ -221,11 +221,11 @@ onAuthStateChanged(auth, async (user) => {
 
   const usuario = await obtenerUsuario(user.uid);
 
-  if (!usuario || !["medico", "psicologo"].includes(usuario.rol)) {
+  if (!usuario || !["medico", "psicologo", "admin"].includes(usuario.rol)) {
     alert("Acceso restringido al personal clinico");
     window.location.href = "dashboard.html";
+    return;
   }
-});
 
 document.getElementById("abrirIngresoNuevo")?.addEventListener("click", abrirSelectorIngresoNuevo);
 document.getElementById("cerrarIngresoNuevo")?.addEventListener("click", cerrarSelectorIngresoNuevo);
