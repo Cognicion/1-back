@@ -176,19 +176,4 @@ window.recuperarPassword = async function() {
     }
   }
 };
-    if (error.code === "auth/user-not-found") {
-
-      alert("No existe una cuenta registrada con ese correo.");
-
-    } else if (error.code === "auth/invalid-email") {
-
-      alert("El correo electrónico no es válido.");
-
-    } else {
-
-      alert("No fue posible enviar el correo de recuperación.");
-    }
-
-  }
-
-};
+    
