@@ -9,7 +9,7 @@
 <style>
 :root {
     --bg: #05070b;
-    --panel: rgba(12, 17, 26, 0.72);
+    --panel: rgba(2, 5, 10, 0.72);
     --panel-strong: rgba(16, 23, 36, 0.86);
     --line: rgba(148, 163, 184, 0.16);
     --line-blue: rgba(56, 189, 248, 0.22);
@@ -663,6 +663,39 @@ footer {
     letter-spacing: 0.06em;
     text-transform: uppercase;
 }
+
+.sofia-card {
+    position: relative;
+    overflow: hidden;
+    border-color: rgba(125, 211, 252, 0.36);
+    background:
+        radial-gradient(circle at 84% 0%, rgba(56, 189, 248, 0.20), transparent 34%),
+        linear-gradient(145deg, rgba(6, 12, 24, 0.94), rgba(15, 23, 42, 0.82));
+}
+
+.sofia-card::after {
+    content: "";
+    position: absolute;
+    inset: auto -40px -80px auto;
+    width: 180px;
+    height: 180px;
+    border-radius: 50%;
+    background: rgba(56, 189, 248, 0.12);
+    filter: blur(24px);
+    pointer-events: none;
+}
+
+.sofia-card .module-icon {
+    background: rgba(37, 99, 235, 0.20);
+    border-color: rgba(125, 211, 252, 0.28);
+}
+
+.badge-alpha {
+    color: #dff8ff;
+    background: rgba(37, 99, 235, 0.26);
+    border-color: rgba(125, 211, 252, 0.34);
+}
+
 </style>
   <link rel="stylesheet" href="css/reportes.css">
   <!-- dashboard-deploy: 2026-07-02 18:22:52 -06:00 -->
@@ -729,6 +762,29 @@ footer {
                     <button class="primary-button" onclick="window.location.href='mi-salud.html'">Abrir m&oacute;dulo</button>
                 </div>
             </article>
+
+            <article class="module-card sofia-card" id="tarjetaSofia" style="display:none;">
+                <div class="module-top">
+                    <div class="module-icon">IA</div>
+                    <span class="badge badge-alpha">ALPHA</span>
+                </div>
+
+                <h3>🧠 Proyecto Sofía</h3>
+
+                <p>
+                    Sistema Experimental de Inteligencia Clínica.
+                    Laboratorio privado para investigación, pruebas internas
+                    y desarrollo del motor de IA de Cognición.
+                </p>
+
+                <div class="card-actions">
+                    <button class="primary-button"
+                        onclick="window.location.href='sofia.html'">
+                        Entrar al laboratorio
+                    </button>
+                </div>
+            </article>
+
 
             <article class="module-card">
                 <div class="module-top">

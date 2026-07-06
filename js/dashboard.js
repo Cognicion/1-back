@@ -74,6 +74,12 @@ onAuthStateChanged(auth, async (user) => {
   const datos = await obtenerUsuario(user.uid);
   const rolUsuario = String(datos?.rol || "").toLowerCase().trim();
 
+  const tarjetaSofia = document.getElementById("tarjetaSofia");
+
+  if (tarjetaSofia && rolUsuario === "admin") {
+    tarjetaSofia.style.display = "";
+  }
+
   if (datos) {
     document.getElementById("bienvenida").innerText =
       "Bienvenido, " + datos.nombre;
