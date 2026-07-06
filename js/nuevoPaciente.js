@@ -372,4 +372,5 @@ window.guardarPacienteNuevo = async function() {
   } catch(error) {
     alert("Error: " + error.message);
   }
-};
+}
+})
