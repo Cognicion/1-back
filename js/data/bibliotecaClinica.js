@@ -94,7 +94,26 @@ export const CRITERIOS_DIAGNOSTICOS = [
       "Plan de reduccion de danos, desintoxicacion o rehabilitacion segun gravedad."
     ],
     psicoeducacion: "El consumo problematico es tratable. La recuperacion combina seguridad, plan terapeutico, apoyo y prevencion de recaidas."
+  },
+
+  {
+    codigo: "60.6 / 6D10",
+    nombre: "Trastorno ansioso (evitativo) de la personalidad",
+    categoria: "Trastornos de la personalidad",
+    criterios: [
+      "A) Deben cumplirse los criterios generales para el diagnostico de trastorno de la personalidad.",
+      "B) Deben cumplirse al menos cuatro de los siguientes criterios:", 
+      "1) Evita actividades laborales o escolares que impliquen un contacto interpersonal significativo, por temor a la critica, desaprobacion o rechazo.", 
+      "2) Esta reacio a implicarse con personas, a menos que este seguro de ser aceptado.",
+      "3) Muestra restriccion en las relaciones interpersonales debido al miedo a ser avergonzado o ridiculizado.", 
+      "4) Preocupacion por ser criticado o rechazado en situaciones sociales.",
+      "5) Inhibicion en situaciones interpersonales nuevas debido a sentimientos de inferioridad.", 
+      "6) Se ve a si mismo como socialmente inepto, personalmente poco atractivo o inferior a los demas.", 
+      "7) Es extraordinariamente reacio a asumir riesgos personales o a implicarse en nuevas actividades debido a que pueden resultar embarazosas.", 
+    ],
+    psicoeducacion: "Brindar información sobre el trastorno evitativo de la personalidad, sus características clínicas y el papel de la evitación en el mantenimiento de los síntomas; promover el reconocimiento de pensamientos disfuncionales relacionados con el rechazo y la baja autoestima, reforzar estrategias de afrontamiento, habilidades sociales y la importancia de la adherencia al tratamiento psicoterapéutico y farmacológico cuando esté indicado."
   }
+
 ];
 
 export const PSICOEDUCACION = [

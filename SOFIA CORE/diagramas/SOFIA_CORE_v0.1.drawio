@@ -1,0 +1,46 @@
+<mxfile host="Electron">
+  <diagram name="Página-1" id="ENSynGDIWLfYIavfghOO">
+    <mxGraphModel dx="2029" dy="1795" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="ECVMAZM5nfa2GM8tFFPB-3" parent="1" style="rounded=0;whiteSpace=wrap;html=1;align=center;labelPosition=center;verticalLabelPosition=middle;verticalAlign=top;" value="&lt;div&gt;&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;ENTRADA&lt;/span&gt;&lt;/div&gt;" vertex="1">
+          <mxGeometry height="200" width="410" x="470" y="100" as="geometry" />
+        </mxCell>
+        <mxCell id="ECVMAZM5nfa2GM8tFFPB-4" parent="1" style="rounded=0;whiteSpace=wrap;html=1;verticalAlign=top;" value="COGNICIÓN" vertex="1">
+          <mxGeometry height="350" width="320" x="-300" y="100" as="geometry" />
+        </mxCell>
+        <mxCell id="ECVMAZM5nfa2GM8tFFPB-5" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="ACCIÓN" vertex="1">
+          <mxGeometry height="30" width="120" x="350" y="490" as="geometry" />
+        </mxCell>
+        <mxCell id="ECVMAZM5nfa2GM8tFFPB-6" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="GOBIERNO" vertex="1">
+          <mxGeometry height="30" width="120" x="270" y="520" as="geometry" />
+        </mxCell>
+        <mxCell id="ECVMAZM5nfa2GM8tFFPB-9" parent="1" style="rounded=0;whiteSpace=wrap;html=1;align=center;" value="SOFIA" vertex="1">
+          <mxGeometry height="160" width="410" x="125" y="-140" as="geometry" />
+        </mxCell>
+        <mxCell id="ECVMAZM5nfa2GM8tFFPB-14" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="Identidad" vertex="1">
+          <mxGeometry height="30" width="120" x="-290" y="150" as="geometry" />
+        </mxCell>
+        <mxCell id="ECVMAZM5nfa2GM8tFFPB-15" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="Atención" vertex="1">
+          <mxGeometry height="30" width="120" x="-290" y="190" as="geometry" />
+        </mxCell>
+        <mxCell id="ECVMAZM5nfa2GM8tFFPB-16" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="Memoria" vertex="1">
+          <mxGeometry height="30" width="120" x="-290" y="230" as="geometry" />
+        </mxCell>
+        <mxCell id="ECVMAZM5nfa2GM8tFFPB-19" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="Razonamiento" vertex="1">
+          <mxGeometry height="30" width="120" x="-290" y="270" as="geometry" />
+        </mxCell>
+        <mxCell id="ECVMAZM5nfa2GM8tFFPB-20" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="Planificación" vertex="1">
+          <mxGeometry height="30" width="120" x="-290" y="310" as="geometry" />
+        </mxCell>
+        <mxCell id="ECVMAZM5nfa2GM8tFFPB-21" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="Aprendizaje" vertex="1">
+          <mxGeometry height="30" width="120" x="-290" y="350" as="geometry" />
+        </mxCell>
+        <mxCell id="ECVMAZM5nfa2GM8tFFPB-22" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="Metacognición" vertex="1">
+          <mxGeometry height="30" width="120" x="-290" y="390" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
