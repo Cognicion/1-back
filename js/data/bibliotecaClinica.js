@@ -47,18 +47,45 @@ export const CRITERIOS_DIAGNOSTICOS = [
     ],
     psicoeducacion: "La psicosis requiere atencion temprana, continuidad terapeutica, apoyo familiar y reduccion de recaidas."
   },
+
   {
     codigo: "F41.1 / 6B00",
-    nombre: "Ansiedad generalizada",
+    nombre: "Trastorno de Ansiedad generalizada",
     categoria: "Ansiedad",
     criterios: [
-      "Preocupacion excesiva y dificil de controlar sobre multiples areas.",
-      "Sintomas como inquietud, tension muscular, fatiga, irritabilidad, problemas de concentracion o sueno.",
-      "Deterioro funcional y persistencia clinicamente significativa.",
-      "Descartar hipertiroidismo, sustancias, ansiedad inducida por medicamentos u otros trastornos."
+      "A) Presencia de un período de por lo menos 6 meses con tensión prominente, preocupación y aprensión sobre los acontecimientos y problemas de la vida diaria.",
+      "B) Presencia de al menos 4 de los síntomas lsitados a continuación, de los cuales por lo menos uno de ellos debe ser del grupo 1-4:",
+      "Síntomas autonómicos:",
+      " 1) Palpitaciones o golpeo del corazón o ritmo cardiaco acelerado.",
+      " 2) Sudoración.",
+      " 3) Temblores o sacudidas.",
+      " 4) Sequedad de boca (no debida a medicación o deshidratación).",
+      " Síntomas relacionados con el pecho y abdomen:",
+      " 5) Dificultad para respirar.",
+      " 6) Sensación de ahogo.",
+      " 7) Dolor o molestias en el pecho.",
+      " 8) Náuseas o malestar abdominal (p. ej., estómago revuelto).",
+      "Síntomas relacionados con el estado mental:",
+      " 9) Sensación de mareo, inestabilidad o desvanecimiento.",
+      " 10) Sensación de que los objetos son irreales (desrealización) o de que uno mismo está distante o no realmente aquí (despersonalización).", 
+      " 11) Miedo a perder el control, a perder la conciencia o volverse loco.",
+      " 12) Miedo a morir.",
+      "Síntomas generales:",
+      " 13) Sofocos de calor o escalofríos.",
+      " 14) aturdimiento o sensación de hormigueo (parestesias).",
+      " 15) Tensión, dolores o molestias musculares.",
+      " 16) Inquietud e incapacidad para relajrse.",
+      " 17) sentimientos de estar al límite o bajo presión, o de tensión mental",
+      " 18) Sensación de nudo en la garganta o dificultad para tragar.",
+      "Otros síntomas no específicos:",
+      " 19) Respuesta exagerada a pequeñas sorpresas o sobresaltos.",
+      " 20) Dificultad para concentrarse o de mente en blanco, a causa de la preocupación o de la ansiedad.",
+      " 21) Irritabilidad persistente",
+      " 22) Dificultad para conciliar el sueño debido a las preocupaciones."
     ],
     psicoeducacion: "La ansiedad se trabaja con psicoeducacion, regulacion fisiologica, exposicion gradual, sueño y estrategias cognitivas."
   },
+
   {
     codigo: "F42 / 6B20",
     nombre: "Trastorno obsesivo compulsivo",
