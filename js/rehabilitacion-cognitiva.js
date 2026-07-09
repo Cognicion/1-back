@@ -67,8 +67,9 @@ const actividades = [
     nombre: "Stroop",
     descripcion: "Selecciona el color de la tinta e inhibe la lectura automatica de la palabra.",
     funciones: ["Funciones ejecutivas", "Atencion", "Velocidad de procesamiento"],
-    estado: "Proximamente",
-    accion: "Ver ejercicio"
+    estado: "Disponible",
+    accion: "Entrenar",
+    url: "stroop.html"
   },
   {
     icono: "GN",

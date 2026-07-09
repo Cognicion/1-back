@@ -1278,7 +1278,7 @@ button:hover{
 .diagnosticos-editables-head,
 .diagnosticos-editables-row {
   display: grid;
-  grid-template-columns: minmax(110px, 0.45fr) minmax(260px, 1.4fr) minmax(120px, 0.45fr) minmax(110px, auto) auto;
+  grid-template-columns: minmax(90px, 0.45fr) minmax(220px, 1.25fr) minmax(130px, 0.65fr) minmax(110px, 0.55fr) minmax(74px, auto) minmax(92px, auto) auto;
   gap: 10px;
   align-items: center;
   padding: 12px 14px;
@@ -1478,4 +1478,15 @@ button:hover{
 .temporizador-escala-nota button {
   width: auto;
   margin: 0;
+}
+
+.diagnostico-orden-nota {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.diagnostico-orden-nota button:disabled {
+  opacity: 0.38;
+  cursor: not-allowed;
 }

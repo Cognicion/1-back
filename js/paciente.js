@@ -271,7 +271,9 @@ function formatearDiagnostico(diagnostico) {
       diagnostico.descripcion ||
       "";
 
-    return `${codigo}${texto}`.trim() || "Sin diagnostico";
+    const base = `${codigo}${texto}`.trim();
+    const estado = diagnostico.estado ? ` — ${diagnostico.estado}` : "";
+    return `${base}${estado}`.trim() || "Sin diagnostico";
   }
 
   return String(diagnostico);
@@ -903,6 +905,87 @@ function ocultarSecciones() {
   });
 }
 
+const ESTADOS_DIAGNOSTICO = [
+  "Se agrega",
+  "Se descarta",
+  "Probable",
+  "A descartar",
+  "Confirmado",
+  "En seguimiento",
+  "Antecedente",
+  "Remisión",
+  "Diferencial"
+];
+
+function estadoDiagnosticoValido(estado) {
+  return ESTADOS_DIAGNOSTICO.includes(estado) ? estado : ESTADOS_DIAGNOSTICO[0];
+}
+
+function crearIdDiagnostico(diagnostico, index = 0) {
+  if (diagnostico?.id) return diagnostico.id;
+  const base = [diagnostico?.catalogo, diagnostico?.codigo, diagnostico?.nombre || diagnostico?.texto, index]
+    .filter(Boolean)
+    .join("-")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+  return base || `diagnostico-${index}`;
+}
+
+function normalizarDiagnostico(diagnostico = {}, catalogoFallback = "CIE-10", index = 0) {
+  if (typeof diagnostico === "string") {
+    const base = {
+      codigo: "",
+      nombre: diagnostico,
+      texto: diagnostico,
+      catalogo: catalogoFallback,
+      fechaSeleccion: new Date().toISOString(),
+      estado: ESTADOS_DIAGNOSTICO[0],
+      orden: index
+    };
+    return { ...base, id: crearIdDiagnostico(base, index) };
+  }
+
+  const catalogo = diagnostico.catalogo || catalogoFallback;
+  const nombre = diagnostico.nombre || diagnostico.texto || diagnostico.descripcion || "";
+  const orden = Number.isFinite(Number(diagnostico.orden)) ? Number(diagnostico.orden) : index;
+  const normalizado = {
+    id: diagnostico.id || "",
+    codigo: diagnostico.codigo || "",
+    nombre,
+    texto: diagnostico.texto || `${diagnostico.codigo || ""}${diagnostico.codigo && nombre ? " - " : ""}${nombre}`.trim() || nombre,
+    catalogo,
+    fechaSeleccion: diagnostico.fechaSeleccion || new Date().toISOString(),
+    estado: estadoDiagnosticoValido(diagnostico.estado),
+    orden,
+    manual: diagnostico.manual === true,
+    agregadoManual: diagnostico.agregadoManual === true,
+    editadoManual: diagnostico.editadoManual === true,
+    incluidoEnCatalogo: diagnostico.incluidoEnCatalogo === true
+  };
+  normalizado.id = crearIdDiagnostico(normalizado, index);
+  return normalizado;
+}
+
+function normalizarHistorialDiagnosticos(historial = []) {
+  return historial
+    .map((dx, index) => normalizarDiagnostico(dx, dx?.catalogo || "CIE-10", index))
+    .sort((a, b) => (Number(a.orden) || 0) - (Number(b.orden) || 0))
+    .map((dx, index) => ({ ...dx, orden: index }));
+}
+
+function obtenerHistorialDiagnosticos(datos = datosPacienteActual || {}) {
+  const historial = Array.isArray(datos.historialDiagnosticos)
+    ? datos.historialDiagnosticos
+    : [];
+
+  if (historial.length) return normalizarHistorialDiagnosticos(historial);
+
+  return datos.diagnostico
+    ? normalizarHistorialDiagnosticos([normalizarDiagnostico(datos.diagnostico, datos.diagnostico?.catalogo || "CIE-10")])
+    : [];
+}
+
 function renderizarDiagnosticos(datos) {
   const diagnosticoDiv = document.getElementById("diagnostico");
 
@@ -910,12 +993,8 @@ function renderizarDiagnosticos(datos) {
 
   diagnosticoDiv.innerHTML = "";
 
-  const historial = Array.isArray(datos.historialDiagnosticos)
-    ? datos.historialDiagnosticos
-    : [];
-
-  const principal = datos.diagnostico || historial[historial.length - 1] || "";
-  const clavePrincipal = claveDiagnostico(principal);
+  const historial = obtenerHistorialDiagnosticos(datos);
+  const principal = historial[0] || (datos.diagnostico ? normalizarDiagnostico(datos.diagnostico, datos.diagnostico?.catalogo || "CIE-10") : "");
 
   if (historial.length === 0) {
     const linea = document.createElement("div");
@@ -926,7 +1005,7 @@ function renderizarDiagnosticos(datos) {
   }
 
   historial.forEach((dx, index) => {
-    const esPrincipal = claveDiagnostico(dx) === clavePrincipal;
+    const esPrincipal = index === 0;
     const linea = document.createElement("div");
     linea.className = `diagnostico-linea${esPrincipal ? " principal" : ""}`;
 
@@ -936,60 +1015,14 @@ function renderizarDiagnosticos(datos) {
     const acciones = document.createElement("div");
     acciones.className = "diagnostico-acciones";
 
-    if (esPrincipal) {
-      const etiqueta = document.createElement("span");
-      etiqueta.className = "diagnostico-principal-badge";
-      etiqueta.textContent = "Principal";
-      acciones.appendChild(etiqueta);
-    } else {
-      const boton = document.createElement("button");
-      boton.type = "button";
-      boton.className = "boton-diagnostico-principal";
-      boton.textContent = "Marcar principal";
-      boton.addEventListener("click", () => window.marcarDiagnosticoPrincipal(index));
-      acciones.appendChild(boton);
-    }
+    const etiqueta = document.createElement("span");
+    etiqueta.className = "diagnostico-principal-badge";
+    etiqueta.textContent = esPrincipal ? "Principal" : "Secundario";
+    acciones.appendChild(etiqueta);
 
     linea.append(texto, acciones);
     diagnosticoDiv.appendChild(linea);
   });
-}
-
-function normalizarDiagnostico(diagnostico = {}, catalogoFallback = "CIE-10") {
-  if (typeof diagnostico === "string") {
-    return {
-      codigo: "",
-      nombre: diagnostico,
-      texto: diagnostico,
-      catalogo: catalogoFallback,
-      fechaSeleccion: new Date().toISOString()
-    };
-  }
-
-  const catalogo = diagnostico.catalogo || catalogoFallback;
-  const nombre = diagnostico.nombre || diagnostico.texto || diagnostico.descripcion || "";
-
-  return {
-    codigo: diagnostico.codigo || "",
-    nombre,
-    texto: diagnostico.texto || nombre,
-    catalogo,
-    fechaSeleccion: diagnostico.fechaSeleccion || new Date().toISOString(),
-    manual: diagnostico.manual === true,
-    agregadoManual: diagnostico.agregadoManual === true
-  };
-}
-
-function obtenerHistorialDiagnosticos(datos = datosPacienteActual || {}) {
-  const historial = Array.isArray(datos.historialDiagnosticos)
-    ? datos.historialDiagnosticos
-    : [];
-
-  if (historial.length) return historial.map((dx) => normalizarDiagnostico(dx, dx.catalogo || "CIE-10"));
-
-  return datos.diagnostico
-    ? [normalizarDiagnostico(datos.diagnostico, datos.diagnostico?.catalogo || "CIE-10")]
-    : [];
 }
 
 function obtenerCatalogoDiagnostico() {
@@ -1036,13 +1069,17 @@ function renderizarResultadosBusquedaDiagnosticos() {
   });
 }
 
+function opcionesEstadoDiagnostico(estadoActual = ESTADOS_DIAGNOSTICO[0]) {
+  return ESTADOS_DIAGNOSTICO.map((estado) => `
+    <option value="${escaparHTML(estado)}" ${estado === estadoActual ? "selected" : ""}>${escaparHTML(estado)}</option>
+  `).join("");
+}
+
 function renderizarPanelDiagnosticos() {
   const contenedor = document.getElementById("panelDiagnosticosPaciente");
   if (!contenedor) return;
 
   const historial = obtenerHistorialDiagnosticos();
-  const principal = datosPacienteActual?.diagnostico || historial[historial.length - 1] || "";
-  const clavePrincipal = claveDiagnostico(principal);
 
   if (!historial.length) {
     contenedor.innerHTML = "<p>Aun no hay diagnosticos registrados.</p>";
@@ -1050,7 +1087,7 @@ function renderizarPanelDiagnosticos() {
   }
 
   contenedor.innerHTML = historial.map((dx, index) => {
-    const esPrincipal = claveDiagnostico(dx) === clavePrincipal;
+    const esPrincipal = index === 0;
     return `
       <article class="registro-card diagnostico-card">
         <div class="registro-top">
@@ -1060,8 +1097,15 @@ function renderizarPanelDiagnosticos() {
           </div>
           <span class="diagnostico-principal-badge">${esPrincipal ? "Principal" : "Secundario"}</span>
         </div>
-        <div class="registro-actions">
-          ${esPrincipal ? "" : `<button type="button" data-principal-diagnostico="${index}">Marcar principal</button>`}
+        <div class="registro-actions diagnostico-orden-acciones">
+          <label class="diagnostico-estado-label">
+            Estado
+            <select data-estado-diagnostico="${index}">
+              ${opcionesEstadoDiagnostico(dx.estado)}
+            </select>
+          </label>
+          <button type="button" data-mover-diagnostico="${index}" data-direccion="-1" ${index === 0 ? "disabled" : ""}>↑</button>
+          <button type="button" data-mover-diagnostico="${index}" data-direccion="1" ${index === historial.length - 1 ? "disabled" : ""}>↓</button>
           <button type="button" data-reemplazar-diagnostico="${index}">Cambiar por catalogo</button>
           <button type="button" data-editar-diagnostico="${index}">Editar codigo/texto</button>
           <button type="button" class="boton-peligro" data-quitar-diagnostico="${index}">Quitar</button>
@@ -1070,8 +1114,12 @@ function renderizarPanelDiagnosticos() {
     `;
   }).join("");
 
-  contenedor.querySelectorAll("[data-principal-diagnostico]").forEach((boton) => {
-    boton.addEventListener("click", () => window.marcarDiagnosticoPrincipal(Number(boton.dataset.principalDiagnostico)));
+  contenedor.querySelectorAll("[data-estado-diagnostico]").forEach((selector) => {
+    selector.addEventListener("change", () => cambiarEstadoDiagnosticoPaciente(Number(selector.dataset.estadoDiagnostico), selector.value));
+  });
+
+  contenedor.querySelectorAll("[data-mover-diagnostico]").forEach((boton) => {
+    boton.addEventListener("click", () => moverDiagnosticoPaciente(Number(boton.dataset.moverDiagnostico), Number(boton.dataset.direccion)));
   });
 
   contenedor.querySelectorAll("[data-editar-diagnostico]").forEach((boton) => {
@@ -2236,9 +2284,7 @@ async function limpiarIngresoPacienteDesdeModal() {
 }
 
 window.marcarDiagnosticoPrincipal = async function(index) {
-  const datos = await obtenerUsuario(uidPaciente);
-  const historial = obtenerHistorialDiagnosticos(datos);
-
+  const historial = obtenerHistorialDiagnosticos();
   const diagnostico = historial[index];
 
   if (!diagnostico) {
@@ -2246,9 +2292,9 @@ window.marcarDiagnosticoPrincipal = async function(index) {
     return;
   }
 
-  await actualizarUsuario(uidPaciente, {
-    diagnostico
-  });
+  const nuevoHistorial = historial.filter((_, i) => i !== index);
+  nuevoHistorial.unshift(diagnostico);
+  await guardarHistorialDiagnosticos(nuevoHistorial);
 
   await registrarAccionExpediente({
     accion: "cambiar_diagnostico_principal",
@@ -2261,9 +2307,9 @@ window.marcarDiagnosticoPrincipal = async function(index) {
   await cargarDatosPaciente();
 };
 
-async function guardarHistorialDiagnosticos(historial, principal = null) {
-  const limpio = historial.map((dx) => normalizarDiagnostico(dx, dx.catalogo || "CIE-10"));
-  const diagnosticoPrincipal = principal || limpio[limpio.length - 1] || "";
+async function guardarHistorialDiagnosticos(historial) {
+  const limpio = normalizarHistorialDiagnosticos(historial);
+  const diagnosticoPrincipal = limpio[0] || "";
 
   await actualizarUsuario(uidPaciente, {
     diagnostico: diagnosticoPrincipal || deleteField(),
@@ -2296,14 +2342,9 @@ async function agregarDiagnosticoPaciente(index) {
       return;
     }
 
-    historial[diagnosticoReemplazoIndex] = diagnostico;
+    historial[diagnosticoReemplazoIndex] = { ...normalizarDiagnostico(diagnostico, diagnostico.catalogo || "CIE-10", diagnosticoReemplazoIndex), estado: anterior.estado, orden: anterior.orden };
 
-    const principalActual = datosPacienteActual?.diagnostico || anterior;
-    const principal = claveDiagnostico(principalActual) === claveDiagnostico(anterior)
-      ? diagnostico
-      : principalActual;
-
-    await guardarHistorialDiagnosticos(historial, principal);
+    await guardarHistorialDiagnosticos(historial);
 
     await registrarAccionExpediente({
       accion: "cambiar_diagnostico",
@@ -2329,9 +2370,8 @@ async function agregarDiagnosticoPaciente(index) {
     return;
   }
 
-  const nuevoHistorial = [...historial, diagnostico];
-  const debeSerPrincipal = !datosPacienteActual?.diagnostico;
-  await guardarHistorialDiagnosticos(nuevoHistorial, debeSerPrincipal ? diagnostico : datosPacienteActual?.diagnostico);
+  const nuevoHistorial = [...historial, normalizarDiagnostico(diagnostico, diagnostico.catalogo || "CIE-10", historial.length)];
+  await guardarHistorialDiagnosticos(nuevoHistorial);
 
   await registrarAccionExpediente({
     accion: "agregar_diagnostico",
@@ -2383,12 +2423,7 @@ async function editarDiagnosticoPaciente(index) {
 
   historial[index] = actualizado;
 
-  const principalActual = datosPacienteActual?.diagnostico || historial[historial.length - 1] || "";
-  const principal = claveDiagnostico(principalActual) === claveDiagnostico(diagnostico)
-    ? actualizado
-    : principalActual;
-
-  await guardarHistorialDiagnosticos(historial, principal);
+  await guardarHistorialDiagnosticos(historial);
 
   await registrarAccionExpediente({
     accion: "editar_diagnostico",
@@ -2451,10 +2486,8 @@ async function agregarDiagnosticoManualPaciente() {
   }
 
   const historial = obtenerHistorialDiagnosticos();
-  const nuevoHistorial = [...historial, diagnostico];
-  const debeSerPrincipal = !datosPacienteActual?.diagnostico;
-
-  await guardarHistorialDiagnosticos(nuevoHistorial, debeSerPrincipal ? diagnostico : datosPacienteActual?.diagnostico);
+  const nuevoHistorial = [...historial, normalizarDiagnostico(diagnostico, diagnostico.catalogo || "CIE-10", historial.length)];
+  await guardarHistorialDiagnosticos(nuevoHistorial);
 
   await registrarAccionExpediente({
     accion: "agregar_diagnostico_manual",
@@ -2471,6 +2504,46 @@ async function agregarDiagnosticoManualPaciente() {
   await cargarDatosPaciente();
 }
 
+async function moverDiagnosticoPaciente(index, direccion) {
+  const historial = obtenerHistorialDiagnosticos();
+  const destino = index + direccion;
+
+  if (!historial[index] || destino < 0 || destino >= historial.length) return;
+
+  [historial[index], historial[destino]] = [historial[destino], historial[index]];
+  await guardarHistorialDiagnosticos(historial.map((dx, orden) => ({ ...dx, orden })));
+  await registrarAccionExpediente({
+    accion: "reordenar_diagnosticos",
+    descripcion: "El medico cambio el orden de los diagnosticos del expediente.",
+    detalles: {
+      diagnosticoPrincipal: formatearDiagnostico(historial[0])
+    }
+  });
+  renderizarPanelDiagnosticos();
+  renderizarDiagnosticos(datosPacienteActual);
+}
+
+async function cambiarEstadoDiagnosticoPaciente(index, estado) {
+  const historial = obtenerHistorialDiagnosticos();
+  if (!historial[index]) return;
+
+  historial[index] = {
+    ...historial[index],
+    estado: estadoDiagnosticoValido(estado)
+  };
+
+  await guardarHistorialDiagnosticos(historial);
+  await registrarAccionExpediente({
+    accion: "cambiar_estado_diagnostico",
+    descripcion: "El medico cambio el estado clinico de un diagnostico.",
+    detalles: {
+      diagnostico: formatearDiagnostico(historial[index]),
+      estado: historial[index].estado
+    }
+  });
+  renderizarPanelDiagnosticos();
+  renderizarDiagnosticos(datosPacienteActual);
+}
 async function quitarDiagnosticoPaciente(index) {
   const historial = obtenerHistorialDiagnosticos();
   const diagnostico = historial[index];
@@ -2479,12 +2552,8 @@ async function quitarDiagnosticoPaciente(index) {
   if (!confirm("Quitar este diagnostico del expediente?")) return;
 
   const nuevoHistorial = historial.filter((_, i) => i !== index);
-  const principalActual = datosPacienteActual?.diagnostico || historial[historial.length - 1] || "";
-  const principal = claveDiagnostico(principalActual) === claveDiagnostico(diagnostico)
-    ? nuevoHistorial[nuevoHistorial.length - 1] || null
-    : principalActual;
 
-  await guardarHistorialDiagnosticos(nuevoHistorial, principal);
+  await guardarHistorialDiagnosticos(nuevoHistorial);
 
   await registrarAccionExpediente({
     accion: "quitar_diagnostico",
@@ -4783,7 +4852,3 @@ async function registrarAccionExpediente({ accion, descripcion, detalles = {} })
     detalles
   });
 }
-
-
-
-

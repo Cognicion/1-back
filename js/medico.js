@@ -824,7 +824,9 @@ function formatearDiagnostico(diagnostico) {
       ? `${diagnostico.codigo} - `
       : "";
 
-    return `${catalogo}${codigo}${texto}`.trim() || "Sin diagnóstico";
+    const base = `${catalogo}${codigo}${texto}`.trim();
+    const estado = diagnostico.estado ? ` — ${diagnostico.estado}` : "";
+    return `${base}${estado}`.trim() || "Sin diagnóstico";
   }
 
   return String(diagnostico);
@@ -844,28 +846,27 @@ function claveDiagnostico(diagnostico) {
   return String(diagnostico);
 }
 
+function normalizarOrdenDiagnosticosPanel(historial = []) {
+  return historial
+    .map((dx, index) => ({
+      ...(typeof dx === "object" && dx !== null ? dx : { texto: String(dx || "") }),
+      estado: typeof dx === "object" && dx !== null ? (dx.estado || "Se agrega") : "Se agrega",
+      orden: Number.isFinite(Number(dx?.orden)) ? Number(dx.orden) : index
+    }))
+    .sort((a, b) => (Number(a.orden) || 0) - (Number(b.orden) || 0))
+    .map((dx, index) => ({ ...dx, orden: index }));
+}
+
 function obtenerDiagnosticosPaciente(paciente) {
-  const historial = Array.isArray(paciente.historialDiagnosticos)
+  const historial = normalizarOrdenDiagnosticosPanel(Array.isArray(paciente.historialDiagnosticos)
     ? paciente.historialDiagnosticos
-    : [];
+    : []);
   const catalogoVisible = paciente.diagnosticoCatalogoVisible || "auto";
   const historialVisible = catalogoVisible === "auto"
     ? historial
     : historial.filter((dx) => (dx.catalogo || "CIE-10") === catalogoVisible);
 
-  const principal =
-    (
-      catalogoVisible !== "auto" &&
-      paciente.diagnostico &&
-      (paciente.diagnostico.catalogo || "CIE-10") === catalogoVisible
-        ? paciente.diagnostico
-        : null
-    ) ||
-    (catalogoVisible === "auto" ? paciente.diagnostico : null) ||
-    historialVisible[historialVisible.length - 1] ||
-    historial[historial.length - 1] ||
-    "";
-
+  const principal = historialVisible[0] || historial[0] || paciente.diagnostico || "";
   const clavePrincipal = claveDiagnostico(principal);
   const secundarios = historial.filter(
     (diagnostico) => claveDiagnostico(diagnostico) !== clavePrincipal

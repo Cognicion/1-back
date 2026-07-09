@@ -905,7 +905,83 @@ function insertarEscalaPreviaEnNota(idEscalaAplicada) {
 configurarPanelEscalaNota();
 configurarSeccionesRedimensionablesNota();
 
+const ESTADOS_DIAGNOSTICO_NOTA = [
+  "Se agrega",
+  "Se descarta",
+  "Probable",
+  "A descartar",
+  "Confirmado",
+  "En seguimiento",
+  "Antecedente",
+  "Remisión",
+  "Diferencial"
+];
+
+function estadoDiagnosticoNotaValido(estado) {
+  return ESTADOS_DIAGNOSTICO_NOTA.includes(estado) ? estado : ESTADOS_DIAGNOSTICO_NOTA[0];
+}
+
+function crearIdDiagnosticoNota(dx, index = 0) {
+  if (dx?.id) return dx.id;
+  const base = [dx?.catalogo, dx?.codigo, dx?.nombre || dx?.texto, index]
+    .filter(Boolean)
+    .join("-")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+  return base || `diagnostico-${index}`;
+}
+
+function normalizarDiagnosticoNota(dx = {}, index = 0) {
+  if (typeof dx === "string") {
+    const base = {
+      codigo: "",
+      nombre: dx,
+      catalogo: "CIE-10",
+      texto: dx,
+      fechaSeleccion: new Date().toISOString(),
+      estado: ESTADOS_DIAGNOSTICO_NOTA[0],
+      orden: index
+    };
+    return { ...base, id: crearIdDiagnosticoNota(base, index) };
+  }
+
+  const nombre = dx.nombre || dx.texto || dx.descripcion || "";
+  const normalizado = {
+    ...dx,
+    id: dx.id || "",
+    codigo: dx.codigo || "",
+    nombre,
+    catalogo: dx.catalogo || "CIE-10",
+    texto: dx.texto || `${dx.codigo || ""}${dx.codigo && nombre ? " - " : ""}${nombre}`.trim() || nombre,
+    fechaSeleccion: dx.fechaSeleccion || new Date().toISOString(),
+    estado: estadoDiagnosticoNotaValido(dx.estado),
+    orden: Number.isFinite(Number(dx.orden)) ? Number(dx.orden) : index
+  };
+  normalizado.id = crearIdDiagnosticoNota(normalizado, index);
+  return normalizado;
+}
+
+function normalizarDiagnosticosNota(lista = []) {
+  return lista
+    .map((dx, index) => normalizarDiagnosticoNota(dx, index))
+    .sort((a, b) => (Number(a.orden) || 0) - (Number(b.orden) || 0))
+    .map((dx, index) => ({ ...dx, orden: index }));
+}
+
+function textoDiagnosticoConEstado(dx) {
+  const base = dx?.texto || `${dx?.codigo || ""}${dx?.codigo && dx?.nombre ? " - " : ""}${dx?.nombre || ""}`.trim();
+  const estado = dx?.estado ? ` — ${dx.estado}` : "";
+  return `${base}${estado}`.trim();
+}
+
+function opcionesEstadoDiagnosticoNota(estadoActual = ESTADOS_DIAGNOSTICO_NOTA[0]) {
+  return ESTADOS_DIAGNOSTICO_NOTA.map((estado) => `
+    <option value="${escaparHTML(estado)}" ${estado === estadoActual ? "selected" : ""}>${escaparHTML(estado)}</option>
+  `).join("");
+}
 function agregarDiagnostico(dx) {
+  diagnosticosSeleccionados = normalizarDiagnosticosNota(diagnosticosSeleccionados);
   const yaExiste = diagnosticosSeleccionados.some(
     (item) =>
       item.codigo === dx.codigo &&
@@ -917,15 +993,16 @@ function agregarDiagnostico(dx) {
     return;
   }
 
-  const nuevoDiagnostico = {
+  const nuevoDiagnostico = normalizarDiagnosticoNota({
     codigo: dx.codigo,
     nombre: dx.nombre,
     catalogo: dx.catalogo || "CIE-10",
     texto: `${dx.codigo} - ${dx.nombre}`,
     fechaSeleccion: new Date().toISOString()
-  };
+  }, diagnosticosSeleccionados.length);
 
   diagnosticosSeleccionados.push(nuevoDiagnostico);
+  diagnosticosSeleccionados = normalizarDiagnosticosNota(diagnosticosSeleccionados);
 
   cie10Codigo.value = dx.codigo;
   cie10Nombre.value = dx.nombre;
@@ -1028,16 +1105,18 @@ function aceptarDiagnosticoAutomatico(index) {
   );
 
   if (!yaExiste) {
-    diagnosticosSeleccionados.push({
+    diagnosticosSeleccionados = normalizarDiagnosticosNota(diagnosticosSeleccionados);
+    diagnosticosSeleccionados.push(normalizarDiagnosticoNota({
       codigo: dx.codigo || "",
       nombre: dx.nombre || "",
       catalogo: "CIE-10",
       texto: dx.texto || `${dx.codigo || ""}${dx.codigo && dx.nombre ? " - " : ""}${dx.nombre || ""}`.trim(),
+      estado: dx.estado || "Probable",
       sugerido: true,
       certeza: dx.certeza || "sugerido",
       razon: dx.razon || "",
       fechaSeleccion: new Date().toISOString()
-    });
+    }, diagnosticosSeleccionados.length));
   }
 
   diagnosticosAutomaticosSugeridos.diagnosticos.splice(index, 1);
@@ -1149,6 +1228,8 @@ function renderizarDiagnosticosSeleccionadosEditable() {
 
   if (!contenedor) return;
 
+  diagnosticosSeleccionados = normalizarDiagnosticosNota(diagnosticosSeleccionados);
+
   contenedor.innerHTML = `
     <div class="diagnostico-manual-nota">
       <div>
@@ -1172,7 +1253,9 @@ function renderizarDiagnosticosSeleccionadosEditable() {
       <div class="diagnosticos-editables-head">
         <span>Codigo</span>
         <span>Diagnostico</span>
+        <span>Estado</span>
         <span>Catalogo</span>
+        <span>Orden</span>
         <span>Catalogo local</span>
         <span></span>
       </div>
@@ -1192,11 +1275,18 @@ function renderizarDiagnosticosSeleccionadosEditable() {
             oninput="actualizarDiagnosticoSeleccionado(this)"
             placeholder="Nombre del diagnostico"
           >
+          <select data-dx-index="${index}" data-dx-campo="estado" onchange="actualizarDiagnosticoSeleccionado(this)">
+            ${opcionesEstadoDiagnosticoNota(dx.estado)}
+          </select>
           <select data-dx-index="${index}" data-dx-campo="catalogo" onchange="actualizarDiagnosticoSeleccionado(this)">
             <option value="CIE-10" ${(dx.catalogo || "CIE-10") === "CIE-10" ? "selected" : ""}>CIE-10</option>
             <option value="CIE-11" ${(dx.catalogo || "CIE-10") === "CIE-11" ? "selected" : ""}>CIE-11</option>
             <option value="Manual" ${(dx.catalogo || "CIE-10") === "Manual" ? "selected" : ""}>Manual</option>
           </select>
+          <div class="diagnostico-orden-nota">
+            <button type="button" onclick="moverDiagnosticoSeleccionado(${index}, -1)" ${index === 0 ? "disabled" : ""}>↑</button>
+            <button type="button" onclick="moverDiagnosticoSeleccionado(${index}, 1)" ${index === diagnosticosSeleccionados.length - 1 ? "disabled" : ""}>↓</button>
+          </div>
           <button type="button" class="boton-catalogo-manual" onclick="incluirDiagnosticoManualEnCatalogo(${index})">
             Incluir
           </button>
@@ -1232,22 +1322,35 @@ window.actualizarDiagnosticoSeleccionado = function(campo) {
     diagnosticosSeleccionados[index].texto = `${dx.codigo || ""}${dx.codigo && dx.nombre ? " - " : ""}${dx.nombre || ""}`.trim();
   }
 
+  diagnosticosSeleccionados = normalizarDiagnosticosNota(diagnosticosSeleccionados);
   sincronizarDiagnosticosObservacion();
 };
 
 window.agregarDiagnosticoManualNota = function() {
-  diagnosticosSeleccionados.push({
+  diagnosticosSeleccionados = normalizarDiagnosticosNota(diagnosticosSeleccionados);
+  diagnosticosSeleccionados.push(normalizarDiagnosticoNota({
     codigo: "",
     nombre: "Diagnostico manual",
     catalogo: "Manual",
     texto: "Diagnostico manual",
     manual: true,
     fechaSeleccion: new Date().toISOString()
-  });
+  }, diagnosticosSeleccionados.length));
 
+  diagnosticosSeleccionados = normalizarDiagnosticosNota(diagnosticosSeleccionados);
   renderizarDiagnosticosSeleccionados();
 };
 
+window.moverDiagnosticoSeleccionado = function(index, direccion) {
+  diagnosticosSeleccionados = normalizarDiagnosticosNota(diagnosticosSeleccionados);
+  const destino = index + direccion;
+
+  if (!diagnosticosSeleccionados[index] || destino < 0 || destino >= diagnosticosSeleccionados.length) return;
+
+  [diagnosticosSeleccionados[index], diagnosticosSeleccionados[destino]] = [diagnosticosSeleccionados[destino], diagnosticosSeleccionados[index]];
+  diagnosticosSeleccionados = diagnosticosSeleccionados.map((dx, orden) => ({ ...dx, orden }));
+  renderizarDiagnosticosSeleccionados();
+};
 window.incluirDiagnosticoManualEnCatalogo = function(index) {
   const dx = diagnosticosSeleccionados[index];
   if (!dx) return;
@@ -1310,26 +1413,18 @@ window.eliminarDiagnostico = function(index) {
 };
 
 function diagnosticoActual() {
+  diagnosticosSeleccionados = normalizarDiagnosticosNota(diagnosticosSeleccionados);
   if (diagnosticosSeleccionados.length === 0) return null;
 
-  const catalogoVisible = diagnosticoCatalogoVisible?.value || "auto";
-
-  if (catalogoVisible !== "auto") {
-    const diagnostico = [...diagnosticosSeleccionados]
-      .reverse()
-      .find((dx) => (dx.catalogo || "CIE-10") === catalogoVisible);
-
-    if (diagnostico) return diagnostico;
-  }
-
-  return diagnosticosSeleccionados[diagnosticosSeleccionados.length - 1];
+  return diagnosticosSeleccionados[0];
 }
 
 function textoDiagnosticos() {
+  diagnosticosSeleccionados = normalizarDiagnosticosNota(diagnosticosSeleccionados);
   if (diagnosticosSeleccionados.length === 0) return "";
 
   return diagnosticosSeleccionados
-    .map((dx) => dx.texto)
+    .map(textoDiagnosticoConEstado)
     .join("\n");
 }
 
@@ -1618,12 +1713,13 @@ formatoNota?.addEventListener("change", sincronizarFormatoNota);
 btnSincronizarDxObs?.addEventListener("click", sincronizarDiagnosticosObservacion);
 
 function diagnosticosCIE10Observacion() {
+  diagnosticosSeleccionados = normalizarDiagnosticosNota(diagnosticosSeleccionados);
   return diagnosticosSeleccionados
     .filter((dx) => (dx.catalogo || "CIE-10") === "CIE-10")
     .map((dx) => ({
       codigo: dx.codigo || "",
-      diagnostico: dx.nombre || dx.texto || "",
-      texto: dx.texto || `${dx.codigo || ""} - ${dx.nombre || ""}`.trim()
+      diagnostico: `${dx.nombre || dx.texto || ""}${dx.estado ? ` — ${dx.estado}` : ""}`.trim(),
+      texto: textoDiagnosticoConEstado(dx)
     }));
 }
 
@@ -2428,20 +2524,20 @@ async function cargarPaciente(uidPaciente) {
   diagnosticosSeleccionados = [];
 
   if (Array.isArray(datos.historialDiagnosticos)) {
-    diagnosticosSeleccionados = datos.historialDiagnosticos;
+    diagnosticosSeleccionados = normalizarDiagnosticosNota(datos.historialDiagnosticos);
   } else if (Array.isArray(datos.datosClinicosResumen?.historialDiagnosticos)) {
-    diagnosticosSeleccionados = datos.datosClinicosResumen.historialDiagnosticos;
+    diagnosticosSeleccionados = normalizarDiagnosticosNota(datos.datosClinicosResumen.historialDiagnosticos);
   } else if (typeof datos.diagnostico === "object" && datos.diagnostico !== null) {
-    diagnosticosSeleccionados = [datos.diagnostico];
+    diagnosticosSeleccionados = normalizarDiagnosticosNota([datos.diagnostico]);
   } else if (typeof datos.diagnostico === "string" && datos.diagnostico.trim() !== "") {
-    diagnosticosSeleccionados = [
+    diagnosticosSeleccionados = normalizarDiagnosticosNota([
       {
         codigo: "",
         nombre: datos.diagnostico,
         texto: datos.diagnostico,
         fechaSeleccion: new Date().toISOString()
       }
-    ];
+    ]);
   }
 
   renderizarDiagnosticosSeleccionados();
@@ -2492,6 +2588,7 @@ async function guardarNotaMedicaConEstado(estadoNota = "definitiva") {
 
   const esBorrador = estadoNota === "borrador";
 
+  diagnosticosSeleccionados = normalizarDiagnosticosNota(diagnosticosSeleccionados);
   const diagnostico = diagnosticoActual();
 
   const tratamiento = document.getElementById("tratamiento").value;
@@ -2576,7 +2673,7 @@ async function guardarNotaMedicaConEstado(estadoNota = "definitiva") {
         tipoNota: datosNotaClinica.tipoNota || "",
         formatoNota: datosNotaClinica.formatoNota || "cognicion",
         formatoInstitucional: datosNotaClinica.formatoInstitucional || "",
-        diagnosticos: diagnosticosSeleccionados.map((dx) => dx.codigo || dx.nombre || dx.texto || "")
+        diagnosticos: normalizarDiagnosticosNota(diagnosticosSeleccionados).map(textoDiagnosticoConEstado)
       }
     });
 
@@ -3007,9 +3104,9 @@ async function htmlWordFrayObservacion() {
   const datosCognicion = leerFormularioNota();
   const diagnosticos = datos.diagnosticosCIE10.length
     ? datos.diagnosticosCIE10
-    : diagnosticosSeleccionados.map((dx) => ({
+    : normalizarDiagnosticosNota(diagnosticosSeleccionados).map((dx) => ({
         codigo: dx.codigo || "",
-        diagnostico: dx.nombre || dx.texto || ""
+        diagnostico: `${dx.nombre || dx.texto || ""}${dx.estado ? ` — ${dx.estado}` : ""}`.trim()
       }));
 
   const tablaDiagnosticos = diagnosticos.length

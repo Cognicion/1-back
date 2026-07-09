@@ -1,0 +1,81 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>COGNICION | Stroop Cognitivo</title>
+<link rel="icon" type="image/png" href="assets/favicon-cognicion.png">
+<link rel="stylesheet" href="css/stroop.css">
+<link rel="stylesheet" href="css/reportes.css">
+</head>
+<body>
+<div class="stroop-bg" aria-hidden="true">
+  <span></span><span></span><span></span><span></span>
+</div>
+
+<header class="stroop-topbar">
+  <a href="rehabilitacion-cognitiva.html" class="stroop-brand" aria-label="Volver a rehabilitacion cognitiva">
+    <img src="assets/favicon-cognicion.png" alt="COGNICION">
+    <div>
+      <strong>COGNICION</strong>
+      <span>Rehabilitacion cognitiva</span>
+    </div>
+  </a>
+  <a class="stroop-link" href="dashboard.html">Dashboard</a>
+</header>
+
+<main class="stroop-shell">
+  <section id="stroopStart" class="stroop-panel stroop-start">
+    <span class="stroop-kicker">Entrenamiento ejecutivo</span>
+    <h1>Stroop Cognitivo</h1>
+    <p>Selecciona el color de la tinta, no el significado de la palabra. Este ejercicio entrena atencion, control inhibitorio, velocidad de procesamiento y flexibilidad cognitiva.</p>
+
+    <div class="stroop-difficulty" role="radiogroup" aria-label="Dificultad">
+      <label><input type="radio" name="difficulty" value="facil" checked><span>Facil</span><small>Mayor tiempo y mas ensayos congruentes.</small></label>
+      <label><input type="radio" name="difficulty" value="medio"><span>Medio</span><small>Mezcla equilibrada y menor tiempo.</small></label>
+      <label><input type="radio" name="difficulty" value="dificil"><span>Dificil</span><small>Mas incongruentes, menor tiempo y distractores.</small></label>
+    </div>
+
+    <button id="startStroop" class="stroop-primary" type="button">Iniciar</button>
+    <p id="stroopSessionStatus" class="stroop-status">La sesion se guardara si hay usuario autenticado.</p>
+  </section>
+
+  <section id="stroopTask" class="stroop-panel stroop-task" hidden>
+    <div class="stroop-hud">
+      <div><span>Ensayo</span><strong id="trialCounter">1/24</strong></div>
+      <div><span>Precision</span><strong id="liveAccuracy">0%</strong></div>
+      <div><span>Tiempo</span><strong id="timeRemaining">0.0s</strong></div>
+    </div>
+    <div class="stroop-progress"><span id="progressBar"></span></div>
+
+    <div id="stimulusWrap" class="stimulus-wrap">
+      <div id="stimulusWord" class="stimulus-word">ROJO</div>
+    </div>
+
+    <div id="answerButtons" class="answer-buttons" aria-label="Selecciona el color de la tinta"></div>
+    <div id="feedback" class="stroop-feedback" aria-live="polite"></div>
+  </section>
+
+  <section id="stroopResults" class="stroop-panel stroop-results" hidden>
+    <span class="stroop-kicker">Resultados</span>
+    <h2>Sesion completada</h2>
+    <div class="results-grid">
+      <article><span>Puntuacion</span><strong id="scoreResult">0</strong></article>
+      <article><span>Precision</span><strong id="accuracyResult">0%</strong></article>
+      <article><span>Tiempo promedio</span><strong id="rtResult">0 ms</strong></article>
+      <article><span>Aciertos</span><strong id="correctResult">0</strong></article>
+      <article><span>Errores</span><strong id="incorrectResult">0</strong></article>
+      <article><span>Ensayos</span><strong id="totalResult">0</strong></article>
+    </div>
+    <p id="recommendationResult" class="recommendation"></p>
+    <div class="result-actions">
+      <button id="restartStroop" class="stroop-primary" type="button">Nueva sesion</button>
+      <a class="stroop-link" href="rehabilitacion-cognitiva.html">Volver</a>
+    </div>
+  </section>
+</main>
+
+<script type="module" src="js/stroop.js"></script>
+<script type="module" src="js/reportes.js"></script>
+</body>
+</html>
