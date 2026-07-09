@@ -302,6 +302,15 @@ export const CIE10 = [
   { codigo: "G93.8", nombre: "Otros trastornos especificados del cerebro (como esclerosis temporal)" },
   { codigo: "G93.9", nombre: "Trastorno del encéfalo, no especificado" },
 
+
+  {codigo: "I10", nombre: "Hipertensión esencial (primaria)"},
+  {codigo: "I11", nombre: "Enfermedad cardíaca hipertensiva"},
+  {codigo: "I12", nombre: "Enfermedad renal hipertensiva"},
+  {codigo: "I13", nombre: "Enfermedad cardíaca y renal hipertensiva"},
+  {codigo: "I15", nombre: "Hipertensión secundaria"}, 
+
+
+  
   // j000-J99 Enfermedades del sistema respiratorio
   { codigo: "J00", nombre: "Rinofaringitis aguda [resfriado común]" },
   { codigo: "J01", nombre: "Sinusitis aguda" },
