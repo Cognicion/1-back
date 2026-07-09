@@ -29,6 +29,11 @@ export const CIE10 = [
   { codigo: "E66.8", nombre: "Otras formas de obesidad" },
   { codigo: "E66.9", nombre: "Obesidad no especificada" },
   { codigo: "E70", nombre: "Trastornos del metabolismo de los aminoacidos" },
+  { codigo: "E71", nombre: "Trastornos del metabolismo de los acidos grasos y de la oxidacion de los acidos grasos" },
+  { codigo: "E72", nombre: "Otros trastornos del metabolismo de los carbohidratos" },
+  { codigo: "E73", nombre: "Intolerancia a la lactosa" },
+  { codigo: "E74", nombre: "Otros trastornos del metabolismo de los carbohidratos" },
+
 
 
 
@@ -39,6 +44,13 @@ export const CIE10 = [
   // F00-F09 Orgánicos
   { codigo: "F00", nombre: "Demencia en la enfermedad de Alzheimer" },
   { codigo: "F01", nombre: "Demencia vascular" },
+  { codigo: "F01.0", nombre: "Demencia vascular de inicio agudo" },
+  { codigo: "F01.1", nombre: "Demencia vascular de inicio subagudo" },
+  { codigo: "F01.2", nombre: "Demencia vascular de inicio crónico" },
+  { codigo: "F01.3", nombre: "Demencia vascular de inicio no especificado" },
+  { codigo: "F01.8", nombre: "Otros tipos de demencia vascular" },
+  { codigo: "F01.9", nombre: "Demencia vascular no especificada" },
+  { codigo: "F02.0", nombre: "Demencia en la enfermedad de Alzheimer con inicio temprano" },
   { codigo: "F02", nombre: "Demencia en otras enfermedades clasificadas en otra parte" },
   { codigo: "F03", nombre: "Demencia no especificada" },
   { codigo: "F04", nombre: "Síndrome amnésico orgánico no inducido por alcohol u otras sustancias psicoactivas" },
