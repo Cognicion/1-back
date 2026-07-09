@@ -97,7 +97,7 @@ export const CRITERIOS_DIAGNOSTICOS = [
   },
 
   {
-    codigo: "60.5 /6D10+6D11.4",
+    codigo: "F60.5 /6D10+6D11.4",
     nombre: "Trastorno ansioso anancástico de la personalidad //Trastorno de la personalidad, con rasgo prominente de anancastia",
     categoria: "Trastornos de la personalidad",
     criterios: ["CIE10",
@@ -117,7 +117,7 @@ export const CRITERIOS_DIAGNOSTICOS = [
 
 
   {
-    codigo: "60.6 / 6D11.1",
+    codigo: "F60.6 / 6D11.1",
     nombre: "Trastorno ansioso (evitativo) de la personalidad",
     categoria: "Trastornos de la personalidad",
     criterios: [
