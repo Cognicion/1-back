@@ -23,6 +23,15 @@ export const CIE10 = [
   { codigo: "E51.2", nombre: "Encefalopatía de wernicke"},
   { codigo: "E55", nombre: "Deficiencia de vitamina D" },
   { codigo: "E66", nombre: "Obesidad" },
+  { codigo: "E66.0", nombre: "Obesidad debida a exceso de calorias" },
+  { codigo: "E66.1", nombre: "Obesidad endogena" },
+  { codigo: "E66.2", nombre: "Obesidad de origen exogeno" },
+  { codigo: "E66.8", nombre: "Otras formas de obesidad" },
+  { codigo: "E66.9", nombre: "Obesidad no especificada" },
+  { codigo: "E70", nombre: "Trastornos del metabolismo de los aminoacidos" },
+
+
+
   { codigo: "E78", nombre: "Trastornos del metabolismo de las lipoproteinas y otras lipidemias" },
   { codigo: "E87", nombre: "Otros trastornos de los liquidos, electrolitos y equilibrio acido-base" },
 
@@ -310,7 +319,7 @@ export const CIE10 = [
   {codigo: "I15", nombre: "Hipertensión secundaria"}, 
 
 
-  
+
   // j000-J99 Enfermedades del sistema respiratorio
   { codigo: "J00", nombre: "Rinofaringitis aguda [resfriado común]" },
   { codigo: "J01", nombre: "Sinusitis aguda" },
