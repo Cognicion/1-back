@@ -1470,6 +1470,14 @@ async function actualizarVisibilidadResultadoEscala(idEscalaAplicada, visible, e
     }
   });
 }
+window.abrirRehabilitacionCognitivaPaciente = function() {
+  if (!uidPaciente) {
+    alert("Selecciona o recarga el expediente del paciente antes de aplicar un tamizaje cognitivo.");
+    return;
+  }
+  window.location.href = `rehabilitacion-cognitiva.html?id=${encodeURIComponent(uidPaciente)}`;
+};
+
 window.mostrarRehabilitacionCognitivaPaciente = async function() {
   ocultarSecciones();
   const seccion = document.getElementById("seccionRehabilitacionCognitivaPaciente");

@@ -1032,3 +1032,99 @@ button {
     width: 100%;
   }
 }
+
+.acciones-tarjeta-tamizaje {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.acciones-tarjeta-tamizaje button {
+  width: 100%;
+}
+
+.modo-tamizaje-switch {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 12px 0 10px;
+  padding: 6px;
+  border: 1px solid rgba(125, 211, 252, 0.16);
+  border-radius: 18px;
+  background: rgba(15, 23, 42, 0.52);
+}
+
+.modo-tamizaje-switch button {
+  width: auto;
+  flex: 1 1 210px;
+  background: rgba(15, 23, 42, 0.72);
+  border: 1px solid rgba(125, 211, 252, 0.18);
+}
+
+.modo-tamizaje-switch button.activo {
+  color: #02111f;
+  background: linear-gradient(135deg, #7dd3fc, #22d3ee);
+  box-shadow: 0 12px 28px rgba(34, 211, 238, 0.16);
+}
+
+.modo-tamizaje-switch button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.pasos-tamizaje-cognitivo,
+.guia-prueba-tamizaje {
+  margin: 12px 0 16px;
+}
+
+.guia-prueba-tamizaje {
+  padding: 14px;
+  border: 1px solid rgba(125, 211, 252, 0.18);
+  border-radius: 18px;
+  background: rgba(8, 47, 73, 0.22);
+}
+
+.guia-prueba-tamizaje strong,
+.temporizador-tamizaje span {
+  color: #7dd3fc;
+}
+
+.guia-prueba-tamizaje ol {
+  margin: 10px 0 0;
+  padding-left: 20px;
+  color: #cbd5e1;
+}
+
+.estimulo-tamizaje {
+  margin-top: 12px;
+  padding: 12px;
+  border-radius: 14px;
+  background: rgba(2, 6, 23, 0.42);
+  color: #e0f2fe;
+}
+
+.temporizador-tamizaje {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.temporizador-tamizaje button {
+  width: auto;
+}
+
+.visibilidad-tamizaje-paciente {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 14px;
+  color: #dbeafe;
+  font-weight: 700;
+}
+
+.visibilidad-tamizaje-paciente input {
+  width: 18px;
+  height: 18px;
+}

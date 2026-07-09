@@ -1,4 +1,4 @@
-﻿import { auth } from "./firebase.js";
+﻿import { auth, db } from "./firebase.js";
 import {
   ESCALAS_COGNITIVAS,
   calcularPuntajeEscalaCognitiva,
@@ -9,6 +9,22 @@ import {
 import {
   onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+import {
+  collection,
+  doc
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+import {
+  PRUEBAS_INTERACTIVAS,
+  calcularPuntajePruebaInteractiva,
+  interpretarPruebaInteractiva,
+  obtenerPruebaInteractiva,
+  puntajesDominioPruebaInteractiva
+} from "./data/pruebasInteractivas.js";
+
+import { obtenerUsuario } from "./services/usuarios.js";
+import { crearResumenEscala, guardarEscalaAplicada } from "./services/escalas.js";
 
 const INTRO_KEY = "cognicion_intro_rehabilitacion_vista";
 
@@ -22,7 +38,7 @@ const dominios = [
   "Visuoespacial"
 ];
 
-const tamizajes = ESCALAS_COGNITIVAS.map((escala) => ({
+const tamizajes = [...ESCALAS_COGNITIVAS, ...PRUEBAS_INTERACTIVAS.filter((prueba) => !ESCALAS_COGNITIVAS.some((escala) => escala.id === prueba.id))].map((escala) => ({
   id: escala.id,
   icono: escala.nombre.replace(/[^A-Za-z0-9]/g, "").slice(0, 3).toUpperCase(),
   titulo: escala.nombre,
@@ -30,6 +46,7 @@ const tamizajes = ESCALAS_COGNITIVAS.map((escala) => ({
   uso: escala.descripcion,
   evalua: escala.dominiosEvaluados || [],
   requiereInstrumentoOficial: escala.requiereInstrumentoOficial,
+  interactiva: Boolean(obtenerPruebaInteractiva(escala.id)),
   puntajeMaximo: escala.puntajeMaximo,
   poblacionSugerida: escala.poblacionSugerida,
   limitaciones: escala.limitaciones || []
@@ -146,8 +163,12 @@ document.addEventListener("DOMContentLoaded", () => {
   asegurarPanelTamizajeCognitivo();
 });
 
-onAuthStateChanged(auth, (user) => {
-  if (!user) window.location.href = "login.html";
+onAuthStateChanged(auth, async (user) => {
+  if (!user) {
+    window.location.href = "login.html";
+    return;
+  }
+  usuarioActualDatos = await obtenerUsuario(user.uid);
 });
 
 function inicializarIntro() {
@@ -184,7 +205,7 @@ function renderizarTamizajes() {
     <article class="tarjeta-tamizaje">
       <div class="tarjeta-icono">${item.icono}</div>
       <div class="estado-tamizaje ${item.requiereInstrumentoOficial ? "oficial" : "disponible"}">
-        ${item.requiereInstrumentoOficial ? "Captura con instrumento oficial" : "Disponible"}
+        ${item.interactiva ? "Aplicable en plataforma" : item.requiereInstrumentoOficial ? "Captura con instrumento oficial" : "Disponible"}
       </div>
       <h3>${item.titulo}</h3>
       <small>${item.nombre}</small>
@@ -193,16 +214,27 @@ function renderizarTamizajes() {
         ${item.evalua.map((dominio) => `<li>${dominio}</li>`).join("")}
       </ul>
       <p class="texto-tamizaje-mini">${item.poblacionSugerida || "Aplicacion clinica supervisada."}</p>
-      <button type="button" data-ficha-tamizaje="${item.id}">${item.requiereInstrumentoOficial ? "Capturar puntajes" : "Aplicar"}</button>
+      <div class="acciones-tarjeta-tamizaje">
+        <button type="button" data-aplicar-tamizaje="${item.id}">Aplicar prueba ahora</button>
+        <button type="button" class="boton-secundario" data-ficha-tamizaje="${item.id}">Capturar resultado previo</button>
+      </div>
     </article>
   `).join("");
 
+  grid.querySelectorAll("[data-aplicar-tamizaje]").forEach((boton) => {
+    boton.addEventListener("click", () => abrirTamizajeCognitivo(boton.dataset.aplicarTamizaje, "interactiva"));
+  });
+
   grid.querySelectorAll("[data-ficha-tamizaje]").forEach((boton) => {
-    boton.addEventListener("click", () => abrirTamizajeCognitivo(boton.dataset.fichaTamizaje));
+    boton.addEventListener("click", () => abrirTamizajeCognitivo(boton.dataset.fichaTamizaje, "manual"));
   });
 }
 
 let escalaCognitivaActual = null;
+let pruebaInteractivaActual = null;
+let modoTamizajeActual = "interactiva";
+let resultadoTamizajeActual = null;
+let usuarioActualDatos = null;
 
 function asegurarPanelTamizajeCognitivo() {
   if (document.getElementById("panelTamizajeCognitivo")) return;
@@ -221,46 +253,84 @@ function asegurarPanelTamizajeCognitivo() {
         </div>
         <button type="button" class="cerrar-tamizaje" data-cerrar-tamizaje="true">Cerrar</button>
       </div>
+      <div class="modo-tamizaje-switch" role="tablist" aria-label="Modo de aplicacion">
+        <button type="button" id="modoAplicarTamizaje" data-modo-tamizaje="interactiva">Aplicar prueba ahora</button>
+        <button type="button" id="modoManualTamizaje" data-modo-tamizaje="manual">Capturar resultado previo</button>
+      </div>
       <div id="avisoTamizajeCognitivo" class="aviso-tamizaje-cognitivo"></div>
+      <div id="pasosTamizajeCognitivo" class="pasos-tamizaje-cognitivo"></div>
       <form id="formTamizajeCognitivo" class="form-tamizaje-cognitivo"></form>
       <label class="observaciones-tamizaje">Observaciones clinicas
         <textarea id="observacionesTamizajeCognitivo" placeholder="Observaciones, conducta durante la prueba, cooperacion, factores que puedan afectar el resultado."></textarea>
       </label>
+      <label class="visibilidad-tamizaje-paciente">
+        <input id="visibilidadTamizajePaciente" type="checkbox">
+        Hacer visible para paciente
+      </label>
       <div class="resultado-tamizaje-cognitivo" id="resultadoTamizajeCognitivo">
         <strong>Resultado</strong>
-        <p>Captura los puntajes y calcula el resultado.</p>
+        <p>Aplica la prueba o captura puntajes y calcula el resultado.</p>
       </div>
       <div class="acciones-tamizaje-cognitivo">
         <button type="button" id="calcularTamizajeCognitivo">Calcular</button>
+        <button type="button" id="guardarTamizajeCognitivo">Guardar en expediente</button>
         <button type="button" id="limpiarTamizajeCognitivo" class="boton-secundario">Limpiar</button>
       </div>
     </div>
   `;
   document.body.appendChild(panel);
   panel.querySelectorAll("[data-cerrar-tamizaje]").forEach((control) => control.addEventListener("click", cerrarTamizajeCognitivo));
+  panel.querySelectorAll("[data-modo-tamizaje]").forEach((control) => control.addEventListener("click", () => cambiarModoTamizaje(control.dataset.modoTamizaje)));
   document.getElementById("calcularTamizajeCognitivo")?.addEventListener("click", calcularTamizajeCognitivoActual);
+  document.getElementById("guardarTamizajeCognitivo")?.addEventListener("click", guardarTamizajeCognitivoActual);
   document.getElementById("limpiarTamizajeCognitivo")?.addEventListener("click", limpiarTamizajeCognitivoActual);
   document.addEventListener("keydown", (evento) => {
     if (evento.key === "Escape" && panel.classList.contains("abierto")) cerrarTamizajeCognitivo();
   });
 }
 
-function abrirTamizajeCognitivo(idEscala) {
+function abrirTamizajeCognitivo(idEscala, modo = "interactiva") {
   asegurarPanelTamizajeCognitivo();
   escalaCognitivaActual = ESCALAS_COGNITIVAS.find((escala) => escala.id === idEscala) || null;
-  if (!escalaCognitivaActual) return;
+  pruebaInteractivaActual = obtenerPruebaInteractiva(idEscala);
+  if (!escalaCognitivaActual && !pruebaInteractivaActual) return;
 
-  document.getElementById("subtituloTamizajeCognitivo").textContent = escalaCognitivaActual.subtitulo || escalaCognitivaActual.area || "Tamizaje cognitivo";
-  document.getElementById("tituloTamizajeCognitivo").textContent = escalaCognitivaActual.nombre;
-  document.getElementById("descripcionTamizajeCognitivo").textContent = escalaCognitivaActual.descripcion || "";
-  document.getElementById("avisoTamizajeCognitivo").innerHTML = construirAvisoTamizaje(escalaCognitivaActual);
+  modoTamizajeActual = modo === "manual" || !pruebaInteractivaActual ? "manual" : "interactiva";
+  const base = pruebaInteractivaActual || escalaCognitivaActual;
+  resultadoTamizajeActual = null;
+
+  document.getElementById("subtituloTamizajeCognitivo").textContent = base.subtitulo || base.area || "Tamizaje";
+  document.getElementById("tituloTamizajeCognitivo").textContent = base.nombre;
+  document.getElementById("descripcionTamizajeCognitivo").textContent = base.descripcion || "";
   document.getElementById("observacionesTamizajeCognitivo").value = "";
-  document.getElementById("resultadoTamizajeCognitivo").innerHTML = `<strong>Resultado</strong><p>Captura los puntajes y calcula el resultado.</p>`;
-  renderizarFormularioTamizaje(escalaCognitivaActual);
+  document.getElementById("visibilidadTamizajePaciente").checked = false;
+  document.getElementById("resultadoTamizajeCognitivo").innerHTML = `<strong>Resultado</strong><p>Aplica la prueba o captura puntajes y calcula el resultado.</p>`;
+
+  actualizarModoVisualTamizaje();
+  renderizarContenidoTamizaje();
 
   const panel = document.getElementById("panelTamizajeCognitivo");
   panel?.classList.add("abierto");
   panel?.setAttribute("aria-hidden", "false");
+}
+
+function cambiarModoTamizaje(modo) {
+  if (modo === "interactiva" && !pruebaInteractivaActual) {
+    mostrarToast("Esta escala solo tiene captura estructurada por ahora.");
+    return;
+  }
+  modoTamizajeActual = modo === "manual" ? "manual" : "interactiva";
+  resultadoTamizajeActual = null;
+  actualizarModoVisualTamizaje();
+  renderizarContenidoTamizaje();
+  document.getElementById("resultadoTamizajeCognitivo").innerHTML = `<strong>Resultado</strong><p>Aplica la prueba o captura puntajes y calcula el resultado.</p>`;
+}
+
+function actualizarModoVisualTamizaje() {
+  document.querySelectorAll("[data-modo-tamizaje]").forEach((boton) => {
+    boton.classList.toggle("activo", boton.dataset.modoTamizaje === modoTamizajeActual);
+  });
+  document.getElementById("modoAplicarTamizaje")?.toggleAttribute("disabled", !pruebaInteractivaActual);
 }
 
 function cerrarTamizajeCognitivo() {
@@ -269,19 +339,60 @@ function cerrarTamizajeCognitivo() {
   panel?.setAttribute("aria-hidden", "true");
 }
 
-function construirAvisoTamizaje(escala) {
-  const oficial = escala.requiereInstrumentoOficial
-    ? `<p><strong>Instrumento oficial:</strong> use el material autorizado y capture aqui el puntaje por dominio. No se reproducen items protegidos.</p>`
-    : "";
-  const limitaciones = escala.limitaciones ? `<p><strong>Limitaciones:</strong> ${escaparHTML(escala.limitaciones)}</p>` : "";
-  const instrucciones = escala.instrucciones ? `<p><strong>Aplicacion:</strong> ${escaparHTML(escala.instrucciones)}</p>` : "";
-  return `${oficial}${instrucciones}${limitaciones}<p>Los resultados apoyan el juicio clinico y no sustituyen valoracion medica o neuropsicologica.</p>`;
+function renderizarContenidoTamizaje() {
+  const base = modoTamizajeActual === "interactiva" ? pruebaInteractivaActual : escalaCognitivaActual || pruebaInteractivaActual;
+  document.getElementById("avisoTamizajeCognitivo").innerHTML = construirAvisoTamizaje(base);
+  document.getElementById("pasosTamizajeCognitivo").innerHTML = modoTamizajeActual === "interactiva" ? renderizarPasosPrueba(base) : "";
+  renderizarFormularioTamizaje(base, modoTamizajeActual);
 }
 
-function renderizarFormularioTamizaje(escala) {
+function construirAvisoTamizaje(escala) {
+  if (!escala) return "";
+  const modo = modoTamizajeActual === "manual" ? "Captura resultado previo" : "Aplicacion interactiva";
+  const oficial = escala.requiereInstrumentoOficial
+    ? `<p><strong>Instrumento oficial:</strong> use material autorizado. Cognicion guia la aplicacion/captura sin reproducir contenido protegido.</p>`
+    : "";
+  const limitaciones = escala.limitaciones ? `<p><strong>Limitaciones:</strong> ${escaparHTML(escala.limitaciones)}</p>` : "";
+  const instrucciones = escala.instrucciones ? `<p><strong>${modo}:</strong> ${escaparHTML(escala.instrucciones)}</p>` : "";
+  const referencias = escala.referencias ? `<p><strong>Criterio/fuente:</strong> ${escaparHTML(Array.isArray(escala.referencias) ? escala.referencias.join("; ") : escala.referencias)}</p>` : "";
+  return `${oficial}${instrucciones}${limitaciones}${referencias}<p>Los resultados apoyan el juicio clinico y no sustituyen valoracion medica o neuropsicologica.</p>`;
+}
+
+function renderizarPasosPrueba(prueba) {
+  if (!prueba) return "";
+  const pasos = prueba.pasos || [];
+  const temporizador = prueba.duracionSegundos ? `<div class="temporizador-tamizaje"><span data-tiempo-tamizaje>${prueba.duracionSegundos}</span>s <button type="button" data-iniciar-temporizador>Iniciar temporizador</button></div>` : "";
+  const estimulo = prueba.estimulo ? `<p class="estimulo-tamizaje">${escaparHTML(prueba.estimulo)}</p>` : "";
+  const lista = pasos.length ? `<ol>${pasos.map((paso) => `<li>${escaparHTML(paso)}</li>`).join("")}</ol>` : "";
+  window.setTimeout(configurarTemporizadorTamizaje, 0);
+  return `<div class="guia-prueba-tamizaje"><strong>Guia de aplicacion</strong>${lista}${estimulo}${temporizador}</div>`;
+}
+
+function configurarTemporizadorTamizaje() {
+  const boton = document.querySelector("[data-iniciar-temporizador]");
+  const etiqueta = document.querySelector("[data-tiempo-tamizaje]");
+  if (!boton || !etiqueta || boton.dataset.configurado === "1") return;
+  boton.dataset.configurado = "1";
+  boton.addEventListener("click", () => {
+    let restante = Number(etiqueta.textContent || 0);
+    boton.disabled = true;
+    const intervalo = window.setInterval(() => {
+      restante -= 1;
+      etiqueta.textContent = String(Math.max(0, restante));
+      if (restante <= 0) {
+        window.clearInterval(intervalo);
+        boton.disabled = false;
+        boton.textContent = "Reiniciar temporizador";
+      }
+    }, 1000);
+  });
+}
+
+function renderizarFormularioTamizaje(escala, modo = "manual") {
   const form = document.getElementById("formTamizajeCognitivo");
-  if (!form) return;
-  form.innerHTML = (escala.items || []).map((item, index) => {
+  if (!form || !escala) return;
+  const items = modo === "interactiva" ? escala.reactivos || [] : escala.items || escala.reactivos || [];
+  form.innerHTML = items.map((item, index) => {
     if (item.tipo === "select") {
       const opciones = (item.opciones || []).map((opcion, opcionIndex) => {
         const valor = item.valores?.[opcionIndex] ?? opcion.valor ?? opcion;
@@ -290,33 +401,34 @@ function renderizarFormularioTamizaje(escala) {
       }).join("");
       return `
         <label class="item-tamizaje-cognitivo">
-          <span>${escaparHTML(item.texto || `Item ${index + 1}`)}</span>
-          <select data-item-tamizaje="${index}">${opciones}</select>
+          <span>${index + 1}. ${escaparHTML(item.texto || `Item ${index + 1}`)}</span>
+          <select data-item-tamizaje="${index}"><option value="">Seleccionar</option>${opciones}</select>
           <small>${escaparHTML(item.dominio || "")}</small>
         </label>
       `;
     }
     return `
       <label class="item-tamizaje-cognitivo">
-        <span>${escaparHTML(item.texto || `Item ${index + 1}`)}</span>
+        <span>${index + 1}. ${escaparHTML(item.texto || `Item ${index + 1}`)}</span>
         <input type="number" data-item-tamizaje="${index}" min="${item.min ?? 0}" max="${item.max ?? ""}" step="${item.step || 1}" placeholder="${item.min ?? 0}-${item.max ?? ""}">
-        <small>${escaparHTML(item.dominio || "")} ${item.max !== undefined ? `· max ${escaparHTML(item.max)}` : ""}</small>
+        <small>${escaparHTML(item.dominio || "")}${item.max !== undefined ? ` - max ${escaparHTML(item.max)}` : ""}${item.ayuda ? ` - ${escaparHTML(item.ayuda)}` : ""}</small>
       </label>
     `;
   }).join("");
 }
 
 function leerRespuestasTamizaje(escala) {
+  const items = modoTamizajeActual === "interactiva" ? escala.reactivos || [] : escala.items || escala.reactivos || [];
   const respuestas = [];
   let valido = true;
   document.querySelectorAll("[data-item-tamizaje]").forEach((control) => {
     const index = Number(control.dataset.itemTamizaje);
-    const item = escala.items[index];
-    const valor = Number(control.value || 0);
+    const item = items[index];
+    const valor = control.value === "" ? null : Number(control.value || 0);
     const min = Number(item.min ?? 0);
     const max = item.max !== undefined ? Number(item.max) : null;
 
-    if (Number.isNaN(valor) || valor < min || (max !== null && valor > max)) {
+    if (valor === null || Number.isNaN(valor) || valor < min || (max !== null && valor > max)) {
       control.classList.add("campo-error");
       valido = false;
     } else {
@@ -334,36 +446,104 @@ function leerRespuestasTamizaje(escala) {
 }
 
 function calcularTamizajeCognitivoActual() {
-  if (!escalaCognitivaActual) return;
-  const { respuestas, valido } = leerRespuestasTamizaje(escalaCognitivaActual);
+  const escala = modoTamizajeActual === "interactiva" ? pruebaInteractivaActual : escalaCognitivaActual || pruebaInteractivaActual;
+  if (!escala) return;
+  const { respuestas, valido } = leerRespuestasTamizaje(escala);
   if (!valido) {
-    mostrarToast("Revisa los campos marcados: hay puntajes fuera de rango.");
+    mostrarToast("Responde todos los campos y revisa rangos marcados.");
     return;
   }
 
-  const puntaje = calcularPuntajeEscalaCognitiva(escalaCognitivaActual, respuestas);
-  const interpretacion = interpretarEscalaCognitiva(escalaCognitivaActual, puntaje, respuestas);
-  const dominios = obtenerPuntajesDominioCognitivo(respuestas);
-  const dominiosTexto = Object.entries(dominios).map(([dominio, valor]) => `${dominio}: ${valor}`).join(" · ");
-  const maximo = escalaCognitivaActual.puntajeMaximo ? `/${escalaCognitivaActual.puntajeMaximo}` : "";
+  const puntaje = modoTamizajeActual === "interactiva"
+    ? calcularPuntajePruebaInteractiva(escala, respuestas)
+    : calcularPuntajeEscalaCognitiva(escala, respuestas);
+  const interpretacion = modoTamizajeActual === "interactiva"
+    ? interpretarPruebaInteractiva(escala, puntaje)
+    : interpretarEscalaCognitiva(escala, puntaje, respuestas);
+  const dominios = modoTamizajeActual === "interactiva"
+    ? puntajesDominioPruebaInteractiva(respuestas)
+    : obtenerPuntajesDominioCognitivo(respuestas);
+  const dominiosTexto = Object.entries(dominios).map(([dominio, valor]) => `${dominio}: ${valor}`).join(" - ");
+  const maximo = escala.puntajeMaximo ? `/${escala.puntajeMaximo}` : "";
   const observaciones = document.getElementById("observacionesTamizajeCognitivo")?.value.trim() || "";
+  const fechaAplicacion = new Date().toISOString();
+
+  resultadoTamizajeActual = { escala, respuestas, puntaje, interpretacion, dominios, observaciones, fechaAplicacion };
 
   document.getElementById("resultadoTamizajeCognitivo").innerHTML = `
-    <strong>${escaparHTML(escalaCognitivaActual.nombre)}: ${escaparHTML(puntaje)}${escaparHTML(maximo)}</strong>
+    <strong>${escaparHTML(escala.nombre)}: ${escaparHTML(puntaje)}${escaparHTML(maximo)}</strong>
     <p>${escaparHTML(interpretacion)}</p>
-    ${dominiosTexto ? `<p><strong>Dominios:</strong> ${escaparHTML(dominiosTexto)}</p>` : ""}
+    <p><strong>Fecha:</strong> ${escaparHTML(new Date(fechaAplicacion).toLocaleString("es-MX", { dateStyle: "short", timeStyle: "short", hour12: false }))}</p>
+    <p><strong>Aplicador:</strong> ${escaparHTML(usuarioActualDatos?.nombre || auth.currentUser?.email || "Usuario actual")}</p>
+    <p><strong>Visible para paciente:</strong> ${document.getElementById("visibilidadTamizajePaciente")?.checked ? "Si" : "No"}</p>
+    ${dominiosTexto ? `<p><strong>Subpuntajes:</strong> ${escaparHTML(dominiosTexto)}</p>` : ""}
     ${observaciones ? `<p><strong>Observaciones:</strong> ${escaparHTML(observaciones)}</p>` : ""}
   `;
 }
 
+async function guardarTamizajeCognitivoActual() {
+  if (!resultadoTamizajeActual) calcularTamizajeCognitivoActual();
+  if (!resultadoTamizajeActual) return;
+  const idPaciente = new URLSearchParams(window.location.search).get("id") || new URLSearchParams(window.location.search).get("paciente") || "";
+  if (!idPaciente) {
+    mostrarToast("Abre rehabilitacion desde el expediente del paciente para guardar el resultado.");
+    return;
+  }
+  const usuario = auth.currentUser;
+  const paciente = await obtenerUsuario(idPaciente);
+  const idEscalaAplicada = doc(collection(db, "usuarios", idPaciente, "escalasAplicadas")).id;
+  const visible = Boolean(document.getElementById("visibilidadTamizajePaciente")?.checked);
+  const { escala, respuestas, puntaje, interpretacion, dominios, observaciones, fechaAplicacion } = resultadoTamizajeActual;
+  const registro = {
+    idEscalaAplicada,
+    escalaId: escala.id,
+    uidMedico: usuario?.uid || "",
+    uidProfesional: usuario?.uid || "",
+    rolProfesional: usuarioActualDatos?.rol || "",
+    nombrePaciente: paciente?.nombre || paciente?.nombreCompleto || "",
+    nombreEscala: escala.nombre,
+    tipoEscala: escala.tipoEscala || "cognitiva",
+    fechaAplicacion,
+    origen: "rehabilitacion_cognitiva",
+    modoAplicacion: modoTamizajeActual === "manual" ? "captura_resultado_previo" : "aplicacion_interactiva",
+    puntajeTotal: puntaje,
+    puntajeMaximo: escala.puntajeMaximo ?? "",
+    dominiosEvaluados: escala.dominiosEvaluados || [],
+    puntajesPorDominio: dominios,
+    rango: escala.rango,
+    interpretacion,
+    respuestasPorItem: respuestas,
+    observaciones,
+    observacionesClinicas: observaciones,
+    recomendaciones: generarRecomendacionesCognitivas(dominios, escala),
+    medicoNombre: usuarioActualDatos?.nombre || usuario?.email || "",
+    visibilidadPaciente: visible,
+    visibleDesdePaciente: visible
+  };
+  await guardarEscalaAplicada(idPaciente, registro);
+  mostrarToast("Resultado guardado en Escalas/Tamizajes del paciente.");
+}
+
+function generarRecomendacionesCognitivas(dominios = {}, escala = {}) {
+  if ((escala.tipoEscala || "") !== "cognitiva" && escala.area !== "Cognitiva") return "";
+  const claves = Object.keys(dominios).join(" ").toLowerCase();
+  const recomendaciones = [];
+  if (/atencion|velocidad/.test(claves)) recomendaciones.push("Ejercicios de atencion sostenida/selectiva y velocidad de procesamiento.");
+  if (/memoria|recuerdo/.test(claves)) recomendaciones.push("Ejercicios de memoria de trabajo, evocacion y aprendizaje verbal.");
+  if (/ejecutiva|flexibilidad|control/.test(claves)) recomendaciones.push("Ejercicios de planificacion, flexibilidad cognitiva e inhibicion.");
+  if (/visuoespacial|reloj/.test(claves)) recomendaciones.push("Actividades visuoespaciales, copia de figuras y rutas visuales.");
+  return recomendaciones.join(" ");
+}
+
 function limpiarTamizajeCognitivoActual() {
+  resultadoTamizajeActual = null;
   document.querySelectorAll("[data-item-tamizaje]").forEach((control) => {
     control.value = "";
     control.classList.remove("campo-error");
   });
   const observaciones = document.getElementById("observacionesTamizajeCognitivo");
   if (observaciones) observaciones.value = "";
-  document.getElementById("resultadoTamizajeCognitivo").innerHTML = `<strong>Resultado</strong><p>Captura los puntajes y calcula el resultado.</p>`;
+  document.getElementById("resultadoTamizajeCognitivo").innerHTML = `<strong>Resultado</strong><p>Aplica la prueba o captura puntajes y calcula el resultado.</p>`;
 }
 
 function escaparHTML(valor) {
@@ -373,8 +553,7 @@ function escaparHTML(valor) {
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#039;");
-}
-function renderizarFiltros() {
+}function renderizarFiltros() {
   const contenedor = document.getElementById("filtrosDominios");
   if (!contenedor) return;
 

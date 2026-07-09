@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -151,6 +151,10 @@
     <div class="panel-escala-contenido">
     <label for="selectorEscalaNota">Escala</label>
     <select id="selectorEscalaNota"></select>
+    <div class="modo-escala-nota" role="tablist" aria-label="Modo de aplicacion de escala">
+        <button id="modoAplicarEscalaNota" type="button" data-modo-escala-nota="interactiva">Aplicar prueba ahora</button>
+        <button id="modoManualEscalaNota" type="button" data-modo-escala-nota="manual">Capturar resultado previo</button>
+    </div>
     <div id="descripcionEscalaNota" class="descripcion-escala-nota"></div>
     <div id="itemsEscalaNota" class="items-escala-nota"></div>
     <label for="observacionesEscalaNota">Observaciones opcionales</label>

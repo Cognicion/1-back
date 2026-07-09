@@ -1,4 +1,4 @@
-import { auth, db } from "./firebase.js";
+﻿import { auth, db } from "./firebase.js";
 import { registrarEventoAuditoria } from "./services/auditoria.js";
 import { iniciarMonitoreoSesion } from "./services/sesion.js";
 import { CIE10 } from "./data/cie10.js";
@@ -11,6 +11,13 @@ import {
   interpretarEscalaCognitiva,
   obtenerPuntajesDominioCognitivo
 } from "./data/escalasCognitivas.js";
+import {
+  PRUEBAS_INTERACTIVAS,
+  calcularPuntajePruebaInteractiva,
+  interpretarPruebaInteractiva,
+  obtenerPruebaInteractiva,
+  puntajesDominioPruebaInteractiva
+} from "./data/pruebasInteractivas.js";
 import { generarNotaAutomatica } from "./services/notaAutomatica.js";
 import {
   calcularPuntajeEscala,
@@ -71,10 +78,22 @@ let diagnosticosAutomaticosSugeridos = [];
 let escalasPreviasNotaCache = [];
 let escalasAplicadasPendientesNota = [];
 
+const IDS_PRUEBAS_INTERACTIVAS = new Set(PRUEBAS_INTERACTIVAS.map((escala) => escala.id));
 const ESCALAS_NOTA = [
-  ...ESCALAS_PSIQUIATRICAS.map((escala) => ({ ...escala, tipoEscala: "psiquiatrica" })),
+  ...ESCALAS_PSIQUIATRICAS
+    .filter((escala) => !IDS_PRUEBAS_INTERACTIVAS.has(escala.id))
+    .map((escala) => ({ ...escala, tipoEscala: "psiquiatrica", interactiva: false })),
   ...ESCALAS_COGNITIVAS
+    .filter((escala) => !IDS_PRUEBAS_INTERACTIVAS.has(escala.id))
+    .map((escala) => ({ ...escala, interactiva: false })),
+  ...PRUEBAS_INTERACTIVAS.map((escala) => ({
+    ...escala,
+    tipoEscala: escala.tipoEscala || "cognitiva",
+    items: escala.reactivos || escala.items || [],
+    interactiva: true
+  }))
 ];
+let modoEscalaNota = "interactiva";
 
 iniciarMonitoreoSesion("Nota medica");
 
@@ -431,16 +450,25 @@ function configurarPanelEscalaNota() {
 
   if (!selector) return;
 
+  const escalasClinicasNota = ESCALAS_NOTA.filter((escala) => !esEscalaCognitivaNota(escala));
+  const escalasCognitivasNota = ESCALAS_NOTA.filter((escala) => esEscalaCognitivaNota(escala));
   selector.innerHTML = `
     <optgroup label="Escalas clinicas">
-      ${ESCALAS_PSIQUIATRICAS.map((escala) => `<option value="${escala.id}">${escala.nombre} - ${escala.area}</option>`).join("")}
+      ${escalasClinicasNota.map((escala) => `<option value="${escala.id}">${escala.nombre} - ${escala.area || escala.subtitulo || "Clinica"}</option>`).join("")}
     </optgroup>
     <optgroup label="Escalas y tamizajes cognitivos">
-      ${ESCALAS_COGNITIVAS.map((escala) => `<option value="${escala.id}">${escala.nombre} - ${escala.subtitulo || escala.area}</option>`).join("")}
+      ${escalasCognitivasNota.map((escala) => `<option value="${escala.id}">${escala.nombre} - ${escala.subtitulo || escala.area || "Cognitiva"}</option>`).join("")}
     </optgroup>
   `;
 
-  selector.addEventListener("change", renderizarEscalaNotaSeleccionada);
+  selector.addEventListener("change", () => {
+    const escala = escalaNotaActual();
+    modoEscalaNota = escala?.interactiva ? "interactiva" : "manual";
+    renderizarEscalaNotaSeleccionada();
+  });
+  document.querySelectorAll("[data-modo-escala-nota]").forEach((boton) => {
+    boton.addEventListener("click", () => cambiarModoEscalaNota(boton.dataset.modoEscalaNota));
+  });
   botonGuardar?.addEventListener("click", guardarEscalaDesdeNota);
   botonPrevias?.addEventListener("click", abrirPanelEscalasPreviasNota);
   botonCerrarPrevias?.addEventListener("click", cerrarPanelEscalasPreviasNota);
@@ -454,77 +482,130 @@ function escalaNotaActual() {
   return ESCALAS_NOTA.find((escala) => escala.id === id) || ESCALAS_NOTA[0];
 }
 
+function esEscalaCognitivaNota(escala = {}) {
+  return escala.tipoEscala === "cognitiva" || escala.area === "Cognitiva" || Boolean(escala.dominiosEvaluados?.length);
+}
+
+function cambiarModoEscalaNota(modo) {
+  const escala = escalaNotaActual();
+  if (modo === "interactiva" && !escala?.interactiva) {
+    alert("Esta escala solo permite captura estructurada por ahora.");
+    return;
+  }
+  modoEscalaNota = modo === "manual" ? "manual" : "interactiva";
+  renderizarEscalaNotaSeleccionada();
+}
+
+function actualizarModoEscalaNota() {
+  const escala = escalaNotaActual();
+  if (!escala?.interactiva) modoEscalaNota = "manual";
+  document.querySelectorAll("[data-modo-escala-nota]").forEach((boton) => {
+    boton.classList.toggle("activo", boton.dataset.modoEscalaNota === modoEscalaNota);
+  });
+  document.getElementById("modoAplicarEscalaNota")?.toggleAttribute("disabled", !escala?.interactiva);
+}
+
+function itemsEscalaNota(escala = {}) {
+  return modoEscalaNota === "interactiva" ? escala.reactivos || escala.items || [] : escala.items || escala.reactivos || [];
+}
+
 function renderizarEscalaNotaSeleccionada() {
   const escala = escalaNotaActual();
   const descripcion = document.getElementById("descripcionEscalaNota");
   const items = document.getElementById("itemsEscalaNota");
   if (!escala || !descripcion || !items) return;
+  actualizarModoEscalaNota();
 
   const intro = escala.introduccion || escala.instrucciones
     ? `<p>${escaparHTML(escala.introduccion || escala.instrucciones)}</p>`
     : "";
+  const pasos = escala.pasos?.length
+    ? `<div class="guia-escala-nota"><strong>Guia de aplicacion</strong><ol>${escala.pasos.map((paso) => `<li>${escaparHTML(paso)}</li>`).join("")}</ol></div>`
+    : "";
+  const temporizador = escala.duracionSegundos
+    ? `<div class="temporizador-escala-nota"><span data-tiempo-escala-nota>${escala.duracionSegundos}</span>s <button type="button" data-iniciar-temporizador-escala-nota>Iniciar temporizador</button></div>`
+    : "";
+  const estimulo = escala.estimulo ? `<p class="estimulo-escala-nota">${escaparHTML(escala.estimulo)}</p>` : "";
   const limitaciones = escala.limitaciones
     ? `<p class="advertencia-escala-nota">${escaparHTML(escala.limitaciones)}</p>`
     : "";
   const oficial = escala.requiereInstrumentoOficial
-    ? `<p class="advertencia-escala-nota">Este instrumento requiere material oficial o aplicacion clinica supervisada. Cognicion solo captura puntajes estructurados.</p>`
+    ? `<p class="advertencia-escala-nota">Este instrumento requiere material oficial o aplicacion clinica supervisada. Cognicion guia la aplicacion/captura sin reproducir contenido protegido.</p>`
     : "";
   const consideraciones = Array.isArray(escala.consideraciones) && escala.consideraciones.length
     ? `<div class="consideraciones-escala-nota"><strong>Consideraciones clinicas</strong><ul>${escala.consideraciones.map((item) => `<li>${escaparHTML(item)}</li>`).join("")}</ul></div>`
     : "";
 
   descripcion.innerHTML = `
-    <strong>${escaparHTML(escala.nombre)}</strong> - ${escaparHTML(escala.subtitulo || escala.area)}<br>
-    ${escaparHTML(escala.descripcion)}<br>
-    <small>Rango: ${escaparHTML(escala.rango)}. Resultado integrado al expediente.</small>
+    <strong>${escaparHTML(escala.nombre)}</strong> - ${escaparHTML(escala.subtitulo || escala.area || "")}
+    <br>${escaparHTML(escala.descripcion || "")}
+    <br><small>Modo: ${modoEscalaNota === "manual" ? "Capturar resultado previo" : "Aplicar prueba ahora"}. Rango: ${escaparHTML(escala.rango || "")}. Resultado integrado al expediente.</small>
     ${intro}
     ${oficial}
     ${limitaciones}
+    ${pasos}
+    ${estimulo}
+    ${temporizador}
     ${consideraciones}
   `;
+  window.setTimeout(configurarTemporizadorEscalaNota, 0);
 
-  items.innerHTML = escala.items.map((item, index) => {
+  const reactivos = itemsEscalaNota(escala);
+  items.innerHTML = reactivos.map((item, index) => {
     if (item.tipo === "numero") {
       return `
         <div class="item-escala-nota">
           <label>${index + 1}. ${escaparHTML(textoItemEscala(item))}
-            <input data-item-escala-nota="${index}" type="number" min="${item.min ?? 0}" max="${item.max ?? ""}" step="1" placeholder="${item.min ?? 0}-${item.max ?? ""}">
+            <input data-item-escala-nota="${index}" type="number" min="${item.min ?? 0}" max="${item.max ?? ""}" step="${item.step || 1}" placeholder="${item.min ?? 0}-${item.max ?? ""}">
           </label>
-          <small>${escaparHTML(item.dominio || "")}${item.max !== undefined ? ` · Maximo ${escaparHTML(item.max)}` : ""}</small>
+          <small>${escaparHTML(item.dominio || "")}${item.max !== undefined ? ` - Maximo ${escaparHTML(item.max)}` : ""}${item.ayuda ? ` - ${escaparHTML(item.ayuda)}` : ""}</small>
         </div>
       `;
     }
 
-    if (item.tipo === "select") {
-      const opciones = (item.opciones || []).map((texto, opcionIndex) => ({
-        texto,
-        valor: Number(item.valores?.[opcionIndex] ?? opcionIndex)
-      }));
-      return `
-        <div class="item-escala-nota">
-          <label>${index + 1}. ${escaparHTML(textoItemEscala(item))}
-            <select data-item-escala-nota="${index}">
-              <option value="">Seleccionar</option>
-              ${opciones.map((opcion) => `<option value="${opcion.valor}">${escaparHTML(opcion.texto)}</option>`).join("")}
-            </select>
-          </label>
-          <small>${escaparHTML(item.dominio || "")}</small>
-        </div>
-      `;
-    }
-
-    const opciones = obtenerOpcionesItemEscala(escala, item);
+    const opciones = obtenerOpcionesEscalaNota(escala, item);
     return `
       <div class="item-escala-nota">
         <label>${index + 1}. ${escaparHTML(textoItemEscala(item))}
           <select data-item-escala-nota="${index}">
             <option value="">Seleccionar</option>
-            ${opciones.map((opcion) => `<option value="${opcion.valor}">${escaparHTML(opcion.texto)}</option>`).join("")}
+            ${opciones.map((opcion) => `<option value="${escaparHTML(opcion.valor)}">${escaparHTML(opcion.texto)}${opcion.texto.includes("(") ? "" : ` (${escaparHTML(opcion.valor)})`}</option>`).join("")}
           </select>
         </label>
+        <small>${escaparHTML(item.dominio || "")}</small>
       </div>
     `;
   }).join("");
+}
+
+function obtenerOpcionesEscalaNota(escala, item) {
+  if (Array.isArray(item.opciones) && item.opciones.length) {
+    return item.opciones.map((opcion, opcionIndex) => {
+      if (typeof opcion === "object") return { texto: opcion.texto ?? String(opcion.valor ?? opcionIndex), valor: Number(opcion.valor ?? opcionIndex) };
+      return { texto: String(opcion), valor: Number(item.valores?.[opcionIndex] ?? opcionIndex) };
+    });
+  }
+  return obtenerOpcionesItemEscala(escala, item);
+}
+
+function configurarTemporizadorEscalaNota() {
+  const boton = document.querySelector("[data-iniciar-temporizador-escala-nota]");
+  const etiqueta = document.querySelector("[data-tiempo-escala-nota]");
+  if (!boton || !etiqueta || boton.dataset.configurado === "1") return;
+  boton.dataset.configurado = "1";
+  boton.addEventListener("click", () => {
+    let restante = Number(etiqueta.textContent || 0);
+    boton.disabled = true;
+    const intervalo = window.setInterval(() => {
+      restante -= 1;
+      etiqueta.textContent = String(Math.max(0, restante));
+      if (restante <= 0) {
+        window.clearInterval(intervalo);
+        boton.disabled = false;
+        boton.textContent = "Reiniciar temporizador";
+      }
+    }, 1000);
+  });
 }
 
 async function guardarEscalaDesdeNota() {
@@ -539,9 +620,10 @@ async function guardarEscalaDesdeNota() {
   const escala = escalaNotaActual();
   if (!escala) return;
 
+  const reactivos = itemsEscalaNota(escala);
   const controles = [...document.querySelectorAll("[data-item-escala-nota]")];
   const respuestas = controles.map((control, index) => {
-    const item = escala.items[index];
+    const item = reactivos[index];
     const valor = control.value === "" ? null : Number(control.value);
     const respuesta = control.tagName === "SELECT"
       ? control.options[control.selectedIndex]?.textContent || ""
@@ -560,9 +642,10 @@ async function guardarEscalaDesdeNota() {
     return;
   }
 
-  const esCognitiva = escala.tipoEscala === "cognitiva";
+  const esInteractiva = modoEscalaNota === "interactiva" && Boolean(obtenerPruebaInteractiva(escala.id));
+  const esCognitiva = esEscalaCognitivaNota(escala);
   const fueraDeRango = respuestas.some((respuesta, index) => {
-    const item = escala.items[index] || {};
+    const item = reactivos[index] || {};
     if (item.tipo !== "numero") return false;
     if (item.min !== undefined && respuesta.valor < item.min) return true;
     if (item.max !== undefined && respuesta.valor > item.max) return true;
@@ -574,13 +657,21 @@ async function guardarEscalaDesdeNota() {
     return;
   }
 
-  const puntaje = esCognitiva
-    ? calcularPuntajeEscalaCognitiva(escala, respuestas)
-    : calcularPuntajeEscala(respuestas);
-  const interpretacion = esCognitiva
-    ? interpretarEscalaCognitiva(escala, puntaje, respuestas)
-    : interpretarEscala(escala, puntaje);
-  const puntajesPorDominio = esCognitiva ? obtenerPuntajesDominioCognitivo(respuestas) : {};
+  const puntaje = esInteractiva
+    ? calcularPuntajePruebaInteractiva(escala, respuestas)
+    : esCognitiva
+      ? calcularPuntajeEscalaCognitiva(escala, respuestas)
+      : calcularPuntajeEscala(respuestas);
+  const interpretacion = esInteractiva
+    ? interpretarPruebaInteractiva(escala, puntaje)
+    : esCognitiva
+      ? interpretarEscalaCognitiva(escala, puntaje, respuestas)
+      : interpretarEscala(escala, puntaje);
+  const puntajesPorDominio = esInteractiva
+    ? puntajesDominioPruebaInteractiva(respuestas)
+    : esCognitiva
+      ? obtenerPuntajesDominioCognitivo(respuestas)
+      : {};
   const usuario = auth.currentUser;
   const medicoActual = usuario ? await obtenerUsuario(usuario.uid) : null;
   const pacienteActual = await obtenerUsuario(uidPaciente);
@@ -596,9 +687,10 @@ async function guardarEscalaDesdeNota() {
     rolProfesional: medicoActual?.rol || "",
     nombrePaciente: pacienteActual?.nombre || "",
     nombreEscala: escala.nombre,
-    tipoEscala: esCognitiva ? "cognitiva" : escala.area,
+    tipoEscala: esCognitiva ? "cognitiva" : escala.tipoEscala || escala.area,
     fechaAplicacion,
     origen: "nota_clinica",
+    modoAplicacion: esInteractiva ? "aplicacion_interactiva" : "captura_resultado_previo",
     puntajeTotal: puntaje,
     puntajeMaximo: escala.puntajeMaximo ?? "",
     dominiosEvaluados: escala.dominiosEvaluados || [],
