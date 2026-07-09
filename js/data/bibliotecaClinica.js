@@ -97,12 +97,32 @@ export const CRITERIOS_DIAGNOSTICOS = [
   },
 
   {
-    codigo: "60.6 / 6D10",
+    codigo: "60.5 /6D10+6D11.4",
+    nombre: "Trastorno ansioso anancástico de la personalidad //Trastorno de la personalidad, con rasgo prominente de anancastia",
+    categoria: "Trastornos de la personalidad",
+    criterios: ["CIE10",
+      "A) Deben cumplirse los criterios generales para el diagnostico de trastorno de la personalidad.",
+      "B) Deben cumplirse al menos cuatro de los siguientes síntomas:", 
+      "1) Sentimientos de duda, y preocupaciones excesivas.",
+      "2) Preocupación por detalles, listas, reglas, organización u horarios",
+      "3) Perfeccionismo que interfiere con la finalización de tareas.",
+      "4) Rectitud y escrupolosidad excesivos",
+      "5) Preocupación injustificada por la productividad, hasta el extremo de renunciar a actividades placenteras y relaciones itnerpersonales", 
+      "6) Excesiva pedantería y adhesión a las convenciones sociales",
+      "7) Rigidez y obstinación",
+      "8) Insistencia irracional se sometan a la propia rutina de ahcer las cosas o resistencia irracional a permitir que los demás realicen sus tareas"
+    ],
+    psicoeducacion: "Brindar información sobre el trastorno anancástico de la personalidad, sus características clínicas y el impacto del perfeccionismo, la rigidez cognitiva y la necesidad de control en el funcionamiento cotidiano; promover el reconocimiento de pensamientos disfuncionales, favorecer el desarrollo de estrategias de flexibilización cognitiva, tolerancia a la incertidumbre y manejo de la ansiedad, reforzando la importancia de la adherencia al tratamiento psicoterapéutico y farmacológico cuando esté indicado."
+  },
+
+
+  {
+    codigo: "60.6 / 6D11.1",
     nombre: "Trastorno ansioso (evitativo) de la personalidad",
     categoria: "Trastornos de la personalidad",
     criterios: [
       "A) Deben cumplirse los criterios generales para el diagnostico de trastorno de la personalidad.",
-      "B) Deben cumplirse al menos cuatro de los siguientes criterios:", 
+      "B) Deben cumplirse al menos cuatro de los siguientes síntomas:", 
       "1) Evita actividades laborales o escolares que impliquen un contacto interpersonal significativo, por temor a la critica, desaprobacion o rechazo.", 
       "2) Esta reacio a implicarse con personas, a menos que este seguro de ser aceptado.",
       "3) Muestra restriccion en las relaciones interpersonales debido al miedo a ser avergonzado o ridiculizado.", 
