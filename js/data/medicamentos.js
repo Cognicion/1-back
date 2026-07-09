@@ -446,7 +446,40 @@ export const MEDICAMENTOS = [
     dosisHabitual: "250-500 mg/dia",
     notas: "Alcohol; requiere consentimiento y vigilancia.",
     presentaciones: ["tabletas de 250 mg", "tabletas de 500 mg"]
-  }
+  },
+  //AINES Y PARACETAMOL
+  {
+    nombre: "Paracetamol",
+    clase: "analgesico",
+    dosisHabitual: "500-1000 mg cada 6-8 horas",
+    notas: "Analgesico y antipiretico; vigilar funcion hepatica.",
+    presentaciones: ["tabletas de 500 mg", "tabletas de 1000 mg", "suspension oral de 160 mg/5 ml"]
+  },
+  
+  {
+    nombre: "Naproxeno", 
+    clase: "AINE", 
+    dosisHabitual: "250-500 mg cada 8-12 horas", 
+    notas: "Analgesico y antiinflamatorio; vigilar funcion renal y gastrointestinal.", 
+    presentaciones: ["tabletas de 250 mg", "tabletas de 500 mg", "suspension oral de 125 mg/5 ml"]
+  },
+  
+  {
+    nombre: "Ibuprofeno", 
+    clase: "AINE", 
+    dosisHabitual: "200-400 mg cada 6-8 horas", 
+    notas: "Analgesico y antiinflamatorio; vigilar funcion renal y gastrointestinal.", 
+    presentaciones: ["tabletas de 200 mg", "tabletas de 400 mg", "suspension oral de 100 mg/5 ml"]
+  },
+
+  {
+    nombre: "Diclofenaco", 
+    clase: "AINE", 
+    dosisHabitual: "50-100 mg cada 8-12 horas", 
+    notas: "Analgesico y antiinflamatorio; vigilar funcion renal y gastrointestinal.", 
+    presentaciones: ["tabletas de 50 mg", "tabletas de 75 mg", "suspension oral de 25 mg/5 ml"]
+  }       
+
 ];
 
 export const MEDICAMENTOS_PRESENTACIONES = MEDICAMENTOS.flatMap((medicamento) =>
