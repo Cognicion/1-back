@@ -144,7 +144,7 @@ function siguienteEnsayo() {
   const variante = estimulos[config.tipoEstimulo] || estimulos.colores;
   const data = variante[ensayoActual.tipo];
   const estimulo = $("estimuloVisual");
-  estimulo.className = `estimulo visible ${data.clase}`;
+  estimulo.className = `estimulo visible ${data.clase} entrada-${ensayoActual.tipo}`;
   $("textoEstimulo").textContent = data.texto;
   inicioEstimulo = performance.now();
   activarPulsoEstimulo(ensayoActual.tipo);
@@ -175,9 +175,13 @@ function cerrarEnsayoSinRespuesta() {
 function activarPulsoEstimulo(tipo) {
   const zona = $("zonaEstimulo");
   if (!zona || config?.efectos === false) return;
-  zona.classList.remove("pulso-go", "pulso-nogo");
+  zona.classList.remove("pulso-go", "pulso-nogo", "cambio-estimulo");
   void zona.offsetWidth;
-  zona.classList.add(tipo === "go" ? "pulso-go" : "pulso-nogo");
+  zona.classList.add("cambio-estimulo", tipo === "go" ? "pulso-go" : "pulso-nogo");
+  const texto = $("textoEstimulo");
+  texto?.classList.remove("nuevo-estimulo");
+  void texto?.offsetWidth;
+  texto?.classList.add("nuevo-estimulo");
 }
 function registrarRespuesta(event) {
   event?.preventDefault?.();
@@ -342,7 +346,8 @@ function limpiarTemporizadores() {
 function limpiarEnsayoVisual() {
   const estimulo = $("estimuloVisual");
   if (estimulo) estimulo.className = "estimulo";
-  $("zonaEstimulo")?.classList.remove("pulso-go", "pulso-nogo");
+  $("zonaEstimulo")?.classList.remove("pulso-go", "pulso-nogo", "cambio-estimulo");
+  $("textoEstimulo")?.classList.remove("nuevo-estimulo");
   const texto = $("textoEstimulo");
   if (texto) texto.textContent = estado === "resultados" ? "Finalizado" : "Preparado";
 }
