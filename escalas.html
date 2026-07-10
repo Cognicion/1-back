@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>COGNICION | Escalas clinicas</title>
+<link rel="icon" type="image/png" href="assets/favicon-cognicion.png">
+<link rel="stylesheet" href="css/escalas.css">
+<link rel="stylesheet" href="css/reportes.css">
+</head>
+<body>
+<header class="topbar-escalas">
+  <a class="marca-escalas" href="dashboard.html" aria-label="Volver al dashboard">
+    <img src="assets/favicon-cognicion.png" alt="COGNICION">
+    <div>
+      <strong>COGNICI&Oacute;N</strong>
+      <span>Escalas clinicas y tamizajes</span>
+    </div>
+  </a>
+  <nav>
+    <a href="dashboard.html">Dashboard</a>
+    <a href="rehabilitacion-cognitiva.html">Rehabilitaci&oacute;n</a>
+  </nav>
+</header>
+
+<main class="escalas-shell">
+  <section class="hero-escalas">
+    <span class="kicker">Evaluaci&oacute;n cl&iacute;nica</span>
+    <h1>Escalas y tamizajes</h1>
+    <p>Instrumentos cl&iacute;nicos y cognitivos organizados para aplicaci&oacute;n, captura estructurada y seguimiento longitudinal.</p>
+  </section>
+
+  <section class="panel-filtros-escalas">
+    <label>
+      <span>Buscar escala</span>
+      <input id="buscarEscala" type="search" placeholder="Ej. MoCA, PHQ-9, cognicion, abstinencia...">
+    </label>
+    <label>
+      <span>Categor&iacute;a</span>
+      <select id="filtroCategoriaEscala">
+        <option value="">Todas</option>
+        <option value="cognitiva">Cognici&oacute;n</option>
+        <option value="psiquiatrica">Cl&iacute;nica / psiqui&aacute;trica</option>
+      </select>
+    </label>
+  </section>
+
+  <section class="bloque-escalas">
+    <div class="seccion-titulo">
+      <span class="kicker">Cognici&oacute;n · Tamizaje cognitivo · Evaluaci&oacute;n cognitiva</span>
+      <h2>Cat&aacute;logo de escalas</h2>
+      <p>Los tamizajes cognitivos se trasladaron aqu&iacute; desde Rehabilitaci&oacute;n Cognitiva para separar evaluaci&oacute;n de actividades de entrenamiento.</p>
+    </div>
+    <div class="grid-escalas" id="gridEscalas"></div>
+    <p class="sin-resultados" id="sinEscalas">No se encontraron escalas para esta b&uacute;squeda.</p>
+  </section>
+</main>
+
+<section id="panelEscala" class="panel-escala" aria-hidden="true">
+  <div class="panel-escala-overlay" data-cerrar-escala="true"></div>
+  <div class="panel-escala-card" role="dialog" aria-modal="true" aria-labelledby="tituloEscala">
+    <div class="panel-escala-header">
+      <div>
+        <span id="subtituloEscala">Escala</span>
+        <h2 id="tituloEscala">Escala</h2>
+        <p id="descripcionEscala"></p>
+      </div>
+      <button type="button" class="cerrar-escala" data-cerrar-escala="true">Cerrar</button>
+    </div>
+    <div class="modo-escala-switch">
+      <button type="button" id="modoAplicarEscala" data-modo-escala="interactiva">Aplicar prueba ahora</button>
+      <button type="button" id="modoManualEscala" data-modo-escala="manual">Capturar resultado previo</button>
+    </div>
+    <div id="avisoEscala" class="aviso-escala"></div>
+    <form id="formEscala" class="form-escala"></form>
+    <label class="observaciones-escala">Observaciones clinicas
+      <textarea id="observacionesEscala" placeholder="Observaciones opcionales"></textarea>
+    </label>
+    <label class="visibilidad-escala-paciente"><input id="visibilidadEscalaPaciente" type="checkbox"> Hacer visible para paciente</label>
+    <div id="resultadoEscala" class="resultado-escala"><strong>Resultado</strong><p>Aplica la prueba o captura puntajes y calcula el resultado.</p></div>
+    <div class="acciones-escala">
+      <button type="button" id="calcularEscala">Calcular</button>
+      <button type="button" id="guardarEscala">Guardar resultado</button>
+      <button type="button" id="limpiarEscala" class="boton-secundario">Limpiar</button>
+    </div>
+  </div>
+</section>
+
+<div class="toast-escalas" id="toastEscalas" role="status" aria-live="polite"></div>
+<script type="module" src="js/escalas.js"></script>
+<script type="module" src="js/reportes.js"></script>
+</body>
+</html>

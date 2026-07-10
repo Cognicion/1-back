@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>COGNICION | Go / No-Go</title>
+<link rel="icon" type="image/png" href="assets/favicon-cognicion.png">
+<link rel="stylesheet" href="css/go-nogo.css">
+<link rel="stylesheet" href="css/reportes.css">
+</head>
+<body>
+<header class="topbar-go">
+  <a class="marca-go" href="rehabilitacion-cognitiva.html">
+    <img src="assets/favicon-cognicion.png" alt="COGNICION">
+    <div><strong>Go / No-Go</strong><span>Control inhibitorio y atenci&oacute;n sostenida</span></div>
+  </a>
+  <nav>
+    <a href="rehabilitacion-cognitiva.html">Rehabilitaci&oacute;n</a>
+    <a href="dashboard.html">Dashboard</a>
+  </nav>
+</header>
+
+<main class="go-shell">
+  <section class="go-hero" id="pantallaInicio">
+    <span class="kicker">Actividad neurocognitiva</span>
+    <h1>Go / No-Go</h1>
+    <p>Responde ante los est&iacute;mulos Go y det&eacute;n la respuesta ante los No-Go. La tarea registra precisi&oacute;n, impulsividad, omisiones y tiempo de reacci&oacute;n.</p>
+    <div class="go-acciones">
+      <button id="btnIrConfiguracion" type="button">Configurar sesi&oacute;n</button>
+      <a class="boton-secundario" href="rehabilitacion-cognitiva.html">Volver</a>
+    </div>
+  </section>
+
+  <section class="panel-go" id="pantallaConfiguracion">
+    <div class="seccion-titulo">
+      <span class="kicker">Preparaci&oacute;n</span>
+      <h2>Configuraci&oacute;n de la sesi&oacute;n</h2>
+      <p>Elige dificultad y par&aacute;metros. Puedes iniciar una pr&aacute;ctica breve antes de la sesi&oacute;n real.</p>
+    </div>
+    <form class="config-grid" id="formConfigGo">
+      <label>Nivel de dificultad
+        <select id="dificultad"><option value="facil">F&aacute;cil</option><option value="intermedio">Intermedio</option><option value="dificil">Dif&iacute;cil</option></select>
+      </label>
+      <label>Duraci&oacute;n de sesi&oacute;n (segundos)<input id="duracionSesion" type="number" min="20" max="600" value="60"></label>
+      <label>N&uacute;mero de ensayos<input id="totalEnsayos" type="number" min="10" max="200" value="40"></label>
+      <label>Duraci&oacute;n visible (ms)<input id="duracionEstimulo" type="number" min="200" max="2000" value="900"></label>
+      <label>Intervalo entre est&iacute;mulos (ms)<input id="intervaloEstimulo" type="number" min="200" max="2500" value="800"></label>
+      <label>Porcentaje Go<input id="porcentajeGo" type="number" min="10" max="90" value="75"></label>
+      <label>Tipo de est&iacute;mulos
+        <select id="tipoEstimulo"><option value="colores">C&iacute;rculos de color</option><option value="formas">Figuras geom&eacute;tricas</option><option value="flechas">Flechas</option><option value="letras">Letras</option></select>
+      </label>
+      <label>Sonido
+        <select id="sonido"><option value="off">Desactivado</option><option value="on">Activado</option></select>
+      </label>
+      <label>Retroalimentaci&oacute;n inmediata
+        <select id="feedback"><option value="on">Activada</option><option value="off">Desactivada</option></select>
+      </label>
+      <label>Efectos visuales
+        <select id="efectos"><option value="on">Activados</option><option value="off">Reducidos</option></select>
+      </label>
+    </form>
+    <div class="go-acciones">
+      <button id="btnPractica" type="button">Iniciar pr&aacute;ctica</button>
+      <button id="btnSesion" type="button">Iniciar sesi&oacute;n real</button>
+    </div>
+  </section>
+
+  <section class="arena-go" id="pantallaJuego" aria-live="polite">
+    <div class="hud-go">
+      <div><span>Modo</span><strong id="modoJuego">Pr&aacute;ctica</strong></div>
+      <div><span>Ensayo</span><strong id="contadorEnsayos">0/0</strong></div>
+      <div><span>Tiempo</span><strong id="tiempoRestante">00:00</strong></div>
+      <div><span>Precisi&oacute;n</span><strong id="precisionActual">--</strong></div>
+    </div>
+    <div class="barra-progreso"><span id="barraProgreso"></span></div>
+    <div class="cuenta-regresiva" id="cuentaRegresiva"></div>
+    <button class="zona-estimulo" id="zonaEstimulo" type="button" aria-label="Zona principal de respuesta">
+      <span class="estimulo" id="estimuloVisual"></span>
+      <span class="texto-estimulo" id="textoEstimulo">Preparado</span>
+    </button>
+    <button class="boton-respuesta" id="btnResponder" type="button">Responder (espacio)</button>
+    <p class="feedback-go" id="feedbackGo"></p>
+    <div class="go-acciones compactas">
+      <button id="btnCancelar" type="button" class="boton-secundario">Cancelar sesi&oacute;n</button>
+    </div>
+  </section>
+
+  <section class="panel-go resultados" id="pantallaResultados">
+    <div class="seccion-titulo">
+      <span class="kicker">Resultados</span>
+      <h2>Resumen de rendimiento</h2>
+      <p>Esta actividad es una herramienta de entrenamiento y registro del rendimiento. Sus resultados no sustituyen una evaluaci&oacute;n cl&iacute;nica o neuropsicol&oacute;gica profesional.</p>
+    </div>
+    <div class="resultados-grid" id="resultadosGrid"></div>
+    <article class="interpretacion-go" id="interpretacionGo"></article>
+    <div class="graficas-controles">
+      <button type="button" data-toggle-grafica="rt">Tiempo de reacci&oacute;n</button>
+      <button type="button" data-toggle-grafica="aciertos">Aciertos y errores</button>
+      <button type="button" data-toggle-grafica="distribucion">Distribuci&oacute;n</button>
+      <button type="button" data-toggle-grafica="evolucion">Evoluci&oacute;n</button>
+    </div>
+    <div class="graficas-go">
+      <article id="graficaRt"><h3>Tiempo de reacci&oacute;n por ensayo</h3><div class="grafica-linea" id="lineaRt"></div></article>
+      <article id="graficaAciertos"><h3>Aciertos y errores</h3><div class="grafica-barras" id="barrasAciertos"></div></article>
+      <article id="graficaDistribucion"><h3>Distribuci&oacute;n de respuestas</h3><div class="grafica-barras" id="barrasDistribucion"></div></article>
+      <article id="graficaEvolucion"><h3>Evoluci&oacute;n durante la sesi&oacute;n</h3><div class="grafica-linea" id="lineaEvolucion"></div></article>
+    </div>
+    <div class="go-acciones">
+      <button id="btnRepetir" type="button">Repetir</button>
+      <button id="btnCambiar" type="button" class="boton-secundario">Cambiar dificultad</button>
+      <a class="boton-secundario" href="rehabilitacion-cognitiva.html">Regresar a Rehabilitaci&oacute;n</a>
+    </div>
+  </section>
+</main>
+
+<div class="toast-go" id="toastGo" role="status" aria-live="polite"></div>
+<script type="module" src="js/go-nogo.js"></script>
+<script type="module" src="js/reportes.js"></script>
+</body>
+</html>

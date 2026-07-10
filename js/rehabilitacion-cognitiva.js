@@ -1,4 +1,4 @@
-﻿import { auth, db } from "./firebase.js";
+import { auth, db } from "./firebase.js";
 import {
   ESCALAS_COGNITIVAS,
   calcularPuntajeEscalaCognitiva,
@@ -74,10 +74,11 @@ const actividades = [
   {
     icono: "GN",
     nombre: "Go / No-Go",
-    descripcion: "Responde ante estimulos objetivo y detente ante estimulos de inhibicion.",
+    descripcion: "Entrena el control inhibitorio y la atencion sostenida respondiendo ante estimulos objetivo y deteniendo la respuesta ante estimulos de inhibicion.",
     funciones: ["Funciones ejecutivas", "Atencion", "Velocidad de procesamiento"],
-    estado: "Proximamente",
-    accion: "Ver ejercicio"
+    estado: "Disponible",
+    accion: "Entrenar",
+    url: "go-nogo.html"
   },
   {
     icono: "SD",
@@ -157,7 +158,6 @@ let filtroActivo = "Todos";
 
 document.addEventListener("DOMContentLoaded", () => {
   inicializarIntro();
-  renderizarTamizajes();
   renderizarFiltros();
   renderizarActividades();
   configurarBusqueda();
