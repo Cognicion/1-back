@@ -20,6 +20,23 @@ const variableY = document.getElementById("variableY");
 const variableX = document.getElementById("variableX");
 const tiposVariablesContenedor = document.getElementById("tiposVariables");
 const recomendacionAnalisis = document.getElementById("recomendacionAnalisis");
+const selectorProyecto = document.getElementById("selectorProyectoEstadistica");
+const nombreProyectoInput = document.getElementById("nombreProyectoEstadistica");
+const estadoGuardadoProyecto = document.getElementById("estadoGuardadoProyecto");
+const listaProyectos = document.getElementById("listaProyectosEstadistica");
+const tablaEditable = document.getElementById("tablaEditableEstadistica");
+const nombreTablaActiva = document.getElementById("nombreTablaActiva");
+const selectorTabla = document.getElementById("selectorTablaEstadistica");
+const redaccionProyecto = document.getElementById("redaccionProyectoEstadistica");
+const graficasSugeridasContenedor = document.getElementById("graficasSugeridas");
+
+let proyectosEstadistica = [];
+let proyectoActivoId = "";
+let tablaActivaId = "";
+let cambiosProyectoPendientes = false;
+let graficasSugeridas = [];
+let renderizandoTabla = false;
+const CLAVE_PROYECTOS_ESTADISTICA = "cognicion_estadistica_proyectos_v1";
 
 function usuarioTieneAccesoTotal() {
   return usuarioActual?.rol === "admin";
@@ -41,6 +58,7 @@ onAuthStateChanged(auth, async (user) => {
   }
 
   document.body.classList.remove("bloqueado");
+  cargarProyectosEstadistica();
 });
 
 function parsearTabla(texto) {
@@ -59,13 +77,387 @@ function parsearTabla(texto) {
   });
 }
 
-function cargarDatos() {
-  datos = aplicarFiltro(parsearTabla(entrada.value));
-  columnas = datos.length ? Object.keys(datos[0]) : [];
+function crearIdEstadistica(prefijo = "id") {
+  return `${prefijo}_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+}
+
+function claveProyectosEstadistica() {
+  return `${CLAVE_PROYECTOS_ESTADISTICA}:${auth.currentUser?.uid || "anon"}`;
+}
+
+function valorCelda(valor) {
+  if (valor === null || valor === undefined) return "";
+  const texto = String(valor).trim();
+  if (texto === "") return "";
+  const numero = Number(texto);
+  return !Number.isNaN(numero) && /^-?\d+(\.\d+)?$/.test(texto) ? numero : texto;
+}
+
+function csvDesdeTabla(tabla) {
+  if (!tabla?.columnas?.length) return "";
+  const escapeCSV = (valor) => {
+    const texto = String(valor ?? "");
+    return /[",\n\t]/.test(texto) ? `"${texto.replace(/"/g, '""')}"` : texto;
+  };
+  return [
+    tabla.columnas.map(escapeCSV).join(","),
+    ...tabla.filas.map((fila) => tabla.columnas.map((col) => escapeCSV(fila[col])).join(","))
+  ].join("\n");
+}
+
+function tablaDesdeDatos(filas, nombre = "Tabla 1", id = crearIdEstadistica("tabla")) {
+  const cols = filas.length ? Object.keys(filas[0]) : ["variable_1"];
+  return {
+    id,
+    nombre,
+    columnas: cols,
+    filas: filas.length ? filas.map((fila) => cols.reduce((acc, col) => {
+      acc[col] = fila[col] ?? "";
+      return acc;
+    }, {})) : [cols.reduce((acc, col) => ({ ...acc, [col]: "" }), {})]
+  };
+}
+
+function datosDesdeTabla(tabla) {
+  if (!tabla?.columnas?.length) return [];
+  return (tabla.filas || []).map((fila) => tabla.columnas.reduce((acc, col) => {
+    acc[col] = valorCelda(fila[col]);
+    return acc;
+  }, {}));
+}
+
+function proyectoActivo() {
+  return proyectosEstadistica.find((proyecto) => proyecto.id === proyectoActivoId) || null;
+}
+
+function tablaActiva() {
+  const proyecto = proyectoActivo();
+  if (!proyecto) return null;
+  if (!tablaActivaId && proyecto.tablas?.length) tablaActivaId = proyecto.tablas[0].id;
+  return proyecto.tablas?.find((tabla) => tabla.id === tablaActivaId) || proyecto.tablas?.[0] || null;
+}
+
+function normalizarProyectoEstadistica(proyecto = {}) {
+  const ahora = new Date().toISOString();
+  const tablas = Array.isArray(proyecto.tablas) && proyecto.tablas.length
+    ? proyecto.tablas.map((tabla, i) => ({
+      id: tabla.id || crearIdEstadistica("tabla"),
+      nombre: tabla.nombre || `Tabla ${i + 1}`,
+      columnas: Array.isArray(tabla.columnas) && tabla.columnas.length ? tabla.columnas : ["variable_1"],
+      filas: Array.isArray(tabla.filas) ? tabla.filas : []
+    }))
+    : [tablaDesdeDatos(parsearTabla(entrada?.value || ""), "Tabla inicial")];
+
+  return {
+    id: proyecto.id || crearIdEstadistica("proyecto"),
+    nombre: proyecto.nombre || "Proyecto sin nombre",
+    createdAt: proyecto.createdAt || ahora,
+    updatedAt: proyecto.updatedAt || ahora,
+    tablas,
+    csvOriginal: proyecto.csvOriginal || "",
+    graficas: Array.isArray(proyecto.graficas) ? proyecto.graficas : [],
+    redaccionUsuario: proyecto.redaccionUsuario || ""
+  };
+}
+
+function crearProyectoEstadistica(nombre = "Proyecto sin nombre", activar = true) {
+  const filasIniciales = parsearTabla(entrada?.value || "");
+  const proyecto = normalizarProyectoEstadistica({
+    nombre,
+    tablas: [tablaDesdeDatos(filasIniciales, "Tabla inicial")],
+    csvOriginal: entrada?.value || ""
+  });
+  proyectosEstadistica.unshift(proyecto);
+  if (activar) abrirProyecto(proyecto.id, { omitirConfirmacion: true });
+  persistirProyectosEstadistica(false);
+  renderizarProyectosEstadistica();
+  return proyecto;
+}
+
+function cargarProyectosEstadistica() {
+  try {
+    proyectosEstadistica = JSON.parse(localStorage.getItem(claveProyectosEstadistica()) || "[]").map(normalizarProyectoEstadistica);
+  } catch (error) {
+    proyectosEstadistica = [];
+  }
+
+  if (!proyectosEstadistica.length) {
+    crearProyectoEstadistica("Proyecto inicial", true);
+    return;
+  }
+
+  abrirProyecto(proyectosEstadistica[0].id, { omitirConfirmacion: true });
+}
+
+function persistirProyectosEstadistica(marcarGuardado = true) {
+  localStorage.setItem(claveProyectosEstadistica(), JSON.stringify(proyectosEstadistica));
+  cambiosProyectoPendientes = !marcarGuardado;
+  actualizarEstadoGuardado(marcarGuardado ? "Guardado" : "Cambios sin guardar");
+}
+
+function actualizarEstadoGuardado(texto = "Cambios sin guardar") {
+  if (!estadoGuardadoProyecto) return;
+  estadoGuardadoProyecto.textContent = texto;
+  estadoGuardadoProyecto.classList.toggle("pendiente", texto !== "Guardado");
+}
+
+function marcarCambiosProyecto() {
+  cambiosProyectoPendientes = true;
+  actualizarEstadoGuardado("Cambios sin guardar");
+}
+
+function sincronizarProyectoDesdeEstado() {
+  const proyecto = proyectoActivo();
+  const tabla = tablaActiva();
+  if (!proyecto) return;
+  if (nombreProyectoInput) proyecto.nombre = nombreProyectoInput.value.trim() || "Proyecto sin nombre";
+  if (tabla) proyecto.csvOriginal = csvDesdeTabla(tabla);
+  proyecto.redaccionUsuario = redaccionProyecto?.value || "";
+  proyecto.graficas = graficasSugeridas.map((grafica) => ({
+    id: grafica.id,
+    tipo: grafica.tipo,
+    titulo: grafica.titulo,
+    columnasUsadas: grafica.columnasUsadas,
+    visible: grafica.visible,
+    configuracion: grafica.configuracion || {}
+  }));
+  proyecto.updatedAt = new Date().toISOString();
+}
+
+function guardarProyectoActivo() {
+  sincronizarProyectoDesdeEstado();
+  persistirProyectosEstadistica(true);
+  renderizarProyectosEstadistica();
+}
+
+function renderizarProyectosEstadistica() {
+  if (selectorProyecto) {
+    selectorProyecto.innerHTML = proyectosEstadistica.map((proyecto) => `
+      <option value="${escaparHTML(proyecto.id)}" ${proyecto.id === proyectoActivoId ? "selected" : ""}>${escaparHTML(proyecto.nombre)}</option>
+    `).join("");
+  }
+
+  if (listaProyectos) {
+    listaProyectos.innerHTML = proyectosEstadistica.slice(0, 6).map((proyecto) => `
+      <button class="proyecto-chip ${proyecto.id === proyectoActivoId ? "activo" : ""}" data-abrir-proyecto="${escaparHTML(proyecto.id)}">
+        <strong>${escaparHTML(proyecto.nombre)}</strong>
+        <span>${new Date(proyecto.updatedAt).toLocaleDateString("es-MX")}</span>
+      </button>
+    `).join("");
+    listaProyectos.querySelectorAll("[data-abrir-proyecto]").forEach((btn) => {
+      btn.addEventListener("click", () => abrirProyecto(btn.dataset.abrirProyecto));
+    });
+  }
+}
+
+function abrirProyecto(id, opciones = {}) {
+  if (!opciones.omitirConfirmacion && cambiosProyectoPendientes && !confirm("Hay cambios sin guardar. Si cambias de proyecto se perderan. ¿Continuar?")) return;
+  const proyecto = proyectosEstadistica.find((item) => item.id === id);
+  if (!proyecto) return;
+  proyectoActivoId = proyecto.id;
+  tablaActivaId = proyecto.tablas?.[0]?.id || "";
+  if (nombreProyectoInput) nombreProyectoInput.value = proyecto.nombre;
+  if (redaccionProyecto) redaccionProyecto.value = proyecto.redaccionUsuario || "";
+  renderizarProyectosEstadistica();
+  renderizarTablaEditable();
+  sincronizarDatosDesdeTablaActiva({ actualizarEntrada: true, mensaje: "Proyecto cargado. Selecciona un analisis." });
+  cambiosProyectoPendientes = false;
+  actualizarEstadoGuardado("Guardado");
+}
+
+function eliminarProyectoActivo() {
+  const proyecto = proyectoActivo();
+  if (!proyecto || !confirm(`Eliminar el proyecto "${proyecto.nombre}"?`)) return;
+  proyectosEstadistica = proyectosEstadistica.filter((item) => item.id !== proyecto.id);
+  if (!proyectosEstadistica.length) crearProyectoEstadistica("Proyecto inicial", true);
+  else abrirProyecto(proyectosEstadistica[0].id, { omitirConfirmacion: true });
+  persistirProyectosEstadistica(true);
+}
+
+function decidirImportacionTabla() {
+  const tabla = tablaActiva();
+  const tieneDatos = tabla?.filas?.some((fila) => Object.values(fila).some((valor) => String(valor ?? "").trim() !== ""));
+  if (!tieneDatos) return "reemplazar";
+  const respuesta = prompt("Ya existe una tabla. Escribe R para reemplazarla, A para agregar el CSV como nueva tabla o C para cancelar.", "R");
+  const opcion = String(respuesta || "").trim().toLowerCase();
+  if (opcion === "a") return "agregar";
+  if (opcion === "c" || respuesta === null) return "cancelar";
+  return "reemplazar";
+}
+
+function aplicarTablaAlProyecto(tabla, modo = "reemplazar") {
+  let proyecto = proyectoActivo();
+  if (!proyecto) proyecto = crearProyectoEstadistica("Proyecto inicial", true);
+  if (modo === "agregar") {
+    proyecto.tablas.push(tabla);
+  } else {
+    const indice = proyecto.tablas.findIndex((item) => item.id === tablaActivaId);
+    if (indice >= 0) proyecto.tablas[indice] = { ...tabla, id: tablaActivaId || tabla.id };
+    else proyecto.tablas = [tabla];
+  }
+  tablaActivaId = modo === "agregar" ? tabla.id : (tablaActivaId || tabla.id);
+  proyecto.csvOriginal = csvDesdeTabla(tablaActiva());
+  renderizarTablaEditable();
+  sincronizarDatosDesdeTablaActiva({ actualizarEntrada: true });
+  marcarCambiosProyecto();
+}
+
+function sincronizarDatosDesdeTablaActiva({ actualizarEntrada = true, mensaje = "Datos cargados. Selecciona un analisis." } = {}) {
+  const tabla = tablaActiva();
+  const datosTabla = tabla ? datosDesdeTabla(tabla) : [];
+  datos = aplicarFiltro(datosTabla);
+  columnas = tabla?.columnas || (datos.length ? Object.keys(datos[0]) : []);
+  if (actualizarEntrada && entrada) entrada.value = tabla ? csvDesdeTabla(tabla) : "";
   llenarSelects();
-  resumenDatos.textContent = `${datos.length} filas, ${columnas.length} variables.`;
-  resultados.textContent = "Datos cargados. Selecciona un analisis.";
+  if (resumenDatos) resumenDatos.textContent = `${datos.length} filas, ${columnas.length} variables.`;
+  if (resultados) resultados.textContent = mensaje;
+  if (nombreTablaActiva) nombreTablaActiva.textContent = tabla?.nombre || "Tabla activa";
   dibujarGraficasAutomaticas();
+}
+
+function leerTablaEditableDesdeDOM() {
+  if (renderizandoTabla) return;
+  const tabla = tablaActiva();
+  if (!tablaEditable || !tabla) return;
+  const encabezados = [...tablaEditable.querySelectorAll("thead input")].map((input, i) => input.value.trim() || `variable_${i + 1}`);
+  const filas = [...tablaEditable.querySelectorAll("tbody tr")].map((tr) => {
+    const celdas = [...tr.querySelectorAll("td[data-col]")];
+    return encabezados.reduce((fila, col, i) => {
+      fila[col] = celdas[i]?.textContent.trim() || "";
+      return fila;
+    }, {});
+  });
+  tabla.columnas = encabezados;
+  tabla.filas = filas;
+  sincronizarDatosDesdeTablaActiva({ actualizarEntrada: true, mensaje: "Tabla actualizada. Selecciona un analisis." });
+  marcarCambiosProyecto();
+}
+
+function renderizarSelectorTablas() {
+  const proyecto = proyectoActivo();
+  if (!selectorTabla || !proyecto) return;
+  selectorTabla.innerHTML = (proyecto.tablas || []).map((tabla, i) => `
+    <option value="${escaparHTML(tabla.id)}" ${tabla.id === tablaActivaId ? "selected" : ""}>${escaparHTML(tabla.nombre || `Tabla ${i + 1}`)}</option>
+  `).join("");
+}
+
+function renderizarTablaEditable() {
+  const tabla = tablaActiva();
+  if (!tablaEditable) return;
+  if (!tabla) {
+    tablaEditable.innerHTML = "<p class=\"ayuda\">Crea o carga un proyecto para editar datos.</p>";
+    return;
+  }
+  renderizandoTabla = true;
+  tablaEditable.innerHTML = `
+    <table class="tabla-excel">
+      <thead><tr>${tabla.columnas.map((col) => `<th><input value="${escaparHTML(col)}" aria-label="Nombre de columna"></th>`).join("")}</tr></thead>
+      <tbody>
+        ${(tabla.filas.length ? tabla.filas : [{}]).map((fila, filaIdx) => `
+          <tr>${tabla.columnas.map((col, colIdx) => `<td contenteditable="true" data-row="${filaIdx}" data-col="${colIdx}">${escaparHTML(fila[col] ?? "")}</td>`).join("")}</tr>
+        `).join("")}
+      </tbody>
+    </table>
+  `;
+  renderizandoTabla = false;
+  if (nombreTablaActiva) nombreTablaActiva.textContent = tabla.nombre || "Tabla activa";
+  renderizarSelectorTablas();
+  tablaEditable.querySelectorAll("input, td[contenteditable]").forEach((el) => {
+    el.addEventListener("input", leerTablaEditableDesdeDOM);
+  });
+  tablaEditable.querySelectorAll("td[contenteditable]").forEach((celda) => {
+    celda.addEventListener("paste", pegarDatosEnTabla);
+  });
+}
+
+function pegarDatosEnTabla(event) {
+  const texto = event.clipboardData?.getData("text/plain") || "";
+  if (!texto.includes("\t") && !texto.includes("\n")) return;
+  event.preventDefault();
+  const tabla = tablaActiva();
+  if (!tabla) return;
+  const filaInicial = Number(event.currentTarget.dataset.row || 0);
+  const colInicial = Number(event.currentTarget.dataset.col || 0);
+  const filasPegadas = texto.trimEnd().split(/\r?\n/).map((linea) => linea.split("\t"));
+  const columnasNecesarias = colInicial + Math.max(...filasPegadas.map((fila) => fila.length));
+  while (tabla.columnas.length < columnasNecesarias) tabla.columnas.push(`variable_${tabla.columnas.length + 1}`);
+  while (tabla.filas.length < filaInicial + filasPegadas.length) tabla.filas.push({});
+  filasPegadas.forEach((fila, r) => {
+    fila.forEach((valor, c) => {
+      tabla.filas[filaInicial + r][tabla.columnas[colInicial + c]] = valor.trim();
+    });
+  });
+  renderizarTablaEditable();
+  sincronizarDatosDesdeTablaActiva({ actualizarEntrada: true, mensaje: "Datos pegados desde hoja de calculo." });
+  marcarCambiosProyecto();
+}
+
+function agregarFilaTabla() {
+  const tabla = tablaActiva();
+  if (!tabla) return;
+  tabla.filas.push(tabla.columnas.reduce((fila, col) => ({ ...fila, [col]: "" }), {}));
+  renderizarTablaEditable();
+  sincronizarDatosDesdeTablaActiva({ actualizarEntrada: true });
+  marcarCambiosProyecto();
+}
+
+function eliminarFilaTabla() {
+  const tabla = tablaActiva();
+  if (!tabla || !tabla.filas.length) return;
+  tabla.filas.pop();
+  renderizarTablaEditable();
+  sincronizarDatosDesdeTablaActiva({ actualizarEntrada: true });
+  marcarCambiosProyecto();
+}
+
+function agregarColumnaTabla() {
+  const tabla = tablaActiva();
+  if (!tabla) return;
+  const input = document.getElementById("nombreNuevaColumnaEstadistica");
+  let nombre = input?.value.trim() || `variable_${tabla.columnas.length + 1}`;
+  let base = nombre;
+  let contador = 2;
+  while (tabla.columnas.includes(nombre)) nombre = `${base}_${contador++}`;
+  tabla.columnas.push(nombre);
+  tabla.filas.forEach((fila) => fila[nombre] = "");
+  if (input) input.value = "";
+  renderizarTablaEditable();
+  sincronizarDatosDesdeTablaActiva({ actualizarEntrada: true });
+  marcarCambiosProyecto();
+}
+
+function eliminarColumnaTabla() {
+  const tabla = tablaActiva();
+  if (!tabla || tabla.columnas.length <= 1) return;
+  const col = tabla.columnas.pop();
+  tabla.filas.forEach((fila) => delete fila[col]);
+  renderizarTablaEditable();
+  sincronizarDatosDesdeTablaActiva({ actualizarEntrada: true });
+  marcarCambiosProyecto();
+}
+
+function cambiarSeccionEstadistica(tab = "datos") {
+  document.querySelectorAll("[data-stat-tab]").forEach((btn) => btn.classList.toggle("activo", btn.dataset.statTab === tab));
+  document.querySelectorAll("[data-stat-section]").forEach((section) => {
+    section.hidden = section.dataset.statSection !== tab;
+  });
+  if (tab === "graficas") dibujarGraficasAutomaticas();
+}
+
+function cargarDatos() {
+  const filas = parsearTabla(entrada.value);
+  if (!filas.length) {
+    datos = [];
+    columnas = [];
+    llenarSelects();
+    resumenDatos.textContent = "Sin datos validos.";
+    resultados.textContent = "Carga una tabla con encabezados y al menos una fila.";
+    return;
+  }
+  const decision = decidirImportacionTabla();
+  if (decision === "cancelar") return;
+  aplicarTablaAlProyecto(tablaDesdeDatos(filas, decision === "agregar" ? "CSV importado" : (tablaActiva()?.nombre || "Tabla importada")), decision);
+  resultados.textContent = "Datos cargados. Selecciona un analisis.";
 }
 
 function calcularEdad(fechaNacimiento) {
@@ -143,18 +535,12 @@ async function cargarPacientesDelMedico() {
     });
   }
 
-  datos = filas;
-  columnas = datos.length ? Object.keys(datos[0]) : [];
-  entrada.value = [
-    columnas.join(","),
-    ...datos.map((fila) => columnas.map((col) => fila[col]).join(","))
-  ].join("\n");
-  llenarSelects();
+  const tabla = tablaDesdeDatos(filas, "Pacientes del panel medico");
+  aplicarTablaAlProyecto(tabla, "reemplazar");
   resumenDatos.textContent = usuarioTieneAccesoTotal()
     ? `${datos.length} pacientes cargados desde Firestore.`
     : `${datos.length} pacientes autorizados cargados desde Firestore.`;
   resultados.textContent = "Datos clinicos cargados. Selecciona un analisis o grafica.";
-  dibujarGraficasAutomaticas();
 }
 
 function aplicarFiltro(filas) {
@@ -748,11 +1134,267 @@ function graficaDispersion() {
   });
 }
 
+function columnasPorTipo(tiposBuscados) {
+  return columnas.filter((col) => tiposBuscados.includes(tiposVariables[col] || detectarTipoVariable(col)));
+}
+
+function combinarPreferenciasGraficas(sugeridas) {
+  const proyecto = proyectoActivo();
+  const previas = proyecto?.graficas || [];
+  return sugeridas.map((grafica) => {
+    const previa = previas.find((item) => item.id === grafica.id);
+    return { ...grafica, visible: previa?.visible ?? true };
+  });
+}
+
+function generarGraficasSugeridas() {
+  if (!datos.length || !columnas.length) return [];
+  const categoricas = columnasPorTipo(["nominal", "binaria", "ordinal"]);
+  const numericas = columnasPorTipo(["cuantitativa", "ordinal", "binaria"]);
+  const fechas = columnasPorTipo(["fecha"]);
+  const sugeridas = [];
+
+  categoricas.slice(0, 3).forEach((col) => {
+    sugeridas.push({
+      id: `barras_${col}`,
+      tipo: "barras",
+      titulo: `Barras: ${col}`,
+      columnasUsadas: [col],
+      visible: true,
+      configuracion: { col }
+    });
+    if (new Set(valores(col)).size <= 6) {
+      sugeridas.push({
+        id: `pastel_${col}`,
+        tipo: "pastel",
+        titulo: `Pastel: ${col}`,
+        columnasUsadas: [col],
+        visible: true,
+        configuracion: { col }
+      });
+    }
+  });
+
+  numericas.slice(0, 3).forEach((col) => {
+    sugeridas.push({
+      id: `histograma_${col}`,
+      tipo: "histograma",
+      titulo: `Histograma: ${col}`,
+      columnasUsadas: [col],
+      visible: true,
+      configuracion: { col }
+    });
+    sugeridas.push({
+      id: `linea_${col}`,
+      tipo: "linea",
+      titulo: fechas[0] ? `Linea: ${col} por ${fechas[0]}` : `Linea secuencial: ${col}`,
+      columnasUsadas: fechas[0] ? [fechas[0], col] : [col],
+      visible: true,
+      configuracion: { x: fechas[0] || "__indice", y: col }
+    });
+  });
+
+  if (numericas.length >= 2) {
+    sugeridas.push({
+      id: `dispersion_${numericas[0]}_${numericas[1]}`,
+      tipo: "dispersion",
+      titulo: `Dispersion: ${numericas[1]} vs ${numericas[0]}`,
+      columnasUsadas: [numericas[0], numericas[1]],
+      visible: true,
+      configuracion: { x: numericas[0], y: numericas[1] }
+    });
+  }
+
+  return combinarPreferenciasGraficas(sugeridas.slice(0, 8));
+}
+
+function prepararCanvasElemento(canvas) {
+  if (!canvas) return null;
+  const ctx = canvas.getContext("2d");
+  const rect = canvas.getBoundingClientRect();
+  const dpr = window.devicePixelRatio || 1;
+  const cssHeight = Number(canvas.getAttribute("height")) || 220;
+  canvas.width = Math.max(rect.width, 280) * dpr;
+  canvas.height = cssHeight * dpr;
+  ctx.scale(dpr, dpr);
+  ctx.clearRect(0, 0, rect.width, cssHeight);
+  return { canvas, ctx, width: Math.max(rect.width, 280), height: cssHeight };
+}
+
+function dibujarBarrasCanvas(canvas, col) {
+  const grafica = prepararCanvasElemento(canvas);
+  if (!grafica) return;
+  const { ctx, width, height } = grafica;
+  const entradas = Object.entries(conteo(col)).sort((a, b) => b[1] - a[1]).slice(0, 8);
+  const max = Math.max(...entradas.map(([, v]) => v), 1);
+  const barH = Math.max(14, (height - 28) / Math.max(entradas.length, 1) - 6);
+  ctx.font = "12px Arial";
+  entradas.forEach(([label, valor], i) => {
+    const y = 16 + i * (barH + 6);
+    const w = (width - 150) * valor / max;
+    ctx.fillStyle = "rgba(56, 189, 248, 0.22)";
+    ctx.fillRect(128, y, w, barH);
+    ctx.fillStyle = "#67e8f9";
+    ctx.fillText(String(label).slice(0, 18), 8, y + barH - 3);
+    ctx.fillStyle = "#f8fafc";
+    ctx.fillText(String(valor), 136 + w, y + barH - 3);
+  });
+}
+
+function dibujarHistogramaCanvas(canvas, col) {
+  const grafica = prepararCanvasElemento(canvas);
+  if (!grafica) return;
+  const { ctx, width, height } = grafica;
+  const arr = numeros(col);
+  if (!arr.length) return;
+  const min = Math.min(...arr);
+  const max = Math.max(...arr);
+  const bins = Math.min(8, Math.max(4, Math.ceil(Math.sqrt(arr.length))));
+  const conteos = Array.from({ length: bins }, () => 0);
+  arr.forEach((valor) => {
+    const idx = Math.min(bins - 1, Math.floor(((valor - min) / (max - min || 1)) * bins));
+    conteos[idx] += 1;
+  });
+  const maxConteo = Math.max(...conteos, 1);
+  const ancho = (width - 40) / bins;
+  conteos.forEach((valor, i) => {
+    const h = (height - 42) * valor / maxConteo;
+    const x = 24 + i * ancho;
+    const y = height - 24 - h;
+    ctx.fillStyle = "rgba(14, 165, 233, 0.36)";
+    ctx.fillRect(x, y, ancho - 7, h);
+    ctx.fillStyle = "#e0f2fe";
+    ctx.fillText(String(valor), x + 4, y - 4);
+  });
+}
+
+function dibujarLineaCanvas(canvas, graficaConfig) {
+  const grafica = prepararCanvasElemento(canvas);
+  if (!grafica) return;
+  const { ctx, width, height } = grafica;
+  const yCol = graficaConfig.y;
+  const puntos = datos.map((fila, i) => ({ x: i, y: Number(fila[yCol]) })).filter((p) => !Number.isNaN(p.y));
+  if (!puntos.length) return;
+  const minY = Math.min(...puntos.map((p) => p.y));
+  const maxY = Math.max(...puntos.map((p) => p.y));
+  const sx = (i) => 32 + (i / Math.max(puntos.length - 1, 1)) * (width - 58);
+  const sy = (y) => height - 28 - ((y - minY) / (maxY - minY || 1)) * (height - 54);
+  ctx.strokeStyle = "rgba(148, 163, 184, 0.35)";
+  ctx.beginPath();
+  ctx.moveTo(28, 14);
+  ctx.lineTo(28, height - 24);
+  ctx.lineTo(width - 14, height - 24);
+  ctx.stroke();
+  ctx.strokeStyle = "#38bdf8";
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  puntos.forEach((p, i) => {
+    if (i === 0) ctx.moveTo(sx(i), sy(p.y));
+    else ctx.lineTo(sx(i), sy(p.y));
+  });
+  ctx.stroke();
+}
+
+function dibujarPastelCanvas(canvas, col) {
+  const grafica = prepararCanvasElemento(canvas);
+  if (!grafica) return;
+  const { ctx, width, height } = grafica;
+  const entradas = Object.entries(conteo(col)).slice(0, 6);
+  const total = entradas.reduce((s, [, n]) => s + n, 0) || 1;
+  const radio = Math.min(width, height) / 3.2;
+  let angulo = -Math.PI / 2;
+  const colores = ["#38bdf8", "#22d3ee", "#60a5fa", "#818cf8", "#14b8a6", "#93c5fd"];
+  entradas.forEach(([label, valor], i) => {
+    const siguiente = angulo + (valor / total) * Math.PI * 2;
+    ctx.beginPath();
+    ctx.moveTo(width / 2, height / 2);
+    ctx.arc(width / 2, height / 2, radio, angulo, siguiente);
+    ctx.fillStyle = colores[i % colores.length];
+    ctx.globalAlpha = 0.78;
+    ctx.fill();
+    ctx.globalAlpha = 1;
+    ctx.fillStyle = "#dbeafe";
+    ctx.fillText(String(label).slice(0, 14), 10, 18 + i * 16);
+    angulo = siguiente;
+  });
+}
+
+function dibujarGraficaSugerida(canvas, grafica) {
+  const cfg = grafica.configuracion || {};
+  if (grafica.tipo === "barras") dibujarBarrasCanvas(canvas, cfg.col);
+  if (grafica.tipo === "histograma") dibujarHistogramaCanvas(canvas, cfg.col);
+  if (grafica.tipo === "linea") dibujarLineaCanvas(canvas, cfg);
+  if (grafica.tipo === "pastel") dibujarPastelCanvas(canvas, cfg.col);
+  if (grafica.tipo === "dispersion") {
+    dibujarDispersionCanvas(canvas, cfg.x, cfg.y);
+  }
+}
+
+function dibujarDispersionCanvas(canvas, xCol, yCol) {
+  const grafica = prepararCanvasElemento(canvas);
+  if (!grafica || !xCol || !yCol) return;
+  const { ctx, width, height } = grafica;
+  const puntos = datos.map((fila) => ({ x: Number(fila[xCol]), y: Number(fila[yCol]) })).filter((p) => !Number.isNaN(p.x) && !Number.isNaN(p.y));
+  if (!puntos.length) return;
+  const minX = Math.min(...puntos.map((p) => p.x));
+  const maxX = Math.max(...puntos.map((p) => p.x));
+  const minY = Math.min(...puntos.map((p) => p.y));
+  const maxY = Math.max(...puntos.map((p) => p.y));
+  const sx = (x) => 36 + ((x - minX) / (maxX - minX || 1)) * (width - 58);
+  const sy = (y) => height - 28 - ((y - minY) / (maxY - minY || 1)) * (height - 52);
+  ctx.strokeStyle = "rgba(148, 163, 184, 0.4)";
+  ctx.beginPath();
+  ctx.moveTo(32, 12);
+  ctx.lineTo(32, height - 24);
+  ctx.lineTo(width - 12, height - 24);
+  ctx.stroke();
+  ctx.fillStyle = "#38bdf8";
+  puntos.forEach((p) => {
+    ctx.beginPath();
+    ctx.arc(sx(p.x), sy(p.y), 4, 0, Math.PI * 2);
+    ctx.fill();
+  });
+}
+
+function renderizarGraficasSugeridas() {
+  if (!graficasSugeridasContenedor) return;
+  if (!datos.length || !columnas.length) {
+    graficasSugeridasContenedor.innerHTML = "<p class=\"ayuda\">Carga datos para generar graficas sugeridas.</p>";
+    return;
+  }
+  graficasSugeridas = generarGraficasSugeridas();
+  graficasSugeridasContenedor.innerHTML = graficasSugeridas.map((grafica, i) => `
+    <article class="grafica-sugerida ${grafica.visible ? "" : "oculta"}">
+      <label class="switch-grafica"><input type="checkbox" data-grafica-visible="${escaparHTML(grafica.id)}" ${grafica.visible ? "checked" : ""}> Mostrar</label>
+      <h4>${escaparHTML(grafica.titulo)}</h4>
+      <p>${escaparHTML(grafica.tipo)} · ${grafica.columnasUsadas.map(escaparHTML).join(", ")}</p>
+      ${grafica.visible ? `<canvas id="graficaSugerida_${i}" height="210"></canvas>` : `<div class="grafica-oculta">Grafica oculta en este proyecto.</div>`}
+    </article>
+  `).join("");
+  graficasSugeridas.forEach((grafica, i) => {
+    if (!grafica.visible) return;
+    dibujarGraficaSugerida(document.getElementById(`graficaSugerida_${i}`), grafica);
+  });
+  graficasSugeridasContenedor.querySelectorAll("[data-grafica-visible]").forEach((input) => {
+    input.addEventListener("change", () => {
+      const grafica = graficasSugeridas.find((item) => item.id === input.dataset.graficaVisible);
+      if (grafica) grafica.visible = input.checked;
+      sincronizarProyectoDesdeEstado();
+      marcarCambiosProyecto();
+      renderizarGraficasSugeridas();
+    });
+  });
+}
+
 function dibujarGraficasAutomaticas() {
-  if (!datos.length || !columnas.length) return;
+  if (!datos.length || !columnas.length) {
+    renderizarGraficasSugeridas();
+    return;
+  }
   if (!variableY.value) variableY.value = columnas[0];
   graficaBarras();
   graficaDispersion();
+  renderizarGraficasSugeridas();
 }
 
 function exportar(tipo) {
@@ -794,8 +1436,42 @@ document.querySelectorAll("[data-analisis]").forEach((btn) => {
 });
 document.getElementById("btnExportarCSV").addEventListener("click", () => exportar("csv"));
 document.getElementById("btnExportarJSON").addEventListener("click", () => exportar("json"));
-variableY.addEventListener("change", actualizarRecomendacion);
-variableX.addEventListener("change", actualizarRecomendacion);
-document.getElementById("filtroTexto").addEventListener("change", cargarDatos);
+variableY.addEventListener("change", () => {
+  actualizarRecomendacion();
+  dibujarGraficasAutomaticas();
+});
+variableX.addEventListener("change", () => {
+  actualizarRecomendacion();
+  dibujarGraficasAutomaticas();
+});
+document.getElementById("filtroTexto").addEventListener("change", () => sincronizarDatosDesdeTablaActiva({ actualizarEntrada: false, mensaje: "Filtro aplicado. Selecciona un analisis." }));
 
-cargarDatos();
+document.getElementById("btnNuevoProyecto")?.addEventListener("click", () => {
+  const nombre = prompt("Nombre del nuevo proyecto estadistico:", "Nuevo proyecto");
+  if (nombre === null) return;
+  crearProyectoEstadistica(nombre.trim() || "Nuevo proyecto", true);
+});
+document.getElementById("btnGuardarProyecto")?.addEventListener("click", guardarProyectoActivo);
+document.getElementById("btnEliminarProyecto")?.addEventListener("click", eliminarProyectoActivo);
+selectorProyecto?.addEventListener("change", () => abrirProyecto(selectorProyecto.value));
+selectorTabla?.addEventListener("change", () => {
+  tablaActivaId = selectorTabla.value;
+  renderizarTablaEditable();
+  sincronizarDatosDesdeTablaActiva({ actualizarEntrada: true, mensaje: "Tabla activa cambiada. Selecciona un analisis." });
+});
+nombreProyectoInput?.addEventListener("input", marcarCambiosProyecto);
+redaccionProyecto?.addEventListener("input", marcarCambiosProyecto);
+
+document.getElementById("btnAgregarFilaEstadistica")?.addEventListener("click", agregarFilaTabla);
+document.getElementById("btnEliminarFilaEstadistica")?.addEventListener("click", eliminarFilaTabla);
+document.getElementById("btnAgregarColumnaEstadistica")?.addEventListener("click", agregarColumnaTabla);
+document.getElementById("btnEliminarColumnaEstadistica")?.addEventListener("click", eliminarColumnaTabla);
+document.querySelectorAll("[data-stat-tab]").forEach((btn) => {
+  btn.addEventListener("click", () => cambiarSeccionEstadistica(btn.dataset.statTab));
+});
+
+window.addEventListener("beforeunload", (event) => {
+  if (!cambiosProyectoPendientes) return;
+  event.preventDefault();
+  event.returnValue = "";
+});

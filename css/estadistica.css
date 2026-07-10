@@ -288,3 +288,245 @@ th {
     grid-template-columns: 1fr;
   }
 }
+
+[hidden] {
+  display: none !important;
+}
+
+.proyectos-card {
+  border-color: rgba(56,189,248,0.24);
+}
+
+.proyectos-header,
+.tabla-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 18px;
+}
+
+.estado-guardado {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  border: 1px solid rgba(34,197,94,0.36);
+  background: rgba(34,197,94,0.12);
+  color: #bbf7d0;
+  border-radius: 999px;
+  padding: 8px 12px;
+  font-size: 12px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.estado-guardado.pendiente {
+  border-color: rgba(251,191,36,0.4);
+  background: rgba(251,191,36,0.12);
+  color: #fde68a;
+}
+
+.grid-proyectos {
+  display: grid;
+  grid-template-columns: minmax(180px, 1.2fr) minmax(180px, 1fr) auto;
+  gap: 14px;
+  align-items: end;
+  margin-top: 18px;
+}
+
+.acciones-proyecto {
+  justify-content: flex-end;
+}
+
+.btn-secundario {
+  background: rgba(15,23,42,0.95);
+  border: 1px solid rgba(148,163,184,0.28);
+}
+
+.lista-proyectos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.proyecto-chip {
+  display: inline-grid;
+  gap: 3px;
+  text-align: left;
+  background: rgba(15,23,42,0.82);
+  border: 1px solid rgba(148,163,184,0.22);
+  border-radius: 16px;
+  padding: 10px 12px;
+  color: #dbeafe;
+}
+
+.proyecto-chip.activo {
+  border-color: rgba(56,189,248,0.55);
+  box-shadow: 0 0 22px rgba(56,189,248,0.18);
+}
+
+.proyecto-chip span {
+  color: #94a3b8;
+  font-size: 11px;
+}
+
+.tabs-estadistica {
+  position: sticky;
+  top: 0;
+  z-index: 4;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 10px;
+  border-radius: 20px;
+  border: 1px solid rgba(255,255,255,0.08);
+  background: rgba(2,6,23,0.72);
+  backdrop-filter: blur(16px);
+}
+
+.tabs-estadistica button {
+  background: rgba(15,23,42,0.92);
+  border: 1px solid rgba(148,163,184,0.24);
+  color: #dbeafe;
+}
+
+.tabs-estadistica button.activo {
+  background: linear-gradient(135deg, #2563eb, #00d4ff);
+  color: #fff;
+}
+
+.tabla-card .acciones input {
+  max-width: 260px;
+}
+
+.tabla-editable {
+  margin-top: 16px;
+  overflow: auto;
+  border: 1px solid rgba(148,163,184,0.16);
+  border-radius: 18px;
+  background: rgba(2,6,23,0.45);
+}
+
+.tabla-excel {
+  min-width: 760px;
+  border-radius: 0;
+}
+
+.tabla-excel th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  padding: 8px;
+}
+
+.tabla-excel th input {
+  min-width: 140px;
+  padding: 8px 9px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.tabla-excel td {
+  min-width: 140px;
+  height: 40px;
+  outline: none;
+  background: rgba(15,23,42,0.36);
+}
+
+.tabla-excel td:focus {
+  box-shadow: inset 0 0 0 2px rgba(56,189,248,0.55);
+  background: rgba(14,165,233,0.10);
+}
+
+.graficas-sugeridas-wrap {
+  margin-top: 24px;
+}
+
+.graficas-sugeridas {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 14px;
+  margin-top: 14px;
+}
+
+.grafica-sugerida {
+  position: relative;
+  min-width: 0;
+  padding: 16px;
+  border-radius: 18px;
+  border: 1px solid rgba(56,189,248,0.18);
+  background: rgba(15,23,42,0.72);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
+}
+
+.grafica-sugerida.oculta {
+  opacity: 0.72;
+}
+
+.grafica-sugerida h4 {
+  margin: 0 0 6px;
+  color: #e0f2fe;
+}
+
+.grafica-sugerida p {
+  margin: 0 0 12px;
+  color: #94a3b8;
+  font-size: 12px;
+}
+
+.grafica-sugerida canvas {
+  width: 100%;
+  max-width: 100%;
+}
+
+.switch-grafica {
+  display: inline-flex;
+  grid-template-columns: none;
+  align-items: center;
+  gap: 7px;
+  float: right;
+  color: #bae6fd;
+  font-size: 12px;
+}
+
+.switch-grafica input {
+  width: auto;
+}
+
+.grafica-oculta {
+  display: grid;
+  place-items: center;
+  min-height: 180px;
+  border-radius: 14px;
+  border: 1px dashed rgba(148,163,184,0.24);
+  color: #94a3b8;
+  background: rgba(2,6,23,0.38);
+}
+
+.redaccion-card textarea {
+  min-height: 360px;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+@media (max-width: 900px) {
+  .grid-proyectos,
+  .proyectos-header,
+  .tabla-header {
+    grid-template-columns: 1fr;
+    display: grid;
+  }
+
+  .acciones-proyecto {
+    justify-content: flex-start;
+  }
+
+  .tabs-estadistica {
+    position: static;
+  }
+}
+.selector-tabla-label {
+  min-width: 220px;
+  max-width: 280px;
+}
