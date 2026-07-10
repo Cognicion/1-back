@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>COGNICION | Calculadoras medicas</title>
+<link rel="icon" type="image/png" href="assets/favicon-cognicion.png">
+<link rel="stylesheet" href="css/calculadora-benzodiacepinas.css">
+<link rel="stylesheet" href="css/reportes.css">
+<style>
+.calculadoras-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:18px}.calc-card{border:1px solid rgba(125,211,252,.22);border-radius:28px;padding:24px;background:linear-gradient(145deg,rgba(15,23,42,.82),rgba(2,6,23,.58));box-shadow:0 28px 90px rgba(0,0,0,.32),inset 0 1px 0 rgba(255,255,255,.05);transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease}.calc-card:hover{transform:translateY(-3px);border-color:rgba(34,211,238,.5);box-shadow:0 34px 100px rgba(34,211,238,.12)}.calc-card h2{margin:12px 0 8px;font-size:1.45rem}.calc-card p{color:#cbd5e1;line-height:1.6}.calc-card .estado{display:inline-flex;border:1px solid rgba(34,211,238,.28);border-radius:999px;padding:6px 10px;color:#7dd3fc;font-weight:800;font-size:.74rem;letter-spacing:.12em;text-transform:uppercase}.calc-card a{display:inline-flex;margin-top:14px;min-height:44px;align-items:center;justify-content:center;border-radius:999px;padding:0 18px;color:#02111f;background:linear-gradient(135deg,#38bdf8,#22d3ee);font-weight:900;text-decoration:none}.calc-card.disabled{opacity:.72}.calc-card.disabled a{color:#dbeafe;background:rgba(15,23,42,.72);border:1px solid rgba(125,211,252,.22)}
+</style>
+</head>
+<body>
+<div class="benzo-bg" aria-hidden="true"><span></span><span></span><span></span></div>
+<header class="benzo-topbar">
+  <a class="benzo-brand" href="dashboard.html" aria-label="Volver al dashboard"><img src="assets/favicon-cognicion.png" alt="COGNICION"><div><strong>COGNICION</strong><span>Herramientas clinicas</span></div></a>
+  <nav><a href="dashboard.html">Dashboard</a></nav>
+</header>
+<main class="benzo-shell">
+  <section class="benzo-hero">
+    <span class="kicker">Herramientas</span>
+    <h1>Calculadoras medicas</h1>
+    <p>Modulo de calculadoras clinicas de apoyo. Los resultados son informativos y deben interpretarse dentro del contexto medico.</p>
+  </section>
+  <section class="calculadoras-grid" aria-label="Calculadoras disponibles">
+    <article class="calc-card">
+      <span class="estado">Disponible</span>
+      <h2>Equivalencias de benzodiacepinas</h2>
+      <p>Convierte dosis diarias aproximadas usando diazepam como referencia comun, con comparador de vida media y advertencias clinicas.</p>
+      <a href="calculadora-benzodiacepinas.html">Abrir calculadora</a>
+    </article>
+    <article class="calc-card disabled">
+      <span class="estado">Proximamente</span>
+      <h2>Calculadoras generales</h2>
+      <p>IMC avanzado, riesgo clinico, indices medicos y herramientas adicionales quedaran integradas aqui.</p>
+      <a href="#" onclick="event.preventDefault();">En desarrollo</a>
+    </article>
+  </section>
+</main>
+<script type="module" src="js/reportes.js"></script>
+</body>
+</html>

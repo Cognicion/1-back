@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>COGNICI&Oacute;N | Dashboard m&eacute;dico</title>
+<title>COGNICIÓN | Dashboard médico</title>
 <link rel="icon" type="image/png" href="assets/favicon-cognicion.png">
 
 <style>
@@ -165,7 +165,8 @@ header {
 }
 
 .hero-grid {
-    display: block;
+    display: flex;
+    justify-content: center;
 }
 
 .hero-copy {
@@ -180,8 +181,10 @@ header {
     overflow: visible;
 }
 
-.hero-copy::after {
-    display: none;
+.hero-copy {
+    max-width: 1400px;
+    margin: 0 auto;
+    text-align: center;
 }
 
 .eyebrow,
@@ -195,19 +198,23 @@ header {
 }
 
 .hero h1 {
-    margin: 18px 0 0;
-    max-width: 780px;
-    font-size: clamp(3.1rem, 6.2vw, 6.4rem);
-    line-height: 0.98;
-    letter-spacing: 0;
+    white-space: nowrap;
 }
 
 .hero-subtitle {
-    max-width: 720px;
-    margin: 28px 0 0;
+    max-width: 700px;
+    margin: 18px auto 0;
+    text-align: center;
     color: #cbd5e1;
-    font-size: clamp(1.05rem, 1.4vw, 1.32rem);
-    line-height: 1.65;
+    font-size: clamp(1.1rem, 1.3vw, 1.35rem);
+    line-height: 1.6;
+}
+
+
+.clinical-phrase {
+    margin-top: 12px;
+    color: var(--muted);
+    font-size: 1rem;
 }
 
 #bienvenida {
@@ -217,11 +224,7 @@ header {
     color: #f8fafc;
 }
 
-.clinical-phrase {
-    margin-top: 12px;
-    color: var(--muted);
-    font-size: 1rem;
-}
+
 
 .hero-stats {
     display: flex;
@@ -592,10 +595,79 @@ footer {
     }
 }
 
+
+.notifications-wrapper {
+    position: relative;
+}
+
+.notifications-button {
+    position: relative;
+    width: 44px;
+    height: 44px;
+    border-radius: 999px;
+    color: #dbeafe;
+    background: rgba(15, 23, 42, 0.68);
+    border: 1px solid rgba(125, 211, 252, 0.2);
+    transition: transform 0.22s ease, border-color 0.22s ease, box-shadow 0.22s ease;
+}
+
+.notifications-button:hover {
+    transform: translateY(-2px);
+    border-color: rgba(125, 211, 252, 0.48);
+    box-shadow: 0 18px 46px rgba(34, 211, 238, 0.12);
+}
+
+.notification-badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    min-width: 20px;
+    height: 20px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    background: #22d3ee;
+    color: #02111f;
+    font-size: 0.72rem;
+    font-weight: 900;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.notifications-dropdown {
+    position: absolute;
+    top: calc(100% + 12px);
+    right: 0;
+    width: min(340px, calc(100vw - 32px));
+    padding: 16px;
+    border: 1px solid rgba(125, 211, 252, 0.22);
+    border-radius: 20px;
+    background: rgba(5, 10, 22, 0.94);
+    box-shadow: 0 24px 70px rgba(0, 0, 0, 0.35);
+    backdrop-filter: blur(18px);
+    opacity: 0;
+    transform: translateY(-8px) scale(0.98);
+    pointer-events: none;
+    transition: opacity 0.18s ease, transform 0.18s ease;
+    z-index: 40;
+}
+
+.notifications-dropdown.abierto {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    pointer-events: auto;
+}
+
+.notifications-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
 .avisos-dashboard {
     width: min(860px, 100%);
-    margin-top: 30px;
-    padding: 20px;
+    margin: 30px auto 0;
+    padding: 18px 20px;
     border: 1px solid rgba(125, 211, 252, 0.34);
     border-radius: 24px;
     background:
@@ -603,6 +675,13 @@ footer {
         linear-gradient(135deg, rgba(15, 23, 42, 0.88), rgba(8, 47, 73, 0.46));
     box-shadow: 0 24px 90px rgba(2, 8, 23, 0.36), inset 0 1px 0 rgba(255, 255, 255, 0.05);
     backdrop-filter: blur(20px);
+    overflow: hidden;
+    transition: border-color 0.22s ease, box-shadow 0.22s ease;
+}
+
+.avisos-dashboard:hover {
+    border-color: rgba(125, 211, 252, 0.52);
+    box-shadow: 0 28px 100px rgba(8, 145, 178, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
 
 .avisos-header {
@@ -620,6 +699,42 @@ footer {
     letter-spacing: 0.01em;
 }
 
+
+.avisos-toggle {
+    min-height: 38px;
+    padding: 0 14px;
+    border-radius: 999px;
+    color: #dbeafe;
+    background: rgba(15, 23, 42, 0.62);
+    border: 1px solid rgba(125, 211, 252, 0.22);
+    transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.avisos-toggle:hover {
+    transform: translateY(-1px);
+    border-color: rgba(125, 211, 252, 0.5);
+    box-shadow: 0 14px 34px rgba(34, 211, 238, 0.12);
+}
+
+.avisos-contenido {
+    display: grid;
+    gap: 12px;
+    max-height: 520px;
+    opacity: 1;
+    overflow: hidden;
+    transition: max-height 0.32s ease, opacity 0.22s ease, margin-top 0.22s ease;
+}
+
+.avisos-dashboard.colapsado .avisos-contenido {
+    max-height: 0;
+    opacity: 0;
+    margin-top: 0;
+}
+
+.avisos-resumen-rapido {
+    color: #b6c4d7;
+    line-height: 1.45;
+}
 .ghost-button.mini {
     width: auto;
     min-height: 34px;
@@ -627,13 +742,7 @@ footer {
     font-size: 0.82rem;
 }
 
-.lista-avisos-dashboard {
-    display: grid;
-    gap: 12px;
-    max-height: 260px;
-    overflow: auto;
-    padding-right: 4px;
-}
+
 
 .aviso-dashboard-item {
     padding: 14px 16px;
@@ -704,14 +813,74 @@ footer {
 <body>
 <header>
     <div class="app-shell topbar">
+
         <div class="brand">
-            <img src="assets/favicon-cognicion.png" alt="Cognicion">
+            <img src="assets/favicon-cognicion.png" alt="Cognición">
+
             <div>
-                <div class="brand-name">Cognici&oacute;n</div>
-                <div class="brand-subtitle">As&iacute; como la cognici&oacute;n integra m&uacute;ltiples procesos mentales para comprender al individuo, Cognici&oacute;n integra m&uacute;ltiples herramientas tecnol&oacute;gicas para comprender al paciente.</div></div>
+                <div class="brand-name">Cognición</div>
+
+                <div class="brand-subtitle">
+                    Así como la cognición integra múltiples procesos mentales
+                    para comprender al individuo, Cognición integra múltiples
+                    herramientas tecnológicas para comprender al paciente.
+                </div>
+            </div>
         </div>
 
-        <button class="logout-button" onclick="cerrarSesion()">Cerrar sesion</button>
+        <div class="topbar-actions">
+
+            <div class="notifications-wrapper">
+
+                <button
+                    id="notificationsButton"
+                    class="notifications-button"
+                    type="button"
+                    aria-label="Abrir notificaciones"
+                    aria-expanded="false"
+                    onclick="alternarNotificaciones()"
+                >
+                    <span class="notification-bell">🔔</span>
+                    <span id="notificationBadge" class="notification-badge">
+                        1
+                    </span>
+                </button>
+
+                <div
+                    id="notificationsDropdown"
+                    class="notifications-dropdown"
+                    aria-hidden="true"
+                >
+                    <div class="notifications-header">
+                        <div>
+                            <span class="section-kicker">Avisos</span>
+                            <strong>Notificaciones y comunicados</strong>
+                        </div>
+
+                        <button
+                            type="button"
+                            class="ghost-button mini"
+                            onclick="window.location.href='foro.html'"
+                        >
+                            Abrir foro
+                        </button>
+                    </div>
+
+                    <p class="avisos-resumen-rapido">Los avisos ahora se muestran en el modulo desplegable del dashboard.</p>
+                </div>
+
+            </div>
+
+            <button
+                class="logout-button"
+                type="button"
+                onclick="cerrarSesion()"
+            >
+                Cerrar sesión
+            </button>
+
+        </div>
+
     </div>
 </header>
 
@@ -719,22 +888,27 @@ footer {
     <section class="hero">
         <div class="hero-grid">
             <div class="hero-copy">
-                <div class="eyebrow">PLATAFORMA CL&Iacute;NICA DIGITAL</div>
-                <h1>Salud mental y medicina de precisi&oacute;n</h1>
+                <div class="eyebrow">PLATAFORMA CLÍNICA DIGITAL</div>
+                <h1>Salud mental y medicina de precisión</h1>
                 <p class="hero-subtitle">Evaluaci&oacute;n cl&iacute;nica, seguimiento terap&eacute;utico y herramientas digitales para comprender al paciente de forma integral.</p>
                 <h2 id="bienvenida">Cargando...</h2>
                 <p id="fraseClinica" class="clinical-phrase">La evidencia gu&iacute;a mejores decisiones cl&iacute;nicas.</p>
 
-                <section class="avisos-dashboard" aria-label="Avisos y notificaciones">
+                <section id="avisosDashboardModulo" class="avisos-dashboard" aria-labelledby="avisosDashboardTitulo">
                     <div class="avisos-header">
                         <div>
                             <span class="section-kicker">Avisos</span>
-                            <strong>Notificaciones y comunicados</strong>
+                            <strong id="avisosDashboardTitulo">Notificaciones y comunicados</strong>
                         </div>
-                        <button type="button" class="ghost-button mini" onclick="window.location.href='foro.html'">Abrir foro</button>
+                        <div class="card-actions">
+                            <button id="btnToggleAvisosDashboard" class="avisos-toggle" type="button" aria-expanded="true" onclick="alternarModuloAvisos()">Contraer</button>
+                            <button type="button" class="ghost-button mini" onclick="window.location.href='foro.html'">Abrir foro</button>
+                        </div>
                     </div>
-                    <div id="listaAvisosDashboard" class="lista-avisos-dashboard">
-                        <p>Cargando avisos...</p>
+                    <div id="avisosDashboardContenido" class="avisos-contenido">
+                        <div id="listaAvisosDashboard" class="lista-avisos-dashboard">
+                            <p>Cargando avisos...</p>
+                        </div>
                     </div>
                 </section>
             </div>
@@ -859,13 +1033,13 @@ footer {
 
             <article class="module-card">
                 <div class="module-top">
-                    <div class="module-icon">📠</div>
-                    <span class="badge">Próximamente</span>
+                    <div class="module-icon">CALC</div>
+                    <span class="badge">Disponible</span>
                 </div>
                 <h3>Calculadoras médicas</h3>
                 <p>Accede a herramientas para dosificación, escalas, índices y cálculos de uso frecuente en medicina.</p>
                 <div class="card-actions">
-                    <button class="ghost-button" onclick="mostrarProximamente('Proximamente', 'El acceso directo al expediente se reorganizara dentro de los flujos clinicos principales.')">Pr&oacute;ximamente</button>
+                    <a class="ghost-button" href="calculadoras-medicas.html">Abrir calculadoras</a>
                 </div>
             </article>
 

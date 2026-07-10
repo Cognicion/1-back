@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>COGNICION | Reconocimiento de emociones</title>
+<link rel="icon" type="image/png" href="assets/favicon-cognicion.png">
+<link rel="stylesheet" href="css/reconocimiento-emociones.css">
+<link rel="stylesheet" href="css/reportes.css">
+</head>
+<body>
+<div class="emo-bg" aria-hidden="true"><span></span><span></span><span></span></div>
+<header class="emo-topbar">
+  <a class="emo-brand" href="rehabilitacion-cognitiva.html"><img src="assets/favicon-cognicion.png" alt="COGNICION"><div><strong>Reconocimiento de emociones</strong><span>Cognicion social y atencion visual</span></div></a>
+  <nav><a href="rehabilitacion-cognitiva.html">Rehabilitacion</a><a href="dashboard.html">Dashboard</a></nav>
+</header>
+<main class="emo-shell">
+  <section class="emo-hero pantalla" id="pantallaInicio">
+    <span class="kicker">Actividad neurocognitiva</span>
+    <h1>Reconocimiento de emociones</h1>
+    <p>Entrena la identificacion de emociones mediante expresiones faciales ilustradas, situaciones sociales y pistas contextuales. No utiliza fotografias reales ni material externo.</p>
+    <div class="acciones"><button id="btnConfigurar" type="button">Configurar sesion</button><a class="boton-secundario" href="rehabilitacion-cognitiva.html">Volver</a></div>
+    <p class="aviso-clinico">Esta actividad es una herramienta de entrenamiento y registro del rendimiento. Sus resultados no sustituyen una evaluacion clinica, neuropsicologica o diagnostica profesional.</p>
+  </section>
+
+  <section class="emo-panel pantalla" id="pantallaConfiguracion" hidden>
+    <div class="seccion-titulo"><span class="kicker">Preparacion</span><h2>Configuracion</h2><p>Elige dificultad, modalidad, tiempo y opciones de accesibilidad.</p></div>
+    <form class="config-grid" id="formConfigEmociones">
+      <label>Nivel de dificultad<select id="dificultad"><option value="facil">Facil</option><option value="intermedio">Intermedio</option><option value="dificil">Dificil</option></select></label>
+      <label>Numero de ensayos<input id="totalEnsayos" type="number" min="8" max="80" value="20"></label>
+      <label>Tiempo maximo por ensayo (ms)<input id="tiempoEnsayo" type="number" min="2500" max="20000" step="500" value="7000"></label>
+      <label>Tipo de estimulos<select id="tipoEstimulo"><option value="mixto">Mixto</option><option value="facial">Facial</option><option value="contextual">Contextual</option></select></label>
+      <label>Opciones de respuesta<input id="numeroOpciones" type="number" min="2" max="7" value="4"></label>
+      <label>Retroalimentacion<select id="feedback"><option value="on">Activada</option><option value="off">Desactivada</option></select></label>
+      <label>Sin limite de tiempo<select id="sinLimite"><option value="off">No</option><option value="on">Si</option></select></label>
+      <label>Efectos visuales<select id="efectos"><option value="on">Activados</option><option value="off">Reducidos</option></select></label>
+    </form>
+    <div class="emociones-checks" id="emocionesIncluidas" aria-label="Emociones incluidas"></div>
+    <div class="acciones"><button id="btnPractica" type="button">Practica breve</button><button id="btnSesion" type="button">Iniciar sesion real</button></div>
+  </section>
+
+  <section class="arena-emociones pantalla" id="pantallaJuego" hidden aria-live="polite">
+    <div class="hud"><div><span>Modo</span><strong id="modoJuego">Practica</strong></div><div><span>Ensayo</span><strong id="contadorEnsayos">0/0</strong></div><div><span>Tiempo</span><strong id="tiempoRestante">--</strong></div><div><span>Precision</span><strong id="precisionActual">--</strong></div></div>
+    <div class="barra-progreso"><span id="barraProgreso"></span></div>
+    <div class="cuenta" id="cuentaRegresiva"></div>
+    <article class="estimulo-card" id="estimuloCard">
+      <div id="avatarEmocion" class="avatar-emocion neutral" aria-hidden="true"></div>
+      <div class="estimulo-texto"><span id="tipoEnsayo">Estimulo</span><h2 id="promptEstimulo">Preparado</h2></div>
+    </article>
+    <div class="opciones-respuesta" id="opcionesRespuesta"></div>
+    <p class="feedback" id="feedbackEmocion"></p>
+    <div class="acciones compactas"><button id="btnCancelar" type="button" class="boton-secundario">Cancelar sesion</button></div>
+  </section>
+
+  <section class="emo-panel resultados pantalla" id="pantallaResultados" hidden>
+    <div class="seccion-titulo"><span class="kicker">Resultados</span><h2>Resumen de rendimiento</h2><p>Interpretacion descriptiva, no diagnostica.</p></div>
+    <div class="resultados-grid" id="resultadosGrid"></div>
+    <article class="interpretacion" id="interpretacionResultado"></article>
+    <div class="graficas-controles"><button type="button" data-grafica="emociones">Precision por emocion</button><button type="button" data-grafica="tiempos">Tiempos</button><button type="button" data-grafica="confusion">Matriz de confusion</button></div>
+    <div class="graficas"><article id="graficaEmociones"><h3>Precision por emocion</h3><div class="barras" id="barrasEmociones"></div></article><article id="graficaTiempos"><h3>Tiempo por ensayo</h3><div class="linea" id="lineaTiempos"></div></article><article id="graficaConfusion"><h3>Matriz de confusion</h3><div class="matriz" id="matrizConfusion"></div></article></div>
+    <div class="acciones"><button id="btnRepetir" type="button">Repetir</button><button id="btnCambiar" type="button" class="boton-secundario">Cambiar configuracion</button><a class="boton-secundario" href="rehabilitacion-cognitiva.html">Regresar</a></div>
+  </section>
+</main>
+<div class="toast" id="toastEmocion" role="status" aria-live="polite"></div>
+<script type="module" src="js/reconocimiento-emociones.js"></script>
+<script type="module" src="js/reportes.js"></script>
+</body>
+</html>

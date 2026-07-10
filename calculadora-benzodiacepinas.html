@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>COGNICION | Equivalencias de benzodiacepinas</title>
+<link rel="icon" type="image/png" href="assets/favicon-cognicion.png">
+<link rel="stylesheet" href="css/calculadora-benzodiacepinas.css">
+<link rel="stylesheet" href="css/reportes.css">
+</head>
+<body>
+<div class="benzo-bg" aria-hidden="true"><span></span><span></span><span></span></div>
+<header class="benzo-topbar">
+  <a class="benzo-brand" href="dashboard.html" aria-label="Volver al dashboard">
+    <img src="assets/favicon-cognicion.png" alt="COGNICION">
+    <div><strong>COGNICION</strong><span>Calculadoras medicas</span></div>
+  </a>
+  <nav><a href="dashboard.html">Dashboard</a></nav>
+</header>
+<main class="benzo-shell">
+  <section class="benzo-hero">
+    <span class="kicker">Herramienta clinica</span>
+    <h1>Calculadora de equivalencias de benzodiacepinas</h1>
+    <p>Convierte dosis diarias aproximadas usando diazepam como unidad comun. El resultado es informativo y siempre requiere juicio clinico.</p>
+  </section>
+
+  <section class="alerta-seguridad" aria-label="Advertencias clinicas">
+    <strong>Uso seguro</strong>
+    <ul>
+      <li>Las equivalencias entre benzodiacepinas son aproximadas.</li>
+      <li>Las equivalencias no son necesariamente lineales, especialmente en dosis altas.</li>
+      <li>La respuesta puede variar por tolerancia, edad, comorbilidades, funcion hepatica, interacciones, duracion del tratamiento y caracteristicas individuales.</li>
+      <li>Este calculo no sustituye la valoracion medica.</li>
+      <li>No suspender benzodiacepinas de forma abrupta.</li>
+      <li>El cambio y la reduccion deben individualizarse para disminuir el riesgo de abstinencia, convulsiones, delirium o rebote sintomatico.</li>
+    </ul>
+  </section>
+
+  <section class="conversion-grid">
+    <article class="panel-conversion">
+      <span class="panel-label">Tratamiento actual</span>
+      <label>Benzodiacepina actual<select id="origenBenzo"></select></label>
+      <div class="dos-columnas">
+        <label>Dosis por toma<input id="dosisActual" type="text" inputmode="decimal" placeholder="Ej. 1 o 0,5"></label>
+        <label>Unidad<select id="unidadActual"><option value="mg">mg</option></select></label>
+      </div>
+      <label>Frecuencia
+        <select id="frecuenciaActual">
+          <option value="total_diaria">Dosis total diaria</option>
+          <option value="una_vez">Una vez al dia</option>
+          <option value="cada_12">Cada 12 horas</option>
+          <option value="cada_8">Cada 8 horas</option>
+          <option value="cada_6">Cada 6 horas</option>
+          <option value="nocturna">Dosis nocturna</option>
+          <option value="personalizada">Frecuencia personalizada</option>
+        </select>
+      </label>
+      <label id="grupoTomas" class="oculto">Tomas al dia<input id="tomasPersonalizadas" type="number" min="1" step="1" value="1"></label>
+      <div class="dato-destacado"><span>Dosis total diaria</span><strong id="dosisDiariaVisible">-- mg/dia</strong></div>
+      <div id="infoOrigen" class="info-medicamento"></div>
+    </article>
+
+    <div class="flecha-conversion" aria-hidden="true"><span>≈</span></div>
+
+    <article class="panel-conversion destino">
+      <span class="panel-label">Medicamento de destino</span>
+      <label>Benzodiacepina de destino<select id="destinoBenzo"></select></label>
+      <label>Frecuencia para desglose matematico
+        <select id="frecuenciaDestino">
+          <option value="total_diaria">Dosis total diaria</option>
+          <option value="una_vez">Una vez al dia</option>
+          <option value="cada_12">Cada 12 horas</option>
+          <option value="cada_8">Cada 8 horas</option>
+          <option value="cada_6">Cada 6 horas</option>
+          <option value="nocturna">Dosis nocturna</option>
+          <option value="personalizada">Frecuencia personalizada</option>
+        </select>
+      </label>
+      <label id="grupoTomasDestino" class="oculto">Tomas al dia<input id="tomasDestino" type="number" min="1" step="1" value="1"></label>
+      <div class="resultado-card" id="resultadoConversion" aria-live="polite">
+        <span>Resultado aproximado</span>
+        <strong>Completa los datos para calcular.</strong>
+      </div>
+      <div id="infoDestino" class="info-medicamento"></div>
+    </article>
+  </section>
+
+  <section class="panel-resultado">
+    <div id="mensajesValidacion" class="mensajes-validacion" aria-live="polite"></div>
+    <div id="comparadorVidaMedia" class="comparador-vida"></div>
+    <p class="nota-vida">La vida media influye en la acumulacion, la duracion de los efectos y la posible aparicion de sintomas interdosis, pero no determina por si sola la equivalencia clinica.</p>
+  </section>
+
+  <section class="panel-historial">
+    <div class="seccion-cabecera"><div><span class="kicker">Sesion actual</span><h2>Historial temporal</h2></div><button id="limpiarHistorial" type="button">Limpiar</button></div>
+    <div id="historialConversiones" class="historial-vacio">Aun no hay conversiones en esta sesion.</div>
+  </section>
+
+  <details class="panel-tabla" open>
+    <summary>Tabla comparativa de benzodiacepinas</summary>
+    <div class="controles-tabla">
+      <label>Buscar<input id="buscarTabla" type="search" placeholder="Buscar medicamento"></label>
+      <label>Filtrar accion<select id="filtroAccion"><option value="todas">Todas</option><option value="Corta">Corta</option><option value="Intermedia">Intermedia</option><option value="Prolongada">Prolongada</option></select></label>
+      <label>Ordenar<select id="ordenTabla"><option value="nombre">Nombre</option><option value="vida">Vida media</option><option value="accion">Duracion</option></select></label>
+      <label class="check-tabla"><input id="colFuentes" type="checkbox" checked> Mostrar fuentes</label>
+    </div>
+    <div class="tabla-scroll"><table id="tablaBenzodiacepinas"><thead><tr><th>Medicamento</th><th>Dosis ref.</th><th>Equiv. diazepam</th><th>Vida media</th><th>Accion</th><th>Metabolitos</th><th class="col-fuentes">Fuentes</th><th>Revision</th></tr></thead><tbody></tbody></table></div>
+  </details>
+
+  <details class="panel-educativo">
+    <summary>Informacion clinica complementaria</summary>
+    <div class="educativo-grid">
+      <article><h3>Equivalencia aproximada</h3><p>Expresa una relacion matematica entre dosis de referencia, no una indicacion automatica ni una sustitucion individualizada.</p></article>
+      <article><h3>Vida media</h3><p>Tiempo aproximado para reducir a la mitad la concentracion. Los rangos varian entre personas y fuentes.</p></article>
+      <article><h3>Duracion de accion</h3><p>No siempre coincide con la vida media. Depende de distribucion, metabolitos, receptor y contexto clinico.</p></article>
+      <article><h3>Retirada brusca</h3><p>La suspension abrupta puede producir abstinencia, rebote sintomatico, delirium o convulsiones.</p></article>
+    </div>
+  </details>
+</main>
+<script type="module" src="js/calculadora-benzodiacepinas.js"></script>
+<script type="module" src="js/reportes.js"></script>
+</body>
+</html>

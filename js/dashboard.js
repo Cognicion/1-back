@@ -37,6 +37,25 @@ function mostrarFraseClinicaAleatoria() {
 }
 
 mostrarFraseClinicaAleatoria();
+window.alternarModuloAvisos = function(forzarAbierto = null) {
+  const modulo = document.getElementById("avisosDashboardModulo");
+  const boton = document.getElementById("btnToggleAvisosDashboard");
+  if (!modulo) return;
+  const debeAbrir = forzarAbierto === null ? modulo.classList.contains("colapsado") : Boolean(forzarAbierto);
+  modulo.classList.toggle("colapsado", !debeAbrir);
+  boton?.setAttribute("aria-expanded", String(debeAbrir));
+  if (boton) boton.textContent = debeAbrir ? "Contraer" : "Expandir";
+};
+
+window.alternarNotificaciones = function() {
+  const dropdown = document.getElementById("notificationsDropdown");
+  const boton = document.getElementById("notificationsButton");
+  const abierto = dropdown?.classList.toggle("abierto");
+  dropdown?.setAttribute("aria-hidden", String(!abierto));
+  boton?.setAttribute("aria-expanded", String(Boolean(abierto)));
+  window.alternarModuloAvisos(true);
+  document.getElementById("avisosDashboardModulo")?.scrollIntoView({ behavior: "smooth", block: "center" });
+};
 
 window.mostrarProximamente = function(titulo = "Proximamente", descripcion = "Estamos desarrollando este modulo.") {
   const overlay = document.getElementById("proximamenteOverlay");
@@ -158,6 +177,9 @@ async function cargarAvisosDashboard(rolUsuario, uidUsuario) {
       .map((docAviso) => ({ id: docAviso.id, ...docAviso.data() }))
       .filter((aviso) => aviso.activo !== false && avisoVisibleParaUsuario(aviso, rolUsuario, uidUsuario))
       .slice(0, 6);
+
+    const badge = document.getElementById("notificationBadge");
+    if (badge) badge.textContent = avisos.length;
 
     if (!avisos.length) {
       contenedor.innerHTML = `<article class="aviso-dashboard-item"><strong>Sin avisos nuevos</strong><p>Cuando haya comunicados o notificaciones relevantes apareceran aqui.</p></article>`;

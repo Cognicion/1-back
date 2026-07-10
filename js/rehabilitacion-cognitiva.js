@@ -123,10 +123,11 @@ const actividades = [
   {
     icono: "EM",
     nombre: "Reconocimiento de emociones",
-    descripcion: "Identifica emociones basicas en rostros o expresiones.",
-    funciones: ["Cognicion social", "Atencion"],
-    estado: "Proximamente",
-    accion: "Ver ejercicio"
+    descripcion: "Entrena la identificacion de emociones mediante expresiones faciales, situaciones sociales y pistas contextuales.",
+    funciones: ["Cognicion social", "Atencion", "Velocidad de procesamiento"],
+    estado: "Disponible",
+    accion: "Entrenar",
+    url: "reconocimiento-emociones.html"
   },
   {
     icono: "FV",

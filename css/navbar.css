@@ -83,3 +83,130 @@ cursor:pointer;
 background:#2563eb;
 
 }
+
+.topbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-left: auto;
+}
+
+.notifications-wrapper {
+    position: relative;
+    flex: 0 0 auto;
+}
+
+.notifications-button {
+    position: relative;
+    width: 46px;
+    height: 46px;
+    display: grid;
+    place-items: center;
+    padding: 0;
+    border: 1px solid var(--line);
+    border-radius: 50%;
+    color: var(--text);
+    background: rgba(15, 23, 42, 0.64);
+    transition:
+        transform 0.22s ease,
+        border-color 0.22s ease,
+        background 0.22s ease,
+        box-shadow 0.22s ease;
+}
+
+.notifications-button:hover {
+    transform: translateY(-2px);
+    border-color: rgba(125, 211, 252, 0.42);
+    background: rgba(30, 41, 59, 0.86);
+    box-shadow: 0 14px 36px rgba(56, 189, 248, 0.12);
+}
+
+.notification-bell {
+    font-size: 1.2rem;
+    line-height: 1;
+}
+
+.notification-badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    min-width: 20px;
+    height: 20px;
+    display: grid;
+    place-items: center;
+    padding: 0 5px;
+    border: 2px solid #05070b;
+    border-radius: 999px;
+    color: white;
+    background: #ef4444;
+    font-size: 0.67rem;
+    font-weight: 800;
+}
+
+.notifications-dropdown {
+    position: absolute;
+    top: calc(100% + 12px);
+    right: 0;
+
+    width: 420px;
+    max-width: calc(100vw - 32px);
+    max-height: 520px;
+
+    z-index: 5000;
+
+    padding: 18px;
+    border: 1px solid rgba(125, 211, 252, 0.28);
+    border-radius: 22px;
+
+    background:
+        radial-gradient(
+            circle at 15% 0%,
+            rgba(56, 189, 248, 0.16),
+            transparent 34%
+        ),
+        rgba(6, 12, 22, 0.98);
+
+    box-shadow:
+        0 30px 90px rgba(0, 0, 0, 0.52),
+        0 0 44px rgba(56, 189, 248, 0.10);
+
+    backdrop-filter: blur(22px);
+
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+
+    transform: translateY(-8px) scale(0.98);
+    transform-origin: top right;
+
+    transition:
+        opacity 0.2s ease,
+        transform 0.2s ease,
+        visibility 0.2s ease;
+}
+
+.notifications-dropdown.abierto {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transform: translateY(0) scale(1);
+}
+
+.notifications-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    margin-bottom: 14px;
+}
+
+.notifications-header strong {
+    display: block;
+    margin-top: 4px;
+    color: #eef6ff;
+}
+
+.notifications-dropdown .lista-avisos-dashboard {
+    max-height: 360px;
+    overflow-y: auto;
+}
