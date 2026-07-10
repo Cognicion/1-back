@@ -858,9 +858,13 @@ function normalizarOrdenDiagnosticosPanel(historial = []) {
 }
 
 function obtenerDiagnosticosPaciente(paciente) {
-  const historial = normalizarOrdenDiagnosticosPanel(Array.isArray(paciente.historialDiagnosticos)
-    ? paciente.historialDiagnosticos
-    : []);
+  const historial = normalizarOrdenDiagnosticosPanel([
+    ...(Array.isArray(paciente.historialDiagnosticos) ? paciente.historialDiagnosticos : []),
+    ...(Array.isArray(paciente.datosClinicosResumen?.historialDiagnosticos) ? paciente.datosClinicosResumen.historialDiagnosticos : []),
+    ...(Array.isArray(paciente.diagnosticos) ? paciente.diagnosticos : []),
+    ...(paciente.diagnostico ? [paciente.diagnostico] : []),
+    ...(paciente.datosClinicosResumen?.diagnostico ? [paciente.datosClinicosResumen.diagnostico] : [])
+  ]);
   const catalogoVisible = paciente.diagnosticoCatalogoVisible || "auto";
   const historialVisible = catalogoVisible === "auto"
     ? historial
@@ -1814,8 +1818,16 @@ function diagnosticosParaGrafica(paciente = {}) {
     acumulados.push(...paciente.diagnosticos);
   }
 
+  if (Array.isArray(paciente.datosClinicosResumen?.historialDiagnosticos)) {
+    acumulados.push(...paciente.datosClinicosResumen.historialDiagnosticos);
+  }
+
   if (paciente.diagnostico) {
     acumulados.push(paciente.diagnostico);
+  }
+
+  if (paciente.datosClinicosResumen?.diagnostico) {
+    acumulados.push(paciente.datosClinicosResumen.diagnostico);
   }
 
   const vistos = new Set();

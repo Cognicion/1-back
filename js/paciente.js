@@ -1,4 +1,4 @@
-﻿import { auth, db } from "./firebase.js";
+import { auth, db } from "./firebase.js";
 import { ESCALAS_PSIQUIATRICAS } from "./data/escalasPsiquiatricas.js";
 import { ESCALAS_COGNITIVAS } from "./data/escalasCognitivas.js";
 import {
@@ -969,21 +969,34 @@ function normalizarDiagnostico(diagnostico = {}, catalogoFallback = "CIE-10", in
 
 function normalizarHistorialDiagnosticos(historial = []) {
   return historial
+    .filter(Boolean)
     .map((dx, index) => normalizarDiagnostico(dx, dx?.catalogo || "CIE-10", index))
     .sort((a, b) => (Number(a.orden) || 0) - (Number(b.orden) || 0))
     .map((dx, index) => ({ ...dx, orden: index }));
 }
 
+function deduplicarHistorialDiagnosticos(historial = []) {
+  const vistos = new Set();
+  return normalizarHistorialDiagnosticos(historial).filter((dx) => {
+    const clave = claveDiagnostico(dx) || dx.id;
+    if (!clave || vistos.has(clave)) return false;
+    vistos.add(clave);
+    return true;
+  }).map((dx, index) => ({ ...dx, orden: index }));
+}
+
+function recolectarDiagnosticosPaciente(datos = {}) {
+  return [
+    ...(Array.isArray(datos.historialDiagnosticos) ? datos.historialDiagnosticos : []),
+    ...(Array.isArray(datos.datosClinicosResumen?.historialDiagnosticos) ? datos.datosClinicosResumen.historialDiagnosticos : []),
+    ...(Array.isArray(datos.diagnosticos) ? datos.diagnosticos : []),
+    ...(datos.diagnostico ? [datos.diagnostico] : []),
+    ...(datos.datosClinicosResumen?.diagnostico ? [datos.datosClinicosResumen.diagnostico] : [])
+  ];
+}
+
 function obtenerHistorialDiagnosticos(datos = datosPacienteActual || {}) {
-  const historial = Array.isArray(datos.historialDiagnosticos)
-    ? datos.historialDiagnosticos
-    : [];
-
-  if (historial.length) return normalizarHistorialDiagnosticos(historial);
-
-  return datos.diagnostico
-    ? normalizarHistorialDiagnosticos([normalizarDiagnostico(datos.diagnostico, datos.diagnostico?.catalogo || "CIE-10")])
-    : [];
+  return deduplicarHistorialDiagnosticos(recolectarDiagnosticosPaciente(datos));
 }
 
 function renderizarDiagnosticos(datos) {
@@ -2307,15 +2320,30 @@ window.marcarDiagnosticoPrincipal = async function(index) {
   await cargarDatosPaciente();
 };
 
-async function guardarHistorialDiagnosticos(historial) {
-  const limpio = normalizarHistorialDiagnosticos(historial);
+async function guardarHistorialDiagnosticos(historial, opciones = {}) {
+  const permitirEliminar = opciones.permitirEliminar === true;
+  const remoto = await obtenerUsuario(uidPaciente).catch(() => null);
+  const baseActual = remoto || datosPacienteActual || {};
+  const historialActual = obtenerHistorialDiagnosticos(baseActual);
+
+  let limpio = normalizarHistorialDiagnosticos(historial);
+
+  if (!permitirEliminar && historialActual.length > limpio.length) {
+    const clavesNuevas = new Set(limpio.map(claveDiagnostico).filter(Boolean));
+    const preservados = historialActual.filter((dx) => {
+      const clave = claveDiagnostico(dx);
+      return clave && !clavesNuevas.has(clave);
+    });
+    limpio = normalizarHistorialDiagnosticos([...limpio, ...preservados]);
+  }
+
   const diagnosticoPrincipal = limpio[0] || "";
 
   await actualizarUsuario(uidPaciente, {
     diagnostico: diagnosticoPrincipal || deleteField(),
     historialDiagnosticos: limpio,
     datosClinicosResumen: {
-      ...(datosPacienteActual?.datosClinicosResumen || {}),
+      ...(baseActual?.datosClinicosResumen || {}),
       diagnostico: diagnosticoPrincipal || null,
       historialDiagnosticos: limpio,
       fechaActualizacionDiagnosticos: new Date().toISOString()
@@ -2323,9 +2351,15 @@ async function guardarHistorialDiagnosticos(historial) {
   });
 
   datosPacienteActual = {
-    ...(datosPacienteActual || {}),
+    ...(baseActual || {}),
     diagnostico: diagnosticoPrincipal,
-    historialDiagnosticos: limpio
+    historialDiagnosticos: limpio,
+    datosClinicosResumen: {
+      ...(baseActual?.datosClinicosResumen || {}),
+      diagnostico: diagnosticoPrincipal || null,
+      historialDiagnosticos: limpio,
+      fechaActualizacionDiagnosticos: new Date().toISOString()
+    }
   };
 }
 
@@ -2553,7 +2587,7 @@ async function quitarDiagnosticoPaciente(index) {
 
   const nuevoHistorial = historial.filter((_, i) => i !== index);
 
-  await guardarHistorialDiagnosticos(nuevoHistorial);
+  await guardarHistorialDiagnosticos(nuevoHistorial, { permitirEliminar: true });
 
   await registrarAccionExpediente({
     accion: "quitar_diagnostico",
