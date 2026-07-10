@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>COGNICION Labs | Laboratorio de Neurofisiologia</title>
+<link rel="icon" type="image/png" href="assets/favicon-cognicion.png">
+<link rel="stylesheet" href="css/laboratorio-neurofisiologia.css">
+<link rel="stylesheet" href="css/reportes.css">
+</head>
+<body>
+<div class="neuro-bg" aria-hidden="true"><span></span><span></span><span></span></div>
+<header class="neuro-topbar">
+  <a class="neuro-brand" href="dashboard.html"><img src="assets/favicon-cognicion.png" alt="COGNICION"><div><strong>CognicionLabs</strong><span>Laboratorio de Neurofisiologia</span></div></a>
+  <nav><a href="dashboard.html">Dashboard</a><a href="calculadoras-medicas.html">Herramientas</a></nav>
+</header>
+<main class="neuro-shell">
+  <section class="neuro-hero">
+    <span class="kicker">Simulacion educativa</span>
+    <h1>Laboratorio de Neurofisiologia</h1>
+    <p>Explora membrana neuronal, potencial de accion y propagacion axonal en una experiencia interactiva conectada.</p>
+    <div class="alerta-lab">Simulacion educativa. Los resultados son aproximaciones computacionales y no deben utilizarse para decisiones clinicas.</div>
+  </section>
+
+  <nav class="tabs-lab" aria-label="Secciones del laboratorio">
+    <button data-tab="membrana" class="activo">Membrana e iones</button>
+    <button data-tab="accion">Potencial de accion</button>
+    <button data-tab="axon">Propagacion axonal</button>
+    <button data-tab="experimentos">Experimentos</button>
+    <button data-tab="resultados">Resultados</button>
+    <button data-tab="teoria">Fundamento teorico</button>
+  </nav>
+
+  <section id="tab-membrana" class="panel-lab tab-panel activo">
+    <div class="panel-heading"><div><span class="kicker">Simulador 1</span><h2>Membrana neuronal e intercambio ionico</h2></div><div class="acciones"><button id="btnMembranaPlay">Iniciar</button><button id="btnMembranaPausa" class="secundario">Pausar</button><button id="btnMembranaReset" class="secundario">Reiniciar</button><button id="btnMembranaPaso" class="secundario">Paso</button></div></div>
+    <div class="lab-grid">
+      <aside class="controles-lab">
+        <label>Preset<select id="presetMembrana"></select></label>
+        <label>Velocidad<select id="velocidadMembrana"><option value="0.5">Lenta</option><option value="1" selected>Normal</option><option value="2">Rapida</option></select></label>
+        <label>Zoom<input id="zoomMembrana" type="range" min="0.8" max="1.6" step="0.05" value="1"></label>
+        <label>Temperatura (C)<input data-membrana="temperaturaC" type="number" min="0" max="45" step="0.5"></label>
+        <label>Na+ extra<input data-ion="na.extra" type="number" step="1"></label><label>Na+ intra<input data-ion="na.intra" type="number" step="1"></label>
+        <label>K+ extra<input data-ion="k.extra" type="number" step="0.1"></label><label>K+ intra<input data-ion="k.intra" type="number" step="1"></label>
+        <label>Cl- extra<input data-ion="cl.extra" type="number" step="1"></label><label>Cl- intra<input data-ion="cl.intra" type="number" step="0.5"></label>
+        <label>Ca2+ extra<input data-ion="ca.extra" type="number" step="0.1"></label><label>Ca2+ intra<input data-ion="ca.intra" type="number" step="0.0001"></label>
+        <label>P Na+<input data-perm="na" type="range" min="0" max="2" step="0.01"></label><label>P K+<input data-perm="k" type="range" min="0" max="2" step="0.01"></label><label>P Cl-<input data-perm="cl" type="range" min="0" max="2" step="0.01"></label>
+        <label>Bomba Na/K<input id="bombaNaK" type="range" min="0" max="1.5" step="0.05"></label>
+        <div class="checks"><label><input id="verIones" type="checkbox" checked> Iones</label><label><input id="verCargas" type="checkbox" checked> Cargas</label><label><input id="verCanales" type="checkbox" checked> Canales</label><label><input id="verFlechas" type="checkbox" checked> Flechas</label></div>
+      </aside>
+      <div class="escena-y-datos">
+        <div id="escenaMembrana" class="escena-membrana"><div class="medio extra">Extracelular</div><div class="bicapa"><span></span><span></span><b>Na/K ATPasa</b></div><div class="medio intra">Intracelular</div></div>
+        <div class="indicadores" id="indicadoresMembrana"></div>
+        <div class="tabla-scroll"><table id="tablaIonica"><thead><tr><th>Ion</th><th>Intra</th><th>Extra</th><th>P</th><th>Eion</th><th>Flujo neto</th></tr></thead><tbody></tbody></table></div>
+        <div id="ecuacionesMembrana" class="ecuaciones"></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="tab-accion" class="panel-lab tab-panel">
+    <div class="panel-heading"><div><span class="kicker">Simulador 2</span><h2>Potencial de accion</h2></div><div class="acciones"><button id="btnAplicarEstimulo">Aplicar estimulo</button><button id="btnAccionPlay">Iniciar</button><button id="btnAccionPausa" class="secundario">Pausar</button><button id="btnAccionReset" class="secundario">Reiniciar</button></div></div>
+    <div class="lab-grid accion-grid"><aside class="controles-lab"><label>Nivel<select id="nivelAccion"><option value="basico">Basico</option><option value="intermedio" selected>Intermedio</option><option value="avanzado">Avanzado</option></select></label><label>Intensidad<input id="estimuloIntensidad" type="range" min="0" max="30" step="0.5" value="12"></label><label>Duracion ms<input id="estimuloDuracion" type="number" min="0.1" max="10" step="0.1" value="1"></label><label>Inicio ms<input id="estimuloInicio" type="number" min="0" max="30" step="0.5" value="5"></label><label><input id="segundoEstimulo" type="checkbox"> Segundo estimulo</label><label>Separacion ms<input id="separacionEstimulo" type="range" min="2" max="30" step="0.5" value="8"></label><label>Velocidad<select id="velocidadAccion"><option value="0.5">Camara lenta</option><option value="1" selected>Normal</option><option value="3">Rapida</option></select></label><button id="btnSuperponer" class="secundario">Superponer simulacion</button><button id="btnLimpiarSuperposiciones" class="secundario">Limpiar superposiciones</button></aside><div><canvas id="graficaAccion" width="920" height="430"></canvas><div id="tooltipAccion" class="tooltip-grafica"></div><div class="canales-grid"><article><h3>Canal de sodio</h3><div id="canalSodio" class="canal">Cerrado disponible</div></article><article><h3>Canal de potasio</h3><div id="canalPotasio" class="canal">Cerrado</div></article></div><div id="resumenAccion" class="indicadores"></div></div></div>
+  </section>
+
+  <section id="tab-axon" class="panel-lab tab-panel">
+    <div class="panel-heading"><div><span class="kicker">Simulador 3</span><h2>Propagacion axonal</h2></div><div class="acciones"><button id="btnAxonPlay">Iniciar propagacion</button><button id="btnAxonPausa" class="secundario">Pausar</button><button id="btnAxonReset" class="secundario">Reiniciar</button></div></div>
+    <div class="lab-grid"><aside class="controles-lab"><label>Tipo de axon<select id="tipoAxon"><option value="mielinizado">Mielinizado</option><option value="amielinico">Amielinico</option></select></label><label>Longitud mm<input id="longitudAxon" type="range" min="20" max="160" value="80"></label><label>Diametro um<input id="diametroAxon" type="range" min="0.2" max="12" step="0.1" value="2"></label><label>Grosor mielina<input id="grosorMielina" type="range" min="0" max="1.5" step="0.05" value="0.8"></label><label>Temperatura C<input id="temperaturaAxon" type="range" min="10" max="42" step="0.5" value="37"></label><label>Densidad Na<input id="densidadNaAxon" type="range" min="0.05" max="1.5" step="0.05" value="1"></label><label>Bloqueo canales<input id="bloqueoAxon" type="range" min="0" max="0.95" step="0.05" value="0"></label><label><input id="desmielinizacionActiva" type="checkbox"> Desmielinizacion focal</label><label>Severidad lesion<input id="severidadDesmielina" type="range" min="0" max="1" step="0.05" value="0.55"></label><label>Estimular desde<select id="estimularDesde"><option value="izquierda">Extremo izquierdo</option><option value="derecha">Extremo derecho</option><option value="centro">Region central</option></select></label><label><input id="bidireccional" type="checkbox"> Conduccion bidireccional experimental</label></aside><div><div id="axonVisual" class="axon-visual"></div><canvas id="graficaAxon" width="920" height="330"></canvas><div id="resumenAxon" class="indicadores"></div></div></div>
+  </section>
+
+  <section id="tab-experimentos" class="panel-lab tab-panel"><div class="panel-heading"><div><span class="kicker">Experimentos guiados</span><h2>Protocolos preconfigurados</h2></div></div><div id="listaExperimentos" class="experimentos-grid"></div></section>
+  <section id="tab-resultados" class="panel-lab tab-panel"><div class="panel-heading"><div><span class="kicker">Cuaderno</span><h2>Resultados y proyectos</h2></div><div class="acciones"><button id="btnGuardarProyecto">Guardar proyecto</button><button id="btnExportarCSV" class="secundario">Exportar CSV</button><button id="btnReporte" class="secundario">Reporte imprimible</button></div></div><label>Nombre del proyecto<input id="nombreProyecto" type="text" placeholder="Ej. Hiperpotasemia y umbral"></label><label>Observaciones<textarea id="observacionesProyecto" rows="5" placeholder="Hipotesis, observaciones y conclusiones..."></textarea></label><div id="listaProyectos" class="proyectos-lista"></div></section>
+  <section id="tab-teoria" class="panel-lab tab-panel"><span class="kicker">Fundamento teorico</span><h2>Conceptos clave</h2><div class="teoria-grid"><article><h3>Nernst</h3><p>Calcula el potencial de equilibrio de un ion a partir de concentraciones intra/extracelulares, valencia y temperatura.</p></article><article><h3>Goldman-Hodgkin-Katz</h3><p>Estima Vm ponderando concentraciones por permeabilidad. Para Cl- se invierten las concentraciones por ser anion.</p></article><article><h3>Hodgkin-Huxley reducido</h3><p>Modelo educativo con compuertas m, h y n para Na+ y K+ que genera fases del potencial de accion.</p></article><article><h3>Mielina</h3><p>Reduce capacitancia efectiva y favorece conduccion saltatoria entre nodos de Ranvier.</p></article></div></section>
+</main>
+<script type="module" src="js/neurofisiologia/laboratorio-neurofisiologia.js"></script>
+<script type="module" src="js/reportes.js"></script>
+</body>
+</html>
