@@ -280,15 +280,27 @@ function precisionParcial() {
 }
 
 function mostrar(pantalla) {
-  [els.inicio, els.config, els.juego, els.resultados].forEach((el) => {
-    if (el) el.hidden = true;
+  const pantallas = [
+    els.inicio,
+    els.config,
+    els.juego,
+    els.resultados
+  ];
+
+  pantallas.forEach((elemento) => {
+    if (elemento) {
+      elemento.hidden = true;
+    }
   });
 
-  if (els[pantalla]) {
-    els[pantalla].hidden = false;
-  } else {
-    console.error(`No existe la pantalla: ${pantalla}`);
+  const pantallaSeleccionada = els[pantalla];
+
+  if (!pantallaSeleccionada) {
+    console.error(`Pantalla no encontrada: ${pantalla}`);
+    return;
   }
+
+  pantallaSeleccionada.hidden = false;
 }
 
 function cancelarSesion() {
