@@ -280,8 +280,15 @@ function precisionParcial() {
 }
 
 function mostrar(pantalla) {
-  [els.inicio, els.config, els.juego, els.resultados].forEach((el) => el.hidden = true);
-  els[pantalla].hidden = false;
+  [els.inicio, els.config, els.juego, els.resultados].forEach((el) => {
+    if (el) el.hidden = true;
+  });
+
+  if (els[pantalla]) {
+    els[pantalla].hidden = false;
+  } else {
+    console.error(`No existe la pantalla: ${pantalla}`);
+  }
 }
 
 function cancelarSesion() {
