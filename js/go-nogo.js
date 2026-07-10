@@ -147,6 +147,7 @@ function siguienteEnsayo() {
   estimulo.className = `estimulo visible ${data.clase}`;
   $("textoEstimulo").textContent = data.texto;
   inicioEstimulo = performance.now();
+  activarPulsoEstimulo(ensayoActual.tipo);
   beep(ensayoActual.tipo === "go" ? 520 : 260, 0.025);
 
   timeoutVisible = window.setTimeout(() => {
@@ -170,6 +171,14 @@ function cerrarEnsayoSinRespuesta() {
   programarSiguiente();
 }
 
+
+function activarPulsoEstimulo(tipo) {
+  const zona = $("zonaEstimulo");
+  if (!zona || config?.efectos === false) return;
+  zona.classList.remove("pulso-go", "pulso-nogo");
+  void zona.offsetWidth;
+  zona.classList.add(tipo === "go" ? "pulso-go" : "pulso-nogo");
+}
 function registrarRespuesta(event) {
   event?.preventDefault?.();
   if (estado !== "jugando" || !ensayoActual || respondido) return;
@@ -333,6 +342,7 @@ function limpiarTemporizadores() {
 function limpiarEnsayoVisual() {
   const estimulo = $("estimuloVisual");
   if (estimulo) estimulo.className = "estimulo";
+  $("zonaEstimulo")?.classList.remove("pulso-go", "pulso-nogo");
   const texto = $("textoEstimulo");
   if (texto) texto.textContent = estado === "resultados" ? "Finalizado" : "Preparado";
 }
