@@ -906,6 +906,7 @@ configurarPanelEscalaNota();
 configurarSeccionesRedimensionablesNota();
 
 const ESTADOS_DIAGNOSTICO_NOTA = [
+  "",
   "Se agrega",
   "Se descarta",
   "Probable",
