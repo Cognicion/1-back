@@ -72,6 +72,7 @@ function vincularMembrana() {
   $("bombaNaK").addEventListener("input", (e) => { estadoMembrana.bombaNaK = Number(e.target.value); renderizarMembrana(); });
   $("zoomMembrana").addEventListener("input", (e) => { escena.style.transform = `scale(${e.target.value})`; });
   ["verIones", "verCargas", "verCanales", "verFlechas"].forEach((id) => $(id).addEventListener("change", renderizarMembrana));
+  ["ionActivoMembrana", "vistaMembrana", "drogaAbusoMembrana"].forEach((id) => $(id)?.addEventListener("change", renderizarMembrana));
   $("btnMembranaPlay").addEventListener("click", () => { membranaActiva = true; animarMembrana(); });
   $("btnMembranaPausa").addEventListener("click", () => { membranaActiva = false; cancelAnimationFrame(rafMembrana); });
   $("btnMembranaReset").addEventListener("click", () => { estadoMembrana = aplicarPresetMembrana("fisiologica"); sincronizarControlesMembrana(); renderizarMembrana(); });
@@ -86,20 +87,105 @@ function sincronizarControlesMembrana() {
 }
 
 function renderizarMembrana() {
-  escena.querySelectorAll(".ion,.flecha-flujo,.carga").forEach((n) => n.remove());
+  escena.querySelectorAll(".ion,.flecha-flujo,.carga,.ion-flujo-dirigido,.canal-selectivo,.droga-abuso-molecula").forEach((n) => n.remove());
+  escena.classList.remove("vista-corte", "vista-sinapsis");
   const vm = calcularGHK(estadoMembrana);
   const potenciales = calcularPotencialesEquilibrio(estadoMembrana);
   const validacion = validarEstadoMembrana(estadoMembrana);
+  const tabla = construirTablaIonica(estadoMembrana);
+  const ionActivo = $("ionActivoMembrana")?.value || "na";
+  const vista = $("vistaMembrana")?.value || "membrana";
+  const droga = $("drogaAbusoMembrana")?.value || "ninguna";
+  aplicarVistaEducativaMembrana(vista);
   if ($("verIones").checked) crearIonesVisuales();
   if ($("verFlechas").checked) crearFlechasVisuales();
   escena.classList.toggle("sin-canales", !$("verCanales").checked);
+  crearCanalSelectivoMembrana(tabla, ionActivo, droga);
+  crearFlujoDirigidoMembrana(tabla, ionActivo, droga);
+  renderizarPanelNeurovisualMembrana(tabla, ionActivo, vista, droga, vm, potenciales);
   $("indicadoresMembrana").innerHTML = [
     ["Vm actual", `${vm.toFixed(1)} mV`], ["ENa", `${potenciales.na.toFixed(1)} mV`], ["EK", `${potenciales.k.toFixed(1)} mV`], ["ECl", `${potenciales.cl.toFixed(1)} mV`], ["ECa", `${potenciales.ca.toFixed(1)} mV`], ["Bomba Na/K", `${Math.round(estadoMembrana.bombaNaK * 100)}%`]
   ].map(([k, v]) => `<article><span>${k}</span><strong>${v}</strong></article>`).join("") + validacion.advertencias.map((a) => `<article><span>Advertencia</span><strong>${a}</strong></article>`).join("");
-  $("tablaIonica").querySelector("tbody").innerHTML = construirTablaIonica(estadoMembrana).map((r) => `<tr><td style="color:${r.ion.color}">${r.ion.etiqueta}</td><td>${r.intra}</td><td>${r.extra}</td><td>${Number(r.permeabilidad).toFixed(3)}</td><td>${r.potencial.toFixed(1)} mV</td><td>${r.flujo.direccion}</td></tr>`).join("");
+  $("tablaIonica").querySelector("tbody").innerHTML = tabla.map((r) => `<tr class="${r.ion.id === ionActivo ? "ion-activo-row" : ""}"><td style="color:${r.ion.color}">${r.ion.etiqueta}</td><td>${r.intra}</td><td>${r.extra}</td><td>${Number(r.permeabilidad).toFixed(3)}</td><td>${r.potencial.toFixed(1)} mV</td><td>${r.flujo.direccion}</td></tr>`).join("");
   $("ecuacionesMembrana").innerHTML = `<code>${sustituirEcuacionGHK(estadoMembrana)}</code>` + Object.keys(IONES).map((id) => `<code>${sustituirEcuacionNernst(estadoMembrana, id)}</code>`).join("");
 }
 
+function aplicarVistaEducativaMembrana(vista) {
+  escena.classList.toggle("vista-corte", vista === "corte");
+  escena.classList.toggle("vista-sinapsis", vista === "sinapsis");
+}
+
+function crearCanalSelectivoMembrana(tabla, ionActivo, droga) {
+  const fila = tabla.find((r) => r.ion.id === ionActivo) || tabla[0];
+  if (!fila) return;
+  const canal = document.createElement("span");
+  canal.className = `canal-selectivo ${ionActivo}`;
+  canal.innerHTML = `<b>${fila.ion.etiqueta}</b><small>${fila.flujo.direccion}</small>`;
+  escena.appendChild(canal);
+  if (droga !== "ninguna") {
+    const molecula = document.createElement("span");
+    molecula.className = `droga-abuso-molecula droga-${droga}`;
+    molecula.textContent = etiquetaDrogaAbuso(droga);
+    escena.appendChild(molecula);
+  }
+}
+
+function crearFlujoDirigidoMembrana(tabla, ionActivo, droga) {
+  const fila = tabla.find((r) => r.ion.id === ionActivo) || tabla[0];
+  if (!fila) return;
+  const haciaInterior = fila.flujo.direccion === "hacia el interior";
+  const cantidad = Math.max(5, Math.min(18, Math.round(Math.abs(fila.flujo.flujo) / 7) + 6));
+  for (let i = 0; i < cantidad; i += 1) {
+    const p = document.createElement("span");
+    p.className = `ion-flujo-dirigido ${ionActivo} ${haciaInterior ? "entra" : "sale"}`;
+    p.textContent = fila.ion.etiqueta;
+    p.style.setProperty("--x", `${20 + ((i * 9) % 58)}%`);
+    p.style.setProperty("--delay", `${i * 0.13}s`);
+    p.style.setProperty("--color", fila.ion.color);
+    if (droga !== "ninguna") p.classList.add("modulado");
+    escena.appendChild(p);
+  }
+}
+
+function renderizarPanelNeurovisualMembrana(tabla, ionActivo, vista, droga, vm, potenciales) {
+  const panel = $("panelNeurovisualMembrana");
+  if (!panel) return;
+  const fila = tabla.find((r) => r.ion.id === ionActivo) || tabla[0];
+  const drogaInfo = efectoDrogaAbuso(droga);
+  const vistaHtml = vista === "corte" ? crearCorteAxonalHtml(fila) : vista === "sinapsis" ? crearSinapsisZoomHtml(fila, droga) : crearMembranaZoomHtml(fila);
+  panel.innerHTML = `
+    <article class="neurovisual-card principal"><span class="kicker">Ion protagonista</span><h3>${fila.ion.etiqueta}: ${fila.flujo.direccion}</h3><p>${fila.flujo.gradienteQuimico}. ${fila.flujo.gradienteElectrico}. Vm ${vm.toFixed(1)} mV; E${fila.ion.etiqueta} ${potenciales[fila.ion.id].toFixed(1)} mV.</p></article>
+    <article class="neurovisual-card visual">${vistaHtml}</article>
+    <article class="neurovisual-card droga"><span class="kicker">Droga de abuso</span><h3>${drogaInfo.titulo}</h3><p>${drogaInfo.texto}</p></article>`;
+}
+
+function crearMembranaZoomHtml(fila) {
+  return `<div class="mini-membrana"><span class="mini-extra">Extracelular</span><span class="mini-bicapa"><i>${fila.ion.etiqueta}</i><b>Canal selectivo</b></span><span class="mini-intra">Intracelular</span><em class="mini-transportador">Na/K ATPasa</em></div>`;
+}
+
+function crearCorteAxonalHtml(fila) {
+  return `<div class="corte-axon-mini"><span class="mielina-anillo"></span><span class="axon-citoplasma"><i>${fila.ion.etiqueta}</i><i>${fila.ion.etiqueta}</i><i>${fila.ion.etiqueta}</i></span><b>Nodo/corte transversal</b><small>Se observan gradientes alrededor de la membrana axonal.</small></div>`;
+}
+
+function crearSinapsisZoomHtml(fila, droga) {
+  return `<div class="sinapsis-mini"><span class="boton-presinaptico"><i></i><i></i><i></i><b>Vesiculas</b></span><span class="hendidura-mini"><i></i><i></i><i></i></span><span class="post-mini"><b>Receptores</b><em>Transportadores</em><em>Enzimas catabolicas</em></span>${droga !== "ninguna" ? `<strong>${etiquetaDrogaAbuso(droga)}</strong>` : ""}</div>`;
+}
+
+function etiquetaDrogaAbuso(droga) {
+  return ({ cocaina: "Cocaina", anfetamina: "Anfetamina", alcohol: "Alcohol", opioide: "Opioide", cannabis: "Cannabis" })[droga] || "Sin droga";
+}
+
+function efectoDrogaAbuso(droga) {
+  const mapa = {
+    ninguna: { titulo: "Sin modulacion", texto: "La simulacion muestra el flujo ionico basal segun concentraciones, permeabilidad y Vm." },
+    cocaina: { titulo: "Cocaina", texto: "Modelo educativo: aumenta senal monoaminergica por bloqueo de recaptura; se resaltan transportadores y mayor activacion sinaptica." },
+    anfetamina: { titulo: "Anfetamina / metanfetamina", texto: "Modelo educativo: favorece liberacion monoaminergica; se visualiza mayor salida de neurotransmisor." },
+    alcohol: { titulo: "Alcohol", texto: "Modelo educativo: potencia tono inhibitorio GABAergico y reduce excitabilidad; se resaltan Cl- y receptores inhibitorios." },
+    opioide: { titulo: "Opioide", texto: "Modelo educativo: hiperpolarizacion por salida de K+ y menor liberacion presinaptica; se ve menor activacion terminal." },
+    cannabis: { titulo: "Cannabis", texto: "Modelo educativo: modulacion presinaptica de liberacion; la sinapsis muestra menor probabilidad de descarga vesicular." }
+  };
+  return mapa[droga] || mapa.ninguna;
+}
 function crearIonesVisuales() {
   Object.values(IONES).forEach((ion) => {
     const total = ion.id === "ca" ? 8 : 18;
@@ -269,6 +355,7 @@ function poblarFarmacosIntegrados() {
     vesicular: (f) => /vesicula|SV2A|liberacion/i.test(`${f.diana} ${f.clase} ${f.descripcion}`),
     intracelular: (f) => /intracelular|multimodal/i.test(`${f.diana} ${f.clase} ${f.descripcion}`),
     herramientas: (f) => /experimental|Tetrodotoxina|Tetraetilamonio/i.test(`${f.nombre} ${f.clase}`),
+    abuso: (f) => /droga de abuso/i.test(f.clase),
     todos: () => true
   };
   const lista = REGISTRO_FARMACOS_NEURO.filter(filtros[categoria] || filtros.principales);

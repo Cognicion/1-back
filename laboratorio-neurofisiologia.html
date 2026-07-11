@@ -54,7 +54,7 @@
           <label>Sensibilidad postsinaptica<input id="intSensibilidad" type="range" min="0.2" max="2" step="0.01" value="1"></label>
         </details>
         <details><summary>Farmacologia experimental</summary>
-          <label>Categoria farmacologica<select id="intCategoriaFarmaco"><option value="principales">Ejemplos principales</option><option value="na">Canales de Na+</option><option value="gaba">GABA</option><option value="ca">Canales de Ca2+</option><option value="vesicular">Liberacion vesicular</option><option value="intracelular">Modulacion intracelular</option><option value="herramientas">Herramientas experimentales</option><option value="todos">Ver mas farmacos</option></select></label><label>Farmaco<select id="intFarmaco"></select></label><div id="intInfoFarmaco" class="info-farmaco"></div>
+          <label>Categoria farmacologica<select id="intCategoriaFarmaco"><option value="principales">Ejemplos principales</option><option value="na">Canales de Na+</option><option value="gaba">GABA</option><option value="ca">Canales de Ca2+</option><option value="vesicular">Liberacion vesicular</option><option value="intracelular">Modulacion intracelular</option><option value="herramientas">Herramientas experimentales</option><option value="abuso">Drogas de abuso</option><option value="todos">Ver mas farmacos</option></select></label><label>Farmaco<select id="intFarmaco"></select></label><div id="intInfoFarmaco" class="info-farmaco"></div>
           <label>Concentracion experimental relativa<input id="intFarmacoIntensidad" type="range" min="0" max="1" step="0.01" value="0.5"></label>
           <button id="btnIntAgregarFarmaco" type="button">Aplicar farmaco</button>
           <button id="btnIntLimpiarFarmacos" type="button" class="secundario">Retirar farmacos</button>
@@ -92,6 +92,9 @@
       <aside class="controles-lab">
         <label>Preset<select id="presetMembrana"></select></label>
         <label>Velocidad<select id="velocidadMembrana"><option value="0.5">Lenta</option><option value="1" selected>Normal</option><option value="2">Rapida</option></select></label>
+        <label>Ion protagonista<select id="ionActivoMembrana"><option value="na">Na+ entrada</option><option value="k">K+ salida</option><option value="cl">Cl- inhibicion</option><option value="ca">Ca2+ sinapsis</option></select></label>
+        <label>Vista educativa<select id="vistaMembrana"><option value="membrana" selected>Membrana</option><option value="corte">Axon en corte transversal</option><option value="sinapsis">Terminal sinaptica</option></select></label>
+        <label>Droga de abuso<select id="drogaAbusoMembrana"><option value="ninguna" selected>Sin droga</option><option value="cocaina">Cocaina</option><option value="anfetamina">Anfetamina / metanfetamina</option><option value="alcohol">Alcohol</option><option value="opioide">Opioide</option><option value="cannabis">Cannabis</option></select></label>
         <label>Zoom<input id="zoomMembrana" type="range" min="0.8" max="1.6" step="0.05" value="1"></label>
         <label>Temperatura (C)<input data-membrana="temperaturaC" type="number" min="0" max="45" step="0.5"></label>
         <label>Na+ extra<input data-ion="na.extra" type="number" step="1"></label><label>Na+ intra<input data-ion="na.intra" type="number" step="1"></label>
@@ -104,6 +107,7 @@
       </aside>
       <div class="escena-y-datos">
         <div id="escenaMembrana" class="escena-membrana"><div class="medio extra">Extracelular</div><div class="bicapa"><span></span><span></span><b>Na/K ATPasa</b></div><div class="medio intra">Intracelular</div></div>
+        <div id="panelNeurovisualMembrana" class="panel-neurovisual-membrana"></div>
         <div class="indicadores" id="indicadoresMembrana"></div>
         <div class="tabla-scroll"><table id="tablaIonica"><thead><tr><th>Ion</th><th>Intra</th><th>Extra</th><th>P</th><th>Eion</th><th>Flujo neto</th></tr></thead><tbody></tbody></table></div>
         <div id="ecuacionesMembrana" class="ecuaciones"></div>
