@@ -29,6 +29,7 @@ document.addEventListener("DOMContentLoaded", inicializar);
 onAuthStateChanged(auth, (user) => { usuarioId = user?.uid || null; });
 
 function inicializar() {
+  if (els.cuenta) els.cuenta.hidden = true;
   renderizarChecksEmociones();
   aplicarPerfil("facil");
   els.btnConfigurar.addEventListener("click", () => mostrar("config"));

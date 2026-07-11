@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -23,7 +23,8 @@
   </section>
 
   <nav class="tabs-lab" aria-label="Secciones del laboratorio">
-    <button data-tab="membrana" class="activo">Membrana e iones</button>
+    <button data-tab="integrada" class="activo">Neurona integrada</button>
+    <button data-tab="membrana">Membrana e iones</button>
     <button data-tab="accion">Potencial de accion</button>
     <button data-tab="axon">Propagacion axonal</button>
     <button data-tab="experimentos">Experimentos</button>
@@ -31,7 +32,57 @@
     <button data-tab="teoria">Fundamento teorico</button>
   </nav>
 
-  <section id="tab-membrana" class="panel-lab tab-panel activo">
+  <section id="tab-integrada" class="panel-lab tab-panel activo">
+    <div class="panel-heading"><div><span class="kicker">Modelo sincronizado</span><h2>Neurona, axon y sinapsis en una sola simulacion</h2></div><div class="acciones"><button id="btnIntegradaPlay">Iniciar</button><button id="btnIntegradaPausa" class="secundario">Pausar</button><button id="btnIntegradaReset" class="secundario">Reiniciar</button><button id="btnIntegradaPulso" class="secundario">Estimulo unico</button></div></div>
+    <div class="integrated-lab">
+      <aside class="controles-lab panel-colapsable">
+        <details open><summary>Estimulo y axon</summary>
+          <label>Frecuencia de estimulacion (Hz)<input id="intFrecuencia" type="range" min="0.1" max="40" step="0.1" value="8"></label>
+          <label>Intensidad relativa<input id="intIntensidad" type="range" min="0" max="30" step="0.5" value="14"></label>
+          <label>Tipo de axon<select id="intTipoAxon"><option value="mielinizado">Mielinizado</option><option value="amielinico">Amielinico</option></select></label>
+          <label>Diametro axonal (um)<input id="intDiametro" type="range" min="0.2" max="12" step="0.1" value="2"></label>
+          <label>Temperatura (C)<input id="intTemperatura" type="range" min="10" max="42" step="0.5" value="37"></label>
+          <label><input id="intDesmielina" type="checkbox"> Desmielinizacion focal</label>
+        </details>
+        <details open><summary>Sinapsis</summary>
+          <label>Tipo de sinapsis<select id="intTipoSinapsis"><option value="glutamato">Excitadora glutamatergica</option><option value="gaba">Inhibidora GABAergica</option><option value="dopamina">Dopaminergica moduladora</option><option value="serotonina">Serotoninergica moduladora</option><option value="noradrenalina">Noradrenergica moduladora</option></select></label>
+          <label>Vesiculas visibles<input id="intVesiculas" type="range" min="8" max="48" step="1" value="24"></label>
+          <label>Probabilidad basal de liberacion<input id="intLiberacion" type="range" min="0.05" max="1" step="0.01" value="0.45"></label>
+          <label>Recaptura<input id="intRecaptura" type="range" min="0" max="1.5" step="0.01" value="0.55"></label>
+          <label>Degradacion enzimatica<input id="intDegradacion" type="range" min="0" max="1.5" step="0.01" value="0.18"></label>
+          <label>Sensibilidad postsinaptica<input id="intSensibilidad" type="range" min="0.2" max="2" step="0.01" value="1"></label>
+        </details>
+        <details open><summary>Farmacologia experimental</summary>
+          <label>Farmaco<select id="intFarmaco"></select></label>
+          <label>Concentracion experimental relativa<input id="intFarmacoIntensidad" type="range" min="0" max="1" step="0.01" value="0.5"></label>
+          <button id="btnIntAgregarFarmaco" type="button">Aplicar farmaco</button>
+          <button id="btnIntLimpiarFarmacos" type="button" class="secundario">Retirar farmacos</button>
+          <div id="intFarmacosActivos" class="lista-farmacos"></div>
+        </details>
+        <details><summary>Matematicas</summary>
+          <label><input id="intSeguirEcuacion" type="checkbox" checked> Seguir ecuacion activa</label>
+          <label><input id="intCongelarEcuacion" type="checkbox"> Congelar ecuacion</label>
+          <label>Ecuacion<select id="intEcuacionSeleccionada"></select></label>
+          <button id="btnCopiarEcuacion" type="button" class="secundario">Copiar ecuacion</button>
+        </details>
+      </aside>
+      <section class="escena-integrada-wrap">
+        <div id="escenaIntegrada" class="escena-integrada" aria-label="Simulacion integrada de neurona y sinapsis"></div>
+        <div id="estadoIntegrado" class="indicadores"></div>
+        <div class="graficas-integradas">
+          <canvas id="graficaIntegrada" width="1060" height="360"></canvas>
+          <div id="selectorGraficasIntegradas" class="checks graficas-checks"></div>
+        </div>
+      </section>
+      <aside class="panel-derecho-integrado panel-colapsable">
+        <details open><summary>Variables fisiologicas</summary><div id="variablesIntegradas" class="tabla-scroll"></div></details>
+        <details open><summary>Matematicas del modelo</summary><div id="matematicasIntegradas" class="ecuaciones matematicas-panel"></div></details>
+        <details><summary>Explicacion detallada</summary><div id="explicacionIntegrada" class="explicacion-modelo"></div></details>
+      </aside>
+    </div>
+  </section>
+
+  <section id="tab-membrana" class="panel-lab tab-panel">
     <div class="panel-heading"><div><span class="kicker">Simulador 1</span><h2>Membrana neuronal e intercambio ionico</h2></div><div class="acciones"><button id="btnMembranaPlay">Iniciar</button><button id="btnMembranaPausa" class="secundario">Pausar</button><button id="btnMembranaReset" class="secundario">Reiniciar</button><button id="btnMembranaPaso" class="secundario">Paso</button></div></div>
     <div class="lab-grid">
       <aside class="controles-lab">

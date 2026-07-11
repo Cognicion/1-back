@@ -1,8 +1,13 @@
-import { aplicarPresetMembrana, construirTablaIonica, calcularGHK, calcularPotencialesEquilibrio, ESTADO_MEMBRANA_BASE, IONES, PRESETS_MEMBRANA, sustituirEcuacionGHK, sustituirEcuacionNernst, validarEstadoMembrana } from "./ionModel.js";
+﻿import { aplicarPresetMembrana, construirTablaIonica, calcularGHK, calcularPotencialesEquilibrio, ESTADO_MEMBRANA_BASE, IONES, PRESETS_MEMBRANA, sustituirEcuacionGHK, sustituirEcuacionNernst, validarEstadoMembrana } from "./ionModel.js";
 import { simularPotencialAccion } from "./actionPotentialModel.js";
 import { simularPropagacionAxonal } from "./axonPropagationModel.js";
 import { EXPERIMENTOS_NEUROFISIOLOGIA } from "./experimentManager.js";
 import { duplicarProyectoLaboratorio, eliminarProyectoLaboratorio, exportarCSVLaboratorio, guardarProyectoLaboratorio, listarProyectosLaboratorio } from "./labNotebook.js";
+import { REGISTRO_FARMACOS_NEURO } from "./drugRegistry.js";
+import { REGISTRO_ECUACIONES_NEURO } from "./equationRegistry.js";
+import { aplicarFarmacoIntegrado, avanzarNeuronaIntegrada, crearEstadoNeuronaIntegrada, estimularNeuronaIntegrada, limpiarFarmacosIntegrados, actualizarParametrosIntegrados } from "./integratedNeuronModel.js";
+import { dibujarGraficaIntegrada, poblarSelectorEcuaciones, poblarSelectorGraficas, renderizarEscenaIntegrada, renderizarExplicacionIntegrada, renderizarIndicadoresIntegrados, renderizarMatematicasIntegradas, renderizarVariablesIntegradas, resumenCopiableEcuacion } from "./integratedNeuronRenderer.js";
+
 
 const $ = (id) => document.getElementById(id);
 let estadoMembrana = aplicarPresetMembrana("fisiologica");
@@ -18,16 +23,23 @@ let resultadoAccion = simularPotencialAccion();
 let superposiciones = [];
 let resultadoAxon = simularPropagacionAxonal();
 let ultimoProyecto = null;
+let integradaActiva = false;
+let rafIntegrada = null;
+let estadoIntegrado = crearEstadoNeuronaIntegrada();
+let graficasIntegradasVisibles = new Set(["Vm", "INa", "IK", "ICa", "NT", "Post", "Prelease", "receptor"]);
+let ecuacionCongelada = null;
 
 const escena = $("escenaMembrana");
 const graficaAccion = $("graficaAccion");
 const graficaAxon = $("graficaAxon");
+const graficaIntegrada = $("graficaIntegrada");
 
 inicializar();
 
 function inicializar() {
   document.querySelectorAll(".tabs-lab button").forEach((btn) => btn.addEventListener("click", () => cambiarTab(btn.dataset.tab)));
   poblarPresets();
+  vincularIntegrada();
   vincularMembrana();
   vincularAccion();
   vincularAxon();
@@ -183,3 +195,91 @@ function cargarExperimento(id){ const exp=EXPERIMENTOS_NEUROFISIOLOGIA.find(e=>e
 function vincularCuaderno(){ $("btnGuardarProyecto").addEventListener("click",guardarProyectoActual); $("btnExportarCSV").addEventListener("click",()=>exportarCSVLaboratorio(resultadoAccion.trazas)); $("btnReporte").addEventListener("click",()=>window.print()); }
 function guardarProyectoActual(){ ultimoProyecto=guardarProyectoLaboratorio({ nombre: $("nombreProyecto").value || "Proyecto neurofisiologia", observaciones: $("observacionesProyecto").value, parametrosMembrana: estadoMembrana, resultadoAccion: resultadoAccion.resumen, resultadoAxon: { velocidad: resultadoAxon.velocidadMms, seguridad: resultadoAxon.seguridadConduccion } }); renderizarProyectos(); }
 function renderizarProyectos(){ const proyectos=listarProyectosLaboratorio(); $("listaProyectos").innerHTML=proyectos.length?proyectos.map(p=>`<div class="proyecto-item"><div><strong>${p.nombre}</strong><br><small>${p.actualizadoEn}</small></div><div><button data-dup="${p.id}">Duplicar</button><button data-del="${p.id}">Eliminar</button></div></div>`).join(""):"<p class='muted'>Aun no hay proyectos guardados.</p>"; document.querySelectorAll("[data-del]").forEach(b=>b.addEventListener("click",()=>{if(confirm("Eliminar proyecto?")){eliminarProyectoLaboratorio(b.dataset.del);renderizarProyectos();}})); document.querySelectorAll("[data-dup]").forEach(b=>b.addEventListener("click",()=>{duplicarProyectoLaboratorio(b.dataset.dup);renderizarProyectos();})); }
+function vincularIntegrada() {
+  poblarFarmacosIntegrados();
+  poblarSelectorEcuaciones($("intEcuacionSeleccionada"));
+  poblarSelectorGraficas($("selectorGraficasIntegradas"), graficasIntegradasVisibles);
+  ["intFrecuencia", "intIntensidad", "intTipoAxon", "intDiametro", "intTemperatura", "intDesmielina", "intTipoSinapsis", "intVesiculas", "intLiberacion", "intRecaptura", "intDegradacion", "intSensibilidad"].forEach((id) => {
+    const el = $(id);
+    if (el) el.addEventListener("input", () => { leerControlesIntegrados(); renderizarIntegrada(); });
+  });
+  $("btnIntegradaPlay")?.addEventListener("click", () => { integradaActiva = true; animarIntegrada(); });
+  $("btnIntegradaPausa")?.addEventListener("click", () => { integradaActiva = false; cancelAnimationFrame(rafIntegrada); });
+  $("btnIntegradaReset")?.addEventListener("click", () => { integradaActiva = false; cancelAnimationFrame(rafIntegrada); estadoIntegrado = crearEstadoNeuronaIntegrada(); sincronizarControlesIntegrados(); renderizarIntegrada(); });
+  $("btnIntegradaPulso")?.addEventListener("click", () => { estimularNeuronaIntegrada(estadoIntegrado); renderizarIntegrada(); });
+  $("btnIntAgregarFarmaco")?.addEventListener("click", () => { aplicarFarmacoIntegrado(estadoIntegrado, $("intFarmaco").value, Number($("intFarmacoIntensidad").value)); renderizarIntegrada(); });
+  $("btnIntLimpiarFarmacos")?.addEventListener("click", () => { limpiarFarmacosIntegrados(estadoIntegrado); renderizarIntegrada(); });
+  $("intSeguirEcuacion")?.addEventListener("change", renderizarIntegrada);
+  $("intCongelarEcuacion")?.addEventListener("change", (e) => { ecuacionCongelada = e.target.checked ? ($("intEcuacionSeleccionada").value || estadoIntegrado.ecuacionActiva) : null; renderizarIntegrada(); });
+  $("intEcuacionSeleccionada")?.addEventListener("change", () => { ecuacionCongelada = $("intCongelarEcuacion")?.checked ? $("intEcuacionSeleccionada").value : null; renderizarIntegrada(); });
+  $("btnCopiarEcuacion")?.addEventListener("click", async () => {
+    const texto = resumenCopiableEcuacion(estadoIntegrado, ecuacionCongelada || $("intEcuacionSeleccionada")?.value || estadoIntegrado.ecuacionActiva);
+    try { await navigator.clipboard.writeText(texto); } catch { console.log(texto); }
+  });
+  document.querySelectorAll("[data-grafica-integrada]").forEach((check) => check.addEventListener("change", () => {
+    if (check.checked) graficasIntegradasVisibles.add(check.dataset.graficaIntegrada); else graficasIntegradasVisibles.delete(check.dataset.graficaIntegrada);
+    dibujarGraficaIntegrada(graficaIntegrada, estadoIntegrado, graficasIntegradasVisibles);
+  }));
+  sincronizarControlesIntegrados();
+}
+
+function poblarFarmacosIntegrados() {
+  const select = $("intFarmaco");
+  if (!select) return;
+  select.innerHTML = REGISTRO_FARMACOS_NEURO.map((farmaco) => `<option value="${farmaco.id}">${farmaco.nombre} - ${farmaco.clase}</option>`).join("");
+}
+
+function sincronizarControlesIntegrados() {
+  if (!$("intFrecuencia")) return;
+  $("intFrecuencia").value = estadoIntegrado.controles.frecuenciaHz;
+  $("intIntensidad").value = estadoIntegrado.controles.intensidad;
+  $("intTipoAxon").value = estadoIntegrado.axon.mielina ? "mielinizado" : "amielinico";
+  $("intDiametro").value = estadoIntegrado.axon.diametroUm;
+  $("intTemperatura").value = estadoIntegrado.axon.temperaturaC;
+  $("intDesmielina").checked = estadoIntegrado.axon.desmielinizacion.activa;
+  $("intTipoSinapsis").value = estadoIntegrado.sinapsis.tipoId;
+  $("intVesiculas").value = estadoIntegrado.sinapsis.vesiculasVisuales;
+  $("intLiberacion").value = estadoIntegrado.sinapsis.basalLiberacion;
+  $("intRecaptura").value = estadoIntegrado.sinapsis.recaptura;
+  $("intDegradacion").value = estadoIntegrado.sinapsis.degradacion;
+  $("intSensibilidad").value = estadoIntegrado.sinapsis.sensibilidad;
+}
+
+function leerControlesIntegrados() {
+  if (!$("intFrecuencia")) return;
+  actualizarParametrosIntegrados(estadoIntegrado, {
+    frecuenciaHz: $("intFrecuencia").value,
+    intensidad: $("intIntensidad").value,
+    tipoAxon: $("intTipoAxon").value,
+    diametroUm: $("intDiametro").value,
+    temperaturaC: $("intTemperatura").value,
+    desmielinizacion: $("intDesmielina").checked,
+    tipoSinapsis: $("intTipoSinapsis").value,
+    vesiculasVisuales: $("intVesiculas").value,
+    basalLiberacion: $("intLiberacion").value,
+    recaptura: $("intRecaptura").value,
+    degradacion: $("intDegradacion").value,
+    sensibilidad: $("intSensibilidad").value
+  });
+}
+
+function animarIntegrada() {
+  if (!integradaActiva) return;
+  leerControlesIntegrados();
+  avanzarNeuronaIntegrada(estadoIntegrado, 0.45);
+  renderizarIntegrada();
+  rafIntegrada = requestAnimationFrame(animarIntegrada);
+}
+
+function renderizarIntegrada() {
+  if (!$("escenaIntegrada")) return;
+  const ecuacionSeleccionada = ecuacionCongelada || ($("intSeguirEcuacion")?.checked ? estadoIntegrado.ecuacionActiva : ($("intEcuacionSeleccionada")?.value || estadoIntegrado.ecuacionActiva));
+  if ($("intEcuacionSeleccionada") && !ecuacionCongelada && $("intSeguirEcuacion")?.checked) $("intEcuacionSeleccionada").value = ecuacionSeleccionada;
+  renderizarEscenaIntegrada($("escenaIntegrada"), estadoIntegrado);
+  renderizarIndicadoresIntegrados($("estadoIntegrado"), estadoIntegrado);
+  renderizarVariablesIntegradas($("variablesIntegradas"), estadoIntegrado);
+  renderizarMatematicasIntegradas($("matematicasIntegradas"), estadoIntegrado, ecuacionSeleccionada);
+  renderizarExplicacionIntegrada($("explicacionIntegrada"), estadoIntegrado);
+  dibujarGraficaIntegrada(graficaIntegrada, estadoIntegrado, graficasIntegradasVisibles);
+  $("intFarmacosActivos").innerHTML = estadoIntegrado.farmacos.activos.length ? estadoIntegrado.farmacos.activos.map((f) => `<span>${f.nombre} ${Math.round(f.intensidad * 100)}%</span>`).join("") : `<span>Sin farmacos activos</span>`;
+}

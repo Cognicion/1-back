@@ -1,4 +1,4 @@
-import assert from "node:assert/strict";
+﻿import assert from "node:assert/strict";
 import fs from "node:fs";
 
 function cargarModulo(ruta, nombres) {
@@ -49,3 +49,21 @@ const prop = axon.simularPropagacionAxonal({ mielina: true, electrodos: [10, 30,
 assert.equal(prop.electrodos.length, 3);
 assert.ok(prop.electrodos[2].retraso > prop.electrodos[0].retraso, "Electrodos distales deben retrasarse mas");
 console.log("Pruebas neurofisiologia OK");
+const integrated = await import("file:///D:/Escritorio/PROYECTO%20COGNICION/1-back/js/neurofisiologia/integratedNeuronModel.js");
+const equations = await import("file:///D:/Escritorio/PROYECTO%20COGNICION/1-back/js/neurofisiologia/equationRegistry.js");
+let integrado = integrated.crearEstadoNeuronaIntegrada();
+integrated.estimularNeuronaIntegrada(integrado, 18);
+for (let i = 0; i < 260; i += 1) integrated.avanzarNeuronaIntegrada(integrado, 0.25);
+assert.ok(Number.isFinite(integrado.Vm), "Vm integrado debe ser finito");
+assert.ok(Number.isFinite(integrado.sinapsis.caLocal), "Ca presinaptico debe ser finito");
+assert.ok(Number.isFinite(integrado.sinapsis.nt), "Neurotransmisor debe ser finito");
+assert.ok(integrado.historia.length > 0, "Modelo integrado debe acumular historia sincronizada");
+const gNaBase = integrado.gNa;
+integrated.aplicarFarmacoIntegrado(integrado, "ttx", 1);
+integrated.avanzarNeuronaIntegrada(integrado, 0.5);
+assert.ok(integrado.gNa < gNaBase * 0.2, "TTX debe reducir conductancia efectiva de Na en el modelo educativo");
+const eqLiberacion = equations.evaluarEcuacion("liberacion_vesicular", integrado);
+assert.ok(eqLiberacion.sustitucion.includes("Prelease"), "La ecuacion de liberacion debe generar sustitucion numerica");
+const eqFarmaco = equations.evaluarEcuacion("farmacos", integrado);
+assert.ok(eqFarmaco.sustitucion.includes("gNa efectiva"), "La ecuacion farmacologica debe reportar parametro efectivo");
+console.log("Pruebas neurofisiologia integrada OK");
