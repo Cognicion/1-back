@@ -29,14 +29,76 @@ export async function obtenerUsuario(uid){
 
 
 
-export async function listarPacientes(){
+function crearResultadoPacientesDesdeDocs(docs) {
+    return {
+        docs,
+        empty: docs.length === 0,
+        size: docs.length,
+        forEach(callback) {
+            docs.forEach(callback);
+        }
+    };
+}
 
-    const q = query(
-        collection(db,"usuarios"),
-        where("rol","==","paciente")
+export async function listarPacientes(uidMedico = ""){
+
+    if (!uidMedico) {
+        const q = query(
+            collection(db,"usuarios"),
+            where("rol","==","paciente")
+        );
+
+        return await getDocs(q);
+    }
+
+    const usuariosRef = collection(db,"usuarios");
+    const camposVinculo = [
+        "creadoPor",
+        "ownerUid",
+        "createdByUid",
+        "medicoUid",
+        "medicoTratanteUid",
+        "medicoTratanteUID"
+    ];
+    const consultas = camposVinculo.map((campo) =>
+        query(usuariosRef, where(campo,"==",uidMedico))
     );
 
-    return await getDocs(q);
+    consultas.push(
+        query(usuariosRef, where("medicosAutorizados","array-contains",uidMedico))
+    );
+
+    const resultados = await Promise.allSettled(
+        consultas.map((consulta) => getDocs(consulta))
+    );
+    const pacientes = new Map();
+    let primerError = null;
+
+    resultados.forEach((resultado) => {
+        if (resultado.status === "rejected") {
+            primerError = primerError || resultado.reason;
+            return;
+        }
+
+        resultado.value.forEach((docPaciente) => {
+            const datos = docPaciente.data();
+            if (datos.rol === "paciente") {
+                pacientes.set(docPaciente.id, docPaciente);
+            }
+        });
+    });
+
+    if (!pacientes.size && primerError && resultados.every((resultado) => resultado.status === "rejected")) {
+        throw primerError;
+    }
+
+    const docs = Array.from(pacientes.values()).sort((a,b) => {
+        const nombreA = (a.data().nombre || a.data().nombreCompleto || "").toString();
+        const nombreB = (b.data().nombre || b.data().nombreCompleto || "").toString();
+        return nombreA.localeCompare(nombreB, "es", { sensitivity: "base" });
+    });
+
+    return crearResultadoPacientesDesdeDocs(docs);
 
 }
 
@@ -99,10 +161,20 @@ export async function medicoPuedeVer(uidMedico, pacienteId) {
     if (!pacienteSnap.exists()) return false;
 
     const paciente = pacienteSnap.data();
+    const camposPropietario = [
+        paciente.creadoPor,
+        paciente.ownerUid,
+        paciente.createdByUid,
+        paciente.medicoUid,
+        paciente.medicoTratanteUid,
+        paciente.medicoTratanteUID
+    ].filter(Boolean);
 
-    if (paciente.creadoPor === uidMedico) return true;
-    if (paciente.medicoTratanteUid === uidMedico) return true;
-    if (paciente.medicoTratanteUID === uidMedico) return true;
+    if (camposPropietario.includes(uidMedico)) return true;
+
+    if (Array.isArray(paciente.medicosAutorizados) && paciente.medicosAutorizados.includes(uidMedico)) return true;
+    if (Array.isArray(paciente.medicosAutorizadosUid) && paciente.medicosAutorizadosUid.includes(uidMedico)) return true;
+    if (paciente.permisosMedicos && paciente.permisosMedicos[uidMedico]?.lectura === true) return true;
 
     const permisoRef = doc(
         db,

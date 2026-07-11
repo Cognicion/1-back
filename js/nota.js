@@ -1,4 +1,4 @@
-﻿import { auth, db } from "./firebase.js";
+import { auth, db } from "./firebase.js";
 import { registrarEventoAuditoria } from "./services/auditoria.js";
 import { iniciarMonitoreoSesion } from "./services/sesion.js";
 import { CIE10 } from "./data/cie10.js";
@@ -50,7 +50,8 @@ import {
 import {
   obtenerUsuario,
   listarPacientes,
-  actualizarUsuario
+  actualizarUsuario,
+  medicoPuedeVer
 } from "./services/usuarios.js";
 
 import {
@@ -2432,6 +2433,16 @@ function escaparHTML(valor) {
     .replace(/'/g, "&#039;");
 }
 
+async function usuarioActualPuedeAccederPaciente(uidPaciente) {
+  const usuarioAuth = auth.currentUser;
+  if (!usuarioAuth || !uidPaciente) return false;
+
+  const perfilUsuario = await obtenerUsuario(usuarioAuth.uid);
+  if (perfilUsuario?.rol === "admin") return true;
+  if (!["medico", "psicologo"].includes(perfilUsuario?.rol)) return false;
+
+  return await medicoPuedeVer(usuarioAuth.uid, uidPaciente);
+}
 onAuthStateChanged(auth, async (user) => {
   if (!user) {
     window.location.href = "login.html";
@@ -2483,27 +2494,61 @@ async function cargarListaPacientes() {
 
   if (!selector) return;
 
-  const pacientes = await listarPacientes();
+  selector.innerHTML = '<option value="">Seleccionar paciente</option>';
 
-  pacientes.forEach((paciente) => {
-    const datos = paciente.data();
+  if (!uidMedicoActual) {
     const opcion = document.createElement("option");
-
-    opcion.value = paciente.id;
-    opcion.textContent = datos.nombre || "Sin nombre";
-
+    opcion.disabled = true;
+    opcion.textContent = "No se pudo identificar al profesional";
     selector.appendChild(opcion);
-  });
+    return;
+  }
+
+  try {
+    const pacientes = await listarPacientes(uidMedicoActual);
+
+    if (pacientes.empty || pacientes.size === 0) {
+      const opcion = document.createElement("option");
+      opcion.disabled = true;
+      opcion.textContent = "No hay pacientes autorizados";
+      selector.appendChild(opcion);
+      return;
+    }
+
+    pacientes.forEach((paciente) => {
+      const datos = paciente.data();
+      const opcion = document.createElement("option");
+
+      opcion.value = paciente.id;
+      opcion.textContent = datos.nombre || datos.nombreCompleto || "Sin nombre";
+      selector.appendChild(opcion);
+    });
+  } catch (error) {
+    console.error("Error al cargar pacientes autorizados:", error);
+    const opcion = document.createElement("option");
+    opcion.disabled = true;
+    opcion.textContent = "No se pudieron cargar pacientes";
+    selector.appendChild(opcion);
+  }
 
   selector.addEventListener("change", async () => {
     uidPacienteActual = selector.value;
-
+    if (!uidPacienteActual) return;
     await cargarPaciente(uidPacienteActual);
     await cargarHistorial(uidPacienteActual);
   });
 }
 
 async function cargarPaciente(uidPaciente) {
+  const tieneAcceso = await usuarioActualPuedeAccederPaciente(uidPaciente);
+
+  if (!tieneAcceso) {
+    alert("No tienes permiso para acceder a este paciente.");
+    uidPacienteActual = null;
+    window.location.href = "medico.html";
+    return;
+  }
+
   const datos = await obtenerUsuario(uidPaciente);
 
   if (!datos) return;
@@ -2584,6 +2629,12 @@ async function guardarNotaMedicaConEstado(estadoNota = "definitiva") {
 
   if (!uidPaciente) {
     alert("Selecciona un paciente");
+    return;
+  }
+
+  const tieneAccesoPaciente = await usuarioActualPuedeAccederPaciente(uidPaciente);
+  if (!tieneAccesoPaciente) {
+    alert("No tienes permiso para guardar notas de este paciente.");
     return;
   }
 

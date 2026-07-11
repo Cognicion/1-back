@@ -1,4 +1,4 @@
-﻿import { auth, db } from "./firebase.js";
+import { auth, db } from "./firebase.js";
 import { iniciarMonitoreoSesion } from "./services/sesion.js";
 import { registrarEventoAuditoria, resumenError } from "./services/auditoria.js";
 import {
@@ -39,6 +39,15 @@ let codigosMedicoAdmin = [];
 let avisosGlobalesAdmin = [];
 let notasPorPaciente = {};
 let adminActual = null;
+const ESTADOS_REPORTE_ADMIN = [
+  "nuevo",
+  "en_revision",
+  "resuelto",
+  "prueba",
+  "invalido",
+  "duplicado",
+  "descartado"
+];
 
 const SUBCOLECCIONES_USUARIO_PACIENTE = [
   "notasMedicas",
@@ -1032,9 +1041,7 @@ function renderizarReportesUsuariosAdmin() {
         </div>
         <div class="reporte-admin-acciones">
           <select id="estado-reporte-${escaparHTML(reporte.id)}">
-            ${opcionEstadoReporte("nuevo", estadoReporte)}
-            ${opcionEstadoReporte("en_revision", estadoReporte)}
-            ${opcionEstadoReporte("resuelto", estadoReporte)}
+            ${ESTADOS_REPORTE_ADMIN.map((estado) => opcionEstadoReporte(estado, estadoReporte)).join("")}
           </select>
           <button type="button" onclick="cambiarEstadoReporteAdmin('${reporte.id}')">Actualizar estado</button>
         </div>

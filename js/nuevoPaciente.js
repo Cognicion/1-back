@@ -17,24 +17,67 @@ import { registrarEventoAuditoria } from "./services/auditoria.js";
 import { iniciarMonitoreoSesion } from "./services/sesion.js";
 
 let uidMedico = "";
+let medicoActualDatos = {};
 
 iniciarMonitoreoSesion("Nuevo paciente");
 
-function calcularEdad(fechaNacimiento) {
-  if (!fechaNacimiento) return "";
+function esAnioBisiesto(anio) {
+  return (anio % 4 === 0 && anio % 100 !== 0) || anio % 400 === 0;
+}
 
-  const nacimiento = new Date(`${fechaNacimiento}T00:00:00`);
-  if (Number.isNaN(nacimiento.getTime())) return "";
+function parsearFechaNacimientoISO(fechaNacimiento) {
+  const coincidencia = /^(\d{4})-(\d{2})-(\d{2})$/.exec(fechaNacimiento || "");
+  if (!coincidencia) return null;
 
-  const hoy = new Date();
-  let edad = hoy.getFullYear() - nacimiento.getFullYear();
-  const mes = hoy.getMonth() - nacimiento.getMonth();
+  const anio = Number(coincidencia[1]);
+  const mes = Number(coincidencia[2]);
+  const dia = Number(coincidencia[3]);
+  const fecha = new Date(anio, mes - 1, dia);
 
-  if (mes < 0 || (mes === 0 && hoy.getDate() < nacimiento.getDate())) {
+  if (
+    fecha.getFullYear() !== anio ||
+    fecha.getMonth() !== mes - 1 ||
+    fecha.getDate() !== dia
+  ) {
+    return null;
+  }
+
+  return { anio, mes, dia };
+}
+
+function calcularEdad(fechaNacimiento, fechaReferencia = new Date()) {
+  const nacimiento = parsearFechaNacimientoISO(fechaNacimiento);
+  if (!nacimiento) return "";
+
+  const hoy = {
+    anio: fechaReferencia.getFullYear(),
+    mes: fechaReferencia.getMonth() + 1,
+    dia: fechaReferencia.getDate()
+  };
+  let diaCumple = nacimiento.dia;
+
+  if (nacimiento.mes === 2 && nacimiento.dia === 29 && !esAnioBisiesto(hoy.anio)) {
+    diaCumple = 28;
+  }
+
+  let edad = hoy.anio - nacimiento.anio;
+  if (hoy.mes < nacimiento.mes || (hoy.mes === nacimiento.mes && hoy.dia < diaCumple)) {
     edad -= 1;
   }
 
   return edad >= 0 ? edad : "";
+}
+
+function obtenerNombreProfesional(usuario = {}, firebaseUser = null) {
+  return (
+    usuario.nombreProfesional ||
+    usuario.medicoNombre ||
+    usuario.nombreCompleto ||
+    usuario.nombre ||
+    usuario.displayName ||
+    firebaseUser?.displayName ||
+    ""
+  ).trim();
 }
 
 function valorEdadManual() {
@@ -67,7 +110,7 @@ function sincronizarEdadConFecha(origen = "fecha") {
     return;
   }
 
-  if ((origen === "edad" || origen === "guardar") && tieneEdadEscrita && edadEscrita !== Number(edadCalculada)) {
+  if (origen === "edad" && tieneEdadEscrita && edadEscrita !== Number(edadCalculada)) {
     alert("La edad escrita no coincide con la fecha de nacimiento. Se borrara la fecha de nacimiento y se conservara la edad manual.");
     fechaInput.value = "";
     ponerAyudaEdad("Edad manual conservada. La fecha de nacimiento fue borrada por no coincidir.");
@@ -227,11 +270,18 @@ onAuthStateChanged(auth, async (user) => {
     return;
   }
 
+  medicoActualDatos = usuario;
+  const nombreProfesional = obtenerNombreProfesional(usuario, user);
+  const medicoTratanteInput = document.getElementById("medicoTratante");
+  if (medicoTratanteInput && !medicoTratanteInput.value.trim()) {
+    medicoTratanteInput.value = nombreProfesional;
+    medicoTratanteInput.placeholder = nombreProfesional ? "Médico tratante" : "Configura tu nombre profesional";
+  }
+
 document.getElementById("abrirIngresoNuevo")?.addEventListener("click", abrirSelectorIngresoNuevo);
 document.getElementById("cerrarIngresoNuevo")?.addEventListener("click", cerrarSelectorIngresoNuevo);
 document.getElementById("guardarIngresoNuevo")?.addEventListener("click", aplicarIngresoNuevo);
 document.getElementById("limpiarIngresoNuevo")?.addEventListener("click", limpiarIngresoNuevo);
-document.getElementById("fechaNacimiento")?.addEventListener("input", () => sincronizarEdadConFecha("fecha"));
 document.getElementById("fechaNacimiento")?.addEventListener("change", () => sincronizarEdadConFecha("fecha"));
 document.getElementById("edadManual")?.addEventListener("change", () => sincronizarEdadConFecha("edad"));
 document.getElementById("edadManual")?.addEventListener("blur", () => sincronizarEdadConFecha("edad"));
@@ -277,6 +327,8 @@ window.guardarPacienteNuevo = async function() {
     imc,
     perimetroAbdominal
   };
+
+  const medicoTratanteNombre = document.getElementById("medicoTratante")?.value.trim() || obtenerNombreProfesional(medicoActualDatos, auth.currentUser);
 
   const paciente = {
     nombre: document.getElementById("nombre").value,
@@ -330,15 +382,18 @@ window.guardarPacienteNuevo = async function() {
       perimetroAbdominal,
       diasEstancia
     },
-    medicoTratante: document.getElementById("medicoTratante").value,
+    medicoTratante: medicoTratanteNombre,
+    medicoTratanteNombre,
     diagnostico: document.getElementById("diagnostico").value,
     ultimaConsulta: document.getElementById("ultimaConsulta").value,
     tratamiento: document.getElementById("tratamiento").value,
     observaciones: document.getElementById("observaciones").value,
-    
     creadoPor: uidMedico,
+    ownerUid: uidMedico,
+    createdByUid: uidMedico,
+    medicoUid: uidMedico,
     medicoTratanteUid: uidMedico,
-    medicosAutorizados: [uidMedico]
+    medicosAutorizados: Array.from(new Set([uidMedico].filter(Boolean)))
   };
 
   if (!paciente.nombre) {

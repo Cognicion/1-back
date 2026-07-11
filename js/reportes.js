@@ -102,6 +102,42 @@ function inicializarReporteGlobal() {
   conectarEventosReporte(raiz);
 }
 
+function textoUtil(valor = "") {
+  return String(valor)
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑ]/g, "")
+    .toLowerCase();
+}
+
+function pareceContenidoDePrueba(valor = "") {
+  const util = textoUtil(valor);
+  if (!util) return true;
+
+  const caracteresUnicos = new Set(util.split("")).size;
+  const contienePalabras = /[a-záéíóúñ]{3,}/i.test(valor);
+
+  return caracteresUnicos <= 2 && !contienePalabras;
+}
+
+function validarReporteUsuario(titulo = "", mensaje = "") {
+  const tituloUtil = textoUtil(titulo);
+  const mensajeUtil = textoUtil(mensaje);
+
+  if (tituloUtil.length < 5) {
+    return { ok: false, mensaje: "Escribe un titulo con al menos 5 caracteres utiles." };
+  }
+
+  if (mensajeUtil.length < 15) {
+    return { ok: false, mensaje: "Describe un poco mas el problema o sugerencia (minimo 15 caracteres utiles)." };
+  }
+
+  if (pareceContenidoDePrueba(titulo) || pareceContenidoDePrueba(mensaje)) {
+    return { ok: false, mensaje: "El contenido parece de prueba. Escribe una descripcion breve pero clara." };
+  }
+
+  return { ok: true, mensaje: "" };
+}
 function conectarEventosReporte(raiz) {
   const botonAbrir = raiz.querySelector(".reporte-float-btn");
   const botonContraer = raiz.querySelector(".reporte-contraer-btn");
@@ -138,10 +174,11 @@ function conectarEventosReporte(raiz) {
     const texto = mensaje?.value.trim() || "";
     const tituloReporte = titulo?.value.trim() || "";
 
-    if (!texto) {
-      estado.textContent = "Escribe una descripcion antes de enviar.";
+    const validacion = validarReporteUsuario(tituloReporte, texto);
+    if (!validacion.ok) {
+      estado.textContent = validacion.mensaje;
       estado.className = "reporte-error";
-      mensaje?.focus();
+      (!tituloReporte ? titulo : mensaje)?.focus();
       return;
     }
 
