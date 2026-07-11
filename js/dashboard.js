@@ -1,4 +1,4 @@
-import { auth, db } from "./firebase.js";
+﻿import { auth, db } from "./firebase.js";
 
 import {
   onAuthStateChanged,
@@ -7,10 +7,13 @@ import {
 
 import {
   collection,
+  doc,
+  getDoc,
   getDocs,
   limit,
   orderBy,
-  query
+  query,
+  setDoc
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 import {
@@ -37,6 +40,11 @@ function mostrarFraseClinicaAleatoria() {
 }
 
 mostrarFraseClinicaAleatoria();
+
+let avisosDashboardActuales = [];
+let avisosLeidosDashboard = new Set();
+let usuarioDashboardActual = null;
+let rolDashboardActual = "";
 window.alternarModuloAvisos = function(forzarAbierto = null) {
   const modulo = document.getElementById("avisosDashboardModulo");
   const boton = document.getElementById("btnToggleAvisosDashboard");
@@ -50,11 +58,15 @@ window.alternarModuloAvisos = function(forzarAbierto = null) {
 window.alternarNotificaciones = function() {
   const dropdown = document.getElementById("notificationsDropdown");
   const boton = document.getElementById("notificationsButton");
-  const abierto = dropdown?.classList.toggle("abierto");
+  const panelAvisos = document.getElementById("avisosDashboardModulo");
+  const abierto = !panelAvisos?.classList.contains("abierto");
+
+  dropdown?.classList.toggle("abierto", abierto);
   dropdown?.setAttribute("aria-hidden", String(!abierto));
   boton?.setAttribute("aria-expanded", String(Boolean(abierto)));
-  window.alternarModuloAvisos(true);
-  document.getElementById("avisosDashboardModulo")?.scrollIntoView({ behavior: "smooth", block: "center" });
+  panelAvisos?.classList.toggle("abierto", abierto);
+  panelAvisos?.classList.remove("colapsado");
+  panelAvisos?.setAttribute("aria-hidden", String(!abierto));
 };
 
 window.mostrarProximamente = function(titulo = "Proximamente", descripcion = "Estamos desarrollando este modulo.") {
@@ -91,7 +103,9 @@ onAuthStateChanged(auth, async (user) => {
   }
 
   const datos = await obtenerUsuario(user.uid);
+  usuarioDashboardActual = { uid: user.uid, email: user.email || "", nombre: datos?.nombre || user.email || "" };
   const rolUsuario = String(datos?.rol || "").toLowerCase().trim();
+  rolDashboardActual = rolUsuario;
 
   const tarjetaSofia = document.getElementById("tarjetaSofia");
 
@@ -165,6 +179,78 @@ function textoDestinatarioAvisoDashboard(aviso = {}) {
   return mapa[destino] || destino;
 }
 
+async function obtenerLecturasAvisosDashboard(avisos = [], uidUsuario = "") {
+  const lecturas = await Promise.all(avisos.map(async (aviso) => {
+    try {
+      const snap = await getDoc(doc(db, "avisosGlobales", aviso.id, "lecturas", uidUsuario));
+      return [aviso.id, snap.exists()];
+    } catch (error) {
+      console.warn("No se pudo revisar lectura de aviso:", aviso.id, error);
+      return [aviso.id, false];
+    }
+  }));
+
+  return new Set(lecturas.filter(([, leido]) => leido).map(([id]) => id));
+}
+
+function renderizarAvisosDashboard() {
+  const contenedor = document.getElementById("listaAvisosDashboard");
+  const badge = document.getElementById("notificationBadge");
+  if (!contenedor) return;
+
+  const noLeidos = avisosDashboardActuales.filter((aviso) => !avisosLeidosDashboard.has(aviso.id));
+  if (badge) {
+    badge.textContent = noLeidos.length;
+    badge.style.display = noLeidos.length ? "inline-flex" : "none";
+  }
+
+  if (!avisosDashboardActuales.length) {
+    contenedor.innerHTML = `<article class="aviso-dashboard-item"><strong>Sin avisos nuevos</strong><p>Cuando haya comunicados o notificaciones relevantes apareceran aqui.</p></article>`;
+    return;
+  }
+
+  contenedor.innerHTML = avisosDashboardActuales.map((aviso) => {
+    const leido = avisosLeidosDashboard.has(aviso.id);
+    return `
+      <article class="aviso-dashboard-item ${leido ? "leido" : "no-leido"}">
+        <div class="aviso-dashboard-top">
+          <strong>${escaparHTML(aviso.titulo || "Aviso")}</strong>
+          <span>${leido ? "Leido" : "Nuevo"}</span>
+        </div>
+        <p>${escaparHTML(aviso.mensaje || aviso.descripcion || "")}</p>
+        <span class="aviso-dashboard-meta">${escaparHTML(textoDestinatarioAvisoDashboard(aviso))} · ${escaparHTML(aviso.creadoEn || "")}</span>
+        <div class="card-actions aviso-acciones">
+          <button type="button" class="ghost-button mini" ${leido ? "disabled" : ""} data-marcar-aviso-leido="${escaparHTML(aviso.id)}">
+            ${leido ? "Ya leido" : "Marcar como leido"}
+          </button>
+        </div>
+      </article>
+    `;
+  }).join("");
+
+  contenedor.querySelectorAll("[data-marcar-aviso-leido]").forEach((boton) => {
+    boton.addEventListener("click", () => marcarAvisoLeidoDashboard(boton.dataset.marcarAvisoLeido));
+  });
+}
+
+async function marcarAvisoLeidoDashboard(idAviso) {
+  if (!idAviso || !usuarioDashboardActual?.uid) return;
+  try {
+    await setDoc(doc(db, "avisosGlobales", idAviso, "lecturas", usuarioDashboardActual.uid), {
+      uid: usuarioDashboardActual.uid,
+      nombre: usuarioDashboardActual.nombre || "",
+      email: usuarioDashboardActual.email || "",
+      rol: rolDashboardActual || "",
+      leido: true,
+      leidoEn: new Date().toISOString()
+    }, { merge: true });
+    avisosLeidosDashboard.add(idAviso);
+    renderizarAvisosDashboard();
+  } catch (error) {
+    console.error("No se pudo marcar el aviso como leido:", error);
+  }
+}
+
 async function cargarAvisosDashboard(rolUsuario, uidUsuario) {
   const contenedor = document.getElementById("listaAvisosDashboard");
   if (!contenedor) return;
@@ -173,30 +259,15 @@ async function cargarAvisosDashboard(rolUsuario, uidUsuario) {
   try {
     const qAvisos = query(collection(db, "avisosGlobales"), orderBy("creadoEn", "desc"), limit(30));
     const snap = await getDocs(qAvisos);
-    const avisos = snap.docs
+    avisosDashboardActuales = snap.docs
       .map((docAviso) => ({ id: docAviso.id, ...docAviso.data() }))
       .filter((aviso) => aviso.activo !== false && avisoVisibleParaUsuario(aviso, rolUsuario, uidUsuario))
       .slice(0, 6);
 
-    const badge = document.getElementById("notificationBadge");
-    if (badge) badge.textContent = avisos.length;
-
-    if (!avisos.length) {
-      contenedor.innerHTML = `<article class="aviso-dashboard-item"><strong>Sin avisos nuevos</strong><p>Cuando haya comunicados o notificaciones relevantes apareceran aqui.</p></article>`;
-      return;
-    }
-
-    contenedor.innerHTML = avisos.map((aviso) => `
-      <article class="aviso-dashboard-item">
-        <strong>${escaparHTML(aviso.titulo || "Aviso")}</strong>
-        <p>${escaparHTML(aviso.mensaje || aviso.descripcion || "")}</p>
-        <span class="aviso-dashboard-meta">${escaparHTML(textoDestinatarioAvisoDashboard(aviso))} Â· ${escaparHTML(aviso.creadoEn || "")}</span>
-      </article>
-    `).join("");
+    avisosLeidosDashboard = await obtenerLecturasAvisosDashboard(avisosDashboardActuales, uidUsuario);
+    renderizarAvisosDashboard();
   } catch (error) {
     console.error("Error al cargar avisos:", error);
     contenedor.innerHTML = `<article class="aviso-dashboard-item"><strong>Avisos no disponibles</strong><p>No se pudieron cargar los avisos por el momento.</p></article>`;
   }
 }
-
-

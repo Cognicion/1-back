@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>COGNICIÓN | Dashboard médico</title>
+<title>COGNICIÃ“N | Dashboard mÃ©dico</title>
 <link rel="icon" type="image/png" href="assets/favicon-cognicion.png">
 
 <style>
@@ -773,6 +773,72 @@ footer {
     text-transform: uppercase;
 }
 
+
+.notificaciones-panel-flotante {
+    position: fixed;
+    top: 88px;
+    right: 28px;
+    z-index: 120;
+    width: min(440px, calc(100vw - 32px));
+    max-height: calc(100vh - 120px);
+    margin: 0;
+    overflow-y: auto;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transform: translateY(-8px) scale(0.98);
+    transition: opacity 0.22s ease, transform 0.22s ease, visibility 0.22s ease, border-color 0.22s ease;
+}
+
+.notificaciones-panel-flotante.abierto {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transform: translateY(0) scale(1);
+}
+
+.notificaciones-panel-flotante .avisos-contenido,
+.notificaciones-panel-flotante.colapsado .avisos-contenido {
+    max-height: none;
+    opacity: 1;
+}
+
+.aviso-dashboard-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.aviso-dashboard-top span {
+    color: #7dd3fc;
+    font-size: .68rem;
+    font-weight: 900;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+}
+
+.aviso-dashboard-item.leido {
+    opacity: .72;
+}
+
+.aviso-acciones {
+    margin-top: 10px;
+}
+
+.aviso-acciones button:disabled {
+    opacity: .55;
+    cursor: default;
+}
+
+@media (max-width: 720px) {
+    .notificaciones-panel-flotante {
+        top: 76px;
+        right: 16px;
+        left: 16px;
+        width: auto;
+    }
+}
 .sofia-card {
     position: relative;
     overflow: hidden;
@@ -815,15 +881,15 @@ footer {
     <div class="app-shell topbar">
 
         <div class="brand">
-            <img src="assets/favicon-cognicion.png" alt="Cognición">
+            <img src="assets/favicon-cognicion.png" alt="CogniciÃ³n">
 
             <div>
-                <div class="brand-name">Cognición</div>
+                <div class="brand-name">CogniciÃ³n</div>
 
                 <div class="brand-subtitle">
-                    Así como la cognición integra múltiples procesos mentales
-                    para comprender al individuo, Cognición integra múltiples
-                    herramientas tecnológicas para comprender al paciente.
+                    AsÃ­ como la cogniciÃ³n integra mÃºltiples procesos mentales
+                    para comprender al individuo, CogniciÃ³n integra mÃºltiples
+                    herramientas tecnolÃ³gicas para comprender al paciente.
                 </div>
             </div>
         </div>
@@ -840,7 +906,7 @@ footer {
                     aria-expanded="false"
                     onclick="alternarNotificaciones()"
                 >
-                    <span class="notification-bell">🔔</span>
+                    <span class="notification-bell">ðŸ””</span>
                     <span id="notificationBadge" class="notification-badge">
                         1
                     </span>
@@ -876,7 +942,7 @@ footer {
                 type="button"
                 onclick="cerrarSesion()"
             >
-                Cerrar sesión
+                Cerrar sesiÃ³n
             </button>
 
         </div>
@@ -888,20 +954,20 @@ footer {
     <section class="hero">
         <div class="hero-grid">
             <div class="hero-copy">
-                <div class="eyebrow">PLATAFORMA CLÍNICA DIGITAL</div>
-                <h1>Salud mental y medicina de precisión</h1>
+                <div class="eyebrow">PLATAFORMA CLÃNICA DIGITAL</div>
+                <h1>Salud mental y medicina de precisiÃ³n</h1>
                 <p class="hero-subtitle">Evaluaci&oacute;n cl&iacute;nica, seguimiento terap&eacute;utico y herramientas digitales para comprender al paciente de forma integral.</p>
                 <h2 id="bienvenida">Cargando...</h2>
                 <p id="fraseClinica" class="clinical-phrase">La evidencia gu&iacute;a mejores decisiones cl&iacute;nicas.</p>
 
-                <section id="avisosDashboardModulo" class="avisos-dashboard" aria-labelledby="avisosDashboardTitulo">
+                <section id="avisosDashboardModulo" class="avisos-dashboard notificaciones-panel-flotante" aria-hidden="true" aria-labelledby="avisosDashboardTitulo">
                     <div class="avisos-header">
                         <div>
                             <span class="section-kicker">Avisos</span>
                             <strong id="avisosDashboardTitulo">Notificaciones y comunicados</strong>
                         </div>
                         <div class="card-actions">
-                            <button id="btnToggleAvisosDashboard" class="avisos-toggle" type="button" aria-expanded="true" onclick="alternarModuloAvisos()">Contraer</button>
+                            <button id="btnToggleAvisosDashboard" class="avisos-toggle" type="button" aria-expanded="true" onclick="alternarNotificaciones()">Cerrar</button>
                             <button type="button" class="ghost-button mini" onclick="window.location.href='foro.html'">Abrir foro</button>
                         </div>
                     </div>
@@ -943,12 +1009,12 @@ footer {
                     <span class="badge badge-alpha">ALPHA</span>
                 </div>
 
-                <h3>🧠 Proyecto Sofía</h3>
+                <h3>ðŸ§  Proyecto SofÃ­a</h3>
 
                 <p>
-                    Sistema Experimental de Inteligencia Clínica.
-                    Laboratorio privado para investigación, pruebas internas
-                    y desarrollo del motor de IA de Cognición.
+                    Sistema Experimental de Inteligencia ClÃ­nica.
+                    Laboratorio privado para investigaciÃ³n, pruebas internas
+                    y desarrollo del motor de IA de CogniciÃ³n.
                 </p>
 
                 <div class="card-actions">
@@ -1036,8 +1102,8 @@ footer {
                     <div class="module-icon">CALC</div>
                     <span class="badge">Disponible</span>
                 </div>
-                <h3>Calculadoras médicas</h3>
-                <p>Accede a herramientas para dosificación, escalas, índices y cálculos de uso frecuente en medicina.</p>
+                <h3>Calculadoras mÃ©dicas</h3>
+                <p>Accede a herramientas para dosificaciÃ³n, escalas, Ã­ndices y cÃ¡lculos de uso frecuente en medicina.</p>
                 <div class="card-actions">
                     <a class="ghost-button" href="calculadoras-medicas.html">Abrir calculadoras</a>
                 </div>
@@ -1045,10 +1111,10 @@ footer {
             <article class="module-card">
                 <div class="module-top">
                     <div class="module-icon">LAB</div>
-                    <span class="badge">CogniciónLabs</span>
+                    <span class="badge">CogniciÃ³nLabs</span>
                 </div>
-                <h3>Laboratorio de Neurofisiología</h3>
-                <p>Simula membrana neuronal, potencial de acción y propagación axonal con experimentos guiados.</p>
+                <h3>Laboratorio de NeurofisiologÃ­a</h3>
+                <p>Simula membrana neuronal, potencial de acciÃ³n y propagaciÃ³n axonal con experimentos guiados.</p>
                 <div class="card-actions">
                     <a class="ghost-button" href="laboratorio-neurofisiologia.html">Abrir laboratorio</a>
                 </div>
@@ -1057,10 +1123,10 @@ footer {
             <article class="module-card">
                 <div class="module-top">
                     <div class="module-icon">EV</div>
-                    <span class="badge">Próximamente</span>
+                    <span class="badge">PrÃ³ximamente</span>
                 </div>
-                <h3>Evolución</h3>
-                <p>Visualiza cambios clínicos, desempeño en ejercicios, escalas y seguimiento longitudinal.</p>
+                <h3>EvoluciÃ³n</h3>
+                <p>Visualiza cambios clÃ­nicos, desempeÃ±o en ejercicios, escalas y seguimiento longitudinal.</p>
                 <div class="card-actions">
                     <button class="ghost-button" onclick="mostrarProximamente('Proximamente', 'Estamos desarrollando este modulo para visualizar evolucion clinica, resultados de rehabilitacion cognitiva, graficas de progreso e indicadores de seguimiento.')">Pr&oacute;ximamente</button>
                 </div>
@@ -1071,7 +1137,7 @@ footer {
                     <div class="module-icon">PSI</div>
                     <span class="badge">Pr&oacute;ximamente</span>
                 </div>
-                <h3>Psicoeducación</h3>
+                <h3>PsicoeducaciÃ³n</h3>
                 <p>Biblioteca de recursos para pacientes, familiares y profesionales de la salud.</p>
                 <div class="card-actions">
                     <button class="ghost-button" onclick="mostrarProximamente('Proximamente', 'Biblioteca de recursos para pacientes, familiares y profesionales de la salud.')">Pr&oacute;ximamente</button>
@@ -1081,10 +1147,10 @@ footer {
             <article class="module-card">
                 <div class="module-top">
                     <div class="module-icon">DOC</div>
-                    <span class="badge">Próximamente</span>
+                    <span class="badge">PrÃ³ximamente</span>
                 </div>
                 <h3>Lecturas</h3>
-                <p>Biblioteca científica con guías clínicas, artoiculos, consensos y material académico.</p>
+                <p>Biblioteca cientÃ­fica con guÃ­as clÃ­nicas, artoiculos, consensos y material acadÃ©mico.</p>
                 <div class="card-actions">
                     <button class="ghost-button" onclick="mostrarProximamente('Proximamente', 'Biblioteca cientifica con guias clinicas, articulos, consensos y material academico.')">Pr&oacute;ximamente</button>
                 </div>
@@ -1114,4 +1180,3 @@ footer {
   <script type="module" src="js/reportes.js"></script>
 </body>
 </html>
-

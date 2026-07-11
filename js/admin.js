@@ -194,7 +194,19 @@ async function cargarAvisosAdmin() {
   try {
     const qAvisos = query(collection(db, "avisosGlobales"), orderBy("creadoEn", "desc"), limit(80));
     const snap = await getDocs(qAvisos);
-    avisosGlobalesAdmin = snap.docs.map((docAviso) => ({ id: docAviso.id, ...docAviso.data() }));
+    const avisosBase = snap.docs.map((docAviso) => ({ id: docAviso.id, ...docAviso.data() }));
+    avisosGlobalesAdmin = await Promise.all(avisosBase.map(async (aviso) => {
+      try {
+        const snapLecturas = await getDocs(collection(db, "avisosGlobales", aviso.id, "lecturas"));
+        return {
+          ...aviso,
+          lecturas: snapLecturas.docs.map((docLectura) => ({ id: docLectura.id, ...docLectura.data() }))
+        };
+      } catch (error) {
+        console.warn("No se pudieron cargar lecturas del aviso:", aviso.id, error);
+        return { ...aviso, lecturas: [] };
+      }
+    }));
     renderizarAvisosAdmin();
   } catch (error) {
     console.error("Error al cargar avisos:", error);
@@ -236,6 +248,19 @@ function renderizarAvisosAdmin() {
         <span class="estado-reporte ${aviso.activo === false ? "cerrado" : "nuevo"}">${aviso.activo === false ? "Oculto" : "Activo"}</span>
       </div>
       <p>${escaparHTML(aviso.mensaje || "")}</p>
+      <div class="lecturas-aviso-admin">
+        <strong>Lecturas: ${aviso.lecturas?.length || 0}</strong>
+        ${(aviso.lecturas?.length || 0) ? `
+          <details>
+            <summary>Ver usuarios que lo marcaron como leido</summary>
+            <ul>
+              ${aviso.lecturas.map((lectura) => `
+                <li>${escaparHTML(lectura.nombre || lectura.email || lectura.uid || "Usuario")} · ${escaparHTML(lectura.rol || "sin rol")} · ${escaparHTML(lectura.leidoEn || "")}</li>
+              `).join("")}
+            </ul>
+          </details>
+        ` : `<span>Nadie lo ha marcado como leido todavia.</span>`}
+      </div>
       <div class="acciones-reporte-admin">
         <button type="button" data-toggle-aviso-admin="${escaparHTML(aviso.id)}" data-activo="${aviso.activo === false ? "true" : "false"}">
           ${aviso.activo === false ? "Reactivar" : "Ocultar"}
@@ -1186,5 +1211,3 @@ function escaparHTML(valor) {
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#039;");
 }
-
-

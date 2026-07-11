@@ -1,4 +1,4 @@
-body {
+﻿body {
   margin: 0;
   background: #0f172a;
   color: #e5e7eb;
@@ -721,4 +721,34 @@ select:disabled {
     align-items: flex-start;
     flex-direction: column;
   }
+}
+
+.lecturas-aviso-admin {
+  display: grid;
+  gap: 8px;
+  margin: 12px 0;
+  padding: 12px;
+  border: 1px solid rgba(125, 211, 252, 0.16);
+  border-radius: 14px;
+  background: rgba(15, 23, 42, 0.42);
+  color: #cbd5e1;
+}
+
+.lecturas-aviso-admin strong {
+  color: #e0f2fe;
+}
+
+.lecturas-aviso-admin details summary {
+  cursor: pointer;
+  color: #7dd3fc;
+  font-weight: 800;
+}
+
+.lecturas-aviso-admin ul {
+  margin: 8px 0 0;
+  padding-left: 18px;
+}
+
+.lecturas-aviso-admin li {
+  margin: 4px 0;
 }

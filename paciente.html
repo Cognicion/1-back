@@ -539,6 +539,7 @@
             <h2>Indicaciones medicas</h2>
             <p class="texto-suave">Registra indicaciones por paciente y descargalas en formato institucional Fray Bernardino.</p>
           </div>
+          <button id="abrirInteraccionesIndicaciones" type="button" class="boton-secundario">Interacciones farmacologicas</button>
           <button type="button" class="boton-secundario" onclick="abrirApuntesMedicoPaciente()">Mis apuntes</button>
         </div>
 
@@ -688,6 +689,7 @@
             <p class="texto-suave">Registro farmacologico y clinico vinculado con Mi Salud.</p>
           </div>
           <button id="limpiarTratamiento" type="button" class="boton-secundario">Nuevo tratamiento</button>
+          <button id="abrirInteraccionesTratamiento" type="button" class="boton-secundario">Interacciones</button>
           <button type="button" class="boton-secundario" onclick="abrirApuntesMedicoPaciente()">Mis apuntes</button>
         </div>
 
@@ -957,6 +959,20 @@
 
 </div>
 
+<div id="modalInteraccionesFarmacologicas" class="modal-ingreso" aria-hidden="true">
+  <div class="panel-ingreso panel-interacciones-farmacologicas" role="dialog" aria-modal="true" aria-labelledby="tituloInteraccionesFarmacologicas">
+    <div class="panel-ingreso-header">
+      <div>
+        <p>Farmacologia clinica</p>
+        <h3 id="tituloInteraccionesFarmacologicas">Interacciones farmacologicas</h3>
+      </div>
+      <button id="cerrarInteraccionesFarmacologicas" type="button" aria-label="Cerrar">×</button>
+    </div>
+    <div id="contenidoInteraccionesFarmacologicas" class="contenido-interacciones-farmacologicas">
+      <p>Cargando revision de interacciones...</p>
+    </div>
+  </div>
+</div>
 <div id="modalMedicamentoManual" class="modal-ingreso" aria-hidden="true">
   <div class="panel-ingreso panel-medicamento-manual" role="dialog" aria-modal="true" aria-labelledby="tituloMedicamentoManual">
     <div class="panel-ingreso-header">
@@ -1016,6 +1032,3 @@
   <script type="module" src="js/reportes.js"></script>
 </body>
 </html>
-
-
-
