@@ -161,10 +161,14 @@ header {
 }
 
 .hero {
-    padding: 84px 0 48px;
+    position: relative;
+    padding: 42px 0 26px;
+    overflow: hidden;
 }
 
 .hero-grid {
+    position: relative;
+    z-index: 1;
     display: flex;
     justify-content: center;
 }
@@ -172,7 +176,7 @@ header {
 .hero-copy {
     max-width: 900px;
     min-height: 0;
-    padding: 34px 0 28px;
+    padding: 18px 0 18px;
     border: 0;
     border-radius: 0;
     background: transparent;
@@ -203,7 +207,7 @@ header {
 
 .hero-subtitle {
     max-width: 700px;
-    margin: 18px auto 0;
+    margin: 12px auto 0;
     text-align: center;
     color: #cbd5e1;
     font-size: clamp(1.1rem, 1.3vw, 1.35rem);
@@ -212,13 +216,13 @@ header {
 
 
 .clinical-phrase {
-    margin-top: 12px;
+    margin-top: 8px;
     color: var(--muted);
     font-size: 1rem;
 }
 
 #bienvenida {
-    margin: 36px 0 0;
+    margin: 24px 0 0;
     font-size: 1.34rem;
     font-weight: 720;
     color: #f8fafc;
@@ -309,7 +313,7 @@ header {
 .activity-center,
 .quick-actions,
 .dashboard-section {
-    padding: 28px 0;
+    padding: 20px 0;
 }
 
 .activity-grid {
@@ -543,6 +547,71 @@ footer {
     }
 }
 
+
+.brain-background {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+    opacity: 0.9;
+}
+
+.brain-background::before {
+    content: "";
+    position: absolute;
+    inset: -18% -10%;
+    background:
+        radial-gradient(circle at 18% 38%, rgba(34, 211, 238, 0.12), transparent 28%),
+        radial-gradient(circle at 76% 26%, rgba(59, 130, 246, 0.12), transparent 30%),
+        linear-gradient(115deg, transparent 0%, rgba(125, 211, 252, 0.035) 48%, transparent 70%);
+    filter: blur(20px);
+    animation: neuralMistDashboard 18s ease-in-out infinite alternate;
+}
+
+.brain-background span {
+    position: absolute;
+    width: clamp(72px, 10vw, 150px);
+    aspect-ratio: 1;
+    border: 1px solid rgba(125, 211, 252, 0.14);
+    border-radius: 42% 58% 48% 52%;
+    opacity: 0.18;
+    filter: drop-shadow(0 0 22px rgba(34, 211, 238, 0.22));
+    animation: brainDriftDashboard 16s ease-in-out infinite alternate;
+}
+
+.brain-background span::before,
+.brain-background span::after {
+    content: "";
+    position: absolute;
+    inset: 18%;
+    border: 1px solid rgba(125, 211, 252, 0.22);
+    border-radius: 50% 45% 52% 48%;
+    box-shadow:
+        inset 18px 0 0 rgba(34, 211, 238, 0.035),
+        inset -18px 0 0 rgba(59, 130, 246, 0.04);
+}
+
+.brain-background span::after {
+    inset: 34% 48% 18% 48%;
+    border-radius: 999px;
+    background: rgba(125, 211, 252, 0.2);
+    box-shadow: none;
+}
+
+.brain-background span:nth-child(1) { left: 7%; top: 18%; animation-delay: -3s; }
+.brain-background span:nth-child(2) { right: 12%; top: 8%; width: clamp(92px, 12vw, 180px); animation-delay: -7s; }
+.brain-background span:nth-child(3) { left: 22%; bottom: 4%; width: clamp(58px, 8vw, 110px); animation-delay: -11s; }
+.brain-background span:nth-child(4) { right: 24%; bottom: 16%; width: clamp(64px, 9vw, 128px); animation-delay: -5s; }
+
+@keyframes brainDriftDashboard {
+    from { transform: translate3d(0, 0, 0) rotate(-4deg) scale(0.98); opacity: 0.11; }
+    to { transform: translate3d(18px, -16px, 0) rotate(5deg) scale(1.04); opacity: 0.22; }
+}
+
+@keyframes neuralMistDashboard {
+    from { transform: translate3d(-1.5%, 0, 0) scale(1); }
+    to { transform: translate3d(1.5%, -1%, 0) scale(1.04); }
+}
 @media (max-width: 980px) {
     .hero-grid,
     .activity-grid,
@@ -567,7 +636,7 @@ footer {
     }
 
     .hero {
-        padding-top: 44px;
+        padding: 30px 0 18px;
     }
 
     .hero-grid,
@@ -579,7 +648,7 @@ footer {
 
     .hero-copy {
         min-height: 0;
-        padding: 34px 24px;
+        padding: 24px 18px;
         border-radius: 26px;
     }
 
@@ -952,10 +1021,13 @@ footer {
 
 <main class="app-shell">
     <section class="hero">
+        <div class="brain-background" aria-hidden="true">
+            <span></span><span></span><span></span><span></span>
+        </div>
         <div class="hero-grid">
             <div class="hero-copy">
-                <div class="eyebrow">PLATAFORMA CLÃNICA DIGITAL</div>
-                <h1>Salud mental y medicina de precisiÃ³n</h1>
+                <div class="eyebrow">PLATAFORMA CL&Iacute;NICA DIGITAL</div>
+                <h1>Salud mental y medicina de precisi&oacute;n</h1>
                 <p class="hero-subtitle">Evaluaci&oacute;n cl&iacute;nica, seguimiento terap&eacute;utico y herramientas digitales para comprender al paciente de forma integral.</p>
                 <h2 id="bienvenida">Cargando...</h2>
                 <p id="fraseClinica" class="clinical-phrase">La evidencia gu&iacute;a mejores decisiones cl&iacute;nicas.</p>
