@@ -1,4 +1,4 @@
-﻿import { aplicarPresetMembrana, construirTablaIonica, calcularGHK, calcularPotencialesEquilibrio, ESTADO_MEMBRANA_BASE, IONES, PRESETS_MEMBRANA, sustituirEcuacionGHK, sustituirEcuacionNernst, validarEstadoMembrana } from "./ionModel.js";
+import { aplicarPresetMembrana, construirTablaIonica, calcularGHK, calcularPotencialesEquilibrio, ESTADO_MEMBRANA_BASE, IONES, PRESETS_MEMBRANA, sustituirEcuacionGHK, sustituirEcuacionNernst, validarEstadoMembrana } from "./ionModel.js";
 import { simularPotencialAccion } from "./actionPotentialModel.js";
 import { simularPropagacionAxonal } from "./axonPropagationModel.js";
 import { EXPERIMENTOS_NEUROFISIOLOGIA } from "./experimentManager.js";
@@ -291,7 +291,7 @@ function vincularIntegrada() {
     const el = $(id);
     if (el) el.addEventListener("input", () => { leerControlesIntegrados(); renderizarIntegrada(); });
   });
-  ["intNivelAprendizaje", "intVelocidadParticulas", "intDensidadParticulas", "intExplicacionPaso", "intReducirAnimaciones", "intVistaMatematica"].forEach((id) => {
+  ["intCamaraNeuro", "intNivelAprendizaje", "intVelocidadParticulas", "intDensidadParticulas", "intIonVisible", "intMostrarCargas", "intExplicacionPaso", "intReducirAnimaciones", "intVistaMatematica"].forEach((id) => {
     const el = $(id);
     if (el) el.addEventListener("input", () => { leerUiModeIntegrado(); renderizarIntegrada(true); });
   });
@@ -333,9 +333,12 @@ function aplicarNivelAprendizaje(nivel) {
 
 function leerUiModeIntegrado() {
   const nivelAnterior = uiModeNeuro.learningLevel;
+  uiModeNeuro.cameraMode = $("intCamaraNeuro")?.value || "membrana";
   uiModeNeuro.learningLevel = $("intNivelAprendizaje")?.value || "basico";
   uiModeNeuro.particleSpeed = $("intVelocidadParticulas")?.value || "lenta";
   uiModeNeuro.particleDensity = $("intDensidadParticulas")?.value || "baja";
+  uiModeNeuro.ionFilter = $("intIonVisible")?.value || "todos";
+  uiModeNeuro.showCharges = $("intMostrarCargas") ? Boolean($("intMostrarCargas").checked) : true;
   uiModeNeuro.explanationMode = Boolean($("intExplicacionPaso")?.checked);
   uiModeNeuro.reducedMotion = Boolean($("intReducirAnimaciones")?.checked);
   uiModeNeuro.mathView = $("intVistaMatematica")?.value || "resumida";
@@ -385,9 +388,12 @@ function sincronizarControlesIntegrados() {
   $("intRecaptura").value = estadoIntegrado.sinapsis.recaptura;
   $("intDegradacion").value = estadoIntegrado.sinapsis.degradacion;
   $("intSensibilidad").value = estadoIntegrado.sinapsis.sensibilidad;
+  if ($("intCamaraNeuro")) $("intCamaraNeuro").value = uiModeNeuro.cameraMode || "membrana";
   $("intNivelAprendizaje").value = uiModeNeuro.learningLevel;
   $("intVelocidadParticulas").value = uiModeNeuro.particleSpeed;
   $("intDensidadParticulas").value = uiModeNeuro.particleDensity;
+  if ($("intIonVisible")) $("intIonVisible").value = uiModeNeuro.ionFilter || "todos";
+  if ($("intMostrarCargas")) $("intMostrarCargas").checked = uiModeNeuro.showCharges !== false;
   $("intExplicacionPaso").checked = uiModeNeuro.explanationMode;
   $("intReducirAnimaciones").checked = uiModeNeuro.reducedMotion;
   $("intVistaMatematica").value = uiModeNeuro.mathView;

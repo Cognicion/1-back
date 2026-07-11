@@ -1,4 +1,4 @@
-﻿export const UI_MODE_NEURO_BASE = {
+export const UI_MODE_NEURO_BASE = {
   learningLevel: "basico",
   tutorialActive: false,
   tutorialStep: 0,
@@ -7,6 +7,9 @@
   particleSpeed: "lenta",
   reducedMotion: false,
   mathView: "resumida",
+  cameraMode: "membrana",
+  ionFilter: "todos",
+  showCharges: true,
   focusedStructure: "reposo"
 };
 

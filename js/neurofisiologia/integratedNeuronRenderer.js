@@ -1,6 +1,7 @@
-﻿import { evaluarEcuacion, formato, REGISTRO_ECUACIONES_NEURO } from "./equationRegistry.js";
+import { evaluarEcuacion, formato, REGISTRO_ECUACIONES_NEURO } from "./equationRegistry.js";
 import { estadoActualEducativo } from "./learningModeController.js";
 import { obtenerVariablesIntegradas, explicarEstadoIntegrado } from "./integratedNeuronModel.js";
+import { renderizarMembranaCurvaIntegrada } from "./curvedMembraneRenderer.js";
 
 export const GRAFICAS_INTEGRADAS = [
   { id: "Vm", etiqueta: "Vm", color: "#38bdf8", min: -90, max: 50 },
@@ -29,44 +30,21 @@ export function renderizarEscenaIntegrada(contenedor, estado, uiMode = {}) {
   contenedor.dataset.nivel = uiMode.learningLevel || "basico";
   contenedor.dataset.foco = estadoEdu.foco;
   contenedor.dataset.velocidad = uiMode.particleSpeed || "lenta";
+  contenedor.dataset.camara = uiMode.cameraMode || "membrana";
   contenedor.classList.toggle("reducir-animaciones", Boolean(uiMode.reducedMotion));
-  const onda = estado.posicionOnda > 0 ? 20 + estado.posicionOnda * 43 : 18;
-  const vesiculas = crearVesiculas(estado, uiMode);
-  const iones = crearIones(estado, uiMode);
-  const neurotransmisores = crearNeurotransmisores(estado, uiMode);
-  contenedor.innerHTML = `
-    <div class="region-label soma-label">Soma</div>
-    <div class="region-label axon-label">Axon ${estado.axon.mielina ? "mielinizado" : "amielinico"}</div>
-    <div class="region-label terminal-label">Terminal</div>
-    <div class="region-label sinapsis-label">Sinapsis</div>
-    <div class="soma-neuronal ${estado.Vm > -55 ? "excitado" : ""} ${estadoEdu.foco === "sinapsis" ? "secundario" : ""}"><span>Vm<br>${formato(estado.Vm, 1)} mV</span></div>
-    <div class="membrana-ampliada">
-      <b>Membrana</b>
-      <span class="canal-integrado na ${estadoEdu.foco === "sodio" ? "canalizado" : ""}">Na+</span>
-      <span class="canal-integrado k ${estadoEdu.foco === "potasio" ? "canalizado" : ""}">K+</span>
-      <span class="bomba-integrada">Na/K ATPasa <i>ATP</i></span>
-    </div>
-    <div class="axon-integrado ${estadoEdu.foco !== "propagacion" && estadoEdu.foco !== "reposo" ? "secundario" : ""}">
-      ${crearMielina(estado)}
-      <span class="onda-integrada" style="left:${onda}%"></span>
-    </div>
-    <div class="terminal-integrada ${estado.sinapsis.caLocal > 0.25 ? "activa" : ""} ${estadoEdu.foco !== "sinapsis" && uiMode.learningLevel === "basico" ? "secundario" : ""}">
-      <span class="canal-ca ${estadoEdu.foco === "sinapsis" ? "canalizado" : ""}">Ca2+</span>${vesiculas}
-    </div>
-    <div class="hendidura-integrada">${neurotransmisores}</div>
-    <div class="postsinapsis-integrada ${estado.sinapsis.ocupacion > 0.15 ? "activa" : ""} ${estadoEdu.foco !== "sinapsis" && uiMode.learningLevel === "basico" ? "secundario" : ""}">
-      <span>${estado.sinapsis.tipo.receptor}</span>
-      <b>${formato(estado.sinapsis.potencialPost, 1)} mV</b>
-      <i class="transportador">Recaptura</i>
-      <i class="enzima">Degradacion</i>
-    </div>
-    ${crearFlechaEvento(estadoEdu.foco)}
-    ${iones}
-    ${estadoEdu.foco === "sinapsis" ? neurotransmisores : ""}
-    ${uiMode.learningLevel === "avanzado" ? estado.farmacos.activos.map((f, i) => `<span class="farmaco-molecula" style="--i:${i}">${f.nombre}</span>`).join("") : ""}
-  `;
+  if (!contenedor.querySelector(".neuro-canvas-principal")) {
+    contenedor.innerHTML = `
+      <canvas class="neuro-canvas-principal" aria-label="Membrana neuronal curva funcional"></canvas>
+      <div class="neuro-canvas-overlay"></div>
+    `;
+  }
+  renderizarMembranaCurvaIntegrada(
+    contenedor.querySelector(".neuro-canvas-principal"),
+    contenedor.querySelector(".neuro-canvas-overlay"),
+    estado,
+    uiMode
+  );
 }
-
 function crearFlechaEvento(foco) {
   if (foco === "sodio") return `<span class="flecha-evento flecha-na">Na+ entra</span>`;
   if (foco === "potasio") return `<span class="flecha-evento flecha-k">K+ sale</span>`;

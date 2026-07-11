@@ -18,3 +18,63 @@
 .sinapsis-mini{position:relative;width:100%;height:160px;border-radius:22px;background:linear-gradient(90deg,rgba(8,47,73,.4),rgba(2,6,23,.55),rgba(15,23,42,.7));border:1px solid rgba(125,211,252,.16);overflow:hidden}.boton-presinaptico{position:absolute;left:4%;top:20%;width:34%;height:62%;border-radius:50% 42% 42% 50%;border:1px solid rgba(125,211,252,.24);background:rgba(14,116,144,.25)}.boton-presinaptico i{position:absolute;width:20px;height:20px;border-radius:50%;background:#38bdf8;box-shadow:0 0 18px rgba(56,189,248,.4);animation:vesiculaMini 1.9s ease-in-out infinite}.boton-presinaptico i:nth-child(1){left:22%;top:22%}.boton-presinaptico i:nth-child(2){left:45%;top:45%;animation-delay:-.5s}.boton-presinaptico i:nth-child(3){left:68%;top:26%;animation-delay:-1s}.boton-presinaptico b{position:absolute;left:12px;bottom:8px;color:#e0f2fe;font-size:.72rem}.hendidura-mini{position:absolute;left:43%;top:16%;width:16%;height:70%;border-left:1px dashed rgba(125,211,252,.3);border-right:1px dashed rgba(125,211,252,.3)}.hendidura-mini i{position:absolute;width:9px;height:9px;border-radius:50%;background:#facc15;box-shadow:0 0 16px rgba(250,204,21,.44);animation:ntMini 1.3s ease-in-out infinite alternate}.hendidura-mini i:nth-child(1){left:22%;top:22%}.hendidura-mini i:nth-child(2){left:54%;top:48%;animation-delay:-.4s}.hendidura-mini i:nth-child(3){left:36%;top:72%;animation-delay:-.9s}.post-mini{position:absolute;right:5%;top:20%;width:32%;height:62%;border-radius:24px;border:1px solid rgba(125,211,252,.2);background:rgba(15,23,42,.62);display:grid;align-content:center;gap:6px;padding:10px}.post-mini b{color:#e0f2fe}.post-mini em{font-style:normal;color:#bae6fd;font-size:.68rem;border:1px solid rgba(125,211,252,.18);border-radius:999px;padding:3px 6px}.sinapsis-mini strong{position:absolute;left:39%;bottom:8px;color:#fef9c3;font-size:.72rem}@keyframes vesiculaMini{50%{transform:translate(14px,8px)}}@keyframes ntMini{to{transform:translate(9px,6px);opacity:.55}}
 .escena-membrana.vista-corte .medio,.escena-membrana.vista-corte .bicapa{opacity:.28}.escena-membrana.vista-sinapsis .medio,.escena-membrana.vista-sinapsis .bicapa{opacity:.34}.ion-activo-row{background:rgba(34,211,238,.08)}
 @media(max-width:1050px){.panel-neurovisual-membrana{grid-template-columns:1fr}.neurovisual-card{min-height:auto}}@media(max-width:620px){.canal-selectivo{left:50%;width:64px}.ion-flujo-dirigido{width:28px;height:28px}.corte-axon-mini{width:140px;height:140px}.corte-axon-mini small{width:180px}}
+
+/* Visualizacion principal avanzada del laboratorio: membrana curva funcional */
+.escena-integrada{
+  min-height:620px;
+}
+.neuro-canvas-principal{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  border:0;
+  border-radius:30px;
+  background:#020617;
+  display:block;
+}
+.neuro-canvas-overlay{
+  position:absolute;
+  left:18px;
+  right:18px;
+  bottom:18px;
+  z-index:5;
+  pointer-events:none;
+}
+.neuro-canvas-hud{
+  display:inline-grid;
+  gap:4px;
+  max-width:min(720px,calc(100% - 12px));
+  border:1px solid rgba(125,211,252,.24);
+  border-radius:18px;
+  padding:12px 14px;
+  background:rgba(2,6,23,.68);
+  backdrop-filter:blur(14px);
+  box-shadow:0 0 34px rgba(34,211,238,.12);
+}
+.neuro-canvas-hud span{
+  color:#7dd3fc;
+  font-size:.7rem;
+  font-weight:900;
+  letter-spacing:.16em;
+  text-transform:uppercase;
+}
+.neuro-canvas-hud b{
+  color:#f8fbff;
+  font-size:1.05rem;
+}
+.neuro-canvas-hud em{
+  color:#cbd5e1;
+  font-size:.82rem;
+  font-style:normal;
+}
+.escena-integrada[data-camara="matematica"] .neuro-canvas-hud,
+.escena-integrada[data-camara="farmacologia"] .neuro-canvas-hud{
+  border-color:rgba(250,204,21,.28);
+  box-shadow:0 0 34px rgba(250,204,21,.1);
+}
+@media(max-width:720px){
+  .escena-integrada{min-height:560px;}
+  .neuro-canvas-overlay{left:12px;right:12px;bottom:12px;}
+  .neuro-canvas-hud{padding:10px 12px;}
+}
