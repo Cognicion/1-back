@@ -42,7 +42,7 @@ export const CIE10 = [
 
 
   // F00-F09 Orgánicos
-  { codigo: "F00", nombre: "Demencia en la enfermedad de Alzheimer" }
+  { codigo: "F00", nombre: "Demencia en la enfermedad de Alzheimer" },
   { codigo: "F00.0", nombre: "Demencia en la enfermedad de Alzheimer con inicio temprano" },
   { codigo: "F00.1", nombre: "Demencia en la enfermedad de Alzheimer con inicio tardío" },
   { codigo: "F00.2", nombre: "Demencia en la enfermedad de Alzheimer, tipo mixto" },
