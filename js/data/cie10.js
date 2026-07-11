@@ -42,7 +42,10 @@ export const CIE10 = [
 
 
   // F00-F09 Orgánicos
-  { codigo: "F00", nombre: "Demencia en la enfermedad de Alzheimer" },
+  { codigo: "F00", nombre: "Demencia en la enfermedad de Alzheimer" }
+  { codigo: "F00.0", nombre: "Demencia en la enfermedad de Alzheimer con inicio temprano" },
+  { codigo: "F00.1", nombre: "Demencia en la enfermedad de Alzheimer con inicio tardío" },
+  { codigo: "F00.2", nombre: "Demencia en la enfermedad de Alzheimer, tipo mixto" },
   { codigo: "F01", nombre: "Demencia vascular" },
   { codigo: "F01.0", nombre: "Demencia vascular de inicio agudo" },
   { codigo: "F01.1", nombre: "Demencia vascular de inicio subagudo" },
@@ -329,6 +332,15 @@ export const CIE10 = [
   {codigo: "I12", nombre: "Enfermedad renal hipertensiva"},
   {codigo: "I13", nombre: "Enfermedad cardíaca y renal hipertensiva"},
   {codigo: "I15", nombre: "Hipertensión secundaria"}, 
+  {codigo: "I20", nombre: "Angina de pecho"},
+  {codigo: "I21", nombre: "Infarto agudo de miocardio"},
+  {codigo: "I22", nombre: "Infarto agudo de miocardio posterior"},
+  {codigo: "I23", nombre: "Complicaciones posteriores a infarto agudo de miocardio"},
+  {codigo: "I24", nombre: "Otros síndromes coronarios agudos"},
+  {codigo: "I25", nombre: "Enfermedad isquémica crónica del corazón"},
+  {codigo: "I26", nombre: "Embolia pulmonar"},   
+  {codigo: "I27", nombre: "Otras enfermedades pulmonares del corazón"},
+  {codigo: "I69", nombre: "Secuelas de enfermedades cerebrovasculares"},
 
 
 
@@ -454,6 +466,15 @@ export const CIE10 = [
   { codigo: "S19", nombre: "Otras lesiones especificadas del cuello" },
   { codigo: "S19.9", nombre: "Lesion del cuello, no especificada" },
   { codigo: "S20", nombre: "Contusion del torax" },
+  { codigo: "S20.0", nombre: "Contusion del torax, no especificada" },
+  { codigo: "S20.1", nombre: "Contusion del torax, con daño de nervios" },
+  { codigo: "S20.2", nombre: "Contusion del torax, con daño de vasos sanguineos" },
+  { codigo: "S20.3", nombre: "Contusion del torax, con daño de musculos y tendones" },
+  { codigo: "S20.4", nombre: "Contusion del torax, con daño de articulaciones y ligamentos" },
+  { codigo: "S20.5", nombre: "Contusion del torax, con daño de piel y tejido subcutaneo" },
+  { codigo: "S20.6", nombre: "Contusion del torax, con daño de huesos" },
+  { codigo: "S20.7", nombre: "Contusion del torax, con daño de articulaciones y ligamentos" },
+  { codigo: "S20.8", nombre: "Contusion del torax, con daño de otros tejidos" },
   { codigo: "S21", nombre: "Herida del torax" },
   { codigo: "S22", nombre: "Fractura de costillas, esternon y torax" },
   { codigo: "S23", nombre: "Lesion de articulaciones y ligamentos del torax" },
