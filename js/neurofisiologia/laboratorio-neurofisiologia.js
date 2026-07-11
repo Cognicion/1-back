@@ -29,7 +29,8 @@ let rafIntegrada = null;
 let estadoIntegrado = crearEstadoNeuronaIntegrada();
 let graficasIntegradasVisibles = new Set(["Vm"]);
 let ecuacionCongelada = null;
-
+let uiModeNeuro = crearUiModeNeuro();
+let tutorialVistoNeuro = localStorage.getItem("cognicionNeuroTutorialVisto") === "1";
 const escena = $("escenaMembrana");
 const graficaAccion = $("graficaAccion");
 const graficaAxon = $("graficaAxon");
