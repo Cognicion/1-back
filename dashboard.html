@@ -1,9 +1,9 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>COGNICIÓN | Dashboard médico</title>
+<title>COGNICIÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã¢â‚¬Å“N | Dashboard mÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©dico</title>
 <link rel="icon" type="image/png" href="assets/favicon-cognicion.png">
 
 <style>
@@ -488,7 +488,7 @@ header {
 }
 
 .proximamente-overlay.abierto .proximamente-modal {
-    transform: translateY(0) scale(1);
+    transform: translate(-50%, 0) scale(1);
 }
 
 .proximamente-modal h2 {
@@ -703,29 +703,7 @@ footer {
     border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
-.notifications-dropdown {
-    position: absolute;
-    top: calc(100% + 12px);
-    right: 0;
-    width: min(340px, calc(100vw - 32px));
-    padding: 16px;
-    border: 1px solid rgba(125, 211, 252, 0.22);
-    border-radius: 20px;
-    background: rgba(5, 10, 22, 0.94);
-    box-shadow: 0 24px 70px rgba(0, 0, 0, 0.35);
-    backdrop-filter: blur(18px);
-    opacity: 0;
-    transform: translateY(-8px) scale(0.98);
-    pointer-events: none;
-    transition: opacity 0.18s ease, transform 0.18s ease;
-    z-index: 40;
-}
-
-.notifications-dropdown.abierto {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-    pointer-events: auto;
-}
+.notifications-dropdown { display: none !important; }
 
 .notifications-header {
     display: flex;
@@ -845,17 +823,22 @@ footer {
 
 .notificaciones-panel-flotante {
     position: fixed;
-    top: 88px;
-    right: 28px;
-    z-index: 120;
-    width: min(440px, calc(100vw - 32px));
-    max-height: calc(100vh - 120px);
+    top: 92px;
+    left: 50%;
+    right: auto;
+    z-index: 240;
+    width: min(820px, calc(100vw - 40px));
+    max-height: min(78vh, 720px);
     margin: 0;
-    overflow-y: auto;
+    background:
+        radial-gradient(circle at 10% 0%, rgba(56, 189, 248, 0.16), transparent 34%),
+        linear-gradient(135deg, rgba(6, 12, 24, 0.98), rgba(8, 27, 47, 0.96));
+    box-shadow: 0 34px 110px rgba(0, 0, 0, 0.58), 0 0 0 1px rgba(125, 211, 252, 0.08) inset;
+    overflow: hidden;
     opacity: 0;
     visibility: hidden;
     pointer-events: none;
-    transform: translateY(-8px) scale(0.98);
+    transform: translate(-50%, -10px) scale(0.98);
     transition: opacity 0.22s ease, transform 0.22s ease, visibility 0.22s ease, border-color 0.22s ease;
 }
 
@@ -863,13 +846,15 @@ footer {
     opacity: 1;
     visibility: visible;
     pointer-events: auto;
-    transform: translateY(0) scale(1);
+    transform: translate(-50%, 0) scale(1);
 }
 
 .notificaciones-panel-flotante .avisos-contenido,
 .notificaciones-panel-flotante.colapsado .avisos-contenido {
-    max-height: none;
+    max-height: calc(min(78vh, 720px) - 88px);
     opacity: 1;
+    overflow-y: auto;
+    padding-right: 6px;
 }
 
 .aviso-dashboard-top {
@@ -903,9 +888,17 @@ footer {
 @media (max-width: 720px) {
     .notificaciones-panel-flotante {
         top: 76px;
-        right: 16px;
         left: 16px;
+        right: 16px;
         width: auto;
+        transform: translateY(-10px) scale(0.98);
+    }
+    .notificaciones-panel-flotante.abierto {
+        transform: translateY(0) scale(1);
+    }
+    .avisos-header {
+        align-items: flex-start;
+        flex-wrap: wrap;
     }
 }
 .sofia-card {
@@ -950,15 +943,15 @@ footer {
     <div class="app-shell topbar">
 
         <div class="brand">
-            <img src="assets/favicon-cognicion.png" alt="Cognición">
+            <img src="assets/favicon-cognicion.png" alt="CogniciÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n">
 
             <div>
-                <div class="brand-name">Cognición</div>
+                <div class="brand-name">CogniciÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n</div>
 
                 <div class="brand-subtitle">
-                    Así como la cognición integra múltiples procesos mentales
-                    para comprender al individuo, Cognición integra múltiples
-                    herramientas tecnológicas para comprender al paciente.
+                    AsÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­ como la cogniciÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n integra mÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Âºltiples procesos mentales
+                    para comprender al individuo, CogniciÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n integra mÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Âºltiples
+                    herramientas tecnolÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³gicas para comprender al paciente.
                 </div>
             </div>
         </div>
@@ -975,7 +968,7 @@ footer {
                     aria-expanded="false"
                     onclick="alternarNotificaciones()"
                 >
-                    <span class="notification-bell">🔔</span>
+                    <span class="notification-bell">ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â°ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â</span>
                     <span id="notificationBadge" class="notification-badge">
                         1
                     </span>
@@ -1011,7 +1004,7 @@ footer {
                 type="button"
                 onclick="cerrarSesion()"
             >
-                Cerrar sesión
+                Cerrar sesiÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n
             </button>
 
         </div>
@@ -1081,12 +1074,12 @@ footer {
                     <span class="badge badge-alpha">ALPHA</span>
                 </div>
 
-                <h3>ðŸ§  Proyecto SofÃ­a</h3>
+                <h3>ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â°ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â§ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â  Proyecto SofÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­a</h3>
 
                 <p>
-                    Sistema Experimental de Inteligencia ClÃ­nica.
-                    Laboratorio privado para investigaciÃ³n, pruebas internas
-                    y desarrollo del motor de IA de Cognición.
+                    Sistema Experimental de Inteligencia ClÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­nica.
+                    Laboratorio privado para investigaciÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n, pruebas internas
+                    y desarrollo del motor de IA de CogniciÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n.
                 </p>
 
                 <div class="card-actions">
@@ -1162,7 +1155,7 @@ footer {
                     <div class="module-icon">FORO</div>
                     <span class="badge">Nuevo</span>
                 </div>
-                <h3>Foro Cognición</h3>
+                <h3>Foro CogniciÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n</h3>
                 <p>Espacios de comunicaci&oacute;n para pacientes y profesionales, organizados por rol y comunidad.</p>
                 <div class="card-actions">
                     <button class="primary-button" onclick="window.location.href='foro.html'">Abrir foro</button>
@@ -1176,8 +1169,8 @@ footer {
                     <div class="module-icon">CALC</div>
                     <span class="badge">Disponible</span>
                 </div>
-                <h3>Calculadoras médicas</h3>
-                <p>Accede a herramientas para dosificación, escalas, índices y cálculos de uso frecuente en medicina.</p>
+                <h3>Calculadoras mÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©dicas</h3>
+                <p>Accede a herramientas para dosificaciÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n, escalas, ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­ndices y cÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡lculos de uso frecuente en medicina.</p>
                 <div class="card-actions">
                     <a class="ghost-button" href="calculadoras-medicas.html">Abrir calculadoras</a>
                 </div>
@@ -1185,10 +1178,10 @@ footer {
             <article class="module-card">
                 <div class="module-top">
                     <div class="module-icon">LAB</div>
-                    <span class="badge">CogniciónLabs</span>
+                    <span class="badge">CogniciÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³nLabs</span>
                 </div>
-                <h3>Laboratorio de Neurofisiología</h3>
-                <p>Simula membrana neuronal, potencial de acción y propagación axonal con experimentos guiados.</p>
+                <h3>Laboratorio de NeurofisiologÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­a</h3>
+                <p>Simula membrana neuronal, potencial de acciÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n y propagaciÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n axonal con experimentos guiados.</p>
                 <div class="card-actions">
                     <a class="ghost-button" href="laboratorio-neurofisiologia.html">Abrir laboratorio</a>
                 </div>
@@ -1197,10 +1190,10 @@ footer {
             <article class="module-card">
                 <div class="module-top">
                     <div class="module-icon">EV</div>
-                    <span class="badge">Próximamente</span>
+                    <span class="badge">PrÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³ximamente</span>
                 </div>
-                <h3>Evolución</h3>
-                <p>Visualiza cambios clínicos, desempeño en ejercicios, escalas y seguimiento longitudinal.</p>
+                <h3>EvoluciÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n</h3>
+                <p>Visualiza cambios clÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­nicos, desempeÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â±o en ejercicios, escalas y seguimiento longitudinal.</p>
                 <div class="card-actions">
                     <button class="ghost-button" onclick="mostrarProximamente('Proximamente', 'Estamos desarrollando este modulo para visualizar evolucion clinica, resultados de rehabilitacion cognitiva, graficas de progreso e indicadores de seguimiento.')">Pr&oacute;ximamente</button>
                 </div>
@@ -1211,7 +1204,7 @@ footer {
                     <div class="module-icon">PSI</div>
                     <span class="badge">Pr&oacute;ximamente</span>
                 </div>
-                <h3>Psicoeducación</h3>
+                <h3>PsicoeducaciÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n</h3>
                 <p>Biblioteca de recursos para pacientes, familiares y profesionales de la salud.</p>
                 <div class="card-actions">
                     <button class="ghost-button" onclick="mostrarProximamente('Proximamente', 'Biblioteca de recursos para pacientes, familiares y profesionales de la salud.')">Pr&oacute;ximamente</button>
@@ -1221,12 +1214,12 @@ footer {
             <article class="module-card">
                 <div class="module-top">
                     <div class="module-icon">DOC</div>
-                    <span class="badge">Próximamente</span>
+                    <span class="badge">PrÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³ximamente</span>
                 </div>
                 <h3>Lecturas</h3>
-                <p>Biblioteca científica con guías clínicas, artículos, consensos y material académico.</p>
+                <p>Biblioteca cientÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­fica con guÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­as clÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­nicas, artÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­culos, consensos y material acadÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©mico.</p>
                 <div class="card-actions">
-                    <button class="ghost-button" onclick="mostrarProximamente('Proximamente', 'Biblioteca científica con guías clínicas, artículos, consensos y material académico.')">Próximamente</button>
+                    <button class="ghost-button" onclick="mostrarProximamente('Proximamente', 'Biblioteca cientÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­fica con guÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­as clÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­nicas, artÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­culos, consensos y material acadÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©mico.')">PrÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³ximamente</button>
                 </div>
             </article>
         </div>
@@ -1246,7 +1239,7 @@ footer {
 
 <footer>
     <div class="app-shell dashboard-footer">
-        <div class="footer-signature">Cognición &middot; Ciencia &middot; Evidencia &middot; Medicina humana</div>
+        <div class="footer-signature">CogniciÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n &middot; Ciencia &middot; Evidencia &middot; Medicina humana</div>
     </div>
 </footer>
 

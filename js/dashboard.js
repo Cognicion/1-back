@@ -1,4 +1,4 @@
-﻿import { auth, db } from "./firebase.js";
+import { auth, db } from "./firebase.js";
 
 import {
   onAuthStateChanged,
@@ -61,8 +61,8 @@ window.alternarNotificaciones = function() {
   const panelAvisos = document.getElementById("avisosDashboardModulo");
   const abierto = !panelAvisos?.classList.contains("abierto");
 
-  dropdown?.classList.toggle("abierto", abierto);
-  dropdown?.setAttribute("aria-hidden", String(!abierto));
+  dropdown?.classList.remove("abierto");
+  dropdown?.setAttribute("aria-hidden", "true");
   boton?.setAttribute("aria-expanded", String(Boolean(abierto)));
   panelAvisos?.classList.toggle("abierto", abierto);
   panelAvisos?.classList.remove("colapsado");
