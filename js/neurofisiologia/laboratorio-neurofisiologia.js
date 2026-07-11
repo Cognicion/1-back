@@ -4,9 +4,10 @@ import { simularPropagacionAxonal } from "./axonPropagationModel.js";
 import { EXPERIMENTOS_NEUROFISIOLOGIA } from "./experimentManager.js";
 import { duplicarProyectoLaboratorio, eliminarProyectoLaboratorio, exportarCSVLaboratorio, guardarProyectoLaboratorio, listarProyectosLaboratorio } from "./labNotebook.js";
 import { REGISTRO_FARMACOS_NEURO } from "./drugRegistry.js";
+import { crearUiModeNeuro, GRAFICAS_POR_NIVEL, PASOS_TUTORIAL_NEURO } from "./learningModeController.js";
 import { REGISTRO_ECUACIONES_NEURO } from "./equationRegistry.js";
 import { aplicarFarmacoIntegrado, avanzarNeuronaIntegrada, crearEstadoNeuronaIntegrada, estimularNeuronaIntegrada, limpiarFarmacosIntegrados, actualizarParametrosIntegrados } from "./integratedNeuronModel.js";
-import { dibujarGraficaIntegrada, poblarSelectorEcuaciones, poblarSelectorGraficas, renderizarEscenaIntegrada, renderizarExplicacionIntegrada, renderizarIndicadoresIntegrados, renderizarMatematicasIntegradas, renderizarVariablesIntegradas, resumenCopiableEcuacion } from "./integratedNeuronRenderer.js";
+import { dibujarGraficaIntegrada, poblarSelectorEcuaciones, poblarSelectorGraficas, renderizarEscenaIntegrada, renderizarExplicacionIntegrada, renderizarIndicadoresIntegrados, renderizarMatematicasIntegradas, renderizarTarjetaEstadoActual, renderizarVariablesIntegradas, resumenCopiableEcuacion } from "./integratedNeuronRenderer.js";
 
 
 const $ = (id) => document.getElementById(id);
@@ -26,7 +27,7 @@ let ultimoProyecto = null;
 let integradaActiva = false;
 let rafIntegrada = null;
 let estadoIntegrado = crearEstadoNeuronaIntegrada();
-let graficasIntegradasVisibles = new Set(["Vm", "INa", "IK", "ICa", "NT", "Post", "Prelease", "receptor"]);
+let graficasIntegradasVisibles = new Set(["Vm"]);
 let ecuacionCongelada = null;
 
 const escena = $("escenaMembrana");
@@ -198,35 +199,88 @@ function renderizarProyectos(){ const proyectos=listarProyectosLaboratorio(); $(
 function vincularIntegrada() {
   poblarFarmacosIntegrados();
   poblarSelectorEcuaciones($("intEcuacionSeleccionada"));
-  poblarSelectorGraficas($("selectorGraficasIntegradas"), graficasIntegradasVisibles);
+  aplicarNivelAprendizaje("basico");
   ["intFrecuencia", "intIntensidad", "intTipoAxon", "intDiametro", "intTemperatura", "intDesmielina", "intTipoSinapsis", "intVesiculas", "intLiberacion", "intRecaptura", "intDegradacion", "intSensibilidad"].forEach((id) => {
     const el = $(id);
     if (el) el.addEventListener("input", () => { leerControlesIntegrados(); renderizarIntegrada(); });
   });
+  ["intNivelAprendizaje", "intVelocidadParticulas", "intDensidadParticulas", "intExplicacionPaso", "intReducirAnimaciones", "intVistaMatematica"].forEach((id) => {
+    const el = $(id);
+    if (el) el.addEventListener("input", () => { leerUiModeIntegrado(); renderizarIntegrada(true); });
+  });
+  $("intCategoriaFarmaco")?.addEventListener("change", poblarFarmacosIntegrados);
+  $("intFarmaco")?.addEventListener("change", mostrarInfoFarmaco);
   $("btnIntegradaPlay")?.addEventListener("click", () => { integradaActiva = true; animarIntegrada(); });
   $("btnIntegradaPausa")?.addEventListener("click", () => { integradaActiva = false; cancelAnimationFrame(rafIntegrada); });
-  $("btnIntegradaReset")?.addEventListener("click", () => { integradaActiva = false; cancelAnimationFrame(rafIntegrada); estadoIntegrado = crearEstadoNeuronaIntegrada(); sincronizarControlesIntegrados(); renderizarIntegrada(); });
-  $("btnIntegradaPulso")?.addEventListener("click", () => { estimularNeuronaIntegrada(estadoIntegrado); renderizarIntegrada(); });
-  $("btnIntAgregarFarmaco")?.addEventListener("click", () => { aplicarFarmacoIntegrado(estadoIntegrado, $("intFarmaco").value, Number($("intFarmacoIntensidad").value)); renderizarIntegrada(); });
-  $("btnIntLimpiarFarmacos")?.addEventListener("click", () => { limpiarFarmacosIntegrados(estadoIntegrado); renderizarIntegrada(); });
-  $("intSeguirEcuacion")?.addEventListener("change", renderizarIntegrada);
-  $("intCongelarEcuacion")?.addEventListener("change", (e) => { ecuacionCongelada = e.target.checked ? ($("intEcuacionSeleccionada").value || estadoIntegrado.ecuacionActiva) : null; renderizarIntegrada(); });
-  $("intEcuacionSeleccionada")?.addEventListener("change", () => { ecuacionCongelada = $("intCongelarEcuacion")?.checked ? $("intEcuacionSeleccionada").value : null; renderizarIntegrada(); });
+  $("btnIntegradaReset")?.addEventListener("click", () => { integradaActiva = false; cancelAnimationFrame(rafIntegrada); estadoIntegrado = crearEstadoNeuronaIntegrada(); sincronizarControlesIntegrados(); renderizarIntegrada(true); });
+  $("btnIntegradaPulso")?.addEventListener("click", () => { estimularNeuronaIntegrada(estadoIntegrado); renderizarIntegrada(true); });
+  $("btnIntAgregarFarmaco")?.addEventListener("click", () => { aplicarFarmacoIntegrado(estadoIntegrado, $("intFarmaco").value, Number($("intFarmacoIntensidad").value)); renderizarIntegrada(true); });
+  $("btnIntLimpiarFarmacos")?.addEventListener("click", () => { limpiarFarmacosIntegrados(estadoIntegrado); renderizarIntegrada(true); });
+  $("intSeguirEcuacion")?.addEventListener("change", () => renderizarIntegrada(true));
+  $("intCongelarEcuacion")?.addEventListener("change", (e) => { ecuacionCongelada = e.target.checked ? ($("intEcuacionSeleccionada").value || estadoIntegrado.ecuacionActiva) : null; renderizarIntegrada(true); });
+  $("intEcuacionSeleccionada")?.addEventListener("change", () => { ecuacionCongelada = $("intCongelarEcuacion")?.checked ? $("intEcuacionSeleccionada").value : null; renderizarIntegrada(true); });
   $("btnCopiarEcuacion")?.addEventListener("click", async () => {
     const texto = resumenCopiableEcuacion(estadoIntegrado, ecuacionCongelada || $("intEcuacionSeleccionada")?.value || estadoIntegrado.ecuacionActiva);
     try { await navigator.clipboard.writeText(texto); } catch { console.log(texto); }
   });
-  document.querySelectorAll("[data-grafica-integrada]").forEach((check) => check.addEventListener("change", () => {
-    if (check.checked) graficasIntegradasVisibles.add(check.dataset.graficaIntegrada); else graficasIntegradasVisibles.delete(check.dataset.graficaIntegrada);
-    dibujarGraficaIntegrada(graficaIntegrada, estadoIntegrado, graficasIntegradasVisibles);
-  }));
+  $("btnTutorialNeuro")?.addEventListener("click", () => iniciarTutorialNeuro());
+  $("btnComenzarRecorrido")?.addEventListener("click", () => iniciarTutorialNeuro());
+  $("tutorialNext")?.addEventListener("click", () => moverTutorialNeuro(1));
+  $("tutorialPrev")?.addEventListener("click", () => moverTutorialNeuro(-1));
+  $("tutorialSkip")?.addEventListener("click", cerrarTutorialNeuro);
   sincronizarControlesIntegrados();
+  if (!tutorialVistoNeuro) iniciarTutorialNeuro();
+}
+
+function aplicarNivelAprendizaje(nivel) {
+  uiModeNeuro.learningLevel = nivel;
+  graficasIntegradasVisibles = new Set(GRAFICAS_POR_NIVEL[nivel] || ["Vm"]);
+  if ($("selectorGraficasIntegradas")) {
+    poblarSelectorGraficas($("selectorGraficasIntegradas"), graficasIntegradasVisibles);
+    document.querySelectorAll("[data-grafica-integrada]").forEach((check) => check.addEventListener("change", () => {
+      if (check.checked) graficasIntegradasVisibles.add(check.dataset.graficaIntegrada); else graficasIntegradasVisibles.delete(check.dataset.graficaIntegrada);
+      dibujarGraficaIntegrada(graficaIntegrada, estadoIntegrado, graficasIntegradasVisibles);
+    }));
+  }
+}
+
+function leerUiModeIntegrado() {
+  const nivelAnterior = uiModeNeuro.learningLevel;
+  uiModeNeuro.learningLevel = $("intNivelAprendizaje")?.value || "basico";
+  uiModeNeuro.particleSpeed = $("intVelocidadParticulas")?.value || "lenta";
+  uiModeNeuro.particleDensity = $("intDensidadParticulas")?.value || "baja";
+  uiModeNeuro.explanationMode = Boolean($("intExplicacionPaso")?.checked);
+  uiModeNeuro.reducedMotion = Boolean($("intReducirAnimaciones")?.checked);
+  uiModeNeuro.mathView = $("intVistaMatematica")?.value || "resumida";
+  if (nivelAnterior !== uiModeNeuro.learningLevel) aplicarNivelAprendizaje(uiModeNeuro.learningLevel);
 }
 
 function poblarFarmacosIntegrados() {
   const select = $("intFarmaco");
   if (!select) return;
-  select.innerHTML = REGISTRO_FARMACOS_NEURO.map((farmaco) => `<option value="${farmaco.id}">${farmaco.nombre} - ${farmaco.clase}</option>`).join("");
+  const categoria = $("intCategoriaFarmaco")?.value || "principales";
+  const principales = new Set(["fenitoina", "benzodiacepina", "pregabalina", "levetiracetam", "litio", "valproato"]);
+  const filtros = {
+    principales: (f) => principales.has(f.id),
+    na: (f) => /Na\+|sodio|Na/i.test(`${f.diana} ${f.clase}`),
+    gaba: (f) => /GABA/i.test(`${f.diana} ${f.clase}`),
+    ca: (f) => /Ca2|calcio|alfa2delta/i.test(`${f.diana} ${f.clase}`),
+    vesicular: (f) => /vesicula|SV2A|liberacion/i.test(`${f.diana} ${f.clase} ${f.descripcion}`),
+    intracelular: (f) => /intracelular|multimodal/i.test(`${f.diana} ${f.clase} ${f.descripcion}`),
+    herramientas: (f) => /experimental|Tetrodotoxina|Tetraetilamonio/i.test(`${f.nombre} ${f.clase}`),
+    todos: () => true
+  };
+  const lista = REGISTRO_FARMACOS_NEURO.filter(filtros[categoria] || filtros.principales);
+  select.innerHTML = lista.map((farmaco) => `<option value="${farmaco.id}">${farmaco.nombre}</option>`).join("");
+  mostrarInfoFarmaco();
+}
+
+function mostrarInfoFarmaco() {
+  const id = $("intFarmaco")?.value;
+  const f = REGISTRO_FARMACOS_NEURO.find((item) => item.id === id);
+  const box = $("intInfoFarmaco");
+  if (!box || !f) return;
+  box.innerHTML = `<b>${f.nombre}</b><span>Diana: ${f.diana}</span><span>Efecto: ${f.descripcion}</span><span>Que observar: cambios en ${Object.keys(f.efectos || {}).join(", ")}.</span>`;
 }
 
 function sincronizarControlesIntegrados() {
@@ -243,6 +297,12 @@ function sincronizarControlesIntegrados() {
   $("intRecaptura").value = estadoIntegrado.sinapsis.recaptura;
   $("intDegradacion").value = estadoIntegrado.sinapsis.degradacion;
   $("intSensibilidad").value = estadoIntegrado.sinapsis.sensibilidad;
+  $("intNivelAprendizaje").value = uiModeNeuro.learningLevel;
+  $("intVelocidadParticulas").value = uiModeNeuro.particleSpeed;
+  $("intDensidadParticulas").value = uiModeNeuro.particleDensity;
+  $("intExplicacionPaso").checked = uiModeNeuro.explanationMode;
+  $("intReducirAnimaciones").checked = uiModeNeuro.reducedMotion;
+  $("intVistaMatematica").value = uiModeNeuro.mathView;
 }
 
 function leerControlesIntegrados() {
@@ -266,20 +326,58 @@ function leerControlesIntegrados() {
 function animarIntegrada() {
   if (!integradaActiva) return;
   leerControlesIntegrados();
-  avanzarNeuronaIntegrada(estadoIntegrado, 0.45);
-  renderizarIntegrada();
+  leerUiModeIntegrado();
+  const paso = uiModeNeuro.explanationMode ? 0.18 : 0.34;
+  avanzarNeuronaIntegrada(estadoIntegrado, paso);
+  renderizarIntegrada(false);
   rafIntegrada = requestAnimationFrame(animarIntegrada);
 }
 
-function renderizarIntegrada() {
+function renderizarIntegrada(forzarTexto = false) {
   if (!$("escenaIntegrada")) return;
   const ecuacionSeleccionada = ecuacionCongelada || ($("intSeguirEcuacion")?.checked ? estadoIntegrado.ecuacionActiva : ($("intEcuacionSeleccionada")?.value || estadoIntegrado.ecuacionActiva));
   if ($("intEcuacionSeleccionada") && !ecuacionCongelada && $("intSeguirEcuacion")?.checked) $("intEcuacionSeleccionada").value = ecuacionSeleccionada;
-  renderizarEscenaIntegrada($("escenaIntegrada"), estadoIntegrado);
-  renderizarIndicadoresIntegrados($("estadoIntegrado"), estadoIntegrado);
+  renderizarEscenaIntegrada($("escenaIntegrada"), estadoIntegrado, uiModeNeuro);
+  renderizarIndicadoresIntegrados($("estadoIntegrado"), estadoIntegrado, uiModeNeuro);
+  renderizarTarjetaEstadoActual($("tarjetaEstadoActual"), estadoIntegrado, uiModeNeuro);
   renderizarVariablesIntegradas($("variablesIntegradas"), estadoIntegrado);
-  renderizarMatematicasIntegradas($("matematicasIntegradas"), estadoIntegrado, ecuacionSeleccionada);
-  renderizarExplicacionIntegrada($("explicacionIntegrada"), estadoIntegrado);
+  renderizarMatematicasIntegradas($("matematicasIntegradas"), estadoIntegrado, ecuacionSeleccionada, uiModeNeuro);
+  if (forzarTexto || uiModeNeuro.explanationMode) renderizarExplicacionIntegrada($("explicacionIntegrada"), estadoIntegrado);
   dibujarGraficaIntegrada(graficaIntegrada, estadoIntegrado, graficasIntegradasVisibles);
   $("intFarmacosActivos").innerHTML = estadoIntegrado.farmacos.activos.length ? estadoIntegrado.farmacos.activos.map((f) => `<span>${f.nombre} ${Math.round(f.intensidad * 100)}%</span>`).join("") : `<span>Sin farmacos activos</span>`;
 }
+
+function iniciarTutorialNeuro() {
+  uiModeNeuro.tutorialActive = true;
+  uiModeNeuro.tutorialStep = 0;
+  mostrarPasoTutorialNeuro();
+}
+
+function moverTutorialNeuro(delta) {
+  if (delta > 0 && uiModeNeuro.tutorialStep >= PASOS_TUTORIAL_NEURO.length - 1) {
+    cerrarTutorialNeuro();
+    return;
+  }
+  uiModeNeuro.tutorialStep = Math.max(0, Math.min(PASOS_TUTORIAL_NEURO.length - 1, uiModeNeuro.tutorialStep + delta));
+  mostrarPasoTutorialNeuro();
+}
+
+function mostrarPasoTutorialNeuro() {
+  const modal = $("tutorialNeuro");
+  const paso = PASOS_TUTORIAL_NEURO[uiModeNeuro.tutorialStep];
+  if (!modal || !paso) return;
+  modal.hidden = false;
+  $("tutorialTitulo").textContent = paso.titulo;
+  $("tutorialTexto").textContent = paso.texto;
+  document.querySelectorAll(".tutorial-focus").forEach((el) => el.classList.remove("tutorial-focus"));
+  const objetivo = $(paso.foco);
+  if (objetivo) objetivo.classList.add("tutorial-focus");
+  $("tutorialPrev").disabled = uiModeNeuro.tutorialStep === 0;
+  $("tutorialNext").textContent = uiModeNeuro.tutorialStep === PASOS_TUTORIAL_NEURO.length - 1 ? "Explorar libremente" : "Siguiente";
+  if (uiModeNeuro.tutorialStep === PASOS_TUTORIAL_NEURO.length - 1) localStorage.setItem("cognicionNeuroTutorialVisto", "1");
+}
+
+function cerrarTutorialNeuro() {
+  uiModeNeuro.tutorialActive = false;
+  localStorage.setItem("cognicionNeuroTutorialVisto", "1");
+  $("tutorialNe

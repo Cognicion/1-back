@@ -33,9 +33,10 @@
   </nav>
 
   <section id="tab-integrada" class="panel-lab tab-panel activo">
-    <div class="panel-heading"><div><span class="kicker">Modelo sincronizado</span><h2>Neurona, axon y sinapsis en una sola simulacion</h2></div><div class="acciones"><button id="btnIntegradaPlay">Iniciar</button><button id="btnIntegradaPausa" class="secundario">Pausar</button><button id="btnIntegradaReset" class="secundario">Reiniciar</button><button id="btnIntegradaPulso" class="secundario">Estimulo unico</button></div></div>
+    <div class="panel-heading"><div><span class="kicker">Modelo sincronizado</span><h2>Neurona, axon y sinapsis en una sola simulacion</h2></div><div class="acciones"><button id="btnComenzarRecorrido">Comenzar recorrido</button><button id="btnTutorialNeuro" class="secundario">Tutorial</button><button id="btnIntegradaPlay">Iniciar</button><button id="btnIntegradaPausa" class="secundario">Pausar</button><button id="btnIntegradaReset" class="secundario">Reiniciar</button><button id="btnIntegradaPulso" class="secundario">Estimulo unico</button></div></div>
     <div class="integrated-lab">
       <aside class="controles-lab panel-colapsable">
+        <div class="controles-esenciales"><label>Nivel de aprendizaje<select id="intNivelAprendizaje"><option value="basico" selected>Basico</option><option value="intermedio">Intermedio</option><option value="avanzado">Avanzado</option></select></label><label>Velocidad de particulas<select id="intVelocidadParticulas"><option value="muy-lenta">Muy lenta</option><option value="lenta" selected>Lenta</option><option value="normal">Normal</option></select></label><label>Intensidad visual de particulas<select id="intDensidadParticulas"><option value="muy-baja">Muy baja</option><option value="baja" selected>Baja</option><option value="media">Media</option><option value="alta">Alta</option></select></label><label><input id="intExplicacionPaso" type="checkbox"> Explicacion paso a paso</label><label><input id="intReducirAnimaciones" type="checkbox"> Reducir animaciones</label></div>
         <details open><summary>Estimulo y axon</summary>
           <label>Frecuencia de estimulacion (Hz)<input id="intFrecuencia" type="range" min="0.1" max="40" step="0.1" value="8"></label>
           <label>Intensidad relativa<input id="intIntensidad" type="range" min="0" max="30" step="0.5" value="14"></label>
@@ -52,22 +53,22 @@
           <label>Degradacion enzimatica<input id="intDegradacion" type="range" min="0" max="1.5" step="0.01" value="0.18"></label>
           <label>Sensibilidad postsinaptica<input id="intSensibilidad" type="range" min="0.2" max="2" step="0.01" value="1"></label>
         </details>
-        <details open><summary>Farmacologia experimental</summary>
-          <label>Farmaco<select id="intFarmaco"></select></label>
+        <details><summary>Farmacologia experimental</summary>
+          <label>Categoria farmacologica<select id="intCategoriaFarmaco"><option value="principales">Ejemplos principales</option><option value="na">Canales de Na+</option><option value="gaba">GABA</option><option value="ca">Canales de Ca2+</option><option value="vesicular">Liberacion vesicular</option><option value="intracelular">Modulacion intracelular</option><option value="herramientas">Herramientas experimentales</option><option value="todos">Ver mas farmacos</option></select></label><label>Farmaco<select id="intFarmaco"></select></label><div id="intInfoFarmaco" class="info-farmaco"></div>
           <label>Concentracion experimental relativa<input id="intFarmacoIntensidad" type="range" min="0" max="1" step="0.01" value="0.5"></label>
           <button id="btnIntAgregarFarmaco" type="button">Aplicar farmaco</button>
           <button id="btnIntLimpiarFarmacos" type="button" class="secundario">Retirar farmacos</button>
           <div id="intFarmacosActivos" class="lista-farmacos"></div>
         </details>
         <details><summary>Matematicas</summary>
-          <label><input id="intSeguirEcuacion" type="checkbox" checked> Seguir ecuacion activa</label>
+          <label>Vista matematica<select id="intVistaMatematica"><option value="resumida" selected>Resumida</option><option value="paso">Paso a paso</option><option value="avanzada">Avanzada</option></select></label><label><input id="intSeguirEcuacion" type="checkbox" checked> Seguir ecuacion activa</label>
           <label><input id="intCongelarEcuacion" type="checkbox"> Congelar ecuacion</label>
           <label>Ecuacion<select id="intEcuacionSeleccionada"></select></label>
           <button id="btnCopiarEcuacion" type="button" class="secundario">Copiar ecuacion</button>
         </details>
       </aside>
       <section class="escena-integrada-wrap">
-        <div id="escenaIntegrada" class="escena-integrada" aria-label="Simulacion integrada de neurona y sinapsis"></div>
+        <div id="escenaIntegrada" class="escena-integrada" aria-label="Simulacion integrada de neurona y sinapsis"></div><p class="leyenda-particulas">Las particulas visibles representan flujos ionicos, no el numero real de iones.</p>
         <div id="estadoIntegrado" class="indicadores"></div>
         <div class="graficas-integradas">
           <canvas id="graficaIntegrada" width="1060" height="360"></canvas>
@@ -75,14 +76,17 @@
         </div>
       </section>
       <aside class="panel-derecho-integrado panel-colapsable">
-        <details open><summary>Variables fisiologicas</summary><div id="variablesIntegradas" class="tabla-scroll"></div></details>
+        <div id="tarjetaEstadoActual" class="tarjeta-estado-actual"></div>
+        <details><summary>Ver variables avanzadas</summary><div id="variablesIntegradas" class="tabla-scroll"></div></details>
         <details open><summary>Matematicas del modelo</summary><div id="matematicasIntegradas" class="ecuaciones matematicas-panel"></div></details>
         <details><summary>Explicacion detallada</summary><div id="explicacionIntegrada" class="explicacion-modelo"></div></details>
       </aside>
     </div>
   </section>
 
-  <section id="tab-membrana" class="panel-lab tab-panel">
+    <div id="tutorialNeuro" class="tutorial-neuro" hidden><div class="tutorial-card"><span class="kicker">Tutorial</span><h3 id="tutorialTitulo">Tutorial</h3><p id="tutorialTexto"></p><div class="tutorial-actions"><button id="tutorialPrev" class="secundario">Anterior</button><button id="tutorialNext">Siguiente</button><button id="tutorialSkip" class="secundario">Omitir</button></div></div></div>
+
+    <section id="tab-membrana" class="panel-lab tab-panel">
     <div class="panel-heading"><div><span class="kicker">Simulador 1</span><h2>Membrana neuronal e intercambio ionico</h2></div><div class="acciones"><button id="btnMembranaPlay">Iniciar</button><button id="btnMembranaPausa" class="secundario">Pausar</button><button id="btnMembranaReset" class="secundario">Reiniciar</button><button id="btnMembranaPaso" class="secundario">Paso</button></div></div>
     <div class="lab-grid">
       <aside class="controles-lab">

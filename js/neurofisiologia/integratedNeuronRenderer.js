@@ -1,4 +1,5 @@
 ﻿import { evaluarEcuacion, formato, REGISTRO_ECUACIONES_NEURO } from "./equationRegistry.js";
+import { estadoActualEducativo } from "./learningModeController.js";
 import { obtenerVariablesIntegradas, explicarEstadoIntegrado } from "./integratedNeuronModel.js";
 
 export const GRAFICAS_INTEGRADAS = [
@@ -22,41 +23,56 @@ export function poblarSelectorGraficas(contenedor, visibles) {
   contenedor.innerHTML = GRAFICAS_INTEGRADAS.map((g) => `<label><input type="checkbox" data-grafica-integrada="${g.id}" ${visibles.has(g.id) ? "checked" : ""}> ${g.etiqueta}</label>`).join("");
 }
 
-export function renderizarEscenaIntegrada(contenedor, estado) {
+export function renderizarEscenaIntegrada(contenedor, estado, uiMode = {}) {
   if (!contenedor) return;
+  const estadoEdu = estadoActualEducativo(estado, uiMode);
+  contenedor.dataset.nivel = uiMode.learningLevel || "basico";
+  contenedor.dataset.foco = estadoEdu.foco;
+  contenedor.dataset.velocidad = uiMode.particleSpeed || "lenta";
+  contenedor.classList.toggle("reducir-animaciones", Boolean(uiMode.reducedMotion));
   const onda = estado.posicionOnda > 0 ? 20 + estado.posicionOnda * 43 : 18;
-  const vesiculas = crearVesiculas(estado);
-  const iones = crearIones(estado);
-  const neurotransmisores = crearNeurotransmisores(estado);
+  const vesiculas = crearVesiculas(estado, uiMode);
+  const iones = crearIones(estado, uiMode);
+  const neurotransmisores = crearNeurotransmisores(estado, uiMode);
   contenedor.innerHTML = `
     <div class="region-label soma-label">Soma</div>
     <div class="region-label axon-label">Axon ${estado.axon.mielina ? "mielinizado" : "amielinico"}</div>
-    <div class="region-label terminal-label">Terminal presinaptica</div>
-    <div class="region-label sinapsis-label">Hendidura / postsinapsis</div>
-    <div class="soma-neuronal ${estado.Vm > -55 ? "excitado" : ""}"><span>Vm<br>${formato(estado.Vm, 1)} mV</span></div>
+    <div class="region-label terminal-label">Terminal</div>
+    <div class="region-label sinapsis-label">Sinapsis</div>
+    <div class="soma-neuronal ${estado.Vm > -55 ? "excitado" : ""} ${estadoEdu.foco === "sinapsis" ? "secundario" : ""}"><span>Vm<br>${formato(estado.Vm, 1)} mV</span></div>
     <div class="membrana-ampliada">
       <b>Membrana</b>
-      <span class="canal-integrado na ${estado.canales.sodio.toLowerCase().replaceAll(" ", "-")}">Na+</span>
-      <span class="canal-integrado k ${estado.canales.potasio.toLowerCase().replaceAll(" ", "-")}">K+</span>
+      <span class="canal-integrado na ${estadoEdu.foco === "sodio" ? "canalizado" : ""}">Na+</span>
+      <span class="canal-integrado k ${estadoEdu.foco === "potasio" ? "canalizado" : ""}">K+</span>
       <span class="bomba-integrada">Na/K ATPasa <i>ATP</i></span>
     </div>
-    <div class="axon-integrado">
+    <div class="axon-integrado ${estadoEdu.foco !== "propagacion" && estadoEdu.foco !== "reposo" ? "secundario" : ""}">
       ${crearMielina(estado)}
       <span class="onda-integrada" style="left:${onda}%"></span>
     </div>
-    <div class="terminal-integrada ${estado.sinapsis.caLocal > 0.25 ? "activa" : ""}">
-      <span class="canal-ca">Ca2+</span>${vesiculas}
+    <div class="terminal-integrada ${estado.sinapsis.caLocal > 0.25 ? "activa" : ""} ${estadoEdu.foco !== "sinapsis" && uiMode.learningLevel === "basico" ? "secundario" : ""}">
+      <span class="canal-ca ${estadoEdu.foco === "sinapsis" ? "canalizado" : ""}">Ca2+</span>${vesiculas}
     </div>
     <div class="hendidura-integrada">${neurotransmisores}</div>
-    <div class="postsinapsis-integrada ${estado.sinapsis.ocupacion > 0.15 ? "activa" : ""}">
+    <div class="postsinapsis-integrada ${estado.sinapsis.ocupacion > 0.15 ? "activa" : ""} ${estadoEdu.foco !== "sinapsis" && uiMode.learningLevel === "basico" ? "secundario" : ""}">
       <span>${estado.sinapsis.tipo.receptor}</span>
       <b>${formato(estado.sinapsis.potencialPost, 1)} mV</b>
       <i class="transportador">Recaptura</i>
       <i class="enzima">Degradacion</i>
     </div>
+    ${crearFlechaEvento(estadoEdu.foco)}
     ${iones}
-    ${estado.farmacos.activos.map((f, i) => `<span class="farmaco-molecula" style="--i:${i}">${f.nombre}</span>`).join("")}
+    ${estadoEdu.foco === "sinapsis" ? neurotransmisores : ""}
+    ${uiMode.learningLevel === "avanzado" ? estado.farmacos.activos.map((f, i) => `<span class="farmaco-molecula" style="--i:${i}">${f.nombre}</span>`).join("") : ""}
   `;
+}
+
+function crearFlechaEvento(foco) {
+  if (foco === "sodio") return `<span class="flecha-evento flecha-na">Na+ entra</span>`;
+  if (foco === "potasio") return `<span class="flecha-evento flecha-k">K+ sale</span>`;
+  if (foco === "sinapsis") return `<span class="flecha-evento flecha-ca">Ca2+ y NT</span>`;
+  if (foco === "propagacion") return `<span class="flecha-evento flecha-axon">impulso</span>`;
+  return `<span class="estado-reposo-label">Reposo</span>`;
 }
 
 function crearMielina(estado) {
@@ -67,8 +83,10 @@ function crearMielina(estado) {
   return html;
 }
 
-function crearVesiculas(estado) {
-  const total = Math.min(48, Math.max(8, Math.round(estado.sinapsis.vesiculasVisuales)));
+function crearVesiculas(estado, uiMode = {}) {
+  if (uiMode.learningLevel === "basico" && estado.sinapsis.caLocal < 0.25 && estado.sinapsis.nt < 0.05) return "";
+  const maximo = uiMode.learningLevel === "basico" ? 10 : uiMode.learningLevel === "intermedio" ? 20 : 36;
+  const total = Math.min(maximo, Math.max(6, Math.round(estado.sinapsis.vesiculasVisuales)));
   let html = "";
   for (let i = 0; i < total; i += 1) {
     const estadoV = i < estado.sinapsis.vesiculasFusionadas ? "fusion" : i < estado.sinapsis.vesiculasListas ? "lista" : i < estado.sinapsis.vesiculasListas + estado.sinapsis.vesiculasReciclaje ? "reciclaje" : "reserva";
@@ -79,48 +97,63 @@ function crearVesiculas(estado) {
   return html;
 }
 
-function crearIones(estado) {
-  const tipos = [
-    ["na", "Na+", "#fb923c", estado.INa < -5 ? "canalizado" : ""],
-    ["k", "K+", "#34d399", estado.IK > 5 ? "canalizado" : ""],
-    ["cl", "Cl-", "#a78bfa", estado.sinapsis.tipoId === "gaba" && estado.sinapsis.ocupacion > 0.08 ? "canalizado" : ""],
-    ["ca", "Ca2+", "#facc15", estado.sinapsis.caLocal > 0.2 ? "canalizado" : ""]
+function crearIones(estado, uiMode = {}) {
+  const nivel = uiMode.learningLevel || "basico";
+  const densidad = uiMode.particleDensity || "baja";
+  const foco = estadoActualEducativo(estado, uiMode).foco;
+  const totalPorNivel = {
+    "muy-baja": nivel === "avanzado" ? 6 : 4,
+    baja: nivel === "avanzado" ? 10 : nivel === "intermedio" ? 8 : 5,
+    media: nivel === "avanzado" ? 18 : nivel === "intermedio" ? 12 : 8,
+    alta: nivel === "avanzado" ? 30 : nivel === "intermedio" ? 18 : 10
+  };
+  const base = totalPorNivel[densidad] || totalPorNivel.baja;
+  const tipos = nivel === "basico" ? [
+    ["na", "Na+", "#fb923c", foco === "sodio" ? "canalizado" : ""],
+    ["k", "K+", "#34d399", foco === "potasio" ? "canalizado" : ""]
+  ] : [
+    ["na", "Na+", "#fb923c", foco === "sodio" ? "canalizado" : ""],
+    ["k", "K+", "#34d399", foco === "potasio" ? "canalizado" : ""],
+    ["cl", "Cl-", "#a78bfa", foco === "sinapsis" && estado.sinapsis.tipoId === "gaba" ? "canalizado" : ""],
+    ["ca", "Ca2+", "#facc15", foco === "sinapsis" ? "canalizado" : ""]
   ];
   let html = "";
   tipos.forEach(([id, label, color, clase], ti) => {
-    const cantidad = id === "ca" ? 10 : 18;
+    const cantidad = id === "ca" ? Math.max(3, Math.floor(base * 0.45)) : base;
     for (let i = 0; i < cantidad; i += 1) {
-      const x = 6 + ((i * 23 + ti * 11 + Math.round(estado.relojVisual * 13)) % 88);
-      const yBase = i % 2 === 0 ? 8 : 68;
-      const y = yBase + ((i * 19 + ti * 7 + Math.round(estado.relojVisual * 9)) % 20);
-      html += `<span class="ion-integrado ${id} ${clase}" style="left:${x}%;top:${y}%;--ion:${color}">${label}</span>`;
+      const dirigido = clase && i < (nivel === "basico" ? 2 : 4);
+      const x = dirigido ? (id === "k" ? 30 + i * 2 : 25 + i * 2) : 6 + ((i * 23 + ti * 11 + Math.round(estado.relojVisual * 3)) % 88);
+      const yBase = dirigido ? (id === "k" ? 57 : 38) : i % 2 === 0 ? 12 : 70;
+      const y = dirigido ? yBase : yBase + ((i * 19 + ti * 7 + Math.round(estado.relojVisual * 2)) % 14);
+      html += `<span class="ion-integrado ${id} ${dirigido ? clase : ""}" style="left:${x}%;top:${y}%;--ion:${color}">${label}</span>`;
     }
   });
   return html;
 }
 
-function crearNeurotransmisores(estado) {
-  const cantidad = Math.min(36, Math.round(estado.sinapsis.nt * 7));
+function crearNeurotransmisores(estado, uiMode = {}) {
+  const maximo = uiMode.learningLevel === "basico" ? 10 : uiMode.learningLevel === "intermedio" ? 22 : 36;
+  const cantidad = Math.min(maximo, Math.round(estado.sinapsis.nt * 5));
   let html = "";
   for (let i = 0; i < cantidad; i += 1) {
-    const x = 8 + ((i * 13 + Math.round(estado.relojVisual * 11)) % 82);
-    const y = 12 + ((i * 23 + Math.round(estado.relojVisual * 8)) % 76);
+    const x = 8 + ((i * 13 + Math.round(estado.relojVisual * 4)) % 82);
+    const y = 12 + ((i * 23 + Math.round(estado.relojVisual * 3)) % 76);
     html += `<span class="nt-particula" style="left:${x}%;top:${y}%;background:${estado.sinapsis.tipo.color}"></span>`;
   }
   return html;
 }
 
-export function renderizarIndicadoresIntegrados(contenedor, estado) {
+export function renderizarIndicadoresIntegrados(contenedor, estado, uiMode = {}) {
   if (!contenedor) return;
-  const items = [
-    ["Fase", estado.fase],
-    ["Na+", estado.canales.sodio],
-    ["K+", estado.canales.potasio],
-    ["Velocidad", `${formato(estado.velocidadMms, 3)} mm/ms`],
-    ["Ca2+ terminal", formato(estado.sinapsis.caLocal, 2)],
-    ["P liberacion", formato(estado.sinapsis.probabilidadLiberacion, 3)],
-    ["NT", `${estado.sinapsis.tipo.nt} ${formato(estado.sinapsis.nt, 2)}`],
-    ["Receptores", `${formato(estado.sinapsis.ocupacion * 100, 1)}%`]
+  const nivel = uiMode.learningLevel || "basico";
+  const items = nivel === "basico" ? [
+    ["Vm", `${formato(estado.Vm, 1)} mV`],
+    ["Fase", estadoActualEducativo(estado, uiMode).fase],
+    ["Canal", estadoActualEducativo(estado, uiMode).canal],
+    ["Movimiento", estadoActualEducativo(estado, uiMode).movimiento]
+  ] : [
+    ["Fase", estado.fase], ["Na+", estado.canales.sodio], ["K+", estado.canales.potasio], ["Velocidad", `${formato(estado.velocidadMms, 3)} mm/ms`],
+    ["Ca2+ terminal", formato(estado.sinapsis.caLocal, 2)], ["P liberacion", formato(estado.sinapsis.probabilidadLiberacion, 3)], ["NT", `${estado.sinapsis.tipo.nt} ${formato(estado.sinapsis.nt, 2)}`], ["Receptores", `${formato(estado.sinapsis.ocupacion * 100, 1)}%`]
   ];
   contenedor.innerHTML = items.map(([k, v]) => `<article><span>${k}</span><strong>${v}</strong></article>`).join("");
 }
@@ -131,20 +164,20 @@ export function renderizarVariablesIntegradas(contenedor, estado) {
   contenedor.innerHTML = `<table><thead><tr><th>Variable</th><th>Simbolo</th><th>Valor</th><th>Unidad</th><th>Referencia</th><th>Estado</th></tr></thead><tbody>${filas}</tbody></table>`;
 }
 
-export function renderizarMatematicasIntegradas(contenedor, estado, idEcuacion) {
+export function renderizarMatematicasIntegradas(contenedor, estado, idEcuacion, uiMode = {}) {
   if (!contenedor) return;
   const ecuacion = evaluarEcuacion(idEcuacion || estado.ecuacionActiva, estado);
-  contenedor.innerHTML = `
-    <article class="ecuacion-activa">
-      <span class="kicker">${ecuacion.categoria}</span>
-      <h3>${ecuacion.nombre}</h3>
-      <code>${ecuacion.formulaTexto}</code>
-      <p>${ecuacion.descripcion}</p>
-      <code>${ecuacion.sustitucion}</code>
-      <p><b>Interpretacion:</b> ${ecuacion.interpretacion}</p>
-    </article>
-    <article><h3>Farmacologia activa</h3>${estado.farmacos.activos.length ? estado.farmacos.activos.map((f) => `<p><b>${f.nombre}</b> (${formato(f.intensidad * 100, 0)}%): ${f.descripcion}</p>`).join("") : "<p>Sin farmacos activos.</p>"}</article>
-  `;
+  const vista = uiMode.mathView || "resumida";
+  const resumen = `<article class="ecuacion-activa vista-${vista}"><span class="kicker">${ecuacion.categoria}</span><h3>${ecuacion.nombre}</h3><code>${ecuacion.formulaTexto}</code><p><b>Resultado:</b> ${formato(ecuacion.resultado, 3)}</p><p><b>Interpretacion:</b> ${ecuacion.interpretacion}</p></article>`;
+  const paso = `<article class="ecuacion-activa vista-${vista}"><span class="kicker">Paso a paso</span><h3>${ecuacion.nombre}</h3><p>${ecuacion.descripcion}</p><code>${ecuacion.formulaTexto}</code><code>${ecuacion.sustitucion}</code><p><b>Significado fisiologico:</b> ${ecuacion.interpretacion}</p></article>`;
+  const avanzada = `<article class="ecuacion-activa vista-${vista}"><span class="kicker">Avanzada</span><h3>${ecuacion.nombre}</h3><p>${ecuacion.descripcion}</p><code>${ecuacion.formulaTexto}</code><code>${ecuacion.sustitucion}</code><p><b>Resultado:</b> ${formato(ecuacion.resultado, 4)}</p><p><b>Supuesto:</b> Modelo educativo simplificado sincronizado con el motor actual.</p><p><b>Farmacologia:</b> ${estado.farmacos.activos.length ? estado.farmacos.activos.map((f) => `${f.nombre} ${formato(f.intensidad * 100, 0)}%`).join(", ") : "sin farmacos activos"}.</p></article>`;
+  contenedor.innerHTML = vista === "avanzada" ? avanzada : vista === "paso" ? paso : resumen;
+}
+
+export function renderizarTarjetaEstadoActual(contenedor, estado, uiMode = {}) {
+  if (!contenedor) return;
+  const info = estadoActualEducativo(estado, uiMode);
+  contenedor.innerHTML = `<span class="kicker">Que esta ocurriendo ahora</span><h3>${info.fase}</h3><dl><dt>Canal activo</dt><dd>${info.canal}</dd><dt>Movimiento</dt><dd>${info.movimiento}</dd><dt>Consecuencia</dt><dd>${info.consecuencia}</dd>${info.detalle ? `<dt>Detalle</dt><dd>${info.detalle}</dd>` : ""}</dl>`;
 }
 
 export function renderizarExplicacionIntegrada(contenedor, estado) {
