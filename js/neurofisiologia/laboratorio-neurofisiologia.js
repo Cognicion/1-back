@@ -380,4 +380,6 @@ function mostrarPasoTutorialNeuro() {
 function cerrarTutorialNeuro() {
   uiModeNeuro.tutorialActive = false;
   localStorage.setItem("cognicionNeuroTutorialVisto", "1");
-  $("tutorialNe
+  $("tutorialNeuro").hidden = true;
+  document.querySelectorAll(".tutorial-focus").forEach((el) => el.classList.remove("tutorial-focus"));
+}
