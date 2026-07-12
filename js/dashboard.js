@@ -13,7 +13,8 @@ import {
   limit,
   orderBy,
   query,
-  setDoc
+  setDoc,
+  updateDoc
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 import {
@@ -181,6 +182,9 @@ function textoDestinatarioAvisoDashboard(aviso = {}) {
 
 async function obtenerLecturasAvisosDashboard(avisos = [], uidUsuario = "") {
   const lecturas = await Promise.all(avisos.map(async (aviso) => {
+    const lecturaEnDocumento = Boolean(aviso.lecturasUsuarios?.[uidUsuario]?.leido);
+    if (lecturaEnDocumento) return [aviso.id, true];
+
     try {
       const snap = await getDoc(doc(db, "avisosGlobales", aviso.id, "lecturas", uidUsuario));
       return [aviso.id, snap.exists()];
@@ -229,28 +233,75 @@ function renderizarAvisosDashboard() {
   }).join("");
 
   contenedor.querySelectorAll("[data-marcar-aviso-leido]").forEach((boton) => {
-    boton.addEventListener("click", () => marcarAvisoLeidoDashboard(boton.dataset.marcarAvisoLeido));
+    boton.addEventListener("click", (evento) => {
+      evento.preventDefault();
+      evento.stopPropagation();
+      marcarAvisoLeidoDashboard(boton.dataset.marcarAvisoLeido, boton);
+    });
   });
 }
 
-async function marcarAvisoLeidoDashboard(idAviso) {
+async function marcarAvisoLeidoDashboard(idAviso, boton = null) {
   if (!idAviso || !usuarioDashboardActual?.uid) return;
-  try {
-    await setDoc(doc(db, "avisosGlobales", idAviso, "lecturas", usuarioDashboardActual.uid), {
-      uid: usuarioDashboardActual.uid,
-      nombre: usuarioDashboardActual.nombre || "",
-      email: usuarioDashboardActual.email || "",
-      rol: rolDashboardActual || "",
-      leido: true,
-      leidoEn: new Date().toISOString()
-    }, { merge: true });
-    avisosLeidosDashboard.add(idAviso);
-    renderizarAvisosDashboard();
-  } catch (error) {
-    console.error("No se pudo marcar el aviso como leido:", error);
+
+  const lectura = {
+    uid: usuarioDashboardActual.uid,
+    nombre: usuarioDashboardActual.nombre || "",
+    email: usuarioDashboardActual.email || "",
+    rol: rolDashboardActual || "",
+    leido: true,
+    leidoEn: new Date().toISOString()
+  };
+
+  if (boton) {
+    boton.disabled = true;
+    boton.textContent = "Guardando...";
   }
+
+  const escrituraSubcoleccion = setDoc(
+    doc(db, "avisosGlobales", idAviso, "lecturas", usuarioDashboardActual.uid),
+    lectura,
+    { merge: true }
+  );
+
+  const escrituraDocumento = updateDoc(doc(db, "avisosGlobales", idAviso), {
+    [`lecturasUsuarios.${usuarioDashboardActual.uid}`]: lectura
+  });
+
+  const resultados = await Promise.allSettled([escrituraSubcoleccion, escrituraDocumento]);
+  const exitos = resultados.filter((resultado) => resultado.status === "fulfilled");
+
+  if (!exitos.length) {
+    console.error("No se pudo marcar el aviso como leido:", resultados.map((resultado) => resultado.reason));
+    if (boton) {
+      boton.disabled = false;
+      boton.textContent = "Marcar como leido";
+    }
+    alert("No se pudo marcar el aviso como leido. Intentalo de nuevo.");
+    return;
+  }
+
+  avisosLeidosDashboard.add(idAviso);
+  avisosDashboardActuales = avisosDashboardActuales.map((aviso) => aviso.id === idAviso
+    ? {
+        ...aviso,
+        lecturasUsuarios: {
+          ...(aviso.lecturasUsuarios || {}),
+          [usuarioDashboardActual.uid]: lectura
+        }
+      }
+    : aviso);
+  renderizarAvisosDashboard();
 }
 
+
+document.addEventListener("click", (evento) => {
+  const boton = evento.target.closest("[data-marcar-aviso-leido]");
+  if (!boton) return;
+  evento.preventDefault();
+  evento.stopPropagation();
+  marcarAvisoLeidoDashboard(boton.dataset.marcarAvisoLeido, boton);
+});
 async function cargarAvisosDashboard(rolUsuario, uidUsuario) {
   const contenedor = document.getElementById("listaAvisosDashboard");
   if (!contenedor) return;

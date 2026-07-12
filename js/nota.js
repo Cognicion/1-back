@@ -28,7 +28,11 @@ import {
   obtenerOpcionesItemEscala,
   textoItemEscala
 } from "./services/escalas.js";
-
+import {
+  aplicarPermisosFormatosSelect,
+  obtenerPermisosFormatosUsuario,
+  usuarioPuedeUsarFormato
+} from "./services/formatosInstitucionales.js";
 import {
   onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
@@ -72,6 +76,8 @@ let notasHistorialOrdenadas = [];
 let historiaClinicaActual = {};
 let pacienteActualDatos = {};
 let uidMedicoActual = "";
+let rolUsuarioActual = "";
+let permisosFormatosActual = {};
 let apuntesMedicoCache = [];
 let notasFlotantesPacienteCache = [];
 let catalogoMedicosFirmasCache = [];
@@ -1683,11 +1689,27 @@ function calcularIMCNota() {
   document.getElementById(id)?.addEventListener("input", calcularIMCNota);
 });
 
+
+function puedeUsarFormatoNota(valor = formatoNota?.value || "") {
+  return usuarioPuedeUsarFormato(valor, permisosFormatosActual, rolUsuarioActual);
+}
+
+function aplicarPermisosFormatoNota() {
+  aplicarPermisosFormatosSelect(formatoNota, permisosFormatosActual, {
+    rol: rolUsuarioActual,
+    fallback: "cognicion",
+    fallbackLabel: "PDF Cognicion"
+  });
+}
 function esFormatoFray() {
   return formatoNota?.value?.startsWith("fray_observacion") || false;
 }
 
 function sincronizarFormatoNota() {
+  aplicarPermisosFormatoNota();
+  if (formatoNota && !puedeUsarFormatoNota(formatoNota.value)) {
+    formatoNota.value = "cognicion";
+  }
   bloqueObservacionFray?.classList.remove("oculto");
 
   if (formatoNota?.value?.startsWith("fray_observacion")) {
@@ -2458,6 +2480,9 @@ onAuthStateChanged(auth, async (user) => {
 }
 
   uidMedicoActual = user.uid;
+  rolUsuarioActual = usuario.rol || "";
+  permisosFormatosActual = await obtenerPermisosFormatosUsuario(user.uid, usuario);
+  aplicarPermisosFormatoNota();
   await cargarBorradoresMedico();
   await cargarCatalogoMedicosFirmas();
   configurarCatalogoMedicosFirmas();
@@ -2616,7 +2641,7 @@ async function cargarPaciente(uidPaciente) {
 
   const institucion = `${datos.institucionPaciente || datos.institucion || ""}`.toLowerCase();
   const esPacienteFray = datos.tipoPaciente === "institucion" && institucion.includes("fray");
-  if (esPacienteFray && formatoNota?.value === "cognicion") {
+  if (esPacienteFray && formatoNota?.value === "cognicion" && puedeUsarFormatoNota("fray_observacion_evolucion")) {
     formatoNota.value = "fray_observacion_evolucion";
   }
 
@@ -2635,6 +2660,14 @@ async function guardarNotaMedicaConEstado(estadoNota = "definitiva") {
   const tieneAccesoPaciente = await usuarioActualPuedeAccederPaciente(uidPaciente);
   if (!tieneAccesoPaciente) {
     alert("No tienes permiso para guardar notas de este paciente.");
+    return;
+  }
+
+  aplicarPermisosFormatoNota();
+  if (formatoNota && !puedeUsarFormatoNota(formatoNota.value)) {
+    alert("No tienes autorizacion para usar este formato institucional. Solicita acceso al administrador.");
+    formatoNota.value = "cognicion";
+    sincronizarFormatoNota();
     return;
   }
 

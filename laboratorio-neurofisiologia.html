@@ -133,8 +133,43 @@
   </section>
 
   <section id="tab-axon" class="panel-lab tab-panel">
-    <div class="panel-heading"><div><span class="kicker">Simulador 3</span><h2>Propagacion axonal</h2></div><div class="acciones"><button id="btnAxonPlay">Iniciar propagacion</button><button id="btnAxonPausa" class="secundario">Pausar</button><button id="btnAxonReset" class="secundario">Reiniciar</button><button type="button" class="secundario" data-lab-jump="membrana">Volver a membrana</button></div></div>
-    <div class="lab-grid"><aside class="controles-lab"><label>Tipo de axon<select id="tipoAxon"><option value="mielinizado">Mielinizado</option><option value="amielinico">Amielinico</option></select></label><label>Longitud mm<input id="longitudAxon" type="range" min="20" max="160" value="80"></label><label>Diametro del axon (um)<input id="diametroAxon" type="range" min="0.2" max="12" step="0.1" value="2"></label><label>Grosor mielina<input id="grosorMielina" type="range" min="0" max="1.5" step="0.05" value="0.8"></label><label>Temperatura C<input id="temperaturaAxon" type="range" min="10" max="42" step="0.5" value="37"></label><label>Densidad Na<input id="densidadNaAxon" type="range" min="0.05" max="1.5" step="0.05" value="1"></label><label>Bloqueo canales<input id="bloqueoAxon" type="range" min="0" max="0.95" step="0.05" value="0"></label><label><input id="desmielinizacionActiva" type="checkbox"> Desmielinizacion focal</label><label>Severidad lesion<input id="severidadDesmielina" type="range" min="0" max="1" step="0.05" value="0.55"></label><label>Estimular desde<select id="estimularDesde"><option value="izquierda">Extremo izquierdo</option><option value="derecha">Extremo derecho</option><option value="centro">Region central</option></select></label><label><input id="bidireccional" type="checkbox"> Conduccion bidireccional experimental</label></aside><div><div id="axonVisual" class="axon-visual"></div><canvas id="graficaAxon" width="920" height="330"></canvas><div id="resumenAxon" class="indicadores"></div></div></div>
+    <div class="panel-heading">
+      <div><span class="kicker">Simulador 3</span><h2>Propagacion axonal</h2><p class="muted">Imagina que este potencial de accion acaba de nacer en el cono axonico. Ahora veremos como viaja hasta la terminal.</p></div>
+      <div class="acciones"><button id="btnAxonPlay">Iniciar propagacion</button><button id="btnAxonPausa" class="secundario">Pausar</button><button id="btnAxonReset" class="secundario">Reiniciar</button><button id="btnAxonDesdeCero" class="secundario">Explicamelo desde cero</button><button id="btnAxonPrev" class="secundario">Anterior</button><button id="btnAxonNext" class="secundario">Siguiente</button><button type="button" class="secundario" data-lab-jump="accion">Ver como nacio este potencial</button><button type="button" class="secundario" data-lab-jump="integrada">Ver terminal y sinapsis</button></div>
+    </div>
+    <div class="axon-clase-intro" id="axonIntroClase"><strong>Clase interactiva</strong><span>Un potencial de accion no viaja como una pelota: se regenera en regiones sucesivas. En axones mielinizados, los nodos de Ranvier son los puntos donde se abre una gran densidad de canales de sodio.</span></div>
+    <div class="lab-grid axon-grid-docente">
+      <aside class="controles-lab">
+        <label>Tipo de axon<select id="tipoAxon"><option value="mielinizado">Mielinizado</option><option value="amielinico">Amielinico</option></select></label>
+        <label>Longitud mm<input id="longitudAxon" type="range" min="20" max="160" value="80"></label>
+        <label>Diametro del axon (um)<input id="diametroAxon" type="range" min="0.2" max="12" step="0.1" value="2"></label>
+        <label>Grosor mielina<input id="grosorMielina" type="range" min="0" max="1.5" step="0.05" value="0.8"></label>
+        <label>Temperatura C<input id="temperaturaAxon" type="range" min="10" max="42" step="0.5" value="37"></label>
+        <label>Densidad Na<input id="densidadNaAxon" type="range" min="0.05" max="1.5" step="0.05" value="1"></label>
+        <label>Bloqueo canales<input id="bloqueoAxon" type="range" min="0" max="0.95" step="0.05" value="0"></label>
+        <label><input id="desmielinizacionActiva" type="checkbox"> Desmielinizacion focal</label>
+        <label>Severidad lesion<input id="severidadDesmielina" type="range" min="0" max="1" step="0.05" value="0.55"></label>
+        <label>Estimular desde<select id="estimularDesde"><option value="izquierda">Extremo izquierdo</option><option value="derecha">Extremo derecho</option><option value="centro">Region central</option></select></label>
+        <label><input id="bidireccional" type="checkbox"> Conduccion bidireccional experimental</label>
+        <details open><summary>Electrodos y vista</summary>
+          <label>E1 posicion mm<input id="electrodoAxon1" type="range" min="2" max="155" value="15"></label>
+          <label>E2 posicion mm<input id="electrodoAxon2" type="range" min="2" max="155" value="40"></label>
+          <label>E3 posicion mm<input id="electrodoAxon3" type="range" min="2" max="155" value="65"></label>
+          <label>Vista<select id="axonVista"><option value="completa">Clase completa</option><option value="nodo">Ver solo un nodo</option><option value="graficas">Solo graficas</option></select></label>
+          <label>Nodo a seguir<select id="axonNodoSeguido"><option value="auto">Seguir onda</option></select></label>
+          <label><input id="axonMostrarGraficas" type="checkbox" checked> Mostrar graficas</label>
+        </details>
+      </aside>
+      <div class="axon-aula">
+        <article class="axon-paso-card" id="axonPasoCard"></article>
+        <div id="axonVisual" class="axon-visual axon-docente" tabindex="0"></div>
+        <div id="axonTooltip" class="axon-tooltip" hidden></div>
+        <div id="axonVelocidadDocente" class="axon-velocidad-docente"></div>
+        <canvas id="graficaAxon" width="920" height="330"></canvas>
+        <div id="comparacionAxon" class="axon-comparacion"></div>
+        <div id="resumenAxon" class="indicadores"></div>
+      </div>
+    </div>
   </section>
 
   <section id="tab-experimentos" class="panel-lab tab-panel"><div class="panel-heading"><div><span class="kicker">Experimentos guiados</span><h2>Protocolos preconfigurados</h2></div></div><div id="listaExperimentos" class="experimentos-grid"></div></section>

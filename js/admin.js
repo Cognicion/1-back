@@ -1,6 +1,7 @@
 import { auth, db } from "./firebase.js";
 import { iniciarMonitoreoSesion } from "./services/sesion.js";
 import { registrarEventoAuditoria, resumenError } from "./services/auditoria.js";
+import { FORMATOS_INSTITUCIONALES, permisosFormatosDesdeUsuario } from "./services/formatosInstitucionales.js";
 import {
   actualizarEstadoReporteUsuario,
   listarReportesUsuarios
@@ -128,6 +129,14 @@ function configurarFiltros() {
 
   document.getElementById("btnActualizarUsuariosAdmin")?.addEventListener("click", cargarUsuariosAdmin);
   document.getElementById("btnActualizarUsuariosRecientesAdmin")?.addEventListener("click", cargarUsuariosAdmin);
+  document.getElementById("btnActualizarFormatosAdmin")?.addEventListener("click", cargarUsuariosAdmin);
+  document.getElementById("btnAutorizarFrayVisibles")?.addEventListener("click", () => aplicarFormatoUsuariosVisiblesAdmin("fray", true));
+  document.getElementById("btnRetirarFrayVisibles")?.addEventListener("click", () => aplicarFormatoUsuariosVisiblesAdmin("fray", false));
+
+  ["filtroFormatosAdmin", "filtroFormatosInstitucionAdmin"].forEach((id) => {
+    document.getElementById(id)?.addEventListener("input", renderizarFormatosAdmin);
+    document.getElementById(id)?.addEventListener("change", renderizarFormatosAdmin);
+  });
 
   ["filtroPacientesAdmin", "filtroPacientesEstado"].forEach((id) => {
     document.getElementById(id)?.addEventListener("input", renderizarPacientesAdmin);
@@ -205,15 +214,27 @@ async function cargarAvisosAdmin() {
     const snap = await getDocs(qAvisos);
     const avisosBase = snap.docs.map((docAviso) => ({ id: docAviso.id, ...docAviso.data() }));
     avisosGlobalesAdmin = await Promise.all(avisosBase.map(async (aviso) => {
+      const lecturasDocumento = Object.entries(aviso.lecturasUsuarios || {}).map(([uid, lectura]) => ({
+        id: uid,
+        uid,
+        ...(lectura || {})
+      }));
+
       try {
         const snapLecturas = await getDocs(collection(db, "avisosGlobales", aviso.id, "lecturas"));
+        const lecturasSubcoleccion = snapLecturas.docs.map((docLectura) => ({ id: docLectura.id, ...docLectura.data() }));
+        const lecturasPorUid = new Map();
+        [...lecturasDocumento, ...lecturasSubcoleccion].forEach((lectura) => {
+          const uid = lectura.uid || lectura.id;
+          if (uid) lecturasPorUid.set(uid, lectura);
+        });
         return {
           ...aviso,
-          lecturas: snapLecturas.docs.map((docLectura) => ({ id: docLectura.id, ...docLectura.data() }))
+          lecturas: Array.from(lecturasPorUid.values())
         };
       } catch (error) {
         console.warn("No se pudieron cargar lecturas del aviso:", aviso.id, error);
-        return { ...aviso, lecturas: [] };
+        return { ...aviso, lecturas: lecturasDocumento };
       }
     }));
     renderizarAvisosAdmin();
@@ -481,6 +502,8 @@ async function cargarUsuariosAdmin() {
   renderizarUsuariosAdmin();
   renderizarUsuariosRecientesAdmin();
   poblarUsuariosAvisosAdmin();
+  poblarInstitucionesFormatosAdmin();
+  renderizarFormatosAdmin();
   actualizarCampoUsuarioAviso();
 }
 
@@ -595,6 +618,145 @@ function renderizarUsuariosAdmin() {
   }).join("");
 }
 
+
+function institucionUsuarioFormato(usuario = {}) {
+  return usuario.institucion ||
+    usuario.unidad ||
+    usuario.institucionPaciente ||
+    usuario.servicioInstitucional ||
+    "Sin institucion";
+}
+
+function poblarInstitucionesFormatosAdmin() {
+  const selector = document.getElementById("filtroFormatosInstitucionAdmin");
+  if (!selector) return;
+  const valorActual = selector.value || "";
+  const instituciones = [...new Set(usuariosAdmin.map(institucionUsuarioFormato).filter(Boolean))]
+    .sort((a, b) => a.localeCompare(b));
+
+  selector.innerHTML = `<option value="">Todas las instituciones</option>` + instituciones.map((institucion) => `
+    <option value="${escaparHTML(institucion)}">${escaparHTML(institucion)}</option>
+  `).join("");
+  selector.value = instituciones.includes(valorActual) ? valorActual : "";
+}
+
+function usuariosFiltradosFormatosAdmin() {
+  const texto = normalizar(document.getElementById("filtroFormatosAdmin")?.value || "");
+  const institucion = document.getElementById("filtroFormatosInstitucionAdmin")?.value || "";
+  return usuariosAdmin.filter((usuario) => {
+    const institucionUsuario = institucionUsuarioFormato(usuario);
+    const coincideInstitucion = !institucion || institucionUsuario === institucion;
+    const coincideTexto = !texto || normalizar([
+      usuario.nombre,
+      usuario.email,
+      usuario.rol,
+      usuario.id,
+      institucionUsuario
+    ].join(" ")).includes(texto);
+    return coincideInstitucion && coincideTexto;
+  });
+}
+
+function renderizarFormatosAdmin() {
+  const contenedor = document.getElementById("listaFormatosAdmin");
+  if (!contenedor) return;
+
+  const formatosControlables = FORMATOS_INSTITUCIONALES.filter((formato) => formato.requiereAutorizacion);
+  const usuarios = usuariosFiltradosFormatosAdmin();
+
+  if (!usuarios.length) {
+    contenedor.innerHTML = "<p>No hay usuarios con esos filtros.</p>";
+    return;
+  }
+
+  contenedor.innerHTML = usuarios.map((usuario) => {
+    const permisos = permisosFormatosDesdeUsuario(usuario);
+    const institucionTexto = institucionUsuarioFormato(usuario);
+    const controles = formatosControlables.map((formato) => {
+      const autorizado = usuario.rol === "admin" || permisos[formato.id] === true || permisos.todos === true;
+      const protegido = usuario.rol === "admin";
+      return `
+        <div class="usuario-admin-meta formato-admin-control">
+          <span>${escaparHTML(formato.nombre)}</span>
+          <span>${autorizado ? "Autorizado" : "Sin acceso"}</span>
+          <button type="button" data-toggle-formato-admin="${escaparHTML(usuario.id)}" data-formato="${escaparHTML(formato.id)}" data-valor="${autorizado ? "false" : "true"}" ${protegido ? "disabled" : ""}>
+            ${autorizado ? "Retirar acceso" : "Autorizar"}
+          </button>
+        </div>
+      `;
+    }).join("");
+
+    return `
+      <article class="usuario-admin-card">
+        <div>
+          <h3>${escaparHTML(usuario.nombre || usuario.email || "Usuario sin nombre")}</h3>
+          <p>${escaparHTML(usuario.email || "Sin correo")}</p>
+          <small>UID: ${escaparHTML(usuario.id)}</small>
+          <div class="usuario-admin-meta">
+            <span>${escaparHTML(etiquetaRolUsuario(usuario.rol || "sin_rol"))}</span>
+            <span>Institucion: ${escaparHTML(institucionTexto)}</span>
+          </div>
+        </div>
+        <div class="paciente-admin-acciones">
+          ${controles}
+        </div>
+      </article>
+    `;
+  }).join("");
+
+  contenedor.querySelectorAll("[data-toggle-formato-admin]").forEach((boton) => {
+    boton.addEventListener("click", alternarFormatoUsuarioAdmin);
+  });
+}
+
+async function alternarFormatoUsuarioAdmin(evento) {
+  const boton = evento.currentTarget;
+  const uid = boton.dataset.toggleFormatoAdmin || "";
+  const formato = boton.dataset.formato || "";
+  const valor = boton.dataset.valor === "true";
+  const usuario = usuariosAdmin.find((item) => item.id === uid);
+
+  if (!uid || !formato || !usuario) return;
+
+  boton.disabled = true;
+  await updateDoc(doc(db, "usuarios", uid), {
+    [`permisosFormatos.${formato}`]: valor,
+    formatosInstitucionalesActualizadosEn: new Date().toISOString(),
+    formatosInstitucionalesActualizadoPor: adminActual?.uid || ""
+  });
+
+  await registrarAuditoriaAdmin(
+    valor ? "autorizar_formato_institucional" : "retirar_formato_institucional",
+    `${valor ? "Autorizo" : "Retiro"} formato ${formato} a ${usuario.email || usuario.nombre || uid}`,
+    { usuarioObjetivoUid: uid }
+  );
+  await cargarUsuariosAdmin();
+}
+
+async function aplicarFormatoUsuariosVisiblesAdmin(formato, valor) {
+  const usuarios = usuariosFiltradosFormatosAdmin().filter((usuario) => usuario.rol !== "admin");
+  if (!usuarios.length) {
+    alert("No hay usuarios visibles para actualizar.");
+    return;
+  }
+
+  const accion = valor ? "autorizar" : "retirar";
+  const confirmar = confirm(`¿Deseas ${accion} el formato ${formato} a ${usuarios.length} usuario(s) visibles?`);
+  if (!confirmar) return;
+
+  await Promise.all(usuarios.map((usuario) => updateDoc(doc(db, "usuarios", usuario.id), {
+    [`permisosFormatos.${formato}`]: valor,
+    formatosInstitucionalesActualizadosEn: new Date().toISOString(),
+    formatosInstitucionalesActualizadoPor: adminActual?.uid || ""
+  })));
+
+  await registrarAuditoriaAdmin(
+    valor ? "autorizar_formato_institucional_masivo" : "retirar_formato_institucional_masivo",
+    `${valor ? "Autorizo" : "Retiro"} formato ${formato} a ${usuarios.length} usuario(s) visibles`,
+    { totalUsuarios: usuarios.length }
+  );
+  await cargarUsuariosAdmin();
+}
 function actualizarResumenUsuariosVista(usuarios = []) {
   ponerTexto("usuariosVistaTotal", usuarios.length);
   ponerTexto("usuariosVistaPacientes", usuarios.filter((usuario) => usuario.rol === "paciente").length);

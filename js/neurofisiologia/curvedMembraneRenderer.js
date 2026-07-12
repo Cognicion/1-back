@@ -17,6 +17,65 @@ const NT_STYLE = {
   serotonina: { label: "5HT", color: "#fb7185", shape: "amine", receptor: "5-HT", transportador: "SERT", enzima: "MAO" },
   noradrenalina: { label: "NA", color: "#34d399", shape: "amine", receptor: "alfa/beta", transportador: "NET", enzima: "MAO/COMT" }
 };
+
+
+const REGISTRO_PROTEINAS_MEMBRANA = {
+  naV: { titulo: "Canal Nav", tipo: "canal voltaje-dependiente", proteina: "Nav", localizacion: "axon, segmento inicial y terminal", iones: ["na"], rechaza: ["k", "cl", "ca"], ecuacion: "INa = gNa*m^3*h*(Vm-ENa)", farmacos: ["fenitoina", "carbamazepina", "lamotrigina", "topiramato", "valproato"], funcion: "Entrada selectiva de Na+ durante despolarizacion." },
+  kV: { titulo: "Canal Kv", tipo: "canal voltaje-dependiente", proteina: "Kv", localizacion: "axon y membrana", iones: ["k"], rechaza: ["na", "cl", "ca"], ecuacion: "IK = gK*n^4*(Vm-EK)", farmacos: ["bloqueador K+ experimental"], funcion: "Salida selectiva de K+ para repolarizacion." },
+  kLeak: { titulo: "Canal de fuga de K+", tipo: "canal de fuga", proteina: "K2P/Kir simplificado", localizacion: "membrana neuronal", iones: ["k"], rechaza: ["na", "cl", "ca"], ecuacion: "IK_leak = gK_leak*(Vm-EK)", farmacos: [], funcion: "Permeabilidad basal a K+ que estabiliza el reposo." },
+  naLeak: { titulo: "Canal de fuga de Na+", tipo: "canal de fuga", proteina: "NALCN simplificado", localizacion: "membrana neuronal", iones: ["na"], rechaza: ["k", "cl", "ca"], ecuacion: "INa_leak = gNa_leak*(Vm-ENa)", farmacos: [], funcion: "Entrada basal pequena de Na+ dentro del modelo educativo." },
+  cl: { titulo: "Receptor/canal GABA-A", tipo: "canal activado por ligando", proteina: "GABA-A", localizacion: "postsinapsis inhibitoria", iones: ["cl"], rechaza: ["na", "k", "ca"], ecuacion: "ICl = gCl*(Vm-ECl)", farmacos: ["benzodiacepinas", "barbituricos", "antagonistas GABA-A"], funcion: "Conductancia de Cl- dependiente de GABA; tiende a estabilizar o hiperpolarizar." },
+  caV: { titulo: "Canal Cav presinaptico", tipo: "canal voltaje-dependiente", proteina: "Cav2.x", localizacion: "zona activa presinaptica", iones: ["ca"], rechaza: ["na", "k", "cl"], ecuacion: "ICa = gCa*(Vm-ECa)", farmacos: ["pregabalina", "gabapentina", "bloqueadores Ca2+"], funcion: "Entrada local de Ca2+ que activa fusion vesicular." },
+  pump: { titulo: "Na+/K+ ATPasa", tipo: "bomba ATPasa", proteina: "ATP1A/ATP1B", localizacion: "membrana neuronal", iones: ["na", "k"], rechaza: ["cl", "ca"], ecuacion: "3 Na+ salen / 2 K+ entran / ATP", farmacos: [], funcion: "Mantiene gradientes ionicos por transporte activo primario." },
+  ampa: { titulo: "Receptor AMPA", tipo: "canal ionotropico", proteina: "GluA", localizacion: "postsinapsis glutamatergica", iones: ["na", "k"], rechaza: ["cl"], ecuacion: "IAMPA = gAMPA*(Vm-EAMPA)", farmacos: ["topiramato", "antagonistas AMPA"], funcion: "Respuesta excitadora rapida a glutamato." },
+  nmda: { titulo: "Receptor NMDA", tipo: "canal ionotropico dependiente de voltaje/ligando", proteina: "GluN", localizacion: "postsinapsis glutamatergica", iones: ["na", "k", "ca"], rechaza: ["cl"], ecuacion: "INMDA = gNMDA*B(Vm)*(Vm-ENMDA)", farmacos: ["ketamina", "memantina"], funcion: "Entrada de Ca2+ y corriente excitadora modulada por bloqueo de Mg2+." },
+  kainato: { titulo: "Receptor kainato", tipo: "canal ionotropico", proteina: "GluK", localizacion: "postsinapsis glutamatergica", iones: ["na", "k"], rechaza: ["cl"], ecuacion: "IKainato = gKainato*(Vm-Erev)", farmacos: [], funcion: "Componente excitador glutamatergico adicional." },
+  gabaB: { titulo: "Receptor GABA-B", tipo: "GPCR", proteina: "GABBR", localizacion: "pre y postsinapsis", iones: ["k"], rechaza: ["na", "cl", "ca"], ecuacion: "modula GIRK y Cav", farmacos: ["agonistas GABA-B"], funcion: "Inhibicion lenta por aumento de K+ y menor entrada presinaptica de Ca2+." },
+  alpha2delta: { titulo: "Subunidad alpha2delta", tipo: "subunidad auxiliar Cav", proteina: "CACNA2D", localizacion: "canal Cav presinaptico", iones: ["ca"], rechaza: ["na", "k", "cl"], ecuacion: "reduce gCa funcional y liberacion", farmacos: ["pregabalina", "gabapentina"], funcion: "Diana de pregabalina/gabapentina; no bloquea el poro de forma instantanea." },
+  sv2a: { titulo: "SV2A", tipo: "proteina vesicular", proteina: "SV2A", localizacion: "vesicula sinaptica", iones: [], rechaza: [], ecuacion: "modula disponibilidad vesicular", farmacos: ["levetiracetam"], funcion: "Regula liberacion vesicular excesiva." },
+  vmat2: { titulo: "VMAT2", tipo: "transportador vesicular", proteina: "SLC18A2", localizacion: "membrana de vesiculas de monoaminas", iones: [], rechaza: [], ecuacion: "monoamina/H+ antiporte", farmacos: ["anfetamina", "reserpina educativa"], funcion: "Carga dopamina, serotonina y noradrenalina dentro de vesiculas." },
+  dat: { titulo: "DAT", tipo: "transportador de recaptura", proteina: "SLC6A3", localizacion: "presinapsis dopaminergica", iones: [], rechaza: [], ecuacion: "recaptura DA dependiente de Na+/Cl-", farmacos: ["cocaina", "metilfenidato", "anfetamina"], funcion: "Retira dopamina de la hendidura." },
+  sert: { titulo: "SERT", tipo: "transportador de recaptura", proteina: "SLC6A4", localizacion: "presinapsis serotoninergica", iones: [], rechaza: [], ecuacion: "recaptura 5-HT dependiente de Na+/Cl-", farmacos: ["ISRS", "fluoxetina", "sertralina"], funcion: "Retira serotonina de la hendidura." },
+  net: { titulo: "NET", tipo: "transportador de recaptura", proteina: "SLC6A2", localizacion: "presinapsis noradrenergica", iones: [], rechaza: [], ecuacion: "recaptura NA dependiente de Na+/Cl-", farmacos: ["triciclicos", "atomoxetina", "cocaina"], funcion: "Retira noradrenalina de la hendidura." },
+  d2: { titulo: "Receptor D2", tipo: "GPCR Gi/o", proteina: "DRD2", localizacion: "postsinapsis/autorreceptor", iones: [], rechaza: [], ecuacion: "disminuye cAMP; modula K+/Ca2+", farmacos: ["haloperidol", "risperidona", "aripiprazol"], funcion: "Diana antipsicotica principal dentro del modelo educativo." },
+  gabaA: { titulo: "Receptor GABA-A", tipo: "canal Cl- ionotropico", proteina: "GABA-A", localizacion: "postsinapsis", iones: ["cl"], rechaza: ["na", "k", "ca"], ecuacion: "ICl = gGABA*(Vm-ECl)", farmacos: ["benzodiacepinas", "barbituricos"], funcion: "Inhibicion rapida dependiente de GABA." },
+  litio: { titulo: "Senalizacion por litio", tipo: "diana intracelular", proteina: "GSK3b/IP3 simplificado", localizacion: "citoplasma", iones: [], rechaza: [], ecuacion: "modulacion lenta de segundos mensajeros", farmacos: ["litio"], funcion: "No es bloqueo directo de canal; modula redes intracelulares lentamente." }
+};
+
+const RECEPTORES_POR_SINAPSIS = {
+  glutamato: [["AMPA", "na", "abierto", "ampa"], ["NMDA", "ca", "bloqueo Mg", "nmda"], ["Kainato", "na", "ionotropico", "kainato"], ["mGluR", "k", "GPCR", "mGluR"]],
+  gaba: [["GABA-A", "cl", "potenciado", "gabaA"], ["GABA-B", "k", "GPCR", "gabaB"], ["GAT", "na", "transportador", "gat"]],
+  dopamina: [["D1", "na", "GPCR Gs", "d1"], ["D2", "k", "GPCR Gi", "d2"], ["D3/D4", "k", "GPCR", "d3"], ["DAT", "na", "transportador", "dat"]],
+  serotonina: [["5-HT1A", "k", "GPCR Gi", "5ht1a"], ["5-HT2A", "ca", "GPCR Gq", "5ht2a"], ["5-HT2C", "ca", "GPCR", "5ht2c"], ["5-HT3", "na", "ionotropico", "5ht3"], ["SERT", "na", "transportador", "sert"]],
+  noradrenalina: [["alpha-1", "ca", "GPCR Gq", "alpha1"], ["alpha-2", "k", "GPCR Gi", "alpha2"], ["beta-1", "ca", "GPCR Gs", "beta1"], ["beta-2", "ca", "GPCR Gs", "beta2"], ["NET", "na", "transportador", "net"]]
+};
+
+const RECEPTOR_EXTRA_INFO = {
+  d1: { titulo: "Receptor D1", tipo: "GPCR Gs", proteina: "DRD1", farmacos: ["agonistas dopaminergicos"], funcion: "Facilita via cAMP/PKA de forma educativa." },
+  d3: { titulo: "Receptores D3/D4", tipo: "GPCR Gi/o", proteina: "DRD3/DRD4", farmacos: ["antipsicoticos"], funcion: "Modulacion dopaminergica limbica y cortical simplificada." },
+  "5ht1a": { titulo: "Receptor 5-HT1A", tipo: "GPCR Gi/o", proteina: "HTR1A", farmacos: ["buspirona", "ISRS indirectos"], funcion: "Autorreceptor/sitio postsinaptico serotoninergico." },
+  "5ht2a": { titulo: "Receptor 5-HT2A", tipo: "GPCR Gq", proteina: "HTR2A", farmacos: ["antipsicoticos atipicos", "psicodelicos"], funcion: "Diana serotoninergica cortical relevante en neuropsicofarmacologia." },
+  "5ht2c": { titulo: "Receptor 5-HT2C", tipo: "GPCR Gq", proteina: "HTR2C", farmacos: ["antipsicoticos", "agonistas 5-HT2C"], funcion: "Modula apetito, ansiedad y tono dopaminergico en modelo educativo." },
+  "5ht3": { titulo: "Receptor 5-HT3", tipo: "canal ionotropico", proteina: "HTR3", farmacos: ["ondansetron"], funcion: "Canal cationico activado por serotonina." },
+  alpha1: { titulo: "Receptor alpha-1", tipo: "GPCR Gq", proteina: "ADRA1", farmacos: ["prazosina", "antipsicoticos con bloqueo alpha"], funcion: "Excitabilidad noradrenergica postsinaptica." },
+  alpha2: { titulo: "Receptor alpha-2", tipo: "GPCR Gi/o", proteina: "ADRA2", farmacos: ["clonidina", "guanfacina"], funcion: "Autorreceptor que reduce liberacion de noradrenalina." },
+  beta1: { titulo: "Receptor beta-1", tipo: "GPCR Gs", proteina: "ADRB1", farmacos: ["betabloqueadores"], funcion: "Respuesta noradrenergica excitadora simplificada." },
+  beta2: { titulo: "Receptor beta-2", tipo: "GPCR Gs", proteina: "ADRB2", farmacos: ["agonistas/bloqueadores beta"], funcion: "Modulacion adrenergica postsinaptica." },
+  mGluR: { titulo: "Receptor mGluR", tipo: "GPCR glutamatergico", proteina: "GRM", farmacos: ["moduladores mGluR"], funcion: "Modulacion lenta de liberacion y excitabilidad." },
+  gat: { titulo: "GAT", tipo: "transportador GABA", proteina: "SLC6A1", farmacos: ["tiagabina"], funcion: "Recaptura GABA dependiente de gradientes." },
+  d4: { titulo: "Receptor D4", tipo: "GPCR Gi/o", proteina: "DRD4", farmacos: ["antipsicoticos"], funcion: "Diana dopaminergica cortical simplificada." },
+  d5: { titulo: "Receptor D5", tipo: "GPCR Gs", proteina: "DRD5", farmacos: ["agonistas dopaminergicos"], funcion: "Subtipo D1-like representado para docencia." },
+  muscarinicoM1: { titulo: "Receptor muscarinico M1", tipo: "GPCR Gq", proteina: "CHRM1", farmacos: ["anticolinergicos"], funcion: "Modulacion colinergica cognitiva y autonoma." },
+  muscarinicoM2: { titulo: "Receptor muscarinico M2", tipo: "GPCR Gi", proteina: "CHRM2", farmacos: ["anticolinergicos"], funcion: "Autorreceptor colinergico simplificado." },
+  muscarinicoM3: { titulo: "Receptor muscarinico M3", tipo: "GPCR Gq", proteina: "CHRM3", farmacos: ["anticolinergicos"], funcion: "Diana periferica importante para efectos adversos anticolinergicos." },
+  muscarinicoM4: { titulo: "Receptor muscarinico M4", tipo: "GPCR Gi", proteina: "CHRM4", farmacos: ["moduladores muscarinicos"], funcion: "Modulacion estriatal y cortical educativa." },
+  muscarinicoM5: { titulo: "Receptor muscarinico M5", tipo: "GPCR Gq", proteina: "CHRM5", farmacos: ["moduladores muscarinicos"], funcion: "Subtipo colinergico avanzado para mapa farmacologico." },
+  nicotinico: { titulo: "Receptor nicotinico", tipo: "canal cationico", proteina: "nAChR", farmacos: ["nicotina", "vareniclina"], funcion: "Canal activado por acetilcolina/nicotina." },
+  sigma: { titulo: "Receptor sigma", tipo: "diana moduladora", proteina: "sigma", farmacos: ["dextrometorfano educativo", "algunos antipsicoticos"], funcion: "Diana avanzada representada como modulador intracelular." },
+  muOpioide: { titulo: "Receptor opioide mu", tipo: "GPCR Gi/o", proteina: "OPRM1", farmacos: ["opioides", "naloxona"], funcion: "Inhibe liberacion y modula vias de recompensa/dolor." },
+  cb1: { titulo: "Receptor CB1", tipo: "GPCR Gi/o", proteina: "CNR1", farmacos: ["THC", "cannabinoides"], funcion: "Reduce liberacion presinaptica de neurotransmisores." }
+};
+
 const CAMERA_LABELS = {
   membrana: "Vista de membrana",
   axon: "Vista de axon",
@@ -200,15 +259,67 @@ function canalesModelo(estado) {
   const kOpen = estado.Vm > -55 || String(estado.canales.potasio).includes("Abierto");
   const caOpen = estado.terminalActiva || estado.sinapsis.caLocal > 0.25;
   const fxs = estado.farmacos?.efectos || {};
-  return [
-    { id: "naV", ion: "na", t: 0.18, label: "NaV", state: fxs.bloqueoNa > .65 ? "bloqueado" : naOpen ? "abierto" : estado.canales.sodio === "Inactivado" ? "inactivado" : "cerrado" },
-    { id: "kLeak", ion: "k", t: 0.29, label: "K fuga", state: "abierto" },
-    { id: "naLeak", ion: "na", t: 0.39, label: "Na fuga", state: "abierto" },
-    { id: "kV", ion: "k", t: 0.50, label: "KV", state: fxs.bloqueoK > .65 ? "bloqueado" : kOpen ? "abierto" : "cerrado" },
-    { id: "cl", ion: "cl", t: 0.61, label: estado.sinapsis.tipoId === "gaba" ? "GABA-A" : "Cl", state: fxs.gaba > .25 && estado.sinapsis.tipoId === "gaba" ? "potenciado" : "cerrado" },
-    { id: "caV", ion: "ca", t: 0.72, label: "CaV", state: fxs.bloqueoCa > .55 ? "bloqueado" : caOpen ? "abierto" : "cerrado" },
-    { id: "pump", ion: "na", t: 0.84, label: "Na/K", state: "bomba" }
+  const canales = [
+    { id: "naV", t: 0.18, label: "Nav", state: fxs.bloqueoNa > .65 ? "bloqueado" : naOpen ? "abierto" : estado.canales.sodio === "Inactivado" ? "inactivado" : "cerrado", maxEventos: 9 },
+    { id: "kLeak", t: 0.29, label: "K fuga", state: "abierto", maxEventos: 3 },
+    { id: "naLeak", t: 0.39, label: "Na fuga", state: "abierto", maxEventos: 2 },
+    { id: "kV", t: 0.50, label: "Kv", state: fxs.bloqueoK > .65 ? "bloqueado" : kOpen ? "abierto" : "cerrado", maxEventos: 7 },
+    { id: "cl", t: 0.61, label: estado.sinapsis.tipoId === "gaba" ? "GABA-A" : "Cl", state: estado.sinapsis.tipoId === "gaba" && fxs.gaba > -.45 ? (fxs.gaba > .25 ? "potenciado" : "abierto") : "cerrado", maxEventos: 6 },
+    { id: "caV", t: 0.72, label: "Cav", state: fxs.bloqueoCa > .75 ? "bloqueado" : caOpen ? "abierto" : "cerrado", maxEventos: 6 },
+    { id: "pump", t: 0.84, label: "Na/K", state: "bomba", maxEventos: 5 }
   ];
+  return canales.map((canal) => {
+    const meta = REGISTRO_PROTEINAS_MEMBRANA[canal.id] || {};
+    return { ...canal, ion: meta.iones?.[0] || "na", selectividad: meta.iones || [], rechaza: meta.rechaza || [], meta };
+  });
+}
+
+function canalEstaFuncional(canal) {
+  if (!canal) return false;
+  if (canal.id === "pump") return true;
+  return /abierto|potenciado|bomba/i.test(canal.state || "") && !/cerrado|inactivado|bloqueado/i.test(canal.state || "");
+}
+
+function canalPermiteIon(canal, ion) {
+  if (!canalEstaFuncional(canal)) return false;
+  return Array.isArray(canal.selectividad) && canal.selectividad.includes(ion);
+}
+
+function corrienteVisualPorCanal(flujo, canal) {
+  if (!canalPermiteIon(canal, flujo.ion)) return 0;
+  return Math.max(0, Math.min(canal.maxEventos || 6, Math.round(Math.abs(flujo.val) / (flujo.escala || 24))));
+}
+
+function farmacoActivo(estado, patron) {
+  const activos = estado.farmacos?.activos || [];
+  return activos.find((farmaco) => patron.test(`${farmaco.id || ""} ${farmaco.nombre || ""} ${farmaco.diana || ""} ${farmaco.clase || ""}`));
+}
+
+function tipoTransportadorMonoamina(tipoId) {
+  if (tipoId === "dopamina") return "DAT";
+  if (tipoId === "serotonina") return "SERT";
+  if (tipoId === "noradrenalina") return "NET";
+  if (tipoId === "gaba") return "GAT";
+  return "EAAT";
+}
+
+function infoProteina(id, estado) {
+  const base = REGISTRO_PROTEINAS_MEMBRANA[id] || RECEPTOR_EXTRA_INFO[id];
+  if (!base) return null;
+  const ion = base.iones?.length ? `Ion/NT: ${base.iones.map((i) => ION_STYLE[i]?.label || i).join(", ")}. ` : "";
+  const rechaza = base.rechaza?.length ? `Rechaza: ${base.rechaza.map((i) => ION_STYLE[i]?.label || i).join(", ")}. ` : "";
+  const farmacos = base.farmacos?.length ? `Farmacos/drogas: ${base.farmacos.join(", ")}. ` : "";
+  return {
+    titulo: base.titulo || id,
+    detalle: `${base.tipo || "Diana"}. ${base.funcion || ""} ${ion}${rechaza}${farmacos}Ecuacion o variable: ${base.ecuacion || "modelo educativo simplificado"}. Estado actual: ${canalesModelo(estado).find((c) => c.id === id)?.state || "segun contexto sinaptico"}.`,
+    camara: id === "caV" || id === "alpha2delta" || id === "sv2a" || id === "vmat2" ? "terminal" : "sinapsis"
+  };
+}
+
+function zonaInfo(id, estado = null) {
+  const base = ZONAS_NEURO_INFO[id] || {};
+  const protein = estado ? infoProteina(id, estado) : null;
+  return { ...base, ...(protein || {}), id, titulo: protein?.titulo || base.titulo || id, detalle: protein?.detalle || base.detalle || "Estructura del modelo educativo." };
 }
 
 function dibujarCanales(ctx, geo, estado) {
@@ -224,21 +335,33 @@ function dibujarCanales(ctx, geo, estado) {
 }
 
 function dibujarIones(ctx, geo, estado, uiMode) {
-  const densidad = ({ "muy-baja": 34, baja: 62, media: 110, alta: 170 })[uiMode.particleDensity || "baja"] || 62;
-  const slow = ({ "muy-lenta": 0.18, lenta: 0.35, normal: 0.7 })[uiMode.particleSpeed || "lenta"] || 0.35;
+  const densidadBase = ({ "muy-baja": 24, baja: 44, media: 74, alta: 108 })[uiMode.particleDensity || "baja"] || 44;
+  const slow = ({ "muy-lenta": 0.045, lenta: 0.085, normal: 0.16 })[uiMode.particleSpeed || "lenta"] || 0.085;
   const t = estado.relojVisual * slow;
   const ratios = { na: [0.72, 0.12], k: [0.16, 0.70], cl: [0.42, 0.20], ca: [0.16, 0.03], a: [0.02, 0.34] };
+  const actividad = actividadIonVisual(estado);
   Object.entries(ratios).forEach(([ion, [extraRatio, intraRatio]], ionIndex) => {
     if (uiMode.ionFilter && uiMode.ionFilter !== "todos" && uiMode.ionFilter !== ion) return;
-    const total = ion === "ca" ? Math.max(8, Math.floor(densidad * 0.18)) : Math.floor(densidad * Math.max(extraRatio, intraRatio) / 1.5);
+    const base = ion === "ca" ? densidadBase * 0.18 : densidadBase * Math.max(extraRatio, intraRatio) / 1.55;
+    const extraPorCorriente = ion === "k" ? Math.min(0.72, actividad.k) : ion === "na" ? Math.min(0.9, actividad.na) : ion === "ca" ? Math.min(0.7, actividad.ca) : 0.08;
+    const total = Math.max(ion === "ca" ? 5 : 8, Math.floor(base * (0.72 + extraPorCorriente)));
     for (let i = 0; i < total; i += 1) {
       const extra = i / total < extraRatio / (extraRatio + intraRatio);
       const p = posicionIon(geo, i, ionIndex, t, extra);
-      dibujarIon(ctx, p.x, p.y, ion, 0.75 + 0.25 * pseudo(i + ionIndex * 97));
+      const alpha = ion === "k" ? 0.58 + 0.18 * pseudo(i + 73) : 0.70 + 0.22 * pseudo(i + ionIndex * 97);
+      dibujarIon(ctx, p.x, p.y, ion, alpha);
     }
   });
 }
 
+function actividadIonVisual(estado) {
+  return {
+    na: Math.min(1, Math.abs(Number(estado.INa || 0)) / 260),
+    k: Math.min(1, Math.abs(Number(estado.IK || 0)) / 320),
+    ca: Math.min(1, Number(estado.sinapsis?.caLocal || 0) / 1.4),
+    cl: 0.12
+  };
+}
 function posicionIon(geo, i, ionIndex, t, extra) {
   const seed = i * 37 + ionIndex * 101;
   const x = (0.06 + pseudo(seed) * 0.86) * geo.w + Math.sin(t + seed) * 8;
@@ -309,21 +432,28 @@ function dibujarParticulaBio(ctx, p) {
 
 function dibujarFlujos(ctx, geo, estado) {
   const flujos = [
-    { ion: "na", val: -estado.INa, channel: "naV" },
-    { ion: "k", val: estado.IK, channel: "kV" },
-    { ion: "ca", val: estado.sinapsis.caLocal * 24, channel: "caV" }
+    { ion: "na", val: -estado.INa, channel: "naV", escala: 28 },
+    { ion: "k", val: estado.IK, channel: "kV", escala: 30 },
+    { ion: "k", val: Math.max(2, Math.abs(estado.IK || 0) * .10), channel: "kLeak", escala: 18 },
+    { ion: "na", val: Math.max(1.8, Math.abs(estado.INa || 0) * .035), channel: "naLeak", escala: 18 },
+    { ion: "cl", val: estado.sinapsis.tipoId === "gaba" ? 6 + Math.max(0, estado.farmacos?.efectos?.gaba || 0) * 12 : 0, channel: "cl", escala: 12 },
+    { ion: "ca", val: estado.sinapsis.caLocal * 24, channel: "caV", escala: 10 }
   ];
   const channels = Object.fromEntries(canalesModelo(estado).map((c) => [c.id, c]));
   flujos.forEach((f) => {
-    const ch = channels[f.channel]; if (!ch || Math.abs(f.val) < 2) return;
-    const p = puntoEnArco(geo, ch.t); const n = normalEnArco(p.a); const count = Math.min(10, Math.max(2, Math.round(Math.abs(f.val) / 35)));
-    const inward = f.ion === "na" || f.ion === "ca" ? f.val > 0 : f.val < 0;
+    const ch = channels[f.channel];
+    const count = corrienteVisualPorCanal(f, ch);
+    if (!count) return;
+    const p = puntoEnArco(geo, ch.t);
+    const n = normalEnArco(p.a);
+    const inward = f.ion === "k" ? f.val < 0 : f.val > 0;
+    const amplitud = f.ion === "k" ? 72 : f.ion === "cl" ? 68 : 96;
+    const velocidadIon = f.ion === "k" ? 0.075 : f.ion === "ca" ? 0.10 : f.ion === "cl" ? 0.085 : 0.11;
     for (let i = 0; i < count; i += 1) {
-      const velocidadIon = f.ion === "k" ? 0.16 : f.ion === "ca" ? 0.22 : 0.28;
-      const phase = (estado.relojVisual * velocidadIon + i / count) % 1;
-      const amplitud = f.ion === "k" ? 78 : 116;
+      const phase = (estado.relojVisual * velocidadIon + i / Math.max(1, count)) % 1;
       const d = inward ? amplitud / 2 - phase * amplitud : -amplitud / 2 + phase * amplitud;
-      dibujarIon(ctx, p.x + n.x * d + Math.sin(i) * 3, p.y + n.y * d + Math.cos(i) * 3, f.ion, 0.95);
+      const jitter = Math.sin(i * 1.7) * 2.4;
+      dibujarIon(ctx, p.x + n.x * d + jitter, p.y + n.y * d + Math.cos(i) * 2.4, f.ion, 0.88);
     }
   });
 }
@@ -504,6 +634,14 @@ function dibujarVesiculasLibro(ctx, cx, cy, terminalW, terminalH, estado) {
     ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
     ctx.strokeStyle = "rgba(224,242,254,.34)"; ctx.beginPath(); ctx.arc(x, y, r - 5, 0, Math.PI * 2); ctx.stroke();
     for (let n = 0; n < 7; n += 1) dibujarNeurotransmisor(ctx, x + Math.cos(n * .9 + i) * 6, y + Math.sin(n * .9 + i) * 6, estado.sinapsis.tipoId, .88, 3.2);
+    if (["dopamina", "serotonina", "noradrenalina"].includes(estado.sinapsis.tipoId) && i % 4 === 0) {
+      ctx.fillStyle = "#e0f2fe"; ctx.font = "800 5.8px Inter, sans-serif"; ctx.textAlign = "center";
+      ctx.fillText("VMAT2", x, y - r - 3);
+    }
+    if (farmacoActivo(estado, /levetiracetam|sv2a/i) && i % 5 === 1) {
+      ctx.strokeStyle = "#f472b6"; ctx.strokeRect(x - r - 2, y - r - 2, (r + 2) * 2, (r + 2) * 2);
+      ctx.fillStyle = "#fbcfe8"; ctx.font = "800 5.8px Inter, sans-serif"; ctx.textAlign = "center"; ctx.fillText("SV2A", x, y + r + 8);
+    }
     ctx.restore();
   }
 }
@@ -518,9 +656,13 @@ function dibujarMembranaActivaLibro(ctx, cx, cleftY, terminalW, estado) {
   ctx.fillStyle = "rgba(250,204,21,.18)";
   roundRect(ctx, activeX - 6, cleftY - 74, activeW + 12, 34, 16); ctx.fill();
   const caAbierto = estado.terminalActiva || estado.sinapsis.caLocal > .25;
+  const gabapentinoide = farmacoActivo(estado, /pregabalina|gabapentina|alpha2delta/i);
   for (let i = 0; i < 5; i += 1) {
-    dibujarCanalConSubdominios(ctx, activeX + 22 + i * (activeW - 44) / 4, cleftY - 58, "CaV", "ca", caAbierto ? "abierto" : "cerrado", { escala: .68, vertical: true });
+    const cxCanal = activeX + 22 + i * (activeW - 44) / 4;
+    dibujarCanalConSubdominios(ctx, cxCanal, cleftY - 58, "CaV", "ca", caAbierto ? "abierto" : "cerrado", { escala: .68, vertical: true });
+    dibujarSubunidadAlpha2Delta(ctx, cxCanal + 13, cleftY - 62, gabapentinoide);
   }
+  if (gabapentinoide) dibujarAccionFarmaco(ctx, activeX + activeW + 24, cleftY - 92, activeX + activeW - 8, cleftY - 62, gabapentinoide.nombre || "Pregabalina", "alpha2delta");
   const fase = (estado.relojVisual * .18) % 1;
   for (let i = 0; i < 18; i += 1) {
     const t = (fase + i / 18) % 1;
@@ -580,6 +722,11 @@ function dibujarTransportadoresEnzimasLibro(ctx, cx, cleftY, postW, estado) {
   ctx.restore();
 }
 
+function receptoresParaSinapsis(tipo, estado) {
+  const base = RECEPTORES_POR_SINAPSIS[tipo] || RECEPTORES_POR_SINAPSIS.glutamato;
+  return base.map(([label, ion, state, id]) => [label, ion, label === "NMDA" ? (estado.sinapsis.receptorOcupado > .4 ? "abierto" : "bloqueo Mg") : state, id]);
+}
+
 function dibujarPostsinapsisLibro(ctx, cx, cy, postW, postH, estado) {
   const left = cx - postW / 2;
   const top = cy - postH / 2;
@@ -598,17 +745,9 @@ function dibujarPostsinapsisLibro(ctx, cx, cy, postW, postH, estado) {
   ctx.closePath(); ctx.fill(); ctx.stroke();
   dibujarMosaicoFosfolipidoRecto(ctx, left + 100, top + 24, postW - 200, 0, "arriba");
   const tipo = estado.sinapsis.tipoId;
-  const receptores = tipo === "gaba"
-    ? [["GABA-A", "cl", "potenciado"], ["GABA-B", "k", "metabotropico"], ["GIRK", "k", "modulado"]]
-    : tipo === "dopamina"
-      ? [["D1", "na", "metabotropico"], ["D2", "k", "metabotropico"], ["DAT", "na", "transportador"]]
-      : tipo === "serotonina"
-        ? [["5-HT1A", "k", "metabotropico"], ["5-HT2A", "ca", "metabotropico"], ["SERT", "na", "transportador"]]
-        : tipo === "noradrenalina"
-          ? [["alfa-2", "k", "metabotropico"], ["beta", "ca", "metabotropico"], ["NET", "na", "transportador"]]
-          : [["AMPA", "na", "abierto"], ["NMDA", "ca", estado.sinapsis.receptorOcupado > .4 ? "abierto" : "bloqueo Mg"], ["mGluR", "k", "metabotropico"]];
+  const receptores = receptoresParaSinapsis(tipo, estado).slice(0, 5);
   receptores.forEach(([label, ion, state], i) => {
-    dibujarReceptorPostsinaptico(ctx, cx - 120 + i * 120, top + 4, label, ion, state, estado);
+    dibujarReceptorPostsinaptico(ctx, cx - 185 + i * 92, top + 4, label, ion, state, estado);
   });
   const post = Number(estado.sinapsis.postPotencial || 0);
   ctx.fillStyle = post >= 0 ? "rgba(34,211,238,.22)" : "rgba(167,139,250,.22)";
@@ -744,7 +883,7 @@ function renderizarModelo3DFisicoQuimico(ctx, w, h, estado, uiMode = {}) {
   const nt = NT_STYLE[estado.sinapsis.tipoId] || NT_STYLE.glutamato;
   const vmNorm = Math.max(0, Math.min(1, (estado.Vm + 80) / 120));
   const naFlux = Math.min(1.4, Math.abs(estado.INa || 0) / 260);
-  const kFlux = Math.min(1.4, Math.abs(estado.IK || 0) / 220);
+  const kFlux = Math.min(0.95, Math.abs(estado.IK || 0) / 360);
   const caFlux = Math.min(1.4, Number(estado.sinapsis.caLocal || 0) / 1.2);
   const mielina = Boolean(estado.axon.mielina);
   const diametro = Math.max(.18, Math.min(1.35, Number(estado.axon.diametroUm || 2) / 5));
@@ -760,26 +899,39 @@ function renderizarModelo3DFisicoQuimico(ctx, w, h, estado, uiMode = {}) {
   ctx.fillRect(0, 0, w, h);
   ctx.restore();
 
-  for (let i = 0; i < 7; i += 1) {
-    const ang = -1.95 + i * .64;
-    const base = { x: -1.1 + Math.cos(ang) * .32, y: -.24 + Math.sin(ang) * .22, z: Math.sin(i) * .28 };
-    const end = { x: base.x - .55 - (i % 2) * .22, y: base.y + Math.sin(ang) * .38, z: base.z + Math.cos(ang) * .26 };
-    add(base.z, () => tubo3D(ctx, cam, [base, end], "rgba(56,189,248,.42)", .035, .78));
-    add(end.z, () => esfera3D(ctx, cam, end, .032, "#38bdf8", "", .66));
+  const somaCentro = { x: -1.0, y: -.12, z: 0 };
+  for (let i = 0; i < 9; i += 1) {
+    const ang = -2.45 + i * .55;
+    const base = { x: somaCentro.x + Math.cos(ang) * .22, y: somaCentro.y + Math.sin(ang) * .18, z: Math.sin(i * .9) * .18 };
+    const medio = { x: base.x + Math.cos(ang) * .34, y: base.y + Math.sin(ang) * .26 + Math.sin(i) * .05, z: base.z + Math.cos(i) * .12 };
+    const end = { x: medio.x + Math.cos(ang + .15) * (.38 + (i % 3) * .08), y: medio.y + Math.sin(ang) * .30, z: medio.z + Math.sin(ang) * .18 };
+    add(base.z, () => tubo3D(ctx, cam, [base, medio, end], "rgba(56,189,248,.46)", .030, .82));
+    const rama = { x: medio.x + Math.cos(ang + .75) * .18, y: medio.y + Math.sin(ang + .75) * .14, z: medio.z + .10 };
+    add(rama.z, () => tubo3D(ctx, cam, [medio, rama], "rgba(125,211,252,.36)", .018, .62));
+    for (let s = 0; s < 3; s += 1) {
+      const sp = { x: base.x + (end.x - base.x) * (.32 + s * .18), y: base.y + (end.y - base.y) * (.32 + s * .18) - .025, z: base.z + (end.z - base.z) * (.32 + s * .18) + .025 };
+      add(sp.z + .02, () => esfera3D(ctx, cam, sp, .014, "#bae6fd", "", .62));
+    }
   }
 
   add(0, () => {
-    esfera3D(ctx, cam, { x: -1.0, y: -.12, z: 0 }, .25, "#0ea5e9", "Vm", .92);
-    esfera3D(ctx, cam, { x: -1.03, y: -.12, z: .04 }, .12, vmNorm > .55 ? "#facc15" : "#38bdf8", `${formato(estado.Vm,0)}`, .92);
+    esfera3D(ctx, cam, { x: -1.03, y: -.11, z: -.03 }, .28, "#0ea5e9", "", .86);
+    esfera3D(ctx, cam, { x: -.93, y: -.14, z: .08 }, .20, "#0284c7", "Vm", .74);
+    esfera3D(ctx, cam, { x: -1.03, y: -.12, z: .06 }, .105, vmNorm > .55 ? "#facc15" : "#38bdf8", `${formato(estado.Vm,0)}`, .92);
+    esfera3D(ctx, cam, { x: -1.08, y: -.12, z: .08 }, .055, "#c084fc", "N", .84);
   });
 
   const axonPts = [];
   for (let i = 0; i <= 24; i += 1) axonPts.push({ x: -0.76 + i * .07, y: -.08 + Math.sin(i * .34) * .025, z: Math.sin(i * .22) * .05 });
-  add(.05, () => tubo3D(ctx, cam, axonPts, "rgba(125,211,252,.68)", .05 + diametro * .035, .92));
+  add(.06, () => tubo3D(ctx, cam, [{ x: -.88, y: -.10, z: 0 }, { x: -.78, y: -.09, z: .02 }, axonPts[0]], "rgba(45,212,191,.62)", .075, .9));
+  add(.05, () => tubo3D(ctx, cam, axonPts, "rgba(125,211,252,.68)", .042 + diametro * .03, .92));
   for (let i = 2; i < 22; i += 4) {
-    const p = axonPts[i];
-    if (mielina) add(p.z + .03, () => esfera3D(ctx, cam, p, .095 + diametro * .025, "#eab308", "", .74));
-    add(p.z + .08, () => esfera3D(ctx, cam, { x: p.x + .04, y: p.y - .085, z: p.z + .03 }, .028, "#fb923c", "Na", .86));
+    const p1 = axonPts[i];
+    const p2 = axonPts[Math.min(i + 2, axonPts.length - 1)];
+    if (mielina) add((p1.z + p2.z) / 2 + .03, () => tubo3D(ctx, cam, [p1, p2], "rgba(234,179,8,.78)", .083 + diametro * .024, .82));
+    const nodo = axonPts[Math.min(i + 3, axonPts.length - 1)];
+    add(nodo.z + .08, () => esfera3D(ctx, cam, { x: nodo.x, y: nodo.y - .085, z: nodo.z + .03 }, .026, "#fb923c", "Na", .86));
+    if (mielina) add(nodo.z + .04, () => etiqueta3D(ctx, cam, { x: nodo.x, y: nodo.y + .08, z: nodo.z }, "nodo", "#fde68a"));
   }
   if (estado.posicionOnda > 0) {
     const idx = Math.min(axonPts.length - 1, Math.max(0, Math.round(estado.posicionOnda * (axonPts.length - 1))));
@@ -788,7 +940,13 @@ function renderizarModelo3DFisicoQuimico(ctx, w, h, estado, uiMode = {}) {
   }
 
   const terminal = { x: 1.05, y: -.06, z: 0 };
-  add(.2, () => esfera3D(ctx, cam, terminal, .25, "#0f766e", "", .86));
+  add(.16, () => tubo3D(ctx, cam, [axonPts[axonPts.length - 1], { x: .92, y: -.08, z: 0 }, terminal], "rgba(125,211,252,.48)", .036, .8));
+  [[.13,-.13,.16],[.16,.02,-.12],[.08,.15,.1]].forEach(([dx, dy, dz], idx) => {
+    const rama = { x: terminal.x + dx, y: terminal.y + dy, z: terminal.z + dz };
+    add(rama.z, () => tubo3D(ctx, cam, [terminal, rama], "rgba(45,212,191,.55)", .026, .72));
+    add(rama.z + .04, () => esfera3D(ctx, cam, rama, .068, "#0f766e", idx === 0 ? "boton" : "", .82));
+  });
+  add(.2, () => esfera3D(ctx, cam, terminal, .22, "#0f766e", "", .84));
   for (let i = 0; i < 5; i += 1) {
     const p = { x: .92 + (i % 3) * .12, y: -.17 + Math.floor(i / 3) * .15, z: -.18 + i * .09 };
     add(p.z, () => esfera3D(ctx, cam, p, .055, "#94a3b8", "", .78));
@@ -836,9 +994,9 @@ function renderizarModelo3DFisicoQuimico(ctx, w, h, estado, uiMode = {}) {
   fluxes.forEach((f) => {
     if (uiMode.ionFilter && uiMode.ionFilter !== "todos" && uiMode.ionFilter !== f.ion) return;
     const s = ION_STYLE[f.ion];
-    const n = Math.max(2, Math.round(4 + f.fuerza * 8));
+    const n = Math.max(2, Math.round((f.ion === "k" ? 2.5 : 4) + f.fuerza * (f.ion === "k" ? 4 : 8)));
     for (let i = 0; i < n; i += 1) {
-      const tt = ((estado.relojVisual * .18 + i / n) % 1);
+      const tt = ((estado.relojVisual * (f.ion === "k" ? .045 : .12) + i / n) % 1);
       const p = { x: f.from.x + (f.to.x - f.from.x) * tt, y: f.from.y + (f.to.y - f.from.y) * tt, z: f.from.z + (f.to.z - f.from.z) * tt };
       add(p.z + .2, () => esfera3D(ctx, cam, p, .025 + f.fuerza * .006, s.color, s.label, .88));
     }
@@ -846,7 +1004,7 @@ function renderizarModelo3DFisicoQuimico(ctx, w, h, estado, uiMode = {}) {
 
   (estado.farmacos?.activos || []).slice(0, 5).forEach((farmaco, i) => {
     const p = { x: .58 + i * .12, y: .1 + Math.sin(i) * .08, z: .32 - i * .08 };
-    add(p.z + .4, () => esfera3D(ctx, cam, p, .038, "#f472b6", "Dx", .9));
+    add(p.z + .4, () => { esfera3D(ctx, cam, p, .038, "#f472b6", "Dx", .9); etiqueta3D(ctx, cam, { x: p.x + .05, y: p.y - .06, z: p.z }, `${farmaco.nombre || "farmaco"} -> ${(farmaco.dianas || farmaco.diana || "diana")}`, "#f9a8d4"); });
   });
 
   objetos.sort((a, b) => a.z - b.z).forEach((o) => o.fn());
@@ -990,6 +1148,13 @@ function dibujarVesiculasSinapticas(ctx, sx, sy, estado) {
     for (let n = 0; n < 5; n += 1) {
       dibujarNeurotransmisor(ctx, x + Math.cos(n * 1.26 + i) * 3.5, y + Math.sin(n * 1.26 + i) * 3.5, estado.sinapsis.tipoId, lista ? .9 : .42, 2.5);
     }
+    if (["dopamina", "serotonina", "noradrenalina"].includes(estado.sinapsis.tipoId) && i % 5 === 0) {
+      ctx.fillStyle = "#e0f2fe"; ctx.font = "800 5px Inter, sans-serif"; ctx.textAlign = "center"; ctx.fillText("VMAT2", x, y - radio - 2);
+    }
+    if (farmacoActivo(estado, /levetiracetam|sv2a/i) && i % 6 === 2) {
+      ctx.strokeStyle = "#f472b6"; ctx.strokeRect(x - radio - 2, y - radio - 2, (radio + 2) * 2, (radio + 2) * 2);
+      ctx.fillStyle = "#fbcfe8"; ctx.font = "800 5px Inter, sans-serif"; ctx.textAlign = "center"; ctx.fillText("SV2A", x, y + radio + 7);
+    }
     if (fusion) {
       ctx.strokeStyle = "rgba(250,204,21,.75)";
       ctx.beginPath(); ctx.moveTo(x + radio - 1, y + 4); ctx.lineTo(sx + 104, sy + 72); ctx.stroke();
@@ -1007,9 +1172,13 @@ function dibujarZonaActiva(ctx, sx, sy, estado) {
   ctx.beginPath(); ctx.moveTo(sx + 22, y); ctx.lineTo(sx + 96, y); ctx.stroke();
   etiqueta(ctx, "zona activa", sx + 22, y + 22, "#fef9c3");
   const caAbierto = estado.terminalActiva || estado.sinapsis.caLocal > .25;
+  const gabapentinoide = farmacoActivo(estado, /pregabalina|gabapentina|alpha2delta/i);
   for (let i = 0; i < 4; i += 1) {
-    dibujarCanalConSubdominios(ctx, sx + 28 + i * 18, y - 18, "CaV", "ca", caAbierto ? "abierto" : "cerrado", { escala: .72, vertical: true });
+    const cxCanal = sx + 28 + i * 18;
+    dibujarCanalConSubdominios(ctx, cxCanal, y - 18, "CaV", "ca", caAbierto ? "abierto" : "cerrado", { escala: .72, vertical: true });
+    dibujarSubunidadAlpha2Delta(ctx, cxCanal + 11, y - 22, gabapentinoide);
   }
+  if (gabapentinoide) dibujarAccionFarmaco(ctx, sx + 118, y - 72, sx + 88, y - 22, gabapentinoide.nombre || "Pregabalina", "alpha2delta");
   ctx.restore();
 }
 
@@ -1092,6 +1261,8 @@ function dibujarTransportadoresYEnzimas(ctx, x, sy, w, estado) {
     ctx.fillStyle = "#020617"; ctx.font = "800 5.5px Inter, sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
     ctx.fillText("E", ex, ey);
   }
+  const farmacoRecaptura = farmacoActivo(estado, /fluoxetina|sertralina|isrs|cocaina|metilfenidato|anfetamina|dat|sert|net/i);
+  if (farmacoRecaptura) dibujarAccionFarmaco(ctx, x + 78, yBase - 54, x + 28, yBase - 12, farmacoRecaptura.nombre || "Farmaco", nt.transportador);
   ctx.fillStyle = "#cbd5e1"; ctx.font = "800 9px Inter, sans-serif"; ctx.textAlign = "left"; ctx.textBaseline = "alphabetic";
   ctx.fillText(`${nt.transportador} recaptura`, x + 4, yBase + 24);
   ctx.fillText(`${nt.enzima}`, x + w - 90, yBase + 24);
@@ -1107,23 +1278,39 @@ function dibujarMembranaPostsinaptica(ctx, geo, x, sy, estado) {
   roundRect(ctx, x + 16, y - 96, 64, 212, 22); ctx.fill();
   etiqueta(ctx, "neurona postsinaptica", x - 8, y - 132, "#7dd3fc");
   const tipo = estado.sinapsis.tipoId;
-  const receptores = tipo === "gaba"
-    ? [["GABA-A", "cl", "potenciado"], ["GABA-B", "k", "metabotropico"], ["GAT", "na", "transportador"]]
-    : tipo === "dopamina"
-      ? [["D1/D2", "na", "metabotropico"], ["DAT", "na", "transportador"], ["K+", "k", "modulado"]]
-      : tipo === "serotonina"
-        ? [["5-HT1A", "k", "metabotropico"], ["5-HT2A", "ca", "modulado"], ["SERT", "na", "transportador"]]
-        : tipo === "noradrenalina"
-          ? [["alfa-2", "k", "metabotropico"], ["beta", "ca", "modulado"], ["NET", "na", "transportador"]]
-          : [["AMPA", "na", "abierto"], ["NMDA", "ca", estado.sinapsis.receptorOcupado > .4 ? "abierto" : "bloqueo Mg"], ["EAAT/mGluR", "k", "transportador"]];
+  const receptores = receptoresParaSinapsis(tipo, estado).slice(0, 5);
   receptores.forEach(([label, ion, state], i) => {
-    dibujarReceptorPostsinaptico(ctx, x + 6, y - 80 + i * 62, label, ion, state, estado);
+    dibujarReceptorPostsinaptico(ctx, x + 2, y - 92 + i * 48, label, ion, state, estado);
   });
   const post = Number(estado.sinapsis.postPotencial || 0);
   ctx.fillStyle = post >= 0 ? "rgba(34,211,238,.22)" : "rgba(167,139,250,.22)";
   ctx.beginPath(); ctx.arc(x + 92, y + Math.max(-82, Math.min(82, -post * 3)), 26, 0, Math.PI * 2); ctx.fill();
   ctx.fillStyle = "#e0f2fe"; ctx.font = "900 10px Inter, sans-serif"; ctx.textAlign = "center";
   ctx.fillText(`${formato(post,1)} mV`, x + 48, y + 126);
+  ctx.restore();
+}
+
+function dibujarSubunidadAlpha2Delta(ctx, x, y, farmaco) {
+  ctx.save();
+  ctx.fillStyle = farmaco ? "rgba(244,114,182,.88)" : "rgba(56,189,248,.62)";
+  ctx.strokeStyle = farmaco ? "#fbcfe8" : "#bae6fd";
+  ctx.lineWidth = 1.2;
+  ctx.beginPath(); ctx.arc(x, y, 7, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+  ctx.fillStyle = "#020617"; ctx.font = "900 5.5px Inter, sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+  ctx.fillText("a2d", x, y);
+  ctx.restore();
+}
+
+function dibujarAccionFarmaco(ctx, x1, y1, x2, y2, nombre, diana) {
+  ctx.save();
+  ctx.strokeStyle = "rgba(244,114,182,.82)";
+  ctx.fillStyle = "rgba(244,114,182,.20)";
+  ctx.lineWidth = 1.8;
+  ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+  ctx.beginPath(); ctx.arc(x1, y1, 12, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+  ctx.fillStyle = "#fbcfe8"; ctx.font = "900 8px Inter, sans-serif"; ctx.textAlign = "center";
+  ctx.fillText(nombre, x1, y1 - 16);
+  ctx.fillText(`-> ${diana}`, x1, y1 + 24);
   ctx.restore();
 }
 
@@ -1273,7 +1460,7 @@ export function identificarZonaNeuroCanvas(canvas, estado, uiMode = {}, clientX,
       { id: "postsinapsis", x: cx, y: postY, r: Math.max(120, postW * .26) }
     ];
     const foco = zonasSinapsis.map((p) => ({ ...p, d: Math.hypot(x - p.x, y - p.y) })).filter((p) => p.d <= p.r).sort((a, b) => a.d - b.d)[0];
-    if (foco && ZONAS_NEURO_INFO[foco.id]) return zonaInfo(foco.id);
+    if (foco && (ZONAS_NEURO_INFO[foco.id] || REGISTRO_PROTEINAS_MEMBRANA[foco.id])) return zonaInfo(foco.id, estado);
   }
   const puntos = [];
   canalesModelo(estado).forEach((ch) => {
@@ -1289,13 +1476,13 @@ export function identificarZonaNeuroCanvas(canvas, estado, uiMode = {}, clientX,
     .map((p) => ({ ...p, d: Math.hypot(x - p.x, y - p.y) }))
     .filter((p) => p.d <= p.r)
     .sort((a, b) => a.d - b.d)[0];
-  if (cercano && ZONAS_NEURO_INFO[cercano.id]) return zonaInfo(cercano.id);
+  if (cercano && (ZONAS_NEURO_INFO[cercano.id] || REGISTRO_PROTEINAS_MEMBRANA[cercano.id])) return zonaInfo(cercano.id, estado);
   const distanciaMembrana = Math.abs(Math.hypot(x - geo.cx, y - geo.cy) - (geo.rOuter - geo.thickness / 2));
   let angulo = Math.atan2(y - geo.cy, x - geo.cx);
   if (angulo < 0) angulo += Math.PI * 2;
-  if (angulo >= geo.arcStart && angulo <= geo.arcEnd && distanciaMembrana < geo.thickness * 0.78) return zonaInfo("membrana");
-  if (y < cssH * 0.48) return zonaInfo("extracelular");
-  if (y > cssH * 0.54) return zonaInfo("intracelular");
+  if (angulo >= geo.arcStart && angulo <= geo.arcEnd && distanciaMembrana < geo.thickness * 0.78) return zonaInfo("membrana", estado);
+  if (y < cssH * 0.48) return zonaInfo("extracelular", estado);
+  if (y > cssH * 0.54) return zonaInfo("intracelular", estado);
   return null;
 }
 

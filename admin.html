@@ -70,6 +70,7 @@
     <button type="button" class="activo" data-admin-section="seccionUsuariosRecientes">Ultimos usuarios</button>
     <button type="button" data-admin-section="seccionAvisosAdmin">Avisos Dashboard</button>
     <button type="button" data-admin-section="seccionUsuariosRegistrados">Usuarios registrados</button>
+    <button type="button" data-admin-section="seccionFormatosAdmin">Formatos</button>
     <button type="button" data-admin-section="seccionPacientesAdmin">Pacientes y notas</button>
     <button type="button" data-admin-section="seccionReportesAdmin">Reportes</button>
     <button type="button" data-admin-section="seccionAuditoriaAdmin">Auditoria</button>
@@ -163,6 +164,32 @@
     </div>
   </section>
 
+
+  <section id="seccionFormatosAdmin" class="card tabla-card admin-section">
+    <div class="tabla-header">
+      <div>
+        <h2>Formatos institucionales</h2>
+        <p>Autoriza por usuario el acceso a formatos institucionales como Fray Bernardino.</p>
+      </div>
+      <button id="btnActualizarFormatosAdmin" type="button">Actualizar formatos</button>
+    </div>
+
+    <div class="filtros-auditoria">
+      <input id="filtroFormatosAdmin" placeholder="Buscar usuario, correo, rol o institucion">
+      <select id="filtroFormatosInstitucionAdmin">
+        <option value="">Todas las instituciones</option>
+      </select>
+    </div>
+
+    <div class="acciones-admin-inline">
+      <button id="btnAutorizarFrayVisibles" type="button">Autorizar Fray a visibles</button>
+      <button id="btnRetirarFrayVisibles" type="button">Retirar Fray a visibles</button>
+    </div>
+
+    <div id="listaFormatosAdmin" class="lista-pacientes-admin">
+      <p>Cargando permisos de formatos...</p>
+    </div>
+  </section>
   <section id="seccionPacientesAdmin" class="card tabla-card admin-section">
     <div class="tabla-header">
       <div>

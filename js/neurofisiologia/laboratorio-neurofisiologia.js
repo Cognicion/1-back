@@ -32,11 +32,13 @@ let graficasIntegradasVisibles = new Set(["Vm"]);
 let ecuacionCongelada = null;
 let uiModeNeuro = crearUiModeNeuro();
 let zonaNeuroSeleccionada = null;
+let detalleNeuroAbierto = false;
 let interaccionesCanvasIntegradoListas = false;
 let cierreDetalleNeuroEnCurso = false;
 let ultimoDisparadorDetalleNeuro = null;
 let cierreGlobalDetalleInstalado = false;
 const arrastreNeuro = { activo: false, movido: false, inicioX: 0, inicioY: 0, ultimoX: 0, ultimoY: 0 };
+const arrastreDetalleNeuro = { activo: false, dx: 0, dy: 0 };
 let tutorialVistoNeuro = localStorage.getItem("cognicionNeuroTutorialVisto") === "1";
 const escena = $("escenaMembrana");
 const graficaAccion = $("graficaAccion");
@@ -175,28 +177,40 @@ function instalarCierreGlobalDetalleNeuro() {
     const botonDetalle = evento.target?.closest?.("[data-cerrar-detalle-neuro]");
     const botonAyuda = evento.target?.closest?.("[data-cerrar-ayuda-neuro]");
     const botonAislar = evento.target?.closest?.("[data-neuro-aislar]");
-    if (!botonDetalle && !botonAyuda && !botonAislar) return;
+    const botonMinimizar = evento.target?.closest?.("[data-minimizar-detalle-neuro]");
+    if (!botonDetalle && !botonAyuda && !botonAislar && !botonMinimizar) return;
+    if (botonMinimizar && evento.type === "pointerup") return;
     evento.preventDefault();
     evento.stopPropagation();
+    evento.stopImmediatePropagation?.();
     if (botonDetalle) cerrarDetalleNeuroSeleccionado();
     if (botonAyuda) cerrarAyudaParametroNeuro();
     if (botonAislar) aislarFuncionamientoNeuro();
+    if (botonMinimizar) minimizarDetalleNeuroSeleccionado();
   };
   document.addEventListener("pointerup", cerrarSiCorresponde, true);
   document.addEventListener("click", cerrarSiCorresponde, true);
+  document.addEventListener("pointerdown", (evento) => {
+    const panel = $("detalleIntegradaSeleccion");
+    if (!detalleNeuroAbierto || !panel || panel.hidden) return;
+    if (evento.target?.closest?.(".detalle-neuro-seleccion, .panel-ayuda-parametro-neuro, .controles-lab, .acciones, .tabs-lab")) return;
+    cerrarDetalleNeuroSeleccionado();
+  }, true);
   document.addEventListener("keydown", (evento) => {
     if (evento.key === "Escape") {
       cerrarDetalleNeuroSeleccionado();
       cerrarAyudaParametroNeuro();
     }
-    if ((evento.key === "Enter" || evento.key === " ") && evento.target?.matches?.("[data-cerrar-detalle-neuro], [data-cerrar-ayuda-neuro]")) {
+    if ((evento.key === "Enter" || evento.key === " ") && evento.target?.matches?.("[data-cerrar-detalle-neuro], [data-cerrar-ayuda-neuro], [data-minimizar-detalle-neuro]")) {
       evento.preventDefault();
+      evento.stopPropagation();
+      evento.stopImmediatePropagation?.();
       if (evento.target.matches("[data-cerrar-detalle-neuro]")) cerrarDetalleNeuroSeleccionado();
       if (evento.target.matches("[data-cerrar-ayuda-neuro]")) cerrarAyudaParametroNeuro();
+      if (evento.target.matches("[data-minimizar-detalle-neuro]")) minimizarDetalleNeuroSeleccionado();
     }
   }, true);
 }
-
 function devolverFocoDetalleNeuro() {
   const destino = ultimoDisparadorDetalleNeuro;
   ultimoDisparadorDetalleNeuro = null;
@@ -511,25 +525,294 @@ function tooltipAccion(e) {
   tip.style.top = `${top}px`;
 }
 
-function vincularAxon() { ["tipoAxon", "longitudAxon", "diametroAxon", "grosorMielina", "temperaturaAxon", "densidadNaAxon", "bloqueoAxon", "desmielinizacionActiva", "severidadDesmielina", "estimularDesde", "bidireccional"].forEach((id) => $(id).addEventListener("input", actualizarAxon)); $("btnAxonPlay").addEventListener("click", () => { axonActivo = true; tiempoAxon = 0; animarAxon(); }); $("btnAxonPausa").addEventListener("click", () => { axonActivo = false; cancelAnimationFrame(rafAxon); }); $("btnAxonReset").addEventListener("click", () => { axonActivo = false; tiempoAxon = 0; dibujarAxonVisual(); dibujarGraficaAxon(); }); }
-function parametrosAxon() { return { longitudMm: Number($("longitudAxon").value), diametroUm: Number($("diametroAxon").value), mielina: $("tipoAxon").value === "mielinizado", grosorMielina: Number($("grosorMielina").value), temperaturaC: Number($("temperaturaAxon").value), densidadNa: Number($("densidadNaAxon").value), bloqueoCanales: Number($("bloqueoAxon").value), estimulacion: $("estimularDesde").value, bidireccional: $("bidireccional").checked, desmielinizacion: { activa: $("desmielinizacionActiva").checked, severidad: Number($("severidadDesmielina").value), inicioMm: 35, longitudMm: 15 } }; }
-function actualizarAxon() { resultadoAxon = simularPropagacionAxonal(parametrosAxon()); dibujarAxonVisual(); dibujarGraficaAxon(); $("resumenAxon").innerHTML = [["Velocidad", `${resultadoAxon.velocidadMms.toFixed(2)} mm/ms`], ["Tiempo total", `${resultadoAxon.tiempoTotalMs.toFixed(1)} ms`], ["Seguridad", `${Math.round(resultadoAxon.seguridadConduccion * 100)}%`], ["Tipo", resultadoAxon.parametros.mielina ? "Saltatoria" : "Continua"]].map(([k, v]) => `<article><span>${k}</span><strong>${v}</strong></article>`).join(""); }
-function dibujarAxonVisual() {
-  const el = $("axonVisual");
-  const p = resultadoAxon.parametros;
-  el.innerHTML = `<div class="axon-linea"></div><span class="axon-label-mini inicio">Segmento inicial</span><span class="axon-label-mini terminal">Terminal axonal</span>`;
-  if (p.desmielinizacion.activa) el.innerHTML += `<span class="lesion" style="left:${5 + p.desmielinizacion.inicioMm / p.longitudMm * 90}%;width:${p.desmielinizacion.longitudMm / p.longitudMm * 90}%"></span><span class="axon-label-mini lesion-label" style="left:${6 + p.desmielinizacion.inicioMm / p.longitudMm * 90}%">Desmielinizacion focal</span>`;
-  if (p.mielina) {
-    for (let x = 6; x < 92; x += 14) el.innerHTML += `<span class="mielina" style="left:${x}%;width:10%"></span><span class="nodo" style="left:${x + 10}%"></span><span class="axon-label-mini nodo-label" style="left:${x + 8}%">Nodo</span>`;
-  } else {
-    el.innerHTML += `<span class="axon-label-mini continuo">Conduccion continua</span>`;
-  }
-  resultadoAxon.electrodos.forEach((e, i) => { el.innerHTML += `<span class="electrodo" style="left:${5 + e.posicion / p.longitudMm * 90}%"></span><span class="axon-label-mini electrodo-label" style="left:${4 + e.posicion / p.longitudMm * 90}%">E${i + 1}</span>`; });
-  const pos = Math.min(90, tiempoAxon / resultadoAxon.tiempoTotalMs * 90);
-  el.innerHTML += `<span class="onda" style="left:${5 + pos}%"></span><span class="axon-label-mini onda-label" style="left:${5 + pos}%">Impulso</span>`;
+
+const PASOS_AXON_DOCENTE = [
+  { titulo: "Introduccion", foco: "inicio", fraccion: 0, texto: "Imagina que este potencial de accion acaba de nacer en el cono axonico. Ahora veremos como viaja hasta la terminal." },
+  { titulo: "1. Segmento inicial", foco: "inicio", fraccion: 0.02, texto: "Aqui nacio el potencial de accion porque el segmento inicial tiene una gran densidad de canales de sodio dependientes de voltaje." },
+  { titulo: "2. Entrada de sodio", foco: "na", fraccion: 0.10, texto: "Al abrirse los canales de sodio, entra Na+. El interior de esta region se vuelve positivo y se acerca al pico del potencial de accion." },
+  { titulo: "3. Corriente local", foco: "corriente", fraccion: 0.22, texto: "Las cargas positivas se desplazan por el interior del axon. Todavia no existe un nuevo potencial de accion: esto se llama corriente local." },
+  { titulo: "4. Siguiente nodo", foco: "siguiente", fraccion: 0.34, texto: "Cuando la corriente local llega al siguiente nodo de Ranvier, despolariza esa region hasta acercarla al umbral." },
+  { titulo: "5. Regeneracion nodal", foco: "regeneracion", fraccion: 0.47, texto: "Ahora este nodo abre sus canales de sodio. Aqui nace un nuevo potencial de accion, mientras la corriente sigue avanzando." },
+  { titulo: "6. Refractariedad", foco: "refractario", fraccion: 0.60, texto: "El nodo anterior no puede disparar inmediatamente porque sus canales de sodio estan inactivados. Esa refractariedad evita que el impulso regrese." },
+  { titulo: "7. Conduccion saltatoria", foco: "saltatoria", fraccion: 0.76, texto: "No es la electricidad la que salta. El potencial se regenera solo en los nodos; bajo la mielina viaja principalmente la corriente local." }
+];
+let modoAxonDesdeCero = false;
+let pasoAxonDocente = 0;
+
+function valorNumero(id, fallback) {
+  const el = $(id);
+  if (!el) return fallback;
+  const v = Number(el.value);
+  return Number.isFinite(v) ? v : fallback;
 }
-function dibujarGraficaAxon() { const ctx = graficaAxon.getContext("2d"); const w = graficaAxon.width, h = graficaAxon.height; ctx.clearRect(0,0,w,h); ctx.fillStyle="#020617"; ctx.fillRect(0,0,w,h); dibujarGrid(ctx,w,h); const colores=["#38bdf8","#34d399","#facc15"]; resultadoAxon.electrodos.forEach((e,i)=>dibujarTraza(ctx,e.traza,colores[i%colores.length],"Vm",w,h)); }
-function animarAxon(){ if(!axonActivo)return; tiempoAxon += 0.25 * factorTiempoGlobalNeuro(); if(tiempoAxon>resultadoAxon.tiempoTotalMs){axonActivo=false;return;} dibujarAxonVisual(); rafAxon=requestAnimationFrame(animarAxon); }
+
+function vincularAxon() {
+  ["tipoAxon", "longitudAxon", "diametroAxon", "grosorMielina", "temperaturaAxon", "densidadNaAxon", "bloqueoAxon", "desmielinizacionActiva", "severidadDesmielina", "estimularDesde", "bidireccional", "electrodoAxon1", "electrodoAxon2", "electrodoAxon3", "axonVista", "axonNodoSeguido", "axonMostrarGraficas"].forEach((id) => {
+    const el = $(id);
+    if (el) el.addEventListener("input", actualizarAxon);
+  });
+  $("btnAxonPlay")?.addEventListener("click", () => { modoAxonDesdeCero = false; axonActivo = true; if (tiempoAxon >= resultadoAxon.tiempoTotalMs) tiempoAxon = 0; animarAxon(); });
+  $("btnAxonPausa")?.addEventListener("click", () => { axonActivo = false; cancelAnimationFrame(rafAxon); renderizarPasoAxon(); });
+  $("btnAxonReset")?.addEventListener("click", () => { axonActivo = false; cancelAnimationFrame(rafAxon); tiempoAxon = 0; pasoAxonDocente = 0; modoAxonDesdeCero = false; actualizarAxon(); });
+  $("btnAxonDesdeCero")?.addEventListener("click", () => { modoAxonDesdeCero = true; axonActivo = false; cancelAnimationFrame(rafAxon); pasoAxonDocente = 0; aplicarPasoAxonDocente(); });
+  $("btnAxonPrev")?.addEventListener("click", () => avanzarPasoAxonDocente(-1));
+  $("btnAxonNext")?.addEventListener("click", () => avanzarPasoAxonDocente(1));
+  $("axonVisual")?.addEventListener("mousemove", mostrarInfoAxonInteractiva);
+  $("axonVisual")?.addEventListener("mouseleave", () => ocultarTooltipAxon());
+  $("axonVisual")?.addEventListener("click", (ev) => {
+    const electrodo = ev.target.closest?.(".electrodo-real");
+    const nodo = ev.target.closest?.(".nodo-ranvier-real");
+    if (electrodo) mostrarTooltipAxon(ev, `Electrodo ${electrodo.dataset.electrodo}: registra el potencial de membrana en este punto. No produce el potencial; solo mide cuando la onda llega aqui.`);
+    if (nodo) mostrarTooltipAxon(ev, textoNodoAxon(Number(nodo.dataset.pos), Number(nodo.dataset.indice)));
+  });
+}
+
+function parametrosAxon() {
+  const longitudMm = valorNumero("longitudAxon", 80);
+  const e1 = Math.min(longitudMm - 1, Math.max(1, valorNumero("electrodoAxon1", 15)));
+  const e2 = Math.min(longitudMm - 1, Math.max(1, valorNumero("electrodoAxon2", 40)));
+  const e3 = Math.min(longitudMm - 1, Math.max(1, valorNumero("electrodoAxon3", 65)));
+  return {
+    longitudMm,
+    diametroUm: valorNumero("diametroAxon", 2),
+    mielina: $("tipoAxon")?.value === "mielinizado",
+    grosorMielina: valorNumero("grosorMielina", 0.8),
+    temperaturaC: valorNumero("temperaturaAxon", 37),
+    densidadNa: valorNumero("densidadNaAxon", 1),
+    bloqueoCanales: valorNumero("bloqueoAxon", 0),
+    estimulacion: $("estimularDesde")?.value || "izquierda",
+    bidireccional: Boolean($("bidireccional")?.checked),
+    electrodos: [e1, e2, e3],
+    desmielinizacion: { activa: Boolean($("desmielinizacionActiva")?.checked), severidad: valorNumero("severidadDesmielina", 0.55), inicioMm: 35, longitudMm: 15 }
+  };
+}
+
+function actualizarAxon() {
+  resultadoAxon = simularPropagacionAxonal(parametrosAxon());
+  sincronizarElectrodosAxon(resultadoAxon.parametros.longitudMm);
+  sincronizarSelectorNodosAxon();
+  dibujarAxonVisual();
+  dibujarGraficaAxon();
+  renderizarVelocidadAxon();
+  renderizarComparacionAxon();
+  renderizarPasoAxon();
+  $("resumenAxon").innerHTML = [["Velocidad", `${resultadoAxon.velocidadMms.toFixed(2)} mm/ms`], ["Tiempo total", `${resultadoAxon.tiempoTotalMs.toFixed(1)} ms`], ["Seguridad", `${Math.round(resultadoAxon.seguridadConduccion * 100)}%`], ["Tipo", resultadoAxon.parametros.mielina ? "Saltatoria" : "Continua"], ["Energia", resultadoAxon.parametros.mielina ? "Menor consumo" : "Mayor consumo"], ["Canales", resultadoAxon.parametros.mielina ? "Concentrados en nodos" : "Distribuidos"]].map(([k, v]) => `<article><span>${k}</span><strong>${v}</strong></article>`).join("");
+}
+
+function sincronizarElectrodosAxon(longitud) {
+  ["electrodoAxon1", "electrodoAxon2", "electrodoAxon3"].forEach((id) => {
+    const el = $(id);
+    if (!el) return;
+    el.max = String(Math.max(3, Math.floor(longitud - 1)));
+    if (Number(el.value) > Number(el.max)) el.value = el.max;
+  });
+}
+
+function posicionesNodosAxon() {
+  const p = resultadoAxon.parametros;
+  if (!p.mielina) {
+    const n = 9;
+    return Array.from({ length: n }, (_, i) => (p.longitudMm * i) / (n - 1));
+  }
+  const distancia = Math.max(6, p.distanciaNodosMm || 10);
+  const nodos = [];
+  for (let x = 0; x <= p.longitudMm + 0.001; x += distancia) nodos.push(Math.min(p.longitudMm, x));
+  if (nodos[nodos.length - 1] < p.longitudMm) nodos.push(p.longitudMm);
+  return nodos;
+}
+
+function sincronizarSelectorNodosAxon() {
+  const sel = $("axonNodoSeguido");
+  if (!sel) return;
+  const previo = sel.value;
+  const opciones = ['<option value="auto">Seguir onda</option>'].concat(posicionesNodosAxon().map((pos, i) => `<option value="${i}">Nodo ${i + 1} (${pos.toFixed(0)} mm)</option>`));
+  sel.innerHTML = opciones.join("");
+  sel.value = [...sel.options].some((o) => o.value === previo) ? previo : "auto";
+}
+
+function progresoAxonActual() {
+  return Math.max(0, Math.min(1, tiempoAxon / Math.max(1, resultadoAxon.tiempoTotalMs)));
+}
+
+function posicionOndaAxon() {
+  const longitud = resultadoAxon.parametros.longitudMm;
+  const progreso = progresoAxonActual();
+  if (resultadoAxon.parametros.estimulacion === "derecha") return longitud * (1 - progreso);
+  if (resultadoAxon.parametros.estimulacion === "centro") return longitud / 2 + (longitud / 2) * progreso;
+  return longitud * progreso;
+}
+
+function estadoNodoAxon(pos) {
+  const actual = posicionOndaAxon();
+  const delta = actual - pos;
+  if (Math.abs(delta) < 1.7) return "pico";
+  if (delta < 0 && Math.abs(delta) < 9) return "despolarizacion";
+  if (delta > 0 && delta < 4) return "repolarizacion";
+  if (delta > 0 && delta < 13) return "refractario";
+  if (delta > 13 && delta < 20) return "hiperpolarizacion";
+  return "reposo";
+}
+
+function datosNodoAxon(pos, indice) {
+  const estado = estadoNodoAxon(pos);
+  const vmPorEstado = { reposo: -70, despolarizacion: -42, pico: 32, repolarizacion: -18, refractario: -66, hiperpolarizacion: -82 };
+  const inaPorEstado = { reposo: 0.02, despolarizacion: -2.6, pico: -1.1, repolarizacion: -0.2, refractario: 0.01, hiperpolarizacion: 0.01 };
+  const ikPorEstado = { reposo: 0.05, despolarizacion: 0.2, pico: 1.2, repolarizacion: 2.4, refractario: 1.4, hiperpolarizacion: 0.6 };
+  const llegada = resultadoAxon.tiempoLlegada?.find((t) => Math.abs(t.posicionMm - pos) < 0.1)?.tiempoMs ?? (pos / Math.max(0.1, resultadoAxon.velocidadMms));
+  const desde = tiempoAxon - llegada;
+  return { indice, pos, estado, vm: vmPorEstado[estado], ina: inaPorEstado[estado], ik: ikPorEstado[estado], desde, recuperacion: Math.max(0, 2.5 - desde) };
+}
+
+function textoNodoAxon(pos, indice) {
+  const d = datosNodoAxon(pos, indice);
+  const estado = d.estado === "pico" ? "pico/despolarizacion maxima" : d.estado;
+  return `<strong>Nodo de Ranvier ${indice + 1}</strong><br>Vm: ${d.vm.toFixed(0)} mV<br>INa: ${d.ina.toFixed(2)} u.a. | IK: ${d.ik.toFixed(2)} u.a.<br>Estado: ${estado}<br>Tiempo desde activacion: ${Math.max(0, d.desde).toFixed(1)} ms<br>Recuperacion estimada: ${d.recuperacion.toFixed(1)} ms<br><em>Importancia:</em> aqui se regenera el potencial de accion por alta densidad de canales Nav.`;
+}
+
+function dibujarAxonVisual() {
+  const cont = $("axonVisual");
+  if (!cont) return;
+  const p = resultadoAxon.parametros;
+  const vista = $("axonVista")?.value || "completa";
+  cont.classList.toggle("vista-graficas", vista === "graficas");
+  const nodos = posicionesNodosAxon();
+  const ondaMm = posicionOndaAxon();
+  const escala = (mm) => 12 + (mm / p.longitudMm) * 76;
+  const lesion = p.desmielinizacion?.activa ? `<div class="lesion-axon-real" style="left:${escala(p.desmielinizacion.inicioMm)}%;width:${(p.desmielinizacion.longitudMm / p.longitudMm) * 76}%;"><span>mielina danada<br>fuga de corriente</span></div>` : "";
+  const mielina = p.mielina ? nodos.slice(0, -1).map((pos, i) => {
+    const next = nodos[i + 1];
+    const left = escala(pos + 0.9);
+    const width = Math.max(2, escala(next - 0.9) - left);
+    return `<span class="axon-mielina-real" style="left:${left}%;width:${width}%;"></span>`;
+  }).join("") : `<span class="axon-amielinico-real">canales distribuidos a lo largo de la membrana</span>`;
+  const nodosHtml = nodos.map((pos, i) => {
+    const estado = estadoNodoAxon(pos);
+    return `<button type="button" class="nodo-ranvier-real ${estado}" data-pos="${pos}" data-indice="${i}" style="left:${escala(pos)}%" aria-label="Nodo de Ranvier ${i + 1}"><span>${i + 1}</span></button>`;
+  }).join("");
+  const electrodos = (p.electrodos || [15, 40, 65]).map((pos, i) => `<button type="button" class="electrodo-real" data-electrodo="E${i + 1}" style="left:${escala(pos)}%"><b>E${i + 1}</b></button>`).join("");
+  const na = Array.from({ length: 10 }, (_, i) => `<span class="ion-axon na" style="left:${Math.max(13, Math.min(86, escala(ondaMm) - 2 + (i % 5) * .8))}%;top:${34 + (i % 2) * 7}%">Na+</span>`).join("");
+  const k = Array.from({ length: 7 }, (_, i) => `<span class="ion-axon k" style="left:${Math.max(13, Math.min(86, escala(ondaMm) - 9 + (i % 4) * .9))}%;top:${58 + (i % 2) * 8}%">K+</span>`).join("");
+  const corriente = `<span class="corriente-local-axon" style="left:${Math.max(14, escala(ondaMm) - 10)}%;width:${Math.min(18, Math.max(6, 88 - escala(ondaMm)))}%"><i>corriente local</i></span>`;
+  const zona = `<span class="zona-potencial-axon" style="left:${Math.max(12, escala(ondaMm) - 4)}%"></span>`;
+  const focoClase = modoAxonDesdeCero ? ` foco-${PASOS_AXON_DOCENTE[pasoAxonDocente]?.foco || "inicio"}` : "";
+  cont.innerHTML = `<div class="axon-escena-real ${p.mielina ? "mielinizado" : "amielinico"}${focoClase}">
+    <div class="soma-axon-real"><span>Soma</span></div><div class="cono-axon-real"><span>cono axonico</span></div><div class="terminal-axon-real"><span>terminal</span></div>
+    <div class="axon-cable-real"><span class="axon-nucleo-real"></span>${mielina}${lesion}${zona}${corriente}${nodosHtml}${electrodos}${na}${k}</div>
+    <div class="leyenda-axon-real"><b>Codigo de color</b><span class="reposo">reposo</span><span class="despolarizacion">despolarizacion</span><span class="pico">pico</span><span class="repolarizacion">repolarizacion</span><span class="refractario">refractario</span></div>
+  </div>`;
+}
+
+function dibujarGraficaAxon() {
+  const canvas = graficaAxon;
+  if (!canvas) return;
+  const mostrar = $("axonMostrarGraficas")?.checked !== false && ($("axonVista")?.value || "completa") !== "nodo";
+  canvas.style.display = mostrar ? "block" : "none";
+  if (!mostrar) return;
+  const ctx = canvas.getContext("2d");
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = "#020617"; ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.strokeStyle = "rgba(125,211,252,.12)"; ctx.lineWidth = 1;
+  for (let x = 60; x < canvas.width - 30; x += 80) { ctx.beginPath(); ctx.moveTo(x, 28); ctx.lineTo(x, 270); ctx.stroke(); }
+  for (let y = 40; y < 270; y += 45) { ctx.beginPath(); ctx.moveTo(52, y); ctx.lineTo(canvas.width - 22, y); ctx.stroke(); }
+  ctx.fillStyle = "#cbd5e1"; ctx.font = "13px sans-serif"; ctx.fillText("Potencial registrado por electrodos", 60, 22);
+  const colores = ["#38bdf8", "#34d399", "#facc15"];
+  const labels = ["Electrodo 1", "Electrodo 2", "Electrodo 3"];
+  resultadoAxon.electrodos.forEach((electrodo, i) => {
+    const traza = electrodo.traza || [];
+    ctx.strokeStyle = colores[i]; ctx.lineWidth = 2.2; ctx.beginPath();
+    traza.forEach((punto, j) => {
+      const x = 60 + (punto.t / resultadoAxon.tiempoTotalMs) * (canvas.width - 100);
+      const y = 252 - ((punto.vm + 90) / 130) * 205;
+      if (j === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    });
+    ctx.stroke();
+    ctx.fillStyle = colores[i]; ctx.fillRect(65 + i * 170, 292, 22, 5); ctx.fillText(`${labels[i]}: punto de registro ${i + 1}`, 94 + i * 170, 299);
+  });
+  const xActual = 60 + (tiempoAxon / Math.max(1, resultadoAxon.tiempoTotalMs)) * (canvas.width - 100);
+  ctx.strokeStyle = "rgba(248,250,252,.8)"; ctx.setLineDash([6, 6]); ctx.beginPath(); ctx.moveTo(xActual, 34); ctx.lineTo(xActual, 270); ctx.stroke(); ctx.setLineDash([]);
+  ctx.fillStyle = "#e0f2fe"; ctx.fillText("El potencial llego aqui", Math.min(canvas.width - 185, xActual + 8), 48);
+  ctx.fillStyle = "#94a3b8"; ctx.fillText("Tiempo (ms)", canvas.width - 120, 316); ctx.fillText("Vm", 18, 44);
+}
+
+function renderizarPasoAxon() {
+  const card = $("axonPasoCard");
+  if (!card) return;
+  const paso = PASOS_AXON_DOCENTE[pasoAxonDocente] || PASOS_AXON_DOCENTE[0];
+  card.innerHTML = `<div><span class="kicker">${modoAxonDesdeCero ? "Explicamelo desde cero" : "Guia docente"}</span><h3>${paso.titulo}</h3><p>${paso.texto}</p></div><div class="axon-paso-numero">${pasoAxonDocente + 1}/${PASOS_AXON_DOCENTE.length}</div>`;
+}
+
+function aplicarPasoAxonDocente() {
+  const paso = PASOS_AXON_DOCENTE[pasoAxonDocente] || PASOS_AXON_DOCENTE[0];
+  tiempoAxon = paso.fraccion * resultadoAxon.tiempoTotalMs;
+  dibujarAxonVisual();
+  dibujarGraficaAxon();
+  renderizarVelocidadAxon();
+  renderizarPasoAxon();
+}
+
+function avanzarPasoAxonDocente(dir) {
+  modoAxonDesdeCero = true;
+  axonActivo = false;
+  cancelAnimationFrame(rafAxon);
+  pasoAxonDocente = Math.max(0, Math.min(PASOS_AXON_DOCENTE.length - 1, pasoAxonDocente + dir));
+  aplicarPasoAxonDocente();
+}
+
+function renderizarVelocidadAxon() {
+  const box = $("axonVelocidadDocente");
+  if (!box) return;
+  const e = resultadoAxon.parametros.electrodos || [15, 40, 65];
+  const d = Math.abs(e[1] - e[0]);
+  const t1 = resultadoAxon.electrodos?.[0]?.retraso ?? e[0] / resultadoAxon.velocidadMms;
+  const t2 = resultadoAxon.electrodos?.[1]?.retraso ?? e[1] / resultadoAxon.velocidadMms;
+  const dt = Math.max(0.01, Math.abs(t2 - t1));
+  box.innerHTML = `<strong>Como se calcula la velocidad</strong><span>Distancia entre E1 y E2: ${d.toFixed(1)} mm</span><span>Tiempo entre registros: ${dt.toFixed(2)} ms</span><span>Velocidad = distancia / tiempo = ${(d / dt).toFixed(2)} mm/ms</span>`;
+}
+
+function renderizarComparacionAxon() {
+  const box = $("comparacionAxon");
+  if (!box) return;
+  const base = parametrosAxon();
+  const miel = simularPropagacionAxonal({ ...base, mielina: true, grosorMielina: Math.max(0.7, base.grosorMielina) });
+  const ami = simularPropagacionAxonal({ ...base, mielina: false, grosorMielina: 0 });
+  box.innerHTML = `<article><h3>Axon mielinizado</h3><p>Conduccion saltatoria: el potencial se regenera en nodos y bajo la mielina viaja corriente local.</p><b>${miel.velocidadMms.toFixed(2)} mm/ms</b><span>Menos canales abiertos y menor entrada total de Na+.</span></article><article><h3>Axon amielinico</h3><p>Conduccion continua: la membrana debe despolarizarse punto por punto.</p><b>${ami.velocidadMms.toFixed(2)} mm/ms</b><span>Mayor consumo energetico y mas actividad de bomba Na/K.</span></article>`;
+}
+
+function mostrarInfoAxonInteractiva(ev) {
+  const nodo = ev.target.closest?.(".nodo-ranvier-real");
+  const electrodo = ev.target.closest?.(".electrodo-real");
+  if (nodo) return mostrarTooltipAxon(ev, textoNodoAxon(Number(nodo.dataset.pos), Number(nodo.dataset.indice)));
+  if (electrodo) return mostrarTooltipAxon(ev, `<strong>${electrodo.dataset.electrodo}</strong><br>Este electrodo registra Vm en ese punto. La separacion temporal entre electrodos permite calcular velocidad.`);
+  ocultarTooltipAxon();
+}
+
+function mostrarTooltipAxon(ev, html) {
+  const tip = $("axonTooltip");
+  const cont = $("axonVisual");
+  if (!tip || !cont) return;
+  const r = cont.getBoundingClientRect();
+  tip.hidden = false;
+  tip.innerHTML = html;
+  const left = Math.min(r.width - 300, Math.max(12, ev.clientX - r.left + 16));
+  const top = Math.min(r.height - 150, Math.max(12, ev.clientY - r.top + 16));
+  tip.style.left = `${left}px`;
+  tip.style.top = `${top}px`;
+}
+
+function ocultarTooltipAxon() {
+  const tip = $("axonTooltip");
+  if (tip) tip.hidden = true;
+}
+
+function animarAxon(){
+  if(!axonActivo)return;
+  tiempoAxon += 0.25 * factorTiempoGlobalNeuro();
+  if(tiempoAxon>resultadoAxon.tiempoTotalMs){axonActivo=false;tiempoAxon=resultadoAxon.tiempoTotalMs;}
+  dibujarAxonVisual();
+  dibujarGraficaAxon();
+  renderizarVelocidadAxon();
+  rafAxon=requestAnimationFrame(animarAxon);
+}
 
 function renderizarExperimentos(){ $("listaExperimentos").innerHTML=EXPERIMENTOS_NEUROFISIOLOGIA.map((e)=>`<article class="experimento-card"><span class="kicker">${e.variableIndependiente}</span><h3>${e.titulo}</h3><p>${e.objetivo}</p><button data-exp="${e.id}">Cargar configuracion</button><details><summary>Ver guia</summary><p><b>Hipotesis:</b> ${e.hipotesis}</p><ol>${e.pasos.map(p=>`<li>${p}</li>`).join("")}</ol><p><b>Resultado esperado:</b> ${e.resultadoEsperado}</p><p>${e.explicacion}</p></details></article>`).join(""); document.querySelectorAll("[data-exp]").forEach((b)=>b.addEventListener("click",()=>cargarExperimento(b.dataset.exp))); }
 function cargarExperimento(id){ const exp=EXPERIMENTOS_NEUROFISIOLOGIA.find(e=>e.id===id); if(!exp)return; if(exp.parametros.preset){estadoMembrana=aplicarPresetMembrana(exp.parametros.preset);sincronizarControlesMembrana();renderizarMembrana();} if(exp.parametros.gNa||exp.parametros.gK||exp.parametros.segundoEstimulo){$("segundoEstimulo").checked=Boolean(exp.parametros.segundoEstimulo);actualizarAccion();cambiarTab("accion");} else if(exp.parametros.mielina!==undefined||exp.parametros.desmielinizacion){$("tipoAxon").value=exp.parametros.mielina===false?"amielinico":"mielinizado";$("desmielinizacionActiva").checked=Boolean(exp.parametros.desmielinizacion);actualizarAxon();cambiarTab("axon");} else cambiarTab("membrana"); $("observacionesProyecto").value=`Experimento: ${exp.titulo}\nHipotesis: ${exp.hipotesis}\n`; }
@@ -575,15 +858,18 @@ function vincularIntegrada() {
 }
 
 function cerrarDetalleNeuroSeleccionado() {
+  const panel = $("detalleIntegradaSeleccion");
+  const estabaAbierto = panel && !panel.hidden;
   cierreDetalleNeuroEnCurso = true;
+  detalleNeuroAbierto = false;
   zonaNeuroSeleccionada = null;
   uiModeNeuro.focusedStructure = "reposo";
-  const panel = $("detalleIntegradaSeleccion");
   if (panel) {
     panel.hidden = true;
     panel.inert = true;
     panel.setAttribute("aria-hidden", "true");
     panel.removeAttribute("data-panel-neuro-abierto");
+    panel.classList.remove("detalle-minimizado", "detalle-arrastrando");
     panel.innerHTML = "";
   }
   const tip = $("tooltipIntegrada");
@@ -591,11 +877,54 @@ function cerrarDetalleNeuroSeleccionado() {
     tip.style.display = "none";
     tip.setAttribute("aria-hidden", "true");
   }
-  renderizarIntegrada(false);
+  if (estabaAbierto) renderizarIntegrada(false);
   devolverFocoDetalleNeuro();
   window.setTimeout(() => { cierreDetalleNeuroEnCurso = false; }, 0);
 }
 
+function minimizarDetalleNeuroSeleccionado() {
+  const panel = $("detalleIntegradaSeleccion");
+  if (!panel || panel.hidden) return;
+  panel.classList.toggle("detalle-minimizado");
+  panel.querySelector("[data-minimizar-detalle-neuro]")?.setAttribute("aria-expanded", String(!panel.classList.contains("detalle-minimizado")));
+}
+
+function instalarArrastreDetalleNeuro(panel) {
+  if (!panel || panel.dataset.dragDetalleNeuro === "true") return;
+  panel.dataset.dragDetalleNeuro = "true";
+  panel.addEventListener("pointerdown", (evento) => {
+    if (evento.button !== 0) return;
+    if (evento.target?.closest?.("button, a, input, select, textarea, [data-neuro-aislar]")) return;
+    arrastreDetalleNeuro.activo = true;
+    const rect = panel.getBoundingClientRect();
+    arrastreDetalleNeuro.dx = evento.clientX - rect.left;
+    arrastreDetalleNeuro.dy = evento.clientY - rect.top;
+    panel.setPointerCapture?.(evento.pointerId);
+    panel.classList.add("detalle-arrastrando");
+    evento.stopPropagation();
+  });
+  panel.addEventListener("pointermove", (evento) => {
+    if (!arrastreDetalleNeuro.activo) return;
+    const host = $("escenaIntegrada")?.getBoundingClientRect();
+    if (!host) return;
+    const ancho = panel.offsetWidth || 420;
+    const alto = panel.offsetHeight || 220;
+    const left = Math.max(10, Math.min(host.width - ancho - 10, evento.clientX - host.left - arrastreDetalleNeuro.dx));
+    const top = Math.max(10, Math.min(host.height - alto - 10, evento.clientY - host.top - arrastreDetalleNeuro.dy));
+    panel.style.left = `${left}px`;
+    panel.style.top = `${top}px`;
+    panel.style.bottom = "auto";
+    evento.stopPropagation();
+  });
+  const finalizar = (evento) => {
+    if (!arrastreDetalleNeuro.activo) return;
+    arrastreDetalleNeuro.activo = false;
+    panel.classList.remove("detalle-arrastrando");
+    panel.releasePointerCapture?.(evento.pointerId);
+  };
+  panel.addEventListener("pointerup", finalizar);
+  panel.addEventListener("pointercancel", finalizar);
+}
 function eventoDentroDetalleNeuro(evento) {
   return Boolean(evento.target?.closest?.(".detalle-neuro-seleccion, [data-cerrar-detalle-neuro]"));
 }
@@ -728,6 +1057,7 @@ function vincularInteraccionesCanvasIntegrado() {
     const zona = zonaDesdeEvento(evento);
     if (!zona) return;
     zonaNeuroSeleccionada = zona;
+    detalleNeuroAbierto = true;
     uiModeNeuro.focusedStructure = zona.id;
     if ($("intCamaraNeuro") && zona.camara && zona.camara !== uiModeNeuro.cameraMode) {
       uiModeNeuro.cameraMode = zona.camara;
@@ -752,6 +1082,7 @@ function mostrarTooltipNeuro(zona, x, y) {
 }
 
 function mostrarDetalleNeuroSeleccionado(zona, disparador = null) {
+  detalleNeuroAbierto = true;
   const panel = $("detalleIntegradaSeleccion");
   if (!panel || !zona) return;
   ultimoDisparadorDetalleNeuro = disparador || document.activeElement || $("btnPorQueNeuro");
@@ -761,14 +1092,16 @@ function mostrarDetalleNeuroSeleccionado(zona, disparador = null) {
   panel.setAttribute("role", "dialog");
   panel.setAttribute("aria-label", zona.titulo || "Estructura seleccionada");
   panel.setAttribute("data-panel-neuro-abierto", "true");
+  panel.classList.remove("detalle-minimizado", "detalle-arrastrando");
   panel.tabIndex = -1;
   panel.innerHTML = construirDetalleNeuroHTML(zona);
+  instalarArrastreDetalleNeuro(panel);
   panel.querySelector("[data-cerrar-detalle-neuro]")?.focus({ preventScroll: true });
 }
 
 function construirDetalleNeuroHTML(zona) {
   const secciones = zona.secciones || crearSeccionesNeuroDesdeZona(zona);
-  return `<button type="button" data-cerrar-detalle-neuro aria-label="Cerrar detalle">x</button><span class="kicker">Estructura seleccionada</span><h3>${zona.titulo}</h3><div class="detalle-neuro-secciones">${secciones.map((s) => `<section><h4>${s.titulo}</h4>${Array.isArray(s.texto) ? `<ul>${s.texto.map((x) => `<li>${x}</li>`).join("")}</ul>` : `<p>${s.texto}</p>`}</section>`).join("")}</div><div class="detalle-neuro-acciones"><button type="button" class="secundario" data-neuro-aislar>Ver funcionamiento aislado</button></div><small>Rueda = zoom. Arrastra el canvas = desplazar. Escape cierra este panel.</small>`;
+  return `<button type="button" data-minimizar-detalle-neuro aria-label="Minimizar detalle" aria-expanded="true">−</button><button type="button" data-cerrar-detalle-neuro aria-label="Cerrar detalle">×</button><span class="kicker">Estructura seleccionada</span><h3>${zona.titulo}</h3><div class="detalle-neuro-secciones">${secciones.map((s) => `<section><h4>${s.titulo}</h4>${Array.isArray(s.texto) ? `<ul>${s.texto.map((x) => `<li>${x}</li>`).join("")}</ul>` : `<p>${s.texto}</p>`}</section>`).join("")}</div><div class="detalle-neuro-acciones"><button type="button" class="secundario" data-neuro-aislar>Ver funcionamiento aislado</button></div><small>Rueda = zoom. Arrastra el canvas = desplazar. Escape cierra este panel.</small>`;
 }
 
 function crearSeccionesNeuroDesdeZona(zona) {
@@ -800,6 +1133,7 @@ function explicarPorQueNeuro() {
     medicamentos: "Bloqueadores de Na+ reducen excitabilidad; moduladores GABA favorecen inhibicion; drogas de recaptura aumentan neurotransmisor en hendidura."
   };
   zonaNeuroSeleccionada = zona;
+  detalleNeuroAbierto = true;
   uiModeNeuro.focusedStructure = zona.id;
   mostrarDetalleNeuroSeleccionado(zona, $("btnPorQueNeuro"));
 }
@@ -945,7 +1279,7 @@ function renderizarIntegrada(forzarTexto = false) {
   const ecuacionSeleccionada = ecuacionCongelada || ($("intSeguirEcuacion")?.checked ? estadoIntegrado.ecuacionActiva : ($("intEcuacionSeleccionada")?.value || estadoIntegrado.ecuacionActiva));
   if ($("intEcuacionSeleccionada") && !ecuacionCongelada && $("intSeguirEcuacion")?.checked) $("intEcuacionSeleccionada").value = ecuacionSeleccionada;
   ejecutarBloqueLaboratorio("render escena integrada", () => renderizarEscenaIntegrada($("escenaIntegrada"), estadoIntegrado, uiModeNeuro));
-  if (zonaNeuroSeleccionada) ejecutarBloqueLaboratorio("detalle seleccionado", () => mostrarDetalleNeuroSeleccionado(zonaNeuroSeleccionada));
+  if (zonaNeuroSeleccionada && detalleNeuroAbierto) ejecutarBloqueLaboratorio("detalle seleccionado", () => mostrarDetalleNeuroSeleccionado(zonaNeuroSeleccionada));
   ejecutarBloqueLaboratorio("indicadores integrados", () => renderizarIndicadoresIntegrados($("estadoIntegrado"), estadoIntegrado, uiModeNeuro));
   ejecutarBloqueLaboratorio("estado actual", () => renderizarTarjetaEstadoActual($("tarjetaEstadoActual"), estadoIntegrado, uiModeNeuro));
   ejecutarBloqueLaboratorio("variables integradas", () => renderizarVariablesIntegradas($("variablesIntegradas"), estadoIntegrado));
@@ -954,6 +1288,7 @@ function renderizarIntegrada(forzarTexto = false) {
   ejecutarBloqueLaboratorio("grafica integrada", () => dibujarGraficaIntegrada(graficaIntegrada, estadoIntegrado, graficasIntegradasVisibles));
   const listaFarmacos = $("intFarmacosActivos");
   if (listaFarmacos) listaFarmacos.innerHTML = estadoIntegrado.farmacos.activos.length ? estadoIntegrado.farmacos.activos.map((f) => `<span>${f.nombre} ${Math.round(f.intensidad * 100)}%</span>`).join("") : `<span>Sin farmacos activos</span>`;
+  instalarAyudasContextualesNeuro();
 }
 
 function iniciarTutorialNeuro() {
