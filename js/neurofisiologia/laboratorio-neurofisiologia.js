@@ -41,6 +41,33 @@ const graficaIntegrada = $("graficaIntegrada");
 
 inicializar();
 
+function asignarAyudasNeuro() {
+  const ayudas = {
+    btnIntegradaPlay: "Inicia la simulacion integrada: estimulo, potencial de accion, axon, Ca2+ terminal y sinapsis avanzan juntos.",
+    btnIntegradaPausa: "Pausa la simulacion sin reiniciar variables. Util para observar canales, gradientes y graficas.",
+    btnIntegradaReset: "Reinicia neurona, axon y sinapsis al estado fisiologico basal.",
+    btnIntegradaPulso: "Aplica un estimulo unico breve. Permite observar un potencial aislado sin tren repetitivo.",
+    globalPlaybackNeuro: "Controla el tiempo del modelo. Valores menores muestran los eventos ionicos en camara lenta.",
+    intCamaraNeuro: "Cambia la escala visual: membrana, axon, terminal, sinapsis, farmacologia o matematica.",
+    intNivelAprendizaje: "Ajusta cuanta informacion se muestra: basico para estudiantes, avanzado para variables y ecuaciones.",
+    intIonVisible: "Filtra el ion protagonista para observar su gradiente y su flujo neto.",
+    intMostrarCargas: "Muestra polaridad relativa dentro y fuera de la membrana.",
+    intExplicacionPaso: "Activa explicacion sincronizada paso a paso y enlentece el avance educativo.",
+    intFrecuencia: "Modifica la frecuencia de disparo del estimulo. Aumentarla genera mas eventos por unidad de tiempo.",
+    intIntensidad: "Aumenta o reduce la corriente aplicada. Si supera umbral, facilita potenciales de accion.",
+    intTipoSinapsis: "Selecciona neurotransmisor y tipo funcional de sinapsis para modificar receptores y respuesta postsinaptica.",
+    intRecaptura: "Aumenta o reduce eliminacion por transportadores presinapticos.",
+    intDegradacion: "Aumenta o reduce catabolismo enzimatico del neurotransmisor.",
+    intFarmaco: "Selecciona un farmaco o droga experimental para observar cambios en canales, receptores o recaptura."
+  };
+  Object.entries(ayudas).forEach(([id, texto]) => {
+    const el = $(id);
+    if (el) el.title = texto;
+  });
+  document.querySelectorAll(".tabs-lab button,[data-lab-jump]").forEach((btn) => {
+    if (!btn.title) btn.title = "Cambia de simulador conservando la logica sincronizada del laboratorio.";
+  });
+}
 function factorTiempoGlobalNeuro() {
   const valor = Number($("globalPlaybackNeuro")?.value || 1);
   return Math.max(0.05, Math.min(8, valor));
@@ -376,6 +403,7 @@ function vincularIntegrada() {
     try { await navigator.clipboard.writeText(texto); } catch { console.log(texto); }
   });
   $("btnTutorialNeuro")?.addEventListener("click", () => iniciarTutorialNeuro());
+  $("btnPorQueNeuro")?.addEventListener("click", explicarPorQueNeuro);
   $("btnComenzarRecorrido")?.addEventListener("click", () => iniciarTutorialNeuro());
   $("tutorialNext")?.addEventListener("click", () => moverTutorialNeuro(1));
   $("tutorialPrev")?.addEventListener("click", () => moverTutorialNeuro(-1));
@@ -384,6 +412,29 @@ function vincularIntegrada() {
   if (!tutorialVistoNeuro) iniciarTutorialNeuro();
 }
 
+function cerrarDetalleNeuroSeleccionado() {
+  zonaNeuroSeleccionada = null;
+  uiModeNeuro.focusedStructure = "reposo";
+  const panel = $("detalleIntegradaSeleccion");
+  if (panel) {
+    panel.hidden = true;
+    panel.innerHTML = "";
+  }
+  const tip = $("tooltipIntegrada");
+  if (tip) tip.style.display = "none";
+  renderizarIntegrada(false);
+}
+
+function textoNeuroExtendido(zona) {
+  const bloques = [];
+  if (zona.detalle) bloques.push(`<p>${zona.detalle}</p>`);
+  if (zona.cientifica) bloques.push(`<p><b>Base cientifica:</b> ${zona.cientifica}</p>`);
+  if (zona.aumenta) bloques.push(`<p><b>Si aumenta:</b> ${zona.aumenta}</p>`);
+  if (zona.disminuye) bloques.push(`<p><b>Si disminuye:</b> ${zona.disminuye}</p>`);
+  if (zona.medicamentos) bloques.push(`<p><b>Farmacos:</b> ${zona.medicamentos}</p>`);
+  if (zona.enfermedades) bloques.push(`<p><b>Clinica:</b> ${zona.enfermedades}</p>`);
+  return bloques.join("");
+}
 function vincularInteraccionesCanvasIntegrado() {
   if (interaccionesCanvasIntegradoListas) return;
   const escenaIntegrada = $("escenaIntegrada");
@@ -439,6 +490,21 @@ function mostrarDetalleNeuroSeleccionado(zona) {
     zonaNeuroSeleccionada = null;
     panel.hidden = true;
   });
+}
+function explicarPorQueNeuro() {
+  const zona = zonaNeuroSeleccionada || {
+    id: "estado_actual",
+    titulo: "Por que ocurre esto ahora",
+    detalle: `Vm actual ${estadoIntegrado.Vm.toFixed(1)} mV. El balance entre corrientes de Na+, K+, Ca2+ y Cl- determina si la membrana se acerca al umbral o regresa al reposo.`,
+    cientifica: `INa ${estadoIntegrado.INa.toFixed(1)}, IK ${estadoIntegrado.IK.toFixed(1)}. La direccion del flujo depende del gradiente electroquimico y la conductancia disponible.`,
+    aumenta: "Si domina entrada de Na+ o Ca2+, Vm se despolariza y aumenta probabilidad de disparo.",
+    disminuye: "Si domina salida de K+ o entrada efectiva de Cl-, Vm se repolariza o hiperpolariza.",
+    medicamentos: "Bloqueadores de Na+, moduladores GABA, antagonistas Ca2+ y farmacos de recaptura modifican estos procesos.",
+    enfermedades: "Canalopatias, hipoxia, desmielinizacion y alteraciones metabolicas cambian excitabilidad."
+  };
+  zonaNeuroSeleccionada = zona;
+  uiModeNeuro.focusedStructure = zona.id;
+  mostrarDetalleNeuroSeleccionado(zona);
 }
 function aplicarNivelAprendizaje(nivel) {
   uiModeNeuro.learningLevel = nivel;

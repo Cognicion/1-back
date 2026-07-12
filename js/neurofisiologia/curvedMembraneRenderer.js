@@ -117,6 +117,7 @@ function dibujarMembranaCurva(ctx, geo, estado) {
   ctx.strokeStyle = "rgba(2, 6, 23, .92)"; ctx.lineWidth = 3;
   ctx.beginPath(); ctx.arc(geo.cx, geo.cy, geo.rOuter, geo.arcStart, geo.arcEnd); ctx.stroke();
   ctx.beginPath(); ctx.arc(geo.cx, geo.cy, geo.rOuter - geo.thickness, geo.arcStart, geo.arcEnd); ctx.stroke();
+  dibujarFosfolipidos(ctx, geo);
   ctx.strokeStyle = "rgba(56,189,248,.24)"; ctx.lineWidth = 1.5;
   for (let i = 0; i <= 34; i += 1) {
     const t = i / 34; const p = puntoEnArco(geo, t); const n = normalEnArco(p.a);
@@ -125,6 +126,32 @@ function dibujarMembranaCurva(ctx, geo, estado) {
   ctx.restore();
 }
 
+function dibujarFosfolipidos(ctx, geo) {
+  ctx.save();
+  for (let i = 0; i <= 44; i += 1) {
+    const t = i / 44;
+    const p = puntoEnArco(geo, t);
+    const n = normalEnArco(p.a);
+    const outer = { x: p.x + n.x * 18, y: p.y + n.y * 18 };
+    const inner = { x: p.x - n.x * 18, y: p.y - n.y * 18 };
+    ctx.strokeStyle = "rgba(15,23,42,.72)";
+    ctx.lineWidth = 1.2;
+    ctx.beginPath();
+    ctx.moveTo(outer.x - n.x * 5, outer.y - n.y * 5);
+    ctx.lineTo(p.x - n.x * 3, p.y - n.y * 3);
+    ctx.moveTo(inner.x + n.x * 5, inner.y + n.y * 5);
+    ctx.lineTo(p.x + n.x * 3, p.y + n.y * 3);
+    ctx.stroke();
+    ctx.fillStyle = i % 2 ? "#60a5fa" : "#7dd3fc";
+    ctx.beginPath(); ctx.arc(outer.x, outer.y, 4.2, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(inner.x, inner.y, 4.2, 0, Math.PI * 2); ctx.fill();
+  }
+  ctx.fillStyle = "rgba(224,242,254,.86)";
+  ctx.font = "800 10px Inter, sans-serif";
+  const ref = puntoEnArco(geo, 0.08, 34);
+  ctx.fillText("cabezas fosfolipidicas", ref.x - 42, ref.y - 8);
+  ctx.restore();
+}
 function canalesModelo(estado) {
   const naOpen = estado.Vm > -45 && estado.canales.sodio !== "Inactivado";
   const kOpen = estado.Vm > -55 || String(estado.canales.potasio).includes("Abierto");
@@ -243,13 +270,26 @@ function dibujarTerminalSinapsis(ctx, geo, estado) {
   const sx = geo.w * .72, sy = geo.h * .58; ctx.save();
   ctx.fillStyle = "rgba(14,116,144,.28)"; ctx.strokeStyle = "rgba(125,211,252,.28)"; ctx.lineWidth = 2;
   ctx.beginPath(); ctx.ellipse(sx, sy, 110, 86, -.2, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+  for (let i = 0; i < 3; i += 1) {
+    const mx = sx - 48 + i * 43, my = sy - 42 + (i % 2) * 30;
+    ctx.fillStyle = "rgba(148,163,184,.55)"; ctx.strokeStyle = "rgba(203,213,225,.75)";
+    ctx.beginPath(); ctx.ellipse(mx, my, 18, 9, .35, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    ctx.strokeStyle = "rgba(15,23,42,.7)"; ctx.beginPath(); ctx.moveTo(mx - 9, my); ctx.quadraticCurveTo(mx - 3, my - 7, mx + 3, my); ctx.quadraticCurveTo(mx + 8, my + 7, mx + 12, my); ctx.stroke();
+  }
   const total = Math.min(32, Math.max(8, Math.round(estado.sinapsis.vesiculasVisuales || 18)));
-  for (let i = 0; i < total; i += 1) { const a = i * 2.399; const r = 14 + (i % 5) * 12; const x = sx + Math.cos(a) * r; const y = sy + Math.sin(a) * r; ctx.fillStyle = i < estado.sinapsis.vesiculasFusionadas ? "#facc15" : i < estado.sinapsis.vesiculasListas ? "#38bdf8" : "#a78bfa"; ctx.beginPath(); ctx.arc(x, y, 8, 0, Math.PI * 2); ctx.fill(); }
+  for (let i = 0; i < total; i += 1) { const a = i * 2.399; const r = 14 + (i % 5) * 12; const x = sx + Math.cos(a) * r; const y = sy + Math.sin(a) * r; ctx.fillStyle = i < estado.sinapsis.vesiculasFusionadas ? "#facc15" : i < estado.sinapsis.vesiculasListas ? "#38bdf8" : "#a78bfa"; ctx.beginPath(); ctx.arc(x, y, 8, 0, Math.PI * 2); ctx.fill(); ctx.strokeStyle = "rgba(224,242,254,.45)"; ctx.stroke(); }
+  ctx.strokeStyle = "rgba(250,204,21,.78)"; ctx.lineWidth = 5; ctx.beginPath(); ctx.moveTo(sx + 70, sy + 55); ctx.lineTo(sx + 112, sy + 55); ctx.stroke();
   ctx.fillStyle = "rgba(15,23,42,.7)"; ctx.fillRect(sx + 122, sy - 90, 70, 180);
   ctx.strokeStyle = "rgba(125,211,252,.35)"; ctx.strokeRect(sx + 122, sy - 90, 70, 180);
+  for (let i = 0; i < 5; i += 1) {
+    ctx.fillStyle = i % 2 ? "#22d3ee" : "#a78bfa";
+    roundRect(ctx, sx + 118, sy - 72 + i * 34, 16, 24, 7); ctx.fill();
+    ctx.fillStyle = "#38bdf8";
+    roundRect(ctx, sx + 178, sy - 70 + i * 34, 12, 22, 6); ctx.fill();
+  }
   const ntCount = Math.min(26, Math.round(estado.sinapsis.nt * 5));
   for (let i = 0; i < ntCount; i += 1) { ctx.fillStyle = estado.sinapsis.tipo.color; ctx.beginPath(); ctx.arc(sx + 125 + (i * 19) % 62, sy - 70 + (i * 31) % 140, 4, 0, Math.PI * 2); ctx.fill(); }
-  ctx.fillStyle = "#e0f2fe"; ctx.font = "800 10px Inter, sans-serif"; ctx.fillText(estado.sinapsis.tipo.nt, sx + 130, sy - 105);
+  ctx.fillStyle = "#e0f2fe"; ctx.font = "800 10px Inter, sans-serif"; ctx.fillText(estado.sinapsis.tipo.nt, sx + 130, sy - 105); ctx.fillText("zona activa / receptores / transportadores", sx - 18, sy + 104);
   ctx.restore();
 }
 
@@ -313,13 +353,13 @@ export function identificarZonaNeuroCanvas(canvas, estado, uiMode = {}, clientX,
     .map((p) => ({ ...p, d: Math.hypot(x - p.x, y - p.y) }))
     .filter((p) => p.d <= p.r)
     .sort((a, b) => a.d - b.d)[0];
-  if (cercano && ZONAS_NEURO_INFO[cercano.id]) return { id: cercano.id, ...ZONAS_NEURO_INFO[cercano.id] };
+  if (cercano && ZONAS_NEURO_INFO[cercano.id]) return zonaInfo(cercano.id);
   const distanciaMembrana = Math.abs(Math.hypot(x - geo.cx, y - geo.cy) - (geo.rOuter - geo.thickness / 2));
   let angulo = Math.atan2(y - geo.cy, x - geo.cx);
   if (angulo < 0) angulo += Math.PI * 2;
-  if (angulo >= geo.arcStart && angulo <= geo.arcEnd && distanciaMembrana < geo.thickness * 0.78) return { id: "membrana", ...ZONAS_NEURO_INFO.membrana };
-  if (y < cssH * 0.48) return { id: "extracelular", ...ZONAS_NEURO_INFO.extracelular };
-  if (y > cssH * 0.54) return { id: "intracelular", ...ZONAS_NEURO_INFO.intracelular };
+  if (angulo >= geo.arcStart && angulo <= geo.arcEnd && distanciaMembrana < geo.thickness * 0.78) return zonaInfo("membrana");
+  if (y < cssH * 0.48) return zonaInfo("extracelular");
+  if (y > cssH * 0.54) return zonaInfo("intracelular");
   return null;
 }
 
