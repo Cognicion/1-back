@@ -1,4 +1,4 @@
-﻿import { aplicarPresetMembrana, calcularGHK, calcularPotencialesEquilibrio } from "./ionModel.js";
+import { aplicarPresetMembrana, calcularGHK, calcularPotencialesEquilibrio } from "./ionModel.js";
 import { corrienteExterna, estadoCanales, estadoInicialHH, fasePotencial, limitar, PARAMETROS_HH_BASE } from "./actionPotentialModel.js";
 import { calcularVelocidadConduccion, PARAMETROS_AXON_BASE } from "./axonPropagationModel.js";
 import { obtenerFarmaco, resumirEfectosFarmacos } from "./drugRegistry.js";
@@ -137,8 +137,17 @@ export function limpiarFarmacosIntegrados(estado) {
   return estado;
 }
 
-export function estimularNeuronaIntegrada(estado, intensidad = null) {
-  estado.estimuloManual += Number(intensidad ?? estado.controles.intensidad ?? 12);
+export function estimularNeuronaIntegrada(estado, intensidad = null, opciones = {}) {
+  const intensidadPulso = Number(intensidad ?? estado.controles.intensidad ?? 12);
+  if (opciones.unico) {
+    const duracion = Number(opciones.duracionMs ?? 1.2);
+    estado.pulsoUnico = { restanteMs: Math.max(0.1, duracion), intensidad: intensidadPulso };
+    estado.soloPulsoUnico = true;
+    estado.suspenderTrenHasta = estado.tiempo + Math.max(20, duracion + 12);
+    estado.eventos.unshift({ tiempo: estado.tiempo, texto: `Estimulo aplicado: ${intensidadPulso.toFixed(1)} uA/cm2 durante ${duracion.toFixed(1)} ms.` });
+    return estado;
+  }
+  estado.estimuloManual += intensidadPulso;
   estado.eventos.unshift({ tiempo: estado.tiempo, texto: "Estimulo somatico aplicado." });
   return estado;
 }
@@ -157,8 +166,13 @@ function pasoFisiologico(estado, dt) {
   const efectos = estado.farmacos.efectos;
   const periodoMs = 1000 / Math.max(0.1, estado.controles.frecuenciaHz);
   const fasePeriodo = estado.tiempo % periodoMs;
-  const tren = fasePeriodo < 1.2 ? estado.controles.intensidad : 0;
-  const manual = estado.estimuloManual;
+  const trenSuspendido = estado.soloPulsoUnico || (estado.suspenderTrenHasta && estado.tiempo < estado.suspenderTrenHasta);
+  const tren = !trenSuspendido && fasePeriodo < 1.2 ? estado.controles.intensidad : 0;
+  let manual = estado.estimuloManual;
+  if (estado.pulsoUnico?.restanteMs > 0) {
+    manual += estado.pulsoUnico.intensidad;
+    estado.pulsoUnico.restanteMs = Math.max(0, estado.pulsoUnico.restanteMs - dt);
+  }
   estado.estimuloManual = Math.max(0, estado.estimuloManual - dt * 90);
   const usoNa = efectos.usoNa * Math.min(1, estado.controles.frecuenciaHz / 20);
   estado.gNa = PARAMETROS_HH_BASE.gNa * Math.max(0.02, 1 - efectos.bloqueoNa - usoNa);

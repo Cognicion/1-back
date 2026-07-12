@@ -183,8 +183,10 @@ function dibujarFlujos(ctx, geo, estado) {
     const p = puntoEnArco(geo, ch.t); const n = normalEnArco(p.a); const count = Math.min(10, Math.max(2, Math.round(Math.abs(f.val) / 35)));
     const inward = f.ion === "na" || f.ion === "ca" ? f.val > 0 : f.val < 0;
     for (let i = 0; i < count; i += 1) {
-      const phase = (estado.relojVisual * 0.45 + i / count) % 1;
-      const d = inward ? 58 - phase * 116 : -58 + phase * 116;
+      const velocidadIon = f.ion === "k" ? 0.16 : f.ion === "ca" ? 0.22 : 0.28;
+      const phase = (estado.relojVisual * velocidadIon + i / count) % 1;
+      const amplitud = f.ion === "k" ? 78 : 116;
+      const d = inward ? amplitud / 2 - phase * amplitud : -amplitud / 2 + phase * amplitud;
       dibujarIon(ctx, p.x + n.x * d + Math.sin(i) * 3, p.y + n.y * d + Math.cos(i) * 3, f.ion, 0.95);
     }
   });

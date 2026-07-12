@@ -92,3 +92,7 @@
 .axon-citoplasma i{animation-duration:calc(2.2s * var(--ion-time-scale, 1))}
 .hendidura-mini i{animation-duration:calc(1.3s * var(--ion-time-scale, 1))}
 .tooltip-grafica{position:fixed;z-index:1200;max-width:min(240px,calc(100vw - 24px));box-shadow:0 18px 48px rgba(0,0,0,.42),0 0 24px rgba(34,211,238,.12)}
+/* Conexiones y pedagogia transversal del laboratorio */
+.tabla-transporte-neuro{margin:14px 0 18px;background:rgba(2,6,23,.34)}
+.tabla-transporte-neuro table{min-width:860px}
+[data-lab-jump]{white-space:nowrap}

@@ -38,6 +38,21 @@ const graficaIntegrada = $("graficaIntegrada");
 
 inicializar();
 
+function factorTiempoGlobalNeuro() {
+  const valor = Number($("globalPlaybackNeuro")?.value || 1);
+  return Math.max(0.05, Math.min(8, valor));
+}
+
+function configurarSaltosEntreSimuladores() {
+  document.querySelectorAll("[data-lab-jump]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const destino = btn.dataset.labJump;
+      if (destino === "accion") actualizarAccion();
+      if (destino === "axon") actualizarAxon();
+      cambiarTab(destino);
+    });
+  });
+}
 function inicializar() {
   document.querySelectorAll(".tabs-lab button").forEach((btn) => btn.addEventListener("click", () => cambiarTab(btn.dataset.tab)));
   poblarPresets();
@@ -46,6 +61,7 @@ function inicializar() {
   vincularAccion();
   vincularAxon();
   renderizarExperimentos();
+  configurarSaltosEntreSimuladores();
   vincularCuaderno();
   sincronizarControlesMembrana();
   renderizarMembrana();
@@ -280,7 +296,7 @@ function dibujarAccion(cursor = null) {
 
 function dibujarGrid(ctx, w, h) { ctx.strokeStyle = "rgba(125,211,252,.08)"; for (let x = 0; x < w; x += 60) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke(); } for (let y = 0; y < h; y += 50) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke(); } }
 function dibujarTraza(ctx, trazas, color, campo, w, h, escala = 1) { const maxT = trazas.at(-1).t; ctx.strokeStyle = color; ctx.lineWidth = 2; ctx.beginPath(); trazas.forEach((p, i) => { const x = p.t / maxT * w; const valor = campo === "Vm" ? p.Vm : p[campo] * escala; const y = h - ((valor + 90) / 150) * h; if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y); }); ctx.stroke(); }
-function animarAccion() { if (!accionActiva) return; tiempoAccion += 0.15 * Number($("velocidadAccion").value || 1); if (tiempoAccion > resultadoAccion.parametros.duracionMs) { accionActiva = false; return; } dibujarAccion(tiempoAccion / resultadoAccion.parametros.duracionMs * graficaAccion.width); rafAccion = requestAnimationFrame(animarAccion); }
+function animarAccion() { if (!accionActiva) return; tiempoAccion += 0.15 * Number($("velocidadAccion").value || 1) * factorTiempoGlobalNeuro(); if (tiempoAccion > resultadoAccion.parametros.duracionMs) { accionActiva = false; return; } dibujarAccion(tiempoAccion / resultadoAccion.parametros.duracionMs * graficaAccion.width); rafAccion = requestAnimationFrame(animarAccion); }
 function tooltipAccion(e) {
   const rect = graficaAccion.getBoundingClientRect();
   const x = (e.clientX - rect.left) / rect.width * graficaAccion.width;
@@ -307,7 +323,7 @@ function parametrosAxon() { return { longitudMm: Number($("longitudAxon").value)
 function actualizarAxon() { resultadoAxon = simularPropagacionAxonal(parametrosAxon()); dibujarAxonVisual(); dibujarGraficaAxon(); $("resumenAxon").innerHTML = [["Velocidad", `${resultadoAxon.velocidadMms.toFixed(2)} mm/ms`], ["Tiempo total", `${resultadoAxon.tiempoTotalMs.toFixed(1)} ms`], ["Seguridad", `${Math.round(resultadoAxon.seguridadConduccion * 100)}%`], ["Tipo", resultadoAxon.parametros.mielina ? "Saltatoria" : "Continua"]].map(([k, v]) => `<article><span>${k}</span><strong>${v}</strong></article>`).join(""); }
 function dibujarAxonVisual() { const el = $("axonVisual"); const p = resultadoAxon.parametros; el.innerHTML = `<div class="axon-linea"></div>`; if (p.desmielinizacion.activa) el.innerHTML += `<span class="lesion" style="left:${5 + p.desmielinizacion.inicioMm / p.longitudMm * 90}%;width:${p.desmielinizacion.longitudMm / p.longitudMm * 90}%"></span>`; if (p.mielina) { for (let x = 6; x < 92; x += 14) el.innerHTML += `<span class="mielina" style="left:${x}%;width:10%"></span><span class="nodo" style="left:${x + 10}%"></span>`; } resultadoAxon.electrodos.forEach((e) => { el.innerHTML += `<span class="electrodo" style="left:${5 + e.posicion / p.longitudMm * 90}%"></span>`; }); const pos = Math.min(90, tiempoAxon / resultadoAxon.tiempoTotalMs * 90); el.innerHTML += `<span class="onda" style="left:${5 + pos}%"></span>`; }
 function dibujarGraficaAxon() { const ctx = graficaAxon.getContext("2d"); const w = graficaAxon.width, h = graficaAxon.height; ctx.clearRect(0,0,w,h); ctx.fillStyle="#020617"; ctx.fillRect(0,0,w,h); dibujarGrid(ctx,w,h); const colores=["#38bdf8","#34d399","#facc15"]; resultadoAxon.electrodos.forEach((e,i)=>dibujarTraza(ctx,e.traza,colores[i%colores.length],"Vm",w,h)); }
-function animarAxon(){ if(!axonActivo)return; tiempoAxon += 0.25; if(tiempoAxon>resultadoAxon.tiempoTotalMs){axonActivo=false;return;} dibujarAxonVisual(); rafAxon=requestAnimationFrame(animarAxon); }
+function animarAxon(){ if(!axonActivo)return; tiempoAxon += 0.25 * factorTiempoGlobalNeuro(); if(tiempoAxon>resultadoAxon.tiempoTotalMs){axonActivo=false;return;} dibujarAxonVisual(); rafAxon=requestAnimationFrame(animarAxon); }
 
 function renderizarExperimentos(){ $("listaExperimentos").innerHTML=EXPERIMENTOS_NEUROFISIOLOGIA.map((e)=>`<article class="experimento-card"><span class="kicker">${e.variableIndependiente}</span><h3>${e.titulo}</h3><p>${e.objetivo}</p><button data-exp="${e.id}">Cargar configuracion</button><details><summary>Ver guia</summary><p><b>Hipotesis:</b> ${e.hipotesis}</p><ol>${e.pasos.map(p=>`<li>${p}</li>`).join("")}</ol><p><b>Resultado esperado:</b> ${e.resultadoEsperado}</p><p>${e.explicacion}</p></details></article>`).join(""); document.querySelectorAll("[data-exp]").forEach((b)=>b.addEventListener("click",()=>cargarExperimento(b.dataset.exp))); }
 function cargarExperimento(id){ const exp=EXPERIMENTOS_NEUROFISIOLOGIA.find(e=>e.id===id); if(!exp)return; if(exp.parametros.preset){estadoMembrana=aplicarPresetMembrana(exp.parametros.preset);sincronizarControlesMembrana();renderizarMembrana();} if(exp.parametros.gNa||exp.parametros.gK||exp.parametros.segundoEstimulo){$("segundoEstimulo").checked=Boolean(exp.parametros.segundoEstimulo);actualizarAccion();cambiarTab("accion");} else if(exp.parametros.mielina!==undefined||exp.parametros.desmielinizacion){$("tipoAxon").value=exp.parametros.mielina===false?"amielinico":"mielinizado";$("desmielinizacionActiva").checked=Boolean(exp.parametros.desmielinizacion);actualizarAxon();cambiarTab("axon");} else cambiarTab("membrana"); $("observacionesProyecto").value=`Experimento: ${exp.titulo}\nHipotesis: ${exp.hipotesis}\n`; }
@@ -329,10 +345,10 @@ function vincularIntegrada() {
   });
   $("intCategoriaFarmaco")?.addEventListener("change", poblarFarmacosIntegrados);
   $("intFarmaco")?.addEventListener("change", mostrarInfoFarmaco);
-  $("btnIntegradaPlay")?.addEventListener("click", () => { integradaActiva = true; animarIntegrada(); });
+  $("btnIntegradaPlay")?.addEventListener("click", () => { estadoIntegrado.soloPulsoUnico = false; integradaActiva = true; animarIntegrada(); });
   $("btnIntegradaPausa")?.addEventListener("click", () => { integradaActiva = false; cancelAnimationFrame(rafIntegrada); });
   $("btnIntegradaReset")?.addEventListener("click", () => { integradaActiva = false; cancelAnimationFrame(rafIntegrada); estadoIntegrado = crearEstadoNeuronaIntegrada(); sincronizarControlesIntegrados(); renderizarIntegrada(true); });
-  $("btnIntegradaPulso")?.addEventListener("click", () => { estimularNeuronaIntegrada(estadoIntegrado); renderizarIntegrada(true); });
+  $("btnIntegradaPulso")?.addEventListener("click", () => { estimularNeuronaIntegrada(estadoIntegrado, null, { unico: true, duracionMs: 1.2 }); renderizarIntegrada(true); if (!integradaActiva) { integradaActiva = true; animarIntegrada(); } });
   $("btnIntAgregarFarmaco")?.addEventListener("click", () => { aplicarFarmacoIntegrado(estadoIntegrado, $("intFarmaco").value, Number($("intFarmacoIntensidad").value)); renderizarIntegrada(true); });
   $("btnIntLimpiarFarmacos")?.addEventListener("click", () => { limpiarFarmacosIntegrados(estadoIntegrado); renderizarIntegrada(true); });
   $("intSeguirEcuacion")?.addEventListener("change", () => renderizarIntegrada(true));
@@ -453,7 +469,7 @@ function animarIntegrada() {
   if (!integradaActiva) return;
   leerControlesIntegrados();
   leerUiModeIntegrado();
-  const paso = uiModeNeuro.explanationMode ? 0.18 : 0.34;
+  const paso = (uiModeNeuro.explanationMode ? 0.18 : 0.34) * factorTiempoGlobalNeuro();
   avanzarNeuronaIntegrada(estadoIntegrado, paso);
   renderizarIntegrada(false);
   rafIntegrada = requestAnimationFrame(animarIntegrada);
