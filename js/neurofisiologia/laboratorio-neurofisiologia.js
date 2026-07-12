@@ -925,8 +925,14 @@ function instalarArrastreDetalleNeuro(panel) {
   panel.addEventListener("pointerup", finalizar);
   panel.addEventListener("pointercancel", finalizar);
 }
+function detenerEventoDetalleNeuro(evento) {
+  evento?.preventDefault?.();
+  evento?.stopPropagation?.();
+  evento?.stopImmediatePropagation?.();
+}
+
 function eventoDentroDetalleNeuro(evento) {
-  return Boolean(evento.target?.closest?.(".detalle-neuro-seleccion, [data-cerrar-detalle-neuro]"));
+  return Boolean(evento.target?.closest?.(".detalle-neuro-seleccion, [data-cerrar-detalle-neuro], [data-minimizar-detalle-neuro], [data-neuro-aislar]"));
 }
 function limitarCamaraNeuro() {
   uiModeNeuro.cameraZoom = Math.max(0.55, Math.min(3.4, Number(uiModeNeuro.cameraZoom || 1)));
@@ -1081,6 +1087,30 @@ function mostrarTooltipNeuro(zona, x, y) {
   tip.style.top = `${Math.min(window.innerHeight - alto - margen, Math.max(margen, y + 14))}px`;
 }
 
+function vincularBotonesDetalleNeuro(panel) {
+  if (!panel) return;
+  const cerrar = panel.querySelector("[data-cerrar-detalle-neuro]");
+  const minimizar = panel.querySelector("[data-minimizar-detalle-neuro]");
+  const aislar = panel.querySelector("[data-neuro-aislar]");
+  let cierreSolicitado = false;
+  const cerrarPanel = (evento) => {
+    detenerEventoDetalleNeuro(evento);
+    if (cierreSolicitado) return;
+    cierreSolicitado = true;
+    cerrarDetalleNeuroSeleccionado();
+  };
+  const minimizarPanel = (evento) => {
+    detenerEventoDetalleNeuro(evento);
+    minimizarDetalleNeuroSeleccionado();
+  };
+  const aislarPanel = (evento) => {
+    detenerEventoDetalleNeuro(evento);
+    aislarFuncionamientoNeuro();
+  };
+  ["pointerdown", "click"].forEach((tipo) => cerrar?.addEventListener(tipo, cerrarPanel));
+  ["pointerdown", "click"].forEach((tipo) => minimizar?.addEventListener(tipo, minimizarPanel));
+  ["pointerdown", "click"].forEach((tipo) => aislar?.addEventListener(tipo, aislarPanel));
+}
 function mostrarDetalleNeuroSeleccionado(zona, disparador = null) {
   detalleNeuroAbierto = true;
   const panel = $("detalleIntegradaSeleccion");
@@ -1095,6 +1125,7 @@ function mostrarDetalleNeuroSeleccionado(zona, disparador = null) {
   panel.classList.remove("detalle-minimizado", "detalle-arrastrando");
   panel.tabIndex = -1;
   panel.innerHTML = construirDetalleNeuroHTML(zona);
+  vincularBotonesDetalleNeuro(panel);
   instalarArrastreDetalleNeuro(panel);
   panel.querySelector("[data-cerrar-detalle-neuro]")?.focus({ preventScroll: true });
 }

@@ -1,0 +1,180 @@
+/* Apariencia opcional de Cognicion. El tema clasico no agrega cambios. */
+:root[data-cognicion-theme="laboratorio"] {
+  --lab-glow: rgba(34, 211, 238, .18);
+  --lab-line: rgba(125, 211, 252, .24);
+  --lab-panel: rgba(5, 12, 24, .72);
+}
+
+body.tema-laboratorio {
+  background:
+    radial-gradient(circle at 12% 8%, rgba(34, 211, 238, .16), transparent 30%),
+    radial-gradient(circle at 86% 14%, rgba(59, 130, 246, .14), transparent 34%),
+    linear-gradient(180deg, #020408 0%, #07111f 48%, #020409 100%) !important;
+}
+
+body.tema-laboratorio::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: -1;
+  background:
+    linear-gradient(rgba(125, 211, 252, .045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(125, 211, 252, .035) 1px, transparent 1px),
+    radial-gradient(circle at 50% 14%, rgba(34, 211, 238, .08), transparent 36%);
+  background-size: 42px 42px, 42px 42px, auto;
+  mask-image: linear-gradient(to bottom, black, transparent 86%);
+}
+
+body.tema-laboratorio .card,
+body.tema-laboratorio .tarjeta,
+body.tema-laboratorio .module-card,
+body.tema-laboratorio .panel-lab,
+body.tema-laboratorio .seccion,
+body.tema-laboratorio .contenido,
+body.tema-laboratorio .hero,
+body.tema-laboratorio .workspace-section,
+body.tema-laboratorio .notifications-dropdown,
+body.tema-laboratorio .dashboard-notices-panel {
+  border-color: var(--lab-line) !important;
+  box-shadow: 0 24px 80px rgba(0,0,0,.32), inset 0 1px 0 rgba(255,255,255,.045), 0 0 32px var(--lab-glow) !important;
+  backdrop-filter: blur(18px);
+}
+
+body.tema-laboratorio button,
+body.tema-laboratorio a.primary-button,
+body.tema-laboratorio a.ghost-button,
+body.tema-laboratorio .btn-primario,
+body.tema-laboratorio .btn-secundario {
+  transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease, background .2s ease;
+}
+
+body.tema-laboratorio button:hover,
+body.tema-laboratorio a.primary-button:hover,
+body.tema-laboratorio a.ghost-button:hover,
+body.tema-laboratorio .btn-primario:hover,
+body.tema-laboratorio .btn-secundario:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 18px 46px rgba(34, 211, 238, .16);
+}
+
+.config-shell {
+  width: min(1120px, calc(100% - 40px));
+  margin: 0 auto;
+  padding: 34px 0 64px;
+}
+
+.config-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 24px;
+}
+
+.config-brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.config-brand img {
+  width: 58px;
+  height: 58px;
+  border-radius: 18px;
+  border: 1px solid rgba(125,211,252,.24);
+  box-shadow: 0 0 28px rgba(34,211,238,.16);
+}
+
+.config-card {
+  border: 1px solid rgba(125,211,252,.18);
+  border-radius: 28px;
+  background: linear-gradient(145deg, rgba(15,23,42,.82), rgba(2,6,23,.64));
+  box-shadow: 0 28px 90px rgba(0,0,0,.34);
+  padding: clamp(20px, 4vw, 34px);
+}
+
+.config-kicker {
+  color: #7dd3fc;
+  font-size: .72rem;
+  font-weight: 900;
+  letter-spacing: .22em;
+  text-transform: uppercase;
+}
+
+.config-card h1,
+.config-card h2 {
+  margin: 10px 0;
+  color: #f8fbff;
+}
+
+.config-card p {
+  color: #b7c4d8;
+  line-height: 1.6;
+}
+
+.temas-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px;
+  margin-top: 22px;
+}
+
+.tema-opcion {
+  position: relative;
+  text-align: left;
+  min-height: 190px;
+  border: 1px solid rgba(125,211,252,.18);
+  border-radius: 24px;
+  padding: 18px;
+  background: rgba(15,23,42,.54);
+  color: #eef6ff;
+  cursor: pointer;
+}
+
+.tema-opcion.activo {
+  border-color: rgba(34,211,238,.74);
+  box-shadow: 0 0 36px rgba(34,211,238,.18), inset 0 1px 0 rgba(255,255,255,.06);
+}
+
+.tema-preview {
+  height: 82px;
+  border-radius: 18px;
+  border: 1px solid rgba(125,211,252,.16);
+  margin-bottom: 14px;
+  overflow: hidden;
+  background: #090d16;
+}
+
+.tema-preview.clasica {
+  background: linear-gradient(135deg, #05070b, #111827);
+}
+
+.tema-preview.laboratorio {
+  background:
+    radial-gradient(circle at 30% 25%, rgba(34,211,238,.35), transparent 34%),
+    linear-gradient(135deg, #020408, #082038 62%, #020617);
+}
+
+.tema-opcion strong {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 1.08rem;
+}
+
+.tema-opcion small {
+  color: #9fb1c8;
+  line-height: 1.5;
+}
+
+.config-status {
+  min-height: 24px;
+  margin-top: 18px;
+  color: #7dd3fc;
+  font-weight: 800;
+}
+
+@media (max-width: 720px) {
+  .config-header { align-items: flex-start; flex-direction: column; }
+  .config-shell { width: min(100% - 24px, 1120px); }
+}

@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Configuracion | Cognicion</title>
+  <link rel="icon" type="image/png" href="assets/favicon-cognicion.png">
+  <link rel="stylesheet" href="css/theme.css">
+  <link rel="stylesheet" href="css/apariencia.css">
+</head>
+<body>
+  <main class="config-shell">
+    <header class="config-header">
+      <div class="config-brand">
+        <img src="assets/favicon-cognicion.png" alt="Cognicion">
+        <div>
+          <span class="config-kicker">Configuracion</span>
+          <h1>Apariencia</h1>
+          <p>Personaliza la forma en que se presenta Cognicion sin cambiar tus datos ni flujos de trabajo.</p>
+        </div>
+      </div>
+      <button class="btn-secundario" type="button" onclick="window.location.href='dashboard.html'">Volver al dashboard</button>
+    </header>
+
+    <section class="config-card">
+      <span class="config-kicker">Interfaz</span>
+      <h2>Tema visual</h2>
+      <p>La apariencia Clasica conserva la interfaz actual. Laboratorio agrega una capa visual futurista y clinica que se guardara automaticamente para tu usuario.</p>
+
+      <div id="temasApariencia" class="temas-grid" aria-live="polite"></div>
+      <p id="estadoApariencia" class="config-status">Cargando preferencia...</p>
+    </section>
+  </main>
+
+  <script type="module" src="js/configuracion.js"></script>
+  <script type="module" src="js/reportes.js"></script>
+</body>
+</html>

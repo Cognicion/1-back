@@ -22,7 +22,9 @@ import {
 } from "./services/usuarios.js";
 import { registrarEventoAuditoria } from "./services/auditoria.js";
 import { iniciarMonitoreoSesion } from "./services/sesion.js";
+import { aplicarAparienciaGuardada, sincronizarAparienciaUsuario } from "./services/apariencia.js";
 
+aplicarAparienciaGuardada();
 iniciarMonitoreoSesion("Dashboard");
 
 const frasesClinicas = [
@@ -104,6 +106,7 @@ onAuthStateChanged(auth, async (user) => {
   }
 
   const datos = await obtenerUsuario(user.uid);
+  await sincronizarAparienciaUsuario(user.uid);
   usuarioDashboardActual = { uid: user.uid, email: user.email || "", nombre: datos?.nombre || user.email || "" };
   const rolUsuario = String(datos?.rol || "").toLowerCase().trim();
   rolDashboardActual = rolUsuario;

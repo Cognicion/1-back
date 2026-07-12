@@ -1,9 +1,13 @@
 import { auth } from "./firebase.js";
 import { guardarReporteUsuario } from "./services/reportes.js";
+import { aplicarAparienciaGuardada, sincronizarAparienciaUsuario } from "./services/apariencia.js";
 
 import {
   onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+asegurarCssApariencia();
+aplicarAparienciaGuardada();
 
 const TIPOS_REPORTE = [
   {
@@ -34,10 +38,19 @@ let tipoSeleccionado = TIPOS_REPORTE[0].valor;
 
 onAuthStateChanged(auth, (user) => {
   usuarioActual = user || null;
+  if (user?.uid) sincronizarAparienciaUsuario(user.uid);
 });
 
 document.addEventListener("DOMContentLoaded", inicializarReporteGlobal);
 
+
+function asegurarCssApariencia() {
+  if (document.querySelector('link[href="css/apariencia.css"]')) return;
+  const link = document.createElement("link");
+  link.rel = "stylesheet";
+  link.href = "css/apariencia.css";
+  document.head.appendChild(link);
+}
 function inicializarReporteGlobal() {
   if (document.getElementById("reporteGlobalWidget")) return;
 
