@@ -96,3 +96,13 @@
 .tabla-transporte-neuro{margin:14px 0 18px;background:rgba(2,6,23,.34)}
 .tabla-transporte-neuro table{min-width:860px}
 [data-lab-jump]{white-space:nowrap}
+/* Exploracion interactiva del canvas integrado */
+.escena-integrada.zona-detectada .neuro-canvas-principal{cursor:help}
+.tooltip-neuro{max-width:min(330px,calc(100vw - 24px));line-height:1.45;background:linear-gradient(145deg,rgba(2,6,23,.96),rgba(8,47,73,.92));border-color:rgba(34,211,238,.34)}
+.tooltip-neuro strong{display:block;margin-bottom:4px;color:#e0f2fe;font-size:.86rem}.tooltip-neuro br+*{color:#cbd5e1}
+.detalle-neuro-seleccion{position:absolute;left:18px;bottom:18px;z-index:20;width:min(430px,calc(100% - 36px));border:1px solid rgba(34,211,238,.28);border-radius:20px;padding:14px 44px 14px 14px;background:linear-gradient(145deg,rgba(2,6,23,.9),rgba(14,116,144,.34));box-shadow:0 22px 70px rgba(0,0,0,.42),0 0 34px rgba(34,211,238,.13);backdrop-filter:blur(14px);animation:panelIn .2s ease both}
+.detalle-neuro-seleccion h3{margin:6px 0 8px;color:#f8fbff}.detalle-neuro-seleccion p{margin:0;color:#cbd5e1;line-height:1.55}.detalle-neuro-seleccion small{display:block;margin-top:10px;color:#9fb1c8;line-height:1.4}.detalle-neuro-seleccion button{position:absolute;right:12px;top:12px;width:28px;height:28px;border-radius:999px;border:1px solid rgba(125,211,252,.24);background:rgba(15,23,42,.78);color:#e0f2fe;font-weight:900}
+@media(max-width:720px){.detalle-neuro-seleccion{left:12px;right:12px;bottom:12px;width:auto;padding:12px 42px 12px 12px}.tooltip-neuro{display:none!important}}
+/* Etiquetas funcionales del simulador de propagacion axonal */
+.axon-label-mini{position:absolute;z-index:8;border:1px solid rgba(125,211,252,.22);border-radius:999px;padding:4px 7px;background:rgba(2,6,23,.72);color:#bae6fd;font-size:.66rem;font-weight:900;letter-spacing:.04em;box-shadow:0 0 18px rgba(34,211,238,.08);white-space:nowrap}.axon-label-mini.inicio{left:5%;top:27%}.axon-label-mini.terminal{right:5%;top:27%}.axon-label-mini.continuo{left:42%;top:27%}.nodo-label{top:74%;transform:translateX(-35%);opacity:.72}.electrodo-label{top:8%;color:#f8fafc}.onda-label{top:28%;transform:translateX(-25%);color:#e0f2fe;border-color:rgba(34,211,238,.46);box-shadow:0 0 26px rgba(34,211,238,.22)}.lesion-label{top:13%;color:#fecdd3;border-color:rgba(251,113,133,.42)}
+@media(max-width:720px){.nodo-label{display:none}.axon-label-mini{font-size:.6rem}}

@@ -19,6 +19,24 @@ const CAMERA_LABELS = {
   matematica: "Vista matematica"
 };
 
+const ZONAS_NEURO_INFO = {
+  extracelular: { titulo: "Espacio extracelular", detalle: "Predominan Na+, Cl- y Ca2+. El gradiente electroquimico favorece entrada de Na+ y Ca2+ cuando sus canales abren.", camara: "membrana" },
+  intracelular: { titulo: "Citoplasma axonal", detalle: "Predominan K+ y aniones intracelulares. La salida de K+ contribuye a repolarizacion e hiperpolarizacion.", camara: "membrana" },
+  membrana: { titulo: "Bicapa lipidica", detalle: "Barrera hidrofobica: los iones requieren canales, transportadores o bombas para cruzarla.", camara: "membrana" },
+  naV: { titulo: "Canal de Na+ dependiente de voltaje", detalle: "Se activa con despolarizacion. La entrada rapida de Na+ inicia la fase ascendente del potencial de accion.", camara: "membrana" },
+  kLeak: { titulo: "Canal de fuga de K+", detalle: "Mantiene permeabilidad basal al potasio y estabiliza el potencial de reposo cercano a EK.", camara: "membrana" },
+  naLeak: { titulo: "Canal de fuga de Na+", detalle: "Permite pequena entrada basal de sodio; participa en la conductancia de reposo junto con otros canales.", camara: "membrana" },
+  kV: { titulo: "Canal de K+ dependiente de voltaje", detalle: "Abre con retraso durante el potencial de accion. La salida de K+ repolariza la membrana.", camara: "membrana" },
+  cl: { titulo: "Canal de Cl- / GABA-A", detalle: "La entrada o redistribucion de Cl- suele estabilizar o hiperpolarizar la membrana en sinapsis inhibitorias.", camara: "sinapsis" },
+  caV: { titulo: "Canal de Ca2+ voltaje-dependiente", detalle: "En la terminal presinaptica, la entrada de Ca2+ dispara fusion vesicular y liberacion de neurotransmisor.", camara: "terminal" },
+  pump: { titulo: "Bomba Na+/K+ ATPasa", detalle: "Transporte activo primario: usa ATP para expulsar 3 Na+ e introducir 2 K+, preservando gradientes ionicos.", camara: "membrana" },
+  axon: { titulo: "Axon y conduccion", detalle: "La onda de despolarizacion avanza por corrientes locales; la mielina reduce capacitancia y acelera conduccion saltatoria.", camara: "axon" },
+  terminal: { titulo: "Terminal presinaptica", detalle: "Contiene vesiculas sinapticas. Al llegar el potencial de accion aumenta Ca2+ local y crece la probabilidad de liberacion.", camara: "terminal" },
+  sinapsis: { titulo: "Hendidura sinaptica", detalle: "El neurotransmisor difunde, se une a receptores y luego se retira por recaptura o degradacion enzimatica.", camara: "sinapsis" },
+  postsinapsis: { titulo: "Membrana postsinaptica", detalle: "Los receptores transforman la senal quimica en corrientes ionicas excitadoras o inhibitorias.", camara: "sinapsis" },
+  leyenda: { titulo: "Leyenda de iones", detalle: "Los colores distinguen Na+, K+, Cl- y Ca2+. Las particulas son representacion educativa del flujo, no conteo real.", camara: "general" }
+};
+
 export function renderizarMembranaCurvaIntegrada(canvas, overlay, estado, uiMode = {}) {
   if (!canvas) return;
   const ctx = canvas.getContext("2d");
@@ -43,6 +61,7 @@ export function renderizarMembranaCurvaIntegrada(canvas, overlay, estado, uiMode
   if (["terminal", "sinapsis", "general", "farmacologia"].includes(uiMode.cameraMode)) dibujarTerminalSinapsis(ctx, geo, estado, uiMode);
   dibujarFlujos(ctx, geo, estado, uiMode);
   dibujarLeyenda(ctx, cssW, cssH, estado, uiMode);
+  dibujarFocoSeleccionado(ctx, geo, cssW, cssH, estado, uiMode);
   actualizarOverlay(overlay, estado, uiMode);
 }
 
@@ -240,6 +259,68 @@ function dibujarLeyenda(ctx, w, h, estado, uiMode) {
   [["na","Ion de sodio"],["k","Ion de potasio"],["cl","Ion cloruro"],["ca","Ion calcio"]].forEach(([ion, txt], i) => { dibujarIon(ctx, x + 24, y + 48 + i * 27, ion, 1); ctx.fillStyle = "#cbd5e1"; ctx.font = "700 11px Inter, sans-serif"; ctx.textAlign = "left"; ctx.fillText(txt, x + 44, y + 52 + i * 27); });
   ctx.fillStyle = "#facc15"; ctx.fillText("Bomba Na/K + ATP", x + 16, y + 162); ctx.fillStyle = "#7dd3fc"; ctx.fillText(CAMERA_LABELS[uiMode.cameraMode || "membrana"], x + 16, y + 180);
   ctx.restore();
+}
+
+function dibujarFocoSeleccionado(ctx, geo, w, h, estado, uiMode) {
+  const id = uiMode.focusedStructure;
+  if (!id || id === "reposo") return;
+  const canal = canalesModelo(estado).find((ch) => ch.id === id);
+  let x = null, y = null, r = 36;
+  if (canal) {
+    const p = puntoEnArco(geo, canal.t);
+    x = p.x; y = p.y; r = canal.id === "pump" ? 48 : 40;
+  } else if (id === "membrana") {
+    const p = puntoEnArco(geo, 0.5);
+    x = p.x; y = p.y; r = 54;
+  } else if (id === "axon") { x = w * 0.50; y = h * 0.70; r = 88; }
+  else if (id === "terminal") { x = w * 0.72; y = h * 0.58; r = 118; }
+  else if (id === "sinapsis") { x = w * 0.84; y = h * 0.58; r = 92; }
+  else if (id === "postsinapsis") { x = w * 0.91; y = h * 0.58; r = 94; }
+  else if (id === "leyenda") { x = w - 115; y = 110; r = 120; }
+  else if (id === "extracelular") { x = w * 0.18; y = h * 0.18; r = 82; }
+  else if (id === "intracelular") { x = w * 0.18; y = h * 0.78; r = 82; }
+  if (x === null || y === null) return;
+  ctx.save();
+  ctx.strokeStyle = "rgba(34,211,238,.92)";
+  ctx.lineWidth = 3;
+  ctx.shadowColor = "rgba(34,211,238,.7)";
+  ctx.shadowBlur = 24;
+  ctx.beginPath();
+  ctx.arc(x, y, r, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.restore();
+}
+export function identificarZonaNeuroCanvas(canvas, estado, uiMode = {}, clientX, clientY) {
+  if (!canvas) return null;
+  const rect = canvas.getBoundingClientRect();
+  if (!rect.width || !rect.height) return null;
+  const x = clientX - rect.left;
+  const y = clientY - rect.top;
+  const cssW = Math.max(720, Math.round(rect.width || canvas.clientWidth || 1060));
+  const cssH = Math.max(460, Math.round(rect.height || canvas.clientHeight || 560));
+  const geo = crearGeometria(cssW, cssH, uiMode.cameraMode || "membrana");
+  const puntos = [];
+  canalesModelo(estado).forEach((ch) => {
+    const p = puntoEnArco(geo, ch.t);
+    puntos.push({ id: ch.id, x: p.x, y: p.y, r: ch.id === "pump" ? 42 : 34 });
+  });
+  puntos.push({ id: "axon", x: cssW * 0.50, y: cssH * 0.70, r: 70 });
+  puntos.push({ id: "terminal", x: cssW * 0.72, y: cssH * 0.58, r: 110 });
+  puntos.push({ id: "sinapsis", x: cssW * 0.84, y: cssH * 0.58, r: 88 });
+  puntos.push({ id: "postsinapsis", x: cssW * 0.91, y: cssH * 0.58, r: 88 });
+  puntos.push({ id: "leyenda", x: cssW - 115, y: 110, r: 115 });
+  const cercano = puntos
+    .map((p) => ({ ...p, d: Math.hypot(x - p.x, y - p.y) }))
+    .filter((p) => p.d <= p.r)
+    .sort((a, b) => a.d - b.d)[0];
+  if (cercano && ZONAS_NEURO_INFO[cercano.id]) return { id: cercano.id, ...ZONAS_NEURO_INFO[cercano.id] };
+  const distanciaMembrana = Math.abs(Math.hypot(x - geo.cx, y - geo.cy) - (geo.rOuter - geo.thickness / 2));
+  let angulo = Math.atan2(y - geo.cy, x - geo.cx);
+  if (angulo < 0) angulo += Math.PI * 2;
+  if (angulo >= geo.arcStart && angulo <= geo.arcEnd && distanciaMembrana < geo.thickness * 0.78) return { id: "membrana", ...ZONAS_NEURO_INFO.membrana };
+  if (y < cssH * 0.48) return { id: "extracelular", ...ZONAS_NEURO_INFO.extracelular };
+  if (y > cssH * 0.54) return { id: "intracelular", ...ZONAS_NEURO_INFO.intracelular };
+  return null;
 }
 
 function actualizarOverlay(overlay, estado, uiMode) {

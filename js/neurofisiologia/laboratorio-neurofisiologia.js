@@ -8,6 +8,7 @@ import { crearUiModeNeuro, GRAFICAS_POR_NIVEL, PASOS_TUTORIAL_NEURO } from "./le
 import { REGISTRO_ECUACIONES_NEURO } from "./equationRegistry.js";
 import { aplicarFarmacoIntegrado, avanzarNeuronaIntegrada, crearEstadoNeuronaIntegrada, estimularNeuronaIntegrada, limpiarFarmacosIntegrados, actualizarParametrosIntegrados } from "./integratedNeuronModel.js";
 import { dibujarGraficaIntegrada, poblarSelectorEcuaciones, poblarSelectorGraficas, renderizarEscenaIntegrada, renderizarExplicacionIntegrada, renderizarIndicadoresIntegrados, renderizarMatematicasIntegradas, renderizarTarjetaEstadoActual, renderizarVariablesIntegradas, resumenCopiableEcuacion } from "./integratedNeuronRenderer.js";
+import { identificarZonaNeuroCanvas } from "./curvedMembraneRenderer.js";
 
 
 const $ = (id) => document.getElementById(id);
@@ -30,6 +31,8 @@ let estadoIntegrado = crearEstadoNeuronaIntegrada();
 let graficasIntegradasVisibles = new Set(["Vm"]);
 let ecuacionCongelada = null;
 let uiModeNeuro = crearUiModeNeuro();
+let zonaNeuroSeleccionada = null;
+let interaccionesCanvasIntegradoListas = false;
 let tutorialVistoNeuro = localStorage.getItem("cognicionNeuroTutorialVisto") === "1";
 const escena = $("escenaMembrana");
 const graficaAccion = $("graficaAccion");
@@ -57,6 +60,7 @@ function inicializar() {
   document.querySelectorAll(".tabs-lab button").forEach((btn) => btn.addEventListener("click", () => cambiarTab(btn.dataset.tab)));
   poblarPresets();
   vincularIntegrada();
+  vincularInteraccionesCanvasIntegrado();
   vincularMembrana();
   vincularAccion();
   vincularAxon();
@@ -321,7 +325,20 @@ function tooltipAccion(e) {
 function vincularAxon() { ["tipoAxon", "longitudAxon", "diametroAxon", "grosorMielina", "temperaturaAxon", "densidadNaAxon", "bloqueoAxon", "desmielinizacionActiva", "severidadDesmielina", "estimularDesde", "bidireccional"].forEach((id) => $(id).addEventListener("input", actualizarAxon)); $("btnAxonPlay").addEventListener("click", () => { axonActivo = true; tiempoAxon = 0; animarAxon(); }); $("btnAxonPausa").addEventListener("click", () => { axonActivo = false; cancelAnimationFrame(rafAxon); }); $("btnAxonReset").addEventListener("click", () => { axonActivo = false; tiempoAxon = 0; dibujarAxonVisual(); dibujarGraficaAxon(); }); }
 function parametrosAxon() { return { longitudMm: Number($("longitudAxon").value), diametroUm: Number($("diametroAxon").value), mielina: $("tipoAxon").value === "mielinizado", grosorMielina: Number($("grosorMielina").value), temperaturaC: Number($("temperaturaAxon").value), densidadNa: Number($("densidadNaAxon").value), bloqueoCanales: Number($("bloqueoAxon").value), estimulacion: $("estimularDesde").value, bidireccional: $("bidireccional").checked, desmielinizacion: { activa: $("desmielinizacionActiva").checked, severidad: Number($("severidadDesmielina").value), inicioMm: 35, longitudMm: 15 } }; }
 function actualizarAxon() { resultadoAxon = simularPropagacionAxonal(parametrosAxon()); dibujarAxonVisual(); dibujarGraficaAxon(); $("resumenAxon").innerHTML = [["Velocidad", `${resultadoAxon.velocidadMms.toFixed(2)} mm/ms`], ["Tiempo total", `${resultadoAxon.tiempoTotalMs.toFixed(1)} ms`], ["Seguridad", `${Math.round(resultadoAxon.seguridadConduccion * 100)}%`], ["Tipo", resultadoAxon.parametros.mielina ? "Saltatoria" : "Continua"]].map(([k, v]) => `<article><span>${k}</span><strong>${v}</strong></article>`).join(""); }
-function dibujarAxonVisual() { const el = $("axonVisual"); const p = resultadoAxon.parametros; el.innerHTML = `<div class="axon-linea"></div>`; if (p.desmielinizacion.activa) el.innerHTML += `<span class="lesion" style="left:${5 + p.desmielinizacion.inicioMm / p.longitudMm * 90}%;width:${p.desmielinizacion.longitudMm / p.longitudMm * 90}%"></span>`; if (p.mielina) { for (let x = 6; x < 92; x += 14) el.innerHTML += `<span class="mielina" style="left:${x}%;width:10%"></span><span class="nodo" style="left:${x + 10}%"></span>`; } resultadoAxon.electrodos.forEach((e) => { el.innerHTML += `<span class="electrodo" style="left:${5 + e.posicion / p.longitudMm * 90}%"></span>`; }); const pos = Math.min(90, tiempoAxon / resultadoAxon.tiempoTotalMs * 90); el.innerHTML += `<span class="onda" style="left:${5 + pos}%"></span>`; }
+function dibujarAxonVisual() {
+  const el = $("axonVisual");
+  const p = resultadoAxon.parametros;
+  el.innerHTML = `<div class="axon-linea"></div><span class="axon-label-mini inicio">Segmento inicial</span><span class="axon-label-mini terminal">Terminal axonal</span>`;
+  if (p.desmielinizacion.activa) el.innerHTML += `<span class="lesion" style="left:${5 + p.desmielinizacion.inicioMm / p.longitudMm * 90}%;width:${p.desmielinizacion.longitudMm / p.longitudMm * 90}%"></span><span class="axon-label-mini lesion-label" style="left:${6 + p.desmielinizacion.inicioMm / p.longitudMm * 90}%">Desmielinizacion focal</span>`;
+  if (p.mielina) {
+    for (let x = 6; x < 92; x += 14) el.innerHTML += `<span class="mielina" style="left:${x}%;width:10%"></span><span class="nodo" style="left:${x + 10}%"></span><span class="axon-label-mini nodo-label" style="left:${x + 8}%">Nodo</span>`;
+  } else {
+    el.innerHTML += `<span class="axon-label-mini continuo">Conduccion continua</span>`;
+  }
+  resultadoAxon.electrodos.forEach((e, i) => { el.innerHTML += `<span class="electrodo" style="left:${5 + e.posicion / p.longitudMm * 90}%"></span><span class="axon-label-mini electrodo-label" style="left:${4 + e.posicion / p.longitudMm * 90}%">E${i + 1}</span>`; });
+  const pos = Math.min(90, tiempoAxon / resultadoAxon.tiempoTotalMs * 90);
+  el.innerHTML += `<span class="onda" style="left:${5 + pos}%"></span><span class="axon-label-mini onda-label" style="left:${5 + pos}%">Impulso</span>`;
+}
 function dibujarGraficaAxon() { const ctx = graficaAxon.getContext("2d"); const w = graficaAxon.width, h = graficaAxon.height; ctx.clearRect(0,0,w,h); ctx.fillStyle="#020617"; ctx.fillRect(0,0,w,h); dibujarGrid(ctx,w,h); const colores=["#38bdf8","#34d399","#facc15"]; resultadoAxon.electrodos.forEach((e,i)=>dibujarTraza(ctx,e.traza,colores[i%colores.length],"Vm",w,h)); }
 function animarAxon(){ if(!axonActivo)return; tiempoAxon += 0.25 * factorTiempoGlobalNeuro(); if(tiempoAxon>resultadoAxon.tiempoTotalMs){axonActivo=false;return;} dibujarAxonVisual(); rafAxon=requestAnimationFrame(animarAxon); }
 
@@ -367,6 +384,62 @@ function vincularIntegrada() {
   if (!tutorialVistoNeuro) iniciarTutorialNeuro();
 }
 
+function vincularInteraccionesCanvasIntegrado() {
+  if (interaccionesCanvasIntegradoListas) return;
+  const escenaIntegrada = $("escenaIntegrada");
+  if (!escenaIntegrada) return;
+  interaccionesCanvasIntegradoListas = true;
+  const zonaDesdeEvento = (evento) => {
+    const canvas = escenaIntegrada.querySelector(".neuro-canvas-principal");
+    return identificarZonaNeuroCanvas(canvas, estadoIntegrado, uiModeNeuro, evento.clientX, evento.clientY);
+  };
+  escenaIntegrada.addEventListener("mousemove", (evento) => {
+    const zona = zonaDesdeEvento(evento);
+    mostrarTooltipNeuro(zona, evento.clientX, evento.clientY);
+    escenaIntegrada.classList.toggle("zona-detectada", Boolean(zona));
+  });
+  escenaIntegrada.addEventListener("mouseleave", () => {
+    const tip = $("tooltipIntegrada");
+    if (tip) tip.style.display = "none";
+    escenaIntegrada.classList.remove("zona-detectada");
+  });
+  escenaIntegrada.addEventListener("click", (evento) => {
+    const zona = zonaDesdeEvento(evento);
+    if (!zona) return;
+    zonaNeuroSeleccionada = zona;
+    uiModeNeuro.focusedStructure = zona.id;
+    if ($("intCamaraNeuro") && zona.camara && zona.camara !== uiModeNeuro.cameraMode) {
+      uiModeNeuro.cameraMode = zona.camara;
+      $("intCamaraNeuro").value = zona.camara;
+    }
+    mostrarDetalleNeuroSeleccionado(zona);
+    renderizarIntegrada(true);
+  });
+}
+
+function mostrarTooltipNeuro(zona, x, y) {
+  const tip = $("tooltipIntegrada");
+  if (!tip) return;
+  if (!zona) { tip.style.display = "none"; return; }
+  tip.innerHTML = `<strong>${zona.titulo}</strong><br>${zona.detalle}`;
+  tip.style.display = "block";
+  const margen = 12;
+  const ancho = tip.offsetWidth || 260;
+  const alto = tip.offsetHeight || 90;
+  tip.style.left = `${Math.min(window.innerWidth - ancho - margen, Math.max(margen, x + 14))}px`;
+  tip.style.top = `${Math.min(window.innerHeight - alto - margen, Math.max(margen, y + 14))}px`;
+}
+
+function mostrarDetalleNeuroSeleccionado(zona) {
+  const panel = $("detalleIntegradaSeleccion");
+  if (!panel || !zona) return;
+  panel.hidden = false;
+  panel.innerHTML = `<span class="kicker">Estructura seleccionada</span><button type="button" data-cerrar-detalle-neuro aria-label="Cerrar detalle">x</button><h3>${zona.titulo}</h3><p>${zona.detalle}</p><small>Tip: haz clic sobre canales, bomba, terminal o hendidura para cambiar de foco sin salir de la simulacion.</small>`;
+  panel.querySelector("[data-cerrar-detalle-neuro]")?.addEventListener("click", () => {
+    zonaNeuroSeleccionada = null;
+    panel.hidden = true;
+  });
+}
 function aplicarNivelAprendizaje(nivel) {
   uiModeNeuro.learningLevel = nivel;
   graficasIntegradasVisibles = new Set(GRAFICAS_POR_NIVEL[nivel] || ["Vm"]);
@@ -480,6 +553,7 @@ function renderizarIntegrada(forzarTexto = false) {
   const ecuacionSeleccionada = ecuacionCongelada || ($("intSeguirEcuacion")?.checked ? estadoIntegrado.ecuacionActiva : ($("intEcuacionSeleccionada")?.value || estadoIntegrado.ecuacionActiva));
   if ($("intEcuacionSeleccionada") && !ecuacionCongelada && $("intSeguirEcuacion")?.checked) $("intEcuacionSeleccionada").value = ecuacionSeleccionada;
   renderizarEscenaIntegrada($("escenaIntegrada"), estadoIntegrado, uiModeNeuro);
+  if (zonaNeuroSeleccionada) mostrarDetalleNeuroSeleccionado(zonaNeuroSeleccionada);
   renderizarIndicadoresIntegrados($("estadoIntegrado"), estadoIntegrado, uiModeNeuro);
   renderizarTarjetaEstadoActual($("tarjetaEstadoActual"), estadoIntegrado, uiModeNeuro);
   renderizarVariablesIntegradas($("variablesIntegradas"), estadoIntegrado);

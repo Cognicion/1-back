@@ -36,6 +36,8 @@ export function renderizarEscenaIntegrada(contenedor, estado, uiMode = {}) {
     contenedor.innerHTML = `
       <canvas class="neuro-canvas-principal" aria-label="Membrana neuronal curva funcional"></canvas>
       <div class="neuro-canvas-overlay"></div>
+      <div id="tooltipIntegrada" class="tooltip-grafica tooltip-neuro" aria-hidden="true"></div>
+      <div id="detalleIntegradaSeleccion" class="detalle-neuro-seleccion" hidden></div>
     `;
   }
   renderizarMembranaCurvaIntegrada(
