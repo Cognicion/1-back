@@ -9,6 +9,14 @@ const ION_STYLE = {
   a: { label: "A-", color: "#94a3b8", shape: "hex", charge: -1 }
 };
 
+
+const NT_STYLE = {
+  glutamato: { label: "Glu", color: "#38bdf8", shape: "triad", receptor: "AMPA/NMDA", transportador: "EAAT", enzima: "ciclo Glu-Gln" },
+  gaba: { label: "GABA", color: "#a78bfa", shape: "capsule", receptor: "GABA-A/B", transportador: "GAT", enzima: "GABA-T" },
+  dopamina: { label: "DA", color: "#f472b6", shape: "amine", receptor: "D1/D2", transportador: "DAT", enzima: "MAO/COMT" },
+  serotonina: { label: "5HT", color: "#fb7185", shape: "amine", receptor: "5-HT", transportador: "SERT", enzima: "MAO" },
+  noradrenalina: { label: "NA", color: "#34d399", shape: "amine", receptor: "alfa/beta", transportador: "NET", enzima: "MAO/COMT" }
+};
 const CAMERA_LABELS = {
   membrana: "Vista de membrana",
   axon: "Vista de axon",
@@ -54,14 +62,17 @@ export function renderizarMembranaCurvaIntegrada(canvas, overlay, estado, uiMode
   ctx.save();
   aplicarCamaraCanvas(ctx, cssW, cssH, uiMode);
   dibujarCompartimentos(ctx, geo);
-  dibujarMembranaCurva(ctx, geo, estado);
-  if (uiMode.showCharges !== false) dibujarCargas(ctx, geo, estado, uiMode);
-  dibujarCanales(ctx, geo, estado, uiMode);
+  const vistaSinaptica = ["terminal", "sinapsis", "farmacologia"].includes(uiMode.cameraMode);
+  if (!vistaSinaptica) {
+    dibujarMembranaCurva(ctx, geo, estado);
+    if (uiMode.showCharges !== false) dibujarCargas(ctx, geo, estado, uiMode);
+    dibujarCanales(ctx, geo, estado, uiMode);
+    dibujarBombaNaK(ctx, geo, estado);
+    dibujarFlujos(ctx, geo, estado, uiMode);
+  }
   dibujarIones(ctx, geo, estado, uiMode);
-  dibujarBombaNaK(ctx, geo, estado);
-  if (["axon", "general", "farmacologia"].includes(uiMode.cameraMode)) dibujarAxon(ctx, geo, estado);
+  if (["axon", "general"].includes(uiMode.cameraMode)) dibujarAxon(ctx, geo, estado);
   if (["terminal", "sinapsis", "general", "farmacologia"].includes(uiMode.cameraMode)) dibujarTerminalSinapsis(ctx, geo, estado, uiMode);
-  dibujarFlujos(ctx, geo, estado, uiMode);
   dibujarFocoSeleccionado(ctx, geo, cssW, cssH, estado, uiMode);
   ctx.restore();
   dibujarLeyenda(ctx, cssW, cssH, estado, uiMode);
@@ -197,14 +208,10 @@ function canalesModelo(estado) {
 function dibujarCanales(ctx, geo, estado) {
   canalesModelo(estado).forEach((ch) => {
     const p = puntoEnArco(geo, ch.t); const n = normalEnArco(p.a);
-    ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.a + Math.PI / 2);
-    const color = ION_STYLE[ch.ion]?.color || "#7dd3fc";
-    ctx.fillStyle = ch.state === "bloqueado" ? "#475569" : ch.state === "abierto" || ch.state === "potenciado" || ch.state === "bomba" ? color : "#0f172a";
-    ctx.strokeStyle = ch.state === "inactivado" ? "#fb7185" : color; ctx.lineWidth = 2;
-    roundRect(ctx, -14, -34, 28, 68, 10); ctx.fill(); ctx.stroke();
-    ctx.fillStyle = ch.state === "abierto" || ch.state === "potenciado" || ch.state === "bomba" ? "rgba(2,6,23,.8)" : "rgba(148,163,184,.7)";
-    roundRect(ctx, -5, -25, 10, 50, 5); ctx.fill();
-    if (ch.state === "inactivado" || ch.state === "bloqueado") { ctx.strokeStyle = "#f43f5e"; ctx.beginPath(); ctx.moveTo(-12, -20); ctx.lineTo(12, 20); ctx.stroke(); }
+    ctx.save();
+    ctx.translate(p.x, p.y);
+    ctx.rotate(p.a + Math.PI / 2);
+    dibujarCanalConSubdominios(ctx, 0, 0, ch.label, ch.ion, ch.state, { escala: .92 });
     ctx.restore();
     ctx.fillStyle = "#e0f2fe"; ctx.font = "700 10px Inter, sans-serif"; ctx.fillText(ch.label, p.x + n.x * 30 - 16, p.y + n.y * 30);
   });
@@ -235,11 +242,62 @@ function posicionIon(geo, i, ionIndex, t, extra) {
 }
 
 function dibujarIon(ctx, x, y, ion, alpha = 1) {
-  const s = ION_STYLE[ion]; if (!s) return;
-  ctx.save(); ctx.globalAlpha = alpha; ctx.fillStyle = s.color; ctx.strokeStyle = "rgba(2,6,23,.8)"; ctx.lineWidth = 1.4;
-  if (s.shape === "diamond") { ctx.beginPath(); ctx.moveTo(x, y - 8); ctx.lineTo(x + 8, y); ctx.lineTo(x, y + 8); ctx.lineTo(x - 8, y); ctx.closePath(); }
-  else { ctx.beginPath(); ctx.arc(x, y, ion === "ca" ? 7 : 8, 0, Math.PI * 2); }
-  ctx.fill(); ctx.stroke(); ctx.fillStyle = "#020617"; ctx.font = "800 8px Inter, sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(s.label, x, y);
+  const s = ION_STYLE[ion];
+  if (!s) return;
+  dibujarParticulaBio(ctx, { x, y, tipo: "ion", label: s.label, color: s.color, shape: s.shape, alpha, carga: s.charge, radio: ion === "ca" ? 7 : 8 });
+}
+
+function dibujarNeurotransmisor(ctx, x, y, tipoId, alpha = 1, radio = 5.2) {
+  const nt = NT_STYLE[tipoId] || NT_STYLE.glutamato;
+  dibujarParticulaBio(ctx, { x, y, tipo: "nt", label: nt.label, color: nt.color, shape: nt.shape, alpha, radio });
+}
+
+function dibujarFarmacoMolecula(ctx, x, y, farmaco, alpha = 1) {
+  const esAbuso = /abuso|cocaina|anfetamina|alcohol|opioide|cannabis/i.test(`${farmaco?.nombre || ""} ${farmaco?.clase || ""}`);
+  dibujarParticulaBio(ctx, { x, y, tipo: esAbuso ? "droga" : "farmaco", label: esAbuso ? "Dx" : "Fx", color: esAbuso ? "#f472b6" : "#22d3ee", shape: "molecule", alpha, radio: 8.5 });
+}
+
+function dibujarParticulaBio(ctx, p) {
+  const alpha = p.alpha ?? 1;
+  const r = p.radio || 7;
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  ctx.fillStyle = p.color;
+  ctx.strokeStyle = p.tipo === "ion" ? "rgba(2,6,23,.82)" : "rgba(224,242,254,.82)";
+  ctx.lineWidth = p.tipo === "ion" ? 1.3 : 1.1;
+  ctx.shadowColor = p.tipo === "ion" ? "transparent" : p.color;
+  ctx.shadowBlur = p.tipo === "ion" ? 0 : 9;
+  if (p.shape === "diamond") {
+    ctx.beginPath(); ctx.moveTo(p.x, p.y - r); ctx.lineTo(p.x + r, p.y); ctx.lineTo(p.x, p.y + r); ctx.lineTo(p.x - r, p.y); ctx.closePath();
+  } else if (p.shape === "hex") {
+    ctx.beginPath();
+    for (let i = 0; i < 6; i += 1) {
+      const a = Math.PI / 6 + i * Math.PI / 3;
+      const x = p.x + Math.cos(a) * r;
+      const y = p.y + Math.sin(a) * r;
+      if (i) ctx.lineTo(x, y); else ctx.moveTo(x, y);
+    }
+    ctx.closePath();
+  } else if (p.shape === "capsule") {
+    roundRect(ctx, p.x - r * 1.25, p.y - r * .65, r * 2.5, r * 1.3, r * .65);
+  } else if (p.shape === "triad") {
+    ctx.beginPath(); ctx.arc(p.x - r * .52, p.y + r * .22, r * .52, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    ctx.beginPath(); ctx.arc(p.x + r * .52, p.y + r * .22, r * .52, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    ctx.beginPath(); ctx.arc(p.x, p.y - r * .46, r * .52, 0, Math.PI * 2);
+  } else if (p.shape === "amine" || p.shape === "molecule") {
+    ctx.beginPath(); ctx.arc(p.x, p.y, r, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    ctx.beginPath(); ctx.arc(p.x + r * .86, p.y + r * .46, r * .48, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    ctx.beginPath(); ctx.arc(p.x - r * .72, p.y + r * .62, r * .42, 0, Math.PI * 2);
+  } else {
+    ctx.beginPath(); ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
+  }
+  ctx.fill(); ctx.stroke();
+  ctx.shadowBlur = 0;
+  ctx.fillStyle = p.tipo === "ion" ? "#020617" : "#f8fbff";
+  ctx.font = p.tipo === "ion" ? "800 8px Inter, sans-serif" : "900 7px Inter, sans-serif";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillText(p.label, p.x, p.y);
   ctx.restore();
 }
 
@@ -293,37 +351,341 @@ function dibujarAxon(ctx, geo, estado) {
 }
 
 function dibujarTerminalSinapsis(ctx, geo, estado) {
-  const sx = geo.w * .72, sy = geo.h * .58; ctx.save();
-  ctx.fillStyle = "rgba(14,116,144,.28)"; ctx.strokeStyle = "rgba(125,211,252,.28)"; ctx.lineWidth = 2;
-  ctx.beginPath(); ctx.ellipse(sx, sy, 110, 86, -.2, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-  for (let i = 0; i < 3; i += 1) {
-    const mx = sx - 48 + i * 43, my = sy - 42 + (i % 2) * 30;
-    ctx.fillStyle = "rgba(148,163,184,.55)"; ctx.strokeStyle = "rgba(203,213,225,.75)";
-    ctx.beginPath(); ctx.ellipse(mx, my, 18, 9, .35, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-    ctx.strokeStyle = "rgba(15,23,42,.7)"; ctx.beginPath(); ctx.moveTo(mx - 9, my); ctx.quadraticCurveTo(mx - 3, my - 7, mx + 3, my); ctx.quadraticCurveTo(mx + 8, my + 7, mx + 12, my); ctx.stroke();
-  }
-  const total = Math.min(32, Math.max(8, Math.round(estado.sinapsis.vesiculasVisuales || 18)));
-  for (let i = 0; i < total; i += 1) { const a = i * 2.399; const r = 14 + (i % 5) * 12; const x = sx + Math.cos(a) * r; const y = sy + Math.sin(a) * r; ctx.fillStyle = i < estado.sinapsis.vesiculasFusionadas ? "#facc15" : i < estado.sinapsis.vesiculasListas ? "#38bdf8" : "#a78bfa"; ctx.beginPath(); ctx.arc(x, y, 8, 0, Math.PI * 2); ctx.fill(); ctx.strokeStyle = "rgba(224,242,254,.45)"; ctx.stroke(); }
-  ctx.strokeStyle = "rgba(250,204,21,.78)"; ctx.lineWidth = 5; ctx.beginPath(); ctx.moveTo(sx + 70, sy + 55); ctx.lineTo(sx + 112, sy + 55); ctx.stroke();
-  ctx.fillStyle = "rgba(15,23,42,.7)"; ctx.fillRect(sx + 122, sy - 90, 70, 180);
-  ctx.strokeStyle = "rgba(125,211,252,.35)"; ctx.strokeRect(sx + 122, sy - 90, 70, 180);
-  for (let i = 0; i < 5; i += 1) {
-    ctx.fillStyle = i % 2 ? "#22d3ee" : "#a78bfa";
-    roundRect(ctx, sx + 118, sy - 72 + i * 34, 16, 24, 7); ctx.fill();
-    ctx.fillStyle = "#38bdf8";
-    roundRect(ctx, sx + 178, sy - 70 + i * 34, 12, 22, 6); ctx.fill();
-  }
-  const ntCount = Math.min(26, Math.round(estado.sinapsis.nt * 5));
-  for (let i = 0; i < ntCount; i += 1) { ctx.fillStyle = estado.sinapsis.tipo.color; ctx.beginPath(); ctx.arc(sx + 125 + (i * 19) % 62, sy - 70 + (i * 31) % 140, 4, 0, Math.PI * 2); ctx.fill(); }
-  ctx.fillStyle = "#e0f2fe"; ctx.font = "800 10px Inter, sans-serif"; ctx.fillText(estado.sinapsis.tipo.nt, sx + 130, sy - 105); ctx.fillText("zona activa / receptores / transportadores", sx - 18, sy + 104);
+  const sx = geo.w * .60;
+  const sy = geo.h * .52;
+  const postX = geo.w * .84;
+  const hendiduraX = geo.w * .74;
+  const hendiduraW = Math.max(70, postX - hendiduraX - 20);
+  ctx.save();
+  dibujarAxonPresinaptico(ctx, geo, sx, sy, estado);
+  dibujarBotonPresinaptico(ctx, geo, sx, sy, estado);
+  dibujarHendiduraSinaptica(ctx, geo, hendiduraX, sy, hendiduraW, estado);
+  dibujarMembranaPostsinaptica(ctx, geo, postX, sy, estado);
+  dibujarMoleculasFarmacoSinapticas(ctx, geo, hendiduraX, sy, hendiduraW, estado);
   ctx.restore();
 }
 
+function dibujarAxonPresinaptico(ctx, geo, sx, sy, estado) {
+  const y = sy - 14;
+  ctx.save();
+  ctx.lineCap = "round";
+  ctx.strokeStyle = "rgba(56,189,248,.22)";
+  ctx.lineWidth = 34;
+  ctx.beginPath();
+  ctx.moveTo(geo.w * .16, y);
+  ctx.bezierCurveTo(geo.w * .30, y - 20, geo.w * .43, y + 16, sx - 82, sy - 6);
+  ctx.stroke();
+  ctx.strokeStyle = "rgba(224,242,254,.28)";
+  ctx.lineWidth = 52;
+  for (let i = 0; i < 5; i += 1) {
+    const x = geo.w * (.20 + i * .075);
+    ctx.beginPath();
+    ctx.moveTo(x, y - 4);
+    ctx.lineTo(x + geo.w * .035, y + 2);
+    ctx.stroke();
+  }
+  const xWave = geo.w * (.17 + .42 * Math.max(0, Math.min(1, estado.posicionOnda || 0)));
+  ctx.fillStyle = "rgba(56,189,248,.34)";
+  ctx.shadowColor = "rgba(56,189,248,.72)";
+  ctx.shadowBlur = 20;
+  ctx.beginPath();
+  ctx.arc(xWave, y, 24, 0, Math.PI * 2);
+  ctx.fill();
+  etiqueta(ctx, "axon presinaptico", geo.w * .18, y - 48, "#bae6fd");
+  ctx.restore();
+}
+
+function dibujarBotonPresinaptico(ctx, geo, sx, sy, estado) {
+  ctx.save();
+  const grad = ctx.createRadialGradient(sx - 40, sy - 38, 10, sx, sy, 132);
+  grad.addColorStop(0, "rgba(125,211,252,.34)");
+  grad.addColorStop(.55, "rgba(14,116,144,.34)");
+  grad.addColorStop(1, "rgba(15,23,42,.88)");
+  ctx.fillStyle = grad;
+  ctx.strokeStyle = "rgba(125,211,252,.42)";
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(sx - 92, sy - 72);
+  ctx.bezierCurveTo(sx - 28, sy - 118, sx + 86, sy - 92, sx + 94, sy - 10);
+  ctx.bezierCurveTo(sx + 106, sy + 80, sx - 8, sy + 104, sx - 82, sy + 58);
+  ctx.bezierCurveTo(sx - 132, sy + 26, sx - 136, sy - 34, sx - 92, sy - 72);
+  ctx.closePath();
+  ctx.fill();
+  ctx.stroke();
+  dibujarMitocondriasPresinapticas(ctx, sx, sy);
+  dibujarMicrotubulosTerminal(ctx, sx, sy);
+  dibujarVesiculasSinapticas(ctx, sx, sy, estado);
+  dibujarZonaActiva(ctx, sx, sy, estado);
+  etiqueta(ctx, "boton presinaptico", sx - 96, sy - 98, "#7dd3fc");
+  ctx.restore();
+}
+
+function dibujarMitocondriasPresinapticas(ctx, sx, sy) {
+  [[-50, -42], [24, -50], [-8, 36]].forEach(([dx, dy], i) => {
+    ctx.save();
+    ctx.translate(sx + dx, sy + dy);
+    ctx.rotate(i ? -.35 : .28);
+    ctx.fillStyle = "rgba(148,163,184,.58)";
+    ctx.strokeStyle = "rgba(203,213,225,.75)";
+    ctx.lineWidth = 1.2;
+    ctx.beginPath();
+    ctx.ellipse(0, 0, 22, 10, 0, 0, Math.PI * 2);
+    ctx.fill(); ctx.stroke();
+    ctx.strokeStyle = "rgba(15,23,42,.72)";
+    ctx.beginPath();
+    ctx.moveTo(-12, 0); ctx.bezierCurveTo(-7, -8, 0, 8, 6, 0); ctx.bezierCurveTo(10, -6, 14, 4, 18, 0);
+    ctx.stroke();
+    ctx.restore();
+  });
+}
+
+function dibujarMicrotubulosTerminal(ctx, sx, sy) {
+  ctx.save();
+  ctx.strokeStyle = "rgba(96,165,250,.22)";
+  ctx.lineWidth = 3;
+  for (let i = 0; i < 4; i += 1) {
+    ctx.beginPath();
+    ctx.moveTo(sx - 86, sy - 45 + i * 24);
+    ctx.bezierCurveTo(sx - 34, sy - 54 + i * 15, sx + 18, sy - 32 + i * 10, sx + 62, sy - 18 + i * 7);
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+
+function dibujarVesiculasSinapticas(ctx, sx, sy, estado) {
+  const total = Math.min(38, Math.max(12, Math.round(estado.sinapsis.vesiculasVisuales || 18)));
+  for (let i = 0; i < total; i += 1) {
+    const a = i * 2.399;
+    const r = 16 + (i % 6) * 12;
+    const x = sx - 12 + Math.cos(a) * r;
+    const y = sy - 6 + Math.sin(a) * r * .78;
+    const lista = i < estado.sinapsis.vesiculasListas;
+    const fusion = i < estado.sinapsis.vesiculasFusionadas;
+    const radio = fusion ? 12 : 9;
+    ctx.save();
+    ctx.fillStyle = fusion ? "rgba(250,204,21,.42)" : lista ? "rgba(56,189,248,.28)" : "rgba(167,139,250,.22)";
+    ctx.strokeStyle = fusion ? "rgba(250,204,21,.92)" : "rgba(224,242,254,.62)";
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.arc(x, y, radio, 0, Math.PI * 2);
+    ctx.fill(); ctx.stroke();
+    ctx.strokeStyle = "rgba(224,242,254,.22)";
+    ctx.beginPath(); ctx.arc(x, y, radio - 3, 0, Math.PI * 2); ctx.stroke();
+    for (let n = 0; n < 5; n += 1) {
+      dibujarNeurotransmisor(ctx, x + Math.cos(n * 1.26 + i) * 3.5, y + Math.sin(n * 1.26 + i) * 3.5, estado.sinapsis.tipoId, lista ? .9 : .42, 2.5);
+    }
+    if (fusion) {
+      ctx.strokeStyle = "rgba(250,204,21,.75)";
+      ctx.beginPath(); ctx.moveTo(x + radio - 1, y + 4); ctx.lineTo(sx + 104, sy + 72); ctx.stroke();
+    }
+    ctx.restore();
+  }
+  etiqueta(ctx, `${estado.sinapsis.tipo.nt} en vesiculas`, sx - 92, sy + 112, NT_STYLE[estado.sinapsis.tipoId]?.color || "#7dd3fc");
+}
+
+function dibujarZonaActiva(ctx, sx, sy, estado) {
+  ctx.save();
+  const y = sy + 72;
+  ctx.strokeStyle = "rgba(250,204,21,.88)";
+  ctx.lineWidth = 5;
+  ctx.beginPath(); ctx.moveTo(sx + 22, y); ctx.lineTo(sx + 96, y); ctx.stroke();
+  etiqueta(ctx, "zona activa", sx + 22, y + 22, "#fef9c3");
+  const caAbierto = estado.terminalActiva || estado.sinapsis.caLocal > .25;
+  for (let i = 0; i < 4; i += 1) {
+    dibujarCanalConSubdominios(ctx, sx + 28 + i * 18, y - 18, "CaV", "ca", caAbierto ? "abierto" : "cerrado", { escala: .72, vertical: true });
+  }
+  ctx.restore();
+}
+
+function dibujarHendiduraSinaptica(ctx, geo, x, sy, w, estado) {
+  ctx.save();
+  const top = sy - 86;
+  const h = 194;
+  ctx.fillStyle = "rgba(2,6,23,.25)";
+  ctx.strokeStyle = "rgba(125,211,252,.24)";
+  ctx.setLineDash([5, 7]);
+  ctx.strokeRect(x, top, w, h);
+  ctx.setLineDash([]);
+  etiqueta(ctx, "hendidura sinaptica", x - 4, top - 12, "#bae6fd");
+  dibujarNeurotransmisoresHendidura(ctx, x, top, w, h, estado);
+  dibujarTransportadoresYEnzimas(ctx, x, sy, w, estado);
+  ctx.restore();
+}
+
+function dibujarNeurotransmisoresHendidura(ctx, x, top, w, h, estado) {
+  const s = estado.sinapsis;
+  const ntCount = Math.min(46, Math.max(4, Math.round(s.nt * 7)));
+  const recaptura = s.recapturaActual || s.recaptura * s.nt;
+  const degradacion = s.degradacionActual || s.degradacion * s.nt;
+  const receptor = s.ocupacion || 0;
+  for (let i = 0; i < ntCount; i += 1) {
+    const fase = (estado.relojVisual * .38 + i * .137) % 1;
+    const baseY = top + 28 + ((i * 29) % Math.max(32, h - 56));
+    const liberado = pseudo(i * 19 + 3) < Math.min(.85, s.liberacionNt + .18);
+    const vaReceptor = pseudo(i * 31 + 5) < receptor;
+    const vaRecaptura = !vaReceptor && pseudo(i * 43 + 7) < recaptura / Math.max(.2, recaptura + degradacion + .35);
+    const vaEnzima = !vaReceptor && !vaRecaptura && pseudo(i * 47 + 11) < degradacion / Math.max(.2, recaptura + degradacion + .35);
+    let px = x + 12 + fase * Math.max(26, w - 34);
+    let py = baseY + Math.sin(fase * Math.PI * 2 + i) * 10;
+    if (vaReceptor) {
+      px = x + w - 12 - (1 - fase) * 30;
+      py = top + h * (.28 + .44 * pseudo(i + 91));
+    } else if (vaRecaptura) {
+      px = x + 10 + Math.sin(fase * Math.PI) * 34;
+      py = top + h - 30 - Math.cos(fase * Math.PI) * 18;
+    } else if (vaEnzima) {
+      px = x + w - 64 + Math.sin(fase * Math.PI * 2 + i) * 16;
+      py = top + h - 28 + Math.cos(fase * Math.PI * 2 + i) * 11;
+    } else if (liberado) {
+      px = x + 8 + fase * Math.max(26, w - 28);
+    }
+    dibujarNeurotransmisor(ctx, px, py, s.tipoId, .72 + .24 * pseudo(i + 17), vaReceptor ? 6.2 : 4.8);
+  }
+}
+
+function dibujarTransportadoresYEnzimas(ctx, x, sy, w, estado) {
+  const yBase = sy + 74;
+  const nt = NT_STYLE[estado.sinapsis.tipoId] || NT_STYLE.glutamato;
+  const recaptura = Math.max(.2, Number(estado.sinapsis.recaptura || 0.55));
+  for (let i = 0; i < 4; i += 1) {
+    const tx = x + 8 + i * 20;
+    ctx.fillStyle = "rgba(34,211,238,.28)";
+    ctx.strokeStyle = "rgba(125,211,252,.68)";
+    roundRect(ctx, tx, yBase - 16, 12, 26, 5); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = "rgba(2,6,23,.82)";
+    ctx.fillRect(tx + 4, yBase - 13, 4, 20);
+    if (i < Math.round(recaptura * 4)) {
+      ctx.fillStyle = nt.color;
+      ctx.beginPath(); ctx.moveTo(tx + 6, yBase - 24); ctx.lineTo(tx + 13, yBase - 12); ctx.lineTo(tx - 1, yBase - 12); ctx.fill();
+    }
+  }
+  const degradacion = Math.max(.15, Number(estado.sinapsis.degradacion || 0.35));
+  for (let i = 0; i < 4; i += 1) {
+    const ex = x + w - 78 + i * 18;
+    const ey = yBase - 5 + (i % 2) * 12;
+    ctx.fillStyle = i < Math.round(degradacion * 4) ? "rgba(250,204,21,.78)" : "rgba(250,204,21,.26)";
+    ctx.strokeStyle = "rgba(254,249,195,.62)";
+    ctx.beginPath();
+    for (let n = 0; n < 6; n += 1) {
+      const a = Math.PI / 6 + n * Math.PI / 3;
+      const px = ex + Math.cos(a) * 7;
+      const py = ey + Math.sin(a) * 7;
+      if (n) ctx.lineTo(px, py); else ctx.moveTo(px, py);
+    }
+    ctx.closePath(); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = "#020617"; ctx.font = "800 5.5px Inter, sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    ctx.fillText("E", ex, ey);
+  }
+  ctx.fillStyle = "#cbd5e1"; ctx.font = "800 9px Inter, sans-serif"; ctx.textAlign = "left"; ctx.textBaseline = "alphabetic";
+  ctx.fillText(`${nt.transportador} recaptura`, x + 4, yBase + 24);
+  ctx.fillText(`${nt.enzima}`, x + w - 90, yBase + 24);
+}
+
+function dibujarMembranaPostsinaptica(ctx, geo, x, sy, estado) {
+  ctx.save();
+  const y = sy;
+  ctx.fillStyle = "rgba(15,23,42,.88)";
+  ctx.strokeStyle = "rgba(125,211,252,.36)";
+  roundRect(ctx, x, y - 112, 96, 244, 28); ctx.fill(); ctx.stroke();
+  ctx.fillStyle = "rgba(34,211,238,.10)";
+  roundRect(ctx, x + 16, y - 96, 64, 212, 22); ctx.fill();
+  etiqueta(ctx, "neurona postsinaptica", x - 8, y - 132, "#7dd3fc");
+  const tipo = estado.sinapsis.tipoId;
+  const receptores = tipo === "gaba"
+    ? [["GABA-A", "cl", "potenciado"], ["GABA-B", "k", "metabotropico"], ["GAT", "na", "transportador"]]
+    : tipo === "dopamina"
+      ? [["D1/D2", "na", "metabotropico"], ["DAT", "na", "transportador"], ["K+", "k", "modulado"]]
+      : tipo === "serotonina"
+        ? [["5-HT1A", "k", "metabotropico"], ["5-HT2A", "ca", "modulado"], ["SERT", "na", "transportador"]]
+        : tipo === "noradrenalina"
+          ? [["alfa-2", "k", "metabotropico"], ["beta", "ca", "modulado"], ["NET", "na", "transportador"]]
+          : [["AMPA", "na", "abierto"], ["NMDA", "ca", estado.sinapsis.receptorOcupado > .4 ? "abierto" : "bloqueo Mg"], ["EAAT/mGluR", "k", "transportador"]];
+  receptores.forEach(([label, ion, state], i) => {
+    dibujarReceptorPostsinaptico(ctx, x + 6, y - 80 + i * 62, label, ion, state, estado);
+  });
+  const post = Number(estado.sinapsis.postPotencial || 0);
+  ctx.fillStyle = post >= 0 ? "rgba(34,211,238,.22)" : "rgba(167,139,250,.22)";
+  ctx.beginPath(); ctx.arc(x + 92, y + Math.max(-82, Math.min(82, -post * 3)), 26, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = "#e0f2fe"; ctx.font = "900 10px Inter, sans-serif"; ctx.textAlign = "center";
+  ctx.fillText(`${formato(post,1)} mV`, x + 48, y + 126);
+  ctx.restore();
+}
+
+function dibujarCanalConSubdominios(ctx, x, y, label, ion, state, opts = {}) {
+  const escala = opts.escala || 1;
+  const w = 30 * escala;
+  const h = 68 * escala;
+  const color = ION_STYLE[ion]?.color || "#7dd3fc";
+  ctx.save();
+  ctx.translate(x, y);
+  if (opts.vertical) ctx.rotate(0);
+  ctx.fillStyle = state === "bloqueado" ? "#475569" : state === "abierto" || state === "potenciado" ? color : "#0f172a";
+  ctx.strokeStyle = state === "inactivado" ? "#fb7185" : color;
+  ctx.lineWidth = 2 * escala;
+  roundRect(ctx, -w / 2, -h / 2, w, h, 10 * escala); ctx.fill(); ctx.stroke();
+  ctx.fillStyle = "rgba(2,6,23,.76)";
+  roundRect(ctx, -w * .18, -h * .34, w * .36, h * .68, 5 * escala); ctx.fill();
+  ctx.fillStyle = "rgba(224,242,254,.92)";
+  ctx.beginPath(); ctx.arc(-w * .22, -h * .22, 3.2 * escala, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.arc(w * .22, h * .22, 3.2 * escala, 0, Math.PI * 2); ctx.fill();
+  ctx.strokeStyle = "rgba(224,242,254,.58)";
+  ctx.beginPath(); ctx.moveTo(-w * .38, 0); ctx.lineTo(w * .38, 0); ctx.stroke();
+  if (escala >= .85) {
+    ctx.fillStyle = "rgba(224,242,254,.82)";
+    ctx.font = "700 6.5px Inter, sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText("poro", 0, 2);
+    ctx.fillText("sensor", -w * .42, -h * .34);
+    ctx.fillText("compuerta", w * .34, h * .38);
+  }
+  if (/bloqueo|bloqueado|inactivado/i.test(state)) {
+    ctx.strokeStyle = "#f43f5e"; ctx.beginPath(); ctx.moveTo(-w * .42, -h * .30); ctx.lineTo(w * .42, h * .30); ctx.stroke();
+  }
+  ctx.restore();
+  ctx.fillStyle = "#e0f2fe"; ctx.font = `${Math.max(7, 9 * escala)}px Inter, sans-serif`; ctx.textAlign = "center";
+  ctx.fillText(label, x, y + h / 2 + 12 * escala);
+}
+
+function dibujarReceptorPostsinaptico(ctx, x, y, label, ion, state, estado) {
+  const color = ION_STYLE[ion]?.color || "#7dd3fc";
+  ctx.save();
+  ctx.translate(x + 30, y + 22);
+  ctx.fillStyle = /transportador/i.test(state) ? "rgba(34,211,238,.42)" : /metabotropico/i.test(state) ? "rgba(167,139,250,.42)" : color;
+  ctx.strokeStyle = color; ctx.lineWidth = 1.8;
+  roundRect(ctx, -14, -25, 28, 50, 9); ctx.fill(); ctx.stroke();
+  ctx.fillStyle = "rgba(2,6,23,.82)"; roundRect(ctx, -5, -17, 10, 34, 4); ctx.fill();
+  ctx.fillStyle = "rgba(224,242,254,.95)";
+  ctx.beginPath(); ctx.arc(-9, -16, 3.5, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.arc(9, -16, 3.5, 0, Math.PI * 2); ctx.fill();
+  ctx.strokeStyle = "rgba(224,242,254,.55)";
+  ctx.beginPath(); ctx.moveTo(-12, 0); ctx.lineTo(12, 0); ctx.stroke();
+  ctx.fillStyle = "rgba(224,242,254,.82)";
+  ctx.font = "700 6.5px Inter, sans-serif";
+  ctx.textAlign = "center";
+  ctx.fillText(/metabotropico/i.test(state) ? "GPCR" : "poro", 0, 2);
+  ctx.fillText("sitio", 0, -29);
+  ctx.restore();
+  ctx.fillStyle = "#e0f2fe"; ctx.font = "900 10px Inter, sans-serif"; ctx.textAlign = "left";
+  ctx.fillText(label, x + 48, y + 18);
+  ctx.fillStyle = "#9fb1c8"; ctx.font = "800 8px Inter, sans-serif";
+function dibujarMoleculasFarmacoSinapticas(ctx, geo, x, sy, w, estado) {
+  const activos = estado.farmacos?.activos || [];
+  if (!activos.length) return;
+  activos.slice(0, 5).forEach((farmaco, i) => {
+    const fase = (estado.relojVisual * .22 + i * .19) % 1;
+    const px = x + 18 + fase * Math.max(24, w - 36);
+    const py = sy - 60 + Math.sin(fase * Math.PI * 2 + i) * 48;
+    dibujarFarmacoMolecula(ctx, px, py, farmaco, .92);
+    ctx.fillStyle = "#f8fbff"; ctx.font = "900 8px Inter, sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "alphabetic";
+    ctx.fillText(/droga de abuso/i.test(farmaco.clase || "") ? "droga" : "farmaco", px, py - 14);
+  });
+}
+
 function dibujarLeyenda(ctx, w, h, estado, uiMode) {
-  const x = w - 210, y = 18; ctx.save(); ctx.fillStyle = "rgba(2,6,23,.72)"; ctx.strokeStyle = "rgba(125,211,252,.22)"; roundRect(ctx, x, y, 190, 190, 18); ctx.fill(); ctx.stroke();
+  const x = w - 210, y = 18; ctx.save(); ctx.fillStyle = "rgba(2,6,23,.72)"; ctx.strokeStyle = "rgba(125,211,252,.22)"; roundRect(ctx, x, y, 190, 240, 18); ctx.fill(); ctx.stroke();
   ctx.fillStyle = "#e0f2fe"; ctx.font = "900 13px Inter, sans-serif"; ctx.fillText("Leyenda", x + 16, y + 24);
   [["na","Ion de sodio"],["k","Ion de potasio"],["cl","Ion cloruro"],["ca","Ion calcio"]].forEach(([ion, txt], i) => { dibujarIon(ctx, x + 24, y + 48 + i * 27, ion, 1); ctx.fillStyle = "#cbd5e1"; ctx.font = "700 11px Inter, sans-serif"; ctx.textAlign = "left"; ctx.fillText(txt, x + 44, y + 52 + i * 27); });
-  ctx.fillStyle = "#facc15"; ctx.fillText("Bomba Na/K + ATP", x + 16, y + 162); ctx.fillStyle = "#7dd3fc"; ctx.fillText(CAMERA_LABELS[uiMode.cameraMode || "membrana"], x + 16, y + 180);
+  ctx.fillStyle = "#facc15"; ctx.fillText("Bomba Na/K + ATP", x + 16, y + 162); dibujarNeurotransmisor(ctx, x + 25, y + 181, estado.sinapsis?.tipoId || "glutamato", 1, 5); ctx.fillStyle = "#cbd5e1"; ctx.fillText("Neurotransmisor", x + 44, y + 184); ctx.fillStyle = "#f472b6"; ctx.beginPath(); ctx.arc(x + 23, y + 204, 6, 0, Math.PI * 2); ctx.fill(); ctx.beginPath(); ctx.arc(x + 31, y + 208, 3.5, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = "#cbd5e1"; ctx.fillText("Farmaco / droga", x + 44, y + 208); ctx.fillStyle = "#7dd3fc"; ctx.fillText(CAMERA_LABELS[uiMode.cameraMode || "membrana"], x + 16, y + 228);
   ctx.restore();
 }
 
@@ -339,9 +701,9 @@ function dibujarFocoSeleccionado(ctx, geo, w, h, estado, uiMode) {
     const p = puntoEnArco(geo, 0.5);
     x = p.x; y = p.y; r = 54;
   } else if (id === "axon") { x = w * 0.50; y = h * 0.70; r = 88; }
-  else if (id === "terminal") { x = w * 0.72; y = h * 0.58; r = 118; }
-  else if (id === "sinapsis") { x = w * 0.84; y = h * 0.58; r = 92; }
-  else if (id === "postsinapsis") { x = w * 0.91; y = h * 0.58; r = 94; }
+  else if (id === "terminal") { x = w * 0.60; y = h * 0.52; r = 124; }
+  else if (id === "sinapsis") { x = w * 0.75; y = h * 0.52; r = 104; }
+  else if (id === "postsinapsis") { x = w * 0.84; y = h * 0.52; r = 112; }
   else if (id === "leyenda") { x = w - 115; y = 110; r = 120; }
   else if (id === "extracelular") { x = w * 0.18; y = h * 0.18; r = 82; }
   else if (id === "intracelular") { x = w * 0.18; y = h * 0.78; r = 82; }
@@ -372,9 +734,9 @@ export function identificarZonaNeuroCanvas(canvas, estado, uiMode = {}, clientX,
     puntos.push({ id: ch.id, x: p.x, y: p.y, r: ch.id === "pump" ? 42 : 34 });
   });
   puntos.push({ id: "axon", x: cssW * 0.50, y: cssH * 0.70, r: 70 });
-  puntos.push({ id: "terminal", x: cssW * 0.72, y: cssH * 0.58, r: 110 });
-  puntos.push({ id: "sinapsis", x: cssW * 0.84, y: cssH * 0.58, r: 88 });
-  puntos.push({ id: "postsinapsis", x: cssW * 0.91, y: cssH * 0.58, r: 88 });
+  puntos.push({ id: "terminal", x: cssW * 0.60, y: cssH * 0.52, r: 124 });
+  puntos.push({ id: "sinapsis", x: cssW * 0.75, y: cssH * 0.52, r: 104 });
+  puntos.push({ id: "postsinapsis", x: cssW * 0.84, y: cssH * 0.52, r: 112 });
   puntos.push({ id: "leyenda", x: cssW - 115, y: 110, r: 115 });
   const cercano = puntos
     .map((p) => ({ ...p, d: Math.hypot(x - p.x, y - p.y) }))

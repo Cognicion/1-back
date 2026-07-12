@@ -499,11 +499,15 @@ function vincularInteraccionesCanvasIntegrado() {
     evento.preventDefault();
     zoomCamaraNeuro(evento.deltaY, evento.clientX, evento.clientY);
   }, { passive: false });
-  escenaIntegrada.addEventListener("pointerdown", (evento) => {
-    if (eventoDentroDetalleNeuro(evento)) {
-      evento.stopPropagation();
-      return;
+  escenaIntegrada.addEventListener("click", (evento) => {
+    if (evento.target?.closest?.("[data-cerrar-detalle-neuro]")) {
+      evento.preventDefault();
+      evento.stopImmediatePropagation();
+      cerrarDetalleNeuroSeleccionado();
     }
+  }, true);
+  escenaIntegrada.addEventListener("pointerdown", (evento) => {
+    if (eventoDentroDetalleNeuro(evento)) return;
     if (evento.button !== 0) return;
     arrastreNeuro.activo = true;
     arrastreNeuro.movido = false;

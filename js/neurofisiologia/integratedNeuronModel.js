@@ -125,7 +125,7 @@ export function aplicarFarmacoIntegrado(estado, id, intensidad = 0.5) {
   const farmaco = obtenerFarmaco(id);
   if (!farmaco) return estado;
   estado.farmacos.activos = estado.farmacos.activos.filter((f) => f.id !== id);
-  estado.farmacos.activos.push({ id, nombre: farmaco.nombre, intensidad: Number(intensidad), descripcion: farmaco.descripcion });
+  estado.farmacos.activos.push({ id, nombre: farmaco.nombre, clase: farmaco.clase, intensidad: Number(intensidad), descripcion: farmaco.descripcion });
   estado.eventos.unshift({ tiempo: estado.tiempo, texto: `${farmaco.nombre}: ${farmaco.descripcion}` });
   return estado;
 }
