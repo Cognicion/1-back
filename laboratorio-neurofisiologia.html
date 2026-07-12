@@ -92,6 +92,7 @@
       <aside class="controles-lab">
         <label>Preset<select id="presetMembrana"></select></label>
         <label>Velocidad<select id="velocidadMembrana"><option value="0.5">Lenta</option><option value="1" selected>Normal</option><option value="2">Rapida</option></select></label>
+        <label class="control-tiempo-ionico">Tiempo de movimiento de iones<span id="tiempoIonesMembranaValor">2.5x mas lento</span><input id="tiempoIonesMembrana" type="range" min="0.6" max="6" step="0.2" value="2.5"></label>
         <label>Ion protagonista<select id="ionActivoMembrana"><option value="na">Na+ entrada</option><option value="k">K+ salida</option><option value="cl">Cl- inhibicion</option><option value="ca">Ca2+ sinapsis</option></select></label>
         <label>Vista educativa<select id="vistaMembrana"><option value="membrana" selected>Membrana</option><option value="corte">Axon en corte transversal</option><option value="sinapsis">Terminal sinaptica</option></select></label>
         <label>Droga de abuso<select id="drogaAbusoMembrana"><option value="ninguna" selected>Sin droga</option><option value="cocaina">Cocaina</option><option value="anfetamina">Anfetamina / metanfetamina</option><option value="alcohol">Alcohol</option><option value="opioide">Opioide</option><option value="cannabis">Cannabis</option></select></label>
@@ -104,6 +105,17 @@
         <label>P Na+<input data-perm="na" type="range" min="0" max="2" step="0.01"></label><label>P K+<input data-perm="k" type="range" min="0" max="2" step="0.01"></label><label>P Cl-<input data-perm="cl" type="range" min="0" max="2" step="0.01"></label>
         <label>Bomba Na/K<input id="bombaNaK" type="range" min="0" max="1.5" step="0.05"></label>
         <div class="checks"><label><input id="verIones" type="checkbox" checked> Iones</label><label><input id="verCargas" type="checkbox" checked> Cargas</label><label><input id="verCanales" type="checkbox" checked> Canales</label><label><input id="verFlechas" type="checkbox" checked> Flechas</label></div>
+        <details class="guia-simulador-membrana" open>
+          <summary>Como usar este simulador</summary>
+          <ol>
+            <li>Elige un preset o modifica concentraciones intra/extracelulares para observar como cambia Vm.</li>
+            <li>Selecciona el ion protagonista para enfocar su gradiente, canal y direccion de flujo.</li>
+            <li>Usa el tiempo de movimiento para pasar de una vista rapida educativa a camara lenta.</li>
+            <li>Activa o desactiva iones, cargas, canales y flechas para estudiar cada capa por separado.</li>
+            <li>Compara Vm con Eion y revisa la tabla para integrar gradiente quimico, electrico y flujo neto.</li>
+          </ol>
+          <p>Las particulas son una representacion pedagogica sincronizada con el modelo; no equivalen al numero real de iones.</p>
+        </details>
       </aside>
       <div class="escena-y-datos">
         <div id="escenaMembrana" class="escena-membrana"><div class="medio extra">Extracelular</div><div class="bicapa"><span></span><span></span><b>Na/K ATPasa</b></div><div class="medio intra">Intracelular</div></div>

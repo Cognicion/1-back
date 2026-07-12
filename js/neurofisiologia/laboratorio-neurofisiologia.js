@@ -64,6 +64,17 @@ function poblarPresets() {
   select.innerHTML = Object.entries(PRESETS_MEMBRANA).map(([id, p]) => `<option value="${id}">${p.nombre}</option>`).join("") + `<option value="fisiologica">Restablecer valores fisiologicos</option>`;
 }
 
+function leerTiempoIonicoMembrana() {
+  const valor = Number($("tiempoIonesMembrana")?.value || 2.5);
+  return Math.max(0.6, Math.min(6, valor));
+}
+
+function actualizarEtiquetaTiempoIonico() {
+  const escala = leerTiempoIonicoMembrana();
+  const etiqueta = $("tiempoIonesMembranaValor");
+  if (etiqueta) etiqueta.textContent = `${escala.toFixed(1)}x mas lento`;
+  if (escena) escena.style.setProperty("--ion-time-scale", escala.toFixed(2));
+}
 function vincularMembrana() {
   $("presetMembrana").addEventListener("change", (e) => { estadoMembrana = aplicarPresetMembrana(e.target.value); sincronizarControlesMembrana(); renderizarMembrana(); actualizarAccion(); actualizarAxon(); });
   document.querySelectorAll("[data-ion]").forEach((input) => input.addEventListener("input", () => { const [ion, lugar] = input.dataset.ion.split("."); estadoMembrana.concentraciones[ion][lugar] = Number(input.value); renderizarMembrana(); }));
@@ -71,6 +82,7 @@ function vincularMembrana() {
   document.querySelector("[data-membrana='temperaturaC']").addEventListener("input", (e) => { estadoMembrana.temperaturaC = Number(e.target.value); renderizarMembrana(); actualizarAxon(); });
   $("bombaNaK").addEventListener("input", (e) => { estadoMembrana.bombaNaK = Number(e.target.value); renderizarMembrana(); });
   $("zoomMembrana").addEventListener("input", (e) => { escena.style.transform = `scale(${e.target.value})`; });
+  $("tiempoIonesMembrana")?.addEventListener("input", () => { actualizarEtiquetaTiempoIonico(); renderizarMembrana(); });
   ["verIones", "verCargas", "verCanales", "verFlechas"].forEach((id) => $(id).addEventListener("change", renderizarMembrana));
   ["ionActivoMembrana", "vistaMembrana", "drogaAbusoMembrana"].forEach((id) => $(id)?.addEventListener("change", renderizarMembrana));
   $("btnMembranaPlay").addEventListener("click", () => { membranaActiva = true; animarMembrana(); });
@@ -240,6 +252,7 @@ function vincularAccion() {
   $("btnSuperponer").addEventListener("click", () => { superposiciones.push(resultadoAccion.trazas); dibujarAccion(); });
   $("btnLimpiarSuperposiciones").addEventListener("click", () => { superposiciones = []; dibujarAccion(); });
   graficaAccion.addEventListener("mousemove", tooltipAccion);
+  graficaAccion.addEventListener("mouseleave", () => { const tip = $("tooltipAccion"); if (tip) tip.style.display = "none"; });
 }
 
 function parametrosAccion() {
@@ -268,7 +281,26 @@ function dibujarAccion(cursor = null) {
 function dibujarGrid(ctx, w, h) { ctx.strokeStyle = "rgba(125,211,252,.08)"; for (let x = 0; x < w; x += 60) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke(); } for (let y = 0; y < h; y += 50) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke(); } }
 function dibujarTraza(ctx, trazas, color, campo, w, h, escala = 1) { const maxT = trazas.at(-1).t; ctx.strokeStyle = color; ctx.lineWidth = 2; ctx.beginPath(); trazas.forEach((p, i) => { const x = p.t / maxT * w; const valor = campo === "Vm" ? p.Vm : p[campo] * escala; const y = h - ((valor + 90) / 150) * h; if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y); }); ctx.stroke(); }
 function animarAccion() { if (!accionActiva) return; tiempoAccion += 0.15 * Number($("velocidadAccion").value || 1); if (tiempoAccion > resultadoAccion.parametros.duracionMs) { accionActiva = false; return; } dibujarAccion(tiempoAccion / resultadoAccion.parametros.duracionMs * graficaAccion.width); rafAccion = requestAnimationFrame(animarAccion); }
-function tooltipAccion(e) { const rect = graficaAccion.getBoundingClientRect(); const x = (e.clientX - rect.left) / rect.width * graficaAccion.width; const idx = Math.floor(x / graficaAccion.width * resultadoAccion.trazas.length); const p = resultadoAccion.trazas[idx]; const tip = $("tooltipAccion"); if (!p) return; tip.style.display = "block"; tip.style.left = `${e.pageX + 12}px`; tip.style.top = `${e.pageY + 12}px`; tip.innerHTML = `${p.t.toFixed(2)} ms<br>Vm ${p.Vm.toFixed(1)} mV<br>INa ${p.INa.toFixed(1)} | IK ${p.IK.toFixed(1)}<br>${p.fase}`; }
+function tooltipAccion(e) {
+  const rect = graficaAccion.getBoundingClientRect();
+  const x = (e.clientX - rect.left) / rect.width * graficaAccion.width;
+  const idx = Math.max(0, Math.min(resultadoAccion.trazas.length - 1, Math.floor(x / graficaAccion.width * resultadoAccion.trazas.length)));
+  const p = resultadoAccion.trazas[idx];
+  const tip = $("tooltipAccion");
+  if (!p || !tip) return;
+  tip.innerHTML = `${p.t.toFixed(2)} ms<br>Vm ${p.Vm.toFixed(1)} mV<br>INa ${p.INa.toFixed(1)} | IK ${p.IK.toFixed(1)}<br>${p.fase}`;
+  tip.style.display = "block";
+  const margen = 12;
+  const ancho = tip.offsetWidth || 170;
+  const alto = tip.offsetHeight || 78;
+  let left = e.clientX + 14;
+  let top = e.clientY - alto - 14;
+  if (top < margen) top = e.clientY + 18;
+  left = Math.min(window.innerWidth - ancho - margen, Math.max(margen, left));
+  top = Math.min(window.innerHeight - alto - margen, Math.max(margen, top));
+  tip.style.left = `${left}px`;
+  tip.style.top = `${top}px`;
+}
 
 function vincularAxon() { ["tipoAxon", "longitudAxon", "diametroAxon", "grosorMielina", "temperaturaAxon", "densidadNaAxon", "bloqueoAxon", "desmielinizacionActiva", "severidadDesmielina", "estimularDesde", "bidireccional"].forEach((id) => $(id).addEventListener("input", actualizarAxon)); $("btnAxonPlay").addEventListener("click", () => { axonActivo = true; tiempoAxon = 0; animarAxon(); }); $("btnAxonPausa").addEventListener("click", () => { axonActivo = false; cancelAnimationFrame(rafAxon); }); $("btnAxonReset").addEventListener("click", () => { axonActivo = false; tiempoAxon = 0; dibujarAxonVisual(); dibujarGraficaAxon(); }); }
 function parametrosAxon() { return { longitudMm: Number($("longitudAxon").value), diametroUm: Number($("diametroAxon").value), mielina: $("tipoAxon").value === "mielinizado", grosorMielina: Number($("grosorMielina").value), temperaturaC: Number($("temperaturaAxon").value), densidadNa: Number($("densidadNaAxon").value), bloqueoCanales: Number($("bloqueoAxon").value), estimulacion: $("estimularDesde").value, bidireccional: $("bidireccional").checked, desmielinizacion: { activa: $("desmielinizacionActiva").checked, severidad: Number($("severidadDesmielina").value), inicioMm: 35, longitudMm: 15 } }; }
