@@ -34,6 +34,8 @@ let uiModeNeuro = crearUiModeNeuro();
 let zonaNeuroSeleccionada = null;
 let interaccionesCanvasIntegradoListas = false;
 let cierreDetalleNeuroEnCurso = false;
+let ultimoDisparadorDetalleNeuro = null;
+let cierreGlobalDetalleInstalado = false;
 const arrastreNeuro = { activo: false, movido: false, inicioX: 0, inicioY: 0, ultimoX: 0, ultimoY: 0 };
 let tutorialVistoNeuro = localStorage.getItem("cognicionNeuroTutorialVisto") === "1";
 const escena = $("escenaMembrana");
@@ -50,7 +52,7 @@ function asignarAyudasNeuro() {
     btnIntegradaReset: "Reinicia neurona, axon y sinapsis al estado fisiologico basal.",
     btnIntegradaPulso: "Aplica un estimulo unico breve. Permite observar un potencial aislado sin tren repetitivo.",
     globalPlaybackNeuro: "Controla el tiempo del modelo. Valores menores muestran los eventos ionicos en camara lenta.",
-    intCamaraNeuro: "Cambia la escala visual: membrana, axon, terminal, sinapsis, farmacologia o matematica.",
+    intCamaraNeuro: "Cambia la escala visual: membrana, axon, terminal, sinapsis, farmacologia, matematica o modelo 3D fisico-quimico.",
     intNivelAprendizaje: "Ajusta cuanta informacion se muestra: basico para estudiantes, avanzado para variables y ecuaciones.",
     intIonVisible: "Filtra el ion protagonista para observar su gradiente y su flujo neto.",
     intMostrarCargas: "Muestra polaridad relativa dentro y fuera de la membrana.",
@@ -69,6 +71,136 @@ function asignarAyudasNeuro() {
   document.querySelectorAll(".tabs-lab button,[data-lab-jump]").forEach((btn) => {
     if (!btn.title) btn.title = "Cambia de simulador conservando la logica sincronizada del laboratorio.";
   });
+}
+const AYUDAS_CONTROLES_NEURO = {
+  intCamaraNeuro: { nombre: "Camara", tipo: "Visual", unidad: "vista", definicion: "Cambia la region anatomo-funcional que observas.", funcion: "No modifica ecuaciones; enfoca membrana, axon, terminal, sinapsis o una reconstruccion 3D fisico-quimica.", aumenta: "Permite acercarte a detalles moleculares.", disminuye: "Vuelve a una vista global.", rango: "Membrana, axon, terminal, sinapsis, general, farmacologia, matematica y modelo 3D.", ejemplo: "Usa Modelo 3D para rotar la neurona y ver gradientes, canales, mielina y sinapsis en volumen." },
+  intNivelAprendizaje: { nombre: "Nivel de aprendizaje", tipo: "Visual", unidad: "nivel", definicion: "Ajusta cuanta informacion aparece en pantalla.", funcion: "Controla etiquetas, detalle y graficas visibles.", aumenta: "Muestra mas estructuras y variables.", disminuye: "Reduce saturacion visual.", rango: "Basico, intermedio, avanzado.", ejemplo: "Basico para entender el flujo; avanzado para ecuaciones." },
+  globalPlaybackNeuro: { nombre: "Tiempo global", tipo: "Temporal", unidad: "x", definicion: "Escala la velocidad de reproduccion del modelo.", funcion: "Modifica la velocidad con la que avanzan los eventos simulados.", aumenta: "Los eventos ocurren mas rapido.", disminuye: "Se observa en camara lenta.", rango: "0.05x a 8x.", ejemplo: "0.1x ayuda a ver entrada de Ca2+ y liberacion vesicular." },
+  intVelocidadParticulas: { nombre: "Velocidad visual de particulas", tipo: "Visual", unidad: "categoria", definicion: "Controla la rapidez con la que se dibujan iones y moleculas.", funcion: "No cambia corriente, voltaje ni concentraciones; solo representacion.", aumenta: "Las particulas se desplazan mas rapido.", disminuye: "El movimiento se vuelve mas didactico.", rango: "Muy lenta, lenta, normal educativa.", ejemplo: "Muy lenta permite seguir el Ca2+ hacia la zona activa." },
+  intDensidadParticulas: { nombre: "Intensidad visual de particulas", tipo: "Visual", unidad: "categoria", definicion: "Ajusta cuantas particulas se dibujan.", funcion: "Representa visibilidad, no numero real de iones.", aumenta: "La escena se ve mas poblada.", disminuye: "Menos saturacion visual.", rango: "Muy baja a alta.", ejemplo: "Baja evita que se encimen los neurotransmisores." },
+  intIonVisible: { nombre: "Ion visible", tipo: "Visual", unidad: "ion", definicion: "Filtra la particula que quieres estudiar.", funcion: "Ayuda a seguir Na+, K+, Cl- o Ca2+ sin modificar el modelo.", aumenta: "No aplica.", disminuye: "No aplica.", rango: "Todos, Na+, K+, Cl-, Ca2+.", ejemplo: "Selecciona Ca2+ para ver fusion vesicular." },
+  intMostrarCargas: { nombre: "Mostrar cargas", tipo: "Visual", unidad: "on/off", definicion: "Dibuja polaridad relativa intra y extracelular.", funcion: "Facilita entender gradiente electrico.", aumenta: "Muestra signos de carga.", disminuye: "Oculta una capa visual.", rango: "Activado o desactivado.", ejemplo: "Util para explicar por que el interior es negativo." },
+  intExplicacionPaso: { nombre: "Explicacion paso a paso", tipo: "Didactico", unidad: "on/off", definicion: "Sincroniza explicaciones con las fases del modelo.", funcion: "No cambia fisiologia; cambia la guia educativa.", aumenta: "La simulacion queda mas narrada.", disminuye: "La escena queda mas libre.", rango: "Activado o desactivado.", ejemplo: "Activala en clase o tutorial." },
+  intReducirAnimaciones: { nombre: "Reducir animaciones", tipo: "Accesibilidad", unidad: "on/off", definicion: "Disminuye movimiento para mejorar tolerancia visual.", funcion: "No cambia ecuaciones.", aumenta: "Menos movimiento en pantalla.", disminuye: "Animacion completa.", rango: "Activado o desactivado.", ejemplo: "Usalo si la escena se siente saturada." },
+  intFrecuencia: { nombre: "Frecuencia de estimulacion", tipo: "Fisiologico", unidad: "Hz", definicion: "Numero de estimulos por segundo.", funcion: "Modifica la probabilidad de eventos repetidos en el modelo integrado.", aumenta: "Mas disparos y mayor activacion terminal.", disminuye: "Menos activacion sinaptica.", rango: "0.1 a 40 Hz didacticos.", ejemplo: "Frecuencias altas pueden aumentar liberacion de neurotransmisor." },
+  intIntensidad: { nombre: "Intensidad del estimulo", tipo: "Fisiologico", unidad: "relativa", definicion: "Magnitud de corriente aplicada a la neurona.", funcion: "Si supera umbral, favorece potencial de accion.", aumenta: "Mayor despolarizacion.", disminuye: "Estimulos subumbrales.", rango: "0 a 30 unidades relativas.", ejemplo: "Al subirla, se activa NaV con mayor facilidad." },
+  intDiametro: { nombre: "Diametro del axon", tipo: "Anatomico/Fisiologico", unidad: "um", definicion: "Grosor transversal del axon.", funcion: "En el modelo participa en velocidad de conduccion al modificar resistencia axial aproximada.", aumenta: "Menor resistencia axial y conduccion mas rapida.", disminuye: "Mayor resistencia axial y conduccion mas lenta.", rango: "0.2 a 12 um.", ejemplo: "Axones grandes conducen con mayor facilidad, especialmente con mielina." },
+  intTemperatura: { nombre: "Temperatura", tipo: "Fisiologico", unidad: "C", definicion: "Temperatura del tejido simulado.", funcion: "Afecta cinetica y velocidad de conduccion aproximada.", aumenta: "Canales y conduccion se aceleran hasta limites fisiologicos.", disminuye: "Conduccion mas lenta.", rango: "10 a 42 C.", ejemplo: "Hipotermia enlentece la conduccion." },
+  intTipoSinapsis: { nombre: "Tipo de sinapsis", tipo: "Fisiologico", unidad: "neurotransmisor", definicion: "Selecciona el sistema neurotransmisor predominante.", funcion: "Cambia receptores, transportadores y tipo de respuesta postsinaptica.", aumenta: "No aplica.", disminuye: "No aplica.", rango: "Glutamato, GABA, dopamina, serotonina, noradrenalina.", ejemplo: "GABA favorece inhibicion por Cl- y K+." },
+  intVesiculas: { nombre: "Vesiculas visibles", tipo: "Visual", unidad: "conteo educativo", definicion: "Cantidad de vesiculas dibujadas en la terminal.", funcion: "Representa disponibilidad visual; no es conteo real.", aumenta: "Mas vesiculas en pantalla.", disminuye: "Menos saturacion.", rango: "8 a 48.", ejemplo: "Subelo para estudiar reservas vesiculares." },
+  intLiberacion: { nombre: "Probabilidad basal de liberacion", tipo: "Fisiologico", unidad: "0-1", definicion: "Probabilidad aproximada de fusion vesicular ante Ca2+.", funcion: "Afecta liberacion de neurotransmisor.", aumenta: "Mas neurotransmisor en hendidura.", disminuye: "Menor respuesta postsinaptica.", rango: "0.05 a 1.", ejemplo: "Toxinas o farmacos pueden modificar liberacion." },
+  intRecaptura: { nombre: "Recaptura", tipo: "Fisiologico", unidad: "relativa", definicion: "Actividad de transportadores que retiran neurotransmisor.", funcion: "Reduce neurotransmisor disponible en hendidura.", aumenta: "Senal mas breve.", disminuye: "Senal mas prolongada.", rango: "0 a 1.5.", ejemplo: "Cocaina reduce DAT y aumenta dopamina sinaptica." },
+  intDegradacion: { nombre: "Degradacion enzimatica", tipo: "Fisiologico", unidad: "relativa", definicion: "Catabolismo del neurotransmisor por enzimas.", funcion: "Reduce concentracion sinaptica.", aumenta: "Senal mas corta.", disminuye: "Senal mas persistente.", rango: "0 a 1.5.", ejemplo: "MAO/COMT metabolizan monoaminas." },
+  intSensibilidad: { nombre: "Sensibilidad postsinaptica", tipo: "Fisiologico", unidad: "relativa", definicion: "Respuesta de receptores postsinapticos al neurotransmisor.", funcion: "Modula amplitud del potencial postsinaptico.", aumenta: "Mayor respuesta por la misma cantidad de neurotransmisor.", disminuye: "Respuesta menor.", rango: "0.2 a 2.", ejemplo: "Cambios adaptativos pueden aumentar o reducir sensibilidad." },
+  intFarmaco: { nombre: "Farmaco o droga", tipo: "Experimental", unidad: "sustancia", definicion: "Selecciona una sustancia para modificar canales, receptores o recaptura.", funcion: "Aplica efectos pedagogicos sobre el modelo.", aumenta: "Depende del farmaco elegido.", disminuye: "Depende del farmaco elegido.", rango: "Catalogo experimental.", ejemplo: "Cocaina aumenta monoaminas al bloquear recaptura." },
+  tiempoIonesMembrana: { nombre: "Tiempo de movimiento de iones", tipo: "Temporal/Visual", unidad: "x mas lento", definicion: "Escala la animacion de iones del simulador de membrana.", funcion: "No modifica GHK ni Nernst; solo la velocidad visual.", aumenta: "Movimiento mas lento.", disminuye: "Movimiento mas rapido.", rango: "0.6 a 6x.", ejemplo: "6x permite observar entradas y salidas con calma." },
+  estimuloIntensidad: { nombre: "Intensidad del estimulo", tipo: "Fisiologico", unidad: "uA/cm2 aprox.", definicion: "Corriente externa aplicada en el modelo HH reducido.", funcion: "Puede llevar Vm al umbral.", aumenta: "Mas probabilidad de potencial de accion.", disminuye: "Respuesta subumbral.", rango: "0 a 30.", ejemplo: "Un pulso intenso abre canales de Na+." },
+  diametroAxon: { nombre: "Diametro del axon", tipo: "Anatomico/Fisiologico", unidad: "um", definicion: "Grosor del axon en propagacion.", funcion: "Participa en velocidad por resistencia axial aproximada.", aumenta: "Conduccion mas rapida.", disminuye: "Conduccion mas lenta.", rango: "0.2 a 12 um.", ejemplo: "Mayor diametro facilita propagacion." }
+};
+
+function instalarAyudasContextualesNeuro() {
+  document.querySelectorAll(".controles-lab label").forEach((label) => {
+    const control = label.querySelector("input, select, textarea");
+    if (!control || label.querySelector(".btn-ayuda-control")) return;
+    const meta = AYUDAS_CONTROLES_NEURO[control.id] || ayudaGenericaDesdeControl(label, control);
+    if (!meta) return;
+    label.classList.add("label-con-ayuda");
+    const badge = document.createElement("span");
+    badge.className = `tipo-parametro tipo-${String(meta.tipo || "visual").toLowerCase().split("/")[0]}`;
+    badge.textContent = meta.tipo || "Visual";
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "btn-ayuda-control";
+    btn.textContent = "?";
+    btn.title = `Explicar ${meta.nombre}`;
+    btn.setAttribute("aria-label", `Explicar ${meta.nombre}`);
+    btn.addEventListener("pointerdown", (evento) => evento.stopPropagation());
+    btn.addEventListener("click", (evento) => {
+      evento.preventDefault();
+      evento.stopPropagation();
+      mostrarAyudaParametroNeuro(meta, control, btn);
+    });
+    label.append(badge, btn);
+  });
+}
+
+function ayudaGenericaDesdeControl(label, control) {
+  const nombre = (label.childNodes[0]?.textContent || control.id || "Parametro").trim();
+  return {
+    nombre,
+    tipo: control.type === "checkbox" ? "Visual" : control.type === "range" ? "Fisiologico/Visual" : "Parametro",
+    unidad: control.min || control.max ? "segun rango del control" : "variable",
+    definicion: "Parametro del laboratorio de neurofisiologia.",
+    funcion: "Modifica el comportamiento o la representacion segun el simulador activo.",
+    aumenta: "Si aumenta, observa el cambio en la escena y en las graficas.",
+    disminuye: "Si disminuye, compara la respuesta con el valor basal.",
+    rango: control.min || control.max ? `${control.min || "min"} a ${control.max || "max"}` : "Opciones del selector.",
+    ejemplo: "Usalo junto con las graficas para distinguir efecto fisiologico y efecto visual."
+  };
+}
+
+function mostrarAyudaParametroNeuro(meta, control, disparador) {
+  ultimoDisparadorDetalleNeuro = disparador || control || null;
+  let panel = document.getElementById("panelAyudaParametroNeuro");
+  if (!panel) {
+    panel = document.createElement("aside");
+    panel.id = "panelAyudaParametroNeuro";
+    panel.className = "panel-ayuda-parametro-neuro";
+    document.body.appendChild(panel);
+  }
+  const valor = control?.type === "checkbox" ? (control.checked ? "Activado" : "Desactivado") : (control?.value ?? "");
+  panel.hidden = false;
+  panel.inert = false;
+  panel.setAttribute("aria-hidden", "false");
+  panel.setAttribute("role", "dialog");
+  panel.setAttribute("aria-label", `Ayuda: ${meta.nombre}`);
+  panel.innerHTML = `<button type="button" data-cerrar-ayuda-neuro aria-label="Cerrar ayuda">x</button><span class="kicker">${meta.tipo || "Parametro"}</span><h3>${meta.nombre}</h3><dl><dt>Definicion sencilla</dt><dd>${meta.definicion}</dd><dt>Funcion</dt><dd>${meta.funcion}</dd><dt>Efecto en el modelo</dt><dd>${meta.tipo === "Visual" ? "Cambia la representacion grafica, no las ecuaciones." : "Puede modificar variables del modelo o su reproduccion."}</dd><dt>Si aumenta</dt><dd>${meta.aumenta}</dd><dt>Si disminuye</dt><dd>${meta.disminuye}</dd><dt>Unidad</dt><dd>${meta.unidad || "No especificada"}</dd><dt>Valor actual</dt><dd>${valor}</dd><dt>Rango</dt><dd>${meta.rango || "Segun control"}</dd><dt>Ejemplo</dt><dd>${meta.ejemplo}</dd><dt>Relacion farmacologica</dt><dd>${meta.farmaco || "Farmacos y drogas pueden modificar canales, receptores, recaptura, degradacion o excitabilidad segun el caso."}</dd><dt>Nivel de evidencia del modelo</dt><dd>${meta.tipo === "Visual" ? "Solo visual" : "Aproximacion didactica basada en principios fisiologicos."}</dd></dl>`;
+  panel.querySelector("[data-cerrar-ayuda-neuro]")?.focus();
+}
+
+function cerrarAyudaParametroNeuro() {
+  const panel = document.getElementById("panelAyudaParametroNeuro");
+  if (!panel) return;
+  panel.hidden = true;
+  panel.inert = true;
+  panel.setAttribute("aria-hidden", "true");
+  panel.innerHTML = "";
+  devolverFocoDetalleNeuro();
+}
+
+function instalarCierreGlobalDetalleNeuro() {
+  if (cierreGlobalDetalleInstalado) return;
+  cierreGlobalDetalleInstalado = true;
+  const cerrarSiCorresponde = (evento) => {
+    const botonDetalle = evento.target?.closest?.("[data-cerrar-detalle-neuro]");
+    const botonAyuda = evento.target?.closest?.("[data-cerrar-ayuda-neuro]");
+    const botonAislar = evento.target?.closest?.("[data-neuro-aislar]");
+    if (!botonDetalle && !botonAyuda && !botonAislar) return;
+    evento.preventDefault();
+    evento.stopPropagation();
+    if (botonDetalle) cerrarDetalleNeuroSeleccionado();
+    if (botonAyuda) cerrarAyudaParametroNeuro();
+    if (botonAislar) aislarFuncionamientoNeuro();
+  };
+  document.addEventListener("pointerup", cerrarSiCorresponde, true);
+  document.addEventListener("click", cerrarSiCorresponde, true);
+  document.addEventListener("keydown", (evento) => {
+    if (evento.key === "Escape") {
+      cerrarDetalleNeuroSeleccionado();
+      cerrarAyudaParametroNeuro();
+    }
+    if ((evento.key === "Enter" || evento.key === " ") && evento.target?.matches?.("[data-cerrar-detalle-neuro], [data-cerrar-ayuda-neuro]")) {
+      evento.preventDefault();
+      if (evento.target.matches("[data-cerrar-detalle-neuro]")) cerrarDetalleNeuroSeleccionado();
+      if (evento.target.matches("[data-cerrar-ayuda-neuro]")) cerrarAyudaParametroNeuro();
+    }
+  }, true);
+}
+
+function devolverFocoDetalleNeuro() {
+  const destino = ultimoDisparadorDetalleNeuro;
+  ultimoDisparadorDetalleNeuro = null;
+  if (destino && typeof destino.focus === "function" && document.contains(destino)) destino.focus({ preventScroll: true });
 }
 function factorTiempoGlobalNeuro() {
   const valor = Number($("globalPlaybackNeuro")?.value || 1);
@@ -105,6 +237,7 @@ function ejecutarBloqueLaboratorio(nombre, fn) {
 
 function inicializar() {
   ejecutarBloqueLaboratorio("tabs", () => document.querySelectorAll(".tabs-lab button").forEach((btn) => btn.addEventListener("click", () => cambiarTab(btn.dataset.tab))));
+  ejecutarBloqueLaboratorio("ayudas", () => { asignarAyudasNeuro(); instalarAyudasContextualesNeuro(); instalarCierreGlobalDetalleNeuro(); });
   ejecutarBloqueLaboratorio("presets", poblarPresets);
   ejecutarBloqueLaboratorio("simulador integrado", vincularIntegrada);
   ejecutarBloqueLaboratorio("interacciones de canvas integrado", vincularInteraccionesCanvasIntegrado);
@@ -412,7 +545,7 @@ function vincularIntegrada() {
     const el = $(id);
     if (el) el.addEventListener("input", () => { leerControlesIntegrados(); renderizarIntegrada(); });
   });
-  ["intCamaraNeuro", "intNivelAprendizaje", "intVelocidadParticulas", "intDensidadParticulas", "intIonVisible", "intMostrarCargas", "intExplicacionPaso", "intReducirAnimaciones", "intVistaMatematica"].forEach((id) => {
+  ["intCamaraNeuro", "intNivelAprendizaje", "intVelocidadParticulas", "intDensidadParticulas", "intIonVisible", "intEtiquetasNeuro", "intMostrarCargas", "intExplicacionPaso", "intReducirAnimaciones", "intVistaMatematica"].forEach((id) => {
     const el = $(id);
     if (el) el.addEventListener("input", () => { leerUiModeIntegrado(); renderizarIntegrada(true); });
   });
@@ -448,11 +581,18 @@ function cerrarDetalleNeuroSeleccionado() {
   const panel = $("detalleIntegradaSeleccion");
   if (panel) {
     panel.hidden = true;
+    panel.inert = true;
+    panel.setAttribute("aria-hidden", "true");
+    panel.removeAttribute("data-panel-neuro-abierto");
     panel.innerHTML = "";
   }
   const tip = $("tooltipIntegrada");
-  if (tip) tip.style.display = "none";
+  if (tip) {
+    tip.style.display = "none";
+    tip.setAttribute("aria-hidden", "true");
+  }
   renderizarIntegrada(false);
+  devolverFocoDetalleNeuro();
   window.setTimeout(() => { cierreDetalleNeuroEnCurso = false; }, 0);
 }
 
@@ -463,6 +603,8 @@ function limitarCamaraNeuro() {
   uiModeNeuro.cameraZoom = Math.max(0.55, Math.min(3.4, Number(uiModeNeuro.cameraZoom || 1)));
   uiModeNeuro.cameraPanX = Math.max(-1400, Math.min(1400, Number(uiModeNeuro.cameraPanX || 0)));
   uiModeNeuro.cameraPanY = Math.max(-1000, Math.min(1000, Number(uiModeNeuro.cameraPanY || 0)));
+  uiModeNeuro.orbitYaw = Math.max(-Math.PI, Math.min(Math.PI, Number(uiModeNeuro.orbitYaw || -0.55)));
+  uiModeNeuro.orbitPitch = Math.max(-1.05, Math.min(1.05, Number(uiModeNeuro.orbitPitch || 0.28)));
 }
 
 function recentrarCamaraNeuro() {
@@ -553,8 +695,13 @@ function vincularInteraccionesCanvasIntegrado() {
     arrastreNeuro.ultimoY = evento.clientY;
     if (Math.hypot(evento.clientX - arrastreNeuro.inicioX, evento.clientY - arrastreNeuro.inicioY) > 4) arrastreNeuro.movido = true;
     if (!arrastreNeuro.movido) return;
-    uiModeNeuro.cameraPanX = Number(uiModeNeuro.cameraPanX || 0) + dx;
-    uiModeNeuro.cameraPanY = Number(uiModeNeuro.cameraPanY || 0) + dy;
+    if (uiModeNeuro.cameraMode === "modelo3d") {
+      uiModeNeuro.orbitYaw = Number(uiModeNeuro.orbitYaw || -0.55) + dx * 0.008;
+      uiModeNeuro.orbitPitch = Number(uiModeNeuro.orbitPitch || 0.28) - dy * 0.006;
+    } else {
+      uiModeNeuro.cameraPanX = Number(uiModeNeuro.cameraPanX || 0) + dx;
+      uiModeNeuro.cameraPanY = Number(uiModeNeuro.cameraPanY || 0) + dy;
+    }
     limitarCamaraNeuro();
     const tip = $("tooltipIntegrada");
     if (tip) tip.style.display = "none";
@@ -604,40 +751,80 @@ function mostrarTooltipNeuro(zona, x, y) {
   tip.style.top = `${Math.min(window.innerHeight - alto - margen, Math.max(margen, y + 14))}px`;
 }
 
-function mostrarDetalleNeuroSeleccionado(zona) {
+function mostrarDetalleNeuroSeleccionado(zona, disparador = null) {
   const panel = $("detalleIntegradaSeleccion");
   if (!panel || !zona) return;
+  ultimoDisparadorDetalleNeuro = disparador || document.activeElement || $("btnPorQueNeuro");
   panel.hidden = false;
-  panel.innerHTML = `<span class="kicker">Estructura seleccionada</span><button type="button" data-cerrar-detalle-neuro aria-label="Cerrar detalle">x</button><h3>${zona.titulo}</h3><p>${zona.detalle}</p><small>Tip: haz clic sobre canales, bomba, terminal o hendidura para cambiar de foco sin salir de la simulacion.</small>`;
-  panel.onpointerdown = (evento) => evento.stopPropagation();
-  panel.onclick = (evento) => evento.stopPropagation();
-  const cerrar = panel.querySelector("[data-cerrar-detalle-neuro]");
-  if (cerrar) {
-    cerrar.onpointerdown = (evento) => {
-      evento.preventDefault();
-      evento.stopPropagation();
-    };
-    cerrar.onclick = (evento) => {
-      evento.preventDefault();
-      evento.stopPropagation();
-      cerrarDetalleNeuroSeleccionado();
-    };
-  }
+  panel.inert = false;
+  panel.setAttribute("aria-hidden", "false");
+  panel.setAttribute("role", "dialog");
+  panel.setAttribute("aria-label", zona.titulo || "Estructura seleccionada");
+  panel.setAttribute("data-panel-neuro-abierto", "true");
+  panel.tabIndex = -1;
+  panel.innerHTML = construirDetalleNeuroHTML(zona);
+  panel.querySelector("[data-cerrar-detalle-neuro]")?.focus({ preventScroll: true });
 }
+
+function construirDetalleNeuroHTML(zona) {
+  const secciones = zona.secciones || crearSeccionesNeuroDesdeZona(zona);
+  return `<button type="button" data-cerrar-detalle-neuro aria-label="Cerrar detalle">x</button><span class="kicker">Estructura seleccionada</span><h3>${zona.titulo}</h3><div class="detalle-neuro-secciones">${secciones.map((s) => `<section><h4>${s.titulo}</h4>${Array.isArray(s.texto) ? `<ul>${s.texto.map((x) => `<li>${x}</li>`).join("")}</ul>` : `<p>${s.texto}</p>`}</section>`).join("")}</div><div class="detalle-neuro-acciones"><button type="button" class="secundario" data-neuro-aislar>Ver funcionamiento aislado</button></div><small>Rueda = zoom. Arrastra el canvas = desplazar. Escape cierra este panel.</small>`;
+}
+
+function crearSeccionesNeuroDesdeZona(zona) {
+  return [
+    { titulo: "Que esta pasando", texto: zona.detalle || "Se selecciono una estructura funcional de la neurona." },
+    { titulo: "Por que esta pasando", texto: zona.cientifica || "Su estado depende del potencial de membrana, gradientes electroquimicos, conductancias y modulacion sinaptica." },
+    { titulo: "Estructuras participantes", texto: zona.estructuras || ["Membrana plasmatica", "Canales o receptores", "Gradientes ionicos", "Bomba Na+/K+ ATPasa cuando aplica"] },
+    { titulo: "Iones o moleculas que se mueven", texto: zona.iones || ["Na+", "K+", "Cl-", "Ca2+", "neurotransmisor segun la sinapsis"] },
+    { titulo: "Que ocurrira despues", texto: zona.despues || "Si el cambio de voltaje alcanza umbral, se amplificara la respuesta; si no, la membrana regresara hacia reposo." },
+    { titulo: "Parametro que cambio", texto: zona.parametro || "Revisa los controles fisiologicos y visuales activos en el panel izquierdo." },
+    { titulo: "Relacion con la grafica", texto: zona.grafica || "La curva de potencial de membrana (Vm) muestra si la celula se despolariza, repolariza o hiperpolariza." },
+    { titulo: "Farmacos o experimentos", texto: zona.medicamentos || "Farmacos, drogas o bloqueadores pueden modificar canales, receptores, recaptura, degradacion o liberacion vesicular." }
+  ];
+}
+
 function explicarPorQueNeuro() {
+  const vm = Number(estadoIntegrado.Vm || 0);
+  const fase = vm > -45 ? "despolarizacion" : vm < -75 ? "hiperpolarizacion" : "reposo funcional";
   const zona = zonaNeuroSeleccionada || {
     id: "estado_actual",
     titulo: "Por que ocurre esto ahora",
-    detalle: `Vm actual ${estadoIntegrado.Vm.toFixed(1)} mV. El balance entre corrientes de Na+, K+, Ca2+ y Cl- determina si la membrana se acerca al umbral o regresa al reposo.`,
-    cientifica: `INa ${estadoIntegrado.INa.toFixed(1)}, IK ${estadoIntegrado.IK.toFixed(1)}. La direccion del flujo depende del gradiente electroquimico y la conductancia disponible.`,
-    aumenta: "Si domina entrada de Na+ o Ca2+, Vm se despolariza y aumenta probabilidad de disparo.",
-    disminuye: "Si domina salida de K+ o entrada efectiva de Cl-, Vm se repolariza o hiperpolariza.",
-    medicamentos: "Bloqueadores de Na+, moduladores GABA, antagonistas Ca2+ y farmacos de recaptura modifican estos procesos.",
-    enfermedades: "Canalopatias, hipoxia, desmielinizacion y alteraciones metabolicas cambian excitabilidad."
+    detalle: `La neurona se encuentra en fase de ${fase}. Potencial de membrana (Vm): ${vm.toFixed(1)} mV.`,
+    cientifica: `La membrana integra corrientes de Na+, K+, Ca2+ y Cl-. INa ${estadoIntegrado.INa.toFixed(1)} e IK ${estadoIntegrado.IK.toFixed(1)} reflejan el balance actual de conductancias y gradientes.`,
+    estructuras: ["Bicapa fosfolipidica", "Canales de Na+ y K+", "Canales de Ca2+ terminales", "Bomba Na+/K+ ATPasa", "Receptores postsinapticos"],
+    iones: ["Na+ entra si se abren canales de sodio", "K+ suele salir y favorece repolarizacion", "Ca2+ entra en la terminal y activa fusion vesicular", "Cl- estabiliza o inhibe segun su gradiente"],
+    despues: vm > -55 ? "Si la despolarizacion progresa, se activaran mas canales de Na+ y puede generarse un potencial de accion." : "Si no entra suficiente carga positiva, la bomba y canales de fuga llevaran la membrana hacia reposo.",
+    parametro: `Frecuencia ${$("intFrecuencia")?.value || ""} Hz, intensidad del estimulo ${$("intIntensidad")?.value || ""}, tipo de sinapsis ${$("intTipoSinapsis")?.value || ""}.`,
+    grafica: "En la grafica, Vm muestra el voltaje; INa e IK muestran corrientes principales; Ca2+ y NT muestran la activacion terminal y sinaptica.",
+    medicamentos: "Bloqueadores de Na+ reducen excitabilidad; moduladores GABA favorecen inhibicion; drogas de recaptura aumentan neurotransmisor en hendidura."
   };
   zonaNeuroSeleccionada = zona;
   uiModeNeuro.focusedStructure = zona.id;
-  mostrarDetalleNeuroSeleccionado(zona);
+  mostrarDetalleNeuroSeleccionado(zona, $("btnPorQueNeuro"));
+}
+
+
+function aislarFuncionamientoNeuro() {
+  if (!zonaNeuroSeleccionada) return;
+  uiModeNeuro.focusedStructure = zonaNeuroSeleccionada.id || "reposo";
+  if (zonaNeuroSeleccionada.camara && $("intCamaraNeuro")) {
+    uiModeNeuro.cameraMode = zonaNeuroSeleccionada.camara;
+    $("intCamaraNeuro").value = zonaNeuroSeleccionada.camara;
+  }
+  uiModeNeuro.cameraZoom = Math.max(Number(uiModeNeuro.cameraZoom || 1), 1.45);
+  if ($("intEtiquetasNeuro") && $("intEtiquetasNeuro").value === "none") {
+    $("intEtiquetasNeuro").value = "basicas";
+    uiModeNeuro.labelMode = "basicas";
+  }
+  limitarCamaraNeuro();
+  renderizarIntegrada(true);
+  const panel = $("detalleIntegradaSeleccion");
+  const boton = panel?.querySelector("[data-neuro-aislar]");
+  if (boton) {
+    boton.textContent = "Funcionamiento resaltado";
+    boton.setAttribute("aria-pressed", "true");
+  }
 }
 function aplicarNivelAprendizaje(nivel) {
   uiModeNeuro.learningLevel = nivel;
@@ -654,10 +841,15 @@ function aplicarNivelAprendizaje(nivel) {
 function leerUiModeIntegrado() {
   const nivelAnterior = uiModeNeuro.learningLevel;
   uiModeNeuro.cameraMode = $("intCamaraNeuro")?.value || "membrana";
+  if (uiModeNeuro.cameraMode === "modelo3d") {
+    uiModeNeuro.orbitYaw = Number(uiModeNeuro.orbitYaw || -0.55);
+    uiModeNeuro.orbitPitch = Number(uiModeNeuro.orbitPitch || 0.28);
+  }
   uiModeNeuro.learningLevel = $("intNivelAprendizaje")?.value || "basico";
   uiModeNeuro.particleSpeed = $("intVelocidadParticulas")?.value || "lenta";
   uiModeNeuro.particleDensity = $("intDensidadParticulas")?.value || "baja";
   uiModeNeuro.ionFilter = $("intIonVisible")?.value || "todos";
+  uiModeNeuro.labelMode = $("intEtiquetasNeuro")?.value || "basicas";
   uiModeNeuro.showCharges = $("intMostrarCargas") ? Boolean($("intMostrarCargas").checked) : true;
   uiModeNeuro.explanationMode = Boolean($("intExplicacionPaso")?.checked);
   uiModeNeuro.reducedMotion = Boolean($("intReducirAnimaciones")?.checked);
@@ -713,6 +905,7 @@ function sincronizarControlesIntegrados() {
   $("intVelocidadParticulas").value = uiModeNeuro.particleSpeed;
   $("intDensidadParticulas").value = uiModeNeuro.particleDensity;
   if ($("intIonVisible")) $("intIonVisible").value = uiModeNeuro.ionFilter || "todos";
+  if ($("intEtiquetasNeuro")) $("intEtiquetasNeuro").value = uiModeNeuro.labelMode || "basicas";
   if ($("intMostrarCargas")) $("intMostrarCargas").checked = uiModeNeuro.showCharges !== false;
   $("intExplicacionPaso").checked = uiModeNeuro.explanationMode;
   $("intReducirAnimaciones").checked = uiModeNeuro.reducedMotion;
