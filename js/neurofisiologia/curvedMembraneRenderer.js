@@ -668,6 +668,9 @@ function dibujarReceptorPostsinaptico(ctx, x, y, label, ion, state, estado) {
   ctx.fillStyle = "#e0f2fe"; ctx.font = "900 10px Inter, sans-serif"; ctx.textAlign = "left";
   ctx.fillText(label, x + 48, y + 18);
   ctx.fillStyle = "#9fb1c8"; ctx.font = "800 8px Inter, sans-serif";
+  ctx.fillText(state, x + 48, y + 32);
+}
+
 function dibujarMoleculasFarmacoSinapticas(ctx, geo, x, sy, w, estado) {
   const activos = estado.farmacos?.activos || [];
   if (!activos.length) return;
