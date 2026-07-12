@@ -51,6 +51,8 @@ export function renderizarMembranaCurvaIntegrada(canvas, overlay, estado, uiMode
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   const geo = crearGeometria(cssW, cssH, uiMode.cameraMode || "membrana");
   dibujarFondo(ctx, cssW, cssH, geo, estado, uiMode);
+  ctx.save();
+  aplicarCamaraCanvas(ctx, cssW, cssH, uiMode);
   dibujarCompartimentos(ctx, geo);
   dibujarMembranaCurva(ctx, geo, estado);
   if (uiMode.showCharges !== false) dibujarCargas(ctx, geo, estado, uiMode);
@@ -60,9 +62,33 @@ export function renderizarMembranaCurvaIntegrada(canvas, overlay, estado, uiMode
   if (["axon", "general", "farmacologia"].includes(uiMode.cameraMode)) dibujarAxon(ctx, geo, estado);
   if (["terminal", "sinapsis", "general", "farmacologia"].includes(uiMode.cameraMode)) dibujarTerminalSinapsis(ctx, geo, estado, uiMode);
   dibujarFlujos(ctx, geo, estado, uiMode);
-  dibujarLeyenda(ctx, cssW, cssH, estado, uiMode);
   dibujarFocoSeleccionado(ctx, geo, cssW, cssH, estado, uiMode);
+  ctx.restore();
+  dibujarLeyenda(ctx, cssW, cssH, estado, uiMode);
   actualizarOverlay(overlay, estado, uiMode);
+}
+
+function camaraCanvas(uiMode = {}) {
+  return {
+    zoom: Math.max(0.55, Math.min(3.4, Number(uiMode.cameraZoom || 1))),
+    panX: Math.max(-1400, Math.min(1400, Number(uiMode.cameraPanX || 0))),
+    panY: Math.max(-1000, Math.min(1000, Number(uiMode.cameraPanY || 0)))
+  };
+}
+
+function aplicarCamaraCanvas(ctx, w, h, uiMode = {}) {
+  const cam = camaraCanvas(uiMode);
+  ctx.translate(w / 2 + cam.panX, h / 2 + cam.panY);
+  ctx.scale(cam.zoom, cam.zoom);
+  ctx.translate(-w / 2, -h / 2);
+}
+
+function pantallaAMundo(x, y, w, h, uiMode = {}) {
+  const cam = camaraCanvas(uiMode);
+  return {
+    x: (x - w / 2 - cam.panX) / cam.zoom + w / 2,
+    y: (y - h / 2 - cam.panY) / cam.zoom + h / 2
+  };
 }
 
 function crearGeometria(w, h, modo) {
@@ -334,10 +360,11 @@ export function identificarZonaNeuroCanvas(canvas, estado, uiMode = {}, clientX,
   if (!canvas) return null;
   const rect = canvas.getBoundingClientRect();
   if (!rect.width || !rect.height) return null;
-  const x = clientX - rect.left;
-  const y = clientY - rect.top;
+  const xPantalla = clientX - rect.left;
+  const yPantalla = clientY - rect.top;
   const cssW = Math.max(720, Math.round(rect.width || canvas.clientWidth || 1060));
   const cssH = Math.max(460, Math.round(rect.height || canvas.clientHeight || 560));
+  const { x, y } = pantallaAMundo(xPantalla, yPantalla, cssW, cssH, uiMode);
   const geo = crearGeometria(cssW, cssH, uiMode.cameraMode || "membrana");
   const puntos = [];
   canalesModelo(estado).forEach((ch) => {
@@ -366,7 +393,8 @@ export function identificarZonaNeuroCanvas(canvas, estado, uiMode = {}, clientX,
 function actualizarOverlay(overlay, estado, uiMode) {
   if (!overlay) return;
   const info = estadoActualEducativo(estado, uiMode);
-  overlay.innerHTML = `<div class="neuro-canvas-hud"><span>${CAMERA_LABELS[uiMode.cameraMode || "membrana"]}</span><b>${info.fase}</b><em>Vm ${formato(estado.Vm,1)} mV | INa ${formato(estado.INa,1)} | IK ${formato(estado.IK,1)} | Ca ${formato(estado.sinapsis.caLocal,2)}</em></div>`;
+  const zoom = Math.round(camaraCanvas(uiMode).zoom * 100);
+  overlay.innerHTML = `<div class="neuro-canvas-hud"><span>${CAMERA_LABELS[uiMode.cameraMode || "membrana"]} | zoom ${zoom}%</span><b>${info.fase}</b><em>Rueda = zoom | arrastrar = desplazar | doble clic = recentrar</em><em>Vm ${formato(estado.Vm,1)} mV | INa ${formato(estado.INa,1)} | IK ${formato(estado.IK,1)} | Ca ${formato(estado.sinapsis.caLocal,2)}</em></div>`;
 }
 
 function etiqueta(ctx, text, x, y, color) { ctx.fillStyle = color; ctx.font = "900 11px Inter, sans-serif"; ctx.letterSpacing = "2px"; ctx.fillText(text, x, y); }

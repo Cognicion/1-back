@@ -33,6 +33,8 @@ let ecuacionCongelada = null;
 let uiModeNeuro = crearUiModeNeuro();
 let zonaNeuroSeleccionada = null;
 let interaccionesCanvasIntegradoListas = false;
+let cierreDetalleNeuroEnCurso = false;
+const arrastreNeuro = { activo: false, movido: false, inicioX: 0, inicioY: 0, ultimoX: 0, ultimoY: 0 };
 let tutorialVistoNeuro = localStorage.getItem("cognicionNeuroTutorialVisto") === "1";
 const escena = $("escenaMembrana");
 const graficaAccion = $("graficaAccion");
@@ -413,6 +415,7 @@ function vincularIntegrada() {
 }
 
 function cerrarDetalleNeuroSeleccionado() {
+  cierreDetalleNeuroEnCurso = true;
   zonaNeuroSeleccionada = null;
   uiModeNeuro.focusedStructure = "reposo";
   const panel = $("detalleIntegradaSeleccion");
@@ -423,6 +426,42 @@ function cerrarDetalleNeuroSeleccionado() {
   const tip = $("tooltipIntegrada");
   if (tip) tip.style.display = "none";
   renderizarIntegrada(false);
+  window.setTimeout(() => { cierreDetalleNeuroEnCurso = false; }, 0);
+}
+
+function eventoDentroDetalleNeuro(evento) {
+  return Boolean(evento.target?.closest?.(".detalle-neuro-seleccion, [data-cerrar-detalle-neuro]"));
+}
+function limitarCamaraNeuro() {
+  uiModeNeuro.cameraZoom = Math.max(0.55, Math.min(3.4, Number(uiModeNeuro.cameraZoom || 1)));
+  uiModeNeuro.cameraPanX = Math.max(-1400, Math.min(1400, Number(uiModeNeuro.cameraPanX || 0)));
+  uiModeNeuro.cameraPanY = Math.max(-1000, Math.min(1000, Number(uiModeNeuro.cameraPanY || 0)));
+}
+
+function recentrarCamaraNeuro() {
+  uiModeNeuro.cameraZoom = 1;
+  uiModeNeuro.cameraPanX = 0;
+  uiModeNeuro.cameraPanY = 0;
+  renderizarIntegrada(true);
+}
+
+function zoomCamaraNeuro(delta, clientX, clientY) {
+  const escena = $("escenaIntegrada");
+  if (!escena) return;
+  const rect = escena.getBoundingClientRect();
+  const zoomPrevio = Math.max(0.55, Math.min(3.4, Number(uiModeNeuro.cameraZoom || 1)));
+  const factor = delta < 0 ? 1.12 : 0.89;
+  const zoomNuevo = Math.max(0.55, Math.min(3.4, zoomPrevio * factor));
+  if (Math.abs(zoomNuevo - zoomPrevio) < 0.001) return;
+  const x = clientX - rect.left;
+  const y = clientY - rect.top;
+  const mundoX = (x - rect.width / 2 - Number(uiModeNeuro.cameraPanX || 0)) / zoomPrevio + rect.width / 2;
+  const mundoY = (y - rect.height / 2 - Number(uiModeNeuro.cameraPanY || 0)) / zoomPrevio + rect.height / 2;
+  uiModeNeuro.cameraZoom = zoomNuevo;
+  uiModeNeuro.cameraPanX = x - rect.width / 2 - (mundoX - rect.width / 2) * zoomNuevo;
+  uiModeNeuro.cameraPanY = y - rect.height / 2 - (mundoY - rect.height / 2) * zoomNuevo;
+  limitarCamaraNeuro();
+  renderizarIntegrada(true);
 }
 
 function textoNeuroExtendido(zona) {
@@ -445,6 +484,7 @@ function vincularInteraccionesCanvasIntegrado() {
     return identificarZonaNeuroCanvas(canvas, estadoIntegrado, uiModeNeuro, evento.clientX, evento.clientY);
   };
   escenaIntegrada.addEventListener("mousemove", (evento) => {
+    if (arrastreNeuro.activo || eventoDentroDetalleNeuro(evento)) return;
     const zona = zonaDesdeEvento(evento);
     mostrarTooltipNeuro(zona, evento.clientX, evento.clientY);
     escenaIntegrada.classList.toggle("zona-detectada", Boolean(zona));
@@ -454,7 +494,59 @@ function vincularInteraccionesCanvasIntegrado() {
     if (tip) tip.style.display = "none";
     escenaIntegrada.classList.remove("zona-detectada");
   });
+  escenaIntegrada.addEventListener("wheel", (evento) => {
+    if (eventoDentroDetalleNeuro(evento)) return;
+    evento.preventDefault();
+    zoomCamaraNeuro(evento.deltaY, evento.clientX, evento.clientY);
+  }, { passive: false });
+  escenaIntegrada.addEventListener("pointerdown", (evento) => {
+    if (eventoDentroDetalleNeuro(evento)) {
+      evento.stopPropagation();
+      return;
+    }
+    if (evento.button !== 0) return;
+    arrastreNeuro.activo = true;
+    arrastreNeuro.movido = false;
+    arrastreNeuro.inicioX = evento.clientX;
+    arrastreNeuro.inicioY = evento.clientY;
+    arrastreNeuro.ultimoX = evento.clientX;
+    arrastreNeuro.ultimoY = evento.clientY;
+    escenaIntegrada.classList.add("pan-activo");
+    escenaIntegrada.setPointerCapture?.(evento.pointerId);
+  }, true);
+  escenaIntegrada.addEventListener("pointermove", (evento) => {
+    if (!arrastreNeuro.activo) return;
+    const dx = evento.clientX - arrastreNeuro.ultimoX;
+    const dy = evento.clientY - arrastreNeuro.ultimoY;
+    arrastreNeuro.ultimoX = evento.clientX;
+    arrastreNeuro.ultimoY = evento.clientY;
+    if (Math.hypot(evento.clientX - arrastreNeuro.inicioX, evento.clientY - arrastreNeuro.inicioY) > 4) arrastreNeuro.movido = true;
+    if (!arrastreNeuro.movido) return;
+    uiModeNeuro.cameraPanX = Number(uiModeNeuro.cameraPanX || 0) + dx;
+    uiModeNeuro.cameraPanY = Number(uiModeNeuro.cameraPanY || 0) + dy;
+    limitarCamaraNeuro();
+    const tip = $("tooltipIntegrada");
+    if (tip) tip.style.display = "none";
+    renderizarIntegrada(false);
+  });
+  escenaIntegrada.addEventListener("pointerup", (evento) => {
+    if (!arrastreNeuro.activo) return;
+    arrastreNeuro.activo = false;
+    escenaIntegrada.classList.remove("pan-activo");
+    escenaIntegrada.releasePointerCapture?.(evento.pointerId);
+    window.setTimeout(() => { arrastreNeuro.movido = false; }, 0);
+  });
+  escenaIntegrada.addEventListener("pointercancel", () => {
+    arrastreNeuro.activo = false;
+    arrastreNeuro.movido = false;
+    escenaIntegrada.classList.remove("pan-activo");
+  });
+  escenaIntegrada.addEventListener("dblclick", (evento) => {
+    if (eventoDentroDetalleNeuro(evento)) return;
+    recentrarCamaraNeuro();
+  });
   escenaIntegrada.addEventListener("click", (evento) => {
+    if (arrastreNeuro.movido || cierreDetalleNeuroEnCurso || eventoDentroDetalleNeuro(evento)) return;
     const zona = zonaDesdeEvento(evento);
     if (!zona) return;
     zonaNeuroSeleccionada = zona;
@@ -486,10 +578,20 @@ function mostrarDetalleNeuroSeleccionado(zona) {
   if (!panel || !zona) return;
   panel.hidden = false;
   panel.innerHTML = `<span class="kicker">Estructura seleccionada</span><button type="button" data-cerrar-detalle-neuro aria-label="Cerrar detalle">x</button><h3>${zona.titulo}</h3><p>${zona.detalle}</p><small>Tip: haz clic sobre canales, bomba, terminal o hendidura para cambiar de foco sin salir de la simulacion.</small>`;
-  panel.querySelector("[data-cerrar-detalle-neuro]")?.addEventListener("click", () => {
-    zonaNeuroSeleccionada = null;
-    panel.hidden = true;
-  });
+  panel.onpointerdown = (evento) => evento.stopPropagation();
+  panel.onclick = (evento) => evento.stopPropagation();
+  const cerrar = panel.querySelector("[data-cerrar-detalle-neuro]");
+  if (cerrar) {
+    cerrar.onpointerdown = (evento) => {
+      evento.preventDefault();
+      evento.stopPropagation();
+    };
+    cerrar.onclick = (evento) => {
+      evento.preventDefault();
+      evento.stopPropagation();
+      cerrarDetalleNeuroSeleccionado();
+    };
+  }
 }
 function explicarPorQueNeuro() {
   const zona = zonaNeuroSeleccionada || {

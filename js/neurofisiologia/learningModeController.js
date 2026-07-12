@@ -10,7 +10,10 @@ export const UI_MODE_NEURO_BASE = {
   cameraMode: "membrana",
   ionFilter: "todos",
   showCharges: true,
-  focusedStructure: "reposo"
+  focusedStructure: "reposo",
+  cameraZoom: 1,
+  cameraPanX: 0,
+  cameraPanY: 0
 };
 
 export const PASOS_TUTORIAL_NEURO = [
