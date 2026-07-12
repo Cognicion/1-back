@@ -41,7 +41,7 @@ const graficaAccion = $("graficaAccion");
 const graficaAxon = $("graficaAxon");
 const graficaIntegrada = $("graficaIntegrada");
 
-inicializar();
+inicializarSeguro();
 
 function asignarAyudasNeuro() {
   const ayudas = {
@@ -85,22 +85,49 @@ function configurarSaltosEntreSimuladores() {
     });
   });
 }
+function inicializarSeguro() {
+  try {
+    inicializar();
+  } catch (error) {
+    console.error("Error al iniciar laboratorio de neurofisiologia", error);
+    mostrarErrorLaboratorio(error);
+  }
+}
+
+function ejecutarBloqueLaboratorio(nombre, fn) {
+  try {
+    fn();
+  } catch (error) {
+    console.error(`Error en ${nombre}`, error);
+    mostrarErrorLaboratorio(error, nombre);
+  }
+}
+
 function inicializar() {
-  document.querySelectorAll(".tabs-lab button").forEach((btn) => btn.addEventListener("click", () => cambiarTab(btn.dataset.tab)));
-  poblarPresets();
-  vincularIntegrada();
-  vincularInteraccionesCanvasIntegrado();
-  vincularMembrana();
-  vincularAccion();
-  vincularAxon();
-  renderizarExperimentos();
-  configurarSaltosEntreSimuladores();
-  vincularCuaderno();
-  sincronizarControlesMembrana();
-  renderizarMembrana();
-  actualizarAccion();
-  actualizarAxon();
-  renderizarProyectos();
+  ejecutarBloqueLaboratorio("tabs", () => document.querySelectorAll(".tabs-lab button").forEach((btn) => btn.addEventListener("click", () => cambiarTab(btn.dataset.tab))));
+  ejecutarBloqueLaboratorio("presets", poblarPresets);
+  ejecutarBloqueLaboratorio("simulador integrado", vincularIntegrada);
+  ejecutarBloqueLaboratorio("interacciones de canvas integrado", vincularInteraccionesCanvasIntegrado);
+  ejecutarBloqueLaboratorio("membrana", vincularMembrana);
+  ejecutarBloqueLaboratorio("potencial de accion", vincularAccion);
+  ejecutarBloqueLaboratorio("axon", vincularAxon);
+  ejecutarBloqueLaboratorio("experimentos", renderizarExperimentos);
+  ejecutarBloqueLaboratorio("saltos", configurarSaltosEntreSimuladores);
+  ejecutarBloqueLaboratorio("cuaderno", vincularCuaderno);
+  ejecutarBloqueLaboratorio("render membrana", () => { sincronizarControlesMembrana(); renderizarMembrana(); });
+  ejecutarBloqueLaboratorio("render accion", actualizarAccion);
+  ejecutarBloqueLaboratorio("render axon", actualizarAxon);
+  ejecutarBloqueLaboratorio("proyectos", renderizarProyectos);
+}
+
+function mostrarErrorLaboratorio(error, contexto = "laboratorio") {
+  const contenedor = document.querySelector(".neuro-shell") || document.body;
+  if (!contenedor || document.getElementById("errorLaboratorioNeuro")) return;
+  const aviso = document.createElement("div");
+  aviso.id = "errorLaboratorioNeuro";
+  aviso.className = "alerta-lab";
+  aviso.textContent = `Se detecto un problema al iniciar ${contexto}. Revisa consola: ${error?.message || error}`;
+  contenedor.prepend(aviso);
 }
 
 function cambiarTab(tab) {
@@ -724,15 +751,16 @@ function renderizarIntegrada(forzarTexto = false) {
   if (!$("escenaIntegrada")) return;
   const ecuacionSeleccionada = ecuacionCongelada || ($("intSeguirEcuacion")?.checked ? estadoIntegrado.ecuacionActiva : ($("intEcuacionSeleccionada")?.value || estadoIntegrado.ecuacionActiva));
   if ($("intEcuacionSeleccionada") && !ecuacionCongelada && $("intSeguirEcuacion")?.checked) $("intEcuacionSeleccionada").value = ecuacionSeleccionada;
-  renderizarEscenaIntegrada($("escenaIntegrada"), estadoIntegrado, uiModeNeuro);
-  if (zonaNeuroSeleccionada) mostrarDetalleNeuroSeleccionado(zonaNeuroSeleccionada);
-  renderizarIndicadoresIntegrados($("estadoIntegrado"), estadoIntegrado, uiModeNeuro);
-  renderizarTarjetaEstadoActual($("tarjetaEstadoActual"), estadoIntegrado, uiModeNeuro);
-  renderizarVariablesIntegradas($("variablesIntegradas"), estadoIntegrado);
-  renderizarMatematicasIntegradas($("matematicasIntegradas"), estadoIntegrado, ecuacionSeleccionada, uiModeNeuro);
-  if (forzarTexto || uiModeNeuro.explanationMode) renderizarExplicacionIntegrada($("explicacionIntegrada"), estadoIntegrado);
-  dibujarGraficaIntegrada(graficaIntegrada, estadoIntegrado, graficasIntegradasVisibles);
-  $("intFarmacosActivos").innerHTML = estadoIntegrado.farmacos.activos.length ? estadoIntegrado.farmacos.activos.map((f) => `<span>${f.nombre} ${Math.round(f.intensidad * 100)}%</span>`).join("") : `<span>Sin farmacos activos</span>`;
+  ejecutarBloqueLaboratorio("render escena integrada", () => renderizarEscenaIntegrada($("escenaIntegrada"), estadoIntegrado, uiModeNeuro));
+  if (zonaNeuroSeleccionada) ejecutarBloqueLaboratorio("detalle seleccionado", () => mostrarDetalleNeuroSeleccionado(zonaNeuroSeleccionada));
+  ejecutarBloqueLaboratorio("indicadores integrados", () => renderizarIndicadoresIntegrados($("estadoIntegrado"), estadoIntegrado, uiModeNeuro));
+  ejecutarBloqueLaboratorio("estado actual", () => renderizarTarjetaEstadoActual($("tarjetaEstadoActual"), estadoIntegrado, uiModeNeuro));
+  ejecutarBloqueLaboratorio("variables integradas", () => renderizarVariablesIntegradas($("variablesIntegradas"), estadoIntegrado));
+  ejecutarBloqueLaboratorio("matematicas integradas", () => renderizarMatematicasIntegradas($("matematicasIntegradas"), estadoIntegrado, ecuacionSeleccionada, uiModeNeuro));
+  if (forzarTexto || uiModeNeuro.explanationMode) ejecutarBloqueLaboratorio("explicacion integrada", () => renderizarExplicacionIntegrada($("explicacionIntegrada"), estadoIntegrado));
+  ejecutarBloqueLaboratorio("grafica integrada", () => dibujarGraficaIntegrada(graficaIntegrada, estadoIntegrado, graficasIntegradasVisibles));
+  const listaFarmacos = $("intFarmacosActivos");
+  if (listaFarmacos) listaFarmacos.innerHTML = estadoIntegrado.farmacos.activos.length ? estadoIntegrado.farmacos.activos.map((f) => `<span>${f.nombre} ${Math.round(f.intensidad * 100)}%</span>`).join("") : `<span>Sin farmacos activos</span>`;
 }
 
 function iniciarTutorialNeuro() {
