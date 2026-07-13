@@ -147,6 +147,8 @@ export async function enviarMensajeConversacion(conversacionId, usuarioActual, t
     ultimoMensajePor: usuarioActual.uid,
     ultimoMensajeEn: mensaje.fechaISO,
     updatedAt: serverTimestamp()
+  }).catch((error) => {
+    console.warn("El mensaje se guardo, pero no se pudo actualizar el resumen de la conversacion:", error);
   });
 }
 

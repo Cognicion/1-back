@@ -318,25 +318,43 @@ async function cargarRespuestasReportesComoAvisos(uidUsuario = "") {
   try {
     const qReportes = query(collection(db, "reportesUsuarios"), where("usuarioUid", "==", uidUsuario));
     const snap = await getDocs(qReportes);
-    return snap.docs
-      .map((docReporte) => ({ id: docReporte.id, ...docReporte.data() }))
-      .filter((reporte) => reporte.respuestaAdminUltima?.mensaje)
-      .map((reporte) => {
-        const respuesta = reporte.respuestaAdminUltima || {};
-        return {
-          id: `respuesta_reporte_${reporte.id}_${respuesta.fechaISO || reporte.respondidoEn || ""}`,
-          idAviso: `respuesta_reporte_${reporte.id}`,
-          titulo: `Respuesta a tu reporte: ${reporte.titulo || "Reporte enviado"}`,
-          mensaje: respuesta.mensaje || "",
-          destinatarioTipo: "usuario",
-          destinatarioUid: uidUsuario,
-          activo: true,
-          origen: "respuesta_reporte",
-          reporteId: reporte.id,
-          creadoEn: respuesta.fechaISO || reporte.respondidoEn || reporte.fechaActualizacionISO || "",
-          adminNombre: respuesta.adminNombre || "Administrador"
-        };
+    const reportes = snap.docs.map((docReporte) => ({ id: docReporte.id, ...docReporte.data() }));
+    const respuestasPorReporte = await Promise.all(reportes.map(async (reporte) => {
+      const respuestas = [];
+      if (reporte.respuestaAdminUltima?.mensaje) respuestas.push(reporte.respuestaAdminUltima);
+
+      try {
+        const snapRespuestas = await getDocs(collection(db, "reportesUsuarios", reporte.id, "respuestas"));
+        snapRespuestas.docs.forEach((docRespuesta) => respuestas.push({ id: docRespuesta.id, ...docRespuesta.data() }));
+      } catch (error) {
+        console.warn("No se pudieron leer respuestas del reporte:", reporte.id, error);
+      }
+
+      const respuestasUnicas = new Map();
+      respuestas.forEach((respuesta) => {
+        const clave = `${respuesta.fechaISO || ""}_${respuesta.mensaje || ""}`;
+        if (respuesta.mensaje && !respuestasUnicas.has(clave)) respuestasUnicas.set(clave, respuesta);
       });
+
+      return Array.from(respuestasUnicas.values()).map((respuesta) => ({
+        reporte,
+        respuesta
+      }));
+    }));
+
+    return respuestasPorReporte.flat().map(({ reporte, respuesta }) => ({
+      id: `respuesta_reporte_${reporte.id}_${respuesta.fechaISO || respuesta.id || reporte.respondidoEn || ""}`,
+      idAviso: `respuesta_reporte_${reporte.id}`,
+      titulo: `Respuesta a tu reporte: ${reporte.titulo || "Reporte enviado"}`,
+      mensaje: respuesta.mensaje || "",
+      destinatarioTipo: "usuario",
+      destinatarioUid: uidUsuario,
+      activo: true,
+      origen: "respuesta_reporte",
+      reporteId: reporte.id,
+      creadoEn: respuesta.fechaISO || reporte.respondidoEn || reporte.fechaActualizacionISO || "",
+      adminNombre: respuesta.adminNombre || "Administrador"
+    }));
   } catch (error) {
     console.warn("No se pudieron cargar respuestas de reportes como avisos:", error);
     return [];
