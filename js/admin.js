@@ -4,7 +4,8 @@ import { registrarEventoAuditoria, resumenError } from "./services/auditoria.js"
 import { FORMATOS_INSTITUCIONALES, permisosFormatosDesdeUsuario } from "./services/formatosInstitucionales.js";
 import {
   actualizarEstadoReporteUsuario,
-  listarReportesUsuarios
+  listarReportesUsuarios,
+  responderReporteUsuario
 } from "./services/reportes.js";
 
 import {
@@ -1201,11 +1202,28 @@ function renderizarReportesUsuariosAdmin() {
           <span>${escaparHTML(usuario)}</span>
           <span>${escaparHTML(reporte.pagina || "Sin pagina")}</span>
         </div>
+        ${reporte.respuestaAdminUltima?.mensaje ? `
+          <div class="respuesta-reporte-admin">
+            <strong>Ultima respuesta enviada</strong>
+            <p>${escaparHTML(reporte.respuestaAdminUltima.mensaje)}</p>
+            <span>${escaparHTML(reporte.respuestaAdminUltima.fechaISO || "")}</span>
+          </div>
+        ` : ""}
+        <div class="respuesta-reporte-form">
+          <label for="respuesta-reporte-${escaparHTML(reporte.id)}">Responder al usuario</label>
+          <textarea id="respuesta-reporte-${escaparHTML(reporte.id)}" placeholder="${reporte.usuarioUid ? "Escribe una respuesta. Se enviara como notificacion personal en su Dashboard." : "Este reporte no tiene usuario vinculado; no se puede enviar notificacion personal."}" ${reporte.usuarioUid ? "" : "disabled"}></textarea>
+          <div class="respuesta-reporte-ayuda">
+            ${reporte.usuarioUid
+              ? "La respuesta quedara registrada y aparecera en las notificaciones del usuario."
+              : "Solo los reportes enviados con sesion iniciada pueden recibir respuesta directa."}
+          </div>
+        </div>
         <div class="reporte-admin-acciones">
           <select id="estado-reporte-${escaparHTML(reporte.id)}">
             ${ESTADOS_REPORTE_ADMIN.map((estado) => opcionEstadoReporte(estado, estadoReporte)).join("")}
           </select>
           <button type="button" onclick="cambiarEstadoReporteAdmin('${reporte.id}')">Actualizar estado</button>
+          <button type="button" ${reporte.usuarioUid ? "" : "disabled"} onclick="responderReporteAdmin('${reporte.id}')">Enviar respuesta</button>
         </div>
       </article>
     `;
@@ -1236,6 +1254,82 @@ window.cambiarEstadoReporteAdmin = async function(reporteId) {
     await cargarReportesUsuariosAdmin();
   } catch (error) {
     alert("No se pudo actualizar el reporte: " + error.message);
+  }
+};
+
+window.responderReporteAdmin = async function(reporteId) {
+  const reporte = reportesUsuariosAdmin.find((item) => item.id === reporteId);
+  const campo = document.getElementById(`respuesta-reporte-${reporteId}`);
+  const selectorEstado = document.getElementById(`estado-reporte-${reporteId}`);
+  const mensaje = campo?.value.trim() || "";
+
+  if (!reporte) {
+    alert("No se encontro el reporte seleccionado.");
+    return;
+  }
+
+  if (!reporte.usuarioUid) {
+    alert("Este reporte no tiene un usuario vinculado. No se puede enviar una notificacion personal.");
+    return;
+  }
+
+  if (mensaje.length < 5) {
+    alert("Escribe una respuesta un poco mas clara antes de enviarla.");
+    campo?.focus();
+    return;
+  }
+
+  const ahora = new Date().toISOString();
+  const estadoSeleccionado = selectorEstado?.value || reporte.estado || "en_revision";
+  const estadoFinal = estadoSeleccionado === "nuevo" ? "en_revision" : estadoSeleccionado;
+  const idAviso = `respuesta_reporte_${reporteId}_${Date.now()}`;
+  const tituloReporte = reporte.titulo || etiquetaTipoReporte(reporte.tipo);
+
+  try {
+    await setDoc(doc(db, "avisosGlobales", idAviso), {
+      idAviso,
+      titulo: `Respuesta a tu reporte: ${tituloReporte}`,
+      mensaje,
+      destinatarioTipo: "usuario",
+      destinatarioRol: "usuario",
+      destinatarioUid: reporte.usuarioUid,
+      destinatarioNombre: reporte.usuarioNombre || reporte.usuarioEmail || reporte.usuarioUid,
+      destinatarioRolUsuario: "",
+      activo: true,
+      origen: "respuesta_reporte",
+      reporteId,
+      creadoPorUid: adminActual?.uid || "",
+      creadoPorEmail: adminActual?.email || "",
+      creadoEn: ahora,
+      actualizadoEn: ahora
+    });
+
+    await responderReporteUsuario(reporteId, {
+      mensaje,
+      estado: estadoFinal,
+      idAviso,
+      adminUid: adminActual?.uid || "",
+      adminEmail: adminActual?.email || "",
+      adminNombre: adminActual?.email || "Admin"
+    });
+
+    await registrarAuditoriaAdmin("responder_reporte_usuario", "El administrador respondio un reporte de usuario.", {
+      pacienteUid: reporte.usuarioUid,
+      pacienteNombre: reporte.usuarioNombre || "",
+      detalles: {
+        reporteId,
+        idAviso,
+        estado: estadoFinal,
+        tipo: reporte.tipo || ""
+      }
+    });
+
+    alert("Respuesta enviada. El usuario la vera en sus notificaciones.");
+    await cargarReportesUsuariosAdmin();
+    await cargarAvisosAdmin();
+  } catch (error) {
+    console.error("No se pudo responder el reporte:", error);
+    alert("No se pudo enviar la respuesta: " + error.message);
   }
 };
 

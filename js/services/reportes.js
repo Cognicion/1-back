@@ -49,3 +49,26 @@ export async function actualizarEstadoReporteUsuario(reporteId, estado) {
     fechaActualizacionISO: new Date().toISOString()
   });
 }
+
+export async function responderReporteUsuario(reporteId, datosRespuesta = {}) {
+  const ahora = new Date().toISOString();
+  const respuesta = {
+    mensaje: datosRespuesta.mensaje || "",
+    adminUid: datosRespuesta.adminUid || "",
+    adminEmail: datosRespuesta.adminEmail || "",
+    adminNombre: datosRespuesta.adminNombre || "",
+    idAviso: datosRespuesta.idAviso || "",
+    fechaISO: ahora,
+    fechaCreacion: serverTimestamp()
+  };
+
+  await addDoc(collection(db, COLECCION_REPORTES, reporteId, "respuestas"), respuesta);
+
+  await updateDoc(doc(db, COLECCION_REPORTES, reporteId), {
+    estado: datosRespuesta.estado || "en_revision",
+    respuestaAdminUltima: respuesta,
+    respondido: true,
+    respondidoEn: ahora,
+    fechaActualizacionISO: ahora
+  });
+}
