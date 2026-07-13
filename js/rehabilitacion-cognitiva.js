@@ -1,4 +1,5 @@
 import { auth, db } from "./firebase.js";
+import { aplicarAparienciaGuardada, sincronizarAparienciaUsuario } from "./services/apariencia.js";
 import {
   ESCALAS_COGNITIVAS,
   calcularPuntajeEscalaCognitiva,
@@ -25,6 +26,8 @@ import {
 
 import { obtenerUsuario } from "./services/usuarios.js";
 import { crearResumenEscala, guardarEscalaAplicada } from "./services/escalas.js";
+
+aplicarAparienciaGuardada();
 
 const INTRO_KEY = "cognicion_intro_rehabilitacion_vista";
 
@@ -109,8 +112,9 @@ const actividades = [
     nombre: "Busqueda visual",
     descripcion: "Encuentra un estimulo objetivo entre multiples distractores.",
     funciones: ["Atencion", "Velocidad de procesamiento", "Visuoespacial"],
-    estado: "Proximamente",
-    accion: "Ver ejercicio"
+    estado: "Disponible",
+    accion: "Entrenar",
+    url: "busqueda-visual.html"
   },
   {
     icono: "MP",
@@ -170,6 +174,7 @@ onAuthStateChanged(auth, async (user) => {
     window.location.href = "login.html";
     return;
   }
+  await sincronizarAparienciaUsuario(user.uid);
   usuarioActualDatos = await obtenerUsuario(user.uid);
 });
 

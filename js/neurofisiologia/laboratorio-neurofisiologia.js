@@ -9,6 +9,7 @@ import { REGISTRO_ECUACIONES_NEURO } from "./equationRegistry.js";
 import { aplicarFarmacoIntegrado, avanzarNeuronaIntegrada, crearEstadoNeuronaIntegrada, estimularNeuronaIntegrada, limpiarFarmacosIntegrados, actualizarParametrosIntegrados } from "./integratedNeuronModel.js";
 import { dibujarGraficaIntegrada, poblarSelectorEcuaciones, poblarSelectorGraficas, renderizarEscenaIntegrada, renderizarExplicacionIntegrada, renderizarIndicadoresIntegrados, renderizarMatematicasIntegradas, renderizarTarjetaEstadoActual, renderizarVariablesIntegradas, resumenCopiableEcuacion } from "./integratedNeuronRenderer.js";
 import { identificarZonaNeuroCanvas } from "./curvedMembraneRenderer.js";
+import { inicializarAtlasCerebral3D } from "./atlasCerebral3d.js";
 
 
 const $ = (id) => document.getElementById(id);
@@ -275,6 +276,7 @@ function inicializar() {
   ejecutarBloqueLaboratorio("potencial de accion", vincularAccion);
   ejecutarBloqueLaboratorio("axon", vincularAxon);
   ejecutarBloqueLaboratorio("tec", vincularTEC);
+  ejecutarBloqueLaboratorio("atlas cerebral 3d", inicializarAtlasCerebral3D);
   ejecutarBloqueLaboratorio("experimentos", renderizarExperimentos);
   ejecutarBloqueLaboratorio("saltos", configurarSaltosEntreSimuladores);
   ejecutarBloqueLaboratorio("cuaderno", vincularCuaderno);
@@ -1164,7 +1166,7 @@ function mostrarDetalleNeuroSeleccionado(zona, disparador = null) {
 
 function construirDetalleNeuroHTML(zona) {
   const secciones = zona.secciones || crearSeccionesNeuroDesdeZona(zona);
-  return `<button type="button" data-minimizar-detalle-neuro aria-label="Minimizar detalle" aria-expanded="true">Ã¢Ë†â€™</button><button type="button" data-cerrar-detalle-neuro aria-label="Cerrar detalle">Ãƒâ€”</button><span class="kicker">Estructura seleccionada</span><h3>${zona.titulo}</h3><div class="detalle-neuro-secciones">${secciones.map((s) => `<section><h4>${s.titulo}</h4>${Array.isArray(s.texto) ? `<ul>${s.texto.map((x) => `<li>${x}</li>`).join("")}</ul>` : `<p>${s.texto}</p>`}</section>`).join("")}</div><div class="detalle-neuro-acciones"><button type="button" class="secundario" data-neuro-aislar>Ver funcionamiento aislado</button></div><small>Rueda = zoom. Arrastra el canvas = desplazar. Escape cierra este panel.</small>`;
+  return `<button type="button" data-minimizar-detalle-neuro aria-label="Minimizar detalle" aria-expanded="true">-</button><button type="button" data-cerrar-detalle-neuro aria-label="Cerrar detalle">x</button><span class="kicker">Estructura seleccionada</span><h3>${zona.titulo}</h3><div class="detalle-neuro-secciones">${secciones.map((s) => `<section><h4>${s.titulo}</h4>${Array.isArray(s.texto) ? `<ul>${s.texto.map((x) => `<li>${x}</li>`).join("")}</ul>` : `<p>${s.texto}</p>`}</section>`).join("")}</div><div class="detalle-neuro-acciones"><button type="button" class="secundario" data-neuro-aislar>Ver funcionamiento aislado</button></div><small>Rueda = zoom. Arrastra el canvas = desplazar. Escape cierra este panel.</small>`;
 }
 
 function crearSeccionesNeuroDesdeZona(zona) {

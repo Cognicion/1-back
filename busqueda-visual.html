@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>COGNICION | Busqueda visual</title>
+<link rel="icon" type="image/png" href="assets/favicon-cognicion.png">
+<link rel="stylesheet" href="css/busqueda-visual.css">
+<link rel="stylesheet" href="css/reportes.css">
+<link rel="stylesheet" href="css/apariencia.css">
+</head>
+<body>
+<div class="visual-bg" aria-hidden="true">
+  <span></span><span></span><span></span><span></span><span></span>
+</div>
+
+<header class="visual-topbar">
+  <a class="visual-brand" href="rehabilitacion-cognitiva.html">
+    <img src="assets/favicon-cognicion.png" alt="COGNICION">
+    <div>
+      <strong>Busqueda visual</strong>
+      <span>Atencion selectiva, rastreo y velocidad perceptual</span>
+    </div>
+  </a>
+  <nav>
+    <a href="rehabilitacion-cognitiva.html">Rehabilitacion</a>
+    <a href="dashboard.html">Dashboard</a>
+  </nav>
+</header>
+
+<main class="visual-shell">
+  <section class="visual-hero" id="pantallaInicio">
+    <span class="kicker">Actividad visuoespacial</span>
+    <h1>Busqueda visual</h1>
+    <p>Encuentra el estimulo objetivo entre distractores. Esta actividad entrena atencion selectiva, escaneo visual, velocidad perceptual y precision de respuesta.</p>
+    <div class="visual-acciones">
+      <button id="btnIrConfiguracion" type="button">Configurar sesion</button>
+      <a class="boton-secundario" href="rehabilitacion-cognitiva.html">Volver</a>
+    </div>
+  </section>
+
+  <section class="visual-panel" id="pantallaConfiguracion">
+    <div class="seccion-titulo">
+      <span class="kicker">Preparacion</span>
+      <h2>Configura la tarea</h2>
+      <p>Elige dificultad, tamano de matriz y tipo de estimulos. Puedes practicar antes de iniciar la sesion real.</p>
+    </div>
+    <form class="config-grid" id="formConfigVisual">
+      <label>Dificultad
+        <select id="dificultad">
+          <option value="facil">Facil</option>
+          <option value="intermedio">Intermedio</option>
+          <option value="dificil">Dificil</option>
+        </select>
+      </label>
+      <label>Ensayos
+        <input id="totalEnsayos" type="number" min="8" max="120" value="30">
+      </label>
+      <label>Tiempo por ensayo (segundos)
+        <input id="tiempoEnsayo" type="number" min="2" max="20" value="8">
+      </label>
+      <label>Tamano de matriz
+        <select id="tamanoMatriz">
+          <option value="4">4 x 4</option>
+          <option value="5">5 x 5</option>
+          <option value="6">6 x 6</option>
+          <option value="7">7 x 7</option>
+        </select>
+      </label>
+      <label>Tipo de estimulo
+        <select id="tipoEstimulo">
+          <option value="formas">Formas</option>
+          <option value="letras">Letras</option>
+          <option value="orientacion">Orientacion</option>
+          <option value="color">Color</option>
+        </select>
+      </label>
+      <label>Distractores similares
+        <select id="similitud">
+          <option value="baja">Baja</option>
+          <option value="media">Media</option>
+          <option value="alta">Alta</option>
+        </select>
+      </label>
+      <label>Retroalimentacion
+        <select id="feedback">
+          <option value="on">Activada</option>
+          <option value="off">Desactivada</option>
+        </select>
+      </label>
+      <label>Sonido
+        <select id="sonido">
+          <option value="off">Desactivado</option>
+          <option value="on">Activado</option>
+        </select>
+      </label>
+    </form>
+    <div class="visual-acciones">
+      <button id="btnPractica" type="button">Iniciar practica</button>
+      <button id="btnSesion" type="button">Iniciar sesion real</button>
+    </div>
+  </section>
+
+  <section class="visual-arena" id="pantallaJuego" aria-live="polite">
+    <div class="hud-visual">
+      <div><span>Modo</span><strong id="modoJuego">Practica</strong></div>
+      <div><span>Ensayo</span><strong id="contadorEnsayos">0/0</strong></div>
+      <div><span>Tiempo</span><strong id="tiempoRestante">0.0 s</strong></div>
+      <div><span>Precision</span><strong id="precisionActual">--</strong></div>
+    </div>
+    <div class="barra-progreso"><span id="barraProgreso"></span></div>
+    <div class="objetivo-panel">
+      <span>Busca este objetivo</span>
+      <strong id="objetivoTexto">--</strong>
+    </div>
+    <div class="cuenta-regresiva" id="cuentaRegresiva"></div>
+    <div class="matriz-visual" id="matrizVisual" role="grid" aria-label="Matriz de busqueda visual"></div>
+    <p class="feedback-visual" id="feedbackVisual"></p>
+    <div class="visual-acciones compactas">
+      <button id="btnCancelar" class="boton-secundario" type="button">Cancelar sesion</button>
+    </div>
+  </section>
+
+  <section class="visual-panel resultados" id="pantallaResultados">
+    <div class="seccion-titulo">
+      <span class="kicker">Resultados</span>
+      <h2>Resumen de rendimiento</h2>
+      <p>Los resultados describen el desempeno durante esta sesion y deben interpretarse dentro del contexto clinico.</p>
+    </div>
+    <div class="resultados-grid" id="resultadosGrid"></div>
+    <article class="interpretacion-visual" id="interpretacionVisual"></article>
+    <div class="graficas-visual">
+      <article><h3>Tiempo de busqueda</h3><div class="grafica-linea" id="lineaRt"></div></article>
+      <article><h3>Respuestas</h3><div class="grafica-barras" id="barrasAciertos"></div></article>
+    </div>
+    <div class="visual-acciones">
+      <button id="btnRepetir" type="button">Repetir</button>
+      <button id="btnCambiar" class="boton-secundario" type="button">Cambiar configuracion</button>
+      <a class="boton-secundario" href="rehabilitacion-cognitiva.html">Regresar</a>
+    </div>
+  </section>
+</main>
+
+<div class="toast-visual" id="toastVisual" role="status" aria-live="polite"></div>
+<script type="module" src="js/busqueda-visual.js"></script>
+<script type="module" src="js/reportes.js"></script>
+</body>
+</html>

@@ -299,3 +299,314 @@
 .detalle-neuro-seleccion [data-minimizar-detalle-neuro] {
   touch-action: manipulation;
 }
+
+/* Atlas cerebral 3D - COGNICION Labs */
+.atlas-cerebral-lab {
+  --atlas-bg: color-mix(in srgb, var(--surface, #081421) 88%, #02131d 12%);
+  --atlas-card: color-mix(in srgb, var(--panel, #0d1b2d) 82%, transparent 18%);
+  --atlas-line: color-mix(in srgb, var(--border, #1f5a78) 72%, #5edcff 28%);
+  --atlas-accent: var(--accent, #27c7f7);
+  --atlas-text: var(--text, #ecf7ff);
+  --atlas-muted: var(--muted, #9bb2c8);
+}
+
+.atlas-cerebral-head {
+  align-items: flex-start;
+  gap: 18px;
+}
+
+.atlas-status {
+  margin: 0 0 14px;
+  padding: 10px 14px;
+  border: 1px solid color-mix(in srgb, var(--atlas-line) 70%, transparent 30%);
+  border-radius: 14px;
+  color: var(--atlas-text);
+  background: linear-gradient(135deg, color-mix(in srgb, var(--atlas-card) 92%, #2fd7ff 8%), color-mix(in srgb, var(--atlas-card) 92%, transparent 8%));
+  box-shadow: 0 18px 50px rgba(0, 180, 255, 0.08);
+}
+
+.atlas-layout {
+  display: grid;
+  grid-template-columns: minmax(260px, 310px) minmax(420px, 1fr) minmax(280px, 340px);
+  gap: 16px;
+  align-items: stretch;
+}
+
+.atlas-sidebar,
+.atlas-viewport-card,
+.atlas-info-panel,
+.atlas-panel-mini,
+.atlas-ficha,
+.atlas-completeness {
+  border: 1px solid color-mix(in srgb, var(--atlas-line) 62%, transparent 38%);
+  border-radius: 18px;
+  background: linear-gradient(145deg, color-mix(in srgb, var(--atlas-card) 90%, #0ad7ff 10%), color-mix(in srgb, var(--atlas-card) 92%, #08111d 8%));
+  box-shadow: 0 18px 60px rgba(0, 10, 25, 0.24);
+}
+
+.atlas-sidebar,
+.atlas-info-panel {
+  padding: 14px;
+  max-height: 760px;
+  overflow: auto;
+}
+
+.atlas-search-label {
+  display: grid;
+  gap: 8px;
+  color: var(--atlas-muted);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.atlas-search-label input,
+.atlas-cut-controls select,
+.atlas-cut-controls input {
+  width: 100%;
+  border: 1px solid color-mix(in srgb, var(--atlas-line) 60%, transparent 40%);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--atlas-bg) 78%, transparent 22%);
+  color: var(--atlas-text);
+  padding: 10px 12px;
+}
+
+.atlas-panel-mini {
+  padding: 12px;
+  margin-top: 12px;
+}
+
+.atlas-panel-mini summary {
+  cursor: pointer;
+  color: var(--atlas-text);
+  font-weight: 800;
+  letter-spacing: 0.05em;
+}
+
+.atlas-check-grid {
+  display: grid;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.atlas-check-grid label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--atlas-muted);
+}
+
+.atlas-tree-tools,
+.atlas-ficha-actions,
+.atlas-view-toolbar,
+.atlas-cut-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.atlas-tree-tools {
+  margin: 12px 0;
+}
+
+.atlas-tree {
+  display: grid;
+  gap: 7px;
+}
+
+.atlas-tree-node {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 6px;
+  margin-left: calc(var(--depth, 0) * 12px);
+}
+
+.atlas-tree-main,
+.atlas-mini-btn,
+.atlas-icon-btn,
+.atlas-view-toolbar button,
+.atlas-ficha-actions button,
+.atlas-tree-tools button,
+.atlas-cut-controls button {
+  border: 1px solid color-mix(in srgb, var(--atlas-line) 68%, transparent 32%);
+  border-radius: 999px;
+  color: var(--atlas-text);
+  background: color-mix(in srgb, var(--atlas-bg) 72%, #1ac7ff 10%);
+  padding: 8px 10px;
+  cursor: pointer;
+  transition: transform 180ms ease, border-color 180ms ease, background 180ms ease;
+}
+
+.atlas-tree-main {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  text-align: left;
+  border-radius: 12px;
+}
+
+.atlas-tree-main small {
+  color: var(--atlas-accent);
+  font-size: 0.72rem;
+}
+
+.atlas-tree-main.activo,
+.atlas-tree-main:hover,
+.atlas-mini-btn:hover,
+.atlas-view-toolbar button:hover,
+.atlas-ficha-actions button:hover,
+.atlas-tree-tools button:hover,
+.atlas-cut-controls button:hover {
+  transform: translateY(-1px);
+  border-color: var(--atlas-accent);
+  background: color-mix(in srgb, var(--atlas-accent) 22%, var(--atlas-bg) 78%);
+}
+
+.atlas-mini-btn {
+  font-size: 0.72rem;
+  padding-inline: 8px;
+}
+
+.atlas-viewport-card {
+  padding: 12px;
+  min-height: 720px;
+  display: grid;
+  grid-template-rows: auto minmax(520px, 1fr) auto;
+  gap: 10px;
+  overflow: hidden;
+}
+
+.atlas-canvas-host {
+  position: relative;
+  min-height: 560px;
+  border-radius: 20px;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 30% 20%, rgba(56, 216, 255, 0.15), transparent 34%),
+    linear-gradient(135deg, rgba(4, 12, 26, 0.92), rgba(5, 29, 45, 0.82));
+  border: 1px solid color-mix(in srgb, var(--atlas-line) 62%, transparent 38%);
+}
+
+.atlas-canvas-host canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  outline: none;
+}
+
+.atlas-cut-controls label {
+  display: grid;
+  gap: 6px;
+  min-width: 150px;
+  color: var(--atlas-muted);
+  font-size: 0.82rem;
+}
+
+.atlas-info-panel {
+  display: grid;
+  gap: 14px;
+}
+
+.atlas-ficha,
+.atlas-completeness {
+  padding: 14px;
+}
+
+.atlas-ficha-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: start;
+  gap: 10px;
+}
+
+.atlas-icon-btn {
+  width: 34px;
+  height: 34px;
+  display: inline-grid;
+  place-items: center;
+  padding: 0;
+}
+
+.atlas-ficha-grid {
+  display: grid;
+  grid-template-columns: 110px 1fr;
+  gap: 8px 12px;
+  margin: 14px 0;
+}
+
+.atlas-ficha-grid dt {
+  color: var(--atlas-accent);
+  font-weight: 800;
+  text-transform: uppercase;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+}
+
+.atlas-ficha-grid dd {
+  margin: 0;
+  color: var(--atlas-text);
+}
+
+.atlas-progress {
+  height: 10px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--atlas-bg) 80%, transparent 20%);
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--atlas-line) 55%, transparent 45%);
+}
+
+.atlas-progress span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #20b7ff, #5ff4d2);
+}
+
+.atlas-completeness ul {
+  padding-left: 18px;
+  color: var(--atlas-muted);
+}
+
+[data-theme*="light"] .atlas-canvas-host,
+body.tema-claro .atlas-canvas-host {
+  background:
+    radial-gradient(circle at 30% 20%, rgba(32, 167, 230, 0.22), transparent 34%),
+    linear-gradient(135deg, rgba(231, 247, 255, 0.96), rgba(212, 238, 248, 0.9));
+}
+
+[data-theme*="light"] .atlas-cerebral-lab,
+body.tema-claro .atlas-cerebral-lab {
+  --atlas-bg: #eef8fd;
+  --atlas-card: #f7fcff;
+  --atlas-text: #10243a;
+  --atlas-muted: #49657a;
+  --atlas-line: #9bd7f0;
+  --atlas-accent: #087eb5;
+}
+
+@media (max-width: 1180px) {
+  .atlas-layout {
+    grid-template-columns: 1fr;
+  }
+  .atlas-sidebar,
+  .atlas-info-panel {
+    max-height: none;
+  }
+  .atlas-viewport-card {
+    min-height: 620px;
+  }
+}
+
+@media (max-width: 680px) {
+  .atlas-viewport-card {
+    min-height: 520px;
+    grid-template-rows: auto 420px auto;
+  }
+  .atlas-canvas-host {
+    min-height: 420px;
+  }
+  .atlas-ficha-grid {
+    grid-template-columns: 1fr;
+  }
+}

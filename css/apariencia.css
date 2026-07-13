@@ -1,4 +1,4 @@
-﻿/* Apariencia opcional de Cognicion. El tema clasico no agrega cambios. */
+/* Apariencia opcional de Cognicion. El tema clasico no agrega cambios. */
 :root[data-cognicion-theme="laboratorio"] {
   --lab-glow: rgba(34, 211, 238, .18);
   --lab-line: rgba(125, 211, 252, .24);
@@ -1495,4 +1495,273 @@ body.tema-claro .estado-pendiente {
 body.tema-claro .lista-simple,
 body.tema-claro .lista-simple li {
   color: #334155 !important;
+}
+/* Tema claro: compatibilidad de rehabilitacion cognitiva */
+body.tema-claro .topbar-rehabilitacion {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.94), rgba(231, 244, 255, 0.88)) !important;
+  border-bottom: 1px solid rgba(14, 116, 144, 0.16) !important;
+  box-shadow: 0 18px 46px rgba(30, 64, 175, 0.10) !important;
+  color: var(--cog-text, #102033) !important;
+}
+
+body.tema-claro .marca-rehabilitacion strong,
+body.tema-claro .rehabilitacion-shell h1,
+body.tema-claro .rehabilitacion-shell h2,
+body.tema-claro .rehabilitacion-shell h3,
+body.tema-claro .tarjeta-actividad h3,
+body.tema-claro .tarjeta-tamizaje h3,
+body.tema-claro .panel-tamizaje-header h2 {
+  color: var(--cog-text, #102033) !important;
+  text-shadow: none !important;
+}
+
+body.tema-claro .marca-rehabilitacion span,
+body.tema-claro .hero-subtitulo,
+body.tema-claro .hero-frase,
+body.tema-claro .bloque-rehabilitacion p,
+body.tema-claro .tarjeta-actividad p,
+body.tema-claro .tarjeta-tamizaje p,
+body.tema-claro .grid-progreso p,
+body.tema-claro .texto-tamizaje-mini,
+body.tema-claro .panel-tamizaje-card p,
+body.tema-claro .panel-tamizaje-card small,
+body.tema-claro .guia-prueba-tamizaje li,
+body.tema-claro .resultado-tamizaje-cognitivo p {
+  color: var(--cog-muted, #52657d) !important;
+  text-shadow: none !important;
+}
+
+body.tema-claro .nav-rehabilitacion a,
+body.tema-claro .nav-rehabilitacion button,
+body.tema-claro .intro-repetir,
+body.tema-claro .boton-secundario,
+body.tema-claro .tarjeta-actividad button,
+body.tema-claro .tarjeta-tamizaje button,
+body.tema-claro .cerrar-tamizaje,
+body.tema-claro .intro-saltar,
+body.tema-claro .modo-tamizaje-switch button {
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.98), rgba(225, 242, 253, 0.92)) !important;
+  border: 1px solid rgba(14, 116, 144, 0.20) !important;
+  color: var(--cog-text, #102033) !important;
+  box-shadow: 0 12px 28px rgba(15, 76, 129, 0.10) !important;
+}
+
+body.tema-claro .nav-rehabilitacion a:hover,
+body.tema-claro .nav-rehabilitacion button:hover,
+body.tema-claro .boton-secundario:hover,
+body.tema-claro .tarjeta-actividad button:hover,
+body.tema-claro .tarjeta-tamizaje button:hover {
+  border-color: rgba(14, 165, 233, 0.45) !important;
+  box-shadow: 0 18px 42px rgba(14, 165, 233, 0.18) !important;
+  transform: translateY(-1px);
+}
+
+body.tema-claro .rehabilitacion-shell {
+  color: var(--cog-text, #102033) !important;
+}
+
+body.tema-claro .hero-rehabilitacion {
+  background:
+    radial-gradient(circle at 80% 18%, rgba(14, 165, 233, 0.16), transparent 34%),
+    linear-gradient(145deg, rgba(255, 255, 255, 0.96), rgba(226, 240, 252, 0.84)) !important;
+  border: 1px solid rgba(14, 116, 144, 0.20) !important;
+  box-shadow: 0 30px 80px rgba(30, 64, 175, 0.14) !important;
+  color: var(--cog-text, #102033) !important;
+}
+
+body.tema-claro .hero-rehabilitacion::before,
+body.tema-claro .hero-rehabilitacion::after {
+  opacity: 0.22 !important;
+  background: radial-gradient(circle, rgba(56, 189, 248, 0.22), transparent 62%) !important;
+}
+
+body.tema-claro .kicker,
+body.tema-claro .bloque-rehabilitacion .kicker,
+body.tema-claro .tarjeta-actividad .estado,
+body.tema-claro .estado-tamizaje,
+body.tema-claro .chip {
+  background: rgba(224, 242, 254, 0.86) !important;
+  border: 1px solid rgba(14, 165, 233, 0.25) !important;
+  color: #0369a1 !important;
+  box-shadow: none !important;
+}
+
+body.tema-claro .hero-orbita {
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.96), rgba(213, 232, 245, 0.84)) !important;
+  border: 1px solid rgba(14, 116, 144, 0.16) !important;
+  box-shadow: inset 0 0 50px rgba(14, 165, 233, 0.13), 0 24px 60px rgba(30, 64, 175, 0.12) !important;
+}
+
+body.tema-claro .orbita {
+  border-color: rgba(14, 116, 144, 0.20) !important;
+  box-shadow: inset 0 0 30px rgba(14, 165, 233, 0.10) !important;
+}
+
+body.tema-claro .nucleo-cognitivo {
+  background: radial-gradient(circle, #e0f2fe, #93c5fd) !important;
+  color: #0f2a45 !important;
+  box-shadow: 0 0 34px rgba(14, 165, 233, 0.28) !important;
+}
+
+body.tema-claro .punto {
+  background: #38bdf8 !important;
+  box-shadow: 0 0 18px rgba(14, 165, 233, 0.45) !important;
+}
+
+body.tema-claro .bloque-rehabilitacion,
+body.tema-claro .tarjeta-tamizaje,
+body.tema-claro .tarjeta-actividad,
+body.tema-claro .grid-progreso article,
+body.tema-claro .panel-tamizaje-card,
+body.tema-claro .barra-filtros,
+body.tema-claro .modo-tamizaje-switch,
+body.tema-claro .item-tamizaje-cognitivo,
+body.tema-claro .contenedor-prueba-interactiva,
+body.tema-claro .pregunta-prueba-interactiva,
+body.tema-claro .estimulo-tamizaje,
+body.tema-claro .resultado-tamizaje-cognitivo,
+body.tema-claro .guia-prueba-tamizaje,
+body.tema-claro .visibilidad-tamizaje-paciente {
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.95), rgba(232, 246, 255, 0.82)) !important;
+  border: 1px solid rgba(14, 116, 144, 0.18) !important;
+  box-shadow: 0 18px 46px rgba(30, 64, 175, 0.10) !important;
+  color: var(--cog-text, #102033) !important;
+}
+
+body.tema-claro .tarjeta-actividad.disponible,
+body.tema-claro .tarjeta-tamizaje:hover,
+body.tema-claro .tarjeta-actividad:hover {
+  border-color: rgba(14, 165, 233, 0.34) !important;
+  box-shadow: 0 24px 58px rgba(14, 165, 233, 0.15) !important;
+}
+
+body.tema-claro .aviso-clinico {
+  background: linear-gradient(145deg, rgba(235, 248, 255, 0.94), rgba(243, 244, 246, 0.84)) !important;
+  border: 1px solid rgba(14, 116, 144, 0.18) !important;
+  color: var(--cog-muted, #52657d) !important;
+}
+
+body.tema-claro .buscador-actividad input,
+body.tema-claro .item-tamizaje-cognitivo input,
+body.tema-claro .item-tamizaje-cognitivo select,
+body.tema-claro .item-tamizaje-cognitivo textarea,
+body.tema-claro .observaciones-tamizaje textarea,
+body.tema-claro .contenedor-prueba-interactiva input,
+body.tema-claro .contenedor-prueba-interactiva select,
+body.tema-claro .contenedor-prueba-interactiva textarea {
+  background: rgba(255, 255, 255, 0.96) !important;
+  border: 1px solid rgba(14, 116, 144, 0.20) !important;
+  color: var(--cog-text, #102033) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.70) !important;
+}
+
+body.tema-claro .buscador-actividad input::placeholder,
+body.tema-claro .item-tamizaje-cognitivo textarea::placeholder,
+body.tema-claro .observaciones-tamizaje textarea::placeholder {
+  color: rgba(82, 101, 125, 0.70) !important;
+}
+
+body.tema-claro .filtro-dominio,
+body.tema-claro .tarjeta-tamizaje li,
+body.tema-claro .opcion-prueba-interactiva,
+body.tema-claro .opcion-prueba-interactiva label {
+  background: rgba(255, 255, 255, 0.84) !important;
+  border: 1px solid rgba(14, 116, 144, 0.16) !important;
+  color: var(--cog-text, #102033) !important;
+}
+
+body.tema-claro .filtro-dominio.activo,
+body.tema-claro .filtro-dominio:hover,
+body.tema-claro .opcion-prueba-interactiva:hover {
+  background: linear-gradient(135deg, rgba(219, 234, 254, 0.96), rgba(207, 250, 254, 0.84)) !important;
+  border-color: rgba(14, 165, 233, 0.36) !important;
+  color: #075985 !important;
+}
+
+body.tema-claro .boton-principal,
+body.tema-claro .tarjeta-actividad.disponible button,
+body.tema-claro .acciones-tamizaje-cognitivo #calcularTamizajeCognitivo,
+body.tema-claro .acciones-tamizaje-cognitivo #guardarTamizajeCognitivo,
+body.tema-claro .modo-tamizaje-switch button.activo,
+body.tema-claro .boton-proximo.activo {
+  background: linear-gradient(135deg, #2563eb, #06b6d4) !important;
+  color: #ffffff !important;
+  border-color: rgba(14, 165, 233, 0.45) !important;
+  box-shadow: 0 14px 34px rgba(37, 99, 235, 0.20) !important;
+}
+
+body.tema-claro .panel-tamizaje-overlay {
+  background: rgba(225, 238, 248, 0.64) !important;
+  backdrop-filter: blur(14px) !important;
+}
+
+body.tema-claro .panel-tamizaje-card {
+  max-height: min(86vh, 860px);
+  overflow: auto;
+}
+
+body.tema-claro .toast-rehabilitacion,
+body.tema-claro .sin-resultados {
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.96), rgba(224, 242, 254, 0.88)) !important;
+  border: 1px solid rgba(14, 116, 144, 0.18) !important;
+  color: var(--cog-text, #102033) !important;
+  box-shadow: 0 18px 42px rgba(30, 64, 175, 0.14) !important;
+}
+
+body.tema-claro .intro-rehabilitacion.oculta {
+  pointer-events: none;
+}
+
+/* Tema claro: detalles finales de rehabilitacion cognitiva */
+body.tema-claro .explicacion,
+body.tema-claro .metricas-placeholder,
+body.tema-claro .actividad-meta,
+body.tema-claro .recomendacion-rehabilitacion,
+body.tema-claro .resumen-cognitivo,
+body.tema-claro .historial-cognitivo {
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.94), rgba(235, 244, 252, 0.82)) !important;
+  border: 1px solid rgba(14, 116, 144, 0.18) !important;
+  color: var(--cog-text, #102033) !important;
+  box-shadow: 0 18px 44px rgba(30, 64, 175, 0.10) !important;
+}
+
+body.tema-claro .tarjeta-icono,
+body.tema-claro .actividad-icono,
+body.tema-claro .tamizaje-icono {
+  background: radial-gradient(circle, rgba(224, 242, 254, 0.98), rgba(186, 230, 253, 0.62)) !important;
+  border: 1px solid rgba(14, 165, 233, 0.24) !important;
+  color: #075985 !important;
+  box-shadow: inset 0 0 24px rgba(14, 165, 233, 0.12) !important;
+}
+
+body.tema-claro .estado,
+body.tema-claro .estado.disponible,
+body.tema-claro .estado.proximamente,
+body.tema-claro .badge-rehabilitacion,
+body.tema-claro .badge-cognitivo {
+  background: rgba(224, 242, 254, 0.88) !important;
+  border: 1px solid rgba(14, 165, 233, 0.24) !important;
+  color: #0369a1 !important;
+}
+
+body.tema-claro .panel-tamizaje-header,
+body.tema-claro .acciones-tamizaje-cognitivo,
+body.tema-claro .acciones-prueba-interactiva {
+  border-color: rgba(14, 116, 144, 0.14) !important;
+  background: rgba(255, 255, 255, 0.38) !important;
+}
+
+body.tema-claro .panel-tamizaje-card::-webkit-scrollbar-thumb,
+body.tema-claro .rehabilitacion-shell::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #38bdf8, #2563eb) !important;
+}
+
+body.tema-claro .panel-tamizaje-card::-webkit-scrollbar-track,
+body.tema-claro .rehabilitacion-shell::-webkit-scrollbar-track {
+  background: rgba(226, 232, 240, 0.7) !important;
+}
+
+body.tema-claro .intro-rehabilitacion:not(.oculta) {
+  background: radial-gradient(circle at 50% 60%, rgba(14, 165, 233, 0.20), transparent 38%), #020817 !important;
+  color: #f8fbff !important;
 }

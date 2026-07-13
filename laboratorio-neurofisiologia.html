@@ -28,6 +28,7 @@
     <button data-tab="accion">Potencial de accion</button>
     <button data-tab="axon">Propagacion axonal</button>
     <button data-tab="tec">TEC</button>
+    <button data-tab="atlas-cerebral">Atlas cerebral 3D</button>
     <button data-tab="experimentos">Experimentos</button>
     <button data-tab="resultados">Resultados</button>
     <button data-tab="teoria">Fundamento teorico</button>
@@ -233,9 +234,98 @@
       </aside>
     </div>
   </section>
+
+  <section id="tab-atlas-cerebral" class="panel-lab tab-panel">
+    <div id="atlasCerebral3d" class="atlas-cerebral-lab">
+      <div class="panel-heading atlas-cerebral-head">
+        <div>
+          <span class="kicker">Atlas anatomico interactivo</span>
+          <h2>Atlas cerebral 3D: lobulo temporal izquierdo</h2>
+          <p class="muted">Fase 1 procedural educativa. No sustituye atlas anatomicos oficiales ni modelos segmentados con validacion neuroquirurgica.</p>
+        </div>
+        <div class="acciones">
+          <button id="atlasResetView" type="button">Restablecer camara</button>
+          <button id="atlasSnapshot" type="button" class="secundario">Captura PNG</button>
+          <button id="atlasFullscreen" type="button" class="secundario">Pantalla completa</button>
+        </div>
+      </div>
+
+      <div class="atlas-status" id="atlasCerebralEstado">Cargando visor 3D...</div>
+
+      <div class="atlas-layout">
+        <aside class="atlas-sidebar">
+          <label class="atlas-search-label">Buscar estructura
+            <input id="atlasCerebralSearch" type="search" placeholder="Ej. hipocampo, Heschl, surco temporal...">
+          </label>
+
+          <details open class="atlas-panel-mini">
+            <summary>Niveles visibles</summary>
+            <div class="atlas-check-grid">
+              <label><input type="checkbox" checked data-atlas-level="superficie"> Superficie</label>
+              <label><input type="checkbox" checked data-atlas-level="lobulos"> Lobulos</label>
+              <label><input type="checkbox" checked data-atlas-level="surcos"> Surcos</label>
+              <label><input type="checkbox" checked data-atlas-level="hipocampo"> Hipocampo</label>
+              <label><input type="checkbox" checked data-atlas-level="amigdala"> Amigdala</label>
+              <label><input type="checkbox" checked data-atlas-level="tractos"> Tractos</label>
+              <label><input type="checkbox" checked data-atlas-level="ventriculos"> Ventriculos</label>
+              <label><input type="checkbox" checked data-atlas-level="nucleos"> Nucleos</label>
+              <label><input type="checkbox" checked data-atlas-level="limbico"> Limbico</label>
+              <label><input type="checkbox" checked data-atlas-level="sustancia-blanca"> Sustancia blanca</label>
+            </div>
+          </details>
+
+          <details open class="atlas-panel-mini">
+            <summary>Arbol anatomico</summary>
+            <div class="atlas-tree-tools">
+              <button id="atlasMostrarTodo" type="button" class="secundario">Mostrar todo</button>
+              <button id="atlasOcultarTodo" type="button" class="secundario">Ocultar todo</button>
+              <button id="atlasDeshacer" type="button" class="secundario">Deshacer seleccion</button>
+            </div>
+            <div id="atlasCerebralTree" class="atlas-tree"></div>
+          </details>
+        </aside>
+
+        <section class="atlas-viewport-card">
+          <div class="atlas-view-toolbar" aria-label="Vistas del atlas cerebral">
+            <button type="button" data-atlas-view="lateral">Lateral</button>
+            <button type="button" data-atlas-view="medial">Medial</button>
+            <button type="button" data-atlas-view="anterior">Anterior</button>
+            <button type="button" data-atlas-view="posterior">Posterior</button>
+            <button type="button" data-atlas-view="superior">Superior</button>
+            <button type="button" data-atlas-view="inferior">Inferior</button>
+            <button type="button" data-atlas-view="oblicua">Oblicua</button>
+          </div>
+          <div id="atlasCerebralCanvasHost" class="atlas-canvas-host" aria-label="Modelo cerebral 3D interactivo"></div>
+          <div class="atlas-cut-controls">
+            <label>Corte
+              <select id="atlasClipAxis">
+                <option value="none">Sin corte</option>
+                <option value="sagital">Sagital</option>
+                <option value="coronal">Coronal</option>
+                <option value="axial">Axial</option>
+              </select>
+            </label>
+            <label>Plano
+              <input id="atlasClipOffset" type="range" min="-4" max="4" step="0.1" value="0">
+            </label>
+            <button id="atlasClearSelection" type="button" class="secundario">Limpiar seleccion</button>
+          </div>
+        </section>
+
+        <aside class="atlas-info-panel">
+          <div id="atlasCerebralFicha" class="atlas-ficha"></div>
+          <article class="atlas-completeness">
+            <span class="kicker">Completitud y licencia</span>
+            <h3>Estado de la fase 1</h3>
+            <div id="atlasCerebralCompleteness"></div>
+          </article>
+        </aside>
+      </div>
+    </div>
+  </section>
   <section id="tab-experimentos" class="panel-lab tab-panel"><div class="panel-heading"><div><span class="kicker">Experimentos guiados</span><h2>Protocolos preconfigurados</h2></div></div><div id="listaExperimentos" class="experimentos-grid"></div></section>
   <section id="tab-resultados" class="panel-lab tab-panel"><div class="panel-heading"><div><span class="kicker">Cuaderno</span><h2>Resultados y proyectos</h2></div><div class="acciones"><button id="btnGuardarProyecto">Guardar proyecto</button><button id="btnExportarCSV" class="secundario">Exportar CSV</button><button id="btnReporte" class="secundario">Reporte imprimible</button></div></div><label>Nombre del proyecto<input id="nombreProyecto" type="text" placeholder="Ej. Hiperpotasemia y umbral"></label><label>Observaciones<textarea id="observacionesProyecto" rows="5" placeholder="Hipotesis, observaciones y conclusiones..."></textarea></label><div id="listaProyectos" class="proyectos-lista"></div></section>
-  <section id="tab-teoria" class="panel-lab tab-panel"><span class="kicker">Fundamento teorico</span><h2>Conceptos clave</h2><div class="tabla-scroll tabla-transporte-neuro"><table><thead><tr><th>Proceso</th><th>Usa proteina</th><th>ATP directo</th><th>Direccion</th><th>Ejemplo</th></tr></thead><tbody><tr><td>Difusion simple</td><td>No</td><td>No</td><td>A favor del gradiente; iones casi no cruzan bicapa</td><td>Moléculas liposolubles</td></tr><tr><td>Difusion facilitada</td><td>Si</td><td>No</td><td>A favor del gradiente electroquimico</td><td>Nav, Kv, AMPA, GABA-A</td></tr><tr><td>Transporte activo primario</td><td>Si</td><td>Si</td><td>Puede ir contra gradiente</td><td>Na/K ATPasa, PMCA</td></tr><tr><td>Transporte activo secundario</td><td>Si</td><td>No directo</td><td>Acoplado a otro gradiente</td><td>KCC2, NKCC1, NCX, DAT/SERT/NET</td></tr><tr><td>Difusion de neurotransmisor</td><td>No</td><td>No</td><td>Movimiento aleatorio en hendidura</td><td>Glutamato, GABA, monoaminas</td></tr></tbody></table></div><div class="teoria-grid"><article><h3>Nernst</h3><p>Calcula el potencial de equilibrio de un ion a partir de concentraciones intra/extracelulares, valencia y temperatura.</p></article><article><h3>Goldman-Hodgkin-Katz</h3><p>Estima Vm ponderando concentraciones por permeabilidad. Para Cl- se invierten las concentraciones por ser anion.</p></article><article><h3>Hodgkin-Huxley reducido</h3><p>Modelo educativo con compuertas m, h y n para Na+ y K+ que genera fases del potencial de accion.</p></article><article><h3>Mielina</h3><p>Reduce capacitancia efectiva y favorece conduccion saltatoria entre nodos de Ranvier.</p></article></div></section>
+  <section id="tab-teoria" class="panel-lab tab-panel"><span class="kicker">Fundamento teorico</span><h2>Conceptos clave</h2><div class="tabla-scroll tabla-transporte-neuro"><table><thead><tr><th>Proceso</th><th>Usa proteina</th><th>ATP directo</th><th>Direccion</th><th>Ejemplo</th></tr></thead><tbody><tr><td>Difusion simple</td><td>No</td><td>No</td><td>A favor del gradiente; iones casi no cruzan bicapa</td><td>Moleculas liposolubles</td></tr><tr><td>Difusion facilitada</td><td>Si</td><td>No</td><td>A favor del gradiente electroquimico</td><td>Nav, Kv, AMPA, GABA-A</td></tr><tr><td>Transporte activo primario</td><td>Si</td><td>Si</td><td>Puede ir contra gradiente</td><td>Na/K ATPasa, PMCA</td></tr><tr><td>Transporte activo secundario</td><td>Si</td><td>No directo</td><td>Acoplado a otro gradiente</td><td>KCC2, NKCC1, NCX, DAT/SERT/NET</td></tr><tr><td>Difusion de neurotransmisor</td><td>No</td><td>No</td><td>Movimiento aleatorio en hendidura</td><td>Glutamato, GABA, monoaminas</td></tr></tbody></table></div><div class="teoria-grid"><article><h3>Nernst</h3><p>Calcula el potencial de equilibrio de un ion a partir de concentraciones intra/extracelulares, valencia y temperatura.</p></article><article><h3>Goldman-Hodgkin-Katz</h3><p>Estima Vm ponderando concentraciones por permeabilidad. Para Cl- se invierten las concentraciones por ser anion.</p></article><article><h3>Hodgkin-Huxley reducido</h3><p>Modelo educativo con compuertas m, h y n para Na+ y K+ que genera fases del potencial de accion.</p></article><article><h3>Mielina</h3><p>Reduce capacitancia efectiva y favorece conduccion saltatoria entre nodos de Ranvier.</p></article></div></section>
 </main>
 <script type="module" src="js/neurofisiologia/laboratorio-neurofisiologia.js"></script>
 <script type="module" src="js/reportes.js"></script>

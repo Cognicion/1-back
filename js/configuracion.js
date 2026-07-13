@@ -23,6 +23,7 @@ let temaGuardado = aplicarAparienciaGuardada();
 let temaPendiente = temaGuardado;
 let modoInterfazGuardado = obtenerModoInterfazLocalCognicion();
 let modoInterfazPendiente = modoInterfazGuardado;
+let guardandoApariencia = false;
 
 function estado(texto) {
   const el = document.getElementById("estadoApariencia");
@@ -39,15 +40,37 @@ function nombreModoInterfaz(modo) {
   return opcion?.nombre || "Futurista Oscuro";
 }
 
+function textoPreferenciaActiva() {
+  return `Preferencia activa: ${nombreTema(temaGuardado)} - ${nombreModoInterfaz(modoInterfazGuardado)}.`;
+}
+
 function hayCambiosPendientes() {
-  return temaPendiente !== temaGuardado;
+  return temaPendiente !== temaGuardado || modoInterfazPendiente !== modoInterfazGuardado;
 }
 
 function actualizarBotonesAccion() {
   const aplicar = document.getElementById("aplicarTemaApariencia");
   const cancelar = document.getElementById("cancelarTemaApariencia");
-  if (aplicar) aplicar.disabled = !hayCambiosPendientes();
-  if (cancelar) cancelar.disabled = !hayCambiosPendientes();
+  const hayCambios = hayCambiosPendientes();
+  if (aplicar) {
+    aplicar.disabled = guardandoApariencia || !hayCambios;
+    aplicar.setAttribute("aria-disabled", String(aplicar.disabled));
+  }
+  if (cancelar) {
+    cancelar.disabled = guardandoApariencia || !hayCambios;
+    cancelar.setAttribute("aria-disabled", String(cancelar.disabled));
+  }
+}
+
+function actualizarVistaPrevia() {
+  aplicarTemaCognicion(temaPendiente);
+  aplicarModoInterfazCognicion(modoInterfazPendiente);
+}
+
+function estadoVistaPrevia() {
+  estado(hayCambiosPendientes()
+    ? `Vista previa: ${nombreTema(temaPendiente)} - ${nombreModoInterfaz(modoInterfazPendiente)}. Pulsa Aplicar tema para guardar.`
+    : textoPreferenciaActiva());
 }
 
 function renderizarTemas() {
@@ -68,12 +91,11 @@ function renderizarTemas() {
   contenedor.querySelectorAll("[data-tema]").forEach((boton) => {
     boton.addEventListener("click", () => {
       temaPendiente = boton.dataset.tema;
-      aplicarTemaCognicion(temaPendiente);
+      actualizarVistaPrevia();
       renderizarTemas();
+      renderizarModosInterfaz();
       actualizarBotonesAccion();
-      estado(hayCambiosPendientes()
-        ? `Vista previa: ${nombreTema(temaPendiente)}. Pulsa Aplicar tema para guardar.`
-        : `Preferencia activa: ${nombreTema(temaGuardado)} · ${nombreModoInterfaz(modoInterfazGuardado)}.`);
+      estadoVistaPrevia();
     });
   });
 
@@ -99,54 +121,64 @@ function renderizarModosInterfaz() {
   }).join("");
 
   contenedor.querySelectorAll("[data-modo-interfaz]").forEach((boton) => {
-    boton.addEventListener("click", async () => {
+    boton.addEventListener("click", () => {
       modoInterfazPendiente = boton.dataset.modoInterfaz;
-      aplicarModoInterfazCognicion(modoInterfazPendiente);
+      actualizarVistaPrevia();
+      renderizarTemas();
       renderizarModosInterfaz();
-      estado(`Aplicando ${nombreModoInterfaz(modoInterfazPendiente)}...`);
-      try {
-        modoInterfazGuardado = await guardarModoInterfazUsuario(uidActual, modoInterfazPendiente);
-        modoInterfazPendiente = modoInterfazGuardado;
-        renderizarModosInterfaz();
-        estado(`Preferencia activa: ${nombreTema(temaGuardado)} · ${nombreModoInterfaz(modoInterfazGuardado)}.`);
-      } catch (error) {
-        console.error("No se pudo guardar el tema de interfaz.", error);
-        estado("El tema de interfaz se aplico localmente, pero no se pudo guardar en la nube.");
-      }
+      actualizarBotonesAccion();
+      estadoVistaPrevia();
     });
   });
+
+  actualizarBotonesAccion();
 }
 
 async function aplicarTemaPendiente() {
+  if (!hayCambiosPendientes() || guardandoApariencia) return;
+  guardandoApariencia = true;
+  actualizarBotonesAccion();
   try {
     estado("Guardando apariencia...");
-    temaGuardado = await guardarPreferenciaAparienciaUsuario(uidActual, temaPendiente);
-    temaPendiente = temaGuardado;
+    if (temaPendiente !== temaGuardado) {
+      temaGuardado = await guardarPreferenciaAparienciaUsuario(uidActual, temaPendiente);
+      temaPendiente = temaGuardado;
+    }
+    if (modoInterfazPendiente !== modoInterfazGuardado) {
+      modoInterfazGuardado = await guardarModoInterfazUsuario(uidActual, modoInterfazPendiente);
+      modoInterfazPendiente = modoInterfazGuardado;
+    }
+    actualizarVistaPrevia();
     renderizarTemas();
-    estado(`Apariencia aplicada: ${nombreTema(temaGuardado)} · ${nombreModoInterfaz(modoInterfazGuardado)}.`);
+    renderizarModosInterfaz();
+    estado(`Apariencia aplicada: ${nombreTema(temaGuardado)} - ${nombreModoInterfaz(modoInterfazGuardado)}.`);
   } catch (error) {
     console.error("No se pudo guardar la apariencia.", error);
-    estado("No se pudo guardar en la nube. Se conservo localmente.");
+    estado("No se pudo guardar en la nube. La vista previa sigue activa; puedes reintentar o cancelar.");
+  } finally {
+    guardandoApariencia = false;
+    actualizarBotonesAccion();
   }
 }
 
 function cancelarVistaPrevia() {
   temaPendiente = temaGuardado;
-  aplicarTemaCognicion(temaGuardado);
+  modoInterfazPendiente = modoInterfazGuardado;
+  actualizarVistaPrevia();
   renderizarTemas();
-  estado(`Vista previa cancelada. Preferencia activa: ${nombreTema(temaGuardado)} · ${nombreModoInterfaz(modoInterfazGuardado)}.`);
+  renderizarModosInterfaz();
+  actualizarBotonesAccion();
+  estado(`Vista previa cancelada. ${textoPreferenciaActiva()}`);
 }
 
-async function restaurarTemaPredeterminado() {
+function restaurarTemaPredeterminado() {
   temaPendiente = TEMAS_COGNICION.CLASICA;
   modoInterfazPendiente = MODOS_INTERFAZ_COGNICION.OSCURO;
-  aplicarTemaCognicion(temaPendiente);
-  aplicarModoInterfazCognicion(modoInterfazPendiente);
-  await aplicarTemaPendiente();
-  modoInterfazGuardado = await guardarModoInterfazUsuario(uidActual, modoInterfazPendiente);
-  modoInterfazPendiente = modoInterfazGuardado;
+  actualizarVistaPrevia();
+  renderizarTemas();
   renderizarModosInterfaz();
-  estado(`Preferencia activa: ${nombreTema(temaGuardado)} · ${nombreModoInterfaz(modoInterfazGuardado)}.`);
+  actualizarBotonesAccion();
+  estado("Predeterminado en vista previa. Pulsa Aplicar tema para guardar.");
 }
 
 function inicializarControlesApariencia() {
@@ -172,5 +204,6 @@ onAuthStateChanged(auth, async (user) => {
   modoInterfazPendiente = modoInterfazGuardado;
   renderizarTemas();
   renderizarModosInterfaz();
-  estado(`Preferencia activa: ${nombreTema(temaGuardado)} · ${nombreModoInterfaz(modoInterfazGuardado)}.`);
+  actualizarBotonesAccion();
+  estado(textoPreferenciaActiva());
 });
