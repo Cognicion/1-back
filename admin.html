@@ -276,6 +276,35 @@
       </select>
     </div>
 
+    <div class="auditoria-paneles-admin">
+      <section class="auditoria-presencia-admin">
+        <div class="auditoria-panel-header">
+          <div>
+            <h3>Usuarios en linea</h3>
+            <p>Estado estimado por actividad reciente, cierre de sesion e inactividad.</p>
+          </div>
+          <input id="filtroSesionesAuditoria" placeholder="Buscar usuario en sesiones">
+        </div>
+        <div id="listaSesionesAuditoria" class="lista-sesiones-auditoria">
+          <p>Cargando sesiones...</p>
+        </div>
+      </section>
+
+      <section class="auditoria-ocultos-admin">
+        <div class="auditoria-panel-header">
+          <div>
+            <h3>Ocultar eventos por usuario</h3>
+            <p>Selecciona usuarios para ocultar sus eventos en esta vista de auditoria.</p>
+          </div>
+          <button type="button" id="btnLimpiarUsuariosOcultosAuditoria">Mostrar todos</button>
+        </div>
+        <input id="filtroUsuariosOcultosAuditoria" placeholder="Buscar usuario por nombre, correo o palabra clave">
+        <div id="listaUsuariosOcultosAuditoria" class="lista-usuarios-ocultos-auditoria">
+          <p>Cargando usuarios...</p>
+        </div>
+      </section>
+    </div>
+
     <table>
       <thead>
         <tr>

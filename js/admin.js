@@ -31,7 +31,9 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const ADMIN_UID = "NQ0CU5PSDBUgVrk56sjPEVhOs2D3";
-const LIMITE_EVENTOS = 250;
+const LIMITE_EVENTOS = 1000;
+const VENTANA_USUARIO_EN_LINEA_MS = 20 * 60 * 1000;
+const CLAVE_USUARIOS_AUDITORIA_OCULTOS = "cognicion_admin_auditoria_usuarios_ocultos";
 const ACCIONES_AUDITORIA_OCULTAS = new Set([
   "abrir_modulo",
   "pagina_oculta",
@@ -39,6 +41,7 @@ const ACCIONES_AUDITORIA_OCULTAS = new Set([
 ]);
 
 let eventosAuditoria = [];
+let usuariosOcultosAuditoria = new Set();
 let pacientesAdmin = [];
 let usuariosAdmin = [];
 let reportesUsuariosAdmin = [];
@@ -113,10 +116,20 @@ onAuthStateChanged(auth, async (user) => {
 
 function configurarFiltros() {
   configurarNavegacionCentroControl();
+  usuariosOcultosAuditoria = cargarUsuariosOcultosAuditoria();
 
   ["filtroAuditoria", "filtroRol", "filtroModulo", "filtroResultado"].forEach((id) => {
     document.getElementById(id)?.addEventListener("input", renderizarAuditoria);
     document.getElementById(id)?.addEventListener("change", renderizarAuditoria);
+  });
+
+  document.getElementById("filtroUsuariosOcultosAuditoria")?.addEventListener("input", renderizarUsuariosOcultosAuditoria);
+  document.getElementById("filtroSesionesAuditoria")?.addEventListener("input", renderizarSesionesAuditoria);
+  document.getElementById("btnLimpiarUsuariosOcultosAuditoria")?.addEventListener("click", () => {
+    usuariosOcultosAuditoria.clear();
+    guardarUsuariosOcultosAuditoria();
+    renderizarUsuariosOcultosAuditoria();
+    renderizarAuditoria();
   });
 
   document.getElementById("btnActualizarAuditoria")?.addEventListener("click", async () => {
@@ -508,6 +521,8 @@ async function cargarUsuariosAdmin() {
 
   renderizarUsuariosAdmin();
   renderizarUsuariosRecientesAdmin();
+  renderizarUsuariosOcultosAuditoria();
+  renderizarSesionesAuditoria();
   poblarUsuariosAvisosAdmin();
   poblarInstitucionesFormatosAdmin();
   renderizarFormatosAdmin();
