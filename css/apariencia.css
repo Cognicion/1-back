@@ -304,3 +304,336 @@ body:has(.config-shell) .tema-opcion.activo::after {
   letter-spacing: .08em;
   text-transform: uppercase;
 }
+/* Tema de interfaz: claro/oscuro global */
+:root {
+  --cog-bg: #020617;
+  --cog-bg-soft: #07111f;
+  --cog-surface: rgba(10, 18, 32, .82);
+  --cog-surface-strong: rgba(8, 13, 24, .92);
+  --cog-border: rgba(125, 211, 252, .18);
+  --cog-text: #f5f8ff;
+  --cog-muted: #aebcd0;
+  --cog-accent: #22d3ee;
+  --cog-accent-2: #2f80ed;
+  --cog-shadow: rgba(0, 0, 0, .34);
+  --bg: var(--cog-bg);
+  --panel: var(--cog-surface);
+  --line: var(--cog-border);
+  --text: var(--cog-text);
+  --muted: var(--cog-muted);
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+  --cog-bg: #f4f8ff;
+  --cog-bg-soft: #eaf3ff;
+  --cog-surface: rgba(255, 255, 255, .78);
+  --cog-surface-strong: rgba(255, 255, 255, .94);
+  --cog-border: rgba(14, 116, 144, .2);
+  --cog-text: #102033;
+  --cog-muted: #4d6178;
+  --cog-accent: #0284c7;
+  --cog-accent-2: #0ea5e9;
+  --cog-shadow: rgba(15, 50, 80, .13);
+  --bg: var(--cog-bg);
+  --panel: var(--cog-surface);
+  --line: var(--cog-border);
+  --text: var(--cog-text);
+  --muted: var(--cog-muted);
+}
+
+html,
+body,
+button,
+input,
+select,
+textarea,
+a,
+.card,
+.tarjeta,
+.module-card,
+.panel-lab,
+.seccion,
+.contenido,
+.modal,
+.reporte-modal,
+.config-card,
+.dashboard-notices-panel,
+.notifications-dropdown,
+table,
+th,
+td {
+  transition: background-color .25s ease, background .25s ease, color .25s ease, border-color .25s ease, box-shadow .25s ease, opacity .25s ease;
+}
+
+body.tema-claro {
+  background:
+    radial-gradient(circle at 14% 8%, rgba(14, 165, 233, .16), transparent 30%),
+    radial-gradient(circle at 88% 14%, rgba(45, 212, 191, .12), transparent 34%),
+    linear-gradient(135deg, #f8fbff 0%, #edf6ff 46%, #f7fbff 100%) !important;
+  color: var(--cog-text) !important;
+}
+
+body.tema-claro::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: -1;
+  background:
+    linear-gradient(rgba(14, 116, 144, .055) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(14, 116, 144, .055) 1px, transparent 1px);
+  background-size: 42px 42px;
+  opacity: .55;
+}
+
+body.tema-claro .card,
+body.tema-claro .tarjeta,
+body.tema-claro .module-card,
+body.tema-claro .panel-lab,
+body.tema-claro .seccion,
+body.tema-claro .contenido,
+body.tema-claro .hero,
+body.tema-claro .workspace-section,
+body.tema-claro .notifications-dropdown,
+body.tema-claro .dashboard-notices-panel,
+body.tema-claro .modal,
+body.tema-claro .reporte-modal,
+body.tema-claro .config-card,
+body.tema-claro .tabla-contenedor,
+body.tema-claro .panel,
+body.tema-claro .bloque,
+body.tema-claro .bloque-observacion,
+body.tema-claro .nota-card,
+body.tema-claro .paciente-card,
+body.tema-claro .escala-card,
+body.tema-claro .floating-panel,
+body.tema-claro details,
+body.tema-claro aside,
+body.tema-claro header {
+  background: linear-gradient(145deg, rgba(255,255,255,.88), rgba(237,246,255,.68)) !important;
+  border-color: var(--cog-border) !important;
+  color: var(--cog-text) !important;
+  box-shadow: 0 22px 70px var(--cog-shadow), inset 0 1px 0 rgba(255,255,255,.8) !important;
+}
+
+body.tema-claro h1,
+body.tema-claro h2,
+body.tema-claro h3,
+body.tema-claro h4,
+body.tema-claro strong,
+body.tema-claro th,
+body.tema-claro .titulo,
+body.tema-claro .card-title {
+  color: var(--cog-text) !important;
+}
+
+body.tema-claro p,
+body.tema-claro small,
+body.tema-claro label,
+body.tema-claro li,
+body.tema-claro td,
+body.tema-claro .muted,
+body.tema-claro .texto-suave,
+body.tema-claro .descripcion,
+body.tema-claro .subtitulo {
+  color: var(--cog-muted) !important;
+}
+
+body.tema-claro .config-kicker,
+body.tema-claro .kicker,
+body.tema-claro .badge,
+body.tema-claro .pill,
+body.tema-claro .chip {
+  color: #036b95 !important;
+  border-color: rgba(2, 132, 199, .28) !important;
+  background: rgba(224, 247, 255, .74) !important;
+}
+
+body.tema-claro input,
+body.tema-claro select,
+body.tema-claro textarea,
+body.tema-claro .input,
+body.tema-claro .select {
+  background: rgba(255,255,255,.86) !important;
+  border-color: rgba(14, 116, 144, .22) !important;
+  color: var(--cog-text) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.8) !important;
+}
+
+body.tema-claro input::placeholder,
+body.tema-claro textarea::placeholder {
+  color: #7890a8 !important;
+}
+
+body.tema-claro button,
+body.tema-claro .btn,
+body.tema-claro .btn-secundario,
+body.tema-claro .ghost-button {
+  color: var(--cog-text);
+  border-color: rgba(14, 116, 144, .24) !important;
+}
+
+body.tema-claro .btn-primario,
+body.tema-claro .primary-button,
+body.tema-claro button.activo,
+body.tema-claro .active {
+  color: #ffffff !important;
+}
+
+body.tema-claro table,
+body.tema-claro thead,
+body.tema-claro tbody,
+body.tema-claro tr {
+  border-color: rgba(14, 116, 144, .18) !important;
+}
+
+body.tema-claro ::selection {
+  background: rgba(14, 165, 233, .22);
+  color: var(--cog-text);
+}
+
+.modo-interfaz-section {
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 1px solid rgba(125,211,252,.14);
+}
+
+.modo-interfaz-section h3 {
+  margin: 8px 0 10px;
+  color: #f8fbff;
+  font-size: 1.35rem;
+}
+
+.modo-interfaz-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.modo-interfaz-opcion {
+  position: relative;
+  min-height: 176px;
+  padding: 18px;
+  border-radius: 24px;
+  border: 1px solid rgba(125,211,252,.18);
+  background: linear-gradient(145deg, rgba(15,23,42,.78), rgba(2,6,23,.72));
+  color: #f8fbff;
+  text-align: left;
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.modo-interfaz-opcion:hover {
+  transform: translateY(-3px);
+  border-color: rgba(34,211,238,.48);
+  box-shadow: 0 22px 58px rgba(34,211,238,.13);
+}
+
+.modo-interfaz-opcion.activo {
+  border-color: rgba(34,211,238,.78);
+  box-shadow: 0 0 34px rgba(34,211,238,.2), inset 0 1px 0 rgba(255,255,255,.08);
+}
+
+.modo-interfaz-opcion.activo::after {
+  content: "Activo";
+  position: absolute;
+  right: 14px;
+  top: 14px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: .68rem;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: #03131d;
+  background: linear-gradient(135deg, #67e8f9, #38bdf8);
+}
+
+.modo-interfaz-preview {
+  position: relative;
+  height: 72px;
+  margin-bottom: 14px;
+  border-radius: 18px;
+  border: 1px solid rgba(125,211,252,.18);
+  overflow: hidden;
+}
+
+.modo-interfaz-preview span {
+  position: absolute;
+  right: 16px;
+  top: 14px;
+  font-size: 1.3rem;
+  z-index: 2;
+}
+
+.modo-interfaz-preview i {
+  position: absolute;
+  left: 16px;
+  height: 8px;
+  border-radius: 999px;
+  opacity: .92;
+}
+
+.modo-interfaz-preview i:nth-of-type(1) { bottom: 16px; width: 62%; }
+.modo-interfaz-preview i:nth-of-type(2) { bottom: 30px; width: 42%; }
+.modo-interfaz-preview i:nth-of-type(3) { bottom: 44px; width: 25%; }
+
+.modo-interfaz-preview.dark {
+  background:
+    radial-gradient(circle at 78% 20%, rgba(34,211,238,.34), transparent 36%),
+    linear-gradient(135deg, #020617, #0f172a 72%);
+}
+
+.modo-interfaz-preview.dark i {
+  background: rgba(148, 163, 184, .72);
+}
+
+.modo-interfaz-preview.light {
+  background:
+    radial-gradient(circle at 76% 18%, rgba(14,165,233,.24), transparent 36%),
+    linear-gradient(135deg, #ffffff, #eaf6ff 72%);
+}
+
+.modo-interfaz-preview.light i {
+  background: rgba(2, 132, 199, .55);
+}
+
+.modo-interfaz-opcion strong {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 1.05rem;
+}
+
+.modo-interfaz-opcion small {
+  display: block;
+  color: #a9b8cc;
+  line-height: 1.45;
+}
+
+body.tema-claro:has(.config-shell) .config-card,
+body.tema-claro:has(.config-shell) .tema-opcion,
+body.tema-claro:has(.config-shell) .modo-interfaz-opcion {
+  background: linear-gradient(145deg, rgba(255,255,255,.88), rgba(230,244,255,.7)) !important;
+  color: var(--cog-text) !important;
+}
+
+body.tema-claro:has(.config-shell) .config-card h1,
+body.tema-claro:has(.config-shell) .config-card h2,
+body.tema-claro:has(.config-shell) .config-card h3,
+body.tema-claro:has(.config-shell) .tema-opcion strong,
+body.tema-claro:has(.config-shell) .modo-interfaz-opcion strong {
+  color: var(--cog-text) !important;
+}
+
+body.tema-claro:has(.config-shell) .config-card p,
+body.tema-claro:has(.config-shell) .tema-opcion small,
+body.tema-claro:has(.config-shell) .modo-interfaz-opcion small {
+  color: var(--cog-muted) !important;
+}
+
+@media (max-width: 720px) {
+  .modo-interfaz-grid {
+    grid-template-columns: 1fr;
+  }
+}

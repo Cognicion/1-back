@@ -284,3 +284,18 @@
   .escena-integrada[data-camara="sinapsis"],
   .escena-integrada[data-camara="farmacologia"]{min-height:620px;}
 }
+/* Cierre robusto para ventanas flotantes de ayuda contextual */
+.panel-ayuda-parametro-neuro {
+  pointer-events: auto !important;
+  z-index: 5200 !important;
+}
+.panel-ayuda-parametro-neuro [data-cerrar-ayuda-neuro] {
+  pointer-events: auto !important;
+  z-index: 5300 !important;
+  cursor: pointer !important;
+  touch-action: manipulation;
+}
+.detalle-neuro-seleccion [data-cerrar-detalle-neuro],
+.detalle-neuro-seleccion [data-minimizar-detalle-neuro] {
+  touch-action: manipulation;
+}

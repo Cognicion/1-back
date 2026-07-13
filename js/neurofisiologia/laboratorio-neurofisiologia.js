@@ -48,8 +48,6 @@ const graficaAccion = $("graficaAccion");
 const graficaAxon = $("graficaAxon");
 const graficaIntegrada = $("graficaIntegrada");
 
-inicializarSeguro();
-
 function asignarAyudasNeuro() {
   const ayudas = {
     btnIntegradaPlay: "Inicia la simulacion integrada: estimulo, potencial de accion, axon, Ca2+ terminal y sinapsis avanzan juntos.",
@@ -160,9 +158,23 @@ function mostrarAyudaParametroNeuro(meta, control, disparador) {
   panel.setAttribute("role", "dialog");
   panel.setAttribute("aria-label", `Ayuda: ${meta.nombre}`);
   panel.innerHTML = `<button type="button" data-cerrar-ayuda-neuro aria-label="Cerrar ayuda">x</button><span class="kicker">${meta.tipo || "Parametro"}</span><h3>${meta.nombre}</h3><dl><dt>Definicion sencilla</dt><dd>${meta.definicion}</dd><dt>Funcion</dt><dd>${meta.funcion}</dd><dt>Efecto en el modelo</dt><dd>${meta.tipo === "Visual" ? "Cambia la representacion grafica, no las ecuaciones." : "Puede modificar variables del modelo o su reproduccion."}</dd><dt>Si aumenta</dt><dd>${meta.aumenta}</dd><dt>Si disminuye</dt><dd>${meta.disminuye}</dd><dt>Unidad</dt><dd>${meta.unidad || "No especificada"}</dd><dt>Valor actual</dt><dd>${valor}</dd><dt>Rango</dt><dd>${meta.rango || "Segun control"}</dd><dt>Ejemplo</dt><dd>${meta.ejemplo}</dd><dt>Relacion farmacologica</dt><dd>${meta.farmaco || "Farmacos y drogas pueden modificar canales, receptores, recaptura, degradacion o excitabilidad segun el caso."}</dd><dt>Nivel de evidencia del modelo</dt><dd>${meta.tipo === "Visual" ? "Solo visual" : "Aproximacion didactica basada en principios fisiologicos."}</dd></dl>`;
+  vincularCierreAyudaParametroNeuro(panel);
   panel.querySelector("[data-cerrar-ayuda-neuro]")?.focus();
 }
 
+
+function vincularCierreAyudaParametroNeuro(panel) {
+  const cerrar = panel?.querySelector?.("[data-cerrar-ayuda-neuro]");
+  if (!cerrar || cerrar.dataset.cierreAyudaNeuro === "true") return;
+  cerrar.dataset.cierreAyudaNeuro = "true";
+  const cerrarPanel = (evento) => {
+    evento?.preventDefault?.();
+    evento?.stopPropagation?.();
+    evento?.stopImmediatePropagation?.();
+    cerrarAyudaParametroNeuro();
+  };
+  ["pointerdown", "click", "touchstart"].forEach((tipo) => cerrar.addEventListener(tipo, cerrarPanel, { capture: true }));
+}
 function cerrarAyudaParametroNeuro() {
   const panel = document.getElementById("panelAyudaParametroNeuro");
   if (!panel) return;
@@ -182,7 +194,7 @@ function instalarCierreGlobalDetalleNeuro() {
     const botonAislar = evento.target?.closest?.("[data-neuro-aislar]");
     const botonMinimizar = evento.target?.closest?.("[data-minimizar-detalle-neuro]");
     if (!botonDetalle && !botonAyuda && !botonAislar && !botonMinimizar) return;
-    if (botonMinimizar && evento.type === "pointerup") return;
+    if (botonMinimizar && (evento.type === "pointerup" || evento.type === "click")) return;
     evento.preventDefault();
     evento.stopPropagation();
     evento.stopImmediatePropagation?.();
@@ -191,6 +203,7 @@ function instalarCierreGlobalDetalleNeuro() {
     if (botonAislar) aislarFuncionamientoNeuro();
     if (botonMinimizar) minimizarDetalleNeuroSeleccionado();
   };
+  document.addEventListener("pointerdown", cerrarSiCorresponde, true);
   document.addEventListener("pointerup", cerrarSiCorresponde, true);
   document.addEventListener("click", cerrarSiCorresponde, true);
   document.addEventListener("pointerdown", (evento) => {
@@ -1151,7 +1164,7 @@ function mostrarDetalleNeuroSeleccionado(zona, disparador = null) {
 
 function construirDetalleNeuroHTML(zona) {
   const secciones = zona.secciones || crearSeccionesNeuroDesdeZona(zona);
-  return `<button type="button" data-minimizar-detalle-neuro aria-label="Minimizar detalle" aria-expanded="true">−</button><button type="button" data-cerrar-detalle-neuro aria-label="Cerrar detalle">×</button><span class="kicker">Estructura seleccionada</span><h3>${zona.titulo}</h3><div class="detalle-neuro-secciones">${secciones.map((s) => `<section><h4>${s.titulo}</h4>${Array.isArray(s.texto) ? `<ul>${s.texto.map((x) => `<li>${x}</li>`).join("")}</ul>` : `<p>${s.texto}</p>`}</section>`).join("")}</div><div class="detalle-neuro-acciones"><button type="button" class="secundario" data-neuro-aislar>Ver funcionamiento aislado</button></div><small>Rueda = zoom. Arrastra el canvas = desplazar. Escape cierra este panel.</small>`;
+  return `<button type="button" data-minimizar-detalle-neuro aria-label="Minimizar detalle" aria-expanded="true">Ã¢Ë†â€™</button><button type="button" data-cerrar-detalle-neuro aria-label="Cerrar detalle">Ãƒâ€”</button><span class="kicker">Estructura seleccionada</span><h3>${zona.titulo}</h3><div class="detalle-neuro-secciones">${secciones.map((s) => `<section><h4>${s.titulo}</h4>${Array.isArray(s.texto) ? `<ul>${s.texto.map((x) => `<li>${x}</li>`).join("")}</ul>` : `<p>${s.texto}</p>`}</section>`).join("")}</div><div class="detalle-neuro-acciones"><button type="button" class="secundario" data-neuro-aislar>Ver funcionamiento aislado</button></div><small>Rueda = zoom. Arrastra el canvas = desplazar. Escape cierra este panel.</small>`;
 }
 
 function crearSeccionesNeuroDesdeZona(zona) {
@@ -1479,3 +1492,5 @@ function renderizarNeuronasTEC(modelo) {
     return `<span class="tec-neurona ${activada ? "activa" : ""}" style="left:${x.toFixed(1)}%;top:${y.toFixed(1)}%;animation-delay:${(i * 0.035).toFixed(2)}s"></span>`;
   }).join("");
 }
+
+inicializarSeguro();
