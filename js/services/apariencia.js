@@ -62,12 +62,14 @@ export const OPCIONES_MODO_INTERFAZ_COGNICION = [
 
 const CLAVE_LOCAL = "cognicion.apariencia.tema";
 const CLAVE_LOCAL_MODO = "cognicion.apariencia.modoInterfaz";
+const TEMA_PREDETERMINADO_COGNICION = TEMAS_COGNICION.LABORATORIO;
+const MODO_PREDETERMINADO_COGNICION = MODOS_INTERFAZ_COGNICION.OSCURO;
 
 export function normalizarTemaCognicion(tema) {
   const valor = String(tema || "").toLowerCase().trim();
   return OPCIONES_TEMA_COGNICION.some((opcion) => opcion.id === valor)
     ? valor
-    : TEMAS_COGNICION.CLASICA;
+    : TEMA_PREDETERMINADO_COGNICION;
 }
 
 
@@ -75,14 +77,15 @@ export function normalizarModoInterfazCognicion(modo) {
   const valor = String(modo || "").toLowerCase().trim();
   return OPCIONES_MODO_INTERFAZ_COGNICION.some((opcion) => opcion.id === valor)
     ? valor
-    : MODOS_INTERFAZ_COGNICION.OSCURO;
+    : MODO_PREDETERMINADO_COGNICION;
 }
 
 export function obtenerModoInterfazLocalCognicion() {
   try {
-    return normalizarModoInterfazCognicion(localStorage.getItem(CLAVE_LOCAL_MODO));
+    const guardado = localStorage.getItem(CLAVE_LOCAL_MODO);
+    return guardado ? normalizarModoInterfazCognicion(guardado) : MODO_PREDETERMINADO_COGNICION;
   } catch (error) {
-    return MODOS_INTERFAZ_COGNICION.OSCURO;
+    return MODO_PREDETERMINADO_COGNICION;
   }
 }
 
@@ -119,9 +122,10 @@ export function aplicarModoInterfazCognicion(modo) {
 }
 export function obtenerTemaLocalCognicion() {
   try {
-    return normalizarTemaCognicion(localStorage.getItem(CLAVE_LOCAL));
+    const guardado = localStorage.getItem(CLAVE_LOCAL);
+    return guardado ? normalizarTemaCognicion(guardado) : TEMA_PREDETERMINADO_COGNICION;
   } catch (error) {
-    return TEMAS_COGNICION.CLASICA;
+    return TEMA_PREDETERMINADO_COGNICION;
   }
 }
 
@@ -153,12 +157,8 @@ export async function obtenerPreferenciaAparienciaUsuario(uid) {
   try {
     const snap = await getDoc(doc(db, "usuarios", uid));
     const datos = snap.exists() ? snap.data() : {};
-    return normalizarTemaCognicion(
-      datos?.preferencias?.apariencia?.tema ||
-      datos?.apariencia?.tema ||
-      datos?.temaApariencia ||
-      obtenerTemaLocalCognicion()
-    );
+    const temaRemoto = datos?.preferencias?.apariencia?.tema || datos?.apariencia?.tema || datos?.temaApariencia;
+    return temaRemoto ? normalizarTemaCognicion(temaRemoto) : obtenerTemaLocalCognicion();
   } catch (error) {
     console.warn("No se pudo leer la apariencia del usuario.", error);
     return obtenerTemaLocalCognicion();
@@ -169,12 +169,8 @@ export async function obtenerModoInterfazUsuario(uid) {
   try {
     const snap = await getDoc(doc(db, "usuarios", uid));
     const datos = snap.exists() ? snap.data() : {};
-    return normalizarModoInterfazCognicion(
-      datos?.preferencias?.apariencia?.modoInterfaz ||
-      datos?.apariencia?.modoInterfaz ||
-      datos?.modoInterfaz ||
-      obtenerModoInterfazLocalCognicion()
-    );
+    const modoRemoto = datos?.preferencias?.apariencia?.modoInterfaz || datos?.apariencia?.modoInterfaz || datos?.modoInterfaz;
+    return modoRemoto ? normalizarModoInterfazCognicion(modoRemoto) : obtenerModoInterfazLocalCognicion();
   } catch (error) {
     console.warn("No se pudo leer el modo de interfaz del usuario.", error);
     return obtenerModoInterfazLocalCognicion();
