@@ -14,7 +14,8 @@ import {
   orderBy,
   query,
   setDoc,
-  updateDoc
+  updateDoc,
+  where
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 import {
@@ -64,6 +65,7 @@ let contactosMensajesDashboard = [];
 let conversacionesMensajesDashboard = [];
 let conversacionActivaDashboard = null;
 let mensajesConversacionActiva = [];
+const CLAVE_LECTURAS_RESPUESTAS_REPORTES = "cognicion_lecturas_respuestas_reportes";
 window.alternarModuloAvisos = function(forzarAbierto = null) {
   const modulo = document.getElementById("avisosDashboardModulo");
   const boton = document.getElementById("btnToggleAvisosDashboard");
@@ -233,7 +235,12 @@ function textoDestinatarioAvisoDashboard(aviso = {}) {
 }
 
 async function obtenerLecturasAvisosDashboard(avisos = [], uidUsuario = "") {
+  const lecturasLocales = cargarLecturasLocalesRespuestasReportes();
   const lecturas = await Promise.all(avisos.map(async (aviso) => {
+    if (aviso.origen === "respuesta_reporte") {
+      return [aviso.id, Boolean(lecturasLocales[uidUsuario]?.[aviso.id])];
+    }
+
     const lecturaEnDocumento = Boolean(aviso.lecturasUsuarios?.[uidUsuario]?.leido);
     if (lecturaEnDocumento) return [aviso.id, true];
 
@@ -247,6 +254,25 @@ async function obtenerLecturasAvisosDashboard(avisos = [], uidUsuario = "") {
   }));
 
   return new Set(lecturas.filter(([, leido]) => leido).map(([id]) => id));
+}
+
+function cargarLecturasLocalesRespuestasReportes() {
+  try {
+    const datos = JSON.parse(localStorage.getItem(CLAVE_LECTURAS_RESPUESTAS_REPORTES) || "{}");
+    return datos && typeof datos === "object" ? datos : {};
+  } catch (error) {
+    return {};
+  }
+}
+
+function guardarLecturaLocalRespuestaReporte(uidUsuario = "", idAviso = "") {
+  if (!uidUsuario || !idAviso) return;
+  const datos = cargarLecturasLocalesRespuestasReportes();
+  datos[uidUsuario] = {
+    ...(datos[uidUsuario] || {}),
+    [idAviso]: new Date().toISOString()
+  };
+  localStorage.setItem(CLAVE_LECTURAS_RESPUESTAS_REPORTES, JSON.stringify(datos));
 }
 
 function renderizarAvisosDashboard() {
@@ -286,8 +312,40 @@ function renderizarAvisosDashboard() {
 
 }
 
+async function cargarRespuestasReportesComoAvisos(uidUsuario = "") {
+  if (!uidUsuario) return [];
+
+  try {
+    const qReportes = query(collection(db, "reportesUsuarios"), where("usuarioUid", "==", uidUsuario));
+    const snap = await getDocs(qReportes);
+    return snap.docs
+      .map((docReporte) => ({ id: docReporte.id, ...docReporte.data() }))
+      .filter((reporte) => reporte.respuestaAdminUltima?.mensaje)
+      .map((reporte) => {
+        const respuesta = reporte.respuestaAdminUltima || {};
+        return {
+          id: `respuesta_reporte_${reporte.id}_${respuesta.fechaISO || reporte.respondidoEn || ""}`,
+          idAviso: `respuesta_reporte_${reporte.id}`,
+          titulo: `Respuesta a tu reporte: ${reporte.titulo || "Reporte enviado"}`,
+          mensaje: respuesta.mensaje || "",
+          destinatarioTipo: "usuario",
+          destinatarioUid: uidUsuario,
+          activo: true,
+          origen: "respuesta_reporte",
+          reporteId: reporte.id,
+          creadoEn: respuesta.fechaISO || reporte.respondidoEn || reporte.fechaActualizacionISO || "",
+          adminNombre: respuesta.adminNombre || "Administrador"
+        };
+      });
+  } catch (error) {
+    console.warn("No se pudieron cargar respuestas de reportes como avisos:", error);
+    return [];
+  }
+}
+
 async function marcarAvisoLeidoDashboard(idAviso, boton = null) {
   if (!idAviso || !usuarioDashboardActual?.uid) return;
+  const aviso = avisosDashboardActuales.find((item) => item.id === idAviso);
 
   const lectura = {
     uid: usuarioDashboardActual.uid,
@@ -301,6 +359,13 @@ async function marcarAvisoLeidoDashboard(idAviso, boton = null) {
   if (boton) {
     boton.disabled = true;
     boton.textContent = "Guardando...";
+  }
+
+  if (aviso?.origen === "respuesta_reporte") {
+    guardarLecturaLocalRespuestaReporte(usuarioDashboardActual.uid, idAviso);
+    avisosLeidosDashboard.add(idAviso);
+    renderizarAvisosDashboard();
+    return;
   }
 
   const escrituraSubcoleccion = setDoc(
@@ -354,11 +419,21 @@ async function cargarAvisosDashboard(rolUsuario, uidUsuario) {
 
   try {
     const qAvisos = query(collection(db, "avisosGlobales"), orderBy("creadoEn", "desc"), limit(30));
-    const snap = await getDocs(qAvisos);
-    avisosDashboardActuales = snap.docs
+    const [snap, respuestasReportes] = await Promise.all([
+      getDocs(qAvisos).catch((error) => {
+        console.warn("No se pudieron cargar avisosGlobales:", error);
+        return { docs: [] };
+      }),
+      cargarRespuestasReportesComoAvisos(uidUsuario)
+    ]);
+    avisosDashboardActuales = [
+      ...snap.docs
       .map((docAviso) => ({ id: docAviso.id, ...docAviso.data() }))
-      .filter((aviso) => aviso.activo !== false && avisoVisibleParaUsuario(aviso, rolUsuario, uidUsuario))
-      .slice(0, 6);
+      .filter((aviso) => aviso.activo !== false && avisoVisibleParaUsuario(aviso, rolUsuario, uidUsuario)),
+      ...respuestasReportes
+    ]
+      .sort((a, b) => String(b.creadoEn || "").localeCompare(String(a.creadoEn || "")))
+      .slice(0, 8);
 
     avisosLeidosDashboard = await obtenerLecturasAvisosDashboard(avisosDashboardActuales, uidUsuario);
     renderizarAvisosDashboard();

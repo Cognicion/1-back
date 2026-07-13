@@ -62,13 +62,26 @@ export async function responderReporteUsuario(reporteId, datosRespuesta = {}) {
     fechaCreacion: serverTimestamp()
   };
 
-  await addDoc(collection(db, COLECCION_REPORTES, reporteId, "respuestas"), respuesta);
-
-  await updateDoc(doc(db, COLECCION_REPORTES, reporteId), {
+  const escrituraSubcoleccion = addDoc(collection(db, COLECCION_REPORTES, reporteId, "respuestas"), respuesta);
+  const escrituraReporte = updateDoc(doc(db, COLECCION_REPORTES, reporteId), {
     estado: datosRespuesta.estado || "en_revision",
     respuestaAdminUltima: respuesta,
     respondido: true,
     respondidoEn: ahora,
     fechaActualizacionISO: ahora
   });
+
+  const resultados = await Promise.allSettled([escrituraSubcoleccion, escrituraReporte]);
+  const exitos = resultados.filter((resultado) => resultado.status === "fulfilled");
+
+  if (!exitos.length) {
+    throw resultados.find((resultado) => resultado.status === "rejected")?.reason
+      || new Error("No se pudo guardar la respuesta del reporte.");
+  }
+
+  return {
+    respuesta,
+    guardadoEnSubcoleccion: resultados[0].status === "fulfilled",
+    guardadoEnReporte: resultados[1].status === "fulfilled"
+  };
 }

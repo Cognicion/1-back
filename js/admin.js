@@ -1437,7 +1437,16 @@ window.responderReporteAdmin = async function(reporteId) {
   const tituloReporte = reporte.titulo || etiquetaTipoReporte(reporte.tipo);
 
   try {
-    await setDoc(doc(db, "avisosGlobales", idAviso), {
+    const resultadoReporte = await responderReporteUsuario(reporteId, {
+      mensaje,
+      estado: estadoFinal,
+      idAviso,
+      adminUid: adminActual?.uid || "",
+      adminEmail: adminActual?.email || "",
+      adminNombre: adminActual?.email || "Admin"
+    });
+
+    const resultadoAviso = await setDoc(doc(db, "avisosGlobales", idAviso), {
       idAviso,
       titulo: `Respuesta a tu reporte: ${tituloReporte}`,
       mensaje,
@@ -1453,16 +1462,7 @@ window.responderReporteAdmin = async function(reporteId) {
       creadoPorEmail: adminActual?.email || "",
       creadoEn: ahora,
       actualizadoEn: ahora
-    });
-
-    await responderReporteUsuario(reporteId, {
-      mensaje,
-      estado: estadoFinal,
-      idAviso,
-      adminUid: adminActual?.uid || "",
-      adminEmail: adminActual?.email || "",
-      adminNombre: adminActual?.email || "Admin"
-    });
+    }).then(() => ({ ok: true })).catch((error) => ({ ok: false, error }));
 
     await registrarAuditoriaAdmin("responder_reporte_usuario", "El administrador respondio un reporte de usuario.", {
       pacienteUid: reporte.usuarioUid,
@@ -1471,13 +1471,19 @@ window.responderReporteAdmin = async function(reporteId) {
         reporteId,
         idAviso,
         estado: estadoFinal,
-        tipo: reporte.tipo || ""
+        tipo: reporte.tipo || "",
+        avisoDashboard: resultadoAviso.ok,
+        guardadoEnReporte: resultadoReporte.guardadoEnReporte,
+        guardadoEnSubcoleccion: resultadoReporte.guardadoEnSubcoleccion,
+        errorAviso: resultadoAviso.ok ? "" : resumenError(resultadoAviso.error)
       }
-    });
+    }).catch((error) => console.warn("No se pudo registrar auditoria de respuesta a reporte:", error));
 
-    alert("Respuesta enviada. El usuario la vera en sus notificaciones.");
+    alert(resultadoAviso.ok
+      ? "Respuesta enviada. El usuario la vera en sus notificaciones."
+      : "Respuesta guardada en el reporte. El aviso directo del Dashboard fue bloqueado por permisos, pero el usuario podra verla desde sus respuestas.");
     await cargarReportesUsuariosAdmin();
-    await cargarAvisosAdmin();
+    if (resultadoAviso.ok) await cargarAvisosAdmin();
   } catch (error) {
     console.error("No se pudo responder el reporte:", error);
     alert("No se pudo enviar la respuesta: " + error.message);
@@ -1537,27 +1543,31 @@ window.responderReportePorMensajeAdmin = async function(reporteId) {
   const estadoFinal = estadoSeleccionado === "nuevo" ? "en_revision" : estadoSeleccionado;
 
   try {
-    await agregarContactoMensaje(adminMensaje.uid, contactoReporte);
+    const resultadoContactoAdmin = await agregarContactoMensaje(adminMensaje.uid, contactoReporte)
+      .then(() => ({ ok: true }))
+      .catch((error) => ({ ok: false, error }));
 
     // Algunas reglas solo permiten a cada usuario editar su propia libreta de contactos.
     // La conversacion 1:1 se muestra por participantIds, asi que esta escritura reciproca
     // es conveniente pero no debe impedir que el admin responda el reporte.
-    await agregarContactoMensaje(contactoReporte.id, {
+    const resultadoContactoUsuario = await agregarContactoMensaje(contactoReporte.id, {
       id: adminMensaje.uid,
       nombre: adminMensaje.nombre,
       email: adminMensaje.email,
       rol: "admin"
-    }).catch((error) => {
-      console.warn("No se pudo agregar el admin a contactos del usuario; se continuara con la conversacion directa.", error);
-    });
+    }).then(() => ({ ok: true })).catch((error) => ({ ok: false, error }));
 
-    const conversacion = await obtenerOCrearConversacion(adminMensaje, contactoReporte);
-    await enviarMensajeConversacion(conversacion.id, adminMensaje, textoMensaje);
+    const resultadoConversacion = await obtenerOCrearConversacion(adminMensaje, contactoReporte)
+      .then(async (conversacion) => {
+        await enviarMensajeConversacion(conversacion.id, adminMensaje, textoMensaje);
+        return { ok: true, conversacion };
+      })
+      .catch((error) => ({ ok: false, error }));
 
-    await responderReporteUsuario(reporteId, {
+    const resultadoReporte = await responderReporteUsuario(reporteId, {
       mensaje,
       estado: estadoFinal,
-      idAviso: `mensaje:${conversacion.id}`,
+      idAviso: resultadoConversacion.ok ? `mensaje:${resultadoConversacion.conversacion.id}` : "mensaje_bloqueado_por_permisos",
       adminUid: adminMensaje.uid,
       adminEmail: adminMensaje.email,
       adminNombre: adminMensaje.nombre
@@ -1568,13 +1578,21 @@ window.responderReportePorMensajeAdmin = async function(reporteId) {
       pacienteNombre: contactoReporte.nombre || "",
       detalles: {
         reporteId,
-        conversacionId: conversacion.id,
+        conversacionId: resultadoConversacion.ok ? resultadoConversacion.conversacion.id : "",
         destinatarioUid: contactoReporte.id,
-        estado: estadoFinal
+        estado: estadoFinal,
+        mensajeDirecto: resultadoConversacion.ok,
+        contactoAdmin: resultadoContactoAdmin.ok,
+        contactoUsuario: resultadoContactoUsuario.ok,
+        guardadoEnReporte: resultadoReporte.guardadoEnReporte,
+        guardadoEnSubcoleccion: resultadoReporte.guardadoEnSubcoleccion,
+        errorMensaje: resultadoConversacion.ok ? "" : resumenError(resultadoConversacion.error)
       }
-    });
+    }).catch((error) => console.warn("No se pudo registrar auditoria de respuesta por mensaje:", error));
 
-    alert("Mensaje enviado al usuario seleccionado.");
+    alert(resultadoConversacion.ok
+      ? "Mensaje enviado al usuario seleccionado."
+      : "La respuesta quedo guardada en el reporte, pero el mensaje directo fue bloqueado por permisos de Firestore.");
     await cargarReportesUsuariosAdmin();
   } catch (error) {
     console.error("No se pudo responder por mensaje:", error);
