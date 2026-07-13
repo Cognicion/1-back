@@ -528,7 +528,9 @@ async function iniciarConversacionConUsuarioDashboard(uidContacto) {
     || contactosMensajesDashboard.find((usuario) => usuario.id === uidContacto || usuario.uid === uidContacto);
   if (!contacto || !usuarioDashboardActual?.uid) return;
 
-  await agregarContactoMensaje(usuarioDashboardActual.uid, contacto);
+  await agregarContactoMensaje(usuarioDashboardActual.uid, contacto).catch((error) => {
+    console.warn("No se pudo guardar el contacto antes de iniciar conversacion:", error);
+  });
   const conversacion = await obtenerOCrearConversacion(usuarioDashboardActual, contacto);
   await cargarDatosMensajesDashboard();
   await abrirConversacionDashboard(conversacion.id);
@@ -536,26 +538,56 @@ async function iniciarConversacionConUsuarioDashboard(uidContacto) {
 
 async function hablarConAdminDashboard() {
   if (!usuarioDashboardActual?.uid) return;
-
-  const admins = await listarAdminsParaMensajes(usuarioDashboardActual.uid);
-  const admin = admins[0];
-  if (!admin) {
-    alert("No se encontro un administrador disponible para mensaje directo.");
-    return;
+  const contenedor = contenedorMensajes();
+  if (contenedor) {
+    contenedor.innerHTML = `
+      <div class="mensajes-contacto">
+        <strong>Buscando administrador...</strong>
+        <span>Preparando una conversacion directa y privada.</span>
+      </div>
+    `;
   }
 
-  const contactoAdmin = {
-    id: admin.id,
-    uid: admin.id,
-    nombre: admin.nombre || admin.email || "Administrador",
-    email: admin.email || "",
-    rol: admin.rol || "admin"
-  };
+  try {
+    const admins = await listarAdminsParaMensajes(usuarioDashboardActual.uid);
+    const admin = admins[0];
+    if (!admin) {
+      if (contenedor) {
+        contenedor.innerHTML = `
+          <div class="mensajes-contacto">
+            <strong>No hay administrador disponible</strong>
+            <span>No se encontro una cuenta con rol de administrador para iniciar mensaje directo.</span>
+          </div>
+        `;
+      }
+      return;
+    }
 
-  await agregarContactoMensaje(usuarioDashboardActual.uid, contactoAdmin);
-  const conversacion = await obtenerOCrearConversacion(usuarioDashboardActual, contactoAdmin);
-  await cargarDatosMensajesDashboard();
-  await abrirConversacionDashboard(conversacion.id);
+    const contactoAdmin = {
+      id: admin.id,
+      uid: admin.id,
+      nombre: admin.nombre || admin.email || "Administrador",
+      email: admin.email || "",
+      rol: admin.rol || "admin"
+    };
+
+    await agregarContactoMensaje(usuarioDashboardActual.uid, contactoAdmin).catch((error) => {
+      console.warn("No se pudo guardar el admin como contacto; se intentara abrir conversacion directa:", error);
+    });
+    const conversacion = await obtenerOCrearConversacion(usuarioDashboardActual, contactoAdmin);
+    await cargarDatosMensajesDashboard();
+    await abrirConversacionDashboard(conversacion.id);
+  } catch (error) {
+    console.error("No se pudo iniciar conversacion con admin:", error);
+    if (contenedor) {
+      contenedor.innerHTML = `
+        <div class="mensajes-contacto">
+          <strong>No se pudo abrir la conversacion</strong>
+          <span>${escaparHTML(error.message || "Revisa permisos de mensajes en Firestore.")}</span>
+        </div>
+      `;
+    }
+  }
 }
 
 async function abrirConversacionDashboard(conversacionId) {
@@ -629,7 +661,8 @@ document.querySelectorAll("[data-mensajes-vista]").forEach((boton) => {
   });
 });
 
-document.querySelector("[data-mensajes-admin]")?.addEventListener("click", async () => {
+document.querySelector("[data-mensajes-admin]")?.addEventListener("click", async (evento) => {
+  evento.preventDefault();
   await cargarDatosMensajesDashboard();
   await hablarConAdminDashboard();
 });

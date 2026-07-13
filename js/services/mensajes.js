@@ -28,11 +28,27 @@ export async function listarUsuariosParaMensajes(uidActual = "") {
 }
 
 export async function listarAdminsParaMensajes(uidActual = "") {
-  const qAdmins = query(collection(db, "usuarios"), where("rol", "==", "admin"));
-  const snap = await getDocs(qAdmins);
-  return snap.docs
+  const esAdmin = (usuario = {}) => {
+    const rol = String(usuario.rol || "").toLowerCase().trim();
+    return ["admin", "administrador", "superadmin"].includes(rol);
+  };
+
+  try {
+    const qAdmins = query(collection(db, "usuarios"), where("rol", "==", "admin"));
+    const snap = await getDocs(qAdmins);
+    const admins = snap.docs
+      .map((docUsuario) => ({ id: docUsuario.id, ...docUsuario.data() }))
+      .filter((usuario) => usuario.id !== uidActual);
+
+    if (admins.length) return admins;
+  } catch (error) {
+    console.warn("No se pudo consultar administradores por rol exacto:", error);
+  }
+
+  const snapUsuarios = await getDocs(collection(db, "usuarios"));
+  return snapUsuarios.docs
     .map((docUsuario) => ({ id: docUsuario.id, ...docUsuario.data() }))
-    .filter((usuario) => usuario.id !== uidActual);
+    .filter((usuario) => usuario.id !== uidActual && esAdmin(usuario));
 }
 
 export async function agregarContactoMensaje(uidActual, contacto) {
