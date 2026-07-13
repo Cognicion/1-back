@@ -83,6 +83,18 @@
 
 .lab-paciente-top,
 .lab-paciente-grid,
+
+
+
+.lab-metricas-sin-modelo {
+  grid-template-columns: repeat(5, minmax(130px, 1fr));
+  margin-top: 8px;
+}
+
+.lab-metricas-sin-modelo .lab-gauge {
+  min-height: 104px;
+}
+
 .lab-info-grid {
   position: relative;
   z-index: 1;
@@ -370,7 +382,8 @@
 
 @media (max-width: 1100px) {
   .lab-paciente-grid,
-  .lab-info-grid {
+
+.lab-info-grid {
     grid-template-columns: 1fr;
   }
 

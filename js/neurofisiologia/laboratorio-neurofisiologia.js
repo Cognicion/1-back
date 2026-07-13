@@ -16,11 +16,14 @@ let estadoMembrana = aplicarPresetMembrana("fisiologica");
 let membranaActiva = false;
 let accionActiva = false;
 let axonActivo = false;
+let tecActivo = false;
 let rafMembrana = null;
 let rafAccion = null;
 let rafAxon = null;
+let rafTec = null;
 let tiempoAccion = 0;
 let tiempoAxon = 0;
+let tiempoTec = 0;
 let resultadoAccion = simularPotencialAccion();
 let superposiciones = [];
 let resultadoAxon = simularPropagacionAxonal();
@@ -258,6 +261,7 @@ function inicializar() {
   ejecutarBloqueLaboratorio("membrana", vincularMembrana);
   ejecutarBloqueLaboratorio("potencial de accion", vincularAccion);
   ejecutarBloqueLaboratorio("axon", vincularAxon);
+  ejecutarBloqueLaboratorio("tec", vincularTEC);
   ejecutarBloqueLaboratorio("experimentos", renderizarExperimentos);
   ejecutarBloqueLaboratorio("saltos", configurarSaltosEntreSimuladores);
   ejecutarBloqueLaboratorio("cuaderno", vincularCuaderno);
@@ -1373,4 +1377,105 @@ function cerrarTutorialNeuro() {
   localStorage.setItem("cognicionNeuroTutorialVisto", "1");
   $("tutorialNeuro").hidden = true;
   document.querySelectorAll(".tutorial-focus").forEach((el) => el.classList.remove("tutorial-focus"));
+}
+
+function leerParametrosTEC() {
+  return {
+    montaje: $("tecMontaje")?.value || "bilateral",
+    intensidad: Number($("tecIntensidad")?.value || 55),
+    pulsoMs: Number($("tecPulso")?.value || 0.8),
+    frecuenciaHz: Number($("tecFrecuencia")?.value || 70),
+    duracionS: Number($("tecDuracion")?.value || 4),
+    impedancia: Number($("tecImpedancia")?.value || 900),
+    umbral: Number($("tecUmbral")?.value || 45),
+    vista: $("tecVista")?.value || "campo"
+  };
+}
+
+function calcularModeloTEC(p = leerParametrosTEC()) {
+  const factorMontaje = p.montaje === "bilateral" ? 1.1 : p.montaje === "bifrontal" ? 1 : 0.82;
+  const energiaRelativa = (p.intensidad * p.pulsoMs * p.frecuenciaHz * p.duracionS * factorMontaje) / Math.max(300, p.impedancia);
+  const cargaRelativa = Math.max(0, energiaRelativa * 18);
+  const reclutamiento = Math.max(0, Math.min(100, (cargaRelativa / Math.max(1, p.umbral)) * 62));
+  const superaUmbral = reclutamiento >= 55;
+  const campo = Math.max(8, Math.min(100, (p.intensidad * factorMontaje * 900) / Math.max(350, p.impedancia)));
+  return { ...p, factorMontaje, cargaRelativa, reclutamiento, superaUmbral, campo };
+}
+
+function vincularTEC() {
+  ["tecMontaje", "tecIntensidad", "tecPulso", "tecFrecuencia", "tecDuracion", "tecImpedancia", "tecUmbral", "tecVista"].forEach((id) => {
+    const el = $(id);
+    if (el) el.addEventListener("input", renderizarTEC);
+  });
+  $("btnTecIniciar")?.addEventListener("click", () => { tecActivo = true; if (tiempoTec <= 0 || tiempoTec > 1) tiempoTec = 0; animarTEC(); });
+  $("btnTecPausar")?.addEventListener("click", () => { tecActivo = false; cancelAnimationFrame(rafTec); });
+  $("btnTecReset")?.addEventListener("click", () => { tecActivo = false; cancelAnimationFrame(rafTec); tiempoTec = 0; renderizarTEC(); });
+  $("btnTecPulso")?.addEventListener("click", () => { tiempoTec = Math.min(1, tiempoTec + 0.08); renderizarTEC(true); });
+  renderizarTEC();
+}
+
+function animarTEC() {
+  if (!tecActivo) return;
+  tiempoTec += 0.006 * Number($("globalPlaybackNeuro")?.value || 1);
+  if (tiempoTec > 1) {
+    tecActivo = false;
+    tiempoTec = 1;
+    renderizarTEC();
+    return;
+  }
+  renderizarTEC(true);
+  rafTec = requestAnimationFrame(animarTEC);
+}
+
+function renderizarTEC(animado = false) {
+  const escenaTec = $("tecEscena");
+  if (!escenaTec) return;
+  const modelo = calcularModeloTEC();
+  escenaTec.dataset.vistaTec = modelo.vista;
+  escenaTec.dataset.montajeTec = modelo.montaje;
+  escenaTec.classList.toggle("tec-activo", Boolean(animado || tecActivo));
+  escenaTec.style.setProperty("--tec-campo", `${modelo.campo}%`);
+  escenaTec.style.setProperty("--tec-reclutamiento", `${modelo.reclutamiento}%`);
+  escenaTec.style.setProperty("--tec-progreso", `${Math.max(0, Math.min(1, tiempoTec))}`);
+  renderizarNeuronasTEC(modelo);
+  const indicadores = $("tecIndicadores");
+  if (indicadores) {
+    indicadores.innerHTML = `
+      <div><span>Campo relativo</span><strong>${modelo.campo.toFixed(1)}%</strong></div>
+      <div><span>Carga educativa</span><strong>${modelo.cargaRelativa.toFixed(1)}</strong></div>
+      <div><span>Reclutamiento cortical</span><strong>${modelo.reclutamiento.toFixed(0)}%</strong></div>
+      <div><span>Umbral</span><strong>${modelo.superaUmbral ? "Superado" : "Subumbral"}</strong></div>
+    `;
+  }
+  const explicacion = $("tecExplicacion");
+  if (explicacion) {
+    explicacion.innerHTML = `
+      <h3>${modelo.superaUmbral ? "Respuesta generalizada probable en el modelo" : "Estimulo por debajo del umbral educativo"}</h3>
+      <p>Montaje: <b>${textoMontajeTEC(modelo.montaje)}</b>. La intensidad, ancho de pulso, frecuencia y duracion aumentan la carga educativa; la impedancia la reduce. Esta representacion ayuda a entender relaciones fisicas generales, no prescribe parametros de TEC real.</p>
+      <p><b>Lectura didactica:</b> ${modelo.superaUmbral ? "el campo recluta suficientes redes para mostrar sincronizacion cortical." : "el campo no recluta suficiente red cortical para una respuesta generalizada."}</p>
+    `;
+  }
+}
+
+function textoMontajeTEC(montaje) {
+  if (montaje === "bilateral") return "bitemporal bilateral";
+  if (montaje === "bifrontal") return "bifrontal";
+  return "unilateral derecho";
+}
+
+function renderizarNeuronasTEC(modelo) {
+  const contenedor = $("tecNeurons");
+  if (!contenedor) return;
+  const total = 34;
+  const fase = Math.max(0, Math.min(1, tiempoTec));
+  contenedor.innerHTML = Array.from({ length: total }, (_, i) => {
+    const angulo = (i / total) * Math.PI * 2;
+    const radioX = 29 + (i % 5) * 6;
+    const radioY = 20 + (i % 4) * 5;
+    const x = 50 + Math.cos(angulo) * radioX;
+    const y = 50 + Math.sin(angulo) * radioY;
+    const umbralLocal = (i % 9) * 5 + 28;
+    const activada = modelo.reclutamiento * fase > umbralLocal;
+    return `<span class="tec-neurona ${activada ? "activa" : ""}" style="left:${x.toFixed(1)}%;top:${y.toFixed(1)}%;animation-delay:${(i * 0.035).toFixed(2)}s"></span>`;
+  }).join("");
 }

@@ -27,6 +27,7 @@
     <button data-tab="membrana">Membrana e iones</button>
     <button data-tab="accion">Potencial de accion</button>
     <button data-tab="axon">Propagacion axonal</button>
+    <button data-tab="tec">TEC</button>
     <button data-tab="experimentos">Experimentos</button>
     <button data-tab="resultados">Resultados</button>
     <button data-tab="teoria">Fundamento teorico</button>
@@ -172,6 +173,66 @@
     </div>
   </section>
 
+
+  <section id="tab-tec" class="panel-lab tab-panel">
+    <div class="panel-heading">
+      <div>
+        <span class="kicker">Simulador educativo</span>
+        <h2>TEC: campo electrico y respuesta cortical</h2>
+        <p class="muted">Modelo didactico de terapia electroconvulsiva. No calcula dosis clinicas reales ni sustituye protocolos institucionales.</p>
+      </div>
+      <div class="acciones">
+        <button id="btnTecIniciar">Iniciar estimulo</button>
+        <button id="btnTecPausar" class="secundario">Pausar</button>
+        <button id="btnTecReset" class="secundario">Reiniciar</button>
+        <button id="btnTecPulso" class="secundario">Pulso unico</button>
+      </div>
+    </div>
+    <div class="tec-lab-grid">
+      <aside class="controles-lab">
+        <label>Montaje de electrodos<select id="tecMontaje"><option value="bilateral" selected>Bitemporal bilateral</option><option value="bifrontal">Bifrontal</option><option value="unilateral">Unilateral derecho</option></select></label>
+        <label>Intensidad relativa<input id="tecIntensidad" type="range" min="10" max="100" step="1" value="55"></label>
+        <label>Ancho de pulso (ms)<input id="tecPulso" type="range" min="0.25" max="2" step="0.05" value="0.8"></label>
+        <label>Frecuencia (Hz)<input id="tecFrecuencia" type="range" min="10" max="120" step="1" value="70"></label>
+        <label>Duracion del tren (s)<input id="tecDuracion" type="range" min="0.5" max="8" step="0.1" value="4"></label>
+        <label>Impedancia educativa (ohm)<input id="tecImpedancia" type="range" min="200" max="3000" step="50" value="900"></label>
+        <label>Umbral convulsivo relativo<input id="tecUmbral" type="range" min="20" max="90" step="1" value="45"></label>
+        <label>Visualizacion<select id="tecVista"><option value="campo" selected>Campo electrico</option><option value="red">Red cortical</option><option value="seguridad">Seguridad y monitoreo</option></select></label>
+      </aside>
+      <section class="tec-stage-wrap">
+        <div id="tecEscena" class="tec-escena" aria-label="Simulador educativo de TEC">
+          <div class="tec-head" aria-hidden="true">
+            <span class="tec-electrode tec-electrode-a"></span>
+            <span class="tec-electrode tec-electrode-b"></span>
+            <span class="tec-brain"></span>
+            <span class="tec-cortex tec-cortex-a"></span>
+            <span class="tec-cortex tec-cortex-b"></span>
+            <span class="tec-field"></span>
+            <span class="tec-wave"></span>
+          </div>
+          <div id="tecNeurons" class="tec-neurons" aria-hidden="true"></div>
+        </div>
+        <div id="tecIndicadores" class="indicadores"></div>
+        <div id="tecExplicacion" class="tec-explicacion"></div>
+      </section>
+      <aside class="panel-derecho-integrado">
+        <article class="tarjeta-estado-actual">
+          <span class="kicker">Que representa</span>
+          <h3>Estimulo electrico controlado</h3>
+          <p>El simulador muestra como los parametros del tren modifican una estimacion educativa de carga, campo y reclutamiento cortical. Los valores son relativos y no deben usarse para indicacion, dosis ni seguridad clinica.</p>
+        </article>
+        <details open><summary>Secuencia fisiologica simplificada</summary>
+          <ol class="tec-lista">
+            <li>El dispositivo aplica un tren breve de pulsos.</li>
+            <li>El campo atraviesa tejidos con impedancia variable.</li>
+            <li>Se despolarizan redes corticales suficientes si se supera el umbral.</li>
+            <li>La respuesta se monitoriza clinicamente con EEG, motor y signos vitales.</li>
+          </ol>
+        </details>
+        <details><summary>Advertencia</summary><p class="muted">Modelo de educacion medica. TEC real requiere evaluacion, consentimiento, anestesia, monitorizacion y protocolos especializados.</p></details>
+      </aside>
+    </div>
+  </section>
   <section id="tab-experimentos" class="panel-lab tab-panel"><div class="panel-heading"><div><span class="kicker">Experimentos guiados</span><h2>Protocolos preconfigurados</h2></div></div><div id="listaExperimentos" class="experimentos-grid"></div></section>
   <section id="tab-resultados" class="panel-lab tab-panel"><div class="panel-heading"><div><span class="kicker">Cuaderno</span><h2>Resultados y proyectos</h2></div><div class="acciones"><button id="btnGuardarProyecto">Guardar proyecto</button><button id="btnExportarCSV" class="secundario">Exportar CSV</button><button id="btnReporte" class="secundario">Reporte imprimible</button></div></div><label>Nombre del proyecto<input id="nombreProyecto" type="text" placeholder="Ej. Hiperpotasemia y umbral"></label><label>Observaciones<textarea id="observacionesProyecto" rows="5" placeholder="Hipotesis, observaciones y conclusiones..."></textarea></label><div id="listaProyectos" class="proyectos-lista"></div></section>
   <section id="tab-teoria" class="panel-lab tab-panel"><span class="kicker">Fundamento teorico</span><h2>Conceptos clave</h2><div class="tabla-scroll tabla-transporte-neuro"><table><thead><tr><th>Proceso</th><th>Usa proteina</th><th>ATP directo</th><th>Direccion</th><th>Ejemplo</th></tr></thead><tbody><tr><td>Difusion simple</td><td>No</td><td>No</td><td>A favor del gradiente; iones casi no cruzan bicapa</td><td>Moléculas liposolubles</td></tr><tr><td>Difusion facilitada</td><td>Si</td><td>No</td><td>A favor del gradiente electroquimico</td><td>Nav, Kv, AMPA, GABA-A</td></tr><tr><td>Transporte activo primario</td><td>Si</td><td>Si</td><td>Puede ir contra gradiente</td><td>Na/K ATPasa, PMCA</td></tr><tr><td>Transporte activo secundario</td><td>Si</td><td>No directo</td><td>Acoplado a otro gradiente</td><td>KCC2, NKCC1, NCX, DAT/SERT/NET</td></tr><tr><td>Difusion de neurotransmisor</td><td>No</td><td>No</td><td>Movimiento aleatorio en hendidura</td><td>Glutamato, GABA, monoaminas</td></tr></tbody></table></div><div class="teoria-grid"><article><h3>Nernst</h3><p>Calcula el potencial de equilibrio de un ion a partir de concentraciones intra/extracelulares, valencia y temperatura.</p></article><article><h3>Goldman-Hodgkin-Katz</h3><p>Estima Vm ponderando concentraciones por permeabilidad. Para Cl- se invierten las concentraciones por ser anion.</p></article><article><h3>Hodgkin-Huxley reducido</h3><p>Modelo educativo con compuertas m, h y n para Na+ y K+ que genera fases del potencial de accion.</p></article><article><h3>Mielina</h3><p>Reduce capacitancia efectiva y favorece conduccion saltatoria entre nodos de Ranvier.</p></article></div></section>

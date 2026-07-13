@@ -604,31 +604,7 @@ function renderizarVistaLaboratorioPaciente(datos = datosPacienteActual || {}) {
         </div>
       </div>
 
-      <div class="lab-paciente-grid">
-        <section class="lab-humano-panel" aria-label="Modelo clinico del paciente">
-          <div class="lab-humano-bg"></div>
-          <div class="lab-humano-modelo" aria-hidden="true">
-            <div class="lab-cabeza"></div>
-            <div class="lab-cuello"></div>
-            <div class="lab-torso"></div>
-            <div class="lab-brazo izq"></div>
-            <div class="lab-brazo der"></div>
-            <div class="lab-pierna izq"></div>
-            <div class="lab-pierna der"></div>
-            <div class="lab-anillo pulso"></div>
-          </div>
-          <div class="lab-organos">
-            ${organos.map(([id, nombre]) => `<button type="button" data-organo-lab="${id}" style="${posicionOrganoLab(id)}">${escaparHTML(nombre)}</button>`).join("")}
-          </div>
-          <div id="panelOrganoLaboratorioPaciente" class="lab-organo-panel oculto">
-            <button type="button" id="cerrarOrganoLaboratorioPaciente" aria-label="Cerrar organo seleccionado">×</button>
-            <span>Estructura seleccionada</span>
-            <h4 id="tituloOrganoLaboratorioPaciente">Organo</h4>
-            <p id="textoOrganoLaboratorioPaciente">Selecciona una region del modelo.</p>
-          </div>
-        </section>
-
-        <aside class="lab-metricas-panel">
+      <div class="lab-metricas-panel lab-metricas-sin-modelo">
           <div class="lab-gauge principal">
             <span>Edad</span>
             <strong>${edad !== "" ? `${escaparHTML(edad)} años` : "Sin registro"}</strong>
@@ -649,8 +625,7 @@ function renderizarVistaLaboratorioPaciente(datos = datosPacienteActual || {}) {
             <span>IMC</span>
             <strong>${escaparHTML(valorPaciente(datos, ["imc", "somatometria.imc", "signosVitales.imc", "datosInstitucionales.imc"], "Sin registro"))}</strong>
           </div>
-        </aside>
-      </div>
+        </div>
 
       <div class="lab-info-grid">
         <article class="lab-card">
@@ -696,15 +671,6 @@ function renderizarVistaLaboratorioPaciente(datos = datosPacienteActual || {}) {
       </div>
     </div>
   `;
-
-  const mapaOrganos = Object.fromEntries(organos.map(([id, nombre, texto]) => [id, { nombre, texto }]));
-  contenedor.querySelectorAll("[data-organo-lab]").forEach((boton) => {
-    boton.addEventListener("click", (event) => {
-      event.stopPropagation();
-      abrirOrganoLaboratorioPaciente(mapaOrganos[boton.dataset.organoLab]);
-    });
-  });
-  contenedor.querySelector("#cerrarOrganoLaboratorioPaciente")?.addEventListener("click", cerrarOrganoLaboratorioPaciente);
 }
 
 function posicionOrganoLab(id) {

@@ -135,3 +135,136 @@
   z-index:2200!important;
   cursor:pointer!important;
 }
+/* Simulador educativo de TEC */
+.tec-lab-grid {
+  display: grid;
+  grid-template-columns: minmax(220px, 280px) minmax(420px, 1fr) minmax(260px, 360px);
+  gap: 16px;
+  align-items: start;
+}
+.tec-stage-wrap {
+  display: grid;
+  gap: 14px;
+}
+.tec-escena {
+  --tec-campo: 40%;
+  --tec-reclutamiento: 0%;
+  --tec-progreso: 0;
+  position: relative;
+  min-height: 470px;
+  overflow: hidden;
+  border: 1px solid rgba(125, 211, 252, .24);
+  border-radius: 28px;
+  background:
+    radial-gradient(circle at 50% 18%, rgba(34, 211, 238, .12), transparent 30%),
+    linear-gradient(180deg, rgba(2, 6, 23, .96), rgba(7, 21, 38, .88));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.05), 0 22px 70px rgba(0,0,0,.32);
+}
+.tec-head {
+  position: absolute;
+  inset: 30px 10% 24px;
+  border-radius: 45% 45% 42% 42%;
+  background:
+    radial-gradient(circle at 50% 46%, rgba(34, 211, 238, .18), transparent 31%),
+    radial-gradient(ellipse at center, rgba(15, 23, 42, .92), rgba(3, 7, 18, .78) 65%, transparent 66%);
+  border: 1px solid rgba(125, 211, 252, .18);
+}
+.tec-brain {
+  position: absolute;
+  left: 50%; top: 49%;
+  width: 48%; height: 58%;
+  transform: translate(-50%, -50%);
+  border-radius: 44% 44% 48% 48%;
+  background:
+    repeating-radial-gradient(ellipse at 45% 45%, rgba(125,211,252,.16) 0 4px, transparent 5px 16px),
+    radial-gradient(ellipse at center, rgba(15, 118, 160, .34), rgba(15, 23, 42, .24));
+  box-shadow: 0 0 44px rgba(34,211,238,.12);
+}
+.tec-cortex {
+  position: absolute;
+  top: 27%; bottom: 26%;
+  width: 16%;
+  border: 1px solid rgba(125,211,252,.32);
+  background: linear-gradient(180deg, rgba(34,211,238,.14), rgba(59,130,246,.04));
+  filter: drop-shadow(0 0 18px rgba(34,211,238,.16));
+}
+.tec-cortex-a { left: 28%; border-radius: 60% 24% 24% 60%; }
+.tec-cortex-b { right: 28%; border-radius: 24% 60% 60% 24%; }
+.tec-electrode {
+  position: absolute;
+  top: 42%;
+  width: 54px; height: 86px;
+  border-radius: 18px;
+  background: linear-gradient(180deg, #67e8f9, #0ea5e9);
+  box-shadow: 0 0 28px rgba(34,211,238,.38);
+  z-index: 4;
+}
+.tec-electrode-a { left: 10%; }
+.tec-electrode-b { right: 10%; }
+.tec-escena[data-montaje-tec="unilateral"] .tec-electrode-a { left: 61%; top: 18%; }
+.tec-escena[data-montaje-tec="unilateral"] .tec-electrode-b { right: 13%; top: 45%; }
+.tec-escena[data-montaje-tec="bifrontal"] .tec-electrode-a { left: 28%; top: 16%; }
+.tec-escena[data-montaje-tec="bifrontal"] .tec-electrode-b { right: 28%; top: 16%; }
+.tec-field, .tec-wave {
+  position: absolute;
+  inset: 18% 16%;
+  border-radius: 50%;
+  pointer-events: none;
+}
+.tec-field {
+  opacity: calc(.12 + var(--tec-progreso) * .48);
+  background:
+    radial-gradient(ellipse at center, rgba(34,211,238,.32), transparent 58%),
+    repeating-radial-gradient(ellipse at center, transparent 0 18px, rgba(125,211,252,.18) 19px 21px, transparent 22px 42px);
+  transform: scale(calc(.75 + var(--tec-progreso) * .35));
+}
+.tec-wave {
+  border: 1px solid rgba(34,211,238,.5);
+  transform: scale(calc(.35 + var(--tec-progreso) * 1.05));
+  opacity: calc(1 - var(--tec-progreso) * .7);
+  box-shadow: 0 0 34px rgba(34,211,238,.2);
+}
+.tec-neurons {
+  position: absolute;
+  inset: 20% 20%;
+  z-index: 5;
+}
+.tec-neurona {
+  position: absolute;
+  width: 8px; height: 8px;
+  border-radius: 999px;
+  background: rgba(148, 163, 184, .55);
+  box-shadow: 0 0 10px rgba(148,163,184,.18);
+}
+.tec-neurona.activa {
+  background: #22d3ee;
+  box-shadow: 0 0 18px rgba(34,211,238,.85), 0 0 36px rgba(59,130,246,.35);
+  animation: tec-neurona-pulso .72s ease-in-out infinite alternate;
+}
+.tec-escena[data-vista-tec="seguridad"] .tec-field { opacity: .16; }
+.tec-escena[data-vista-tec="seguridad"]::after {
+  content: "Monitoreo: EEG / motor / signos vitales / anestesia";
+  position: absolute;
+  left: 22px; right: 22px; bottom: 20px;
+  border: 1px solid rgba(250,204,21,.28);
+  border-radius: 16px;
+  padding: 12px 14px;
+  color: #fde68a;
+  background: rgba(113,63,18,.18);
+}
+.tec-explicacion {
+  border: 1px solid rgba(125,211,252,.18);
+  border-radius: 20px;
+  padding: 16px;
+  background: rgba(2, 6, 23, .52);
+}
+.tec-explicacion h3 { margin: 0 0 8px; }
+.tec-lista { margin: 10px 0 0; padding-left: 20px; color: #cbd5e1; line-height: 1.55; }
+@keyframes tec-neurona-pulso {
+  from { transform: scale(.85); }
+  to { transform: scale(1.65); }
+}
+@media (max-width: 1100px) {
+  .tec-lab-grid { grid-template-columns: 1fr; }
+  .tec-escena { min-height: 380px; }
+}
