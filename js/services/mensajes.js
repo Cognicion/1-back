@@ -2,6 +2,7 @@ import { db } from "../firebase.js";
 
 import {
   addDoc,
+  arrayUnion,
   collection,
   doc,
   getDoc,
@@ -14,6 +15,35 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const COLECCION_CONVERSACIONES = "mensajesConversaciones";
+
+function crearMensajeConversacion(usuarioActual, texto = "") {
+  const fechaISO = new Date().toISOString();
+  return {
+    id: `msg_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+    texto,
+    autorUid: usuarioActual.uid,
+    autorNombre: usuarioActual.nombre || usuarioActual.email || "",
+    autorRol: usuarioActual.rol || "",
+    vistosPor: {
+      [usuarioActual.uid]: {
+        uid: usuarioActual.uid,
+        nombre: usuarioActual.nombre || usuarioActual.email || "",
+        vistoEn: fechaISO
+      }
+    },
+    fechaISO
+  };
+}
+
+function ordenarMensajes(lista = []) {
+  const unicos = new Map();
+  lista.forEach((mensaje) => {
+    const clave = mensaje.id || `${mensaje.autorUid || ""}_${mensaje.fechaISO || ""}_${mensaje.texto || ""}`;
+    if (clave && !unicos.has(clave)) unicos.set(clave, mensaje);
+  });
+  return Array.from(unicos.values())
+    .sort((a, b) => String(a.fechaISO || "").localeCompare(String(b.fechaISO || "")));
+}
 
 export function idConversacionParaUsuarios(uidA = "", uidB = "") {
   return [uidA, uidB].filter(Boolean).sort().join("__");
@@ -118,38 +148,58 @@ export async function listarConversacionesMensajes(uidActual = "") {
 }
 
 export async function listarMensajesConversacion(conversacionId = "") {
-  const snap = await getDocs(collection(db, COLECCION_CONVERSACIONES, conversacionId, "mensajes"));
-  return snap.docs
-    .map((docMensaje) => ({ id: docMensaje.id, ...docMensaje.data() }))
-    .sort((a, b) => String(a.fechaISO || "").localeCompare(String(b.fechaISO || "")));
+  const mensajes = [];
+
+  try {
+    const snap = await getDocs(collection(db, COLECCION_CONVERSACIONES, conversacionId, "mensajes"));
+    mensajes.push(...snap.docs.map((docMensaje) => ({ id: docMensaje.id, ...docMensaje.data() })));
+  } catch (error) {
+    console.warn("No se pudo leer subcoleccion de mensajes; se usara respaldo del documento:", error);
+  }
+
+  try {
+    const snapConversacion = await getDoc(doc(db, COLECCION_CONVERSACIONES, conversacionId));
+    const datos = snapConversacion.exists() ? snapConversacion.data() : {};
+    const respaldo = Array.isArray(datos.mensajesFallback) ? datos.mensajesFallback : [];
+    mensajes.push(...respaldo.map((mensaje) => ({ ...mensaje, origenFallback: true })));
+  } catch (error) {
+    console.warn("No se pudo leer respaldo de mensajes:", error);
+  }
+
+  return ordenarMensajes(mensajes);
 }
 
 export async function enviarMensajeConversacion(conversacionId, usuarioActual, texto = "") {
-  const mensaje = {
-    texto,
-    autorUid: usuarioActual.uid,
-    autorNombre: usuarioActual.nombre || usuarioActual.email || "",
-    autorRol: usuarioActual.rol || "",
-    vistosPor: {
-      [usuarioActual.uid]: {
-        uid: usuarioActual.uid,
-        nombre: usuarioActual.nombre || usuarioActual.email || "",
-        vistoEn: new Date().toISOString()
-      }
-    },
-    fechaISO: new Date().toISOString(),
-    createdAt: serverTimestamp()
-  };
-
-  await addDoc(collection(db, COLECCION_CONVERSACIONES, conversacionId, "mensajes"), mensaje);
-  await updateDoc(doc(db, COLECCION_CONVERSACIONES, conversacionId), {
+  const mensaje = crearMensajeConversacion(usuarioActual, texto);
+  const resumen = {
     ultimoMensaje: texto,
     ultimoMensajePor: usuarioActual.uid,
     ultimoMensajeEn: mensaje.fechaISO,
     updatedAt: serverTimestamp()
-  }).catch((error) => {
-    console.warn("El mensaje se guardo, pero no se pudo actualizar el resumen de la conversacion:", error);
-  });
+  };
+
+  try {
+    const docMensaje = await addDoc(collection(db, COLECCION_CONVERSACIONES, conversacionId, "mensajes"), {
+      ...mensaje,
+      createdAt: serverTimestamp()
+    });
+    await updateDoc(doc(db, COLECCION_CONVERSACIONES, conversacionId), resumen).catch((error) => {
+      console.warn("El mensaje se guardo, pero no se pudo actualizar el resumen de la conversacion:", error);
+    });
+    return { ...mensaje, id: docMensaje.id };
+  } catch (errorSubcoleccion) {
+    console.warn("La subcoleccion de mensajes fue bloqueada; guardando mensaje en respaldo de la conversacion:", errorSubcoleccion);
+    try {
+      await setDoc(doc(db, COLECCION_CONVERSACIONES, conversacionId), {
+        mensajesFallback: arrayUnion(mensaje),
+        ...resumen
+      }, { merge: true });
+      return { ...mensaje, origenFallback: true };
+    } catch (errorFallback) {
+      console.error("No se pudo guardar mensaje ni en subcoleccion ni en respaldo:", errorFallback);
+      throw errorFallback;
+    }
+  }
 }
 
 export async function marcarMensajesConversacionVistos(conversacionId, uidActual, datosUsuario = {}) {
@@ -157,15 +207,28 @@ export async function marcarMensajesConversacionVistos(conversacionId, uidActual
   const ahora = new Date().toISOString();
   const pendientes = mensajes.filter((mensaje) => mensaje.autorUid !== uidActual && !mensaje.vistosPor?.[uidActual]);
 
-  await Promise.all(pendientes.map((mensaje) =>
-    updateDoc(doc(db, COLECCION_CONVERSACIONES, conversacionId, "mensajes", mensaje.id), {
+  await Promise.allSettled(pendientes
+    .filter((mensaje) => !mensaje.origenFallback)
+    .map((mensaje) => updateDoc(doc(db, COLECCION_CONVERSACIONES, conversacionId, "mensajes", mensaje.id), {
       [`vistosPor.${uidActual}`]: {
         uid: uidActual,
         nombre: datosUsuario.nombre || datosUsuario.email || "",
         vistoEn: ahora
       }
-    })
-  ));
+    })));
+
+  await setDoc(doc(db, COLECCION_CONVERSACIONES, conversacionId), {
+    lecturasUsuarios: {
+      [uidActual]: {
+        leidoEn: ahora,
+        uid: uidActual,
+        nombre: datosUsuario.nombre || datosUsuario.email || ""
+      }
+    },
+    updatedAt: serverTimestamp()
+  }, { merge: true }).catch((error) => {
+    console.warn("No se pudo actualizar lectura general de conversacion:", error);
+  });
 
   return mensajes;
 }
