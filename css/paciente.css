@@ -329,6 +329,44 @@ button:hover{
     grid-column:span 2;
 }
 
+.datos-generales-grid .pediatria-resumen-dato{
+    grid-column:1 / -1;
+    border-color:rgba(34,211,238,0.28);
+    background:
+      radial-gradient(circle at top right, rgba(34,211,238,0.12), transparent 42%),
+      rgba(15,23,42,0.48);
+}
+
+.pediatria-resumen-grid{
+    display:grid;
+    grid-template-columns:repeat(3, minmax(0, 1fr));
+    gap:10px;
+    margin-top:10px;
+}
+
+.pediatria-resumen-grid span{
+    display:grid;
+    gap:3px;
+    padding:10px 12px;
+    border:1px solid rgba(125,211,252,0.16);
+    border-radius:14px;
+    background:rgba(8,13,24,0.38);
+    color:#dbeafe;
+}
+
+.pediatria-resumen-grid b{
+    color:#7dd3fc;
+    font-size:12px;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+}
+
+.pediatria-resumen-dato small{
+    display:block;
+    margin-top:10px;
+    color:#94a3b8;
+}
+
 .consultas-en-linea > div {
     min-width:0;
 }
@@ -1187,8 +1225,13 @@ textarea{
   }
 
   .datos-generales-grid .consultas-en-linea,
-  .datos-generales-grid .diagnosticos-lista{
+  .datos-generales-grid .diagnosticos-lista,
+  .datos-generales-grid .pediatria-resumen-dato{
     grid-column:auto;
+  }
+
+  .pediatria-resumen-grid{
+    grid-template-columns:1fr;
   }
 
   .campo-catalogo-inline {

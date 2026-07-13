@@ -100,15 +100,17 @@ function bindEntradasCalculo() {
 
 function renderNavegacion() {
   $("pediatriaNav").innerHTML = categorias.map(([id, etiqueta]) => `
-    <button class="ped-nav-btn ${estado.seccion === id ? "activo" : ""}" data-seccion="${id}">
+    <button class="ped-nav-btn" data-seccion="${id}">
       ${etiqueta}
     </button>
   `).join("");
   document.querySelectorAll(".ped-nav-btn").forEach((boton) => {
     boton.addEventListener("click", () => {
       estado.seccion = boton.dataset.seccion;
-      renderNavegacion();
-      renderSeccion();
+      document.getElementById(`ped-seccion-${estado.seccion}`)?.scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+      });
     });
   });
 }
@@ -234,30 +236,41 @@ function renderResumen(edad = null) {
 
 function renderSeccion() {
   const filtro = $("busquedaPediatria").value.toLowerCase().trim();
-  const tarjetas = {
-    resumen: [
+  const secciones = [
+    ["resumen", "Accesos rapidos", [
       card("Edad exacta", "Calcula edad cronologica, dias de vida y edad corregida.", "edad"),
       card("Antropometria", "IMC y superficie corporal con varias formulas.", "antropometria"),
       card("Dosis pediatricas", "Calculadora segura por kg con confirmacion de peso.", "medicamentos"),
       card("Liquidos", "Mantenimiento, deficit, diuresis y electrolitos basicos.", "liquidos")
-    ],
-    edad: [panelEdad()],
-    antropometria: [panelAntropometria()],
-    percentiles: [panelPercentiles()],
-    vitales: [panelVitales()],
-    liquidos: [panelLiquidos()],
-    medicamentos: [panelMedicamentos()],
-    fuentes: [panelFuentes()],
-    neonatos: [pendiente("Neonatologia", "Bilirrubina, edad gestacional, peso al nacer, sepsis neonatal y nutricion parenteral se agregaran con tablas oficiales.")],
-    urgencias: [pendiente("Urgencias pediatricas", "Se dejara listo para PALS/APLS, convulsiones, anafilaxia y choque, con validacion local.")],
-    nutricion: [pendiente("Nutricion", "Requerimientos caloricos, proteicos y micronutrientes por edad se cargaran como tablas versionadas.")],
-    desarrollo: [pendiente("Desarrollo", "Hitos, tamizajes y red flags se integraran sin sustituir valoracion clinica.")],
-    vacunas: [pendiente("Vacunas", "Esquema nacional y alertas por edad requieren versionamiento oficial por pais.")],
-    nefro: [pendiente("Renal", "eGFR Schwartz, ajuste renal y electrolitos avanzados se agregaran por fase.")],
-    respiratorio: [pendiente("Respiratorio", "Oxigenoterapia, crisis asmatica y escalas respiratorias se preparan para fase posterior.")],
-    endocrino: [pendiente("Endocrino", "Glucosa, insulina, cetoacidosis y crecimiento puberal se agregaran con protocolos.")],
-  };
-  const contenido = (tarjetas[estado.seccion] || []).filter((html) => !filtro || html.toLowerCase().includes(filtro));
+    ]],
+    ["edad", "Edad y etapa", [panelEdad()]],
+    ["antropometria", "Antropometria", [panelAntropometria()]],
+    ["percentiles", "Percentiles LMS", [panelPercentiles()]],
+    ["vitales", "Signos vitales", [panelVitales()]],
+    ["liquidos", "Liquidos", [panelLiquidos()]],
+    ["medicamentos", "Dosis pediatricas", [panelMedicamentos()]],
+    ["neonatos", "Neonatologia", [pendiente("Neonatologia", "Bilirrubina, edad gestacional, peso al nacer, sepsis neonatal y nutricion parenteral se agregaran con tablas oficiales.")]],
+    ["urgencias", "Urgencias", [pendiente("Urgencias pediatricas", "Se dejara listo para PALS/APLS, convulsiones, anafilaxia y choque, con validacion local.")]],
+    ["nutricion", "Nutricion", [pendiente("Nutricion", "Requerimientos caloricos, proteicos y micronutrientes por edad se cargaran como tablas versionadas.")]],
+    ["desarrollo", "Desarrollo", [pendiente("Desarrollo", "Hitos, tamizajes y red flags se integraran sin sustituir valoracion clinica.")]],
+    ["vacunas", "Vacunas", [pendiente("Vacunas", "Esquema nacional y alertas por edad requieren versionamiento oficial por pais.")]],
+    ["nefro", "Renal", [pendiente("Renal", "eGFR Schwartz, ajuste renal y electrolitos avanzados se agregaran por fase.")]],
+    ["respiratorio", "Respiratorio", [pendiente("Respiratorio", "Oxigenoterapia, crisis asmatica y escalas respiratorias se preparan para fase posterior.")]],
+    ["endocrino", "Endocrino", [pendiente("Endocrino", "Glucosa, insulina, cetoacidosis y crecimiento puberal se agregaran con protocolos.")]],
+    ["fuentes", "Fuentes", [panelFuentes()]]
+  ];
+  const contenido = secciones
+    .map(([id, titulo, tarjetas]) => {
+      const tarjetasFiltradas = tarjetas.filter((html) => !filtro || `${titulo} ${html}`.toLowerCase().includes(filtro));
+      if (!tarjetasFiltradas.length) return "";
+      return `
+        <section id="ped-seccion-${id}" class="ped-section-block">
+          <h3>${titulo}</h3>
+          <div class="ped-section-content">${tarjetasFiltradas.join("")}</div>
+        </section>
+      `;
+    })
+    .filter(Boolean);
   $("contenidoPediatria").innerHTML = contenido.length ? contenido.join("") : `<div class="ped-empty">No se encontraron herramientas para esta busqueda.</div>`;
   bindEntradasCalculo();
   document.querySelectorAll("[data-ir]").forEach((boton) => {

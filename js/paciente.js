@@ -21,6 +21,12 @@ import {
   obtenerTemaLocalCognicion,
   TEMAS_COGNICION
 } from "./services/apariencia.js";
+import { calcularEdadPediatrica } from "./pediatria/edad.js";
+import {
+  calcularIMC as calcularIMCPediatrico,
+  mantenimientoHollidaySegar,
+  superficieCorporal
+} from "./pediatria/formulas.js";
 import {
   onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
@@ -672,6 +678,58 @@ function renderizarVistaLaboratorioPaciente(datos = datosPacienteActual || {}) {
     </div>
   `;
 }
+
+function obtenerPesoPaciente(datos = {}) {
+  return datos.peso || datos.signosVitales?.peso || datos.somatometria?.peso || datos.datosInstitucionales?.peso || "";
+}
+
+function obtenerTallaPaciente(datos = {}) {
+  return datos.talla || datos.signosVitales?.talla || datos.somatometria?.talla || datos.datosInstitucionales?.talla || "";
+}
+
+function renderizarResumenPediatricoPaciente(datos = datosPacienteActual || {}) {
+  const bloque = document.getElementById("resumenPediatriaPaciente");
+  const boton = document.getElementById("btnPediatriaPaciente");
+  if (!bloque) return;
+
+  const edad = calcularEdadPediatrica(obtenerFechaNacimiento(datos));
+  const esPediatrico = Boolean(edad && edad.anos < 18);
+
+  bloque.style.display = esPediatrico ? "" : "none";
+  if (boton) boton.style.display = esPediatrico ? "" : "none";
+
+  if (!esPediatrico) {
+    bloque.innerHTML = "";
+    return;
+  }
+
+  const peso = obtenerPesoPaciente(datos);
+  const talla = obtenerTallaPaciente(datos);
+  const imc = calcularIMCPediatrico(peso, talla);
+  const sc = superficieCorporal(peso, talla);
+  const liquidos = mantenimientoHollidaySegar(peso);
+
+  bloque.innerHTML = `
+    <label>
+      Pediatria
+      <button class="boton-editar-dato" onclick="abrirModuloPediatriaPaciente()">Abrir modulo</button>
+    </label>
+    <div class="pediatria-resumen-grid">
+      <span><b>Edad exacta</b>${escaparHTML(edad.edadCronologicaTexto)}</span>
+      <span><b>Dia de vida</b>${escaparHTML(String(edad.diaDeVida))}</span>
+      <span><b>IMC</b>${imc ? imc.toFixed(2) : "Sin calcular"}</span>
+      <span><b>SC Mosteller</b>${sc ? `${sc.mosteller.toFixed(2)} m2` : "Sin calcular"}</span>
+      <span><b>Mantenimiento</b>${liquidos ? `${liquidos.mlDia.toFixed(0)} mL/dia` : "Sin peso"}</span>
+      <span><b>Regla 4-2-1</b>${liquidos ? `${liquidos.regla421.toFixed(1)} mL/h` : "Sin peso"}</span>
+    </div>
+    <small>Los percentiles se calculan solo con tablas LMS oficiales cargadas en Pediatria.</small>
+  `;
+}
+
+window.abrirModuloPediatriaPaciente = function() {
+  const destino = uidPaciente ? `pediatria.html?id=${encodeURIComponent(uidPaciente)}` : "pediatria.html";
+  window.location.href = destino;
+};
 
 function posicionOrganoLab(id) {
   const posiciones = {
@@ -1637,6 +1695,7 @@ async function cargarDatosPaciente() {
   actualizarVisibilidadCamposInstitucionalesPaciente(datos);
   inicializarSelectorVistaDatosGeneralesPaciente();
   renderizarVistaLaboratorioPaciente(datos);
+  renderizarResumenPediatricoPaciente(datos);
 }
 
 window.mostrarResumen = function() {

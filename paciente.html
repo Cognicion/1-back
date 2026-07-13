@@ -85,6 +85,7 @@
       <button onclick="mostrarReceta()">Receta</button>
       <button onclick="mostrarResultadosEscalas()">Escalas</button>
       <button onclick="mostrarRehabilitacionCognitivaPaciente()">Rehabilitación cognitiva</button>
+      <button id="btnPediatriaPaciente" onclick="abrirModuloPediatriaPaciente()" style="display:none;">Pediatría</button>
       <button onclick="previsualizarMiSalud()">Ver Mi Salud</button>
       <button onclick="mostrarPermisos()">Permisos</button>
     </div>
@@ -259,6 +260,8 @@
             <label>IMC</label>
             <div id="imcPaciente">Sin registro</div>
           </div>
+
+          <div id="resumenPediatriaPaciente" class="dato pediatria-resumen-dato" style="display:none;"></div>
 
         </div>
         <div id="datosGeneralesLaboratorio" class="paciente-lab-view oculto" aria-live="polite"></div>
