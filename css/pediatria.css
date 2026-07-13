@@ -134,7 +134,7 @@ body {
 .ped-layout > aside,
 .ped-main {
   border-radius: 24px;
-  padding: 22px;
+  padding: 18px;
 }
 
 .ped-nav {
@@ -202,14 +202,14 @@ body {
   gap: 12px;
   align-items: center;
   flex-wrap: wrap;
-  margin-bottom: 18px;
+  margin-bottom: 14px;
 }
 
 .ped-summary,
 .ped-content {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 14px;
+  gap: 10px;
 }
 
 .ped-summary article,
@@ -217,7 +217,7 @@ body {
 .ped-source {
   border: 1px solid rgba(125, 211, 252, 0.16);
   border-radius: 16px;
-  padding: 14px;
+  padding: 12px;
   background: var(--ped-panel-soft);
 }
 
@@ -229,40 +229,141 @@ body {
   line-height: 1.48;
 }
 
+.ped-med-result {
+  display: grid;
+  gap: 10px;
+}
+
+.ped-med-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.ped-med-info {
+  border: 1px solid rgba(125, 211, 252, 0.14);
+  border-radius: 14px;
+  padding: 10px;
+  background: rgba(2, 6, 23, 0.18);
+}
+
+[data-theme="light"] .ped-med-info {
+  background: rgba(255, 255, 255, 0.58);
+}
+
+.ped-med-info strong {
+  display: block;
+  color: var(--ped-accent);
+  font-size: 0.76rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.ped-med-info ul {
+  margin: 0;
+  padding-left: 18px;
+  color: var(--ped-muted);
+  line-height: 1.42;
+  font-size: 0.84rem;
+}
+
+.ped-med-info li + li {
+  margin-top: 4px;
+}
+
+.ped-med-warning {
+  color: #fde68a !important;
+}
+
+.ped-med-source {
+  font-size: 0.82rem;
+}
+
 .ped-content {
   grid-template-columns: 1fr;
-  margin-top: 18px;
+  margin-top: 14px;
 }
 
 .ped-section-block {
   scroll-margin-top: 18px;
+  border: 1px solid rgba(125, 211, 252, 0.18);
+  border-radius: 20px;
+  padding: 0;
+  background: rgba(15, 23, 42, 0.18);
+  overflow: hidden;
 }
 
-.ped-section-block > h3 {
-  margin: 20px 0 12px;
+.ped-section-block + .ped-section-block {
+  margin-top: 12px;
+}
+
+.ped-section-block summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px;
+  cursor: pointer;
+  list-style: none;
+  font-weight: 900;
+  letter-spacing: 0.02em;
+  color: var(--ped-text);
+  background: linear-gradient(90deg, rgba(34, 211, 238, 0.08), transparent);
+}
+
+.ped-section-block summary::-webkit-details-marker {
+  display: none;
+}
+
+.ped-section-block summary::after {
+  content: "+";
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--ped-line);
+  border-radius: 999px;
+  color: var(--ped-accent);
+}
+
+.ped-section-block[open] summary::after {
+  content: "-";
+}
+
+.ped-section-block summary small {
+  margin-left: auto;
+  color: var(--ped-muted);
+  font-size: 0.74rem;
+  font-weight: 700;
 }
 
 .ped-section-content {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 14px;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 12px;
+  padding: 0 14px 14px;
 }
 
 .ped-card,
 .ped-panel {
-  border-radius: 22px;
-  padding: 22px;
+  border-radius: 18px;
+  padding: 16px;
 }
 
 .ped-card h3,
 .ped-panel h3 {
-  margin: 8px 0;
+  margin: 6px 0;
+  font-size: 1.03rem;
 }
 
 .ped-card p,
 .ped-panel p {
   color: var(--ped-muted);
-  line-height: 1.6;
+  line-height: 1.48;
+  margin: 8px 0 12px;
+  font-size: 0.92rem;
 }
 
 .ped-source {
@@ -281,6 +382,59 @@ body {
   border-radius: 20px;
   padding: 30px;
   color: var(--ped-muted);
+}
+
+.ped-charts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 12px;
+}
+
+.ped-chart-card {
+  border: 1px solid rgba(125, 211, 252, 0.18);
+  border-radius: 16px;
+  padding: 14px;
+  background: rgba(2, 6, 23, 0.24);
+}
+
+[data-theme="light"] .ped-chart-card,
+[data-theme="light"] .ped-section-block {
+  background: rgba(255, 255, 255, 0.62);
+}
+
+.ped-chart-card h4 {
+  margin: 0 0 10px;
+  color: var(--ped-text);
+}
+
+.ped-chart-row {
+  display: grid;
+  grid-template-columns: 72px 1fr 90px;
+  gap: 10px;
+  align-items: center;
+  margin: 9px 0;
+  color: var(--ped-muted);
+  font-size: 0.82rem;
+}
+
+.ped-chart-track {
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(148, 163, 184, 0.16);
+  overflow: hidden;
+}
+
+.ped-chart-track i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #2563eb, #22d3ee);
+  box-shadow: 0 0 16px rgba(34, 211, 238, 0.34);
+}
+
+.ped-chart-row b {
+  color: var(--ped-text);
+  text-align: right;
 }
 
 @media (max-width: 980px) {

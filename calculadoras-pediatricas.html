@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>COGNICION | Calculadoras pediatricas</title>
+<link rel="icon" type="image/png" href="assets/favicon-cognicion.png">
+<link rel="stylesheet" href="css/calculadoras-pediatricas.css">
+<link rel="stylesheet" href="css/reportes.css">
+</head>
+<body>
+<div class="calc-ped-bg" aria-hidden="true"><span></span><span></span><span></span></div>
+<header class="calc-ped-topbar">
+  <a class="calc-ped-brand" href="calculadoras-medicas.html" aria-label="Volver a calculadoras medicas">
+    <img src="assets/favicon-cognicion.png" alt="COGNICION">
+    <div>
+      <strong>COGNICION</strong>
+      <span>Calculadoras pediatricas</span>
+    </div>
+  </a>
+  <nav>
+    <a href="dashboard.html">Dashboard</a>
+    <a href="calculadoras-medicas.html">Calculadoras</a>
+  </nav>
+</header>
+
+<main class="calc-ped-shell">
+  <section class="calc-ped-hero">
+    <span class="calc-ped-kicker">Pediatria clinica</span>
+    <h1>Calculadoras pediatricas</h1>
+    <p>Somatometria, percentiles LMS, liquidos, electrolitos, urgencias, neonatologia, renal, respiratorio y cardiologia pediatrica en un solo modulo.</p>
+    <div class="calc-ped-alert">
+      Apoyo educativo y clinico. Verifica resultados con guias, protocolos locales y juicio medico antes de tomar decisiones.
+    </div>
+  </section>
+
+  <section class="calc-ped-layout">
+    <aside class="calc-ped-sidebar" aria-label="Buscar calculadoras pediatricas">
+      <label class="calc-ped-search">
+        <span>Buscar calculadora</span>
+        <input id="buscarCalculadora" type="search" placeholder="Ej. percentil, sodio, tubo, APGAR">
+      </label>
+      <div class="calc-ped-categorias" id="categoriasCalculadoras"></div>
+      <div class="calc-ped-lista" id="listaCalculadoras"></div>
+    </aside>
+
+    <section class="calc-ped-detail" id="detalleCalculadora" aria-live="polite"></section>
+  </section>
+</main>
+
+<script type="module" src="js/calculadoras-pediatricas.js"></script>
+<script type="module" src="js/reportes.js"></script>
+</body>
+</html>

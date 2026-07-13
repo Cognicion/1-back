@@ -67,6 +67,13 @@ import {
 import {
   obtenerHistoriaClinica
 } from "./services/historias.js";
+import { calcularEdadPediatrica, formatearFechaDDMMAAAA } from "./pediatria/edad.js";
+import {
+  calcularIMC as calcularIMCPediatrico,
+  mantenimientoHollidaySegar,
+  numero as numeroPediatrico,
+  superficieCorporal
+} from "./pediatria/formulas.js";
 
 let uidPacienteActual = null;
 let diagnosticosSeleccionados = [];
@@ -1686,8 +1693,122 @@ function calcularIMCNota() {
 }
 
 ["obsPeso", "obsTalla"].forEach((id) => {
-  document.getElementById(id)?.addEventListener("input", calcularIMCNota);
+  document.getElementById(id)?.addEventListener("input", () => {
+    calcularIMCNota();
+    sincronizarParametrosPediatriaNota();
+  });
 });
+
+document.getElementById("omitirPediatriaNota")?.addEventListener("change", () => {
+  document.getElementById("bloquePediatriaNota")?.classList.toggle(
+    "omitido",
+    Boolean(document.getElementById("omitirPediatriaNota")?.checked)
+  );
+});
+
+function valorClinicoDesdePaciente(paciente = {}, clave) {
+  const institucional = paciente.datosInstitucionales || {};
+  const signos = paciente.signosVitales || {};
+  const somatometria = paciente.somatometria || {};
+  return paciente[clave] ?? signos[clave] ?? somatometria[clave] ?? institucional[clave] ?? "";
+}
+
+function fechaNacimientoPacienteNota(paciente = pacienteActualDatos || {}) {
+  const institucional = paciente.datosInstitucionales || {};
+  return paciente.fechaNacimiento ||
+    institucional.fechaNacimiento ||
+    paciente.fecha_nacimiento ||
+    paciente.fechaDeNacimiento ||
+    paciente.fechaNac ||
+    paciente.nacimiento ||
+    "";
+}
+
+function tallaCmParaPediatria(valor) {
+  const talla = numeroPediatrico(valor);
+  if (talla === null) return null;
+  return talla > 3 ? talla : talla * 100;
+}
+
+function calcularParametrosPediatriaNota() {
+  const fechaNacimiento = fechaNacimientoPacienteNota();
+  const edad = calcularEdadPediatrica(fechaNacimiento);
+  if (!edad || edad.anos >= 18) return null;
+
+  const peso = numeroPediatrico(valorCampo("obsPeso") || valorClinicoDesdePaciente(pacienteActualDatos, "peso"));
+  const tallaCm = tallaCmParaPediatria(valorCampo("obsTalla") || valorClinicoDesdePaciente(pacienteActualDatos, "talla"));
+  const imc = calcularIMCPediatrico(peso, tallaCm);
+  const sc = superficieCorporal(peso, tallaCm);
+  const mantenimiento = mantenimientoHollidaySegar(peso);
+
+  return {
+    aplica: true,
+    omitido: Boolean(document.getElementById("omitirPediatriaNota")?.checked),
+    fechaNacimiento: formatearFechaDDMMAAAA(fechaNacimiento),
+    edadTexto: edad.edadCronologicaTexto,
+    anos: edad.anos,
+    meses: edad.meses,
+    dias: edad.dias,
+    diasVida: edad.diaDeVida,
+    semanasVida: Number(edad.semanasTotales.toFixed(1)),
+    pesoKg: peso,
+    tallaCm,
+    imc: imc ? Number(imc.toFixed(2)) : null,
+    superficieCorporalM2: sc?.mosteller ? Number(sc.mosteller.toFixed(2)) : null,
+    mantenimientoMlDia: mantenimiento?.mlDia ? Math.round(mantenimiento.mlDia) : null,
+    mantenimientoMlHora: mantenimiento?.mlHora ? Number(mantenimiento.mlHora.toFixed(1)) : null,
+    regla421MlHora: mantenimiento?.regla421 ? Number(mantenimiento.regla421.toFixed(1)) : null
+  };
+}
+
+function textoResumenPediatriaNota(datos) {
+  if (!datos) return "";
+  return [
+    `Edad pediatrica: ${datos.edadTexto} (${datos.diasVida} dias de vida).`,
+    `Somatometria: peso ${datos.pesoKg ?? "-"} kg, talla ${datos.tallaCm ?? "-"} cm, IMC ${datos.imc ?? "-"}, SC ${datos.superficieCorporalM2 ?? "-"} m2.`,
+    `Liquidos de mantenimiento estimados: ${datos.mantenimientoMlDia ?? "-"} mL/dia (${datos.mantenimientoMlHora ?? "-"} mL/h). Regla 4-2-1: ${datos.regla421MlHora ?? "-"} mL/h.`
+  ].join("\n");
+}
+
+function sincronizarParametrosPediatriaNota(datosGuardados = null) {
+  const bloque = document.getElementById("bloquePediatriaNota");
+  if (!bloque) return null;
+
+  const calculados = calcularParametrosPediatriaNota();
+  const datos = datosGuardados?.aplica ? { ...calculados, ...datosGuardados } : calculados;
+
+  if (!datos) {
+    bloque.classList.add("oculto");
+    return null;
+  }
+
+  bloque.classList.remove("oculto");
+  const omitido = Boolean(datos.omitido);
+  const checkbox = document.getElementById("omitirPediatriaNota");
+  if (checkbox) checkbox.checked = omitido;
+  bloque.classList.toggle("omitido", omitido);
+
+  asignarValor("notaPedEdad", datos.edadTexto || "");
+  asignarValor("notaPedDiaVida", datos.diasVida ? `${datos.diasVida} dias` : "");
+  asignarValor("notaPedPeso", datos.pesoKg !== null && datos.pesoKg !== undefined ? `${datos.pesoKg} kg` : "");
+  asignarValor("notaPedTalla", datos.tallaCm ? `${datos.tallaCm} cm` : "");
+  asignarValor("notaPedIMC", datos.imc ? `${datos.imc}` : "");
+  asignarValor("notaPedSC", datos.superficieCorporalM2 ? `${datos.superficieCorporalM2} m2` : "");
+  asignarValor("notaPedMantenimiento", datos.mantenimientoMlDia ? `${datos.mantenimientoMlDia} mL/dia` : "");
+  asignarValor("notaPedRegla421", datos.regla421MlHora ? `${datos.regla421MlHora} mL/h` : "");
+  asignarValor("notaPediatriaResumen", omitido ? "Parametros pediatricos omitidos en esta nota." : textoResumenPediatriaNota(datos));
+  return datos;
+}
+
+function leerParametrosPediatriaNota() {
+  const datos = calcularParametrosPediatriaNota();
+  if (!datos) return { aplica: false, omitido: true };
+  return {
+    ...datos,
+    omitido: Boolean(document.getElementById("omitirPediatriaNota")?.checked),
+    resumen: document.getElementById("notaPediatriaResumen")?.value || textoResumenPediatriaNota(datos)
+  };
+}
 
 
 function puedeUsarFormatoNota(valor = formatoNota?.value || "") {
@@ -1959,7 +2080,8 @@ function leerFormularioNota() {
     subjetivo: document.getElementById("subjetivo").value,
     objetivo: document.getElementById("objetivo").value,
     analisis: document.getElementById("analisis").value,
-    plan: document.getElementById("plan").value
+    plan: document.getElementById("plan").value,
+    pediatriaNota: leerParametrosPediatriaNota()
   };
 }
 
@@ -1972,6 +2094,7 @@ function llenarFormularioNota(datos) {
   document.getElementById("analisis").value = datos.analisis || "";
   document.getElementById("plan").value = datos.plan || "";
   llenarFormularioObservacionFray(datos.observacionFray || {});
+  sincronizarParametrosPediatriaNota(datos.pediatriaNota || null);
   sincronizarTipoNota();
   sincronizarFormatoNota();
 }
@@ -2637,6 +2760,7 @@ async function cargarPaciente(uidPaciente) {
 
   aplicarDatosInstitucionalesPaciente(datos);
   aplicarHistoriaClinicaObservacion(historiaClinicaActual);
+  sincronizarParametrosPediatriaNota();
   cargarNotasFlotantesParaNota();
 
   const institucion = `${datos.institucionPaciente || datos.institucion || ""}`.toLowerCase();

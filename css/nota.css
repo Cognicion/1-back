@@ -218,6 +218,95 @@ button:hover{
     margin-top: 6px;
 }
 
+.bloque-pediatria-nota {
+    border: 1px solid rgba(125, 211, 252, 0.24);
+    border-radius: 20px;
+    padding: 18px;
+    margin: 18px 0 24px;
+    background:
+        radial-gradient(circle at top right, rgba(34, 211, 238, 0.12), transparent 38%),
+        rgba(15, 23, 42, 0.56);
+    box-shadow: 0 16px 38px rgba(0, 0, 0, 0.22);
+}
+
+.bloque-pediatria-nota.omitido {
+    opacity: 0.62;
+}
+
+.pediatria-nota-header {
+    display: flex;
+    justify-content: space-between;
+    gap: 14px;
+    align-items: flex-start;
+    margin-bottom: 14px;
+}
+
+.pediatria-nota-header span {
+    display: block;
+    color: #7dd3fc;
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    font-size: 0.78rem;
+}
+
+.pediatria-nota-header small {
+    display: block;
+    color: #94a3b8;
+    margin-top: 5px;
+}
+
+.pediatria-omitir {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+    white-space: nowrap;
+}
+
+.pediatria-omitir input {
+    width: auto;
+    margin: 0;
+}
+
+.pediatria-nota-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.pediatria-nota-grid label {
+    margin: 0;
+}
+
+.pediatria-nota-grid input,
+#notaPediatriaResumen {
+    background: rgba(15, 23, 42, 0.74);
+}
+
+#notaPediatriaResumen {
+    min-height: 82px;
+    height: 82px;
+    margin-top: 12px;
+    resize: vertical;
+}
+
+@media (max-width: 860px) {
+    .pediatria-nota-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .pediatria-nota-header {
+        flex-direction: column;
+    }
+}
+
+@media (max-width: 560px) {
+    .pediatria-nota-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
 .barra-superior {
     position: fixed;
     top: 20px;

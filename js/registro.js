@@ -37,13 +37,19 @@ function configurarTipoCuenta() {
         item.classList.toggle("activo", item === boton);
       });
 
-      const esMedico = tipoCuentaSeleccionada === "medico";
-      camposPaciente?.classList.toggle("oculto", esMedico);
-      camposMedico?.classList.toggle("oculto", !esMedico);
+      const esProfesional = ["medico", "psicologo"].includes(tipoCuentaSeleccionada);
+      camposPaciente?.classList.toggle("oculto", esProfesional);
+      camposMedico?.classList.toggle("oculto", !esProfesional);
 
-      if (titulo) titulo.textContent = esMedico ? "Registro de medico" : "Registro de paciente";
+      if (titulo) {
+        titulo.textContent = tipoCuentaSeleccionada === "medico"
+          ? "Registro de medico"
+          : tipoCuentaSeleccionada === "psicologo"
+            ? "Registro de psicologo"
+            : "Registro de paciente";
+      }
       if (descripcion) {
-        descripcion.textContent = esMedico
+        descripcion.textContent = esProfesional
           ? "Ingresa el codigo de autorizacion generado por un administrador."
           : "Tu medico debe estar registrado para vincular tu expediente.";
       }
@@ -57,7 +63,7 @@ function normalizarCodigo(codigo = "") {
 
 async function validarCodigoAutorizacionMedico(codigo) {
   const codigoNormalizado = normalizarCodigo(codigo);
-  if (!codigoNormalizado) throw new Error("Ingresa el codigo de autorizacion medico.");
+  if (!codigoNormalizado) throw new Error("Ingresa el codigo de autorizacion profesional.");
 
   const codigoRef = doc(db, "codigosAutorizacionMedico", codigoNormalizado);
   const codigoSnap = await getDoc(codigoRef);
@@ -75,7 +81,10 @@ async function validarCodigoAutorizacionMedico(codigo) {
   return { codigo: codigoNormalizado, ref: codigoRef, datos: datosCodigo };
 }
 
-async function crearCuentaMedico({ nombre, email, password, codigoAutorizacion, aceptaAviso, mensaje }) {
+async function crearCuentaProfesional({ nombre, email, password, codigoAutorizacion, aceptaAviso, mensaje, rol }) {
+  const rolProfesional = rol === "psicologo" ? "psicologo" : "medico";
+  const etiquetaRol = rolProfesional === "psicologo" ? "psicologo" : "medico";
+
   if (!nombre || !email || !password || !codigoAutorizacion) {
     mensaje.textContent = "Completa nombre, correo, contrasena y codigo de autorizacion.";
     return;
@@ -94,19 +103,19 @@ async function crearCuentaMedico({ nombre, email, password, codigoAutorizacion, 
   mensaje.textContent = "Validando codigo de autorizacion...";
   const autorizacion = await validarCodigoAutorizacionMedico(codigoAutorizacion);
 
-  mensaje.textContent = "Creando cuenta de medico...";
+  mensaje.textContent = `Creando cuenta de ${etiquetaRol}...`;
   const credencial = await createUserWithEmailAndPassword(auth, email, password);
-  const uidMedico = credencial.user.uid;
+  const uidProfesional = credencial.user.uid;
   const fechaActual = new Date().toISOString();
 
-  await setDoc(doc(db, "usuarios", uidMedico), {
+  await setDoc(doc(db, "usuarios", uidProfesional), {
     nombre,
     email,
-    rol: "medico",
+    rol: rolProfesional,
     tieneCuenta: true,
     estado: "activo",
     unidad: "",
-    especialidad: "",
+    especialidad: rolProfesional === "psicologo" ? "Psicologia" : "",
     institucion: "",
     cedula: "",
     aceptoAvisoPrivacidad: true,
@@ -119,20 +128,21 @@ async function crearCuentaMedico({ nombre, email, password, codigoAutorizacion, 
 
   await updateDoc(autorizacion.ref, {
     usado: true,
-    usadoPorUid: uidMedico,
+    usadoPorUid: uidProfesional,
     usadoPorEmail: email,
     usadoPorNombre: nombre,
+    usadoPorRol: rolProfesional,
     usadoEn: fechaActual
   });
 
   try {
     await registrarEventoAuditoria({
-      accion: "crear_cuenta_medico_codigo_admin",
+      accion: `crear_cuenta_${rolProfesional}_codigo_admin`,
       modulo: "Registro",
-      descripcion: "Se creo una cuenta de medico con codigo de autorizacion generado por admin.",
-      usuarioUid: uidMedico,
+      descripcion: `Se creo una cuenta de ${etiquetaRol} con codigo de autorizacion generado por admin.`,
+      usuarioUid: uidProfesional,
       usuarioNombre: nombre,
-      usuarioRol: "medico",
+      usuarioRol: rolProfesional,
       exito: true,
       detalles: {
         codigoAutorizacion: autorizacion.codigo,
@@ -143,7 +153,7 @@ async function crearCuentaMedico({ nombre, email, password, codigoAutorizacion, 
     console.error("No se pudo registrar la auditoria:", errorAuditoria);
   }
 
-  mensaje.textContent = "Cuenta de medico creada correctamente.";
+  mensaje.textContent = `Cuenta de ${etiquetaRol} creada correctamente.`;
   window.location.href = "dashboard.html";
 }
 
@@ -159,15 +169,16 @@ btnCrearCuenta.addEventListener("click", async () => {
   const aceptaAviso = document.getElementById("aceptaAviso").checked;
   const mensaje = document.getElementById("mensaje");
 
-  if (tipoCuentaSeleccionada === "medico") {
+  if (["medico", "psicologo"].includes(tipoCuentaSeleccionada)) {
     try {
-      await crearCuentaMedico({
+      await crearCuentaProfesional({
         nombre,
         email,
         password,
         codigoAutorizacion,
         aceptaAviso,
-        mensaje
+        mensaje,
+        rol: tipoCuentaSeleccionada
       });
     } catch (error) {
       console.error(error);

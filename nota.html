@@ -359,6 +359,30 @@
     </details>
 </section>
 
+<section id="bloquePediatriaNota" class="bloque-pediatria-nota oculto">
+    <div class="pediatria-nota-header">
+        <div>
+            <span>Parámetros pediátricos</span>
+            <small>Se muestran automáticamente en pacientes menores de 18 años.</small>
+        </div>
+        <label class="pediatria-omitir">
+            <input id="omitirPediatriaNota" type="checkbox">
+            Omitir en esta nota
+        </label>
+    </div>
+    <div class="pediatria-nota-grid">
+        <label>Edad pediátrica <input id="notaPedEdad" readonly></label>
+        <label>Día de vida <input id="notaPedDiaVida" readonly></label>
+        <label>Peso <input id="notaPedPeso" readonly></label>
+        <label>Talla <input id="notaPedTalla" readonly></label>
+        <label>IMC <input id="notaPedIMC" readonly></label>
+        <label>Superficie corporal <input id="notaPedSC" readonly></label>
+        <label>Mantenimiento <input id="notaPedMantenimiento" readonly></label>
+        <label>Regla 4-2-1 <input id="notaPedRegla421" readonly></label>
+    </div>
+    <textarea id="notaPediatriaResumen" readonly placeholder="Resumen pediátrico automático"></textarea>
+</section>
+
 <h2>Nota interna medica</h2>
 
 <label>Tipo de nota</label>

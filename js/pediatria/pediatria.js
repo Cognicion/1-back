@@ -10,6 +10,7 @@ import {
   calcularIMC,
   corregirSodioPorGlucosa,
   mantenimientoHollidaySegar,
+  numero,
   percentilDesdeLMS,
   superficieCorporal
 } from "./formulas.js";
@@ -34,6 +35,7 @@ const categorias = [
   ["vitales", "Signos vitales"],
   ["liquidos", "Liquidos"],
   ["medicamentos", "Dosis pediatricas"],
+  ["graficas", "Graficas"],
   ["neonatos", "Neonatologia"],
   ["urgencias", "Urgencias"],
   ["nutricion", "Nutricion"],
@@ -44,6 +46,8 @@ const categorias = [
   ["endocrino", "Endocrino"],
   ["fuentes", "Fuentes"]
 ];
+
+const SECCIONES_ABIERTAS_DEFAULT = new Set(["resumen", "edad", "antropometria", "liquidos", "medicamentos", "graficas"]);
 
 const $ = (id) => document.getElementById(id);
 
@@ -107,7 +111,9 @@ function renderNavegacion() {
   document.querySelectorAll(".ped-nav-btn").forEach((boton) => {
     boton.addEventListener("click", () => {
       estado.seccion = boton.dataset.seccion;
-      document.getElementById(`ped-seccion-${estado.seccion}`)?.scrollIntoView({
+      const seccion = document.getElementById(`ped-seccion-${estado.seccion}`);
+      if (seccion?.tagName === "DETAILS") seccion.open = true;
+      seccion?.scrollIntoView({
         behavior: "smooth",
         block: "start"
       });
@@ -140,7 +146,7 @@ function normalizarFechaInput(valor) {
 
 function poblarMedicamentos() {
   $("medicamentoSelect").innerHTML = MEDICAMENTOS_PEDIATRICOS.map((med) => `
-    <option value="${med.id}">${med.nombre}</option>
+    <option value="${med.id}">${med.nombre} · ${med.categoria}</option>
   `).join("");
   $("medicamentoSelect").addEventListener("change", () => {
     const med = MEDICAMENTOS_PEDIATRICOS.find((item) => item.id === $("medicamentoSelect").value);
@@ -199,7 +205,7 @@ function calcularTodo() {
     <b>${dosis.medicamento.nombre}: ${dosis.mgDosis.toFixed(2)} mg por dosis</b>
     <span>${dosis.frecuenciaDia} dosis/dia | total diario ${dosis.mgDia.toFixed(2)} mg/dia.</span>
     <span>${dosis.volumenMlDosis ? `Volumen: ${dosis.volumenMlDosis.toFixed(2)} mL por dosis.` : "Agrega concentracion mg/mL para volumen."}</span>
-    <span>${dosis.medicamento.advertencia || ""}</span>
+    ${infoMedicamentoPediatrico(dosis.medicamento)}
   `);
 
   const lms = percentilDesdeLMS(valorDe("lmsValor"), valorDe("lmsL"), valorDe("lmsM"), valorDe("lmsS"));
@@ -208,6 +214,7 @@ function calcularTodo() {
     <span>Resultado calculado con parametros LMS ingresados manualmente.</span>
   ` : "Carga L, M y S oficiales para calcular z-score/percentil.");
 
+  renderGraficasPediatria({ peso, talla, imc, sc, mantenimiento, deficit, diuresis });
   renderResumen(edad);
 }
 
@@ -249,6 +256,7 @@ function renderSeccion() {
     ["vitales", "Signos vitales", [panelVitales()]],
     ["liquidos", "Liquidos", [panelLiquidos()]],
     ["medicamentos", "Dosis pediatricas", [panelMedicamentos()]],
+    ["graficas", "Graficas pediatricas", [panelGraficas()]],
     ["neonatos", "Neonatologia", [pendiente("Neonatologia", "Bilirrubina, edad gestacional, peso al nacer, sepsis neonatal y nutricion parenteral se agregaran con tablas oficiales.")]],
     ["urgencias", "Urgencias", [pendiente("Urgencias pediatricas", "Se dejara listo para PALS/APLS, convulsiones, anafilaxia y choque, con validacion local.")]],
     ["nutricion", "Nutricion", [pendiente("Nutricion", "Requerimientos caloricos, proteicos y micronutrientes por edad se cargaran como tablas versionadas.")]],
@@ -263,11 +271,15 @@ function renderSeccion() {
     .map(([id, titulo, tarjetas]) => {
       const tarjetasFiltradas = tarjetas.filter((html) => !filtro || `${titulo} ${html}`.toLowerCase().includes(filtro));
       if (!tarjetasFiltradas.length) return "";
+      const abierto = filtro || SECCIONES_ABIERTAS_DEFAULT.has(id) ? " open" : "";
       return `
-        <section id="ped-seccion-${id}" class="ped-section-block">
-          <h3>${titulo}</h3>
+        <details id="ped-seccion-${id}" class="ped-section-block"${abierto}>
+          <summary>
+            <span>${titulo}</span>
+            <small>${tarjetasFiltradas.length} modulo${tarjetasFiltradas.length === 1 ? "" : "s"}</small>
+          </summary>
           <div class="ped-section-content">${tarjetasFiltradas.join("")}</div>
-        </section>
+        </details>
       `;
     })
     .filter(Boolean);
@@ -308,7 +320,78 @@ function panelLiquidos() {
 }
 
 function panelMedicamentos() {
-  return `<article class="ped-panel"><h3>Dosis pediatricas seguras</h3><p>Selecciona medicamento, esquema, concentracion y confirma peso actual. El resultado es apoyo de calculo, no orden medica automatica.</p><div class="ped-result" id="medicamentoResultado"></div></article>`;
+  return `<article class="ped-panel"><h3>Dosis pediatricas seguras</h3><p>Selecciona medicamento, esquema, concentracion y confirma peso actual. El resultado es apoyo de calculo, no orden medica automatica.</p><div class="ped-result ped-med-result" id="medicamentoResultado"></div></article>`;
+}
+
+function listaCompactaMedicamento(titulo, items = []) {
+  if (!items?.length) return "";
+  return `
+    <div class="ped-med-info">
+      <strong>${titulo}</strong>
+      <ul>${items.map((item) => `<li>${item}</li>`).join("")}</ul>
+    </div>
+  `;
+}
+
+function infoMedicamentoPediatrico(medicamento) {
+  if (!medicamento) return "";
+  return `
+    <div class="ped-med-grid">
+      ${listaCompactaMedicamento("Presentaciones", medicamento.presentaciones)}
+      ${listaCompactaMedicamento("Nombres comerciales", medicamento.nombresComerciales)}
+      ${listaCompactaMedicamento("Contraindicaciones / precauciones", medicamento.contraindicaciones)}
+      ${listaCompactaMedicamento("Interacciones relevantes", medicamento.interacciones)}
+    </div>
+    ${medicamento.advertencia ? `<span class="ped-med-warning">${medicamento.advertencia}</span>` : ""}
+    ${medicamento.fuente ? `<span class="ped-med-source">${medicamento.fuente}</span>` : ""}
+  `;
+}
+
+function panelGraficas() {
+  return `<article class="ped-panel ped-panel-graficas"><h3>Graficas clinicas pediatricas</h3><p>Visualizacion rapida de somatometria, superficie corporal y liquidos calculados. No sustituye percentiles oficiales.</p><div id="graficasPediatria" class="ped-charts"></div></article>`;
+}
+
+function renderGraficasPediatria({ peso, talla, imc, sc, mantenimiento, deficit, diuresis }) {
+  const contenedor = $("graficasPediatria");
+  if (!contenedor) return;
+
+  const pesoNum = numero(peso);
+  const tallaNum = numero(talla);
+  const imcNum = numero(imc);
+  const scNum = sc?.mosteller ? numero(sc.mosteller) : null;
+  const mantenimientoNum = mantenimiento?.mlDia ? numero(mantenimiento.mlDia) : null;
+  const deficitNum = numero(deficit);
+  const diuresisNum = numero(diuresis);
+
+  contenedor.innerHTML = `
+    ${graficaBarras("Somatometria", [
+      { etiqueta: "Peso", valor: pesoNum, unidad: "kg", max: Math.max(30, pesoNum || 0) },
+      { etiqueta: "Talla", valor: tallaNum, unidad: "cm", max: Math.max(120, tallaNum || 0) },
+      { etiqueta: "IMC", valor: imcNum, unidad: "kg/m2", max: 35 },
+      { etiqueta: "SC", valor: scNum, unidad: "m2", max: Math.max(2, scNum || 0) }
+    ])}
+    ${graficaBarras("Liquidos", [
+      { etiqueta: "Mant.", valor: mantenimientoNum, unidad: "mL/dia", max: Math.max(1200, mantenimientoNum || 0, deficitNum || 0) },
+      { etiqueta: "Deficit", valor: deficitNum, unidad: "mL", max: Math.max(1200, mantenimientoNum || 0, deficitNum || 0) },
+      { etiqueta: "Diuresis", valor: diuresisNum, unidad: "mL/kg/h", max: 5 }
+    ])}
+  `;
+}
+
+function graficaBarras(titulo, datos) {
+  const filas = datos.map((item) => {
+    const valor = numero(item.valor);
+    const max = numero(item.max) || 1;
+    const porcentaje = valor ? Math.max(4, Math.min(100, (valor / max) * 100)) : 0;
+    return `
+      <div class="ped-chart-row">
+        <span>${item.etiqueta}</span>
+        <div class="ped-chart-track"><i style="width:${porcentaje}%"></i></div>
+        <b>${valor !== null ? valor.toFixed(valor >= 10 ? 0 : 2) : "-"} ${item.unidad}</b>
+      </div>
+    `;
+  }).join("");
+  return `<div class="ped-chart-card"><h4>${titulo}</h4>${filas}</div>`;
 }
 
 function panelFuentes() {

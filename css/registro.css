@@ -92,7 +92,7 @@ body {
 
 .tipo-cuenta-registro {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 8px;
   margin: 18px 0 4px;
   padding: 5px;
@@ -214,5 +214,11 @@ button:hover {
 
   .beneficios {
     justify-content: center;
+  }
+}
+
+@media (max-width: 520px) {
+  .tipo-cuenta-registro {
+    grid-template-columns: 1fr;
   }
 }
