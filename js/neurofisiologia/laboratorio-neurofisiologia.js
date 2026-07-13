@@ -836,7 +836,7 @@ function vincularIntegrada() {
   $("intFarmaco")?.addEventListener("change", mostrarInfoFarmaco);
   $("btnIntegradaPlay")?.addEventListener("click", () => { estadoIntegrado.soloPulsoUnico = false; integradaActiva = true; animarIntegrada(); });
   $("btnIntegradaPausa")?.addEventListener("click", () => { integradaActiva = false; cancelAnimationFrame(rafIntegrada); });
-  $("btnIntegradaReset")?.addEventListener("click", () => { integradaActiva = false; cancelAnimationFrame(rafIntegrada); estadoIntegrado = crearEstadoNeuronaIntegrada(); sincronizarControlesIntegrados(); renderizarIntegrada(true); });
+  $("btnIntegradaReset")?.addEventListener("click", () => { integradaActiva = false; cancelAnimationFrame(rafIntegrada); estadoIntegrado = crearEstadoNeuronaIntegrada(); zonaNeuroSeleccionada = null; detalleNeuroAbierto = false; uiModeNeuro.focusedStructure = "reposo"; sincronizarControlesIntegrados(); renderizarIntegrada(true); });
   $("btnIntegradaPulso")?.addEventListener("click", () => { estimularNeuronaIntegrada(estadoIntegrado, null, { unico: true, duracionMs: 1.2 }); renderizarIntegrada(true); if (!integradaActiva) { integradaActiva = true; animarIntegrada(); } });
   $("btnIntAgregarFarmaco")?.addEventListener("click", () => { aplicarFarmacoIntegrado(estadoIntegrado, $("intFarmaco").value, Number($("intFarmacoIntensidad").value)); renderizarIntegrada(true); });
   $("btnIntLimpiarFarmacos")?.addEventListener("click", () => { limpiarFarmacosIntegrados(estadoIntegrado); renderizarIntegrada(true); });
@@ -854,9 +854,24 @@ function vincularIntegrada() {
   $("tutorialPrev")?.addEventListener("click", () => moverTutorialNeuro(-1));
   $("tutorialSkip")?.addEventListener("click", cerrarTutorialNeuro);
   sincronizarControlesIntegrados();
+  zonaNeuroSeleccionada = null;
+  detalleNeuroAbierto = false;
+  uiModeNeuro.focusedStructure = "reposo";
+  renderizarIntegrada(true);
+  ocultarDetalleNeuroSinSeleccion();
   if (!tutorialVistoNeuro) iniciarTutorialNeuro();
 }
 
+function ocultarDetalleNeuroSinSeleccion() {
+  const panel = $("detalleIntegradaSeleccion");
+  if (!panel || (zonaNeuroSeleccionada && detalleNeuroAbierto)) return;
+  panel.hidden = true;
+  panel.inert = true;
+  panel.setAttribute("aria-hidden", "true");
+  panel.removeAttribute("data-panel-neuro-abierto");
+  panel.classList.remove("detalle-minimizado", "detalle-arrastrando");
+  panel.innerHTML = "";
+}
 function cerrarDetalleNeuroSeleccionado() {
   const panel = $("detalleIntegradaSeleccion");
   const estabaAbierto = panel && !panel.hidden;
@@ -1311,6 +1326,7 @@ function renderizarIntegrada(forzarTexto = false) {
   if ($("intEcuacionSeleccionada") && !ecuacionCongelada && $("intSeguirEcuacion")?.checked) $("intEcuacionSeleccionada").value = ecuacionSeleccionada;
   ejecutarBloqueLaboratorio("render escena integrada", () => renderizarEscenaIntegrada($("escenaIntegrada"), estadoIntegrado, uiModeNeuro));
   if (zonaNeuroSeleccionada && detalleNeuroAbierto) ejecutarBloqueLaboratorio("detalle seleccionado", () => mostrarDetalleNeuroSeleccionado(zonaNeuroSeleccionada));
+  else ocultarDetalleNeuroSinSeleccion();
   ejecutarBloqueLaboratorio("indicadores integrados", () => renderizarIndicadoresIntegrados($("estadoIntegrado"), estadoIntegrado, uiModeNeuro));
   ejecutarBloqueLaboratorio("estado actual", () => renderizarTarjetaEstadoActual($("tarjetaEstadoActual"), estadoIntegrado, uiModeNeuro));
   ejecutarBloqueLaboratorio("variables integradas", () => renderizarVariablesIntegradas($("variablesIntegradas"), estadoIntegrado));

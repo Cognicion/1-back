@@ -6,6 +6,7 @@ import {
   onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
+asegurarCssReporte();
 asegurarCssApariencia();
 aplicarAparienciaGuardada();
 
@@ -44,6 +45,13 @@ onAuthStateChanged(auth, (user) => {
 document.addEventListener("DOMContentLoaded", inicializarReporteGlobal);
 
 
+function asegurarCssReporte() {
+  if (document.querySelector('link[href="css/reportes.css"]')) return;
+  const link = document.createElement("link");
+  link.rel = "stylesheet";
+  link.href = "css/reportes.css";
+  document.head.appendChild(link);
+}
 function asegurarCssApariencia() {
   if (document.querySelector('link[href="css/apariencia.css"]')) return;
   const link = document.createElement("link");

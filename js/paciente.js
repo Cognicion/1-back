@@ -18,6 +18,10 @@ import {
   usuarioPuedeUsarFormato
 } from "./services/formatosInstitucionales.js";
 import {
+  obtenerTemaLocalCognicion,
+  TEMAS_COGNICION
+} from "./services/apariencia.js";
+import {
   onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
@@ -88,6 +92,10 @@ let apuntesMedicoPacienteCache = [];
 let catalogoMedicosFirmasIndicacionesCache = [];
 let indicacionesPacienteCache = [];
 let medicamentosRecetaActual = [];
+const VISTAS_DATOS_GENERALES_PACIENTE = Object.freeze({
+  CLASICA: "clasica",
+  LABORATORIO: "laboratorio"
+});
 let estudiosSolicitudActual = [];
 const CLAVE_CATALOGO_MANUAL = "cognicion_catalogo_diagnosticos_manual";
 let catalogoManualDiagnosticos = cargarCatalogoManualDiagnosticos();
@@ -419,8 +427,14 @@ function actualizarEstanciaPaciente(datos = datosPacienteActual || {}) {
     fechaIngresoElemento.innerText = formatearFecha(fechaIngreso);
   }
 
+  const estanciaTexto = formatearEstancia(calcularDiasEstancia(fechaIngreso));
   if (estanciaElemento) {
-    estanciaElemento.innerText = formatearEstancia(calcularDiasEstancia(fechaIngreso));
+    estanciaElemento.innerText = estanciaTexto;
+  }
+
+  const estanciaLaboratorio = document.getElementById("labEstanciaPaciente");
+  if (estanciaLaboratorio) {
+    estanciaLaboratorio.innerText = estanciaTexto;
   }
 }
 
@@ -452,6 +466,310 @@ function escaparHTML(valor) {
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#039;");
+}
+function claveVistaDatosGeneralesPaciente() {
+  return `cognicion.paciente.${uidPaciente || "actual"}.vistaDatosGenerales`;
+}
+
+function vistaInicialDatosGeneralesPaciente() {
+  const tema = obtenerTemaLocalCognicion();
+  return tema === TEMAS_COGNICION.LABORATORIO
+    ? VISTAS_DATOS_GENERALES_PACIENTE.LABORATORIO
+    : VISTAS_DATOS_GENERALES_PACIENTE.CLASICA;
+}
+
+function obtenerVistaDatosGeneralesPaciente() {
+  try {
+    const guardada = localStorage.getItem(claveVistaDatosGeneralesPaciente());
+    return Object.values(VISTAS_DATOS_GENERALES_PACIENTE).includes(guardada)
+      ? guardada
+      : vistaInicialDatosGeneralesPaciente();
+  } catch (error) {
+    return vistaInicialDatosGeneralesPaciente();
+  }
+}
+
+function guardarVistaDatosGeneralesPaciente(vista) {
+  const vistaSegura = Object.values(VISTAS_DATOS_GENERALES_PACIENTE).includes(vista)
+    ? vista
+    : VISTAS_DATOS_GENERALES_PACIENTE.CLASICA;
+  try {
+    localStorage.setItem(claveVistaDatosGeneralesPaciente(), vistaSegura);
+  } catch (error) {
+    console.warn("No se pudo guardar la vista de datos generales", error);
+  }
+  return vistaSegura;
+}
+
+function valorPaciente(datos, rutas, alterno = "Sin registro") {
+  for (const ruta of rutas) {
+    const partes = ruta.split(".");
+    let actual = datos;
+    for (const parte of partes) {
+      actual = actual?.[parte];
+    }
+    if (actual !== undefined && actual !== null && String(actual).trim() !== "") {
+      return actual;
+    }
+  }
+  return alterno;
+}
+
+function listaDiagnosticosLaboratorio(datos = datosPacienteActual || {}) {
+  const diagnosticos = obtenerHistorialDiagnosticos(datos)
+    .map((dx) => formatearDiagnostico(dx))
+    .filter((dx) => dx && dx !== "Sin diagnostico");
+  return diagnosticos.length ? diagnosticos : ["Sin diagnostico registrado"];
+}
+
+function listaTratamientosLaboratorio(datos = datosPacienteActual || {}) {
+  const activos = tratamientosCache
+    .filter((tratamiento) => (tratamiento.estado || "activo").toLowerCase() === "activo")
+    .map((tratamiento) => tratamiento.medicamento || tratamiento.nombre || tratamiento.texto)
+    .filter(Boolean);
+  if (activos.length) return activos;
+  const resumen = datos.tratamiento || datos.tratamientoActual || datos.datosClinicosResumen?.tratamiento;
+  return resumen ? [resumen] : ["Sin tratamiento activo registrado"];
+}
+
+function listaEstudiosLaboratorio(datos = datosPacienteActual || {}) {
+  const desdeCache = estudiosCache
+    .map((estudio) => estudio.nombre || estudio.tipo || estudio.resultado || estudio.resumen)
+    .filter(Boolean);
+  if (desdeCache.length) return desdeCache.slice(0, 4);
+  const posibles = [
+    ...(Array.isArray(datos.estudios) ? datos.estudios : []),
+    ...(Array.isArray(datos.laboratorios) ? datos.laboratorios : []),
+    ...(Array.isArray(datos.estudiosDiagnosticos) ? datos.estudiosDiagnosticos : [])
+  ].map((estudio) => typeof estudio === "string" ? estudio : estudio?.nombre || estudio?.tipo || estudio?.resultado).filter(Boolean);
+  return posibles.length ? posibles.slice(0, 4) : ["Sin estudios registrados"];
+}
+
+function listaTimelineLaboratorio(datos = datosPacienteActual || {}) {
+  const eventos = [];
+  const ingreso = obtenerFechaIngreso(datos);
+  if (ingreso) eventos.push({ etiqueta: "Ingreso", valor: formatearFecha(ingreso) });
+  if (datos.ultimaConsulta) eventos.push({ etiqueta: "Ultima consulta", valor: formatearFecha(datos.ultimaConsulta) });
+  if (datos.proximaConsulta) eventos.push({ etiqueta: "Proxima consulta", valor: formatearFecha(datos.proximaConsulta) });
+  const ultimoIngreso = obtenerUltimoIngreso(datos);
+  if (ultimoIngreso) eventos.push({ etiqueta: "Ultimo ingreso", valor: formatearFecha(ultimoIngreso) });
+  return eventos.length ? eventos : [{ etiqueta: "Seguimiento", valor: "Sin eventos cronologicos registrados" }];
+}
+
+function renderizarListaLab(items) {
+  return items.map((item) => `<li>${escaparHTML(item)}</li>`).join("");
+}
+
+function renderizarVistaLaboratorioPaciente(datos = datosPacienteActual || {}) {
+  const contenedor = document.getElementById("datosGeneralesLaboratorio");
+  if (!contenedor || !datos) return;
+
+  const fechaIngreso = obtenerFechaIngreso(datos);
+  const edad = calcularEdad(obtenerFechaNacimiento(datos));
+  const diagnosticos = listaDiagnosticosLaboratorio(datos);
+  const tratamientos = listaTratamientosLaboratorio(datos);
+  const estudios = listaEstudiosLaboratorio(datos);
+  const timeline = listaTimelineLaboratorio(datos);
+  const organos = [
+    ["cerebro", "Cerebro", "Diagnosticos, escalas cognitivas, sintomas y evolucion clinica registrada."],
+    ["ojos", "Ojos", "Hallazgos visuales, efectos adversos o estudios oftalmologicos si existen."],
+    ["tiroides", "Tiroides", "Datos tiroideos, peso, energia, apetito y laboratorios endocrinos registrados."],
+    ["corazon", "Corazon", "Frecuencia cardiaca, presion arterial y riesgos cardiovasculares documentados."],
+    ["pulmon", "Pulmones", "Frecuencia respiratoria, saturacion y antecedentes respiratorios si existen."],
+    ["higado", "Higado", "Metabolismo farmacologico, consumo de sustancias y resultados hepaticos registrados."],
+    ["rinon", "Rinones", "Funcion renal, hidratacion y ajustes farmacologicos si hay estudios registrados."],
+    ["pancreas", "Pancreas", "Glucosa, metabolismo, apetito y datos endocrino-metabolicos disponibles."],
+    ["estomago", "Estomago", "Tolerancia oral, apetito, nausea, dolor o sintomas gastrointestinales registrados."],
+    ["intestinos", "Intestinos", "Habito intestinal, nutricion, efectos adversos y sintomas digestivos registrados."],
+    ["vascular", "Sistema vascular", "Presion arterial, perfusion, edema, riesgo vascular y eventos relacionados."],
+    ["nervioso", "Sistema nervioso", "Exploracion neurologica, movimientos, sensibilidad y funcionamiento cognitivo."],
+    ["columna", "Columna", "Dolor, movilidad, lesiones medulares o datos musculoesqueleticos registrados."],
+    ["piel", "Piel", "Lesiones, alergias, eventos adversos o hallazgos cutaneos registrados."],
+    ["musculo", "Musculos", "Movilidad, dolor, caidas, funcionalidad y rehabilitacion."],
+    ["extremidades", "Extremidades", "Marcha, movilidad, fuerza, caidas, lesiones o edema documentado."],
+    ["sangre", "Hematologico", "Tipo de sangre, biometria, anemias o alteraciones registradas."]
+  ];
+
+  contenedor.innerHTML = `
+    <div class="lab-paciente-shell">
+      <div class="lab-paciente-top">
+        <div>
+          <span class="lab-kicker">Vista Laboratorio</span>
+          <h3>${escaparHTML(datos.nombre || "Paciente sin nombre")}</h3>
+          <p>Lectura visual del expediente con datos reales. Los campos vacios se muestran como sin registro.</p>
+        </div>
+        <div class="lab-paciente-id">
+          <span>Expediente</span>
+          <strong>${escaparHTML(valorPaciente(datos, ["expedienteCognicion", "datosInstitucionales.expedienteCognicion"], "Sin expediente"))}</strong>
+        </div>
+      </div>
+
+      <div class="lab-paciente-grid">
+        <section class="lab-humano-panel" aria-label="Modelo clinico del paciente">
+          <div class="lab-humano-bg"></div>
+          <div class="lab-humano-modelo" aria-hidden="true">
+            <div class="lab-cabeza"></div>
+            <div class="lab-cuello"></div>
+            <div class="lab-torso"></div>
+            <div class="lab-brazo izq"></div>
+            <div class="lab-brazo der"></div>
+            <div class="lab-pierna izq"></div>
+            <div class="lab-pierna der"></div>
+            <div class="lab-anillo pulso"></div>
+          </div>
+          <div class="lab-organos">
+            ${organos.map(([id, nombre]) => `<button type="button" data-organo-lab="${id}" style="${posicionOrganoLab(id)}">${escaparHTML(nombre)}</button>`).join("")}
+          </div>
+          <div id="panelOrganoLaboratorioPaciente" class="lab-organo-panel oculto">
+            <button type="button" id="cerrarOrganoLaboratorioPaciente" aria-label="Cerrar organo seleccionado">×</button>
+            <span>Estructura seleccionada</span>
+            <h4 id="tituloOrganoLaboratorioPaciente">Organo</h4>
+            <p id="textoOrganoLaboratorioPaciente">Selecciona una region del modelo.</p>
+          </div>
+        </section>
+
+        <aside class="lab-metricas-panel">
+          <div class="lab-gauge principal">
+            <span>Edad</span>
+            <strong>${edad !== "" ? `${escaparHTML(edad)} años` : "Sin registro"}</strong>
+          </div>
+          <div class="lab-gauge">
+            <span>PA</span>
+            <strong>${escaparHTML(valorPaciente(datos, ["presionArterial", "signosVitales.presionArterial", "datosInstitucionales.presionArterial"], "Sin registro"))}</strong>
+          </div>
+          <div class="lab-gauge">
+            <span>FC</span>
+            <strong>${escaparHTML(valorPaciente(datos, ["frecuenciaCardiaca", "signosVitales.frecuenciaCardiaca"], "Sin registro"))}</strong>
+          </div>
+          <div class="lab-gauge">
+            <span>SpO2</span>
+            <strong>${escaparHTML(valorPaciente(datos, ["saturacionO2", "saturacionOxigeno", "signosVitales.saturacionO2", "signosVitales.saturacionOxigeno"], "Sin registro"))}</strong>
+          </div>
+          <div class="lab-gauge">
+            <span>IMC</span>
+            <strong>${escaparHTML(valorPaciente(datos, ["imc", "somatometria.imc", "signosVitales.imc", "datosInstitucionales.imc"], "Sin registro"))}</strong>
+          </div>
+        </aside>
+      </div>
+
+      <div class="lab-info-grid">
+        <article class="lab-card">
+          <span>Identificacion</span>
+          <p><b>Sexo:</b> ${escaparHTML(valorPaciente(datos, ["sexo"]))}</p>
+          <p><b>Genero:</b> ${escaparHTML(valorPaciente(datos, ["genero", "identidadGenero"]))}</p>
+          <p><b>Tipo:</b> ${escaparHTML(etiquetaTipoPaciente(datos.tipoPaciente || datos.datosInstitucionales?.tipoPaciente))}</p>
+        </article>
+        <article class="lab-card">
+          <span>Institucion</span>
+          <p><b>Institucion:</b> ${escaparHTML(valorPaciente(datos, ["institucionPaciente", "institucion"]))}</p>
+          <p><b>Servicio:</b> ${escaparHTML(valorPaciente(datos, ["servicioInstitucional", "servicio"]))}</p>
+          <p><b>Cama:</b> ${escaparHTML(valorPaciente(datos, ["cama"]))}</p>
+        </article>
+        <article class="lab-card">
+          <span>Ingreso</span>
+          <p><b>Fecha:</b> ${escaparHTML(formatearFecha(fechaIngreso))}</p>
+          <p><b>Estancia:</b> <span id="labEstanciaPaciente">${escaparHTML(formatearEstancia(calcularDiasEstancia(fechaIngreso)))}</span></p>
+          <p><b>Ultimo ingreso:</b> ${escaparHTML(formatearFecha(obtenerUltimoIngreso(datos)))}</p>
+        </article>
+        <article class="lab-card">
+          <span>Somatometria</span>
+          <p><b>Peso:</b> ${escaparHTML(valorPaciente(datos, ["peso", "somatometria.peso", "signosVitales.peso", "datosInstitucionales.peso"]))}</p>
+          <p><b>Talla:</b> ${escaparHTML(valorPaciente(datos, ["talla", "somatometria.talla", "signosVitales.talla", "datosInstitucionales.talla"]))}</p>
+          <p><b>Perimetro:</b> ${escaparHTML(valorPaciente(datos, ["perimetroAbdominal", "somatometria.perimetroAbdominal"]))}</p>
+        </article>
+        <article class="lab-card lab-card-lista">
+          <span>Diagnosticos</span>
+          <ul>${renderizarListaLab(diagnosticos)}</ul>
+        </article>
+        <article class="lab-card lab-card-lista">
+          <span>Tratamiento activo</span>
+          <ul>${renderizarListaLab(tratamientos)}</ul>
+        </article>
+        <article class="lab-card lab-card-lista">
+          <span>Estudios</span>
+          <ul>${renderizarListaLab(estudios)}</ul>
+        </article>
+        <article class="lab-card lab-card-lista">
+          <span>Linea clinica</span>
+          <ul>${timeline.map((item) => `<li><b>${escaparHTML(item.etiqueta)}:</b> ${escaparHTML(item.valor)}</li>`).join("")}</ul>
+        </article>
+      </div>
+    </div>
+  `;
+
+  const mapaOrganos = Object.fromEntries(organos.map(([id, nombre, texto]) => [id, { nombre, texto }]));
+  contenedor.querySelectorAll("[data-organo-lab]").forEach((boton) => {
+    boton.addEventListener("click", (event) => {
+      event.stopPropagation();
+      abrirOrganoLaboratorioPaciente(mapaOrganos[boton.dataset.organoLab]);
+    });
+  });
+  contenedor.querySelector("#cerrarOrganoLaboratorioPaciente")?.addEventListener("click", cerrarOrganoLaboratorioPaciente);
+}
+
+function posicionOrganoLab(id) {
+  const posiciones = {
+    cerebro: "left:45%;top:9%;",
+    ojos: "left:56%;top:13%;",
+    tiroides: "left:52%;top:24%;",
+    corazon: "left:43%;top:34%;",
+    pulmon: "left:56%;top:36%;",
+    higado: "left:38%;top:48%;",
+    rinon: "left:62%;top:54%;",
+    pancreas: "left:50%;top:50%;",
+    estomago: "left:43%;top:56%;",
+    intestinos: "left:53%;top:62%;",
+    vascular: "left:68%;top:42%;",
+    nervioso: "left:24%;top:34%;",
+    columna: "left:31%;top:49%;",
+    piel: "left:74%;top:67%;",
+    musculo: "left:30%;top:76%;",
+    extremidades: "left:58%;top:80%;",
+    sangre: "left:67%;top:28%;"
+  };
+  return posiciones[id] || "left:50%;top:50%;";
+}
+
+function abrirOrganoLaboratorioPaciente(organo = {}) {
+  const panel = document.getElementById("panelOrganoLaboratorioPaciente");
+  if (!panel) return;
+  document.getElementById("tituloOrganoLaboratorioPaciente").textContent = organo.nombre || "Estructura";
+  document.getElementById("textoOrganoLaboratorioPaciente").textContent = organo.texto || "Sin informacion registrada.";
+  panel.classList.remove("oculto");
+}
+
+function cerrarOrganoLaboratorioPaciente() {
+  document.getElementById("panelOrganoLaboratorioPaciente")?.classList.add("oculto");
+}
+
+function aplicarVistaDatosGeneralesPaciente(vista = obtenerVistaDatosGeneralesPaciente()) {
+  const vistaSegura = Object.values(VISTAS_DATOS_GENERALES_PACIENTE).includes(vista)
+    ? vista
+    : VISTAS_DATOS_GENERALES_PACIENTE.CLASICA;
+  const clasica = document.getElementById("datosGeneralesClasicos");
+  const laboratorio = document.getElementById("datosGeneralesLaboratorio");
+  const esLaboratorio = vistaSegura === VISTAS_DATOS_GENERALES_PACIENTE.LABORATORIO;
+
+  clasica?.classList.toggle("oculto", esLaboratorio);
+  laboratorio?.classList.toggle("oculto", !esLaboratorio);
+  document.querySelectorAll("[data-vista-datos]").forEach((boton) => {
+    const activo = boton.dataset.vistaDatos === vistaSegura;
+    boton.classList.toggle("activo", activo);
+    boton.setAttribute("aria-pressed", activo ? "true" : "false");
+  });
+
+  if (esLaboratorio) renderizarVistaLaboratorioPaciente();
+}
+
+function inicializarSelectorVistaDatosGeneralesPaciente() {
+  document.querySelectorAll("[data-vista-datos]").forEach((boton) => {
+    if (boton.dataset.vistaDatosInicializada === "1") return;
+    boton.dataset.vistaDatosInicializada = "1";
+    boton.addEventListener("click", () => {
+      aplicarVistaDatosGeneralesPaciente(guardarVistaDatosGeneralesPaciente(boton.dataset.vistaDatos));
+    });
+  });
+  aplicarVistaDatosGeneralesPaciente(obtenerVistaDatosGeneralesPaciente());
 }
 
 function valorCampo(id) {
@@ -1351,6 +1669,8 @@ async function cargarDatosPaciente() {
 
   actualizarEstanciaPaciente(datos);
   actualizarVisibilidadCamposInstitucionalesPaciente(datos);
+  inicializarSelectorVistaDatosGeneralesPaciente();
+  renderizarVistaLaboratorioPaciente(datos);
 }
 
 window.mostrarResumen = function() {

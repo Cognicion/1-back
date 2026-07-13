@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
@@ -6,6 +6,7 @@
   <link rel="stylesheet" href="css/theme.css">
   <link rel="icon" type="image/png" href="assets/favicon-cognicion.png">
   <link rel="stylesheet" href="css/paciente.css">
+  <link rel="stylesheet" href="css/paciente-laboratorio.css">
   <link rel="stylesheet" href="css/reportes.css">
 </head>
 
@@ -103,9 +104,15 @@
 
     <section id="seccionResumen">
       <div class="tarjeta">
-        <h2>Datos generales <button class="boton-editar-dato" onclick="editarCampoPaciente('nombre', 'Nombre', 'text')">Editar nombre</button></h2>
+        <div class="datos-generales-encabezado">
+          <h2>Datos generales <button class="boton-editar-dato" onclick="editarCampoPaciente('nombre', 'Nombre', 'text')">Editar nombre</button></h2>
+          <div class="selector-vista-datos" role="group" aria-label="Vista de datos generales">
+            <button type="button" class="vista-datos-btn activo" data-vista-datos="clasica">Clásica</button>
+            <button type="button" class="vista-datos-btn" data-vista-datos="laboratorio">Laboratorio</button>
+          </div>
+        </div>
 
-        <div class="grid datos-generales-grid">
+        <div id="datosGeneralesClasicos" class="grid datos-generales-grid">
           <div class="dato">
             <label>Correo <button class="boton-editar-dato" onclick="editarCampoPaciente('email', 'Correo', 'text')">Editar</button></label>
             <div id="correoPaciente">Cargando...</div>
@@ -254,6 +261,7 @@
           </div>
 
         </div>
+        <div id="datosGeneralesLaboratorio" class="paciente-lab-view oculto" aria-live="polite"></div>
       </div>
     </section>
 

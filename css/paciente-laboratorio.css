@@ -1,0 +1,403 @@
+.datos-generales-encabezado {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.datos-generales-encabezado h2 {
+  margin: 0;
+}
+
+.selector-vista-datos {
+  display: inline-flex;
+  gap: 6px;
+  padding: 5px;
+  border: 1px solid rgba(56, 189, 248, 0.22);
+  border-radius: 999px;
+  background: rgba(2, 8, 23, 0.62);
+  box-shadow: inset 0 0 22px rgba(14, 165, 233, 0.08);
+}
+
+.vista-datos-btn {
+  border: 0;
+  border-radius: 999px;
+  padding: 8px 13px;
+  color: #9fb3c8;
+  background: transparent;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition: transform 0.18s ease, background 0.18s ease, color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.vista-datos-btn:hover,
+.vista-datos-btn:focus-visible {
+  color: #e0f7ff;
+  transform: translateY(-1px);
+  outline: none;
+}
+
+.vista-datos-btn.activo {
+  color: #06111f;
+  background: linear-gradient(135deg, #38bdf8, #22d3ee);
+  box-shadow: 0 10px 26px rgba(34, 211, 238, 0.22);
+}
+
+.paciente-lab-view.oculto,
+#datosGeneralesClasicos.oculto {
+  display: none !important;
+}
+
+.paciente-lab-view {
+  animation: labPacienteEntrada 0.34s ease both;
+}
+
+.lab-paciente-shell {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(56, 189, 248, 0.22);
+  border-radius: 26px;
+  padding: 22px;
+  background:
+    radial-gradient(circle at 18% 14%, rgba(34, 211, 238, 0.16), transparent 28%),
+    radial-gradient(circle at 88% 26%, rgba(59, 130, 246, 0.14), transparent 30%),
+    linear-gradient(135deg, rgba(4, 12, 26, 0.98), rgba(5, 21, 41, 0.92));
+  box-shadow: inset 0 0 60px rgba(8, 145, 178, 0.08), 0 24px 80px rgba(0, 0, 0, 0.26);
+}
+
+.lab-paciente-shell::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(125, 211, 252, 0.055) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(125, 211, 252, 0.055) 1px, transparent 1px);
+  background-size: 42px 42px;
+  mask-image: radial-gradient(circle at 50% 38%, black, transparent 78%);
+}
+
+.lab-paciente-top,
+.lab-paciente-grid,
+.lab-info-grid {
+  position: relative;
+  z-index: 1;
+}
+
+.lab-paciente-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 20px;
+}
+
+.lab-kicker,
+.lab-card span,
+.lab-paciente-id span {
+  display: block;
+  color: #67e8f9;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.lab-paciente-top h3 {
+  margin: 7px 0;
+  color: #f8fbff;
+  font-size: clamp(28px, 4vw, 52px);
+  line-height: 1;
+}
+
+.lab-paciente-top p,
+.lab-card p,
+.lab-card li {
+  color: #cbd5e1;
+  line-height: 1.55;
+}
+
+.lab-paciente-id {
+  min-width: 180px;
+  padding: 16px;
+  border-radius: 18px;
+  border: 1px solid rgba(56, 189, 248, 0.18);
+  background: rgba(2, 8, 23, 0.58);
+  align-self: start;
+}
+
+.lab-paciente-id strong {
+  display: block;
+  margin-top: 8px;
+  color: #e0f2fe;
+  font-size: 18px;
+}
+
+.lab-paciente-grid {
+  display: grid;
+  grid-template-columns: minmax(320px, 1.35fr) minmax(220px, 0.65fr);
+  gap: 18px;
+  align-items: stretch;
+}
+
+.lab-humano-panel {
+  position: relative;
+  min-height: 520px;
+  overflow: hidden;
+  border: 1px solid rgba(56, 189, 248, 0.18);
+  border-radius: 24px;
+  background: radial-gradient(circle at 50% 35%, rgba(14, 165, 233, 0.16), rgba(2, 6, 23, 0.78) 64%);
+}
+
+.lab-humano-bg {
+  position: absolute;
+  inset: 8%;
+  border-radius: 50%;
+  border: 1px solid rgba(34, 211, 238, 0.15);
+  box-shadow: 0 0 80px rgba(34, 211, 238, 0.08), inset 0 0 60px rgba(34, 211, 238, 0.08);
+}
+
+.lab-humano-modelo {
+  position: absolute;
+  inset: 44px 0 34px;
+  width: min(270px, 50%);
+  margin: auto;
+  filter: drop-shadow(0 0 22px rgba(34, 211, 238, 0.34));
+}
+
+.lab-cabeza,
+.lab-cuello,
+.lab-torso,
+.lab-brazo,
+.lab-pierna,
+.lab-anillo {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(180deg, rgba(34, 211, 238, 0.34), rgba(15, 23, 42, 0.2));
+  border: 1px solid rgba(125, 211, 252, 0.3);
+}
+
+.lab-cabeza {
+  top: 0;
+  width: 72px;
+  height: 86px;
+  border-radius: 48% 48% 44% 44%;
+}
+
+.lab-cuello {
+  top: 82px;
+  width: 36px;
+  height: 34px;
+  border-radius: 14px;
+}
+
+.lab-torso {
+  top: 112px;
+  width: 138px;
+  height: 205px;
+  border-radius: 48% 48% 34% 34%;
+}
+
+.lab-brazo {
+  top: 126px;
+  width: 32px;
+  height: 190px;
+  border-radius: 999px;
+}
+
+.lab-brazo.izq { transform: translateX(-126px) rotate(8deg); }
+.lab-brazo.der { transform: translateX(94px) rotate(-8deg); }
+
+.lab-pierna {
+  top: 300px;
+  width: 42px;
+  height: 175px;
+  border-radius: 999px;
+}
+
+.lab-pierna.izq { transform: translateX(-52px); }
+.lab-pierna.der { transform: translateX(10px); }
+
+.lab-anillo {
+  bottom: 4px;
+  width: 210px;
+  height: 34px;
+  border-radius: 50%;
+  background: transparent;
+  border-color: rgba(34, 211, 238, 0.48);
+  box-shadow: 0 0 24px rgba(34, 211, 238, 0.3);
+}
+
+.lab-anillo.pulso {
+  animation: labPulso 3.6s ease-in-out infinite;
+}
+
+.lab-organos button {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  border: 1px solid rgba(34, 211, 238, 0.38);
+  border-radius: 999px;
+  padding: 7px 10px;
+  color: #e0f7ff;
+  background: rgba(3, 12, 25, 0.78);
+  backdrop-filter: blur(12px);
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 800;
+  box-shadow: 0 0 20px rgba(34, 211, 238, 0.14);
+  transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.lab-organos button:hover,
+.lab-organos button:focus-visible {
+  transform: translate(-50%, -50%) scale(1.06);
+  border-color: rgba(103, 232, 249, 0.8);
+  box-shadow: 0 0 26px rgba(34, 211, 238, 0.35);
+  outline: none;
+}
+
+.lab-organo-panel {
+  position: absolute;
+  left: 18px;
+  bottom: 18px;
+  width: min(360px, calc(100% - 36px));
+  padding: 18px;
+  border-radius: 22px;
+  border: 1px solid rgba(103, 232, 249, 0.3);
+  background: rgba(3, 19, 36, 0.9);
+  backdrop-filter: blur(18px);
+  box-shadow: 0 22px 54px rgba(0, 0, 0, 0.28);
+  animation: labPacienteEntrada 0.2s ease both;
+}
+
+.lab-organo-panel button {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 30px;
+  height: 30px;
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  border-radius: 999px;
+  color: #e0f2fe;
+  background: rgba(15, 23, 42, 0.78);
+  cursor: pointer;
+}
+
+.lab-organo-panel h4 {
+  margin: 7px 34px 8px 0;
+  color: #f8fafc;
+}
+
+.lab-organo-panel p {
+  margin: 0;
+  color: #cbd5e1;
+  line-height: 1.55;
+}
+
+.lab-metricas-panel {
+  display: grid;
+  gap: 12px;
+}
+
+.lab-gauge,
+.lab-card {
+  border: 1px solid rgba(56, 189, 248, 0.17);
+  border-radius: 18px;
+  background: rgba(2, 8, 23, 0.56);
+  box-shadow: inset 0 0 34px rgba(14, 165, 233, 0.05);
+}
+
+.lab-gauge {
+  padding: 18px;
+}
+
+.lab-gauge span {
+  display: block;
+  color: #8aa4bd;
+  font-size: 12px;
+  margin-bottom: 8px;
+}
+
+.lab-gauge strong {
+  color: #e0f7ff;
+  font-size: 22px;
+}
+
+.lab-gauge.principal strong {
+  font-size: 30px;
+  color: #67e8f9;
+}
+
+.lab-info-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 18px;
+}
+
+.lab-card {
+  padding: 16px;
+}
+
+.lab-card p,
+.lab-card ul {
+  margin: 10px 0 0;
+}
+
+.lab-card ul {
+  padding-left: 18px;
+  display: grid;
+  gap: 7px;
+}
+
+.lab-card-lista {
+  grid-column: span 2;
+}
+
+@keyframes labPacienteEntrada {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes labPulso {
+  0%, 100% { opacity: 0.55; transform: translateX(-50%) scale(0.98); }
+  50% { opacity: 1; transform: translateX(-50%) scale(1.06); }
+}
+
+@media (max-width: 1100px) {
+  .lab-paciente-grid,
+  .lab-info-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .lab-card-lista {
+    grid-column: auto;
+  }
+}
+
+@media (max-width: 760px) {
+  .datos-generales-encabezado,
+  .lab-paciente-top {
+    flex-direction: column;
+  }
+
+  .selector-vista-datos {
+    width: 100%;
+  }
+
+  .vista-datos-btn {
+    flex: 1;
+  }
+
+  .lab-paciente-shell {
+    padding: 16px;
+  }
+
+  .lab-humano-panel {
+    min-height: 470px;
+  }
+}

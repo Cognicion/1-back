@@ -25,9 +25,14 @@
     <section class="config-card">
       <span class="config-kicker">Interfaz</span>
       <h2>Tema visual</h2>
-      <p>La apariencia Clasica conserva la interfaz actual. Laboratorio agrega una capa visual futurista y clinica que se guardara automaticamente para tu usuario.</p>
+      <p>La apariencia Clasica conserva la interfaz actual. Laboratorio agrega una capa visual futurista y clinica. Puedes previsualizar antes de guardar el cambio.</p>
 
       <div id="temasApariencia" class="temas-grid" aria-live="polite"></div>
+      <div class="config-actions" aria-label="Acciones de apariencia">
+        <button id="aplicarTemaApariencia" class="btn-primario" type="button">Aplicar tema</button>
+        <button id="cancelarTemaApariencia" class="btn-secundario" type="button">Cancelar</button>
+        <button id="restaurarTemaApariencia" class="btn-secundario" type="button">Restaurar predeterminado</button>
+      </div>
       <p id="estadoApariencia" class="config-status">Cargando preferencia...</p>
     </section>
   </main>

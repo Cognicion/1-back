@@ -178,3 +178,129 @@ body.tema-laboratorio .btn-secundario:hover {
   .config-header { align-items: flex-start; flex-direction: column; }
   .config-shell { width: min(100% - 24px, 1120px); }
 }
+/* Pantalla de configuracion: los temas deben diferenciarse visualmente al instante. */
+body:has(.config-shell) {
+  min-height: 100vh;
+  color: #e5eefc;
+  background:
+    radial-gradient(circle at 18% 8%, rgba(14, 116, 144, .16), transparent 28%),
+    linear-gradient(180deg, #060a12 0%, #0b1220 48%, #05070b 100%) !important;
+}
+
+body:has(.config-shell):not(.tema-laboratorio) .config-card {
+  background: linear-gradient(145deg, rgba(15,23,42,.86), rgba(7,12,22,.78));
+  border-color: rgba(148,163,184,.18);
+  box-shadow: 0 26px 80px rgba(0,0,0,.36);
+}
+
+body.tema-laboratorio:has(.config-shell) .config-card {
+  background:
+    radial-gradient(circle at 18% 22%, rgba(34,211,238,.18), transparent 28%),
+    linear-gradient(145deg, rgba(2,8,23,.9), rgba(8,47,73,.68));
+  border-color: rgba(34,211,238,.34);
+  box-shadow: 0 30px 100px rgba(0,0,0,.46), 0 0 58px rgba(34,211,238,.16);
+}
+
+body:has(.config-shell) .config-header h1,
+body:has(.config-shell) .config-header p {
+  color: #f8fbff;
+}
+
+body:has(.config-shell) .tema-opcion {
+  isolation: isolate;
+  transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease, background .18s ease;
+}
+
+body:has(.config-shell) .tema-opcion:hover {
+  transform: translateY(-3px);
+}
+
+body:has(.config-shell) .tema-opcion.activo::after {
+  content: "Activo";
+  position: absolute;
+  right: 16px;
+  top: 16px;
+  border: 1px solid rgba(34,211,238,.45);
+  border-radius: 999px;
+  padding: 4px 9px;
+  background: rgba(14,116,144,.28);
+  color: #bae6fd;
+  font-size: .68rem;
+  font-weight: 950;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.tema-preview {
+  position: relative;
+}
+
+.tema-preview::before,
+.tema-preview::after {
+  content: "";
+  position: absolute;
+  border-radius: 999px;
+}
+
+.tema-preview.clasica::before {
+  left: 16px;
+  top: 18px;
+  width: 44%;
+  height: 10px;
+  background: rgba(226,232,240,.75);
+}
+
+.tema-preview.clasica::after {
+  left: 16px;
+  bottom: 16px;
+  width: 78%;
+  height: 14px;
+  background: linear-gradient(90deg, rgba(30,41,59,.95), rgba(51,65,85,.9));
+  box-shadow: 0 -24px 0 rgba(15,23,42,.95);
+}
+
+.tema-preview.laboratorio::before {
+  inset: 12px 18px auto auto;
+  width: 42px;
+  height: 42px;
+  background: radial-gradient(circle, rgba(34,211,238,.9), rgba(14,116,144,.32) 45%, transparent 70%);
+  filter: blur(.2px);
+}
+
+.tema-preview.laboratorio::after {
+  left: 16px;
+  right: 16px;
+  bottom: 15px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(125,211,252,.9), transparent);
+  box-shadow: 0 -18px 0 rgba(34,211,238,.18), 0 -36px 0 rgba(59,130,246,.12);
+}
+.config-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.config-actions button:disabled {
+  opacity: .48;
+  cursor: not-allowed;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+.tema-opcion.guardado:not(.activo)::after {
+  content: "Guardado";
+  position: absolute;
+  right: 16px;
+  top: 16px;
+  border: 1px solid rgba(148,163,184,.32);
+  border-radius: 999px;
+  padding: 4px 9px;
+  background: rgba(15,23,42,.68);
+  color: #cbd5e1;
+  font-size: .68rem;
+  font-weight: 900;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
