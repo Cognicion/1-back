@@ -388,6 +388,14 @@ function actualizarBadgeMensajesDashboard() {
   badge.style.display = noLeidas ? "inline-flex" : "none";
 }
 
+function integrarConversacionLocal(conversacion) {
+  if (!conversacion?.id) return;
+  conversacionesMensajesDashboard = [
+    conversacion,
+    ...conversacionesMensajesDashboard.filter((item) => item.id !== conversacion.id)
+  ];
+}
+
 async function cargarDatosMensajesDashboard() {
   if (!usuarioDashboardActual?.uid) return;
   try {
@@ -532,7 +540,9 @@ async function iniciarConversacionConUsuarioDashboard(uidContacto) {
     console.warn("No se pudo guardar el contacto antes de iniciar conversacion:", error);
   });
   const conversacion = await obtenerOCrearConversacion(usuarioDashboardActual, contacto);
+  integrarConversacionLocal(conversacion);
   await cargarDatosMensajesDashboard();
+  integrarConversacionLocal(conversacion);
   await abrirConversacionDashboard(conversacion.id);
 }
 
@@ -575,7 +585,9 @@ async function hablarConAdminDashboard() {
       console.warn("No se pudo guardar el admin como contacto; se intentara abrir conversacion directa:", error);
     });
     const conversacion = await obtenerOCrearConversacion(usuarioDashboardActual, contactoAdmin);
+    integrarConversacionLocal(conversacion);
     await cargarDatosMensajesDashboard();
+    integrarConversacionLocal(conversacion);
     await abrirConversacionDashboard(conversacion.id);
   } catch (error) {
     console.error("No se pudo iniciar conversacion con admin:", error);
