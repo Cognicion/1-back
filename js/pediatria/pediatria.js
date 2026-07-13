@@ -47,7 +47,7 @@ const categorias = [
   ["fuentes", "Fuentes"]
 ];
 
-const SECCIONES_ABIERTAS_DEFAULT = new Set(["resumen", "edad", "antropometria", "liquidos", "medicamentos", "graficas"]);
+const SECCIONES_ABIERTAS_DEFAULT = new Set(["resumen", "edad", "antropometria", "liquidos", "medicamentos"]);
 
 const $ = (id) => document.getElementById(id);
 
@@ -110,13 +110,7 @@ function renderNavegacion() {
   `).join("");
   document.querySelectorAll(".ped-nav-btn").forEach((boton) => {
     boton.addEventListener("click", () => {
-      estado.seccion = boton.dataset.seccion;
-      const seccion = document.getElementById(`ped-seccion-${estado.seccion}`);
-      if (seccion?.tagName === "DETAILS") seccion.open = true;
-      seccion?.scrollIntoView({
-        behavior: "smooth",
-        block: "start"
-      });
+      abrirSeccionPediatria(boton.dataset.seccion);
     });
   });
 }
@@ -271,7 +265,7 @@ function renderSeccion() {
     .map(([id, titulo, tarjetas]) => {
       const tarjetasFiltradas = tarjetas.filter((html) => !filtro || `${titulo} ${html}`.toLowerCase().includes(filtro));
       if (!tarjetasFiltradas.length) return "";
-      const abierto = filtro || SECCIONES_ABIERTAS_DEFAULT.has(id) ? " open" : "";
+      const abierto = filtro || estado.seccion === id || SECCIONES_ABIERTAS_DEFAULT.has(id) ? " open" : "";
       return `
         <details id="ped-seccion-${id}" class="ped-section-block"${abierto}>
           <summary>
@@ -287,10 +281,24 @@ function renderSeccion() {
   bindEntradasCalculo();
   document.querySelectorAll("[data-ir]").forEach((boton) => {
     boton.addEventListener("click", () => {
-      estado.seccion = boton.dataset.ir;
-      renderNavegacion();
-      renderSeccion();
-      calcularTodo();
+      abrirSeccionPediatria(boton.dataset.ir);
+    });
+  });
+}
+
+function abrirSeccionPediatria(destino) {
+  if (!destino) return;
+  estado.seccion = destino;
+  renderNavegacion();
+  renderSeccion();
+  calcularTodo();
+
+  requestAnimationFrame(() => {
+    const seccion = document.getElementById(`ped-seccion-${destino}`);
+    if (seccion?.tagName === "DETAILS") seccion.open = true;
+    seccion?.scrollIntoView({
+      behavior: "smooth",
+      block: "start"
     });
   });
 }

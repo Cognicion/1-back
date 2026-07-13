@@ -841,7 +841,7 @@ footer {
     top: 92px;
     right: 24px;
     z-index: 2147482500;
-    width: min(720px, calc(100vw - 48px));
+    width: min(860px, calc(100vw - 48px));
     max-height: calc(100dvh - 118px);
     margin: 0;
     display: flex;
@@ -873,7 +873,7 @@ footer {
     display: grid;
     gap: 12px;
     min-height: 0;
-    max-height: calc(100dvh - 230px);
+    max-height: calc(100dvh - 238px);
     overflow-y: auto;
     padding-right: 6px;
 }
@@ -930,7 +930,7 @@ footer {
     }
 
     .lista-avisos-dashboard {
-        max-height: calc(100dvh - 210px);
+        max-height: calc(100dvh - 214px);
     }
 }
 
@@ -1295,6 +1295,24 @@ footer {
     </div>
 </section>
 
+<section id="avisosDashboardModulo" class="avisos-dashboard notificaciones-panel-flotante" aria-hidden="true" aria-labelledby="avisosDashboardTitulo">
+    <div class="avisos-header">
+        <div>
+            <span class="section-kicker">Avisos</span>
+            <strong id="avisosDashboardTitulo">Notificaciones y comunicados</strong>
+        </div>
+        <div class="card-actions">
+            <button id="btnToggleAvisosDashboard" class="avisos-toggle" type="button" aria-expanded="true" onclick="alternarNotificaciones()">Cerrar</button>
+            <button type="button" class="ghost-button mini" onclick="window.location.href='foro.html'">Abrir foro</button>
+        </div>
+    </div>
+    <div id="avisosDashboardContenido" class="avisos-contenido">
+        <div id="listaAvisosDashboard" class="lista-avisos-dashboard">
+            <p>Cargando avisos...</p>
+        </div>
+    </div>
+</section>
+
 <main class="app-shell">
     <section class="hero">
         <div class="brain-background" aria-hidden="true">
@@ -1308,23 +1326,6 @@ footer {
                 <h2 id="bienvenida">Cargando...</h2>
                 <p id="fraseClinica" class="clinical-phrase">La evidencia gu&iacute;a mejores decisiones cl&iacute;nicas.</p>
 
-                <section id="avisosDashboardModulo" class="avisos-dashboard notificaciones-panel-flotante" aria-hidden="true" aria-labelledby="avisosDashboardTitulo">
-                    <div class="avisos-header">
-                        <div>
-                            <span class="section-kicker">Avisos</span>
-                            <strong id="avisosDashboardTitulo">Notificaciones y comunicados</strong>
-                        </div>
-                        <div class="card-actions">
-                            <button id="btnToggleAvisosDashboard" class="avisos-toggle" type="button" aria-expanded="true" onclick="alternarNotificaciones()">Cerrar</button>
-                            <button type="button" class="ghost-button mini" onclick="window.location.href='foro.html'">Abrir foro</button>
-                        </div>
-                    </div>
-                    <div id="avisosDashboardContenido" class="avisos-contenido">
-                        <div id="listaAvisosDashboard" class="lista-avisos-dashboard">
-                            <p>Cargando avisos...</p>
-                        </div>
-                    </div>
-                </section>
             </div>
         </div>
     </section>
