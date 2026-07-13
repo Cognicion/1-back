@@ -1,9 +1,11 @@
-import { auth, db } from "./firebase.js";
+﻿import { auth, db } from "./firebase.js";
 import { iniciarMonitoreoSesion } from "./services/sesion.js";
 import { registrarEventoAuditoria, resumenError } from "./services/auditoria.js";
 import { FORMATOS_INSTITUCIONALES, permisosFormatosDesdeUsuario } from "./services/formatosInstitucionales.js";
 import {
   agregarContactoMensaje,
+  archivarConversacionMensaje,
+  eliminarConversacionMensaje,
   enviarMensajeConversacion,
   listarConversacionesMensajes,
   listarMensajesConversacion,
@@ -242,7 +244,9 @@ async function cargarAvisosAdmin() {
   try {
     const qAvisos = query(collection(db, "avisosGlobales"), orderBy("creadoEn", "desc"), limit(80));
     const snap = await getDocs(qAvisos);
-    const avisosBase = snap.docs.map((docAviso) => ({ id: docAviso.id, ...docAviso.data() }));
+    const avisosBase = snap.docs
+      .map((docAviso) => ({ id: docAviso.id, ...docAviso.data() }))
+      .filter((aviso) => !aviso.eliminado);
     avisosGlobalesAdmin = await Promise.all(avisosBase.map(async (aviso) => {
       const lecturasDocumento = Object.entries(aviso.lecturasUsuarios || {}).map(([uid, lectura]) => ({
         id: uid,
@@ -303,9 +307,9 @@ function renderizarAvisosAdmin() {
       <div class="reporte-admin-top">
         <div>
           <strong>${escaparHTML(aviso.titulo || "Aviso")}</strong>
-          <span>${escaparHTML(textoDestinatarioAviso(aviso))} · ${escaparHTML(aviso.creadoEn || "")}</span>
+          <span>${escaparHTML(textoDestinatarioAviso(aviso))} Â· ${escaparHTML(aviso.creadoEn || "")}</span>
         </div>
-        <span class="estado-reporte ${aviso.activo === false ? "cerrado" : "nuevo"}">${aviso.activo === false ? "Oculto" : "Activo"}</span>
+        <span class="estado-reporte ${aviso.archivado ? "cerrado" : aviso.activo === false ? "cerrado" : "nuevo"}">${aviso.archivado ? "Archivado" : aviso.activo === false ? "Oculto" : "Activo"}</span>
       </div>
       <p>${escaparHTML(aviso.mensaje || "")}</p>
       <div class="lecturas-aviso-admin">
@@ -315,7 +319,7 @@ function renderizarAvisosAdmin() {
             <summary>Ver usuarios que lo marcaron como leido</summary>
             <ul>
               ${aviso.lecturas.map((lectura) => `
-                <li>${escaparHTML(lectura.nombre || lectura.email || lectura.uid || "Usuario")} · ${escaparHTML(lectura.rol || "sin rol")} · ${escaparHTML(lectura.leidoEn || "")}</li>
+                <li>${escaparHTML(lectura.nombre || lectura.email || lectura.uid || "Usuario")} Â· ${escaparHTML(lectura.rol || "sin rol")} Â· ${escaparHTML(lectura.leidoEn || "")}</li>
               `).join("")}
             </ul>
           </details>
@@ -324,6 +328,12 @@ function renderizarAvisosAdmin() {
       <div class="acciones-reporte-admin">
         <button type="button" data-toggle-aviso-admin="${escaparHTML(aviso.id)}" data-activo="${aviso.activo === false ? "true" : "false"}">
           ${aviso.activo === false ? "Reactivar" : "Ocultar"}
+        </button>
+        <button type="button" data-archivar-aviso-admin="${escaparHTML(aviso.id)}" data-archivado="${aviso.archivado ? "false" : "true"}">
+          ${aviso.archivado ? "Desarchivar" : "Archivar"}
+        </button>
+        <button type="button" class="boton-peligro" data-eliminar-aviso-admin="${escaparHTML(aviso.id)}">
+          Eliminar
         </button>
       </div>
     </article>
@@ -335,6 +345,31 @@ function renderizarAvisosAdmin() {
         activo: boton.dataset.activo === "true",
         actualizadoEn: new Date().toISOString(),
         actualizadoPorUid: adminActual?.uid || ""
+      });
+      await cargarAvisosAdmin();
+    });
+  });
+
+  contenedor.querySelectorAll("[data-archivar-aviso-admin]").forEach((boton) => {
+    boton.addEventListener("click", async () => {
+      await updateDoc(doc(db, "avisosGlobales", boton.dataset.archivarAvisoAdmin), {
+        archivado: boton.dataset.archivado === "true",
+        activo: boton.dataset.archivado === "true" ? false : true,
+        actualizadoEn: new Date().toISOString(),
+        actualizadoPorUid: adminActual?.uid || ""
+      });
+      await cargarAvisosAdmin();
+    });
+  });
+
+  contenedor.querySelectorAll("[data-eliminar-aviso-admin]").forEach((boton) => {
+    boton.addEventListener("click", async () => {
+      if (!confirm("Eliminar este aviso enviado? Dejara de mostrarse a los usuarios.")) return;
+      await updateDoc(doc(db, "avisosGlobales", boton.dataset.eliminarAvisoAdmin), {
+        eliminado: true,
+        activo: false,
+        eliminadoEn: new Date().toISOString(),
+        eliminadoPorUid: adminActual?.uid || ""
       });
       await cargarAvisosAdmin();
     });
@@ -568,7 +603,7 @@ function renderizarUsuariosRecientesAdmin() {
     <article class="usuario-reciente-card">
       <div>
         <strong>${escaparHTML(usuario.nombre || usuario.email || "Sin nombre")}</strong>
-        <span>${escaparHTML(usuario.email || "Sin correo")} · ${escaparHTML(usuario.rol || "sin rol")}</span>
+        <span>${escaparHTML(usuario.email || "Sin correo")} Â· ${escaparHTML(usuario.rol || "sin rol")}</span>
       </div>
       <small>${escaparHTML(textoFechaUsuarioRegistro(usuario))}</small>
     </article>
@@ -617,7 +652,7 @@ function renderizarUsuariosOcultosAuditoria() {
         <input type="checkbox" data-usuario-auditoria-oculto="${escaparHTML(usuario.id)}" ${oculto ? "checked" : ""}>
         <span>
           <strong>${escaparHTML(usuario.nombre || usuario.email || "Usuario sin nombre")}</strong>
-          <small>${escaparHTML(usuario.email || usuario.id)} · ${escaparHTML(etiquetaRolUsuario(usuario.rol || "sin_rol"))}</small>
+          <small>${escaparHTML(usuario.email || usuario.id)} Â· ${escaparHTML(etiquetaRolUsuario(usuario.rol || "sin_rol"))}</small>
         </span>
       </label>
     `;
@@ -741,7 +776,7 @@ function renderizarSesionesAuditoria() {
         <article class="sesion-usuario-card ${enLinea ? "en-linea" : "desconectado"}">
           <div>
             <strong>${escaparHTML(usuario.nombre || usuario.email || "Usuario sin nombre")}</strong>
-            <small>${escaparHTML(usuario.email || usuario.id)} · ${escaparHTML(etiquetaRolUsuario(usuario.rol || "sin_rol"))}</small>
+            <small>${escaparHTML(usuario.email || usuario.id)} Â· ${escaparHTML(etiquetaRolUsuario(usuario.rol || "sin_rol"))}</small>
           </div>
           <div class="sesion-usuario-meta">
             <span class="${enLinea ? "ok" : "admin-muted"}">${enLinea ? "En linea" : "Desconectado"}</span>
@@ -763,7 +798,7 @@ function poblarUsuariosAvisosAdmin() {
   if (!selector) return;
   const usuarios = [...usuariosAdmin].sort((a, b) => (a.nombre || a.email || "").localeCompare(b.nombre || b.email || ""));
   selector.innerHTML = `<option value="">Seleccionar usuario...</option>` + usuarios.map((usuario) => `
-    <option value="${escaparHTML(usuario.id)}">${escaparHTML(usuario.nombre || usuario.email || usuario.id)} · ${escaparHTML(usuario.rol || "sin rol")}</option>
+    <option value="${escaparHTML(usuario.id)}">${escaparHTML(usuario.nombre || usuario.email || usuario.id)} Â· ${escaparHTML(usuario.rol || "sin rol")}</option>
   `).join("");
 }
 function datosAdminParaMensajes() {
@@ -919,7 +954,7 @@ async function iniciarMensajeAdminConUsuario(uidUsuario = "") {
       <div class="mensaje-admin-header">
         <div>
           <h3>Abriendo chat...</h3>
-          <p>Preparando conversación con ${escaparHTML(contacto.nombre || contacto.email || contacto.id)}.</p>
+          <p>Preparando conversaciÃ³n con ${escaparHTML(contacto.nombre || contacto.email || contacto.id)}.</p>
         </div>
       </div>
     `;
@@ -945,7 +980,7 @@ async function iniciarMensajeAdminConUsuario(uidUsuario = "") {
         <div class="mensaje-admin-header">
           <div>
             <h3>No se pudo abrir el chat</h3>
-            <p>${escaparHTML(error.message || "Firestore bloqueo la creación de la conversación.")}</p>
+            <p>${escaparHTML(error.message || "Firestore bloqueo la creaciÃ³n de la conversaciÃ³n.")}</p>
           </div>
         </div>
       `;
@@ -984,7 +1019,11 @@ async function abrirConversacionAdmin(conversacionId = "") {
         <h3>${escaparHTML(otro.nombre || otro.email || "Usuario")}</h3>
         <p>${escaparHTML(otro.email || otro.uid || otro.id || "")} - ${escaparHTML(etiquetaRolUsuario(otro.rol || "sin_rol"))}</p>
       </div>
-      <button type="button" id="btnRecargarConversacionAdmin">Recargar</button>
+      <div class="acciones-reporte-admin">
+        <button type="button" id="btnRecargarConversacionAdmin">Recargar</button>
+        <button type="button" id="btnArchivarConversacionAdmin">Archivar</button>
+        <button type="button" id="btnEliminarConversacionAdmin" class="boton-peligro">Eliminar</button>
+      </div>
     </div>
     <div id="hiloMensajesAdmin" class="hilo-mensajes-admin">
       ${mensajesAdminActivos.length ? mensajesAdminActivos.map((mensaje) => renderMensajeAdmin(mensaje, otro.uid || otro.id)).join("") : "<p class=\"admin-muted\">Sin mensajes todavia.</p>"}
@@ -996,6 +1035,23 @@ async function abrirConversacionAdmin(conversacionId = "") {
   `;
 
   document.getElementById("btnRecargarConversacionAdmin")?.addEventListener("click", () => abrirConversacionAdmin(conversacionId));
+  document.getElementById("btnArchivarConversacionAdmin")?.addEventListener("click", async () => {
+    await archivarConversacionMensaje(conversacionId, adminActual.uid);
+    conversacionesAdmin = conversacionesAdmin.filter((item) => item.id !== conversacionId);
+    conversacionAdminActiva = null;
+    mensajesAdminActivos = [];
+    renderizarConversacionesAdmin();
+    detalle.innerHTML = `<p class="admin-muted">Conversacion archivada.</p>`;
+  });
+  document.getElementById("btnEliminarConversacionAdmin")?.addEventListener("click", async () => {
+    if (!confirm("Eliminar esta conversacion de tu bandeja de administrador?")) return;
+    await eliminarConversacionMensaje(conversacionId, adminActual.uid);
+    conversacionesAdmin = conversacionesAdmin.filter((item) => item.id !== conversacionId);
+    conversacionAdminActiva = null;
+    mensajesAdminActivos = [];
+    renderizarConversacionesAdmin();
+    detalle.innerHTML = `<p class="admin-muted">Conversacion eliminada de tu bandeja.</p>`;
+  });
   document.getElementById("formMensajeAdmin")?.addEventListener("submit", enviarMensajeAdmin);
   const hilo = document.getElementById("hiloMensajesAdmin");
   if (hilo) hilo.scrollTop = hilo.scrollHeight;
@@ -1229,7 +1285,7 @@ async function aplicarFormatoUsuariosVisiblesAdmin(formato, valor) {
   }
 
   const accion = valor ? "autorizar" : "retirar";
-  const confirmar = confirm(`¿Deseas ${accion} el formato ${formato} a ${usuarios.length} usuario(s) visibles?`);
+  const confirmar = confirm(`Â¿Deseas ${accion} el formato ${formato} a ${usuarios.length} usuario(s) visibles?`);
   if (!confirmar) return;
 
   await Promise.all(usuarios.map((usuario) => updateDoc(doc(db, "usuarios", usuario.id), {

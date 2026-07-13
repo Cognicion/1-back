@@ -235,7 +235,40 @@ export async function listarConversacionesMensajes(uidActual = "") {
   const snap = await getDocs(qConversaciones);
   return snap.docs
     .map((docConversacion) => ({ id: docConversacion.id, ...docConversacion.data() }))
+    .filter((conversacion) => {
+      const estadoUsuario = conversacion.estadosUsuarios?.[uidActual] || {};
+      return !estadoUsuario.eliminado && !estadoUsuario.archivado;
+    })
     .sort((a, b) => String(b.ultimoMensajeEn || "").localeCompare(String(a.ultimoMensajeEn || "")));
+}
+
+export async function actualizarEstadoConversacionUsuario(conversacionId, uidActual, cambios = {}) {
+  if (!conversacionId || !uidActual) return;
+  await setDoc(doc(db, COLECCION_CONVERSACIONES, conversacionId), {
+    estadosUsuarios: {
+      [uidActual]: {
+        ...cambios,
+        actualizadoEn: new Date().toISOString()
+      }
+    },
+    updatedAt: serverTimestamp()
+  }, { merge: true });
+}
+
+export async function archivarConversacionMensaje(conversacionId, uidActual) {
+  return actualizarEstadoConversacionUsuario(conversacionId, uidActual, {
+    archivado: true,
+    eliminado: false,
+    archivadoEn: new Date().toISOString()
+  });
+}
+
+export async function eliminarConversacionMensaje(conversacionId, uidActual) {
+  return actualizarEstadoConversacionUsuario(conversacionId, uidActual, {
+    eliminado: true,
+    archivado: false,
+    eliminadoEn: new Date().toISOString()
+  });
 }
 
 export async function listarMensajesConversacion(conversacionId = "") {

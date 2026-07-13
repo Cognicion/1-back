@@ -26,7 +26,9 @@ import { iniciarMonitoreoSesion } from "./services/sesion.js";
 import { aplicarAparienciaGuardada, sincronizarAparienciaUsuario } from "./services/apariencia.js";
 import {
   agregarContactoMensaje,
+  archivarConversacionMensaje,
   buscarUsuariosParaMensajes,
+  eliminarConversacionMensaje,
   listarAdminsParaMensajes,
   listarContactosMensajes,
   listarConversacionesMensajes,
@@ -68,6 +70,7 @@ let conversacionActivaDashboard = null;
 let mensajesConversacionActiva = [];
 const CLAVE_LECTURAS_AVISOS_DASHBOARD = "cognicion_lecturas_avisos_dashboard";
 const CLAVE_LECTURAS_RESPUESTAS_REPORTES = "cognicion_lecturas_respuestas_reportes";
+const CLAVE_ESTADO_AVISOS_DASHBOARD = "cognicion_estado_avisos_dashboard";
 window.alternarModuloAvisos = function(forzarAbierto = null) {
   const modulo = document.getElementById("avisosDashboardModulo");
   const boton = document.getElementById("btnToggleAvisosDashboard");
@@ -298,23 +301,48 @@ function guardarLecturaLocalRespuestaReporte(uidUsuario = "", idAviso = "") {
   guardarLecturaLocalAvisoDashboard(uidUsuario, idAviso);
 }
 
+function estadosLocalesAvisosDashboard() {
+  return cargarObjetoLocalDashboard(CLAVE_ESTADO_AVISOS_DASHBOARD);
+}
+
+function guardarEstadoLocalAvisoDashboard(idAviso = "", cambios = {}) {
+  if (!idAviso || !usuarioDashboardActual?.uid) return;
+  const estados = estadosLocalesAvisosDashboard();
+  const uid = usuarioDashboardActual.uid;
+  estados[uid] = {
+    ...(estados[uid] || {}),
+    [idAviso]: {
+      ...(estados[uid]?.[idAviso] || {}),
+      ...cambios,
+      actualizadoEn: new Date().toISOString()
+    }
+  };
+  localStorage.setItem(CLAVE_ESTADO_AVISOS_DASHBOARD, JSON.stringify(estados));
+}
+
+function avisoOcultoParaUsuarioDashboard(aviso = {}) {
+  const estado = estadosLocalesAvisosDashboard()[usuarioDashboardActual?.uid]?.[aviso.id] || {};
+  return Boolean(estado.archivado || estado.eliminado);
+}
+
 function renderizarAvisosDashboard() {
   const contenedor = document.getElementById("listaAvisosDashboard");
   const badge = document.getElementById("notificationBadge");
   if (!contenedor) return;
 
-  const noLeidos = avisosDashboardActuales.filter((aviso) => !avisosLeidosDashboard.has(aviso.id));
+  const avisosVisibles = avisosDashboardActuales.filter((aviso) => !avisoOcultoParaUsuarioDashboard(aviso));
+  const noLeidos = avisosVisibles.filter((aviso) => !avisosLeidosDashboard.has(aviso.id));
   if (badge) {
     badge.textContent = noLeidos.length;
     badge.style.display = noLeidos.length ? "inline-flex" : "none";
   }
 
-  if (!avisosDashboardActuales.length) {
+  if (!avisosVisibles.length) {
     contenedor.innerHTML = `<article class="aviso-dashboard-item"><strong>Sin avisos nuevos</strong><p>Cuando haya comunicados o notificaciones relevantes apareceran aqui.</p></article>`;
     return;
   }
 
-  contenedor.innerHTML = avisosDashboardActuales.map((aviso) => {
+  contenedor.innerHTML = avisosVisibles.map((aviso) => {
     const leido = avisosLeidosDashboard.has(aviso.id);
     return `
       <article class="aviso-dashboard-item ${leido ? "leido" : "no-leido"}">
@@ -328,6 +356,8 @@ function renderizarAvisosDashboard() {
           <button type="button" class="ghost-button mini" ${leido ? "disabled" : ""} data-marcar-aviso-leido="${escaparHTML(aviso.id)}">
             ${leido ? "Ya leido" : "Marcar como leido"}
           </button>
+          <button type="button" class="ghost-button mini" data-archivar-aviso-dashboard="${escaparHTML(aviso.id)}">Archivar</button>
+          <button type="button" class="ghost-button mini" data-eliminar-aviso-dashboard="${escaparHTML(aviso.id)}">Eliminar</button>
         </div>
       </article>
     `;
@@ -451,6 +481,24 @@ document.addEventListener("click", (evento) => {
   evento.stopPropagation();
   marcarAvisoLeidoDashboard(boton.dataset.marcarAvisoLeido, boton);
 });
+
+document.addEventListener("click", (evento) => {
+  const botonArchivar = evento.target.closest("[data-archivar-aviso-dashboard]");
+  const botonEliminar = evento.target.closest("[data-eliminar-aviso-dashboard]");
+  if (!botonArchivar && !botonEliminar) return;
+  evento.preventDefault();
+  evento.stopPropagation();
+
+  const idAviso = botonArchivar?.dataset.archivarAvisoDashboard || botonEliminar?.dataset.eliminarAvisoDashboard || "";
+  if (!idAviso) return;
+  if (botonEliminar && !confirm("Eliminar este aviso de tu bandeja?")) return;
+
+  guardarEstadoLocalAvisoDashboard(idAviso, botonEliminar
+    ? { eliminado: true, archivado: false }
+    : { archivado: true, eliminado: false });
+  renderizarAvisosDashboard();
+});
+
 async function cargarAvisosDashboard(rolUsuario, uidUsuario) {
   const contenedor = document.getElementById("listaAvisosDashboard");
   if (!contenedor) return;
@@ -468,7 +516,7 @@ async function cargarAvisosDashboard(rolUsuario, uidUsuario) {
     avisosDashboardActuales = [
       ...snap.docs
       .map((docAviso) => ({ id: docAviso.id, ...docAviso.data() }))
-      .filter((aviso) => aviso.activo !== false && avisoVisibleParaUsuario(aviso, rolUsuario, uidUsuario)),
+      .filter((aviso) => !aviso.eliminado && !aviso.archivado && aviso.activo !== false && avisoVisibleParaUsuario(aviso, rolUsuario, uidUsuario)),
       ...respuestasReportes
     ]
       .sort((a, b) => String(b.creadoEn || "").localeCompare(String(a.creadoEn || "")))
@@ -787,7 +835,11 @@ async function abrirConversacionDashboard(conversacionId) {
     <div class="mensajes-contacto">
       <strong>${escaparHTML(otro.nombre || otro.email || "Contacto")}</strong>
       <span>${escaparHTML(otro.rol || "usuario")} · visto por usuario/admin cuando aparece “Visto”.</span>
-      <button type="button" data-volver-conversaciones>Volver a conversaciones</button>
+      <div class="card-actions">
+        <button type="button" data-volver-conversaciones>Volver a conversaciones</button>
+        <button type="button" data-archivar-conversacion-dashboard="${escaparHTML(conversacionId)}">Archivar</button>
+        <button type="button" data-eliminar-conversacion-dashboard="${escaparHTML(conversacionId)}">Eliminar</button>
+      </div>
     </div>
     <div id="mensajesHiloDashboard">
       ${mensajesActualizados.length ? mensajesActualizados.map((mensaje) => renderMensajeDashboard(mensaje, otro.uid)).join("") : `<p class="avisos-resumen-rapido">Escribe el primer mensaje.</p>`}
@@ -797,6 +849,19 @@ async function abrirConversacionDashboard(conversacionId) {
   contenedor.querySelector("[data-volver-conversaciones]")?.addEventListener("click", async () => {
     await cargarDatosMensajesDashboard();
     renderizarConversacionesDashboard();
+  });
+  contenedor.querySelector("[data-archivar-conversacion-dashboard]")?.addEventListener("click", async () => {
+    await archivarConversacionMensaje(conversacionId, usuarioDashboardActual.uid);
+    conversacionesMensajesDashboard = conversacionesMensajesDashboard.filter((item) => item.id !== conversacionId);
+    renderizarConversacionesDashboard();
+    actualizarBadgeMensajesDashboard();
+  });
+  contenedor.querySelector("[data-eliminar-conversacion-dashboard]")?.addEventListener("click", async () => {
+    if (!confirm("Eliminar esta conversacion de tu bandeja?")) return;
+    await eliminarConversacionMensaje(conversacionId, usuarioDashboardActual.uid);
+    conversacionesMensajesDashboard = conversacionesMensajesDashboard.filter((item) => item.id !== conversacionId);
+    renderizarConversacionesDashboard();
+    actualizarBadgeMensajesDashboard();
   });
   contenedor.scrollTop = contenedor.scrollHeight;
   await cargarDatosMensajesDashboard();
