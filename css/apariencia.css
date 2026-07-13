@@ -637,3 +637,132 @@ body.tema-claro:has(.config-shell) .modo-interfaz-opcion small {
     grid-template-columns: 1fr;
   }
 }
+
+/* Futurista claro: variables compatibles con toda la plataforma */
+:root[data-theme="light"] {
+  --fondo: #f7fbff;
+  --panel: rgba(255, 255, 255, .88);
+  --panel-oscuro: rgba(241, 248, 255, .96);
+  --texto: #0f1f33;
+  --texto-suave: #52657d;
+  --azul: #0b74d1;
+  --azul-claro: #0284c7;
+  --cyan: #0891b2;
+  --borde: rgba(14, 116, 144, .22);
+  --bg: #f7fbff;
+  --panel-strong: rgba(255, 255, 255, .94);
+  --line: rgba(14, 116, 144, .18);
+  --line-blue: rgba(2, 132, 199, .25);
+  --text: #0f1f33;
+  --muted: #52657d;
+  --soft: #334155;
+  --blue: #0284c7;
+  --blue-deep: #075985;
+  --green: #0f766e;
+  --shadow: 0 24px 70px rgba(14, 47, 77, .14);
+}
+
+body.tema-claro {
+  background:
+    radial-gradient(circle at 18% 6%, rgba(14, 165, 233, .16), transparent 28%),
+    radial-gradient(circle at 86% 16%, rgba(45, 212, 191, .10), transparent 34%),
+    linear-gradient(135deg, #fbfdff 0%, #eef7ff 48%, #f8fbff 100%) !important;
+  color: #0f1f33 !important;
+}
+
+body.tema-claro,
+body.tema-claro main,
+body.tema-claro .main,
+body.tema-claro .layout,
+body.tema-claro .app,
+body.tema-claro .page,
+body.tema-claro .contenedor-principal {
+  color: #0f1f33 !important;
+}
+
+body.tema-claro .config-card,
+body.tema-claro .card,
+body.tema-claro .tarjeta,
+body.tema-claro .module-card,
+body.tema-claro .panel-lab,
+body.tema-claro .seccion,
+body.tema-claro .contenido,
+body.tema-claro .hero,
+body.tema-claro .workspace-section,
+body.tema-claro .notifications-dropdown,
+body.tema-claro .dashboard-notices-panel,
+body.tema-claro .modal,
+body.tema-claro .reporte-modal,
+body.tema-claro .tabla-contenedor,
+body.tema-claro .panel,
+body.tema-claro .bloque,
+body.tema-claro .bloque-observacion,
+body.tema-claro .nota-card,
+body.tema-claro .paciente-card,
+body.tema-claro .escala-card,
+body.tema-claro .floating-panel,
+body.tema-claro .config-shell .tema-opcion,
+body.tema-claro .config-shell .modo-interfaz-opcion {
+  background: linear-gradient(145deg, rgba(255,255,255,.94), rgba(235,246,255,.76)) !important;
+  color: #0f1f33 !important;
+  border-color: rgba(14, 116, 144, .22) !important;
+  box-shadow: 0 22px 70px rgba(14, 47, 77, .14), inset 0 1px 0 rgba(255,255,255,.85) !important;
+}
+
+body.tema-claro h1,
+body.tema-claro h2,
+body.tema-claro h3,
+body.tema-claro h4,
+body.tema-claro h5,
+body.tema-claro h6,
+body.tema-claro strong,
+body.tema-claro th,
+body.tema-claro .titulo,
+body.tema-claro .card-title,
+body.tema-claro .config-header h1 {
+  color: #0f1f33 !important;
+}
+
+body.tema-claro p,
+body.tema-claro small,
+body.tema-claro label,
+body.tema-claro li,
+body.tema-claro td,
+body.tema-claro .muted,
+body.tema-claro .texto-suave,
+body.tema-claro .descripcion,
+body.tema-claro .subtitulo,
+body.tema-claro .config-header p {
+  color: #52657d !important;
+}
+
+body.tema-claro input,
+body.tema-claro select,
+body.tema-claro textarea,
+body.tema-claro .input,
+body.tema-claro .select {
+  background: rgba(255,255,255,.92) !important;
+  color: #0f1f33 !important;
+  border-color: rgba(14, 116, 144, .26) !important;
+}
+
+body.tema-claro input[type="date"]::-webkit-calendar-picker-indicator,
+body.tema-claro input[type="time"]::-webkit-calendar-picker-indicator {
+  filter: none !important;
+}
+
+body.tema-claro .btn-secundario,
+body.tema-claro .ghost-button,
+body.tema-claro button:not(.btn-primario):not(.primary-button) {
+  color: #0f1f33;
+}
+
+body.tema-claro .config-kicker,
+body.tema-claro .kicker,
+body.tema-claro .badge,
+body.tema-claro .pill,
+body.tema-claro .chip {
+  color: #036b95 !important;
+  border-color: rgba(2, 132, 199, .28) !important;
+  background: rgba(224, 247, 255, .74) !important;
+}
