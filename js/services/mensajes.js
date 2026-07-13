@@ -15,6 +15,7 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const COLECCION_CONVERSACIONES = "mensajesConversaciones";
+const ADMIN_PRINCIPAL_UID = "NQ0CU5PSDBUgVrk56sjPEVhOs2D3";
 
 function crearMensajeConversacion(usuarioActual, texto = "") {
   const fechaISO = new Date().toISOString();
@@ -57,6 +58,62 @@ export async function listarUsuariosParaMensajes(uidActual = "") {
     .sort((a, b) => String(a.nombre || a.email || "").localeCompare(String(b.nombre || b.email || ""), "es", { sensitivity: "base" }));
 }
 
+export async function buscarUsuariosParaMensajes(texto = "", uidActual = "") {
+  const busqueda = String(texto || "").trim();
+  if (!busqueda) return listarUsuariosParaMensajes(uidActual);
+
+  const resultados = new Map();
+  const agregar = (usuario) => {
+    if (!usuario?.id || usuario.id === uidActual || resultados.has(usuario.id)) return;
+    resultados.set(usuario.id, usuario);
+  };
+
+  try {
+    const snapUid = await getDoc(doc(db, "usuarios", busqueda));
+    if (snapUid.exists()) agregar({ id: snapUid.id, ...snapUid.data() });
+  } catch (error) {
+    console.warn("No se pudo buscar usuario por UID:", error);
+  }
+
+  if (busqueda.includes("@")) {
+    const emailNormalizado = busqueda.toLowerCase();
+    const consultas = [
+      query(collection(db, "usuarios"), where("email", "==", busqueda)),
+      query(collection(db, "usuarios"), where("email", "==", emailNormalizado)),
+      query(collection(db, "usuarios"), where("correo", "==", busqueda)),
+      query(collection(db, "usuarios"), where("correo", "==", emailNormalizado))
+    ];
+
+    const snaps = await Promise.allSettled(consultas.map((consulta) => getDocs(consulta)));
+    snaps.forEach((resultado) => {
+      if (resultado.status !== "fulfilled") return;
+      resultado.value.docs.forEach((docUsuario) => agregar({ id: docUsuario.id, ...docUsuario.data() }));
+    });
+  }
+
+  if (!resultados.size) {
+    try {
+      const usuarios = await listarUsuariosParaMensajes(uidActual);
+      const normalizado = busqueda
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase();
+      usuarios
+        .filter((usuario) => `${usuario.nombre || ""} ${usuario.email || ""} ${usuario.correo || ""} ${usuario.rol || ""}`
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "")
+          .toLowerCase()
+          .includes(normalizado))
+        .forEach(agregar);
+    } catch (error) {
+      console.warn("No se pudo hacer busqueda amplia de usuarios:", error);
+    }
+  }
+
+  return Array.from(resultados.values())
+    .sort((a, b) => String(a.nombre || a.email || "").localeCompare(String(b.nombre || b.email || ""), "es", { sensitivity: "base" }));
+}
+
 export async function listarAdminsParaMensajes(uidActual = "") {
   const esAdmin = (usuario = {}) => {
     const rol = String(usuario.rol || "").toLowerCase().trim();
@@ -75,10 +132,32 @@ export async function listarAdminsParaMensajes(uidActual = "") {
     console.warn("No se pudo consultar administradores por rol exacto:", error);
   }
 
-  const snapUsuarios = await getDocs(collection(db, "usuarios"));
-  return snapUsuarios.docs
-    .map((docUsuario) => ({ id: docUsuario.id, ...docUsuario.data() }))
-    .filter((usuario) => usuario.id !== uidActual && esAdmin(usuario));
+  try {
+    const snapUsuarios = await getDocs(collection(db, "usuarios"));
+    const admins = snapUsuarios.docs
+      .map((docUsuario) => ({ id: docUsuario.id, ...docUsuario.data() }))
+      .filter((usuario) => usuario.id !== uidActual && esAdmin(usuario));
+    if (admins.length) return admins;
+  } catch (error) {
+    console.warn("No se pudo consultar lista general de usuarios para administradores:", error);
+  }
+
+  try {
+    const snapAdmin = await getDoc(doc(db, "usuarios", ADMIN_PRINCIPAL_UID));
+    if (snapAdmin.exists() && snapAdmin.id !== uidActual) {
+      return [{ id: snapAdmin.id, ...snapAdmin.data(), rol: snapAdmin.data().rol || "admin" }];
+    }
+  } catch (error) {
+    console.warn("No se pudo leer administrador principal:", error);
+  }
+
+  return uidActual === ADMIN_PRINCIPAL_UID ? [] : [{
+    id: ADMIN_PRINCIPAL_UID,
+    uid: ADMIN_PRINCIPAL_UID,
+    nombre: "Administrador",
+    email: "",
+    rol: "admin"
+  }];
 }
 
 export async function agregarContactoMensaje(uidActual, contacto) {
@@ -102,7 +181,7 @@ export async function listarContactosMensajes(uidActual = "") {
 export async function obtenerOCrearConversacion(usuarioActual, contacto) {
   const id = idConversacionParaUsuarios(usuarioActual.uid, contacto.id || contacto.uid);
   const ref = doc(db, COLECCION_CONVERSACIONES, id);
-  const snap = await getDoc(ref);
+  let snap = null;
   const ahora = new Date().toISOString();
 
   const participantes = {
@@ -120,20 +199,32 @@ export async function obtenerOCrearConversacion(usuarioActual, contacto) {
     }
   };
 
-  if (!snap.exists()) {
-    await setDoc(ref, {
-      participantIds: Object.keys(participantes),
-      participantes,
-      ultimoMensaje: "",
-      ultimoMensajeEn: ahora,
-      creadoEn: ahora,
-      updatedAt: serverTimestamp()
-    });
-  } else {
-    await setDoc(ref, { participantes, updatedAt: serverTimestamp() }, { merge: true });
+  try {
+    snap = await getDoc(ref);
+    if (!snap.exists()) {
+      await setDoc(ref, {
+        participantIds: Object.keys(participantes),
+        participantes,
+        ultimoMensaje: "",
+        ultimoMensajeEn: ahora,
+        creadoEn: ahora,
+        updatedAt: serverTimestamp()
+      });
+    } else {
+      await setDoc(ref, { participantes, updatedAt: serverTimestamp() }, { merge: true });
+    }
+  } catch (error) {
+    console.warn("No se pudo crear o leer la conversacion; se usara conversacion local hasta enviar mensaje:", error);
   }
 
-  return { id, ...(snap.exists() ? snap.data() : {}), participantes, participantIds: Object.keys(participantes) };
+  return {
+    id,
+    ...(snap?.exists?.() ? snap.data() : {}),
+    participantes,
+    participantIds: Object.keys(participantes),
+    ultimoMensaje: snap?.exists?.() ? snap.data().ultimoMensaje || "" : "",
+    ultimoMensajeEn: snap?.exists?.() ? snap.data().ultimoMensajeEn || ahora : ahora
+  };
 }
 
 export async function listarConversacionesMensajes(uidActual = "") {

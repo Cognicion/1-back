@@ -26,6 +26,7 @@ import { iniciarMonitoreoSesion } from "./services/sesion.js";
 import { aplicarAparienciaGuardada, sincronizarAparienciaUsuario } from "./services/apariencia.js";
 import {
   agregarContactoMensaje,
+  buscarUsuariosParaMensajes,
   listarAdminsParaMensajes,
   listarContactosMensajes,
   listarConversacionesMensajes,
@@ -511,19 +512,31 @@ function integrarConversacionLocal(conversacion) {
 
 async function cargarDatosMensajesDashboard() {
   if (!usuarioDashboardActual?.uid) return;
-  try {
-    const [usuarios, contactos, conversaciones] = await Promise.all([
-      usuariosMensajesDashboard.length ? Promise.resolve(usuariosMensajesDashboard) : listarUsuariosParaMensajes(usuarioDashboardActual.uid),
-      listarContactosMensajes(usuarioDashboardActual.uid),
-      listarConversacionesMensajes(usuarioDashboardActual.uid)
-    ]);
-    usuariosMensajesDashboard = usuarios;
-    contactosMensajesDashboard = contactos;
-    conversacionesMensajesDashboard = conversaciones;
-    actualizarBadgeMensajesDashboard();
-  } catch (error) {
-    console.error("No se pudieron cargar mensajes:", error);
+  const [usuarios, contactos, conversaciones] = await Promise.allSettled([
+    usuariosMensajesDashboard.length ? Promise.resolve(usuariosMensajesDashboard) : listarUsuariosParaMensajes(usuarioDashboardActual.uid),
+    listarContactosMensajes(usuarioDashboardActual.uid),
+    listarConversacionesMensajes(usuarioDashboardActual.uid)
+  ]);
+
+  if (usuarios.status === "fulfilled") {
+    usuariosMensajesDashboard = usuarios.value;
+  } else {
+    console.warn("No se pudo cargar la lista general de usuarios para mensajes:", usuarios.reason);
   }
+
+  if (contactos.status === "fulfilled") {
+    contactosMensajesDashboard = contactos.value;
+  } else {
+    console.warn("No se pudieron cargar contactos de mensajes:", contactos.reason);
+  }
+
+  if (conversaciones.status === "fulfilled") {
+    conversacionesMensajesDashboard = conversaciones.value;
+  } else {
+    console.warn("No se pudieron cargar conversaciones:", conversaciones.reason);
+  }
+
+  actualizarBadgeMensajesDashboard();
 }
 
 function contenedorMensajes() {
@@ -599,43 +612,76 @@ function renderizarAgregarContactoDashboard() {
 
   contenedor.innerHTML = `
     <div class="mensajes-buscador">
-      <input id="buscarContactoMensaje" placeholder="Buscar por nombre, correo o rol">
+      <input id="buscarContactoMensaje" placeholder="Buscar por nombre, correo o UID">
       <div id="resultadosContactoMensaje"></div>
     </div>
   `;
 
   const input = document.getElementById("buscarContactoMensaje");
   const resultados = document.getElementById("resultadosContactoMensaje");
+  let temporizadorBusqueda = null;
 
-  const pintar = () => {
-    const texto = normalizarTextoMensaje(input?.value || "");
-    const usuarios = usuariosMensajesDashboard
-      .filter((usuario) => !texto || normalizarTextoMensaje(`${usuario.nombre || ""} ${usuario.email || ""} ${usuario.rol || ""}`).includes(texto))
-      .slice(0, 20);
+  const pintarResultados = (usuarios = [], texto = "") => {
+    if (!usuarios.length) {
+      resultados.innerHTML = texto
+        ? `<div class="mensajes-contacto"><span>No se encontraron usuarios con esa busqueda. Intenta con correo completo o UID.</span></div>`
+        : `<div class="mensajes-contacto"><span>Escribe un nombre, correo o UID para buscar usuarios. Tambien puedes usar "Hablar con admin".</span></div>`;
+      return;
+    }
 
-    resultados.innerHTML = usuarios.length ? usuarios.map((usuario) => `
+    resultados.innerHTML = usuarios.map((usuario) => `
       <div class="mensajes-contacto">
-        <strong>${escaparHTML(usuario.nombre || usuario.email || usuario.id)}</strong>
-        <span>${escaparHTML(usuario.email || "")} · ${escaparHTML(usuario.rol || "usuario")}</span>
+        <strong>${escaparHTML(usuario.nombre || usuario.email || usuario.correo || usuario.id)}</strong>
+        <span>${escaparHTML(usuario.email || usuario.correo || "")} · ${escaparHTML(usuario.rol || "usuario")}</span>
         <button type="button" data-agregar-contacto="${escaparHTML(usuario.id)}">Agregar contacto</button>
       </div>
-    `).join("") : `<div class="mensajes-contacto"><span>No se encontraron usuarios.</span></div>`;
+    `).join("");
 
     resultados.querySelectorAll("[data-agregar-contacto]").forEach((boton) => {
       boton.addEventListener("click", async () => {
-        const usuario = usuariosMensajesDashboard.find((item) => item.id === boton.dataset.agregarContacto);
+        const usuario = usuarios.find((item) => item.id === boton.dataset.agregarContacto)
+          || usuariosMensajesDashboard.find((item) => item.id === boton.dataset.agregarContacto);
         if (!usuario) return;
         await agregarContactoMensaje(usuarioDashboardActual.uid, usuario);
+        usuariosMensajesDashboard = [
+          usuario,
+          ...usuariosMensajesDashboard.filter((item) => item.id !== usuario.id)
+        ];
         await cargarDatosMensajesDashboard();
         renderizarContactosDashboard();
       });
     });
   };
 
-  input?.addEventListener("input", pintar);
+  const pintar = async () => {
+    const textoOriginal = input?.value || "";
+    const texto = normalizarTextoMensaje(textoOriginal);
+    let usuarios = usuariosMensajesDashboard
+      .filter((usuario) => !texto || normalizarTextoMensaje(`${usuario.nombre || ""} ${usuario.email || ""} ${usuario.correo || ""} ${usuario.rol || ""}`).includes(texto))
+      .slice(0, 20);
+
+    if (texto && !usuarios.length) {
+      resultados.innerHTML = `<div class="mensajes-contacto"><span>Buscando usuarios...</span></div>`;
+      try {
+        usuarios = await buscarUsuariosParaMensajes(textoOriginal, usuarioDashboardActual.uid);
+        usuarios.forEach((usuario) => {
+          if (!usuariosMensajesDashboard.some((item) => item.id === usuario.id)) usuariosMensajesDashboard.push(usuario);
+        });
+      } catch (error) {
+        console.warn("No se pudo buscar usuario para mensajes:", error);
+        usuarios = [];
+      }
+    }
+
+    pintarResultados(usuarios, texto);
+  };
+
+  input?.addEventListener("input", () => {
+    clearTimeout(temporizadorBusqueda);
+    temporizadorBusqueda = setTimeout(pintar, 250);
+  });
   pintar();
 }
-
 function normalizarTextoMensaje(texto = "") {
   return String(texto)
     .normalize("NFD")

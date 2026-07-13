@@ -791,7 +791,7 @@ function conversacionNoLeidaAdmin(conversacion = {}) {
 
 async function cargarMensajesAdmin() {
   const lista = document.getElementById("listaConversacionesAdmin");
-  if (lista) lista.innerHTML = "<p>Cargando conversaciones...</p>";
+  if (lista && !conversacionesAdmin.length) lista.innerHTML = "<p>Cargando conversaciones...</p>";
   if (!adminActual?.uid) return;
 
   try {
@@ -799,7 +799,17 @@ async function cargarMensajesAdmin() {
     renderizarConversacionesAdmin();
   } catch (error) {
     console.error("No se pudieron cargar conversaciones de admin:", error);
-    if (lista) lista.innerHTML = `<p class="admin-muted">No se pudieron cargar mensajes: ${escaparHTML(error.message)}</p>`;
+    if (conversacionesAdmin.length) {
+      renderizarConversacionesAdmin();
+      return;
+    }
+    if (lista) {
+      lista.innerHTML = `
+        <p class="admin-muted">
+          No se pudo cargar la lista completa por permisos. Usa "Nuevo mensaje" para abrir un chat directo.
+        </p>
+      `;
+    }
   }
 }
 
@@ -903,13 +913,44 @@ async function iniciarMensajeAdminConUsuario(uidUsuario = "") {
     rol: usuario.rol || ""
   };
 
-  await agregarContactoMensaje(adminActual.uid, contacto).catch((error) => {
-    console.warn("No se pudo guardar contacto de admin:", error);
-  });
-  const conversacion = await obtenerOCrearConversacion(datosAdminParaMensajes(), contacto);
-  conversacionesAdmin = [conversacion, ...conversacionesAdmin.filter((item) => item.id !== conversacion.id)];
-  await cargarMensajesAdmin();
-  await abrirConversacionAdmin(conversacion.id);
+  const detalle = document.getElementById("detalleConversacionAdmin");
+  if (detalle) {
+    detalle.innerHTML = `
+      <div class="mensaje-admin-header">
+        <div>
+          <h3>Abriendo chat...</h3>
+          <p>Preparando conversación con ${escaparHTML(contacto.nombre || contacto.email || contacto.id)}.</p>
+        </div>
+      </div>
+    `;
+  }
+
+  try {
+    await agregarContactoMensaje(adminActual.uid, contacto).catch((error) => {
+      console.warn("No se pudo guardar contacto de admin:", error);
+    });
+    const conversacion = await obtenerOCrearConversacion(datosAdminParaMensajes(), contacto);
+    conversacionesAdmin = [conversacion, ...conversacionesAdmin.filter((item) => item.id !== conversacion.id)];
+
+    // Abrir el hilo directamente. La consulta global de conversaciones puede estar
+    // limitada por reglas y no debe impedir iniciar un mensaje nuevo.
+    await abrirConversacionAdmin(conversacion.id);
+    cargarMensajesAdmin().catch((error) => {
+      console.warn("No se pudo refrescar lista lateral de conversaciones:", error);
+    });
+  } catch (error) {
+    console.error("No se pudo iniciar chat con usuario:", error);
+    if (detalle) {
+      detalle.innerHTML = `
+        <div class="mensaje-admin-header">
+          <div>
+            <h3>No se pudo abrir el chat</h3>
+            <p>${escaparHTML(error.message || "Firestore bloqueo la creación de la conversación.")}</p>
+          </div>
+        </div>
+      `;
+    }
+  }
 }
 
 async function abrirConversacionAdmin(conversacionId = "") {
