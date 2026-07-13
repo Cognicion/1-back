@@ -46,6 +46,7 @@ let codigosMedicoAdmin = [];
 let avisosGlobalesAdmin = [];
 let notasPorPaciente = {};
 let adminActual = null;
+const CLAVE_ALTURAS_RESPUESTAS_REPORTE = "cognicion_admin_alturas_respuestas_reportes";
 const ESTADOS_REPORTE_ADMIN = [
   "nuevo",
   "en_revision",
@@ -1202,6 +1203,88 @@ function datosUsuarioReporteHTML(reporte = {}) {
   `;
 }
 
+function cargarAlturasRespuestasReporte() {
+  try {
+    const guardado = localStorage.getItem(CLAVE_ALTURAS_RESPUESTAS_REPORTE);
+    const datos = guardado ? JSON.parse(guardado) : {};
+    return datos && typeof datos === "object" ? datos : {};
+  } catch (error) {
+    console.warn("No se pudieron cargar las alturas de respuestas de reportes", error);
+    return {};
+  }
+}
+
+function guardarEstadoRespuestaReporte(reporteId, cambios = {}) {
+  const alturas = cargarAlturasRespuestasReporte();
+  alturas[reporteId] = {
+    ...(typeof alturas[reporteId] === "object" ? alturas[reporteId] : { altura: alturas[reporteId] }),
+    ...cambios
+  };
+  localStorage.setItem(CLAVE_ALTURAS_RESPUESTAS_REPORTE, JSON.stringify(alturas));
+}
+
+function alturaRespuestaReporteGuardada(reporteId) {
+  const estado = cargarAlturasRespuestasReporte()[reporteId];
+  if (typeof estado === "number") return estado;
+  if (estado && typeof estado === "object") return estado.altura;
+  return null;
+}
+
+function respuestaReporteContraida(reporteId) {
+  const estado = cargarAlturasRespuestasReporte()[reporteId];
+  return Boolean(estado && typeof estado === "object" && estado.contraida);
+}
+
+function aplicarAlturaRespuestaReporte(reporteId, altura, contraida = false) {
+  const campo = document.getElementById(`respuesta-reporte-${reporteId}`);
+  if (!campo) return;
+  const alto = Math.max(58, Math.round(Number(altura) || 112));
+  campo.style.height = `${alto}px`;
+  campo.closest(".respuesta-reporte-form")?.classList.toggle("respuesta-contraida", contraida);
+  guardarEstadoRespuestaReporte(reporteId, { altura: alto, contraida });
+}
+
+function configurarControlesRespuestaReporte() {
+  document.querySelectorAll("[data-respuesta-reporte-accion]").forEach((boton) => {
+    if (boton.dataset.respuestaBound === "1") return;
+    boton.dataset.respuestaBound = "1";
+    boton.addEventListener("click", (evento) => {
+      evento.preventDefault();
+      evento.stopPropagation();
+      const reporteId = boton.dataset.reporteId;
+      const campo = document.getElementById(`respuesta-reporte-${reporteId}`);
+      if (!campo) return;
+      const actual = campo.getBoundingClientRect().height;
+      const accion = boton.dataset.respuestaReporteAccion;
+
+      if (accion === "menos") aplicarAlturaRespuestaReporte(reporteId, actual - 54, false);
+      if (accion === "mas") aplicarAlturaRespuestaReporte(reporteId, actual + 54, false);
+      if (accion === "reiniciar") aplicarAlturaRespuestaReporte(reporteId, 112, false);
+      if (accion === "menos" || accion === "mas" || accion === "reiniciar") {
+        const botonContraer = boton.parentElement?.querySelector("[data-respuesta-reporte-accion=\"contraer\"]");
+        if (botonContraer) botonContraer.textContent = "Contraer";
+      }
+      if (accion === "contraer") {
+        const contraer = !campo.closest(".respuesta-reporte-form")?.classList.contains("respuesta-contraida");
+        aplicarAlturaRespuestaReporte(reporteId, contraer ? 58 : (alturaRespuestaReporteGuardada(reporteId) || 112), contraer);
+        boton.textContent = contraer ? "Expandir" : "Contraer";
+      }
+    });
+  });
+
+  document.querySelectorAll(".respuesta-reporte-form textarea").forEach((campo) => {
+    if (campo.dataset.alturaBound === "1") return;
+    campo.dataset.alturaBound = "1";
+    campo.addEventListener("blur", () => {
+      const reporteId = campo.id.replace("respuesta-reporte-", "");
+      guardarEstadoRespuestaReporte(reporteId, {
+        altura: campo.getBoundingClientRect().height,
+        contraida: false
+      });
+    });
+  });
+}
+
 function renderizarReportesUsuariosAdmin() {
   const contenedor = document.getElementById("listaReportesAdmin");
   if (!contenedor) return;
@@ -1267,9 +1350,17 @@ function renderizarReportesUsuariosAdmin() {
             <span>${escaparHTML(reporte.respuestaAdminUltima.fechaISO || "")}</span>
           </div>
         ` : ""}
-        <div class="respuesta-reporte-form">
-          <label for="respuesta-reporte-${escaparHTML(reporte.id)}">Responder al usuario</label>
-          <textarea id="respuesta-reporte-${escaparHTML(reporte.id)}" placeholder="${reporte.usuarioUid ? "Escribe una respuesta. Se enviara como notificacion personal en su Dashboard." : "Este reporte no tiene usuario vinculado; no se puede enviar notificacion personal."}" ${reporte.usuarioUid ? "" : "disabled"}></textarea>
+        <div class="respuesta-reporte-form ${respuestaReporteContraida(reporte.id) ? "respuesta-contraida" : ""}">
+          <div class="respuesta-reporte-barra">
+            <label for="respuesta-reporte-${escaparHTML(reporte.id)}">Responder al usuario</label>
+            <div class="respuesta-reporte-controles" aria-label="Ajustar campo de respuesta">
+              <button type="button" data-reporte-id="${escaparHTML(reporte.id)}" data-respuesta-reporte-accion="menos">-</button>
+              <button type="button" data-reporte-id="${escaparHTML(reporte.id)}" data-respuesta-reporte-accion="mas">+</button>
+              <button type="button" data-reporte-id="${escaparHTML(reporte.id)}" data-respuesta-reporte-accion="contraer">${respuestaReporteContraida(reporte.id) ? "Expandir" : "Contraer"}</button>
+              <button type="button" data-reporte-id="${escaparHTML(reporte.id)}" data-respuesta-reporte-accion="reiniciar">Reiniciar</button>
+            </div>
+          </div>
+          <textarea id="respuesta-reporte-${escaparHTML(reporte.id)}" style="height:${respuestaReporteContraida(reporte.id) ? 58 : (alturaRespuestaReporteGuardada(reporte.id) || 112)}px" placeholder="${reporte.usuarioUid ? "Escribe una respuesta. Se enviara como notificacion personal en su Dashboard." : "Este reporte no tiene usuario vinculado; no se puede enviar notificacion personal."}" ${reporte.usuarioUid ? "" : "disabled"}></textarea>
           <div class="respuesta-reporte-ayuda">
             ${reporte.usuarioUid
               ? "Puedes enviarla como notificacion del Dashboard o como mensaje directo. En mensaje directo solo se enviara al usuario seleccionado en este reporte."
@@ -1287,6 +1378,7 @@ function renderizarReportesUsuariosAdmin() {
       </article>
     `;
   }).join("");
+  configurarControlesRespuestaReporte();
 }
 
 function etiquetaTipoReporte(tipo) {
