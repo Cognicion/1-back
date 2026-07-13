@@ -23,6 +23,17 @@ import {
 import { registrarEventoAuditoria } from "./services/auditoria.js";
 import { iniciarMonitoreoSesion } from "./services/sesion.js";
 import { aplicarAparienciaGuardada, sincronizarAparienciaUsuario } from "./services/apariencia.js";
+import {
+  agregarContactoMensaje,
+  listarAdminsParaMensajes,
+  listarContactosMensajes,
+  listarConversacionesMensajes,
+  listarMensajesConversacion,
+  listarUsuariosParaMensajes,
+  marcarMensajesConversacionVistos,
+  obtenerOCrearConversacion,
+  enviarMensajeConversacion
+} from "./services/mensajes.js";
 
 aplicarAparienciaGuardada();
 iniciarMonitoreoSesion("Dashboard");
@@ -48,6 +59,11 @@ let avisosDashboardActuales = [];
 let avisosLeidosDashboard = new Set();
 let usuarioDashboardActual = null;
 let rolDashboardActual = "";
+let usuariosMensajesDashboard = [];
+let contactosMensajesDashboard = [];
+let conversacionesMensajesDashboard = [];
+let conversacionActivaDashboard = null;
+let mensajesConversacionActiva = [];
 window.alternarModuloAvisos = function(forzarAbierto = null) {
   const modulo = document.getElementById("avisosDashboardModulo");
   const boton = document.getElementById("btnToggleAvisosDashboard");
@@ -56,6 +72,22 @@ window.alternarModuloAvisos = function(forzarAbierto = null) {
   modulo.classList.toggle("colapsado", !debeAbrir);
   boton?.setAttribute("aria-expanded", String(debeAbrir));
   if (boton) boton.textContent = debeAbrir ? "Contraer" : "Expandir";
+};
+
+window.alternarMensajes = async function(forzarAbierto = null) {
+  const panel = document.getElementById("mensajesPanel");
+  const boton = document.getElementById("mensajesButton");
+  if (!panel) return;
+
+  const abrir = forzarAbierto === null ? !panel.classList.contains("abierto") : Boolean(forzarAbierto);
+  panel.classList.toggle("abierto", abrir);
+  panel.setAttribute("aria-hidden", String(!abrir));
+  boton?.setAttribute("aria-expanded", String(abrir));
+
+  if (abrir) {
+    await cargarDatosMensajesDashboard();
+    renderizarConversacionesDashboard();
+  }
 };
 
 window.alternarNotificaciones = function() {
@@ -96,7 +128,10 @@ document.getElementById("proximamenteOverlay")?.addEventListener("click", (event
 });
 
 document.addEventListener("keydown", (evento) => {
-  if (evento.key === "Escape") window.cerrarProximamente();
+  if (evento.key === "Escape") {
+    window.cerrarProximamente();
+    window.alternarMensajes?.(false);
+  }
 });
 
 onAuthStateChanged(auth, async (user) => {
@@ -107,7 +142,7 @@ onAuthStateChanged(auth, async (user) => {
 
   const datos = await obtenerUsuario(user.uid);
   await sincronizarAparienciaUsuario(user.uid);
-  usuarioDashboardActual = { uid: user.uid, email: user.email || "", nombre: datos?.nombre || user.email || "" };
+  usuarioDashboardActual = { uid: user.uid, email: user.email || "", nombre: datos?.nombre || user.email || "", rol: datos?.rol || "" };
   const rolUsuario = String(datos?.rol || "").toLowerCase().trim();
   rolDashboardActual = rolUsuario;
 
@@ -126,6 +161,7 @@ onAuthStateChanged(auth, async (user) => {
   }
 
   await cargarAvisosDashboard(rolUsuario, user.uid);
+  await cargarDatosMensajesDashboard();
 });
 
 window.cerrarSesion = async function() {
@@ -325,3 +361,255 @@ async function cargarAvisosDashboard(rolUsuario, uidUsuario) {
     contenedor.innerHTML = `<article class="aviso-dashboard-item"><strong>Avisos no disponibles</strong><p>No se pudieron cargar los avisos por el momento.</p></article>`;
   }
 }
+
+function otroParticipanteConversacion(conversacion = {}) {
+  const participantes = conversacion.participantes || {};
+  const otroUid = (conversacion.participantIds || Object.keys(participantes)).find((uid) => uid !== usuarioDashboardActual?.uid);
+  return participantes[otroUid] || { uid: otroUid, nombre: "Contacto" };
+}
+
+function actualizarBadgeMensajesDashboard() {
+  const badge = document.getElementById("mensajesBadge");
+  if (!badge || !usuarioDashboardActual?.uid) return;
+
+  const noLeidas = conversacionesMensajesDashboard.filter((conversacion) => {
+    if (conversacion.ultimoMensajePor === usuarioDashboardActual.uid) return false;
+    const leidoEn = conversacion.lecturasUsuarios?.[usuarioDashboardActual.uid]?.leidoEn || "";
+    return !leidoEn || String(leidoEn) < String(conversacion.ultimoMensajeEn || "");
+  }).length;
+
+  badge.textContent = noLeidas;
+  badge.style.display = noLeidas ? "inline-flex" : "none";
+}
+
+async function cargarDatosMensajesDashboard() {
+  if (!usuarioDashboardActual?.uid) return;
+  try {
+    const [usuarios, contactos, conversaciones] = await Promise.all([
+      usuariosMensajesDashboard.length ? Promise.resolve(usuariosMensajesDashboard) : listarUsuariosParaMensajes(usuarioDashboardActual.uid),
+      listarContactosMensajes(usuarioDashboardActual.uid),
+      listarConversacionesMensajes(usuarioDashboardActual.uid)
+    ]);
+    usuariosMensajesDashboard = usuarios;
+    contactosMensajesDashboard = contactos;
+    conversacionesMensajesDashboard = conversaciones;
+    actualizarBadgeMensajesDashboard();
+  } catch (error) {
+    console.error("No se pudieron cargar mensajes:", error);
+  }
+}
+
+function contenedorMensajes() {
+  return document.getElementById("mensajesVista");
+}
+
+function renderizarConversacionesDashboard() {
+  const panel = document.getElementById("mensajesPanel");
+  const contenedor = contenedorMensajes();
+  panel?.classList.remove("con-chat");
+  conversacionActivaDashboard = null;
+  mensajesConversacionActiva = [];
+  if (!contenedor) return;
+
+  if (!conversacionesMensajesDashboard.length) {
+    contenedor.innerHTML = `
+      <div class="mensajes-contacto">
+        <strong>Sin conversaciones todavia</strong>
+        <span>Agrega un contacto, inicia una conversacion o habla con el admin.</span>
+      </div>
+    `;
+    return;
+  }
+
+  contenedor.innerHTML = conversacionesMensajesDashboard.map((conversacion) => {
+    const otro = otroParticipanteConversacion(conversacion);
+    const leidoEn = conversacion.lecturasUsuarios?.[usuarioDashboardActual.uid]?.leidoEn || "";
+    const noLeida = conversacion.ultimoMensajePor !== usuarioDashboardActual.uid
+      && (!leidoEn || String(leidoEn) < String(conversacion.ultimoMensajeEn || ""));
+    return `
+      <button type="button" class="mensajes-conversacion-item ${noLeida ? "activa" : ""}" data-abrir-conversacion="${escaparHTML(conversacion.id)}">
+        <strong>${escaparHTML(otro.nombre || otro.email || "Contacto")}</strong>
+        <span>${escaparHTML(otro.rol || "usuario")} ${noLeida ? "· nuevo" : ""}</span>
+        <span>${escaparHTML(conversacion.ultimoMensaje || "Conversacion iniciada")}</span>
+      </button>
+    `;
+  }).join("");
+
+  contenedor.querySelectorAll("[data-abrir-conversacion]").forEach((boton) => {
+    boton.addEventListener("click", () => abrirConversacionDashboard(boton.dataset.abrirConversacion));
+  });
+}
+
+function renderizarContactosDashboard() {
+  const panel = document.getElementById("mensajesPanel");
+  const contenedor = contenedorMensajes();
+  panel?.classList.remove("con-chat");
+  if (!contenedor) return;
+
+  if (!contactosMensajesDashboard.length) {
+    contenedor.innerHTML = `<div class="mensajes-contacto"><strong>Sin contactos</strong><span>Usa “Agregar contacto” para buscar usuarios registrados.</span></div>`;
+    return;
+  }
+
+  contenedor.innerHTML = contactosMensajesDashboard.map((contacto) => `
+    <div class="mensajes-contacto">
+      <strong>${escaparHTML(contacto.nombre || contacto.email || contacto.id)}</strong>
+      <span>${escaparHTML(contacto.email || "")} · ${escaparHTML(contacto.rol || "usuario")}</span>
+      <button type="button" data-iniciar-contacto="${escaparHTML(contacto.id || contacto.uid)}">Iniciar conversacion</button>
+    </div>
+  `).join("");
+
+  contenedor.querySelectorAll("[data-iniciar-contacto]").forEach((boton) => {
+    boton.addEventListener("click", () => iniciarConversacionConUsuarioDashboard(boton.dataset.iniciarContacto));
+  });
+}
+
+function renderizarAgregarContactoDashboard() {
+  const panel = document.getElementById("mensajesPanel");
+  const contenedor = contenedorMensajes();
+  panel?.classList.remove("con-chat");
+  if (!contenedor) return;
+
+  contenedor.innerHTML = `
+    <div class="mensajes-buscador">
+      <input id="buscarContactoMensaje" placeholder="Buscar por nombre, correo o rol">
+      <div id="resultadosContactoMensaje"></div>
+    </div>
+  `;
+
+  const input = document.getElementById("buscarContactoMensaje");
+  const resultados = document.getElementById("resultadosContactoMensaje");
+
+  const pintar = () => {
+    const texto = normalizarTextoMensaje(input?.value || "");
+    const usuarios = usuariosMensajesDashboard
+      .filter((usuario) => !texto || normalizarTextoMensaje(`${usuario.nombre || ""} ${usuario.email || ""} ${usuario.rol || ""}`).includes(texto))
+      .slice(0, 20);
+
+    resultados.innerHTML = usuarios.length ? usuarios.map((usuario) => `
+      <div class="mensajes-contacto">
+        <strong>${escaparHTML(usuario.nombre || usuario.email || usuario.id)}</strong>
+        <span>${escaparHTML(usuario.email || "")} · ${escaparHTML(usuario.rol || "usuario")}</span>
+        <button type="button" data-agregar-contacto="${escaparHTML(usuario.id)}">Agregar contacto</button>
+      </div>
+    `).join("") : `<div class="mensajes-contacto"><span>No se encontraron usuarios.</span></div>`;
+
+    resultados.querySelectorAll("[data-agregar-contacto]").forEach((boton) => {
+      boton.addEventListener("click", async () => {
+        const usuario = usuariosMensajesDashboard.find((item) => item.id === boton.dataset.agregarContacto);
+        if (!usuario) return;
+        await agregarContactoMensaje(usuarioDashboardActual.uid, usuario);
+        await cargarDatosMensajesDashboard();
+        renderizarContactosDashboard();
+      });
+    });
+  };
+
+  input?.addEventListener("input", pintar);
+  pintar();
+}
+
+function normalizarTextoMensaje(texto = "") {
+  return String(texto)
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim();
+}
+
+async function iniciarConversacionConUsuarioDashboard(uidContacto) {
+  const contacto = usuariosMensajesDashboard.find((usuario) => usuario.id === uidContacto)
+    || contactosMensajesDashboard.find((usuario) => usuario.id === uidContacto || usuario.uid === uidContacto);
+  if (!contacto || !usuarioDashboardActual?.uid) return;
+
+  await agregarContactoMensaje(usuarioDashboardActual.uid, contacto);
+  const conversacion = await obtenerOCrearConversacion(usuarioDashboardActual, contacto);
+  await cargarDatosMensajesDashboard();
+  await abrirConversacionDashboard(conversacion.id);
+}
+
+async function hablarConAdminDashboard() {
+  const admins = await listarAdminsParaMensajes(usuarioDashboardActual.uid);
+  const admin = admins[0];
+  if (!admin) {
+    alert("No se encontro un administrador disponible para mensaje directo.");
+    return;
+  }
+  await iniciarConversacionConUsuarioDashboard(admin.id);
+}
+
+async function abrirConversacionDashboard(conversacionId) {
+  const panel = document.getElementById("mensajesPanel");
+  const contenedor = contenedorMensajes();
+  if (!contenedor || !conversacionId) return;
+
+  conversacionActivaDashboard = conversacionesMensajesDashboard.find((conv) => conv.id === conversacionId)
+    || { id: conversacionId, participantes: {}, participantIds: [] };
+
+  mensajesConversacionActiva = await marcarMensajesConversacionVistos(conversacionId, usuarioDashboardActual.uid, usuarioDashboardActual);
+  const mensajesActualizados = await listarMensajesConversacion(conversacionId);
+  mensajesConversacionActiva = mensajesActualizados;
+
+  await updateDoc(doc(db, "mensajesConversaciones", conversacionId), {
+    [`lecturasUsuarios.${usuarioDashboardActual.uid}`]: {
+      leidoEn: new Date().toISOString(),
+      uid: usuarioDashboardActual.uid,
+      nombre: usuarioDashboardActual.nombre || ""
+    }
+  }).catch((error) => console.warn("No se pudo actualizar lectura de conversacion:", error));
+
+  panel?.classList.add("con-chat");
+  const otro = otroParticipanteConversacion(conversacionActivaDashboard);
+  contenedor.innerHTML = `
+    <div class="mensajes-contacto">
+      <strong>${escaparHTML(otro.nombre || otro.email || "Contacto")}</strong>
+      <span>${escaparHTML(otro.rol || "usuario")} · visto por usuario/admin cuando aparece “Visto”.</span>
+      <button type="button" data-volver-conversaciones>Volver a conversaciones</button>
+    </div>
+    <div id="mensajesHiloDashboard">
+      ${mensajesActualizados.length ? mensajesActualizados.map((mensaje) => renderMensajeDashboard(mensaje, otro.uid)).join("") : `<p class="avisos-resumen-rapido">Escribe el primer mensaje.</p>`}
+    </div>
+  `;
+
+  contenedor.querySelector("[data-volver-conversaciones]")?.addEventListener("click", async () => {
+    await cargarDatosMensajesDashboard();
+    renderizarConversacionesDashboard();
+  });
+  contenedor.scrollTop = contenedor.scrollHeight;
+  await cargarDatosMensajesDashboard();
+}
+
+function renderMensajeDashboard(mensaje, otroUid = "") {
+  const propio = mensaje.autorUid === usuarioDashboardActual?.uid;
+  const vistoPorOtro = propio && otroUid && mensaje.vistosPor?.[otroUid];
+  return `
+    <div class="mensaje-burbuja ${propio ? "propio" : ""}">
+      ${escaparHTML(mensaje.texto || "")}
+      <small>${escaparHTML(mensaje.autorNombre || "")} · ${escaparHTML(mensaje.fechaISO || "")}${vistoPorOtro ? " · Visto" : ""}</small>
+    </div>
+  `;
+}
+
+window.enviarMensajeDashboard = async function() {
+  const campo = document.getElementById("mensajeTexto");
+  const texto = campo?.value.trim() || "";
+  if (!texto || !conversacionActivaDashboard?.id) return;
+  await enviarMensajeConversacion(conversacionActivaDashboard.id, usuarioDashboardActual, texto);
+  campo.value = "";
+  await abrirConversacionDashboard(conversacionActivaDashboard.id);
+};
+
+document.querySelectorAll("[data-mensajes-vista]").forEach((boton) => {
+  boton.addEventListener("click", async () => {
+    await cargarDatosMensajesDashboard();
+    const vista = boton.dataset.mensajesVista;
+    if (vista === "contactos") renderizarContactosDashboard();
+    if (vista === "agregar") renderizarAgregarContactoDashboard();
+    if (vista === "conversaciones") renderizarConversacionesDashboard();
+  });
+});
+
+document.querySelector("[data-mensajes-admin]")?.addEventListener("click", async () => {
+  await cargarDatosMensajesDashboard();
+  await hablarConAdminDashboard();
+});

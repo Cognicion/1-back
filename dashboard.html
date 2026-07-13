@@ -670,6 +670,12 @@ footer {
     position: relative;
 }
 
+.topbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
 .notifications-button {
     position: relative;
     width: 44px;
@@ -909,6 +915,212 @@ footer {
         width: auto;
     }
 }
+
+.mensajes-panel {
+    position: fixed;
+    top: 88px;
+    right: 28px;
+    z-index: 130;
+    width: min(420px, calc(100vw - 32px));
+    max-height: calc(100vh - 118px);
+    display: grid;
+    grid-template-rows: auto auto minmax(260px, 1fr) auto;
+    border: 1px solid rgba(125, 211, 252, 0.28);
+    border-radius: 24px;
+    background:
+        radial-gradient(circle at 12% 0%, rgba(56, 189, 248, 0.22), transparent 34%),
+        linear-gradient(145deg, rgba(5, 10, 22, 0.96), rgba(15, 23, 42, 0.94));
+    box-shadow: 0 32px 90px rgba(0, 0, 0, 0.42), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(22px);
+    overflow: hidden;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transform: translateY(-8px) scale(0.98);
+    transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s ease;
+}
+
+.mensajes-panel.abierto {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transform: translateY(0) scale(1);
+}
+
+.mensajes-header,
+.mensajes-toolbar,
+.mensajes-compose {
+    padding: 14px 16px;
+    border-bottom: 1px solid rgba(125, 211, 252, 0.14);
+}
+
+.mensajes-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+}
+
+.mensajes-header strong {
+    display: block;
+    color: #eef6ff;
+    font-size: 1.05rem;
+}
+
+.mensajes-cerrar {
+    width: 34px;
+    height: 34px;
+    border-radius: 999px;
+    color: #dbeafe;
+    background: rgba(15, 23, 42, 0.74);
+    border: 1px solid rgba(125, 211, 252, 0.22);
+}
+
+.mensajes-toolbar {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+}
+
+.mensajes-toolbar button,
+.mensajes-contacto button,
+.mensajes-compose button {
+    min-height: 36px;
+    border-radius: 999px;
+    color: #e0f2fe;
+    background: rgba(15, 23, 42, 0.7);
+    border: 1px solid rgba(125, 211, 252, 0.2);
+    font-size: .82rem;
+    font-weight: 800;
+}
+
+.mensajes-toolbar button:hover,
+.mensajes-contacto button:hover,
+.mensajes-compose button:hover,
+.mensajes-cerrar:hover {
+    border-color: rgba(125, 211, 252, 0.52);
+    transform: translateY(-1px);
+}
+
+.mensajes-vista {
+    min-height: 300px;
+    max-height: 54vh;
+    overflow: auto;
+    padding: 14px 16px;
+}
+
+.mensajes-buscador {
+    display: grid;
+    gap: 10px;
+}
+
+.mensajes-buscador input,
+.mensajes-compose textarea {
+    width: 100%;
+    border: 1px solid rgba(125, 211, 252, 0.2);
+    border-radius: 14px;
+    background: rgba(2, 6, 23, 0.66);
+    color: #eef6ff;
+    padding: 12px 13px;
+    font: inherit;
+    outline: none;
+}
+
+.mensajes-buscador input:focus,
+.mensajes-compose textarea:focus {
+    border-color: rgba(56, 189, 248, 0.62);
+    box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.12);
+}
+
+.mensajes-contacto,
+.mensajes-conversacion-item {
+    display: grid;
+    gap: 8px;
+    padding: 12px;
+    border: 1px solid rgba(125, 211, 252, 0.14);
+    border-radius: 16px;
+    background: rgba(2, 6, 23, 0.44);
+    margin-bottom: 10px;
+}
+
+.mensajes-contacto strong,
+.mensajes-conversacion-item strong {
+    color: #e0f2fe;
+}
+
+.mensajes-contacto span,
+.mensajes-conversacion-item span,
+.mensaje-visto {
+    color: #94a3b8;
+    font-size: .78rem;
+}
+
+.mensajes-conversacion-item {
+    cursor: pointer;
+    text-align: left;
+    width: 100%;
+}
+
+.mensajes-conversacion-item.activa,
+.mensajes-conversacion-item:hover {
+    border-color: rgba(34, 211, 238, 0.48);
+    background: rgba(14, 165, 233, 0.12);
+}
+
+.mensaje-burbuja {
+    width: fit-content;
+    max-width: 86%;
+    margin: 8px 0;
+    padding: 10px 12px;
+    border: 1px solid rgba(125, 211, 252, 0.15);
+    border-radius: 16px 16px 16px 4px;
+    color: #dbeafe;
+    background: rgba(15, 23, 42, 0.74);
+    line-height: 1.42;
+}
+
+.mensaje-burbuja.propio {
+    margin-left: auto;
+    border-radius: 16px 16px 4px 16px;
+    background: linear-gradient(135deg, rgba(37, 99, 235, .72), rgba(6, 182, 212, .52));
+    color: #f8fbff;
+}
+
+.mensaje-burbuja small {
+    display: block;
+    margin-top: 5px;
+    color: rgba(219, 234, 254, 0.72);
+    font-size: .68rem;
+}
+
+.mensajes-compose {
+    border-top: 1px solid rgba(125, 211, 252, 0.14);
+    border-bottom: 0;
+    display: none;
+    gap: 10px;
+}
+
+.mensajes-panel.con-chat .mensajes-compose {
+    display: grid;
+}
+
+.mensajes-compose textarea {
+    min-height: 68px;
+    resize: vertical;
+}
+
+@media (max-width: 720px) {
+    .mensajes-panel {
+        top: 76px;
+        right: 16px;
+        left: 16px;
+        width: auto;
+    }
+
+    .topbar-actions {
+        flex-wrap: wrap;
+    }
+}
 .sofia-card {
     position: relative;
     overflow: hidden;
@@ -1007,6 +1219,20 @@ footer {
 
             </div>
 
+            <div class="notifications-wrapper">
+                <button
+                    id="mensajesButton"
+                    class="notifications-button"
+                    type="button"
+                    aria-label="Abrir mensajes"
+                    aria-expanded="false"
+                    onclick="alternarMensajes()"
+                >
+                    <span class="notification-bell">MSG</span>
+                    <span id="mensajesBadge" class="notification-badge" style="display:none">0</span>
+                </button>
+            </div>
+
             <button
                 class="logout-button"
                 type="button"
@@ -1027,6 +1253,29 @@ footer {
 
     </div>
 </header>
+
+<section id="mensajesPanel" class="mensajes-panel" aria-hidden="true" aria-labelledby="mensajesTitulo">
+    <div class="mensajes-header">
+        <div>
+            <span class="section-kicker">Mensajes</span>
+            <strong id="mensajesTitulo">Conversaciones</strong>
+        </div>
+        <button class="mensajes-cerrar" type="button" aria-label="Cerrar mensajes" onclick="alternarMensajes(false)">x</button>
+    </div>
+    <div class="mensajes-toolbar">
+        <button type="button" data-mensajes-vista="contactos">Lista de contactos</button>
+        <button type="button" data-mensajes-vista="agregar">Agregar contacto</button>
+        <button type="button" data-mensajes-vista="conversaciones">Iniciar conversacion</button>
+        <button type="button" data-mensajes-admin>Hablar con admin</button>
+    </div>
+    <div id="mensajesVista" class="mensajes-vista">
+        <p class="avisos-resumen-rapido">Cargando mensajes...</p>
+    </div>
+    <div class="mensajes-compose">
+        <textarea id="mensajeTexto" maxlength="1200" placeholder="Escribe un mensaje..."></textarea>
+        <button type="button" onclick="enviarMensajeDashboard()">Enviar mensaje</button>
+    </div>
+</section>
 
 <main class="app-shell">
     <section class="hero">
