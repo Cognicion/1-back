@@ -268,3 +268,19 @@
   .tec-lab-grid { grid-template-columns: 1fr; }
   .tec-escena { min-height: 380px; }
 }
+/* Sinapsis ampliada: el simulador tipo atlas usa mas alto visual sin cambiar el motor. */
+.escena-integrada[data-camara="terminal"],
+.escena-integrada[data-camara="sinapsis"],
+.escena-integrada[data-camara="farmacologia"]{
+  min-height:720px;
+}
+@media(max-width:1220px){
+  .escena-integrada[data-camara="terminal"],
+  .escena-integrada[data-camara="sinapsis"],
+  .escena-integrada[data-camara="farmacologia"]{min-height:680px;}
+}
+@media(max-width:720px){
+  .escena-integrada[data-camara="terminal"],
+  .escena-integrada[data-camara="sinapsis"],
+  .escena-integrada[data-camara="farmacologia"]{min-height:620px;}
+}

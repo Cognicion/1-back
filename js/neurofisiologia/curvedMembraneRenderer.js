@@ -493,19 +493,20 @@ function dibujarTerminalSinapsis(ctx, geo, estado, uiMode = {}) {
 function dibujarSinapsisTipoLibro(ctx, geo, estado, uiMode = {}) {
   const w = geo.w;
   const h = geo.h;
-  const cx = w * 0.54;
-  const terminalY = h * 0.28;
-  const cleftY = h * 0.57;
-  const postY = h * 0.78;
-  const terminalW = Math.min(520, w * 0.58);
-  const terminalH = Math.min(255, h * 0.44);
-  const postW = Math.min(640, w * 0.68);
-  const postH = Math.min(180, h * 0.28);
+  const cx = w * 0.50;
+  const terminalY = h * 0.34;
+  const cleftY = h * 0.60;
+  const postY = h * 0.82;
+  const terminalW = Math.min(820, w * 0.78);
+  const terminalH = Math.min(295, h * 0.48);
+  const postW = Math.min(900, w * 0.86);
+  const postH = Math.min(205, h * 0.31);
   ctx.save();
   dibujarAxonSuperiorLibro(ctx, cx, terminalY, terminalW, estado);
   dibujarTerminalLibro(ctx, cx, terminalY, terminalW, terminalH, estado);
   dibujarMembranaActivaLibro(ctx, cx, cleftY, terminalW, estado);
   dibujarHendiduraLibro(ctx, cx, cleftY, terminalW, postW, estado);
+  dibujarRutaMetanfetaminaLibro(ctx, cx, terminalY, cleftY, terminalW, terminalH, postW, estado);
   dibujarPostsinapsisLibro(ctx, cx, postY, postW, postH, estado);
   dibujarEtiquetasSinapsisLibro(ctx, cx, terminalY, cleftY, postY, terminalW, postW, estado, uiMode);
   ctx.restore();
@@ -513,7 +514,7 @@ function dibujarSinapsisTipoLibro(ctx, geo, estado, uiMode = {}) {
 
 function dibujarAxonSuperiorLibro(ctx, cx, terminalY, terminalW, estado) {
   ctx.save();
-  const top = terminalY - 250;
+  const top = Math.max(18, terminalY - 250);
   const grad = ctx.createLinearGradient(cx, top, cx, terminalY - 80);
   grad.addColorStop(0, "rgba(125,211,252,.36)");
   grad.addColorStop(1, "rgba(56,189,248,.12)");
@@ -566,6 +567,7 @@ function dibujarTerminalLibro(ctx, cx, cy, terminalW, terminalH, estado) {
   dibujarMitocondriaLibro(ctx, cx + 118, cy - 22, -.18);
   dibujarMicrotubulosLibro(ctx, cx, cy, terminalW);
   dibujarVesiculasLibro(ctx, cx, cy, terminalW, terminalH, estado);
+  dibujarMonoaminasCitoplasmaticasLibro(ctx, cx, cy, terminalW, terminalH, estado);
   ctx.restore();
 }
 
@@ -646,6 +648,22 @@ function dibujarVesiculasLibro(ctx, cx, cy, terminalW, terminalH, estado) {
   }
 }
 
+function dibujarMonoaminasCitoplasmaticasLibro(ctx, cx, cy, terminalW, terminalH, estado) {
+  if (!["dopamina", "serotonina", "noradrenalina"].includes(estado.sinapsis.tipoId)) return;
+  const metanfetamina = farmacoActivo(estado, /metanfetamina|anfetamina/i);
+  const total = metanfetamina ? 28 : 10;
+  const left = cx - terminalW / 2;
+  const top = cy - terminalH / 2;
+  ctx.save();
+  for (let i = 0; i < total; i += 1) {
+    const phase = (estado.relojVisual * (metanfetamina ? .22 : .08) + i * .071) % 1;
+    const x = left + terminalW * .18 + ((i * 37 + phase * terminalW * .28) % (terminalW * .55));
+    const y = top + 72 + ((i * 23 + Math.sin(phase * Math.PI * 2) * 16) % Math.max(96, terminalH - 128));
+    dibujarNeurotransmisor(ctx, x, y, estado.sinapsis.tipoId, metanfetamina ? .95 : .42, metanfetamina ? 4.8 : 3.2);
+  }
+  if (metanfetamina) dibujarMiniEtiqueta(ctx, "monoamina citoplasmatica aumenta", cx - terminalW * .25, cy + terminalH * .32, "#f9a8d4");
+  ctx.restore();
+}
 function dibujarMembranaActivaLibro(ctx, cx, cleftY, terminalW, estado) {
   const activeX = cx - terminalW * .18;
   const activeW = terminalW * .36;
@@ -680,7 +698,10 @@ function dibujarHendiduraLibro(ctx, cx, cleftY, terminalW, postW, estado) {
   ctx.setLineDash([6, 8]);
   roundRect(ctx, cleftX, cleftY - 44, cleftW, 82, 20); ctx.fill(); ctx.stroke();
   ctx.setLineDash([]);
-  const ntCount = Math.min(44, Math.max(6, Math.round(estado.sinapsis.nt * 8 + estado.sinapsis.liberacionNt * 18)));
+  const monoaminergica = ["dopamina", "serotonina", "noradrenalina"].includes(estado.sinapsis.tipoId);
+  const metanfetamina = monoaminergica && farmacoActivo(estado, /metanfetamina|anfetamina/i);
+  const extraReverso = metanfetamina ? 24 : 0;
+  const ntCount = Math.min(72, Math.max(6, Math.round(estado.sinapsis.nt * 8 + estado.sinapsis.liberacionNt * 18 + extraReverso)));
   for (let i = 0; i < ntCount; i += 1) {
     const phase = (estado.relojVisual * .16 + i * .061) % 1;
     const px = cleftX + 34 + ((i * 47 + phase * 130) % Math.max(90, cleftW - 68));
@@ -692,41 +713,137 @@ function dibujarHendiduraLibro(ctx, cx, cleftY, terminalW, postW, estado) {
 }
 
 function dibujarTransportadoresEnzimasLibro(ctx, cx, cleftY, postW, estado) {
-  const nt = NT_STYLE[estado.sinapsis.tipoId] || NT_STYLE.glutamato;
-  const left = cx - postW * .31;
+  const tipo = estado.sinapsis.tipoId;
+  const left = cx - postW * .34;
+  const transportadores = transportadoresParaSinapsis(tipo);
+  const enzimas = enzimasParaSinapsis(tipo);
+  const metanfetamina = farmacoActivo(estado, /metanfetamina|anfetamina/i);
   ctx.save();
-  for (let i = 0; i < 4; i += 1) {
-    const x = left + i * 42;
-    ctx.fillStyle = "rgba(34,211,238,.32)";
-    ctx.strokeStyle = "rgba(125,211,252,.72)";
-    roundRect(ctx, x, cleftY + 26, 18, 34, 7); ctx.fill(); ctx.stroke();
-    ctx.fillStyle = "#e0f2fe"; ctx.font = "700 6px Inter, sans-serif"; ctx.textAlign = "center"; ctx.fillText(nt.transportador, x + 9, cleftY + 72);
-  }
-  for (let i = 0; i < 5; i += 1) {
-    const x = cx + postW * .18 + i * 25;
-    const y = cleftY + 8 + (i % 2) * 20;
-    ctx.fillStyle = "rgba(250,204,21,.72)";
-    ctx.strokeStyle = "rgba(254,249,195,.72)";
-    ctx.beginPath();
-    for (let n = 0; n < 6; n += 1) {
-      const a = Math.PI / 6 + n * Math.PI / 3;
-      const px = x + Math.cos(a) * 8;
-      const py = y + Math.sin(a) * 8;
-      if (n) ctx.lineTo(px, py); else ctx.moveTo(px, py);
-    }
-    ctx.closePath(); ctx.fill(); ctx.stroke();
-  }
+  transportadores.forEach((transportador, i) => {
+    const x = left + i * 54;
+    const bloqueado = metanfetamina && ["DAT", "NET", "SERT"].includes(transportador.id);
+    ctx.fillStyle = bloqueado ? "rgba(244,114,182,.34)" : "rgba(34,211,238,.32)";
+    ctx.strokeStyle = bloqueado ? "rgba(244,114,182,.92)" : "rgba(125,211,252,.72)";
+    roundRect(ctx, x, cleftY + 25, 24, 38, 8); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = bloqueado ? "#fbcfe8" : "#e0f2fe";
+    ctx.font = "800 7px Inter, sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText(transportador.id, x + 12, cleftY + 72);
+    if (bloqueado) dibujarMiniEtiqueta(ctx, "transporte reverso", x - 8, cleftY + 88, "#f9a8d4");
+  });
+  enzimas.forEach((enzima, i) => {
+    const x = cx + postW * .16 + i * 34;
+    const y = cleftY + 5 + (i % 2) * 23;
+    dibujarHexagonoEnzima(ctx, x, y, enzima);
+  });
   ctx.fillStyle = "#cbd5e1"; ctx.font = "800 9px Inter, sans-serif"; ctx.textAlign = "left";
-  ctx.fillText("recaptura", left, cleftY + 88);
-  ctx.fillText(`enzimas ${nt.enzima}`, cx + postW * .18, cleftY + 58);
+  ctx.fillText("recaptura / transportadores", left, cleftY + 106);
+  ctx.fillText("enzimas y sintesis", cx + postW * .16, cleftY + 64);
   ctx.restore();
 }
 
-function receptoresParaSinapsis(tipo, estado) {
-  const base = RECEPTORES_POR_SINAPSIS[tipo] || RECEPTORES_POR_SINAPSIS.glutamato;
-  return base.map(([label, ion, state, id]) => [label, ion, label === "NMDA" ? (estado.sinapsis.receptorOcupado > .4 ? "abierto" : "bloqueo Mg") : state, id]);
+function transportadoresParaSinapsis(tipo) {
+  const mapa = {
+    dopamina: [{ id: "DAT" }, { id: "VMAT2" }, { id: "DAT" }],
+    serotonina: [{ id: "SERT" }, { id: "VMAT2" }, { id: "SERT" }],
+    noradrenalina: [{ id: "NET" }, { id: "VMAT2" }, { id: "NET" }],
+    glutamato: [{ id: "EAAT" }, { id: "VGLUT" }, { id: "EAAT" }],
+    gaba: [{ id: "GAT" }, { id: "VGAT" }, { id: "GAT" }]
+  };
+  return mapa[tipo] || mapa.glutamato;
 }
 
+function enzimasParaSinapsis(tipo) {
+  const mapa = {
+    dopamina: ["TH", "AADC", "MAO", "COMT"],
+    serotonina: ["TPH", "AADC", "MAO"],
+    noradrenalina: ["DBH", "MAO", "COMT"],
+    glutamato: ["GLS", "Glu-Gln"],
+    gaba: ["GAD", "GABA-T"]
+  };
+  return mapa[tipo] || mapa.glutamato;
+}
+
+function dibujarHexagonoEnzima(ctx, x, y, label) {
+  ctx.save();
+  ctx.fillStyle = "rgba(250,204,21,.72)";
+  ctx.strokeStyle = "rgba(254,249,195,.72)";
+  ctx.beginPath();
+  for (let n = 0; n < 6; n += 1) {
+    const a = Math.PI / 6 + n * Math.PI / 3;
+    const px = x + Math.cos(a) * 10;
+    const py = y + Math.sin(a) * 10;
+    if (n) ctx.lineTo(px, py); else ctx.moveTo(px, py);
+  }
+  ctx.closePath(); ctx.fill(); ctx.stroke();
+  ctx.fillStyle = "#1e293b";
+  ctx.font = "900 5.8px Inter, sans-serif";
+  ctx.textAlign = "center";
+  ctx.fillText(label, x, y + 2);
+  ctx.restore();
+}
+function receptoresParaSinapsis(tipo, estado) {
+  const base = RECEPTORES_POR_SINAPSIS[tipo] || RECEPTORES_POR_SINAPSIS.glutamato;
+  return base.map(([label, ion, state, id]) => [label, ion, label === "NMDA" ? (estado.sinapsis.ocupacion > .4 ? "abierto" : "bloqueo Mg") : state, id]);
+}
+
+function dibujarRutaMetanfetaminaLibro(ctx, cx, terminalY, cleftY, terminalW, terminalH, postW, estado) {
+  const farmaco = farmacoActivo(estado, /metanfetamina|anfetamina/i);
+  if (!farmaco || !["dopamina", "serotonina", "noradrenalina"].includes(estado.sinapsis.tipoId)) return;
+  const dat = transportadoresParaSinapsis(estado.sinapsis.tipoId)[0]?.id || "DAT";
+  const datX = cx - postW * .34 + 12;
+  const datY = cleftY + 44;
+  const cytX = cx - terminalW * .26;
+  const cytY = terminalY + terminalH * .05;
+  const vesX = cx + terminalW * .08;
+  const vesY = terminalY - terminalH * .06;
+  const cleftX = cx - postW * .05;
+  const cleftNtY = cleftY - 8;
+  ctx.save();
+  dibujarFarmacoMolecula(ctx, datX - 42, datY + 18, farmaco, .95);
+  dibujarMiniEtiqueta(ctx, "metanfetamina", datX - 72, datY + 43, "#fbcfe8");
+  dibujarFlechaSinaptica(ctx, datX - 30, datY + 8, datX, datY - 18, "#f472b6", `entra por ${dat}`);
+  dibujarFlechaSinaptica(ctx, datX + 8, datY - 18, cytX, cytY, "#f472b6", "difunde en terminal");
+  dibujarFlechaSinaptica(ctx, cytX, cytY, vesX, vesY, "#f472b6", "VMAT2 desplaza DA");
+  dibujarFlechaSinaptica(ctx, cytX + 24, cytY + 24, datX + 24, datY - 12, "#f472b6", `${dat} reverso`);
+  dibujarFlechaSinaptica(ctx, datX + 30, datY - 16, cleftX, cleftNtY, "#f9a8d4", "eflujo monoaminergico");
+  for (let i = 0; i < 10; i += 1) {
+    const t = (estado.relojVisual * .22 + i * .09) % 1;
+    dibujarNeurotransmisor(ctx, datX + 28 + t * 150, cleftY - 25 + Math.sin(i + t * 6) * 13, estado.sinapsis.tipoId, .95, 5.6);
+  }
+  ctx.restore();
+}
+
+function dibujarFlechaSinaptica(ctx, x1, y1, x2, y2, color, label) {
+  ctx.save();
+  ctx.strokeStyle = color;
+  ctx.fillStyle = color;
+  ctx.lineWidth = 2;
+  ctx.setLineDash([7, 5]);
+  ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+  ctx.setLineDash([]);
+  const ang = Math.atan2(y2 - y1, x2 - x1);
+  ctx.beginPath();
+  ctx.moveTo(x2, y2);
+  ctx.lineTo(x2 - Math.cos(ang - .45) * 10, y2 - Math.sin(ang - .45) * 10);
+  ctx.lineTo(x2 - Math.cos(ang + .45) * 10, y2 - Math.sin(ang + .45) * 10);
+  ctx.closePath(); ctx.fill();
+  if (label) dibujarMiniEtiqueta(ctx, label, (x1 + x2) / 2 + 4, (y1 + y2) / 2 - 5, color);
+  ctx.restore();
+}
+
+function dibujarMiniEtiqueta(ctx, label, x, y, color = "#bae6fd") {
+  ctx.save();
+  ctx.font = "800 7px Inter, sans-serif";
+  const w = Math.max(44, ctx.measureText(label).width + 12);
+  ctx.fillStyle = "rgba(2,6,23,.72)";
+  ctx.strokeStyle = color;
+  roundRect(ctx, x, y - 12, w, 18, 8); ctx.fill(); ctx.stroke();
+  ctx.fillStyle = color;
+  ctx.textAlign = "left";
+  ctx.fillText(label, x + 6, y + 1);
+  ctx.restore();
+}
 function dibujarPostsinapsisLibro(ctx, cx, cy, postW, postH, estado) {
   const left = cx - postW / 2;
   const top = cy - postH / 2;
@@ -749,7 +866,8 @@ function dibujarPostsinapsisLibro(ctx, cx, cy, postW, postH, estado) {
   receptores.forEach(([label, ion, state], i) => {
     dibujarReceptorPostsinaptico(ctx, cx - 185 + i * 92, top + 4, label, ion, state, estado);
   });
-  const post = Number(estado.sinapsis.postPotencial || 0);
+  dibujarCorrientesPostsinapticasLibro(ctx, cx, top, postW, estado);
+  const post = Number(estado.sinapsis.potencialPost || 0);
   ctx.fillStyle = post >= 0 ? "rgba(34,211,238,.22)" : "rgba(167,139,250,.22)";
   roundRect(ctx, cx - 70, top + 72, 140, 38, 18); ctx.fill();
   ctx.fillStyle = "#e0f2fe"; ctx.font = "900 11px Inter, sans-serif"; ctx.textAlign = "center";
@@ -757,6 +875,22 @@ function dibujarPostsinapsisLibro(ctx, cx, cy, postW, postH, estado) {
   ctx.restore();
 }
 
+function dibujarCorrientesPostsinapticasLibro(ctx, cx, top, postW, estado) {
+  const ocupacion = Math.max(0, Number(estado.sinapsis.ocupacion || 0));
+  if (ocupacion < .04) return;
+  const tipo = estado.sinapsis.tipoId;
+  const ion = tipo === "gaba" ? "cl" : tipo === "glutamato" ? "na" : "na";
+  const etiqueta = tipo === "gaba" ? "IPSP / entrada Cl-" : tipo === "glutamato" ? "EPSP / Na+ Ca2+" : "GPCR / segundos mensajeros";
+  ctx.save();
+  for (let i = 0; i < Math.round(6 + ocupacion * 18); i += 1) {
+    const x = cx - postW * .22 + (i % 9) * 48;
+    const y = top + 18 + ((estado.relojVisual * 55 + i * 11) % 78);
+    if (tipo === "glutamato" && i % 4 === 0) dibujarIon(ctx, x + 10, y, "ca", .72);
+    dibujarIon(ctx, x, y, ion, .68 + ocupacion * .25);
+  }
+  dibujarMiniEtiqueta(ctx, etiqueta, cx + postW * .18, top + 105, tipo === "gaba" ? "#c4b5fd" : "#67e8f9");
+  ctx.restore();
+}
 function dibujarEtiquetasSinapsisLibro(ctx, cx, terminalY, cleftY, postY, terminalW, postW, estado, uiMode) {
   const nivel = uiMode.learningLevel || "basico";
   if (nivel === "basico" || uiMode.labelMode === "none") {
@@ -1282,7 +1416,7 @@ function dibujarMembranaPostsinaptica(ctx, geo, x, sy, estado) {
   receptores.forEach(([label, ion, state], i) => {
     dibujarReceptorPostsinaptico(ctx, x + 2, y - 92 + i * 48, label, ion, state, estado);
   });
-  const post = Number(estado.sinapsis.postPotencial || 0);
+  const post = Number(estado.sinapsis.potencialPost || 0);
   ctx.fillStyle = post >= 0 ? "rgba(34,211,238,.22)" : "rgba(167,139,250,.22)";
   ctx.beginPath(); ctx.arc(x + 92, y + Math.max(-82, Math.min(82, -post * 3)), 26, 0, Math.PI * 2); ctx.fill();
   ctx.fillStyle = "#e0f2fe"; ctx.font = "900 10px Inter, sans-serif"; ctx.textAlign = "center";
@@ -1446,12 +1580,12 @@ export function identificarZonaNeuroCanvas(canvas, estado, uiMode = {}, clientX,
   const geo = crearGeometria(cssW, cssH, uiMode.cameraMode || "membrana");
   const modo = uiMode.cameraMode || "membrana";
   if (["terminal", "sinapsis", "farmacologia"].includes(modo)) {
-    const cx = cssW * 0.54;
-    const terminalY = cssH * 0.28;
-    const cleftY = cssH * 0.57;
-    const postY = cssH * 0.78;
-    const terminalW = Math.min(520, cssW * 0.58);
-    const postW = Math.min(640, cssW * 0.68);
+    const cx = cssW * 0.50;
+    const terminalY = cssH * 0.34;
+    const cleftY = cssH * 0.60;
+    const postY = cssH * 0.82;
+    const terminalW = Math.min(820, cssW * 0.78);
+    const postW = Math.min(900, cssW * 0.86);
     const zonasSinapsis = [
       { id: "axon", x: cx, y: terminalY - 155, r: 92 },
       { id: "terminal", x: cx, y: terminalY, r: Math.max(130, terminalW * .28) },

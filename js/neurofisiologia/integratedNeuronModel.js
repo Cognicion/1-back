@@ -245,11 +245,14 @@ function actualizarAxonYSinapsis(estado, dt) {
   const liberacionFarmaco = Math.max(0.05, 1 + efectos.liberacion);
   s.probabilidadLiberacion = limitar(s.basalLiberacion * caPow / (kdPow + caPow) * sv2a * liberacionFarmaco, 0, 1);
   s.vesiculasLiberadas = estado.terminalActiva ? s.probabilidadLiberacion * Math.min(s.vesiculasListas, s.vesiculasVisuales / 4) : 0;
-  s.liberacionNt = s.vesiculasLiberadas * 0.16;
-  s.vesiculasListas = limitar(s.vesiculasListas - s.vesiculasLiberadas * dt + dt * 0.18 * (s.vesiculasVisuales / 3 - s.vesiculasListas), 0, s.vesiculasVisuales);
+  const monoaminergica = ["dopamina", "serotonina", "noradrenalina"].includes(s.tipoId);
+  const datReverso = monoaminergica ? Math.max(0, Number(efectos.datReverso || 0)) : 0;
+  const recapturaFactor = Math.max(0.04, 1 + Number(efectos.recaptura || 0));
+  s.liberacionNt = s.vesiculasLiberadas * 0.16 + datReverso * (0.10 + 0.04 * Math.sin(estado.tiempo / 7));
+  s.vesiculasListas = limitar(s.vesiculasListas - s.vesiculasLiberadas * dt - datReverso * dt * 0.18 + dt * 0.18 * (s.vesiculasVisuales / 3 - s.vesiculasListas), 0, s.vesiculasVisuales);
   s.vesiculasFusionadas = s.vesiculasLiberadas;
   s.vesiculasReciclaje = limitar(s.vesiculasReciclaje + s.vesiculasLiberadas * dt - s.vesiculasReciclaje * dt * 0.08, 0, s.vesiculasVisuales);
-  s.recapturaActual = s.recaptura * s.nt / (0.35 + s.nt);
+  s.recapturaActual = s.recaptura * recapturaFactor * s.nt / (0.35 + s.nt);
   s.degradacionActual = s.degradacion * s.nt;
   s.difusionActual = s.difusion * s.nt;
   s.dNt = s.liberacionNt - s.recapturaActual - s.degradacionActual - s.difusionActual;
