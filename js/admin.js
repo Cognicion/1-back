@@ -1446,11 +1446,17 @@ window.responderReportePorMensajeAdmin = async function(reporteId) {
 
   try {
     await agregarContactoMensaje(adminMensaje.uid, contactoReporte);
+
+    // Algunas reglas solo permiten a cada usuario editar su propia libreta de contactos.
+    // La conversacion 1:1 se muestra por participantIds, asi que esta escritura reciproca
+    // es conveniente pero no debe impedir que el admin responda el reporte.
     await agregarContactoMensaje(contactoReporte.id, {
       id: adminMensaje.uid,
       nombre: adminMensaje.nombre,
       email: adminMensaje.email,
       rol: "admin"
+    }).catch((error) => {
+      console.warn("No se pudo agregar el admin a contactos del usuario; se continuara con la conversacion directa.", error);
     });
 
     const conversacion = await obtenerOCrearConversacion(adminMensaje, contactoReporte);
