@@ -3,6 +3,11 @@ import { iniciarMonitoreoSesion } from "./services/sesion.js";
 import { registrarEventoAuditoria, resumenError } from "./services/auditoria.js";
 import { FORMATOS_INSTITUCIONALES, permisosFormatosDesdeUsuario } from "./services/formatosInstitucionales.js";
 import {
+  agregarContactoMensaje,
+  enviarMensajeConversacion,
+  obtenerOCrearConversacion
+} from "./services/mensajes.js";
+import {
   actualizarEstadoReporteUsuario,
   listarReportesUsuarios,
   responderReporteUsuario
@@ -1141,13 +1146,60 @@ async function cargarReportesUsuariosAdmin() {
   if (contenedor) contenedor.innerHTML = "<p>Cargando reportes...</p>";
 
   try {
-    reportesUsuariosAdmin = await listarReportesUsuarios();
+    const reportes = await listarReportesUsuarios();
+    reportesUsuariosAdmin = reportes.map((reporte) => ({
+      ...reporte,
+      usuarioRegistrado: buscarUsuarioDeReporte(reporte)
+    }));
     renderizarReportesUsuariosAdmin();
   } catch (error) {
     if (contenedor) {
       contenedor.innerHTML = `<p class="admin-muted">No se pudieron cargar los reportes: ${escaparHTML(error.message)}</p>`;
     }
   }
+}
+
+function buscarUsuarioDeReporte(reporte = {}) {
+  if (reporte.usuarioUid) {
+    const porUid = usuariosAdmin.find((usuario) => usuario.id === reporte.usuarioUid);
+    if (porUid) return porUid;
+  }
+
+  const emailReporte = String(reporte.usuarioEmail || "").toLowerCase().trim();
+  if (emailReporte) {
+    const porEmail = usuariosAdmin.find((usuario) => String(usuario.email || "").toLowerCase().trim() === emailReporte);
+    if (porEmail) return porEmail;
+  }
+
+  return null;
+}
+
+function datosUsuarioReporteHTML(reporte = {}) {
+  const usuario = reporte.usuarioRegistrado || {};
+  const nombre = usuario.nombre || reporte.usuarioNombre || "Usuario no identificado";
+  const email = usuario.email || reporte.usuarioEmail || "Sin correo";
+  const rol = usuario.rol || "sin rol";
+  const unidad = usuario.unidad || usuario.institucion || usuario.institucionPaciente || "Sin unidad";
+  const telefono = usuario.telefono || usuario.celular || "Sin telefono";
+  const fechaRegistro = reporte.usuarioRegistrado
+    ? textoFechaUsuarioRegistro(reporte.usuarioRegistrado)
+    : "No disponible";
+
+  return `
+    <div class="reporte-usuario-detalle">
+      <div>
+        <strong>${escaparHTML(nombre)}</strong>
+        <span>${escaparHTML(email)}</span>
+      </div>
+      <div class="reporte-usuario-grid">
+        <span>Rol: ${escaparHTML(etiquetaRolUsuario(rol))}</span>
+        <span>UID: ${escaparHTML(reporte.usuarioUid || usuario.id || "Sin UID")}</span>
+        <span>Unidad: ${escaparHTML(unidad)}</span>
+        <span>Telefono: ${escaparHTML(telefono)}</span>
+        <span>Se unio: ${escaparHTML(fechaRegistro)}</span>
+      </div>
+    </div>
+  `;
 }
 
 function renderizarReportesUsuariosAdmin() {
@@ -1165,6 +1217,11 @@ function renderizarReportesUsuariosAdmin() {
       reporte.usuarioEmail,
       reporte.usuarioNombre,
       reporte.usuarioUid,
+      reporte.usuarioRegistrado?.nombre,
+      reporte.usuarioRegistrado?.email,
+      reporte.usuarioRegistrado?.rol,
+      reporte.usuarioRegistrado?.unidad,
+      reporte.usuarioRegistrado?.institucion,
       reporte.pagina,
       reporte.url
     ].join(" ")).includes(texto);
@@ -1202,6 +1259,7 @@ function renderizarReportesUsuariosAdmin() {
           <span>${escaparHTML(usuario)}</span>
           <span>${escaparHTML(reporte.pagina || "Sin pagina")}</span>
         </div>
+        ${datosUsuarioReporteHTML(reporte)}
         ${reporte.respuestaAdminUltima?.mensaje ? `
           <div class="respuesta-reporte-admin">
             <strong>Ultima respuesta enviada</strong>
@@ -1214,7 +1272,7 @@ function renderizarReportesUsuariosAdmin() {
           <textarea id="respuesta-reporte-${escaparHTML(reporte.id)}" placeholder="${reporte.usuarioUid ? "Escribe una respuesta. Se enviara como notificacion personal en su Dashboard." : "Este reporte no tiene usuario vinculado; no se puede enviar notificacion personal."}" ${reporte.usuarioUid ? "" : "disabled"}></textarea>
           <div class="respuesta-reporte-ayuda">
             ${reporte.usuarioUid
-              ? "La respuesta quedara registrada y aparecera en las notificaciones del usuario."
+              ? "Puedes enviarla como notificacion del Dashboard o como mensaje directo. En mensaje directo solo se enviara al usuario seleccionado en este reporte."
               : "Solo los reportes enviados con sesion iniciada pueden recibir respuesta directa."}
           </div>
         </div>
@@ -1224,6 +1282,7 @@ function renderizarReportesUsuariosAdmin() {
           </select>
           <button type="button" onclick="cambiarEstadoReporteAdmin('${reporte.id}')">Actualizar estado</button>
           <button type="button" ${reporte.usuarioUid ? "" : "disabled"} onclick="responderReporteAdmin('${reporte.id}')">Enviar respuesta</button>
+          <button type="button" ${reporte.usuarioUid ? "" : "disabled"} onclick="responderReportePorMensajeAdmin('${reporte.id}')">Responder por mensaje</button>
         </div>
       </article>
     `;
@@ -1330,6 +1389,98 @@ window.responderReporteAdmin = async function(reporteId) {
   } catch (error) {
     console.error("No se pudo responder el reporte:", error);
     alert("No se pudo enviar la respuesta: " + error.message);
+  }
+};
+
+window.responderReportePorMensajeAdmin = async function(reporteId) {
+  const reporte = reportesUsuariosAdmin.find((item) => item.id === reporteId);
+  const campo = document.getElementById(`respuesta-reporte-${reporteId}`);
+  const selectorEstado = document.getElementById(`estado-reporte-${reporteId}`);
+  const mensaje = campo?.value.trim() || "";
+
+  if (!reporte) {
+    alert("No se encontro el reporte seleccionado.");
+    return;
+  }
+
+  if (!reporte.usuarioUid) {
+    alert("Este reporte no tiene un usuario vinculado. No se puede responder por mensaje.");
+    return;
+  }
+
+  if (mensaje.length < 5) {
+    alert("Escribe una respuesta antes de enviarla por mensaje.");
+    campo?.focus();
+    return;
+  }
+
+  const usuarioDestino = reporte.usuarioRegistrado || {
+    id: reporte.usuarioUid,
+    nombre: reporte.usuarioNombre || reporte.usuarioEmail || reporte.usuarioUid,
+    email: reporte.usuarioEmail || "",
+    rol: ""
+  };
+
+  if ((usuarioDestino.id || reporte.usuarioUid) !== reporte.usuarioUid) {
+    alert("El contacto seleccionado no coincide con el usuario del reporte.");
+    return;
+  }
+
+  const adminMensaje = {
+    uid: adminActual?.uid || "",
+    nombre: adminActual?.email || "Administrador",
+    email: adminActual?.email || "",
+    rol: "admin"
+  };
+
+  const contactoReporte = {
+    id: reporte.usuarioUid,
+    nombre: usuarioDestino.nombre || reporte.usuarioNombre || reporte.usuarioEmail || reporte.usuarioUid,
+    email: usuarioDestino.email || reporte.usuarioEmail || "",
+    rol: usuarioDestino.rol || ""
+  };
+
+  const textoMensaje = `Respuesta a tu reporte "${reporte.titulo || etiquetaTipoReporte(reporte.tipo)}":\n\n${mensaje}`;
+  const estadoSeleccionado = selectorEstado?.value || reporte.estado || "en_revision";
+  const estadoFinal = estadoSeleccionado === "nuevo" ? "en_revision" : estadoSeleccionado;
+
+  try {
+    await agregarContactoMensaje(adminMensaje.uid, contactoReporte);
+    await agregarContactoMensaje(contactoReporte.id, {
+      id: adminMensaje.uid,
+      nombre: adminMensaje.nombre,
+      email: adminMensaje.email,
+      rol: "admin"
+    });
+
+    const conversacion = await obtenerOCrearConversacion(adminMensaje, contactoReporte);
+    await enviarMensajeConversacion(conversacion.id, adminMensaje, textoMensaje);
+
+    await responderReporteUsuario(reporteId, {
+      mensaje,
+      estado: estadoFinal,
+      idAviso: `mensaje:${conversacion.id}`,
+      adminUid: adminMensaje.uid,
+      adminEmail: adminMensaje.email,
+      adminNombre: adminMensaje.nombre
+    });
+
+    await registrarAuditoriaAdmin("responder_reporte_por_mensaje", "El administrador respondio un reporte por mensaje directo.", {
+      pacienteUid: reporte.usuarioUid,
+      pacienteNombre: contactoReporte.nombre || "",
+      detalles: {
+        reporteId,
+        conversacionId: conversacion.id,
+        destinatarioUid: contactoReporte.id,
+        estado: estadoFinal
+      }
+    });
+
+    alert("Mensaje enviado al usuario seleccionado.");
+    await cargarReportesUsuariosAdmin();
+  } catch (error) {
+    console.error("No se pudo responder por mensaje:", error);
+    alert("No se pudo enviar el mensaje: " + error.message);
   }
 };
 
