@@ -1,5 +1,6 @@
-import { medicoPuedeVer } from "./services/usuarios.js";
+﻿import { medicoPuedeVer } from "./services/usuarios.js";
 import { iniciarMonitoreoSesion } from "./services/sesion.js";
+import { aplicarAparienciaGuardada, sincronizarAparienciaUsuario } from "./services/apariencia.js";
 
 import { auth, db } from "./firebase.js";
 
@@ -20,6 +21,8 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const ADMIN_UID = "NQ0CU5PSDBUgVrk56sjPEVhOs2D3";
+
+aplicarAparienciaGuardada();
 
 iniciarMonitoreoSesion("Panel medico");
 
@@ -92,6 +95,8 @@ onAuthStateChanged(auth, async (user) => {
     window.location.href = "login.html";
     return;
   }
+
+  await sincronizarAparienciaUsuario(user.uid);
 
   const accesoPermitido = await cargarPerfilMedico(user);
 

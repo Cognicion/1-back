@@ -1,4 +1,4 @@
-/* Apariencia opcional de Cognicion. El tema clasico no agrega cambios. */
+﻿/* Apariencia opcional de Cognicion. El tema clasico no agrega cambios. */
 :root[data-cognicion-theme="laboratorio"] {
   --lab-glow: rgba(34, 211, 238, .18);
   --lab-line: rgba(125, 211, 252, .24);
@@ -1111,4 +1111,388 @@ body.tema-claro .module-card .card-actions .available-action:hover {
   border-color: rgba(2, 132, 199, .64) !important;
   transform: translateY(-2px);
   box-shadow: 0 18px 42px rgba(2, 132, 199, .26) !important;
+}
+/* Tema claro: compatibilidad completa del panel medico */
+body.tema-claro .header-medico,
+body.tema-claro .contenedor,
+body.tema-claro .grid-principal,
+body.tema-claro .panel-secundario,
+body.tema-claro .graficas-medico {
+  color: #102033 !important;
+}
+
+body.tema-claro .header-medico {
+  background: linear-gradient(180deg, rgba(255,255,255,.94), rgba(235,246,255,.82)) !important;
+  border-bottom-color: rgba(14,116,144,.16) !important;
+  box-shadow: 0 14px 34px rgba(15,23,42,.05) !important;
+}
+
+body.tema-claro .perfil-medico.card,
+body.tema-claro .seccion.card,
+body.tema-claro .graficas-medico.card,
+body.tema-claro .grid-graficas > div,
+body.tema-claro .card {
+  background: linear-gradient(145deg, rgba(255,255,255,.94), rgba(232,246,255,.78)) !important;
+  color: #102033 !important;
+  border-color: rgba(14,116,144,.18) !important;
+  box-shadow: 0 18px 52px rgba(37,99,235,.09), 0 8px 22px rgba(15,23,42,.05) !important;
+}
+
+body.tema-claro .estadisticas .stat,
+body.tema-claro .stat {
+  background: linear-gradient(145deg, rgba(238,247,255,.96), rgba(220,238,252,.9)) !important;
+  color: #102033 !important;
+  border-color: rgba(14,116,144,.18) !important;
+  box-shadow: 0 14px 34px rgba(37,99,235,.08) !important;
+}
+
+body.tema-claro .stat h3 {
+  color: #0369a1 !important;
+}
+
+body.tema-claro .stat p,
+body.tema-claro .header-medico p,
+body.tema-claro .dato,
+body.tema-claro .dato span,
+body.tema-claro .texto-suave,
+body.tema-claro .cita-panel span,
+body.tema-claro .cita-panel small,
+body.tema-claro .grid-graficas p,
+body.tema-claro .grid-graficas small {
+  color: #52657d !important;
+}
+
+body.tema-claro .perfil-medico h2,
+body.tema-claro .seccion h2,
+body.tema-claro .grid-graficas h3,
+body.tema-claro .cita-panel strong {
+  color: #102033 !important;
+}
+
+body.tema-claro .barra-acciones input,
+body.tema-claro .barra-acciones select,
+body.tema-claro .selector-atencion,
+body.tema-claro .selector-carpeta,
+body.tema-claro .input-carpeta-medico input,
+body.tema-claro .campo-carpeta-medico select {
+  background: rgba(255,255,255,.94) !important;
+  color: #102033 !important;
+  border-color: rgba(14,116,144,.22) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.75) !important;
+}
+
+body.tema-claro .barra-acciones input::placeholder,
+body.tema-claro .input-carpeta-medico input::placeholder {
+  color: #7890a8 !important;
+}
+
+body.tema-claro .barra-acciones button,
+body.tema-claro .boton,
+body.tema-claro .boton-filtro-atencion,
+body.tema-claro .boton-archivo-paciente,
+body.tema-claro .boton-contraer-panel,
+body.tema-claro .boton-contraer-carpetas {
+  background: linear-gradient(145deg, rgba(255,255,255,.96), rgba(224,244,255,.88)) !important;
+  color: #102033 !important;
+  border: 1px solid rgba(14,116,144,.22) !important;
+  box-shadow: 0 10px 24px rgba(37,99,235,.08) !important;
+}
+
+body.tema-claro .barra-acciones button:hover,
+body.tema-claro .boton:hover,
+body.tema-claro .boton-filtro-atencion:hover,
+body.tema-claro .boton-archivo-paciente:hover,
+body.tema-claro .boton-contraer-panel:hover,
+body.tema-claro .boton-contraer-carpetas:hover {
+  background: linear-gradient(145deg, #ffffff, #dff4ff) !important;
+  color: #075985 !important;
+  border-color: rgba(2,132,199,.46) !important;
+  transform: translateY(-1px);
+}
+
+body.tema-claro .carpetas-lista-pacientes {
+  background: linear-gradient(145deg, rgba(232,241,249,.92), rgba(205,221,235,.78)) !important;
+  color: #102033 !important;
+  border-color: rgba(14,116,144,.18) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.65) !important;
+}
+
+body.tema-claro .carpetas-lista-header small,
+body.tema-claro .carpetas-lista-pacientes .carpetas-lista-header small {
+  color: #4a6b88 !important;
+}
+
+body.tema-claro .carpeta-inline-medico,
+body.tema-claro .carpeta-inline-editar,
+body.tema-claro .carpeta-chip-medico,
+body.tema-claro .opcion-carpeta-visible,
+body.tema-claro .opcion-carpeta-columna {
+  background: rgba(255,255,255,.9) !important;
+  color: #102033 !important;
+  border-color: rgba(14,116,144,.18) !important;
+}
+
+body.tema-claro .carpeta-inline-medico.activa,
+body.tema-claro .carpeta-inline-medico:hover,
+body.tema-claro .carpeta-inline-editar:hover,
+body.tema-claro .carpeta-chip-medico:hover {
+  background: linear-gradient(135deg, rgba(37,99,235,.16), rgba(6,182,212,.14)) !important;
+  color: #075985 !important;
+  border-color: rgba(2,132,199,.42) !important;
+}
+
+body.tema-claro .carpeta-inline-medico small,
+body.tema-claro .carpeta-chip-medico small {
+  background: rgba(15,23,42,.08) !important;
+  color: #075985 !important;
+}
+
+body.tema-claro .tabla-pacientes {
+  scrollbar-color: #0284c7 rgba(219,234,254,.78) !important;
+}
+
+body.tema-claro .encabezado-pacientes {
+  background: linear-gradient(145deg, #dbeafe, #eaf6ff) !important;
+  color: #102033 !important;
+  border-color: rgba(14,116,144,.22) !important;
+  box-shadow: inset 0 -1px 0 rgba(14,116,144,.12) !important;
+}
+
+body.tema-claro .encabezado-pacientes span,
+body.tema-claro .encabezado-pacientes .celda-tabla {
+  color: #233b55 !important;
+  border-right-color: rgba(14,116,144,.16) !important;
+}
+
+body.tema-claro .fila-paciente,
+body.tema-claro .paciente-card {
+  background: linear-gradient(145deg, rgba(255,255,255,.86), rgba(237,246,255,.72)) !important;
+  color: #102033 !important;
+  border-color: rgba(14,116,144,.16) !important;
+}
+
+body.tema-claro .fila-paciente:hover,
+body.tema-claro .fila-paciente.seleccionada {
+  background: linear-gradient(145deg, rgba(219,234,254,.88), rgba(224,242,254,.78)) !important;
+  border-color: rgba(2,132,199,.32) !important;
+}
+
+body.tema-claro .celda-tabla,
+body.tema-claro .fila-paciente > span,
+body.tema-claro .paciente-card p {
+  color: #334155 !important;
+  border-right-color: rgba(14,116,144,.12) !important;
+}
+
+body.tema-claro .fila-paciente strong,
+body.tema-claro .paciente-card h3,
+body.tema-claro .nombre-paciente,
+body.tema-claro .celda-nombre {
+  color: #0f1f33 !important;
+}
+
+body.tema-claro .diagnostico-columna,
+body.tema-claro .diagnostico-principal,
+body.tema-claro .diagnosticos-secundarios {
+  color: #334155 !important;
+}
+
+body.tema-claro .selector-atencion,
+body.tema-claro .selector-carpeta {
+  background-image: linear-gradient(145deg, rgba(255,255,255,.96), rgba(225,245,255,.86)) !important;
+}
+
+body.tema-claro .grid-graficas > div {
+  background: linear-gradient(145deg, rgba(255,255,255,.9), rgba(230,242,252,.82)) !important;
+  scrollbar-color: #0284c7 rgba(219,234,254,.78) !important;
+}
+
+body.tema-claro .grid-graficas canvas {
+  background: transparent !important;
+}
+
+body.tema-claro .resizer::after {
+  background: #0284c7 !important;
+  box-shadow: 0 0 10px rgba(2,132,199,.35) !important;
+}
+
+body.tema-claro .modal-filtro-atencion,
+body.tema-claro .panel-filtro-atencion,
+body.tema-claro .panel-carpetas-pacientes,
+body.tema-claro .modal-columnas-pacientes,
+body.tema-claro .panel-columnas-pacientes {
+  color: #102033 !important;
+}
+
+body.tema-claro .panel-filtro-atencion,
+body.tema-claro .panel-carpetas-pacientes,
+body.tema-claro .panel-columnas-pacientes {
+  background: linear-gradient(145deg, rgba(255,255,255,.96), rgba(231,244,255,.9)) !important;
+  border-color: rgba(14,116,144,.22) !important;
+  box-shadow: 0 28px 90px rgba(15,23,42,.18) !important;
+}
+
+/* Tema claro: cierre de compatibilidad del panel medico */
+body.tema-claro .contenedor {
+  background: transparent !important;
+}
+
+body.tema-claro .logo-header,
+body.tema-claro .perfil-medico,
+body.tema-claro .seccion,
+body.tema-claro .graficas-medico,
+body.tema-claro .stat {
+  backdrop-filter: blur(18px) saturate(140%) !important;
+}
+
+body.tema-claro .avatar {
+  color: #0f172a !important;
+  box-shadow: 0 18px 36px rgba(37, 99, 235, .18) !important;
+}
+
+body.tema-claro .pestana-panel-medico,
+body.tema-claro .cerrar-filtro-atencion,
+body.tema-claro .boton-mini-carpeta,
+body.tema-claro .carpeta-chip-abrir,
+body.tema-claro .carpeta-chip-editar,
+body.tema-claro .diagnostico-toggle,
+body.tema-claro .boton-accion-tabla {
+  background: rgba(255, 255, 255, .88) !important;
+  color: #123047 !important;
+  border-color: rgba(14, 116, 144, .24) !important;
+  box-shadow: 0 10px 22px rgba(15, 23, 42, .06) !important;
+}
+
+body.tema-claro .pestana-panel-medico:hover,
+body.tema-claro .cerrar-filtro-atencion:hover,
+body.tema-claro .boton-mini-carpeta:hover,
+body.tema-claro .carpeta-chip-abrir:hover,
+body.tema-claro .carpeta-chip-editar:hover,
+body.tema-claro .diagnostico-toggle:hover,
+body.tema-claro .boton-accion-tabla:hover {
+  background: linear-gradient(135deg, #eef8ff, #dff4ff) !important;
+  color: #0369a1 !important;
+  border-color: rgba(2, 132, 199, .44) !important;
+}
+
+body.tema-claro .boton.activo,
+body.tema-claro .boton-filtro-atencion.activo,
+body.tema-claro #btnPacientesArchivados.activo,
+body.tema-claro #btnAdmin {
+  background: linear-gradient(135deg, #2563eb, #06b6d4) !important;
+  color: #ffffff !important;
+  border-color: rgba(2, 132, 199, .45) !important;
+}
+
+body.tema-claro .modal-filtro-atencion {
+  background: rgba(226, 239, 249, .58) !important;
+  backdrop-filter: blur(12px) !important;
+}
+
+body.tema-claro .encabezado-filtro-atencion,
+body.tema-claro .acciones-filtro-atencion,
+body.tema-claro .carpetas-panel-cuerpo,
+body.tema-claro .bloque-carpetas-visibles {
+  color: #102033 !important;
+}
+
+body.tema-claro .opciones-filtro-atencion label,
+body.tema-claro .opciones-filtro-atencion .opcion-filtro-atencion,
+body.tema-claro .opcion-carpeta-columna,
+body.tema-claro .opcion-carpeta-visible,
+body.tema-claro .bloque-carpetas-visibles,
+body.tema-claro .carpeta-chip-medico {
+  background: rgba(255, 255, 255, .82) !important;
+  color: #123047 !important;
+  border-color: rgba(14, 116, 144, .18) !important;
+}
+
+body.tema-claro .acciones-filtro-atencion button,
+body.tema-claro .input-carpeta-medico button,
+body.tema-claro #aplicarFiltroAtencion,
+body.tema-claro #aplicarColumnasPacientes,
+body.tema-claro #aplicarFiltroCarpetaMedico {
+  background: linear-gradient(135deg, #2563eb, #06b6d4) !important;
+  color: #ffffff !important;
+  border-color: rgba(2, 132, 199, .42) !important;
+}
+
+body.tema-claro .boton-secundario-filtro,
+body.tema-claro #limpiarFiltroAtencion,
+body.tema-claro #todosFiltroAtencion,
+body.tema-claro #restaurarColumnasPacientes,
+body.tema-claro #todasColumnasPacientes,
+body.tema-claro #limpiarFiltroCarpetaMedico {
+  background: rgba(255, 255, 255, .9) !important;
+  color: #123047 !important;
+}
+
+body.tema-claro .carpetas-lista-pacientes.carpetas-contraidas {
+  background: linear-gradient(145deg, rgba(240, 247, 253, .9), rgba(219, 234, 245, .72)) !important;
+}
+
+body.tema-claro .carpetas-inline-medico p,
+body.tema-claro .lista-carpetas-medico p,
+body.tema-claro .opciones-carpetas-visibles p,
+body.tema-claro #listaPacientes {
+  color: #52657d !important;
+}
+
+body.tema-claro .tabla-pacientes::-webkit-scrollbar,
+body.tema-claro .grid-graficas > div::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+body.tema-claro .tabla-pacientes::-webkit-scrollbar-track,
+body.tema-claro .grid-graficas > div::-webkit-scrollbar-track {
+  background: rgba(219, 234, 254, .82) !important;
+  border-radius: 999px;
+}
+
+body.tema-claro .tabla-pacientes::-webkit-scrollbar-thumb,
+body.tema-claro .grid-graficas > div::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #38bdf8, #2563eb) !important;
+  border-radius: 999px;
+  border: 2px solid rgba(219, 234, 254, .82);
+}
+
+body.tema-claro .tabla-pacientes::-webkit-scrollbar-corner,
+body.tema-claro .grid-graficas > div::-webkit-scrollbar-corner {
+  background: rgba(219, 234, 254, .82) !important;
+}
+
+body.tema-claro .encabezado-pacientes {
+  background: linear-gradient(145deg, #edf7ff, #dbeafe) !important;
+}
+
+body.tema-claro .encabezado-pacientes .celda-tabla {
+  color: #1e3a56 !important;
+  letter-spacing: .18em;
+}
+
+body.tema-claro .fila-paciente > span strong,
+body.tema-claro .fila-paciente .celda-nombre strong {
+  color: #0f172a !important;
+}
+
+body.tema-claro .selector-atencion option,
+body.tema-claro .selector-carpeta option,
+body.tema-claro .barra-acciones select option,
+body.tema-claro .campo-carpeta-medico select option {
+  background: #ffffff !important;
+  color: #102033 !important;
+}
+
+body.tema-claro .estado-activo {
+  color: #047857 !important;
+}
+
+body.tema-claro .estado-pendiente {
+  color: #a16207 !important;
+}
+
+body.tema-claro .lista-simple,
+body.tema-claro .lista-simple li {
+  color: #334155 !important;
 }
