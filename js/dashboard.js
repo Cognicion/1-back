@@ -65,6 +65,7 @@ let contactosMensajesDashboard = [];
 let conversacionesMensajesDashboard = [];
 let conversacionActivaDashboard = null;
 let mensajesConversacionActiva = [];
+const CLAVE_LECTURAS_AVISOS_DASHBOARD = "cognicion_lecturas_avisos_dashboard";
 const CLAVE_LECTURAS_RESPUESTAS_REPORTES = "cognicion_lecturas_respuestas_reportes";
 window.alternarModuloAvisos = function(forzarAbierto = null) {
   const modulo = document.getElementById("avisosDashboardModulo");
@@ -235,10 +236,12 @@ function textoDestinatarioAvisoDashboard(aviso = {}) {
 }
 
 async function obtenerLecturasAvisosDashboard(avisos = [], uidUsuario = "") {
-  const lecturasLocales = cargarLecturasLocalesRespuestasReportes();
+  const lecturasLocales = cargarLecturasLocalesAvisosDashboard();
   const lecturas = await Promise.all(avisos.map(async (aviso) => {
+    if (lecturasLocales[uidUsuario]?.[aviso.id]) return [aviso.id, true];
+
     if (aviso.origen === "respuesta_reporte") {
-      return [aviso.id, Boolean(lecturasLocales[uidUsuario]?.[aviso.id])];
+      return [aviso.id, false];
     }
 
     const lecturaEnDocumento = Boolean(aviso.lecturasUsuarios?.[uidUsuario]?.leido);
@@ -256,23 +259,42 @@ async function obtenerLecturasAvisosDashboard(avisos = [], uidUsuario = "") {
   return new Set(lecturas.filter(([, leido]) => leido).map(([id]) => id));
 }
 
-function cargarLecturasLocalesRespuestasReportes() {
+function cargarObjetoLocalDashboard(clave = "") {
   try {
-    const datos = JSON.parse(localStorage.getItem(CLAVE_LECTURAS_RESPUESTAS_REPORTES) || "{}");
+    const datos = JSON.parse(localStorage.getItem(clave) || "{}");
     return datos && typeof datos === "object" ? datos : {};
   } catch (error) {
     return {};
   }
 }
 
-function guardarLecturaLocalRespuestaReporte(uidUsuario = "", idAviso = "") {
+function cargarLecturasLocalesAvisosDashboard() {
+  const lecturasGenerales = cargarObjetoLocalDashboard(CLAVE_LECTURAS_AVISOS_DASHBOARD);
+  const lecturasRespuestas = cargarObjetoLocalDashboard(CLAVE_LECTURAS_RESPUESTAS_REPORTES);
+  const combinadas = { ...lecturasRespuestas };
+
+  Object.entries(lecturasGenerales).forEach(([uid, lecturas]) => {
+    combinadas[uid] = {
+      ...(combinadas[uid] || {}),
+      ...(lecturas && typeof lecturas === "object" ? lecturas : {})
+    };
+  });
+
+  return combinadas;
+}
+
+function guardarLecturaLocalAvisoDashboard(uidUsuario = "", idAviso = "") {
   if (!uidUsuario || !idAviso) return;
-  const datos = cargarLecturasLocalesRespuestasReportes();
+  const datos = cargarObjetoLocalDashboard(CLAVE_LECTURAS_AVISOS_DASHBOARD);
   datos[uidUsuario] = {
     ...(datos[uidUsuario] || {}),
     [idAviso]: new Date().toISOString()
   };
-  localStorage.setItem(CLAVE_LECTURAS_RESPUESTAS_REPORTES, JSON.stringify(datos));
+  localStorage.setItem(CLAVE_LECTURAS_AVISOS_DASHBOARD, JSON.stringify(datos));
+}
+
+function guardarLecturaLocalRespuestaReporte(uidUsuario = "", idAviso = "") {
+  guardarLecturaLocalAvisoDashboard(uidUsuario, idAviso);
 }
 
 function renderizarAvisosDashboard() {
@@ -400,12 +422,10 @@ async function marcarAvisoLeidoDashboard(idAviso, boton = null) {
   const exitos = resultados.filter((resultado) => resultado.status === "fulfilled");
 
   if (!exitos.length) {
-    console.error("No se pudo marcar el aviso como leido:", resultados.map((resultado) => resultado.reason));
-    if (boton) {
-      boton.disabled = false;
-      boton.textContent = "Marcar como leido";
-    }
-    alert("No se pudo marcar el aviso como leido. Intentalo de nuevo.");
+    console.warn("No se pudo marcar el aviso en Firestore; se guardara lectura local:", resultados.map((resultado) => resultado.reason));
+    guardarLecturaLocalAvisoDashboard(usuarioDashboardActual.uid, idAviso);
+    avisosLeidosDashboard.add(idAviso);
+    renderizarAvisosDashboard();
     return;
   }
 
