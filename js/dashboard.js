@@ -104,6 +104,16 @@ window.alternarNotificaciones = function() {
   panelAvisos?.setAttribute("aria-hidden", String(!abierto));
 };
 
+document.addEventListener("click", (evento) => {
+  const panelAvisos = document.getElementById("avisosDashboardModulo");
+  const botonAvisos = document.getElementById("notificationsButton");
+  if (!panelAvisos?.classList.contains("abierto")) return;
+  if (panelAvisos.contains(evento.target) || botonAvisos?.contains(evento.target)) return;
+  panelAvisos.classList.remove("abierto");
+  panelAvisos.setAttribute("aria-hidden", "true");
+  botonAvisos?.setAttribute("aria-expanded", "false");
+});
+
 window.mostrarProximamente = function(titulo = "Proximamente", descripcion = "Estamos desarrollando este modulo.") {
   const overlay = document.getElementById("proximamenteOverlay");
   const tituloElemento = document.getElementById("proximamenteTitulo");
@@ -131,6 +141,9 @@ document.addEventListener("keydown", (evento) => {
   if (evento.key === "Escape") {
     window.cerrarProximamente();
     window.alternarMensajes?.(false);
+    document.getElementById("avisosDashboardModulo")?.classList.remove("abierto");
+    document.getElementById("avisosDashboardModulo")?.setAttribute("aria-hidden", "true");
+    document.getElementById("notificationsButton")?.setAttribute("aria-expanded", "false");
   }
 });
 
@@ -271,13 +284,6 @@ function renderizarAvisosDashboard() {
     `;
   }).join("");
 
-  contenedor.querySelectorAll("[data-marcar-aviso-leido]").forEach((boton) => {
-    boton.addEventListener("click", (evento) => {
-      evento.preventDefault();
-      evento.stopPropagation();
-      marcarAvisoLeidoDashboard(boton.dataset.marcarAvisoLeido, boton);
-    });
-  });
 }
 
 async function marcarAvisoLeidoDashboard(idAviso, boton = null) {
@@ -529,13 +535,27 @@ async function iniciarConversacionConUsuarioDashboard(uidContacto) {
 }
 
 async function hablarConAdminDashboard() {
+  if (!usuarioDashboardActual?.uid) return;
+
   const admins = await listarAdminsParaMensajes(usuarioDashboardActual.uid);
   const admin = admins[0];
   if (!admin) {
     alert("No se encontro un administrador disponible para mensaje directo.");
     return;
   }
-  await iniciarConversacionConUsuarioDashboard(admin.id);
+
+  const contactoAdmin = {
+    id: admin.id,
+    uid: admin.id,
+    nombre: admin.nombre || admin.email || "Administrador",
+    email: admin.email || "",
+    rol: admin.rol || "admin"
+  };
+
+  await agregarContactoMensaje(usuarioDashboardActual.uid, contactoAdmin);
+  const conversacion = await obtenerOCrearConversacion(usuarioDashboardActual, contactoAdmin);
+  await cargarDatosMensajesDashboard();
+  await abrirConversacionDashboard(conversacion.id);
 }
 
 async function abrirConversacionDashboard(conversacionId) {

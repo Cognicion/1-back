@@ -711,21 +711,7 @@ footer {
 }
 
 .notifications-dropdown {
-    position: absolute;
-    top: calc(100% + 12px);
-    right: 0;
-    width: min(340px, calc(100vw - 32px));
-    padding: 16px;
-    border: 1px solid rgba(125, 211, 252, 0.22);
-    border-radius: 20px;
-    background: rgba(5, 10, 22, 0.94);
-    box-shadow: 0 24px 70px rgba(0, 0, 0, 0.35);
-    backdrop-filter: blur(18px);
-    opacity: 0;
-    transform: translateY(-8px) scale(0.98);
-    pointer-events: none;
-    transition: opacity 0.18s ease, transform 0.18s ease;
-    z-index: 40;
+    display: none;
 }
 
 .notifications-dropdown.abierto {
@@ -852,18 +838,20 @@ footer {
 
 .notificaciones-panel-flotante {
     position: fixed;
-    top: 88px;
-    right: 28px;
-    z-index: 120;
-    width: min(440px, calc(100vw - 32px));
-    max-height: calc(100vh - 120px);
+    top: 92px;
+    right: 24px;
+    z-index: 2147482500;
+    width: min(720px, calc(100vw - 48px));
+    max-height: calc(100dvh - 118px);
     margin: 0;
-    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
     opacity: 0;
     visibility: hidden;
     pointer-events: none;
-    transform: translateY(-8px) scale(0.98);
-    transition: opacity 0.22s ease, transform 0.22s ease, visibility 0.22s ease, border-color 0.22s ease;
+    transform: translateY(-10px) scale(0.98);
+    transition: opacity 0.22s ease, transform 0.22s ease, visibility 0.22s ease, border-color 0.22s ease, box-shadow 0.22s ease;
 }
 
 .notificaciones-panel-flotante.abierto {
@@ -876,7 +864,32 @@ footer {
 .notificaciones-panel-flotante .avisos-contenido,
 .notificaciones-panel-flotante.colapsado .avisos-contenido {
     max-height: none;
+    min-height: 0;
     opacity: 1;
+    overflow: hidden;
+}
+
+.lista-avisos-dashboard {
+    display: grid;
+    gap: 12px;
+    min-height: 0;
+    max-height: calc(100dvh - 230px);
+    overflow-y: auto;
+    padding-right: 6px;
+}
+
+.lista-avisos-dashboard::-webkit-scrollbar {
+    width: 10px;
+}
+
+.lista-avisos-dashboard::-webkit-scrollbar-thumb {
+    border-radius: 999px;
+    background: linear-gradient(180deg, rgba(56, 189, 248, 0.8), rgba(37, 99, 235, 0.62));
+}
+
+.lista-avisos-dashboard::-webkit-scrollbar-track {
+    border-radius: 999px;
+    background: rgba(2, 6, 23, 0.42);
 }
 
 .aviso-dashboard-top {
@@ -913,6 +926,11 @@ footer {
         right: 16px;
         left: 16px;
         width: auto;
+        max-height: calc(100dvh - 92px);
+    }
+
+    .lista-avisos-dashboard {
+        max-height: calc(100dvh - 210px);
     }
 }
 
@@ -1228,7 +1246,7 @@ footer {
                     aria-expanded="false"
                     onclick="alternarMensajes()"
                 >
-                    <span class="notification-bell">MSG</span>
+                    <span class="notification-bell" aria-hidden="true">✉️</span>
                     <span id="mensajesBadge" class="notification-badge" style="display:none">0</span>
                 </button>
             </div>
