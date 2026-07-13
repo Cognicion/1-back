@@ -8,7 +8,10 @@ export const TEMAS_COGNICION = Object.freeze({
 
 export const MODOS_INTERFAZ_COGNICION = Object.freeze({
   OSCURO: "dark",
-  CLARO: "light"
+  CLARO: "light",
+  CLARO_GRIS: "light-gray",
+  CLARO_MENTA: "light-mint",
+  CLARO_LAVANDA: "light-lavender"
 });
 
 export const OPCIONES_TEMA_COGNICION = [
@@ -33,9 +36,27 @@ export const OPCIONES_MODO_INTERFAZ_COGNICION = [
   },
   {
     id: MODOS_INTERFAZ_COGNICION.CLARO,
-    nombre: "Futurista Claro",
+    nombre: "Claro Azul Pastel",
     icono: "\u2600\uFE0F",
-    descripcion: "Una version luminosa, limpia y medica, conservando acentos cian y el lenguaje futurista."
+    descripcion: "Fondos blancos con tarjetas azul pastel, acentos cian y texto azul oscuro."
+  },
+  {
+    id: MODOS_INTERFAZ_COGNICION.CLARO_GRIS,
+    nombre: "Claro Gris Clinico",
+    icono: "\u25FB\uFE0F",
+    descripcion: "Base blanca y gris perla, sobria y muy legible para trabajo clinico prolongado."
+  },
+  {
+    id: MODOS_INTERFAZ_COGNICION.CLARO_MENTA,
+    nombre: "Claro Menta",
+    icono: "\u{1F9EA}",
+    descripcion: "Blanco, menta y cian suave para una apariencia limpia de laboratorio medico."
+  },
+  {
+    id: MODOS_INTERFAZ_COGNICION.CLARO_LAVANDA,
+    nombre: "Claro Lavanda",
+    icono: "\u2726",
+    descripcion: "Blanco con lavanda suave y azul, pensado para una lectura calmada y elegante."
   }
 ];
 
@@ -78,12 +99,22 @@ export function guardarModoInterfazLocalCognicion(modo) {
 export function aplicarModoInterfazCognicion(modo) {
   const modoSeguro = normalizarModoInterfazCognicion(modo);
   const root = document.documentElement;
-  const esClaro = modoSeguro === MODOS_INTERFAZ_COGNICION.CLARO;
+  const esClaro = modoSeguro !== MODOS_INTERFAZ_COGNICION.OSCURO;
   root.dataset.theme = modoSeguro;
   root.dataset.cognicionInterface = modoSeguro;
   root.style.colorScheme = esClaro ? "light" : "dark";
   document.body?.classList.toggle("tema-claro", esClaro);
   document.body?.classList.toggle("tema-oscuro", !esClaro);
+  document.body?.classList.remove("tema-claro-azul", "tema-claro-gris", "tema-claro-menta", "tema-claro-lavanda");
+  if (esClaro) {
+    const claseModo = {
+      [MODOS_INTERFAZ_COGNICION.CLARO]: "tema-claro-azul",
+      [MODOS_INTERFAZ_COGNICION.CLARO_GRIS]: "tema-claro-gris",
+      [MODOS_INTERFAZ_COGNICION.CLARO_MENTA]: "tema-claro-menta",
+      [MODOS_INTERFAZ_COGNICION.CLARO_LAVANDA]: "tema-claro-lavanda"
+    }[modoSeguro] || "tema-claro-azul";
+    document.body?.classList.add(claseModo);
+  }
   return modoSeguro;
 }
 export function obtenerTemaLocalCognicion() {

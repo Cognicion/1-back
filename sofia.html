@@ -3,28 +3,107 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Proyecto SofÃƒÂ­a | CogniciÃƒÂ³n</title>
+  <title>SOFIA Clinica | Cognicion Labs</title>
+  <link rel="icon" href="assets/favicon-cognicion.png" />
+  <link rel="stylesheet" href="css/apariencia.css" />
   <link rel="stylesheet" href="css/sofia.css" />
 </head>
 <body>
+  <header class="sofia-topbar">
+    <a class="brand" href="dashboard.html" aria-label="Volver al dashboard">
+      <img src="assets/favicon-cognicion.png" alt="Cognicion" />
+      <span><strong>COGNICION Labs</strong><small>SOFIA - Sistema clinico inteligente</small></span>
+    </a>
+    <nav class="top-actions">
+      <a href="dashboard.html" class="ghost-link">Dashboard</a>
+      <a href="medico.html" class="ghost-link">Panel medico</a>
+    </nav>
+  </header>
+
   <main class="sofia-shell">
-    <section class="sofia-card">
-      <p class="eyebrow">COGNICIÃƒâ€œN LABS</p>
-      <h1>Proyecto SofÃƒÂ­a</h1>
-      <p class="subtitle">Sistema experimental de inteligencia clÃƒÂ­nica.</p>
-
+    <section class="sofia-hero">
+      <p class="eyebrow">COGNICION LABS / SOFIA V2</p>
+      <h1>Paciente digital y razonamiento clinico explicable</h1>
+      <p class="subtitle">SOFIA integra expediente, notas, escalas, tratamientos y estudios para organizar informacion clinica. No modifica el expediente y toda sugerencia requiere juicio profesional.</p>
       <div id="estadoAcceso" class="status">Verificando acceso...</div>
+      <div class="control-row">
+        <label for="selectorPacienteSofia">Paciente</label>
+        <select id="selectorPacienteSofia">
+          <option value="">Cargando pacientes...</option>
+        </select>
+        <button id="recargarSofia" type="button">Actualizar modelo</button>
+      </div>
+    </section>
 
-      <section id="chatBox" class="chat-box">
-        <div class="msg sofia">
-          Hola. Soy SofÃƒÂ­a, un mÃƒÂ³dulo experimental de CogniciÃƒÂ³n.
+    <section class="sofia-grid" id="panelesSofia" aria-live="polite">
+      <article class="sofia-panel span-2">
+        <div class="panel-title"><span>Paciente Digital</span><small>Gemelo clinico no editable</small></div>
+        <div id="pacienteDigitalSofia" class="metric-grid empty-state">Selecciona un paciente.</div>
+      </article>
+
+      <article class="sofia-panel">
+        <div class="panel-title"><span>Alertas inteligentes</span><small>Reglas clinicas</small></div>
+        <div id="alertasSofia" class="stack-list empty-state">Sin datos cargados.</div>
+      </article>
+
+      <article class="sofia-panel">
+        <div class="panel-title"><span>Prediccion clinica</span><small>Estimaciones explicables</small></div>
+        <div id="prediccionSofia" class="stack-list empty-state">Sin datos cargados.</div>
+      </article>
+
+      <article class="sofia-panel span-2">
+        <div class="panel-title"><span>Linea del tiempo</span><small>Notas, tratamientos, estudios y escalas</small></div>
+        <div class="mini-toolbar">
+          <input id="buscarTimelineSofia" type="search" placeholder="Buscar en timeline..." />
         </div>
-      </section>
+        <div id="timelineSofia" class="timeline empty-state">Sin eventos.</div>
+      </article>
 
-      <form id="formSofia" class="input-row">
-        <input id="mensajeSofia" type="text" placeholder="Escribe un mensaje..." autocomplete="off" />
-        <button type="submit">Enviar</button>
-      </form>
+      <article class="sofia-panel span-2">
+        <div class="panel-title"><span>Mapa de relaciones</span><small>Vista tipo grafo</small></div>
+        <div id="mapaSofia" class="sofia-graph empty-state">Sin nodos.</div>
+      </article>
+
+      <article class="sofia-panel span-2">
+        <div class="panel-title"><span>Narrativa clinica automatica</span><small>Texto revisable</small></div>
+        <div id="narrativaSofia" class="narrative-box empty-state">Sin narrativa.</div>
+      </article>
+
+      <article class="sofia-panel span-2">
+        <div class="panel-title"><span>Razonamiento clinico</span><small>Hipotesis, evidencia y limites</small></div>
+        <div id="razonamientoSofia" class="reasoning-list empty-state">Sin razonamiento.</div>
+      </article>
+
+      <article class="sofia-panel">
+        <div class="panel-title"><span>Monitorizacion</span><small>Laboratorios y seguimiento</small></div>
+        <div id="labsSofia" class="stack-list empty-state">Sin recomendaciones.</div>
+      </article>
+
+      <article class="sofia-panel">
+        <div class="panel-title"><span>Farmacologia</span><small>Interacciones y precauciones</small></div>
+        <div id="farmacoSofia" class="stack-list empty-state">Sin tratamiento activo.</div>
+      </article>
+
+      <article class="sofia-panel span-2">
+        <div class="panel-title"><span>Critica de nota medica</span><small>No guarda ni modifica texto</small></div>
+        <textarea id="notaCriticaSofia" class="sofia-textarea" placeholder="Pega aqui una nota clinica para que SOFIA senale omisiones, riesgos o inconsistencias. La nota no se guarda automaticamente."></textarea>
+        <div class="button-row">
+          <button id="analizarNotaSofia" type="button">Analizar nota</button>
+          <button id="limpiarCriticaSofia" type="button" class="ghost-button">Limpiar</button>
+        </div>
+        <div id="criticaNotaSofia" class="stack-list"></div>
+      </article>
+
+      <article class="sofia-panel span-2 chat-panel">
+        <div class="panel-title"><span>Chat SOFIA</span><small>Canal experimental existente</small></div>
+        <section id="chatBox" class="chat-box">
+          <div class="msg sofia">Hola. Soy SOFIA, un modulo experimental de Cognicion. Puedo ayudarte a revisar informacion clinica, pero mis respuestas siempre deben ser verificadas por el profesional.</div>
+        </section>
+        <form id="formSofia" class="input-row">
+          <input id="mensajeSofia" type="text" placeholder="Escribe un mensaje..." autocomplete="off" />
+          <button type="submit">Enviar</button>
+        </form>
+      </article>
     </section>
   </main>
 
@@ -32,4 +111,3 @@
   <script type="module" src="js/reportes.js"></script>
 </body>
 </html>
-
