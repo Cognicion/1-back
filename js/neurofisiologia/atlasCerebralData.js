@@ -1,4 +1,4 @@
-﻿export const FUENTES_ATLAS_CEREBRAL = [
+export const FUENTES_ATLAS_CEREBRAL = [
   {
     id: "terminologia-neuroanatomica",
     recurso: "Terminologia Neuroanatomica / Terminologia Anatomica",

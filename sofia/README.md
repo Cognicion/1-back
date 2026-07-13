@@ -1,4 +1,4 @@
-﻿# SOFIA
+# SOFIA
 
 SOFIA significa Sistema de Operacion para Funciones Inteligentes y Aprendizaje.
 

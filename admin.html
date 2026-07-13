@@ -73,6 +73,7 @@
     <button type="button" data-admin-section="seccionFormatosAdmin">Formatos</button>
     <button type="button" data-admin-section="seccionPacientesAdmin">Pacientes y notas</button>
     <button type="button" data-admin-section="seccionReportesAdmin">Reportes</button>
+    <button type="button" data-admin-section="seccionMensajesAdmin">Mensajes</button>
     <button type="button" data-admin-section="seccionAuditoriaAdmin">Auditoria</button>
     <button type="button" data-admin-section="seccionCodigosAdmin">Codigos medicos</button>
   </nav>
@@ -245,6 +246,31 @@
 
     <div id="listaReportesAdmin" class="lista-reportes-admin">
       <p>Cargando reportes...</p>
+    </div>
+  </section>
+
+  <section id="seccionMensajesAdmin" class="card tabla-card admin-section">
+    <div class="tabla-header">
+      <div>
+        <h2>Conversaciones con usuarios</h2>
+        <p>Mensajes directos privados entre usuarios y administracion. Puedes responder desde este panel.</p>
+      </div>
+      <div class="admin-header-actions">
+        <button id="btnNuevoMensajeAdmin" type="button">Nuevo mensaje</button>
+        <button id="btnActualizarMensajesAdmin" type="button">Actualizar mensajes</button>
+      </div>
+    </div>
+
+    <div class="mensajes-admin-layout">
+      <aside class="mensajes-admin-lista-panel">
+        <input id="filtroMensajesAdmin" placeholder="Buscar conversacion, usuario o mensaje">
+        <div id="listaConversacionesAdmin" class="mensajes-admin-lista">
+          <p>Cargando conversaciones...</p>
+        </div>
+      </aside>
+      <section id="detalleConversacionAdmin" class="mensajes-admin-detalle">
+        <p class="admin-muted">Selecciona una conversacion para leer y responder.</p>
+      </section>
     </div>
   </section>
 

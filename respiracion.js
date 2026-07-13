@@ -7,7 +7,7 @@ const fases = [
   },
   {
     clave: "sosten",
-    nombre: "SOST\u00c9N",
+    nombre: "SOSTÉN",
     duracion: 2,
     instruccion: "Permanece en quietud."
   },

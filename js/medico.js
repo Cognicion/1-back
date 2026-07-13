@@ -1,4 +1,4 @@
-﻿import { medicoPuedeVer } from "./services/usuarios.js";
+import { medicoPuedeVer } from "./services/usuarios.js";
 import { iniciarMonitoreoSesion } from "./services/sesion.js";
 import { aplicarAparienciaGuardada, sincronizarAparienciaUsuario } from "./services/apariencia.js";
 
@@ -1349,7 +1349,7 @@ function mostrarPacientes(pacientes) {
     const fechaIngreso = formatearFechaCorta(fechaIngresoRaw);
     const diasEstancia = formatearEstancia(calcularDiasEstancia(fechaIngresoRaw));
     const edadValor = calcularEdad(obtenerFechaNacimiento(paciente));
-    const edad = edadValor ? `${edadValor} a\u00f1os` : "No registrada";
+    const edad = edadValor ? `${edadValor} años` : "No registrada";
     const claveAtencion = obtenerClaveAtencion(paciente);
     const diagnosticos = obtenerDiagnosticosPaciente(paciente);
     const diagnosticoPrincipal = formatearDiagnostico(diagnosticos.principal);

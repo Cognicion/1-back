@@ -3507,17 +3507,17 @@ async function htmlWordFrayObservacion() {
 
       <p class="identificacion">
         <b>Nombre del paciente:</b> ${textoWord(datos.nombrePaciente || pacienteActualDatos.nombre)}
-        &nbsp;&nbsp; <b>Fecha de nacimiento:</b> ${textoWord(formatoFechaFray(datos.fechaNacimiento))}
-        &nbsp;&nbsp; <b>Edad:</b> ${textoWord(datos.edad)} ANOS
-        &nbsp;&nbsp; <b>Cama:</b> ${textoWord(datos.cama)}
-        &nbsp;&nbsp; <b>Expediente:</b> ${textoWord(datos.expediente)}
-        &nbsp;&nbsp; <b>Sexo:</b> ${textoWord(datos.sexo)}
-        &nbsp;&nbsp; <b>Genero:</b> ${textoWord(datos.genero)}
-        &nbsp;&nbsp; <b>Servicio:</b> ${textoWord(datos.servicio || "OBSERVACION")}
-        &nbsp;&nbsp; <b>Alergias:</b> ${textoWord(datos.alergias)}
-        &nbsp;&nbsp; <b>Fecha:</b> ${textoWord(formatoFechaFray(datos.fechaNota))}
-        &nbsp;&nbsp; <b>Hora:</b> ${textoWord(datos.horaNota)} H
-        &nbsp;&nbsp; <b>Dias estancia:</b> ${textoWord(datos.diasEstancia)}
+           <b>Fecha de nacimiento:</b> ${textoWord(formatoFechaFray(datos.fechaNacimiento))}
+           <b>Edad:</b> ${textoWord(datos.edad)} ANOS
+           <b>Cama:</b> ${textoWord(datos.cama)}
+           <b>Expediente:</b> ${textoWord(datos.expediente)}
+           <b>Sexo:</b> ${textoWord(datos.sexo)}
+           <b>Genero:</b> ${textoWord(datos.genero)}
+           <b>Servicio:</b> ${textoWord(datos.servicio || "OBSERVACION")}
+           <b>Alergias:</b> ${textoWord(datos.alergias)}
+           <b>Fecha:</b> ${textoWord(formatoFechaFray(datos.fechaNota))}
+           <b>Hora:</b> ${textoWord(datos.horaNota)} H
+           <b>Dias estancia:</b> ${textoWord(datos.diasEstancia)}
       </p>
 
       ${vitales}

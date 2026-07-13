@@ -1,4 +1,4 @@
-﻿import { auth, db } from "./firebase.js";
+import { auth, db } from "./firebase.js";
 import { ESCALAS_PSIQUIATRICAS, interpretarEscala } from "./data/escalasPsiquiatricas.js";
 import {
   calcularPuntajeEscala,
@@ -582,7 +582,7 @@ function formatearIndicacionTratamiento(t = {}, incluirMedicamento = true) {
   if (dosis || horarios) partes.push(asegurarPunto([dosis, horarios].filter(Boolean).join(" ")));
 
   if (!partes.length && !incluirMedicamento) {
-    return [t.dosis, t.frecuencia, t.via, t.horarios].filter(Boolean).join(" Â· ");
+    return [t.dosis, t.frecuencia, t.via, t.horarios].filter(Boolean).join(" · ");
   }
 
   return partes.join(" ");
@@ -650,7 +650,7 @@ async function cargarProximaCita(uid, datosUsuario) {
     }
 
     const cita = citas[0];
-    ponerTexto("proximaCita", `${cita.fecha || ""} ${cita.hora || ""} Â· ${cita.tipo || "Consulta"}`);
+    ponerTexto("proximaCita", `${cita.fecha || ""} ${cita.hora || ""} · ${cita.tipo || "Consulta"}`);
   } catch (error) {
     console.error("Error al cargar proxima cita:", error);
     ponerTexto("proximaCita", "No hay proxima cita registrada.");

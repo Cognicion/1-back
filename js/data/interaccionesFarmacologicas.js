@@ -1,4 +1,4 @@
-﻿const CATEGORIAS_MEDICAMENTOS = [
+const CATEGORIAS_MEDICAMENTOS = [
   { id: "isrs", nombre: "ISRS", patrones: ["sertralina", "fluoxetina", "paroxetina", "escitalopram", "citalopram", "fluvoxamina"] },
   { id: "irsn", nombre: "IRSN", patrones: ["venlafaxina", "desvenlafaxina", "duloxetina", "milnacipran"] },
   { id: "triciclico", nombre: "Antidepresivo triciclico", patrones: ["amitriptilina", "imipramina", "clomipramina", "nortriptilina"] },

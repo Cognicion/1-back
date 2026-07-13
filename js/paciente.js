@@ -1598,7 +1598,7 @@ async function cargarDatosPaciente() {
 
   document.getElementById("edadPaciente").innerText =
   edadVisible !== "" && edadVisible !== null && edadVisible !== undefined
-    ? `${edadVisible} a\u00f1os`
+    ? `${edadVisible} años`
     : "No registrada";
 
   if (fechaNacimiento && datos.fechaNacimiento !== fechaNacimiento) {
@@ -1629,7 +1629,7 @@ async function cargarDatosPaciente() {
     datos.proximaConsulta ? formatearFecha(datos.proximaConsulta) : "Sin programar";
 
   document.getElementById("telefonoPaciente").innerText =
-    datos.telefono || "Sin tel\u00e9fono";
+    datos.telefono || "Sin teléfono";
 
   document.getElementById("tipoPaciente").innerText =
     etiquetaTipoPaciente(datos.tipoPaciente || datos.datosInstitucionales?.tipoPaciente);
@@ -2309,7 +2309,7 @@ window.editarNombrePaciente = async function() {
 window.editarDatosPaciente = async function() {
   const datos = await obtenerUsuario(uidPaciente);
 
-  const nuevoTelefono = prompt("Tel\u00e9fono:", datos.telefono || "");
+  const nuevoTelefono = prompt("Teléfono:", datos.telefono || "");
   if (nuevoTelefono === null) return;
 
   const nuevoDiagnostico = prompt("Diagnóstico:", datos.diagnostico || "");
@@ -3405,14 +3405,14 @@ function bloqueIdentificacionFrayPaciente(datos = {}) {
   return `
     <p class="identificacion">
       <b>Nombre del paciente:</b> ${textoWordPaciente(datos.nombrePaciente)}
-      &nbsp;&nbsp; <b>Fecha de nacimiento:</b> ${textoWordPaciente(formatoFechaInterconsulta(datos.fechaNacimiento))}
-      &nbsp;&nbsp; <b>Edad:</b> ${textoWordPaciente(datos.edad)} ANOS
-      &nbsp;&nbsp; <b>Cama:</b> ${textoWordPaciente(datos.cama)}
-      &nbsp;&nbsp; <b>Expediente:</b> ${textoWordPaciente(datos.expediente)}
-      &nbsp;&nbsp; <b>Sexo:</b> ${textoWordPaciente(datos.sexo)}
-      &nbsp;&nbsp; <b>Genero:</b> ${textoWordPaciente(datos.genero)}
-      &nbsp;&nbsp; <b>Servicio:</b> ${textoWordPaciente(datos.servicio)}
-      &nbsp;&nbsp; <b>Alergias:</b> ${textoWordPaciente(datos.alergias)}
+         <b>Fecha de nacimiento:</b> ${textoWordPaciente(formatoFechaInterconsulta(datos.fechaNacimiento))}
+         <b>Edad:</b> ${textoWordPaciente(datos.edad)} ANOS
+         <b>Cama:</b> ${textoWordPaciente(datos.cama)}
+         <b>Expediente:</b> ${textoWordPaciente(datos.expediente)}
+         <b>Sexo:</b> ${textoWordPaciente(datos.sexo)}
+         <b>Genero:</b> ${textoWordPaciente(datos.genero)}
+         <b>Servicio:</b> ${textoWordPaciente(datos.servicio)}
+         <b>Alergias:</b> ${textoWordPaciente(datos.alergias)}
     </p>
   `;
 }
@@ -3478,9 +3478,9 @@ async function htmlInterconsultaWord(datos) {
           ${datos.formato === "fray" ? encabezadoFray : encabezadoCognicion}
           <h1>SOLICITUD DE INTERCONSULTA</h1>
           ${identificacion}
-          <p><b>Fecha:</b> ${textoWordPaciente(formatoFechaInterconsulta(datos.fecha))} &nbsp;&nbsp; <b>Hora:</b> ${textoWordPaciente(datos.hora)} &nbsp;&nbsp; <b>CURP:</b> ${textoWordPaciente(datos.curp)}</p>
-          <p><b>Servicio solicitante:</b> ${textoWordPaciente(datos.servicioSolicitante)} &nbsp;&nbsp; <b>Servicio interconsultante:</b> ${textoWordPaciente(datos.servicio)} &nbsp;&nbsp; <b>Prioridad:</b> ${textoWordPaciente(datos.prioridad)}</p>
-          <p><b>Peso:</b> ${textoWordPaciente(datos.peso)} Kg &nbsp;&nbsp; <b>Talla:</b> ${textoWordPaciente(datos.talla)} m &nbsp;&nbsp; <b>Perimetro abdominal:</b> ${textoWordPaciente(datos.perimetroAbdominal)} cm</p>
+          <p><b>Fecha:</b> ${textoWordPaciente(formatoFechaInterconsulta(datos.fecha))}    <b>Hora:</b> ${textoWordPaciente(datos.hora)}    <b>CURP:</b> ${textoWordPaciente(datos.curp)}</p>
+          <p><b>Servicio solicitante:</b> ${textoWordPaciente(datos.servicioSolicitante)}    <b>Servicio interconsultante:</b> ${textoWordPaciente(datos.servicio)}    <b>Prioridad:</b> ${textoWordPaciente(datos.prioridad)}</p>
+          <p><b>Peso:</b> ${textoWordPaciente(datos.peso)} Kg    <b>Talla:</b> ${textoWordPaciente(datos.talla)} m    <b>Perimetro abdominal:</b> ${textoWordPaciente(datos.perimetroAbdominal)} cm</p>
           <h2>Sospecha diagnostica</h2>
           <p>${textoWordPaciente(datos.diagnostico)}</p>
           <h2>Motivo de la interconsulta</h2>

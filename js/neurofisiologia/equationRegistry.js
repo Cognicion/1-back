@@ -1,4 +1,4 @@
-﻿export const REGISTRO_ECUACIONES_NEURO = [
+export const REGISTRO_ECUACIONES_NEURO = [
   {
     id: "nernst",
     nombre: "Potencial de equilibrio de Nernst",

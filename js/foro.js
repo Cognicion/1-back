@@ -1,4 +1,4 @@
-﻿import { auth, db } from "./firebase.js";
+import { auth, db } from "./firebase.js";
 import { obtenerUsuario } from "./services/usuarios.js";
 import { iniciarMonitoreoSesion } from "./services/sesion.js";
 import {

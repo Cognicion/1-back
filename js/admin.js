@@ -5,6 +5,9 @@ import { FORMATOS_INSTITUCIONALES, permisosFormatosDesdeUsuario } from "./servic
 import {
   agregarContactoMensaje,
   enviarMensajeConversacion,
+  listarConversacionesMensajes,
+  listarMensajesConversacion,
+  marcarMensajesConversacionVistos,
   obtenerOCrearConversacion
 } from "./services/mensajes.js";
 import {
@@ -49,6 +52,9 @@ let codigosMedicoAdmin = [];
 let avisosGlobalesAdmin = [];
 let notasPorPaciente = {};
 let adminActual = null;
+let conversacionesAdmin = [];
+let conversacionAdminActiva = null;
+let mensajesAdminActivos = [];
 const CLAVE_ALTURAS_RESPUESTAS_REPORTE = "cognicion_admin_alturas_respuestas_reportes";
 const ESTADOS_REPORTE_ADMIN = [
   "nuevo",
@@ -111,6 +117,7 @@ onAuthStateChanged(auth, async (user) => {
   await cargarPacientesAdmin();
   await cargarReportesUsuariosAdmin();
   await cargarAvisosAdmin();
+  await cargarMensajesAdmin();
   await cargarAuditoria();
 });
 
@@ -174,6 +181,9 @@ function configurarFiltros() {
 
   document.getElementById("btnPublicarAvisoAdmin")?.addEventListener("click", publicarAvisoAdmin);
   document.getElementById("btnActualizarAvisosAdmin")?.addEventListener("click", cargarAvisosAdmin);
+  document.getElementById("btnActualizarMensajesAdmin")?.addEventListener("click", cargarMensajesAdmin);
+  document.getElementById("filtroMensajesAdmin")?.addEventListener("input", renderizarConversacionesAdmin);
+  document.getElementById("btnNuevoMensajeAdmin")?.addEventListener("click", renderizarNuevoMensajeAdmin);
 
   document.getElementById("btnGenerarCodigoMedico")?.addEventListener("click", generarCodigoMedicoAdmin);
   document.getElementById("btnActualizarCodigosMedico")?.addEventListener("click", cargarCodigosMedicoAdmin);
@@ -565,6 +575,189 @@ function renderizarUsuariosRecientesAdmin() {
   `).join("");
 }
 
+function cargarUsuariosOcultosAuditoria() {
+  try {
+    const datos = JSON.parse(localStorage.getItem(CLAVE_USUARIOS_AUDITORIA_OCULTOS) || "[]");
+    return new Set(Array.isArray(datos) ? datos.filter(Boolean) : []);
+  } catch (error) {
+    return new Set();
+  }
+}
+
+function guardarUsuariosOcultosAuditoria() {
+  localStorage.setItem(CLAVE_USUARIOS_AUDITORIA_OCULTOS, JSON.stringify([...usuariosOcultosAuditoria]));
+}
+
+function renderizarUsuariosOcultosAuditoria() {
+  const contenedor = document.getElementById("listaUsuariosOcultosAuditoria");
+  if (!contenedor) return;
+
+  const texto = normalizar(document.getElementById("filtroUsuariosOcultosAuditoria")?.value || "");
+  const usuarios = usuariosAdmin.filter((usuario) => {
+    if (!texto) return true;
+    return normalizar([
+      usuario.nombre,
+      usuario.email,
+      usuario.id,
+      usuario.rol,
+      usuario.unidad,
+      usuario.institucion
+    ].join(" ")).includes(texto);
+  });
+
+  if (!usuarios.length) {
+    contenedor.innerHTML = "<p>No hay usuarios con esa busqueda.</p>";
+    return;
+  }
+
+  contenedor.innerHTML = usuarios.map((usuario) => {
+    const oculto = usuariosOcultosAuditoria.has(usuario.id);
+    return `
+      <label class="usuario-oculto-auditoria ${oculto ? "activo" : ""}">
+        <input type="checkbox" data-usuario-auditoria-oculto="${escaparHTML(usuario.id)}" ${oculto ? "checked" : ""}>
+        <span>
+          <strong>${escaparHTML(usuario.nombre || usuario.email || "Usuario sin nombre")}</strong>
+          <small>${escaparHTML(usuario.email || usuario.id)} · ${escaparHTML(etiquetaRolUsuario(usuario.rol || "sin_rol"))}</small>
+        </span>
+      </label>
+    `;
+  }).join("");
+
+  contenedor.querySelectorAll("[data-usuario-auditoria-oculto]").forEach((input) => {
+    input.addEventListener("change", (evento) => {
+      const uid = evento.currentTarget.dataset.usuarioAuditoriaOculto;
+      if (!uid) return;
+      if (evento.currentTarget.checked) {
+        usuariosOcultosAuditoria.add(uid);
+      } else {
+        usuariosOcultosAuditoria.delete(uid);
+      }
+      guardarUsuariosOcultosAuditoria();
+      renderizarUsuariosOcultosAuditoria();
+      renderizarAuditoria();
+    });
+  });
+}
+
+function fechaEventoAuditoria(evento = {}) {
+  const valor = evento.fechaTexto || evento.fecha || evento.createdAt || "";
+  if (valor?.toDate) return valor.toDate();
+  if (typeof valor === "object" && typeof valor.seconds === "number") return new Date(valor.seconds * 1000);
+  const fecha = valor ? new Date(valor) : null;
+  return fecha && !Number.isNaN(fecha.getTime()) ? fecha : null;
+}
+
+function textoFechaCortaAdmin(fecha) {
+  return fecha ? fecha.toLocaleString("es-MX", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false
+  }) : "Sin registro";
+}
+
+function resumenSesionesUsuariosAdmin() {
+  const porUsuario = new Map();
+
+  [...eventosAuditoria]
+    .sort((a, b) => (fechaEventoAuditoria(b)?.getTime() || 0) - (fechaEventoAuditoria(a)?.getTime() || 0))
+    .forEach((evento) => {
+      const uid = evento.usuarioUid || "";
+      if (!uid) return;
+      const fecha = fechaEventoAuditoria(evento);
+      if (!fecha) return;
+
+      const actual = porUsuario.get(uid) || {
+        ultimoEvento: null,
+        ultimoInicio: null,
+        ultimaDesconexion: null,
+        ultimaAccion: ""
+      };
+
+      if (!actual.ultimoEvento) {
+        actual.ultimoEvento = fecha;
+        actual.ultimaAccion = evento.accion || "";
+      }
+      if (!actual.ultimoInicio && evento.accion === "inicio_sesion") actual.ultimoInicio = fecha;
+      if (!actual.ultimaDesconexion && ["cierre_sesion", "sesion_inactiva"].includes(evento.accion)) {
+        actual.ultimaDesconexion = fecha;
+      }
+
+      porUsuario.set(uid, actual);
+    });
+
+  const ahora = Date.now();
+  return usuariosAdmin.map((usuario) => {
+    const sesion = porUsuario.get(usuario.id) || {};
+    const ultimoEventoMs = sesion.ultimoEvento?.getTime() || 0;
+    const accionCierre = ["cierre_sesion", "sesion_inactiva"].includes(sesion.ultimaAccion || "");
+    const enLinea = Boolean(ultimoEventoMs && !accionCierre && ahora - ultimoEventoMs <= VENTANA_USUARIO_EN_LINEA_MS);
+
+    return {
+      usuario,
+      enLinea,
+      ultimoEvento: sesion.ultimoEvento || null,
+      ultimoInicio: sesion.ultimoInicio || null,
+      ultimaDesconexion: sesion.ultimaDesconexion || null,
+      ultimaAccion: sesion.ultimaAccion || "sin_eventos"
+    };
+  }).sort((a, b) => {
+    if (a.enLinea !== b.enLinea) return a.enLinea ? -1 : 1;
+    return (b.ultimoEvento?.getTime() || 0) - (a.ultimoEvento?.getTime() || 0);
+  });
+}
+
+function renderizarSesionesAuditoria() {
+  const contenedor = document.getElementById("listaSesionesAuditoria");
+  if (!contenedor) return;
+
+  const texto = normalizar(document.getElementById("filtroSesionesAuditoria")?.value || "");
+  const sesiones = resumenSesionesUsuariosAdmin().filter(({ usuario }) => {
+    if (!texto) return true;
+    return normalizar([
+      usuario.nombre,
+      usuario.email,
+      usuario.id,
+      usuario.rol,
+      usuario.unidad,
+      usuario.institucion
+    ].join(" ")).includes(texto);
+  });
+
+  if (!sesiones.length) {
+    contenedor.innerHTML = "<p>No hay usuarios con esa busqueda.</p>";
+    return;
+  }
+
+  const enLinea = sesiones.filter((sesion) => sesion.enLinea);
+  const desconectados = sesiones.filter((sesion) => !sesion.enLinea);
+
+  const renderGrupo = (titulo, items) => `
+    <div class="sesion-auditoria-grupo">
+      <h4>${escaparHTML(titulo)} <span>${items.length}</span></h4>
+      ${items.length ? items.map(({ usuario, enLinea, ultimoEvento, ultimoInicio, ultimaDesconexion, ultimaAccion }) => `
+        <article class="sesion-usuario-card ${enLinea ? "en-linea" : "desconectado"}">
+          <div>
+            <strong>${escaparHTML(usuario.nombre || usuario.email || "Usuario sin nombre")}</strong>
+            <small>${escaparHTML(usuario.email || usuario.id)} · ${escaparHTML(etiquetaRolUsuario(usuario.rol || "sin_rol"))}</small>
+          </div>
+          <div class="sesion-usuario-meta">
+            <span class="${enLinea ? "ok" : "admin-muted"}">${enLinea ? "En linea" : "Desconectado"}</span>
+            <span>Ultima actividad: ${escaparHTML(textoFechaCortaAdmin(ultimoEvento))}</span>
+            <span>Ultimo inicio: ${escaparHTML(textoFechaCortaAdmin(ultimoInicio))}</span>
+            <span>Desconexion/inactividad: ${escaparHTML(textoFechaCortaAdmin(ultimaDesconexion))}</span>
+            <span>Ultima accion: ${escaparHTML(ultimaAccion)}</span>
+          </div>
+        </article>
+      `).join("") : "<p class=\"admin-muted\">Sin usuarios en este grupo.</p>"}
+    </div>
+  `;
+
+  contenedor.innerHTML = renderGrupo("En linea ahora", enLinea) + renderGrupo("Desconectados", desconectados);
+}
+
 function poblarUsuariosAvisosAdmin() {
   const selector = document.getElementById("avisoAdminUsuario");
   if (!selector) return;
@@ -573,6 +766,238 @@ function poblarUsuariosAvisosAdmin() {
     <option value="${escaparHTML(usuario.id)}">${escaparHTML(usuario.nombre || usuario.email || usuario.id)} · ${escaparHTML(usuario.rol || "sin rol")}</option>
   `).join("");
 }
+function datosAdminParaMensajes() {
+  return {
+    uid: adminActual?.uid || ADMIN_UID,
+    nombre: adminActual?.displayName || adminActual?.email || "Administrador",
+    email: adminActual?.email || "",
+    rol: "admin"
+  };
+}
+
+function otroParticipanteAdmin(conversacion = {}) {
+  const participantes = conversacion.participantes || {};
+  const adminUid = adminActual?.uid || ADMIN_UID;
+  const otroUid = (conversacion.participantIds || Object.keys(participantes)).find((uid) => uid !== adminUid);
+  return participantes[otroUid] || usuariosAdmin.find((usuario) => usuario.id === otroUid) || { uid: otroUid, nombre: "Usuario" };
+}
+
+function conversacionNoLeidaAdmin(conversacion = {}) {
+  const adminUid = adminActual?.uid || ADMIN_UID;
+  if (!adminUid || conversacion.ultimoMensajePor === adminUid) return false;
+  const leidoEn = conversacion.lecturasUsuarios?.[adminUid]?.leidoEn || "";
+  return !leidoEn || String(leidoEn) < String(conversacion.ultimoMensajeEn || "");
+}
+
+async function cargarMensajesAdmin() {
+  const lista = document.getElementById("listaConversacionesAdmin");
+  if (lista) lista.innerHTML = "<p>Cargando conversaciones...</p>";
+  if (!adminActual?.uid) return;
+
+  try {
+    conversacionesAdmin = await listarConversacionesMensajes(adminActual.uid);
+    renderizarConversacionesAdmin();
+  } catch (error) {
+    console.error("No se pudieron cargar conversaciones de admin:", error);
+    if (lista) lista.innerHTML = `<p class="admin-muted">No se pudieron cargar mensajes: ${escaparHTML(error.message)}</p>`;
+  }
+}
+
+function renderizarConversacionesAdmin() {
+  const lista = document.getElementById("listaConversacionesAdmin");
+  if (!lista) return;
+
+  const texto = normalizar(document.getElementById("filtroMensajesAdmin")?.value || "");
+  const conversaciones = conversacionesAdmin.filter((conversacion) => {
+    const otro = otroParticipanteAdmin(conversacion);
+    if (!texto) return true;
+    return normalizar([
+      otro.nombre,
+      otro.email,
+      otro.rol,
+      conversacion.ultimoMensaje,
+      conversacion.id
+    ].join(" ")).includes(texto);
+  });
+
+  if (!conversaciones.length) {
+    lista.innerHTML = "<p>No hay conversaciones con esos filtros.</p>";
+    return;
+  }
+
+  lista.innerHTML = conversaciones.map((conversacion) => {
+    const otro = otroParticipanteAdmin(conversacion);
+    const noLeida = conversacionNoLeidaAdmin(conversacion);
+    return `
+      <button type="button" class="mensaje-admin-conversacion ${noLeida ? "nuevo" : ""}" data-conversacion-admin="${escaparHTML(conversacion.id)}">
+        <span>
+          <strong>${escaparHTML(otro.nombre || otro.email || "Usuario")}</strong>
+          <small>${escaparHTML(otro.email || otro.uid || otro.id || "")} - ${escaparHTML(etiquetaRolUsuario(otro.rol || "sin_rol"))}</small>
+        </span>
+        <span>${escaparHTML(conversacion.ultimoMensaje || "Conversacion iniciada")}</span>
+        <small>${noLeida ? "Nuevo - " : ""}${escaparHTML(conversacion.ultimoMensajeEn || "")}</small>
+      </button>
+    `;
+  }).join("");
+
+  lista.querySelectorAll("[data-conversacion-admin]").forEach((boton) => {
+    boton.addEventListener("click", () => abrirConversacionAdmin(boton.dataset.conversacionAdmin));
+  });
+}
+
+function renderizarNuevoMensajeAdmin() {
+  const detalle = document.getElementById("detalleConversacionAdmin");
+  if (!detalle) return;
+  const usuarios = [...usuariosAdmin]
+    .filter((usuario) => usuario.id !== adminActual?.uid)
+    .sort((a, b) => String(a.nombre || a.email || "").localeCompare(String(b.nombre || b.email || ""), "es", { sensitivity: "base" }));
+
+  detalle.innerHTML = `
+    <div class="mensaje-admin-header">
+      <div>
+        <h3>Nuevo mensaje</h3>
+        <p>Selecciona un usuario y escribe un mensaje directo.</p>
+      </div>
+    </div>
+    <div class="mensaje-admin-nuevo">
+      <input id="buscarNuevoMensajeAdmin" placeholder="Buscar usuario por nombre, correo o rol">
+      <div id="resultadosNuevoMensajeAdmin"></div>
+    </div>
+  `;
+
+  const input = document.getElementById("buscarNuevoMensajeAdmin");
+  const resultados = document.getElementById("resultadosNuevoMensajeAdmin");
+  const pintar = () => {
+    const texto = normalizar(input?.value || "");
+    const visibles = usuarios
+      .filter((usuario) => !texto || normalizar(`${usuario.nombre || ""} ${usuario.email || ""} ${usuario.rol || ""}`).includes(texto))
+      .slice(0, 30);
+    resultados.innerHTML = visibles.length ? visibles.map((usuario) => `
+      <article class="mensaje-admin-contacto">
+        <div>
+          <strong>${escaparHTML(usuario.nombre || usuario.email || usuario.id)}</strong>
+          <small>${escaparHTML(usuario.email || "")} - ${escaparHTML(etiquetaRolUsuario(usuario.rol || "sin_rol"))}</small>
+        </div>
+        <button type="button" data-nuevo-mensaje-usuario="${escaparHTML(usuario.id)}">Abrir chat</button>
+      </article>
+    `).join("") : "<p class=\"admin-muted\">No se encontraron usuarios.</p>";
+
+    resultados.querySelectorAll("[data-nuevo-mensaje-usuario]").forEach((boton) => {
+      boton.addEventListener("click", () => iniciarMensajeAdminConUsuario(boton.dataset.nuevoMensajeUsuario));
+    });
+  };
+
+  input?.addEventListener("input", pintar);
+  pintar();
+}
+
+async function iniciarMensajeAdminConUsuario(uidUsuario = "") {
+  const usuario = usuariosAdmin.find((item) => item.id === uidUsuario);
+  if (!usuario || !adminActual?.uid) return;
+
+  const contacto = {
+    id: usuario.id,
+    uid: usuario.id,
+    nombre: usuario.nombre || usuario.email || usuario.id,
+    email: usuario.email || "",
+    rol: usuario.rol || ""
+  };
+
+  await agregarContactoMensaje(adminActual.uid, contacto).catch((error) => {
+    console.warn("No se pudo guardar contacto de admin:", error);
+  });
+  const conversacion = await obtenerOCrearConversacion(datosAdminParaMensajes(), contacto);
+  conversacionesAdmin = [conversacion, ...conversacionesAdmin.filter((item) => item.id !== conversacion.id)];
+  await cargarMensajesAdmin();
+  await abrirConversacionAdmin(conversacion.id);
+}
+
+async function abrirConversacionAdmin(conversacionId = "") {
+  const detalle = document.getElementById("detalleConversacionAdmin");
+  if (!detalle || !conversacionId || !adminActual?.uid) return;
+
+  conversacionAdminActiva = conversacionesAdmin.find((item) => item.id === conversacionId)
+    || { id: conversacionId, participantes: {}, participantIds: [] };
+  const otro = otroParticipanteAdmin(conversacionAdminActiva);
+
+  try {
+    await marcarMensajesConversacionVistos(conversacionId, adminActual.uid, datosAdminParaMensajes()).catch((error) => {
+      console.warn("No se pudieron marcar mensajes vistos por admin:", error);
+    });
+    mensajesAdminActivos = await listarMensajesConversacion(conversacionId);
+    await updateDoc(doc(db, "mensajesConversaciones", conversacionId), {
+      [`lecturasUsuarios.${adminActual.uid}`]: {
+        leidoEn: new Date().toISOString(),
+        uid: adminActual.uid,
+        nombre: adminActual.email || "Administrador"
+      }
+    }).catch((error) => console.warn("No se pudo actualizar lectura de conversacion admin:", error));
+  } catch (error) {
+    detalle.innerHTML = `<p class="admin-muted">No se pudo abrir la conversacion: ${escaparHTML(error.message)}</p>`;
+    return;
+  }
+
+  detalle.innerHTML = `
+    <div class="mensaje-admin-header">
+      <div>
+        <h3>${escaparHTML(otro.nombre || otro.email || "Usuario")}</h3>
+        <p>${escaparHTML(otro.email || otro.uid || otro.id || "")} - ${escaparHTML(etiquetaRolUsuario(otro.rol || "sin_rol"))}</p>
+      </div>
+      <button type="button" id="btnRecargarConversacionAdmin">Recargar</button>
+    </div>
+    <div id="hiloMensajesAdmin" class="hilo-mensajes-admin">
+      ${mensajesAdminActivos.length ? mensajesAdminActivos.map((mensaje) => renderMensajeAdmin(mensaje, otro.uid || otro.id)).join("") : "<p class=\"admin-muted\">Sin mensajes todavia.</p>"}
+    </div>
+    <form id="formMensajeAdmin" class="form-mensaje-admin">
+      <textarea id="textoMensajeAdmin" placeholder="Responder al usuario..." rows="3"></textarea>
+      <button type="submit">Enviar respuesta</button>
+    </form>
+  `;
+
+  document.getElementById("btnRecargarConversacionAdmin")?.addEventListener("click", () => abrirConversacionAdmin(conversacionId));
+  document.getElementById("formMensajeAdmin")?.addEventListener("submit", enviarMensajeAdmin);
+  const hilo = document.getElementById("hiloMensajesAdmin");
+  if (hilo) hilo.scrollTop = hilo.scrollHeight;
+  await cargarMensajesAdmin();
+}
+
+function renderMensajeAdmin(mensaje = {}, otroUid = "") {
+  const propio = mensaje.autorUid === adminActual?.uid;
+  const vistoPorOtro = propio && otroUid && mensaje.vistosPor?.[otroUid];
+  return `
+    <div class="mensaje-admin-burbuja ${propio ? "propio" : ""}">
+      <p>${escaparHTML(mensaje.texto || "")}</p>
+      <small>${escaparHTML(mensaje.autorNombre || "")} - ${escaparHTML(mensaje.fechaISO || "")}${vistoPorOtro ? " - Visto" : ""}</small>
+    </div>
+  `;
+}
+
+async function enviarMensajeAdmin(evento) {
+  evento.preventDefault();
+  const campo = document.getElementById("textoMensajeAdmin");
+  const texto = campo?.value.trim() || "";
+  if (!texto || !conversacionAdminActiva?.id) return;
+
+  const boton = evento.currentTarget.querySelector("button[type='submit']");
+  if (boton) {
+    boton.disabled = true;
+    boton.textContent = "Enviando...";
+  }
+
+  try {
+    await enviarMensajeConversacion(conversacionAdminActiva.id, datosAdminParaMensajes(), texto);
+    if (campo) campo.value = "";
+    await abrirConversacionAdmin(conversacionAdminActiva.id);
+  } catch (error) {
+    alert("No se pudo enviar el mensaje: " + error.message);
+  } finally {
+    if (boton) {
+      boton.disabled = false;
+      boton.textContent = "Enviar respuesta";
+    }
+  }
+}
+
 function renderizarUsuariosAdmin() {
   const contenedor = document.getElementById("listaUsuariosAdmin");
   if (!contenedor) return;
@@ -1631,6 +2056,8 @@ async function cargarAuditoria() {
     .filter(eventoAuditoriaVisible);
 
   llenarFiltroModulos();
+  renderizarSesionesAuditoria();
+  renderizarUsuariosOcultosAuditoria();
   renderizarAuditoria();
 }
 
@@ -1677,8 +2104,9 @@ function renderizarAuditoria() {
     const coincideRol = !rol || evento.usuarioRol === rol;
     const coincideModulo = !modulo || evento.modulo === modulo;
     const coincideResultado = !resultado || String(Boolean(evento.exito)) === resultado;
+    const usuarioVisible = !evento.usuarioUid || !usuariosOcultosAuditoria.has(evento.usuarioUid);
 
-    return coincideTexto && coincideRol && coincideModulo && coincideResultado;
+    return usuarioVisible && coincideTexto && coincideRol && coincideModulo && coincideResultado;
   });
 
   if (!eventos.length) {

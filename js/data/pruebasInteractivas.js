@@ -1,4 +1,4 @@
-﻿// Motor declarativo inicial para aplicar pruebas dentro de Cognicion.
+// Motor declarativo inicial para aplicar pruebas dentro de Cognicion.
 // Criterios de interpretacion documentados por instrumento en "referencias".
 // Instrumentos con restricciones (p. ej. MoCA/MMSE) usan aplicacion guiada y captura por dominios,
 // sin reproducir material protegido ni sustituir manuales oficiales.
