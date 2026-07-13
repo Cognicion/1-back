@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>COGNICION Labs | Pediatria</title>
+  <link rel="icon" type="image/png" href="assets/favicon-cognicion.png">
+  <link rel="stylesheet" href="css/apariencia.css">
+  <link rel="stylesheet" href="css/reportes.css">
+  <link rel="stylesheet" href="css/pediatria.css">
+</head>
+<body>
+  <main class="ped-shell">
+    <header class="ped-header">
+      <div class="ped-brand">
+        <img src="assets/favicon-cognicion.png" alt="COGNICION">
+        <div>
+          <div class="ped-kicker">COGNICION Labs</div>
+          <h1>Pediatria</h1>
+          <p>Herramientas clinicas pediatricas integradas al expediente, con calculos trazables y sin percentiles inventados.</p>
+          <small id="estadoPaciente">Modo manual</small>
+        </div>
+      </div>
+      <div class="ped-actions">
+        <a class="ped-secondary" href="dashboard.html">Dashboard</a>
+        <a class="ped-secondary" href="medico.html">Panel medico</a>
+      </div>
+    </header>
+
+    <section class="ped-layout">
+      <aside>
+        <div class="ped-kicker">Paciente y contexto</div>
+        <p id="usuarioSesion">Validando sesion...</p>
+        <div class="ped-nav" id="pediatriaNav"></div>
+
+        <form class="ped-form" autocomplete="off">
+          <label>Nombre
+            <input id="nombrePaciente" data-ped-calc placeholder="Nombre del paciente">
+          </label>
+          <label>Sexo
+            <select id="sexoPaciente" data-ped-calc>
+              <option value="">Seleccionar</option>
+              <option value="Femenino">Femenino</option>
+              <option value="Masculino">Masculino</option>
+              <option value="Intersexual">Intersexual</option>
+            </select>
+          </label>
+          <label>Fecha de nacimiento
+            <input id="fechaNacimiento" data-ped-calc type="date">
+          </label>
+          <label>Edad gestacional al nacimiento (semanas)
+            <input id="edadGestacional" data-ped-calc type="number" min="22" max="42" step="0.1" placeholder="Ej. 38">
+          </label>
+          <label>Peso actual (kg)
+            <input id="pesoKg" data-ped-calc type="number" min="0" step="0.01" placeholder="kg">
+          </label>
+          <label>Talla (cm)
+            <input id="tallaCm" data-ped-calc type="number" min="0" step="0.1" placeholder="cm">
+          </label>
+          <label>Perimetro cefalico (cm)
+            <input id="perimetroCefalico" data-ped-calc type="number" min="0" step="0.1" placeholder="cm">
+          </label>
+          <label>Alergias
+            <input id="alergias" data-ped-calc placeholder="Negadas, no conocidas...">
+          </label>
+        </form>
+      </aside>
+
+      <section class="ped-main">
+        <div class="ped-tools-head">
+          <div>
+            <div class="ped-kicker">Modulo clinico integral</div>
+            <h2>Centro pediatrico</h2>
+          </div>
+          <input class="ped-search" id="busquedaPediatria" placeholder="Buscar herramienta o calculo...">
+        </div>
+
+        <div class="ped-summary" id="resumenPediatria"></div>
+
+        <section class="ped-panel" style="margin-top:18px;">
+          <h3>Variables de calculo rapido</h3>
+          <div class="ped-grid-mini">
+            <input id="deshidratacion" data-ped-calc placeholder="% deshidratacion">
+            <input id="diuresisMl" data-ped-calc placeholder="Diuresis total mL">
+            <input id="diuresisHoras" data-ped-calc placeholder="Horas">
+            <input id="sodio" data-ped-calc placeholder="Na mEq/L">
+            <input id="glucosa" data-ped-calc placeholder="Glucosa mg/dL">
+            <input id="cloro" data-ped-calc placeholder="Cl mEq/L">
+            <input id="bicarbonato" data-ped-calc placeholder="HCO3 mEq/L">
+            <input id="concentracionMgMl" data-ped-calc placeholder="Concentracion mg/mL">
+          </div>
+          <div class="ped-grid-mini" style="margin-top:10px;">
+            <select id="medicamentoSelect" data-ped-calc></select>
+            <select id="opcionDosisSelect" data-ped-calc></select>
+            <label style="display:flex;align-items:center;gap:8px;color:var(--ped-muted);"><input id="pesoConfirmado" data-ped-calc type="checkbox"> Peso actual confirmado</label>
+            <button class="ped-primary" type="button" id="copiarResumenPediatria">Copiar resumen</button>
+          </div>
+        </section>
+
+        <section class="ped-content" id="contenidoPediatria"></section>
+      </section>
+    </section>
+  </main>
+
+  <script type="module" src="js/pediatria/pediatria.js"></script>
+  <script type="module" src="js/reportes.js"></script>
+</body>
+</html>
