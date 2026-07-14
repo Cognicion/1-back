@@ -554,17 +554,157 @@ function renderizarListaLab(items) {
   return items.map((item) => `<li>${escaparHTML(item)}</li>`).join("");
 }
 
+const OPCIONES_SELECT_PACIENTE = {
+  sexo: ["Femenino", "Masculino", "Intersexual", "No especificado", "Otro..."],
+  genero: ["Femenino-CIS", "Masculino-CIS", "Mujer trans", "Hombre trans", "No binario", "Prefiere no decir", "Otro..."],
+  tipoSangre: ["O+", "O-", "A+", "A-", "B+", "B-", "AB+", "AB-", "Desconocido", "Otro..."],
+  alergias: ["Negadas", "No conocidas", "A medicamentos", "A alimentos", "A látex", "Otro..."],
+  institucionPaciente: [
+    "Hospital Psiquiátrico Fray Bernardino Álvarez",
+    "Hospital Psiquiátrico Infantil Juan N. Navarro",
+    "Clínica privada",
+    "Otra..."
+  ],
+  servicioInstitucional: ["Observación", "Hospitalización continua", "Consulta externa", "Urgencias", "Interconsulta", "Otro..."],
+  estadoCivil: ["Soltero/a", "Casado/a", "Unión libre", "Divorciado/a", "Separado/a", "Viudo/a", "Otro..."]
+};
+
+const OPCIONES_CARGO_CLINICO = [
+  "Psiquiatría",
+  "Psicología",
+  "Medicina interna",
+  "Medicina general",
+  "Cardiología",
+  "Neurología",
+  "Nutrición",
+  "Trabajo social",
+  "Enfermería",
+  "Terapia ocupacional",
+  "Otro..."
+];
+
+const SIGNOS_VITALES_LAB = {
+  presionArterial: {
+    etiqueta: "PA",
+    titulo: "Presión arterial",
+    rutas: ["presionArterial", "signosVitales.presionArterial", "datosInstitucionales.presionArterial"],
+    unidad: "mmHg"
+  },
+  frecuenciaCardiaca: {
+    etiqueta: "FC",
+    titulo: "Frecuencia cardiaca",
+    rutas: ["frecuenciaCardiaca", "signosVitales.frecuenciaCardiaca"],
+    unidad: "lpm"
+  },
+  saturacionO2: {
+    etiqueta: "SpO2",
+    titulo: "Saturación O2",
+    rutas: ["saturacionO2", "saturacionOxigeno", "signosVitales.saturacionO2", "signosVitales.saturacionOxigeno"],
+    unidad: "%"
+  },
+  imc: {
+    etiqueta: "IMC",
+    titulo: "IMC",
+    rutas: ["imc", "somatometria.imc", "signosVitales.imc", "datosInstitucionales.imc"],
+    unidad: "kg/m²"
+  }
+};
+
+function opcionesCampoPaciente(campo) {
+  return OPCIONES_SELECT_PACIENTE[campo] || [];
+}
+
+function obtenerEquipoClinicoPaciente(datos = {}) {
+  return Array.isArray(datos.equipoClinico)
+    ? datos.equipoClinico.filter((item) => item && (item.cargo || item.nombre))
+    : [];
+}
+
+function renderizarEquipoClinicoLab(equipo = []) {
+  if (!equipo.length) {
+    return `<p class="lab-muted">Sin integrantes registrados. Agrega personal clínico con el botón +.</p>`;
+  }
+  return `
+    <div class="lab-equipo-lista">
+      ${equipo.map((item, index) => `
+        <div class="lab-equipo-item">
+          <p><b>${escaparHTML(item.cargo || "Personal clínico")}:</b> ${escaparHTML(item.nombre || "Sin nombre")}</p>
+          <div>
+            <button class="boton-editar-dato" onclick="editarEquipoClinicoPaciente(${index})">Editar</button>
+            <button class="boton-editar-dato" onclick="eliminarEquipoClinicoPaciente(${index})">Quitar</button>
+          </div>
+        </div>
+      `).join("")}
+    </div>
+  `;
+}
+
+function renderizarGaugeVital(clave, datos = {}) {
+  const signo = SIGNOS_VITALES_LAB[clave];
+  if (!signo) return "";
+  const valor = valorPaciente(datos, signo.rutas, "Sin registro");
+  return `
+    <div class="lab-gauge lab-gauge-interactivo">
+      <span>${escaparHTML(signo.etiqueta)}</span>
+      <strong>${escaparHTML(valor)}</strong>
+      <div class="lab-gauge-actions">
+        <button type="button" onclick="registrarSignoVitalPaciente('${clave}')">Registrar</button>
+        <button type="button" onclick="abrirHistorialSignoVitalPaciente('${clave}')">Curva</button>
+      </div>
+    </div>
+  `;
+}
+
+function renderizarBloqueInstitucionLab(datos = {}, mostrarInstitucional = false) {
+  if (!mostrarInstitucional) return "";
+  return `
+    <article class="lab-card">
+      <span>Institución</span>
+      <p><b>Institución:</b> ${escaparHTML(valorPaciente(datos, ["institucionPaciente", "institucion"]))} <button class="boton-editar-dato" onclick="editarCampoPaciente('institucionPaciente', 'Institución', 'text')">Editar</button></p>
+      <p><b>Expediente institucional:</b> ${escaparHTML(valorPaciente(datos, ["expediente", "numeroExpediente"], "Sin expediente"))} <button class="boton-editar-dato" onclick="editarCampoPaciente('expediente', 'Expediente institucional', 'text')">Editar</button></p>
+      <p><b>Cama:</b> ${escaparHTML(valorPaciente(datos, ["cama"]))} <button class="boton-editar-dato" onclick="editarCampoPaciente('cama', 'Cama', 'text')">Editar</button></p>
+    </article>
+  `;
+}
+
+function renderizarBloqueIngresoLab(datos = {}, mostrarInstitucional = false) {
+  const fechaIngreso = obtenerFechaIngreso(datos);
+  const consultas = valorPaciente(datos, ["numeroConsultas", "consultasTotales", "conteoConsultas"], "Sin registro");
+  return `
+    <article class="lab-card">
+      <span>Ingreso y consultas</span>
+      ${mostrarInstitucional ? `
+        <p><b>Fecha de ingreso:</b> ${escaparHTML(formatearFecha(fechaIngreso))} <button class="boton-editar-dato" onclick="abrirSelectorIngresoPaciente()">Editar</button></p>
+        <p><b>Servicio:</b> ${escaparHTML(valorPaciente(datos, ["servicioInstitucional", "servicio"]))} <button class="boton-editar-dato" onclick="editarCampoPaciente('servicioInstitucional', 'Servicio institucional', 'text')">Editar</button></p>
+        <p><b>Estancia:</b> <span id="labEstanciaPaciente">${escaparHTML(formatearEstancia(calcularDiasEstancia(fechaIngreso)))}</span></p>
+        <p><b>Último ingreso:</b> ${escaparHTML(formatearFecha(obtenerUltimoIngreso(datos)))} <button class="boton-editar-dato" onclick="abrirSelectorUltimoIngresoPaciente()">Editar</button></p>
+      ` : ""}
+      <p><b>Última consulta:</b> ${escaparHTML(formatearFecha(datos.ultimaConsulta) || "Sin fecha")} <button class="boton-editar-dato" onclick="editarCampoPaciente('ultimaConsulta', 'Última consulta', 'date')">Editar</button></p>
+      <p><b>Número de consultas:</b> ${escaparHTML(consultas)} <button class="boton-editar-dato" onclick="editarCampoPaciente('numeroConsultas', 'Número de consultas', 'number')">Editar</button></p>
+      <p><b>Próxima consulta:</b> ${escaparHTML(datos.proximaConsulta ? formatearFecha(datos.proximaConsulta) : "Sin programar")} <button class="boton-editar-dato" onclick="editarCampoPaciente('proximaConsulta', 'Próxima consulta', 'date')">Editar</button></p>
+    </article>
+  `;
+}
+
 function renderizarVistaLaboratorioPaciente(datos = datosPacienteActual || {}) {
   const contenedor = document.getElementById("datosGeneralesLaboratorio");
   if (!contenedor || !datos) return;
 
-  const fechaIngreso = obtenerFechaIngreso(datos);
   const fechaNacimiento = obtenerFechaNacimiento(datos);
   const edad = calcularEdad(fechaNacimiento);
+  const tipoPaciente = datos.tipoPaciente || datos.datosInstitucionales?.tipoPaciente || "privada";
+  const mostrarInstitucional = pacienteRequiereCamposInstitucionales(tipoPaciente);
+  const equipoClinico = obtenerEquipoClinicoPaciente(datos);
   const diagnosticos = listaDiagnosticosLaboratorio(datos);
   const tratamientos = listaTratamientosLaboratorio(datos);
   const estudios = listaEstudiosLaboratorio(datos);
   const timeline = listaTimelineLaboratorio(datos);
+  const timelineVisible = mostrarInstitucional
+    ? timeline
+    : timeline.filter((item) => !["Ingreso", "Ultimo ingreso"].includes(item.etiqueta));
+  const timelineFinal = timelineVisible.length
+    ? timelineVisible
+    : [{ etiqueta: "Seguimiento", valor: "Sin eventos cronologicos registrados" }];
 
   contenedor.innerHTML = `
     <div class="lab-paciente-shell">
@@ -585,22 +725,10 @@ function renderizarVistaLaboratorioPaciente(datos = datosPacienteActual || {}) {
           <span>Edad</span>
           <strong>${edad !== "" ? `${escaparHTML(edad)} años` : "Sin registro"}</strong>
         </div>
-        <div class="lab-gauge">
-          <span>PA</span>
-          <strong>${escaparHTML(valorPaciente(datos, ["presionArterial", "signosVitales.presionArterial", "datosInstitucionales.presionArterial"], "Sin registro"))}</strong>
-        </div>
-        <div class="lab-gauge">
-          <span>FC</span>
-          <strong>${escaparHTML(valorPaciente(datos, ["frecuenciaCardiaca", "signosVitales.frecuenciaCardiaca"], "Sin registro"))}</strong>
-        </div>
-        <div class="lab-gauge">
-          <span>SpO2</span>
-          <strong>${escaparHTML(valorPaciente(datos, ["saturacionO2", "saturacionOxigeno", "signosVitales.saturacionO2", "signosVitales.saturacionOxigeno"], "Sin registro"))}</strong>
-        </div>
-        <div class="lab-gauge">
-          <span>IMC</span>
-          <strong>${escaparHTML(valorPaciente(datos, ["imc", "somatometria.imc", "signosVitales.imc", "datosInstitucionales.imc"], "Sin registro"))}</strong>
-        </div>
+        ${renderizarGaugeVital("presionArterial", datos)}
+        ${renderizarGaugeVital("frecuenciaCardiaca", datos)}
+        ${renderizarGaugeVital("saturacionO2", datos)}
+        ${renderizarGaugeVital("imc", datos)}
       </div>
 
       <div class="lab-info-grid">
@@ -609,42 +737,27 @@ function renderizarVistaLaboratorioPaciente(datos = datosPacienteActual || {}) {
           <p><b>Correo:</b> ${escaparHTML(valorPaciente(datos, ["email", "correo"], "Sin correo"))}</p>
           <p><b>Fecha de nacimiento:</b> ${escaparHTML(formatearFecha(fechaNacimiento))} <button class="boton-editar-dato" onclick="abrirSelectorFechaNacimientoPaciente()">Editar</button></p>
           <p><b>Sexo:</b> ${escaparHTML(valorPaciente(datos, ["sexo"]))} <button class="boton-editar-dato" onclick="editarCampoPaciente('sexo', 'Sexo', 'text')">Editar</button></p>
-          <p><b>Género:</b> ${escaparHTML(valorPaciente(datos, ["genero", "identidadGenero"]))} <button class="boton-editar-dato" onclick="editarCampoPaciente('genero', 'Genero', 'text')">Editar</button></p>
+          <p><b>Género:</b> ${escaparHTML(valorPaciente(datos, ["genero", "identidadGenero"]))} <button class="boton-editar-dato" onclick="editarCampoPaciente('genero', 'Género', 'text')">Editar</button></p>
           <p><b>CURP:</b> ${escaparHTML(valorPaciente(datos, ["curp", "datosInstitucionales.curp"]))} <button class="boton-editar-dato" onclick="editarCampoPaciente('curp', 'CURP', 'text')">Editar</button></p>
-          <p><b>Teléfono:</b> ${escaparHTML(valorPaciente(datos, ["telefono"], "Sin teléfono"))} <button class="boton-editar-dato" onclick="editarCampoPaciente('telefono', 'Telefono', 'text')">Editar</button></p>
-          <p><b>Tipo:</b> ${escaparHTML(etiquetaTipoPaciente(datos.tipoPaciente || datos.datosInstitucionales?.tipoPaciente))}</p>
+          <p><b>Teléfono:</b> ${escaparHTML(valorPaciente(datos, ["telefono"], "Sin teléfono"))} <button class="boton-editar-dato" onclick="editarCampoPaciente('telefono', 'Teléfono', 'text')">Editar</button></p>
+          <p><b>Tipo:</b> ${escaparHTML(etiquetaTipoPaciente(tipoPaciente))}</p>
           <button class="boton-editar-dato" onclick="editarTipoPaciente()">Editar tipo</button>
         </article>
 
-        <article class="lab-card">
-          <span>Institución</span>
-          <p><b>Institución:</b> ${escaparHTML(valorPaciente(datos, ["institucionPaciente", "institucion"]))} <button class="boton-editar-dato" onclick="editarCampoPaciente('institucionPaciente', 'Institucion', 'text')">Editar</button></p>
-          <p><b>Servicio:</b> ${escaparHTML(valorPaciente(datos, ["servicioInstitucional", "servicio"]))} <button class="boton-editar-dato" onclick="editarCampoPaciente('servicioInstitucional', 'Servicio institucional', 'text')">Editar</button></p>
-          <p><b>Expediente institucional:</b> ${escaparHTML(valorPaciente(datos, ["expediente", "numeroExpediente"], "Sin expediente"))} <button class="boton-editar-dato" onclick="editarCampoPaciente('expediente', 'Expediente institucional', 'text')">Editar</button></p>
-          <p><b>Cama:</b> ${escaparHTML(valorPaciente(datos, ["cama"]))} <button class="boton-editar-dato" onclick="editarCampoPaciente('cama', 'Cama', 'text')">Editar</button></p>
-        </article>
-
-        <article class="lab-card">
-          <span>Ingreso y consultas</span>
-          <p><b>Fecha de ingreso:</b> ${escaparHTML(formatearFecha(fechaIngreso))} <button class="boton-editar-dato" onclick="abrirSelectorIngresoPaciente()">Editar</button></p>
-          <p><b>Estancia:</b> <span id="labEstanciaPaciente">${escaparHTML(formatearEstancia(calcularDiasEstancia(fechaIngreso)))}</span></p>
-          <p><b>Último ingreso:</b> ${escaparHTML(formatearFecha(obtenerUltimoIngreso(datos)))} <button class="boton-editar-dato" onclick="abrirSelectorUltimoIngresoPaciente()">Editar</button></p>
-          <p><b>Última consulta:</b> ${escaparHTML(formatearFecha(datos.ultimaConsulta) || "Sin fecha")} <button class="boton-editar-dato" onclick="editarCampoPaciente('ultimaConsulta', 'Ultima consulta', 'date')">Editar</button></p>
-          <p><b>Próxima consulta:</b> ${escaparHTML(datos.proximaConsulta ? formatearFecha(datos.proximaConsulta) : "Sin programar")} <button class="boton-editar-dato" onclick="editarCampoPaciente('proximaConsulta', 'Proxima consulta', 'date')">Editar</button></p>
-        </article>
+        ${renderizarBloqueInstitucionLab(datos, mostrarInstitucional)}
+        ${renderizarBloqueIngresoLab(datos, mostrarInstitucional)}
 
         <article class="lab-card">
           <span>Equipo clínico</span>
-          <p><b>Médico tratante:</b> ${escaparHTML(valorPaciente(datos, ["medicoTratante"], "Sin médico tratante"))} <button class="boton-editar-dato" onclick="editarCampoPaciente('medicoTratante', 'Medico tratante', 'text')">Editar</button></p>
-          <p><b>Médico adscrito encargado:</b> ${escaparHTML(valorPaciente(datos, ["medicoAdscritoEncargado", "datosInstitucionales.medicoAdscritoEncargado", "medicoAdscrito"]))} <button class="boton-editar-dato" onclick="editarCampoPaciente('medicoAdscritoEncargado', 'Medico adscrito encargado', 'text')">Editar</button></p>
-          <p><b>Residente encargado:</b> ${escaparHTML(valorPaciente(datos, ["residenteEncargado", "datosInstitucionales.residenteEncargado", "medicoResidente"]))} <button class="boton-editar-dato" onclick="editarCampoPaciente('residenteEncargado', 'Residente encargado', 'text')">Editar</button></p>
+          ${renderizarEquipoClinicoLab(equipoClinico)}
+          <button class="lab-equipo-add" type="button" onclick="agregarEquipoClinicoPaciente()" aria-label="Agregar integrante al equipo clínico">+</button>
         </article>
 
         <article class="lab-card">
           <span>Somatometría</span>
           <p><b>Peso:</b> ${escaparHTML(valorPaciente(datos, ["peso", "somatometria.peso", "signosVitales.peso", "datosInstitucionales.peso"]))} <button class="boton-editar-dato" onclick="editarCampoPaciente('peso', 'Peso', 'text')">Editar</button></p>
           <p><b>Talla:</b> ${escaparHTML(valorPaciente(datos, ["talla", "somatometria.talla", "signosVitales.talla", "datosInstitucionales.talla"]))} <button class="boton-editar-dato" onclick="editarCampoPaciente('talla', 'Talla', 'text')">Editar</button></p>
-          <p><b>Perímetro abdominal:</b> ${escaparHTML(valorPaciente(datos, ["perimetroAbdominal", "somatometria.perimetroAbdominal", "signosVitales.perimetroAbdominal", "datosInstitucionales.perimetroAbdominal"]))} <button class="boton-editar-dato" onclick="editarCampoPaciente('perimetroAbdominal', 'Perimetro abdominal', 'text')">Editar</button></p>
+          <p><b>Perímetro abdominal:</b> ${escaparHTML(valorPaciente(datos, ["perimetroAbdominal", "somatometria.perimetroAbdominal", "signosVitales.perimetroAbdominal", "datosInstitucionales.perimetroAbdominal"]))} <button class="boton-editar-dato" onclick="editarCampoPaciente('perimetroAbdominal', 'Perímetro abdominal', 'text')">Editar</button></p>
           <p><b>IMC:</b> ${escaparHTML(valorPaciente(datos, ["imc", "somatometria.imc", "signosVitales.imc", "datosInstitucionales.imc"], "Sin registro"))}</p>
         </article>
 
@@ -668,7 +781,7 @@ function renderizarVistaLaboratorioPaciente(datos = datosPacienteActual || {}) {
         </article>
         <article class="lab-card lab-card-lista">
           <span>Línea clínica</span>
-          <ul>${timeline.map((item) => `<li><b>${escaparHTML(item.etiqueta)}:</b> ${escaparHTML(item.valor)}</li>`).join("")}</ul>
+          <ul>${timelineFinal.map((item) => `<li><b>${escaparHTML(item.etiqueta)}:</b> ${escaparHTML(item.valor)}</li>`).join("")}</ul>
         </article>
       </div>
     </div>
@@ -1543,6 +1656,15 @@ function esTipoPacienteInstitucional(valor = "") {
   return tipo === "institucion" || tipo === "institucional" || tipo === "paciente de institucion";
 }
 
+function esTipoPacientePrivado(valor = "") {
+  const tipo = normalizarTipoPaciente(valor);
+  return tipo === "" || tipo === "privada" || tipo === "privado" || tipo === "consulta privada";
+}
+
+function pacienteRequiereCamposInstitucionales(valor = "") {
+  return !esTipoPacientePrivado(valor);
+}
+
 function etiquetaTipoPaciente(valor = "") {
   const tipo = normalizarTipoPaciente(valor);
   if (tipo === "privada" || tipo === "privado" || tipo === "consulta privada") return "Privado";
@@ -1552,7 +1674,7 @@ function etiquetaTipoPaciente(valor = "") {
 }
 
 function actualizarVisibilidadCamposInstitucionalesPaciente(datos = datosPacienteActual || {}) {
-  const mostrar = esTipoPacienteInstitucional(datos?.tipoPaciente || datos?.datosInstitucionales?.tipoPaciente);
+  const mostrar = pacienteRequiereCamposInstitucionales(datos?.tipoPaciente || datos?.datosInstitucionales?.tipoPaciente);
   document.querySelectorAll(".campo-institucional-paciente").forEach((campo) => {
     campo.classList.toggle("oculto", !mostrar);
   });
@@ -2408,6 +2530,52 @@ window.editarTipoPaciente = async function() {
   });
 };
 
+function seleccionarValorPaciente(etiqueta = "Campo", valorActual = "", opciones = []) {
+  return new Promise((resolve) => {
+    const modal = document.createElement("div");
+    modal.className = "modal-tipo-paciente";
+    const opcionesHtml = opciones.map((opcion) => `
+      <option value="${escaparHTML(opcion)}" ${String(valorActual) === opcion ? "selected" : ""}>${escaparHTML(opcion)}</option>
+    `).join("");
+    modal.innerHTML = `
+      <div class="modal-tipo-paciente-contenido selector-campo-paciente">
+        <h3>${escaparHTML(etiqueta)}</h3>
+        <label>
+          Seleccionar opción
+          <select id="selectorCampoPaciente">${opcionesHtml}</select>
+        </label>
+        <label id="campoManualPacienteWrap" class="oculto">
+          Especificar
+          <input id="campoManualPaciente" type="text" value="${escaparHTML(valorActual)}" placeholder="Escribe el valor">
+        </label>
+        <div class="modal-tipo-paciente-acciones">
+          <button type="button" class="boton-secundario" data-cancelar-selector-paciente>Cancelar</button>
+          <button type="button" class="boton-primario" id="guardarSelectorCampoPaciente">Guardar</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(modal);
+
+    const selector = modal.querySelector("#selectorCampoPaciente");
+    const manualWrap = modal.querySelector("#campoManualPacienteWrap");
+    const manual = modal.querySelector("#campoManualPaciente");
+    const actualizarManual = () => manualWrap?.classList.toggle("oculto", selector.value !== "Otro..." && selector.value !== "Otra...");
+    actualizarManual();
+    selector?.addEventListener("change", actualizarManual);
+
+    modal.querySelector("[data-cancelar-selector-paciente]")?.addEventListener("click", () => {
+      modal.remove();
+      resolve(null);
+    });
+    modal.querySelector("#guardarSelectorCampoPaciente")?.addEventListener("click", () => {
+      const esManual = selector.value === "Otro..." || selector.value === "Otra...";
+      const valor = esManual ? manual.value.trim() : selector.value;
+      modal.remove();
+      resolve(valor);
+    });
+  });
+}
+
 window.editarCampoPaciente = async function(campo, etiqueta, tipo = "text") {
   if (campo === "edad") {
     alert("La edad se calcula automaticamente a partir de la fecha de nacimiento. Edita la fecha de nacimiento para actualizarla.");
@@ -2437,8 +2605,11 @@ window.editarCampoPaciente = async function(campo, etiqueta, tipo = "text") {
       : datos?.[campo] || datos?.datosInstitucionales?.[campo] || "";
   const etiquetaCampo = etiqueta || campo;
   let nuevoValor = null;
+  const opciones = opcionesCampoPaciente(campo);
 
-  if (tipo === "textarea") {
+  if (opciones.length) {
+    nuevoValor = await seleccionarValorPaciente(etiquetaCampo, valorActual, opciones);
+  } else if (tipo === "textarea") {
     nuevoValor = prompt(`${etiquetaCampo}:`, valorActual);
   } else if (tipo === "date") {
     nuevoValor = prompt(`${etiquetaCampo} (AAAA-MM-DD):`, valorActual);
@@ -2520,6 +2691,185 @@ window.editarCampoPaciente = async function(campo, etiqueta, tipo = "text") {
 
   await actualizarUsuario(uidPaciente, actualizacion);
   await cargarDatosPaciente();
+};
+
+async function guardarEquipoClinicoPaciente(equipoClinico = []) {
+  await actualizarUsuario(uidPaciente, { equipoClinico });
+  await cargarDatosPaciente();
+}
+
+async function abrirModalEquipoClinicoPaciente(item = {}) {
+  const cargo = await seleccionarValorPaciente("Cargo o especialidad", item.cargo || "", OPCIONES_CARGO_CLINICO);
+  if (cargo === null) return null;
+  const nombre = prompt(`${cargo || "Personal clínico"} - Nombre:`, item.nombre || "");
+  if (nombre === null) return null;
+  return {
+    cargo: cargo || "Personal clínico",
+    nombre: nombre.trim(),
+    actualizadoEn: new Date().toISOString()
+  };
+}
+
+window.agregarEquipoClinicoPaciente = async function() {
+  const datos = datosPacienteActual || await obtenerUsuario(uidPaciente);
+  const equipo = obtenerEquipoClinicoPaciente(datos);
+  const nuevo = await abrirModalEquipoClinicoPaciente();
+  if (!nuevo || !nuevo.nombre) return;
+  equipo.push(nuevo);
+  await guardarEquipoClinicoPaciente(equipo);
+};
+
+window.editarEquipoClinicoPaciente = async function(index) {
+  const datos = datosPacienteActual || await obtenerUsuario(uidPaciente);
+  const equipo = obtenerEquipoClinicoPaciente(datos);
+  if (!equipo[index]) return;
+  const editado = await abrirModalEquipoClinicoPaciente(equipo[index]);
+  if (!editado || !editado.nombre) return;
+  equipo[index] = editado;
+  await guardarEquipoClinicoPaciente(equipo);
+};
+
+window.eliminarEquipoClinicoPaciente = async function(index) {
+  const datos = datosPacienteActual || await obtenerUsuario(uidPaciente);
+  const equipo = obtenerEquipoClinicoPaciente(datos);
+  if (!equipo[index]) return;
+  if (!confirm("¿Quitar este integrante del equipo clínico?")) return;
+  equipo.splice(index, 1);
+  await guardarEquipoClinicoPaciente(equipo);
+};
+
+function obtenerHistorialSignoVital(datos = {}, clave = "") {
+  const historial = datos.historialSignosVitales?.[clave];
+  return Array.isArray(historial) ? historial : [];
+}
+
+function valorNumericoParaGrafica(valor = "") {
+  if (String(valor).includes("/")) return numeroDesdeTexto(String(valor).split("/")[0]);
+  return numeroDesdeTexto(valor);
+}
+
+function construirGraficaSignoVital(registros = []) {
+  const puntos = registros
+    .map((registro, index) => ({ index, valor: valorNumericoParaGrafica(registro.valor) }))
+    .filter((punto) => Number.isFinite(punto.valor) && punto.valor > 0);
+  if (puntos.length < 2) {
+    return `<div class="historial-signo-vacio">Se necesitan al menos dos registros numéricos para dibujar la curva.</div>`;
+  }
+  const ancho = 720;
+  const alto = 260;
+  const margen = 36;
+  const min = Math.min(...puntos.map((p) => p.valor));
+  const max = Math.max(...puntos.map((p) => p.valor));
+  const rango = Math.max(max - min, 1);
+  const ultimoIndice = Math.max(...puntos.map((p) => p.index), 1);
+  const coords = puntos.map((punto) => {
+    const x = margen + (punto.index / ultimoIndice) * (ancho - margen * 2);
+    const y = alto - margen - ((punto.valor - min) / rango) * (alto - margen * 2);
+    return `${x.toFixed(1)},${y.toFixed(1)}`;
+  }).join(" ");
+  return `
+    <svg viewBox="0 0 ${ancho} ${alto}" class="historial-signo-svg" role="img" aria-label="Curva histórica del signo vital">
+      <line x1="${margen}" y1="${alto - margen}" x2="${ancho - margen}" y2="${alto - margen}" />
+      <line x1="${margen}" y1="${margen}" x2="${margen}" y2="${alto - margen}" />
+      <polyline points="${coords}" />
+      ${puntos.map((punto) => {
+        const x = margen + (punto.index / ultimoIndice) * (ancho - margen * 2);
+        const y = alto - margen - ((punto.valor - min) / rango) * (alto - margen * 2);
+        return `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="5"><title>${punto.valor}</title></circle>`;
+      }).join("")}
+      <text x="${margen}" y="22">${max}</text>
+      <text x="${margen}" y="${alto - 8}">${min}</text>
+    </svg>
+  `;
+}
+
+window.registrarSignoVitalPaciente = async function(clave) {
+  const signo = SIGNOS_VITALES_LAB[clave];
+  if (!signo) return;
+  const datos = datosPacienteActual || await obtenerUsuario(uidPaciente);
+  const valorActual = valorPaciente(datos, signo.rutas, "");
+  const valor = prompt(`${signo.titulo}${signo.unidad ? ` (${signo.unidad})` : ""}:`, valorActual);
+  if (valor === null) return;
+  const nota = prompt("Nota clínica opcional para este valor:", "") || "";
+  const historial = {
+    ...(datos?.historialSignosVitales || {}),
+    [clave]: [
+      ...obtenerHistorialSignoVital(datos, clave),
+      {
+        valor: valor.trim(),
+        nota: nota.trim(),
+        fecha: new Date().toISOString(),
+        uidRegistro: auth.currentUser?.uid || ""
+      }
+    ]
+  };
+  const actualizacion = {
+    [clave]: valor.trim(),
+    datosInstitucionales: {
+      ...(datos?.datosInstitucionales || {}),
+      [clave]: valor.trim()
+    },
+    signosVitales: {
+      ...(datos?.signosVitales || {}),
+      [clave]: valor.trim()
+    },
+    historialSignosVitales: historial
+  };
+  if (clave === "imc") {
+    actualizacion.somatometria = {
+      ...(datos?.somatometria || {}),
+      imc: valor.trim()
+    };
+  }
+  await actualizarUsuario(uidPaciente, actualizacion);
+  await cargarDatosPaciente();
+};
+
+window.abrirHistorialSignoVitalPaciente = function(clave) {
+  const signo = SIGNOS_VITALES_LAB[clave];
+  if (!signo) return;
+  const datos = datosPacienteActual || {};
+  const registros = obtenerHistorialSignoVital(datos, clave);
+  const modalPrevio = document.getElementById("modalHistorialSignoVital");
+  modalPrevio?.remove();
+
+  const modal = document.createElement("div");
+  modal.id = "modalHistorialSignoVital";
+  modal.className = "historial-signo-overlay";
+  modal.innerHTML = `
+    <section class="historial-signo-card" aria-label="Historial de ${escaparHTML(signo.titulo)}">
+      <header>
+        <div>
+          <span>Signos vitales</span>
+          <h3>${escaparHTML(signo.titulo)}</h3>
+        </div>
+        <div class="historial-signo-actions">
+          <button type="button" data-ampliar-historial>Ampliar</button>
+          <button type="button" data-cerrar-historial>×</button>
+        </div>
+      </header>
+      <div class="historial-signo-grafica">
+        ${construirGraficaSignoVital(registros)}
+      </div>
+      <div class="historial-signo-lista">
+        ${registros.length ? registros.slice().reverse().map((registro) => `
+          <article>
+            <b>${escaparHTML(registro.valor || "Sin valor")}</b>
+            <span>${escaparHTML(formatearFecha(registro.fecha) || registro.fecha || "Sin fecha")}</span>
+            ${registro.nota ? `<p>${escaparHTML(registro.nota)}</p>` : ""}
+          </article>
+        `).join("") : `<p class="lab-muted">Aún no hay registros históricos para este signo vital.</p>`}
+      </div>
+    </section>
+  `;
+  document.body.appendChild(modal);
+  modal.querySelector("[data-cerrar-historial]")?.addEventListener("click", () => modal.remove());
+  modal.addEventListener("click", (evento) => {
+    if (evento.target === modal) modal.remove();
+  });
+  modal.querySelector("[data-ampliar-historial]")?.addEventListener("click", () => {
+    modal.querySelector(".historial-signo-card")?.classList.toggle("amplia");
+  });
 };
 
 async function abrirSelectorFechaPaciente(campo = "fechaIngreso") {
@@ -5357,3 +5707,4 @@ async function registrarAccionExpediente({ accion, descripcion, detalles = {} })
     detalles
   });
 }
+

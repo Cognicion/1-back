@@ -35,6 +35,7 @@ const sexoOptions = [
 
 const categorias = {
   antropometria: "Antropometría y signos vitales",
+  pediatria: "Pediatría",
   renal: "Función renal",
   electrolitos: "Electrolitos y metabolismo",
   cardiovascular: "Cardiovascular",
@@ -72,6 +73,29 @@ function sofaPoints(value, ranges) {
 export const CATEGORIAS_CALCULADORAS_MEDICAS = Object.entries(categorias).map(([id, nombre]) => ({ id, nombre }));
 
 export const CALCULADORAS_MEDICAS = [
+  {
+    id: "calculadoras-pediatricas",
+    name: "Calculadoras pediátricas",
+    abbreviation: "PED",
+    category: "pediatria",
+    type: "Módulo",
+    specialties: ["pediatría", "medicina-general", "urgencias", "medicina-interna"],
+    aliases: ["pediatría", "niños", "dosis pediátrica", "Holliday-Segar", "percentiles", "superficie corporal", "líquidos pediátricos"],
+    version: "1.0.0",
+    status: "active",
+    duration: "variable",
+    description: "Abre el panel de calculadoras pediátricas: dosis por kg, somatometría, superficie corporal, líquidos, urgencias, neonatología y más.",
+    externalUrl: "calculadoras-pediatricas.html",
+    inputs: [],
+    calculate() {
+      return result({
+        value: "Abrir módulo",
+        category: "Calculadoras pediátricas",
+        interpretation: "Este elemento abre el módulo pediátrico completo."
+      });
+    },
+    bibliography: []
+  },
   {
     id: "imc",
     name: "Índice de masa corporal",
@@ -768,4 +792,3 @@ export function ejecutarCalculadoraMedica(id, inputs) {
   const calculator = obtenerCalculadoraMedica(id);
   return calculator.calculate(inputs, calculator);
 }
-

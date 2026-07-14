@@ -339,6 +339,38 @@
   font-size: 22px;
 }
 
+.lab-gauge-interactivo {
+  display: grid;
+  align-content: start;
+  gap: 8px;
+}
+
+.lab-gauge-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.lab-gauge-actions button,
+.lab-equipo-add,
+.historial-signo-actions button {
+  border: 1px solid rgba(103, 232, 249, 0.34);
+  border-radius: 999px;
+  color: #dff8ff;
+  background: rgba(14, 165, 233, 0.13);
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 7px 10px;
+}
+
+.lab-gauge-actions button:hover,
+.lab-equipo-add:hover,
+.historial-signo-actions button:hover {
+  border-color: rgba(103, 232, 249, 0.75);
+  box-shadow: 0 0 18px rgba(34, 211, 238, 0.22);
+}
+
 .lab-gauge.principal strong {
   font-size: 30px;
   color: #67e8f9;
@@ -355,6 +387,48 @@
   padding: 16px;
 }
 
+.lab-muted {
+  color: #9fb4c9;
+  line-height: 1.5;
+}
+
+.lab-equipo-lista {
+  display: grid;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.lab-equipo-item {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px;
+  border: 1px solid rgba(103, 232, 249, 0.14);
+  border-radius: 14px;
+  background: rgba(15, 23, 42, 0.4);
+}
+
+.lab-equipo-item p {
+  margin: 0;
+}
+
+.lab-equipo-item div {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.lab-equipo-add {
+  width: 42px;
+  height: 42px;
+  padding: 0;
+  margin-top: 12px;
+  font-size: 22px;
+  line-height: 1;
+}
+
 .lab-card p,
 .lab-card ul {
   margin: 10px 0 0;
@@ -368,6 +442,140 @@
 
 .lab-card-lista {
   grid-column: span 2;
+}
+
+.selector-campo-paciente select,
+.selector-campo-paciente input {
+  width: 100%;
+}
+
+.historial-signo-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(2, 6, 23, 0.54);
+  backdrop-filter: blur(10px);
+  animation: labPacienteEntrada 0.18s ease both;
+}
+
+.historial-signo-card {
+  width: min(860px, 94vw);
+  max-height: 86vh;
+  overflow: auto;
+  resize: both;
+  min-width: min(440px, 94vw);
+  min-height: 420px;
+  padding: 20px;
+  border: 1px solid rgba(103, 232, 249, 0.28);
+  border-radius: 24px;
+  background: rgba(3, 15, 31, 0.94);
+  box-shadow: 0 30px 90px rgba(0, 0, 0, 0.45);
+}
+
+.historial-signo-card.amplia {
+  width: min(1180px, 96vw);
+  height: min(760px, 90vh);
+}
+
+.historial-signo-card header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.historial-signo-card header span {
+  color: #67e8f9;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+.historial-signo-card h3 {
+  margin: 6px 0 0;
+  color: #f8fafc;
+}
+
+.historial-signo-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.historial-signo-grafica {
+  overflow: auto;
+  border: 1px solid rgba(103, 232, 249, 0.14);
+  border-radius: 18px;
+  background: rgba(15, 23, 42, 0.58);
+  padding: 12px;
+}
+
+.historial-signo-svg {
+  width: 100%;
+  min-width: 620px;
+  height: 280px;
+}
+
+.historial-signo-svg line {
+  stroke: rgba(148, 163, 184, 0.42);
+  stroke-width: 1;
+}
+
+.historial-signo-svg polyline {
+  fill: none;
+  stroke: #22d3ee;
+  stroke-width: 4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 0 8px rgba(34, 211, 238, 0.5));
+}
+
+.historial-signo-svg circle {
+  fill: #f8fafc;
+  stroke: #22d3ee;
+  stroke-width: 2;
+}
+
+.historial-signo-svg text {
+  fill: #9fb4c9;
+  font-size: 12px;
+}
+
+.historial-signo-vacio {
+  color: #9fb4c9;
+  padding: 32px;
+  text-align: center;
+}
+
+.historial-signo-lista {
+  display: grid;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.historial-signo-lista article {
+  padding: 12px;
+  border: 1px solid rgba(103, 232, 249, 0.12);
+  border-radius: 16px;
+  background: rgba(15, 23, 42, 0.5);
+}
+
+.historial-signo-lista b,
+.historial-signo-lista span {
+  display: block;
+}
+
+.historial-signo-lista b {
+  color: #e0f7ff;
+}
+
+.historial-signo-lista span,
+.historial-signo-lista p {
+  color: #9fb4c9;
 }
 
 @keyframes labPacienteEntrada {

@@ -22,6 +22,18 @@ export function redondear(valor, decimales = 2) {
   return Math.round(n * factor) / factor;
 }
 
+export function normalizarTallaCm(valor) {
+  if (valor === null || valor === undefined || valor === "") return null;
+  const texto = String(valor).trim().toLowerCase();
+  const talla = numero(texto);
+  if (!talla || talla <= 0) return null;
+  const tieneCm = /\bcm\b|cent/i.test(texto);
+  const tieneM = /\bm\b|metro/i.test(texto) && !tieneCm;
+  if (tieneCm && talla < 30) return null;
+  if (tieneM) return talla * 100;
+  return talla <= 3 ? talla * 100 : talla;
+}
+
 function clamp(valor, min, max) {
   return Math.min(max, Math.max(min, valor));
 }
@@ -58,15 +70,15 @@ export function zDesdeLMS(valor, l, m, s) {
 
 function imc({ peso, tallaCm }) {
   const p = numero(peso);
-  const t = numero(tallaCm);
+  const t = normalizarTallaCm(tallaCm);
   if (!p || !t) return null;
-  const m = t > 3 ? t / 100 : t;
+  const m = t / 100;
   return p / (m * m);
 }
 
 function superficieCorporal({ peso, tallaCm }) {
   const p = numero(peso);
-  const t = numero(tallaCm);
+  const t = normalizarTallaCm(tallaCm);
   if (!p || !t) return null;
   return Math.sqrt((p * t) / 3600);
 }
@@ -120,7 +132,7 @@ function osmolaridad({ sodio, glucosa, bun }) {
 }
 
 function egfrSchwartz({ tallaCm, creatinina, k = 0.413 }) {
-  const t = numero(tallaCm);
+  const t = normalizarTallaCm(tallaCm);
   const cr = numero(creatinina);
   const constante = numero(k) ?? 0.413;
   if (!t || !cr) return null;
@@ -289,10 +301,10 @@ export const CALCULADORAS_PEDIATRICAS = [
       { id: "imcObjetivo", label: "IMC objetivo" }
     ],
     calcular: ({ tallaCm, imcObjetivo }) => {
-      const t = numero(tallaCm);
+      const t = normalizarTallaCm(tallaCm);
       const imcObj = numero(imcObjetivo);
       if (!t || !imcObj) return null;
-      const m = t > 3 ? t / 100 : t;
+      const m = t / 100;
       return { pesoObjetivo: imcObj * m * m };
     },
     interpretar: (r) => r ? `Peso correspondiente: ${redondear(r.pesoObjetivo, 2)} kg.` : "Completa talla e IMC objetivo."

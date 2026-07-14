@@ -4,18 +4,30 @@ export function numero(valor) {
   return Number.isFinite(n) ? n : null;
 }
 
+export function normalizarTallaCm(valor) {
+  if (valor === null || valor === undefined || valor === "") return null;
+  const texto = String(valor).trim().toLowerCase();
+  const talla = numero(texto);
+  if (!talla || talla <= 0) return null;
+  const tieneCm = /\bcm\b|cent/i.test(texto);
+  const tieneM = /\bm\b|metro/i.test(texto) && !tieneCm;
+  if (tieneCm && talla < 30) return null;
+  if (tieneM) return talla * 100;
+  return talla <= 3 ? talla * 100 : talla;
+}
+
 export function calcularIMC(pesoKg, tallaCm) {
   const peso = numero(pesoKg);
-  const talla = numero(tallaCm);
+  const talla = normalizarTallaCm(tallaCm);
   if (!peso || !talla) return null;
-  const metros = talla > 3 ? talla / 100 : talla;
+  const metros = talla / 100;
   if (metros <= 0) return null;
   return peso / (metros * metros);
 }
 
 export function superficieCorporal(pesoKg, tallaCm) {
   const peso = numero(pesoKg);
-  const talla = numero(tallaCm);
+  const talla = normalizarTallaCm(tallaCm);
   if (!peso || !talla) return null;
   return {
     mosteller: Math.sqrt((peso * talla) / 3600),

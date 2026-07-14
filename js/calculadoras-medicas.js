@@ -198,6 +198,42 @@ function renderPanel() {
   agregarReciente(calc.id);
   estado.resultadoActual = null;
   estado.inputsActuales = {};
+  if (calc.externalUrl) {
+    nodos.panel.innerHTML = `
+      <div class="calc-med-panel-header">
+        <div>
+          <span class="kicker">${escaparHTML(nombreCategoria(calc.category))}</span>
+          <h2>${escaparHTML(calc.name)}</h2>
+          <p>${escaparHTML(calc.description)}</p>
+          <div class="calc-med-badges">
+            <span class="calc-med-badge">${escaparHTML(calc.type)}</span>
+            <span class="calc-med-badge">Versión ${escaparHTML(calc.version)}</span>
+            <span class="calc-med-badge">Disponible</span>
+          </div>
+        </div>
+        <button class="calc-med-star" type="button" data-action="favorita" aria-label="Marcar como favorita">${estado.favoritas.includes(calc.id) ? "★" : "☆"}</button>
+      </div>
+      <section class="calc-med-result">
+        <div class="calc-med-result-main">
+          <div class="calc-med-result-value">
+            <strong>${escaparHTML(calc.abbreviation || "PED")}</strong>
+            <span>Módulo</span>
+          </div>
+          <div>
+            <h3>Calculadoras pediátricas disponibles</h3>
+            <p>Incluye crecimiento, líquidos, urgencias, neonatología, renal, respiratorio, cardiología y escalas clínicas pediátricas.</p>
+            <p class="calc-med-muted">Los cálculos pediátricos verifican unidades y deben interpretarse con protocolos locales y juicio clínico.</p>
+          </div>
+        </div>
+      </section>
+      <div class="calc-med-actions">
+        <button class="calc-med-primary" type="button" data-action="abrir-modulo">Abrir calculadoras pediátricas</button>
+        <button class="calc-med-secondary" type="button" data-action="favorita">Guardar en favoritas</button>
+      </div>
+    `;
+    estado.pacienteId = "";
+    return;
+  }
   nodos.panel.innerHTML = `
     <div class="calc-med-panel-header">
       <div>
@@ -625,6 +661,10 @@ function manejarClick(event) {
   const action = event.target.closest("[data-action]")?.dataset.action;
   if (!action) return;
   if (action === "favorita") alternarFavorita(estado.calculadoraId);
+  if (action === "abrir-modulo") {
+    const calc = obtenerCalculadoraMedica(estado.calculadoraId);
+    if (calc.externalUrl) window.location.href = calc.externalUrl;
+  }
   if (action === "calcular") calcularActual();
   if (action === "limpiar") renderPanel();
   if (action === "copiar") copiarResumen();
@@ -693,4 +733,3 @@ function inicializar() {
 }
 
 inicializar();
-
