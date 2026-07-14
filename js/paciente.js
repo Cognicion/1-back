@@ -11,7 +11,10 @@ import { CIE10 } from "./data/cie10.js";
 import { CIE11 } from "./data/cie11.js";
 import { registrarEventoAuditoria } from "./services/auditoria.js";
 import { iniciarMonitoreoSesion } from "./services/sesion.js";
-import { detectarInteraccionesFarmacologicas } from "./data/interaccionesFarmacologicas.js";
+import {
+  detectarAlertasClinicasMedicamentos,
+  detectarInteraccionesFarmacologicas
+} from "./data/interaccionesFarmacologicas.js";
 import {
   aplicarPermisosFormatosPagina,
   obtenerPermisosFormatosUsuario,
@@ -3996,6 +3999,8 @@ function renderizarInteraccionesFarmacologicas(medicamentos = [], origen = "trat
   if (!contenedor) return;
 
   const interacciones = detectarInteraccionesFarmacologicas(medicamentos);
+  const evaluacionClinica = detectarAlertasClinicasMedicamentos(medicamentos, datosPacienteActual || {});
+  const alertasClinicas = evaluacionClinica.alertas || [];
   const tituloOrigen = origen === "indicaciones" ? "medicamentos activos vinculados a indicaciones" : "tratamientos activos";
   const listaMedicamentos = medicamentos.length
     ? medicamentos.map((med) => `
@@ -4009,10 +4014,33 @@ function renderizarInteraccionesFarmacologicas(medicamentos = [], origen = "trat
 
   contenedor.innerHTML = `
     <p class="texto-suave">Revision orientativa basada en los ${escaparHTML(tituloOrigen)}. No sustituye el juicio clinico ni la revision de fuentes farmacologicas institucionales.</p>
+    <article class="interaccion-card severidad-${escaparHTML(evaluacionClinica.indicador?.clase || "ok")}">
+      <strong>Indicador contextual: ${escaparHTML(evaluacionClinica.indicador?.etiqueta || "Sin alertas locales")}</strong>
+      <p>${alertasClinicas.length ? "Se detectaron alertas por diagnosticos, comorbilidades, interacciones o carga acumulativa." : "No se detectaron alertas clinicas contextuales con las reglas locales actuales."}</p>
+    </article>
     <div class="interacciones-medicamentos-revisados">
       <strong>Medicamentos revisados</strong>
       <ul>${listaMedicamentos}</ul>
     </div>
+    ${alertasClinicas.length ? `
+      <div class="interacciones-lista">
+        ${alertasClinicas.map((alerta) => `
+          <article class="interaccion-card severidad-${escaparHTML(alerta.severidad)}">
+            <div class="registro-top">
+              <div>
+                <strong>${escaparHTML(alerta.titulo)}</strong>
+                <span>${escaparHTML((alerta.medicamentos || []).join(" + ") || "Contexto clinico")}</span>
+              </div>
+              <em>${escaparHTML(alerta.severidad)}</em>
+            </div>
+            ${alerta.diagnosticos?.length ? `<small>Contexto: ${escaparHTML(alerta.diagnosticos.join(", "))}</small>` : ""}
+            <p>${escaparHTML(alerta.efecto)}</p>
+            <small>${escaparHTML(alerta.recomendacion)}</small>
+            ${alerta.requiereJustificacion ? "<small>Requiere justificacion clinica si se decide continuar.</small>" : ""}
+          </article>
+        `).join("")}
+      </div>
+    ` : ""}
     ${interacciones.length ? `
       <div class="interacciones-lista">
         ${interacciones.map((interaccion) => `

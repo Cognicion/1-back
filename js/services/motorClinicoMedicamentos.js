@@ -56,6 +56,23 @@ function contieneConFuzzy(texto, patron) {
   return palabras.some((palabra) => Math.abs(palabra.length - buscado.length) <= 2 && distanciaLevenshtein(palabra, buscado) <= 2);
 }
 
+function patronNegado(texto, patron) {
+  const normalizado = normalizarTextoClinico(texto);
+  const buscado = normalizarTextoClinico(patron);
+  if (!normalizado || !buscado) return false;
+  const expresiones = [
+    `sin ${buscado}`,
+    `niega ${buscado}`,
+    `no ${buscado}`,
+    `sin datos de ${buscado}`,
+    `sin antecedente de ${buscado}`,
+    `no se documenta ${buscado}`
+  ];
+  if (expresiones.some((expresion) => normalizado.includes(expresion))) return true;
+  const primeraPalabra = buscado.split(" ")[0];
+  return new RegExp(`\\b(sin|niega|no|sin datos de)\\s+(?:\\w+\\s+){0,3}${primeraPalabra}\\b`, "i").test(normalizado);
+}
+
 function textoMedicamento(medicamento) {
   if (!medicamento) return "";
   if (typeof medicamento === "string") return medicamento;
@@ -144,15 +161,16 @@ export function resolverDiagnosticosClinicos(textos = []) {
   const encontrados = [];
   const vistos = new Set();
   DIAGNOSTICOS_CLINICOS.forEach((diagnostico) => {
+    const patrones = [diagnostico.nombre, ...(diagnostico.sinonimos || [])];
     const coincide = listaTextos.some((texto) =>
-      [diagnostico.nombre, ...(diagnostico.sinonimos || [])].some((patron) => contieneConFuzzy(texto, patron))
+      patrones.some((patron) => contieneConFuzzy(texto, patron) && !patronNegado(texto, patron))
     );
     if (!coincide || vistos.has(diagnostico.id)) return;
     vistos.add(diagnostico.id);
     encontrados.push({
       ...diagnostico,
       evidenciaTexto: listaTextos.find((texto) =>
-        [diagnostico.nombre, ...(diagnostico.sinonimos || [])].some((patron) => contieneConFuzzy(texto, patron))
+        patrones.some((patron) => contieneConFuzzy(texto, patron) && !patronNegado(texto, patron))
       ) || ""
     });
   });

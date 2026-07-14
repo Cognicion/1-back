@@ -2,7 +2,7 @@ export const INGREDIENTES_MEDICAMENTOS = [
   {
     id: "paracetamol",
     nombre: "Paracetamol",
-    sinonimos: ["paracetamol", "acetaminofen", "acetaminofén", "tempra", "tylenol"],
+    sinonimos: ["paracetamol", "acetaminofen", "acetaminofén", "tempra", "tylenol", "zaldiar", "tramacet"],
     clases: ["analgesico_no_opioide"],
     riesgos: { hepatotoxico: 2 }
   },
