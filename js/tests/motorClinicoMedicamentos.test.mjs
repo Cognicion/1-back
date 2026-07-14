@@ -102,6 +102,32 @@ assert.ok(tiene(resultado, "Litio + diurético"));
 
 resultado = evaluarMedicamentosPaciente({
   medicamentos: [
+    {
+      genericName: "Losartán",
+      therapeuticClasses: ["ARA-II", "antagonista_receptor_angiotensina_II"],
+      dose: 50,
+      unit: "mg",
+      frequency: "cada_24_horas"
+    },
+    {
+      genericName: "Enalapril",
+      therapeuticClasses: ["IECA", "inhibidor_enzima_convertidora_angiotensina"],
+      dose: 10,
+      unit: "mg",
+      frequency: "cada_24_horas"
+    }
+  ]
+});
+assert.ok(tiene(resultado, "Bloqueo dual"), "Losartán + enalapril debe alertar bloqueo dual del SRAA.");
+const alertaSraa = resultado.alertas.find((alerta) => alerta.titulo.includes("Bloqueo dual"));
+assert.equal(alertaSraa?.severidad, "alta");
+assert.ok(
+  /hiperpotasemia|lesi[oó]n renal|creatinina/i.test(`${alertaSraa?.efecto || ""} ${alertaSraa?.recomendacion || ""}`),
+  "La alerta debe describir hiperpotasemia y vigilancia renal."
+);
+
+resultado = evaluarMedicamentosPaciente({
+  medicamentos: [
     { medicamento: "Biperideno 2 mg" },
     { medicamento: "Amitriptilina 25 mg" }
   ]

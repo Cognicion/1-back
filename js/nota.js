@@ -6,6 +6,10 @@ import { CIE11 } from "./data/cie11.js";
 import { MEDICAMENTOS } from "./data/medicamentos.js";
 import { ESCALAS_PSIQUIATRICAS, interpretarEscala } from "./data/escalasPsiquiatricas.js";
 import {
+  ESCALAS_MEDICINA_GENERAL,
+  ESCALAS_PEDIATRICAS_NOTA
+} from "./data/escalasMedicinaGeneral.js";
+import {
   ESCALAS_COGNITIVAS,
   calcularPuntajeEscalaCognitiva,
   interpretarEscalaCognitiva,
@@ -97,6 +101,17 @@ const ESCALAS_NOTA = [
   ...ESCALAS_PSIQUIATRICAS
     .filter((escala) => !IDS_PRUEBAS_INTERACTIVAS.has(escala.id))
     .map((escala) => ({ ...escala, tipoEscala: "psiquiatrica", interactiva: false })),
+  ...ESCALAS_MEDICINA_GENERAL.map((escala) => ({
+    ...escala,
+    tipoEscala: "medicina_general",
+    interactiva: false
+  })),
+  ...ESCALAS_PEDIATRICAS_NOTA.map((escala) => ({
+    ...escala,
+    tipoEscala: "pediatrica",
+    pediatrica: true,
+    interactiva: false
+  })),
   ...ESCALAS_COGNITIVAS
     .filter((escala) => !IDS_PRUEBAS_INTERACTIVAS.has(escala.id))
     .map((escala) => ({ ...escala, interactiva: false })),
@@ -464,16 +479,7 @@ function configurarPanelEscalaNota() {
 
   if (!selector) return;
 
-  const escalasClinicasNota = ESCALAS_NOTA.filter((escala) => !esEscalaCognitivaNota(escala));
-  const escalasCognitivasNota = ESCALAS_NOTA.filter((escala) => esEscalaCognitivaNota(escala));
-  selector.innerHTML = `
-    <optgroup label="Escalas clinicas">
-      ${escalasClinicasNota.map((escala) => `<option value="${escala.id}">${escala.nombre} - ${escala.area || escala.subtitulo || "Clinica"}</option>`).join("")}
-    </optgroup>
-    <optgroup label="Escalas y tamizajes cognitivos">
-      ${escalasCognitivasNota.map((escala) => `<option value="${escala.id}">${escala.nombre} - ${escala.subtitulo || escala.area || "Cognitiva"}</option>`).join("")}
-    </optgroup>
-  `;
+  renderizarOpcionesEscalasNota();
 
   selector.addEventListener("change", () => {
     const escala = escalaNotaActual();
@@ -489,6 +495,51 @@ function configurarPanelEscalaNota() {
   buscadorPrevias?.addEventListener("input", renderizarEscalasPreviasNota);
   filtroPrevias?.addEventListener("change", renderizarEscalasPreviasNota);
   renderizarEscalaNotaSeleccionada();
+}
+
+function pacienteNotaEsPediatrico() {
+  const edad = calcularEdadPediatrica(fechaNacimientoPacienteNota());
+  return Boolean(edad && edad.anos < 18);
+}
+
+function htmlGrupoEscalasNota(etiqueta, escalas) {
+  if (!escalas.length) return "";
+  return `
+    <optgroup label="${escaparHTML(etiqueta)}">
+      ${escalas.map((escala) => {
+        const subtitulo = escala.area || escala.subtitulo || escala.tipoEscala || "Clinica";
+        return `<option value="${escaparHTML(escala.id)}">${escaparHTML(escala.nombre)} - ${escaparHTML(subtitulo)}</option>`;
+      }).join("")}
+    </optgroup>
+  `;
+}
+
+function renderizarOpcionesEscalasNota() {
+  const selector = document.getElementById("selectorEscalaNota");
+  if (!selector) return;
+
+  const seleccionPrevia = selector.value;
+  const escalasPsiquiatricasNota = ESCALAS_NOTA.filter((escala) => escala.tipoEscala === "psiquiatrica");
+  const escalasMedicinaNota = ESCALAS_NOTA.filter((escala) => escala.tipoEscala === "medicina_general");
+  const escalasPediatricasNota = pacienteNotaEsPediatrico()
+    ? ESCALAS_NOTA.filter((escala) => escala.tipoEscala === "pediatrica")
+    : [];
+  const escalasCognitivasNota = ESCALAS_NOTA.filter((escala) => esEscalaCognitivaNota(escala));
+
+  selector.innerHTML = [
+    htmlGrupoEscalasNota("Escalas clinicas", escalasPsiquiatricasNota),
+    htmlGrupoEscalasNota("Medicina general", escalasMedicinaNota),
+    htmlGrupoEscalasNota("Escalas pediatricas", escalasPediatricasNota),
+    htmlGrupoEscalasNota("Escalas y tamizajes cognitivos", escalasCognitivasNota)
+  ].join("");
+
+  const idsDisponibles = [...selector.options].map((opcion) => opcion.value);
+  selector.value = idsDisponibles.includes(seleccionPrevia)
+    ? seleccionPrevia
+    : selector.options[0]?.value || "";
+
+  const escala = escalaNotaActual();
+  modoEscalaNota = escala?.interactiva ? "interactiva" : "manual";
 }
 
 function escalaNotaActual() {
@@ -1772,6 +1823,7 @@ function textoResumenPediatriaNota(datos) {
 
 function sincronizarParametrosPediatriaNota(datosGuardados = null) {
   const bloque = document.getElementById("bloquePediatriaNota");
+  renderizarOpcionesEscalasNota();
   if (!bloque) return null;
 
   const calculados = calcularParametrosPediatriaNota();
@@ -1779,6 +1831,7 @@ function sincronizarParametrosPediatriaNota(datosGuardados = null) {
 
   if (!datos) {
     bloque.classList.add("oculto");
+    renderizarEscalaNotaSeleccionada();
     return null;
   }
 
@@ -1797,6 +1850,7 @@ function sincronizarParametrosPediatriaNota(datosGuardados = null) {
   asignarValor("notaPedMantenimiento", datos.mantenimientoMlDia ? `${datos.mantenimientoMlDia} mL/dia` : "");
   asignarValor("notaPedRegla421", datos.regla421MlHora ? `${datos.regla421MlHora} mL/h` : "");
   asignarValor("notaPediatriaResumen", omitido ? "Parametros pediatricos omitidos en esta nota." : textoResumenPediatriaNota(datos));
+  renderizarEscalaNotaSeleccionada();
   return datos;
 }
 

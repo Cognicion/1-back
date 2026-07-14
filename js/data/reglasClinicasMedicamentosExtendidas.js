@@ -30,6 +30,9 @@ function unirPorId(base = [], extra = []) {
 }
 
 const INGREDIENTES_EXTRA = [
+  { id: "enalapril", nombre: "Enalapril", sinonimos: ["enalapril", "enalapril maleato", "maleato de enalapril"], clases: ["ieca"], riesgos: { potasio: 1, renal: 1, hipotension: 1 } },
+  { id: "losartan", nombre: "Losartán", sinonimos: ["losartan", "losartán", "losartan potasico", "losartán potásico", "cozaar"], clases: ["ara2"], riesgos: { potasio: 1, renal: 1, hipotension: 1 } },
+  { id: "aliskiren", nombre: "Aliskirén", sinonimos: ["aliskiren", "aliskirén", "rasilez", "tekturna"], clases: ["inhibidor_renina"], riesgos: { potasio: 1, renal: 1, hipotension: 1 } },
   { id: "alprazolam", nombre: "Alprazolam", sinonimos: ["alprazolam", "tafil", "xanax"], clases: ["benzodiacepina", "depresor_snc", "sustrato_cyp3a4"], riesgos: { sedacion: 2, respiratorio: 1, caidas: 2 } },
   { id: "midazolam", nombre: "Midazolam", sinonimos: ["midazolam"], clases: ["benzodiacepina", "depresor_snc", "sustrato_cyp3a4"], riesgos: { sedacion: 3, respiratorio: 2, caidas: 2 } },
   { id: "paroxetina", nombre: "Paroxetina", sinonimos: ["paroxetina", "paxil"], clases: ["isrs", "serotoninergico", "inhibidor_cyp2d6"], riesgos: { sangrado: 1, sedacion: 1, anticolinergico: 1 } },
@@ -104,6 +107,52 @@ const MED_DX_EXTRA = [
 ];
 
 const INTERACCIONES_EXTRA = [
+  {
+    id: "bloqueo_dual_sraa_ieca_ara2",
+    clasesA: ["ieca"],
+    clasesB: ["ara2"],
+    severidad: "alta",
+    titulo: "Bloqueo dual del SRAA: IECA + ARA-II",
+    efecto: "La combinación produce bloqueo dual del sistema renina-angiotensina-aldosterona y aumenta el riesgo de hiperpotasemia, hipotensión, síncope, lesión renal aguda, deterioro de la función renal, elevación de creatinina y alteraciones hidroelectrolíticas.",
+    recomendacion: "Evitar uso rutinario combinado. Si existe una indicación excepcional, documentar justificación y vigilar presión arterial, creatinina/eGFR, potasio sérico, balance hídrico y síntomas de hipotensión o síncope.",
+    evidencia: "documentada",
+    fuentes: [
+      "Ficha técnica de losartán/ARA-II: el bloqueo dual del SRAA con IECA, ARA-II o aliskirén se asocia con mayor riesgo de hipotensión, síncope, hiperpotasemia y cambios en función renal.",
+      "Guías nefrológicas y cardiovasculares: evitar bloqueo dual rutinario IECA + ARA-II por riesgo renal y electrolítico."
+    ],
+    permiteOverride: true,
+    requiereJustificacion: true
+  },
+  {
+    id: "bloqueo_dual_sraa_ieca_renina",
+    clasesA: ["ieca"],
+    clasesB: ["inhibidor_renina"],
+    severidad: "alta",
+    titulo: "Bloqueo dual del SRAA: IECA + inhibidor directo de renina",
+    efecto: "La combinación intensifica el bloqueo del sistema renina-angiotensina-aldosterona y aumenta el riesgo de hiperpotasemia, hipotensión, síncope, deterioro de función renal y lesión renal aguda.",
+    recomendacion: "Evitar uso rutinario combinado. Si se justifica excepcionalmente, documentar indicación y vigilar presión arterial, creatinina/eGFR y potasio.",
+    evidencia: "documentada",
+    fuentes: [
+      "Ficha técnica de ARA-II/IECA e inhibidores de renina: el bloqueo dual del SRAA se asocia con mayor riesgo renal, hiperpotasemia e hipotensión."
+    ],
+    permiteOverride: true,
+    requiereJustificacion: true
+  },
+  {
+    id: "bloqueo_dual_sraa_ara2_renina",
+    clasesA: ["ara2"],
+    clasesB: ["inhibidor_renina"],
+    severidad: "alta",
+    titulo: "Bloqueo dual del SRAA: ARA-II + inhibidor directo de renina",
+    efecto: "La combinación intensifica el bloqueo del sistema renina-angiotensina-aldosterona y aumenta el riesgo de hiperpotasemia, hipotensión, síncope, deterioro de función renal y lesión renal aguda.",
+    recomendacion: "Evitar uso rutinario combinado. Si se justifica excepcionalmente, documentar indicación y vigilar presión arterial, creatinina/eGFR y potasio.",
+    evidencia: "documentada",
+    fuentes: [
+      "Ficha técnica de ARA-II/IECA e inhibidores de renina: el bloqueo dual del SRAA se asocia con mayor riesgo renal, hiperpotasemia e hipotensión."
+    ],
+    permiteOverride: true,
+    requiereJustificacion: true
+  },
   { id: "opioide_gabapentinoide", clasesA: ["opioide"], clasesB: ["gabapentinoide"], severidad: "alta", titulo: "Opioide + gabapentinoide", efecto: "Aumenta sedación, caídas y depresión respiratoria, especialmente en adultos mayores o enfermedad respiratoria.", recomendacion: "Evitar si no es indispensable; ajustar dosis y vigilar respiración y somnolencia.", requiereJustificacion: true },
   { id: "benzodiacepina_gabapentinoide", clasesA: ["benzodiacepina"], clasesB: ["gabapentinoide"], severidad: "moderada", titulo: "Benzodiacepina + gabapentinoide", efecto: "Puede potenciar sedación, mareo y caídas.", recomendacion: "Usar dosis mínima y vigilar estado de alerta y marcha." },
   { id: "alcohol_depresor_snc", ingredientesA: ["alcohol"], clasesB: ["depresor_snc"], severidad: "alta", titulo: "Alcohol + depresor del SNC", efecto: "Potencia sedación, deterioro psicomotor y depresión respiratoria.", recomendacion: "Indicar evitar alcohol durante el tratamiento y documentar orientación." },
@@ -146,4 +195,3 @@ export const UMBRALES_RIESGO_ACUMULATIVO = {
   sangrado: { minimo: 4, severidad: "alta", titulo: "Carga hemorrágica acumulativa" },
   glucosa: { minimo: 3, severidad: "moderada", titulo: "Carga metabólica glucémica acumulativa" }
 };
-

@@ -14,6 +14,32 @@ const SEVERIDAD_ORDEN = {
   critica: 5
 };
 
+const ALIAS_CLASES_TERAPEUTICAS = new Map([
+  ["ieca", "ieca"],
+  ["inhibidor eca", "ieca"],
+  ["inhibidor de eca", "ieca"],
+  ["inhibidor enzima convertidora angiotensina", "ieca"],
+  ["inhibidor de la enzima convertidora de angiotensina", "ieca"],
+  ["inhibidores de la enzima convertidora de angiotensina", "ieca"],
+  ["ace inhibitor", "ieca"],
+  ["ace inhibitors", "ieca"],
+  ["ara2", "ara2"],
+  ["ara ii", "ara2"],
+  ["ara-ii", "ara2"],
+  ["ara", "ara2"],
+  ["arb", "ara2"],
+  ["arbs", "ara2"],
+  ["antagonista receptor angiotensina ii", "ara2"],
+  ["antagonista del receptor de angiotensina ii", "ara2"],
+  ["antagonista receptor de angiotensina ii", "ara2"],
+  ["bloqueador receptor angiotensina ii", "ara2"],
+  ["bloqueador del receptor de angiotensina ii", "ara2"],
+  ["antagonista_receptor_angiotensina_ii", "ara2"],
+  ["inhibidor directo renina", "inhibidor_renina"],
+  ["inhibidor directo de renina", "inhibidor_renina"],
+  ["direct renin inhibitor", "inhibidor_renina"]
+]);
+
 export function normalizarTextoClinico(valor = "") {
   return String(valor || "")
     .normalize("NFD")
@@ -78,11 +104,37 @@ function textoMedicamento(medicamento) {
   if (typeof medicamento === "string") return medicamento;
   return [
     medicamento.medicamento,
+    medicamento.genericName,
+    medicamento.nombreGenerico,
+    medicamento.principioActivo,
+    medicamento.activeIngredient,
+    medicamento.activeIngredients,
+    medicamento.ingredienteActivo,
+    medicamento.ingredientesActivos,
     medicamento.nombre,
     medicamento.texto,
     medicamento.indicacion,
     medicamento.presentacion
   ].filter(Boolean).join(" ");
+}
+
+function normalizarClaseTerapeutica(clase) {
+  const normalizada = normalizarTextoClinico(clase);
+  return ALIAS_CLASES_TERAPEUTICAS.get(normalizada) || normalizada.replace(/\s+/g, "_");
+}
+
+function extraerClasesDeclaradas(medicamento) {
+  if (!medicamento || typeof medicamento !== "object") return [];
+  return valoresProfundos([
+    medicamento.therapeuticClasses,
+    medicamento.clasesTerapeuticas,
+    medicamento.clases,
+    medicamento.claseTerapeutica,
+    medicamento.pharmacologicClass,
+    medicamento.pharmacologicClasses
+  ])
+    .map(normalizarClaseTerapeutica)
+    .filter(Boolean);
 }
 
 export function normalizarMedicamentoClinico(medicamento) {
@@ -94,6 +146,7 @@ export function normalizarMedicamentoClinico(medicamento) {
 
   const clases = new Set();
   const riesgos = {};
+  extraerClasesDeclaradas(medicamento).forEach((clase) => clases.add(clase));
   ingredientes.forEach((ingrediente) => {
     (ingrediente.clases || []).forEach((clase) => clases.add(clase));
     Object.entries(ingrediente.riesgos || {}).forEach(([riesgo, valor]) => {
