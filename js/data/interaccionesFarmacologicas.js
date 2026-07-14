@@ -9,14 +9,20 @@ const CATEGORIAS_MEDICAMENTOS = [
   { id: "litio", nombre: "Litio", patrones: ["litio", "carbonato de litio"] },
   { id: "aine", nombre: "AINE", patrones: ["ibuprofeno", "naproxeno", "diclofenaco", "ketorolaco", "celecoxib", "indometacina"] },
   { id: "ieca_ara", nombre: "IECA/ARA-II", patrones: ["enalapril", "captopril", "lisinopril", "losartan", "valsartan", "telmisartan"] },
-  { id: "diuretico", nombre: "Diuretico", patrones: ["hidroclorotiazida", "furosemida", "espironolactona", "clortalidona"] },
+  { id: "diuretico", nombre: "Diuretico", patrones: ["hidroclorotiazida", "furosemida", "bumetanida", "espironolactona", "eplerenona", "clortalidona"] },
+  { id: "ahorrador_potasio", nombre: "Ahorrador de potasio", patrones: ["espironolactona", "eplerenona"] },
   { id: "antiepileptico_inductor", nombre: "Inductor enzimatico", patrones: ["carbamazepina", "oxcarbazepina", "fenitoina", "fenobarbital"] },
   { id: "valproato", nombre: "Valproato", patrones: ["valproato", "acido valproico", "divalproato"] },
   { id: "lamotrigina", nombre: "Lamotrigina", patrones: ["lamotrigina"] },
   { id: "serotoninergico_extra", nombre: "Serotoninergico", patrones: ["tramadol", "linezolid", "sumatriptan", "rizatriptan", "metilfenidato", "trazodona", "mirtazapina"] },
-  { id: "depresor_snc", nombre: "Depresor SNC", patrones: ["opioide", "morfina", "tramadol", "pregabalina", "gabapentina", "zolpidem", "hidroxicina", "difenhidramina"] },
-  { id: "anticoagulante", nombre: "Anticoagulante/antiagregante", patrones: ["warfarina", "acenocumarol", "rivaroxaban", "apixaban", "dabigatran", "aspirina", "clopidogrel"] },
-  { id: "anticolinergico", nombre: "Carga anticolinergica", patrones: ["amitriptilina", "imipramina", "clomipramina", "clozapina", "olanzapina", "quetiapina", "biperideno", "trihexifenidilo", "difenhidramina"] }
+  { id: "depresor_snc", nombre: "Depresor SNC", patrones: ["opioide", "morfina", "oxicodona", "tramadol", "pregabalina", "gabapentina", "zolpidem", "hidroxicina", "difenhidramina", "fenobarbital", "baclofeno", "tizanidina"] },
+  { id: "anticoagulante", nombre: "Anticoagulante/antiagregante", patrones: ["warfarina", "acenocumarol", "rivaroxaban", "apixaban", "dabigatran", "heparina", "enoxaparina", "aspirina", "acido acetilsalicilico", "clopidogrel"] },
+  { id: "anticolinergico", nombre: "Carga anticolinergica", patrones: ["amitriptilina", "imipramina", "clomipramina", "clozapina", "olanzapina", "quetiapina", "biperideno", "trihexifenidilo", "difenhidramina", "clorfenamina", "butilhioscina"] },
+  { id: "estatina", nombre: "Estatina", patrones: ["atorvastatina", "rosuvastatina", "simvastatina", "pravastatina"] },
+  { id: "inhibidor_cyp3a4", nombre: "Inhibidor CYP3A4/P-gp", patrones: ["claritromicina", "eritromicina", "fluconazol", "itraconazol", "ketoconazol", "verapamilo", "diltiazem", "amiodarona"] },
+  { id: "fluoroquinolona", nombre: "Fluoroquinolona", patrones: ["ciprofloxacino", "levofloxacino", "moxifloxacino"] },
+  { id: "corticoide_sistemico", nombre: "Corticoide sistemico", patrones: ["prednisona", "hidrocortisona", "dexametasona", "metilprednisolona"] },
+  { id: "hipoglucemiante", nombre: "Hipoglucemiante", patrones: ["insulina", "glibenclamida", "gliclazida", "metformina", "sitagliptina", "linagliptina", "liraglutida", "semaglutida", "dapagliflozina", "empagliflozina"] }
 ];
 
 const REGLAS_INTERACCIONES = [
@@ -83,6 +89,38 @@ const REGLAS_INTERACCIONES = [
     titulo: "Carga anticolinergica acumulada",
     efecto: "Puede favorecer boca seca, constipacion, retencion urinaria, vision borrosa, confusion o deterioro cognitivo, sobre todo en adultos mayores.",
     recomendacion: "Revisar carga total, sintomas anticolinergicos y necesidad de cada farmaco."
+  },
+  {
+    gruposA: ["ieca_ara"],
+    gruposB: ["ahorrador_potasio"],
+    severidad: "Relevante",
+    titulo: "Riesgo de hiperpotasemia",
+    efecto: "La combinacion puede elevar potasio, especialmente con enfermedad renal, edad avanzada, deshidratacion o dosis altas.",
+    recomendacion: "Vigilar potasio, creatinina, presion arterial y sintomas compatibles con alteraciones electroliticas."
+  },
+  {
+    gruposA: ["estatina"],
+    gruposB: ["inhibidor_cyp3a4"],
+    severidad: "Relevante",
+    titulo: "Aumento de exposicion a estatinas",
+    efecto: "Algunos inhibidores enzimaticos pueden aumentar niveles de estatinas y favorecer mialgias, miopatia o rabdomiolisis, segun estatina y dosis.",
+    recomendacion: "Valorar alternativa, reduccion temporal, cambio de estatina o vigilancia de sintomas musculares y CK si hay sospecha clinica."
+  },
+  {
+    gruposA: ["fluoroquinolona"],
+    gruposB: ["corticoide_sistemico"],
+    severidad: "Precaucion",
+    titulo: "Riesgo tendinoso aumentado",
+    efecto: "Fluoroquinolonas combinadas con corticoides pueden aumentar riesgo de tendinopatia o ruptura tendinosa, en especial en adultos mayores.",
+    recomendacion: "Evitar si hay alternativas; advertir dolor tendinoso y suspender/valorar si aparecen sintomas."
+  },
+  {
+    gruposA: ["hipoglucemiante"],
+    gruposB: ["hipoglucemiante"],
+    severidad: "Precaucion",
+    titulo: "Riesgo de hipoglucemia o variabilidad glucemica",
+    efecto: "La combinacion de farmacos hipoglucemiantes puede aumentar riesgo de hipoglucemia, especialmente con insulinas o sulfonilureas.",
+    recomendacion: "Revisar glucemias, ingesta, funcion renal y educacion sobre sintomas de hipoglucemia."
   }
 ];
 

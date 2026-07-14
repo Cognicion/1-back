@@ -1,3 +1,5 @@
+import { MEDICAMENTOS_SUPLEMENTARIOS } from "./medicamentosSuplementarios.js";
+
 export const MEDICAMENTOS = [
   {
     nombre: "Sertralina",
@@ -482,10 +484,177 @@ export const MEDICAMENTOS = [
 
 ];
 
-export const MEDICAMENTOS_PRESENTACIONES = MEDICAMENTOS.flatMap((medicamento) =>
-  (medicamento.presentaciones || []).map((presentacion) => ({
+function slugMedicamento(valor = "") {
+  return normalizarNombreMedicamento(valor)
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+function textoPresentacion(presentacion) {
+  if (typeof presentacion === "string") return presentacion;
+  return presentacion?.texto || presentacion?.presentationDescription || "";
+}
+
+function normalizarMedicamentoBase(medicamento, origen = "catalogo_legacy") {
+  const id = medicamento.id || slugMedicamento(medicamento.nombre);
+  const presentaciones = (medicamento.presentaciones || medicamento.formulations || [])
+    .map((presentacion) => {
+      const texto = textoPresentacion(presentacion);
+      return texto
+        ? (typeof presentacion === "string" ? { texto, via: "oral", activo: true } : { ...presentacion, texto })
+        : null;
+    })
+    .filter(Boolean);
+
+  return {
+    id,
+    nombre: medicamento.nombre || medicamento.genericName || "",
+    genericName: medicamento.genericName || medicamento.nombre || "",
+    clase: medicamento.clase || medicamento.therapeuticClasses?.[0] || "Medicamento",
+    therapeuticClasses: medicamento.therapeuticClasses || [medicamento.clase || "Medicamento"],
+    especialidades: medicamento.especialidades || medicamento.specialties || [],
+    specialties: medicamento.specialties || medicamento.especialidades || [],
+    brandNames: medicamento.brandNames || medicamento.marcas || [],
+    synonyms: medicamento.synonyms || medicamento.sinonimos || [],
+    presentaciones,
+    formulations: medicamento.formulations || presentaciones.map((presentacion, index) => ({
+      id: `${id}-p${index + 1}`,
+      presentationDescription: presentacion.texto,
+      route: presentacion.via || "oral",
+      active: presentacion.activo !== false
+    })),
+    dosisHabitual: medicamento.dosisHabitual || medicamento.adultDosing?.[0]?.usualDose?.text || "Consultar ficha técnica",
+    adultDosing: medicamento.adultDosing || [{
+      indicationId: "uso_habitual",
+      population: "adult",
+      usualDose: { text: medicamento.dosisHabitual || "Consultar ficha técnica" },
+      administrationNotes: []
+    }],
+    pediatricDosing: medicamento.pediatricDosing || [],
+    indications: medicamento.indications || [],
+    contraindications: medicamento.contraindications || [],
+    precautions: medicamento.precautions || medicamento.warnings || [],
+    warnings: medicamento.warnings || medicamento.precautions || [],
+    monitoring: medicamento.monitoring || [],
+    interactions: medicamento.interactions || [],
+    notas: medicamento.notas || "",
+    references: medicamento.references || ["Validar contra ficha técnica institucional vigente."],
+    active: medicamento.active !== false,
+    origen
+  };
+}
+
+function unirMedicamentos(medicamentos) {
+  const indice = new Map();
+
+  medicamentos
+    .map((medicamento) => normalizarMedicamentoBase(medicamento, medicamento.origen || "catalogo"))
+    .filter((medicamento) => medicamento.nombre)
+    .forEach((medicamento) => {
+      const clave = normalizarNombreMedicamento(medicamento.nombre);
+      if (!indice.has(clave)) {
+        indice.set(clave, medicamento);
+        return;
+      }
+
+      const existente = indice.get(clave);
+      const presentaciones = [...existente.presentaciones];
+      medicamento.presentaciones.forEach((presentacion) => {
+        const texto = normalizarNombreMedicamento(presentacion.texto);
+        if (!presentaciones.some((item) => normalizarNombreMedicamento(item.texto) === texto)) {
+          presentaciones.push(presentacion);
+        }
+      });
+
+      indice.set(clave, {
+        ...existente,
+        ...medicamento,
+        id: existente.id,
+        nombre: existente.nombre,
+        genericName: existente.genericName || medicamento.genericName,
+        clase: existente.clase || medicamento.clase,
+        presentaciones,
+        formulations: [...(existente.formulations || []), ...(medicamento.formulations || [])],
+        brandNames: Array.from(new Set([...(existente.brandNames || []), ...(medicamento.brandNames || [])])),
+        synonyms: Array.from(new Set([...(existente.synonyms || []), ...(medicamento.synonyms || [])])),
+        especialidades: Array.from(new Set([...(existente.especialidades || []), ...(medicamento.especialidades || [])])),
+        specialties: Array.from(new Set([...(existente.specialties || []), ...(medicamento.specialties || [])])),
+        indications: Array.from(new Set([...(existente.indications || []), ...(medicamento.indications || [])])),
+        contraindications: Array.from(new Set([...(existente.contraindications || []), ...(medicamento.contraindications || [])])),
+        precautions: Array.from(new Set([...(existente.precautions || []), ...(medicamento.precautions || [])])),
+        monitoring: Array.from(new Set([...(existente.monitoring || []), ...(medicamento.monitoring || [])])),
+        interactions: Array.from(new Set([...(existente.interactions || []), ...(medicamento.interactions || [])]))
+      });
+    });
+
+  return Array.from(indice.values())
+    .filter((medicamento) => medicamento.active)
+    .sort((a, b) => a.nombre.localeCompare(b.nombre, "es"));
+}
+
+export function normalizarNombreMedicamento(valor = "") {
+  return String(valor || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim();
+}
+
+export function textoMedicamentoParaBusqueda(medicamento) {
+  return [
+    medicamento.nombre,
+    medicamento.genericName,
+    medicamento.clase,
+    ...(medicamento.therapeuticClasses || []),
+    ...(medicamento.especialidades || []),
+    ...(medicamento.brandNames || []),
+    ...(medicamento.synonyms || []),
+    ...(medicamento.presentaciones || []).map((presentacion) => presentacion.texto),
+    medicamento.dosisHabitual,
+    medicamento.notas
+  ].flat().filter(Boolean).join(" ");
+}
+
+function normalizarBusquedaMedicamento(valor = "") {
+  return normalizarNombreMedicamento(valor).replace(/[^a-z0-9]+/g, " ");
+}
+
+export const MEDICAMENTOS_MAESTROS = unirMedicamentos([
+  ...MEDICAMENTOS.map((medicamento) => ({ ...medicamento, origen: "catalogo_legacy" })),
+  ...MEDICAMENTOS_SUPLEMENTARIOS.map((medicamento) => ({ ...medicamento, origen: "catalogo_suplementario" }))
+]);
+
+export const MEDICAMENTOS_PRESENTACIONES = MEDICAMENTOS_MAESTROS.flatMap((medicamento) => {
+  const presentaciones = medicamento.presentaciones?.length
+    ? medicamento.presentaciones
+    : [{ texto: "presentación no especificada", via: "" }];
+
+  return presentaciones.map((presentacion) => ({
     ...medicamento,
-    presentacion,
-    texto: `${medicamento.nombre}, ${presentacion}.`
-  }))
-);
+    presentacion: presentacion.texto,
+    via: presentacion.via || "",
+    texto: `${medicamento.nombre}, ${presentacion.texto}.`
+  }));
+});
+
+export function buscarMedicamentos(query = "", opciones = {}) {
+  const limite = opciones.limit || 40;
+  const filtro = normalizarNombreMedicamento(query);
+  const filtroFlexible = normalizarBusquedaMedicamento(query);
+  const resultados = filtro
+    ? MEDICAMENTOS_MAESTROS.filter((medicamento) =>
+      normalizarNombreMedicamento(textoMedicamentoParaBusqueda(medicamento)).includes(filtro) ||
+      normalizarBusquedaMedicamento(textoMedicamentoParaBusqueda(medicamento)).includes(filtroFlexible)
+    )
+    : MEDICAMENTOS_MAESTROS;
+
+  return resultados.slice(0, limite);
+}
+
+export function medicamentoPorTexto(texto = "") {
+  const normalizado = normalizarNombreMedicamento(texto);
+  return MEDICAMENTOS_MAESTROS.find((medicamento) =>
+    normalizado.includes(normalizarNombreMedicamento(medicamento.nombre)) ||
+    (medicamento.brandNames || []).some((marca) => normalizado.includes(normalizarNombreMedicamento(marca)))
+  ) || null;
+}
