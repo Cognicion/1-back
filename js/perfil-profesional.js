@@ -8,6 +8,7 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 let medicoUid = null;
+let rolPerfilActual = "";
 
 iniciarMonitoreoSesion("Perfil profesional");
 
@@ -23,6 +24,14 @@ const campos = {
   descripcion: document.getElementById("descripcionPerfil")
 };
 
+function normalizarRolPerfil(rol = "") {
+  return String(rol || "").toLowerCase().trim();
+}
+
+function usuarioPuedeUsarPerfilProfesional(rol = "") {
+  return ["admin", "administrador", "medico", "psicologo"].includes(normalizarRolPerfil(rol));
+}
+
 onAuthStateChanged(auth, async (user) => {
   if (!user) {
     window.location.href = "login.html";
@@ -30,13 +39,14 @@ onAuthStateChanged(auth, async (user) => {
   }
 
   const usuario = await obtenerUsuario(user.uid);
-  if (!usuario || !["medico", "psicologo"].includes(usuario.rol)) {
+  if (!usuario || !usuarioPuedeUsarPerfilProfesional(usuario.rol)) {
     alert("Perfil profesional disponible solo para personal clinico.");
     window.location.href = "dashboard.html";
     return;
   }
 
   medicoUid = user.uid;
+  rolPerfilActual = normalizarRolPerfil(usuario.rol);
   llenarFormulario(usuario);
   renderPreview();
   document.body.classList.remove("bloqueado");
@@ -63,10 +73,10 @@ document.getElementById("formPerfil").addEventListener("submit", async (e) => {
   await registrarEventoAuditoria({
     accion: "editar_perfil_profesional",
     modulo: "Perfil profesional",
-    descripcion: "El medico actualizo su perfil profesional.",
+    descripcion: "El usuario actualizo su perfil profesional.",
     usuarioUid: medicoUid,
     usuarioNombre: medico?.nombre || "",
-    usuarioRol: medico?.rol || "medico",
+    usuarioRol: medico?.rol || rolPerfilActual || "medico",
     exito: true,
     detalles: {
       especialidad: campos.especialidad.value.trim(),

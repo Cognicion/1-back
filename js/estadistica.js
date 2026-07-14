@@ -38,8 +38,16 @@ let graficasSugeridas = [];
 let renderizandoTabla = false;
 const CLAVE_PROYECTOS_ESTADISTICA = "cognicion_estadistica_proyectos_v1";
 
+function normalizarRolEstadistica(rol = "") {
+  return String(rol || "").toLowerCase().trim();
+}
+
+function rolEsAdminEstadistica(rol = "") {
+  return ["admin", "administrador"].includes(normalizarRolEstadistica(rol));
+}
+
 function usuarioTieneAccesoTotal() {
-  return usuarioActual?.rol === "admin";
+  return rolEsAdminEstadistica(usuarioActual?.rol);
 }
 
 onAuthStateChanged(auth, async (user) => {
@@ -50,8 +58,9 @@ onAuthStateChanged(auth, async (user) => {
 
   const usuario = await obtenerUsuario(user.uid);
   usuarioActual = usuario;
+  const rolUsuario = normalizarRolEstadistica(usuario?.rol);
 
-  if (!usuario || !["admin", "medico", "psicologo"].includes(usuario.rol)) {
+  if (!usuario || !["admin", "administrador", "medico", "psicologo"].includes(rolUsuario)) {
     alert("Acceso restringido al personal clinico.");
     window.location.href = "dashboard.html";
     return;

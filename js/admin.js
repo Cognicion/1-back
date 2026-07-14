@@ -14,6 +14,8 @@ import {
 } from "./services/mensajes.js";
 import {
   actualizarEstadoReporteUsuario,
+  archivarReporteUsuario,
+  eliminarReporteUsuario,
   listarReportesUsuarios,
   responderReporteUsuario
 } from "./services/reportes.js";
@@ -174,7 +176,7 @@ function configurarFiltros() {
 
   document.getElementById("btnActualizarPacientesAdmin")?.addEventListener("click", cargarPacientesAdmin);
 
-  ["filtroReportesAdmin", "filtroReportesEstado", "filtroReportesTipo"].forEach((id) => {
+    ["filtroReportesAdmin", "filtroReportesEstado", "filtroReportesTipo", "filtroReportesArchivo"].forEach((id) => {
     document.getElementById(id)?.addEventListener("input", renderizarReportesUsuariosAdmin);
     document.getElementById(id)?.addEventListener("change", renderizarReportesUsuariosAdmin);
   });
@@ -1829,6 +1831,7 @@ function renderizarReportesUsuariosAdmin() {
   const texto = normalizar(document.getElementById("filtroReportesAdmin")?.value || "");
   const estado = document.getElementById("filtroReportesEstado")?.value || "";
   const tipo = document.getElementById("filtroReportesTipo")?.value || "";
+  const filtroArchivo = document.getElementById("filtroReportesArchivo")?.value || "activos";
 
   const reportes = reportesUsuariosAdmin.filter((reporte) => {
     const coincideTexto = !texto || normalizar([
@@ -1848,7 +1851,10 @@ function renderizarReportesUsuariosAdmin() {
 
     const coincideEstado = !estado || (reporte.estado || "nuevo") === estado;
     const coincideTipo = !tipo || reporte.tipo === tipo;
-    return coincideTexto && coincideEstado && coincideTipo;
+    const archivado = Boolean(reporte.archivado);
+    const coincideArchivo = filtroArchivo === "todos"
+      || (filtroArchivo === "archivados" ? archivado : !archivado);
+    return coincideTexto && coincideEstado && coincideTipo && coincideArchivo;
   });
 
   if (!reportes.length) {
@@ -1865,12 +1871,14 @@ function renderizarReportesUsuariosAdmin() {
 
     const usuario = reporte.usuarioNombre || reporte.usuarioEmail || reporte.usuarioUid || "Usuario no identificado";
     const estadoReporte = reporte.estado || "nuevo";
+    const archivado = Boolean(reporte.archivado);
 
     return `
-      <article class="reporte-admin-card">
+      <article class="reporte-admin-card ${archivado ? "reporte-archivado" : ""}">
         <div class="reporte-admin-top">
           <span class="reporte-admin-tipo">${escaparHTML(etiquetaTipoReporte(reporte.tipo))}</span>
           <span class="reporte-admin-estado estado-${escaparHTML(estadoReporte)}">${escaparHTML(estadoReporte)}</span>
+          ${archivado ? `<span class="reporte-admin-estado estado-archivado">archivado</span>` : ""}
         </div>
         <h3>${escaparHTML(reporte.titulo || "Sin titulo")}</h3>
         <p>${escaparHTML(reporte.mensaje || "Sin descripcion")}</p>
@@ -1911,6 +1919,8 @@ function renderizarReportesUsuariosAdmin() {
           <button type="button" onclick="cambiarEstadoReporteAdmin('${reporte.id}')">Actualizar estado</button>
           <button type="button" ${reporte.usuarioUid ? "" : "disabled"} onclick="responderReporteAdmin('${reporte.id}')">Enviar respuesta</button>
           <button type="button" ${reporte.usuarioUid ? "" : "disabled"} onclick="responderReportePorMensajeAdmin('${reporte.id}')">Responder por mensaje</button>
+          <button type="button" onclick="archivarReporteAdmin('${reporte.id}', ${archivado ? "false" : "true"})">${archivado ? "Desarchivar" : "Archivar"}</button>
+          <button type="button" class="boton-peligro" onclick="eliminarReporteAdmin('${reporte.id}')">Eliminar</button>
         </div>
       </article>
     `;
@@ -1942,6 +1952,68 @@ window.cambiarEstadoReporteAdmin = async function(reporteId) {
     await cargarReportesUsuariosAdmin();
   } catch (error) {
     alert("No se pudo actualizar el reporte: " + error.message);
+  }
+};
+
+window.archivarReporteAdmin = async function(reporteId, archivado = true) {
+  const reporte = reportesUsuariosAdmin.find((item) => item.id === reporteId);
+  const accion = archivado ? "archivar" : "desarchivar";
+
+  if (!reporte) {
+    alert("No se encontró el reporte seleccionado.");
+    return;
+  }
+
+  try {
+    await archivarReporteUsuario(reporteId, Boolean(archivado), {
+      adminUid: adminActual?.uid || "",
+      adminEmail: adminActual?.email || ""
+    });
+    await registrarAuditoriaAdmin(`${accion}_reporte_usuario`, `El administrador decidió ${accion} un reporte.`, {
+      pacienteUid: reporte.usuarioUid || "",
+      pacienteNombre: reporte.usuarioNombre || reporte.usuarioEmail || "",
+      detalles: {
+        reporteId,
+        tipo: reporte.tipo || "",
+        estado: reporte.estado || "nuevo"
+      }
+    }).catch((error) => console.warn("No se pudo registrar auditoría de archivo de reporte:", error));
+    await cargarReportesUsuariosAdmin();
+  } catch (error) {
+    console.error(`No se pudo ${accion} el reporte:`, error);
+    alert(`No se pudo ${accion} el reporte: ${error.message}`);
+  }
+};
+
+window.eliminarReporteAdmin = async function(reporteId) {
+  const reporte = reportesUsuariosAdmin.find((item) => item.id === reporteId);
+
+  if (!reporte) {
+    alert("No se encontró el reporte seleccionado.");
+    return;
+  }
+
+  const confirmar = confirm(
+    `¿Eliminar definitivamente este reporte?\n\n${reporte.titulo || etiquetaTipoReporte(reporte.tipo)}\n\nEsta acción no se puede deshacer.`
+  );
+  if (!confirmar) return;
+
+  try {
+    await eliminarReporteUsuario(reporteId);
+    await registrarAuditoriaAdmin("eliminar_reporte_usuario", "El administrador eliminó definitivamente un reporte.", {
+      pacienteUid: reporte.usuarioUid || "",
+      pacienteNombre: reporte.usuarioNombre || reporte.usuarioEmail || "",
+      detalles: {
+        reporteId,
+        tipo: reporte.tipo || "",
+        estado: reporte.estado || "nuevo",
+        titulo: reporte.titulo || ""
+      }
+    }).catch((error) => console.warn("No se pudo registrar auditoría de eliminación de reporte:", error));
+    await cargarReportesUsuariosAdmin();
+  } catch (error) {
+    console.error("No se pudo eliminar el reporte:", error);
+    alert("No se pudo eliminar el reporte: " + error.message);
   }
 };
 

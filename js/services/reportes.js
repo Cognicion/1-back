@@ -3,6 +3,7 @@ import { db } from "../firebase.js";
 import {
   addDoc,
   collection,
+  deleteDoc,
   doc,
   getDocs,
   orderBy,
@@ -48,6 +49,20 @@ export async function actualizarEstadoReporteUsuario(reporteId, estado) {
     estado,
     fechaActualizacionISO: new Date().toISOString()
   });
+}
+
+export async function archivarReporteUsuario(reporteId, archivado = true, datosAdmin = {}) {
+  await updateDoc(doc(db, COLECCION_REPORTES, reporteId), {
+    archivado: Boolean(archivado),
+    archivadoEn: archivado ? new Date().toISOString() : "",
+    archivadoPorUid: archivado ? (datosAdmin.adminUid || "") : "",
+    archivadoPorEmail: archivado ? (datosAdmin.adminEmail || "") : "",
+    fechaActualizacionISO: new Date().toISOString()
+  });
+}
+
+export async function eliminarReporteUsuario(reporteId) {
+  await deleteDoc(doc(db, COLECCION_REPORTES, reporteId));
 }
 
 export async function responderReporteUsuario(reporteId, datosRespuesta = {}) {

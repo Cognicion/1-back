@@ -59,6 +59,19 @@ function mostrarFraseClinicaAleatoria() {
 
 mostrarFraseClinicaAleatoria();
 
+function usuarioEsAdmin(rol = "") {
+  return ["admin", "administrador"].includes(String(rol || "").toLowerCase().trim());
+}
+
+function actualizarTarjetasAdmin(rolUsuario = "") {
+  const esAdmin = usuarioEsAdmin(rolUsuario);
+  document.querySelectorAll("[data-admin-only]").forEach((tarjeta) => {
+    tarjeta.hidden = !esAdmin;
+    tarjeta.style.display = esAdmin ? "" : "none";
+    tarjeta.setAttribute("aria-hidden", String(!esAdmin));
+  });
+}
+
 let avisosDashboardActuales = [];
 let avisosLeidosDashboard = new Set();
 let usuarioDashboardActual = null;
@@ -168,7 +181,9 @@ onAuthStateChanged(auth, async (user) => {
 
   const tarjetaSofia = document.getElementById("tarjetaSofia");
 
-  if (tarjetaSofia && rolUsuario === "admin") {
+  actualizarTarjetasAdmin(rolUsuario);
+
+  if (tarjetaSofia && usuarioEsAdmin(rolUsuario)) {
     tarjetaSofia.style.display = "";
   }
 

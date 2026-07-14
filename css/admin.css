@@ -836,6 +836,11 @@ select:disabled {
     #0b1120;
 }
 
+.reporte-admin-card.reporte-archivado {
+  opacity: .72;
+  border-style: dashed;
+}
+
 .reporte-admin-top,
 .reporte-admin-meta,
 .reporte-admin-acciones {
@@ -908,6 +913,23 @@ select:disabled {
   color: white;
   cursor: pointer;
   font-weight: 700;
+}
+
+.reporte-admin-acciones .boton-peligro {
+  background: rgba(127, 29, 29, .55);
+  border-color: rgba(248, 113, 113, .45);
+  color: #fee2e2;
+}
+
+.reporte-admin-acciones .boton-peligro:hover {
+  border-color: rgba(248, 113, 113, .8);
+  box-shadow: 0 14px 34px rgba(248, 113, 113, .12);
+}
+
+.estado-archivado {
+  border-color: rgba(148, 163, 184, .4);
+  color: #cbd5e1;
+  background: rgba(71, 85, 105, .28);
 }
 
 .reporte-admin-acciones button:disabled {

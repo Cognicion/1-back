@@ -1,0 +1,487 @@
+.calc-med-topbar nav {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.calc-med-shell {
+  gap: 18px;
+}
+
+.calc-med-hero {
+  position: relative;
+  overflow: hidden;
+}
+
+.calc-med-hero::after {
+  content: "";
+  position: absolute;
+  right: -90px;
+  bottom: -120px;
+  width: 320px;
+  height: 320px;
+  border-radius: 999px;
+  border: 1px solid rgba(125, 211, 252, .18);
+  box-shadow: inset 0 0 80px rgba(34, 211, 238, .08);
+  pointer-events: none;
+}
+
+.calc-med-hero-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 22px;
+}
+
+.calc-med-hero-actions button,
+.calc-med-primary,
+.calc-med-secondary,
+.calc-med-link-button {
+  border: 1px solid rgba(125, 211, 252, .24);
+  border-radius: 999px;
+  min-height: 42px;
+  padding: 0 16px;
+  color: #eaf8ff;
+  background: rgba(15, 23, 42, .72);
+  font-weight: 900;
+  cursor: pointer;
+  transition: transform .16s ease, border-color .16s ease, box-shadow .16s ease, background .16s ease;
+}
+
+.calc-med-primary,
+.calc-med-hero-actions button:first-child {
+  color: #02111f;
+  border-color: rgba(34, 211, 238, .42);
+  background: linear-gradient(135deg, #38bdf8, #22d3ee);
+}
+
+.calc-med-hero-actions button:hover,
+.calc-med-primary:hover,
+.calc-med-secondary:hover,
+.calc-med-link-button:hover {
+  transform: translateY(-1px);
+  border-color: rgba(34, 211, 238, .62);
+  box-shadow: 0 18px 44px rgba(34, 211, 238, .14);
+}
+
+.calc-med-toolbar {
+  display: grid;
+  grid-template-columns: minmax(220px, 2fr) repeat(3, minmax(150px, 1fr));
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid rgba(125, 211, 252, .18);
+  border-radius: 24px;
+  background: linear-gradient(145deg, rgba(15, 23, 42, .74), rgba(2, 6, 23, .52));
+  backdrop-filter: blur(18px);
+}
+
+.calc-med-toolbar label,
+.calc-med-field label,
+.calc-med-patient-link label {
+  display: grid;
+  gap: 7px;
+  color: #9fb1c8;
+  font-size: .82rem;
+  font-weight: 800;
+}
+
+.calc-med-toolbar input,
+.calc-med-toolbar select,
+.calc-med-field input,
+.calc-med-field select,
+.calc-med-field textarea,
+.calc-med-patient-link select,
+.calc-med-patient-link input {
+  width: 100%;
+  border: 1px solid rgba(125, 211, 252, .22);
+  border-radius: 14px;
+  background: rgba(15, 23, 42, .72);
+  color: #f8fbff;
+  padding: 11px 12px;
+  outline: none;
+}
+
+.calc-med-toolbar input:focus,
+.calc-med-toolbar select:focus,
+.calc-med-field input:focus,
+.calc-med-field select:focus,
+.calc-med-field textarea:focus,
+.calc-med-patient-link select:focus,
+.calc-med-patient-link input:focus {
+  border-color: rgba(34, 211, 238, .75);
+  box-shadow: 0 0 0 4px rgba(34, 211, 238, .1);
+}
+
+.calc-med-layout {
+  display: grid;
+  grid-template-columns: minmax(280px, 360px) minmax(0, 1fr);
+  gap: 18px;
+  align-items: start;
+}
+
+.calc-med-sidebar,
+.calc-med-panel,
+.calc-med-modal-card {
+  border: 1px solid rgba(125, 211, 252, .2);
+  border-radius: 28px;
+  background: linear-gradient(145deg, rgba(15, 23, 42, .86), rgba(2, 6, 23, .66));
+  box-shadow: 0 28px 90px rgba(0, 0, 0, .32), inset 0 1px 0 rgba(255, 255, 255, .05);
+  backdrop-filter: blur(22px);
+}
+
+.calc-med-sidebar {
+  padding: 16px;
+  position: sticky;
+  top: 16px;
+  max-height: calc(100vh - 32px);
+  overflow: auto;
+}
+
+.calc-med-list-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+  margin: 16px 0 10px;
+}
+
+.calc-med-list-head h2,
+.calc-med-mini-section h2 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.calc-med-list-head span {
+  color: #7dd3fc;
+  font-size: .78rem;
+  font-weight: 900;
+}
+
+.calc-med-list,
+.calc-med-chip-list {
+  display: grid;
+  gap: 10px;
+}
+
+.calc-med-chip-list {
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  margin-top: 8px;
+}
+
+.calc-med-chip,
+.calc-med-card {
+  text-align: left;
+  border: 1px solid rgba(125, 211, 252, .17);
+  border-radius: 18px;
+  background: rgba(15, 23, 42, .54);
+  color: #eaf8ff;
+  cursor: pointer;
+  transition: transform .16s ease, border-color .16s ease, background .16s ease;
+}
+
+.calc-med-chip {
+  padding: 9px 10px;
+  font-size: .78rem;
+  font-weight: 900;
+}
+
+.calc-med-card {
+  padding: 14px;
+}
+
+.calc-med-card:hover,
+.calc-med-card.activa,
+.calc-med-chip:hover {
+  transform: translateY(-1px);
+  border-color: rgba(34, 211, 238, .5);
+  background: rgba(8, 47, 73, .34);
+}
+
+.calc-med-card h3 {
+  margin: 7px 0 6px;
+  font-size: 1rem;
+}
+
+.calc-med-card p {
+  margin: 0;
+  color: #a8b8ce;
+  line-height: 1.45;
+  font-size: .86rem;
+}
+
+.calc-med-badges {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.calc-med-badge {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid rgba(34, 211, 238, .26);
+  border-radius: 999px;
+  padding: 4px 8px;
+  color: #7dd3fc;
+  font-size: .68rem;
+  font-weight: 900;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.calc-med-panel {
+  padding: clamp(18px, 3vw, 28px);
+  min-height: 680px;
+}
+
+.calc-med-panel-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  align-items: flex-start;
+  border-bottom: 1px solid rgba(125, 211, 252, .14);
+  padding-bottom: 18px;
+}
+
+.calc-med-panel-header h2 {
+  margin: 8px 0 8px;
+  font-size: clamp(1.7rem, 3vw, 2.5rem);
+  letter-spacing: -.03em;
+}
+
+.calc-med-panel-header p {
+  max-width: 800px;
+  color: #cbd5e1;
+  line-height: 1.6;
+}
+
+.calc-med-star {
+  width: 46px;
+  height: 46px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(125, 211, 252, .2);
+  background: rgba(15, 23, 42, .72);
+  color: #fbbf24;
+  cursor: pointer;
+  font-size: 1.2rem;
+}
+
+.calc-med-patient-link,
+.calc-med-result,
+.calc-med-explain,
+.calc-med-history-inline {
+  margin-top: 18px;
+  border: 1px solid rgba(125, 211, 252, .16);
+  border-radius: 22px;
+  background: rgba(15, 23, 42, .42);
+  padding: 16px;
+}
+
+.calc-med-patient-link {
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) minmax(160px, .7fr) auto;
+  gap: 12px;
+  align-items: end;
+}
+
+.calc-med-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 18px;
+}
+
+.calc-med-field.full {
+  grid-column: 1 / -1;
+}
+
+.calc-med-field small {
+  color: #7dd3fc;
+}
+
+.calc-med-field-help {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.calc-med-help {
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  border: 1px solid rgba(125, 211, 252, .22);
+  background: rgba(8, 47, 73, .46);
+  color: #7dd3fc;
+  cursor: help;
+  font-size: .8rem;
+}
+
+.calc-med-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.calc-med-result {
+  display: grid;
+  gap: 12px;
+  border-color: rgba(34, 211, 238, .26);
+}
+
+.calc-med-result-main {
+  display: grid;
+  grid-template-columns: minmax(170px, .45fr) minmax(0, 1fr);
+  gap: 18px;
+  align-items: center;
+}
+
+.calc-med-result-value {
+  border-radius: 20px;
+  border: 1px solid rgba(34, 211, 238, .3);
+  background: rgba(8, 47, 73, .34);
+  padding: 18px;
+}
+
+.calc-med-result-value strong {
+  display: block;
+  font-size: clamp(2rem, 5vw, 3.7rem);
+  line-height: 1;
+}
+
+.calc-med-result-value span {
+  display: block;
+  margin-top: 6px;
+  color: #a8b8ce;
+}
+
+.calc-med-result h3,
+.calc-med-explain h3 {
+  margin: 0 0 8px;
+}
+
+.calc-med-result ul,
+.calc-med-explain ul {
+  margin: 8px 0 0;
+  padding-left: 20px;
+  color: #cbd5e1;
+  line-height: 1.55;
+}
+
+.calc-med-muted {
+  color: #9fb1c8;
+}
+
+.calc-med-warning {
+  border: 1px solid rgba(251, 191, 36, .28);
+  border-radius: 16px;
+  padding: 12px;
+  color: #fde68a;
+  background: rgba(120, 53, 15, .18);
+}
+
+.calc-med-error {
+  border: 1px solid rgba(251, 113, 133, .32);
+  border-radius: 16px;
+  padding: 12px;
+  color: #fecdd3;
+  background: rgba(127, 29, 29, .18);
+}
+
+.calc-med-table {
+  width: 100%;
+  min-width: 0;
+  border-collapse: collapse;
+}
+
+.calc-med-table th,
+.calc-med-table td {
+  border-bottom: 1px solid rgba(125, 211, 252, .12);
+  padding: 10px;
+  text-align: left;
+  vertical-align: top;
+}
+
+.calc-med-table th {
+  color: #7dd3fc;
+  font-size: .74rem;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+
+.calc-med-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(2, 6, 23, .68);
+  backdrop-filter: blur(10px);
+}
+
+.calc-med-modal-card {
+  width: min(980px, 100%);
+  max-height: min(760px, calc(100vh - 40px));
+  overflow: auto;
+  padding: 22px;
+  position: relative;
+}
+
+.calc-med-modal-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 38px;
+  height: 38px;
+  border-radius: 999px;
+  border: 1px solid rgba(125, 211, 252, .25);
+  color: #eaf8ff;
+  background: rgba(15, 23, 42, .72);
+  cursor: pointer;
+}
+
+.calc-med-empty {
+  border: 1px dashed rgba(125, 211, 252, .25);
+  border-radius: 18px;
+  padding: 18px;
+  color: #a8b8ce;
+}
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+
+  .calc-print,
+  .calc-print * {
+    visibility: visible;
+  }
+
+  .calc-print {
+    position: absolute;
+    inset: 0;
+    color: #111827;
+    background: #fff;
+  }
+}
+
+@media (max-width: 980px) {
+  .calc-med-toolbar,
+  .calc-med-layout,
+  .calc-med-patient-link,
+  .calc-med-result-main {
+    grid-template-columns: 1fr;
+  }
+
+  .calc-med-sidebar {
+    position: static;
+    max-height: none;
+  }
+
+  .calc-med-form {
+    grid-template-columns: 1fr;
+  }
+}
