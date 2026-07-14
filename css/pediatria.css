@@ -131,6 +131,108 @@ body {
   margin-top: 20px;
 }
 
+.oculto,
+.ped-hidden-controls {
+  display: none !important;
+}
+
+.ped-patient-card {
+  margin-top: 20px;
+  border: 1px solid var(--ped-line);
+  background: linear-gradient(160deg, var(--ped-panel), rgba(8, 13, 24, 0.68));
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.22);
+  backdrop-filter: blur(18px);
+  border-radius: 24px;
+  padding: 18px;
+}
+
+[data-theme="light"] .ped-patient-card {
+  background: linear-gradient(160deg, rgba(240, 249, 255, 0.94), rgba(219, 234, 254, 0.82));
+}
+
+.ped-patient-card h2 {
+  margin: 4px 0 6px;
+}
+
+.ped-patient-card p {
+  max-width: 920px;
+  color: var(--ped-muted);
+  line-height: 1.55;
+}
+
+.ped-patient-search {
+  display: grid;
+  grid-template-columns: minmax(240px, 1fr) auto auto auto auto;
+  gap: 10px;
+  align-items: center;
+  margin-top: 14px;
+}
+
+.ped-patient-search input,
+.ped-tool-form input,
+.ped-tool-form select,
+.ped-reference-select select {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid var(--ped-line);
+  border-radius: 14px;
+  padding: 11px 12px;
+  color: var(--ped-text);
+  background: rgba(15, 23, 42, 0.58);
+}
+
+[data-theme="light"] .ped-patient-search input,
+[data-theme="light"] .ped-tool-form input,
+[data-theme="light"] .ped-tool-form select,
+[data-theme="light"] .ped-reference-select select {
+  color: #10233e;
+  background: rgba(255, 255, 255, 0.82);
+}
+
+.ped-search-results {
+  display: grid;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.ped-patient-result,
+.ped-active-patient,
+.ped-ok,
+.ped-alerta-box {
+  border: 1px solid rgba(125, 211, 252, 0.18);
+  border-radius: 16px;
+  padding: 12px;
+  background: var(--ped-panel-soft);
+  color: var(--ped-text);
+}
+
+.ped-patient-result {
+  cursor: pointer;
+  text-align: left;
+  transition: transform 160ms ease, border-color 160ms ease, background 160ms ease;
+}
+
+.ped-patient-result:hover {
+  transform: translateY(-1px);
+  border-color: rgba(34, 211, 238, 0.58);
+  background: rgba(34, 211, 238, 0.13);
+}
+
+.ped-patient-result span,
+.ped-active-patient span {
+  display: block;
+  margin-top: 4px;
+  color: var(--ped-muted);
+}
+
+.ped-ok {
+  color: #86efac;
+}
+
+.ped-alerta-box {
+  color: #fde68a;
+}
+
 .ped-layout > aside,
 .ped-main {
   border-radius: 24px;
@@ -156,6 +258,20 @@ body {
   display: grid;
   gap: 12px;
   margin-top: 20px;
+}
+
+.ped-form-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  color: var(--ped-accent);
+  font-weight: 900;
+}
+
+.ped-small-btn {
+  padding: 8px 11px;
+  font-size: 0.76rem;
 }
 
 .ped-form label,
@@ -212,6 +328,16 @@ body {
   gap: 10px;
 }
 
+.ped-content {
+  margin-top: 18px;
+}
+
+.ped-content .ped-panel,
+.ped-flow-panel,
+.ped-alert-panel {
+  grid-column: 1 / -1;
+}
+
 .ped-summary article,
 .ped-result,
 .ped-source {
@@ -252,6 +378,92 @@ body {
 
 .ped-alerta-suave {
   color: var(--ped-accent) !important;
+}
+
+.ped-action-row,
+.ped-panel-title-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.ped-flow {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  padding: 0;
+  margin: 12px 0 18px;
+  list-style: none;
+}
+
+.ped-flow li,
+.ped-growth-card,
+.ped-history-list > div,
+.ped-medication-box {
+  border: 1px solid rgba(125, 211, 252, 0.16);
+  border-radius: 16px;
+  padding: 12px;
+  background: var(--ped-panel-soft);
+}
+
+.ped-flow span,
+.ped-growth-card small,
+.ped-history-list span {
+  display: block;
+  color: var(--ped-muted);
+  line-height: 1.45;
+  margin-top: 6px;
+}
+
+.ped-growth-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.ped-growth-card span {
+  color: var(--ped-muted);
+}
+
+.ped-growth-card b {
+  display: block;
+  margin-top: 6px;
+  font-size: 1.05rem;
+}
+
+.ped-tool-form {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin: 12px 0;
+}
+
+.ped-tool-form label,
+.ped-reference-select {
+  display: grid;
+  gap: 6px;
+  color: var(--ped-muted);
+  font-size: 0.84rem;
+  font-weight: 800;
+}
+
+.ped-check-line {
+  display: flex !important;
+  align-items: center;
+  gap: 8px;
+}
+
+.ped-check-line input {
+  width: auto;
+}
+
+.ped-history-list {
+  display: grid;
+  gap: 8px;
+  margin-top: 12px;
 }
 
 .ped-formula-list {
@@ -497,7 +709,11 @@ body {
   .ped-layout,
   .ped-summary,
   .ped-content,
-  .ped-section-content {
+  .ped-section-content,
+  .ped-patient-search,
+  .ped-flow,
+  .ped-growth-grid,
+  .ped-tool-form {
     grid-template-columns: 1fr;
   }
 

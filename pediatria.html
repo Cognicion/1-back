@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>COGNICION Labs | Pediatria</title>
+  <title>COGNICIÓN Labs | Centro pediátrico</title>
   <link rel="icon" type="image/png" href="assets/favicon-cognicion.png">
   <link rel="stylesheet" href="css/apariencia.css">
   <link rel="stylesheet" href="css/reportes.css">
@@ -13,31 +13,55 @@
   <main class="ped-shell">
     <header class="ped-header">
       <div class="ped-brand">
-        <img src="assets/favicon-cognicion.png" alt="COGNICION">
+        <img src="assets/favicon-cognicion.png" alt="COGNICIÓN">
         <div>
-          <div class="ped-kicker">COGNICION Labs</div>
-          <h1>Pediatria</h1>
-          <p>Herramientas clinicas pediatricas integradas al expediente, con calculos trazables y sin percentiles inventados.</p>
-          <small id="estadoPaciente">Modo manual</small>
+          <div class="ped-kicker">COGNICIÓN Labs</div>
+          <h1>Centro pediátrico</h1>
+          <p>Evalúa crecimiento, somatometría, líquidos, dosis y seguimiento desde el expediente pediátrico.</p>
+          <small id="estadoPaciente">Selecciona un paciente o inicia una evaluación temporal.</small>
         </div>
       </div>
       <div class="ped-actions">
         <a class="ped-secondary" href="dashboard.html">Dashboard</a>
-        <a class="ped-secondary" href="medico.html">Panel medico</a>
+        <a class="ped-secondary" href="medico.html">Panel médico</a>
       </div>
     </header>
 
+    <section class="ped-patient-card">
+      <div>
+        <div class="ped-kicker">Flujo principal</div>
+        <h2>Selecciona paciente</h2>
+        <p>Busca por nombre, expediente, CURP, teléfono, correo o fecha de nacimiento. El expediente es la fuente principal; el modo temporal solo se usa si todavía no existe paciente.</p>
+      </div>
+      <div class="ped-patient-search">
+        <input id="buscadorPacientePediatria" placeholder="Buscar paciente...">
+        <button class="ped-primary" type="button" id="btnBuscarPaciente">Seleccionar</button>
+        <a class="ped-secondary" href="nuevo-paciente.html">Crear paciente</a>
+        <button class="ped-secondary" type="button" id="btnModoTemporal">Usar evaluación sin expediente</button>
+        <button class="ped-secondary" type="button" id="btnUltimosPacientes">Últimos pacientes</button>
+      </div>
+      <div class="ped-search-results" id="resultadosBusquedaPacientes"></div>
+    </section>
+
     <section class="ped-layout">
-      <aside>
-        <div class="ped-kicker">Paciente y contexto</div>
-        <p id="usuarioSesion">Validando sesion...</p>
+      <aside class="ped-sidebar">
+        <div class="ped-kicker">Paciente activo</div>
+        <p id="usuarioSesion">Validando sesión...</p>
+        <div class="ped-active-patient" id="pacienteActivoCard">
+          <strong>Sin paciente seleccionado</strong>
+          <span>Selecciona un expediente o usa evaluación temporal.</span>
+        </div>
         <div class="ped-nav" id="pediatriaNav"></div>
 
-        <form class="ped-form" autocomplete="off">
+        <form class="ped-form ped-measurement-panel oculto" id="panelMediciones" autocomplete="off">
+          <div class="ped-form-head">
+            <span>Mediciones actuales</span>
+            <button class="ped-secondary ped-small-btn" type="button" id="btnGuardarMedicion">Guardar</button>
+          </div>
           <label>Nombre
             <input id="nombrePaciente" data-ped-calc placeholder="Nombre del paciente">
           </label>
-          <label>Sexo
+          <label>Sexo clínico
             <select id="sexoPaciente" data-ped-calc>
               <option value="">Seleccionar</option>
               <option value="Femenino">Femenino</option>
@@ -48,16 +72,19 @@
           <label>Fecha de nacimiento
             <input id="fechaNacimiento" data-ped-calc type="date">
           </label>
+          <label>Fecha de medición
+            <input id="fechaMedicion" data-ped-calc type="date">
+          </label>
           <label>Edad gestacional al nacimiento (semanas)
             <input id="edadGestacional" data-ped-calc type="number" min="22" max="42" step="0.1" placeholder="Ej. 38">
           </label>
           <label>Peso actual (kg)
             <input id="pesoKg" data-ped-calc type="number" min="0" step="0.01" placeholder="kg">
           </label>
-          <label>Talla (cm)
+          <label>Talla / longitud (cm)
             <input id="tallaCm" data-ped-calc type="number" min="0" step="0.1" placeholder="cm">
           </label>
-          <label>Perimetro cefalico (cm)
+          <label>Perímetro cefálico (cm)
             <input id="perimetroCefalico" data-ped-calc type="number" min="0" step="0.1" placeholder="cm">
           </label>
           <label>Alergias
@@ -69,54 +96,31 @@
       <section class="ped-main">
         <div class="ped-tools-head">
           <div>
-            <div class="ped-kicker">Modulo clinico integral</div>
-            <h2>Centro pediatrico</h2>
+            <div class="ped-kicker">Centro de trabajo pediátrico</div>
+            <h2 id="tituloSeccionPediatria">Resumen</h2>
           </div>
-          <input class="ped-search" id="busquedaPediatria" placeholder="Buscar herramienta o calculo...">
+          <input class="ped-search" id="busquedaPediatria" placeholder="Buscar herramienta, cálculo o resultado...">
         </div>
 
         <div class="ped-summary" id="resumenPediatria"></div>
-
-        <section class="ped-panel" style="margin-top:18px;">
-          <h3>Variables de calculo rapido</h3>
-          <div class="ped-grid-mini">
-            <label class="ped-field">Deshidratacion (%)
-              <input id="deshidratacion" data-ped-calc placeholder="Ej. 5">
-            </label>
-            <label class="ped-field">Diuresis total (mL)
-              <input id="diuresisMl" data-ped-calc placeholder="Ej. 480">
-            </label>
-            <label class="ped-field">Periodo de diuresis (h)
-              <input id="diuresisHoras" data-ped-calc placeholder="Ej. 8">
-            </label>
-            <label class="ped-field">Sodio (mEq/L)
-              <input id="sodio" data-ped-calc placeholder="Na">
-            </label>
-            <label class="ped-field">Glucosa (mg/dL)
-              <input id="glucosa" data-ped-calc placeholder="Glucosa">
-            </label>
-            <label class="ped-field">Cloro (mEq/L)
-              <input id="cloro" data-ped-calc placeholder="Cl">
-            </label>
-            <label class="ped-field">Bicarbonato (mEq/L)
-              <input id="bicarbonato" data-ped-calc placeholder="HCO3">
-            </label>
-            <label class="ped-field">Concentracion
-              <input id="concentracionMgMl" data-ped-calc placeholder="Ej. 160 mg/5 mL o 32 mg/mL">
-            </label>
-          </div>
-          <div class="ped-grid-mini" style="margin-top:10px;">
-            <select id="medicamentoSelect" data-ped-calc></select>
-            <select id="opcionDosisSelect" data-ped-calc></select>
-            <label style="display:flex;align-items:center;gap:8px;color:var(--ped-muted);"><input id="pesoConfirmado" data-ped-calc type="checkbox"> Peso actual confirmado</label>
-            <button class="ped-primary" type="button" id="copiarResumenPediatria">Copiar resumen</button>
-          </div>
-        </section>
-
         <section class="ped-content" id="contenidoPediatria"></section>
       </section>
     </section>
   </main>
+
+  <section class="ped-hidden-controls" aria-hidden="true">
+    <input id="deshidratacion" data-ped-calc>
+    <input id="diuresisMl" data-ped-calc>
+    <input id="diuresisHoras" data-ped-calc>
+    <input id="sodio" data-ped-calc>
+    <input id="glucosa" data-ped-calc>
+    <input id="cloro" data-ped-calc>
+    <input id="bicarbonato" data-ped-calc>
+    <input id="concentracionMgMl" data-ped-calc>
+    <select id="medicamentoSelect" data-ped-calc></select>
+    <select id="opcionDosisSelect" data-ped-calc></select>
+    <input id="pesoConfirmado" data-ped-calc type="checkbox">
+  </section>
 
   <script type="module" src="js/pediatria/pediatria.js"></script>
   <script type="module" src="js/reportes.js"></script>
