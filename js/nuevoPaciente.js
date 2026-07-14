@@ -198,10 +198,24 @@ function formatearIngresoVisible(fecha, hora = "") {
   return hora ? `${dia}/${mes}/${anio} ${hora}` : `${dia}/${mes}/${anio}`;
 }
 
+function poblarSelectorHora24h(selector, valorActual = "") {
+  if (!selector) return;
+  const valor = /^\d{2}:\d{2}$/.test(valorActual) ? valorActual : "";
+  const opciones = ['<option value="">00:00 (inicio del día)</option>'];
+  for (let h = 0; h < 24; h += 1) {
+    for (let m = 0; m < 60; m += 5) {
+      const hora = `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+      opciones.push(`<option value="${hora}" ${hora === valor ? "selected" : ""}>${hora}</option>`);
+    }
+  }
+  selector.innerHTML = opciones.join("");
+}
+
 function abrirSelectorIngresoNuevo() {
   const modal = document.getElementById("modalIngresoNuevo");
   if (!modal) return;
 
+  poblarSelectorHora24h(document.getElementById("ingresoNuevoHora"), document.getElementById("ingresoNuevoHora")?.value || "");
   modal.classList.add("abierto");
   modal.setAttribute("aria-hidden", "false");
 }

@@ -510,11 +510,63 @@ function renderTabCrecimiento() {
 }
 
 function renderGrowthIndicator(indicator) {
+  const chart = renderGrowthChart(indicator);
   return `
     <div class="ped-growth-card">
       <span>${indicator.label}</span>
       <b>${indicator.available ? `${formatNumber(indicator.value)} ${indicator.unit}` : "Sin dato"}</b>
       <small>${indicator.interpretation}</small>
+      ${chart}
+    </div>
+  `;
+}
+
+function renderGrowthChart(indicator) {
+  if (!indicator.available) {
+    return `<div class="ped-growth-chart-empty">Registra el dato para graficar.</div>`;
+  }
+  if (!Array.isArray(indicator.curves) || !indicator.curves.length) {
+    return `
+      <div class="ped-growth-chart-empty">
+        Curva no disponible: falta importar la tabla LMS oficial local de este indicador.
+      </div>
+    `;
+  }
+
+  const points = indicator.curves.flatMap((curve) => curve.points || []);
+  const xs = points.map((p) => Number(p.x)).filter(Number.isFinite);
+  const ys = points.map((p) => Number(p.y)).filter(Number.isFinite);
+  if (!xs.length || !ys.length) return `<div class="ped-growth-chart-empty">Curva sin puntos válidos.</div>`;
+
+  const minX = Math.min(...xs);
+  const maxX = Math.max(...xs);
+  const minY = Math.min(...ys, Number(indicator.value));
+  const maxY = Math.max(...ys, Number(indicator.value));
+  const w = 260;
+  const h = 130;
+  const pad = 22;
+  const xScale = (x) => pad + ((Number(x) - minX) / Math.max(1, maxX - minX)) * (w - pad * 2);
+  const yScale = (y) => h - pad - ((Number(y) - minY) / Math.max(1, maxY - minY)) * (h - pad * 2);
+  const currentX = Number(indicator.axisValue ?? indicator.ageMonths ?? indicator.heightCm ?? minX);
+  const currentY = Number(indicator.value);
+  const currentVisible = Number.isFinite(currentX) && Number.isFinite(currentY) && currentX >= minX && currentX <= maxX;
+
+  return `
+    <svg class="ped-growth-chart" viewBox="0 0 ${w} ${h}" role="img" aria-label="Gráfica de ${escapeAttr(indicator.label)}">
+      <line x1="${pad}" y1="${h - pad}" x2="${w - pad}" y2="${h - pad}" />
+      <line x1="${pad}" y1="${pad}" x2="${pad}" y2="${h - pad}" />
+      ${indicator.curves.map((curve, index) => {
+        const d = (curve.points || []).map((p, pointIndex) =>
+          `${pointIndex === 0 ? "M" : "L"} ${xScale(p.x).toFixed(1)} ${yScale(p.y).toFixed(1)}`
+        ).join(" ");
+        return `<path d="${d}" class="ped-growth-curve ped-growth-curve-${index}" />`;
+      }).join("")}
+      ${currentVisible ? `<circle cx="${xScale(currentX).toFixed(1)}" cy="${yScale(currentY).toFixed(1)}" r="4.8" class="ped-growth-point" />` : ""}
+      <text x="${pad}" y="14">${escapeAttr(indicator.axisLabel || "Edad")}</text>
+      <text x="${w - pad}" y="${h - 6}" text-anchor="end">${escapeAttr(indicator.unit || "")}</text>
+    </svg>
+    <div class="ped-growth-source">
+      ${escapeAttr(indicator.sourceLabel || "Referencia: pendiente de tabla oficial local.")}
     </div>
   `;
 }

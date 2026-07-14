@@ -42,13 +42,25 @@ export function normalizeText(value = "") {
     .trim();
 }
 
+export function normalizeSex(value = "") {
+  const text = normalizeText(value);
+  if (["masculino", "hombre", "male", "m", "1"].includes(text)) return "male";
+  if (["femenino", "mujer", "female", "f", "2"].includes(text)) return "female";
+  return "";
+}
+
 export function normalizePediatricMeasurements(input = {}) {
   const heightInfo = analizarTalla(input.tallaCm);
   const weightKg = numero(input.pesoKg);
   const bmi = calcularIMC(input.pesoKg, input.tallaCm);
   const age = input.fechaNacimiento
-    ? calcularEdadPediatrica(input.fechaNacimiento, input.fechaMedicion ? new Date(input.fechaMedicion) : new Date(), input.edadGestacional)
+    ? calcularEdadPediatrica(
+      input.fechaNacimiento,
+      input.fechaMedicion ? new Date(input.fechaMedicion) : new Date(),
+      input.edadGestacional
+    )
     : null;
+
   return {
     sex: normalizeSex(input.sexo),
     birthDate: input.fechaNacimiento || "",
@@ -65,13 +77,6 @@ export function normalizePediatricMeasurements(input = {}) {
       heightInfo?.error && input.tallaCm ? heightInfo.error : ""
     ].filter(Boolean)
   };
-}
-
-export function normalizeSex(value = "") {
-  const text = normalizeText(value);
-  if (["masculino", "hombre", "male", "m", "1"].includes(text)) return "male";
-  if (["femenino", "mujer", "female", "f", "2"].includes(text)) return "female";
-  return "";
 }
 
 export function getReferenceStatus(referenceId) {
@@ -131,25 +136,33 @@ export function buildGrowthAssessment(input = {}) {
       id: "weight_for_age",
       label: "Peso para la edad",
       value: measurements.weightKg,
-      unit: "kg"
+      unit: "kg",
+      axisValue: measurements.ageMonths,
+      axisLabel: "Edad (meses)"
     },
     {
       id: "height_for_age",
       label: "Talla para la edad",
       value: measurements.heightCm,
-      unit: "cm"
+      unit: "cm",
+      axisValue: measurements.ageMonths,
+      axisLabel: "Edad (meses)"
     },
     {
       id: "bmi_for_age",
       label: "IMC para la edad",
       value: measurements.bmi,
-      unit: "kg/m²"
+      unit: "kg/m²",
+      axisValue: measurements.ageMonths,
+      axisLabel: "Edad (meses)"
     },
     {
       id: "head_circumference_for_age",
       label: "Perímetro cefálico para la edad",
       value: measurements.headCircumferenceCm,
-      unit: "cm"
+      unit: "cm",
+      axisValue: measurements.ageMonths,
+      axisLabel: "Edad (meses)"
     }
   ];
 
@@ -161,6 +174,9 @@ export function buildGrowthAssessment(input = {}) {
       ...indicator,
       available: indicator.value !== null && indicator.value !== undefined,
       status: reference.status === "ready" ? "ready" : "requires_official_table",
+      ageMonths: measurements.ageMonths,
+      sourceLabel: `${reference.label} · ${reference.method} · ${reference.status === "ready" ? "tabla local cargada" : "tabla oficial local pendiente"}`,
+      curves: [],
       z: null,
       percentile: null,
       interpretation: reference.status === "ready"

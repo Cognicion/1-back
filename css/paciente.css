@@ -705,8 +705,24 @@ textarea{
   font-weight: 800;
 }
 
-.panel-ingreso input {
+.panel-ingreso input,
+.panel-ingreso select {
   margin-top: 7px;
+}
+
+.panel-ingreso select {
+  width: 100%;
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  border-radius: 12px;
+  padding: 10px 12px;
+  background: rgba(15, 23, 42, 0.92);
+  color: #f8fafc;
+  color-scheme: dark;
+}
+
+.panel-ingreso select option {
+  background: #0f172a;
+  color: #f8fafc;
 }
 
 .panel-ingreso small {

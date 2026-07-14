@@ -434,6 +434,81 @@ body {
   font-size: 1.05rem;
 }
 
+.ped-growth-chart {
+  width: 100%;
+  min-height: 128px;
+  margin-top: 12px;
+  border: 1px solid rgba(125, 211, 252, 0.16);
+  border-radius: 14px;
+  background:
+    linear-gradient(rgba(125, 211, 252, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(125, 211, 252, 0.08) 1px, transparent 1px),
+    rgba(2, 8, 23, 0.28);
+  background-size: 28px 28px;
+}
+
+.ped-growth-chart line {
+  stroke: rgba(148, 163, 184, 0.62);
+  stroke-width: 1;
+}
+
+.ped-growth-chart text {
+  fill: var(--ped-muted);
+  font-size: 9px;
+  font-weight: 800;
+}
+
+.ped-growth-curve {
+  fill: none;
+  stroke: rgba(125, 211, 252, 0.78);
+  stroke-width: 2;
+}
+
+.ped-growth-curve-1 {
+  stroke: rgba(34, 211, 238, 0.92);
+}
+
+.ped-growth-curve-2 {
+  stroke: rgba(96, 165, 250, 0.76);
+}
+
+.ped-growth-point {
+  fill: #22d3ee;
+  stroke: #f8fafc;
+  stroke-width: 2;
+  filter: drop-shadow(0 0 8px rgba(34, 211, 238, 0.72));
+}
+
+.ped-growth-chart-empty,
+.ped-growth-source {
+  margin-top: 10px;
+  border: 1px dashed rgba(125, 211, 252, 0.22);
+  border-radius: 12px;
+  padding: 10px;
+  color: var(--ped-muted);
+  font-size: 0.82rem;
+  line-height: 1.4;
+  background: rgba(15, 23, 42, 0.24);
+}
+
+.ped-growth-source {
+  border-style: solid;
+  padding: 8px 10px;
+  font-size: 0.76rem;
+}
+
+[data-theme="light"] .ped-growth-chart {
+  background:
+    linear-gradient(rgba(14, 116, 144, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(14, 116, 144, 0.08) 1px, transparent 1px),
+    rgba(255, 255, 255, 0.7);
+}
+
+[data-theme="light"] .ped-growth-chart-empty,
+[data-theme="light"] .ped-growth-source {
+  background: rgba(255, 255, 255, 0.68);
+}
+
 .ped-tool-form {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));

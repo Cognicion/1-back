@@ -389,6 +389,22 @@ function partesFechaIngreso(valor = "") {
   return { fecha, hora };
 }
 
+function poblarSelectorHora24h(selector, valorActual = "") {
+  if (!selector) return;
+  const valor = /^\d{2}:\d{2}$/.test(valorActual) ? valorActual : "";
+  const opciones = ['<option value="">00:00 (inicio del día)</option>'];
+  for (let h = 0; h < 24; h += 1) {
+    for (let m = 0; m < 60; m += 5) {
+      const hora = `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+      opciones.push(`<option value="${hora}" ${hora === valor ? "selected" : ""}>${hora}</option>`);
+    }
+  }
+  selector.innerHTML = opciones.join("");
+  if (valor && selector.value !== valor) {
+    selector.insertAdjacentHTML("afterbegin", `<option value="${valor}" selected>${valor}</option>`);
+  }
+}
+
 function parsearFechaIngreso(fechaIngreso) {
   if (!fechaIngreso) return null;
 
@@ -465,7 +481,7 @@ function formatearFecha(fecha) {
   const partes = soloFecha.split("-");
   if (partes.length !== 3) return fecha;
 
-  return hora ? `${partes[2]}-${partes[1]}-${partes[0]} ${hora}` : `${partes[2]}-${partes[1]}-${partes[0]}`;
+  return hora ? `${partes[2]}/${partes[1]}/${partes[0]} ${hora}` : `${partes[2]}/${partes[1]}/${partes[0]}`;
 }
 
 function escaparHTML(valor) {
@@ -1363,6 +1379,7 @@ function ocultarSecciones() {
 }
 
 const ESTADOS_DIAGNOSTICO = [
+  "",
   "Se agrega",
   "Se descarta",
   "Probable",
@@ -1375,7 +1392,7 @@ const ESTADOS_DIAGNOSTICO = [
 ];
 
 function estadoDiagnosticoValido(estado) {
-  return ESTADOS_DIAGNOSTICO.includes(estado) ? estado : ESTADOS_DIAGNOSTICO[0];
+  return ESTADOS_DIAGNOSTICO.includes(estado) ? estado : "";
 }
 
 function crearIdDiagnostico(diagnostico, index = 0) {
@@ -1397,7 +1414,7 @@ function normalizarDiagnostico(diagnostico = {}, catalogoFallback = "CIE-10", in
       texto: diagnostico,
       catalogo: catalogoFallback,
       fechaSeleccion: new Date().toISOString(),
-      estado: ESTADOS_DIAGNOSTICO[0],
+      estado: "",
       orden: index
     };
     return { ...base, id: crearIdDiagnostico(base, index) };
@@ -1539,9 +1556,9 @@ function renderizarResultadosBusquedaDiagnosticos() {
   });
 }
 
-function opcionesEstadoDiagnostico(estadoActual = ESTADOS_DIAGNOSTICO[0]) {
+function opcionesEstadoDiagnostico(estadoActual = "") {
   return ESTADOS_DIAGNOSTICO.map((estado) => `
-    <option value="${escaparHTML(estado)}" ${estado === estadoActual ? "selected" : ""}>${escaparHTML(estado)}</option>
+    <option value="${escaparHTML(estado)}" ${estado === estadoActual ? "selected" : ""}>${escaparHTML(estado || "Sin especificar")}</option>
   `).join("");
 }
 
@@ -1574,8 +1591,8 @@ function renderizarPanelDiagnosticos() {
               ${opcionesEstadoDiagnostico(dx.estado)}
             </select>
           </label>
-          <button type="button" data-mover-diagnostico="${index}" data-direccion="-1" ${index === 0 ? "disabled" : ""}>â†‘</button>
-          <button type="button" data-mover-diagnostico="${index}" data-direccion="1" ${index === historial.length - 1 ? "disabled" : ""}>â†“</button>
+          <button type="button" data-mover-diagnostico="${index}" data-direccion="-1" ${index === 0 ? "disabled" : ""}>↑</button>
+          <button type="button" data-mover-diagnostico="${index}" data-direccion="1" ${index === historial.length - 1 ? "disabled" : ""}>↓</button>
           <button type="button" data-reemplazar-diagnostico="${index}">Cambiar por catalogo</button>
           <button type="button" data-editar-diagnostico="${index}">Editar codigo/texto</button>
           <button type="button" class="boton-peligro" data-quitar-diagnostico="${index}">Quitar</button>
@@ -2896,7 +2913,7 @@ async function abrirSelectorFechaPaciente(campo = "fechaIngreso") {
   const esNacimiento = campo === "fechaNacimiento";
 
   inputFecha.value = partes.fecha;
-  inputHora.value = esNacimiento ? "" : partes.hora;
+  poblarSelectorHora24h(inputHora, esNacimiento ? "" : partes.hora);
   if (titulo) {
     titulo.textContent = esNacimiento
       ? "Seleccionar fecha de nacimiento"

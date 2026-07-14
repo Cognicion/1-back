@@ -984,7 +984,7 @@ const ESTADOS_DIAGNOSTICO_NOTA = [
 ];
 
 function estadoDiagnosticoNotaValido(estado) {
-  return ESTADOS_DIAGNOSTICO_NOTA.includes(estado) ? estado : ESTADOS_DIAGNOSTICO_NOTA[0];
+  return ESTADOS_DIAGNOSTICO_NOTA.includes(estado) ? estado : "";
 }
 
 function crearIdDiagnosticoNota(dx, index = 0) {
@@ -1006,7 +1006,7 @@ function normalizarDiagnosticoNota(dx = {}, index = 0) {
       catalogo: "CIE-10",
       texto: dx,
       fechaSeleccion: new Date().toISOString(),
-      estado: ESTADOS_DIAGNOSTICO_NOTA[0],
+      estado: "",
       orden: index
     };
     return { ...base, id: crearIdDiagnosticoNota(base, index) };
@@ -1041,9 +1041,9 @@ function textoDiagnosticoConEstado(dx) {
   return `${base}${estado}`.trim();
 }
 
-function opcionesEstadoDiagnosticoNota(estadoActual = ESTADOS_DIAGNOSTICO_NOTA[0]) {
+function opcionesEstadoDiagnosticoNota(estadoActual = "") {
   return ESTADOS_DIAGNOSTICO_NOTA.map((estado) => `
-    <option value="${escaparHTML(estado)}" ${estado === estadoActual ? "selected" : ""}>${escaparHTML(estado)}</option>
+    <option value="${escaparHTML(estado)}" ${estado === estadoActual ? "selected" : ""}>${escaparHTML(estado || "Sin especificar")}</option>
   `).join("");
 }
 function agregarDiagnostico(dx) {
