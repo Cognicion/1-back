@@ -4,6 +4,7 @@ import { MEDICAMENTOS_MAESTROS, normalizarNombreMedicamento, textoMedicamentoPar
 import { CIE10 } from "./data/cie10.js";
 import { CIE11 } from "./data/cie11.js";
 import { CRITERIOS_DIAGNOSTICOS, PSICOEDUCACION } from "./data/bibliotecaClinica.js";
+import { CRITERIOS_DIAGNOSTICOS_EXTENDIDOS } from "./data/diagnosticosClinicosExtendidos.js";
 import { iniciarMonitoreoSesion } from "./services/sesion.js";
 
 import {
@@ -12,6 +13,7 @@ import {
 
 let tabActual = "diagnosticos";
 let filtro = "";
+const CRITERIOS_BIBLIOTECA = [...CRITERIOS_DIAGNOSTICOS, ...CRITERIOS_DIAGNOSTICOS_EXTENDIDOS];
 const ADMIN_UID = "NQ0CU5PSDBUgVrk56sjPEVhOs2D3";
 const ROLES_ADMIN_VALIDOS = new Set([
   "admin",
@@ -116,11 +118,11 @@ function render() {
           <span class="tag">${m.clase}</span>
           <p><strong>Dosis habitual:</strong> ${m.dosisHabitual}</p>
           <p><strong>Presentaciones:</strong> ${(m.presentaciones || []).slice(0, 4).map((p) => p.texto).join("; ") || "Sin presentaciones cargadas"}</p>
-          ${m.especialidades?.length ? `<p><strong>Ãreas:</strong> ${m.especialidades.join(", ")}</p>` : ""}
+          ${m.especialidades?.length ? `<p><strong>Áreas:</strong> ${m.especialidades.join(", ")}</p>` : ""}
           ${m.contraindications?.length ? `<p><strong>Contraindicaciones clave:</strong> ${m.contraindications.slice(0, 3).join("; ")}</p>` : ""}
           ${m.monitoring?.length ? `<p><strong>Monitoreo:</strong> ${m.monitoring.slice(0, 4).join(", ")}</p>` : ""}
           <p>${m.notas}</p>
-          <p class="muted">Contenido de apoyo clÃ­nico. Validar contra ficha tÃ©cnica, protocolos locales y juicio profesional.</p>
+          <p class="muted">Contenido de apoyo clínico. Validar contra ficha técnica, protocolos locales y juicio profesional.</p>
         </article>
       `).join("");
     return;
@@ -144,12 +146,12 @@ function render() {
     ...CIE11.map((dx) => ({ ...dx, catalogo: "CIE-11" }))
   ];
 
-  const tarjetasCriterios = CRITERIOS_DIAGNOSTICOS
+  const tarjetasCriterios = CRITERIOS_BIBLIOTECA
     .filter((dx) => coincide(`${dx.codigo} ${dx.nombre} ${dx.categoria} ${dx.criterios.join(" ")}`))
     .map((dx) => `
       <article class="card">
         <h3>${dx.nombre}</h3>
-        <span class="tag">${dx.codigo} Â· ${dx.categoria}</span>
+        <span class="tag">${dx.codigo} · ${dx.categoria}</span>
         <ul>${dx.criterios.map((c) => `<li>${c}</li>`).join("")}</ul>
         <p><strong>Psicoeducacion:</strong> ${dx.psicoeducacion}</p>
       </article>
@@ -161,7 +163,7 @@ function render() {
     .map((dx) => `
       <article class="card">
         <h3>${dx.nombre}</h3>
-        <span class="tag">${dx.catalogo} Â· ${dx.codigo}</span>
+        <span class="tag">${dx.catalogo} · ${dx.codigo}</span>
         <p>Criterios especificos no cargados aun. Usar como referencia de catalogo y complementar con entrevista clinica.</p>
       </article>
     `);

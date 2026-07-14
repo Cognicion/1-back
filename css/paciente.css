@@ -1364,6 +1364,45 @@ textarea{
   line-height: 1.55;
 }
 
+.med-alerta-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  width: auto;
+  min-height: 24px;
+  margin-left: 8px;
+  padding: 3px 8px;
+  border: 1px solid rgba(56, 189, 248, 0.45);
+  border-radius: 999px;
+  background: rgba(8, 47, 73, 0.78);
+  color: #e0f7ff;
+  font: inherit;
+  font-size: 0.72rem;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: 0 0 16px rgba(14, 165, 233, 0.16);
+}
+
+.med-alerta-badge:hover,
+.med-alerta-badge:focus-visible {
+  border-color: rgba(125, 211, 252, 0.9);
+  transform: translateY(-1px);
+}
+
+.med-alerta-critico,
+.med-alerta-alto {
+  border-color: rgba(248, 113, 113, 0.7);
+  background: rgba(127, 29, 29, 0.84);
+  color: #fee2e2;
+}
+
+.med-alerta-precaucion,
+.med-alerta-bajo {
+  border-color: rgba(250, 204, 21, 0.7);
+  background: rgba(113, 63, 18, 0.78);
+  color: #fef3c7;
+}
+
 .interaccion-card.severidad-alta {
   border-color: rgba(248, 113, 113, 0.45);
   box-shadow: inset 3px 0 0 rgba(248, 113, 113, 0.78);

@@ -387,7 +387,7 @@ function renderizarAvisosAdmin() {
       <div class="reporte-admin-top">
         <div>
           <strong>${escaparHTML(aviso.titulo || "Aviso")}</strong>
-          <span>${escaparHTML(textoDestinatarioAviso(aviso))} Â· ${escaparHTML(aviso.creadoEn || "")}</span>
+          <span>${escaparHTML(textoDestinatarioAviso(aviso))} · ${escaparHTML(aviso.creadoEn || "")}</span>
         </div>
         <span class="estado-reporte ${aviso.archivado ? "cerrado" : aviso.activo === false ? "cerrado" : "nuevo"}">${aviso.archivado ? "Archivado" : aviso.activo === false ? "Oculto" : "Activo"}</span>
       </div>
@@ -399,7 +399,7 @@ function renderizarAvisosAdmin() {
             <summary>Ver usuarios que lo marcaron como leido</summary>
             <ul>
               ${aviso.lecturas.map((lectura) => `
-                <li>${escaparHTML(lectura.nombre || lectura.email || lectura.uid || "Usuario")} Â· ${escaparHTML(lectura.rol || "sin rol")} Â· ${escaparHTML(lectura.leidoEn || "")}</li>
+                <li>${escaparHTML(lectura.nombre || lectura.email || lectura.uid || "Usuario")} · ${escaparHTML(lectura.rol || "sin rol")} · ${escaparHTML(lectura.leidoEn || "")}</li>
               `).join("")}
             </ul>
           </details>
@@ -683,7 +683,7 @@ function renderizarUsuariosRecientesAdmin() {
     <article class="usuario-reciente-card">
       <div>
         <strong>${escaparHTML(usuario.nombre || usuario.email || "Sin nombre")}</strong>
-        <span>${escaparHTML(usuario.email || "Sin correo")} Â· ${escaparHTML(usuario.rol || "sin rol")}</span>
+        <span>${escaparHTML(usuario.email || "Sin correo")} · ${escaparHTML(usuario.rol || "sin rol")}</span>
       </div>
       <small>${escaparHTML(textoFechaUsuarioRegistro(usuario))}</small>
     </article>
@@ -732,7 +732,7 @@ function renderizarUsuariosOcultosAuditoria() {
         <input type="checkbox" data-usuario-auditoria-oculto="${escaparHTML(usuario.id)}" ${oculto ? "checked" : ""}>
         <span>
           <strong>${escaparHTML(usuario.nombre || usuario.email || "Usuario sin nombre")}</strong>
-          <small>${escaparHTML(usuario.email || usuario.id)} Â· ${escaparHTML(etiquetaRolUsuario(usuario.rol || "sin_rol"))}</small>
+          <small>${escaparHTML(usuario.email || usuario.id)} · ${escaparHTML(etiquetaRolUsuario(usuario.rol || "sin_rol"))}</small>
         </span>
       </label>
     `;
@@ -856,7 +856,7 @@ function renderizarSesionesAuditoria() {
         <article class="sesion-usuario-card ${enLinea ? "en-linea" : "desconectado"}">
           <div>
             <strong>${escaparHTML(usuario.nombre || usuario.email || "Usuario sin nombre")}</strong>
-            <small>${escaparHTML(usuario.email || usuario.id)} Â· ${escaparHTML(etiquetaRolUsuario(usuario.rol || "sin_rol"))}</small>
+            <small>${escaparHTML(usuario.email || usuario.id)} · ${escaparHTML(etiquetaRolUsuario(usuario.rol || "sin_rol"))}</small>
           </div>
           <div class="sesion-usuario-meta">
             <span class="${enLinea ? "ok" : "admin-muted"}">${enLinea ? "En linea" : "Desconectado"}</span>
@@ -878,7 +878,7 @@ function poblarUsuariosAvisosAdmin() {
   if (!selector) return;
   const usuarios = [...usuariosAdmin].sort((a, b) => (a.nombre || a.email || "").localeCompare(b.nombre || b.email || ""));
   selector.innerHTML = `<option value="">Seleccionar usuario...</option>` + usuarios.map((usuario) => `
-    <option value="${escaparHTML(usuario.id)}">${escaparHTML(usuario.nombre || usuario.email || usuario.id)} Â· ${escaparHTML(usuario.rol || "sin rol")}</option>
+    <option value="${escaparHTML(usuario.id)}">${escaparHTML(usuario.nombre || usuario.email || usuario.id)} · ${escaparHTML(usuario.rol || "sin rol")}</option>
   `).join("");
 }
 function datosAdminParaMensajes() {
@@ -1034,7 +1034,7 @@ async function iniciarMensajeAdminConUsuario(uidUsuario = "") {
       <div class="mensaje-admin-header">
         <div>
           <h3>Abriendo chat...</h3>
-          <p>Preparando conversaciÃ³n con ${escaparHTML(contacto.nombre || contacto.email || contacto.id)}.</p>
+          <p>Preparando conversación con ${escaparHTML(contacto.nombre || contacto.email || contacto.id)}.</p>
         </div>
       </div>
     `;
@@ -1060,7 +1060,7 @@ async function iniciarMensajeAdminConUsuario(uidUsuario = "") {
         <div class="mensaje-admin-header">
           <div>
             <h3>No se pudo abrir el chat</h3>
-            <p>${escaparHTML(error.message || "Firestore bloqueo la creaciÃ³n de la conversaciÃ³n.")}</p>
+            <p>${escaparHTML(error.message || "Firestore bloqueo la creación de la conversación.")}</p>
           </div>
         </div>
       `;
@@ -1365,7 +1365,7 @@ async function aplicarFormatoUsuariosVisiblesAdmin(formato, valor) {
   }
 
   const accion = valor ? "autorizar" : "retirar";
-  const confirmar = confirm(`Â¿Deseas ${accion} el formato ${formato} a ${usuarios.length} usuario(s) visibles?`);
+  const confirmar = confirm(`¿Deseas ${accion} el formato ${formato} a ${usuarios.length} usuario(s) visibles?`);
   if (!confirmar) return;
 
   await Promise.all(usuarios.map((usuario) => updateDoc(doc(db, "usuarios", usuario.id), {

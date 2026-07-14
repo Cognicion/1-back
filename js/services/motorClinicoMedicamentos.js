@@ -4,7 +4,7 @@ import {
   REGLAS_INTERACCIONES_CLINICAS,
   REGLAS_MEDICAMENTO_DIAGNOSTICO,
   UMBRALES_RIESGO_ACUMULATIVO
-} from "../data/reglasClinicasMedicamentos.js";
+} from "../data/reglasClinicasMedicamentosExtendidas.js";
 
 const SEVERIDAD_ORDEN = {
   informativa: 1,
@@ -127,6 +127,7 @@ function valoresProfundos(objeto, profundidad = 0) {
 }
 
 export function extraerDiagnosticosPaciente(paciente = {}) {
+  const contextoDirecto = extraerContextoDirectoPaciente(paciente);
   const campos = [
     paciente.diagnostico,
     paciente.diagnosticos,
@@ -138,11 +139,51 @@ export function extraerDiagnosticosPaciente(paciente = {}) {
     paciente.alergias,
     paciente.comorbilidades,
     paciente.observaciones,
-    paciente.datosClinicosResumen
+    paciente.datosClinicosResumen,
+    contextoDirecto.textos
   ];
   return valoresProfundos(campos)
     .map((texto) => String(texto || "").trim())
     .filter(Boolean);
+}
+
+function numeroSeguro(valor) {
+  const numero = Number(String(valor ?? "").replace(",", ".").replace(/[^\d.-]/g, ""));
+  return Number.isFinite(numero) ? numero : null;
+}
+
+function calcularEdadLocal(fechaNacimiento) {
+  if (!fechaNacimiento) return null;
+  const fecha = new Date(fechaNacimiento);
+  if (Number.isNaN(fecha.getTime())) return null;
+  const hoy = new Date();
+  let edad = hoy.getFullYear() - fecha.getFullYear();
+  const mes = hoy.getMonth() - fecha.getMonth();
+  if (mes < 0 || (mes === 0 && hoy.getDate() < fecha.getDate())) edad -= 1;
+  return edad >= 0 && edad < 130 ? edad : null;
+}
+
+function extraerContextoDirectoPaciente(paciente = {}) {
+  const textos = [];
+  const edad = numeroSeguro(paciente.edad) ?? calcularEdadLocal(paciente.fechaNacimiento || paciente.fecha_nacimiento);
+  const peso = numeroSeguro(paciente.peso || paciente.somatometria?.peso || paciente.signosVitales?.peso);
+  const eGFR = numeroSeguro(paciente.eGFR || paciente.egfr || paciente.tfg || paciente.laboratorio?.eGFR || paciente.laboratorio?.tfg);
+  const creatinina = numeroSeguro(paciente.creatinina || paciente.laboratorio?.creatinina);
+  const childPugh = paciente.childPugh || paciente.child || paciente.funcionHepatica?.childPugh || "";
+  const alergias = valoresProfundos([paciente.alergias, paciente.datosInstitucionales?.alergias]).join(" ");
+  const embarazo = Boolean(paciente.embarazo || paciente.gestacion || paciente.obstetricia?.embarazo);
+  const lactancia = Boolean(paciente.lactancia || paciente.obstetricia?.lactancia);
+  const consumo = valoresProfundos([paciente.consumoSustancias, paciente.habitos, paciente.sustancias]).join(" ");
+
+  if (edad !== null && edad >= 65) textos.push("adulto mayor fragilidad");
+  if (eGFR !== null && eGFR < 60) textos.push("enfermedad renal cronica filtrado glomerular bajo");
+  if (creatinina !== null && creatinina > 1.4) textos.push("insuficiencia renal creatinina elevada");
+  if (childPugh) textos.push(`hepatopatia cronica child pugh ${childPugh}`);
+  if (embarazo) textos.push("embarazo");
+  if (lactancia) textos.push("lactancia");
+  if (/alcohol|etanol|bebida/i.test(consumo)) textos.push("consumo de alcohol");
+
+  return { edad, peso, eGFR, creatinina, childPugh, alergias, embarazo, lactancia, textos };
 }
 
 function detectarChildPugh(textos = []) {
@@ -239,6 +280,52 @@ export function evaluarMedicamentoContraDiagnosticos(medicamentosNormalizados = 
         diagnosticos: diagnosticosCoincidentes.map((d) => d.nombre)
       }));
     });
+  });
+  return alertas;
+}
+
+function evaluarAlergiasPaciente(medicamentosNormalizados = [], paciente = {}) {
+  const contexto = extraerContextoDirectoPaciente(paciente);
+  const alergias = normalizarTextoClinico(contexto.alergias);
+  if (!alergias || /negad|no conocida|sin alerg/.test(alergias)) return [];
+  const alertas = [];
+  medicamentosNormalizados.forEach((med) => {
+    const coincide = med.ingredientes.some((ingrediente) =>
+      [ingrediente.nombre, ...(ingrediente.sinonimos || [])].some((patron) =>
+        alergias.includes(normalizarTextoClinico(patron))
+      )
+    );
+    if (!coincide) return;
+    alertas.push(crearAlerta({
+      id: `alergia:${med.ingredienteIds.join("+") || med.id}`,
+      tipo: "contraindicacion_alergia",
+      severidad: "critica",
+      titulo: "Medicamento coincide con alergia registrada",
+      medicamentos: [med.textoOriginal],
+      efecto: "El medicamento contiene un ingrediente que coincide con alergias registradas en datos generales.",
+      recomendacion: "No guardar sin verificar alergia, gravedad, reacción previa y alternativa terapéutica.",
+      permiteOverride: true,
+      requiereJustificacion: true
+    }));
+  });
+  return alertas;
+}
+
+function evaluarContextoDirectoPaciente(medicamentosNormalizados = [], paciente = {}) {
+  const contexto = extraerContextoDirectoPaciente(paciente);
+  const alertas = [];
+  medicamentosNormalizados.forEach((med) => {
+    if (contexto.peso !== null && contexto.peso < 45 && (med.clases.includes("depresor_snc") || med.clases.includes("antiepileptico"))) {
+      alertas.push(crearAlerta({
+        id: `peso_bajo:${med.id}`,
+        tipo: "precaucion_dosis",
+        severidad: "baja",
+        titulo: "Peso bajo: revisar dosis",
+        medicamentos: [med.textoOriginal],
+        efecto: "El peso registrado puede requerir ajuste de dosis o vigilancia de sedación/toxicidad.",
+        recomendacion: "Verificar dosis por kg cuando corresponda y registrar vigilancia clínica."
+      }));
+    }
   });
   return alertas;
 }
@@ -359,7 +446,9 @@ export function evaluarMedicamentosPaciente({ paciente = {}, medicamentos = [], 
   const alertas = deduplicarAlertas([
     ...evaluarMedicamentoContraDiagnosticos(medicamentosNormalizados, contextoDiagnostico),
     ...evaluarInteraccionesClinicas(medicamentosNormalizados),
-    ...evaluarRiesgosAcumulativos(medicamentosNormalizados)
+    ...evaluarRiesgosAcumulativos(medicamentosNormalizados),
+    ...evaluarAlergiasPaciente(medicamentosNormalizados, paciente),
+    ...evaluarContextoDirectoPaciente(medicamentosNormalizados, paciente)
   ]);
 
   return {
