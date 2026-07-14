@@ -28,6 +28,7 @@ import {
   collection,
   deleteDoc,
   doc,
+  getDoc,
   getDocs,
   query,
   orderBy,
@@ -38,6 +39,13 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const ADMIN_UID = "NQ0CU5PSDBUgVrk56sjPEVhOs2D3";
+const ROLES_ADMIN_VALIDOS = new Set([
+  "admin",
+  "administrador",
+  "superadmin",
+  "adminprincipal",
+  "administradorprincipal"
+]);
 const LIMITE_EVENTOS = 1000;
 const VENTANA_USUARIO_EN_LINEA_MS = 20 * 60 * 1000;
 const CLAVE_USUARIOS_AUDITORIA_OCULTOS = "cognicion_admin_auditoria_usuarios_ocultos";
@@ -100,13 +108,83 @@ function eventoAuditoriaVisible(evento = {}) {
   return !ACCIONES_AUDITORIA_OCULTAS.has(evento.accion);
 }
 
+function normalizarRolAdmin(valor = "") {
+  return String(valor)
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, "");
+}
+
+function arregloTieneRolAdmin(valores) {
+  if (!Array.isArray(valores)) return false;
+  return valores.some((valor) => ROLES_ADMIN_VALIDOS.has(normalizarRolAdmin(valor)));
+}
+
+function objetoTieneRolAdmin(valores = {}) {
+  if (!valores || typeof valores !== "object") return false;
+  return Object.entries(valores).some(([clave, valor]) => {
+    if (valor !== true) return false;
+    return ROLES_ADMIN_VALIDOS.has(normalizarRolAdmin(clave));
+  });
+}
+
+function datosUsuarioSonAdmin(datos = {}) {
+  if (!datos || typeof datos !== "object") return false;
+
+  const camposRol = [
+    datos.rol,
+    datos.role,
+    datos.tipoRol,
+    datos.tipoUsuario,
+    datos.perfil,
+    datos.cargoSistema
+  ];
+
+  if (camposRol.some((valor) => ROLES_ADMIN_VALIDOS.has(normalizarRolAdmin(valor)))) {
+    return true;
+  }
+
+  return (
+    datos.admin === true ||
+    datos.esAdmin === true ||
+    datos.isAdmin === true ||
+    datos.permisos?.admin === true ||
+    datos.claims?.admin === true ||
+    objetoTieneRolAdmin(datos.roles) ||
+    objetoTieneRolAdmin(datos.permisos) ||
+    arregloTieneRolAdmin(datos.roles) ||
+    arregloTieneRolAdmin(datos.permisosSistema) ||
+    arregloTieneRolAdmin(datos.permisos)
+  );
+}
+
+async function usuarioPuedeAccederAdmin(user) {
+  if (!user) return { permitido: false, datos: null };
+  if (user.uid === ADMIN_UID) return { permitido: true, datos: { rol: "admin", esAdminPrincipal: true } };
+
+  try {
+    const snapUsuario = await getDoc(doc(db, "usuarios", user.uid));
+    if (!snapUsuario.exists()) return { permitido: false, datos: null };
+    const datos = snapUsuario.data();
+    return {
+      permitido: datosUsuarioSonAdmin(datos),
+      datos
+    };
+  } catch (error) {
+    console.error("No se pudo verificar el rol de administrador:", error);
+    return { permitido: false, datos: null, error };
+  }
+}
+
 onAuthStateChanged(auth, async (user) => {
   if (!user) {
     window.location.href = "login.html";
     return;
   }
 
-  if (user.uid !== ADMIN_UID) {
+  const accesoAdmin = await usuarioPuedeAccederAdmin(user);
+  if (!accesoAdmin.permitido) {
     alert("Acceso restringido al administrador.");
     window.location.href = "dashboard.html";
     return;
