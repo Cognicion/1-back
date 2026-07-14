@@ -1,4 +1,4 @@
-import { numero } from "./formulas.js";
+import { normalizarConcentracionMgMl, normalizarPesoKg } from "./formulas.js";
 
 export const MEDICAMENTOS_PEDIATRICOS = [
   {
@@ -342,7 +342,7 @@ export const MEDICAMENTOS_PEDIATRICOS = [
 
 export function calcularDosisMedicamento({ medicamentoId, opcionIndice = 0, pesoKg, concentracionMgMl, pesoConfirmado = false }) {
   const medicamento = MEDICAMENTOS_PEDIATRICOS.find((item) => item.id === medicamentoId);
-  const peso = numero(pesoKg);
+  const peso = normalizarPesoKg(pesoKg);
   if (!medicamento) return { error: "Selecciona un medicamento." };
   if (!peso || peso <= 0) return { error: "Registra un peso actual en kg." };
   if (!pesoConfirmado) return { error: "Confirma que el peso usado es actual antes de calcular dosis." };
@@ -357,7 +357,7 @@ export function calcularDosisMedicamento({ medicamentoId, opcionIndice = 0, peso
     mgDosis = mgDia / (opcion.frecuenciaDia || 1);
   }
 
-  const concentracion = numero(concentracionMgMl);
+  const concentracion = normalizarConcentracionMgMl(concentracionMgMl);
   return {
     medicamento,
     opcion,

@@ -80,14 +80,30 @@
         <section class="ped-panel" style="margin-top:18px;">
           <h3>Variables de calculo rapido</h3>
           <div class="ped-grid-mini">
-            <input id="deshidratacion" data-ped-calc placeholder="% deshidratacion">
-            <input id="diuresisMl" data-ped-calc placeholder="Diuresis total mL">
-            <input id="diuresisHoras" data-ped-calc placeholder="Horas">
-            <input id="sodio" data-ped-calc placeholder="Na mEq/L">
-            <input id="glucosa" data-ped-calc placeholder="Glucosa mg/dL">
-            <input id="cloro" data-ped-calc placeholder="Cl mEq/L">
-            <input id="bicarbonato" data-ped-calc placeholder="HCO3 mEq/L">
-            <input id="concentracionMgMl" data-ped-calc placeholder="Concentracion mg/mL">
+            <label class="ped-field">Deshidratacion (%)
+              <input id="deshidratacion" data-ped-calc placeholder="Ej. 5">
+            </label>
+            <label class="ped-field">Diuresis total (mL)
+              <input id="diuresisMl" data-ped-calc placeholder="Ej. 480">
+            </label>
+            <label class="ped-field">Periodo de diuresis (h)
+              <input id="diuresisHoras" data-ped-calc placeholder="Ej. 8">
+            </label>
+            <label class="ped-field">Sodio (mEq/L)
+              <input id="sodio" data-ped-calc placeholder="Na">
+            </label>
+            <label class="ped-field">Glucosa (mg/dL)
+              <input id="glucosa" data-ped-calc placeholder="Glucosa">
+            </label>
+            <label class="ped-field">Cloro (mEq/L)
+              <input id="cloro" data-ped-calc placeholder="Cl">
+            </label>
+            <label class="ped-field">Bicarbonato (mEq/L)
+              <input id="bicarbonato" data-ped-calc placeholder="HCO3">
+            </label>
+            <label class="ped-field">Concentracion
+              <input id="concentracionMgMl" data-ped-calc placeholder="Ej. 160 mg/5 mL o 32 mg/mL">
+            </label>
           </div>
           <div class="ped-grid-mini" style="margin-top:10px;">
             <select id="medicamentoSelect" data-ped-calc></select>

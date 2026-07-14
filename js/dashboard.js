@@ -59,8 +59,59 @@ function mostrarFraseClinicaAleatoria() {
 
 mostrarFraseClinicaAleatoria();
 
+function normalizarRolUsuario(valor = "") {
+  return String(valor || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim()
+    .replace(/[\s_-]+/g, "");
+}
+
+function obtenerRolUsuarioDashboard(datos = {}) {
+  if (!datos || typeof datos !== "object") return "";
+  if (
+    datos.admin === true ||
+    datos.esAdmin === true ||
+    datos.isAdmin === true ||
+    datos.permisos?.admin === true ||
+    datos.claims?.admin === true ||
+    datos.roles?.admin === true
+  ) {
+    return "admin";
+  }
+
+  const candidatos = [
+    datos.rol,
+    datos.role,
+    datos.rolUsuario,
+    datos.tipoRol,
+    datos.tipoUsuario,
+    datos.perfil,
+    datos.perfilUsuario
+  ];
+
+  if (Array.isArray(datos.roles)) candidatos.push(...datos.roles);
+  if (Array.isArray(datos.permisos)) candidatos.push(...datos.permisos);
+  if (datos.roles && typeof datos.roles === "object" && !Array.isArray(datos.roles)) {
+    Object.entries(datos.roles).forEach(([rol, activo]) => {
+      if (activo) candidatos.push(rol);
+    });
+  }
+  if (datos.permisos && typeof datos.permisos === "object" && !Array.isArray(datos.permisos)) {
+    Object.entries(datos.permisos).forEach(([permiso, activo]) => {
+      if (activo) candidatos.push(permiso);
+    });
+  }
+
+  return candidatos.find((valor) => normalizarRolUsuario(valor)) || "";
+}
+
 function usuarioEsAdmin(rol = "") {
-  return ["admin", "administrador"].includes(String(rol || "").toLowerCase().trim());
+  const rolNormalizado = normalizarRolUsuario(
+    rol && typeof rol === "object" ? obtenerRolUsuarioDashboard(rol) : rol
+  );
+  return ["admin", "administrador", "superadmin", "adminprincipal", "administradorprincipal"].includes(rolNormalizado);
 }
 
 function actualizarTarjetasAdmin(rolUsuario = "") {
@@ -175,8 +226,9 @@ onAuthStateChanged(auth, async (user) => {
 
   const datos = await obtenerUsuario(user.uid);
   await sincronizarAparienciaUsuario(user.uid);
-  usuarioDashboardActual = { uid: user.uid, email: user.email || "", nombre: datos?.nombre || user.email || "", rol: datos?.rol || "" };
-  const rolUsuario = String(datos?.rol || "").toLowerCase().trim();
+  const rolOriginalUsuario = obtenerRolUsuarioDashboard(datos || {});
+  const rolUsuario = normalizarRolUsuario(rolOriginalUsuario);
+  usuarioDashboardActual = { uid: user.uid, email: user.email || "", nombre: datos?.nombre || user.email || "", rol: rolOriginalUsuario || rolUsuario };
   rolDashboardActual = rolUsuario;
 
   const tarjetaSofia = document.getElementById("tarjetaSofia");
@@ -209,7 +261,7 @@ window.cerrarSesion = async function() {
       descripcion: "El usuario cerro sesion explicitamente desde dashboard.",
       usuarioUid: user.uid,
       usuarioNombre: datos?.nombre || user.email || "",
-      usuarioRol: datos?.rol || "",
+      usuarioRol: obtenerRolUsuarioDashboard(datos || {}),
       exito: true
     });
   }
@@ -227,11 +279,11 @@ function escaparHTML(valor) {
 }
 
 function avisoVisibleParaUsuario(aviso = {}, rol = "", uid = "") {
-  const rolNormalizado = String(rol || "").toLowerCase().trim();
+  const rolNormalizado = normalizarRolUsuario(rol);
   const tipo = String(aviso.destinatarioTipo || aviso.destinatarioRol || aviso.rolDestino || "todos").toLowerCase().trim();
   const uidDestino = aviso.destinatarioUid || aviso.uidDestino || aviso.usuarioDestinoUid || "";
 
-  if (rolNormalizado === "admin") return true;
+  if (usuarioEsAdmin(rolNormalizado)) return true;
   if (tipo === "usuario") return uidDestino === uid;
   if (["todos", "todos_los_usuarios", "global"].includes(tipo)) return true;
   if (["personal_salud", "medicos_psicologos", "medico_psicologo"].includes(tipo)) return ["medico", "psicologo"].includes(rolNormalizado);

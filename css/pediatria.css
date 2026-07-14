@@ -221,12 +221,51 @@ body {
   background: var(--ped-panel-soft);
 }
 
+.ped-summary-card {
+  min-height: 94px;
+  display: grid;
+  align-content: start;
+  gap: 6px;
+}
+
+.ped-summary-card b {
+  font-size: 1rem;
+  line-height: 1.28;
+}
+
+.ped-summary-card small {
+  color: var(--ped-muted);
+  line-height: 1.42;
+}
+
 .ped-summary span,
 .ped-result span {
   display: block;
   color: var(--ped-muted);
   margin-top: 6px;
   line-height: 1.48;
+}
+
+.ped-alerta {
+  color: #fde68a !important;
+}
+
+.ped-alerta-suave {
+  color: var(--ped-accent) !important;
+}
+
+.ped-formula-list {
+  display: grid;
+  gap: 5px;
+  margin: 8px 0;
+  padding: 8px 10px;
+  border: 1px solid rgba(125, 211, 252, 0.14);
+  border-radius: 12px;
+  background: rgba(2, 6, 23, 0.16);
+}
+
+[data-theme="light"] .ped-formula-list {
+  background: rgba(255, 255, 255, 0.62);
 }
 
 .ped-med-result {
@@ -407,34 +446,51 @@ body {
   color: var(--ped-text);
 }
 
-.ped-chart-row {
+.ped-value-row {
   display: grid;
-  grid-template-columns: 72px 1fr 90px;
+  grid-template-columns: minmax(120px, 1fr) auto;
   gap: 10px;
   align-items: center;
-  margin: 9px 0;
+  padding: 9px 0;
+  border-bottom: 1px solid rgba(125, 211, 252, 0.12);
   color: var(--ped-muted);
-  font-size: 0.82rem;
+  font-size: 0.9rem;
 }
 
-.ped-chart-track {
-  height: 10px;
-  border-radius: 999px;
-  background: rgba(148, 163, 184, 0.16);
-  overflow: hidden;
+.ped-value-row:last-of-type {
+  border-bottom: 0;
 }
 
-.ped-chart-track i {
-  display: block;
-  height: 100%;
-  border-radius: inherit;
-  background: linear-gradient(90deg, #2563eb, #22d3ee);
-  box-shadow: 0 0 16px rgba(34, 211, 238, 0.34);
-}
-
-.ped-chart-row b {
+.ped-value-row b {
   color: var(--ped-text);
   text-align: right;
+}
+
+.ped-chart-pending p,
+.ped-chart-card p {
+  color: var(--ped-muted);
+  line-height: 1.45;
+}
+
+.ped-lms-auto {
+  margin-bottom: 12px;
+}
+
+.ped-advanced {
+  border: 1px solid rgba(125, 211, 252, 0.16);
+  border-radius: 14px;
+  padding: 10px;
+  background: rgba(2, 6, 23, 0.14);
+}
+
+[data-theme="light"] .ped-advanced {
+  background: rgba(255, 255, 255, 0.58);
+}
+
+.ped-advanced summary {
+  cursor: pointer;
+  font-weight: 900;
+  color: var(--ped-accent);
 }
 
 @media (max-width: 980px) {

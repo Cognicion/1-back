@@ -447,6 +447,38 @@ header {
     padding-top: 28px;
 }
 
+.module-subareas {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 18px;
+}
+
+.module-subareas span {
+    border: 1px solid rgba(125, 211, 252, 0.18);
+    border-radius: 999px;
+    padding: 7px 10px;
+    color: var(--muted);
+    background: rgba(15, 23, 42, 0.38);
+    font-size: 0.76rem;
+    font-weight: 800;
+}
+
+[data-theme="light"] .module-subareas span {
+    color: var(--text);
+    background: rgba(255, 255, 255, 0.72);
+}
+
+.module-card .card-actions.dual-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.module-card .card-actions.dual-actions .primary-button {
+    width: auto;
+}
+
 .module-note {
     display: block;
     margin-top: 10px;
@@ -1431,13 +1463,20 @@ footer {
 
             <article class="module-card">
                 <div class="module-top">
-                    <div class="module-icon">ESC</div>
+                    <div class="module-icon">CLIN</div>
                     <span class="badge">Disponible</span>
                 </div>
-                <h3>Escalas clínicas</h3>
-                <p>Aplicación y seguimiento de instrumentos clínicos, escalas cognitivas y tamizajes para evaluar síntomas, funcionalidad y evolución.</p>
-                <div class="card-actions">
+                <h3>Calculadoras y escalas clínicas</h3>
+                <p>Instrumentos clínicos, tamizajes, escalas cognitivas, índices, dosificación y cálculos médicos organizados por apartados.</p>
+                <div class="module-subareas">
+                    <span>Escalas clínicas</span>
+                    <span>Tamizajes</span>
+                    <span>Calculadoras médicas</span>
+                    <span>Dosis pediátricas</span>
+                </div>
+                <div class="card-actions dual-actions">
                     <button class="primary-button" onclick="window.location.href='escalas.html'">Abrir escalas</button>
+                    <button class="primary-button" onclick="window.location.href='calculadoras-medicas.html'">Abrir calculadoras</button>
                 </div>
             </article>
 
@@ -1466,17 +1505,6 @@ footer {
         
 
             
-            <article class="module-card">
-                <div class="module-top">
-                    <div class="module-icon">CALC</div>
-                    <span class="badge">Disponible</span>
-                </div>
-                <h3>Calculadoras médicas</h3>
-                <p>Accede a herramientas para dosificación, escalas, índices y cálculos de uso frecuente en medicina.</p>
-                <div class="card-actions">
-                    <a class="primary-button available-action" href="calculadoras-medicas.html">Abrir calculadoras</a>
-                </div>
-            </article>
             <article class="module-card admin-dashboard-card" data-admin-only hidden>
                 <div class="module-top">
                     <div class="module-icon">ADM</div>

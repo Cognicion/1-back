@@ -4,12 +4,13 @@ import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase
 import { aplicarAparienciaGuardada } from "../services/apariencia.js";
 import { calcularEdadPediatrica, formatearFechaDDMMAAAA } from "./edad.js";
 import {
+  analizarTalla,
   calcularAnionGap,
   calcularDeficit,
   calcularDiuresis,
   calcularIMC,
   corregirSodioPorGlucosa,
-  mantenimientoHollidaySegar,
+  mantenimientoHollidaySegarDetalle,
   numero,
   percentilDesdeLMS,
   superficieCorporal
@@ -28,26 +29,20 @@ const estado = {
 };
 
 const categorias = [
-  ["resumen", "Resumen clinico"],
-  ["edad", "Edad y etapa"],
-  ["antropometria", "Antropometria"],
-  ["percentiles", "Percentiles LMS"],
+  ["resumen", "Resumen pediatrico"],
+  ["crecimiento", "Crecimiento y antropometria"],
   ["vitales", "Signos vitales"],
-  ["liquidos", "Liquidos"],
-  ["medicamentos", "Dosis pediatricas"],
-  ["graficas", "Graficas"],
-  ["neonatos", "Neonatologia"],
-  ["urgencias", "Urgencias"],
+  ["liquidos", "Liquidos y electrolitos"],
+  ["medicamentos", "Medicamentos y dosis"],
+  ["desarrollo", "Desarrollo y tamizajes"],
   ["nutricion", "Nutricion"],
-  ["desarrollo", "Desarrollo"],
-  ["vacunas", "Vacunas"],
-  ["nefro", "Renal"],
-  ["respiratorio", "Respiratorio"],
-  ["endocrino", "Endocrino"],
+  ["vacunacion", "Vacunacion"],
+  ["indicaciones", "Indicaciones y tratamiento"],
+  ["graficas", "Graficas y seguimiento"],
   ["fuentes", "Fuentes"]
 ];
 
-const SECCIONES_ABIERTAS_DEFAULT = new Set(["resumen", "edad", "antropometria", "liquidos", "medicamentos"]);
+const SECCIONES_ABIERTAS_DEFAULT = new Set(["resumen", "crecimiento", "liquidos", "medicamentos"]);
 
 const $ = (id) => document.getElementById(id);
 
@@ -156,9 +151,10 @@ function calcularTodo() {
   const edad = calcularEdadPediatrica($("fechaNacimiento").value, new Date(), $("edadGestacional").value);
   const peso = $("pesoKg").value;
   const talla = $("tallaCm").value;
+  const tallaInfo = analizarTalla(talla);
   const imc = calcularIMC(peso, talla);
   const sc = superficieCorporal(peso, talla);
-  const mantenimiento = mantenimientoHollidaySegar(peso);
+  const mantenimiento = mantenimientoHollidaySegarDetalle(peso);
   const deficit = calcularDeficit(peso, $("deshidratacion").value);
   const diuresis = calcularDiuresis($("diuresisMl").value, peso, $("diuresisHoras").value);
   const sodio = corregirSodioPorGlucosa($("sodio").value, $("glucosa").value);
@@ -173,6 +169,7 @@ function calcularTodo() {
   const edadHtml = edad ? `
     <b>${edad.edadCronologicaTexto}</b>
     <span>${edad.diasTotales} dias de vida | ${edad.semanasTotales.toFixed(1)} semanas | ${edad.anosDecimales.toFixed(2)} anos</span>
+    <span>Meses totales aproximados: ${Math.floor(edad.diasTotales / 30.4375)}.</span>
     ${edad.edadCorregidaSemanas !== null ? `<span>Edad corregida: ${edad.edadCorregidaSemanas.toFixed(1)} semanas. Edad postmenstrual: ${edad.edadPostmenstrualSemanas.toFixed(1)} semanas.</span>` : ""}
   ` : "Registra fecha de nacimiento.";
 
@@ -180,16 +177,23 @@ function calcularTodo() {
 
   setTextoSiExiste("fechaVisible", formatearFechaDDMMAAAA($("fechaNacimiento").value) || "Sin fecha");
   setHtmlSiExiste("antropometriaResultado", `
-    <b>IMC: ${imc ? imc.toFixed(2) : "sin calcular"}</b>
-    <span>SC Mosteller: ${sc ? sc.mosteller.toFixed(2) : "-"} m2 | Haycock: ${sc ? sc.haycock.toFixed(2) : "-"} m2</span>
-    <span>Los percentiles requieren tablas LMS oficiales cargadas para edad/sexo/indicador.</span>
+    <b>IMC: ${imc ? imc.toFixed(2) : "sin calcular"} kg/m²</b>
+    <span>Talla normalizada: ${formatearTallaClinica(tallaInfo)}</span>
+    ${tallaInfo.error ? `<span class="ped-alerta">${tallaInfo.error}</span>` : ""}
+    ${tallaInfo.advertencias?.map((mensaje) => `<span class="ped-alerta-suave">${mensaje}</span>`).join("") || ""}
+    <span>SC Mosteller: ${sc ? sc.mosteller.toFixed(2) : "-"} m² | Haycock: ${sc ? sc.haycock.toFixed(2) : "-"} m²</span>
+    ${sc ? `<span>Mosteller = √((peso ${numero(peso)} kg × talla ${tallaInfo.valorCm?.toFixed(1)} cm) / 3600).</span>` : ""}
+    <span>Los percentiles y curvas solo se activan cuando existan tablas LMS oficiales cargadas por edad, sexo e indicador.</span>
   `);
 
   setHtmlSiExiste("liquidosResultado", mantenimiento ? `
-    <b>Mantenimiento: ${mantenimiento.mlDia.toFixed(0)} mL/dia</b>
+    <b>Mantenimiento Holliday-Segar: ${mantenimiento.mlDia.toFixed(0)} mL/dia</b>
     <span>${mantenimiento.mlHora.toFixed(1)} mL/h | regla 4-2-1: ${mantenimiento.regla421.toFixed(1)} mL/h</span>
+    <span>Peso usado: ${mantenimiento.pesoKg.toFixed(2)} kg. Formula: ${mantenimiento.formulaTexto} = ${mantenimiento.mlDia.toFixed(0)} mL/dia.</span>
+    <div class="ped-formula-list">${mantenimiento.tramos.map((tramo) => `<span>${tramo.etiqueta}: ${tramo.pesoKg.toFixed(tramo.pesoKg % 1 ? 1 : 0)} kg × ${tramo.factor} = ${tramo.subtotal.toFixed(0)} mL</span>`).join("")}</div>
     <span>Deficit estimado: ${deficit ? deficit.toFixed(0) : "-"} mL. Diuresis: ${diuresis ? diuresis.toFixed(2) : "-"} mL/kg/h.</span>
     <span>Na corregido: ${sodio ? sodio.toFixed(1) : "-"} mEq/L | Anion gap: ${gap ? gap.toFixed(1) : "-"}</span>
+    ${$("pesoConfirmado").checked ? "" : `<span class="ped-alerta">Confirma peso actual antes de usar el resultado para indicaciones.</span>`}
   ` : "Registra peso actual.");
 
   setHtmlSiExiste("medicamentoResultado", dosis.error ? `
@@ -208,7 +212,7 @@ function calcularTodo() {
     <span>Resultado calculado con parametros LMS ingresados manualmente.</span>
   ` : "Carga L, M y S oficiales para calcular z-score/percentil.");
 
-  renderGraficasPediatria({ peso, talla, imc, sc, mantenimiento, deficit, diuresis });
+  renderGraficasPediatria({ peso, tallaInfo, imc, sc, mantenimiento, deficit, diuresis });
   renderResumen(edad);
 }
 
@@ -226,12 +230,44 @@ function setTextoSiExiste(id, texto) {
   if (elemento) elemento.textContent = texto;
 }
 
+function formatearTallaClinica(tallaInfo) {
+  if (!tallaInfo?.valido) return "Sin talla valida";
+  return `${tallaInfo.valorCm.toFixed(1)} cm (${tallaInfo.valorM.toFixed(2)} m)`;
+}
+
+function obtenerDiagnosticosPaciente() {
+  const p = estado.paciente || {};
+  const lista = Array.isArray(p.diagnosticos) ? p.diagnosticos : Array.isArray(p.historialDiagnosticos) ? p.historialDiagnosticos : [];
+  return lista
+    .map((diag) => {
+      if (typeof diag === "string") return diag;
+      return diag?.texto || [diag?.codigo, diag?.nombre].filter(Boolean).join(" - ");
+    })
+    .filter(Boolean)
+    .slice(0, 4);
+}
+
+function obtenerMedicamentosActivos() {
+  const p = estado.paciente || {};
+  const tratamientos = Array.isArray(p.tratamientos) ? p.tratamientos : Array.isArray(p.tratamiento) ? p.tratamiento : [];
+  return tratamientos
+    .filter((tto) => !tto.estado || String(tto.estado).toLowerCase() === "activo")
+    .map((tto) => tto.medicamento || tto.nombre || tto.texto)
+    .filter(Boolean)
+    .slice(0, 4);
+}
+
 function renderResumen(edad = null) {
+  const tallaInfo = analizarTalla($("tallaCm").value);
+  const imc = calcularIMC($("pesoKg").value, $("tallaCm").value);
+  const sc = superficieCorporal($("pesoKg").value, $("tallaCm").value);
+  const diagnosticos = obtenerDiagnosticosPaciente();
+  const medicamentos = obtenerMedicamentosActivos();
   $("resumenPediatria").innerHTML = `
-    <article><span>Paciente</span><b>${$("nombrePaciente").value || "Modo manual"}</b></article>
-    <article><span>Edad</span><b>${edad?.edadCronologicaTexto || "Sin edad"}</b></article>
-    <article><span>Peso actual</span><b>${$("pesoKg").value || "-"} kg</b></article>
-    <article><span>Alertas</span><b>${$("alergias").value || "Sin alergias registradas"}</b></article>
+    <article class="ped-summary-card"><span>Paciente</span><b>${$("nombrePaciente").value || "Modo manual"}</b><small>${$("sexoPaciente").value || "Sexo sin registro"} · ${formatearFechaDDMMAAAA($("fechaNacimiento").value) || "Sin fecha de nacimiento"}</small></article>
+    <article class="ped-summary-card"><span>Edad exacta</span><b>${edad?.edadCronologicaTexto || "Sin edad"}</b><small>${edad ? `${Math.floor(edad.diasTotales / 30.4375)} meses totales · ${edad.diasTotales} dias` : "Calculada desde fecha de nacimiento"}</small></article>
+    <article class="ped-summary-card"><span>Somatometria</span><b>${$("pesoKg").value || "-"} kg · ${formatearTallaClinica(tallaInfo)}</b><small>IMC ${imc ? imc.toFixed(2) : "-"} kg/m² · SC ${sc ? sc.mosteller.toFixed(2) : "-"} m²</small></article>
+    <article class="ped-summary-card"><span>Alergias y alertas</span><b>${$("alergias").value || "Sin alergias registradas"}</b><small>${diagnosticos.length ? `Dx: ${diagnosticos.join("; ")}` : "Sin diagnosticos cargados"}${medicamentos.length ? ` · Tx: ${medicamentos.join(", ")}` : ""}</small></article>
   `;
 }
 
@@ -239,26 +275,20 @@ function renderSeccion() {
   const filtro = $("busquedaPediatria").value.toLowerCase().trim();
   const secciones = [
     ["resumen", "Accesos rapidos", [
-      card("Edad exacta", "Calcula edad cronologica, dias de vida y edad corregida.", "edad"),
-      card("Antropometria", "IMC y superficie corporal con varias formulas.", "antropometria"),
+      card("Edad exacta", "Calcula edad cronologica, dias de vida y edad corregida.", "crecimiento"),
+      card("Crecimiento", "IMC, superficie corporal, LMS avanzado y trazabilidad de unidades.", "crecimiento"),
       card("Dosis pediatricas", "Calculadora segura por kg con confirmacion de peso.", "medicamentos"),
       card("Liquidos", "Mantenimiento, deficit, diuresis y electrolitos basicos.", "liquidos")
     ]],
-    ["edad", "Edad y etapa", [panelEdad()]],
-    ["antropometria", "Antropometria", [panelAntropometria()]],
-    ["percentiles", "Percentiles LMS", [panelPercentiles()]],
+    ["crecimiento", "Crecimiento y antropometria", [panelEdad(), panelAntropometria(), panelPercentiles()]],
     ["vitales", "Signos vitales", [panelVitales()]],
     ["liquidos", "Liquidos", [panelLiquidos()]],
     ["medicamentos", "Dosis pediatricas", [panelMedicamentos()]],
-    ["graficas", "Graficas pediatricas", [panelGraficas()]],
-    ["neonatos", "Neonatologia", [pendiente("Neonatologia", "Bilirrubina, edad gestacional, peso al nacer, sepsis neonatal y nutricion parenteral se agregaran con tablas oficiales.")]],
-    ["urgencias", "Urgencias", [pendiente("Urgencias pediatricas", "Se dejara listo para PALS/APLS, convulsiones, anafilaxia y choque, con validacion local.")]],
+    ["desarrollo", "Desarrollo y tamizajes", [pendiente("Desarrollo y tamizajes", "Hitos, red flags y tamizajes se integraran con referencias versionadas, sin sustituir valoracion clinica.")]],
     ["nutricion", "Nutricion", [pendiente("Nutricion", "Requerimientos caloricos, proteicos y micronutrientes por edad se cargaran como tablas versionadas.")]],
-    ["desarrollo", "Desarrollo", [pendiente("Desarrollo", "Hitos, tamizajes y red flags se integraran sin sustituir valoracion clinica.")]],
-    ["vacunas", "Vacunas", [pendiente("Vacunas", "Esquema nacional y alertas por edad requieren versionamiento oficial por pais.")]],
-    ["nefro", "Renal", [pendiente("Renal", "eGFR Schwartz, ajuste renal y electrolitos avanzados se agregaran por fase.")]],
-    ["respiratorio", "Respiratorio", [pendiente("Respiratorio", "Oxigenoterapia, crisis asmatica y escalas respiratorias se preparan para fase posterior.")]],
-    ["endocrino", "Endocrino", [pendiente("Endocrino", "Glucosa, insulina, cetoacidosis y crecimiento puberal se agregaran con protocolos.")]],
+    ["vacunacion", "Vacunacion", [pendiente("Vacunacion", "Esquema nacional y alertas por edad requieren versionamiento oficial por pais.")]],
+    ["indicaciones", "Indicaciones y tratamiento", [pendiente("Indicaciones y tratamiento", "Integrara medicamentos activos, alergias, peso usado, calculos y validaciones antes de emitir indicaciones.")]],
+    ["graficas", "Graficas pediatricas", [panelGraficas()]],
     ["fuentes", "Fuentes", [panelFuentes()]]
   ];
   const contenido = secciones
@@ -316,7 +346,26 @@ function panelAntropometria() {
 }
 
 function panelPercentiles() {
-  return `<article class="ped-panel"><h3>Motor LMS para percentiles</h3><p>Ingresa valores L, M y S oficiales si deseas validar un indicador puntual. Cognicion no inventa percentiles.</p><div class="ped-grid-mini"><input id="lmsValor" data-ped-calc placeholder="Valor observado"><input id="lmsL" data-ped-calc placeholder="L"><input id="lmsM" data-ped-calc placeholder="M"><input id="lmsS" data-ped-calc placeholder="S"></div><div class="ped-result" id="percentilResultado"></div></article>`;
+  return `
+    <article class="ped-panel">
+      <h3>Crecimiento y percentiles</h3>
+      <div class="ped-result ped-lms-auto">
+        <b>Percentiles oficiales: no disponibles en esta instalacion.</b>
+        <span>Cognicion no dibuja curvas ni clasifica percentiles sin tablas LMS oficiales por sexo, edad e indicador. Cuando se carguen tablas validadas, este bloque calculara z-score y percentil automaticamente.</span>
+      </div>
+      <details class="ped-advanced">
+        <summary>Motor LMS manual avanzado</summary>
+        <p>Usalo solo si tienes los parametros L, M y S de una fuente oficial para el indicador exacto.</p>
+        <div class="ped-grid-mini">
+          <input id="lmsValor" data-ped-calc placeholder="Valor observado">
+          <input id="lmsL" data-ped-calc placeholder="L">
+          <input id="lmsM" data-ped-calc placeholder="M">
+          <input id="lmsS" data-ped-calc placeholder="S">
+        </div>
+        <div class="ped-result" id="percentilResultado"></div>
+      </details>
+    </article>
+  `;
 }
 
 function panelVitales() {
@@ -356,15 +405,14 @@ function infoMedicamentoPediatrico(medicamento) {
 }
 
 function panelGraficas() {
-  return `<article class="ped-panel ped-panel-graficas"><h3>Graficas clinicas pediatricas</h3><p>Visualizacion rapida de somatometria, superficie corporal y liquidos calculados. No sustituye percentiles oficiales.</p><div id="graficasPediatria" class="ped-charts"></div></article>`;
+  return `<article class="ped-panel ped-panel-graficas"><h3>Graficas y seguimiento</h3><p>Valores calculados y tendencia clinica. Las curvas percentilares se mostraran solo cuando existan tablas oficiales cargadas.</p><div id="graficasPediatria" class="ped-charts"></div></article>`;
 }
 
-function renderGraficasPediatria({ peso, talla, imc, sc, mantenimiento, deficit, diuresis }) {
+function renderGraficasPediatria({ peso, tallaInfo, imc, sc, mantenimiento, deficit, diuresis }) {
   const contenedor = $("graficasPediatria");
   if (!contenedor) return;
 
   const pesoNum = numero(peso);
-  const tallaNum = numero(talla);
   const imcNum = numero(imc);
   const scNum = sc?.mosteller ? numero(sc.mosteller) : null;
   const mantenimientoNum = mantenimiento?.mlDia ? numero(mantenimiento.mlDia) : null;
@@ -372,34 +420,33 @@ function renderGraficasPediatria({ peso, talla, imc, sc, mantenimiento, deficit,
   const diuresisNum = numero(diuresis);
 
   contenedor.innerHTML = `
-    ${graficaBarras("Somatometria", [
-      { etiqueta: "Peso", valor: pesoNum, unidad: "kg", max: Math.max(30, pesoNum || 0) },
-      { etiqueta: "Talla", valor: tallaNum, unidad: "cm", max: Math.max(120, tallaNum || 0) },
-      { etiqueta: "IMC", valor: imcNum, unidad: "kg/m2", max: 35 },
-      { etiqueta: "SC", valor: scNum, unidad: "m2", max: Math.max(2, scNum || 0) }
-    ])}
-    ${graficaBarras("Liquidos", [
-      { etiqueta: "Mant.", valor: mantenimientoNum, unidad: "mL/dia", max: Math.max(1200, mantenimientoNum || 0, deficitNum || 0) },
-      { etiqueta: "Deficit", valor: deficitNum, unidad: "mL", max: Math.max(1200, mantenimientoNum || 0, deficitNum || 0) },
-      { etiqueta: "Diuresis", valor: diuresisNum, unidad: "mL/kg/h", max: 5 }
-    ])}
+    ${tarjetaValoresClinicos("Somatometria calculada", [
+      ["Peso", pesoNum !== null ? `${pesoNum.toFixed(2)} kg` : "-"],
+      ["Talla/longitud", tallaInfo?.valido ? formatearTallaClinica(tallaInfo) : "-"],
+      ["IMC", imcNum !== null ? `${imcNum.toFixed(2)} kg/m²` : "-"],
+      ["SC Mosteller", scNum !== null ? `${scNum.toFixed(2)} m²` : "-"]
+    ], "Sin tablas LMS oficiales, estos valores no se representan como percentiles.")}
+    ${tarjetaValoresClinicos("Liquidos y electrolitos", [
+      ["Mantenimiento", mantenimientoNum !== null ? `${mantenimientoNum.toFixed(0)} mL/dia` : "-"],
+      ["mL/h", mantenimiento?.mlHora ? `${mantenimiento.mlHora.toFixed(1)} mL/h` : "-"],
+      ["Deficit", deficitNum !== null ? `${deficitNum.toFixed(0)} mL` : "-"],
+      ["Diuresis", diuresisNum !== null ? `${diuresisNum.toFixed(2)} mL/kg/h` : "-"]
+    ], "La grafica longitudinal se activara con registros seriados fechados del expediente.")}
+    <div class="ped-chart-card ped-chart-pending">
+      <h4>Curvas de crecimiento</h4>
+      <p>Preparado para curvas OMS/CDC u otra referencia oficial. No se dibujan curvas ficticias ni rangos arbitrarios.</p>
+    </div>
   `;
 }
 
-function graficaBarras(titulo, datos) {
-  const filas = datos.map((item) => {
-    const valor = numero(item.valor);
-    const max = numero(item.max) || 1;
-    const porcentaje = valor ? Math.max(4, Math.min(100, (valor / max) * 100)) : 0;
-    return `
-      <div class="ped-chart-row">
-        <span>${item.etiqueta}</span>
-        <div class="ped-chart-track"><i style="width:${porcentaje}%"></i></div>
-        <b>${valor !== null ? valor.toFixed(valor >= 10 ? 0 : 2) : "-"} ${item.unidad}</b>
-      </div>
-    `;
-  }).join("");
-  return `<div class="ped-chart-card"><h4>${titulo}</h4>${filas}</div>`;
+function tarjetaValoresClinicos(titulo, datos, nota) {
+  const filas = datos.map(([etiqueta, valor]) => `
+    <div class="ped-value-row">
+      <span>${etiqueta}</span>
+      <b>${valor}</b>
+    </div>
+  `).join("");
+  return `<div class="ped-chart-card"><h4>${titulo}</h4>${filas}<p>${nota}</p></div>`;
 }
 
 function panelFuentes() {
@@ -416,7 +463,7 @@ async function copiarResumen() {
     `Fecha nacimiento: ${formatearFechaDDMMAAAA($("fechaNacimiento").value) || "Sin registro"}`,
     `Edad: ${$("edadResultado").querySelector("b")?.textContent || "Sin calcular"}`,
     `Peso: ${$("pesoKg").value || "-"} kg`,
-    `Talla: ${$("tallaCm").value || "-"} cm`,
+    `Talla: ${formatearTallaClinica(analizarTalla($("tallaCm").value))}`,
     `Alergias: ${$("alergias").value || "Sin registro"}`
   ].join("\n");
   await navigator.clipboard.writeText(texto);
