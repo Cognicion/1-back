@@ -967,6 +967,138 @@ body {
   color: var(--ped-text);
 }
 
+.ped-prescription-compact {
+  display: grid;
+  gap: 14px;
+}
+
+.ped-rx-header.compact {
+  align-items: center;
+}
+
+.ped-rx-grid-compact {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 12px;
+}
+
+.ped-rx-grid-compact.three {
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+}
+
+.ped-rx-search-field {
+  grid-column: span 2;
+}
+
+.ped-rx-inline-actions,
+.ped-action-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.ped-check-line {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--ped-muted);
+}
+
+.ped-rx-mini-panel {
+  border: 1px solid rgba(125, 211, 252, 0.2);
+  border-radius: 16px;
+  padding: 14px;
+  background: rgba(14, 165, 233, 0.08);
+}
+
+[data-theme="light"] .ped-rx-mini-panel {
+  background: rgba(224, 242, 254, 0.68);
+}
+
+.ped-panel-title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.ped-panel-title-row h5 {
+  margin: 0;
+}
+
+.ped-panel-title-row button {
+  border: 1px solid var(--ped-line);
+  border-radius: 999px;
+  padding: 6px 10px;
+  color: var(--ped-text);
+  background: rgba(15, 23, 42, 0.3);
+  cursor: pointer;
+}
+
+.ped-search-results.compact {
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  max-height: 380px;
+  overflow: auto;
+  padding-right: 4px;
+}
+
+.ped-load-more {
+  min-height: 48px;
+  justify-content: center;
+  text-align: center;
+}
+
+.ped-rx-med-summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid rgba(125, 211, 252, 0.18);
+  border-radius: 16px;
+  padding: 12px;
+  background: rgba(2, 6, 23, 0.22);
+}
+
+[data-theme="light"] .ped-rx-med-summary {
+  background: rgba(255, 255, 255, 0.74);
+}
+
+.ped-rx-med-summary b,
+.ped-rx-med-summary span {
+  display: block;
+}
+
+.ped-med-status {
+  flex: 0 0 auto;
+  border-radius: 999px;
+  border: 1px solid rgba(125, 211, 252, 0.24);
+  padding: 7px 10px;
+  font-size: 0.74rem;
+  font-weight: 900;
+  color: var(--ped-accent);
+  background: rgba(14, 165, 233, 0.1);
+}
+
+.ped-med-status.missing {
+  color: #fbbf24;
+  background: rgba(251, 191, 36, 0.12);
+}
+
+.ped-med-status.ok {
+  color: #34d399;
+  background: rgba(16, 185, 129, 0.12);
+}
+
+.ped-rx-summary.compact {
+  margin: 0;
+}
+
+.ped-rx-preview.compact {
+  margin: 0;
+}
+
 .ped-rx-alerts {
   display: grid;
   gap: 8px;
@@ -1006,6 +1138,10 @@ body {
   .ped-tool-form,
   .ped-rx-steps {
     grid-template-columns: 1fr;
+  }
+
+  .ped-rx-search-field {
+    grid-column: span 1;
   }
 
   .ped-grid-mini {

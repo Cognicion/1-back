@@ -1,4 +1,5 @@
 import { CATALOGO_MEDICAMENTOS_PEDIATRICOS } from "./catalogoMedicamentosPediatricos.js";
+import { MEDICAMENTOS_MAESTROS, normalizarNombreMedicamento, textoMedicamentoParaBusqueda } from "../data/medicamentos.js";
 import { numero, superficieCorporal } from "./formulas.js";
 
 export const MODOS_DOSIFICACION_PEDIATRICA = [
@@ -18,23 +19,128 @@ const EQUIVALENCIAS_INTERVALO = {
   4: 6
 };
 
-export function searchPediatricMedication(query, catalog = CATALOGO_MEDICAMENTOS_PEDIATRICOS) {
-  const q = normalizar(query);
-  if (!q) return catalog;
-  return catalog.filter((med) => {
-    const texto = [
-      med.genericName,
-      med.drugClass,
-      med.mechanism,
-      ...(med.synonyms || []),
-      ...(med.indications || []).map((ind) => ind.name),
-      ...(med.presentations || []).flatMap((presentation) => presentation.brands || [])
-    ].flat().join(" ");
-    return normalizar(texto).includes(q);
+export function normalizeSearchText(value = "") {
+  return normalizarNombreMedicamento(value).replace(/[^a-z0-9]+/g, " ").trim();
+}
+
+function crearIdMedicamento(nombre = "") {
+  return normalizeSearchText(nombre).replace(/\s+/g, "_") || `med_${Date.now()}`;
+}
+
+function normalizarPresentacionesMaestras(medicamento) {
+  const presentaciones = Array.isArray(medicamento.presentaciones) ? medicamento.presentaciones : [];
+  return presentaciones.map((presentacion, index) => {
+    const texto = typeof presentacion === "string" ? presentacion : presentacion?.texto || "";
+    return {
+      presentationId: `${crearIdMedicamento(medicamento.nombre || medicamento.genericName)}_${index}`,
+      form: inferForm(texto),
+      unitStrength: texto || "Presentación no especificada",
+      amountMg: extraerMg(texto),
+      volumeMl: extraerMl(texto),
+      concentrationMgPerMl: extraerConcentracionMgMl(texto),
+      routes: [presentacion?.via || "oral"].filter(Boolean),
+      brands: medicamento.brandNames || [],
+      active: true,
+      source: "Catálogo maestro de COGNICIÓN"
+    };
   });
 }
 
-export function loadMedicationInformation(medicationId, catalog = CATALOGO_MEDICAMENTOS_PEDIATRICOS) {
+function normalizarMedicamentoMaestro(medicamento) {
+  const nombre = medicamento.genericName || medicamento.nombre || "";
+  const medicationId = crearIdMedicamento(nombre);
+  return {
+    medicationId,
+    genericName: nombre,
+    synonyms: medicamento.synonyms || [],
+    drugClass: medicamento.clase || medicamento.therapeuticClasses?.[0] || "",
+    mechanism: medicamento.notas || "",
+    routes: ["oral"],
+    indications: [],
+    presentations: normalizarPresentacionesMaestras(medicamento),
+    contraindications: medicamento.contraindications || medicamento.contraindicaciones || [],
+    precautions: medicamento.precautions || medicamento.precauciones || [],
+    interactions: medicamento.interactions || medicamento.interacciones || [],
+    adverseEffects: medicamento.adverseEffects || [],
+    sources: ["Catálogo maestro de COGNICIÓN"],
+    pediatricStatus: "missing",
+    masterMedication: medicamento
+  };
+}
+
+function unirCatalogoPediatricoYMaestro() {
+  const indice = new Map();
+  CATALOGO_MEDICAMENTOS_PEDIATRICOS.forEach((medicamento) => {
+    indice.set(normalizeSearchText(medicamento.genericName), {
+      ...medicamento,
+      pediatricStatus: medicamento.indications?.some((ind) => ind.dosingSchemes?.length) ? "validated" : "partial"
+    });
+  });
+  MEDICAMENTOS_MAESTROS.forEach((medicamento) => {
+    const normalizado = normalizeSearchText(medicamento.genericName || medicamento.nombre);
+    const claveCompatible = Array.from(indice.keys()).find((key) => key === normalizado || key.includes(normalizado) || normalizado.includes(key));
+    const maestro = normalizarMedicamentoMaestro(medicamento);
+    if (claveCompatible) {
+      const existente = indice.get(claveCompatible);
+      indice.set(claveCompatible, {
+        ...existente,
+        presentations: [...(existente.presentations || []), ...(maestro.presentations || [])],
+        synonyms: Array.from(new Set([...(existente.synonyms || []), ...(maestro.synonyms || []), medicamento.nombre, medicamento.genericName].filter(Boolean))),
+        contraindications: Array.from(new Set([...(existente.contraindications || []), ...(maestro.contraindications || [])])),
+        interactions: Array.from(new Set([...(existente.interactions || []), ...(maestro.interactions || [])])),
+        masterMedication: medicamento
+      });
+    } else {
+      indice.set(normalizado, maestro);
+    }
+  });
+  return Array.from(indice.values()).sort((a, b) => a.genericName.localeCompare(b.genericName, "es"));
+}
+
+export const CATALOGO_FARMACOLOGICO_PEDIATRIA = unirCatalogoPediatricoYMaestro();
+
+export function estadoPediatricoMedicamento(medicamento) {
+  if (medicamento?.pediatricStatus === "validated") return "Dosis pediátrica validada";
+  if (medicamento?.pediatricStatus === "partial") return "Información pediátrica parcial";
+  return "Sin dosis pediátrica cargada";
+}
+
+export function searchPediatricMedication(query, catalog = CATALOGO_FARMACOLOGICO_PEDIATRIA) {
+  const q = normalizeSearchText(query);
+  if (!q) return catalog;
+  return catalog
+    .map((med) => {
+      const nombre = normalizeSearchText(med.genericName);
+      const marcas = normalizeSearchText((med.presentations || []).flatMap((presentation) => presentation.brands || []).join(" "));
+      const sinonimos = normalizeSearchText((med.synonyms || []).join(" "));
+      let score = 0;
+      if (nombre === q) score += 120;
+      else if (nombre.startsWith(q)) score += 90;
+      else if (nombre.includes(q)) score += 70;
+      if (marcas.split(" ").some((brand) => brand === q)) score += 80;
+      else if (marcas.includes(q)) score += 55;
+      if (sinonimos.includes(q)) score += 45;
+      if (normalizeSearchText(med.drugClass).includes(q)) score += 28;
+      const texto = [
+        med.genericName,
+        med.drugClass,
+        med.mechanism,
+      estadoPediatricoMedicamento(med),
+      med.masterMedication ? textoMedicamentoParaBusqueda(med.masterMedication) : "",
+      ...(med.synonyms || []),
+        ...(med.indications || []).map((ind) => ind.name),
+        ...(med.presentations || []).flatMap((presentation) => presentation.brands || [])
+      ].flat().join(" ");
+      if (normalizeSearchText(texto).includes(q)) score += 12;
+      if (score > 0 && estadoPediatricoMedicamento(med).includes("validada")) score += 4;
+      return { med, score };
+    })
+    .filter((item) => item.score > 0)
+    .sort((a, b) => b.score - a.score || a.med.genericName.localeCompare(b.med.genericName, "es"))
+    .map((item) => item.med);
+}
+
+export function loadMedicationInformation(medicationId, catalog = CATALOGO_FARMACOLOGICO_PEDIATRIA) {
   return catalog.find((med) => med.medicationId === medicationId) || null;
 }
 
@@ -244,7 +350,9 @@ export function formatPediatricPrescription(prescription) {
   const marca = prescription.brandName && prescription.brandName !== "Genérico" ? ` Marca: ${prescription.brandName}.` : "";
   const horarios = prescription.customSchedule?.length ? ` Horarios: ${prescription.customSchedule.join(", ")}.` : "";
   const prn = prescription.isPrn ? ` PRN: ${prescription.prnReason || "según necesidad"}.` : "";
-  return `${prescription.genericName}, ${prescription.presentationLabel || "presentación seleccionada"}.${marca} Administrar ${unitsText} (${formatNumber(prescription.finalDoseMg)} mg) vía ${prescription.route || "oral"}, ${frecuenciaTexto(prescription)}.${horarios}${prn}`;
+  const unidadDuracion = prescription.durationUnit === "dias" ? "días" : (prescription.durationUnit || "días");
+  const duracion = prescription.duration ? ` durante ${prescription.duration} ${unidadDuracion}` : "";
+  return `${prescription.genericName}, ${prescription.presentationLabel || "presentación seleccionada"}.${marca} Administrar ${unitsText} (${formatNumber(prescription.finalDoseMg)} mg) vía ${prescription.route || "oral"}, ${frecuenciaTexto(prescription)}${duracion}.${horarios}${prn}`;
 }
 
 export function buildPediatricPrescription(input) {
@@ -285,7 +393,7 @@ export function buildPediatricPrescription(input) {
     medicationId: med?.medicationId || "",
     genericName: med?.genericName || "",
     brandName,
-    indication: indication?.name || "",
+    indication: indication?.name || input.indication || "Indicación no especificada",
     indicationId: indication?.indicationId || "",
     dosingMode: mode,
     weightKg: numero(input.weightKg),
@@ -372,6 +480,22 @@ function inferForm(text) {
   if (text.includes("sol")) return "solución";
   if (text.includes("amp")) return "ampolla";
   return "líquido";
+}
+
+function extraerMg(text = "") {
+  const match = String(text).replace(",", ".").match(/([\d.]+)\s*mg/i);
+  return match ? Number(match[1]) : null;
+}
+
+function extraerMl(text = "") {
+  const match = String(text).replace(",", ".").match(/\/\s*([\d.]+)\s*m?l/i);
+  return match ? Number(match[1]) : null;
+}
+
+function extraerConcentracionMgMl(text = "") {
+  const mg = extraerMg(text);
+  const ml = extraerMl(text);
+  return mg && ml ? mg / ml : null;
 }
 
 function normalizarForma(value) {
