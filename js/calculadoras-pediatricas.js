@@ -161,13 +161,16 @@ function etiquetaCampo(campo) {
     .replace(/^./, (letra) => letra.toUpperCase())
     .replace("Ml", "mL")
     .replace("Kg", "kg")
-    .replace("Dia", "dia")
+    .replace("Dia", "día")
     .replace("Hora", "hora");
 }
 
 function formatearValor(valor) {
   if (valor === null || valor === undefined || Number.isNaN(valor)) return "Sin calcular";
   if (typeof valor === "number") return String(redondear(valor, Math.abs(valor) >= 100 ? 1 : 2));
+  if (Array.isArray(valor)) {
+    return valor.map((item) => formatearValor(item)).join(" · ");
+  }
   if (typeof valor === "object") return Object.entries(valor)
     .map(([clave, item]) => `${etiquetaCampo(clave)}: ${formatearValor(item)}`)
     .join(" | ");
@@ -187,7 +190,8 @@ function renderResultados(resultado) {
         </div>
       `)
       .join("")
-  }</div>`;
+  }</div>
+  <p class="calc-ped-note">Los resultados son apoyo de cálculo. Verifica unidades, peso actual y contexto clínico antes de usarlos.</p>`;
 }
 
 function renderGraficaPercentil(resultado) {
@@ -267,7 +271,8 @@ function actualizarResultado() {
       </div>
       <div class="calc-ped-panel">
         <h3>Interpretacion clinica</h3>
-        <p class="calc-ped-interpretacion">${interpretacion}</p>
+      <p class="calc-ped-interpretacion">${interpretacion}</p>
+      ${calc.id === "percentil_lms" ? `<p class="calc-ped-note">Esta herramienta no contiene tablas LMS internas. Solo calcula con parámetros oficiales ingresados manualmente.</p>` : ""}
       </div>
     </div>
     ${calc.grafica === "percentil" ? renderGraficaPercentil(resultado) : ""}

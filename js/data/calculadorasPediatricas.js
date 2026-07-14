@@ -1,3 +1,10 @@
+import {
+  analizarTalla as analizarTallaClinica,
+  calcularIMC as calcularIMCClinico,
+  mantenimientoHollidaySegarDetalle,
+  superficieCorporal as superficieCorporalClinica
+} from "../pediatria/formulas.js";
+
 export const CATEGORIAS_CALCULADORAS_PEDIATRICAS = [
   { id: "crecimiento", nombre: "Crecimiento y nutricion" },
   { id: "liquidos", nombre: "Liquidos y electrolitos" },
@@ -23,15 +30,8 @@ export function redondear(valor, decimales = 2) {
 }
 
 export function normalizarTallaCm(valor) {
-  if (valor === null || valor === undefined || valor === "") return null;
-  const texto = String(valor).trim().toLowerCase();
-  const talla = numero(texto);
-  if (!talla || talla <= 0) return null;
-  const tieneCm = /\bcm\b|cent/i.test(texto);
-  const tieneM = /\bm\b|metro/i.test(texto) && !tieneCm;
-  if (tieneCm && talla < 30) return null;
-  if (tieneM) return talla * 100;
-  return talla <= 3 ? talla * 100 : talla;
+  const analisis = analizarTallaClinica(valor);
+  return analisis.valido ? analisis.valorCm : null;
 }
 
 function clamp(valor, min, max) {
@@ -69,36 +69,24 @@ export function zDesdeLMS(valor, l, m, s) {
 }
 
 function imc({ peso, tallaCm }) {
-  const p = numero(peso);
-  const t = normalizarTallaCm(tallaCm);
-  if (!p || !t) return null;
-  const m = t / 100;
-  return p / (m * m);
+  return calcularIMCClinico(peso, tallaCm);
 }
 
 function superficieCorporal({ peso, tallaCm }) {
-  const p = numero(peso);
-  const t = normalizarTallaCm(tallaCm);
-  if (!p || !t) return null;
-  return Math.sqrt((p * t) / 3600);
+  const superficie = superficieCorporalClinica(peso, tallaCm);
+  if (!superficie) return null;
+  return {
+    mosteller: superficie.mosteller,
+    haycock: superficie.haycock
+  };
 }
 
 function hollidaySegar({ peso }) {
-  const p = numero(peso);
-  if (!p) return null;
-  let mlDia = 0;
-  if (p <= 10) mlDia = p * 100;
-  else if (p <= 20) mlDia = 1000 + (p - 10) * 50;
-  else mlDia = 1500 + (p - 20) * 20;
-  return { mlDia, mlHora: mlDia / 24 };
+  return mantenimientoHollidaySegarDetalle(peso);
 }
 
 function regla421({ peso }) {
-  const p = numero(peso);
-  if (!p) return null;
-  if (p <= 10) return p * 4;
-  if (p <= 20) return 40 + (p - 10) * 2;
-  return 60 + (p - 20);
+  return mantenimientoHollidaySegarDetalle(peso)?.regla421 ?? null;
 }
 
 function deficitLiquidos({ peso, deshidratacion }) {
@@ -255,33 +243,32 @@ export const CALCULADORAS_PEDIATRICAS = [
   {
     id: "imc_pediatrico",
     categoria: "crecimiento",
-    nombre: "IMC pediatrico",
-    descripcion: "Calcula IMC a partir de peso y talla. La interpretacion pediatrica requiere edad, sexo y percentiles oficiales.",
+    nombre: "IMC pediátrico",
+    descripcion: "Calcula IMC a partir de peso y talla normalizada. La interpretación pediátrica requiere edad, sexo y tablas oficiales.",
     inputs: [
       { id: "peso", label: "Peso", unidad: "kg" },
-      { id: "tallaCm", label: "Talla", unidad: "cm" }
+      { id: "tallaCm", label: "Talla", unidad: "cm o m", ayuda: "Puedes escribir 150, 150 cm o 1.50 m. Si escribes 1.50 sin unidad se interpreta como 1.50 m." }
     ],
     calcular: (v) => ({ imc: imc(v) }),
-    interpretar: (r) => r?.imc ? `IMC ${redondear(r.imc, 2)} kg/m2. Interpretar con tablas por edad y sexo.` : "Completa peso y talla."
+    interpretar: (r) => r?.imc ? `IMC ${redondear(r.imc, 2)} kg/m². Interpretar con tablas oficiales por edad y sexo.` : "Completa peso y talla."
   },
   {
     id: "superficie_corporal",
     categoria: "crecimiento",
-    nombre: "Superficie corporal Mosteller",
-    descripcion: "Apoyo para dosificacion por m2 y evaluacion nutricional.",
+    nombre: "Superficie corporal",
+    descripcion: "Calcula superficie corporal por Mosteller y Haycock usando talla normalizada a centímetros.",
     inputs: [
       { id: "peso", label: "Peso", unidad: "kg" },
-      { id: "tallaCm", label: "Talla", unidad: "cm" }
+      { id: "tallaCm", label: "Talla", unidad: "cm o m", ayuda: "1.50 se interpreta como metros; 150 como centímetros." }
     ],
     calcular: (v) => ({ sc: superficieCorporal(v) }),
-    interpretar: (r) => r?.sc ? `SC ${redondear(r.sc, 2)} m2.` : "Completa peso y talla."
+    interpretar: (r) => r?.sc ? `Mosteller ${redondear(r.sc.mosteller, 2)} m²; Haycock ${redondear(r.sc.haycock, 2)} m².` : "Completa peso y talla."
   },
   {
     id: "percentil_lms",
     categoria: "crecimiento",
-    nombre: "Percentil y z-score LMS",
-    descripcion: "Calcula z-score y percentil con parametros L, M y S oficiales del indicador elegido.",
-    grafica: "percentil",
+    nombre: "LMS manual avanzado",
+    descripcion: "Calcula z-score y percentil solo si cuentas con parámetros L, M y S oficiales del indicador exacto.",
     inputs: [
       { id: "valor", label: "Valor observado" },
       { id: "l", label: "L" },
@@ -289,7 +276,7 @@ export const CALCULADORAS_PEDIATRICAS = [
       { id: "s", label: "S" }
     ],
     calcular: lmsCalculator,
-    interpretar: (r) => r ? `Z ${redondear(r.z, 2)}. Percentil aproximado ${redondear(r.percentil, 1)}.` : "Ingresa valor y parametros LMS oficiales."
+    interpretar: (r) => r ? `Z ${redondear(r.z, 2)}. Percentil ${redondear(r.percentil, 1)} calculado con los parámetros LMS proporcionados.` : "Ingresa valor y parámetros LMS oficiales."
   },
   {
     id: "peso_ideal_imc",
@@ -329,11 +316,11 @@ export const CALCULADORAS_PEDIATRICAS = [
   {
     id: "holliday_segar",
     categoria: "liquidos",
-    nombre: "Liquidos de mantenimiento Holliday-Segar",
-    descripcion: "Calcula mantenimiento diario y horario por peso.",
+    nombre: "Líquidos de mantenimiento Holliday-Segar",
+    descripcion: "Calcula mantenimiento diario y horario por peso, mostrando los tramos de la fórmula.",
     inputs: [{ id: "peso", label: "Peso", unidad: "kg" }],
     calcular: (v) => hollidaySegar(v),
-    interpretar: (r) => r ? `${redondear(r.mlDia, 0)} mL/dia; ${redondear(r.mlHora, 1)} mL/h.` : "Ingresa peso."
+    interpretar: (r) => r ? `${redondear(r.mlDia, 0)} mL/día; ${redondear(r.mlHora, 1)} mL/h. Fórmula: ${r.formulaTexto}.` : "Ingresa peso."
   },
   {
     id: "regla_421",

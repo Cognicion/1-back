@@ -168,7 +168,7 @@ function calcularTodo() {
   });
   const edadHtml = edad ? `
     <b>${edad.edadCronologicaTexto}</b>
-    <span>${edad.diasTotales} dias de vida | ${edad.semanasTotales.toFixed(1)} semanas | ${edad.anosDecimales.toFixed(2)} anos</span>
+    <span>${edad.diasTotales} días de vida | ${edad.semanasTotales.toFixed(1)} semanas | ${edad.anosDecimales.toFixed(2)} años</span>
     <span>Meses totales aproximados: ${Math.floor(edad.diasTotales / 30.4375)}.</span>
     ${edad.edadCorregidaSemanas !== null ? `<span>Edad corregida: ${edad.edadCorregidaSemanas.toFixed(1)} semanas. Edad postmenstrual: ${edad.edadPostmenstrualSemanas.toFixed(1)} semanas.</span>` : ""}
   ` : "Registra fecha de nacimiento.";
@@ -187,9 +187,9 @@ function calcularTodo() {
   `);
 
   setHtmlSiExiste("liquidosResultado", mantenimiento ? `
-    <b>Mantenimiento Holliday-Segar: ${mantenimiento.mlDia.toFixed(0)} mL/dia</b>
+    <b>Mantenimiento Holliday-Segar: ${mantenimiento.mlDia.toFixed(0)} mL/día</b>
     <span>${mantenimiento.mlHora.toFixed(1)} mL/h | regla 4-2-1: ${mantenimiento.regla421.toFixed(1)} mL/h</span>
-    <span>Peso usado: ${mantenimiento.pesoKg.toFixed(2)} kg. Formula: ${mantenimiento.formulaTexto} = ${mantenimiento.mlDia.toFixed(0)} mL/dia.</span>
+    <span>Peso usado: ${mantenimiento.pesoKg.toFixed(2)} kg. Fórmula: ${mantenimiento.formulaTexto} = ${mantenimiento.mlDia.toFixed(0)} mL/día.</span>
     <div class="ped-formula-list">${mantenimiento.tramos.map((tramo) => `<span>${tramo.etiqueta}: ${tramo.pesoKg.toFixed(tramo.pesoKg % 1 ? 1 : 0)} kg × ${tramo.factor} = ${tramo.subtotal.toFixed(0)} mL</span>`).join("")}</div>
     <span>Deficit estimado: ${deficit ? deficit.toFixed(0) : "-"} mL. Diuresis: ${diuresis ? diuresis.toFixed(2) : "-"} mL/kg/h.</span>
     <span>Na corregido: ${sodio ? sodio.toFixed(1) : "-"} mEq/L | Anion gap: ${gap ? gap.toFixed(1) : "-"}</span>
@@ -203,6 +203,7 @@ function calcularTodo() {
     <b>${dosis.medicamento.nombre}: ${dosis.mgDosis.toFixed(2)} mg por dosis</b>
     <span>${dosis.frecuenciaDia} dosis/dia | total diario ${dosis.mgDia.toFixed(2)} mg/dia.</span>
     <span>${dosis.volumenMlDosis ? `Volumen: ${dosis.volumenMlDosis.toFixed(2)} mL por dosis.` : "Agrega concentracion mg/mL para volumen."}</span>
+    ${dosis.advertencias?.map((mensaje) => `<span class="ped-alerta">${mensaje}</span>`).join("") || ""}
     ${infoMedicamentoPediatrico(dosis.medicamento)}
   `);
 
@@ -265,9 +266,9 @@ function renderResumen(edad = null) {
   const medicamentos = obtenerMedicamentosActivos();
   $("resumenPediatria").innerHTML = `
     <article class="ped-summary-card"><span>Paciente</span><b>${$("nombrePaciente").value || "Modo manual"}</b><small>${$("sexoPaciente").value || "Sexo sin registro"} · ${formatearFechaDDMMAAAA($("fechaNacimiento").value) || "Sin fecha de nacimiento"}</small></article>
-    <article class="ped-summary-card"><span>Edad exacta</span><b>${edad?.edadCronologicaTexto || "Sin edad"}</b><small>${edad ? `${Math.floor(edad.diasTotales / 30.4375)} meses totales · ${edad.diasTotales} dias` : "Calculada desde fecha de nacimiento"}</small></article>
-    <article class="ped-summary-card"><span>Somatometria</span><b>${$("pesoKg").value || "-"} kg · ${formatearTallaClinica(tallaInfo)}</b><small>IMC ${imc ? imc.toFixed(2) : "-"} kg/m² · SC ${sc ? sc.mosteller.toFixed(2) : "-"} m²</small></article>
-    <article class="ped-summary-card"><span>Alergias y alertas</span><b>${$("alergias").value || "Sin alergias registradas"}</b><small>${diagnosticos.length ? `Dx: ${diagnosticos.join("; ")}` : "Sin diagnosticos cargados"}${medicamentos.length ? ` · Tx: ${medicamentos.join(", ")}` : ""}</small></article>
+    <article class="ped-summary-card"><span>Edad exacta</span><b>${edad?.edadCronologicaTexto || "Sin edad"}</b><small>${edad ? `${Math.floor(edad.diasTotales / 30.4375)} meses totales · ${edad.diasTotales} días` : "Calculada desde fecha de nacimiento"}</small></article>
+    <article class="ped-summary-card"><span>Somatometría</span><b>${$("pesoKg").value || "-"} kg · ${formatearTallaClinica(tallaInfo)}</b><small>IMC ${imc ? imc.toFixed(2) : "-"} kg/m² · SC ${sc ? sc.mosteller.toFixed(2) : "-"} m²</small></article>
+    <article class="ped-summary-card"><span>Alergias y alertas</span><b>${$("alergias").value || "Sin alergias registradas"}</b><small>${diagnosticos.length ? `Dx: ${diagnosticos.join("; ")}` : "Sin diagnósticos cargados"}${medicamentos.length ? ` · Tx: ${medicamentos.join(", ")}` : ""}</small></article>
   `;
 }
 
@@ -275,7 +276,7 @@ function renderSeccion() {
   const filtro = $("busquedaPediatria").value.toLowerCase().trim();
   const secciones = [
     ["resumen", "Accesos rapidos", [
-      card("Edad exacta", "Calcula edad cronologica, dias de vida y edad corregida.", "crecimiento"),
+      card("Edad exacta", "Calcula edad cronologica, días de vida y edad corregida.", "crecimiento"),
       card("Crecimiento", "IMC, superficie corporal, LMS avanzado y trazabilidad de unidades.", "crecimiento"),
       card("Dosis pediatricas", "Calculadora segura por kg con confirmacion de peso.", "medicamentos"),
       card("Liquidos", "Mantenimiento, deficit, diuresis y electrolitos basicos.", "liquidos")
@@ -420,14 +421,14 @@ function renderGraficasPediatria({ peso, tallaInfo, imc, sc, mantenimiento, defi
   const diuresisNum = numero(diuresis);
 
   contenedor.innerHTML = `
-    ${tarjetaValoresClinicos("Somatometria calculada", [
+    ${tarjetaValoresClinicos("Somatometría calculada", [
       ["Peso", pesoNum !== null ? `${pesoNum.toFixed(2)} kg` : "-"],
       ["Talla/longitud", tallaInfo?.valido ? formatearTallaClinica(tallaInfo) : "-"],
       ["IMC", imcNum !== null ? `${imcNum.toFixed(2)} kg/m²` : "-"],
       ["SC Mosteller", scNum !== null ? `${scNum.toFixed(2)} m²` : "-"]
     ], "Sin tablas LMS oficiales, estos valores no se representan como percentiles.")}
     ${tarjetaValoresClinicos("Liquidos y electrolitos", [
-      ["Mantenimiento", mantenimientoNum !== null ? `${mantenimientoNum.toFixed(0)} mL/dia` : "-"],
+      ["Mantenimiento", mantenimientoNum !== null ? `${mantenimientoNum.toFixed(0)} mL/día` : "-"],
       ["mL/h", mantenimiento?.mlHora ? `${mantenimiento.mlHora.toFixed(1)} mL/h` : "-"],
       ["Deficit", deficitNum !== null ? `${deficitNum.toFixed(0)} mL` : "-"],
       ["Diuresis", diuresisNum !== null ? `${diuresisNum.toFixed(2)} mL/kg/h` : "-"]
@@ -475,3 +476,4 @@ function registrarHistorial(texto) {
   estado.historial = estado.historial.slice(0, 10);
   localStorage.setItem("cognicionPediatriaHistorial", JSON.stringify(estado.historial));
 }
+

@@ -15,6 +15,7 @@ const edad = calcularEdadPediatrica("2020-01-15", "2026-07-13");
 assert.equal(edad.anos, 6);
 assert.equal(edad.meses, 5);
 assert.equal(edad.dias, 28);
+assert.equal(calcularEdadPediatrica("2030-01-01", "2026-07-13"), null);
 
 assert.equal(mantenimientoHollidaySegar(25).mlDia, 1600);
 assert.equal(mantenimientoHollidaySegar(40).mlDia, 1900);
@@ -61,6 +62,14 @@ const dosis40 = calcularDosisMedicamento({
 assert.equal(Math.round(dosis40.mgDosis), 600);
 assert.ok(Math.abs(dosis40.volumenMlDosis - 18.75) < 0.01);
 
+const dosisSinConcentracion = calcularDosisMedicamento({
+  medicamentoId: "paracetamol",
+  pesoKg: 40,
+  pesoConfirmado: true
+});
+assert.equal(Math.round(dosisSinConcentracion.mgDosis), 600);
+assert.equal(dosisSinConcentracion.volumenMlDosis, null);
+
 const bloqueada = calcularDosisMedicamento({
   medicamentoId: "paracetamol",
   pesoKg: 20,
@@ -74,5 +83,13 @@ const pesoInvalido = calcularDosisMedicamento({
   pesoConfirmado: true
 });
 assert.ok(pesoInvalido.error.includes("peso"));
+
+const dosisLimitada = calcularDosisMedicamento({
+  medicamentoId: "paracetamol",
+  pesoKg: 80,
+  pesoConfirmado: true
+});
+assert.ok(dosisLimitada.mgDia <= 4000);
+assert.ok(dosisLimitada.advertencias.length > 0);
 
 console.log("pediatria tests ok");

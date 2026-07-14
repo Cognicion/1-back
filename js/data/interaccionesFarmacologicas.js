@@ -1,3 +1,8 @@
+import {
+  evaluarMedicamentosPaciente,
+  obtenerIndicadorSeguridadMedicamento
+} from "../services/motorClinicoMedicamentos.js";
+
 const CATEGORIAS_MEDICAMENTOS = [
   { id: "isrs", nombre: "ISRS", patrones: ["sertralina", "fluoxetina", "paroxetina", "escitalopram", "citalopram", "fluvoxamina"] },
   { id: "irsn", nombre: "IRSN", patrones: ["venlafaxina", "desvenlafaxina", "duloxetina", "milnacipran"] },
@@ -184,4 +189,12 @@ export function detectarInteraccionesFarmacologicas(medicamentos = []) {
   }
 
   return detectadas;
+}
+
+export function detectarAlertasClinicasMedicamentos(medicamentos = [], paciente = {}) {
+  const evaluacion = evaluarMedicamentosPaciente({ paciente, medicamentos });
+  return {
+    ...evaluacion,
+    indicador: obtenerIndicadorSeguridadMedicamento(evaluacion.alertas)
+  };
 }

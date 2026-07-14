@@ -348,11 +348,22 @@ export function calcularDosisMedicamento({ medicamentoId, opcionIndice = 0, peso
   if (!pesoConfirmado) return { error: "Confirma que el peso usado es actual antes de calcular dosis." };
 
   const opcion = medicamento.opciones[Number(opcionIndice)] || medicamento.opciones[0];
+  const advertencias = [];
   let mgDosis = opcion.mgKgDosis ? opcion.mgKgDosis * peso : (opcion.mgKgDia * peso) / (opcion.frecuenciaDia || 1);
   let mgDia = mgDosis * (opcion.frecuenciaDia || 1);
 
-  if (opcion.maxMgKgDia) mgDia = Math.min(mgDia, opcion.maxMgKgDia * peso);
-  if (opcion.maxMgDia) mgDia = Math.min(mgDia, opcion.maxMgDia);
+  const mgDiaCalculado = mgDia;
+  if (opcion.maxMgKgDia) {
+    const maximoPorPeso = opcion.maxMgKgDia * peso;
+    if (mgDia > maximoPorPeso) {
+      advertencias.push(`Se aplicó máximo por peso: ${maximoPorPeso.toFixed(2)} mg/día.`);
+      mgDia = maximoPorPeso;
+    }
+  }
+  if (opcion.maxMgDia && mgDia > opcion.maxMgDia) {
+    advertencias.push(`Se aplicó máximo diario absoluto: ${opcion.maxMgDia} mg/día.`);
+    mgDia = opcion.maxMgDia;
+  }
   if (opcion.mgKgDia || opcion.maxMgKgDia || opcion.maxMgDia) {
     mgDosis = mgDia / (opcion.frecuenciaDia || 1);
   }
@@ -363,6 +374,8 @@ export function calcularDosisMedicamento({ medicamentoId, opcionIndice = 0, peso
     opcion,
     mgDosis,
     mgDia,
+    mgDiaCalculado,
+    advertencias,
     volumenMlDosis: concentracion ? mgDosis / concentracion : null,
     frecuenciaDia: opcion.frecuenciaDia || 1
   };

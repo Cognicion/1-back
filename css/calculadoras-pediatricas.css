@@ -395,6 +395,13 @@ body {
   line-height: 1.7;
 }
 
+.calc-ped-note {
+  margin: 12px 0 0;
+  color: var(--calc-muted);
+  font-size: .86rem;
+  line-height: 1.55;
+}
+
 .calc-ped-copy {
   min-height: 42px;
   margin-top: 14px;
