@@ -1,4 +1,5 @@
 import { MEDICAMENTOS_SUPLEMENTARIOS } from "./medicamentosSuplementarios.js";
+import { enriquecerMedicamentoClinico } from "./vinculosClinicos.js";
 
 export const MEDICAMENTOS = [
   {
