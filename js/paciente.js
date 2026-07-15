@@ -1614,7 +1614,7 @@ function renderizarResultadosBusquedaDiagnosticos() {
 
 function opcionesEstadoDiagnostico(estadoActual = "") {
   return ESTADOS_DIAGNOSTICO.map((estado) => `
-    <option value="${escaparHTML(estado)}" ${estado === estadoActual ? "selected" : ""}>${escaparHTML(estado || "Sin especificar")}</option>
+    <option value="${escaparHTML(estado)}" ${estado === estadoActual ? "selected" : ""}>${escaparHTML(estado || "No mostrar estado")}</option>
   `).join("");
 }
 

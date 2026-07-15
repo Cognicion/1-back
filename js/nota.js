@@ -659,7 +659,7 @@ function renderizarEscalaNotaSeleccionada() {
       return `
         <div class="item-escala-nota">
           <label>${index + 1}. ${escaparHTML(textoItemEscala(item))}
-            <input data-item-escala-nota="${index}" type="number" min="${item.min !== undefined ? 0 : ""}" max="${item.max !== undefined ? item.max : ""}" step="${item.step || 1}" placeholder="${item.min !== undefined || item.max !== undefined ? `${item.min !== undefined ? 0 : ""}-${item.max !== undefined ? item.max : ""}` : ""}">
+            <input data-item-escala-nota="${index}" type="number" min="${item.min ? 0}" max="${item.max ? ""}" step="${item.step || 1}" placeholder="${item.min ? 0}-${item.max ? ""}">
           </label>
           <small>${escaparHTML(item.dominio || "")}${item.max !== undefined ? ` - Máximo ${escaparHTML(item.max)}` : ""}${item.ayuda ? ` - ${escaparHTML(item.ayuda)}` : ""}</small>
         </div>
@@ -798,7 +798,7 @@ async function guardarEscalaDesdeNota() {
     origen: "nota_clinica",
     modoAplicacion: esInteractiva ? "aplicacion_interactiva" : "captura_resultado_previo",
     puntajeTotal: puntaje,
-    puntajeMaximo: escala.puntajeMaximo ? escala.puntajeMaximo : "",
+    puntajeMaximo: escala.puntajeMaximo ? "",
     dominiosEvaluados: escala.dominiosEvaluados || [],
     puntajesPorDominio,
     rango: escala.rango,
@@ -825,7 +825,7 @@ async function guardarEscalaDesdeNota() {
     nombreEscala: escala.nombre,
     fechaAplicacion,
     puntajeTotal: puntaje,
-    puntajeMaximo: escala.puntajeMaximo ? escala.puntajeMaximo : "",
+    puntajeMaximo: escala.puntajeMaximo ? "",
     interpretacion,
     observaciones
   }), idEscalaAplicada);
