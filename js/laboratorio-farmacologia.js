@@ -5,6 +5,7 @@ import {
   normalizarMedicamentoClinico,
   obtenerIndicadorSeguridadMedicamento
 } from "./services/motorClinicoMedicamentos.js";
+import { enriquecerMedicamentoClinico } from "./data/vinculosClinicos.js";
 
 const seleccionados = [];
 const MENUS_ACTIVOS = [];
@@ -308,26 +309,43 @@ function renderSeccion(titulo, items, tipo, vacio = "No se encontraron alertas e
 }
 
 function renderFichaMedicamento(medEvaluado) {
-  const ficha = medicamentoPorTexto(medEvaluado.textoOriginal || medEvaluado.nombre || medEvaluado.medicamento || "");
+  const fichaBase = medicamentoPorTexto(medEvaluado.textoOriginal || medEvaluado.nombre || medEvaluado.medicamento || "");
+  const ficha = fichaBase ? enriquecerMedicamentoClinico(fichaBase) : null;
   if (!ficha) {
     return `<li>${escapar(medEvaluado.textoOriginal || "Medicamento no identificado en catálogo maestro")}</li>`;
   }
+  const valor = (texto) => escapar(textoVisible(texto || ""));
+  const unir = (...listas) => [...new Set(listas.flat().filter(Boolean))];
   const lista = (titulo, valores = []) => {
     const items = (valores || []).filter(Boolean).slice(0, 4);
-    return items.length ? `<p><b>${titulo}:</b> ${escapar(items.join("; "))}</p>` : "";
+    return items.length ? `<p class="farmaco-ficha-linea"><span class="farmaco-ficha-categoria">${valor(titulo)}:</span> ${valor(items.join("; "))}</p>` : "";
   };
+  const campo = (titulo, contenido) => contenido
+    ? `<p class="farmaco-ficha-linea"><span class="farmaco-ficha-categoria">${valor(titulo)}:</span> ${valor(contenido)}</p>`
+    : "";
+  const farmacocinetica = unir([
+    ficha.vidaMedia ? `Vida media: ${ficha.vidaMedia}` : "",
+    ficha.inicioAccion ? `Inicio: ${ficha.inicioAccion}` : "",
+    ficha.duracionAccion ? `Duración: ${ficha.duracionAccion}` : "",
+    ficha.metabolismo ? `Metabolismo: ${ficha.metabolismo}` : "",
+    ficha.eliminacion ? `Eliminación: ${ficha.eliminacion}` : "",
+    ficha.ajusteRenal ? `Ajuste renal: ${ficha.ajusteRenal}` : "",
+    ficha.ajusteHepatico ? `Ajuste hepático: ${ficha.ajusteHepatico}` : ""
+  ]);
+  const vigilancia = unir(ficha.monitoring || ficha.monitorizacion || [], ficha.parametrosVigilancia || []);
   return `
     <li>
-      <strong>${escapar(ficha.nombre)}</strong>
-      <small>${escapar(ficha.clase || "Medicamento")}</small>
-      ${ficha.brandNames?.length ? `<p><b>Marcas:</b> ${escapar(ficha.brandNames.slice(0, 6).join(", "))}</p>` : ""}
-      ${ficha.dosisHabitual ? `<p><b>Dosis habitual:</b> ${escapar(ficha.dosisHabitual)}</p>` : ""}
-      ${ficha.mecanismoAccion ? `<p><b>Mecanismo:</b> ${escapar(ficha.mecanismoAccion)}</p>` : ""}
-      ${ficha.vidaMedia ? `<p><b>Vida media:</b> ${escapar(ficha.vidaMedia)}</p>` : ""}
+      <strong>${valor(ficha.nombre)}</strong>
+      <small>${valor(ficha.clase || "Medicamento")}</small>
+      ${ficha.brandNames?.length ? campo("Marcas", ficha.brandNames.slice(0, 6).join(", ")) : ""}
+      ${campo("Dosis habitual", ficha.dosisHabitual)}
+      ${campo("Mecanismo", ficha.mecanismoAccion)}
+      ${farmacocinetica.length ? lista("Farmacocinética", farmacocinetica) : campo("Vida media", ficha.vidaMedia)}
       ${lista("Indicaciones", ficha.indicaciones || ficha.indications)}
       ${lista("Contraindicaciones", ficha.contraindicaciones || ficha.contraindications)}
       ${lista("Precaución", ficha.precauciones || ficha.precautions)}
       ${lista("Efectos adversos", ficha.efectosAdversos)}
+      ${lista("Vigilancia sugerida", vigilancia)}
     </li>
   `;
 }
