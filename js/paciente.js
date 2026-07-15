@@ -51,6 +51,7 @@ import {
 
 import {
   obtenerUsuario,
+  listarPacientes,
   actualizarUsuario,
   solicitarEliminacionPaciente,
   buscarMedicoPorCorreo,
@@ -166,7 +167,7 @@ const CATALOGO_SOLICITUD_ESTUDIOS = {
   ]
 };
 
-iniciarMonitoreoSesion("Expediente paciente");
+ejecutarSeguroPaciente("monitoreo de sesión del expediente", () => iniciarMonitoreoSesion("Expediente paciente"));
 
 function cargarCatalogoManualDiagnosticos() {
   try {
@@ -974,7 +975,11 @@ function ponerTexto(id, valor) {
 
 function ejecutarSeguroPaciente(etiqueta, tarea) {
   try {
-    return typeof tarea === "function" ? tarea() : null;
+    const resultado = typeof tarea === "function" ? tarea() : null;
+    if (resultado && typeof resultado.catch === "function") {
+      resultado.catch((error) => console.error(`Error en ${etiqueta}:`, error));
+    }
+    return resultado;
   } catch (error) {
     console.error(`Error en ${etiqueta}:`, error);
     return null;
@@ -1673,50 +1678,52 @@ function renderizarPanelDiagnosticos() {
   });
 }
 
-onAuthStateChanged(auth, async (user) => {
-  if (!user) {
-    window.location.href = "login.html";
-    return;
-  }
+function iniciarCargaExpedientePaciente() {
+  onAuthStateChanged(auth, async (user) => {
+    if (!user) {
+      window.location.href = "login.html";
+      return;
+    }
 
-  const parametros = new URLSearchParams(window.location.search);
-  uidPaciente =
-    parametros.get("id") ||
-    parametros.get("paciente") ||
-    parametros.get("pacienteId") ||
-    parametros.get("idPaciente") ||
-    parametros.get("pacienteUid") ||
-    parametros.get("uidPaciente") ||
-    parametros.get("uid") ||
-    parametros.get("usuario") ||
-    parametros.get("user") ||
-    "";
-  try {
-    medicoActualDatos = await obtenerUsuario(user.uid) || {};
-  } catch (error) {
-    console.warn("No se pudo cargar el perfil del usuario actual. Se continuará con la carga del paciente.", error);
-    medicoActualDatos = { uid: user.uid, correo: user.email || "", email: user.email || "" };
-  }
-  rolUsuarioActual = medicoActualDatos.rol || "";
-  if (!uidPaciente && rolUsuarioActual === "paciente") {
-    uidPaciente = user.uid;
-  }
-  try {
-    permisosFormatosUsuarioActual = await obtenerPermisosFormatosUsuario(user.uid, medicoActualDatos);
-  } catch (error) {
-    console.warn("No se pudieron cargar permisos de formatos. Se usarán permisos básicos para no bloquear el expediente.", error);
-    permisosFormatosUsuarioActual = {};
-  }
-  ejecutarSeguroPaciente("permisos de formatos del expediente", aplicarPermisosFormatosPaciente);
-  ejecutarSeguroPaciente("restricciones por rol del expediente", aplicarRestriccionesRolExpediente);
+    const parametros = new URLSearchParams(window.location.search);
+    uidPaciente =
+      parametros.get("id") ||
+      parametros.get("paciente") ||
+      parametros.get("pacienteId") ||
+      parametros.get("idPaciente") ||
+      parametros.get("pacienteUid") ||
+      parametros.get("uidPaciente") ||
+      parametros.get("uid") ||
+      parametros.get("usuario") ||
+      parametros.get("user") ||
+      "";
+    try {
+      medicoActualDatos = await obtenerUsuario(user.uid) || {};
+    } catch (error) {
+      console.warn("No se pudo cargar el perfil del usuario actual. Se continuará con la carga del paciente.", error);
+      medicoActualDatos = { uid: user.uid, correo: user.email || "", email: user.email || "" };
+    }
+    rolUsuarioActual = medicoActualDatos.rol || "";
+    if (!uidPaciente && rolUsuarioActual === "paciente") {
+      uidPaciente = user.uid;
+    }
+    try {
+      permisosFormatosUsuarioActual = await obtenerPermisosFormatosUsuario(user.uid, medicoActualDatos);
+    } catch (error) {
+      console.warn("No se pudieron cargar permisos de formatos. Se usarán permisos básicos para no bloquear el expediente.", error);
+      permisosFormatosUsuarioActual = {};
+    }
+    ejecutarSeguroPaciente("permisos de formatos del expediente", aplicarPermisosFormatosPaciente);
+    ejecutarSeguroPaciente("restricciones por rol del expediente", aplicarRestriccionesRolExpediente);
 
-  try {
-    await cargarDatosPaciente();
-  } catch (error) {
-    console.error("No se pudieron cargar los datos del paciente:", error);
-    ponerTexto("nombrePaciente", "No se pudieron cargar los datos del paciente");
-  }
-});
+    try {
+      await cargarDatosPaciente();
+    } catch (error) {
+      console.error("No se pudieron cargar los datos del paciente:", error);
+      ponerTexto("nombrePaciente", "No se pudieron cargar los datos del paciente");
+    }
+  });
+}
 
 
 function formatoInstitucionalPermitidoPaciente(valor = "") {
@@ -1779,6 +1786,26 @@ function actualizarVisibilidadCamposInstitucionalesPaciente(datos = datosPacient
   });
 }
 
+async function obtenerPacientePorListaAutorizada(uid) {
+  const usuario = auth.currentUser;
+  if (!uid || !usuario) return null;
+
+  const uidConsulta = rolUsuarioActual === "admin" ? "" : usuario.uid;
+  const resultado = await listarPacientes(uidConsulta);
+  let encontrado = null;
+
+  resultado.forEach((docPaciente) => {
+    if (docPaciente.id === uid) {
+      encontrado = {
+        id: docPaciente.id,
+        ...docPaciente.data()
+      };
+    }
+  });
+
+  return encontrado;
+}
+
 async function cargarDatosPaciente() {
   if (!uidPaciente) {
     datosPacienteActual = null;
@@ -1791,17 +1818,30 @@ async function cargarDatosPaciente() {
   try {
     datos = await obtenerUsuario(uidPaciente);
   } catch (error) {
-    console.error("No se pudo leer el documento del paciente:", error);
-    datosPacienteActual = null;
-    ponerTexto("nombrePaciente", "No se pudo acceder al paciente");
-    ponerTexto("correoPaciente", "Revisa permisos de lectura o vínculo del paciente");
-    return;
+    console.warn("No se pudo leer el documento directo del paciente. Se intentará cargar desde la lista autorizada.", error);
+    try {
+      datos = await obtenerPacientePorListaAutorizada(uidPaciente);
+    } catch (fallbackError) {
+      console.error("No se pudo cargar el paciente desde la lista autorizada:", fallbackError);
+      datosPacienteActual = null;
+      ponerTexto("nombrePaciente", "No se pudo acceder al paciente");
+      ponerTexto("correoPaciente", "Revisa permisos de lectura o vínculo del paciente");
+      return;
+    }
   }
   datosPacienteActual = datos;
 
   if (!datos) {
-    ponerTexto("nombrePaciente", "Paciente no encontrado");
-    return;
+    try {
+      datos = await obtenerPacientePorListaAutorizada(uidPaciente);
+      datosPacienteActual = datos;
+    } catch (fallbackError) {
+      console.warn("No se pudo encontrar el paciente en la lista autorizada.", fallbackError);
+    }
+    if (!datos) {
+      ponerTexto("nombrePaciente", "Paciente no encontrado");
+      return;
+    }
   }
 
   ponerTexto("nombrePaciente", datos.nombre || "Paciente sin nombre");
@@ -2050,12 +2090,18 @@ async function cargarResultadosEscalasPaciente() {
 
 function renderizarEscalaHistorialPaciente(escala) {
   const maximo = escala.puntajeMaximo ? ` / ${escaparHTML(escala.puntajeMaximo)}` : escala.rango ? ` / ${escaparHTML(escala.rango)}` : "";
-  const respuestas = (escala.respuestasPorItem || []).map((respuesta) => `
+  const respuestas = (escala.respuestasPorItem || []).map((respuesta) => {
+    const valorRespuesta = respuesta.valor !== undefined && respuesta.valor !== null && respuesta.valor !== ""
+      ? ` (${escaparHTML(respuesta.valor)})`
+      : "";
+    const dominioRespuesta = respuesta.dominio ? ` - ${escaparHTML(respuesta.dominio)}` : "";
+    return `
     <li>
       <strong>${escaparHTML(respuesta.item || "")}</strong>
-      <span>${escaparHTML(respuesta.respuesta || "")} (${respuesta.valor ? ""})${respuesta.dominio ? ` - ${escaparHTML(respuesta.dominio)}` : ""}</span>
+      <span>${escaparHTML(respuesta.respuesta || "")}${valorRespuesta}${dominioRespuesta}</span>
     </li>
-  `).join("");
+  `;
+  }).join("");
   const dominios = escala.puntajesPorDominio && Object.keys(escala.puntajesPorDominio).length
     ? `<p><strong>Puntajes por dominio:</strong> ${escaparHTML(Object.entries(escala.puntajesPorDominio).map(([dominio, valor]) => `${dominio}: ${valor}`).join("; "))}</p>`
     : "";
@@ -6137,3 +6183,5 @@ async function registrarAccionExpediente({ accion, descripcion, detalles = {} })
     detalles
   });
 }
+
+iniciarCargaExpedientePaciente();
