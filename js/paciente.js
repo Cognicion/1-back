@@ -972,6 +972,15 @@ function ponerTexto(id, valor) {
   if (elemento) elemento.textContent = valor ?? "";
 }
 
+function ejecutarSeguroPaciente(etiqueta, tarea) {
+  try {
+    return typeof tarea === "function" ? tarea() : null;
+  } catch (error) {
+    console.error(`Error en ${etiqueta}:`, error);
+    return null;
+  }
+}
+
 function normalizarTextoBusqueda(valor = "") {
   return String(valor || "")
     .trim()
@@ -1676,16 +1685,30 @@ onAuthStateChanged(auth, async (user) => {
     parametros.get("paciente") ||
     parametros.get("pacienteId") ||
     parametros.get("idPaciente") ||
+    parametros.get("pacienteUid") ||
+    parametros.get("uidPaciente") ||
     parametros.get("uid") ||
+    parametros.get("usuario") ||
+    parametros.get("user") ||
     "";
-  medicoActualDatos = await obtenerUsuario(user.uid) || {};
+  try {
+    medicoActualDatos = await obtenerUsuario(user.uid) || {};
+  } catch (error) {
+    console.warn("No se pudo cargar el perfil del usuario actual. Se continuará con la carga del paciente.", error);
+    medicoActualDatos = { uid: user.uid, correo: user.email || "", email: user.email || "" };
+  }
   rolUsuarioActual = medicoActualDatos.rol || "";
   if (!uidPaciente && rolUsuarioActual === "paciente") {
     uidPaciente = user.uid;
   }
-  permisosFormatosUsuarioActual = await obtenerPermisosFormatosUsuario(user.uid, medicoActualDatos);
-  aplicarPermisosFormatosPaciente();
-  aplicarRestriccionesRolExpediente();
+  try {
+    permisosFormatosUsuarioActual = await obtenerPermisosFormatosUsuario(user.uid, medicoActualDatos);
+  } catch (error) {
+    console.warn("No se pudieron cargar permisos de formatos. Se usarán permisos básicos para no bloquear el expediente.", error);
+    permisosFormatosUsuarioActual = {};
+  }
+  ejecutarSeguroPaciente("permisos de formatos del expediente", aplicarPermisosFormatosPaciente);
+  ejecutarSeguroPaciente("restricciones por rol del expediente", aplicarRestriccionesRolExpediente);
 
   try {
     await cargarDatosPaciente();
@@ -1764,7 +1787,16 @@ async function cargarDatosPaciente() {
     return;
   }
 
-  const datos = await obtenerUsuario(uidPaciente);
+  let datos = null;
+  try {
+    datos = await obtenerUsuario(uidPaciente);
+  } catch (error) {
+    console.error("No se pudo leer el documento del paciente:", error);
+    datosPacienteActual = null;
+    ponerTexto("nombrePaciente", "No se pudo acceder al paciente");
+    ponerTexto("correoPaciente", "Revisa permisos de lectura o vínculo del paciente");
+    return;
+  }
   datosPacienteActual = datos;
 
   if (!datos) {
@@ -1815,11 +1847,10 @@ async function cargarDatosPaciente() {
     datosPacienteActual = datos;
   }
 
-  inicializarSelectorVistaDatosGeneralesPaciente();
-  renderizarVistaLaboratorioPaciente(datos);
+  ejecutarSeguroPaciente("selector de vista de datos generales", inicializarSelectorVistaDatosGeneralesPaciente);
 
-  renderizarDiagnosticos(datos);
-  renderizarPanelDiagnosticos();
+  ejecutarSeguroPaciente("diagnósticos del resumen", () => renderizarDiagnosticos(datos));
+  ejecutarSeguroPaciente("panel de diagnósticos", renderizarPanelDiagnosticos);
 
   ponerTexto("tratamiento", datos.tratamiento || "Sin tratamiento registrado");
 
@@ -1843,8 +1874,8 @@ async function cargarDatosPaciente() {
 
   ponerTexto("curpPaciente", datos.curp || datos.datosInstitucionales?.curp || "Sin registro");
 
-  actualizarEstanciaPaciente(datos);
-  iniciarActualizacionEstanciaPaciente();
+  ejecutarSeguroPaciente("estancia del paciente", () => actualizarEstanciaPaciente(datos));
+  ejecutarSeguroPaciente("actualización automática de estancia", iniciarActualizacionEstanciaPaciente);
 
   ponerTexto("ultimoIngresoPaciente", formatearFecha(obtenerUltimoIngreso(datos)));
 
@@ -1880,10 +1911,10 @@ async function cargarDatosPaciente() {
 
   ponerTexto("imcPaciente", datos.imc || datos.signosVitales?.imc || datos.somatometria?.imc || datos.datosInstitucionales?.imc || "Sin registro");
 
-  actualizarEstanciaPaciente(datos);
-  actualizarVisibilidadCamposInstitucionalesPaciente(datos);
-  renderizarVistaLaboratorioPaciente(datos);
-  renderizarResumenPediatricoPaciente(datos);
+  ejecutarSeguroPaciente("estancia del paciente", () => actualizarEstanciaPaciente(datos));
+  ejecutarSeguroPaciente("visibilidad de campos institucionales", () => actualizarVisibilidadCamposInstitucionalesPaciente(datos));
+  ejecutarSeguroPaciente("vista laboratorio de datos generales", () => renderizarVistaLaboratorioPaciente(datos));
+  ejecutarSeguroPaciente("resumen pediátrico del paciente", () => renderizarResumenPediatricoPaciente(datos));
 }
 
 window.mostrarResumen = function() {
