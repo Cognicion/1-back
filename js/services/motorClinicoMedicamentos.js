@@ -532,6 +532,26 @@ function evaluarContextoDirectoPaciente(medicamentosNormalizados = [], paciente 
   const contexto = extraerContextoDirectoPaciente(paciente);
   const alertas = [];
   medicamentosNormalizados.forEach((med) => {
+    if ((contexto.eGFR !== null && contexto.eGFR < 60) || (contexto.creatinina !== null && contexto.creatinina > 1.4)) {
+      const requiereRevisionRenal = med.clases.includes("gabapentinoide") ||
+        med.clases.includes("ieca") ||
+        med.clases.includes("ara2") ||
+        Number(med.riesgos.renal || 0) > 0 ||
+        Number(med.riesgos.potasio || 0) > 0;
+      if (requiereRevisionRenal) {
+        alertas.push(crearAlerta({
+          id: `funcion_renal:${med.ingredienteIds.join("+") || med.id}`,
+          tipo: "precaucion_funcion_renal",
+          severidad: contexto.eGFR !== null && contexto.eGFR < 30 ? "alta" : "moderada",
+          titulo: "Función renal reducida: revisar medicamento",
+          medicamentos: [med.textoOriginal],
+          diagnosticos: ["Función renal reducida / eGFR bajo o creatinina elevada"],
+          efecto: "El medicamento puede requerir ajuste, monitorización o precaución adicional en función renal reducida.",
+          recomendacion: "Revisar eGFR, creatinina, potasio si aplica, dosis, intervalo y alternativas antes de interpretar seguridad.",
+          parametrosVigilancia: ["eGFR", "Creatinina", "Potasio si aplica", "Presión arterial si aplica"]
+        }));
+      }
+    }
     if (contexto.peso !== null && contexto.peso < 45 && (med.clases.includes("depresor_snc") || med.clases.includes("antiepileptico"))) {
       alertas.push(crearAlerta({
         id: `peso_bajo:${med.id}`,

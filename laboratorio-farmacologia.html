@@ -39,15 +39,26 @@
           <label>Sexo<select id="farmacoSexo"><option value="">No especificado</option><option value="femenino">Femenino</option><option value="masculino">Masculino</option><option value="otro">Otro</option></select></label>
           <label>Función renal / eGFR<input id="farmacoEGFR" type="number" min="0" max="180" placeholder="mL/min/1.73m²"></label>
           <label>Creatinina<input id="farmacoCreatinina" type="number" min="0" step="0.1" placeholder="mg/dL"></label>
-          <label>Alergias<input id="farmacoAlergias" placeholder="Ej. penicilina, AINE"></label>
-          <label>Comorbilidades<textarea id="farmacoComorbilidades" placeholder="Ej. enfermedad renal crónica, hepatopatía, hipertensión, embarazo, consumo de alcohol"></textarea></label>
+          <label class="farmaco-search-field">
+            Alergias
+            <input id="farmacoAlergias" autocomplete="off" placeholder="Buscar medicamento o grupo, ej. penicilina">
+            <div id="farmacoAlergiasMenu" class="farmaco-search-menu" hidden></div>
+          </label>
+          <label class="farmaco-search-field">
+            Comorbilidades
+            <textarea id="farmacoComorbilidades" autocomplete="off" placeholder="Busca por CIE-10 o escribe libremente, ej. I10 hipertensión"></textarea>
+            <div id="farmacoComorbilidadesMenu" class="farmaco-search-menu" hidden></div>
+          </label>
         </div>
       </article>
 
       <article class="farmaco-panel">
         <div class="panel-heading"><span>Paso 2</span><h2>Medicamentos</h2></div>
-        <label>Buscar en catálogo<input id="farmacoBuscador" list="farmacoCatalogo" placeholder="Ej. Losartán, Enalapril, Sertralina"></label>
-        <datalist id="farmacoCatalogo"></datalist>
+        <label class="farmaco-search-field">
+          Buscar en catálogo
+          <input id="farmacoBuscador" autocomplete="off" placeholder="Ej. Losartán, Enalapril, Sertralina">
+          <div id="farmacoCatalogoMenu" class="farmaco-search-menu" hidden></div>
+        </label>
         <div class="farmaco-add-row">
           <input id="farmacoDosis" placeholder="Dosis opcional, ej. 50 mg cada 24 h">
           <button id="agregarFarmaco" type="button">Agregar</button>
@@ -62,7 +73,7 @@
         <button id="evaluarFarmacos" type="button">Evaluar interacciones</button>
         <button id="limpiarFarmacos" type="button" class="ghost-action">Limpiar</button>
       </div>
-      <div id="resultadoInteraccionesFarmaco" class="resultado-interacciones">Agrega dos o más medicamentos para iniciar la revisión.</div>
+      <div id="resultadoInteraccionesFarmaco" class="resultado-interacciones">Agrega al menos un medicamento para iniciar la revisión.</div>
     </section>
   </main>
 

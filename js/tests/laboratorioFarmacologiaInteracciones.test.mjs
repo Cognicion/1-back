@@ -76,4 +76,11 @@ const estructurados = extraerDiagnosticosEstructuradosPaciente({
 });
 assert.deepEqual(estructurados.map((dx) => dx.codigo), ["F33.2"], "No debe inventar ni perder códigos diagnósticos existentes.");
 
-console.log("Laboratorio de farmacología: interacciones, duplicados y estados diagnósticos validados.");
+resultado = evaluarMedicamentosPaciente({
+  paciente: { eGFR: 42, creatinina: 1.7 },
+  medicamentos: [{ medicamento: "Gabapentina 300 mg" }]
+});
+assert.ok(tieneAlerta(resultado, "Función renal reducida"), "Un solo medicamento debe evaluarse contra función renal/eGFR.");
+assert.ok(tieneAlerta(resultado, "eGFR"), "La alerta renal debe indicar vigilancia de eGFR.");
+
+console.log("Laboratorio de farmacología: interacciones, duplicados, función renal y estados diagnósticos validados.");

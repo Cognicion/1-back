@@ -1,4 +1,5 @@
 import { MEDICAMENTOS_MAESTROS, MEDICAMENTOS_PRESENTACIONES, medicamentoPorTexto } from "./data/medicamentos.js";
+import { CIE10 } from "./data/cie10.js";
 import {
   evaluarMedicamentosPaciente,
   normalizarMedicamentoClinico,
@@ -6,6 +7,7 @@ import {
 } from "./services/motorClinicoMedicamentos.js";
 
 const seleccionados = [];
+const MENUS_ACTIVOS = [];
 const $ = (id) => document.getElementById(id);
 
 function textoNormalizado(valor = "") {
@@ -16,19 +18,113 @@ function escapar(valor = "") {
   return String(valor || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 }
 
+function textoVisible(valor = "") {
+  return String(valor || "")
+    .replace(/\u00c3\u00a1/g, "á").replace(/\u00c3\u00a9/g, "é").replace(/\u00c3\u00ad/g, "í").replace(/\u00c3\u00b3/g, "ó").replace(/\u00c3\u00ba/g, "ú")
+    .replace(/\u00c3\u0081/g, "Á").replace(/\u00c3\u0089/g, "É").replace(/\u00c3\u008d/g, "Í").replace(/\u00c3\u0093/g, "Ó").replace(/\u00c3\u009a/g, "Ú")
+    .replace(/\u00c3\u00b1/g, "ñ").replace(/\u00c3\u0091/g, "Ñ").replace(/\u00c3\u00bc/g, "ü").replace(/\u00c3\u009c/g, "Ü")
+    .replace(/\u00c2\u00b7/g, "·").replace(/\u00c2\u00b2/g, "²")
+    .replace(/\u00e2\u0080\u0093/g, "–").replace(/\u00e2\u0080\u0094/g, "—")
+    .replace(/\u00e2\u0080\u009c/g, "“").replace(/\u00e2\u0080\u009d/g, "”").replace(/\u00e2\u0080\u0099/g, "’");
+}
+
 function opcionesMedicamentos() {
   const opciones = [];
   MEDICAMENTOS_MAESTROS.forEach((med) => {
-    if (med.nombre) opciones.push(med.nombre);
-    if (med.genericName && med.genericName !== med.nombre) opciones.push(med.genericName);
-    (med.brandNames || []).forEach((marca) => opciones.push(`${marca} (${med.nombre})`));
-    (med.synonyms || []).forEach((sinonimo) => opciones.push(sinonimo));
+    if (med.nombre) opciones.push(textoVisible(med.nombre));
+    if (med.genericName && med.genericName !== med.nombre) opciones.push(textoVisible(med.genericName));
+    (med.brandNames || []).forEach((marca) => opciones.push(textoVisible(`${marca} (${med.nombre})`)));
+    (med.synonyms || []).forEach((sinonimo) => opciones.push(textoVisible(sinonimo)));
   });
   MEDICAMENTOS_PRESENTACIONES.forEach((med) => {
-    if (med.texto) opciones.push(med.texto);
-    else if (med.nombre && med.presentacion) opciones.push(`${med.nombre}, ${med.presentacion}.`);
+    if (med.texto) opciones.push(textoVisible(med.texto));
+    else if (med.nombre && med.presentacion) opciones.push(textoVisible(`${med.nombre}, ${med.presentacion}.`));
   });
   return [...new Set(opciones.filter(Boolean))].sort((a, b) => a.localeCompare(b, "es"));
+}
+
+function opcionesCie10() {
+  return CIE10
+    .filter((dx) => dx.codigo && dx.nombre)
+    .map((dx) => ({
+      valor: textoVisible(`${dx.codigo} - ${dx.nombre}`),
+      busqueda: textoNormalizado(`${dx.codigo} ${dx.nombre}`)
+    }))
+    .sort((a, b) => a.valor.localeCompare(b.valor, "es"));
+}
+
+function opcionesAlergiasMedicamentos() {
+  const opciones = [];
+  MEDICAMENTOS_MAESTROS.forEach((med) => {
+    if (med.nombre) opciones.push(textoVisible(med.nombre));
+    (med.brandNames || []).forEach((marca) => opciones.push(textoVisible(`${marca} (${med.nombre})`)));
+    (med.synonyms || []).forEach((sinonimo) => opciones.push(textoVisible(sinonimo)));
+    if (med.clase) opciones.push(textoVisible(med.clase));
+  });
+  ["AINE", "Penicilina", "Cefalosporina", "Sulfas", "Macrólidos", "Látex", "Contraste yodado"].forEach((opcion) => opciones.push(opcion));
+  return [...new Set(opciones.filter(Boolean))]
+    .map((valor) => ({ valor, busqueda: textoNormalizado(valor) }))
+    .sort((a, b) => a.valor.localeCompare(b.valor, "es"));
+}
+
+function cerrarMenus(excepto = null) {
+  MENUS_ACTIVOS.forEach((menu) => {
+    if (menu !== excepto) menu.hidden = true;
+  });
+}
+
+function insertarValorEnCampo(campo, valor, modo = "reemplazar") {
+  if (!campo) return;
+  if (modo === "agregar") {
+    const actual = campo.value.trim();
+    campo.value = actual ? `${actual}, ${valor}` : valor;
+  } else {
+    campo.value = valor;
+  }
+  campo.dispatchEvent(new Event("input", { bubbles: true }));
+}
+
+function configurarMenuBuscable({ campoId, menuId, opciones, modo = "reemplazar", max = 18 }) {
+  const campo = $(campoId);
+  const menu = $(menuId);
+  if (!campo || !menu) return;
+  MENUS_ACTIVOS.push(menu);
+
+  const render = () => {
+    const termino = textoNormalizado(campo.value.split(",").pop() || campo.value);
+    const resultados = opciones
+      .filter((opcion) => !termino || opcion.busqueda.includes(termino))
+      .slice(0, max);
+    menu.innerHTML = resultados.length
+      ? resultados.map((opcion) => `<button type="button" data-valor="${escapar(opcion.valor)}">${escapar(opcion.valor)}</button>`).join("")
+      : `<p>No se encontraron coincidencias.</p>`;
+    menu.hidden = false;
+  };
+
+  campo.addEventListener("focus", () => {
+    cerrarMenus(menu);
+    render();
+  });
+  campo.addEventListener("input", render);
+  campo.addEventListener("keydown", (evento) => {
+    if (evento.key === "Escape") menu.hidden = true;
+    if (evento.key === "Enter" && !menu.hidden) {
+      const primero = menu.querySelector("[data-valor]");
+      if (primero) {
+        evento.preventDefault();
+        insertarValorEnCampo(campo, primero.dataset.valor, modo);
+        menu.hidden = true;
+      }
+    }
+  });
+  menu.addEventListener("pointerdown", (evento) => {
+    const boton = evento.target.closest("[data-valor]");
+    if (!boton) return;
+    evento.preventDefault();
+    insertarValorEnCampo(campo, boton.dataset.valor, modo);
+    menu.hidden = true;
+    campo.focus();
+  });
 }
 
 function pacienteSimulado() {
@@ -48,9 +144,26 @@ function pacienteSimulado() {
 }
 
 function renderCatalogo() {
-  const datalist = $("farmacoCatalogo");
-  if (!datalist) return;
-  datalist.innerHTML = opcionesMedicamentos().map((opcion) => `<option value="${escapar(opcion)}"></option>`).join("");
+  const medicamentos = opcionesMedicamentos().map((valor) => ({ valor, busqueda: textoNormalizado(valor) }));
+  configurarMenuBuscable({
+    campoId: "farmacoBuscador",
+    menuId: "farmacoCatalogoMenu",
+    opciones: medicamentos,
+    modo: "reemplazar"
+  });
+  configurarMenuBuscable({
+    campoId: "farmacoAlergias",
+    menuId: "farmacoAlergiasMenu",
+    opciones: opcionesAlergiasMedicamentos(),
+    modo: "agregar"
+  });
+  configurarMenuBuscable({
+    campoId: "farmacoComorbilidades",
+    menuId: "farmacoComorbilidadesMenu",
+    opciones: opcionesCie10(),
+    modo: "agregar",
+    max: 24
+  });
 }
 
 function claveFarmacoSeleccionado(med) {
@@ -278,8 +391,8 @@ function evaluar() {
   const salida = $("resultadoInteraccionesFarmaco");
   if (!salida) return;
   const lista = normalizarSeleccionados();
-  if (lista.length < 2) {
-    salida.textContent = "Agrega dos o más medicamentos para iniciar la revisión.";
+  if (lista.length < 1) {
+    salida.textContent = "Agrega al menos un medicamento para iniciar la revisión.";
     return;
   }
   const paciente = pacienteSimulado();
@@ -302,7 +415,7 @@ function limpiar() {
   seleccionados.splice(0, seleccionados.length);
   renderSeleccionados();
   const salida = $("resultadoInteraccionesFarmaco");
-  if (salida) salida.textContent = "Agrega dos o más medicamentos para iniciar la revisión.";
+  if (salida) salida.textContent = "Agrega al menos un medicamento para iniciar la revisión.";
 }
 
 renderCatalogo();
@@ -311,8 +424,12 @@ $("agregarFarmaco")?.addEventListener("click", agregarMedicamento);
 $("evaluarFarmacos")?.addEventListener("click", evaluar);
 $("limpiarFarmacos")?.addEventListener("click", limpiar);
 $("farmacoBuscador")?.addEventListener("keydown", (evento) => {
+  if (evento.key === "Enter" && !$("farmacoCatalogoMenu")?.hidden) return;
   if (evento.key === "Enter") {
     evento.preventDefault();
     agregarMedicamento();
   }
+});
+document.addEventListener("pointerdown", (evento) => {
+  if (!evento.target.closest(".farmaco-search-field")) cerrarMenus();
 });
