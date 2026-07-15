@@ -1671,14 +1671,28 @@ onAuthStateChanged(auth, async (user) => {
   }
 
   const parametros = new URLSearchParams(window.location.search);
-  uidPaciente = parametros.get("id");
+  uidPaciente =
+    parametros.get("id") ||
+    parametros.get("paciente") ||
+    parametros.get("pacienteId") ||
+    parametros.get("idPaciente") ||
+    parametros.get("uid") ||
+    "";
   medicoActualDatos = await obtenerUsuario(user.uid) || {};
   rolUsuarioActual = medicoActualDatos.rol || "";
+  if (!uidPaciente && rolUsuarioActual === "paciente") {
+    uidPaciente = user.uid;
+  }
   permisosFormatosUsuarioActual = await obtenerPermisosFormatosUsuario(user.uid, medicoActualDatos);
   aplicarPermisosFormatosPaciente();
   aplicarRestriccionesRolExpediente();
 
-  await cargarDatosPaciente();
+  try {
+    await cargarDatosPaciente();
+  } catch (error) {
+    console.error("No se pudieron cargar los datos del paciente:", error);
+    ponerTexto("nombrePaciente", "No se pudieron cargar los datos del paciente");
+  }
 });
 
 
@@ -1743,6 +1757,13 @@ function actualizarVisibilidadCamposInstitucionalesPaciente(datos = datosPacient
 }
 
 async function cargarDatosPaciente() {
+  if (!uidPaciente) {
+    datosPacienteActual = null;
+    ponerTexto("nombrePaciente", "Paciente no seleccionado");
+    ponerTexto("correoPaciente", "Sin paciente seleccionado");
+    return;
+  }
+
   const datos = await obtenerUsuario(uidPaciente);
   datosPacienteActual = datos;
 
@@ -5870,7 +5891,8 @@ document.getElementById("abrirInteraccionesTratamiento")?.addEventListener("clic
 document.getElementById("abrirInteraccionesIndicaciones")?.addEventListener("click", () => abrirInteraccionesFarmacologicas("indicaciones"));
 document.getElementById("cerrarInteraccionesFarmacologicas")?.addEventListener("click", cerrarInteraccionesFarmacologicas);
 document.addEventListener("click", (evento) => {
-  const cerrar = evento.target.closesta.("#cerrarInteraccionesFarmacologicas, [data-cerrar-interacciones]");
+  const objetivo = evento.target instanceof Element ? evento.target : null;
+  const cerrar = objetivo?.closest("#cerrarInteraccionesFarmacologicas, [data-cerrar-interacciones]");
   if (!cerrar) return;
   evento.preventDefault();
   evento.stopPropagation();
