@@ -141,7 +141,7 @@ export function normalizarMedicamentoClinico(medicamento) {
   const textoOriginal = textoMedicamento(medicamento);
   const texto = normalizarTextoClinico(textoOriginal);
   const ingredientes = INGREDIENTES_MEDICAMENTOS.filter((ingrediente) =>
-    ingrediente.sinonimos.some((sinonimo) => texto.includes(normalizarTextoClinico(sinonimo)))
+    ingrediente.sinonimos.some((sinonimo) => texto.includes(normalizarTextoClinico(sinonimo)) || contieneConFuzzy(texto, sinonimo))
   );
 
   const clases = new Set();

@@ -128,6 +128,16 @@ assert.ok(
 
 resultado = evaluarMedicamentosPaciente({
   medicamentos: [
+    { medicamento: "Losartan 50 mg al dia" },
+    { medicamento: "Enalapril 10 mg al dia" },
+    { medicamento: "Paracetamol 500 mg" }
+  ]
+});
+assert.ok(tiene(resultado, "Bloqueo dual"), "Losartan + enalapril escritos como texto libre debe alertar bloqueo dual del SRAA.");
+assert.equal(resultado.alertas.find((alerta) => alerta.titulo.includes("Bloqueo dual"))?.severidad, "alta");
+
+resultado = evaluarMedicamentosPaciente({
+  medicamentos: [
     { medicamento: "Biperideno 2 mg" },
     { medicamento: "Amitriptilina 25 mg" }
   ]
