@@ -368,6 +368,8 @@ export function resolverDiagnosticosClinicos(textos = []) {
 }
 
 function reglaAplicaAMedicamento(regla, med) {
+  if (Array.isArray(regla.excluirIngredientes) && regla.excluirIngredientes.some((ingrediente) => med.ingredienteIds.includes(ingrediente))) return false;
+  if (Array.isArray(regla.excluirClases) && regla.excluirClases.some((clase) => med.clases.includes(clase))) return false;
   if (regla.ingrediente && med.ingredienteIds.includes(regla.ingrediente)) return true;
   if (regla.clase && med.clases.includes(regla.clase)) return true;
   if (Array.isArray(regla.clases) && regla.clases.some((clase) => med.clases.includes(clase))) return true;
