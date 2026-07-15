@@ -181,6 +181,17 @@ body {
   background: rgba(15, 23, 42, 0.58);
 }
 
+.ped-inline-field {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 88px;
+  gap: 8px;
+  align-items: center;
+}
+
+.ped-inline-field select {
+  min-width: 78px;
+}
+
 [data-theme="light"] .ped-patient-search input,
 [data-theme="light"] .ped-tool-form input,
 [data-theme="light"] .ped-tool-form select,
@@ -432,6 +443,44 @@ body {
   display: block;
   margin-top: 6px;
   font-size: 1.05rem;
+}
+
+.ped-growth-metrics {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin: 10px 0;
+}
+
+.ped-growth-metrics div {
+  border: 1px solid rgba(125, 211, 252, 0.16);
+  border-radius: 12px;
+  padding: 8px;
+  background: rgba(8, 13, 24, 0.34);
+}
+
+.ped-growth-metrics strong {
+  display: block;
+  margin-top: 3px;
+  color: var(--ped-accent);
+}
+
+.ped-link-button {
+  width: fit-content;
+  margin-top: 10px;
+  border: 1px solid rgba(125, 211, 252, 0.28);
+  border-radius: 999px;
+  padding: 7px 10px;
+  color: var(--ped-text);
+  background: rgba(15, 23, 42, 0.56);
+  font-weight: 800;
+  cursor: pointer;
+}
+
+[data-theme="light"] .ped-growth-metrics div,
+[data-theme="light"] .ped-link-button {
+  color: #10233e;
+  background: rgba(255, 255, 255, 0.72);
 }
 
 .ped-growth-chart {

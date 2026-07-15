@@ -71,6 +71,7 @@ import {
 import {
   obtenerHistoriaClinica
 } from "./services/historias.js";
+import { listarEstudios } from "./services/estudios.js";
 import { calcularEdadPediatrica, formatearFechaDDMMAAAA } from "./pediatria/edad.js";
 import {
   calcularIMC as calcularIMCPediatrico,
@@ -475,6 +476,8 @@ function configurarPanelEscalaNota() {
   const botonPrevias = document.getElementById("abrirEscalasPreviasNota");
   const botonCerrarPrevias = document.getElementById("cerrarEscalasPreviasNota");
   const buscadorPrevias = document.getElementById("buscarEscalasPreviasNota");
+  document.getElementById("filtroTipoEscalaNota")?.addEventListener("change", renderizarOpcionesEscalasNota);
+  document.getElementById("buscarEscalaNota")?.addEventListener("input", renderizarOpcionesEscalasNota);
   const filtroPrevias = document.getElementById("filtrarEscalasPreviasNota");
 
   if (!selector) return;
@@ -519,12 +522,32 @@ function renderizarOpcionesEscalasNota() {
   if (!selector) return;
 
   const seleccionPrevia = selector.value;
-  const escalasPsiquiatricasNota = ESCALAS_NOTA.filter((escala) => escala.tipoEscala === "psiquiatrica");
-  const escalasMedicinaNota = ESCALAS_NOTA.filter((escala) => escala.tipoEscala === "medicina_general");
+  const filtroTipo = document.getElementById("filtroTipoEscalaNota")?.value || "todas";
+  const busqueda = normalizarTextoBusqueda(document.getElementById("buscarEscalaNota")?.value || "");
+  const filtrarEscala = (escala) => {
+    if (busqueda) {
+      const texto = normalizarTextoBusqueda([
+        escala.nombre,
+        escala.subtitulo,
+        escala.area,
+        escala.tipoEscala,
+        escala.descripcionClinica
+      ].filter(Boolean).join(" "));
+      if (!texto.includes(busqueda)) return false;
+    }
+
+    if (filtroTipo === "todas") return true;
+    if (filtroTipo === "cardiologia") return normalizarTextoBusqueda(escala.area || "").includes("cardio") || normalizarTextoBusqueda(escala.nombre || "").includes("cardio");
+    if (filtroTipo === "cognitiva") return esEscalaCognitivaNota(escala);
+    return escala.tipoEscala === filtroTipo;
+  };
+
+  const escalasPsiquiatricasNota = ESCALAS_NOTA.filter((escala) => escala.tipoEscala === "psiquiatrica" && filtrarEscala(escala));
+  const escalasMedicinaNota = ESCALAS_NOTA.filter((escala) => escala.tipoEscala === "medicina_general" && filtrarEscala(escala));
   const escalasPediatricasNota = pacienteNotaEsPediatrico()
-    ? ESCALAS_NOTA.filter((escala) => escala.tipoEscala === "pediatrica")
+    ? ESCALAS_NOTA.filter((escala) => escala.tipoEscala === "pediatrica" && filtrarEscala(escala))
     : [];
-  const escalasCognitivasNota = ESCALAS_NOTA.filter((escala) => esEscalaCognitivaNota(escala));
+  const escalasCognitivasNota = ESCALAS_NOTA.filter((escala) => esEscalaCognitivaNota(escala) && filtrarEscala(escala));
 
   selector.innerHTML = [
     htmlGrupoEscalasNota("Escalas clinicas", escalasPsiquiatricasNota),
@@ -1676,6 +1699,13 @@ function configurarCatalogoMedicosFirmas() {
   document.querySelectorAll("[data-guardar-medico-firma]").forEach((boton) => {
     boton.addEventListener("click", () => guardarMedicoFirmaDesdeCampo(boton.dataset.guardarMedicoFirma));
   });
+
+  document.querySelectorAll("[data-limpiar-firma]").forEach((boton) => {
+    boton.addEventListener("click", () => {
+      const numeroFirma = boton.dataset.limpiarFirma;
+      ["Nombre", "Cargo", "Cedula"].forEach((campo) => asignarValor(`obsFirma${numeroFirma}${campo}`, ""));
+    });
+  });
 }
 
 async function guardarMedicoFirmaDesdeCampo(numeroFirma) {
@@ -1908,6 +1938,14 @@ function sincronizarFormatoNota() {
   sincronizarDiagnosticosObservacion();
 }
 
+function aplicarTiempoActualNota() {
+  const ahora = new Date();
+  asignarValor("obsFechaNota", ahora.toISOString().slice(0, 10));
+  asignarValor("obsHoraNota", `${String(ahora.getHours()).padStart(2, "0")}:${String(ahora.getMinutes()).padStart(2, "0")}`);
+  const estanciaActual = datosInstitucionalesPaciente(pacienteActualDatos || {}).diasEstancia || "";
+  asignarValor("obsDiasEstancia", estanciaActual);
+}
+
 formatoNota?.addEventListener("change", sincronizarFormatoNota);
 btnSincronizarDxObs?.addEventListener("click", sincronizarDiagnosticosObservacion);
 
@@ -2058,7 +2096,13 @@ function datosInstitucionalesPaciente(paciente = {}) {
 
 function aplicarDatosInstitucionalesPaciente(paciente = {}) {
   const datos = datosInstitucionalesPaciente(paciente);
+  const vitales = paciente.signosVitales || paciente.vitales || {};
 
+  if (!valorCampo("obsPresionArterial")) asignarValor("obsPresionArterial", vitales.presionArterial || vitales.pa || paciente.presionArterial || paciente.pa || "");
+  if (!valorCampo("obsTemperatura")) asignarValor("obsTemperatura", vitales.temperatura || paciente.temperatura || "");
+  if (!valorCampo("obsFrecuenciaCardiaca")) asignarValor("obsFrecuenciaCardiaca", vitales.frecuenciaCardiaca || vitales.fc || paciente.frecuenciaCardiaca || paciente.fc || "");
+  if (!valorCampo("obsFrecuenciaRespiratoria")) asignarValor("obsFrecuenciaRespiratoria", vitales.frecuenciaRespiratoria || vitales.fr || paciente.frecuenciaRespiratoria || paciente.fr || "");
+  if (!valorCampo("obsSaturacionO2")) asignarValor("obsSaturacionO2", vitales.saturacionO2 || vitales.spo2 || paciente.saturacionO2 || paciente.spo2 || "");
   if (!valorCampo("obsPeso")) asignarValor("obsPeso", paciente.peso || paciente.signosVitales?.peso || paciente.datosInstitucionales?.peso || "");
   if (!valorCampo("obsTalla")) asignarValor("obsTalla", paciente.talla || paciente.signosVitales?.talla || paciente.datosInstitucionales?.talla || "");
   calcularIMCNota();
@@ -2071,6 +2115,30 @@ function aplicarDatosInstitucionalesPaciente(paciente = {}) {
   if (!valorCampo("obsFirma3Nombre")) asignarValor("obsFirma3Nombre", datos.firma3Nombre);
   if (!valorCampo("obsFirma3Cargo")) asignarValor("obsFirma3Cargo", datos.firma3Cargo);
   if (!valorCampo("obsFirma3Cedula")) asignarValor("obsFirma3Cedula", datos.firma3Cedula);
+}
+
+async function autollenarResultadosEstudiosDiagnosticos(uidPaciente) {
+  const campo = document.getElementById("obsResultadosEstudios");
+  if (!campo || !uidPaciente || campo.dataset.editadoManual === "true") return;
+
+  try {
+    const estudios = await listarEstudios(uidPaciente);
+    const texto = estudios
+      .map((estudio) => {
+        const nombre = estudio.nombre || estudio.nombreEstudio || estudio.tipo || "Estudio";
+        const resultado = estudio.resultado || estudio.resumen || estudio.observaciones || "";
+        return resultado ? `${nombre}: ${resultado}` : "";
+      })
+      .filter(Boolean)
+      .join("\n");
+
+    if (texto && !campo.value.trim()) {
+      campo.value = texto;
+      campo.dataset.autollenado = "true";
+    }
+  } catch (error) {
+    console.warn("No se pudieron autollenar estudios diagnosticos:", error);
+  }
 }
 
 function aplicarHistoriaClinicaObservacion(historia = {}) {
@@ -2599,6 +2667,7 @@ function cargarDatosNotaComoBorrador(notaId, opciones = {}) {
       ? formatoActual
       : datos.formatoNota || formatoActual
   });
+  aplicarTiempoActualNota();
 
   notaEditandoId = null;
   btnCancelarEdicion?.classList.add("oculto");
@@ -2663,6 +2732,9 @@ onAuthStateChanged(auth, async (user) => {
   await cargarBorradoresMedico();
   await cargarCatalogoMedicosFirmas();
   configurarCatalogoMedicosFirmas();
+  document.getElementById("obsResultadosEstudios")?.addEventListener("input", (evento) => {
+    evento.target.dataset.editadoManual = "true";
+  });
   document.getElementById("borradoresMedicoTexto")?.addEventListener("input", () => {
     const estado = document.getElementById("estadoBorradoresMedico");
     if (estado) estado.textContent = "Cambios sin guardar";
@@ -2813,6 +2885,7 @@ async function cargarPaciente(uidPaciente) {
   }
 
   aplicarDatosInstitucionalesPaciente(datos);
+  await autollenarResultadosEstudiosDiagnosticos(uidPaciente);
   aplicarHistoriaClinicaObservacion(historiaClinicaActual);
   sincronizarParametrosPediatriaNota();
   cargarNotasFlotantesParaNota();

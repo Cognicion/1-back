@@ -847,7 +847,7 @@ function vincularIntegrada() {
     const el = $(id);
     if (el) el.addEventListener("input", () => { leerControlesIntegrados(); renderizarIntegrada(); });
   });
-  ["intCamaraNeuro", "intNivelAprendizaje", "intVelocidadParticulas", "intDensidadParticulas", "intIonVisible", "intEtiquetasNeuro", "intMostrarCargas", "intExplicacionPaso", "intReducirAnimaciones", "intVistaMatematica"].forEach((id) => {
+  ["intCamaraNeuro", "intNivelAprendizaje", "intVelocidadParticulas", "intDensidadParticulas", "intIonVisible", "intEtiquetasNeuro", "intMostrarCargas", "intMostrarIones", "intMostrarCanales", "intMostrarSinapsis", "intMostrarFarmacos", "intExplicacionPaso", "intReducirAnimaciones", "intVistaMatematica"].forEach((id) => {
     const el = $(id);
     if (el) el.addEventListener("input", () => { leerUiModeIntegrado(); renderizarIntegrada(true); });
   });
@@ -1250,6 +1250,10 @@ function leerUiModeIntegrado() {
   uiModeNeuro.ionFilter = $("intIonVisible")?.value || "todos";
   uiModeNeuro.labelMode = $("intEtiquetasNeuro")?.value || "basicas";
   uiModeNeuro.showCharges = $("intMostrarCargas") ? Boolean($("intMostrarCargas").checked) : true;
+  uiModeNeuro.showIons = $("intMostrarIones") ? Boolean($("intMostrarIones").checked) : true;
+  uiModeNeuro.showChannels = $("intMostrarCanales") ? Boolean($("intMostrarCanales").checked) : true;
+  uiModeNeuro.showSynapse = $("intMostrarSinapsis") ? Boolean($("intMostrarSinapsis").checked) : true;
+  uiModeNeuro.showDrugs = $("intMostrarFarmacos") ? Boolean($("intMostrarFarmacos").checked) : true;
   uiModeNeuro.explanationMode = Boolean($("intExplicacionPaso")?.checked);
   uiModeNeuro.reducedMotion = Boolean($("intReducirAnimaciones")?.checked);
   uiModeNeuro.mathView = $("intVistaMatematica")?.value || "resumida";
@@ -1306,6 +1310,10 @@ function sincronizarControlesIntegrados() {
   if ($("intIonVisible")) $("intIonVisible").value = uiModeNeuro.ionFilter || "todos";
   if ($("intEtiquetasNeuro")) $("intEtiquetasNeuro").value = uiModeNeuro.labelMode || "basicas";
   if ($("intMostrarCargas")) $("intMostrarCargas").checked = uiModeNeuro.showCharges !== false;
+  if ($("intMostrarIones")) $("intMostrarIones").checked = uiModeNeuro.showIons !== false;
+  if ($("intMostrarCanales")) $("intMostrarCanales").checked = uiModeNeuro.showChannels !== false;
+  if ($("intMostrarSinapsis")) $("intMostrarSinapsis").checked = uiModeNeuro.showSynapse !== false;
+  if ($("intMostrarFarmacos")) $("intMostrarFarmacos").checked = uiModeNeuro.showDrugs !== false;
   $("intExplicacionPaso").checked = uiModeNeuro.explanationMode;
   $("intReducirAnimaciones").checked = uiModeNeuro.reducedMotion;
   $("intVistaMatematica").value = uiModeNeuro.mathView;

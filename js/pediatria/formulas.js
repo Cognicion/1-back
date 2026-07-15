@@ -22,12 +22,13 @@ export function normalizarConcentracionMgMl(valor) {
   return directa && directa > 0 ? directa : null;
 }
 
-export function analizarTalla(valor) {
+export function analizarTalla(valor, unidadExplicita = "") {
   const base = {
     valorOriginal: valor ?? "",
     valorCm: null,
     valorM: null,
     unidadEntrada: "",
+    metadatos: null,
     valido: false,
     error: "",
     advertencias: []
@@ -44,8 +45,15 @@ export function analizarTalla(valor) {
   const tieneM = /\bm\b|metro/i.test(texto) && !tieneCm;
   let valorCm = talla;
   let unidadEntrada = "cm";
+  const unidad = String(unidadExplicita || "").toLowerCase();
 
-  if (tieneCm) {
+  if (unidad === "m") {
+    unidadEntrada = "m";
+    valorCm = talla * 100;
+  } else if (unidad === "cm") {
+    unidadEntrada = "cm";
+    valorCm = talla;
+  } else if (tieneCm) {
     unidadEntrada = "cm";
     valorCm = talla;
   } else if (tieneM) {
@@ -54,7 +62,14 @@ export function analizarTalla(valor) {
   } else if (talla <= 3) {
     unidadEntrada = "m inferido";
     valorCm = talla * 100;
-    base.advertencias.push("Se interpreto como metros por ser menor o igual a 3.");
+    base.metadatos = {
+      originalValue: talla,
+      originalUnit: "sin unidad",
+      normalizedValue: valorCm,
+      normalizedUnit: "cm",
+      conversionApplied: true,
+      reason: "probable_meters_by_value"
+    };
   }
 
   if (tieneCm && talla < 30) {
@@ -77,6 +92,13 @@ export function analizarTalla(valor) {
     valorCm,
     valorM: valorCm / 100,
     unidadEntrada,
+    metadatos: base.metadatos || {
+      originalValue: talla,
+      originalUnit: unidadEntrada,
+      normalizedValue: valorCm,
+      normalizedUnit: "cm",
+      conversionApplied: unidadEntrada.startsWith("m")
+    },
     valido: true,
     advertencias: base.advertencias
   };

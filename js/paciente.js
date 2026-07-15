@@ -2596,51 +2596,7 @@ function seleccionarValorPaciente(etiqueta = "Campo", valorActual = "", opciones
   });
 }
 
-window.editarCampoPaciente = async function(campo, etiqueta, tipo = "text") {
-  if (campo === "edad") {
-    alert("La edad se calcula automaticamente a partir de la fecha de nacimiento. Edita la fecha de nacimiento para actualizarla.");
-    return;
-  }
-
-  if (campo === "fechaIngreso") {
-    window.abrirSelectorIngresoPaciente();
-    return;
-  }
-
-  if (campo === "fechaNacimiento") {
-    window.abrirSelectorFechaNacimientoPaciente();
-    return;
-  }
-
-  if (campo === "ultimoIngreso") {
-    window.abrirSelectorUltimoIngresoPaciente();
-    return;
-  }
-
-  const datos = datosPacienteActual || await obtenerUsuario(uidPaciente);
-  const valorActual = campo === "fechaNacimiento"
-    ? obtenerFechaNacimiento(datos)
-    : campo === "fechaIngreso"
-      ? obtenerFechaIngreso(datos)
-      : datos?.[campo] || datos?.datosInstitucionales?.[campo] || "";
-  const etiquetaCampo = etiqueta || campo;
-  let nuevoValor = null;
-  const opciones = opcionesCampoPaciente(campo);
-
-  if (opciones.length) {
-    nuevoValor = await seleccionarValorPaciente(etiquetaCampo, valorActual, opciones);
-  } else if (tipo === "textarea") {
-    nuevoValor = prompt(`${etiquetaCampo}:`, valorActual);
-  } else if (tipo === "date") {
-    nuevoValor = prompt(`${etiquetaCampo} (AAAA-MM-DD):`, valorActual);
-  } else if (tipo === "datetime") {
-    nuevoValor = prompt(`${etiquetaCampo} (DD/MM/AAAA HH:mm):`, formatearFecha(valorActual));
-  } else if (tipo === "number") {
-    nuevoValor = prompt(`${etiquetaCampo}:`, valorActual);
-  } else {
-    nuevoValor = prompt(`${etiquetaCampo}:`, valorActual);
-  }
-
+async function guardarCampoPacienteInline(campo, nuevoValor, datos = {}) {
   if (nuevoValor === null) return;
   if (campo === "fechaIngreso") nuevoValor = normalizarFechaIngreso(nuevoValor);
 
@@ -2711,6 +2667,80 @@ window.editarCampoPaciente = async function(campo, etiqueta, tipo = "text") {
 
   await actualizarUsuario(uidPaciente, actualizacion);
   await cargarDatosPaciente();
+}
+
+function crearControlEditorCampoPaciente(campo, tipo, valorActual, opciones = []) {
+  if (opciones.length) {
+    return `
+      <select class="editor-campo-paciente-control" data-editor-campo-valor>
+        ${opciones.map((opcion) => `<option value="${escaparHTML(opcion)}" ${opcion === valorActual ? "selected" : ""}>${escaparHTML(opcion)}</option>`).join("")}
+      </select>
+      <input class="editor-campo-paciente-manual" data-editor-campo-manual placeholder="Escribir otra opcion" value="">
+    `;
+  }
+  if (tipo === "textarea") {
+    return `<textarea class="editor-campo-paciente-control" data-editor-campo-valor>${escaparHTML(valorActual)}</textarea>`;
+  }
+  return `<input class="editor-campo-paciente-control" data-editor-campo-valor type="${tipo === "number" ? "number" : tipo === "date" ? "date" : "text"}" value="${escaparHTML(valorActual)}">`;
+}
+
+window.editarCampoPaciente = async function(campo, etiqueta, tipo = "text") {
+  if (campo === "edad") {
+    alert("La edad se calcula automaticamente a partir de la fecha de nacimiento. Edita la fecha de nacimiento para actualizarla.");
+    return;
+  }
+
+  if (campo === "fechaIngreso") {
+    window.abrirSelectorIngresoPaciente();
+    return;
+  }
+
+  if (campo === "fechaNacimiento") {
+    window.abrirSelectorFechaNacimientoPaciente();
+    return;
+  }
+
+  if (campo === "ultimoIngreso") {
+    window.abrirSelectorUltimoIngresoPaciente();
+    return;
+  }
+
+  const datos = datosPacienteActual || await obtenerUsuario(uidPaciente);
+  const valorActual = campo === "fechaNacimiento"
+    ? obtenerFechaNacimiento(datos)
+    : campo === "fechaIngreso"
+      ? obtenerFechaIngreso(datos)
+      : datos?.[campo] || datos?.datosInstitucionales?.[campo] || "";
+  const etiquetaCampo = etiqueta || campo;
+  const opciones = opcionesCampoPaciente(campo);
+  const disparador = document.activeElement?.classList?.contains("boton-editar-dato")
+    ? document.activeElement
+    : null;
+  const fila = disparador?.closest("p, .registro-card, .lab-card, article") || disparador?.parentElement;
+
+  document.querySelectorAll(".editor-campo-paciente-inline").forEach((editor) => editor.remove());
+  const editor = document.createElement("div");
+  editor.className = "editor-campo-paciente-inline";
+  editor.innerHTML = `
+    <strong>${escaparHTML(etiquetaCampo)}</strong>
+    ${crearControlEditorCampoPaciente(campo, tipo, valorActual, opciones)}
+    <div class="editor-campo-paciente-actions">
+      <button type="button" data-guardar-editor-paciente>Guardar</button>
+      <button type="button" class="boton-secundario" data-cancelar-editor-paciente>Cancelar</button>
+    </div>
+  `;
+
+  const destino = fila || document.querySelector("#seccionResumen .tarjeta") || document.body;
+  destino.insertAdjacentElement("afterend", editor);
+
+  editor.querySelector("[data-cancelar-editor-paciente]")?.addEventListener("click", () => editor.remove());
+  editor.querySelector("[data-guardar-editor-paciente]")?.addEventListener("click", async () => {
+    const manual = editor.querySelector("[data-editor-campo-manual]")?.value?.trim();
+    const control = editor.querySelector("[data-editor-campo-valor]");
+    const nuevoValor = manual || control?.value || "";
+    await guardarCampoPacienteInline(campo, nuevoValor, datos);
+  });
+  editor.querySelector("[data-editor-campo-valor]")?.focus();
 };
 
 async function guardarEquipoClinicoPaciente(equipoClinico = []) {
@@ -4598,11 +4628,16 @@ window.abrirHistoriaClinica = function() {
 };
 
 function datosFormularioTratamiento() {
+  sincronizarCamposTratamientoDesdeTomas();
   actualizarDosisTotalDiaTratamiento();
+  const tomas = leerTomasTratamiento();
   return {
     medicamento: valorCampo("tratamientoMedicamento"),
     dosis: valorCampo("tratamientoDosis"),
     frecuencia: valorCampo("tratamientoFrecuencia"),
+    modoFrecuencia: valorCampo("tratamientoModoFrecuencia") || "horas_especificas",
+    vecesDia: valorCampo("tratamientoVecesDia") || String(tomas.length || numeroTomasTratamiento()),
+    tomas,
     via: valorCampo("tratamientoVia"),
     horarios: valorCampo("tratamientoHorarios"),
     cantidadTotalDia: valorCampo("cantidadTotalDia"),
@@ -4622,6 +4657,8 @@ function limpiarFormularioTratamiento() {
     "tratamientoMedicamento",
     "tratamientoDosis",
     "tratamientoFrecuencia",
+    "tratamientoModoFrecuencia",
+    "tratamientoVecesDia",
     "tratamientoVia",
     "tratamientoHorarios",
     "cantidadTotalDia",
@@ -4634,6 +4671,9 @@ function limpiarFormularioTratamiento() {
   const campoCantidad = document.getElementById("cantidadTotalDia");
   if (campoCantidad) campoCantidad.dataset.auto = "";
   ponerValor("tratamientoEstado", "activo");
+  ponerValor("tratamientoModoFrecuencia", "horas_especificas");
+  ponerValor("tratamientoVecesDia", "3");
+  renderizarTomasTratamiento();
 }
 
 async function guardarTratamientoPaciente() {
@@ -4797,6 +4837,9 @@ function editarTratamientoPaciente(id) {
   ponerValor("tratamientoMedicamento", t.medicamento);
   ponerValor("tratamientoDosis", t.dosis);
   ponerValor("tratamientoFrecuencia", t.frecuencia);
+  ponerValor("tratamientoModoFrecuencia", t.modoFrecuencia || "horas_especificas");
+  const tomasGuardadas = Array.isArray(t.tomas) ? t.tomas.length : 0;
+  ponerValor("tratamientoVecesDia", t.vecesDia || String(tomasGuardadas || obtenerVecesPorDia(t.frecuencia || "") || 1));
   ponerValor("tratamientoVia", t.via);
   ponerValor("tratamientoHorarios", t.horarios);
   ponerValor("cantidadTotalDia", t.cantidadTotalDia);
@@ -4808,6 +4851,7 @@ function editarTratamientoPaciente(id) {
   ponerValor("tratamientoFechaSuspension", t.fechaSuspension);
   ponerValor("tratamientoMotivoSuspension", t.motivoSuspension);
   ponerValor("tratamientoObservaciones", t.observaciones);
+  renderizarTomasTratamiento(tomasDesdeTratamientoGuardado(t));
 }
 
 async function eliminarTratamientoPaciente(id) {
@@ -4894,9 +4938,115 @@ function extraerCantidadesDosis(dosis = "") {
   return matches.map((match) => numeroDesdeTexto(match[1])).filter((valor) => valor > 0);
 }
 
+const HORARIOS_TRATAMIENTO_DEFAULT = ["08:00", "15:00", "22:00", "22:00"];
+
+function numeroTomasTratamiento() {
+  const modo = valorCampo("tratamientoModoFrecuencia");
+  if (modo === "cada_8_horas" || modo === "manana_tarde_noche") return 3;
+  if (modo === "cada_12_horas") return 2;
+  return Math.max(1, Number(valorCampo("tratamientoVecesDia")) || obtenerVecesPorDia(valorCampo("tratamientoFrecuencia")) || 1);
+}
+
+function horariosPorModoTratamiento(modo, total) {
+  if (modo === "cada_8_horas") return ["08:00", "16:00", "00:00"].slice(0, total);
+  if (modo === "cada_12_horas") return ["08:00", "20:00"].slice(0, total);
+  if (modo === "manana_tarde_noche") return ["08:00", "15:00", "22:00"].slice(0, total);
+  return HORARIOS_TRATAMIENTO_DEFAULT.slice(0, total);
+}
+
+function etiquetaFrecuenciaTratamiento(modo, total) {
+  if (modo === "cada_8_horas") return "cada 8 horas";
+  if (modo === "cada_12_horas") return "cada 12 horas";
+  if (modo === "manana_tarde_noche") return "mañana, tarde y noche";
+  return `${total} vez${total === 1 ? "" : "es"} al dia`;
+}
+
+function leerTomasTratamiento() {
+  return [...document.querySelectorAll("[data-toma-tratamiento]")]
+    .map((row) => ({
+      cantidad: row.querySelector("[data-toma-cantidad]")?.value?.trim() || "",
+      horario: row.querySelector("[data-toma-horario]")?.value?.trim() || ""
+    }))
+    .filter((toma) => toma.cantidad || toma.horario);
+}
+
+function sincronizarCamposTratamientoDesdeTomas() {
+  const tomas = leerTomasTratamiento();
+  const modo = valorCampo("tratamientoModoFrecuencia") || "horas_especificas";
+  const total = Math.max(tomas.length, numeroTomasTratamiento());
+  const frecuencia = etiquetaFrecuenciaTratamiento(modo, total);
+  const dosis = tomas
+    .map((toma) => [toma.cantidad, toma.horario ? `a las ${toma.horario}` : ""].filter(Boolean).join(" "))
+    .filter(Boolean)
+    .join(", ");
+
+  ponerValor("tratamientoFrecuencia", frecuencia);
+  ponerValor("tratamientoDosis", dosis);
+  ponerValor("tratamientoHorarios", tomas.map((toma) => toma.horario).filter(Boolean).join(", "));
+}
+
+function renderizarTomasTratamiento(tomasIniciales = null) {
+  const contenedor = document.getElementById("contenedorTomasTratamiento");
+  if (!contenedor) return;
+
+  const modo = valorCampo("tratamientoModoFrecuencia") || "horas_especificas";
+  const total = numeroTomasTratamiento();
+  const horarios = horariosPorModoTratamiento(modo, total);
+  const tomasActuales = Array.isArray(tomasIniciales) && tomasIniciales.length
+    ? tomasIniciales
+    : leerTomasTratamiento();
+
+  contenedor.innerHTML = Array.from({ length: total }, (_, index) => {
+    const toma = tomasActuales[index] || {};
+    const cantidad = toma.cantidad || (index === 0 ? "1 tableta" : "");
+    const horario = toma.horario || horarios[index] || "";
+    return `
+      <div class="tratamiento-toma-row" data-toma-tratamiento>
+        <label><span>Dosis ${index + 1}</span><input data-toma-cantidad placeholder="Ej. 1 tableta" value="${escaparHTML(cantidad)}"></label>
+        <label><span>Horario</span><input data-toma-horario list="catalogoHorariosTratamiento" placeholder="08:00" value="${escaparHTML(horario)}"></label>
+      </div>
+    `;
+  }).join("");
+
+  contenedor.querySelectorAll("input").forEach((input) => {
+    input.addEventListener("input", () => {
+      sincronizarCamposTratamientoDesdeTomas();
+      actualizarDosisTotalDiaTratamiento();
+    });
+    input.addEventListener("change", () => {
+      sincronizarCamposTratamientoDesdeTomas();
+      actualizarDosisTotalDiaTratamiento();
+    });
+  });
+
+  sincronizarCamposTratamientoDesdeTomas();
+  actualizarDosisTotalDiaTratamiento();
+}
+
+function tomasDesdeTratamientoGuardado(t = {}) {
+  if (Array.isArray(t.tomas) && t.tomas.length) return t.tomas;
+  const dosis = String(t.dosis || "");
+  const horarios = String(t.horarios || "")
+    .split(/[,;]/)
+    .map((h) => h.trim())
+    .filter(Boolean);
+  const partesDosis = dosis
+    .split(/,(?=\s*\d|\s*[a-z])/i)
+    .map((p) => p.trim())
+    .filter(Boolean);
+
+  return horarios.map((horario, index) => ({
+    cantidad: (partesDosis[index] || partesDosis[0] || "").replace(/\s*a\s+las\s+\d{1,2}:\d{2}.*/i, "").trim(),
+    horario
+  }));
+}
+
 function calcularDosisTotalDiaTratamiento(t = {}) {
   const presentacion = extraerPresentacionMedicamento(t.medicamento || "");
-  const cantidades = extraerCantidadesDosis(t.dosis || "");
+  const dosisFuente = Array.isArray(t.tomas) && t.tomas.length
+    ? t.tomas.map((toma) => toma.cantidad).join(", ")
+    : t.dosis || "";
+  const cantidades = extraerCantidadesDosis(dosisFuente);
   const veces = obtenerVecesPorDia(t.frecuencia || "");
   const cantidadManual = Number(String(t.cantidadTotalDia || "").replace(",", "."));
 
@@ -4987,7 +5137,13 @@ function formatearIndicacionTratamiento(t = {}, incluirMedicamento = true) {
   const medicamento = incluirMedicamento ? asegurarPunto(t.medicamento || "") : "";
   const via = limpiarPuntoFinal(t.via || "");
   const frecuencia = limpiarPuntoFinal(t.frecuencia || "");
-  const dosis = limpiarPuntoFinal(t.dosis || "");
+  const dosisTomas = Array.isArray(t.tomas) && t.tomas.length
+    ? t.tomas
+      .map((toma) => [limpiarPuntoFinal(toma.cantidad || ""), toma.horario ? `a las ${limpiarPuntoFinal(toma.horario)}` : ""].filter(Boolean).join(" "))
+      .filter(Boolean)
+      .join(", ")
+    : "";
+  const dosis = limpiarPuntoFinal(dosisTomas || t.dosis || "");
   const horarios = formatearHorariosTratamiento(t.horarios || "");
 
   const tomar = [via, frecuencia].filter(Boolean).join(" ");
@@ -4995,7 +5151,11 @@ function formatearIndicacionTratamiento(t = {}, incluirMedicamento = true) {
 
   if (medicamento) partes.push(medicamento);
   if (tomar) partes.push(asegurarPunto(`Tomar ${tomar}`));
-  if (dosis || horarios) partes.push(asegurarPunto([dosis, horarios].filter(Boolean).join(" ")));
+  if (dosis) {
+    partes.push(asegurarPunto(dosis));
+  } else if (horarios) {
+    partes.push(asegurarPunto(horarios));
+  }
 
   if (!partes.length && !incluirMedicamento) {
     return [t.dosis, t.frecuencia, t.via, t.horarios].filter(Boolean).join(" · ");
@@ -5620,6 +5780,13 @@ document.addEventListener("click", (evento) => {
   document.getElementById(id)?.addEventListener("input", actualizarDosisTotalDiaTratamiento);
   document.getElementById(id)?.addEventListener("change", actualizarDosisTotalDiaTratamiento);
 });
+document.getElementById("tratamientoModoFrecuencia")?.addEventListener("change", () => {
+  renderizarTomasTratamiento();
+});
+document.getElementById("tratamientoVecesDia")?.addEventListener("change", () => {
+  renderizarTomasTratamiento();
+});
+renderizarTomasTratamiento();
 document.getElementById("abrirMedicamentoManual")?.addEventListener("click", abrirMedicamentoManual);
 document.getElementById("cerrarMedicamentoManual")?.addEventListener("click", cerrarMedicamentoManual);
 document.getElementById("cancelarMedicamentoManual")?.addEventListener("click", cerrarMedicamentoManual);

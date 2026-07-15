@@ -352,9 +352,9 @@ function guardarUltimoPaciente(id, data = {}) {
 
 function calcularTodo() {
   const edad = calcularEdadPediatrica($("fechaNacimiento").value, $("fechaMedicion").value ? new Date($("fechaMedicion").value) : new Date(), $("edadGestacional").value);
-  const tallaInfo = analizarTalla($("tallaCm").value);
-  const imc = calcularIMC($("pesoKg").value, $("tallaCm").value);
-  const sc = superficieCorporal($("pesoKg").value, $("tallaCm").value);
+  const tallaInfo = analizarTalla($("tallaCm").value, $("tallaUnidad")?.value || "cm");
+  const imc = calcularIMC($("pesoKg").value, tallaInfo.valorCm);
+  const sc = superficieCorporal($("pesoKg").value, tallaInfo.valorCm);
   const mantenimiento = mantenimientoHollidaySegarDetalle($("pesoKg").value);
   const deficit = calcularDeficit($("pesoKg").value, $("deshidratacion").value);
   const diuresis = calcularDiuresis($("diuresisMl").value, $("pesoKg").value, $("diuresisHoras").value);
@@ -372,8 +372,9 @@ function calcularTodo() {
     edadGestacional: $("edadGestacional").value,
     pesoKg: $("pesoKg").value,
     tallaCm: $("tallaCm").value,
+    tallaUnidad: $("tallaUnidad")?.value || "cm",
     perimetroCefalico: $("perimetroCefalico").value,
-    referenceId: $("referenciaCrecimiento")?.value || "who_2006_0_5"
+    referenceId: $("referenciaCrecimiento")?.value || "who_auto"
   });
 
   renderResumen(edad, { tallaInfo, imc, sc });
@@ -487,11 +488,13 @@ function renderTabCrecimiento() {
       <div class="ped-panel-title-row">
         <div>
           <h3>Crecimiento y somatometría</h3>
-          <p>Los percentiles se calculan únicamente si existe una tabla oficial local para la referencia seleccionada.</p>
+          <p>Percentiles, puntuación Z y curvas se calculan con la referencia seleccionada y la edad exacta del paciente.</p>
         </div>
         <label class="ped-field ped-reference-select">Referencia
           <select id="referenciaCrecimiento">
-            <option value="who_2006_0_5" ${crecimiento.reference?.id === "who_2006_0_5" ? "selected" : ""}>OMS 2006/2007</option>
+            <option value="who_auto" ${["who_2006_0_5", "who_2007_5_19"].includes(crecimiento.reference?.id) ? "selected" : ""}>OMS automática por edad</option>
+            <option value="who_2006_0_5" ${crecimiento.reference?.id === "who_2006_0_5" ? "selected" : ""}>OMS 2006, 0 a 5 años</option>
+            <option value="who_2007_5_19" ${crecimiento.reference?.id === "who_2007_5_19" ? "selected" : ""}>OMS 2007, 5 a 19 años</option>
             <option value="cdc_2000_2_20" ${crecimiento.reference?.id === "cdc_2000_2_20" ? "selected" : ""}>CDC 2000</option>
             <option value="mx_context" ${crecimiento.reference?.id === "mx_context" ? "selected" : ""}>México - contexto poblacional</option>
           </select>
@@ -501,7 +504,7 @@ function renderTabCrecimiento() {
         <b>Edad: ${c.edad?.edadCronologicaTexto || "sin calcular"}</b>
         <span>Fecha visible: ${formatearFechaDDMMAAAA($("fechaNacimiento").value) || "sin fecha"}</span>
         <span>IMC: ${c.imc ? c.imc.toFixed(2) : "-"} kg/m² · SC Mosteller: ${c.sc ? c.sc.mosteller.toFixed(2) : "-"} m²</span>
-        <span>Talla normalizada: ${formatearTallaClinica(c.tallaInfo || analizarTalla($("tallaCm").value))}</span>
+        <span>Talla normalizada: ${formatearTallaClinica(c.tallaInfo || analizarTalla($("tallaCm").value, $("tallaUnidad")?.value || "cm"))}</span>
       </div>
       <div class="ped-growth-grid">
         ${crecimiento.indicators.map(renderGrowthIndicator).join("")}
@@ -517,7 +520,12 @@ function renderGrowthIndicator(indicator) {
     <div class="ped-growth-card">
       <span>${indicator.label}</span>
       <b>${indicator.available ? `${formatNumber(indicator.value)} ${indicator.unit}` : "Sin dato"}</b>
+      <div class="ped-growth-metrics">
+        <div><small>Puntuación Z</small><strong>${indicator.z !== null && indicator.z !== undefined ? `${formatNumber(indicator.z)} DE` : "-"}</strong></div>
+        <div><small>Percentil</small><strong>${indicator.percentile !== null && indicator.percentile !== undefined ? `P${formatNumber(indicator.percentile)}` : "-"}</strong></div>
+      </div>
       <small>${indicator.interpretation}</small>
+      <button class="ped-link-button" type="button" data-growth-reference="${indicator.id}">Ver referencia utilizada</button>
       ${chart}
     </div>
   `;
@@ -530,7 +538,7 @@ function renderGrowthChart(indicator) {
   if (!Array.isArray(indicator.curves) || !indicator.curves.length) {
     return `
       <div class="ped-growth-chart-empty">
-        Curva no disponible: falta importar la tabla LMS oficial local de este indicador.
+        No se pudo calcular este indicador con la referencia seleccionada.
       </div>
     `;
   }
@@ -568,22 +576,40 @@ function renderGrowthChart(indicator) {
       <text x="${w - pad}" y="${h - 6}" text-anchor="end">${escapeAttr(indicator.unit || "")}</text>
     </svg>
     <div class="ped-growth-source">
-      ${escapeAttr(indicator.sourceLabel || "Referencia: pendiente de tabla oficial local.")}
+      ${escapeAttr(indicator.sourceLabel || "Referencia no disponible.")}
     </div>
   `;
 }
 
 function renderAlertasCrecimiento() {
-  const alertas = estado.crecimiento?.alerts || [];
-  if (!alertas.length) return "";
+  const captura = estado.crecimiento?.captureWarnings || [];
+  const clinicas = estado.crecimiento?.clinicalAlerts || [];
+  if (!captura.length && !clinicas.length) return "";
   return `
     <article class="ped-panel ped-alert-panel">
-      <h3>Alertas de calidad de dato</h3>
-      <ul>${alertas.map((mensaje) => `<li>${mensaje}</li>`).join("")}</ul>
+      <h3>Revisión clínica de crecimiento</h3>
+      ${captura.length ? `<h4>Verifica captura</h4><ul>${captura.map((mensaje) => `<li>${mensaje}</li>`).join("")}</ul>` : ""}
+      ${clinicas.length ? `<h4>Alertas clínicas</h4><ul>${clinicas.map((mensaje) => `<li>${mensaje}</li>`).join("")}</ul>` : ""}
     </article>
   `;
 }
 
+function mostrarReferenciaCrecimiento(indicatorId = "") {
+  const indicador = estado.crecimiento?.indicators?.find((item) => item.id === indicatorId);
+  const referencia = indicador?.reference || estado.crecimiento?.reference;
+  if (!referencia) return;
+  const texto = [
+    `Referencia: ${referencia.label}`,
+    `Institución: ${referencia.organization}`,
+    `Año: ${referencia.publicationYear || referencia.version || "-"}`,
+    `Rango: ${referencia.ageRangeMonths?.[0] ?? "-"} a ${referencia.ageRangeMonths?.[1] ?? "-"} meses`,
+    `Indicador: ${indicador?.label || "-"}`,
+    `Método: ${referencia.method}`,
+    `Fuente: ${referencia.sourceUrl}`,
+    `Cita: ${referencia.citation || "-"}`
+  ].join("\n");
+  alert(texto);
+}
 function renderTabHerramientas() {
   return `
     <article class="ped-card"><span>Herramienta</span><h3>Edad exacta</h3><p>Edad cronológica, días de vida, semanas y edad corregida si se registra edad gestacional.</p><button class="ped-primary" data-ir="crecimiento">Abrir</button></article>

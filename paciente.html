@@ -729,8 +729,35 @@
             <option value="3 veces al dia"></option>
             <option value="4 veces al dia"></option>
           </datalist>
-          <label>Dosis/horario<input id="tratamientoDosis" placeholder="Ej. 1 tableta a las 08:00"></label>
-          <label>Horarios<input id="tratamientoHorarios" placeholder="Ej. 08:00, 22:00"></label>
+          <label>Modo de frecuencia
+            <select id="tratamientoModoFrecuencia">
+              <option value="horas_especificas">Horas especificas</option>
+              <option value="cada_8_horas">Cada 8 horas</option>
+              <option value="cada_12_horas">Cada 12 horas</option>
+              <option value="manana_tarde_noche">Mañana / tarde / noche</option>
+            </select>
+          </label>
+          <label>Numero de tomas al dia
+            <select id="tratamientoVecesDia">
+              <option value="1">1 vez al dia</option>
+              <option value="2">2 veces al dia</option>
+              <option value="3" selected>3 veces al dia</option>
+              <option value="4">4 veces al dia</option>
+            </select>
+          </label>
+          <input id="tratamientoDosis" type="hidden">
+          <input id="tratamientoHorarios" type="hidden">
+          <div id="contenedorTomasTratamiento" class="tratamiento-tomas-grid"></div>
+          <datalist id="catalogoHorariosTratamiento">
+            <option value="06:00"></option>
+            <option value="08:00"></option>
+            <option value="12:00"></option>
+            <option value="15:00"></option>
+            <option value="18:00"></option>
+            <option value="20:00"></option>
+            <option value="22:00"></option>
+            <option value="00:00"></option>
+          </datalist>
           <label>Fecha de inicio<input id="tratamientoFechaInicio" type="date"></label>
           <label>Cantidad total al dia
             <input

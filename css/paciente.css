@@ -540,6 +540,63 @@ textarea{
   margin-top:8px;
 }
 
+.tratamiento-tomas-grid {
+  grid-column: 1 / -1;
+  display: grid;
+  gap: 10px;
+}
+
+.tratamiento-toma-row {
+  display: grid;
+  grid-template-columns: minmax(120px, 1fr) minmax(120px, 0.8fr);
+  gap: 10px;
+  align-items: end;
+  padding: 10px;
+  border: 1px solid rgba(56, 189, 248, 0.22);
+  border-radius: 14px;
+  background: rgba(8, 18, 38, 0.62);
+}
+
+.tratamiento-toma-row span {
+  display: block;
+  color: #7dd3fc;
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin-bottom: 5px;
+}
+
+.tratamiento-toma-row input {
+  width: 100%;
+}
+
+.editor-campo-paciente-inline {
+  display: grid;
+  gap: 8px;
+  margin: 8px 0 12px;
+  padding: 12px;
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  border-radius: 14px;
+  background: rgba(8, 18, 38, 0.92);
+  box-shadow: 0 16px 35px rgba(0, 0, 0, 0.22);
+}
+
+.editor-campo-paciente-inline strong {
+  color: #e5f5ff;
+}
+
+.editor-campo-paciente-control,
+.editor-campo-paciente-manual {
+  width: 100%;
+}
+
+.editor-campo-paciente-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
 .form-actions {
   display:flex;
   justify-content:flex-end;

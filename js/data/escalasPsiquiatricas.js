@@ -433,6 +433,46 @@ export const ESCALAS_PSIQUIATRICAS = [
       "Despersonalizacion, desrealizacion o sensacion de irrealidad.",
       "Alteraciones perceptivas o confusionales."
     ]
+  },
+  {
+    id: "bush-francis",
+    nombre: "Bush-Francis Catatonia Rating Scale",
+    area: "Catatonia",
+    descripcion: "Escala clínica para tamizaje y seguimiento de signos catatónicos. Debe aplicarse por personal clínico entrenado.",
+    rango: "0-69",
+    opciones: ["Ausente", "Leve", "Moderado", "Severo"],
+    valores: [0, 1, 2, 3],
+    puntosCorte: [
+      { max: 1, texto: "Sin datos suficientes de catatonia en esta captura" },
+      { max: 6, texto: "Datos leves; valorar exploración clínica dirigida" },
+      { max: 18, texto: "Catatonia probable; requiere integración clínica" },
+      { max: 69, texto: "Catatonia marcada; valorar manejo urgente según contexto" }
+    ],
+    items: [
+      "Inmovilidad / estupor.",
+      "Mutismo.",
+      "Mirada fija.",
+      "Posturas o catalepsia.",
+      "Rigidez.",
+      "Negativismo.",
+      "Flexibilidad cérea.",
+      "Retraimiento.",
+      "Excitación.",
+      "Impulsividad.",
+      "Obediencia automática.",
+      "Mitgehen.",
+      "Gegenhalten.",
+      "Ambitendencia.",
+      "Grasp reflex.",
+      "Perseveración.",
+      "Estereotipias.",
+      "Manierismos.",
+      "Verbigeración.",
+      "Rigidez autonómica / signos vegetativos.",
+      "Combatividad.",
+      "Ecolalia.",
+      "Ecopraxia."
+    ]
   }
 ];
 

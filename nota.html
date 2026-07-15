@@ -149,6 +149,21 @@
     </summary>
 
     <div class="panel-escala-contenido">
+    <div class="grid-observacion">
+        <label>Tipo de escala
+            <select id="filtroTipoEscalaNota">
+                <option value="todas">Todas</option>
+                <option value="psiquiatrica">Psiquiatría</option>
+                <option value="medicina_general">Medicina general</option>
+                <option value="cardiologia">Cardiología</option>
+                <option value="pediatrica">Pediatría</option>
+                <option value="cognitiva">Cognitiva</option>
+            </select>
+        </label>
+        <label>Buscar escala
+            <input id="buscarEscalaNota" placeholder="Buscar por nombre, uso o tipo">
+        </label>
+    </div>
     <label for="selectorEscalaNota">Escala</label>
     <select id="selectorEscalaNota"></select>
     <div class="modo-escala-nota" role="tablist" aria-label="Modo de aplicacion de escala">
@@ -326,6 +341,9 @@
                     <button type="button" class="boton-secundario boton-mini" data-guardar-medico-firma="1">
                         Agregar al catalogo
                     </button>
+                    <button type="button" class="boton-secundario boton-mini" data-limpiar-firma="1">
+                        Limpiar
+                    </button>
                 </div>
                 <label>Nombre <input id="obsFirma1Nombre" list="catalogoMedicosFirmas" data-firma-nombre="1"></label>
                 <label>Cargo <input id="obsFirma1Cargo" placeholder="Ej. Medico adscrito"></label>
@@ -338,6 +356,9 @@
                     <button type="button" class="boton-secundario boton-mini" data-guardar-medico-firma="2">
                         Agregar al catalogo
                     </button>
+                    <button type="button" class="boton-secundario boton-mini" data-limpiar-firma="2">
+                        Limpiar
+                    </button>
                 </div>
                 <label>Nombre <input id="obsFirma2Nombre" list="catalogoMedicosFirmas" data-firma-nombre="2"></label>
                 <label>Cargo <input id="obsFirma2Cargo" placeholder="Ej. Medico residente"></label>
@@ -349,6 +370,9 @@
                     <strong>Firma campo 3</strong>
                     <button type="button" class="boton-secundario boton-mini" data-guardar-medico-firma="3">
                         Agregar al catalogo
+                    </button>
+                    <button type="button" class="boton-secundario boton-mini" data-limpiar-firma="3">
+                        Limpiar
                     </button>
                 </div>
                 <label>Nombre <input id="obsFirma3Nombre" list="catalogoMedicosFirmas" data-firma-nombre="3"></label>

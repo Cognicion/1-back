@@ -13,7 +13,9 @@ const CATEGORIAS_MEDICAMENTOS = [
   { id: "qt", nombre: "Riesgo de QT", patrones: ["haloperidol", "ziprasidona", "quetiapina", "risperidona", "escitalopram", "citalopram", "amitriptilina", "clorpromazina", "macrolido", "azitromicina", "claritromicina", "levofloxacino", "ciprofloxacino"] },
   { id: "litio", nombre: "Litio", patrones: ["litio", "carbonato de litio"] },
   { id: "aine", nombre: "AINE", patrones: ["ibuprofeno", "naproxeno", "diclofenaco", "ketorolaco", "celecoxib", "indometacina"] },
-  { id: "ieca_ara", nombre: "IECA/ARA-II", patrones: ["enalapril", "captopril", "lisinopril", "losartan", "valsartan", "telmisartan"] },
+  { id: "ieca", nombre: "IECA", patrones: ["enalapril", "captopril", "lisinopril", "ramipril", "perindopril", "benazepril", "fosinopril", "quinapril"] },
+  { id: "ara2", nombre: "ARA-II", patrones: ["losart", "valsartan", "telmisartan", "irbesartan", "candesartan", "olmesartan", "azilsartan", "eprosartan"] },
+  { id: "ieca_ara", nombre: "IECA/ARA-II", patrones: ["enalapril", "captopril", "lisinopril", "losart", "valsartan", "telmisartan"] },
   { id: "diuretico", nombre: "Diuretico", patrones: ["hidroclorotiazida", "furosemida", "bumetanida", "espironolactona", "eplerenona", "clortalidona"] },
   { id: "ahorrador_potasio", nombre: "Ahorrador de potasio", patrones: ["espironolactona", "eplerenona"] },
   { id: "antiepileptico_inductor", nombre: "Inductor enzimatico", patrones: ["carbamazepina", "oxcarbazepina", "fenitoina", "fenobarbital"] },
@@ -54,6 +56,14 @@ const REGLAS_INTERACCIONES = [
     titulo: "Aumento potencial de niveles de litio",
     efecto: "AINEs, IECA/ARA-II y diureticos pueden elevar concentraciones de litio y favorecer toxicidad: temblor, ataxia, nausea, diarrea, confusion o deterioro renal.",
     recomendacion: "Si la combinacion es necesaria, considerar control de litio, funcion renal, hidratacion y vigilancia estrecha."
+  },
+  {
+    gruposA: ["ieca"],
+    gruposB: ["ara2"],
+    severidad: "Alta",
+    titulo: "Bloqueo dual del sistema renina-angiotensina-aldosterona",
+    efecto: "La combinacion de un IECA con un ARA-II aumenta el riesgo de hiperpotasemia, hipotension, sincope, lesion renal aguda, deterioro de la funcion renal, elevacion de creatinina y alteraciones hidroelectroliticas.",
+    recomendacion: "Evitar la combinacion salvo indicacion especializada y justificada. Si se mantiene, vigilar presion arterial, potasio, creatinina, tasa de filtrado glomerular, hidratacion y sintomas de hipotension o sincope."
   },
   {
     gruposA: ["valproato"],

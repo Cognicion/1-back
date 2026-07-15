@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Laboratorio de Farmacología | Cognición</title>
+  <link rel="icon" href="assets/favicon-cognicion.png">
+  <link rel="stylesheet" href="css/theme.css">
+  <link rel="stylesheet" href="css/laboratorio-farmacologia.css">
+</head>
+<body>
+  <header class="farmaco-header">
+    <a href="dashboard.html" class="farmaco-brand">
+      <img src="assets/favicon-cognicion.png" alt="Cognición">
+      <div>
+        <strong>COGNICIÓN Labs</strong>
+        <span>Laboratorio de Farmacología</span>
+      </div>
+    </a>
+    <nav>
+      <a href="dashboard.html">Dashboard</a>
+      <a href="medico.html">Pacientes</a>
+    </nav>
+  </header>
+
+  <main class="farmaco-shell">
+    <section class="farmaco-hero">
+      <span class="farmaco-kicker">Simulación clínica educativa</span>
+      <h1>Laboratorio de Farmacología</h1>
+      <p>Selecciona medicamentos, agrega comorbilidades opcionales y revisa interacciones farmacológicas relevantes antes de prescribir.</p>
+      <small>Herramienta de apoyo clínico. No sustituye el juicio médico ni fuentes farmacológicas institucionales.</small>
+    </section>
+
+    <section class="farmaco-grid">
+      <article class="farmaco-panel">
+        <div class="panel-heading"><span>Paso 1</span><h2>Paciente simulado</h2></div>
+        <div class="form-grid">
+          <label>Edad<input id="farmacoEdad" type="number" min="0" max="120" placeholder="Ej. 45"></label>
+          <label>Sexo<select id="farmacoSexo"><option value="">No especificado</option><option value="femenino">Femenino</option><option value="masculino">Masculino</option><option value="otro">Otro</option></select></label>
+          <label>Función renal / eGFR<input id="farmacoEGFR" type="number" min="0" max="180" placeholder="mL/min/1.73m²"></label>
+          <label>Creatinina<input id="farmacoCreatinina" type="number" min="0" step="0.1" placeholder="mg/dL"></label>
+          <label>Alergias<input id="farmacoAlergias" placeholder="Ej. penicilina, AINE"></label>
+          <label>Comorbilidades<textarea id="farmacoComorbilidades" placeholder="Ej. enfermedad renal crónica, hepatopatía, hipertensión, embarazo, consumo de alcohol"></textarea></label>
+        </div>
+      </article>
+
+      <article class="farmaco-panel">
+        <div class="panel-heading"><span>Paso 2</span><h2>Medicamentos</h2></div>
+        <label>Buscar en catálogo<input id="farmacoBuscador" list="farmacoCatalogo" placeholder="Ej. Losartán, Enalapril, Sertralina"></label>
+        <datalist id="farmacoCatalogo"></datalist>
+        <div class="farmaco-add-row">
+          <input id="farmacoDosis" placeholder="Dosis opcional, ej. 50 mg cada 24 h">
+          <button id="agregarFarmaco" type="button">Agregar</button>
+        </div>
+        <div id="farmacosSeleccionados" class="farmacos-seleccionados"></div>
+      </article>
+    </section>
+
+    <section class="farmaco-panel resultados-panel">
+      <div class="panel-heading"><span>Revisión</span><h2>Interacciones y alertas clínicas</h2></div>
+      <div class="farmaco-actions">
+        <button id="evaluarFarmacos" type="button">Evaluar interacciones</button>
+        <button id="limpiarFarmacos" type="button" class="ghost-action">Limpiar</button>
+      </div>
+      <div id="resultadoInteraccionesFarmaco" class="resultado-interacciones">Agrega dos o más medicamentos para iniciar la revisión.</div>
+    </section>
+  </main>
+
+  <script type="module" src="js/laboratorio-farmacologia.js"></script>
+  <script type="module" src="js/reportes.js"></script>
+</body>
+</html>

@@ -118,6 +118,7 @@ export function renderizarMembranaCurvaIntegrada(canvas, overlay, estado, uiMode
   }
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   const geo = crearGeometria(cssW, cssH, uiMode.cameraMode || "membrana");
+  estado.ocultarFarmacosVisual = uiMode.showDrugs === false;
   dibujarFondo(ctx, cssW, cssH, geo, estado, uiMode);
   if ((uiMode.cameraMode || "membrana") === "modelo3d") {
     renderizarModelo3DFisicoQuimico(ctx, cssW, cssH, estado, uiMode);
@@ -131,13 +132,15 @@ export function renderizarMembranaCurvaIntegrada(canvas, overlay, estado, uiMode
   if (!vistaSinaptica) {
     dibujarMembranaCurva(ctx, geo, estado);
     if (uiMode.showCharges !== false) dibujarCargas(ctx, geo, estado, uiMode);
-    dibujarCanales(ctx, geo, estado, uiMode);
-    dibujarBombaNaK(ctx, geo, estado);
+    if (uiMode.showChannels !== false) {
+      dibujarCanales(ctx, geo, estado, uiMode);
+      dibujarBombaNaK(ctx, geo, estado);
+    }
     dibujarFlujos(ctx, geo, estado, uiMode);
   }
-  dibujarIones(ctx, geo, estado, uiMode);
+  if (uiMode.showIons !== false) dibujarIones(ctx, geo, estado, uiMode);
   if (["axon", "general"].includes(uiMode.cameraMode)) dibujarAxon(ctx, geo, estado);
-  if (["terminal", "sinapsis", "general", "farmacologia"].includes(uiMode.cameraMode)) dibujarTerminalSinapsis(ctx, geo, estado, uiMode);
+  if (uiMode.showSynapse !== false && ["terminal", "sinapsis", "general", "farmacologia"].includes(uiMode.cameraMode)) dibujarTerminalSinapsis(ctx, geo, estado, uiMode);
   dibujarFocoSeleccionado(ctx, geo, cssW, cssH, estado, uiMode);
   ctx.restore();
   dibujarLeyenda(ctx, cssW, cssH, estado, uiMode);
@@ -291,6 +294,7 @@ function corrienteVisualPorCanal(flujo, canal) {
 }
 
 function farmacoActivo(estado, patron) {
+  if (estado?.ocultarFarmacosVisual) return null;
   const activos = estado.farmacos?.activos || [];
   return activos.find((farmaco) => patron.test(`${farmaco.id || ""} ${farmaco.nombre || ""} ${farmaco.diana || ""} ${farmaco.clase || ""}`));
 }
@@ -322,7 +326,8 @@ function zonaInfo(id, estado = null) {
   return { ...base, ...(protein || {}), id, titulo: protein?.titulo || base.titulo || id, detalle: protein?.detalle || base.detalle || "Estructura del modelo educativo." };
 }
 
-function dibujarCanales(ctx, geo, estado) {
+function dibujarCanales(ctx, geo, estado, uiMode = {}) {
+  if (uiMode.showChannels === false) return;
   canalesModelo(estado).forEach((ch) => {
     const p = puntoEnArco(geo, ch.t); const n = normalEnArco(p.a);
     ctx.save();
@@ -335,6 +340,7 @@ function dibujarCanales(ctx, geo, estado) {
 }
 
 function dibujarIones(ctx, geo, estado, uiMode) {
+  if (uiMode.showIons === false) return;
   const densidadBase = ({ "muy-baja": 24, baja: 44, media: 74, alta: 108 })[uiMode.particleDensity || "baja"] || 44;
   const slow = ({ "muy-lenta": 0.045, lenta: 0.085, normal: 0.16 })[uiMode.particleSpeed || "lenta"] || 0.085;
   const t = estado.relojVisual * slow;
@@ -367,7 +373,8 @@ function posicionIon(geo, i, ionIndex, t, extra) {
   const x = (0.06 + pseudo(seed) * 0.86) * geo.w + Math.sin(t + seed) * 8;
   const y = extra ? (0.06 + pseudo(seed + 3) * 0.38) * geo.h : (0.54 + pseudo(seed + 9) * 0.38) * geo.h;
   const near = pseudo(seed + 11) < 0.35;
-  return near ? puntoEnArco(geo, pseudo(seed + 17), extra ? 38 + pseudo(seed) * 30 : -38 - pseudo(seed) * 42) : { x, y };
+  const distanciaSegura = Math.max(48, geo.thickness * .62);
+  return near ? puntoEnArco(geo, pseudo(seed + 17), extra ? distanciaSegura + pseudo(seed) * 34 : -distanciaSegura - pseudo(seed) * 44) : { x, y };
 }
 
 function dibujarIon(ctx, x, y, ion, alpha = 1) {
@@ -430,7 +437,8 @@ function dibujarParticulaBio(ctx, p) {
   ctx.restore();
 }
 
-function dibujarFlujos(ctx, geo, estado) {
+function dibujarFlujos(ctx, geo, estado, uiMode = {}) {
+  if (uiMode.showIons === false || uiMode.showChannels === false) return;
   const flujos = [
     { ion: "na", val: -estado.INa, channel: "naV", escala: 28 },
     { ion: "k", val: estado.IK, channel: "kV", escala: 30 },
@@ -442,7 +450,8 @@ function dibujarFlujos(ctx, geo, estado) {
   const channels = Object.fromEntries(canalesModelo(estado).map((c) => [c.id, c]));
   flujos.forEach((f) => {
     const ch = channels[f.channel];
-    const count = corrienteVisualPorCanal(f, ch);
+    const countBase = corrienteVisualPorCanal(f, ch);
+    const count = uiMode.reducedMotion ? Math.min(2, countBase) : countBase;
     if (!count) return;
     const p = puntoEnArco(geo, ch.t);
     const n = normalEnArco(p.a);
