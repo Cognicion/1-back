@@ -2121,7 +2121,7 @@ function renderizarEscalaHistorialPaciente(escala) {
           <strong>${escaparHTML(escala.nombreEscala || "Escala")}</strong>
           <span>${escaparHTML(escala.tipoEscala || "")} - ${escaparHTML(formatearFechaEscala(escala.fechaAplicacion))} - ${escaparHTML(escala.origen || "")}</span>
         </div>
-        <div class="resultado-puntaje">${escaparHTML(String(escala.puntajeTotal ? ""))}${maximo}</div>
+        <div class="resultado-puntaje">${escaparHTML(String(escala.puntajeTotal ? escala.puntajeTotal : ""))}${maximo}</div>
         <p>${escaparHTML(escala.interpretacion || "Sin interpretacion")}</p>
         ${controlVisibilidad}
       </summary>
