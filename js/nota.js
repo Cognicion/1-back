@@ -961,7 +961,7 @@ function renderizarEscalasPreviasNota() {
 
 function renderizarTarjetaEscalaPreviaNota(escala) {
   const respuestas = (escala.respuestasPorItem || []).map((respuesta) => `
-    <li><strong>${escaparHTML(respuesta.item || "")}</strong><span>${escaparHTML(respuesta.respuesta || "")} (${respuesta.valor ? ""}) ${respuesta.dominio ? `· ${escaparHTML(respuesta.dominio)}` : ""}</span></li>
+    <li><strong>${escaparHTML(respuesta.item || "")}</strong><span>${escaparHTML(respuesta.respuesta || "")} (${respuesta.valor ? `${escaparHTML(respuesta.valor)}` : ""}) ${respuesta.dominio ? `· ${escaparHTML(respuesta.dominio)}` : ""}</span></li>
   `).join("");
   const puntajesDominio = escala.puntajesPorDominio && Object.keys(escala.puntajesPorDominio).length
     ? `<p><strong>Puntajes por dominio:</strong> ${escaparHTML(Object.entries(escala.puntajesPorDominio).map(([dominio, valor]) => `${dominio}: ${valor}`).join(" · "))}</p>`
