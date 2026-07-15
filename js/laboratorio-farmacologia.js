@@ -1,4 +1,4 @@
-import { MEDICAMENTOS } from "./data/medicamentos.js";
+import { MEDICAMENTOS_MAESTROS, MEDICAMENTOS_PRESENTACIONES } from "./data/medicamentos.js";
 import { detectarInteraccionesFarmacologicas } from "./data/interaccionesFarmacologicas.js";
 import { evaluarMedicamentosPaciente, obtenerIndicadorSeguridadMedicamento } from "./services/motorClinicoMedicamentos.js";
 
@@ -15,11 +15,17 @@ function escapar(valor = "") {
 
 function opcionesMedicamentos() {
   const opciones = [];
-  MEDICAMENTOS.forEach((med) => {
+  MEDICAMENTOS_MAESTROS.forEach((med) => {
     if (med.nombre) opciones.push(med.nombre);
-    (med.presentaciones || []).forEach((presentacion) => opciones.push(`${med.nombre}, ${presentacion}.`));
+    if (med.genericName && med.genericName !== med.nombre) opciones.push(med.genericName);
+    (med.brandNames || []).forEach((marca) => opciones.push(`${marca} (${med.nombre})`));
+    (med.synonyms || []).forEach((sinonimo) => opciones.push(sinonimo));
   });
-  return [...new Set(opciones)].sort((a, b) => a.localeCompare(b, "es"));
+  MEDICAMENTOS_PRESENTACIONES.forEach((med) => {
+    if (med.texto) opciones.push(med.texto);
+    else if (med.nombre && med.presentacion) opciones.push(`${med.nombre}, ${med.presentacion}.`);
+  });
+  return [...new Set(opciones.filter(Boolean))].sort((a, b) => a.localeCompare(b, "es"));
 }
 
 function pacienteSimulado() {
@@ -91,9 +97,15 @@ function renderInteraccion(item, tipo = "interaccion") {
       <p><b>Medicamentos:</b> ${escapar((item.medicamentos || []).join(" + ") || "No especificados")}</p>
       <p>${escapar(item.efecto || item.descripcion || "")}</p>
       ${item.recomendacion ? `<p><b>Recomendación:</b> ${escapar(item.recomendacion)}</p>` : ""}
+      ${item.fuentes?.length ? `<small>Fuente local: ${escapar(item.fuentes.join("; "))}</small>` : ""}
       <small>${tipo === "interaccion" ? "Interacción medicamento-medicamento" : "Alerta por contexto clínico o riesgo acumulativo"}</small>
     </article>
   `;
+}
+
+function claveAlerta(item = {}) {
+  const meds = (item.medicamentos || []).map(textoNormalizado).sort().join("|");
+  return `${textoNormalizado(item.titulo || item.nombre || "")}|${meds}|${textoNormalizado(item.efecto || item.descripcion || "")}`;
 }
 
 function evaluar() {
@@ -106,10 +118,12 @@ function evaluar() {
   const interacciones = detectarInteraccionesFarmacologicas(seleccionados);
   const evaluacion = evaluarMedicamentosPaciente({ paciente: pacienteSimulado(), medicamentos: seleccionados });
   const indicador = obtenerIndicadorSeguridadMedicamento(evaluacion.alertas || []);
+  const clavesInteracciones = new Set(interacciones.map(claveAlerta));
+  const alertasClinicas = (evaluacion.alertas || []).filter((alerta) => !clavesInteracciones.has(claveAlerta(alerta)));
   const bloques = [
-    `<article class="interaccion-card ${severidadClase(indicador.clase || "")}"><strong>Resumen de seguridad: ${escapar(indicador.etiqueta || "Revisión sin alertas críticas")}</strong><p>Medicamentos revisados: ${seleccionados.length}.</p></article>`,
+    `<article class="interaccion-card ${severidadClase(indicador.clase || "")}"><strong>Resumen de seguridad: ${escapar(indicador.etiqueta || "Revisión sin alertas críticas")}</strong><p>Medicamentos revisados: ${seleccionados.length}. Catálogo activo: ${MEDICAMENTOS_MAESTROS.length} medicamentos y ${MEDICAMENTOS_PRESENTACIONES.length} presentaciones.</p></article>`,
     ...interacciones.map((item) => renderInteraccion(item, "interaccion")),
-    ...(evaluacion.alertas || []).map((item) => renderInteraccion(item, "alerta"))
+    ...alertasClinicas.map((item) => renderInteraccion(item, "alerta"))
   ];
   salida.innerHTML = bloques.length > 1 ? bloques.join("") : "<p>No se detectaron interacciones relevantes con la base local actual. Mantén revisión clínica y farmacológica habitual.</p>";
 }

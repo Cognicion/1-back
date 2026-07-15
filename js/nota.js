@@ -552,7 +552,7 @@ function renderizarOpcionesEscalasNota() {
   selector.innerHTML = [
     htmlGrupoEscalasNota("Escalas clinicas", escalasPsiquiatricasNota),
     htmlGrupoEscalasNota("Medicina general", escalasMedicinaNota),
-    htmlGrupoEscalasNota("Escalas pediatricas", escalasPediatricasNota),
+    htmlGrupoEscalasNota("Escalas pediátricas", escalasPediatricasNota),
     htmlGrupoEscalasNota("Escalas y tamizajes cognitivos", escalasCognitivasNota)
   ].join("");
 
@@ -1845,8 +1845,8 @@ function calcularParametrosPediatriaNota() {
 function textoResumenPediatriaNota(datos) {
   if (!datos) return "";
   return [
-    `Edad pediatrica: ${datos.edadTexto} (${datos.diasVida} dias de vida).`,
-    `Somatometria: peso ${datos.pesoKg ?? "-"} kg, talla ${datos.tallaCm ?? "-"} cm, IMC ${datos.imc ?? "-"}, SC ${datos.superficieCorporalM2 ?? "-"} m2.`,
+    `Edad pediátrica: ${datos.edadTexto} (${datos.diasVida} días de vida).`,
+    `Somatometría: peso ${datos.pesoKg ?? "-"} kg, talla ${datos.tallaCm ?? "-"} cm, IMC ${datos.imc ?? "-"}, SC ${datos.superficieCorporalM2 ?? "-"} m2.`,
     `Liquidos de mantenimiento estimados: ${datos.mantenimientoMlDia ?? "-"} mL/dia (${datos.mantenimientoMlHora ?? "-"} mL/h). Regla 4-2-1: ${datos.regla421MlHora ?? "-"} mL/h.`
   ].join("\n");
 }
@@ -1879,7 +1879,7 @@ function sincronizarParametrosPediatriaNota(datosGuardados = null) {
   asignarValor("notaPedSC", datos.superficieCorporalM2 ? `${datos.superficieCorporalM2} m2` : "");
   asignarValor("notaPedMantenimiento", datos.mantenimientoMlDia ? `${datos.mantenimientoMlDia} mL/dia` : "");
   asignarValor("notaPedRegla421", datos.regla421MlHora ? `${datos.regla421MlHora} mL/h` : "");
-  asignarValor("notaPediatriaResumen", omitido ? "Parametros pediatricos omitidos en esta nota." : textoResumenPediatriaNota(datos));
+  asignarValor("notaPediatriaResumen", omitido ? "Parámetros pediátricos omitidos en esta nota." : textoResumenPediatriaNota(datos));
   renderizarEscalaNotaSeleccionada();
   return datos;
 }
@@ -3635,7 +3635,7 @@ async function htmlWordFrayObservacion() {
       <p class="identificacion">
         <b>Nombre del paciente:</b> ${textoWord(datos.nombrePaciente || pacienteActualDatos.nombre)}
            <b>Fecha de nacimiento:</b> ${textoWord(formatoFechaFray(datos.fechaNacimiento))}
-           <b>Edad:</b> ${textoWord(datos.edad)} ANOS
+           <b>Edad:</b> ${textoWord(datos.edad)} AÑOS
            <b>Cama:</b> ${textoWord(datos.cama)}
            <b>Expediente:</b> ${textoWord(datos.expediente)}
            <b>Sexo:</b> ${textoWord(datos.sexo)}

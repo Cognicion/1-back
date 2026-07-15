@@ -838,8 +838,8 @@ function renderizarResumenPediatricoPaciente(datos = datosPacienteActual || {}) 
 
   bloque.innerHTML = `
     <label>
-      Pediatria
-      <button class="boton-editar-dato" onclick="abrirModuloPediatriaPaciente()">Abrir modulo</button>
+      Pediatría
+      <button class="boton-editar-dato" onclick="abrirModuloPediatriaPaciente()">Abrir módulo</button>
     </label>
     <div class="pediatria-resumen-grid">
       <span><b>Edad exacta</b>${escaparHTML(edad.edadCronologicaTexto)}</span>
@@ -849,7 +849,7 @@ function renderizarResumenPediatricoPaciente(datos = datosPacienteActual || {}) 
       <span><b>Mantenimiento</b>${liquidos ? `${liquidos.mlDia.toFixed(0)} mL/dia` : "Sin peso"}</span>
       <span><b>Regla 4-2-1</b>${liquidos ? `${liquidos.regla421.toFixed(1)} mL/h` : "Sin peso"}</span>
     </div>
-    <small>Los percentiles se calculan solo con tablas LMS oficiales cargadas en Pediatria.</small>
+    <small>Los percentiles se calculan solo con tablas LMS oficiales cargadas en Pediatría.</small>
   `;
 }
 
@@ -3799,7 +3799,7 @@ function bloqueIdentificacionFrayPaciente(datos = {}) {
     <p class="identificacion">
       <b>Nombre del paciente:</b> ${textoWordPaciente(datos.nombrePaciente)}
          <b>Fecha de nacimiento:</b> ${textoWordPaciente(formatoFechaInterconsulta(datos.fechaNacimiento))}
-         <b>Edad:</b> ${textoWordPaciente(datos.edad)} ANOS
+         <b>Edad:</b> ${textoWordPaciente(datos.edad)} AÑOS
          <b>Cama:</b> ${textoWordPaciente(datos.cama)}
          <b>Expediente:</b> ${textoWordPaciente(datos.expediente)}
          <b>Sexo:</b> ${textoWordPaciente(datos.sexo)}
@@ -5241,7 +5241,7 @@ function htmlRecetaPreview(datos = datosRecetaActual()) {
 
     <div class="receta-datos">
       <p><b>Paciente:</b> ${escaparHTML(datos.pacienteNombre)}</p>
-      <p><b>Edad:</b> ${datos.edad !== "" ? escaparHTML(`${datos.edad} anos`) : "No registrada"}</p>
+      <p><b>Edad:</b> ${datos.edad !== "" ? escaparHTML(`${datos.edad} años`) : "No registrada"}</p>
       <p><b>Sexo:</b> ${escaparHTML(datos.sexo || "No registrado")}</p>
       <p><b>Expediente:</b> ${escaparHTML(datos.expediente || "No registrado")}</p>
     </div>
@@ -5450,7 +5450,7 @@ function htmlSolicitudEstudiosPreview(datos = datosSolicitudEstudiosActual()) {
 
     <div class="receta-datos">
       <p><b>Paciente:</b> ${escaparHTML(datos.pacienteNombre)}</p>
-      <p><b>Edad:</b> ${datos.edad !== "" ? escaparHTML(`${datos.edad} anos`) : "No registrada"}</p>
+      <p><b>Edad:</b> ${datos.edad !== "" ? escaparHTML(`${datos.edad} años`) : "No registrada"}</p>
       <p><b>Sexo:</b> ${escaparHTML(datos.sexo || "No registrado")}</p>
       <p><b>Expediente:</b> ${escaparHTML(datos.expediente || "No registrado")}</p>
       <p><b>Cama:</b> ${escaparHTML(datos.cama || "No registrada")}</p>
