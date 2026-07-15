@@ -1,40 +1,38 @@
-const ESTADOS_DICTADO = {
-  PREPARADO: "preparado",
-  PERMISO: "solicitando permiso",
-  ESCUCHANDO: "escuchando",
-  PAUSADO: "pausado",
-  PROCESANDO: "procesando",
-  RECUPERANDO: "recuperando conexión",
-  FINALIZADO: "finalizado",
-  ERROR: "error",
-  NO_DISPONIBLE: "no-disponible"
-};
+import { auth } from "./firebase.js";
+import { AudioCaptureService } from "./services/audioCaptureService.js";
+import { aplicarComandosDeVozSeguros } from "./services/clinicalTextNormalizer.js";
+import { DraftPersistenceService } from "./services/dictadoPersistence.js";
+import {
+  DictadoStateMachine,
+  ESTADOS_DICTADO,
+  ETIQUETAS_ESTADO_DICTADO
+} from "./services/dictadoStateMachine.js";
+import { TranscriptAssembler } from "./services/transcriptAssembler.js";
 
-const CLAVE_BORRADOR_DICTADO = "cognicion.dictadoClinico.borrador.v2";
 const SILENCIO_MS = 8500;
-const REINICIO_MAXIMO = 8;
+const REINICIOS_MAXIMOS = 6;
 
-const estado = {
+const runtime = {
   reconocimiento: null,
-  activo: false,
-  iniciado: false,
-  pausadoPorUsuario: false,
-  textoConfirmado: "",
-  ultimoFinalNormalizado: "",
-  ultimoFinalEn: 0,
+  maquina: new DictadoStateMachine(),
+  audio: new AudioCaptureService(),
+  ensamblador: null,
+  persistencia: null,
+  sessionId: "",
+  userId: "",
+  patientId: "",
+  encounterId: "",
   reinicios: 0,
   reinicioTimer: null,
   cronometroTimer: null,
+  meterTimer: null,
+  silencioDesde: null,
   inicioEn: 0,
   acumuladoMs: 0,
   actualizacionInterna: false,
-  mediaStream: null,
-  audioContext: null,
-  analyser: null,
-  audioFrame: null,
-  silencioDesde: null,
+  stopSolicitado: false,
   wakeLock: null,
-  dispositivosCargados: false
+  inicializado: false
 };
 
 function $(id) {
@@ -49,6 +47,83 @@ export function navegadorSoportaDictado() {
   return Boolean(obtenerSpeechRecognition());
 }
 
+function crearId(prefijo) {
+  if (window.crypto?.randomUUID) return `${prefijo}-${window.crypto.randomUUID()}`;
+  return `${prefijo}-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+}
+
+function pacienteActualId() {
+  return new URLSearchParams(window.location.search).get("id") || "sin-paciente";
+}
+
+function encuentroActualId() {
+  const params = new URLSearchParams(window.location.search);
+  return params.get("notaId") || params.get("encounterId") || new Date().toISOString().slice(0, 10);
+}
+
+function usuarioActualId() {
+  return (
+    auth?.currentUser?.uid ||
+    localStorage.getItem("cognicion.uid") ||
+    localStorage.getItem("usuarioUid") ||
+    localStorage.getItem("uid") ||
+    "usuario-local"
+  );
+}
+
+function contextoActual() {
+  return {
+    userId: usuarioActualId(),
+    patientId: pacienteActualId(),
+    encounterId: encuentroActualId()
+  };
+}
+
+function asegurarContexto({ nuevaSesion = false } = {}) {
+  const contexto = contextoActual();
+  const requiereSesionNueva =
+    nuevaSesion ||
+    !runtime.sessionId ||
+    runtime.userId !== contexto.userId ||
+    runtime.patientId !== contexto.patientId ||
+    runtime.encounterId !== contexto.encounterId;
+
+  runtime.userId = contexto.userId;
+  runtime.patientId = contexto.patientId;
+  runtime.encounterId = contexto.encounterId;
+  if (requiereSesionNueva) runtime.sessionId = crearId("dictado");
+
+  if (!runtime.ensamblador || requiereSesionNueva) {
+    runtime.ensamblador = new TranscriptAssembler({
+      sessionId: runtime.sessionId,
+      userId: runtime.userId,
+      patientId: runtime.patientId,
+      encounterId: runtime.encounterId
+    });
+  } else {
+    runtime.ensamblador.setContext({
+      sessionId: runtime.sessionId,
+      userId: runtime.userId,
+      patientId: runtime.patientId,
+      encounterId: runtime.encounterId
+    });
+  }
+
+  if (!runtime.persistencia || requiereSesionNueva) {
+    runtime.persistencia = new DraftPersistenceService({
+      userId: runtime.userId,
+      patientId: runtime.patientId,
+      encounterId: runtime.encounterId
+    });
+  } else {
+    runtime.persistencia.setContext({
+      userId: runtime.userId,
+      patientId: runtime.patientId,
+      encounterId: runtime.encounterId
+    });
+  }
+}
+
 function textareaDictado() {
   return $("textoDictadoClinico");
 }
@@ -57,130 +132,28 @@ function campoDestinoNota() {
   return $("subjetivo") || $("padecimientoActual") || $("motivoAtencion") || $("notaClinica");
 }
 
-function pacienteActualId() {
-  return new URLSearchParams(window.location.search).get("id") || "";
+function estadoNodo() {
+  return $("estadoDictadoClinico");
 }
 
-function actualizarEstadoDictado(texto, estadoVisual = "") {
-  const nodo = $("estadoDictadoClinico");
+function setEstadoVisual(estado) {
+  const nodo = estadoNodo();
   if (!nodo) return;
-  nodo.textContent = texto;
-  nodo.dataset.estado = estadoVisual || texto.toLowerCase();
-}
-
-function normalizarComparacion(texto = "") {
-  return texto
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^\p{L}\p{N}]+/gu, " ")
-    .trim();
-}
-
-function unirTextoClinico(base = "", fragmento = "") {
-  const limpio = normalizarFragmentoDictado(fragmento);
-  if (!limpio) return base || "";
-  const textoBase = String(base || "").trimEnd();
-  if (!textoBase) return limpio;
-  const requiereEspacio = !/[\s\n]$/.test(textoBase);
-  return `${textoBase}${requiereEspacio ? " " : ""}${limpio}`;
-}
-
-function fragmentoFinalYaExiste(fragmento = "") {
-  const normalizado = normalizarComparacion(fragmento);
-  if (!normalizado) return true;
-  const ahora = Date.now();
-  if (normalizado === estado.ultimoFinalNormalizado && ahora - estado.ultimoFinalEn < 3500) {
-    return true;
-  }
-  const textoActual = normalizarComparacion(textareaDictado()?.value || "");
-  return textoActual.endsWith(normalizado);
-}
-
-function registrarFinal(fragmento = "") {
-  estado.ultimoFinalNormalizado = normalizarComparacion(fragmento);
-  estado.ultimoFinalEn = Date.now();
-}
-
-function elegirMejorAlternativa(resultado) {
-  if (!resultado) return "";
-  const alternativas = Array.from(resultado);
-  const mejor = alternativas
-    .filter((item) => item?.transcript)
-    .sort((a, b) => (b.confidence || 0) - (a.confidence || 0))[0];
-  return mejor?.transcript || resultado[0]?.transcript || "";
-}
-
-function aplicarComandosDeVoz(texto = "") {
-  let salida = texto;
-  salida = salida.replace(/\bnuevo párrafo\b/gi, "\n\n");
-  salida = salida.replace(/\bnueva línea\b/gi, "\n");
-  salida = salida.replace(/\bpunto y aparte\b/gi, ".\n\n");
-  salida = salida.replace(/\bpunto\b/gi, ".");
-  salida = salida.replace(/\bcoma\b/gi, ",");
-  salida = salida.replace(/\bdos puntos\b/gi, ":");
-  salida = salida.replace(/\bpunto y coma\b/gi, ";");
-  salida = salida.replace(/\babrir paréntesis\b/gi, "(");
-  salida = salida.replace(/\bcerrar paréntesis\b/gi, ")");
-
-  if (/\bpausar dictado\b/i.test(texto)) {
-    setTimeout(() => pausarDictado(), 0);
-    salida = salida.replace(/\bpausar dictado\b/gi, "");
-  }
-
-  if (/\bborrar última frase\b/i.test(texto)) {
-    if (confirm("¿Borrar la última frase del dictado confirmado?")) {
-      borrarUltimaFrase();
-    }
-    salida = salida.replace(/\bborrar última frase\b/gi, "");
-  }
-
-  return salida;
-}
-
-function normalizarFragmentoDictado(texto = "") {
-  let salida = aplicarComandosDeVoz(String(texto || "").trim());
-  salida = salida
-    .replace(/\bmiligramos\b/gi, "mg")
-    .replace(/\bmiligramo\b/gi, "mg")
-    .replace(/\bmicrogramos\b/gi, "mcg")
-    .replace(/\bmicrogramo\b/gi, "mcg")
-    .replace(/\bgrados centígrados\b/gi, "°C")
-    .replace(/\bgrados celsius\b/gi, "°C")
-    .replace(/\bmedia tableta\b/gi, "½ tableta")
-    .replace(/\bun cuarto de tableta\b/gi, "¼ tableta")
-    .replace(/\btres cuartos de tableta\b/gi, "¾ tableta")
-    .replace(/\bcada ocho horas\b/gi, "cada 8 h")
-    .replace(/\bcada doce horas\b/gi, "cada 12 h")
-    .replace(/\bcada veinticuatro horas\b/gi, "cada 24 h")
-    .replace(/\bideacion suicida\b/gi, "ideación suicida")
-    .replace(/\bbenzodiacepina\b/gi, "benzodiacepina")
-    .replace(/\bbenzodiacepinas\b/gi, "benzodiacepinas")
-    .replace(/\bdiagnostico\b/gi, "diagnóstico")
-    .replace(/\bclinico\b/gi, "clínico");
-
-  salida = salida.replace(/\s+([,.;:])/g, "$1").replace(/\s{2,}/g, " ");
-  if (salida && !/^[a-záéíóúñü]/.test(salida)) return salida;
-  return salida ? salida.charAt(0).toUpperCase() + salida.slice(1) : "";
-}
-
-function borrarUltimaFrase() {
-  const textarea = textareaDictado();
-  if (!textarea) return;
-  const valor = textarea.value.trimEnd();
-  const nuevo = valor.replace(/[^.!?\n]+[.!?]?\s*$/u, "").trimEnd();
-  escribirTextarea(nuevo);
+  nodo.textContent = ETIQUETAS_ESTADO_DICTADO[estado] || estado;
+  nodo.dataset.estado = estado;
 }
 
 function escribirTextarea(valor) {
   const textarea = textareaDictado();
   if (!textarea) return;
-  estado.actualizacionInterna = true;
-  textarea.value = valor;
-  estado.textoConfirmado = valor;
+  runtime.actualizacionInterna = true;
+  textarea.value = valor || "";
   textarea.dispatchEvent(new Event("input", { bubbles: true }));
-  estado.actualizacionInterna = false;
-  guardarBorradorTemporal();
+  runtime.actualizacionInterna = false;
+}
+
+function textoActual() {
+  return textareaDictado()?.value || "";
 }
 
 function mostrarTextoProvisional(texto = "") {
@@ -190,449 +163,542 @@ function mostrarTextoProvisional(texto = "") {
   nodo.classList.toggle("activo", Boolean(texto));
 }
 
-function guardarBorradorTemporal() {
-  const texto = textareaDictado()?.value || "";
-  localStorage.setItem(CLAVE_BORRADOR_DICTADO, JSON.stringify({
-    texto,
-    pacienteId: pacienteActualId(),
-    fecha: new Date().toISOString()
-  }));
-  actualizarBotonRecuperar();
+function mostrarAdvertencia(texto = "", tipo = "info") {
+  const nodo = $("dictadoAdvertencias");
+  if (!nodo) return;
+  nodo.textContent = texto;
+  nodo.dataset.tipo = tipo;
+  nodo.hidden = !texto;
 }
 
-function leerBorradorTemporal() {
-  try {
-    return JSON.parse(localStorage.getItem(CLAVE_BORRADOR_DICTADO) || "null");
-  } catch {
-    return null;
+function formatearTiempo(ms) {
+  const total = Math.max(0, Math.floor(ms / 1000));
+  return `${String(Math.floor(total / 60)).padStart(2, "0")}:${String(total % 60).padStart(2, "0")}`;
+}
+
+function actualizarCronometro() {
+  const nodo = $("cronometroDictadoClinico");
+  if (!nodo) return;
+  const activo = runtime.maquina.current === ESTADOS_DICTADO.LISTENING;
+  const total = runtime.acumuladoMs + (activo && runtime.inicioEn ? Date.now() - runtime.inicioEn : 0);
+  nodo.textContent = formatearTiempo(total);
+}
+
+function iniciarCronometro() {
+  if (!runtime.inicioEn) runtime.inicioEn = Date.now();
+  if (runtime.cronometroTimer) return;
+  runtime.cronometroTimer = window.setInterval(actualizarCronometro, 500);
+  actualizarCronometro();
+}
+
+function pausarCronometro() {
+  if (runtime.inicioEn) {
+    runtime.acumuladoMs += Date.now() - runtime.inicioEn;
+    runtime.inicioEn = 0;
   }
+  actualizarCronometro();
+}
+
+function reiniciarCronometro() {
+  runtime.inicioEn = 0;
+  runtime.acumuladoMs = 0;
+  if (runtime.cronometroTimer) {
+    window.clearInterval(runtime.cronometroTimer);
+    runtime.cronometroTimer = null;
+  }
+  actualizarCronometro();
+}
+
+function actualizarMetricas() {
+  const stats = runtime.ensamblador?.stats() || {};
+  const segmentos = $("dictadoSegmentos");
+  const confianza = $("dictadoConfianza");
+  const sesion = $("dictadoSesion");
+  if (segmentos) segmentos.textContent = `${stats.finalSegments || 0} segmentos`;
+  if (confianza) confianza.textContent = stats.averageConfidence ? `${Math.round(stats.averageConfidence * 100)}% confianza` : "Confianza no disponible";
+  if (sesion) sesion.textContent = runtime.sessionId ? `Sesión: ${runtime.sessionId.slice(-8)}` : "Sin sesión";
 }
 
 function actualizarBotonRecuperar() {
   const boton = $("btnRecuperarDictado");
-  if (!boton) return;
-  const borrador = leerBorradorTemporal();
-  boton.disabled = !borrador?.texto;
+  if (!boton || !runtime.persistencia) return;
+  boton.disabled = !runtime.persistencia.load()?.text;
 }
 
-export function recuperarUltimoDictado() {
-  const borrador = leerBorradorTemporal();
-  if (!borrador?.texto) {
-    alert("No hay un dictado temporal para recuperar.");
-    return;
+function guardarBorradorTemporal() {
+  asegurarContexto();
+  runtime.ensamblador?.setManualText(textoActual());
+  runtime.persistencia?.save({
+    ...runtime.ensamblador?.toJSON(),
+    text: textoActual(),
+    status: runtime.maquina.current,
+    sessionId: runtime.sessionId,
+    updatedAt: new Date().toISOString()
+  });
+  actualizarBotonRecuperar();
+}
+
+function actualizarBotones() {
+  const estado = runtime.maquina.current;
+  const escuchando = estado === ESTADOS_DICTADO.LISTENING || estado === ESTADOS_DICTADO.REQUESTING_PERMISSION || estado === ESTADOS_DICTADO.RECONNECTING;
+  const pausado = estado === ESTADOS_DICTADO.PAUSED || estado === ESTADOS_DICTADO.COMPLETED || estado === ESTADOS_DICTADO.READY;
+
+  const btnIniciar = $("btnIniciarDictado");
+  const btnPausar = $("btnPausarDictado");
+  const btnReanudar = $("btnReanudarDictado");
+  const btnFinalizar = $("btnFinalizarDictado");
+  const btnCancelar = $("btnCancelarDictado");
+  const btnInsertar = $("btnInsertarDictado");
+  const btnLimpiar = $("btnLimpiarDictado");
+
+  if (btnIniciar) {
+    btnIniciar.disabled = escuchando;
+    btnIniciar.textContent = pausado && textoActual().trim() ? "Continuar dictado" : "Iniciar dictado";
   }
-  const textarea = textareaDictado();
-  const actual = textarea?.value?.trim() || "";
-  const texto = actual
-    ? `${actual}\n\n${borrador.texto}`.trim()
-    : borrador.texto;
-  escribirTextarea(texto);
-  actualizarEstadoDictado("Dictado recuperado", ESTADOS_DICTADO.FINALIZADO);
+  if (btnPausar) btnPausar.disabled = estado !== ESTADOS_DICTADO.LISTENING;
+  if (btnReanudar) btnReanudar.disabled = !pausado;
+  if (btnFinalizar) btnFinalizar.disabled = ![ESTADOS_DICTADO.LISTENING, ESTADOS_DICTADO.RECONNECTING, ESTADOS_DICTADO.PAUSED].includes(estado);
+  if (btnCancelar) btnCancelar.disabled = !textoActual().trim() && estado === ESTADOS_DICTADO.READY;
+  if (btnInsertar) btnInsertar.disabled = !textoActual().trim();
+  if (btnLimpiar) btnLimpiar.disabled = !textoActual().trim();
 }
 
-function formatearTiempo(ms) {
-  const total = Math.floor(ms / 1000);
-  const minutos = String(Math.floor(total / 60)).padStart(2, "0");
-  const segundos = String(total % 60).padStart(2, "0");
-  return `${minutos}:${segundos}`;
+function elegirMejorAlternativa(resultado) {
+  const alternativas = Array.from(resultado || []);
+  const mejor = alternativas
+    .filter((item) => item?.transcript)
+    .sort((a, b) => (b.confidence || 0) - (a.confidence || 0))[0];
+  return mejor || resultado?.[0] || { transcript: "", confidence: 0 };
 }
 
-function iniciarCronometro() {
-  detenerCronometro();
-  estado.inicioEn = Date.now();
-  estado.cronometroTimer = window.setInterval(() => {
-    const total = estado.acumuladoMs + (estado.activo ? Date.now() - estado.inicioEn : 0);
-    const nodo = $("cronometroDictadoClinico");
-    if (nodo) nodo.textContent = formatearTiempo(total);
-  }, 500);
-}
-
-function detenerCronometro() {
-  if (estado.cronometroTimer) {
-    window.clearInterval(estado.cronometroTimer);
-    estado.cronometroTimer = null;
-  }
-}
-
-function acumularTiempoActivo() {
-  if (!estado.inicioEn) return;
-  estado.acumuladoMs += Date.now() - estado.inicioEn;
-  estado.inicioEn = 0;
-}
-
-async function solicitarWakeLock() {
-  try {
-    if ("wakeLock" in navigator && !estado.wakeLock) {
-      estado.wakeLock = await navigator.wakeLock.request("screen");
+function ejecutarComandos(comandos = []) {
+  for (const comando of comandos) {
+    if (comando.type === "pause") setTimeout(() => pausarDictado(), 0);
+    if (comando.type === "resume") setTimeout(() => reanudarDictado(), 0);
+    if (comando.type === "undo-last-sentence") {
+      runtime.ensamblador?.undoLastSentence();
+      escribirTextarea(runtime.ensamblador?.getText() || "");
     }
-  } catch {
-    estado.wakeLock = null;
   }
 }
 
-async function liberarWakeLock() {
-  try {
-    await estado.wakeLock?.release?.();
-  } catch {
-    // No hacer nada: algunos navegadores liberan el bloqueo automáticamente.
-  } finally {
-    estado.wakeLock = null;
+function procesarResultado(evento) {
+  if (!runtime.ensamblador) asegurarContexto();
+  let provisional = "";
+
+  for (let i = evento.resultIndex; i < evento.results.length; i += 1) {
+    const resultado = evento.results[i];
+    const alternativa = elegirMejorAlternativa(resultado);
+    const limpio = aplicarComandosDeVozSeguros(alternativa.transcript || "");
+    ejecutarComandos(limpio.commands);
+    if (!limpio.normalizedText) continue;
+
+    const agregado = runtime.ensamblador.addRecognitionResult({
+      resultIndex: i,
+      transcript: limpio.normalizedText,
+      confidence: alternativa.confidence || 0,
+      isFinal: resultado.isFinal,
+      provider: "web_speech_api"
+    });
+
+    if (!resultado.isFinal) provisional = agregado?.normalizedText || limpio.normalizedText;
   }
+
+  escribirTextarea(runtime.ensamblador.getText());
+  mostrarTextoProvisional(provisional);
+  guardarBorradorTemporal();
+  actualizarMetricas();
 }
 
-async function cargarDispositivosAudio() {
+async function iniciarCapturaMicrofono() {
   const selector = $("selectorMicrofonoDictado");
-  if (!selector || !navigator.mediaDevices?.enumerateDevices) return;
   try {
-    const dispositivos = await navigator.mediaDevices.enumerateDevices();
-    const entradas = dispositivos.filter((item) => item.kind === "audioinput");
-    selector.innerHTML = entradas.length
-      ? entradas.map((item, index) => `
-          <option value="${item.deviceId}">
-            ${item.label || `Micrófono ${index + 1}`}
-          </option>
-        `).join("")
-      : `<option value="">Micrófono predeterminado</option>`;
-    estado.dispositivosCargados = true;
-  } catch {
-    selector.innerHTML = `<option value="">Micrófono predeterminado</option>`;
+    await runtime.audio.start(selector?.value || "");
+    iniciarMedidorAudio();
+  } catch (error) {
+    runtime.maquina.transition(ESTADOS_DICTADO.RECOVERABLE_ERROR, { error });
+    mostrarAdvertencia("No se pudo activar el micrófono. Revisa permisos del navegador.", "error");
+    throw error;
   }
 }
 
-async function iniciarCapturaAudio() {
-  if (!navigator.mediaDevices?.getUserMedia) return;
-  detenerCapturaAudio();
-  actualizarEstadoDictado("Solicitando permiso de micrófono…", ESTADOS_DICTADO.PERMISO);
-  const selector = $("selectorMicrofonoDictado");
-  const deviceId = selector?.value || "";
-  const constraints = {
-    audio: deviceId ? { deviceId: { exact: deviceId }, echoCancellation: true, noiseSuppression: true } : true
-  };
-  estado.mediaStream = await navigator.mediaDevices.getUserMedia(constraints);
-  if (!estado.dispositivosCargados) await cargarDispositivosAudio();
-  const AudioContext = window.AudioContext || window.webkitAudioContext;
-  if (!AudioContext) return;
-  estado.audioContext = new AudioContext();
-  const fuente = estado.audioContext.createMediaStreamSource(estado.mediaStream);
-  estado.analyser = estado.audioContext.createAnalyser();
-  estado.analyser.fftSize = 256;
-  fuente.connect(estado.analyser);
-  actualizarMedidorAudio();
-}
-
-function detenerCapturaAudio() {
-  if (estado.audioFrame) {
-    cancelAnimationFrame(estado.audioFrame);
-    estado.audioFrame = null;
+function detenerCapturaMicrofono() {
+  if (runtime.meterTimer) {
+    window.clearInterval(runtime.meterTimer);
+    runtime.meterTimer = null;
   }
-  estado.mediaStream?.getTracks?.().forEach((track) => track.stop());
-  estado.mediaStream = null;
-  estado.audioContext?.close?.().catch(() => {});
-  estado.audioContext = null;
-  estado.analyser = null;
+  runtime.audio.stop();
   const barra = $("nivelAudioDictado");
   if (barra) barra.style.width = "0%";
 }
 
-function actualizarMedidorAudio() {
-  if (!estado.analyser) return;
-  const datos = new Uint8Array(estado.analyser.frequencyBinCount);
-  estado.analyser.getByteTimeDomainData(datos);
-  let suma = 0;
-  for (const valor of datos) {
-    const normalizado = (valor - 128) / 128;
-    suma += normalizado * normalizado;
-  }
-  const rms = Math.sqrt(suma / datos.length);
-  const porcentaje = Math.min(100, Math.round(rms * 260));
-  const barra = $("nivelAudioDictado");
-  if (barra) barra.style.width = `${porcentaje}%`;
+function iniciarMedidorAudio() {
+  if (runtime.meterTimer) window.clearInterval(runtime.meterTimer);
+  runtime.meterTimer = window.setInterval(() => {
+    const medicion = runtime.audio.measure();
+    const barra = $("nivelAudioDictado");
+    if (barra) barra.style.width = `${Math.min(100, Math.round(medicion.rms * 280))}%`;
 
-  const aviso = $("avisoAudioDictado");
-  if (aviso) {
-    if (porcentaje < 4 && estado.activo) {
-      estado.silencioDesde ||= Date.now();
-      aviso.textContent = Date.now() - estado.silencioDesde > SILENCIO_MS
-        ? "No se detecta voz. Revisa el micrófono."
-        : "Nivel bajo.";
-    } else if (porcentaje > 92) {
-      estado.silencioDesde = null;
-      aviso.textContent = "Volumen muy alto; puede saturar.";
-    } else {
-      estado.silencioDesde = null;
-      aviso.textContent = "Micrófono activo.";
+    const advertencia = $("advertenciaAudioDictado");
+    if (advertencia) {
+      advertencia.textContent = medicion.warnings.join(" · ");
+      advertencia.hidden = medicion.warnings.length === 0;
     }
-  }
-  estado.audioFrame = requestAnimationFrame(actualizarMedidorAudio);
+
+    if (runtime.maquina.current !== ESTADOS_DICTADO.LISTENING) return;
+    if (medicion.rms < 0.012) {
+      runtime.silencioDesde ||= Date.now();
+      if (Date.now() - runtime.silencioDesde > SILENCIO_MS) {
+        mostrarAdvertencia("Se detecta volumen bajo. Acerca el micrófono o revisa el dispositivo.", "warning");
+      }
+    } else {
+      runtime.silencioDesde = null;
+      mostrarAdvertencia("");
+    }
+  }, 260);
 }
 
-export async function probarMicrofono() {
+async function cargarDispositivosAudio() {
+  const selector = $("selectorMicrofonoDictado");
+  if (!selector || selector.dataset.cargado === "true") return;
   try {
-    await iniciarCapturaAudio();
-    actualizarEstadoDictado("Prueba de micrófono activa", ESTADOS_DICTADO.PROCESANDO);
-    setTimeout(() => {
-      if (!estado.activo) detenerCapturaAudio();
-    }, 9000);
+    const dispositivos = await runtime.audio.listDevices();
+    selector.innerHTML = `<option value="">Micrófono predeterminado</option>${dispositivos
+      .map((item, index) => `<option value="${item.deviceId}">${item.label || `Micrófono ${index + 1}`}</option>`)
+      .join("")}`;
+    selector.dataset.cargado = "true";
   } catch (error) {
-    console.error("No se pudo probar el micrófono:", error);
-    actualizarEstadoDictado("No se pudo acceder al micrófono", ESTADOS_DICTADO.ERROR);
-  }
-}
-
-function limpiarReinicio() {
-  if (estado.reinicioTimer) {
-    clearTimeout(estado.reinicioTimer);
-    estado.reinicioTimer = null;
+    console.warn("No se pudieron listar micrófonos:", error);
   }
 }
 
 function crearReconocimiento() {
   const SpeechRecognition = obtenerSpeechRecognition();
   if (!SpeechRecognition) return null;
+
   const reconocimiento = new SpeechRecognition();
   reconocimiento.lang = "es-MX";
   reconocimiento.continuous = true;
   reconocimiento.interimResults = true;
   reconocimiento.maxAlternatives = 3;
 
-  reconocimiento.onstart = () => {
-    estado.iniciado = true;
-    estado.activo = true;
-    estado.reinicios = 0;
-    actualizarEstadoDictado("Escuchando…", ESTADOS_DICTADO.ESCUCHANDO);
-  };
-
-  reconocimiento.onresult = (evento) => {
-    let provisional = "";
-    for (let i = evento.resultIndex; i < evento.results.length; i += 1) {
-      const resultado = evento.results[i];
-      const fragmento = elegirMejorAlternativa(resultado);
-      if (!fragmento) continue;
-      if (resultado.isFinal) {
-        const limpio = normalizarFragmentoDictado(fragmento);
-        if (limpio && !fragmentoFinalYaExiste(limpio)) {
-          const actual = textareaDictado()?.value || estado.textoConfirmado || "";
-          escribirTextarea(unirTextoClinico(actual, limpio));
-          registrarFinal(limpio);
-        }
-      } else {
-        provisional = unirTextoClinico(provisional, fragmento);
-      }
-    }
-    mostrarTextoProvisional(normalizarFragmentoDictado(provisional));
-  };
+  reconocimiento.onresult = procesarResultado;
 
   reconocimiento.onerror = (evento) => {
-    console.warn("Error de dictado:", evento.error);
+    console.warn("Error de dictado:", evento.error, evento);
     if (evento.error === "not-allowed" || evento.error === "service-not-allowed") {
-      actualizarEstadoDictado("Micrófono bloqueado por el navegador", ESTADOS_DICTADO.ERROR);
-      pausarDictado();
+      runtime.maquina.transition(ESTADOS_DICTADO.FATAL_ERROR, { error: evento.error });
+      mostrarAdvertencia("Tu navegador bloqueó el micrófono. Autoriza el permiso para usar dictado.", "error");
+      detenerCapturaMicrofono();
+      pausarCronometro();
+      actualizarBotones();
       return;
     }
-    actualizarEstadoDictado("Recuperando conexión de dictado…", ESTADOS_DICTADO.RECUPERANDO);
+    runtime.maquina.transition(ESTADOS_DICTADO.RECOVERABLE_ERROR, { error: evento.error });
+    mostrarAdvertencia("El dictado tuvo una interrupción temporal. Puedes reanudarlo sin perder texto.", "warning");
   };
 
   reconocimiento.onend = () => {
-    estado.iniciado = false;
-    if (estado.activo && !estado.pausadoPorUsuario && estado.reinicios < REINICIO_MAXIMO) {
-      estado.reinicios += 1;
-      limpiarReinicio();
-      estado.reinicioTimer = setTimeout(() => {
-        try {
-          reconocimiento.start();
-        } catch {
-          actualizarEstadoDictado("Dictado pausado por el navegador", ESTADOS_DICTADO.PAUSADO);
-        }
-      }, 450);
+    if (runtime.stopSolicitado) return;
+    if (runtime.maquina.current !== ESTADOS_DICTADO.LISTENING && runtime.maquina.current !== ESTADOS_DICTADO.RECONNECTING) return;
+    if (runtime.reinicios >= REINICIOS_MAXIMOS) {
+      runtime.maquina.transition(ESTADOS_DICTADO.PAUSED, { reason: "max-restarts" });
+      mostrarAdvertencia("El dictado se pausó para evitar duplicados tras varias reconexiones.", "warning");
+      pausarCronometro();
+      detenerCapturaMicrofono();
+      actualizarBotones();
       return;
     }
-    if (!estado.activo) actualizarEstadoDictado("Dictado detenido", ESTADOS_DICTADO.FINALIZADO);
+    runtime.reinicios += 1;
+    runtime.maquina.transition(ESTADOS_DICTADO.RECONNECTING, { reinicios: runtime.reinicios });
+    runtime.reinicioTimer = window.setTimeout(() => {
+      try {
+        runtime.reconocimiento?.start();
+        runtime.maquina.transition(ESTADOS_DICTADO.LISTENING, { reinicios: runtime.reinicios });
+      } catch (error) {
+        console.warn("No se pudo reanudar el reconocimiento:", error);
+      }
+      actualizarBotones();
+    }, 450);
   };
 
   return reconocimiento;
 }
 
+async function solicitarWakeLock() {
+  try {
+    runtime.wakeLock = await navigator.wakeLock?.request?.("screen");
+  } catch {
+    runtime.wakeLock = null;
+  }
+}
+
+async function liberarWakeLock() {
+  try {
+    await runtime.wakeLock?.release?.();
+  } catch {
+    // No action needed.
+  } finally {
+    runtime.wakeLock = null;
+  }
+}
+
 export async function iniciarDictado() {
   if (!navegadorSoportaDictado()) {
-    actualizarEstadoDictado("Dictado no disponible en este navegador", ESTADOS_DICTADO.NO_DISPONIBLE);
-    alert("Tu navegador no soporta dictado por voz.");
+    runtime.maquina.transition(ESTADOS_DICTADO.FATAL_ERROR, { reason: "unsupported" });
+    mostrarAdvertencia("Tu navegador no soporta dictado por voz.", "error");
     return;
   }
-  if (estado.activo && estado.iniciado) return;
+
+  asegurarContexto();
+  runtime.stopSolicitado = false;
+  runtime.reinicios = 0;
+  runtime.maquina.transition(ESTADOS_DICTADO.REQUESTING_PERMISSION, { reason: "start" });
+  actualizarBotones();
 
   try {
-    estado.pausadoPorUsuario = false;
-    estado.textoConfirmado = textareaDictado()?.value || "";
+    await cargarDispositivosAudio();
+    await iniciarCapturaMicrofono();
     await solicitarWakeLock();
-    await iniciarCapturaAudio();
-    estado.reconocimiento ||= crearReconocimiento();
+    runtime.reconocimiento = crearReconocimiento();
+    runtime.reconocimiento?.start();
+    runtime.maquina.transition(ESTADOS_DICTADO.LISTENING, { reason: "start" });
     iniciarCronometro();
-    estado.reconocimiento.start();
+    mostrarAdvertencia("");
   } catch (error) {
-    console.error("No se pudo iniciar el dictado:", error);
-    actualizarEstadoDictado("Error al iniciar dictado", ESTADOS_DICTADO.ERROR);
-    detenerCapturaAudio();
+    console.warn("No se pudo iniciar dictado:", error);
+    runtime.maquina.transition(ESTADOS_DICTADO.RECOVERABLE_ERROR, { error });
+    detenerCapturaMicrofono();
+  } finally {
+    actualizarBotones();
+    actualizarMetricas();
   }
 }
 
 export function pausarDictado() {
-  limpiarReinicio();
-  estado.pausadoPorUsuario = true;
-  estado.activo = false;
-  acumularTiempoActivo();
-  detenerCronometro();
+  runtime.stopSolicitado = true;
+  if (runtime.reinicioTimer) window.clearTimeout(runtime.reinicioTimer);
   try {
-    estado.reconocimiento?.stop?.();
+    runtime.reconocimiento?.stop();
   } catch {
-    // Puede estar ya detenido.
+    // SpeechRecognition may already be stopped.
   }
-  detenerCapturaAudio();
+  detenerCapturaMicrofono();
+  pausarCronometro();
   liberarWakeLock();
-  mostrarTextoProvisional("");
+  runtime.maquina.transition(ESTADOS_DICTADO.PAUSED, { reason: "user" });
   guardarBorradorTemporal();
-  actualizarEstadoDictado("Dictado pausado", ESTADOS_DICTADO.PAUSADO);
+  actualizarBotones();
+}
+
+export async function reanudarDictado() {
+  await iniciarDictado();
 }
 
 export function finalizarDictado() {
-  pausarDictado();
-  actualizarEstadoDictado("Dictado finalizado", ESTADOS_DICTADO.FINALIZADO);
+  runtime.stopSolicitado = true;
+  if (runtime.reinicioTimer) window.clearTimeout(runtime.reinicioTimer);
+  try {
+    runtime.reconocimiento?.stop();
+  } catch {
+    // SpeechRecognition may already be stopped.
+  }
+  detenerCapturaMicrofono();
+  pausarCronometro();
+  liberarWakeLock();
+  mostrarTextoProvisional("");
+  runtime.maquina.transition(ESTADOS_DICTADO.COMPLETED, { reason: "finished" });
+  guardarBorradorTemporal();
+  actualizarBotones();
+}
+
+export function cancelarDictado() {
+  const hayTexto = textoActual().trim();
+  if (hayTexto && !confirm("Se cancelará el dictado actual y se eliminará el borrador local. La nota clínica no se modificará.")) return;
+  finalizarDictado();
+  asegurarContexto({ nuevaSesion: true });
+  runtime.ensamblador.clear();
+  runtime.persistencia.clear();
+  escribirTextarea("");
+  mostrarTextoProvisional("");
+  reiniciarCronometro();
+  runtime.maquina.transition(ESTADOS_DICTADO.READY, { reason: "cancel" });
+  actualizarBotonRecuperar();
+  actualizarBotones();
+  actualizarMetricas();
 }
 
 export function limpiarDictado() {
-  const texto = textareaDictado()?.value?.trim() || "";
-  if (texto && !confirm("¿Limpiar el dictado actual? Esta acción no modificará la nota principal.")) {
-    return;
-  }
+  if (textoActual().trim() && !confirm("Esto vaciará solo el texto dictado. No modifica la nota clínica principal.")) return;
+  asegurarContexto();
+  runtime.ensamblador.clear();
+  runtime.persistencia.clear();
   escribirTextarea("");
   mostrarTextoProvisional("");
-  localStorage.removeItem(CLAVE_BORRADOR_DICTADO);
   actualizarBotonRecuperar();
-  actualizarEstadoDictado("Dictado detenido", ESTADOS_DICTADO.FINALIZADO);
+  actualizarBotones();
+  actualizarMetricas();
+}
+
+export function recuperarUltimoDictado() {
+  asegurarContexto();
+  const borrador = runtime.persistencia?.load();
+  if (!borrador?.text) {
+    alert("No hay un dictado temporal para recuperar en este paciente y encuentro.");
+    return;
+  }
+  const actual = textoActual().trim();
+  const texto = actual ? `${actual}\n\n${borrador.text}`.trim() : borrador.text;
+  runtime.ensamblador.restore(borrador);
+  runtime.ensamblador.setManualText(texto);
+  escribirTextarea(texto);
+  runtime.maquina.transition(ESTADOS_DICTADO.COMPLETED, { reason: "restored" });
+  actualizarBotones();
+  actualizarMetricas();
 }
 
 export function insertarDictadoEnNota() {
-  const textarea = textareaDictado();
-  const destino = campoDestinoNota();
-  const texto = textarea?.value?.trim() || "";
+  const texto = textoActual().trim();
   if (!texto) {
     alert("No hay texto dictado para insertar.");
     return;
   }
+  const confirmado = confirm("Revise y corrija el dictado antes de integrarlo al expediente clínico.");
+  if (!confirmado) return;
+
+  const destino = campoDestinoNota();
   if (!destino) {
-    alert("No se encontró el campo principal de la nota para insertar el dictado.");
+    alert("No se encontró el campo principal de la nota clínica.");
     return;
   }
-  if (!confirm("Revise y corrija el dictado antes de integrarlo al expediente clínico.")) return;
-  destino.value = unirTextoClinico(destino.value || "", texto);
+
+  const separador = destino.value?.trim() ? "\n\n" : "";
+  destino.value = `${destino.value || ""}${separador}${texto}`;
   destino.dispatchEvent(new Event("input", { bubbles: true }));
-  actualizarEstadoDictado("Dictado insertado en la nota", ESTADOS_DICTADO.FINALIZADO);
 }
 
-function asegurarPanelAvanzadoDictado() {
-  const textarea = textareaDictado();
-  if (!textarea || $("dictadoPanelAvanzado")) return;
-  const panel = document.createElement("div");
-  panel.id = "dictadoPanelAvanzado";
+export async function probarMicrofono() {
+  try {
+    await iniciarCapturaMicrofono();
+    mostrarAdvertencia("Micrófono activo. Si ves movimiento en la barra, la entrada funciona.", "info");
+    window.setTimeout(detenerCapturaMicrofono, 2200);
+  } catch {
+    // Error handled in iniciarCapturaMicrofono.
+  }
+}
+
+function crearPanelAvanzado() {
+  const tarjeta = document.querySelector(".dictado-clinico-card");
+  const acciones = document.querySelector(".dictado-clinico-acciones");
+  if (!tarjeta || !acciones || $("panelAvanzadoDictado")) return;
+
+  const panel = document.createElement("section");
+  panel.id = "panelAvanzadoDictado";
   panel.className = "dictado-panel-avanzado";
   panel.innerHTML = `
     <div class="dictado-clinico-toolbar">
-      <span class="dictado-alfa-badge">VERSIÓN ALFA · EN DESARROLLO</span>
-      <label>Modo
-        <select id="modoDictadoClinico">
-          <option value="dictado_libre">Dictado libre</option>
-          <option value="entrevista_clinica">Entrevista clínica</option>
-          <option value="nota_por_apartados">Nota por apartados</option>
-          <option value="exploracion_mental">Exploración mental</option>
-          <option value="evolucion">Evolución</option>
-          <option value="ingreso">Ingreso</option>
-          <option value="urgencias">Urgencias</option>
-          <option value="interconsulta">Interconsulta</option>
-          <option value="egreso">Egreso</option>
-          <option value="nota_pediatrica">Nota pediátrica</option>
-          <option value="transcripcion">Transcripción sin generar nota</option>
-        </select>
-      </label>
-      <label>Micrófono
+      <label>
+        Micrófono
         <select id="selectorMicrofonoDictado">
           <option value="">Micrófono predeterminado</option>
         </select>
       </label>
       <button id="btnProbarMicrofono" type="button" class="boton-secundario">Probar micrófono</button>
-      <button id="btnFinalizarDictado" type="button" class="boton-secundario">Finalizar</button>
       <button id="btnRecuperarDictado" type="button" class="boton-secundario">Recuperar último dictado</button>
+      <button id="btnReanudarDictado" type="button" class="boton-secundario">Reanudar</button>
+      <button id="btnFinalizarDictado" type="button" class="boton-secundario">Finalizar</button>
+      <button id="btnCancelarDictado" type="button" class="boton-secundario dictado-btn-danger">Cancelar sesión</button>
     </div>
-    <div class="dictado-metricas">
+    <div class="dictado-metricas" aria-live="polite">
       <span id="cronometroDictadoClinico">00:00</span>
       <div class="dictado-audio-meter" aria-label="Nivel de audio"><span id="nivelAudioDictado"></span></div>
-      <span id="avisoAudioDictado">Micrófono sin probar.</span>
+      <span id="dictadoSegmentos">0 segmentos</span>
+      <span id="dictadoConfianza">Confianza no disponible</span>
+      <span id="dictadoSesion">Sin sesión</span>
     </div>
+    <p id="advertenciaAudioDictado" class="dictado-advertencia-audio" hidden></p>
+    <p id="dictadoAdvertencias" class="dictado-advertencia-audio" hidden></p>
     <div class="dictado-provisional">
       <strong>Texto provisional</strong>
       <p id="dictadoTextoProvisional">Sin texto provisional.</p>
     </div>
   `;
-  textarea.parentElement?.insertBefore(panel, textarea);
-  $("btnProbarMicrofono")?.addEventListener("click", probarMicrofono);
-  $("btnFinalizarDictado")?.addEventListener("click", finalizarDictado);
-  $("btnRecuperarDictado")?.addEventListener("click", recuperarUltimoDictado);
+  acciones.insertAdjacentElement("beforebegin", panel);
+}
+
+function conectarBotones() {
+  const enlaces = [
+    ["btnIniciarDictado", iniciarDictado],
+    ["btnPausarDictado", pausarDictado],
+    ["btnLimpiarDictado", limpiarDictado],
+    ["btnInsertarDictado", insertarDictadoEnNota],
+    ["btnReanudarDictado", reanudarDictado],
+    ["btnFinalizarDictado", finalizarDictado],
+    ["btnCancelarDictado", cancelarDictado],
+    ["btnRecuperarDictado", recuperarUltimoDictado],
+    ["btnProbarMicrofono", probarMicrofono]
+  ];
+
+  for (const [id, handler] of enlaces) {
+    const boton = $(id);
+    if (!boton || boton.dataset.dictadoListener === "true") continue;
+    boton.addEventListener("click", handler);
+    boton.dataset.dictadoListener = "true";
+  }
+}
+
+function conectarTextarea() {
+  const textarea = textareaDictado();
+  if (!textarea || textarea.dataset.dictadoListener === "true") return;
+  textarea.addEventListener("input", () => {
+    if (runtime.actualizacionInterna) return;
+    asegurarContexto();
+    runtime.ensamblador.setManualText(textarea.value);
+    guardarBorradorTemporal();
+    actualizarBotones();
+    actualizarMetricas();
+  });
+  textarea.dataset.dictadoListener = "true";
 }
 
 export function inicializarDictadoClinico() {
-  asegurarPanelAvanzadoDictado();
-  const iniciar = $("iniciarDictadoClinico") || $("btnIniciarDictado");
-  const pausar = $("pausarDictadoClinico") || $("btnPausarDictado");
-  const limpiar = $("limpiarDictadoClinico") || $("btnLimpiarDictado");
-  const insertar = $("insertarDictadoClinico") || $("btnInsertarDictado");
-  const textarea = textareaDictado();
+  if (runtime.inicializado) return;
+  runtime.inicializado = true;
+  crearPanelAvanzado();
+  asegurarContexto({ nuevaSesion: true });
 
   if (!navegadorSoportaDictado()) {
-    actualizarEstadoDictado("Dictado no disponible en este navegador", ESTADOS_DICTADO.NO_DISPONIBLE);
-    if (iniciar) iniciar.disabled = true;
-    if (pausar) pausar.disabled = true;
+    runtime.maquina.transition(ESTADOS_DICTADO.FATAL_ERROR, { reason: "unsupported" });
+    mostrarAdvertencia("Tu navegador no soporta dictado por voz.", "error");
   } else {
-    actualizarEstadoDictado("Dictado detenido", ESTADOS_DICTADO.FINALIZADO);
+    runtime.maquina.transition(ESTADOS_DICTADO.READY, { reason: "init" });
   }
 
-  if (iniciar && iniciar.dataset.dictadoInicializado !== "true") {
-    iniciar.dataset.dictadoInicializado = "true";
-    iniciar.addEventListener("click", iniciarDictado);
-  }
-  if (pausar && pausar.dataset.dictadoInicializado !== "true") {
-    pausar.dataset.dictadoInicializado = "true";
-    pausar.addEventListener("click", pausarDictado);
-  }
-  if (limpiar && limpiar.dataset.dictadoInicializado !== "true") {
-    limpiar.dataset.dictadoInicializado = "true";
-    limpiar.addEventListener("click", limpiarDictado);
-  }
-  if (insertar && insertar.dataset.dictadoInicializado !== "true") {
-    insertar.dataset.dictadoInicializado = "true";
-    insertar.addEventListener("click", insertarDictadoEnNota);
-  }
-  if (textarea && textarea.dataset.dictadoInicializado !== "true") {
-    textarea.dataset.dictadoInicializado = "true";
-    textarea.addEventListener("input", () => {
-      if (estado.actualizacionInterna) return;
-      estado.textoConfirmado = textarea.value;
-      guardarBorradorTemporal();
-    });
-  }
+  runtime.maquina.subscribe((estado) => {
+    setEstadoVisual(estado.current);
+    actualizarBotones();
+  });
 
+  conectarBotones();
+  conectarTextarea();
   cargarDispositivosAudio();
   actualizarBotonRecuperar();
+  actualizarBotones();
+  actualizarMetricas();
+
   window.addEventListener("pagehide", finalizarDictado);
-  document.addEventListener("visibilitychange", () => {
-    if (document.hidden && estado.activo) guardarBorradorTemporal();
-  });
 }
+
+document.addEventListener("DOMContentLoaded", inicializarDictadoClinico);
 
 window.inicializarDictadoClinico = inicializarDictadoClinico;
 window.iniciarDictado = iniciarDictado;
 window.pausarDictado = pausarDictado;
+window.reanudarDictado = reanudarDictado;
 window.finalizarDictado = finalizarDictado;
+window.cancelarDictado = cancelarDictado;
 window.limpiarDictado = limpiarDictado;
 window.insertarDictadoEnNota = insertarDictadoEnNota;
 window.navegadorSoportaDictado = navegadorSoportaDictado;
 window.recuperarUltimoDictado = recuperarUltimoDictado;
-
-document.addEventListener("DOMContentLoaded", inicializarDictadoClinico);
+window.probarMicrofono = probarMicrofono;

@@ -1273,6 +1273,7 @@ function aplicarNotaAutomatica() {
   if (!confirmado) return;
 
   const generada = generarNotaAutomatica(texto, obtenerIdentificacionPaciente());
+  renderizarRevisionNotaAutomatica(generada);
   anexarTextoGenerado("subjetivo", generada.padecimientoActual, "Padecimiento actual sugerido");
   anexarTextoGenerado("objetivo", generada.exploracionMental, "Exploracion mental sugerida");
   anexarTextoGenerado("plan", generada.planSugerido, "Plan terapeutico sugerido");
@@ -1290,6 +1291,47 @@ function aplicarNotaAutomatica() {
     riesgos: generada.riesgosDetectados || []
   };
   renderizarDiagnosticosAutomaticos();
+}
+
+function renderizarRevisionNotaAutomatica(generada = {}) {
+  const panel = document.getElementById("panelNotaAutomatica");
+  if (!panel) return;
+
+  let revision = document.getElementById("revisionNotaAutomatica");
+  if (!revision) {
+    revision = document.createElement("div");
+    revision.id = "revisionNotaAutomatica";
+    revision.className = "revision-nota-automatica";
+    panel.insertBefore(revision, document.getElementById("riesgosNotaAutomatica"));
+  }
+
+  const issues = generada.validationIssues || [];
+  const procedencia = generada.provenanceRecords || [];
+  revision.innerHTML = `
+    <div class="revision-nota-automatica-grid">
+      <section>
+        <strong>Estado</strong>
+        <p>VERSIÓN ALFA · EN DESARROLLO. Revisión clínica obligatoria antes de guardar.</p>
+      </section>
+      <section>
+        <strong>Validación</strong>
+        ${
+          issues.length
+            ? `<ul>${issues.map((issue) => `<li><b>${issue.severity || "info"}:</b> ${issue.message}</li>`).join("")}</ul>`
+            : "<p>Sin contradicciones automáticas detectadas. Verifique de todos modos el contenido clínico.</p>"
+        }
+      </section>
+      <section>
+        <strong>Procedencia</strong>
+        ${
+          procedencia.length
+            ? `<ul>${procedencia.map((item) => `<li>${item.concept}: ${item.sourceType} (${item.status})</li>`).join("")}</ul>`
+            : "<p>Sin metadatos de procedencia disponibles.</p>"
+        }
+      </section>
+    </div>
+  `;
+  panel.classList.remove("oculto");
 }
 
 function renderizarDiagnosticosSeleccionados() {

@@ -3,6 +3,10 @@ import {
   PLANTILLAS_EXPLORACION_MENTAL,
   PLANTILLAS_PADECIMIENTO
 } from "./plantillasClinicas.js";
+import {
+  crearProvenanceRecord,
+  validarTextoClinico
+} from "./clinicalValidationService.js";
 
 const CIE10_BASE = {
   "F32.1": "Episodio depresivo moderado",
@@ -731,9 +735,35 @@ export function generarNotaAutomatica(textoDictado = "", datosPaciente = {}) {
   });
 
   datosClinicos.impresionDiagnostica.texto = datosClinicos.impresionDiagnostica.texto || impresion;
+  const validationIssues = validarTextoClinico(textoDictado, datosClinicos);
+  const provenanceRecords = [
+    crearProvenanceRecord({
+      concept: "texto fuente de dictado",
+      originalText: textoDictado,
+      sourceType: "dictado_por_voz",
+      status: "requires_clinical_review",
+      confidence: "media"
+    })
+  ];
+  if (datosClinicos?.identificacion?.nombreCompleto) {
+    provenanceRecords.push(crearProvenanceRecord({
+      concept: "identificación del paciente",
+      originalText: datosClinicos.identificacion.nombreCompleto,
+      sourceType: "expediente",
+      status: "structured_source",
+      confidence: "alta"
+    }));
+  }
 
   return {
     datosClinicos,
+    metadata: {
+      version: "alfa",
+      generatedAt: new Date().toISOString(),
+      reviewRequired: true,
+      generatedStatus: "en_revision",
+      sourcePriority: ["expediente", "dictado", "campo_vacio"]
+    },
     estructuraClinica: estructurarTextoClinico(textoDictado, datosPaciente),
     padecimientoActual: generarPadecimientoActual(datosClinicos),
     exploracionMental: generarExploracionMental(datosClinicos),
@@ -743,6 +773,8 @@ export function generarNotaAutomatica(textoDictado = "", datosPaciente = {}) {
     diagnosticosSugeridos: diagnosticosSugeridos.map((dx) => dx.nombre),
     cie10Sugeridos: diagnosticosSugeridos,
     planSugerido: generarPlanSugerido(diagnosticosSugeridos, riesgosDetectados, sintomas, datosClinicos),
-    riesgosDetectados
+    riesgosDetectados,
+    validationIssues,
+    provenanceRecords
   };
 }
