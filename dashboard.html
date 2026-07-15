@@ -479,6 +479,30 @@ header {
     width: auto;
 }
 
+.module-card.card-panel-medico {
+    order: 1;
+}
+
+.module-card.card-laboratorio-farmacologia {
+    order: 2;
+}
+
+.module-card.card-calculadoras-escalas {
+    order: 3;
+}
+
+.module-card.admin-dashboard-card {
+    order: 4;
+}
+
+.module-card.card-prioridad-media {
+    order: 10;
+}
+
+.module-card.card-prioridad-baja {
+    order: 20;
+}
+
 .module-note {
     display: block;
     margin-top: 10px;
@@ -1302,11 +1326,19 @@ footer {
             </div>
 
             <button
+                class="logout-button nav-panel-medico"
+                type="button"
+                onclick="window.location.href='medico.html'"
+            >
+                Panel médico
+            </button>
+
+            <button
                 class="logout-button"
                 type="button"
                 onclick="window.location.href='configuracion.html'"
             >
-                Configuracion
+                Configuración
             </button>
 
             <button
@@ -1314,7 +1346,7 @@ footer {
                 type="button"
                 onclick="cerrarSesion()"
             >
-                Cerrar sesion
+                Cerrar sesión
             </button>
 
         </div>
@@ -1333,7 +1365,7 @@ footer {
     <div class="mensajes-toolbar">
         <button type="button" data-mensajes-vista="contactos">Lista de contactos</button>
         <button type="button" data-mensajes-vista="agregar">Agregar contacto</button>
-        <button type="button" data-mensajes-vista="conversaciones">Iniciar conversacion</button>
+        <button type="button" data-mensajes-vista="conversaciones">Iniciar conversación</button>
         <button type="button" data-mensajes-admin>Hablar con admin</button>
     </div>
     <div id="mensajesVista" class="mensajes-vista">
@@ -1390,7 +1422,7 @@ footer {
         </div>
 
         <div class="module-grid">
-            <article class="module-card">
+            <article class="module-card card-prioridad-media">
                 <div class="module-top">
                     <div class="module-icon">SALUD</div>
                     <span class="badge">Principal</span>
@@ -1402,7 +1434,7 @@ footer {
                 </div>
             </article>
 
-            <article class="module-card sofia-card" id="tarjetaSofia" style="display:none;">
+            <article class="module-card sofia-card card-prioridad-baja" id="tarjetaSofia" style="display:none;">
                 <div class="module-top">
                     <div class="module-icon">IA</div>
                     <span class="badge badge-alpha">ALPHA</span>
@@ -1425,7 +1457,7 @@ footer {
             </article>
 
 
-            <article class="module-card">
+            <article class="module-card card-prioridad-media">
                 <div class="module-top">
                     <div class="module-icon">RC</div>
                     <span class="badge">Disponible</span>
@@ -1437,7 +1469,7 @@ footer {
                 </div>
             </article>
 
-            <article class="module-card">
+            <article class="module-card card-prioridad-media">
                 <div class="module-top">
                     <div class="module-icon">ST</div>
                     <span class="badge">Médico</span>
@@ -1449,7 +1481,7 @@ footer {
                 </div>
             </article>
 
-            <article class="module-card">
+            <article class="module-card card-panel-medico">
                 <div class="module-top">
                     <div class="module-icon">MED</div>
                     <span class="badge">Médico</span>
@@ -1461,7 +1493,7 @@ footer {
                 </div>
             </article>
 
-            <article class="module-card">
+            <article class="module-card card-calculadoras-escalas">
                 <div class="module-top">
                     <div class="module-icon">CLIN</div>
                     <span class="badge">Disponible</span>
@@ -1470,9 +1502,12 @@ footer {
                 <p>Instrumentos clínicos, tamizajes, escalas cognitivas, índices, dosificación y cálculos médicos organizados por apartados.</p>
                 <div class="module-subareas">
                     <span>Escalas clínicas</span>
-                    <span>Tamizajes</span>
+                    <span>Tamizajes cognitivos</span>
                     <span>Calculadoras médicas</span>
-                    <span>Dosis pediátricas</span>
+                    <span>Calculadoras pediátricas</span>
+                    <span>Riesgo cardiovascular</span>
+                    <span>Función renal</span>
+                    <span>Urgencias</span>
                 </div>
                 <div class="card-actions dual-actions">
                     <button class="primary-button" onclick="window.location.href='escalas.html'">Abrir escalas</button>
@@ -1480,7 +1515,7 @@ footer {
                 </div>
             </article>
 
-            <article class="module-card">
+            <article class="module-card card-prioridad-media">
                 <div class="module-top">
                     <div class="module-icon">RESP</div>
                     <span class="badge">Disponible</span>
@@ -1491,7 +1526,7 @@ footer {
                     <button class="primary-button" onclick="window.location.href='respiracion.html'">Abrir asistente</button>
                 </div>
             </article>
-            <article class="module-card">
+            <article class="module-card card-prioridad-media">
                 <div class="module-top">
                     <div class="module-icon">FORO</div>
                     <span class="badge">Nuevo</span>
@@ -1516,7 +1551,7 @@ footer {
                     <button class="primary-button" onclick="window.location.href='admin.html'">Abrir panel admin</button>
                 </div>
             </article>
-            <article class="module-card">
+            <article class="module-card card-prioridad-media">
                 <div class="module-top">
                     <div class="module-icon">PED</div>
                     <span class="badge">COGNICIÓN Labs</span>
@@ -1527,7 +1562,7 @@ footer {
                     <a class="primary-button available-action" href="pediatria.html">Abrir pediatría</a>
                 </div>
             </article>
-            <article class="module-card">
+            <article class="module-card card-prioridad-media">
                 <div class="module-top">
                     <div class="module-icon">LAB</div>
                     <span class="badge">Cognición Labs</span>
@@ -1539,7 +1574,7 @@ footer {
                 </div>
             </article>
 
-            <article class="module-card">
+            <article class="module-card card-laboratorio-farmacologia">
                 <div class="module-top">
                     <div class="module-icon">FARM</div>
                     <span class="badge">COGNICIÓN Labs</span>
@@ -1551,7 +1586,7 @@ footer {
                 </div>
             </article>
 
-            <article class="module-card">
+            <article class="module-card card-prioridad-baja">
                 <div class="module-top">
                     <div class="module-icon">PSI</div>
                     <span class="badge">Próximamente</span>
@@ -1563,7 +1598,7 @@ footer {
                 </div>
             </article>
 
-            <article class="module-card">
+            <article class="module-card card-prioridad-media">
                 <div class="module-top">
                     <div class="module-icon">BIB</div>
                     <span class="badge">Disponible</span>
