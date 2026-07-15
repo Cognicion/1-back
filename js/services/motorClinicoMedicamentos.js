@@ -158,6 +158,7 @@ export function normalizarMedicamentoClinico(medicamento) {
     id: medicamento?.id || texto || "medicamento",
     textoOriginal,
     textoNormalizado: texto,
+    posologiaNormalizada: normalizarPosologiaMedicamento(medicamento, textoOriginal),
     ingredientes,
     ingredienteIds: ingredientes.map((ingrediente) => ingrediente.id),
     nombresIngredientes: ingredientes.map((ingrediente) => ingrediente.nombre),
@@ -165,6 +166,36 @@ export function normalizarMedicamentoClinico(medicamento) {
     riesgos,
     datosOriginales: medicamento
   };
+}
+
+function normalizarPosologiaMedicamento(medicamento, textoOriginal = "") {
+  if (!medicamento || typeof medicamento !== "object") {
+    return extraerPosologiaDesdeTexto(textoOriginal);
+  }
+  const estructurada = normalizarTextoClinico([
+    medicamento.dose,
+    medicamento.dosis,
+    medicamento.dosisUnitaria,
+    medicamento.dosisDia,
+    medicamento.dosisTotalDia,
+    medicamento.unit,
+    medicamento.unidad,
+    medicamento.frequency,
+    medicamento.frecuencia,
+    medicamento.vecesDia,
+    medicamento.via,
+    medicamento.route,
+    medicamento.indicacion,
+    medicamento.presentacion
+  ].filter(Boolean).join(" "));
+  return estructurada || extraerPosologiaDesdeTexto(textoOriginal);
+}
+
+function extraerPosologiaDesdeTexto(textoOriginal = "") {
+  const texto = normalizarTextoClinico(textoOriginal);
+  const dosis = texto.match(/\b\d+(?:[.,]\d+)?\s*(?:mg|mcg|g|ml|ui|iu|unidades?|tabletas?|capsulas?|capsulas|gotas?)\b/g) || [];
+  const frecuencia = texto.match(/\b(?:cada\s*)?\d+\s*(?:h|horas?)\b|\b\d+\s*veces?\s*(?:al|por)\s*dia\b|\b(?:diario|noche|mañana|tarde)\b/g) || [];
+  return [...dosis, ...frecuencia].join(" ").trim() || texto.replace(/\b[a-záéíóúñ]{4,}\b/g, " ").replace(/\s+/g, " ").trim();
 }
 
 function valoresProfundos(objeto, profundidad = 0) {
@@ -180,27 +211,74 @@ function valoresProfundos(objeto, profundidad = 0) {
 }
 
 export function extraerDiagnosticosPaciente(paciente = {}) {
+  return extraerDiagnosticosEstructuradosPaciente(paciente).map((diagnostico) => diagnostico.texto);
+}
+
+const ESTADOS_DIAGNOSTICO_INACTIVOS = new Set(["descartado", "se_descarta", "resuelto", "remision", "remisión"]);
+const ESTADOS_DIAGNOSTICO_PROBABLES = new Set(["probable", "a_descartar", "en_estudio", "diferencial"]);
+
+function normalizarEstadoDiagnostico(estado = "") {
+  const texto = normalizarTextoClinico(estado).replace(/\s+/g, "_");
+  if (!texto) return "confirmado";
+  if (/(descart|se_descarta|no_activo|resuelt|remision)/.test(texto)) return texto.includes("descart") ? "descartado" : "resuelto";
+  if (/(probable|a_descartar|estudio|diferencial)/.test(texto)) return texto.includes("diferencial") ? "diferencial" : "probable";
+  if (/(antecedente|historico|histórico)/.test(texto)) return "antecedente";
+  if (/(seguimiento|activo|confirmado|se_agrega)/.test(texto)) return "confirmado";
+  return texto;
+}
+
+function diagnosticoDesdeObjeto(item, origen = "expediente") {
+  if (!item) return null;
+  if (typeof item === "string" || typeof item === "number") {
+    const texto = String(item).trim();
+    return texto ? { texto, estado: "confirmado", origen } : null;
+  }
+  if (typeof item !== "object") return null;
+  const codigo = item.codigo || item.cie10 || item.cie11 || item.codigoCie10 || item.codigoCie11 || "";
+  const nombre = item.nombre || item.diagnostico || item.descripcion || item.texto || item.label || item.visibleText || "";
+  const textoVisible = [codigo, nombre].filter(Boolean).join(" - ").trim();
+  const texto = textoVisible || valoresProfundos(item).join(" ").trim();
+  if (!texto) return null;
+  return {
+    texto,
+    codigo: String(codigo || "").trim(),
+    sistema: item.sistema || item.catalogo || item.tipoCatalogo || "",
+    estado: normalizarEstadoDiagnostico(item.estado || item.estatus || item.status || item.estadoClinico),
+    origen
+  };
+}
+
+export function extraerDiagnosticosEstructuradosPaciente(paciente = {}) {
   const contextoDirecto = extraerContextoDirectoPaciente(paciente);
-  const campos = [
-    paciente.diagnostico,
-    paciente.diagnosticos,
-    paciente.historialDiagnosticos,
-    paciente.antecedentes,
-    paciente.antecedentesMedicos,
-    paciente.antecedentesPersonales,
-    paciente.historiaClinica,
-    paciente.alergias,
-    paciente.comorbilidades,
-    paciente.observaciones,
-    paciente.datosClinicosResumen,
-    contextoDirecto.textos
+  const fuentes = [
+    ["diagnostico", paciente.diagnostico],
+    ["diagnosticos", paciente.diagnosticos],
+    ["historialDiagnosticos", paciente.historialDiagnosticos],
+    ["comorbilidades", paciente.comorbilidades],
+    ["antecedentes", paciente.antecedentes],
+    ["antecedentesMedicos", paciente.antecedentesMedicos],
+    ["datosClinicosResumen", paciente.datosClinicosResumen],
+    ["contextoDirecto", contextoDirecto.textos.filter((texto) => String(texto || "").trim())]
   ];
-  return valoresProfundos(campos)
-    .map((texto) => String(texto || "").trim())
-    .filter(Boolean);
+  const salida = [];
+  fuentes.forEach(([origen, valor]) => {
+    const lista = Array.isArray(valor) ? valor : [valor];
+    lista.forEach((item) => {
+      const diagnostico = diagnosticoDesdeObjeto(item, origen);
+      if (diagnostico) salida.push(diagnostico);
+    });
+  });
+  const vistos = new Set();
+  return salida.filter((diagnostico) => {
+    const clave = `${normalizarTextoClinico(diagnostico.texto)}:${diagnostico.estado}`;
+    if (vistos.has(clave)) return false;
+    vistos.add(clave);
+    return true;
+  });
 }
 
 function numeroSeguro(valor) {
+  if (valor === null || valor === undefined || String(valor).trim() === "") return null;
   const numero = Number(String(valor ?? "").replace(",", ".").replace(/[^\d.-]/g, ""));
   return Number.isFinite(numero) ? numero : null;
 }
@@ -251,7 +329,13 @@ function detectarChildPugh(textos = []) {
 }
 
 export function resolverDiagnosticosClinicos(textos = []) {
-  const listaTextos = Array.isArray(textos) ? textos : [textos];
+  const listaOriginal = Array.isArray(textos) ? textos : [textos];
+  const listaEstructurada = listaOriginal
+    .map((item) => diagnosticoDesdeObjeto(item, "entrada"))
+    .filter(Boolean);
+  const listaTextos = listaEstructurada
+    .filter((item) => !ESTADOS_DIAGNOSTICO_INACTIVOS.has(item.estado))
+    .map((item) => item.texto);
   const encontrados = [];
   const vistos = new Set();
   DIAGNOSTICOS_CLINICOS.forEach((diagnostico) => {
@@ -263,6 +347,9 @@ export function resolverDiagnosticosClinicos(textos = []) {
     vistos.add(diagnostico.id);
     encontrados.push({
       ...diagnostico,
+      estado: listaEstructurada.find((item) =>
+        patrones.some((patron) => contieneConFuzzy(item.texto, patron) && !patronNegado(item.texto, patron))
+      )?.estado || "confirmado",
       evidenciaTexto: listaTextos.find((texto) =>
         patrones.some((patron) => contieneConFuzzy(texto, patron) && !patronNegado(texto, patron))
       ) || ""
@@ -272,6 +359,9 @@ export function resolverDiagnosticosClinicos(textos = []) {
   const childPugh = detectarChildPugh(listaTextos);
   return {
     diagnosticos: encontrados,
+    diagnosticosEvaluados: listaEstructurada,
+    diagnosticosActivos: listaEstructurada.filter((item) => !ESTADOS_DIAGNOSTICO_INACTIVOS.has(item.estado)),
+    diagnosticosProbables: listaEstructurada.filter((item) => ESTADOS_DIAGNOSTICO_PROBABLES.has(item.estado)),
     categorias: [...new Set(encontrados.map((diagnostico) => diagnostico.categoria))],
     modificadores: { childPugh }
   };
@@ -325,42 +415,69 @@ function clavePrincipioActivo(med) {
     .trim()}`;
 }
 
+function clavePrescripcionExacta(med) {
+  return [
+    clavePrincipioActivo(med),
+    med.posologiaNormalizada || med.textoNormalizado || "",
+    (med.clases || []).sort().join("+")
+  ].join("|");
+}
+
+function crearAlertaDuplicidad(clave, grupo, exacta = false) {
+  const principal = grupo[0] || {};
+  const nombre = principal.nombresIngredientes?.join(" + ") || principal.textoOriginal || "medicamento";
+  return crearAlerta({
+    id: `${exacta ? "duplicidad_exacta" : "duplicidad"}:${clave}`,
+    tipo: "duplicidad_terapeutica",
+    severidad: exacta ? "baja" : "moderada",
+    titulo: exacta ? "Prescripción repetida / duplicidad terapéutica exacta" : "Posible duplicidad terapéutica o de principio activo",
+    medicamentos: grupo.map((med) => med.textoOriginal),
+    efecto: exacta
+      ? `La misma prescripción de ${nombre} aparece más de una vez. Se conserva una sola entrada para el análisis y se registra esta alerta para revisión.`
+      : `Se encontraron ${grupo.length} prescripciones relacionadas con ${nombre}. Puede tratarse de duplicidad real, cambio de dosis, rescate o presentaciones distintas del mismo principio activo.`,
+    recomendacion: exacta
+      ? "Verificar que no haya duplicación accidental antes de guardar o interpretar la prescripción."
+      : "Verificar si son prescripciones distintas, cambio de dosis, rescate o duplicación no intencional antes de interpretar seguridad.",
+    evidencia: "regla_local",
+    fuentes: ["Regla local de deduplicación por prescripción exacta y principio activo."]
+  });
+}
+
 function deduplicarMedicamentosParaAnalisis(medicamentosNormalizados = []) {
-  const grupos = new Map();
+  const gruposExactos = new Map();
   medicamentosNormalizados.forEach((med) => {
-    const clave = clavePrincipioActivo(med);
-    const grupo = grupos.get(clave) || [];
+    const clave = clavePrescripcionExacta(med);
+    const grupo = gruposExactos.get(clave) || [];
     grupo.push(med);
-    grupos.set(clave, grupo);
+    gruposExactos.set(clave, grupo);
   });
 
   const medicamentosUnicos = [];
   const alertasDuplicidad = [];
-  grupos.forEach((grupo, clave) => {
+  gruposExactos.forEach((grupo, clave) => {
     const principal = {
       ...grupo[0],
       prescripcionesRelacionadas: grupo.map((med) => med.textoOriginal)
     };
     medicamentosUnicos.push(principal);
     if (grupo.length > 1) {
-      const nombre = principal.nombresIngredientes?.join(" + ") || principal.textoOriginal;
-      alertasDuplicidad.push(crearAlerta({
-        id: `duplicidad:${clave}`,
-        tipo: "duplicidad_terapeutica",
-        severidad: "moderada",
-        titulo: "Posible duplicidad terapéutica o de principio activo",
-        medicamentos: grupo.map((med) => med.textoOriginal),
-        efecto: `Se encontraron ${grupo.length} prescripciones relacionadas con ${nombre}. Puede tratarse de una duplicidad real o de presentaciones/posologías repetidas.`,
-        recomendacion: "Verificar si son prescripciones distintas, cambio de dosis, rescate o duplicación no intencional antes de interpretar seguridad.",
-        evidencia: "regla_local",
-        fuentes: ["Regla local de deduplicación por ingrediente activo / principio activo."]
-      }));
+      alertasDuplicidad.push(crearAlertaDuplicidad(clave, grupo, true));
     }
+  });
+
+  const gruposPrincipio = new Map();
+  medicamentosUnicos.forEach((med) => {
+    const clave = clavePrincipioActivo(med);
+    const grupo = gruposPrincipio.get(clave) || [];
+    grupo.push(med);
+    gruposPrincipio.set(clave, grupo);
+  });
+  gruposPrincipio.forEach((grupo, clave) => {
+    if (grupo.length > 1) alertasDuplicidad.push(crearAlertaDuplicidad(clave, grupo, false));
   });
 
   return { medicamentosUnicos, alertasDuplicidad };
 }
-
 export function evaluarMedicamentoContraDiagnosticos(medicamentosNormalizados = [], contextoDiagnostico) {
   const alertas = [];
   medicamentosNormalizados.forEach((med) => {
@@ -557,8 +674,9 @@ export function evaluarMedicamentosPaciente({ paciente = {}, medicamentos = [], 
     .map(normalizarMedicamentoClinico)
     .filter((med) => med.textoOriginal);
   const { medicamentosUnicos: medicamentosNormalizados, alertasDuplicidad } = deduplicarMedicamentosParaAnalisis(medicamentosNormalizadosOriginales);
-  const textosDiagnosticos = extraerDiagnosticosPaciente(paciente);
-  const contextoDiagnostico = resolverDiagnosticosClinicos(textosDiagnosticos);
+  const diagnosticosEstructurados = extraerDiagnosticosEstructuradosPaciente(paciente);
+  const textosDiagnosticos = diagnosticosEstructurados.map((diagnostico) => diagnostico.texto);
+  const contextoDiagnostico = resolverDiagnosticosClinicos(diagnosticosEstructurados);
   const alertas = deduplicarAlertas([
     ...alertasDuplicidad,
     ...evaluarMedicamentoContraDiagnosticos(medicamentosNormalizados, contextoDiagnostico),
@@ -574,6 +692,9 @@ export function evaluarMedicamentosPaciente({ paciente = {}, medicamentos = [], 
     medicamentosNormalizados,
     medicamentosOriginalesNormalizados: medicamentosNormalizadosOriginales,
     diagnosticosDetectados: contextoDiagnostico.diagnosticos,
+    diagnosticosEvaluados: contextoDiagnostico.diagnosticosEvaluados || diagnosticosEstructurados,
+    diagnosticosActivos: contextoDiagnostico.diagnosticosActivos || [],
+    diagnosticosProbables: contextoDiagnostico.diagnosticosProbables || [],
     textosDiagnosticosEvaluados: textosDiagnosticos,
     modificadores: contextoDiagnostico.modificadores,
     indicador: obtenerIndicadorSeguridadMedicamento(alertas)

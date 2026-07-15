@@ -1,5 +1,9 @@
 import { MEDICAMENTOS_MAESTROS, MEDICAMENTOS_PRESENTACIONES, medicamentoPorTexto } from "./data/medicamentos.js";
-import { evaluarMedicamentosPaciente, obtenerIndicadorSeguridadMedicamento } from "./services/motorClinicoMedicamentos.js";
+import {
+  evaluarMedicamentosPaciente,
+  normalizarMedicamentoClinico,
+  obtenerIndicadorSeguridadMedicamento
+} from "./services/motorClinicoMedicamentos.js";
 
 const seleccionados = [];
 const $ = (id) => document.getElementById(id);
@@ -49,11 +53,40 @@ function renderCatalogo() {
   datalist.innerHTML = opcionesMedicamentos().map((opcion) => `<option value="${escapar(opcion)}"></option>`).join("");
 }
 
+function claveFarmacoSeleccionado(med) {
+  const normalizado = normalizarMedicamentoClinico(med);
+  const principio = normalizado.ingredienteIds?.length
+    ? normalizado.ingredienteIds.slice().sort().join("+")
+    : textoNormalizado(med.medicamento || med.nombre || med.texto || "");
+  return [
+    principio,
+    textoNormalizado(med.indicacion || med.dosis || ""),
+    textoNormalizado(med.via || ""),
+    textoNormalizado(med.frecuencia || "")
+  ].join("|");
+}
+
+function normalizarSeleccionados() {
+  const vistos = new Set();
+  const unicos = [];
+  seleccionados.forEach((med) => {
+    const clave = claveFarmacoSeleccionado(med);
+    if (vistos.has(clave)) return;
+    vistos.add(clave);
+    unicos.push(med);
+  });
+  if (unicos.length !== seleccionados.length) {
+    seleccionados.splice(0, seleccionados.length, ...unicos);
+  }
+  return unicos;
+}
+
 function renderSeleccionados() {
   const contenedor = $("farmacosSeleccionados");
   if (!contenedor) return;
-  contenedor.innerHTML = seleccionados.length
-    ? seleccionados.map((med, index) => `
+  const lista = normalizarSeleccionados();
+  contenedor.innerHTML = lista.length
+    ? lista.map((med, index) => `
       <article class="farmaco-chip">
         <div><strong>${escapar(med.medicamento)}</strong>${med.indicacion ? `<small>${escapar(med.indicacion)}</small>` : ""}</div>
         <button type="button" data-quitar-farmaco="${index}">Quitar</button>
@@ -73,18 +106,19 @@ function agregarMedicamento() {
   const nombre = $("farmacoBuscador")?.value?.trim();
   if (!nombre) return;
   const dosis = $("farmacoDosis")?.value?.trim();
-  const claveNuevo = `${textoNormalizado(nombre)}|${textoNormalizado(dosis)}`;
-  if (seleccionados.some((med) => `${textoNormalizado(med.medicamento)}|${textoNormalizado(med.indicacion)}` === claveNuevo)) {
-    alert("Ese medicamento ya está en la simulación.");
-    return;
-  }
-  seleccionados.push({
+  const nuevo = {
     id: `farmaco-${Date.now()}-${seleccionados.length}`,
     medicamento: nombre,
     nombre,
     indicacion: dosis,
     texto: `${nombre} ${dosis}`.trim()
-  });
+  };
+  const claveNuevo = claveFarmacoSeleccionado(nuevo);
+  if (normalizarSeleccionados().some((med) => claveFarmacoSeleccionado(med) === claveNuevo)) {
+    alert("Ese medicamento con la misma prescripción ya está en la simulación.");
+    return;
+  }
+  seleccionados.push(nuevo);
   $("farmacoBuscador").value = "";
   $("farmacoDosis").value = "";
   renderSeleccionados();
@@ -204,6 +238,9 @@ function renderResumen(evaluacion, indicador, paciente) {
   const grupos = clasificarAlertas(evaluacion.alertas || []);
   const faltantes = datosFaltantes(paciente, evaluacion);
   const diagnosticos = evaluacion.diagnosticosDetectados || [];
+  const diagnosticosEvaluados = evaluacion.diagnosticosEvaluados || [];
+  const diagnosticosActivos = evaluacion.diagnosticosActivos || [];
+  const diagnosticosProbables = evaluacion.diagnosticosProbables || [];
   const medicamentosUnicos = evaluacion.medicamentosNormalizados || [];
 
   return `
@@ -214,7 +251,8 @@ function renderResumen(evaluacion, indicador, paciente) {
       </div>
       <dl>
         <div><dt>Principios activos únicos</dt><dd>${medicamentosUnicos.length}</dd></div>
-        <div><dt>Diagnósticos activos revisados</dt><dd>${diagnosticos.length}</dd></div>
+        <div><dt>Diagnósticos activos revisados</dt><dd>${diagnosticosActivos.length || diagnosticos.length}</dd></div>
+        <div><dt>Diagnósticos probables/diferenciales</dt><dd>${diagnosticosProbables.length}</dd></div>
         <div><dt>Interacciones</dt><dd>${grupos.interacciones.length}</dd></div>
         <div><dt>Alertas diagnóstico</dt><dd>${grupos.diagnosticos.length}</dd></div>
         <div><dt>Contraindicaciones absolutas</dt><dd>${grupos.absolutas.length}</dd></div>
@@ -227,9 +265,10 @@ function renderResumen(evaluacion, indicador, paciente) {
     </details>
     <details class="farmaco-details">
       <summary>Diagnósticos y comorbilidades considerados</summary>
-      ${diagnosticos.length
-        ? `<ul>${diagnosticos.map((dx) => `<li>${escapar(dx.nombre)}${dx.codigo ? ` · ${escapar(dx.codigo)}` : ""}${dx.categoria ? ` · ${escapar(dx.categoria)}` : ""}</li>`).join("")}</ul>`
+      ${diagnosticosEvaluados.length
+        ? `<ul>${diagnosticosEvaluados.map((dx) => `<li>${escapar(dx.texto || dx.nombre)}${dx.codigo ? ` · ${escapar(dx.codigo)}` : ""}${dx.estado ? ` · ${escapar(dx.estado)}` : ""}${dx.origen ? ` · ${escapar(dx.origen)}` : ""}</li>`).join("")}</ul>`
         : `<p>No hay diagnósticos o comorbilidades disponibles para evaluar contraindicaciones y precauciones. El análisis actual solo incluye los medicamentos registrados.</p>`}
+      ${diagnosticos.length ? `<p><b>Coincidencias clínicas activas:</b> ${escapar(diagnosticos.map((dx) => dx.nombre).join(", "))}</p>` : ""}
     </details>
     ${faltantes.length ? `<article class="interaccion-card precaucion"><strong>Evaluación incompleta por falta de datos</strong><p>${escapar(faltantes.join(", "))}</p><p>No se debe interpretar la ausencia de alertas como uso seguro si faltan datos clínicos.</p></article>` : ""}
   `;
@@ -238,12 +277,13 @@ function renderResumen(evaluacion, indicador, paciente) {
 function evaluar() {
   const salida = $("resultadoInteraccionesFarmaco");
   if (!salida) return;
-  if (seleccionados.length < 2) {
+  const lista = normalizarSeleccionados();
+  if (lista.length < 2) {
     salida.textContent = "Agrega dos o más medicamentos para iniciar la revisión.";
     return;
   }
   const paciente = pacienteSimulado();
-  const evaluacion = evaluarMedicamentosPaciente({ paciente, medicamentos: seleccionados });
+  const evaluacion = evaluarMedicamentosPaciente({ paciente, medicamentos: lista });
   const indicador = obtenerIndicadorSeguridadMedicamento(evaluacion.alertas || []);
   const grupos = clasificarAlertas(evaluacion.alertas || []);
   salida.innerHTML = [
