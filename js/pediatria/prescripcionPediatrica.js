@@ -68,6 +68,72 @@ function normalizarMedicamentoMaestro(medicamento) {
   };
 }
 
+export function normalizeCommercialPresentation(presentation = {}) {
+  const activeIngredientUnit = presentation.activeIngredientUnit || (presentation.amountMg ? "mg" : "");
+  const referenceVolumeUnit = presentation.referenceVolumeUnit || (presentation.volumeMl ? "mL" : "");
+  const amountMg = presentation.activeIngredientAmount && activeIngredientUnit
+    ? convertirAMg(presentation.activeIngredientAmount, activeIngredientUnit)
+    : numero(presentation.amountMg);
+  const referenceVolume = numero(presentation.referenceVolume ?? presentation.volumeMl);
+  const concentrationMgPerMl = numero(presentation.concentrationMgPerMl)
+    ?? (amountMg && referenceVolume && referenceVolumeUnit.toLowerCase() === "ml" ? amountMg / referenceVolume : null);
+  const pharmaceuticalForm = presentation.pharmaceuticalForm || presentation.form || inferForm(presentation.unitStrength || presentation.commercialStrength || "");
+  return {
+    ...presentation,
+    pharmaceuticalForm,
+    form: pharmaceuticalForm,
+    amountMg,
+    volumeMl: referenceVolumeUnit.toLowerCase() === "ml" ? referenceVolume : presentation.volumeMl,
+    concentrationMgPerMl,
+    routes: presentation.routes || presentation.route || ["oral"],
+    brands: presentation.brands || [presentation.brandName || "Genérico"].filter(Boolean),
+    brandName: presentation.brandName || presentation.brands?.[0] || "Genérico",
+    commercialStrength: presentation.commercialStrength || presentation.unitStrength || "",
+    unitStrength: presentation.unitStrength || presentation.commercialStrength || "",
+    packageLabel: presentation.packageLabel || formatearEnvase(presentation)
+  };
+}
+
+export function formatPresentationOption(presentation = {}) {
+  const p = normalizeCommercialPresentation(presentation);
+  const nombre = p.commercialName || `${p.brandName || "Genérico"} ${p.pharmaceuticalForm || "presentación"}`;
+  const fuerza = p.commercialStrength || p.unitStrength || "concentración no especificada";
+  const normalizada = p.concentrationMgPerMl ? `${formatNumber(p.concentrationMgPerMl)} mg/mL` : "";
+  const envase = p.packageLabel || formatearEnvase(p);
+  return [nombre, [fuerza, normalizada, envase].filter(Boolean).join(" · ")].filter(Boolean).join(" — ");
+}
+
+export function validatePresentationConsistency(presentation = {}) {
+  const p = normalizeCommercialPresentation(presentation);
+  const issues = [];
+  const form = normalizar(p.pharmaceuticalForm || p.form || "");
+  const strength = normalizar([p.commercialStrength, p.unitStrength].filter(Boolean).join(" "));
+  const isLiquid = ["jarabe", "suspension", "solucion", "gotas"].some((item) => form.includes(item));
+  const isSolid = ["tableta", "capsula"].some((item) => form.includes(item));
+  if (isLiquid && !p.concentrationMgPerMl) {
+    issues.push("La presentación líquida no tiene concentración normalizada.");
+  }
+  if (isLiquid && /\b(tableta|tabletas|capsula|capsulas)\b/.test(strength)) {
+    issues.push("La presentación líquida tiene una descripción incompatible con tabletas o cápsulas.");
+  }
+  if (isSolid && p.concentrationMgPerMl) {
+    issues.push("La presentación sólida no debe expresarse como mg/mL.");
+  }
+  if (isSolid && (strength.includes("mg/ml") || strength.includes("mg / ml") || strength.includes("mg/5 ml") || p.volumeMl)) {
+    issues.push("La presentación sólida tiene concentración o volumen de una forma líquida.");
+  }
+  if (form.includes("suspension") && !p.volumeMl && !p.referenceVolume) {
+    issues.push("La suspensión requiere volumen de referencia.");
+  }
+  if (form.includes("gotas") && !p.concentrationMgPerMl) {
+    issues.push("Las gotas requieren equivalencia de concentración.");
+  }
+  if (form.includes("capsula") && p.divisible === true) {
+    issues.push("No marcar cápsula como divisible sin validación específica.");
+  }
+  return { ok: issues.length === 0, issues };
+}
+
 function unirCatalogoPediatricoYMaestro() {
   const indice = new Map();
   CATALOGO_MEDICAMENTOS_PEDIATRICOS.forEach((medicamento) => {
@@ -215,16 +281,37 @@ export function synchronizeFrequencyAndInterval({ administrationsPerDay, interva
 
 export function loadMedicationPresentations(medicationId, { route = "", edadAnos = null } = {}) {
   const med = loadMedicationInformation(medicationId);
-  return (med?.presentations || []).filter((presentation) => {
+  return (med?.presentations || []).map(normalizeCommercialPresentation).filter((presentation) => {
     if (presentation.active === false) return false;
     if (route && !(presentation.routes || []).includes(route)) return false;
     return edadAnos === null || edadAnos === undefined || true;
   });
 }
 
+export function loadBrandsForMedication(medicationId) {
+  const med = loadMedicationInformation(medicationId);
+  const brands = (med?.presentations || [])
+    .map(normalizeCommercialPresentation)
+    .filter((presentation) => presentation.active !== false)
+    .map((presentation) => presentation.brandName || presentation.brands?.[0] || "Genérico")
+    .filter(Boolean);
+  return Array.from(new Set(brands)).sort((a, b) => a.localeCompare(b, "es"));
+}
+
 export function loadBrandsForPresentation(medicationId, presentationId) {
   const presentation = loadMedicationPresentations(medicationId).find((item) => item.presentationId === presentationId);
-  return ["Genérico", ...(presentation?.brands || [])].filter((brand, index, arr) => arr.indexOf(brand) === index);
+  return [presentation?.brandName, ...(presentation?.brands || []), ...loadBrandsForMedication(medicationId)]
+    .filter(Boolean)
+    .filter((brand, index, arr) => arr.indexOf(brand) === index);
+}
+
+export function loadPresentationsForBrand(medicationId, brandName = "", options = {}) {
+  const normalizedBrand = normalizeSearchText(brandName || "");
+  return loadMedicationPresentations(medicationId, options).filter((presentation) => {
+    if (!normalizedBrand || normalizedBrand === "manual") return true;
+    const brands = [presentation.brandName, ...(presentation.brands || [])].filter(Boolean).map(normalizeSearchText);
+    return brands.includes(normalizedBrand);
+  });
 }
 
 export function parseManualPresentation(text) {
@@ -256,6 +343,43 @@ export function parseManualPresentation(text) {
     return { form: inferForm(lower), amountMg: concentrationMgPerMl, volumeMl: 1, concentrationMgPerMl, unitStrength: raw, manual: true };
   }
   return null;
+}
+
+export function buildManualCommercialPresentation(input = {}) {
+  const activeIngredientAmount = numero(input.activeIngredientAmount ?? input.manualActiveIngredientAmount);
+  const referenceVolume = numero(input.referenceVolume ?? input.manualReferenceVolume);
+  const activeIngredientUnit = input.activeIngredientUnit || input.manualActiveIngredientUnit || "mg";
+  const referenceVolumeUnit = input.referenceVolumeUnit || input.manualReferenceVolumeUnit || "mL";
+  const amountMg = activeIngredientAmount ? convertirAMg(activeIngredientAmount, activeIngredientUnit) : null;
+  const concentrationMgPerMl = amountMg && referenceVolume && referenceVolumeUnit.toLowerCase() === "ml"
+    ? amountMg / referenceVolume
+    : null;
+  return normalizeCommercialPresentation({
+    presentationId: "manual",
+    medicationId: input.medicationId || "",
+    genericName: input.genericName || "",
+    brandName: input.brandName || input.manualBrandName || "Marca manual",
+    country: input.country || "México",
+    pharmaceuticalForm: input.pharmaceuticalForm || input.manualPharmaceuticalForm || input.form || "otra",
+    commercialName: input.commercialName || input.manualCommercialName || input.brandName || "Presentación manual",
+    activeIngredientAmount,
+    activeIngredientUnit,
+    referenceVolume,
+    referenceVolumeUnit,
+    amountMg,
+    volumeMl: referenceVolumeUnit.toLowerCase() === "ml" ? referenceVolume : null,
+    concentrationMgPerMl,
+    commercialStrength: input.commercialStrength || formatearFuerzaComercial({ activeIngredientAmount, activeIngredientUnit, referenceVolume, referenceVolumeUnit }),
+    unitStrength: input.commercialStrength || formatearFuerzaComercial({ activeIngredientAmount, activeIngredientUnit, referenceVolume, referenceVolumeUnit }),
+    packageContent: numero(input.packageContent ?? input.manualPackageContent),
+    packageUnit: input.packageUnit || input.manualPackageUnit || "",
+    routes: [input.route || "oral"],
+    route: [input.route || "oral"],
+    source: "Captura manual para la orden actual",
+    sourceType: "manual_no_validado",
+    active: true,
+    manual: true
+  });
 }
 
 export function calculateLiquidVolume({ finalDoseMg, presentation }) {
@@ -293,6 +417,26 @@ export function calculateTotalDailyDose({ finalDoseMg, administrationsPerDay }) 
   const dose = numero(finalDoseMg);
   const tomas = Math.max(1, numero(administrationsPerDay) || 1);
   return dose ? dose * tomas : null;
+}
+
+export function calculatePackagingNeed({ volumePerDoseMl, administrationsPerDay, durationValue, durationUnit, packageContent }) {
+  const volumen = numero(volumePerDoseMl);
+  const tomas = Math.max(1, numero(administrationsPerDay) || 1);
+  const duracion = numero(durationValue);
+  const contenido = numero(packageContent);
+  if (!volumen || !duracion || !contenido) return null;
+  const factorDias = durationUnit === "horas" ? duracion / 24
+    : durationUnit === "semanas" ? duracion * 7
+      : durationUnit === "meses" ? duracion * 30
+        : durationUnit === "dosis_unica" ? 1 / tomas
+          : duracion;
+  const totalVolumeMl = volumen * tomas * factorDias;
+  const packagesNeeded = Math.ceil(totalVolumeMl / contenido);
+  return {
+    totalVolumeMl,
+    packagesNeeded,
+    leftoverMl: (packagesNeeded * contenido) - totalVolumeMl
+  };
 }
 
 export function compareDoseWithUsualRange({ finalDoseMg, pesoKg, scheme, administrationsPerDay }) {
@@ -347,12 +491,11 @@ export function formatPediatricPrescription(prescription) {
     : prescription.unitsPerDose
       ? `${formatNumber(prescription.unitsPerDose.roundedUnits)} ${unidadSolida(prescription.presentation?.form)} por toma`
       : `${formatNumber(prescription.finalDoseMg)} mg por toma`;
-  const marca = prescription.brandName && prescription.brandName !== "Genérico" ? ` Marca: ${prescription.brandName}.` : "";
+  const marca = prescription.brandName && prescription.brandName !== "Genérico" ? `marca ${prescription.brandName}, ` : "";
   const horarios = prescription.customSchedule?.length ? ` Horarios: ${prescription.customSchedule.join(", ")}.` : "";
   const prn = prescription.isPrn ? ` PRN: ${prescription.prnReason || "según necesidad"}.` : "";
-  const unidadDuracion = prescription.durationUnit === "dias" ? "días" : (prescription.durationUnit || "días");
-  const duracion = prescription.duration ? ` durante ${prescription.duration} ${unidadDuracion}` : "";
-  return `${prescription.genericName}, ${prescription.presentationLabel || "presentación seleccionada"}.${marca} Administrar ${unitsText} (${formatNumber(prescription.finalDoseMg)} mg) vía ${prescription.route || "oral"}, ${frecuenciaTexto(prescription)}${duracion}.${horarios}${prn}`;
+  const duracion = durationText(prescription);
+  return `${prescription.genericName}, ${marca}${prescription.presentationLabel || "presentación seleccionada"}. Administrar ${unitsText}, equivalentes a ${formatNumber(prescription.finalDoseMg)} mg, por vía ${prescription.route || "oral"} ${frecuenciaTexto(prescription)}${duracion}.${horarios}${prn}`;
 }
 
 export function buildPediatricPrescription(input) {
@@ -375,9 +518,25 @@ export function buildPediatricPrescription(input) {
   const calculatedDoseMg = doseResult?.calculatedDoseMg || null;
   const finalDoseMg = numero(input.finalDoseMg) || calculatedDoseMg;
   const totalDailyDoseMg = calculateTotalDailyDose({ finalDoseMg, administrationsPerDay });
-  const presentations = loadMedicationPresentations(input.medicationId, { route: input.route || scheme?.routes?.[0] || "" });
+  const presentations = loadPresentationsForBrand(input.medicationId, input.brandName, { route: input.route || scheme?.routes?.[0] || "" });
   const catalogPresentation = presentations.find((item) => item.presentationId === input.presentationId) || presentations[0] || null;
-  const manualPresentation = input.manualPresentationText ? parseManualPresentation(input.manualPresentationText) : null;
+  const manualStructured = input.presentationId === "manual" && (input.manualActiveIngredientAmount || input.manualPresentationText)
+    ? buildManualCommercialPresentation({
+      medicationId: input.medicationId,
+      genericName: med?.genericName || "",
+      brandName: input.manualBrandName || input.brandName,
+      pharmaceuticalForm: input.manualPharmaceuticalForm,
+      activeIngredientAmount: input.manualActiveIngredientAmount,
+      activeIngredientUnit: input.manualActiveIngredientUnit,
+      referenceVolume: input.manualReferenceVolume,
+      referenceVolumeUnit: input.manualReferenceVolumeUnit,
+      packageContent: input.manualPackageContent,
+      packageUnit: input.manualPackageUnit,
+      commercialStrength: input.manualPresentationText,
+      route: input.route || "oral"
+    })
+    : null;
+  const manualPresentation = manualStructured || (input.manualPresentationText ? parseManualPresentation(input.manualPresentationText) : null);
   const presentation = manualPresentation || catalogPresentation;
   const liquidVolume = presentation?.concentrationMgPerMl ? calculateLiquidVolume({ finalDoseMg, presentation }) : null;
   const unitsPerDose = !liquidVolume ? calculateSolidUnits({ finalDoseMg, presentation }) : null;
@@ -392,7 +551,11 @@ export function buildPediatricPrescription(input) {
     temporal: Boolean(input.temporal),
     medicationId: med?.medicationId || "",
     genericName: med?.genericName || "",
-    brandName,
+    brandName: presentation?.brandName || brandName,
+    commercialPresentationName: presentation?.commercialName || "",
+    commercialStrength: presentation?.commercialStrength || presentation?.unitStrength || "",
+    packageContent: presentation?.packageContent || null,
+    packageUnit: presentation?.packageUnit || "",
     indication: indication?.name || input.indication || "Indicación no especificada",
     indicationId: indication?.indicationId || "",
     dosingMode: mode,
@@ -410,7 +573,7 @@ export function buildPediatricPrescription(input) {
     presentationId: presentation?.presentationId || "manual",
     presentation,
     manualPresentation,
-    presentationLabel: presentation?.unitStrength || input.manualPresentationText || "",
+    presentationLabel: formatPresentationLabel(presentation) || input.manualPresentationText || "",
     pharmaceuticalForm: presentation?.form || "",
     amountMg: presentation?.amountMg || null,
     volumeMl: presentation?.volumeMl || null,
@@ -418,7 +581,11 @@ export function buildPediatricPrescription(input) {
     liquidVolume,
     unitsPerDose,
     duration: input.duration || "",
+    durationValue: input.durationValue ?? input.duration ?? "",
     durationUnit: input.durationUnit || "días",
+    durationManualText: input.durationManualText || "",
+    isContinuous: input.durationUnit === "continuo" || Boolean(input.isContinuous),
+    isSingleDose: input.durationUnit === "dosis_unica" || Boolean(input.isSingleDose),
     isPrn: Boolean(input.isPrn),
     prnReason: input.prnReason || "",
     maxPrnDosesPerDay: numero(input.maxPrnDosesPerDay),
@@ -430,6 +597,13 @@ export function buildPediatricPrescription(input) {
     source: scheme?.source || med?.sources?.[0] || "",
     medicationInfo: med
   };
+  prescription.packagingNeed = liquidVolume ? calculatePackagingNeed({
+    volumePerDoseMl: liquidVolume.roundedMl,
+    administrationsPerDay,
+    durationValue: prescription.durationValue,
+    durationUnit: prescription.durationUnit,
+    packageContent: prescription.packageContent
+  }) : null;
   const validation = validatePediatricPrescription(prescription);
   return {
     ...prescription,
@@ -461,6 +635,17 @@ function parseSchedule(value) {
 function frecuenciaTexto(p) {
   if (p.intervalHours) return `cada ${formatNumber(p.intervalHours)} horas`;
   return `${formatNumber(p.administrationsPerDay)} ${p.administrationsPerDay === 1 ? "vez" : "veces"} al día`;
+}
+
+export function durationText(p = {}) {
+  if (p.isSingleDose || p.durationUnit === "dosis_unica") return " en dosis única";
+  if (p.isContinuous || p.durationUnit === "continuo") return " de forma continua hasta nueva indicación";
+  if (p.durationUnit === "hasta_nueva_indicacion") return " hasta nueva indicación";
+  if (p.durationUnit === "personalizado") return p.durationManualText ? ` ${p.durationManualText}` : "";
+  const value = p.durationValue ?? p.duration;
+  if (!value) return "";
+  const unit = p.durationUnit === "dias" ? "días" : (p.durationUnit || "días");
+  return ` durante ${value} ${unit}`;
 }
 
 function unidadSolida(form = "") {
@@ -496,6 +681,36 @@ function extraerConcentracionMgMl(text = "") {
   const mg = extraerMg(text);
   const ml = extraerMl(text);
   return mg && ml ? mg / ml : null;
+}
+
+function convertirAMg(value, unit = "mg") {
+  const n = numero(value);
+  if (!n) return null;
+  const u = normalizar(unit);
+  if (u === "g" || u.includes("gramo")) return n * 1000;
+  if (u.includes("mcg") || u.includes("micro")) return n / 1000;
+  return n;
+}
+
+function formatearFuerzaComercial({ activeIngredientAmount, activeIngredientUnit, referenceVolume, referenceVolumeUnit }) {
+  if (!activeIngredientAmount || !activeIngredientUnit) return "";
+  if (!referenceVolume || !referenceVolumeUnit) return `${activeIngredientAmount} ${activeIngredientUnit}`;
+  return `${activeIngredientAmount} ${activeIngredientUnit}/${referenceVolume} ${referenceVolumeUnit}`;
+}
+
+function formatearEnvase(presentation = {}) {
+  const content = presentation.packageContent;
+  const unit = presentation.packageUnit;
+  return content && unit ? `frasco ${content} ${unit}` : "";
+}
+
+function formatPresentationLabel(presentation = {}) {
+  if (!presentation) return "";
+  const p = normalizeCommercialPresentation(presentation);
+  const name = p.commercialName || p.pharmaceuticalForm || "presentación";
+  const strength = p.commercialStrength || p.unitStrength || "";
+  const packageLabel = p.packageLabel || formatearEnvase(p);
+  return [name, strength, packageLabel].filter(Boolean).join(", ");
 }
 
 function normalizarForma(value) {

@@ -1,5 +1,4 @@
 import { MEDICAMENTOS_MAESTROS, MEDICAMENTOS_PRESENTACIONES } from "./data/medicamentos.js";
-import { detectarInteraccionesFarmacologicas } from "./data/interaccionesFarmacologicas.js";
 import { evaluarMedicamentosPaciente, obtenerIndicadorSeguridadMedicamento } from "./services/motorClinicoMedicamentos.js";
 
 const seleccionados = [];
@@ -37,7 +36,9 @@ function pacienteSimulado() {
     creatinina: $("farmacoCreatinina")?.value || "",
     alergias: $("farmacoAlergias")?.value || "",
     comorbilidades,
+    diagnosticos: comorbilidades,
     antecedentes: comorbilidades,
+    antecedentesMedicos: comorbilidades,
     observaciones: comorbilidades
   };
 }
@@ -72,11 +73,18 @@ function agregarMedicamento() {
   const nombre = $("farmacoBuscador")?.value?.trim();
   if (!nombre) return;
   const dosis = $("farmacoDosis")?.value?.trim();
-  if (seleccionados.some((med) => textoNormalizado(med.medicamento) === textoNormalizado(nombre) && textoNormalizado(med.indicacion) === textoNormalizado(dosis))) {
+  const claveNuevo = `${textoNormalizado(nombre)}|${textoNormalizado(dosis)}`;
+  if (seleccionados.some((med) => `${textoNormalizado(med.medicamento)}|${textoNormalizado(med.indicacion)}` === claveNuevo)) {
     alert("Ese medicamento ya está en la simulación.");
     return;
   }
-  seleccionados.push({ id: `farmaco-${Date.now()}-${seleccionados.length}`, medicamento: nombre, nombre, indicacion: dosis, texto: `${nombre} ${dosis}`.trim() });
+  seleccionados.push({
+    id: `farmaco-${Date.now()}-${seleccionados.length}`,
+    medicamento: nombre,
+    nombre,
+    indicacion: dosis,
+    texto: `${nombre} ${dosis}`.trim()
+  });
   $("farmacoBuscador").value = "";
   $("farmacoDosis").value = "";
   renderSeleccionados();
@@ -85,27 +93,121 @@ function agregarMedicamento() {
 
 function severidadClase(severidad = "") {
   const texto = textoNormalizado(severidad);
-  if (texto.includes("alta") || texto.includes("critica")) return "alta";
+  if (texto.includes("critica") || texto.includes("crítica")) return "alta";
+  if (texto.includes("alta")) return "alta";
   if (texto.includes("relevante") || texto.includes("moderada")) return "relevante";
   return "precaucion";
 }
 
-function renderInteraccion(item, tipo = "interaccion") {
+function renderAlerta(item, tipo = "alerta") {
+  const etiquetaTipo = {
+    interaccion: "Interacción medicamento-medicamento",
+    diagnostico: "Alerta medicamento-diagnóstico",
+    contraindicacion: "Contraindicación absoluta",
+    precaucion: "Precaución clínica",
+    duplicidad: "Duplicidad terapéutica",
+    acumulativo: "Efecto farmacodinámico acumulativo",
+    monitorizacion: "Ajuste o monitorización",
+    dato_faltante: "Dato clínico faltante"
+  }[tipo] || "Alerta clínica";
+
   return `
     <article class="interaccion-card ${severidadClase(item.severidad || item.nivel || "")}">
       <strong>${escapar(item.titulo || item.nombre || "Alerta clínica")}</strong>
       <p><b>Medicamentos:</b> ${escapar((item.medicamentos || []).join(" + ") || "No especificados")}</p>
+      ${item.diagnosticos?.length ? `<p><b>Diagnóstico/comorbilidad:</b> ${escapar(item.diagnosticos.join(", "))}</p>` : ""}
       <p>${escapar(item.efecto || item.descripcion || "")}</p>
       ${item.recomendacion ? `<p><b>Recomendación:</b> ${escapar(item.recomendacion)}</p>` : ""}
+      ${item.parametrosVigilancia?.length ? `<p><b>Vigilar:</b> ${escapar(item.parametrosVigilancia.join(", "))}</p>` : ""}
       ${item.fuentes?.length ? `<small>Fuente local: ${escapar(item.fuentes.join("; "))}</small>` : ""}
-      <small>${tipo === "interaccion" ? "Interacción medicamento-medicamento" : "Alerta por contexto clínico o riesgo acumulativo"}</small>
+      <small>${escapar(etiquetaTipo)} · Severidad: ${escapar(item.severidad || "no especificada")}</small>
     </article>
   `;
 }
 
-function claveAlerta(item = {}) {
-  const meds = (item.medicamentos || []).map(textoNormalizado).sort().join("|");
-  return `${textoNormalizado(item.titulo || item.nombre || "")}|${meds}|${textoNormalizado(item.efecto || item.descripcion || "")}`;
+function clasificarAlertas(alertas = []) {
+  const grupos = {
+    interacciones: [],
+    diagnosticos: [],
+    absolutas: [],
+    precauciones: [],
+    duplicidades: [],
+    acumulativos: [],
+    monitorizacion: []
+  };
+
+  alertas.forEach((alerta) => {
+    if (alerta.tipo === "duplicidad_terapeutica") grupos.duplicidades.push(alerta);
+    else if (alerta.tipo === "riesgo_acumulativo") grupos.acumulativos.push(alerta);
+    else if (alerta.tipo?.includes("interaccion")) grupos.interacciones.push(alerta);
+    else if (alerta.tipo?.includes("contraindicacion") && alerta.severidad === "critica") grupos.absolutas.push(alerta);
+    else if (alerta.diagnosticos?.length) grupos.diagnosticos.push(alerta);
+    else if (alerta.tipo?.includes("dosis") || alerta.parametrosVigilancia?.length) grupos.monitorizacion.push(alerta);
+    else grupos.precauciones.push(alerta);
+  });
+
+  return grupos;
+}
+
+function renderSeccion(titulo, items, tipo, vacio = "No se encontraron alertas en esta categoría con la base local actual.") {
+  return `
+    <section class="farmaco-result-section">
+      <h3>${escapar(titulo)} <span>${items.length}</span></h3>
+      <div class="farmaco-result-list">
+        ${items.length ? items.map((item) => renderAlerta(item, tipo)).join("") : `<p class="farmaco-empty">${escapar(vacio)}</p>`}
+      </div>
+    </section>
+  `;
+}
+
+function datosFaltantes(paciente, evaluacion) {
+  const faltantes = [];
+  const textosDx = evaluacion.textosDiagnosticosEvaluados || [];
+  if (!textosDx.length) faltantes.push("Diagnósticos o comorbilidades registradas");
+
+  const textoAlertas = (evaluacion.alertas || []).map((alerta) => `${alerta.titulo} ${alerta.efecto} ${alerta.recomendacion}`).join(" ");
+  if (/renal|creatinina|eGFR|filtrado/i.test(textoAlertas) && !paciente.eGFR && !paciente.creatinina) {
+    faltantes.push("Función renal / creatinina / eGFR");
+  }
+  if (/hep[aá]t|child/i.test(textoAlertas) && !/child|hep[aá]t|cirrosis/i.test(paciente.comorbilidades || "")) {
+    faltantes.push("Función hepática / Child-Pugh si aplica");
+  }
+  return [...new Set(faltantes)];
+}
+
+function renderResumen(evaluacion, indicador, paciente) {
+  const grupos = clasificarAlertas(evaluacion.alertas || []);
+  const faltantes = datosFaltantes(paciente, evaluacion);
+  const diagnosticos = evaluacion.diagnosticosDetectados || [];
+  const medicamentosUnicos = evaluacion.medicamentosNormalizados || [];
+
+  return `
+    <article class="farmaco-resumen ${severidadClase(indicador.clase || "")}">
+      <div>
+        <strong>Resumen de seguridad: ${escapar(indicador.etiqueta || "Revisión sin alertas críticas")}</strong>
+        <p>Catálogo activo: ${MEDICAMENTOS_MAESTROS.length} medicamentos y ${MEDICAMENTOS_PRESENTACIONES.length} presentaciones.</p>
+      </div>
+      <dl>
+        <div><dt>Principios activos únicos</dt><dd>${medicamentosUnicos.length}</dd></div>
+        <div><dt>Diagnósticos activos revisados</dt><dd>${diagnosticos.length}</dd></div>
+        <div><dt>Interacciones</dt><dd>${grupos.interacciones.length}</dd></div>
+        <div><dt>Alertas diagnóstico</dt><dd>${grupos.diagnosticos.length}</dd></div>
+        <div><dt>Contraindicaciones absolutas</dt><dd>${grupos.absolutas.length}</dd></div>
+        <div><dt>Datos faltantes</dt><dd>${faltantes.length}</dd></div>
+      </dl>
+    </article>
+    <details class="farmaco-details" open>
+      <summary>Medicamentos evaluados</summary>
+      <ul>${medicamentosUnicos.map((med) => `<li>${escapar(med.textoOriginal)}</li>`).join("") || "<li>Sin medicamentos evaluados.</li>"}</ul>
+    </details>
+    <details class="farmaco-details">
+      <summary>Diagnósticos y comorbilidades considerados</summary>
+      ${diagnosticos.length
+        ? `<ul>${diagnosticos.map((dx) => `<li>${escapar(dx.nombre)}${dx.codigo ? ` · ${escapar(dx.codigo)}` : ""}${dx.categoria ? ` · ${escapar(dx.categoria)}` : ""}</li>`).join("")}</ul>`
+        : `<p>No hay diagnósticos o comorbilidades disponibles para evaluar contraindicaciones y precauciones. El análisis actual solo incluye los medicamentos registrados.</p>`}
+    </details>
+    ${faltantes.length ? `<article class="interaccion-card precaucion"><strong>Evaluación incompleta por falta de datos</strong><p>${escapar(faltantes.join(", "))}</p><p>No se debe interpretar la ausencia de alertas como uso seguro si faltan datos clínicos.</p></article>` : ""}
+  `;
 }
 
 function evaluar() {
@@ -115,17 +217,20 @@ function evaluar() {
     salida.textContent = "Agrega dos o más medicamentos para iniciar la revisión.";
     return;
   }
-  const interacciones = detectarInteraccionesFarmacologicas(seleccionados);
-  const evaluacion = evaluarMedicamentosPaciente({ paciente: pacienteSimulado(), medicamentos: seleccionados });
+  const paciente = pacienteSimulado();
+  const evaluacion = evaluarMedicamentosPaciente({ paciente, medicamentos: seleccionados });
   const indicador = obtenerIndicadorSeguridadMedicamento(evaluacion.alertas || []);
-  const clavesInteracciones = new Set(interacciones.map(claveAlerta));
-  const alertasClinicas = (evaluacion.alertas || []).filter((alerta) => !clavesInteracciones.has(claveAlerta(alerta)));
-  const bloques = [
-    `<article class="interaccion-card ${severidadClase(indicador.clase || "")}"><strong>Resumen de seguridad: ${escapar(indicador.etiqueta || "Revisión sin alertas críticas")}</strong><p>Medicamentos revisados: ${seleccionados.length}. Catálogo activo: ${MEDICAMENTOS_MAESTROS.length} medicamentos y ${MEDICAMENTOS_PRESENTACIONES.length} presentaciones.</p></article>`,
-    ...interacciones.map((item) => renderInteraccion(item, "interaccion")),
-    ...alertasClinicas.map((item) => renderInteraccion(item, "alerta"))
-  ];
-  salida.innerHTML = bloques.length > 1 ? bloques.join("") : "<p>No se detectaron interacciones relevantes con la base local actual. Mantén revisión clínica y farmacológica habitual.</p>";
+  const grupos = clasificarAlertas(evaluacion.alertas || []);
+  salida.innerHTML = [
+    renderResumen(evaluacion, indicador, paciente),
+    renderSeccion("A. Interacciones medicamento-medicamento", grupos.interacciones, "interaccion"),
+    renderSeccion("B. Alertas medicamento-diagnóstico", grupos.diagnosticos, "diagnostico"),
+    renderSeccion("C. Contraindicaciones absolutas", grupos.absolutas, "contraindicacion"),
+    renderSeccion("D. Contraindicaciones relativas y precauciones", grupos.precauciones, "precaucion"),
+    renderSeccion("E. Duplicidades terapéuticas", grupos.duplicidades, "duplicidad"),
+    renderSeccion("F. Efectos farmacodinámicos acumulativos", grupos.acumulativos, "acumulativo"),
+    renderSeccion("G. Ajustes y monitorización", grupos.monitorizacion, "monitorizacion")
+  ].join("");
 }
 
 function limpiar() {

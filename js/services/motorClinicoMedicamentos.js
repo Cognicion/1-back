@@ -308,10 +308,57 @@ function crearAlerta(base) {
     efecto: base.efecto || "",
     recomendacion: base.recomendacion || "",
     evidencia: base.evidencia || "regla_local",
+    fuentes: base.fuentes || [],
+    fechaFuente: base.fechaFuente || base.actualizado || "",
+    parametrosVigilancia: base.parametrosVigilancia || [],
     permiteOverride: base.permiteOverride !== false,
     requiereJustificacion,
     fuente: "Motor clínico local de Cognición"
   };
+}
+
+function clavePrincipioActivo(med) {
+  if (med.ingredienteIds?.length) return `ingredientes:${[...med.ingredienteIds].sort().join("+")}`;
+  return `texto:${med.textoNormalizado
+    .replace(/\b\d+(?:[.,]\d+)?\s*(mg|mcg|g|ml|ui|iu|tabletas?|capsulas?|cápsulas?|cada|horas?|h|dia|día)\b/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()}`;
+}
+
+function deduplicarMedicamentosParaAnalisis(medicamentosNormalizados = []) {
+  const grupos = new Map();
+  medicamentosNormalizados.forEach((med) => {
+    const clave = clavePrincipioActivo(med);
+    const grupo = grupos.get(clave) || [];
+    grupo.push(med);
+    grupos.set(clave, grupo);
+  });
+
+  const medicamentosUnicos = [];
+  const alertasDuplicidad = [];
+  grupos.forEach((grupo, clave) => {
+    const principal = {
+      ...grupo[0],
+      prescripcionesRelacionadas: grupo.map((med) => med.textoOriginal)
+    };
+    medicamentosUnicos.push(principal);
+    if (grupo.length > 1) {
+      const nombre = principal.nombresIngredientes?.join(" + ") || principal.textoOriginal;
+      alertasDuplicidad.push(crearAlerta({
+        id: `duplicidad:${clave}`,
+        tipo: "duplicidad_terapeutica",
+        severidad: "moderada",
+        titulo: "Posible duplicidad terapéutica o de principio activo",
+        medicamentos: grupo.map((med) => med.textoOriginal),
+        efecto: `Se encontraron ${grupo.length} prescripciones relacionadas con ${nombre}. Puede tratarse de una duplicidad real o de presentaciones/posologías repetidas.`,
+        recomendacion: "Verificar si son prescripciones distintas, cambio de dosis, rescate o duplicación no intencional antes de interpretar seguridad.",
+        evidencia: "regla_local",
+        fuentes: ["Regla local de deduplicación por ingrediente activo / principio activo."]
+      }));
+    }
+  });
+
+  return { medicamentosUnicos, alertasDuplicidad };
 }
 
 export function evaluarMedicamentoContraDiagnosticos(medicamentosNormalizados = [], contextoDiagnostico) {
@@ -429,8 +476,10 @@ export function evaluarRiesgosAcumulativos(medicamentosNormalizados = []) {
       medicamentos: medicamentosNormalizados
         .filter((med) => Number(med.riesgos[riesgo] || 0) > 0)
         .map((med) => med.textoOriginal),
-      efecto: `La suma de medicamentos alcanza una carga ${riesgo} de ${acumulados[riesgo]}.`,
-      recomendacion: "Revisar necesidad de cada fármaco, dosis, factores de riesgo y vigilancia clínica."
+      efecto: regla.descripcion || "Varios medicamentos seleccionados comparten un efecto farmacodinámico o toxicológico que puede acumularse. El valor interno solo se usa para priorizar la alerta y no representa una escala clínica validada.",
+      recomendacion: regla.recomendacion || "Revisar necesidad de cada fármaco, dosis, factores de riesgo y vigilancia clínica.",
+      parametrosVigilancia: regla.parametrosVigilancia || [],
+      fuentes: regla.fuentes || ["Regla local de riesgo farmacodinámico acumulativo; requiere validación clínica e institucional."]
     }));
 }
 
@@ -455,9 +504,22 @@ function validarBloqueosTecnicos(medicamentos = []) {
 function deduplicarAlertas(alertas = []) {
   const indice = new Map();
   alertas.forEach((alerta) => {
-    const clave = alerta.id || `${alerta.titulo}:${(alerta.medicamentos || []).join("+")}:${(alerta.diagnosticos || []).join("+")}`;
+    const clave = alerta.tipo === "precaucion_contextual" && alerta.diagnosticos?.length
+      ? `${alerta.tipo}:${alerta.titulo}:${alerta.efecto}:${(alerta.diagnosticos || []).join("+")}`
+      : alerta.id || `${alerta.titulo}:${(alerta.medicamentos || []).join("+")}:${(alerta.diagnosticos || []).join("+")}`;
     const existente = indice.get(clave);
-    if (!existente || (alerta.prioridad || 0) > (existente.prioridad || 0)) indice.set(clave, alerta);
+    if (!existente) {
+      indice.set(clave, alerta);
+      return;
+    }
+    const fusionada = {
+      ...((alerta.prioridad || 0) > (existente.prioridad || 0) ? alerta : existente),
+      medicamentos: [...new Set([...(existente.medicamentos || []), ...(alerta.medicamentos || [])])],
+      diagnosticos: [...new Set([...(existente.diagnosticos || []), ...(alerta.diagnosticos || [])])],
+      fuentes: [...new Set([...(existente.fuentes || []), ...(alerta.fuentes || [])])],
+      parametrosVigilancia: [...new Set([...(existente.parametrosVigilancia || []), ...(alerta.parametrosVigilancia || [])])]
+    };
+    indice.set(clave, fusionada);
   });
   return [...indice.values()].sort((a, b) => (b.prioridad || 0) - (a.prioridad || 0));
 }
@@ -491,12 +553,14 @@ export function evaluarMedicamentosPaciente({ paciente = {}, medicamentos = [], 
     };
   }
 
-  const medicamentosNormalizados = listaMedicamentos
+  const medicamentosNormalizadosOriginales = listaMedicamentos
     .map(normalizarMedicamentoClinico)
     .filter((med) => med.textoOriginal);
+  const { medicamentosUnicos: medicamentosNormalizados, alertasDuplicidad } = deduplicarMedicamentosParaAnalisis(medicamentosNormalizadosOriginales);
   const textosDiagnosticos = extraerDiagnosticosPaciente(paciente);
   const contextoDiagnostico = resolverDiagnosticosClinicos(textosDiagnosticos);
   const alertas = deduplicarAlertas([
+    ...alertasDuplicidad,
     ...evaluarMedicamentoContraDiagnosticos(medicamentosNormalizados, contextoDiagnostico),
     ...evaluarInteraccionesClinicas(medicamentosNormalizados),
     ...evaluarRiesgosAcumulativos(medicamentosNormalizados),
@@ -508,7 +572,9 @@ export function evaluarMedicamentosPaciente({ paciente = {}, medicamentos = [], 
     alertas,
     bloqueosTecnicos: [],
     medicamentosNormalizados,
+    medicamentosOriginalesNormalizados: medicamentosNormalizadosOriginales,
     diagnosticosDetectados: contextoDiagnostico.diagnosticos,
+    textosDiagnosticosEvaluados: textosDiagnosticos,
     modificadores: contextoDiagnostico.modificadores,
     indicador: obtenerIndicadorSeguridadMedicamento(alertas)
   };

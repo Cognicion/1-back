@@ -75,13 +75,13 @@
       <button onclick="mostrarNotasRapidas()">Nota rapida</button>
       <button onclick="abrirHistoriaClinica()">Historia clinica</button>
       <button onclick="mostrarEstudios()">Estudios</button>
-      <button id="btnTratamientoPaciente" onclick="mostrarTratamiento()">Tratamiento</button>
+      <button id="btnTratamientoPaciente" onclick="mostrarTratamiento()">Tratamiento e indicaciones</button>
       <button onclick="mostrarDiagnosticos()">Diagnosticos</button>
       <button onclick="abrirApuntesMedicoPaciente()">Mis apuntes</button>
       <button onclick="mostrarCarpetas()">Carpetas</button>
       <button onclick="mostrarNotasFlotantes()">Notas flotantes</button>
       <button onclick="mostrarInterconsulta()">Interconsulta</button>
-      <button onclick="mostrarIndicaciones()">Indicaciones</button>
+      <button onclick="mostrarIndicaciones()" style="display:none;">Indicaciones</button>
       <button onclick="mostrarReceta()">Receta</button>
       <button onclick="mostrarResultadosEscalas()">Escalas</button>
       <button onclick="mostrarRehabilitacionCognitivaPaciente()">Rehabilitación cognitiva</button>
@@ -344,7 +344,7 @@
           </div>
 
           <div class="form-grid">
-            <label>Tarea<input id="tareaMiSaludTitulo" placeholder="Ej. Registrar estado de animo diario"></label>
+            <label>Tarea<input id="tareaMiSaludTitulo" placeholder="Ej. Registrar estado de ánimo diario"></label>
             <label>Fecha limite<input id="tareaMiSaludFecha" type="date"></label>
           </div>
           <label>Indicaciones
@@ -515,7 +515,7 @@
           <label>Peso<input id="interconsultaPeso" placeholder="kg"></label>
           <label>Talla<input id="interconsultaTalla" placeholder="m"></label>
           <label>Perimetro abdominal<input id="interconsultaPerimetroAbdominal" placeholder="cm"></label>
-          <label>Sospecha diagnostica<input id="interconsultaSospechaDiagnostica"></label>
+          <label>Sospecha diagnóstica<input id="interconsultaSospechaDiagnostica"></label>
           <label>Medico solicitante<input id="interconsultaMedicoSolicitante"></label>
           <label>Cedula profesional<input id="interconsultaCedulaSolicitante"></label>
         </div>
@@ -716,18 +716,18 @@
             <option value="via topica"></option>
             <option value="via inhalada"></option>
              </datalist>
-          <label>Veces al dia
+          <label>Veces al día
             <input
               id="tratamientoFrecuencia"
-              placeholder="Ej. 1 vez al dia"
+              placeholder="Ej. 1 vez al día"
               list="opcionesFrecuenciaTratamiento"
             >
           </label>
           <datalist id="opcionesFrecuenciaTratamiento">
-            <option value="1 vez al dia"></option>
-            <option value="2 veces al dia"></option>
-            <option value="3 veces al dia"></option>
-            <option value="4 veces al dia"></option>
+            <option value="1 vez al día"></option>
+            <option value="2 veces al día"></option>
+            <option value="3 veces al día"></option>
+            <option value="4 veces al día"></option>
           </datalist>
           <label>Modo de frecuencia
             <select id="tratamientoModoFrecuencia">
@@ -737,12 +737,12 @@
               <option value="manana_tarde_noche">Mañana / tarde / noche</option>
             </select>
           </label>
-          <label>Numero de tomas al dia
+          <label>Número de tomas al día
             <select id="tratamientoVecesDia">
-              <option value="1">1 vez al dia</option>
-              <option value="2">2 veces al dia</option>
-              <option value="3" selected>3 veces al dia</option>
-              <option value="4">4 veces al dia</option>
+              <option value="1">1 vez al día</option>
+              <option value="2">2 veces al día</option>
+              <option value="3" selected>3 veces al día</option>
+              <option value="4">4 veces al día</option>
             </select>
           </label>
           <input id="tratamientoDosis" type="hidden">
@@ -759,7 +759,7 @@
             <option value="00:00"></option>
           </datalist>
           <label>Fecha de inicio<input id="tratamientoFechaInicio" type="date"></label>
-          <label>Cantidad total al dia
+          <label>Cantidad total al día
             <input
               type="number"
               id="cantidadTotalDia"
@@ -768,7 +768,7 @@
               placeholder="Ej. 2"
             >
           </label>
-          <label>Dosis total al dia
+          <label>Dosis total al día
             <input id="tratamientoDosisTotalDia" placeholder="Se calcula automaticamente" readonly>
           </label>
           
@@ -822,14 +822,14 @@
             <input id="recetaFecha" type="date">
           </label>
           <label>Vigencia / indicacion administrativa
-            <input id="recetaVigencia" placeholder="Ej. Receta vigente por 30 dias">
+            <input id="recetaVigencia" placeholder="Ej. Receta vigente por 30 días">
           </label>
           <label>Medicamento del catalogo
             <input id="recetaMedicamentoCatalogo" list="catalogoMedicamentosReceta" placeholder="Buscar medicamento o escribir libremente">
             <datalist id="catalogoMedicamentosReceta"></datalist>
           </label>
           <label>Indicacion del medicamento
-            <input id="recetaIndicacionManual" placeholder="Ej. Tomar via oral 1 vez al dia. 1 tableta a las 08:00">
+            <input id="recetaIndicacionManual" placeholder="Ej. Tomar vía oral 1 vez al día. 1 tableta a las 08:00">
           </label>
         </div>
 
@@ -973,10 +973,18 @@
 
     <section id="seccionNotasRapidas" style="display:none;">
       <div class="tarjeta">
-        <h2>Nota rapida</h2>
-        <p class="texto-suave">Observacion breve del medico, guardada sin sustituir notas medicas completas.</p>
-        <label>Observacion
-          <textarea id="notaRapidaTexto" placeholder="Escribe una observacion breve del seguimiento."></textarea>
+        <div class="panel-header">
+          <div>
+            <h2>Nota rápida</h2>
+            <p class="texto-suave">Observación breve del médico, guardada sin sustituir notas médicas completas.</p>
+          </div>
+          <div class="nota-rapida-resize-actions">
+            <button id="contraerNotaRapida" type="button" class="boton-secundario">Contraer</button>
+            <button id="ampliarNotaRapida" type="button" class="boton-secundario">Ampliar</button>
+          </div>
+        </div>
+        <label>Observación
+          <textarea id="notaRapidaTexto" class="nota-rapida-textarea" placeholder="Escribe una observación breve del seguimiento."></textarea>
         </label>
         <div class="form-actions">
           <button id="guardarNotaRapida" type="button">Guardar nota rapida</button>
@@ -1021,7 +1029,7 @@
       <label>Medicamento<input id="medicamentoManualNombre" placeholder="Ej. Sertralina"></label>
       <label>Presentación<input id="medicamentoManualPresentacion" placeholder="Ej. tabletas de 50 mg"></label>
       <label>Clase<input id="medicamentoManualClase" placeholder="Ej. ISRS"></label>
-      <label>Dosis habitual<input id="medicamentoManualDosisHabitual" placeholder="Ej. 50-200 mg/dia"></label>
+      <label>Dosis habitual<input id="medicamentoManualDosisHabitual" placeholder="Ej. 50-200 mg/día"></label>
     </div>
     <label>Notas clínicas
       <textarea id="medicamentoManualNotas" placeholder="Indicaciones, vigilancia o comentarios breves."></textarea>
@@ -1049,10 +1057,16 @@
     </label>
 
       <label id="grupoHoraIngresoPaciente">Hora
-        <select id="ingresoPacienteHora"></select>
+        <div class="selector-hora-clinica">
+          <select id="ingresoPacienteHoraHH" aria-label="Hora"></select>
+          <span>:</span>
+          <select id="ingresoPacienteHoraMM" aria-label="Minuto"></select>
+          <input id="ingresoPacienteHoraManual" type="text" inputmode="numeric" placeholder="HH:mm" aria-label="Hora manual">
+          <input id="ingresoPacienteHora" type="hidden">
+        </div>
       </label>
 
-    <small id="ayudaIngresoPaciente">Si no seleccionas hora, se tomara el inicio del dia.</small>
+    <small id="ayudaIngresoPaciente">Si no seleccionas hora, se tomará el inicio del día.</small>
 
     <div class="acciones-ingreso">
       <button type="button" id="limpiarIngresoPaciente" class="boton-secundario">Quitar fecha</button>

@@ -19,10 +19,45 @@ export const CATALOGO_MEDICAMENTOS_PEDIATRICOS = [
       }
     ],
     presentations: [
-      { presentationId: "paracetamol_susp_120_5", form: "suspensión", amountMg: 120, volumeMl: 5, concentrationMgPerMl: 24, unitStrength: "120 mg/5 mL", routes: ["oral"], divisible: null, brands: ["Tempra", "Tylenol", "Genérico"], active: true, source: "Catálogo local", updatedAt: "2026-07-14" },
-      { presentationId: "paracetamol_susp_160_5", form: "suspensión", amountMg: 160, volumeMl: 5, concentrationMgPerMl: 32, unitStrength: "160 mg/5 mL", routes: ["oral"], divisible: null, brands: ["Tempra", "Tylenol", "Genérico"], active: true, source: "Catálogo local", updatedAt: "2026-07-14" },
-      { presentationId: "paracetamol_gotas_100_1", form: "gotas", amountMg: 100, volumeMl: 1, concentrationMgPerMl: 100, unitStrength: "100 mg/mL", routes: ["oral"], dropsPerMl: null, divisible: null, brands: ["Tempra gotas", "Genérico"], active: true, source: "Catálogo local", updatedAt: "2026-07-14" },
-      { presentationId: "paracetamol_tab_500", form: "tableta", amountMg: 500, unitStrength: "500 mg por tableta", routes: ["oral"], divisible: true, brands: ["Tylenol", "Genérico"], active: true, source: "Catálogo local", updatedAt: "2026-07-14" }
+      {
+        presentationId: "paracetamol_tempra_jarabe_32mg_ml_120ml",
+        medicationId: "paracetamol",
+        genericName: "Paracetamol",
+        brandName: "Tempra",
+        manufacturer: "P&G Health México",
+        country: "México",
+        pharmaceuticalForm: "jarabe",
+        form: "jarabe",
+        commercialName: "Tempra jarabe infantil",
+        activeIngredientAmount: 3.2,
+        activeIngredientUnit: "g",
+        referenceVolume: 100,
+        referenceVolumeUnit: "mL",
+        amountMg: 3200,
+        volumeMl: 100,
+        concentrationMgPerMl: 32,
+        commercialStrength: "3.2 g/100 mL",
+        unitStrength: "3.2 g/100 mL",
+        packageContent: 120,
+        packageUnit: "mL",
+        packageLabel: "frasco 120 mL",
+        route: ["oral"],
+        routes: ["oral"],
+        ageLabel: "2 a 11 años",
+        flavor: "",
+        divisible: null,
+        requiresReconstitution: false,
+        brands: ["Tempra"],
+        active: true,
+        source: "Sitio oficial Tempra México / alerta sanitaria COFEPRIS sobre Tempra 3.2 g/100 mL",
+        sourceType: "fabricante_regulador",
+        verifiedAt: "2026-07-15",
+        updatedAt: "2026-07-15"
+      },
+      { presentationId: "paracetamol_susp_120_5", medicationId: "paracetamol", genericName: "Paracetamol", brandName: "Genérico", country: "México", pharmaceuticalForm: "suspensión", form: "suspensión", amountMg: 120, volumeMl: 5, activeIngredientAmount: 120, activeIngredientUnit: "mg", referenceVolume: 5, referenceVolumeUnit: "mL", concentrationMgPerMl: 24, commercialStrength: "120 mg/5 mL", unitStrength: "120 mg/5 mL", routes: ["oral"], route: ["oral"], divisible: null, brands: ["Genérico"], active: true, source: "Catálogo local educativo; validar ficha técnica antes de uso institucional", sourceType: "catalogo_local", verifiedAt: "", updatedAt: "2026-07-14" },
+      { presentationId: "paracetamol_susp_160_5", medicationId: "paracetamol", genericName: "Paracetamol", brandName: "Genérico", country: "México", pharmaceuticalForm: "suspensión", form: "suspensión", amountMg: 160, volumeMl: 5, activeIngredientAmount: 160, activeIngredientUnit: "mg", referenceVolume: 5, referenceVolumeUnit: "mL", concentrationMgPerMl: 32, commercialStrength: "160 mg/5 mL", unitStrength: "160 mg/5 mL", routes: ["oral"], route: ["oral"], divisible: null, brands: ["Genérico"], active: true, source: "Catálogo local educativo; validar ficha técnica antes de uso institucional", sourceType: "catalogo_local", verifiedAt: "", updatedAt: "2026-07-14" },
+      { presentationId: "paracetamol_gotas_100_1", medicationId: "paracetamol", genericName: "Paracetamol", brandName: "Genérico", country: "México", pharmaceuticalForm: "gotas", form: "gotas", amountMg: 100, volumeMl: 1, activeIngredientAmount: 100, activeIngredientUnit: "mg", referenceVolume: 1, referenceVolumeUnit: "mL", concentrationMgPerMl: 100, commercialStrength: "100 mg/mL", unitStrength: "100 mg/mL", routes: ["oral"], route: ["oral"], dropsPerMl: null, divisible: null, brands: ["Genérico"], active: true, source: "Catálogo local educativo; validar equivalencia gotas/mL por marca", sourceType: "catalogo_local", verifiedAt: "", updatedAt: "2026-07-14" },
+      { presentationId: "paracetamol_tab_500", medicationId: "paracetamol", genericName: "Paracetamol", brandName: "Genérico", country: "México", pharmaceuticalForm: "tableta", form: "tableta", amountMg: 500, activeIngredientAmount: 500, activeIngredientUnit: "mg", referenceVolume: 1, referenceVolumeUnit: "tableta", commercialStrength: "500 mg por tableta", unitStrength: "500 mg por tableta", routes: ["oral"], route: ["oral"], divisible: true, brands: ["Genérico"], active: true, source: "Catálogo local educativo; validar ficha técnica antes de uso institucional", sourceType: "catalogo_local", verifiedAt: "", updatedAt: "2026-07-14" }
     ],
     contraindications: ["Hipersensibilidad al paracetamol", "Hepatopatía grave o falla hepática activa"],
     precautions: ["Enfermedad hepática", "Desnutrición", "Uso concomitante de otros productos con paracetamol"],
@@ -193,4 +228,3 @@ export const CATALOGO_MEDICAMENTOS_PEDIATRICOS = [
     updatedAt: "2026-07-14"
   }
 ];
-

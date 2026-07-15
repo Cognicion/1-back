@@ -2,50 +2,50 @@ export const ESCALAS_PSIQUIATRICAS = [
   {
     id: "phq9",
     nombre: "PHQ-9",
-    area: "Depresion",
-    descripcion: "Tamizaje y seguimiento de sintomas depresivos en las ultimas 2 semanas.",
+    area: "Depresión",
+    descripcion: "Tamizaje y seguimiento de síntomás depresivos en las últimas 2 semanas.",
     rango: "0-27",
-    opciones: ["Nunca", "Varios dias", "Mas de la mitad de los dias", "Casi todos los dias"],
+    opciones: ["Nunca", "Varios días", "Más de la mitad de los días", "Casi todos los días"],
     valores: [0, 1, 2, 3],
     puntosCorte: [
-      { max: 4, texto: "Minimo" },
+      { max: 4, texto: "Mínimo" },
       { max: 9, texto: "Leve" },
       { max: 14, texto: "Moderado" },
       { max: 19, texto: "Moderadamente grave" },
       { max: 27, texto: "Grave" }
     ],
     items: [
-      "Poco interes o placer en hacer cosas.",
+      "Poco interés o placer en hacer cosas.",
       "Sentirse triste, deprimido o sin esperanza.",
       "Problemas para dormir o dormir demasiado.",
-      "Cansancio o poca energia.",
+      "Cansancio o poca energía.",
       "Poco apetito o comer en exceso.",
       "Sentirse mal consigo mismo o que ha fallado.",
       "Dificultad para concentrarse.",
       "Moverse o hablar lento, o estar inquieto.",
-      "Pensamientos de muerte o autolesion."
+      "Pensamientos de muerte o autolesión."
     ]
   },
   {
     id: "gad7",
     nombre: "GAD-7",
     area: "Ansiedad",
-    descripcion: "Tamizaje y seguimiento de ansiedad generalizada en las ultimas 2 semanas.",
+    descripcion: "Tamizaje y seguimiento de ansiedad generalizada en las últimas 2 semanas.",
     rango: "0-21",
-    opciones: ["Nunca", "Varios dias", "Mas de la mitad de los dias", "Casi todos los dias"],
+    opciones: ["Nunca", "Varios días", "Más de la mitad de los días", "Casi todos los días"],
     valores: [0, 1, 2, 3],
     puntosCorte: [
-      { max: 4, texto: "Minimo" },
+      { max: 4, texto: "Mínimo" },
       { max: 9, texto: "Leve" },
       { max: 14, texto: "Moderado" },
       { max: 21, texto: "Grave" }
     ],
     items: [
-      "Sentirse nervioso, ansioso o al limite.",
-      "No poder parar o controlar la preocupacion.",
+      "Sentirse nervioso, ansioso o al límite.",
+      "No poder parar o controlar la preocupación.",
       "Preocuparse demasiado por diferentes cosas.",
       "Dificultad para relajarse.",
-      "Estar tan inquieto que es dificil quedarse quieto.",
+      "Estar tan inquieto que es difícil quedarse quieto.",
       "Irritarse o molestarse con facilidad.",
       "Sentir miedo como si algo terrible pudiera pasar."
     ]
@@ -54,24 +54,24 @@ export const ESCALAS_PSIQUIATRICAS = [
     id: "isi",
     nombre: "ISI",
     area: "Insomnio",
-    descripcion: "Indice de severidad del insomnio.",
+    descripcion: "Índice de severidad del insomnio.",
     rango: "0-28",
     opciones: ["Nada", "Leve", "Moderado", "Severo", "Muy severo"],
     valores: [0, 1, 2, 3, 4],
     puntosCorte: [
-      { max: 7, texto: "Sin insomnio clinico" },
-      { max: 14, texto: "Subclinico" },
+      { max: 7, texto: "Sin insomnio clínico" },
+      { max: 14, texto: "Subclínico" },
       { max: 21, texto: "Moderado" },
       { max: 28, texto: "Severo" }
     ],
     items: [
-      "Dificultad para conciliar el sueno.",
-      "Dificultad para mantener el sueno.",
+      "Dificultad para conciliar el sueño.",
+      "Dificultad para mantener el sueño.",
       "Despertar demasiado temprano.",
-      "Satisfaccion con el patron actual de sueno.",
-      "Interferencia del sueno con funcionamiento diario.",
-      "Percepcion de otros sobre deterioro por sueno.",
-      "Preocupacion por el problema de sueno."
+      "Satisfacción con el patrón actual de sueño.",
+      "Interferencia del sueño con funcionamiento diario.",
+      "Percepción de otros sobre deterioro por sueño.",
+      "Preocupacion por el problema de sueño."
     ]
   },
   {
@@ -89,15 +89,15 @@ export const ESCALAS_PSIQUIATRICAS = [
     ],
     items: [
       "Frecuencia de consumo de alcohol.",
-      "Cantidad habitual en un dia de consumo.",
-      "Frecuencia de consumo elevado en una ocasion."
+      "Cantidad habitual en un día de consumo.",
+      "Frecuencia de consumo elevado en una ocasión."
     ]
   },
   {
     id: "asrs6",
     nombre: "ASRS-6",
     area: "TDAH adulto",
-    descripcion: "Tamizaje breve de sintomas compatibles con TDAH en adultos.",
+    descripcion: "Tamizaje breve de síntomas compatibles con TDAH en adultos.",
     rango: "0-24",
     opciones: ["Nunca", "Rara vez", "A veces", "Frecuente", "Muy frecuente"],
     valores: [0, 1, 2, 3, 4],
@@ -118,8 +118,8 @@ export const ESCALAS_PSIQUIATRICAS = [
   {
     id: "pss10",
     nombre: "PSS-10",
-    area: "Estres percibido",
-    descripcion: "Percepcion de estres durante el ultimo mes.",
+    area: "Estrés percibido",
+    descripcion: "Percepción de estres durante el último mes.",
     rango: "0-40",
     opciones: ["Nunca", "Casi nunca", "A veces", "Con frecuencia", "Muy frecuente"],
     valores: [0, 1, 2, 3, 4],
@@ -129,118 +129,118 @@ export const ESCALAS_PSIQUIATRICAS = [
       { max: 40, texto: "Alto" }
     ],
     items: [
-      "Se sintio afectado por algo inesperado.",
-      "Sintio que no podia controlar cosas importantes.",
-      "Se sintio nervioso o estresado.",
-      "Sintio confianza para manejar problemas personales.",
-      "Sintio que las cosas iban bien.",
-      "Sintio que no podia afrontar todo lo que tenia que hacer.",
+      "Se sintió afectado por algo inesperado.",
+      "Sintió que no podía controlar cosas importantes.",
+      "Se sintió nervioso o estresado.",
+      "Sintió confianza para manejar problemas personales.",
+      "Sintió que las cosas iban bien.",
+      "Sintió que no podía afrontar todo lo que tenía que hacer.",
       "Pudo controlar irritaciones de su vida.",
-      "Sintio que tenia todo bajo control.",
+      "Sintió que tenía todo bajo control.",
       "Se enojo por cosas fuera de su control.",
-      "Sintio que las dificultades se acumulaban demasiado."
+      "Sintió que las dificultades se acumulaban demasiado."
     ]
   },
   {
     id: "pcl5",
     nombre: "PCL-5",
-    area: "Estres postraumatico",
-    descripcion: "Seguimiento de sintomas postraumaticos. Requiere interpretacion clinica.",
+    area: "Estrés postraumático",
+    descripcion: "Seguimiento de síntomas postraumáticos. Requiere interpretación clínica.",
     rango: "0-80",
     opciones: ["Nada", "Un poco", "Moderado", "Bastante", "Extremo"],
     valores: [0, 1, 2, 3, 4],
     puntosCorte: [
       { max: 30, texto: "Bajo / subumbral" },
-      { max: 80, texto: "Elevado; valorar clinicamente" }
+      { max: 80, texto: "Elevado; valorar clínicamente" }
     ],
     items: [
       "Recuerdos intrusivos del evento.",
-      "Suenos perturbadores relacionados.",
+      "Sueños perturbadores relacionados.",
       "Sentir o actuar como si el evento ocurriera de nuevo.",
       "Malestar intenso ante recordatorios.",
-      "Reacciones fisicas ante recordatorios.",
+      "Reacciones físicas ante recordatorios.",
       "Evitar recuerdos o sentimientos.",
       "Evitar recordatorios externos.",
       "Dificultad para recordar partes importantes.",
       "Creencias negativas persistentes.",
       "Culpa persistente sobre el evento.",
       "Emociones negativas intensas.",
-      "Perdida de interes.",
+      "Pérdida de interés.",
       "Sentirse distante de otros.",
       "Dificultad para sentir emociones positivas.",
       "Irritabilidad o enojo.",
       "Conducta riesgosa.",
       "Hipervigilancia.",
       "Sobresalto exagerado.",
-      "Problemas de concentracion.",
-      "Problemas de sueno."
+      "Problemas de concentración.",
+      "Problemás de sueño."
     ]
   },
   {
     id: "who5",
     nombre: "WHO-5",
     area: "Bienestar",
-    descripcion: "Indice breve de bienestar subjetivo.",
+    descripcion: "Índice breve de bienestar subjetivo.",
     rango: "0-25",
-    opciones: ["Nunca", "Algunas veces", "Menos de la mitad", "Mas de la mitad", "Casi siempre", "Siempre"],
+    opciones: ["Nunca", "Algunas veces", "Menos de la mitad", "Más de la mitad", "Casi siempre", "Siempre"],
     valores: [0, 1, 2, 3, 4, 5],
     puntosCorte: [
-      { max: 12, texto: "Bienestar bajo; considerar evaluacion" },
+      { max: 12, texto: "Bienestar bajo; considerar evaluación" },
       { max: 25, texto: "Bienestar adecuado" }
     ],
     items: [
-      "Me he sentido alegre y de buen animo.",
+      "Me he sentido alegre y de buen ánimo.",
       "Me he sentido tranquilo y relajado.",
-      "Me he sentido activo y con energia.",
+      "Me he sentido activo y con energía.",
       "Me he despertado fresco y descansado.",
-      "Mi vida diaria ha estado llena de cosas interesantes."
+      "Mi vida diaria ha estado llena de cosas interésantes."
     ]
   },
   {
     id: "mdq",
     nombre: "MDQ",
     area: "Bipolaridad",
-    descripcion: "Tamizaje de sintomas de espectro bipolar. Requiere entrevista clinica confirmatoria.",
+    descripcion: "Tamizaje de síntomás de espectro bipolar. Requiere entrevista clínica confirmatoria.",
     rango: "0-13",
-    opciones: ["No", "Si"],
+    opciones: ["No", "Sí"],
     valores: [0, 1],
     puntosCorte: [
       { max: 6, texto: "Tamizaje negativo o bajo" },
-      { max: 13, texto: "Tamizaje positivo posible; valorar clinicamente" }
+      { max: 13, texto: "Tamizaje positivo posible; valorar clínicamente" }
     ],
     items: [
-      "Periodo con animo tan elevado que otros lo notaron.",
+      "Periodo con ánimo tan elevado que otros lo notaron.",
       "Irritabilidad marcada o discusiones frecuentes.",
       "Mayor confianza o grandiosidad.",
       "Menor necesidad de dormir.",
       "Hablar mas o mas rapido.",
       "Pensamientos acelerados.",
       "Distractibilidad marcada.",
-      "Aumento de energia.",
+      "Aumento de energía.",
       "Mayor actividad social.",
-      "Mayor interes sexual.",
+      "Mayor interés sexual.",
       "Conductas inusuales o riesgosas.",
-      "Gastos excesivos o problemas por decisiones impulsivas.",
-      "Estos sintomas ocurrieron en el mismo periodo."
+      "Gastos excesivos o problemas por decisiónes impulsivas.",
+      "Estos síntomas ocurrieron en el mismo periodo."
     ]
   },
   {
     id: "cssrs_screener",
     nombre: "C-SSRS breve",
     area: "Riesgo suicida",
-    descripcion: "Tamizaje breve de ideacion/conducta suicida. Cualquier respuesta positiva requiere valoracion inmediata.",
+    descripcion: "Tamizaje breve de ideación/conducta suicida. Cualquier respuesta positiva requiere valoración inmediata.",
     rango: "0-6",
-    opciones: ["No", "Si"],
+    opciones: ["No", "Sí"],
     valores: [0, 1],
     puntosCorte: [
       { max: 0, texto: "Sin datos positivos en tamizaje" },
-      { max: 6, texto: "Dato positivo; requiere evaluacion de riesgo" }
+      { max: 6, texto: "Dato positivo; requiere evaluación de riesgo" }
     ],
     items: [
       "Ha deseado estar muerto o no despertar.",
       "Ha tenido pensamientos de quitarse la vida.",
-      "Ha pensado en algun metodo.",
-      "Ha tenido intencion de actuar sobre esos pensamientos.",
+      "Ha pensado en algún metodo.",
+      "Ha tenido intención de actuar sobre esos pensamientos.",
       "Ha elaborado un plan.",
       "Ha realizado preparativos o intento."
     ]
@@ -248,34 +248,34 @@ export const ESCALAS_PSIQUIATRICAS = [
   {
     id: "epds",
     nombre: "EPDS",
-    area: "Depresion perinatal",
-    descripcion: "Tamizaje de depresion en embarazo/posparto. Requiere interpretacion clinica.",
+    area: "Depresión perinatal",
+    descripcion: "Tamizaje de depresión en embarazo/posparto. Requiere interpretación clínica.",
     rango: "0-30",
     opciones: ["0", "1", "2", "3"],
     valores: [0, 1, 2, 3],
     puntosCorte: [
       { max: 9, texto: "Bajo" },
-      { max: 12, texto: "Posible depresion" },
-      { max: 30, texto: "Elevado; valorar clinicamente" }
+      { max: 12, texto: "Posible depresión" },
+      { max: 30, texto: "Elevado; valorar clínicamente" }
     ],
     items: [
-      "Capacidad para reir y ver el lado bueno.",
-      "Mirar al futuro con ilusion.",
+      "Capacidad para reír y ver el lado bueno.",
+      "Mirar al futuro con ilusión.",
       "Culparse innecesariamente.",
-      "Ansiedad o preocupacion sin motivo claro.",
-      "Miedo o panico sin razon suficiente.",
+      "Ansiedad o preocupación sin motivo claro.",
+      "Miedo o pánico sin razón suficiente.",
       "Sentirse sobrepasada.",
       "Dificultad para dormir por tristeza.",
       "Sentirse triste o desgraciada.",
       "Llorar por tristeza.",
-      "Pensamientos de hacerse dano."
+      "Pensamientos de hacerse daño."
     ]
   },
   {
     id: "whodas12",
     nombre: "WHODAS 2.0-12",
     area: "Funcionamiento",
-    descripcion: "Evaluacion breve de funcionamiento y discapacidad percibida.",
+    descripcion: "Evaluación breve de funcionamiento y discapacidad percibida.",
     rango: "0-48",
     opciones: ["Ninguna", "Leve", "Moderada", "Severa", "Extrema"],
     valores: [0, 1, 2, 3, 4],
@@ -296,14 +296,14 @@ export const ESCALAS_PSIQUIATRICAS = [
       "Relacionarse con desconocidos.",
       "Mantener amistades.",
       "Trabajo o escuela.",
-      "Participacion familiar o social."
+      "Participación familiar o social."
     ]
   },
   {
     id: "yale_brown_breve",
     nombre: "Y-BOCS breve",
     area: "TOC",
-    descripcion: "Seguimiento breve de obsesiones y compulsiones; no reemplaza Y-BOCS clinica completa.",
+    descripcion: "Seguimiento breve de obsesiones y compulsiones; no reemplaza Y-BOCS clínica completa.",
     rango: "0-20",
     opciones: ["Nada", "Leve", "Moderado", "Severo", "Extremo"],
     valores: [0, 1, 2, 3, 4],
@@ -323,24 +323,24 @@ export const ESCALAS_PSIQUIATRICAS = [
   {
     id: "ciwa_ar",
     nombre: "CIWA-Ar",
-    area: "Abstinencia alcoholica",
-    descripcion: "Evaluacion de la gravedad del sindrome de abstinencia alcoholica.",
-    introduccion: "La CIWA-Ar ayuda a cuantificar la intensidad de la abstinencia alcoholica y orientar la vigilancia clinica. Debe interpretarse junto con signos vitales, comorbilidades, riesgo de delirium, convulsiones y juicio medico.",
+    area: "Abstinencia alcohólica",
+    descripcion: "Evaluación de la gravedad del síndrome de abstinencia alcohólica.",
+    introduccion: "La CIWA-Ar ayuda a cuantificar la intensidad de la abstinencia alcohólica y orientar la vigilancia clínica. Debe interpretarse junto con signos vitales, comorbilidades, riesgo de delirium, convulsiones y juicio médico.",
     rango: "0-67",
     consideraciones: [
-      "Valorar riesgo de delirium tremens, crisis convulsivas, deshidratacion y alteraciones hidroelectroliticas.",
-      "El puntaje no sustituye la exploracion fisica, el estado mental ni la valoracion medica.",
+      "Valorar riesgo de delirium tremens, crisis convulsivas, deshidratación y alteraciones hidroelectrolíticas.",
+      "El puntaje no sustituye la exploración física, el estado mental ni la valoración médica.",
       "Repetir de forma seriada si el paciente se encuentra en periodo de riesgo."
     ],
     puntosCorte: [
-      { max: 9, texto: "Abstinencia leve o minima" },
+      { max: 9, texto: "Abstinencia leve o mínima" },
       { max: 18, texto: "Abstinencia moderada" },
-      { max: 67, texto: "Abstinencia grave; requiere valoracion estrecha" }
+      { max: 67, texto: "Abstinencia grave; requiere valoración estrecha" }
     ],
     items: [
       {
-        texto: "Nausea y vomito.",
-        opciones: ["Ausente", "Leve", "2", "3", "Intermitente", "5", "6", "Nausea constante o vomito repetido"],
+        texto: "Náusea y vómito.",
+        opciones: ["Ausente", "Leve", "2", "3", "Intermitente", "5", "6", "Náusea constante o vómito repetido"],
         valores: [0, 1, 2, 3, 4, 5, 6, 7]
       },
       {
@@ -349,23 +349,23 @@ export const ESCALAS_PSIQUIATRICAS = [
         valores: [0, 1, 2, 3, 4, 5, 6, 7]
       },
       {
-        texto: "Sudoracion paroxistica.",
-        opciones: ["Ausente", "Sudoracion apenas perceptible", "2", "3", "Sudoracion facial", "5", "6", "Sudoracion profusa"],
+        texto: "Sudoración paroxística.",
+        opciones: ["Ausente", "Sudoración apenas perceptible", "2", "3", "Sudoración facial", "5", "6", "Sudoración profusa"],
         valores: [0, 1, 2, 3, 4, 5, 6, 7]
       },
       {
         texto: "Ansiedad.",
-        opciones: ["Sin ansiedad", "Leve", "2", "3", "Moderada", "5", "6", "Equivalente a panico agudo"],
+        opciones: ["Sin ansiedad", "Leve", "2", "3", "Moderada", "5", "6", "Equivalente a pánico agudo"],
         valores: [0, 1, 2, 3, 4, 5, 6, 7]
       },
       {
-        texto: "Agitacion.",
+        texto: "Agitación.",
         opciones: ["Actividad normal", "Leve inquietud", "2", "3", "Moderadamente inquieto", "5", "6", "Se mueve constantemente"],
         valores: [0, 1, 2, 3, 4, 5, 6, 7]
       },
       {
-        texto: "Alteraciones tactiles.",
-        opciones: ["Ausentes", "Muy leves", "Leves", "Moderadas", "Moderadamente severas", "Severas", "Muy severas", "Alucinaciones tactiles continuas"],
+        texto: "Alteraciones táctiles.",
+        opciones: ["Ausentes", "Muy leves", "Leves", "Moderadas", "Moderadamente severas", "Severas", "Muy severas", "Alucinaciones táctiles continuas"],
         valores: [0, 1, 2, 3, 4, 5, 6, 7]
       },
       {
@@ -379,13 +379,13 @@ export const ESCALAS_PSIQUIATRICAS = [
         valores: [0, 1, 2, 3, 4, 5, 6, 7]
       },
       {
-        texto: "Cefalea o plenitud cefalica.",
+        texto: "Cefalea o plenitud cefálica.",
         opciones: ["Ausente", "Muy leve", "Leve", "Moderada", "Moderadamente severa", "Severa", "Muy severa", "Extremadamente severa"],
         valores: [0, 1, 2, 3, 4, 5, 6, 7]
       },
       {
-        texto: "Orientacion y obnubilacion del sensorio.",
-        opciones: ["Orientado y puede hacer calculos seriados", "No puede hacer calculos seriados", "Desorientado en fecha por menos de 2 dias", "Desorientado en fecha por mas de 2 dias", "Desorientado en lugar o persona"],
+        texto: "Orientación y obnubilación del sensorio.",
+        opciones: ["Orientado y puede hacer cálculos seriados", "No puede hacer cálculos seriados", "Desorientado en fecha por menos de 2 días", "Desorientado en fecha por más de 2 días", "Desorientado en lugar o persona"],
         valores: [0, 1, 2, 3, 4]
       }
     ]
@@ -393,44 +393,44 @@ export const ESCALAS_PSIQUIATRICAS = [
   {
     id: "ciwa_b",
     nombre: "CIWA-B",
-    area: "Abstinencia benzodiacepinica",
-    descripcion: "Evaluacion de la gravedad de la abstinencia por benzodiacepinas.",
-    introduccion: "La CIWA-B organiza sintomas frecuentes de abstinencia por benzodiacepinas. Es una herramienta de apoyo y debe interpretarse en conjunto con dosis previa, vida media del farmaco, tiempo de consumo, comorbilidades, riesgo convulsivo y juicio clinico.",
+    area: "Abstinencia benzodiacepínica",
+    descripcion: "Evaluación de la gravedad de la abstinencia por benzodiacepinas.",
+    introduccion: "La CIWA-B organiza síntomas frecuentes de abstinencia por benzodiacepinas. Es una herramienta de apoyo y debe interpretarse en conjunto con dosis previa, vida media del fármaco, tiempo de consumo, comorbilidades, riesgo convulsivo y juicio clínico.",
     rango: "0-88",
     opciones: ["Ausente", "Leve", "Moderado", "Severo", "Muy severo"],
     valores: [0, 1, 2, 3, 4],
     consideraciones: [
       "La retirada de benzodiacepinas debe individualizarse y evitar suspensiones bruscas en pacientes con dependencia.",
-      "Vigilar convulsiones, delirium, descompensacion psiquiatrica, ideacion suicida y sintomas autonomicos intensos.",
-      "La escala apoya el seguimiento, pero no sustituye la decision clinica ni protocolos institucionales."
+      "Vigilar convulsiones, delirium, descompensación psiquiátrica, ideación suicida y síntomas autonómicos intensos.",
+      "La escala apoya el seguimiento, pero no sustituye la decisión clínica ni protocolos institucionales."
     ],
     puntosCorte: [
-      { max: 20, texto: "Abstinencia leve o sintomas bajos" },
+      { max: 20, texto: "Abstinencia leve o síntomas bajos" },
       { max: 40, texto: "Abstinencia moderada" },
-      { max: 88, texto: "Abstinencia severa; requiere valoracion estrecha" }
+      { max: 88, texto: "Abstinencia severa; requiere valoración estrecha" }
     ],
     items: [
       "Ansiedad o nerviosismo.",
       "Irritabilidad.",
       "Inquietud o agitacion.",
-      "Sensacion de panico.",
-      "Animo bajo o disforia.",
-      "Dificultad para conciliar o mantener el sueno.",
-      "Pesadillas o sueno no reparador.",
+      "Sensación de pánico.",
+      "ánimo bajo o disforia.",
+      "Dificultad para conciliar o mantener el sueño.",
+      "Pesadillas o sueño no reparador.",
       "Fatiga o debilidad.",
       "Dificultad para concentrarse.",
       "Alteraciones de memoria.",
       "Temblor.",
-      "Sudoracion.",
-      "Palpitaciones o taquicardia referida.",
-      "Nausea, vomito o malestar gastrointestinal.",
-      "Perdida de apetito.",
+      "Sudoración.",
+      "Palpitaciones o taquicardía referida.",
+      "Náusea, vómito o malestar gastrointestinal.",
+      "Pérdida de apetito.",
       "Cefalea.",
       "Dolor, rigidez o espasmos musculares.",
-      "Parestesias, hormigueo o sensacion de quemazon.",
+      "Parestesias, hormigueo o sensación de quemazón.",
       "Hipersensibilidad a luz, sonido o tacto.",
       "Mareo o inestabilidad.",
-      "Despersonalizacion, desrealizacion o sensacion de irrealidad.",
+      "Despersonalización, desrealización o sensación de irrealidad.",
       "Alteraciones perceptivas o confusionales."
     ]
   },
@@ -478,5 +478,5 @@ export const ESCALAS_PSIQUIATRICAS = [
 
 export function interpretarEscala(escala, puntaje) {
   const corte = escala.puntosCorte.find((item) => puntaje <= item.max);
-  return corte ? corte.texto : "Requiere interpretacion clinica";
+  return corte ? corte.texto : "Requiere interpretación clínica";
 }

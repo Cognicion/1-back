@@ -28,9 +28,11 @@ import {
   MODOS_DOSIFICACION_PEDIATRICA,
   buildPediatricPrescription,
   estadoPediatricoMedicamento,
-  loadBrandsForPresentation,
+  formatPresentationOption,
+  loadBrandsForMedication,
   loadMedicationInformation,
   loadMedicationPresentations,
+  loadPresentationsForBrand,
   savePediatricPrescription,
   searchPediatricMedication,
   synchronizeFrequencyAndInterval
@@ -59,8 +61,8 @@ const estado = {
     administrationsPerDay: 4,
     intervalHours: 6,
     route: "oral",
-    presentationId: "paracetamol_susp_160_5",
-    brandName: "Genérico",
+    presentationId: "paracetamol_tempra_jarabe_32mg_ml_120ml",
+    brandName: "Tempra",
     duration: 3,
     durationUnit: "días",
     customSchedule: "06:00, 12:00, 18:00, 00:00",
@@ -685,8 +687,9 @@ function renderMedicamentosPanelAvanzado() {
   const indicaciones = med?.indications || [];
   const indicacion = indicaciones.find((item) => item.indicationId === estado.prescripcion.indicationId) || indicaciones[0];
   const esquemas = indicacion?.dosingSchemes || [];
-  const presentaciones = loadMedicationPresentations(med?.medicationId, { route: estado.prescripcion.route });
-  const marcas = loadBrandsForPresentation(med?.medicationId, estado.prescripcion.presentationId);
+  const marcas = loadBrandsForMedication(med?.medicationId);
+  const presentaciones = loadPresentationsForBrand(med?.medicationId, estado.prescripcion.brandName, { route: estado.prescripcion.route });
+  const presentacionSeleccionada = presentaciones.find((item) => item.presentationId === rx.presentationId) || rx.presentation || presentaciones[0];
   const resultados = searchPediatricMedication(estado.busquedaMedicamento || "");
   const pagina = Number(estado.prescripcionSearchPage || 1);
   const porPagina = 20;
@@ -699,29 +702,29 @@ function renderMedicamentosPanelAvanzado() {
     <div class="ped-medication-box ped-prescription-compact">
       <div class="ped-rx-header compact">
         <div>
-          <span class="ped-kicker">Prescripcion pediatrica compacta</span>
+          <span class="ped-kicker">Prescripción pediátrica compacta</span>
           <h4>Agregar medicamento</h4>
-          <p>Busca, calcula si lo necesitas y guarda desde una sola tarjeta. La informacion avanzada queda disponible bajo demanda.</p>
+          <p>Busca, elige marca y presentación comercial, calcula si lo necesitas y guarda desde una sola tarjeta.</p>
         </div>
         <div class="ped-rx-status ${rx.valid ? "ok" : "warn"}">${rx.valid ? "Listo" : "Pendiente"}</div>
       </div>
 
       <div class="ped-rx-grid-compact">
         <label class="ped-rx-search-field">Medicamento
-          <input id="buscadorMedicamentoPediatrico" data-ped-rx-search="1" value="${escapeAttr(estado.busquedaMedicamento || "")}" placeholder="Buscar por generico, marca, clase o indicacion">
-          <small>Mostrando ${visibles.length} de ${resultados.length} medicamentos del catalogo maestro.</small>
+          <input id="buscadorMedicamentoPediatrico" data-ped-rx-search="1" value="${escapeAttr(estado.busquedaMedicamento || "")}" placeholder="Buscar por genérico, marca, clase o indicación">
+          <small>Mostrando ${visibles.length} de ${resultados.length} medicamentos del catálogo maestro.</small>
         </label>
         <label>Seleccionado
           <select data-ped-rx="medicationId">
             ${CATALOGO_FARMACOLOGICO_PEDIATRIA.map((item) => `<option value="${item.medicationId}" ${item.medicationId === med.medicationId ? "selected" : ""}>${item.genericName}</option>`).join("")}
           </select>
         </label>
-        <label>Indicacion
+        <label>Indicación
           ${indicaciones.length ? `
             <select data-ped-rx="indicationId">
               ${indicaciones.map((item) => `<option value="${item.indicationId}" ${item.indicationId === indicacion?.indicationId ? "selected" : ""}>${item.name}</option>`).join("")}
             </select>
-          ` : `<input value="Sin esquema pediatrico validado" disabled>`}
+          ` : `<input value="Sin esquema pediátrico validado" disabled>`}
         </label>
         <label>Dosis habitual
           ${esquemas.length ? `
@@ -730,20 +733,6 @@ function renderMedicamentosPanelAvanzado() {
             </select>
           ` : `<input value="No disponible" disabled>`}
         </label>
-        <label>Dosis manual / final
-          <input data-ped-rx="finalDoseMg" value="${rx.finalDoseMg ? formatNumber(rx.finalDoseMg) : escapeAttr(estado.prescripcion.finalDoseMg || "")}" placeholder="mg por dosis">
-        </label>
-        <label>Presentacion
-          <select data-ped-rx="presentationId">
-            ${presentaciones.map((item) => `<option value="${item.presentationId}" ${item.presentationId === rx.presentationId ? "selected" : ""}>${item.form || "Presentacion"} - ${item.unitStrength}</option>`).join("")}
-            <option value="manual" ${estado.prescripcion.presentationId === "manual" ? "selected" : ""}>No encuentro la presentacion</option>
-          </select>
-        </label>
-        ${estado.prescripcion.presentationId === "manual" ? `
-          <label>Presentacion manual
-            <input data-ped-rx="manualPresentationText" value="${escapeAttr(estado.prescripcion.manualPresentationText || "")}" placeholder="Ej. suspension 160 mg/5 mL">
-          </label>
-        ` : ""}
         <label>Marca
           <select data-ped-rx="brandName">
             ${marcas.map((brand) => `<option value="${brand}" ${brand === rx.brandName ? "selected" : ""}>${brand}</option>`).join("")}
@@ -755,24 +744,27 @@ function renderMedicamentosPanelAvanzado() {
             <input data-ped-rx="manualBrandName" value="${escapeAttr(estado.prescripcion.manualBrandName || "")}" placeholder="Nombre comercial">
           </label>
         ` : ""}
+        <label>Presentación
+          <select data-ped-rx="presentationId">
+            ${presentaciones.map((item) => `<option value="${item.presentationId}" ${item.presentationId === rx.presentationId ? "selected" : ""}>${escapeHTML(formatPresentationOption(item))}</option>`).join("")}
+            <option value="manual" ${estado.prescripcion.presentationId === "manual" ? "selected" : ""}>No encuentro la presentación</option>
+          </select>
+        </label>
+        ${estado.prescripcion.presentationId === "manual" ? renderPresentacionManualCompacta() : ""}
         <label>Via
           <select data-ped-rx="route">
             ${Array.from(new Set([...(med.routes || []), "oral", "intravenosa", "rectal"])).filter(Boolean).map((route) => `<option value="${route}" ${route === rx.route ? "selected" : ""}>${route}</option>`).join("")}
           </select>
+        </label>
+        <label>Dosis final
+          <input data-ped-rx="finalDoseMg" value="${rx.finalDoseMg ? formatNumber(rx.finalDoseMg) : escapeAttr(estado.prescripcion.finalDoseMg || "")}" placeholder="mg por dosis">
         </label>
         <label>Frecuencia
           <select data-ped-rx-frequency="1">
             ${opcionesFrecuenciaPediatrica(frecuenciaActual)}
           </select>
         </label>
-        <label>Duracion
-          <input data-ped-rx="duration" value="${escapeAttr(estado.prescripcion.duration || "")}" placeholder="Ej. 3">
-        </label>
-        <label>Unidad
-          <select data-ped-rx="durationUnit">
-            ${[["dias", "días"], ["semanas", "semanas"], ["meses", "meses"], ["dosis", "dosis"]].map(([valor, etiqueta]) => `<option value="${valor}" ${valor === normalizarUnidadDuracion(rx.durationUnit || estado.prescripcion.durationUnit) ? "selected" : ""}>${etiqueta}</option>`).join("")}
-          </select>
-        </label>
+        ${renderDuracionCompacta(rx)}
       </div>
 
       <div class="ped-rx-inline-actions">
@@ -780,7 +772,8 @@ function renderMedicamentosPanelAvanzado() {
         <label class="ped-check-line"><input type="checkbox" data-ped-rx-check="isPrn" ${rx.isPrn ? "checked" : ""}> PRN</label>
         <button class="ped-secondary" type="button" data-rx-toggle="calc">Calcular por peso</button>
         <button class="ped-secondary" type="button" data-rx-toggle="schedule">Configurar horarios</button>
-        <button class="ped-secondary" type="button" data-rx-toggle="info">Ver informacion</button>
+        <button class="ped-secondary" type="button" data-rx-toggle="presentation">Ver información de la presentación</button>
+        <button class="ped-secondary" type="button" data-rx-toggle="info">Ver información</button>
         <button class="ped-secondary" type="button" data-rx-toggle="doses">Ver todas las dosis</button>
       </div>
 
@@ -794,11 +787,12 @@ function renderMedicamentosPanelAvanzado() {
 
       ${estado.prescripcion.panelAbierto === "calc" ? renderCalculadoraPesoCompacta(rx, esquemas) : ""}
       ${estado.prescripcion.panelAbierto === "schedule" ? renderHorariosCompactos(rx) : ""}
+      ${estado.prescripcion.panelAbierto === "presentation" ? renderPresentacionSeleccionadaDrawer(presentacionSeleccionada, rx) : ""}
       ${estado.prescripcion.panelAbierto === "info" ? renderInfoMedicamentoDrawer(med) : ""}
       ${estado.prescripcion.panelAbierto === "doses" ? renderDosisHabitualesDrawer(esquemas) : ""}
 
-      <div class="ped-search-results compact" id="resultadosMedicamentoPediatrico">
-        ${renderResultadosMedicamentosPediatricos(visibles, resultados.length, porPagina)}
+      <div class="ped-search-results compact ${estado.busquedaMedicamento ? "" : "oculto"}" id="resultadosMedicamentoPediatrico">
+        ${estado.busquedaMedicamento ? renderResultadosMedicamentosPediatricos(visibles, resultados.length, porPagina) : ""}
       </div>
 
       <div class="ped-rx-med-summary">
@@ -808,20 +802,22 @@ function renderMedicamentosPanelAvanzado() {
         </div>
         <span class="ped-med-status ${sinDosisValidada ? "missing" : "ok"}">${pediatricStatus}</span>
       </div>
-      ${sinDosisValidada ? `<div class="ped-rx-alerts warn"><div><b>Sin esquema pediatrico validado</b><span>Este medicamento esta disponible en el catalogo, pero aun no cuenta con un esquema pediatrico validado. Puedes registrarlo manualmente si cuentas con una fuente clinica externa.</span></div></div>` : ""}
+      ${sinDosisValidada ? `<div class="ped-rx-alerts warn"><div><b>Sin esquema pediátrico validado</b><span>Este medicamento está disponible en el catálogo, pero aún no cuenta con un esquema pediátrico validado. Puedes registrarlo manualmente si cuentas con una fuente clínica externa.</span></div></div>` : ""}
+      ${renderTarjetaPresentacionCompacta(presentacionSeleccionada, rx)}
       ${renderPrescripcionAlertas(rx)}
       <div class="ped-rx-summary compact">
         <div><span>Dosis</span><b>${rx.finalDoseMg ? `${formatNumber(rx.finalDoseMg)} mg` : "-"}</b></div>
         <div><span>Cantidad por toma</span><b>${rx.liquidVolume ? `${formatNumber(rx.liquidVolume.roundedMl)} mL` : rx.unitsPerDose ? `${formatNumber(rx.unitsPerDose.roundedUnits)} unidad(es)` : "-"}</b></div>
         <div><span>Equivalente</span><b>${rx.comparison ? `${formatNumber(rx.comparison.equivalentMgKgDose)} mg/kg/dosis` : "-"}</b></div>
-        <div><span>Dosis/dia</span><b>${rx.totalDailyDoseMg ? `${formatNumber(rx.totalDailyDoseMg)} mg/dia` : "-"}</b></div>
+        <div><span>Dosis/día</span><b>${rx.totalDailyDoseMg ? `${formatNumber(rx.totalDailyDoseMg)} mg/día` : "-"}</b></div>
+        <div><span>Envase</span><b>${rx.packagingNeed ? `${rx.packagingNeed.packagesNeeded} frasco(s)` : "-"}</b></div>
       </div>
       <div class="ped-rx-preview compact">
         <span>Vista previa</span>
-        <p>${rx.instructionText || "Completa los campos para generar la indicacion."}</p>
+        <p>${rx.instructionText || "Completa los campos para generar la indicación."}</p>
       </div>
       <div class="ped-action-row">
-        <button class="ped-secondary" type="button" data-rx-action="copy">Copiar indicacion</button>
+        <button class="ped-secondary" type="button" data-rx-action="copy">Copiar indicación</button>
         <button class="ped-secondary" type="button" data-rx-action="reset">Reiniciar</button>
         <button class="ped-primary" type="button" data-rx-action="save">Agregar al tratamiento</button>
       </div>
@@ -840,6 +836,102 @@ function renderResultadosMedicamentosPediatricos(resultados, total, porPagina) {
       </button>
     `).join("")}
     ${resultados.length < total ? `<button type="button" class="ped-secondary ped-load-more" data-rx-action="more-results">Cargar más</button>` : ""}
+  `;
+}
+
+function renderDuracionCompacta(rx) {
+  const unidad = normalizarUnidadDuracion(rx.durationUnit || estado.prescripcion.durationUnit);
+  const ocultarNumero = ["dosis_unica", "continuo", "hasta_nueva_indicacion", "personalizado"].includes(unidad);
+  return `
+    <label class="ped-duration-field">Duración del tratamiento
+      <div class="ped-duration-combo">
+        ${ocultarNumero ? "" : `<input data-ped-rx="duration" value="${escapeAttr(estado.prescripcion.duration || "")}" placeholder="3">`}
+        <select data-ped-rx="durationUnit">
+          ${[
+            ["horas", "horas"],
+            ["dias", "días"],
+            ["semanas", "semanas"],
+            ["meses", "meses"],
+            ["dosis_unica", "dosis única"],
+            ["continuo", "continuo"],
+            ["hasta_nueva_indicacion", "hasta nueva indicación"],
+            ["personalizado", "personalizado"]
+          ].map(([valor, etiqueta]) => `<option value="${valor}" ${valor === unidad ? "selected" : ""}>${etiqueta}</option>`).join("")}
+        </select>
+      </div>
+      ${unidad === "continuo" ? `<small>Tratamiento continuo hasta nueva indicación.</small>` : ""}
+      ${unidad === "personalizado" ? `<input data-ped-rx="durationManualText" value="${escapeAttr(estado.prescripcion.durationManualText || "")}" placeholder="Ej. durante 5 días y después reevaluar">` : ""}
+    </label>
+  `;
+}
+
+function renderPresentacionManualCompacta() {
+  return `
+    <div class="ped-manual-presentation">
+      <label>Marca comercial
+        <input data-ped-rx="manualBrandName" value="${escapeAttr(estado.prescripcion.manualBrandName || "")}" placeholder="Ej. marca comercial">
+      </label>
+      <label>Forma farmacéutica
+        <select data-ped-rx="manualPharmaceuticalForm">
+          ${["jarabe", "suspensión", "solución", "gotas", "tableta", "cápsula", "otra"].map((item) => `<option value="${item}" ${item === estado.prescripcion.manualPharmaceuticalForm ? "selected" : ""}>${item}</option>`).join("")}
+        </select>
+      </label>
+      <label>Cantidad de principio activo
+        <div class="ped-duration-combo">
+          <input data-ped-rx="manualActiveIngredientAmount" value="${escapeAttr(estado.prescripcion.manualActiveIngredientAmount || "")}" placeholder="3.2">
+          <select data-ped-rx="manualActiveIngredientUnit">
+            ${["mg", "g", "mcg"].map((item) => `<option value="${item}" ${item === (estado.prescripcion.manualActiveIngredientUnit || "mg") ? "selected" : ""}>${item}</option>`).join("")}
+          </select>
+        </div>
+      </label>
+      <label>Volumen o unidad de referencia
+        <div class="ped-duration-combo">
+          <input data-ped-rx="manualReferenceVolume" value="${escapeAttr(estado.prescripcion.manualReferenceVolume || "")}" placeholder="100">
+          <select data-ped-rx="manualReferenceVolumeUnit">
+            ${["mL", "tableta", "cápsula", "otra"].map((item) => `<option value="${item}" ${item === (estado.prescripcion.manualReferenceVolumeUnit || "mL") ? "selected" : ""}>${item}</option>`).join("")}
+          </select>
+        </div>
+      </label>
+      <label>Contenido del envase
+        <div class="ped-duration-combo">
+          <input data-ped-rx="manualPackageContent" value="${escapeAttr(estado.prescripcion.manualPackageContent || "")}" placeholder="120">
+          <select data-ped-rx="manualPackageUnit">
+            ${["mL", "tabletas", "cápsulas"].map((item) => `<option value="${item}" ${item === (estado.prescripcion.manualPackageUnit || "mL") ? "selected" : ""}>${item}</option>`).join("")}
+          </select>
+        </div>
+      </label>
+    </div>
+  `;
+}
+
+function renderTarjetaPresentacionCompacta(presentacion, rx) {
+  if (!presentacion) {
+    return `<div class="ped-rx-alerts warn"><div><b>Sin presentación comercial validada en el catálogo.</b><span>Puede capturarse manualmente para esta orden.</span></div></div>`;
+  }
+  const concentration = presentacion.concentrationMgPerMl ? `${formatNumber(presentacion.concentrationMgPerMl)} mg/mL` : "No calculable";
+  return `
+    <div class="ped-presentation-card">
+      <div><b>${escapeHTML(presentacion.commercialName || presentacion.pharmaceuticalForm || "Presentación")}</b><span>${escapeHTML(presentacion.brandName || "Genérico")}</span></div>
+      <div><span>Comercial</span><b>${escapeHTML(presentacion.commercialStrength || presentacion.unitStrength || "-")}</b></div>
+      <div><span>Normalizada</span><b>${concentration}</b></div>
+      <div><span>Contenido</span><b>${escapeHTML(presentacion.packageLabel || "-")}</b></div>
+      <div><span>Vía</span><b>${escapeHTML((presentacion.routes || ["oral"]).join(", "))}</b></div>
+      ${rx.packagingNeed ? `<div><span>Logística</span><b>${formatNumber(rx.packagingNeed.totalVolumeMl)} mL totales · ${rx.packagingNeed.packagesNeeded} frasco(s)</b></div>` : ""}
+    </div>
+  `;
+}
+
+function renderPresentacionSeleccionadaDrawer(presentacion, rx) {
+  return `
+    <div class="ped-rx-mini-panel">
+      <div class="ped-panel-title-row"><h5>Información de la presentación</h5><button type="button" data-rx-toggle="">Cerrar</button></div>
+      ${renderTarjetaPresentacionCompacta(presentacion, rx)}
+      <div class="ped-med-info">
+        <div><b>Fuente</b><span>${escapeHTML(presentacion?.source || "Sin fuente comercial validada en el catálogo.")}</span></div>
+        <div><b>Fecha de verificación</b><span>${escapeHTML(presentacion?.verifiedAt || presentacion?.updatedAt || "Pendiente")}</span></div>
+        <div><b>Grupo de edad en empaque</b><span>${escapeHTML(presentacion?.ageLabel || "No especificado")}</span></div>
+      </div>
+    </div>
   `;
 }
 
@@ -1002,12 +1094,13 @@ function actualizarPrescripcionDesdeInput(key, value, trigger = "") {
     const scheme = indication?.dosingSchemes?.[0];
     const route = scheme?.routes?.[0] || med?.routes?.[0] || "oral";
     const presentation = loadMedicationPresentations(value, { route })[0];
+    const brand = presentation?.brandName || loadBrandsForMedication(value)[0] || "Genérico";
     estado.prescripcion.indicationId = indication?.indicationId || "";
     estado.prescripcion.schemeIndex = 0;
     estado.prescripcion.dosingMode = scheme?.type || "mg_kg_dosis";
     estado.prescripcion.route = route;
     estado.prescripcion.presentationId = presentation?.presentationId || "manual";
-    estado.prescripcion.brandName = "Genérico";
+    estado.prescripcion.brandName = brand;
     estado.prescripcion.finalDoseMg = "";
     estado.busquedaMedicamento = "";
     estado.prescripcionSearchPage = 1;
@@ -1024,6 +1117,10 @@ function actualizarPrescripcionDesdeInput(key, value, trigger = "") {
   }
   if (key === "presentationId" && value === "manual") {
     estado.prescripcion.manualPresentationText ||= "";
+  }
+  if (key === "brandName" && value !== "manual") {
+    const primera = loadPresentationsForBrand(estado.prescripcion.medicationId, value, { route: estado.prescripcion.route })[0];
+    estado.prescripcion.presentationId = primera?.presentationId || "manual";
   }
   if (key === "brandName" && value === "manual") {
     estado.prescripcion.brandMode = "manual";
@@ -1084,8 +1181,8 @@ function reiniciarPrescripcionPediatrica() {
     administrationsPerDay: 4,
     intervalHours: 6,
     route: "oral",
-    presentationId: "paracetamol_susp_160_5",
-    brandName: "Genérico",
+    presentationId: "paracetamol_tempra_jarabe_32mg_ml_120ml",
+    brandName: "Tempra",
     duration: 3,
     durationUnit: "días",
     customSchedule: "06:00, 12:00, 18:00, 00:00",
@@ -1319,9 +1416,13 @@ function aplicarFrecuenciaPediatrica(valor) {
 
 function normalizarUnidadDuracion(value = "") {
   const texto = String(value || "").toLowerCase();
+  if (texto.includes("hora")) return "horas";
   if (texto.includes("sem")) return "semanas";
   if (texto.includes("mes")) return "meses";
-  if (texto.includes("dosis")) return "dosis";
+  if (texto.includes("unica") || texto.includes("única")) return "dosis_unica";
+  if (texto.includes("continuo")) return "continuo";
+  if (texto.includes("indicacion") || texto.includes("indicación")) return "hasta_nueva_indicacion";
+  if (texto.includes("personal")) return "personalizado";
   return "dias";
 }
 

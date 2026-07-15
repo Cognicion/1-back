@@ -204,22 +204,26 @@
 <section class="dictado-clinico-card" aria-labelledby="tituloDictadoClinico">
     <div class="dictado-clinico-header">
         <div>
-            <span class="dictado-clinico-etiqueta">Transcripcion asistida</span>
-            <h2 id="tituloDictadoClinico">Dictado clinico</h2>
+            <span class="dictado-clinico-etiqueta">Transcripción asistida</span>
+            <h2 id="tituloDictadoClinico">
+                Dictado clínico
+                <span class="dictado-alfa-badge">Versión alfa · En desarrollo</span>
+            </h2>
             <p>Dicta, revisa y corrige antes de integrar el texto a la nota actual.</p>
         </div>
         <div id="estadoDictadoClinico" class="dictado-clinico-estado">Dictado detenido</div>
     </div>
 
     <div class="dictado-clinico-alertas">
-        <p>El dictado por voz puede contener errores. Revise y corrija el texto antes de guardar la nota clinica.</p>
-        <p>Utilice esta funcion unicamente con autorizacion del paciente.</p>
+        <p>El dictado por voz puede contener errores. Revise y corrija el texto antes de guardar la nota clínica.</p>
+        <p>Utilice esta función únicamente con autorización del paciente.</p>
+        <p><strong>Versión alfa:</strong> esta función se encuentra en desarrollo. Revise y valide el contenido antes de incorporarlo al expediente.</p>
     </div>
 
     <textarea
         id="textoDictadoClinico"
         class="dictado-clinico-texto"
-        placeholder="El texto dictado aparecera aqui. Revise y corrija antes de insertarlo en la nota."
+        placeholder="El texto dictado aparecerá aquí. Revise y corrija antes de insertarlo en la nota."
     ></textarea>
 
     <div class="dictado-clinico-acciones">
@@ -322,7 +326,7 @@
         <div class="grid-vitales">
             <label class="campo-vital">Presion arterial <input id="obsPresionArterial" placeholder="Ej. 120/80 mmHg"></label>
             <label class="campo-vital">Temperatura <input id="obsTemperatura" placeholder="Ej. 36.5 C"></label>
-            <label class="campo-vital">Frecuencia cardiaca <input id="obsFrecuenciaCardiaca" placeholder="lpm"></label>
+            <label class="campo-vital">Frecuencia cardíaca <input id="obsFrecuenciaCardiaca" placeholder="lpm"></label>
             <label class="campo-vital">Frecuencia respiratoria <input id="obsFrecuenciaRespiratoria" placeholder="rpm"></label>
             <label class="campo-vital">Saturacion O2 <input id="obsSaturacionO2" placeholder="%"></label>
             <label class="campo-vital">Peso <input id="obsPeso" placeholder="kg"></label>

@@ -84,6 +84,7 @@ const INGREDIENTES_EXTRA = [
 ];
 
 const DX_EXTRA = [
+  { id: "hipertension_no_controlada", nombre: "Hipertensión arterial / riesgo cardiovascular", categoria: "hipertension", sinonimos: ["hipertension", "hipertensión", "hipertension arterial", "hipertensión arterial", "hta", "presion alta", "presión alta", "riesgo cardiovascular", "cardiopatia", "cardiopatía", "taquiarritmia"] },
   { id: "lactancia", nombre: "Lactancia", categoria: "lactancia", sinonimos: ["lactancia", "amamantando", "puerperio con lactancia"] },
   { id: "adulto_mayor_fragil", nombre: "Adulto mayor / fragilidad", categoria: "adulto_mayor", sinonimos: ["adulto mayor", "anciano", "fragilidad", "alto riesgo de caidas", "riesgo de caídas"] },
   { id: "demencia", nombre: "Deterioro cognitivo mayor / demencia", categoria: "demencia", sinonimos: ["demencia", "deterioro cognitivo mayor", "alzheimer", "delirium previo"] },
@@ -103,7 +104,21 @@ const MED_DX_EXTRA = [
   { id: "clozapina_metabolico", ingrediente: "clozapina", diagnosticoCategoria: "metabolico", severidad: "moderada", titulo: "Clozapina con riesgo metabólico", efecto: "Puede aumentar peso, glucosa y lípidos.", recomendacion: "Plan de seguimiento metabólico y educación al paciente." },
   { id: "benzodiacepina_suicidio", clase: "benzodiacepina", diagnosticoCategoria: "riesgo_suicida", severidad: "moderada", titulo: "Benzodiacepina en contexto de riesgo suicida", efecto: "Puede aumentar desinhibición, sedación o riesgo de uso no seguro en sobredosis.", recomendacion: "Prescribir cantidades limitadas, involucrar red de apoyo y documentar plan de seguridad." },
   { id: "litio_deshidratacion", ingrediente: "litio", diagnosticoCategoria: "hidratacion", severidad: "alta", titulo: "Litio con deshidratación o pérdidas gastrointestinales", efecto: "La deshidratación puede elevar litio y precipitar toxicidad.", recomendacion: "Valorar suspensión temporal, hidratación, función renal y nivel sérico." },
-  { id: "ieca_lactancia", clases: ["ieca", "ara2"], diagnosticoCategoria: "lactancia", severidad: "moderada", titulo: "IECA/ARA-II durante lactancia", efecto: "Requiere valoración del fármaco específico, edad del lactante y alternativas.", recomendacion: "Confirmar compatibilidad y vigilar al lactante si procede." }
+  { id: "ieca_lactancia", clases: ["ieca", "ara2"], diagnosticoCategoria: "lactancia", severidad: "moderada", titulo: "IECA/ARA-II durante lactancia", efecto: "Requiere valoración del fármaco específico, edad del lactante y alternativas.", recomendacion: "Confirmar compatibilidad y vigilar al lactante si procede." },
+  {
+    id: "estimulante_noradrenergico_hipertension",
+    clases: ["estimulante", "noradrenergico"],
+    diagnosticoCategoria: "hipertension",
+    severidad: "moderada",
+    titulo: "Estimulante o noradrenérgico en hipertensión/riesgo cardiovascular",
+    efecto: "Los fármacos estimulantes o noradrenérgicos pueden elevar presión arterial y frecuencia cardiaca, o reducir la tolerancia cardiovascular en pacientes con hipertensión, taquiarritmias o cardiopatía.",
+    recomendacion: "Verificar presión arterial y frecuencia cardiaca basal, control de hipertensión, antecedentes cardiovasculares y necesidad de ECG o valoración cardiológica según el contexto clínico.",
+    parametrosVigilancia: ["Presión arterial", "Frecuencia cardiaca", "Palpitaciones", "Dolor torácico", "Insomnio/ansiedad"],
+    fuentes: [
+      "DailyMed/FDA atomoxetina: advertencias sobre aumento de presión arterial/frecuencia cardiaca y precaución en hipertensión o enfermedad cardiovascular.",
+      "DailyMed/FDA metilfenidato: estimulantes del SNC pueden aumentar presión arterial y frecuencia cardiaca; monitorizar hipertensión/taquicardia."
+    ]
+  }
 ];
 
 const INTERACCIONES_EXTRA = [
@@ -117,7 +132,7 @@ const INTERACCIONES_EXTRA = [
     recomendacion: "Evitar uso rutinario combinado. Si existe una indicación excepcional, documentar justificación y vigilar presión arterial, creatinina/eGFR, potasio sérico, balance hídrico y síntomas de hipotensión o síncope.",
     evidencia: "documentada",
     fuentes: [
-      "Ficha técnica de losartán/ARA-II: el bloqueo dual del SRAA con IECA, ARA-II o aliskirén se asocia con mayor riesgo de hipotensión, síncope, hiperpotasemia y cambios en función renal.",
+      "FDA/DailyMed losartán/ARA-II: bloqueo dual del SRAA con IECA, ARA-II o aliskirén se asocia con mayor riesgo de hipotensión, síncope, hiperpotasemia y cambios en función renal.",
       "Guías nefrológicas y cardiovasculares: evitar bloqueo dual rutinario IECA + ARA-II por riesgo renal y electrolítico."
     ],
     permiteOverride: true,
@@ -191,7 +206,18 @@ export const UMBRALES_RIESGO_ACUMULATIVO = {
   ...UMBRALES_BASE,
   respiratorio: { minimo: 4, severidad: "alta", titulo: "Carga respiratoria depresora acumulativa" },
   caidas: { minimo: 4, severidad: "moderada", titulo: "Carga acumulativa de caídas" },
-  presion: { minimo: 3, severidad: "moderada", titulo: "Carga de presión arterial acumulativa" },
+  presion: {
+    minimo: 3,
+    severidad: "moderada",
+    titulo: "Riesgo de elevación de la presión arterial y la frecuencia cardiaca",
+    descripcion: "La combinación puede sumar efectos simpaticomiméticos o noradrenérgicos y favorecer elevación de presión arterial, frecuencia cardiaca, palpitaciones, ansiedad, insomnio o menor tolerancia cardiovascular en pacientes vulnerables.",
+    recomendacion: "Medir presión arterial y frecuencia cardiaca basal y durante el seguimiento. Valorar antecedentes cardiovasculares, hipertensión, taquiarritmias, ansiedad intensa, insomnio y ajuste de dosis según respuesta clínica.",
+    parametrosVigilancia: ["Presión arterial", "Frecuencia cardiaca", "Síntomas cardiovasculares", "Insomnio/ansiedad"],
+    fuentes: [
+      "DailyMed/FDA atomoxetina: puede aumentar presión arterial y frecuencia cardiaca; medir basal y periódicamente.",
+      "DailyMed/FDA metilfenidato: los estimulantes del SNC pueden aumentar presión arterial y frecuencia cardiaca."
+    ]
+  },
   sangrado: { minimo: 4, severidad: "alta", titulo: "Carga hemorrágica acumulativa" },
   glucosa: { minimo: 3, severidad: "moderada", titulo: "Carga metabólica glucémica acumulativa" }
 };

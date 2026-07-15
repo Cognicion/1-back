@@ -137,6 +137,29 @@ assert.ok(tiene(resultado, "Bloqueo dual"), "Losartan + enalapril escritos como 
 assert.equal(resultado.alertas.find((alerta) => alerta.titulo.includes("Bloqueo dual"))?.severidad, "alta");
 
 resultado = evaluarMedicamentosPaciente({
+  paciente: { diagnosticos: ["Hipertensión arterial sistémica"] },
+  medicamentos: [
+    { medicamento: "Metilfenidato 10 mg" },
+    { medicamento: "Atomoxetina 40 mg" }
+  ]
+});
+assert.ok(tiene(resultado, "Riesgo de elevación de la presión arterial"), "Metilfenidato + atomoxetina debe alertar riesgo cardiovascular acumulativo.");
+assert.ok(tiene(resultado, "Estimulante o noradrenérgico"), "Estimulante/noradrenérgico debe alertar ante hipertensión.");
+assert.ok(
+  !resultado.alertas.some((alerta) => /carga de presión|carga presion|carga presión\s*\d/i.test(`${alerta.titulo} ${alerta.efecto}`)),
+  "No debe exponer puntuaciones internas ambiguas como carga de presión."
+);
+
+resultado = evaluarMedicamentosPaciente({
+  medicamentos: [
+    { medicamento: "Paracetamol 500 mg" },
+    { medicamento: "Acetaminofén 500 mg" }
+  ]
+});
+assert.equal(resultado.medicamentosNormalizados.length, 1, "Debe deduplicar el mismo principio activo antes de analizar.");
+assert.ok(tiene(resultado, "duplicidad terapéutica"), "Debe conservar una alerta explícita de duplicidad terapéutica.");
+
+resultado = evaluarMedicamentosPaciente({
   medicamentos: [
     { medicamento: "Biperideno 2 mg" },
     { medicamento: "Amitriptilina 25 mg" }

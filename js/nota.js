@@ -98,24 +98,34 @@ let escalasPreviasNotaCache = [];
 let escalasAplicadasPendientesNota = [];
 
 const IDS_PRUEBAS_INTERACTIVAS = new Set(PRUEBAS_INTERACTIVAS.map((escala) => escala.id));
+
+function escalaAplicableEnNota(escala = {}) {
+  return Boolean(
+    escala.interactiva ||
+    escala.aplicableEnNota ||
+    escala.reactivos?.length ||
+    escala.items?.length
+  );
+}
+
 const ESCALAS_NOTA = [
   ...ESCALAS_PSIQUIATRICAS
     .filter((escala) => !IDS_PRUEBAS_INTERACTIVAS.has(escala.id))
-    .map((escala) => ({ ...escala, tipoEscala: "psiquiatrica", interactiva: false })),
+    .map((escala) => ({ ...escala, tipoEscala: "psiquiatrica", interactiva: escalaAplicableEnNota(escala) })),
   ...ESCALAS_MEDICINA_GENERAL.map((escala) => ({
     ...escala,
     tipoEscala: "medicina_general",
-    interactiva: false
+    interactiva: escalaAplicableEnNota(escala)
   })),
   ...ESCALAS_PEDIATRICAS_NOTA.map((escala) => ({
     ...escala,
     tipoEscala: "pediatrica",
     pediatrica: true,
-    interactiva: false
+    interactiva: escalaAplicableEnNota(escala)
   })),
   ...ESCALAS_COGNITIVAS
     .filter((escala) => !IDS_PRUEBAS_INTERACTIVAS.has(escala.id))
-    .map((escala) => ({ ...escala, interactiva: false })),
+    .map((escala) => ({ ...escala, interactiva: escalaAplicableEnNota(escala) })),
   ...PRUEBAS_INTERACTIVAS.map((escala) => ({
     ...escala,
     tipoEscala: escala.tipoEscala || "cognitiva",
@@ -510,7 +520,7 @@ function htmlGrupoEscalasNota(etiqueta, escalas) {
   return `
     <optgroup label="${escaparHTML(etiqueta)}">
       ${escalas.map((escala) => {
-        const subtitulo = escala.area || escala.subtitulo || escala.tipoEscala || "Clinica";
+        const subtitulo = escala.area || escala.subtitulo || escala.tipoEscala || "Clínica";
         return `<option value="${escaparHTML(escala.id)}">${escaparHTML(escala.nombre)} - ${escaparHTML(subtitulo)}</option>`;
       }).join("")}
     </optgroup>
@@ -550,7 +560,7 @@ function renderizarOpcionesEscalasNota() {
   const escalasCognitivasNota = ESCALAS_NOTA.filter((escala) => esEscalaCognitivaNota(escala) && filtrarEscala(escala));
 
   selector.innerHTML = [
-    htmlGrupoEscalasNota("Escalas clinicas", escalasPsiquiatricasNota),
+    htmlGrupoEscalasNota("Escalas clínicas", escalasPsiquiatricasNota),
     htmlGrupoEscalasNota("Medicina general", escalasMedicinaNota),
     htmlGrupoEscalasNota("Escalas pediátricas", escalasPediatricasNota),
     htmlGrupoEscalasNota("Escalas y tamizajes cognitivos", escalasCognitivasNota)
@@ -576,8 +586,8 @@ function esEscalaCognitivaNota(escala = {}) {
 
 function cambiarModoEscalaNota(modo) {
   const escala = escalaNotaActual();
-  if (modo === "interactiva" && !escala?.interactiva) {
-    alert("Esta escala solo permite captura estructurada por ahora.");
+  if (modo === "interactiva" && !escalaAplicableEnNota(escala)) {
+    alert("Esta escala no tiene reactivos configurados para aplicarse dentro de la nota.");
     return;
   }
   modoEscalaNota = modo === "manual" ? "manual" : "interactiva";
@@ -586,11 +596,12 @@ function cambiarModoEscalaNota(modo) {
 
 function actualizarModoEscalaNota() {
   const escala = escalaNotaActual();
-  if (!escala?.interactiva) modoEscalaNota = "manual";
+  const aplicable = escalaAplicableEnNota(escala);
+  if (!aplicable) modoEscalaNota = "manual";
   document.querySelectorAll("[data-modo-escala-nota]").forEach((boton) => {
     boton.classList.toggle("activo", boton.dataset.modoEscalaNota === modoEscalaNota);
   });
-  document.getElementById("modoAplicarEscalaNota")?.toggleAttribute("disabled", !escala?.interactiva);
+  document.getElementById("modoAplicarEscalaNota")?.toggleAttribute("disabled", !aplicable);
 }
 
 function itemsEscalaNota(escala = {}) {
@@ -608,7 +619,7 @@ function renderizarEscalaNotaSeleccionada() {
     ? `<p>${escaparHTML(escala.introduccion || escala.instrucciones)}</p>`
     : "";
   const pasos = escala.pasos?.length
-    ? `<div class="guia-escala-nota"><strong>Guia de aplicacion</strong><ol>${escala.pasos.map((paso) => `<li>${escaparHTML(paso)}</li>`).join("")}</ol></div>`
+    ? `<div class="guia-escala-nota"><strong>Guía de aplicación</strong><ol>${escala.pasos.map((paso) => `<li>${escaparHTML(paso)}</li>`).join("")}</ol></div>`
     : "";
   const temporizador = escala.duracionSegundos
     ? `<div class="temporizador-escala-nota"><span data-tiempo-escala-nota>${escala.duracionSegundos}</span>s <button type="button" data-iniciar-temporizador-escala-nota>Iniciar temporizador</button></div>`
@@ -618,10 +629,10 @@ function renderizarEscalaNotaSeleccionada() {
     ? `<p class="advertencia-escala-nota">${escaparHTML(escala.limitaciones)}</p>`
     : "";
   const oficial = escala.requiereInstrumentoOficial
-    ? `<p class="advertencia-escala-nota">Este instrumento requiere material oficial o aplicacion clinica supervisada. Cognicion guia la aplicacion/captura sin reproducir contenido protegido.</p>`
+    ? `<p class="advertencia-escala-nota">Este instrumento requiere material oficial o aplicación clínica supervisada. Cognición guía la aplicación/captura sin reproducir contenido protegido.</p>`
     : "";
   const consideraciones = Array.isArray(escala.consideraciones) && escala.consideraciones.length
-    ? `<div class="consideraciones-escala-nota"><strong>Consideraciones clinicas</strong><ul>${escala.consideraciones.map((item) => `<li>${escaparHTML(item)}</li>`).join("")}</ul></div>`
+    ? `<div class="consideraciones-escala-nota"><strong>Consideraciones clínicas</strong><ul>${escala.consideraciones.map((item) => `<li>${escaparHTML(item)}</li>`).join("")}</ul></div>`
     : "";
 
   descripcion.innerHTML = `
@@ -639,6 +650,10 @@ function renderizarEscalaNotaSeleccionada() {
   window.setTimeout(configurarTemporizadorEscalaNota, 0);
 
   const reactivos = itemsEscalaNota(escala);
+  if (!reactivos.length) {
+    items.innerHTML = "<p class=\"texto-suave\">Esta escala aún no tiene reactivos configurados. Usa captura de resultado previo.</p>";
+    return;
+  }
   items.innerHTML = reactivos.map((item, index) => {
     if (item.tipo === "numero") {
       return `
@@ -646,7 +661,7 @@ function renderizarEscalaNotaSeleccionada() {
           <label>${index + 1}. ${escaparHTML(textoItemEscala(item))}
             <input data-item-escala-nota="${index}" type="number" min="${item.min ?? 0}" max="${item.max ?? ""}" step="${item.step || 1}" placeholder="${item.min ?? 0}-${item.max ?? ""}">
           </label>
-          <small>${escaparHTML(item.dominio || "")}${item.max !== undefined ? ` - Maximo ${escaparHTML(item.max)}` : ""}${item.ayuda ? ` - ${escaparHTML(item.ayuda)}` : ""}</small>
+          <small>${escaparHTML(item.dominio || "")}${item.max !== undefined ? ` - Máximo ${escaparHTML(item.max)}` : ""}${item.ayuda ? ` - ${escaparHTML(item.ayuda)}` : ""}</small>
         </div>
       `;
     }
@@ -946,7 +961,7 @@ function renderizarEscalasPreviasNota() {
 
 function renderizarTarjetaEscalaPreviaNota(escala) {
   const respuestas = (escala.respuestasPorItem || []).map((respuesta) => `
-    <li><strong>${escaparHTML(respuesta.item || "")}</strong><span>${escaparHTML(respuesta.respuesta || "")} (${respuesta.valor ?? ""}) ${respuesta.dominio ? `· ${escaparHTML(respuesta.dominio)}` : ""}</span></li>
+    <li><strong>${escaparHTML(respuesta.item || "")}</strong><span>${escaparHTML(respuesta.respuesta || "")} (${respuesta.valor ? ""}) ${respuesta.dominio ? `· ${escaparHTML(respuesta.dominio)}` : ""}</span></li>
   `).join("");
   const puntajesDominio = escala.puntajesPorDominio && Object.keys(escala.puntajesPorDominio).length
     ? `<p><strong>Puntajes por dominio:</strong> ${escaparHTML(Object.entries(escala.puntajesPorDominio).map(([dominio, valor]) => `${dominio}: ${valor}`).join(" · "))}</p>`
@@ -1262,7 +1277,7 @@ function aplicarNotaAutomatica() {
   const riesgos = textoRiesgosAutomaticos(generada.riesgosDetectados);
   const analisisAutomatico = [
     `Comentario clinico:\n${generada.comentarioClinico || ""}`,
-    `Impresion diagnostica sugerida:\n${generada.impresionDiagnostica || ""}`,
+    `Impresión diagnóstica sugerida:\n${generada.impresionDiagnostica || ""}`,
     riesgos ? `Riesgo sugerido:\n${riesgos}` : ""
   ].filter((bloque) => bloque.trim()).join("\n\n");
   anexarTextoGenerado("analisis", analisisAutomatico, "Analisis automatico sugerido");
@@ -1733,7 +1748,7 @@ async function guardarMedicoFirmaDesdeCampo(numeroFirma) {
   };
 
   if (existente?.id) {
-    const confirmar = confirm("Este medico ya existe en el catalogo. ¿Deseas actualizar cargo y cedula?");
+    const confirmar = confirm("Este médico ya existe en el catálogo. ¿Deseas actualizar cargo y cédula?");
     if (!confirmar) return;
     await updateDoc(doc(db, "usuarios", uidMedicoActual, "catalogoMedicosFirmas", existente.id), payload);
   } else {
@@ -1791,7 +1806,7 @@ function valorClinicoDesdePaciente(paciente = {}, clave) {
   const institucional = paciente.datosInstitucionales || {};
   const signos = paciente.signosVitales || {};
   const somatometria = paciente.somatometria || {};
-  return paciente[clave] ?? signos[clave] ?? somatometria[clave] ?? institucional[clave] ?? "";
+  return paciente[clave] || signos[clave] || somatometria[clave] || institucional[clave] || "";
 }
 
 function fechaNacimientoPacienteNota(paciente = pacienteActualDatos || {}) {
@@ -1847,7 +1862,7 @@ function textoResumenPediatriaNota(datos) {
   return [
     `Edad pediátrica: ${datos.edadTexto} (${datos.diasVida} días de vida).`,
     `Somatometría: peso ${datos.pesoKg ?? "-"} kg, talla ${datos.tallaCm ?? "-"} cm, IMC ${datos.imc ?? "-"}, SC ${datos.superficieCorporalM2 ?? "-"} m2.`,
-    `Liquidos de mantenimiento estimados: ${datos.mantenimientoMlDia ?? "-"} mL/dia (${datos.mantenimientoMlHora ?? "-"} mL/h). Regla 4-2-1: ${datos.regla421MlHora ?? "-"} mL/h.`
+    `Líquidos de mantenimiento estimados: ${datos.mantenimientoMlDia || "-"} mL/día (${datos.mantenimientoMlHora || "-"} mL/h). Regla 4-2-1: ${datos.regla421MlHora || "-"} mL/h.`
   ].join("\n");
 }
 
@@ -1872,12 +1887,12 @@ function sincronizarParametrosPediatriaNota(datosGuardados = null) {
   bloque.classList.toggle("omitido", omitido);
 
   asignarValor("notaPedEdad", datos.edadTexto || "");
-  asignarValor("notaPedDiaVida", datos.diasVida ? `${datos.diasVida} dias` : "");
+  asignarValor("notaPedDiaVida", datos.diasVida ? `${datos.diasVida} días` : "");
   asignarValor("notaPedPeso", datos.pesoKg !== null && datos.pesoKg !== undefined ? `${datos.pesoKg} kg` : "");
   asignarValor("notaPedTalla", datos.tallaCm ? `${datos.tallaCm} cm` : "");
   asignarValor("notaPedIMC", datos.imc ? `${datos.imc}` : "");
   asignarValor("notaPedSC", datos.superficieCorporalM2 ? `${datos.superficieCorporalM2} m2` : "");
-  asignarValor("notaPedMantenimiento", datos.mantenimientoMlDia ? `${datos.mantenimientoMlDia} mL/dia` : "");
+  asignarValor("notaPedMantenimiento", datos.mantenimientoMlDia ? `${datos.mantenimientoMlDia} mL/día` : "");
   asignarValor("notaPedRegla421", datos.regla421MlHora ? `${datos.regla421MlHora} mL/h` : "");
   asignarValor("notaPediatriaResumen", omitido ? "Parámetros pediátricos omitidos en esta nota." : textoResumenPediatriaNota(datos));
   renderizarEscalaNotaSeleccionada();
@@ -1967,7 +1982,7 @@ function sincronizarDiagnosticosObservacion() {
   const diagnosticos = diagnosticosCIE10Observacion();
 
   if (diagnosticos.length === 0) {
-    contenedor.innerHTML = "<p>Sin diagnosticos CIE-10 sincronizados.</p>";
+    contenedor.innerHTML = "<p>Sin diagnósticos CIE-10 sincronizados.</p>";
     return;
   }
 
@@ -1975,8 +1990,8 @@ function sincronizarDiagnosticosObservacion() {
     <table>
       <thead>
         <tr>
-          <th>Codigo</th>
-          <th>Diagnostico</th>
+          <th>Código</th>
+          <th>Diagnóstico</th>
         </tr>
       </thead>
       <tbody>
@@ -2001,7 +2016,7 @@ function leerFormularioObservacionFray() {
 
   return {
     nombrePaciente: administrativos.nombrePaciente,
-    servicio: administrativos.servicioInstitucional || "Observacion",
+    servicio: administrativos.servicioInstitucional || "Observación",
     cama: administrativos.cama,
     expediente: administrativos.expediente,
     fechaNacimiento: administrativos.fechaNacimiento,
@@ -2010,6 +2025,7 @@ function leerFormularioObservacionFray() {
     genero: administrativos.genero,
     alergias: administrativos.alergias,
     diasEstancia: administrativos.diasEstancia || "",
+    díasEstancia: administrativos.diasEstancia || "",
     ...datos,
     motivoAtencion: valorCampo("subjetivo"),
     examenMental: valorCampo("objetivo"),
@@ -2029,13 +2045,13 @@ function llenarFormularioObservacionFray(datos = {}) {
   const datosCompatibles = {
     ...datos,
     firma1Nombre: datos.firma1Nombre || datos.medicoAdscrito || "",
-    firma1Cargo: datos.firma1Cargo || (datos.medicoAdscrito ? "Medico adscrito" : ""),
+    firma1Cargo: datos.firma1Cargo || (datos.medicoAdscrito ? "Médico adscrito" : ""),
     firma1Cedula: datos.firma1Cedula || datos.cedulaAdscrito || "",
     firma2Nombre: datos.firma2Nombre || datos.medicoR3 || "",
-    firma2Cargo: datos.firma2Cargo || (datos.medicoR3 ? "Medico residente de 3er ano" : ""),
+    firma2Cargo: datos.firma2Cargo || (datos.medicoR3 ? "Médico residente de 3er año" : ""),
     firma2Cedula: datos.firma2Cedula || datos.cedulaR3 || "",
     firma3Nombre: datos.firma3Nombre || datos.medicoR2 || "",
-    firma3Cargo: datos.firma3Cargo || (datos.medicoR2 ? "Medico residente de 2o ano" : ""),
+    firma3Cargo: datos.firma3Cargo || (datos.medicoR2 ? "Médico residente de 2o año" : ""),
     firma3Cedula: datos.firma3Cedula || datos.cedulaR2 || ""
   };
 
@@ -2065,7 +2081,9 @@ function datosInstitucionalesPaciente(paciente = {}) {
     "";
   const diasEstancia =
     paciente.diasEstancia ||
+    paciente.díasEstancia ||
     institucional.diasEstancia ||
+    institucional.díasEstancia ||
     calcularEstanciaDesdeIngresoNota(fechaIngreso);
 
   return {
@@ -2082,29 +2100,39 @@ function datosInstitucionalesPaciente(paciente = {}) {
     alergias: paciente.alergias || institucional.alergias || "",
     fechaIngreso,
     diasEstancia,
+    díasEstancia: diasEstancia,
     firma1Nombre: fray.firma1Nombre || fray.medicoAdscrito || paciente.medicoTratante || "",
-    firma1Cargo: fray.firma1Cargo || (fray.medicoAdscrito || paciente.medicoTratante ? "Medico adscrito" : ""),
+    firma1Cargo: fray.firma1Cargo || (fray.medicoAdscrito || paciente.medicoTratante ? "Médico adscrito" : ""),
     firma1Cedula: fray.firma1Cedula || fray.cedulaAdscrito || "",
     firma2Nombre: fray.firma2Nombre || fray.medicoR3 || "",
-    firma2Cargo: fray.firma2Cargo || (fray.medicoR3 ? "Medico residente de 3er ano" : ""),
+    firma2Cargo: fray.firma2Cargo || (fray.medicoR3 ? "Médico residente de 3er año" : ""),
     firma2Cedula: fray.firma2Cedula || fray.cedulaR3 || "",
     firma3Nombre: fray.firma3Nombre || fray.medicoR2 || "",
-    firma3Cargo: fray.firma3Cargo || (fray.medicoR2 ? "Medico residente de 2o ano" : ""),
+    firma3Cargo: fray.firma3Cargo || (fray.medicoR2 ? "Médico residente de 2o año" : ""),
     firma3Cedula: fray.firma3Cedula || fray.cedulaR2 || ""
   };
 }
 
-function aplicarDatosInstitucionalesPaciente(paciente = {}) {
+function aplicarDatosInstitucionalesPaciente(paciente = {}, opciones = {}) {
   const datos = datosInstitucionalesPaciente(paciente);
   const vitales = paciente.signosVitales || paciente.vitales || {};
+  const forzarSignos = Boolean(opciones.forzarSignosVitales);
 
-  if (!valorCampo("obsPresionArterial")) asignarValor("obsPresionArterial", vitales.presionArterial || vitales.pa || paciente.presionArterial || paciente.pa || "");
-  if (!valorCampo("obsTemperatura")) asignarValor("obsTemperatura", vitales.temperatura || paciente.temperatura || "");
-  if (!valorCampo("obsFrecuenciaCardiaca")) asignarValor("obsFrecuenciaCardiaca", vitales.frecuenciaCardiaca || vitales.fc || paciente.frecuenciaCardiaca || paciente.fc || "");
-  if (!valorCampo("obsFrecuenciaRespiratoria")) asignarValor("obsFrecuenciaRespiratoria", vitales.frecuenciaRespiratoria || vitales.fr || paciente.frecuenciaRespiratoria || paciente.fr || "");
-  if (!valorCampo("obsSaturacionO2")) asignarValor("obsSaturacionO2", vitales.saturacionO2 || vitales.spo2 || paciente.saturacionO2 || paciente.spo2 || "");
-  if (!valorCampo("obsPeso")) asignarValor("obsPeso", paciente.peso || paciente.signosVitales?.peso || paciente.datosInstitucionales?.peso || "");
-  if (!valorCampo("obsTalla")) asignarValor("obsTalla", paciente.talla || paciente.signosVitales?.talla || paciente.datosInstitucionales?.talla || "");
+  const valorPA = vitales.presionArterial || vitales.pa || paciente.presionArterial || paciente.pa || "";
+  const valorTemp = vitales.temperatura || paciente.temperatura || "";
+  const valorFC = vitales.frecuenciaCardiaca || vitales.fc || paciente.frecuenciaCardiaca || paciente.fc || "";
+  const valorFR = vitales.frecuenciaRespiratoria || vitales.fr || paciente.frecuenciaRespiratoria || paciente.fr || "";
+  const valorSpO2 = vitales.saturacionO2 || vitales.spo2 || paciente.saturacionO2 || paciente.spo2 || "";
+  const valorPeso = paciente.peso || paciente.signosVitales?.peso || paciente.datosInstitucionales?.peso || "";
+  const valorTalla = paciente.talla || paciente.signosVitales?.talla || paciente.datosInstitucionales?.talla || "";
+
+  if (forzarSignos || !valorCampo("obsPresionArterial")) asignarValor("obsPresionArterial", valorPA);
+  if (forzarSignos || !valorCampo("obsTemperatura")) asignarValor("obsTemperatura", valorTemp);
+  if (forzarSignos || !valorCampo("obsFrecuenciaCardiaca")) asignarValor("obsFrecuenciaCardiaca", valorFC);
+  if (forzarSignos || !valorCampo("obsFrecuenciaRespiratoria")) asignarValor("obsFrecuenciaRespiratoria", valorFR);
+  if (forzarSignos || !valorCampo("obsSaturacionO2")) asignarValor("obsSaturacionO2", valorSpO2);
+  if (forzarSignos || !valorCampo("obsPeso")) asignarValor("obsPeso", valorPeso);
+  if (forzarSignos || !valorCampo("obsTalla")) asignarValor("obsTalla", valorTalla);
   calcularIMCNota();
   if (!valorCampo("obsFirma1Nombre")) asignarValor("obsFirma1Nombre", datos.firma1Nombre);
   if (!valorCampo("obsFirma1Cargo")) asignarValor("obsFirma1Cargo", datos.firma1Cargo);
@@ -2147,9 +2175,9 @@ function aplicarHistoriaClinicaObservacion(historia = {}) {
     const examenMental = [
       historia.apariencia ? `Apariencia y conducta: ${historia.apariencia}` : "",
       historia.lenguaje ? `Lenguaje: ${historia.lenguaje}` : "",
-      historia.afecto ? `Estado de animo y afecto: ${historia.afecto}` : "",
+      historia.afecto ? `Estado de ánimo y afecto: ${historia.afecto}` : "",
       historia.pensamiento ? `Pensamiento: ${historia.pensamiento}` : "",
-      historia.sensopercepcion ? `Sensopercepcion: ${historia.sensopercepcion}` : "",
+      historia.sensopercepcion ? `Sensopercepción: ${historia.sensopercepcion}` : "",
       historia.cognicion ? `Funciones cognitivas: ${historia.cognicion}` : "",
       historia.juicio ? `Juicio e insight: ${historia.juicio}` : ""
     ].filter(Boolean).join("\n");
@@ -2216,7 +2244,7 @@ function llenarFormularioNota(datos) {
   document.getElementById("analisis").value = datos.analisis || "";
   document.getElementById("plan").value = datos.plan || "";
   llenarFormularioObservacionFray(datos.observacionFray || {});
-  sincronizarParametrosPediatriaNota(datos.pediatriaNota || null);
+  sincronizarParametrosPediatriaNota(datos.pediatriaNota || datos["ped?atriaNota"] || null);
   sincronizarTipoNota();
   sincronizarFormatoNota();
 }
@@ -2496,7 +2524,7 @@ window.eliminarNotaFlotanteDesdeNota = async function() {
     return;
   }
 
-  if (!confirm("Eliminar esta nota flotante?")) return;
+  if (!confirm("¿Eliminar esta nota flotante?")) return;
 
   await deleteDoc(doc(db, "usuarios", uidPaciente, "notasFlotantes", id));
   window.nuevaNotaFlotanteDesdeNota();
@@ -2542,7 +2570,7 @@ window.guardarBorradoresMedico = async function() {
   if (estado) estado.textContent = "Guardando...";
 
   const payload = {
-    titulo: titulo?.value.trim() || "Sin titulo",
+    titulo: titulo?.value.trim() || "Sin título",
     contenido: texto.value,
     fechaActualizacion: new Date().toISOString(),
     fechaActualizacionServidor: serverTimestamp()
@@ -2590,7 +2618,7 @@ window.eliminarApunteMedicoActual = async function() {
     return;
   }
 
-  if (!confirm("Eliminar este apunte?")) return;
+  if (!confirm("¿Eliminar este apunte?")) return;
 
   await deleteDoc(doc(db, "usuarios", uidMedicoActual, "apuntesMedico", id));
   await cargarBorradoresMedico();
@@ -2620,7 +2648,7 @@ function renderizarListaApuntes() {
       class="apunte-lista-item ${apunte.id === activo ? "activo" : ""}"
       onclick="seleccionarApunteMedico('${apunte.id}')"
     >
-      <strong>${escaparHTML(apunte.titulo || "Sin titulo")}</strong>
+      <strong>${escaparHTML(apunte.titulo || "Sin título")}</strong>
       <span>${escaparHTML((apunte.contenido || "").slice(0, 90))}</span>
     </button>
   `).join("");
@@ -2631,7 +2659,7 @@ function bloqueContenidoNota(datos, titulo) {
   return `
     <div class="version-nota">
       <h4>${titulo}</h4>
-      ${esRapida ? `<p><b>Nota rapida:</b><br>${escaparHTML(datos.notaRapida || "")}</p>` : `
+      ${esRapida ? `<p><b>Nota rápida:</b><br>${escaparHTML(datos.notaRapida || "")}</p>` : `
         <p><b>Subjetivo:</b><br>${escaparHTML(datos.subjetivo || "")}</p>
         <p><b>Objetivo:</b><br>${escaparHTML(datos.objetivo || "")}</p>
         <p><b>Analisis:</b><br>${escaparHTML(datos.analisis || "")}</p>
@@ -2668,6 +2696,7 @@ function cargarDatosNotaComoBorrador(notaId, opciones = {}) {
       : datos.formatoNota || formatoActual
   });
   aplicarTiempoActualNota();
+  aplicarDatosInstitucionalesPaciente(pacienteActualDatos || {}, { forzarSignosVitales: true });
 
   notaEditandoId = null;
   btnCancelarEdicion?.classList.add("oculto");
@@ -2991,10 +3020,10 @@ async function guardarNotaMedicaConEstado(estadoNota = "definitiva") {
       modulo: "Nota medica",
       descripcion: notaEditandoId
         ? (esBorrador
-          ? "El medico guardo cambios como borrador sin borrar la nota original."
-          : "El medico guardo una nota definitiva sin borrar la nota original.")
+          ? "El médico guardó cambios como borrador sin borrar la nota original."
+          : "El médico guardó una nota definitiva sin borrar la nota original.")
         : (esBorrador
-          ? "El medico guardo una nota medica como borrador."
+          ? "El médico guardó una nota médica como borrador."
           : "El medico creo una nota medica definitiva."),
       usuarioUid: usuario?.uid || "",
       usuarioNombre: medicoActual?.nombre || usuario?.email || medico || "",
@@ -3115,7 +3144,7 @@ async function cargarHistorial(uidPaciente) {
 
           ${bloqueContenidoNota(datos, "Nota original")}
 
-          ${datos.notaEditada ? bloqueContenidoNota(datos.notaEditada, "Version editada") : ""}
+          ${datos.notaEditada ? bloqueContenidoNota(datos.notaEditada, "Versión editada") : ""}
 
           <div class="acciones-historial-nota">
             <button type="button" class="boton-secundario" onclick="cargarNotaComoBorrador('${nota.id}')">
@@ -3401,7 +3430,7 @@ function formatoFechaFray(fecha) {
 function tituloNotaFray(tipo) {
   if (tipo === "envio_piso") return "NOTA DE ENVIO A HOSPITALIZACION CONTINUA";
   return tipo === "evolucion"
-    ? "NOTA DE EVOLUCION AL SERVICIO DE OBSERVACION"
+    ? "NOTA DE EVOLUCIÓN AL SERVICIO DE OBSERVACIÓN"
     : "NOTA DE INGRESO AL SERVICIO DE OBSERVACION";
 }
 
@@ -3449,7 +3478,7 @@ async function htmlWordFrayObservacion() {
     ? `
       <table class="tabla-diagnosticos-word">
         <thead>
-          <tr><th>DIAGNOSTICO</th><th>CIE-10</th></tr>
+          <tr><th>DIAGNÓSTICO</th><th>CIE-10</th></tr>
         </thead>
         <tbody>
           <tr>
@@ -3459,7 +3488,7 @@ async function htmlWordFrayObservacion() {
         </tbody>
       </table>
     `
-    : "<p>Sin diagnosticos CIE-10 registrados.</p>";
+    : "<p>Sin diagnósticos CIE-10 registrados.</p>";
 
   const exploracionFisicaNeurologica = datos.exploracionFisicaNeurologica || "";
 
@@ -3467,9 +3496,9 @@ async function htmlWordFrayObservacion() {
     <table class="tabla-vitales">
       <thead>
         <tr>
-          <th>Presion arterial</th>
+          <th>Presión arterial</th>
           <th>Temperatura</th>
-          <th>Frecuencia cardiaca</th>
+          <th>Frecuencia cardíaca</th>
           <th>Frecuencia respiratoria</th>
           <th>SatO2</th>
           <th>Peso</th>
@@ -3509,7 +3538,7 @@ async function htmlWordFrayObservacion() {
           xmlns="http://www.w3.org/TR/REC-html40">
     <head>
           <meta charset="UTF-8">
-          <title>Nota Observacion Fray Bernardino</title>
+          <title>Nota Observación Fray Bernardino</title>
           <!--[if gte mso 9]>
           <xml>
             <w:WordDocument>
@@ -3622,9 +3651,9 @@ async function htmlWordFrayObservacion() {
             >
           </td>
           <td class="encabezado-centro">
-            SECRETARIA DE SALUD<br>
+            SECRETARÍA DE SALUD<br>
             COMISION NACIONAL DE SALUD MENTAL Y ADICCIONES<br>
-            HOSPITAL PSIQUIATRICO "FRAY BERNARDINO ALVAREZ"
+            HOSPITAL PSIQUIÁTRICO "FRAY BERNARDINO ÁLVAREZ"
           </td>
           <td class="encabezado-logo-der"><img class="logo-fray" src="${logoFray}"></td>
         </tr>
@@ -3639,26 +3668,26 @@ async function htmlWordFrayObservacion() {
            <b>Cama:</b> ${textoWord(datos.cama)}
            <b>Expediente:</b> ${textoWord(datos.expediente)}
            <b>Sexo:</b> ${textoWord(datos.sexo)}
-           <b>Genero:</b> ${textoWord(datos.genero)}
-           <b>Servicio:</b> ${textoWord(datos.servicio || "OBSERVACION")}
+           <b>Género:</b> ${textoWord(datos.genero)}
+           <b>Servicio:</b> ${textoWord(datos.servicio || "OBSERVACIÓN")}
            <b>Alergias:</b> ${textoWord(datos.alergias)}
            <b>Fecha:</b> ${textoWord(formatoFechaFray(datos.fechaNota))}
            <b>Hora:</b> ${textoWord(datos.horaNota)} H
-           <b>Dias estancia:</b> ${textoWord(datos.diasEstancia)}
+           <b>Días estancia:</b> ${textoWord(datos.diasEstancia || datos.díasEstancia || "")}
       </p>
 
       ${vitales}
-      ${bloqueWordFray("MOTIVO DE ATENCION / ACTUALIZACION DEL CUADRO CLINICO", datos.motivoAtencion || datosCognicion.subjetivo)}
-      ${bloqueWordFray("EXPLORACION FISICA Y NEUROLOGICA", exploracionFisicaNeurologica)}
+      ${bloqueWordFray("MOTIVO DE ATENCIÓN / ACTUALIZACIÓN DEL CUADRO CLÍNICO", datos.motivoAtencion || datosCognicion.subjetivo)}
+      ${bloqueWordFray("EXPLORACIÓN FÍSICA Y NEUROLÓGICA", exploracionFisicaNeurologica)}
       ${bloqueWordFray("EXAMEN MENTAL", datos.examenMental || datosCognicion.objetivo)}
-      ${bloqueWordFray("RESULTADOS RELEVANTES DE LOS ESTUDIOS DE DIAGNOSTICO", datos.resultadosEstudios)}
-      <h2>DIAGNOSTICOS DE ACUERDO A CIE-10 (PRIMARIO Y COMORBILIDADES)</h2>
+      ${bloqueWordFray("RESULTADOS RELEVANTES DE LOS ESTUDIOS DE DIAGNÓSTICO", datos.resultadosEstudios)}
+      <h2>DIAGNÓSTICOS DE ACUERDO A CIE-10 (PRIMARIO Y COMORBILIDADES)</h2>
       ${tablaDiagnosticos}
-      ${bloqueWordFray("PLAN TERAPEUTICO (MEDIDAS GENERALES Y TRATAMIENTO FARMACOLOGICO)", datos.planTerapeutico || datosCognicion.plan)}
-      ${bloqueWordFray("COMENTARIO Y/O ANALISIS CLINICO Y FUNDAMENTACION DIAGNOSTICA Y TERAPEUTICA", datos.comentarioAnalisis || datosCognicion.analisis)}
-      <p class="pronostico-destino"><b>PRONOSTICO:</b> ${textoWord(datos.pronostico)}</p>
+      ${bloqueWordFray("PLAN TERAPÉUTICO (MEDIDAS GENERALES Y TRATAMIENTO FARMACOLÓGICO)", datos.planTerapeutico || datosCognicion.plan)}
+      ${bloqueWordFray("COMENTARIO Y/O ANÁLISIS CLÍNICO Y FUNDAMENTACIÓN DIAGNÓSTICA Y TERAPÉUTICA", datos.comentarioAnalisis || datosCognicion.analisis)}
+      <p class="pronostico-destino"><b>PRONÓSTICO:</b> ${textoWord(datos.pronostico)}</p>
       <p class="pronostico-destino"><b>DESTINO:</b> ${textoWord(datos.destino)}</p>
-      <h2>NOMBRE, FIRMA Y CEDULA PROFESIONAL DEL MEDICO QUE REALIZA Y SUPERVISA:</h2>
+      <h2>NOMBRE, FIRMA Y CÉDULA PROFESIONAL DEL MÉDICO QUE REALIZA Y SUPERVISA:</h2>
       ${firmas}
       </div>
       </body>

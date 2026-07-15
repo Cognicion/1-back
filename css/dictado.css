@@ -33,6 +33,22 @@
   font-size: 1.35rem;
 }
 
+.dictado-alfa-badge {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 10px;
+  padding: 5px 9px;
+  border: 1px solid rgba(250, 204, 21, 0.34);
+  border-radius: 999px;
+  background: rgba(113, 63, 18, 0.22);
+  color: #fde68a;
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  vertical-align: middle;
+}
+
 .dictado-clinico-header p,
 .dictado-clinico-alertas p {
   margin: 0;
@@ -77,6 +93,10 @@
   border: 1px solid rgba(125, 211, 252, 0.14);
   border-radius: 14px;
   background: rgba(8, 13, 27, 0.72);
+}
+
+.dictado-clinico-alertas strong {
+  color: #fde68a;
 }
 
 .dictado-clinico-texto {
