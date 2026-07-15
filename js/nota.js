@@ -66,7 +66,7 @@ import {
   guardarNota,
   obtenerHistorialNotas,
   actualizarNota
-} from "./services/notas.js";
+} from "./services/notas.js?v=20260715-1240";
 
 import {
   obtenerHistoriaClinica
@@ -659,7 +659,7 @@ function renderizarEscalaNotaSeleccionada() {
       return `
         <div class="item-escala-nota">
           <label>${index + 1}. ${escaparHTML(textoItemEscala(item))}
-            <input data-item-escala-nota="${index}" type="number" min="${item.min ?? 0}" max="${item.max ?? ""}" step="${item.step || 1}" placeholder="${item.min ?? 0}-${item.max ?? ""}">
+            <input data-item-escala-nota="${index}" type="number" min="${item.min ? 0}" max="${item.max ? ""}" step="${item.step || 1}" placeholder="${item.min ? 0}-${item.max ? ""}">
           </label>
           <small>${escaparHTML(item.dominio || "")}${item.max !== undefined ? ` - Máximo ${escaparHTML(item.max)}` : ""}${item.ayuda ? ` - ${escaparHTML(item.ayuda)}` : ""}</small>
         </div>
@@ -684,8 +684,8 @@ function renderizarEscalaNotaSeleccionada() {
 function obtenerOpcionesEscalaNota(escala, item) {
   if (Array.isArray(item.opciones) && item.opciones.length) {
     return item.opciones.map((opcion, opcionIndex) => {
-      if (typeof opcion === "object") return { texto: opcion.texto ?? String(opcion.valor ?? opcionIndex), valor: Number(opcion.valor ?? opcionIndex) };
-      return { texto: String(opcion), valor: Number(item.valores?.[opcionIndex] ?? opcionIndex) };
+      if (typeof opcion === "object") return { texto: opcion.texto ? String(opcion.valor ? opcionIndex), valor: Number(opcion.valor ? opcionIndex) };
+      return { texto: String(opcion), valor: Number(item.valores?.[opcionIndex] ? opcionIndex) };
     });
   }
   return obtenerOpcionesItemEscala(escala, item);
@@ -795,7 +795,7 @@ async function guardarEscalaDesdeNota() {
     origen: "nota_clinica",
     modoAplicacion: esInteractiva ? "aplicacion_interactiva" : "captura_resultado_previo",
     puntajeTotal: puntaje,
-    puntajeMaximo: escala.puntajeMaximo ?? "",
+    puntajeMaximo: escala.puntajeMaximo ? "",
     dominiosEvaluados: escala.dominiosEvaluados || [],
     puntajesPorDominio,
     rango: escala.rango,
@@ -822,7 +822,7 @@ async function guardarEscalaDesdeNota() {
     nombreEscala: escala.nombre,
     fechaAplicacion,
     puntajeTotal: puntaje,
-    puntajeMaximo: escala.puntajeMaximo ?? "",
+    puntajeMaximo: escala.puntajeMaximo ? "",
     interpretacion,
     observaciones
   }), idEscalaAplicada);
@@ -2669,6 +2669,15 @@ function bloqueContenidoNota(datos, titulo) {
   `;
 }
 
+function fechaNotaHistorial(datos = {}) {
+  const valor = datos.fecha || datos.fechaNotaDefinitiva || datos.fechaGuardadoBorrador || datos.fechaCreacion || datos.createdAt || datos.fechaRegistro;
+  if (!valor) return new Date();
+  if (typeof valor.toDate === "function") return valor.toDate();
+  if (typeof valor.seconds === "number") return new Date(valor.seconds * 1000);
+  const fecha = new Date(valor);
+  return Number.isNaN(fecha.getTime()) ? new Date() : fecha;
+}
+
 window.editarNotaDesdeHistorial = function(notaId) {
   const datos = notasHistorial[notaId];
   if (!datos) return;
@@ -3077,7 +3086,18 @@ async function cargarHistorial(uidPaciente) {
   notasHistorial = {};
   notasHistorialOrdenadas = [];
 
-  const notas = await obtenerHistorialNotas(uidPaciente);
+  let notas;
+  try {
+    notas = await obtenerHistorialNotas(uidPaciente);
+  } catch (error) {
+    console.error("Error al cargar historial de notas:", error);
+    contenedor.innerHTML = `
+      <p style="color:#ffb4b4">
+        No se pudo cargar el historial de notas. Revisa permisos o conexión.
+      </p>
+    `;
+    return;
+  }
 
   if (notas.empty) {
     contenedor.innerHTML = `
@@ -3093,7 +3113,7 @@ async function cargarHistorial(uidPaciente) {
     notasHistorial[nota.id] = datos;
     notasHistorialOrdenadas.push({ id: nota.id, datos });
 
-    const fecha = new Date(datos.fecha);
+    const fecha = fechaNotaHistorial(datos);
 
     const fechaTexto = fecha.toLocaleDateString("es-MX");
 
@@ -3163,8 +3183,8 @@ async function cargarHistorial(uidPaciente) {
   });
 
   notasHistorialOrdenadas.sort((a, b) => {
-    const fechaA = new Date(a.datos?.fecha || 0).getTime();
-    const fechaB = new Date(b.datos?.fecha || 0).getTime();
+    const fechaA = fechaNotaHistorial(a.datos).getTime();
+    const fechaB = fechaNotaHistorial(b.datos).getTime();
     return fechaB - fechaA;
   });
 }

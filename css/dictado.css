@@ -126,6 +126,93 @@
   opacity: 0.55;
 }
 
+.dictado-panel-avanzado {
+  display: grid;
+  gap: 12px;
+  margin: 12px 0 14px;
+}
+
+.dictado-clinico-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 10px;
+}
+
+.dictado-clinico-toolbar label {
+  display: grid;
+  gap: 5px;
+  min-width: min(260px, 100%);
+  color: #a9b8cc;
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.dictado-clinico-toolbar select {
+  min-height: 38px;
+  border: 1px solid rgba(125, 211, 252, 0.2);
+  border-radius: 12px;
+  background: rgba(15, 23, 42, 0.82);
+  color: #e5eefb;
+  padding: 0 12px;
+}
+
+.dictado-metricas {
+  display: grid;
+  grid-template-columns: auto minmax(150px, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  padding: 10px 12px;
+  border: 1px solid rgba(125, 211, 252, 0.13);
+  border-radius: 14px;
+  background: rgba(8, 13, 27, 0.46);
+  color: #cbd5e1;
+  font-size: 0.82rem;
+}
+
+.dictado-audio-meter {
+  height: 10px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(148, 163, 184, 0.16);
+}
+
+.dictado-audio-meter span {
+  display: block;
+  width: 0%;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #38bdf8, #22d3ee, #fde68a);
+  transition: width 120ms linear;
+}
+
+.dictado-provisional {
+  padding: 11px 13px;
+  border: 1px dashed rgba(56, 189, 248, 0.24);
+  border-radius: 14px;
+  background: rgba(14, 165, 233, 0.06);
+}
+
+.dictado-provisional strong {
+  display: block;
+  margin-bottom: 5px;
+  color: #7dd3fc;
+  font-size: 0.75rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.dictado-provisional p {
+  min-height: 22px;
+  margin: 0;
+  color: #cbd5e1;
+  font-style: italic;
+}
+
+.dictado-provisional p.activo {
+  color: #f8fafc;
+}
+
 .nota-automatica-panel {
   margin-top: 18px;
   padding: 16px;
