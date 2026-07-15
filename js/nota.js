@@ -659,7 +659,7 @@ function renderizarEscalaNotaSeleccionada() {
       return `
         <div class="item-escala-nota">
           <label>${index + 1}. ${escaparHTML(textoItemEscala(item))}
-            <input data-item-escala-nota="${index}" type="number" min="${item.min ? 0}" max="${item.max ? ""}" step="${item.step || 1}" placeholder="${item.min ? 0}-${item.max ? ""}">
+            <input data-item-escala-nota="${index}" type="number" min="${item.min !== undefined ? item.min : ""}" max="${item.max !== undefined ? item.max : ""}" step="${item.step || 1}" placeholder="${item.min !== undefined ? item.min : ""}-${item.max !== undefined ? item.max : ""}">
           </label>
           <small>${escaparHTML(item.dominio || "")}${item.max !== undefined ? ` - Máximo ${escaparHTML(item.max)}` : ""}${item.ayuda ? ` - ${escaparHTML(item.ayuda)}` : ""}</small>
         </div>
@@ -798,7 +798,7 @@ async function guardarEscalaDesdeNota() {
     origen: "nota_clinica",
     modoAplicacion: esInteractiva ? "aplicacion_interactiva" : "captura_resultado_previo",
     puntajeTotal: puntaje,
-    puntajeMaximo: escala.puntajeMaximo ? "",
+    puntajeMaximo: escala.puntajeMaximo ? escala.puntajeMaximo : "",
     dominiosEvaluados: escala.dominiosEvaluados || [],
     puntajesPorDominio,
     rango: escala.rango,
@@ -825,7 +825,7 @@ async function guardarEscalaDesdeNota() {
     nombreEscala: escala.nombre,
     fechaAplicacion,
     puntajeTotal: puntaje,
-    puntajeMaximo: escala.puntajeMaximo ? "",
+    puntajeMaximo: escala.puntajeMaximo ? escala.puntajeMaximo : "",
     interpretacion,
     observaciones
   }), idEscalaAplicada);
@@ -1060,7 +1060,7 @@ function normalizarDiagnosticoNota(dx = {}, index = 0) {
     codigo: dx.codigo || "",
     nombre,
     catalogo: dx.catalogo || "CIE-10",
-    texto: dx.texto || `${dx.codigo || ""}${dx.codigo && nombre ? " - " : ""}${nombre}`.trim() || nombre,
+    texto: dx.texto || `${dx.codigo || ""}${dx.codigo && dx.nombre ? " - " : ""}${nombre}`.trim() || nombre,
     fechaSeleccion: dx.fechaSeleccion || new Date().toISOString(),
     estado: estadoDiagnosticoNotaValido(dx.estado),
     orden: Number.isFinite(Number(dx.orden)) ? Number(dx.orden) : index
@@ -1084,7 +1084,7 @@ function textoDiagnosticoConEstado(dx) {
 
 function opcionesEstadoDiagnosticoNota(estadoActual = "") {
   return ESTADOS_DIAGNOSTICO_NOTA.map((estado) => `
-    <option value="${escaparHTML(estado)}" ${estado === estadoActual ? "selected" : ""}>${escaparHTML(estado || "Sin especificar")}</option>
+    <option value="${escaparHTML(estado)}" ${estado === estadoActual ? "selected" : ""}>${escaparHTML(estado || "No mostrar estado")}</option>
   `).join("");
 }
 function agregarDiagnostico(dx) {
@@ -2028,7 +2028,7 @@ function leerFormularioObservacionFray() {
     genero: administrativos.genero,
     alergias: administrativos.alergias,
     diasEstancia: administrativos.diasEstancia || "",
-    díasEstancia: administrativos.diasEstancia || "",
+    díasEstancia: administrativos.díasEstancia || "",
     ...datos,
     motivoAtencion: valorCampo("subjetivo"),
     examenMental: valorCampo("objetivo"),
@@ -2224,8 +2224,7 @@ function leerFormularioNota() {
     exportacionWord: {
       habilitada: esFormatoFray(),
       formato,
-      plantillaSugerida: observacionFray.plantillaSugerida || "",
-      fuenteDatos: "observacionFray"
+      plantillaSuger
     },
     observacionFray,
     tipoNota: tipoNota?.value || "completa",
