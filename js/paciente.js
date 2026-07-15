@@ -967,6 +967,11 @@ function ponerValor(id, valor) {
   if (campo) campo.value = valor || "";
 }
 
+function ponerTexto(id, valor) {
+  const elemento = document.getElementById(id);
+  if (elemento) elemento.textContent = valor ?? "";
+}
+
 function normalizarTextoBusqueda(valor = "") {
   return String(valor || "")
     .trim()
@@ -1742,21 +1747,20 @@ async function cargarDatosPaciente() {
   datosPacienteActual = datos;
 
   if (!datos) {
-    document.getElementById("nombrePaciente").innerText =
-      "Paciente no encontrado";
+    ponerTexto("nombrePaciente", "Paciente no encontrado");
     return;
   }
 
-  document.getElementById("nombrePaciente").innerText =
-    datos.nombre || "Paciente sin nombre";
+  ponerTexto("nombrePaciente", datos.nombre || "Paciente sin nombre");
 
-  document.getElementById("correoPaciente").innerText =
-    datos.email || "Sin correo";
+  ponerTexto("correoPaciente", datos.email || "Sin correo");
 
-  document.getElementById("expedienteCognicionPaciente").innerText =
+  ponerTexto(
+    "expedienteCognicionPaciente",
     datos.expedienteCognicion ||
-    datos.datosInstitucionales?.expedienteCognicion ||
-    "Sin expediente";
+      datos.datosInstitucionales?.expedienteCognicion ||
+      "Sin expediente"
+  );
 
   const fechaNacimiento = obtenerFechaNacimiento(datos);
   const edadCalculada = calcularEdad(fechaNacimiento);
@@ -1765,107 +1769,98 @@ async function cargarDatosPaciente() {
   ? edadCalculada
   : "";
 
-  document.getElementById("fechaNacimientoPaciente").innerText =
-  formatearFecha(fechaNacimiento);
+  ponerTexto("fechaNacimientoPaciente", formatearFecha(fechaNacimiento));
 
-  document.getElementById("edadPaciente").innerText =
-  edadVisible !== "" && edadVisible !== null && edadVisible !== undefined
-    ? `${edadVisible} años`
-    : "No registrada";
+  ponerTexto(
+    "edadPaciente",
+    edadVisible !== "" && edadVisible !== null && edadVisible !== undefined
+      ? `${edadVisible} años`
+      : "No registrada"
+  );
 
   if (fechaNacimiento && datos.fechaNacimiento !== fechaNacimiento) {
-    await actualizarUsuario(uidPaciente, {
-      fechaNacimiento,
-      edad: deleteField(),
-      "datosInstitucionales.edad": deleteField()
-    });
+    try {
+      await actualizarUsuario(uidPaciente, {
+        fechaNacimiento,
+        edad: deleteField(),
+        "datosInstitucionales.edad": deleteField()
+      });
+    } catch (error) {
+      console.warn("No se pudo normalizar la fecha de nacimiento del paciente al cargar.", error);
+    }
     datos.fechaNacimiento = fechaNacimiento;
     delete datos.edad;
     if (datos.datosInstitucionales) delete datos.datosInstitucionales.edad;
     datosPacienteActual = datos;
   }
 
+  inicializarSelectorVistaDatosGeneralesPaciente();
+  renderizarVistaLaboratorioPaciente(datos);
+
   renderizarDiagnosticos(datos);
   renderizarPanelDiagnosticos();
 
-  document.getElementById("tratamiento").innerText =
-    datos.tratamiento || "Sin tratamiento registrado";
+  ponerTexto("tratamiento", datos.tratamiento || "Sin tratamiento registrado");
 
-  document.getElementById("medicoTratante").innerText =
-    datos.medicoTratante || "Sin médico tratante";
+  ponerTexto("medicoTratante", datos.medicoTratante || "Sin médico tratante");
 
-  document.getElementById("ultimaConsulta").innerText =
-    formatearFecha(datos.ultimaConsulta) || "Sin fecha";
+  ponerTexto("ultimaConsulta", formatearFecha(datos.ultimaConsulta) || "Sin fecha");
 
-  document.getElementById("proximaConsulta").textContent =
-    datos.proximaConsulta ? formatearFecha(datos.proximaConsulta) : "Sin programar";
+  ponerTexto("proximaConsulta", datos.proximaConsulta ? formatearFecha(datos.proximaConsulta) : "Sin programar");
 
-  document.getElementById("telefonoPaciente").innerText =
-    datos.telefono || "Sin teléfono";
+  ponerTexto("telefonoPaciente", datos.telefono || "Sin teléfono");
 
-  document.getElementById("tipoPaciente").innerText =
-    etiquetaTipoPaciente(datos.tipoPaciente || datos.datosInstitucionales?.tipoPaciente);
+  ponerTexto("tipoPaciente", etiquetaTipoPaciente(datos.tipoPaciente || datos.datosInstitucionales?.tipoPaciente));
 
-  document.getElementById("institucionPaciente").innerText =
-    datos.institucionPaciente || datos.institucion || "Sin institución";
+  ponerTexto("institucionPaciente", datos.institucionPaciente || datos.institucion || "Sin institución");
 
-  document.getElementById("servicioInstitucional").innerText =
-    datos.servicioInstitucional || datos.servicio || "Sin servicio";
+  ponerTexto("servicioInstitucional", datos.servicioInstitucional || datos.servicio || "Sin servicio");
 
-  document.getElementById("expedientePaciente").innerText =
-    datos.expediente || datos.numeroExpediente || "Sin expediente";
+  ponerTexto("expedientePaciente", datos.expediente || datos.numeroExpediente || "Sin expediente");
 
-  document.getElementById("camaPaciente").innerText =
-    datos.cama || "Sin cama";
+  ponerTexto("camaPaciente", datos.cama || "Sin cama");
 
-  document.getElementById("curpPaciente").innerText =
-    datos.curp || datos.datosInstitucionales?.curp || "Sin registro";
+  ponerTexto("curpPaciente", datos.curp || datos.datosInstitucionales?.curp || "Sin registro");
 
   actualizarEstanciaPaciente(datos);
   iniciarActualizacionEstanciaPaciente();
 
-  document.getElementById("ultimoIngresoPaciente").innerText =
-    formatearFecha(obtenerUltimoIngreso(datos));
+  ponerTexto("ultimoIngresoPaciente", formatearFecha(obtenerUltimoIngreso(datos)));
 
-  document.getElementById("medicoAdscritoEncargadoPaciente").innerText =
+  ponerTexto(
+    "medicoAdscritoEncargadoPaciente",
     datos.medicoAdscritoEncargado ||
-    datos.datosInstitucionales?.medicoAdscritoEncargado ||
-    datos.medicoAdscrito ||
-    "Sin registro";
+      datos.datosInstitucionales?.medicoAdscritoEncargado ||
+      datos.medicoAdscrito ||
+      "Sin registro"
+  );
 
-  document.getElementById("residenteEncargadoPaciente").innerText =
+  ponerTexto(
+    "residenteEncargadoPaciente",
     datos.residenteEncargado ||
-    datos.datosInstitucionales?.residenteEncargado ||
-    datos.medicoResidente ||
-    "Sin registro";
+      datos.datosInstitucionales?.residenteEncargado ||
+      datos.medicoResidente ||
+      "Sin registro"
+  );
 
-  document.getElementById("sexoPaciente").innerText =
-    datos.sexo || "Sin registro";
+  ponerTexto("sexoPaciente", datos.sexo || "Sin registro");
 
-  document.getElementById("generoPaciente").innerText =
-    datos.genero || datos.identidadGenero || "Sin registro";
+  ponerTexto("generoPaciente", datos.genero || datos.identidadGenero || "Sin registro");
 
-  document.getElementById("alergiasPaciente").innerText =
-    datos.alergias || datos.datosInstitucionales?.alergias || "Sin registro";
+  ponerTexto("alergiasPaciente", datos.alergias || datos.datosInstitucionales?.alergias || "Sin registro");
 
-  document.getElementById("tipoSangrePaciente").innerText =
-    datos.tipoSangre || datos.datosInstitucionales?.tipoSangre || "Sin registro";
+  ponerTexto("tipoSangrePaciente", datos.tipoSangre || datos.datosInstitucionales?.tipoSangre || "Sin registro");
 
-  document.getElementById("pesoPaciente").innerText =
-    datos.peso || datos.signosVitales?.peso || datos.somatometria?.peso || datos.datosInstitucionales?.peso || "Sin registro";
+  ponerTexto("pesoPaciente", datos.peso || datos.signosVitales?.peso || datos.somatometria?.peso || datos.datosInstitucionales?.peso || "Sin registro");
 
-  document.getElementById("tallaPaciente").innerText =
-    datos.talla || datos.signosVitales?.talla || datos.somatometria?.talla || datos.datosInstitucionales?.talla || "Sin registro";
+  ponerTexto("tallaPaciente", datos.talla || datos.signosVitales?.talla || datos.somatometria?.talla || datos.datosInstitucionales?.talla || "Sin registro");
 
-  document.getElementById("perimetroAbdominalPaciente").innerText =
-    datos.perimetroAbdominal || datos.signosVitales?.perimetroAbdominal || datos.somatometria?.perimetroAbdominal || datos.datosInstitucionales?.perimetroAbdominal || "Sin registro";
+  ponerTexto("perimetroAbdominalPaciente", datos.perimetroAbdominal || datos.signosVitales?.perimetroAbdominal || datos.somatometria?.perimetroAbdominal || datos.datosInstitucionales?.perimetroAbdominal || "Sin registro");
 
-  document.getElementById("imcPaciente").innerText =
-    datos.imc || datos.signosVitales?.imc || datos.somatometria?.imc || datos.datosInstitucionales?.imc || "Sin registro";
+  ponerTexto("imcPaciente", datos.imc || datos.signosVitales?.imc || datos.somatometria?.imc || datos.datosInstitucionales?.imc || "Sin registro");
 
   actualizarEstanciaPaciente(datos);
   actualizarVisibilidadCamposInstitucionalesPaciente(datos);
-  inicializarSelectorVistaDatosGeneralesPaciente();
   renderizarVistaLaboratorioPaciente(datos);
   renderizarResumenPediatricoPaciente(datos);
 }

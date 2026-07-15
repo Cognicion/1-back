@@ -1,4 +1,4 @@
-import { MEDICAMENTOS_MAESTROS, MEDICAMENTOS_PRESENTACIONES } from "./data/medicamentos.js";
+import { MEDICAMENTOS_MAESTROS, MEDICAMENTOS_PRESENTACIONES, medicamentoPorTexto } from "./data/medicamentos.js";
 import { evaluarMedicamentosPaciente, obtenerIndicadorSeguridadMedicamento } from "./services/motorClinicoMedicamentos.js";
 
 const seleccionados = [];
@@ -160,6 +160,31 @@ function renderSeccion(titulo, items, tipo, vacio = "No se encontraron alertas e
   `;
 }
 
+function renderFichaMedicamento(medEvaluado) {
+  const ficha = medicamentoPorTexto(medEvaluado.textoOriginal || medEvaluado.nombre || medEvaluado.medicamento || "");
+  if (!ficha) {
+    return `<li>${escapar(medEvaluado.textoOriginal || "Medicamento no identificado en catálogo maestro")}</li>`;
+  }
+  const lista = (titulo, valores = []) => {
+    const items = (valores || []).filter(Boolean).slice(0, 4);
+    return items.length ? `<p><b>${titulo}:</b> ${escapar(items.join("; "))}</p>` : "";
+  };
+  return `
+    <li>
+      <strong>${escapar(ficha.nombre)}</strong>
+      <small>${escapar(ficha.clase || "Medicamento")}</small>
+      ${ficha.brandNames?.length ? `<p><b>Marcas:</b> ${escapar(ficha.brandNames.slice(0, 6).join(", "))}</p>` : ""}
+      ${ficha.dosisHabitual ? `<p><b>Dosis habitual:</b> ${escapar(ficha.dosisHabitual)}</p>` : ""}
+      ${ficha.mecanismoAccion ? `<p><b>Mecanismo:</b> ${escapar(ficha.mecanismoAccion)}</p>` : ""}
+      ${ficha.vidaMedia ? `<p><b>Vida media:</b> ${escapar(ficha.vidaMedia)}</p>` : ""}
+      ${lista("Indicaciones", ficha.indicaciones || ficha.indications)}
+      ${lista("Contraindicaciones", ficha.contraindicaciones || ficha.contraindications)}
+      ${lista("Precaución", ficha.precauciones || ficha.precautions)}
+      ${lista("Efectos adversos", ficha.efectosAdversos)}
+    </li>
+  `;
+}
+
 function datosFaltantes(paciente, evaluacion) {
   const faltantes = [];
   const textosDx = evaluacion.textosDiagnosticosEvaluados || [];
@@ -198,7 +223,7 @@ function renderResumen(evaluacion, indicador, paciente) {
     </article>
     <details class="farmaco-details" open>
       <summary>Medicamentos evaluados</summary>
-      <ul>${medicamentosUnicos.map((med) => `<li>${escapar(med.textoOriginal)}</li>`).join("") || "<li>Sin medicamentos evaluados.</li>"}</ul>
+      <ul>${medicamentosUnicos.map(renderFichaMedicamento).join("") || "<li>Sin medicamentos evaluados.</li>"}</ul>
     </details>
     <details class="farmaco-details">
       <summary>Diagnósticos y comorbilidades considerados</summary>

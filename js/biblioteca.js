@@ -4,7 +4,8 @@ import { MEDICAMENTOS_MAESTROS, normalizarNombreMedicamento, textoMedicamentoPar
 import { CIE10 } from "./data/cie10.js";
 import { CIE11 } from "./data/cie11.js";
 import { CRITERIOS_DIAGNOSTICOS, PSICOEDUCACION } from "./data/bibliotecaClinica.js";
-import { CRITERIOS_DIAGNOSTICOS_EXTENDIDOS } from "./data/diagnosticosClinicosExtendidos.js";
+import { CRITERIOS_DIAGNOSTICOS_EXTENDIDOS, GRUPOS_CIE10_BIBLIOTECA } from "./data/diagnosticosClinicosExtendidos.js";
+import { obtenerGrupoCie10 } from "./data/vinculosClinicos.js";
 import { iniciarMonitoreoSesion } from "./services/sesion.js";
 
 import {
@@ -13,6 +14,7 @@ import {
 
 let tabActual = "diagnosticos";
 let filtro = "";
+let grupoCie10Actual = "todos";
 const CRITERIOS_BIBLIOTECA = [...CRITERIOS_DIAGNOSTICOS, ...CRITERIOS_DIAGNOSTICOS_EXTENDIDOS];
 const ADMIN_UID = "NQ0CU5PSDBUgVrk56sjPEVhOs2D3";
 const ROLES_ADMIN_VALIDOS = new Set([
@@ -94,6 +96,17 @@ document.getElementById("buscadorBiblioteca").addEventListener("input", (e) => {
   render();
 });
 
+const selectorGrupoCie10 = document.getElementById("grupoCie10Biblioteca");
+if (selectorGrupoCie10) {
+  selectorGrupoCie10.innerHTML = GRUPOS_CIE10_BIBLIOTECA.map((grupo) =>
+    `<option value="${grupo.id}">${grupo.etiqueta}</option>`
+  ).join("");
+  selectorGrupoCie10.addEventListener("change", (e) => {
+    grupoCie10Actual = e.target.value || "todos";
+    render();
+  });
+}
+
 document.querySelectorAll("[data-tab]").forEach((btn) => {
   btn.addEventListener("click", () => {
     tabActual = btn.dataset.tab;
@@ -104,6 +117,22 @@ document.querySelectorAll("[data-tab]").forEach((btn) => {
 
 function coincide(texto) {
   return !filtro || normalizarNombreMedicamento(texto).includes(filtro);
+}
+
+function coincideGrupoCie10(codigo = "") {
+  if (grupoCie10Actual === "todos") return true;
+  return obtenerGrupoCie10(codigo).id === grupoCie10Actual;
+}
+
+function listaResumen(titulo, items = [], limite = 6) {
+  const valores = (items || []).filter(Boolean).slice(0, limite);
+  if (!valores.length) return "";
+  return `
+    <div class="dato-clinico">
+      <strong>${titulo}</strong>
+      <ul>${valores.map((item) => `<li>${item}</li>`).join("")}</ul>
+    </div>
+  `;
 }
 
 function render() {
@@ -117,9 +146,15 @@ function render() {
           <h3>${m.nombre}</h3>
           <span class="tag">${m.clase}</span>
           <p><strong>Dosis habitual:</strong> ${m.dosisHabitual}</p>
+          ${m.brandNames?.length ? `<p><strong>Marcas comerciales:</strong> ${m.brandNames.slice(0, 8).join(", ")}</p>` : ""}
           <p><strong>Presentaciones:</strong> ${(m.presentaciones || []).slice(0, 4).map((p) => p.texto).join("; ") || "Sin presentaciones cargadas"}</p>
           ${m.especialidades?.length ? `<p><strong>Áreas:</strong> ${m.especialidades.join(", ")}</p>` : ""}
-          ${m.contraindications?.length ? `<p><strong>Contraindicaciones clave:</strong> ${m.contraindications.slice(0, 3).join("; ")}</p>` : ""}
+          ${m.mecanismoAccion ? `<p><strong>Mecanismo de acción:</strong> ${m.mecanismoAccion}</p>` : ""}
+          ${m.vidaMedia ? `<p><strong>Vida media:</strong> ${m.vidaMedia}</p>` : ""}
+          ${listaResumen("Indicaciones", m.indicaciones || m.indications)}
+          ${listaResumen("Contraindicaciones", m.contraindicaciones || m.contraindications)}
+          ${listaResumen("Tener precaución en", m.precauciones || m.precautions)}
+          ${listaResumen("Efectos adversos frecuentes o relevantes", m.efectosAdversos)}
           ${m.monitoring?.length ? `<p><strong>Monitoreo:</strong> ${m.monitoring.slice(0, 4).join(", ")}</p>` : ""}
           <p>${m.notas}</p>
           <p class="muted">Contenido de apoyo clínico. Validar contra ficha técnica, protocolos locales y juicio profesional.</p>
@@ -147,17 +182,22 @@ function render() {
   ];
 
   const tarjetasCriterios = CRITERIOS_BIBLIOTECA
-    .filter((dx) => coincide(`${dx.codigo} ${dx.nombre} ${dx.categoria} ${dx.criterios.join(" ")}`))
+    .filter((dx) => coincideGrupoCie10(dx.codigo))
+    .filter((dx) => coincide(`${dx.codigo} ${dx.nombre} ${dx.categoria} ${dx.criterios.join(" ")} ${(dx.farmacosContraindicados || []).join(" ")} ${(dx.farmacosPrecaucion || []).join(" ")}`))
     .map((dx) => `
       <article class="card">
         <h3>${dx.nombre}</h3>
         <span class="tag">${dx.codigo} · ${dx.categoria}</span>
         <ul>${dx.criterios.map((c) => `<li>${c}</li>`).join("")}</ul>
-        <p><strong>Psicoeducacion:</strong> ${dx.psicoeducacion}</p>
+        <p><strong>Psicoeducación:</strong> ${dx.psicoeducacion}</p>
+        ${listaResumen("Medicamentos contraindicados o a evitar", dx.farmacosContraindicados)}
+        ${listaResumen("Medicamentos con precaución relativa", dx.farmacosPrecaucion)}
+        ${dx.notaFarmacologica ? `<p><strong>Nota farmacológica:</strong> ${dx.notaFarmacologica}</p>` : ""}
       </article>
     `);
 
   const tarjetasCatalogo = catalogo
+    .filter((dx) => dx.catalogo !== "CIE-10" || coincideGrupoCie10(dx.codigo))
     .filter((dx) => coincide(`${dx.codigo} ${dx.nombre} ${dx.catalogo}`))
     .slice(0, 80)
     .map((dx) => `

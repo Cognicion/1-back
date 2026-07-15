@@ -538,6 +538,9 @@ function normalizarMedicamentoBase(medicamento, origen = "catalogo_legacy") {
     warnings: medicamento.warnings || medicamento.precautions || [],
     monitoring: medicamento.monitoring || [],
     interactions: medicamento.interactions || [],
+    mecanismoAccion: medicamento.mecanismoAccion || medicamento.mechanismOfAction || "",
+    vidaMedia: medicamento.vidaMedia || medicamento.halfLife || "",
+    efectosAdversos: medicamento.efectosAdversos || medicamento.adverseEffects || [],
     notas: medicamento.notas || "",
     references: medicamento.references || ["Validar contra ficha técnica institucional vigente."],
     active: medicamento.active !== false,
@@ -590,6 +593,7 @@ function unirMedicamentos(medicamentos) {
 
   return Array.from(indice.values())
     .filter((medicamento) => medicamento.active)
+    .map(enriquecerMedicamentoClinico)
     .sort((a, b) => a.nombre.localeCompare(b.nombre, "es"));
 }
 
@@ -612,6 +616,12 @@ export function textoMedicamentoParaBusqueda(medicamento) {
     ...(medicamento.synonyms || []),
     ...(medicamento.presentaciones || []).map((presentacion) => presentacion.texto),
     medicamento.dosisHabitual,
+    medicamento.mecanismoAccion,
+    medicamento.vidaMedia,
+    ...(medicamento.indicaciones || medicamento.indications || []),
+    ...(medicamento.contraindicaciones || medicamento.contraindications || []),
+    ...(medicamento.precauciones || medicamento.precautions || []),
+    ...(medicamento.efectosAdversos || []),
     medicamento.notas
   ].flat().filter(Boolean).join(" ");
 }

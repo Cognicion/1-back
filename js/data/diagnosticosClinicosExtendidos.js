@@ -1,3 +1,5 @@
+import { enriquecerDiagnosticoClinico, GRUPOS_CIE10_BIBLIOTECA } from "./vinculosClinicos.js";
+
 const DX = [
   ["F00", "Demencia en la enfermedad de Alzheimer"],
   ["F01", "Demencia vascular"],
@@ -131,7 +133,9 @@ function categoriaPorCodigo(codigo = "") {
   return "Clínica general";
 }
 
-export const CRITERIOS_DIAGNOSTICOS_EXTENDIDOS = DX.map(([codigo, nombre]) => ({
+export { GRUPOS_CIE10_BIBLIOTECA };
+
+export const CRITERIOS_DIAGNOSTICOS_EXTENDIDOS = DX.map(([codigo, nombre]) => enriquecerDiagnosticoClinico({
   codigo,
   nombre,
   categoria: categoriaPorCodigo(codigo),
@@ -144,4 +148,3 @@ export const CRITERIOS_DIAGNOSTICOS_EXTENDIDOS = DX.map(([codigo, nombre]) => ({
   psicoeducacion: "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
   fuente: "CIE-10 / resumen clínico orientativo local"
 }));
-
