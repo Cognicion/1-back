@@ -659,7 +659,7 @@ function renderizarEscalaNotaSeleccionada() {
       return `
         <div class="item-escala-nota">
           <label>${index + 1}. ${escaparHTML(textoItemEscala(item))}
-            <input data-item-escala-nota="${index}" type="number" min="${item.min ? 0}" max="${item.max ? ""}" step="${item.step || 1}" placeholder="${item.min ? 0}-${item.max ? ""}">
+            <input data-item-escala-nota="${index}" type="number" min="${item.min !== undefined ? 0 : ""}" max="${item.max !== undefined ? item.max : ""}" step="${item.step || 1}" placeholder="${item.min !== undefined || item.max !== undefined ? `${item.min !== undefined ? 0 : ""}-${item.max !== undefined ? item.max : ""}` : ""}">
           </label>
           <small>${escaparHTML(item.dominio || "")}${item.max !== undefined ? ` - Máximo ${escaparHTML(item.max)}` : ""}${item.ayuda ? ` - ${escaparHTML(item.ayuda)}` : ""}</small>
         </div>
@@ -684,8 +684,11 @@ function renderizarEscalaNotaSeleccionada() {
 function obtenerOpcionesEscalaNota(escala, item) {
   if (Array.isArray(item.opciones) && item.opciones.length) {
     return item.opciones.map((opcion, opcionIndex) => {
-      if (typeof opcion === "object") return { texto: opcion.texto ? String(opcion.valor ? opcionIndex), valor: Number(opcion.valor ? opcionIndex) };
-      return { texto: String(opcion), valor: Number(item.valores?.[opcionIndex] ? opcionIndex) };
+      if (typeof opcion === "object") return {
+        texto: opcion.texto ? String(opcion.texto) : String(opcionIndex),
+        valor: Number(opcion.valor !== undefined ? opcion.valor : opcionIndex)
+      };
+      return { texto: String(opcion), valor: Number(item.valores?.[opcionIndex] ? opcionIndex : opcion) };
     });
   }
   return obtenerOpcionesItemEscala(escala, item);
@@ -795,7 +798,7 @@ async function guardarEscalaDesdeNota() {
     origen: "nota_clinica",
     modoAplicacion: esInteractiva ? "aplicacion_interactiva" : "captura_resultado_previo",
     puntajeTotal: puntaje,
-    puntajeMaximo: escala.puntajeMaximo ? "",
+    puntajeMaximo: escala.puntajeMaximo ? escala.puntajeMaximo : "",
     dominiosEvaluados: escala.dominiosEvaluados || [],
     puntajesPorDominio,
     rango: escala.rango,
@@ -822,7 +825,7 @@ async function guardarEscalaDesdeNota() {
     nombreEscala: escala.nombre,
     fechaAplicacion,
     puntajeTotal: puntaje,
-    puntajeMaximo: escala.puntajeMaximo ? "",
+    puntajeMaximo: escala.puntajeMaximo ? escala.puntajeMaximo : "",
     interpretacion,
     observaciones
   }), idEscalaAplicada);
