@@ -670,7 +670,8 @@ const SIGNOS_VITALES_LAB = {
     etiqueta: "PA",
     titulo: "Presión arterial",
     rutas: ["presionArterial", "signosVitales.presionArterial", "datosInstitucionales.presionArterial"],
-    unidad: "mmHg"
+    unidad: "mmHg",
+    tipo: "presion"
   },
   frecuenciaCardiaca: {
     etiqueta: "FC",
@@ -683,6 +684,18 @@ const SIGNOS_VITALES_LAB = {
     titulo: "Saturación O2",
     rutas: ["saturacionO2", "saturacionOxigeno", "signosVitales.saturacionO2", "signosVitales.saturacionOxigeno"],
     unidad: "%"
+  },
+  frecuenciaRespiratoria: {
+    etiqueta: "FR",
+    titulo: "Frecuencia respiratoria",
+    rutas: ["frecuenciaRespiratoria", "signosVitales.frecuenciaRespiratoria", "datosInstitucionales.frecuenciaRespiratoria"],
+    unidad: "rpm"
+  },
+  temperatura: {
+    etiqueta: "Temp",
+    titulo: "Temperatura",
+    rutas: ["temperatura", "signosVitales.temperatura", "datosInstitucionales.temperatura"],
+    unidad: "°C"
   },
   imc: {
     etiqueta: "IMC",
@@ -732,6 +745,7 @@ function renderizarGaugeVital(clave, datos = {}) {
       <strong>${escaparHTML(valor)}</strong>
       <div class="lab-gauge-actions">
         <button type="button" onclick="registrarSignoVitalPaciente('${clave}')">Registrar</button>
+        <button type="button" onclick="registrarSignoVitalPaciente('${clave}', { previo: true })">Previo</button>
         <button type="button" onclick="abrirHistorialSignoVitalPaciente('${clave}')">Curva</button>
       </div>
     </div>
@@ -810,8 +824,13 @@ function renderizarVistaLaboratorioPaciente(datos = datosPacienteActual || {}) {
         </div>
         ${renderizarGaugeVital("presionArterial", datos)}
         ${renderizarGaugeVital("frecuenciaCardiaca", datos)}
+        ${renderizarGaugeVital("frecuenciaRespiratoria", datos)}
+        ${renderizarGaugeVital("temperatura", datos)}
         ${renderizarGaugeVital("saturacionO2", datos)}
         ${renderizarGaugeVital("imc", datos)}
+      </div>
+      <div class="lab-vitales-global-actions">
+        <button type="button" onclick="abrirGraficaGlobalSignosVitalesPaciente()">Ver gráfica de signos vitales</button>
       </div>
 
       <div class="lab-info-grid">
