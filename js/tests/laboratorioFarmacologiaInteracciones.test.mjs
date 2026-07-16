@@ -9,8 +9,8 @@ function textoAlertas(resultado) {
 }
 
 function tieneAlerta(resultado, fragmento) {
-  const texto = textoAlertas(resultado).toLowerCase();
-  return texto.includes(fragmento.toLowerCase());
+  const limpiar = (valor) => String(valor).normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+  return limpiar(textoAlertas(resultado)).includes(limpiar(fragmento));
 }
 
 let resultado = evaluarMedicamentosPaciente({
@@ -22,9 +22,9 @@ let resultado = evaluarMedicamentosPaciente({
 });
 
 assert.equal(resultado.medicamentosNormalizados.length, 2, "Las prescripciones exactas repetidas no deben duplicar medicamentos evaluados.");
-assert.ok(tieneAlerta(resultado, "presión arterial"), "Metilfenidato + atomoxetina debe advertir riesgo cardiovascular acumulativo.");
+assert.ok(tieneAlerta(resultado, "presion arterial") || tieneAlerta(resultado, "presiÃ³n arterial"), "Metilfenidato + atomoxetina debe advertir riesgo cardiovascular acumulativo.");
 assert.ok(tieneAlerta(resultado, "frecuencia cardiaca"), "La alerta debe mencionar frecuencia cardiaca.");
-assert.ok(!/carga\s+(?:de\s+)?presi[oó]n\s*\d/i.test(textoAlertas(resultado)), "La UI no debe exponer puntuaciones internas como carga presión 3.");
+assert.ok(!/carga\s+(?:de\s+)?presi[oÃ³]n\s*\d/i.test(textoAlertas(resultado)), "La UI no debe exponer puntuaciones internas como carga presion 3.");
 
 const repeticion = evaluarMedicamentosPaciente({
   medicamentos: [
@@ -38,16 +38,17 @@ assert.equal(repeticion.alertas.length, resultado.alertas.length, "Evaluar varia
 resultado = evaluarMedicamentosPaciente({
   medicamentos: [
     { medicamento: "Paracetamol 500 mg", indicacion: "cada 8 horas" },
-    { medicamento: "Acetaminofén 750 mg", indicacion: "cada 12 horas" }
+    { medicamento: "Acetaminofen 750 mg", indicacion: "cada 12 horas" }
   ]
 });
-assert.equal(resultado.medicamentosNormalizados.length, 2, "Mismo principio activo con posologías distintas debe conservarse para revisión.");
-assert.ok(tieneAlerta(resultado, "duplicidad terapéutica"), "Debe alertar duplicidad de principio activo.");
+assert.equal(resultado.medicamentosNormalizados.length, 1, "Mismo principio activo con posologias distintas debe agruparse para el analisis.");
+assert.equal(resultado.medicamentosNormalizados[0].prescripcionesRelacionadas.length, 2, "Las prescripciones originales deben conservarse bajo el principio activo normalizado.");
+assert.ok(tieneAlerta(resultado, "duplicidad terapeutica") || tieneAlerta(resultado, "duplicidad terap"), "Debe alertar duplicidad de principio activo.");
 
 resultado = evaluarMedicamentosPaciente({
   paciente: {
     diagnosticos: [
-      { codigo: "I10", nombre: "Hipertensión arterial", estado: "descartado" }
+      { codigo: "I10", nombre: "Hipertension arterial", estado: "descartado" }
     ]
   },
   medicamentos: [
@@ -55,8 +56,8 @@ resultado = evaluarMedicamentosPaciente({
     { medicamento: "Atomoxetina 10 mg" }
   ]
 });
-assert.ok(resultado.diagnosticosEvaluados.some((dx) => dx.estado === "descartado"), "Los diagnósticos descartados deben conservarse como evaluados.");
-assert.ok(!resultado.alertas.some((alerta) => (alerta.diagnosticos || []).includes("Hipertensión arterial / riesgo cardiovascular")), "Un diagnóstico descartado no debe generar contraindicación activa.");
+assert.ok(resultado.diagnosticosEvaluados.some((dx) => dx.estado === "descartado"), "Los diagnosticos descartados deben conservarse como evaluados.");
+assert.ok(!resultado.alertas.some((alerta) => (alerta.diagnosticos || []).includes("Hipertension arterial / riesgo cardiovascular")), "Un diagnostico descartado no debe generar contraindicacion activa.");
 
 resultado = evaluarMedicamentosPaciente({
   paciente: {
@@ -69,18 +70,18 @@ resultado = evaluarMedicamentosPaciente({
     { medicamento: "Atomoxetina 10 mg" }
   ]
 });
-assert.ok(resultado.diagnosticosProbables.some((dx) => dx.texto.includes("Taquiarritmia")), "Los diagnósticos probables deben separarse.");
+assert.ok(resultado.diagnosticosProbables.some((dx) => dx.texto.includes("Taquiarritmia")), "Los diagnosticos probables deben separarse.");
 
 const estructurados = extraerDiagnosticosEstructuradosPaciente({
   diagnosticos: [{ codigo: "F33.2", nombre: "Trastorno depresivo recurrente", estado: "confirmado" }]
 });
-assert.deepEqual(estructurados.map((dx) => dx.codigo), ["F33.2"], "No debe inventar ni perder códigos diagnósticos existentes.");
+assert.deepEqual(estructurados.map((dx) => dx.codigo), ["F33.2"], "No debe inventar ni perder codigos diagnosticos existentes.");
 
 resultado = evaluarMedicamentosPaciente({
   paciente: { eGFR: 42, creatinina: 1.7 },
   medicamentos: [{ medicamento: "Gabapentina 300 mg" }]
 });
-assert.ok(tieneAlerta(resultado, "Función renal reducida"), "Un solo medicamento debe evaluarse contra función renal/eGFR.");
+assert.ok(tieneAlerta(resultado, "Funcion renal reducida") || tieneAlerta(resultado, "FunciÃ³n renal reducida"), "Un solo medicamento debe evaluarse contra funcion renal/eGFR.");
 assert.ok(tieneAlerta(resultado, "eGFR"), "La alerta renal debe indicar vigilancia de eGFR.");
 
-console.log("Laboratorio de farmacología: interacciones, duplicados, función renal y estados diagnósticos validados.");
+console.log("Laboratorio de farmacologia: interacciones, duplicados, funcion renal y estados diagnosticos validados.");

@@ -262,6 +262,7 @@ function renderAlerta(item, tipo = "alerta") {
     <article class="interaccion-card ${severidadClase(item.severidad || item.nivel || "")}">
       <strong>${escapar(item.titulo || item.nombre || "Alerta clínica")}</strong>
       <p><b>Medicamentos:</b> ${escapar((item.medicamentos || []).join(" + ") || "No especificados")}</p>
+      ${item.presentacionesOriginales?.length ? `<p><b>Prescripciones originales:</b> ${escapar(item.presentacionesOriginales.join(" + "))}</p>` : ""}
       ${item.diagnosticos?.length ? `<p><b>Diagnóstico/comorbilidad:</b> ${escapar(item.diagnosticos.join(", "))}</p>` : ""}
       ${item.mecanismo ? `<p><b>Mecanismo:</b> ${escapar(textoVisible(item.mecanismo))}</p>` : ""}
       <p>${escapar(item.efecto || item.descripcion || "")}</p>
@@ -333,11 +334,17 @@ function renderFichaMedicamento(medEvaluado) {
     ficha.ajusteHepatico ? `Ajuste hepático: ${ficha.ajusteHepatico}` : ""
   ]);
   const vigilancia = unir(ficha.monitoring || ficha.monitorizacion || [], ficha.parametrosVigilancia || []);
+  const presentacionesDetectadas = unir(medEvaluado.prescripcionesRelacionadas || [], medEvaluado.textoOriginal ? [medEvaluado.textoOriginal] : []);
+  const presentacionesFicha = unir(
+    ficha.farmacologia?.presentaciones?.map((item) => [item.formaFarmaceutica, item.concentracion, item.unidad, item.via].filter(Boolean).join(" ")) || [],
+    ficha.presentaciones?.map((item) => item.texto || item) || []
+  );
   if (ficha.estadoFuente !== "verificada_local") {
     return `
       <li>
         <strong>${valor(ficha.nombre)}</strong>
         <small>${valor(ficha.clase || "Medicamento")}</small>
+        ${lista("Presentaciones detectadas", presentacionesDetectadas)}
         ${campo("Dosis de catálogo (no verificada en fuente farmacológica)", ficha.dosisHabitual)}
         ${campo("Vida media", "fuente pendiente")}
         ${campo("Metabolismo/CYP", "fuente pendiente")}
@@ -350,6 +357,8 @@ function renderFichaMedicamento(medEvaluado) {
     <li>
       <strong>${valor(ficha.nombre)}</strong>
       <small>${valor(ficha.clase || "Medicamento")}</small>
+      ${lista("Presentaciones detectadas", presentacionesDetectadas)}
+      ${lista("Presentaciones de referencia", presentacionesFicha)}
       ${ficha.brandNames?.length ? campo("Marcas", ficha.brandNames.slice(0, 6).join(", ")) : ""}
       ${campo("Dosis habitual", ficha.dosisHabitual)}
       ${campo("Rango de dosis", ficha.rangoDosis)}

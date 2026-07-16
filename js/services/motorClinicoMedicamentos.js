@@ -103,7 +103,7 @@ function patronNegado(texto, patron) {
 function textoMedicamento(medicamento) {
   if (!medicamento) return "";
   if (typeof medicamento === "string") return medicamento;
-  return [
+  return [...new Set([
     medicamento.medicamento,
     medicamento.genericName,
     medicamento.nombreGenerico,
@@ -116,7 +116,7 @@ function textoMedicamento(medicamento) {
     medicamento.texto,
     medicamento.indicacion,
     medicamento.presentacion
-  ].filter(Boolean).join(" ");
+  ].filter(Boolean).map((valor) => String(valor).trim()))].join(" ");
 }
 
 function normalizarClaseTerapeutica(clase) {
@@ -397,6 +397,7 @@ function crearAlerta(base) {
     prioridad: SEVERIDAD_ORDEN[severidad] || 3,
     titulo: base.titulo,
     medicamentos: base.medicamentos || [],
+    presentacionesOriginales: base.presentacionesOriginales || [],
     diagnosticos: base.diagnosticos || [],
     mecanismo: base.mecanismo || "Mecanismo no especificado en la regla local",
     efecto: base.efecto || "",
@@ -477,7 +478,16 @@ function deduplicarMedicamentosParaAnalisis(medicamentosNormalizados = []) {
     grupo.push(med);
     gruposPrincipio.set(clave, grupo);
   });
+
+  const medicamentosPorPrincipio = [];
   gruposPrincipio.forEach((grupo, clave) => {
+    const prescripcionesRelacionadas = [...new Set(grupo.flatMap((med) => med.prescripcionesRelacionadas || [med.textoOriginal]))];
+    medicamentosPorPrincipio.push({
+      ...grupo[0],
+      textoOriginal: grupo[0].nombresIngredientes?.join(" + ") || grupo[0].textoOriginal,
+      prescripcionesRelacionadas,
+      posologiasRelacionadas: [...new Set(grupo.map((med) => med.posologiaNormalizada).filter(Boolean))]
+    });
     if (grupo.length > 1) alertasDuplicidad.push(crearAlertaDuplicidad(clave, grupo, false));
   });
 
@@ -490,7 +500,7 @@ function deduplicarMedicamentosParaAnalisis(medicamentosNormalizados = []) {
     ["opioide", "opioides"]
   ]);
   clasesConDuplicidadClinica.forEach((etiqueta, clase) => {
-    const grupo = medicamentosUnicos.filter((med) => med.clases.includes(clase));
+    const grupo = medicamentosPorPrincipio.filter((med) => med.clases.includes(clase));
     const principios = new Set(grupo.flatMap((med) => med.ingredienteIds));
     if (grupo.length < 2 || principios.size < 2) return;
     alertasDuplicidad.push(crearAlerta({
@@ -508,7 +518,15 @@ function deduplicarMedicamentosParaAnalisis(medicamentosNormalizados = []) {
     }));
   });
 
-  return { medicamentosUnicos, alertasDuplicidad };
+  return { medicamentosUnicos: medicamentosPorPrincipio, alertasDuplicidad };
+}
+
+function nombresNormalizadosAlerta(...medicamentos) {
+  return medicamentos.map((med) => med.nombresIngredientes?.join(" + ") || med.textoOriginal);
+}
+
+function presentacionesOriginalesAlerta(...medicamentos) {
+  return [...new Set(medicamentos.flatMap((med) => med.prescripcionesRelacionadas || [med.textoOriginal]).filter(Boolean))];
 }
 export function evaluarMedicamentoContraDiagnosticos(medicamentosNormalizados = [], contextoDiagnostico) {
   const alertas = [];
@@ -619,12 +637,38 @@ export function evaluarInteraccionesClinicas(medicamentosNormalizados = []) {
           ...regla,
           id: `${regla.id}:${[medA.textoNormalizado, medB.textoNormalizado].sort().join("|")}`,
           tipo: regla.evidencia === "potencial" ? "interaccion_farmacocinetica_inferida" : "interaccion_medicamento_medicamento",
-          medicamentos: [medA.textoOriginal, medB.textoOriginal]
+          medicamentos: nombresNormalizadosAlerta(medA, medB),
+          presentacionesOriginales: presentacionesOriginalesAlerta(medA, medB)
         }));
       });
     }
   }
   return alertas;
+}
+
+function evaluarInteraccionesMultifarmaco(medicamentosNormalizados = []) {
+  const tieneSraa = medicamentosNormalizados.some((med) => med.clases.includes("ieca") || med.clases.includes("ara2"));
+  const tieneDiuretico = medicamentosNormalizados.some((med) => med.clases.includes("diuretico"));
+  const tieneAine = medicamentosNormalizados.some((med) => med.clases.includes("aine"));
+  if (!tieneSraa || !tieneDiuretico || !tieneAine) return [];
+  const implicados = medicamentosNormalizados.filter((med) =>
+    med.clases.includes("ieca") || med.clases.includes("ara2") || med.clases.includes("diuretico") || med.clases.includes("aine")
+  );
+  return [crearAlerta({
+    id: `triple_whammy:${implicados.map((med) => med.ingredienteIds.join("+") || med.id).sort().join("|")}`,
+    tipo: "interaccion_medicamento_medicamento",
+    severidad: "alta",
+    titulo: "Triple whammy: AINE + diuretico + IECA/ARA-II",
+    medicamentos: nombresNormalizadosAlerta(...implicados),
+    presentacionesOriginales: presentacionesOriginalesAlerta(...implicados),
+    mecanismo: "AINE reduce vasodilatacion aferente mediada por prostaglandinas, IECA/ARA-II reducen tono eferente y el diuretico puede reducir volumen intravascular.",
+    efecto: "Riesgo aumentado de lesion renal aguda, deterioro de funcion renal, hiperpotasemia e hipotension.",
+    recomendacion: "Evitar la combinacion cuando sea posible; si es inevitable, usar el menor tiempo y monitorizar creatinina/eGFR, potasio, presion arterial e hidratacion.",
+    parametrosVigilancia: ["Creatinina", "eGFR", "Potasio", "Presion arterial", "Estado de hidratacion"],
+    evidencia: "documentada_en_guias_y_etiquetado",
+    confianza: "alta",
+    fuentes: ["DailyMed: advertencias renales de AINEs e interacciones con IECA/ARA-II/diureticos; guias clinicas recomiendan evitar triple whammy cuando sea posible."]
+  })];
 }
 
 export function evaluarRiesgosAcumulativos(medicamentosNormalizados = []) {
@@ -749,6 +793,7 @@ export function evaluarMedicamentosPaciente({ paciente = {}, medicamentos = [], 
     ...alertasDuplicidad,
     ...evaluarMedicamentoContraDiagnosticos(medicamentosNormalizados, contextoDiagnostico),
     ...evaluarInteraccionesClinicas(medicamentosNormalizados),
+    ...evaluarInteraccionesMultifarmaco(medicamentosNormalizados),
     ...evaluarRiesgosAcumulativos(medicamentosNormalizados),
     ...evaluarAlergiasPaciente(medicamentosNormalizados, paciente),
     ...evaluarContextoDirectoPaciente(medicamentosNormalizados, paciente)

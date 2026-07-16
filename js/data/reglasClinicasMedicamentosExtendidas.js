@@ -32,12 +32,33 @@ function unirPorId(base = [], extra = []) {
 }
 
 const INGREDIENTES_EXTRA = [
+  { id: "captopril", nombre: "Captopril", sinonimos: ["captopril", "capoten", "captopril tabletas", "captopril 25 mg", "captopril 50 mg"], clases: ["ieca"], riesgos: { potasio: 1, renal: 1, hipotension: 1 } },
+  { id: "lisinopril", nombre: "Lisinopril", sinonimos: ["lisinopril", "prinivil", "zestril"], clases: ["ieca"], riesgos: { potasio: 1, renal: 1, hipotension: 1 } },
+  { id: "valsartan", nombre: "Valsartan", sinonimos: ["valsartan", "valsartÃ¡n", "diovan"], clases: ["ara2"], riesgos: { potasio: 1, renal: 1, hipotension: 1 } },
+  { id: "telmisartan", nombre: "Telmisartan", sinonimos: ["telmisartan", "telmisartÃ¡n", "micardis"], clases: ["ara2"], riesgos: { potasio: 1, renal: 1, hipotension: 1 } },
+  { id: "hidroclorotiazida", nombre: "Hidroclorotiazida", sinonimos: ["hidroclorotiazida", "hydrochlorothiazide", "hctz"], clases: ["diuretico", "tiazida"], riesgos: { renal: 1, hipotension: 1, potasio_bajo: 1 } },
+  { id: "metformina", nombre: "Metformina", sinonimos: ["metformina", "metformin"], clases: ["hipoglucemiante", "biguanida"], riesgos: { renal: 1, glucosa: 1 } },
+  { id: "insulina", nombre: "Insulina", sinonimos: ["insulina", "insulin", "glargina", "lispro", "aspart"], clases: ["hipoglucemiante", "insulina"], riesgos: { glucosa: 2 } },
+  { id: "atorvastatina", nombre: "Atorvastatina", sinonimos: ["atorvastatina", "atorvastatin", "lipitor"], clases: ["estatina", "sustrato_cyp3a4"], riesgos: { hepatotoxico: 1, muscular: 1 } },
+  { id: "rosuvastatina", nombre: "Rosuvastatina", sinonimos: ["rosuvastatina", "rosuvastatin", "crestor"], clases: ["estatina"], riesgos: { renal: 1, muscular: 1 } },
+  { id: "acido_acetilsalicilico", nombre: "Acido acetilsalicilico", sinonimos: ["acido acetilsalicilico", "Ã¡cido acetilsalicÃ­lico", "aspirina", "aspirin", "asa"], clases: ["antiagregante", "aine"], riesgos: { sangrado: 2, renal: 1 } },
+  { id: "clopidogrel", nombre: "Clopidogrel", sinonimos: ["clopidogrel", "plavix"], clases: ["antiagregante", "sustrato_cyp2c19"], riesgos: { sangrado: 2 } },
+  { id: "apixaban", nombre: "Apixaban", sinonimos: ["apixaban", "apixabÃ¡n", "eliquis"], clases: ["anticoagulante", "sustrato_cyp3a4", "sustrato_pgp"], riesgos: { sangrado: 3, renal: 1 } },
+  { id: "omeprazol", nombre: "Omeprazol", sinonimos: ["omeprazol", "omeprazole"], clases: ["ibp", "inhibidor_cyp2c19"], riesgos: {} },
+  { id: "pantoprazol", nombre: "Pantoprazol", sinonimos: ["pantoprazol", "pantoprazole"], clases: ["ibp"], riesgos: {} },
+  { id: "paracetamol", nombre: "Paracetamol", sinonimos: ["paracetamol", "acetaminofen", "acetaminofÃ©n", "acetaminophen", "tylenol"], clases: ["analgesico"], riesgos: { hepatotoxico: 1 } },
+  { id: "naproxeno", nombre: "Naproxeno", sinonimos: ["naproxeno", "naproxen", "aleve"], clases: ["aine"], riesgos: { sangrado: 2, renal: 2, cardiovascular: 1 } },
+  { id: "diclofenaco", nombre: "Diclofenaco", sinonimos: ["diclofenaco", "diclofenac"], clases: ["aine"], riesgos: { sangrado: 2, renal: 2, cardiovascular: 1, hepatotoxico: 1 } },
+  { id: "prednisona", nombre: "Prednisona", sinonimos: ["prednisona", "prednisone"], clases: ["corticoide"], riesgos: { glucosa: 2, metabolico: 1, cardiovascular: 1 } },
+  { id: "dexametasona", nombre: "Dexametasona", sinonimos: ["dexametasona", "dexamethasone"], clases: ["corticoide"], riesgos: { glucosa: 2, metabolico: 1, cardiovascular: 1 } },
   { id: "enalapril", nombre: "Enalapril", sinonimos: ["enalapril", "enalapril maleato", "maleato de enalapril"], clases: ["ieca"], riesgos: { potasio: 1, renal: 1, hipotension: 1 } },
   { id: "losartan", nombre: "Losartán", sinonimos: ["losartan", "losartán", "losartan potasico", "losartán potásico", "cozaar"], clases: ["ara2"], riesgos: { potasio: 1, renal: 1, hipotension: 1 } },
   { id: "aliskiren", nombre: "Aliskirén", sinonimos: ["aliskiren", "aliskirén", "rasilez", "tekturna"], clases: ["inhibidor_renina"], riesgos: { potasio: 1, renal: 1, hipotension: 1 } },
   { id: "alprazolam", nombre: "Alprazolam", sinonimos: ["alprazolam", "tafil", "xanax"], clases: ["benzodiacepina", "depresor_snc", "sustrato_cyp3a4"], riesgos: { sedacion: 2, respiratorio: 1, caidas: 2 } },
   { id: "midazolam", nombre: "Midazolam", sinonimos: ["midazolam"], clases: ["benzodiacepina", "depresor_snc", "sustrato_cyp3a4"], riesgos: { sedacion: 3, respiratorio: 2, caidas: 2 } },
   { id: "paroxetina", nombre: "Paroxetina", sinonimos: ["paroxetina", "paxil"], clases: ["isrs", "serotoninergico", "inhibidor_cyp2d6"], riesgos: { sangrado: 1, sedacion: 1, anticolinergico: 1 } },
+  { id: "fluoxetina", nombre: "Fluoxetina", sinonimos: ["fluoxetina", "prozac"], clases: ["isrs", "serotoninergico", "inhibidor_cyp2d6"], riesgos: { sangrado: 1 } },
+  { id: "escitalopram", nombre: "Escitalopram", sinonimos: ["escitalopram", "lexapro"], clases: ["isrs", "serotoninergico"], riesgos: { sangrado: 1, qt: 1 } },
   { id: "fluvoxamina", nombre: "Fluvoxamina", sinonimos: ["fluvoxamina", "luvox"], clases: ["isrs", "serotoninergico", "inhibidor_cyp1a2", "inhibidor_cyp3a4"], riesgos: { sangrado: 1 } },
   { id: "venlafaxina", nombre: "Venlafaxina", sinonimos: ["venlafaxina", "efexor"], clases: ["irsn", "serotoninergico"], riesgos: { qt: 1, sangrado: 1, presion: 2 } },
   { id: "duloxetina", nombre: "Duloxetina", sinonimos: ["duloxetina", "cymbalta"], clases: ["irsn", "serotoninergico", "inhibidor_cyp2d6"], riesgos: { sangrado: 1, hepatotoxico: 1 } },
@@ -56,6 +77,8 @@ const INGREDIENTES_EXTRA = [
   { id: "selegilina", nombre: "Selegilina", sinonimos: ["selegilina"], clases: ["imao"], riesgos: { serotoninergico: 3, presion: 2 } },
   { id: "fenelzina", nombre: "Fenelzina", sinonimos: ["fenelzina", "phenelzine"], clases: ["imao"], riesgos: { serotoninergico: 3, presion: 2 } },
   { id: "lamotrigina", nombre: "Lamotrigina", sinonimos: ["lamotrigina", "lamictal"], clases: ["antiepileptico", "estabilizador_animo"], riesgos: { dermatologico: 2 } },
+  { id: "valproato", nombre: "Valproato", sinonimos: ["valproato", "acido valproico", "Ã¡cido valproico", "divalproex", "valproic"], clases: ["antiepileptico", "estabilizador_animo", "inhibidor_ugt"], riesgos: { hepatotoxico: 2, dermatologico: 1 } },
+  { id: "carbamazepina", nombre: "Carbamazepina", sinonimos: ["carbamazepina", "tegretol"], clases: ["antiepileptico", "estabilizador_animo", "inductor_cyp3a4", "inductor_enzimatico"], riesgos: { sedacion: 1, sodio: 2, dermatologico: 2 } },
   { id: "fenitoina", nombre: "Fenitoína", sinonimos: ["fenitoina", "fenitoína", "phenytoin"], clases: ["antiepileptico", "inductor_cyp3a4"], riesgos: { sedacion: 1, teratogenico: 1 } },
   { id: "topiramato", nombre: "Topiramato", sinonimos: ["topiramato", "topamax"], clases: ["antiepileptico"], riesgos: { sedacion: 1, cognitivo: 2, renal: 1 } },
   { id: "pregabalina", nombre: "Pregabalina", sinonimos: ["pregabalina", "lyrica"], clases: ["gabapentinoide", "depresor_snc"], riesgos: { sedacion: 2, respiratorio: 1, caidas: 2 } },
@@ -89,6 +112,8 @@ const INGREDIENTES_EXTRA = [
 ];
 
 const DX_EXTRA = [
+  { id: "enfermedad_renal_cronica", nombre: "Enfermedad renal cronica / insuficiencia renal", categoria: "funcion_renal", sinonimos: ["renal", "i13", "i13 enfermedad cardiaca y renal hipertensiva", "enfermedad cardiaca y renal hipertensiva", "enfermedad renal", "insuficiencia renal", "lesion renal aguda", "lesion renal", "aki", "erc", "enfermedad renal cronica"] },
+  { id: "insuficiencia_cardiaca", nombre: "Insuficiencia cardiaca / enfermedad cardiovascular", categoria: "cardiovascular", sinonimos: ["insuficiencia cardiaca", "i50", "enfermedad cardiovascular", "cardiovascular", "cardiopatia", "cardiopatia hipertensiva", "i13"] },
   { id: "hipertension_no_controlada", nombre: "Hipertensión arterial / riesgo cardiovascular", categoria: "hipertension", sinonimos: ["hipertension", "hipertensión", "hipertension arterial", "hipertensión arterial", "hta", "presion alta", "presión alta", "riesgo cardiovascular", "cardiopatia", "cardiopatía", "taquiarritmia"] },
   { id: "lactancia", nombre: "Lactancia", categoria: "lactancia", sinonimos: ["lactancia", "amamantando", "puerperio con lactancia"] },
   { id: "adulto_mayor_fragil", nombre: "Adulto mayor / fragilidad", categoria: "adulto_mayor", sinonimos: ["adulto mayor", "anciano", "fragilidad", "alto riesgo de caidas", "riesgo de caídas"] },
@@ -100,6 +125,48 @@ const DX_EXTRA = [
 ];
 
 const MED_DX_EXTRA = [
+  {
+    id: "sraa_funcion_renal_i13",
+    clases: ["ieca", "ara2", "inhibidor_renina"],
+    diagnosticoCategoria: "funcion_renal",
+    severidad: "alta",
+    titulo: "Bloqueador del SRAA en enfermedad renal/cardiaca hipertensiva",
+    mecanismo: "IECA/ARA-II modifican la hemodinamia glomerular y pueden elevar potasio o creatinina, especialmente con enfermedad renal, hipovolemia, diureticos, AINEs o bloqueo dual.",
+    efecto: "Aumenta la necesidad de vigilancia renal/electrolitica y de presion arterial.",
+    recomendacion: "Confirmar indicacion, evitar bloqueo dual rutinario y monitorizar potasio, creatinina, eGFR y presion arterial al inicio y tras ajustes.",
+    parametrosVigilancia: ["Potasio", "Creatinina", "eGFR", "Presion arterial"],
+    evidencia: "etiquetado_oficial_y_regla_clinica",
+    confianza: "alta",
+    fuentes: ["DailyMed: etiquetas de IECA/ARA-II advierten hipotension, hiperpotasemia y cambios de funcion renal, especialmente con bloqueo dual del SRAA."]
+  },
+  {
+    id: "diuretico_funcion_renal_i13",
+    clase: "diuretico",
+    diagnosticoCategoria: "funcion_renal",
+    severidad: "moderada",
+    titulo: "Diuretico en enfermedad renal/cardiaca hipertensiva",
+    mecanismo: "Los diureticos modifican volumen intravascular, presion arterial y electrolitos; el riesgo aumenta con SRAA o AINEs.",
+    efecto: "Puede aparecer hipotension, deterioro renal o alteraciones de sodio/potasio.",
+    recomendacion: "Vigilar peso/balance, presion arterial, creatinina/eGFR, sodio y potasio.",
+    parametrosVigilancia: ["Presion arterial", "Creatinina", "eGFR", "Sodio", "Potasio"],
+    evidencia: "etiquetado_oficial_y_regla_clinica",
+    confianza: "moderada",
+    fuentes: ["DailyMed: etiquetas de diureticos describen cambios de volumen, electrolitos y funcion renal."]
+  },
+  {
+    id: "aine_funcion_renal_i13_ext",
+    clase: "aine",
+    diagnosticoCategoria: "funcion_renal",
+    severidad: "alta",
+    titulo: "AINE en enfermedad renal/cardiaca hipertensiva",
+    mecanismo: "La inhibicion de prostaglandinas por AINEs puede reducir perfusion renal y antagonizar efecto antihipertensivo.",
+    efecto: "Mayor riesgo de lesion renal aguda, retencion de liquidos, hipertension o hiperpotasemia, sobre todo con IECA/ARA-II y diureticos.",
+    recomendacion: "Evitar uso sostenido si es posible; si se usa, limitar duracion y monitorizar creatinina/eGFR, potasio y presion arterial.",
+    parametrosVigilancia: ["Creatinina", "eGFR", "Potasio", "Presion arterial", "Edema"],
+    evidencia: "etiquetado_oficial_y_regla_clinica",
+    confianza: "alta",
+    fuentes: ["DailyMed: etiquetas de AINEs advierten toxicidad renal, eventos cardiovasculares y reduccion de respuesta a antihipertensivos."]
+  },
   { id: "isrs_bipolaridad", clase: "isrs", diagnosticoCategoria: "bipolaridad", severidad: "moderada", titulo: "Antidepresivo en antecedente bipolar", efecto: "Los antidepresivos pueden asociarse a viraje afectivo o inestabilidad si no hay cobertura estabilizadora en pacientes vulnerables.", recomendacion: "Tamizar historia de manía/hipomanía, documentar justificación y vigilar activación, insomnio o irritabilidad." },
   { id: "serotoninergico_hiponatremia", clase: "serotoninergico", diagnosticoCategoria: "sodio", severidad: "moderada", titulo: "Serotoninérgico en hiponatremia", efecto: "ISRS/IRSN pueden contribuir a SIADH e hiponatremia, sobre todo en adultos mayores o con diuréticos.", recomendacion: "Valorar sodio basal y seguimiento clínico/laboratorial." },
   { id: "gabapentinoide_renal", clase: "gabapentinoide", diagnosticoCategoria: "funcion_renal", severidad: "moderada", titulo: "Gabapentinoide con función renal reducida", efecto: "Gabapentina/pregabalina se eliminan principalmente por vía renal y pueden acumularse.", recomendacion: "Ajustar dosis según eGFR y vigilar sedación, mareo y caídas." },
@@ -162,6 +229,62 @@ const MED_DX_EXTRA = [
 ];
 
 const INTERACCIONES_EXTRA = [
+  {
+    id: "sraa_aine_riesgo_renal",
+    clasesA: ["ieca", "ara2"],
+    clasesB: ["aine"],
+    severidad: "alta",
+    titulo: "IECA/ARA-II + AINE: riesgo renal y perdida de efecto antihipertensivo",
+    mecanismo: "El bloqueo eferente del SRAA combinado con inhibicion de prostaglandinas por AINE puede reducir filtracion glomerular; los AINEs tambien pueden atenuar el efecto antihipertensivo.",
+    efecto: "Mayor riesgo de lesion renal aguda, hiperpotasemia, elevacion de creatinina, edema o descontrol de presion arterial.",
+    recomendacion: "Evitar AINE sostenido si es posible. Si se usa, limitar duracion y vigilar creatinina/eGFR, potasio y presion arterial.",
+    parametrosVigilancia: ["Creatinina", "eGFR", "Potasio", "Presion arterial", "Edema"],
+    evidencia: "documentada_en_etiquetado",
+    confianza: "alta",
+    fuentes: ["DailyMed: etiquetas de AINEs e IECA/ARA-II describen deterioro renal, hiperpotasemia y menor respuesta antihipertensiva."]
+  },
+  {
+    id: "serotoninergico_antitrombotico_sangrado",
+    clasesA: ["isrs", "irsn"],
+    clasesB: ["antiagregante", "anticoagulante"],
+    severidad: "moderada",
+    titulo: "ISRS/IRSN + antiagregante/anticoagulante",
+    mecanismo: "Los serotoninergicos pueden disminuir captacion plaquetaria de serotonina y aumentar tendencia a sangrado; el riesgo se suma con antiagregantes o anticoagulantes.",
+    efecto: "Aumenta riesgo de sangrado gastrointestinal u otros sangrados.",
+    recomendacion: "Valorar indicacion, antecedente de sangrado, gastroproteccion si procede y vigilancia de sangrado; monitorizar INR si warfarina.",
+    parametrosVigilancia: ["Sangrado", "Melena/hematemesis", "Hemoglobina si riesgo", "INR si warfarina"],
+    evidencia: "documentada",
+    confianza: "moderada",
+    fuentes: ["Etiquetas FDA/DailyMed de ISRS/IRSN advierten aumento de sangrado con AINEs, aspirina, warfarina u otros anticoagulantes."]
+  },
+  {
+    id: "valproato_lamotrigina_rash",
+    ingredientesA: ["valproato"],
+    ingredientesB: ["lamotrigina"],
+    severidad: "alta",
+    titulo: "Valproato + lamotrigina",
+    mecanismo: "Valproato inhibe el metabolismo de lamotrigina y aumenta su exposicion.",
+    efecto: "Mayor riesgo de rash grave, incluyendo SJS/TEN, especialmente durante titulacion.",
+    recomendacion: "Usar esquema de titulacion de lamotrigina reducido para valproato, educar sobre rash y suspender/valorar de inmediato ante lesiones cutaneas.",
+    parametrosVigilancia: ["Rash", "Fiebre/mucosas", "Titulacion"],
+    evidencia: "documentada_en_etiquetado",
+    confianza: "alta",
+    fuentes: ["DailyMed: etiqueta de lamotrigina advierte que valproato aumenta concentraciones de lamotrigina y riesgo de rash grave."]
+  },
+  {
+    id: "carbamazepina_induccion_enzimatica",
+    ingredientesA: ["carbamazepina"],
+    clasesB: ["sustrato_cyp3a4", "anticoagulante", "anticonceptivo_hormonal", "antipsicotico"],
+    severidad: "moderada",
+    titulo: "Carbamazepina: induccion enzimatica",
+    mecanismo: "Carbamazepina induce CYP3A4 y otras enzimas/transportadores, reduciendo exposicion de multiples sustratos.",
+    efecto: "Puede reducir eficacia de farmacos sensibles, incluidos anticonceptivos, anticoagulantes directos y algunos psicofarmacos.",
+    recomendacion: "Revisar cada sustrato, considerar alternativas o ajuste con monitorizacion clinica/laboratorial.",
+    parametrosVigilancia: ["Eficacia clinica", "Niveles si disponibles", "Sangrado/trombosis si anticoagulante"],
+    evidencia: "documentada_en_etiquetado",
+    confianza: "alta",
+    fuentes: ["DailyMed: etiqueta de carbamazepina describe autoinduccion e induccion de CYP3A4 con interacciones amplias."]
+  },
   {
     id: "olanzapina_risperidona_polifarmacia",
     ingredientesA: ["olanzapina"],
@@ -253,7 +376,7 @@ const INTERACCIONES_EXTRA = [
   { id: "betabloqueador_verapamilo_diltiazem", clasesA: ["betabloqueador", "betabloqueador_no_selectivo"], clasesB: ["calcioantagonista_no_dhp"], severidad: "alta", titulo: "Betabloqueador + verapamilo/diltiazem", efecto: "Aumenta riesgo de bradicardia, bloqueo AV e hipotensión.", recomendacion: "Evitar o monitorizar FC, PA y ECG si se justifica." },
   { id: "litio_ieca_ara", ingredientesA: ["litio"], clasesB: ["ieca", "ara2"], severidad: "alta", titulo: "Litio + IECA/ARA-II", efecto: "Puede aumentar niveles de litio y toxicidad renal/neurológica.", recomendacion: "Monitorizar litio, creatinina y estado de hidratación." },
   { id: "litio_deshidratante", ingredientesA: ["litio"], clasesB: ["diuretico"], severidad: "alta", titulo: "Litio + diurético", efecto: "Puede elevar niveles de litio, especialmente con depleción de sodio o volumen.", recomendacion: "Evitar si es posible o monitorizar niveles y función renal." },
-  { id: "espironolactona_ieca_ara", clasesA: ["ahorrador_potasio"], clasesB: ["ieca", "ara2"], severidad: "alta", titulo: "Ahorrador de potasio + IECA/ARA-II", efecto: "Aumenta riesgo de hiperpotasemia.", recomendacion: "Controlar potasio y función renal; evitar si K+ elevado." },
+  { id: "espironolactona_ieca_ara", clasesA: ["ahorrador_potasio"], clasesB: ["ieca", "ara2"], severidad: "alta", titulo: "Ahorrador de potasio + IECA/ARA-II", mecanismo: "Espironolactona reduce excrecion de potasio y el bloqueo SRAA reduce aldosterona; la combinacion aumenta hiperpotasemia y deterioro renal.", efecto: "Aumenta riesgo de hiperpotasemia y deterioro de funcion renal.", recomendacion: "Controlar potasio, creatinina y eGFR; evitar si K+ elevado o funcion renal inestable.", parametrosVigilancia: ["Potasio", "Creatinina", "eGFR", "Presion arterial"], evidencia: "documentada_en_etiquetado", confianza: "alta", fuentes: ["DailyMed: etiquetas de espironolactona e IECA/ARA-II advierten hiperpotasemia con farmacos que aumentan potasio o bloquean SRAA."] },
   { id: "metotrexato_trimethoprim", ingredientesA: ["metotrexato"], ingredientesB: ["trimetoprim"], severidad: "critica", titulo: "Metotrexato + trimetoprim/sulfametoxazol", efecto: "Riesgo de mielosupresión grave por efecto antifolato aditivo.", recomendacion: "Evitar combinación salvo indicación especializada.", requiereJustificacion: true },
   { id: "metotrexato_aine", ingredientesA: ["metotrexato"], clasesB: ["aine"], severidad: "alta", titulo: "Metotrexato + AINE", efecto: "Puede aumentar toxicidad de metotrexato, sobre todo con dosis altas o función renal reducida.", recomendacion: "Vigilar función renal, biometría hemática y signos de toxicidad." },
   { id: "azatioprina_alopurinol", ingredientesA: ["azatioprina"], ingredientesB: ["alopurinol"], severidad: "critica", titulo: "Azatioprina + alopurinol", efecto: "Riesgo de mielosupresión grave por aumento de metabolitos activos.", recomendacion: "Evitar o ajustar drásticamente con control especializado.", requiereJustificacion: true },
@@ -261,7 +384,7 @@ const INTERACCIONES_EXTRA = [
   { id: "rifampicina_anticonceptivo", ingredientesA: ["rifampicina"], clasesB: ["anticonceptivo_hormonal"], severidad: "alta", titulo: "Rifampicina + anticonceptivo hormonal", efecto: "Puede disminuir eficacia anticonceptiva.", recomendacion: "Indicar método alternativo/no hormonal durante y después del tratamiento." },
   { id: "amiodarona_digoxina", ingredientesA: ["amiodarona"], ingredientesB: ["digoxina"], severidad: "alta", titulo: "Amiodarona + digoxina", efecto: "Puede aumentar niveles de digoxina y bradicardia.", recomendacion: "Reducir dosis de digoxina según criterio clínico y monitorizar niveles/ECG." },
   { id: "warfarina_isrs", ingredientesA: ["warfarina"], clasesB: ["isrs", "irsn"], severidad: "moderada", titulo: "Warfarina + ISRS/IRSN", efecto: "Puede aumentar riesgo de sangrado por efecto plaquetario y/o interacciones metabólicas.", recomendacion: "Vigilar INR, sangrado y necesidad de gastroprotección." },
-  { id: "nsaid_isrs", clasesA: ["aine"], clasesB: ["isrs", "irsn"], severidad: "moderada", titulo: "AINE + ISRS/IRSN", efecto: "Aumenta riesgo de sangrado gastrointestinal.", recomendacion: "Evitar uso prolongado, valorar gastroprotección y vigilar sangrado." },
+  { id: "nsaid_isrs", clasesA: ["aine"], clasesB: ["isrs", "irsn"], severidad: "moderada", titulo: "AINE + ISRS/IRSN", mecanismo: "Los serotoninergicos pueden alterar funcion plaquetaria y los AINEs aumentan lesion/sangrado gastrointestinal.", efecto: "Aumenta riesgo de sangrado gastrointestinal.", recomendacion: "Evitar uso prolongado, valorar gastroproteccion y vigilar sangrado.", parametrosVigilancia: ["Melena/hematemesis", "Equimosis/sangrado", "Hemoglobina si riesgo", "Dolor epigastrico"], evidencia: "documentada_en_etiquetado", confianza: "moderada", fuentes: ["DailyMed: etiquetas de ISRS/IRSN advierten sangrado con AINEs/aspirina/anticoagulantes; etiquetas de AINEs advierten sangrado GI."] },
   { id: "clozapina_depresor_snc", ingredientesA: ["clozapina"], clasesB: ["depresor_snc"], severidad: "moderada", titulo: "Clozapina + depresor del SNC", efecto: "Puede aumentar sedación, hipotensión y riesgo respiratorio.", recomendacion: "Ajustar dosis, vigilar estado de alerta y signos respiratorios." }
 ];
 
