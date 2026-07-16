@@ -3077,47 +3077,116 @@ function obtenerHistorialSignoVital(datos = {}, clave = "") {
   return Array.isArray(historial) ? historial : [];
 }
 
-function valorNumericoParaGrafica(valor = "") {
-  if (String(valor).includes("/")) return numeroDesdeTexto(String(valor).split("/")[0]);
+function fechaHoraLocalParaInput(fecha = new Date()) {
+  const d = fecha instanceof Date ? fecha : new Date(fecha);
+  if (Number.isNaN(d.getTime())) return "";
+  const pad = (valor) => String(valor).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+function isoDesdeFechaHoraLocal(valor = "") {
+  const fecha = valor ? new Date(valor) : new Date();
+  return Number.isNaN(fecha.getTime()) ? new Date().toISOString() : fecha.toISOString();
+}
+
+function fechaRegistroSigno(registro = {}) {
+  const fecha = new Date(registro.fecha || registro.fechaToma || registro.creadoEn || "");
+  return Number.isNaN(fecha.getTime()) ? null : fecha;
+}
+
+function parsearPresionArterial(valor = "") {
+  const partes = String(valor || "").match(/(\d{2,3})\s*\/\s*(\d{2,3})/);
+  if (!partes) return { sistolica: null, diastolica: null };
+  return {
+    sistolica: Number(partes[1]),
+    diastolica: Number(partes[2])
+  };
+}
+
+function valorNumericoParaGrafica(valor = "", clave = "") {
+  if (clave === "presionArterial") return parsearPresionArterial(valor).sistolica;
   return numeroDesdeTexto(valor);
 }
 
-function construirGraficaSignoVital(registros = []) {
-  const puntos = registros
-    .map((registro, index) => ({ index, valor: valorNumericoParaGrafica(registro.valor) }))
-    .filter((punto) => Number.isFinite(punto.valor) && punto.valor > 0);
-  if (puntos.length < 2) {
+function puntosSerieSigno(clave, registros = [], opciones = {}) {
+  const componente = opciones.componente || "";
+  return registros
+    .map((registro, index) => {
+      const fecha = fechaRegistroSigno(registro);
+      let valor = valorNumericoParaGrafica(registro.valor, clave);
+      if (clave === "presionArterial" && componente) {
+        valor = parsearPresionArterial(registro.valor)[componente];
+      }
+      return { index, fecha, valor, texto: registro.valor || "", nota: registro.nota || "" };
+    })
+    .filter((punto) => punto.fecha && Number.isFinite(punto.valor) && punto.valor > 0)
+    .sort((a, b) => a.fecha - b.fecha);
+}
+
+function construirGraficaSeriesSignos(series = [], opciones = {}) {
+  const visibles = series.filter((serie) => serie.puntos.length);
+  const puntos = visibles.flatMap((serie) => serie.puntos);
+  if (!puntos.length || visibles.every((serie) => serie.puntos.length < 2)) {
     return `<div class="historial-signo-vacio">Se necesitan al menos dos registros numéricos para dibujar la curva.</div>`;
   }
-  const ancho = 720;
-  const alto = 260;
-  const margen = 36;
+
+  const ancho = opciones.ancho || 840;
+  const alto = opciones.alto || 300;
+  const margen = 42;
+  const minFecha = Math.min(...puntos.map((p) => p.fecha.getTime()));
+  const maxFecha = Math.max(...puntos.map((p) => p.fecha.getTime()));
   const min = Math.min(...puntos.map((p) => p.valor));
   const max = Math.max(...puntos.map((p) => p.valor));
-  const rango = Math.max(max - min, 1);
-  const ultimoIndice = Math.max(...puntos.map((p) => p.index), 1);
-  const coords = puntos.map((punto) => {
-    const x = margen + (punto.index / ultimoIndice) * (ancho - margen * 2);
-    const y = alto - margen - ((punto.valor - min) / rango) * (alto - margen * 2);
-    return `${x.toFixed(1)},${y.toFixed(1)}`;
-  }).join(" ");
+  const rangoValor = Math.max(max - min, 1);
+  const rangoTiempo = Math.max(maxFecha - minFecha, 1);
+  const xPunto = (punto, serie) => {
+    if (rangoTiempo > 1) return margen + ((punto.fecha.getTime() - minFecha) / rangoTiempo) * (ancho - margen * 2);
+    const divisor = Math.max(serie.puntos.length - 1, 1);
+    return margen + (punto.index / divisor) * (ancho - margen * 2);
+  };
+  const yPunto = (punto) => alto - margen - ((punto.valor - min) / rangoValor) * (alto - margen * 2);
+  const paleta = ["#22d3ee", "#f97316", "#a78bfa", "#10b981", "#f43f5e", "#eab308", "#38bdf8"];
+
   return `
-    <svg viewBox="0 0 ${ancho} ${alto}" class="historial-signo-svg" role="img" aria-label="Curva histórica del signo vital">
+    <svg viewBox="0 0 ${ancho} ${alto}" class="historial-signo-svg" role="img" aria-label="Curva histórica de signos vitales">
       <line x1="${margen}" y1="${alto - margen}" x2="${ancho - margen}" y2="${alto - margen}" />
       <line x1="${margen}" y1="${margen}" x2="${margen}" y2="${alto - margen}" />
-      <polyline points="${coords}" />
-      ${puntos.map((punto) => {
-        const x = margen + (punto.index / ultimoIndice) * (ancho - margen * 2);
-        const y = alto - margen - ((punto.valor - min) / rango) * (alto - margen * 2);
-        return `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="5"><title>${punto.valor}</title></circle>`;
-      }).join("")}
       <text x="${margen}" y="22">${max}</text>
       <text x="${margen}" y="${alto - 8}">${min}</text>
+      ${visibles.map((serie, serieIndex) => {
+        const color = serie.color || paleta[serieIndex % paleta.length];
+        const coords = serie.puntos.map((punto) => `${xPunto(punto, serie).toFixed(1)},${yPunto(punto).toFixed(1)}`).join(" ");
+        return `
+          <polyline points="${coords}" style="stroke:${color}" />
+          ${serie.puntos.map((punto) => `
+            <circle cx="${xPunto(punto, serie).toFixed(1)}" cy="${yPunto(punto).toFixed(1)}" r="4" style="stroke:${color}">
+              <title>${escaparHTML(serie.nombre)}: ${escaparHTML(String(punto.texto || punto.valor))} · ${escaparHTML(formatearFecha(punto.fecha.toISOString()))}</title>
+            </circle>
+          `).join("")}
+        `;
+      }).join("")}
     </svg>
+    <div class="historial-signo-leyenda">
+      ${visibles.map((serie, index) => `<span><i style="background:${serie.color || paleta[index % paleta.length]}"></i>${escaparHTML(serie.nombre)}</span>`).join("")}
+    </div>
   `;
 }
 
-window.registrarSignoVitalPaciente = async function(clave) {
+function construirGraficaSignoVital(clave, registros = []) {
+  if (clave === "presionArterial") {
+    return construirGraficaSeriesSignos([
+      { id: "pa_sistolica", nombre: "PA sistólica", puntos: puntosSerieSigno(clave, registros, { componente: "sistolica" }), color: "#22d3ee" },
+      { id: "pa_diastolica", nombre: "PA diastólica", puntos: puntosSerieSigno(clave, registros, { componente: "diastolica" }), color: "#f97316" }
+    ]);
+  }
+
+  const signo = SIGNOS_VITALES_LAB[clave] || {};
+  return construirGraficaSeriesSignos([
+    { id: clave, nombre: signo.titulo || clave, puntos: puntosSerieSigno(clave, registros), color: "#22d3ee" }
+  ]);
+}
+
+window.registrarSignoVitalPaciente = async function(clave, opciones = {}) {
   const signo = SIGNOS_VITALES_LAB[clave];
   if (!signo) return;
   const datos = datosPacienteActual || await obtenerUsuario(uidPaciente);
@@ -3125,6 +3194,11 @@ window.registrarSignoVitalPaciente = async function(clave) {
   const valor = prompt(`${signo.titulo}${signo.unidad ? ` (${signo.unidad})` : ""}:`, valorActual);
   if (valor === null) return;
   const nota = prompt("Nota clinica opcional para este valor:", "") || "";
+  const fechaToma = opciones.previo
+    ? prompt("Fecha y hora de toma (AAAA-MM-DDTHH:mm):", fechaHoraLocalParaInput())
+    : null;
+  if (opciones.previo && fechaToma === null) return;
+  const fechaRegistro = opciones.previo ? isoDesdeFechaHoraLocal(fechaToma) : new Date().toISOString();
   const historial = {
     ...(datos?.historialSignosVitales || {}),
     [clave]: [
@@ -3132,28 +3206,32 @@ window.registrarSignoVitalPaciente = async function(clave) {
       {
         valor: valor.trim(),
         nota: nota.trim(),
-        fecha: new Date().toISOString(),
+        fecha: fechaRegistro,
+        esPrevio: opciones.previo === true,
         uidRegistro: auth.currentUser?.uid || ""
       }
     ]
   };
   const actualizacion = {
-    [clave]: valor.trim(),
-    datosInstitucionales: {
-      ...(datos?.datosInstitucionales || {}),
-      [clave]: valor.trim()
-    },
-    signosVitales: {
-      ...(datos?.signosVitales || {}),
-      [clave]: valor.trim()
-    },
     historialSignosVitales: historial
   };
-  if (clave === "imc") {
-    actualizacion.somatometria = {
-      ...(datos?.somatometria || {}),
-      imc: valor.trim()
+
+  if (!opciones.previo) {
+    actualizacion[clave] = valor.trim();
+    actualizacion.datosInstitucionales = {
+      ...(datos?.datosInstitucionales || {}),
+      [clave]: valor.trim()
     };
+    actualizacion.signosVitales = {
+      ...(datos?.signosVitales || {}),
+      [clave]: valor.trim()
+    };
+    if (clave === "imc") {
+      actualizacion.somatometria = {
+        ...(datos?.somatometria || {}),
+        imc: valor.trim()
+      };
+    }
   }
   await actualizarUsuario(uidPaciente, actualizacion);
   await cargarDatosPaciente();
@@ -3183,7 +3261,7 @@ window.abrirHistorialSignoVitalPaciente = function(clave) {
         </div>
       </header>
       <div class="historial-signo-grafica">
-        ${construirGraficaSignoVital(registros)}
+        ${construirGraficaSignoVital(clave, registros)}
       </div>
       <div class="historial-signo-lista">
         ${registros.length ? registros.slice().reverse().map((registro) => `
@@ -3203,6 +3281,113 @@ window.abrirHistorialSignoVitalPaciente = function(clave) {
   });
   modal.querySelector("[data-ampliar-historial]")?.addEventListener("click", () => {
     modal.querySelector(".historial-signo-card")?.classList.toggle("amplia");
+  });
+};
+
+function rangoFechasSignosVitales(datos = {}) {
+  const fechas = Object.keys(SIGNOS_VITALES_LAB)
+    .flatMap((clave) => obtenerHistorialSignoVital(datos, clave))
+    .map(fechaRegistroSigno)
+    .filter(Boolean)
+    .sort((a, b) => a - b);
+  return {
+    inicio: fechas[0] ? fechas[0].toISOString().slice(0, 10) : "",
+    fin: fechas[fechas.length - 1] ? fechas[fechas.length - 1].toISOString().slice(0, 10) : ""
+  };
+}
+
+function seriesGlobalesSignosVitales(datos = {}, opciones = {}) {
+  const inicio = opciones.inicio ? new Date(`${opciones.inicio}T00:00:00`) : null;
+  const fin = opciones.fin ? new Date(`${opciones.fin}T23:59:59`) : null;
+  const incluir = new Set(opciones.incluir || []);
+  const tieneFiltroSeries = Array.isArray(opciones.incluir);
+  const filtrar = (puntos) => puntos.filter((punto) =>
+    (!inicio || punto.fecha >= inicio) &&
+    (!fin || punto.fecha <= fin)
+  );
+  const series = [];
+
+  Object.entries(SIGNOS_VITALES_LAB).forEach(([clave, signo]) => {
+    const registros = obtenerHistorialSignoVital(datos, clave);
+    if (clave === "presionArterial") {
+      [
+        ["pa_sistolica", "PA sistólica", "sistolica", "#22d3ee"],
+        ["pa_diastolica", "PA diastólica", "diastolica", "#f97316"]
+      ].forEach(([id, nombre, componente, color]) => {
+        if (tieneFiltroSeries && !incluir.has(id)) return;
+        series.push({ id, nombre, color, puntos: filtrar(puntosSerieSigno(clave, registros, { componente })) });
+      });
+      return;
+    }
+
+    if (tieneFiltroSeries && !incluir.has(clave)) return;
+    series.push({
+      id: clave,
+      nombre: signo.titulo,
+      puntos: filtrar(puntosSerieSigno(clave, registros))
+    });
+  });
+
+  return series;
+}
+
+function renderizarGraficaGlobalSignosVitales(modal, datos = {}) {
+  const contenedor = modal.querySelector("[data-grafica-global-signos]");
+  if (!contenedor) return;
+  const incluir = [...modal.querySelectorAll("[data-serie-signo]:checked")].map((check) => check.value);
+  const inicio = modal.querySelector("[data-signos-desde]")?.value || "";
+  const fin = modal.querySelector("[data-signos-hasta]")?.value || "";
+  const series = seriesGlobalesSignosVitales(datos, { incluir, inicio, fin });
+  contenedor.innerHTML = construirGraficaSeriesSignos(series, { ancho: 980, alto: 340 });
+}
+
+window.abrirGraficaGlobalSignosVitalesPaciente = function() {
+  const datos = datosPacienteActual || {};
+  const modalPrevio = document.getElementById("modalGraficaGlobalSignos");
+  modalPrevio?.remove();
+  const rango = rangoFechasSignosVitales(datos);
+  const opcionesSeries = [
+    ["pa_sistolica", "PA sistólica"],
+    ["pa_diastolica", "PA diastólica"],
+    ...Object.entries(SIGNOS_VITALES_LAB)
+      .filter(([clave]) => clave !== "presionArterial")
+      .map(([clave, signo]) => [clave, signo.titulo])
+  ];
+
+  const modal = document.createElement("div");
+  modal.id = "modalGraficaGlobalSignos";
+  modal.className = "historial-signo-overlay";
+  modal.innerHTML = `
+    <section class="historial-signo-card amplia" aria-label="Gráfica global de signos vitales">
+      <header>
+        <div>
+          <span>Signos vitales</span>
+          <h3>Gráfica global</h3>
+        </div>
+        <div class="historial-signo-actions">
+          <button type="button" data-cerrar-global-signos>×</button>
+        </div>
+      </header>
+      <div class="signos-global-controles">
+        <label>Desde<input type="date" data-signos-desde value="${escaparHTML(rango.inicio)}"></label>
+        <label>Hasta<input type="date" data-signos-hasta value="${escaparHTML(rango.fin)}"></label>
+        <div class="signos-global-series">
+          ${opcionesSeries.map(([id, nombre]) => `
+            <label><input type="checkbox" data-serie-signo value="${escaparHTML(id)}" checked> ${escaparHTML(nombre)}</label>
+          `).join("")}
+        </div>
+      </div>
+      <div class="historial-signo-grafica" data-grafica-global-signos></div>
+    </section>
+  `;
+  document.body.appendChild(modal);
+  renderizarGraficaGlobalSignosVitales(modal, datos);
+  modal.querySelector("[data-cerrar-global-signos]")?.addEventListener("click", () => modal.remove());
+  modal.addEventListener("click", (evento) => {
+    if (evento.target === modal) modal.remove();
+  });
+  modal.querySelectorAll("[data-serie-signo], [data-signos-desde], [data-signos-hasta]").forEach((control) => {
+    control.addEventListener("change", () => renderizarGraficaGlobalSignosVitales(modal, datos));
   });
 };
 

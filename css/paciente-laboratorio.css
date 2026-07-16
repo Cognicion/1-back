@@ -87,12 +87,13 @@
 
 
 .lab-metricas-sin-modelo {
-  grid-template-columns: repeat(5, minmax(130px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(118px, 1fr));
   margin-top: 8px;
+  gap: 10px;
 }
 
 .lab-metricas-sin-modelo .lab-gauge {
-  min-height: 104px;
+  min-height: 88px;
 }
 
 .lab-info-grid {
@@ -324,31 +325,32 @@
 }
 
 .lab-gauge {
-  padding: 18px;
+  padding: 12px;
 }
 
 .lab-gauge span {
   display: block;
   color: #8aa4bd;
-  font-size: 12px;
-  margin-bottom: 8px;
+  font-size: 11px;
+  margin-bottom: 4px;
 }
 
 .lab-gauge strong {
   color: #e0f7ff;
-  font-size: 22px;
+  font-size: 19px;
+  line-height: 1.15;
 }
 
 .lab-gauge-interactivo {
   display: grid;
   align-content: start;
-  gap: 8px;
+  gap: 7px;
 }
 
 .lab-gauge-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 7px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(62px, 1fr));
+  gap: 5px;
 }
 
 .lab-gauge-actions button,
@@ -361,7 +363,7 @@
   cursor: pointer;
   font-size: 11px;
   font-weight: 800;
-  padding: 7px 10px;
+  padding: 6px 8px;
 }
 
 .lab-gauge-actions button:hover,
@@ -372,8 +374,27 @@
 }
 
 .lab-gauge.principal strong {
-  font-size: 30px;
+  font-size: 24px;
   color: #67e8f9;
+}
+
+.lab-vitales-global-actions {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  justify-content: flex-end;
+  margin: 10px 0 2px;
+}
+
+.lab-vitales-global-actions button {
+  border: 1px solid rgba(103, 232, 249, 0.34);
+  border-radius: 999px;
+  color: #dff8ff;
+  background: rgba(14, 165, 233, 0.13);
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 800;
+  padding: 8px 12px;
 }
 
 .lab-info-grid {
@@ -551,6 +572,62 @@
   text-align: center;
 }
 
+.historial-signo-leyenda {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 10px;
+  color: #cbd5e1;
+  font-size: 12px;
+}
+
+.historial-signo-leyenda span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.historial-signo-leyenda i {
+  width: 12px;
+  height: 12px;
+  border-radius: 999px;
+}
+
+.signos-global-controles {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(150px, 220px)) minmax(260px, 1fr);
+  gap: 12px;
+  margin: 14px 0;
+  align-items: start;
+}
+
+.signos-global-controles label {
+  color: #9fb4c9;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.signos-global-controles input[type="date"] {
+  margin-top: 6px;
+  width: 100%;
+}
+
+.signos-global-series {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(135px, 1fr));
+  gap: 8px;
+  padding: 8px;
+  border: 1px solid rgba(103, 232, 249, 0.14);
+  border-radius: 14px;
+  background: rgba(15, 23, 42, 0.45);
+}
+
+.signos-global-series label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
 .historial-signo-lista {
   display: grid;
   gap: 10px;
@@ -604,6 +681,14 @@
   .datos-generales-encabezado,
   .lab-paciente-top {
     flex-direction: column;
+  }
+
+  .signos-global-controles {
+    grid-template-columns: 1fr;
+  }
+
+  .lab-gauge-actions {
+    grid-template-columns: 1fr;
   }
 
   .selector-vista-datos {
