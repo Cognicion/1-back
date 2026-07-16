@@ -1,4 +1,4 @@
-import { medicoPuedeVer } from "./services/usuarios.js";
+import { listarPacientes } from "./services/usuarios.js";
 import { iniciarMonitoreoSesion } from "./services/sesion.js";
 import { aplicarAparienciaGuardada, sincronizarAparienciaUsuario } from "./services/apariencia.js";
 
@@ -28,8 +28,17 @@ iniciarMonitoreoSesion("Panel medico");
 
 let pacientesGlobal = [];
 let uidMedicoActual = "";
+let rolUsuarioActual = "";
 let carpetasMedico = [];
 let ultimaRecargaPacientes = 0;
+const TAMANO_PAGINA_PACIENTES = 30;
+const TTL_CACHE_PACIENTES_MS = 45000;
+let pacientesVisiblesLimite = TAMANO_PAGINA_PACIENTES;
+let cachePacientesMedico = {
+  uid: "",
+  datos: [],
+  ultimaCarga: 0
+};
 const STORAGE_ORDEN_PACIENTES = "cognicion.medico.ordenPacientes";
 let ordenPacientesActual = cargarPreferenciaOrdenPacientes();
 const STORAGE_FILTRO_CARPETA = "cognicion.medico.filtroCarpeta";
@@ -112,7 +121,7 @@ onAuthStateChanged(auth, async (user) => {
 
   if (btnAdmin) {
     btnAdmin.style.display =
-      user.uid === ADMIN_UID ? "inline-flex" : "none";
+      user.uid === ADMIN_UID || rolUsuarioActual === "admin" ? "inline-flex" : "none";
   }
 
   console.log("UID del médico:", user.uid);
@@ -120,7 +129,10 @@ onAuthStateChanged(auth, async (user) => {
   const buscador = document.getElementById("buscadorPacientes");
 
   if (buscador) {
-    buscador.addEventListener("input", filtrarPacientes);
+    buscador.addEventListener("input", debounceMedico(() => {
+      reiniciarPaginacionPacientes();
+      filtrarPacientes();
+    }, 300));
   }
 
   const selectorOrden = document.getElementById("ordenPacientes");
@@ -130,9 +142,19 @@ onAuthStateChanged(auth, async (user) => {
     selectorOrden.addEventListener("change", () => {
       ordenPacientesActual = selectorOrden.value;
       guardarPreferenciaOrdenPacientes();
+      reiniciarPaginacionPacientes();
       filtrarPacientes();
     });
   }
+
+  document.getElementById("btnActualizarPacientes")?.addEventListener("click", () => {
+    cargarPacientes(uidMedicoActual, { forzar: true });
+  });
+
+  document.getElementById("cargarMasPacientes")?.addEventListener("click", () => {
+    pacientesVisiblesLimite += TAMANO_PAGINA_PACIENTES;
+    filtrarPacientes();
+  });
 
   inicializarFiltroAtencion();
   inicializarColumnasPacientes();
@@ -163,7 +185,7 @@ function inicializarPanelMedicoColapsable() {
 
 async function refrescarPacientesSiCorresponde() {
   if (!uidMedicoActual || document.hidden) return;
-  if (Date.now() - ultimaRecargaPacientes < 2500) return;
+  if (Date.now() - ultimaRecargaPacientes < TTL_CACHE_PACIENTES_MS) return;
 
   try {
     await cargarPacientes(uidMedicoActual, { silencioso: true });
@@ -196,6 +218,7 @@ async function cargarPerfilMedico(user) {
   }
 
   const datos = snapUsuario.data();
+  rolUsuarioActual = datos.rol || "";
 
   if (!["medico", "psicologo", "admin"].includes(datos.rol)) {
     alert("Acceso restringido al personal clínico.");
@@ -207,6 +230,14 @@ async function cargarPerfilMedico(user) {
     datos.nombre || "Médico sin nombre";
 
   return true;
+}
+
+function debounceMedico(fn, espera = 300) {
+  let temporizador = null;
+  return (...args) => {
+    window.clearTimeout(temporizador);
+    temporizador = window.setTimeout(() => fn(...args), espera);
+  };
 }
 
 function escaparHTML(valor) {
@@ -758,49 +789,50 @@ async function cargarPacientes(uidMedico, opciones = {}) {
   const lista = document.getElementById("listaPacientes");
   if (!opciones.silencioso && lista) lista.innerHTML = "Cargando pacientes...";
 
-  const refPacientes = collection(db, "usuarios");
-  const snapshot = await getDocs(refPacientes);
-  const siguienteExpedienteCognicion = crearGeneradorExpedienteCognicion(
-    snapshot.docs.map((documento) => documento.data())
-  );
+  try {
+    const ahora = Date.now();
+    const cacheVigente =
+      !opciones.forzar &&
+      cachePacientesMedico.uid === uidMedico &&
+      cachePacientesMedico.datos.length > 0 &&
+      ahora - cachePacientesMedico.ultimaCarga < TTL_CACHE_PACIENTES_MS;
 
-  pacientesGlobal = [];
-
-  for (const docPaciente of snapshot.docs) {
-    const datos = docPaciente.data();
-
-    if (datos.rol !== "paciente") continue;
-    if (datos.estado === "vinculado") continue;
-
-    const puedeVer = await medicoPuedeVer(uidMedico, docPaciente.id);
-
-    if (puedeVer) {
-      const expedienteCognicionActual = obtenerExpedienteCognicion(datos);
-
-      if (!expedienteCognicionActual) {
-        const expedienteCognicion = siguienteExpedienteCognicion();
-        try {
-          await updateDoc(doc(db, "usuarios", docPaciente.id), {
-            expedienteCognicion,
-            "datosInstitucionales.expedienteCognicion": expedienteCognicion
-          });
-          datos.expedienteCognicion = expedienteCognicion;
-          datos.datosInstitucionales = {
-            ...(datos.datosInstitucionales || {}),
-            expedienteCognicion
-          };
-        } catch (error) {
-          console.warn("No se pudo asignar expediente Cognicion:", error);
-        }
-      }
-
-      pacientesGlobal.push({
-        id: docPaciente.id,
-        ...datos
-      });
+    if (cacheVigente) {
+      pacientesGlobal = [...cachePacientesMedico.datos];
+      if (!opciones.conservarPagina) reiniciarPaginacionPacientes();
+      actualizarVistaPacientesCargados();
+      return;
     }
-  }
 
+    const uidConsulta = rolUsuarioActual === "admin" ? "" : uidMedico;
+    const snapshot = await listarPacientes(uidConsulta);
+
+    pacientesGlobal = deduplicarPacientes(snapshot.docs
+      .map((docPaciente) => ({
+        id: docPaciente.id,
+        ...docPaciente.data()
+      }))
+      .filter((paciente) => paciente.rol === "paciente")
+      .filter((paciente) => paciente.estado !== "vinculado"));
+
+    cachePacientesMedico = {
+      uid: uidMedico,
+      datos: [...pacientesGlobal],
+      ultimaCarga: Date.now()
+    };
+
+    if (!opciones.conservarPagina) reiniciarPaginacionPacientes();
+    actualizarVistaPacientesCargados();
+  } catch (error) {
+    console.error("No se pudo cargar la lista de pacientes:", error);
+    if (lista) {
+      lista.innerHTML = "No se pudo cargar la lista de pacientes. Usa Actualizar para intentar de nuevo.";
+    }
+    throw error;
+  }
+}
+
+function actualizarVistaPacientesCargados() {
   sincronizarCarpetasDesdePacientes();
   renderizarSelectorFiltroCarpetas();
   renderizarOpcionesCarpetasVisibles();
@@ -809,6 +841,21 @@ async function cargarPacientes(uidMedico, opciones = {}) {
   renderizarCarpetasInlineMedico();
   calcularEstadisticas(pacientesGlobal.filter((paciente) => !pacienteArchivadoParaMedico(paciente)));
   ultimaRecargaPacientes = Date.now();
+}
+
+function reiniciarPaginacionPacientes() {
+  pacientesVisiblesLimite = TAMANO_PAGINA_PACIENTES;
+}
+
+function actualizarBotonCargarMasPacientes(totalFiltrado = 0) {
+  const boton = document.getElementById("cargarMasPacientes");
+  if (!boton) return;
+
+  const faltanPacientes = totalFiltrado > pacientesVisiblesLimite;
+  boton.style.display = faltanPacientes ? "inline-flex" : "none";
+  boton.textContent = faltanPacientes
+    ? `Cargar mas pacientes (${Math.min(TAMANO_PAGINA_PACIENTES, totalFiltrado - pacientesVisiblesLimite)} de ${totalFiltrado - pacientesVisiblesLimite} restantes)`
+    : "Cargar mas pacientes";
 }
 
 function formatearDiagnostico(diagnostico) {
@@ -1466,8 +1513,10 @@ function filtrarPacientes() {
   });
 
   const ordenados = deduplicarPacientes(ordenarPacientes(filtrados));
-  mostrarPacientes(ordenados);
+  const pacientesPagina = ordenados.slice(0, pacientesVisiblesLimite);
+  mostrarPacientes(pacientesPagina);
   renderizarGraficasMedico(ordenados);
+  actualizarBotonCargarMasPacientes(ordenados.length);
 }
 
 function cargarPreferenciaOrdenPacientes() {

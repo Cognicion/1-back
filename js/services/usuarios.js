@@ -7,6 +7,8 @@ import {
     updateDoc,
     deleteDoc,
     collection,
+    collectionGroup,
+    documentId,
     getDocs,
     query,
     where,
@@ -68,6 +70,10 @@ export async function listarPacientes(uidMedico = ""){
         query(usuariosRef, where("medicosAutorizados","array-contains",uidMedico))
     );
 
+    consultas.push(
+        query(usuariosRef, where("medicosAutorizadosUid","array-contains",uidMedico))
+    );
+
     const resultados = await Promise.allSettled(
         consultas.map((consulta) => getDocs(consulta))
     );
@@ -90,6 +96,29 @@ export async function listarPacientes(uidMedico = ""){
 
     if (!pacientes.size && primerError && resultados.every((resultado) => resultado.status === "rejected")) {
         throw primerError;
+    }
+
+    try {
+        const permisosSnap = await getDocs(query(
+            collectionGroup(db, "permisosMedicos"),
+            where(documentId(), "==", uidMedico),
+            where("lectura", "==", true)
+        ));
+
+        const pacientesPorPermiso = await Promise.all(permisosSnap.docs.map(async (permisoDoc) => {
+            const pacienteRef = permisoDoc.ref.parent.parent;
+            if (!pacienteRef || pacientes.has(pacienteRef.id)) return null;
+            const pacienteSnap = await getDoc(pacienteRef);
+            if (!pacienteSnap.exists()) return null;
+            const datos = pacienteSnap.data();
+            return datos.rol === "paciente" ? pacienteSnap : null;
+        }));
+
+        pacientesPorPermiso
+            .filter(Boolean)
+            .forEach((pacienteSnap) => pacientes.set(pacienteSnap.id, pacienteSnap));
+    } catch (error) {
+        console.warn("No se pudieron consultar permisos medicos agrupados:", error);
     }
 
     const docs = Array.from(pacientes.values()).sort((a,b) => {

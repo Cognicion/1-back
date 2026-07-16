@@ -1025,6 +1025,12 @@ body.panel-medico-contraido .pestana-panel-medico {
   margin-top: 8px;
 }
 
+.acciones-paginacion-pacientes {
+  display: flex;
+  justify-content: center;
+  padding: 14px 0 4px;
+}
+
 .fila-paciente {
   overflow: hidden;
   border-radius: 10px;
