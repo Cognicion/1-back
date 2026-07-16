@@ -3946,6 +3946,7 @@ window.regresarDesdeNota = function() {
 };
 
 let contenedorPdfCognicionActivo = null;
+let manejadorAfterPrintCognicion = null;
 
 function clonarNodoPdfCognicion(nodo) {
   if (!nodo) return null;
@@ -3988,6 +3989,102 @@ function convertirControlesPdfCognicion(contenedor) {
   contenedor.querySelectorAll("[id]").forEach((elemento) => elemento.removeAttribute("id"));
 }
 
+function valorFirmaPdfCognicion(tarjeta, campo) {
+  const selectores = {
+    nombre: "[data-firma-nombre], input[id*='Firma'][id$='Nombre']",
+    cargo: "[data-firma-cargo], input[id*='Firma'][id$='Cargo']",
+    cedula: "[data-firma-cedula], input[id*='Firma'][id$='Cedula']"
+  };
+  const control = tarjeta.querySelector(selectores[campo] || "");
+  return String(control?.value ?? control?.textContent ?? "").trim();
+}
+
+function obtenerFirmasPdfCognicion() {
+  return [...document.querySelectorAll("#bloqueObservacionFray .seccion-firmas .firma-campo")]
+    .map((tarjeta, indice) => ({
+      orden: indice,
+      nombre: valorFirmaPdfCognicion(tarjeta, "nombre"),
+      cargo: valorFirmaPdfCognicion(tarjeta, "cargo"),
+      cedula: valorFirmaPdfCognicion(tarjeta, "cedula")
+    }))
+    .filter((firma) => firma.nombre || firma.cargo || firma.cedula);
+}
+
+function crearSeccionFirmasPdfCognicion(firmas = []) {
+  if (!firmas.length) return null;
+
+  const seccion = document.createElement("section");
+  seccion.className = "observacion-seccion pdf-firmas-seccion";
+
+  const encabezado = document.createElement("h3");
+  encabezado.textContent = "NOMBRE, FIRMA Y C\u00c9DULA PROFESIONAL DEL M\u00c9DICO QUE REALIZA Y SUPERVISA:";
+  seccion.appendChild(encabezado);
+
+  const contenedor = document.createElement("div");
+  contenedor.className = "pdf-firmas";
+  contenedor.style.setProperty("--cantidad-columnas", String(Math.min(Math.max(firmas.length, 1), 4)));
+
+  firmas.forEach((firma) => {
+    const bloque = document.createElement("div");
+    bloque.className = "pdf-firma";
+    bloque.dataset.ordenFirmaPdf = String(firma.orden + 1);
+
+    if (firma.nombre) {
+      const nombre = document.createElement("div");
+      nombre.className = "pdf-firma-nombre";
+      nombre.textContent = firma.nombre;
+      bloque.appendChild(nombre);
+    }
+    if (firma.cargo) {
+      const cargo = document.createElement("div");
+      cargo.className = "pdf-firma-cargo";
+      cargo.textContent = firma.cargo;
+      bloque.appendChild(cargo);
+    }
+    if (firma.cedula) {
+      const cedula = document.createElement("div");
+      cedula.className = "pdf-firma-cedula";
+      cedula.textContent = `C\u00e9d. Prof. ${firma.cedula}`;
+      bloque.appendChild(cedula);
+    }
+    contenedor.appendChild(bloque);
+  });
+
+  seccion.appendChild(contenedor);
+  return seccion;
+}
+
+function reemplazarFirmasPdfCognicion(contenedor) {
+  const editorFirmas = contenedor.querySelector(".firmas-extra");
+  if (!editorFirmas) return;
+  const seccionFirmas = crearSeccionFirmasPdfCognicion(obtenerFirmasPdfCognicion());
+  if (seccionFirmas) editorFirmas.replaceWith(seccionFirmas);
+  else editorFirmas.remove();
+}
+
+function esperarRenderPdfCognicion() {
+  return new Promise((resolve) => {
+    requestAnimationFrame(() => requestAnimationFrame(resolve));
+  });
+}
+
+async function esperarImagenesPdfCognicion(contenedor) {
+  const imagenes = [...contenedor.querySelectorAll("img")];
+  await Promise.all(imagenes.map(async (imagen) => {
+    if (!imagen.complete) {
+      await new Promise((resolve) => {
+        imagen.addEventListener("load", resolve, { once: true });
+        imagen.addEventListener("error", resolve, { once: true });
+      });
+    }
+    if (typeof imagen.decode === "function") {
+      try { await imagen.decode(); } catch (error) {
+        console.warn("Una imagen del PDF Cognicion no pudo decodificarse; se continuara sin bloquear la nota.", error?.name || "error");
+      }
+    }
+  }));
+}
+
 function construirContenedorPdfCognicion() {
   const fuente = document.querySelector(".contenedor");
   if (!fuente) throw new Error("No se encontro el contenedor de la nota clinica Cognicion.");
@@ -4015,6 +4112,7 @@ function construirContenedorPdfCognicion() {
 
   const bloqueObservacion = agregarNodo(document.getElementById("bloqueObservacionFray"));
   bloqueObservacion?.classList.remove("oculto");
+  if (bloqueObservacion) reemplazarFirmasPdfCognicion(bloqueObservacion);
   bloqueObservacion?.querySelectorAll("details").forEach((detalle) => { detalle.open = true; });
   if (bloqueObservacion) bloqueObservacion.replaceWith(...bloqueObservacion.childNodes);
 
@@ -4031,21 +4129,15 @@ function construirContenedorPdfCognicion() {
   const bloqueNota = tipoNota?.value === "rapida" ? bloqueNotaRapida : bloqueNotaCompleta;
   agregarNodo(bloqueNota)?.classList.remove("oculto");
 
-  const firmas = [...documento.querySelectorAll(".seccion-firmas .firma-campo")];
-  const contenedorFirmas = documento.querySelector(".seccion-firmas");
-  if (contenedorFirmas && firmas.length) {
-    contenedorFirmas.style.setProperty("--cantidad-firmas", String(Math.min(firmas.length, 6)));
-    firmas.forEach((firma, indice) => {
-      firma.style.order = String(indice);
-      firma.dataset.ordenFirmaPdf = String(indice + 1);
-    });
-  }
-
   convertirControlesPdfCognicion(documento);
   return documento;
 }
 
 function limpiarContenedorPdfCognicion() {
+  if (manejadorAfterPrintCognicion) {
+    window.removeEventListener("afterprint", manejadorAfterPrintCognicion);
+    manejadorAfterPrintCognicion = null;
+  }
   document.body.classList.remove("modo-impresion-cognicion");
   contenedorPdfCognicionActivo?.remove();
   contenedorPdfCognicionActivo = null;
@@ -4058,20 +4150,46 @@ window.generarPDFNota = async function() {
     return;
   }
 
+  const boton = document.getElementById("btnDescargarNota");
+  const textoOriginal = boton?.textContent || "Descargar nota";
+  let impresionSolicitada = false;
+
   try {
+    if (boton) {
+      boton.disabled = true;
+      boton.textContent = "Generando PDF...";
+      boton.setAttribute("aria-busy", "true");
+    }
     limpiarContenedorPdfCognicion();
     contenedorPdfCognicionActivo = construirContenedorPdfCognicion();
     document.body.appendChild(contenedorPdfCognicionActivo);
     document.body.classList.add("modo-impresion-cognicion");
+    await esperarRenderPdfCognicion();
     if (document.fonts?.ready) await document.fonts.ready;
+    await esperarImagenesPdfCognicion(contenedorPdfCognicionActivo);
+    await esperarRenderPdfCognicion();
 
-    window.addEventListener("afterprint", limpiarContenedorPdfCognicion, { once: true });
+    const texto = contenedorPdfCognicionActivo.innerText.trim();
+    const ancho = contenedorPdfCognicionActivo.scrollWidth;
+    const alto = contenedorPdfCognicionActivo.scrollHeight;
+    if (!texto) throw new Error("El contenedor temporal de la nota Cognicion esta vacio.");
+    if (ancho <= 0 || alto <= 0) throw new Error("El contenedor temporal de la nota Cognicion no tiene dimensiones visibles.");
+
+    manejadorAfterPrintCognicion = limpiarContenedorPdfCognicion;
+    window.addEventListener("afterprint", manejadorAfterPrintCognicion, { once: true });
     window.print();
-    window.setTimeout(limpiarContenedorPdfCognicion, 1000);
+    impresionSolicitada = true;
   } catch (error) {
     console.error("No se pudo generar el PDF del formato Cognicion:", error);
     limpiarContenedorPdfCognicion();
-    alert("No se pudo preparar el PDF de la nota. El contenido permanece sin cambios.");
+    alert("No fue posible generar el PDF de la nota Cognicion. El contenido permanece sin cambios.");
+  } finally {
+    if (!impresionSolicitada) limpiarContenedorPdfCognicion();
+    if (boton) {
+      boton.disabled = false;
+      boton.textContent = textoOriginal;
+      boton.removeAttribute("aria-busy");
+    }
   }
 };
 
@@ -4595,8 +4713,7 @@ window.descargarNotaFrayObservacion = async function() {
 
 window.descargarNotaSeleccionada = async function() {
   if (!esFormatoFray()) {
-    window.generarPDFNota();
-    return;
+    return window.generarPDFNota();
   }
   const boton = document.getElementById("btnDescargarNota");
   const textoOriginal = boton?.textContent || "Descargar nota";

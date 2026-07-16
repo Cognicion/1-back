@@ -1151,7 +1151,23 @@ button:hover{
 }
 
 .cognicion-pdf-documento {
-    display: none;
+    display: block;
+    position: fixed;
+    left: -10000px;
+    top: 0;
+    width: 210mm;
+    max-width: none;
+    height: auto;
+    min-height: 0;
+    margin: 0;
+    padding: 40px;
+    box-sizing: border-box;
+    overflow: visible;
+    visibility: visible;
+    opacity: 1;
+    pointer-events: none;
+    background: #ffffff;
+    color: #000000;
 }
 
 @page {
@@ -1174,6 +1190,9 @@ button:hover{
 
     body.modo-impresion-cognicion > .cognicion-pdf-documento {
         display: block !important;
+        position: static !important;
+        left: auto !important;
+        top: auto !important;
         width: 210mm;
         max-width: none;
         margin: 0;
@@ -1186,6 +1205,17 @@ button:hover{
         background: white;
         color: black;
         font-family: Arial, Helvetica, sans-serif;
+    }
+
+    .cognicion-pdf-documento,
+    .cognicion-pdf-documento * {
+        color: #000000 !important;
+        background-color: transparent !important;
+        text-shadow: none !important;
+    }
+
+    body.modo-impresion-cognicion > .cognicion-pdf-documento {
+        background-color: #ffffff !important;
     }
 
     .cognicion-pdf-documento .oculto,
@@ -1274,39 +1304,46 @@ button:hover{
         grid-template-columns: repeat(4, minmax(110px, 1fr)) !important;
     }
 
-    .cognicion-pdf-documento .seccion-firmas {
-        display: grid !important;
-        grid-template-columns: repeat(var(--cantidad-firmas, 1), minmax(0, 1fr)) !important;
-        grid-auto-flow: row;
-        gap: 14px;
-        align-items: stretch;
+    .cognicion-pdf-documento .pdf-firmas-seccion {
+        border: none !important;
+        box-shadow: none !important;
+        background: transparent !important;
     }
 
-    .cognicion-pdf-documento .firma-campo {
+    .cognicion-pdf-documento .pdf-firmas-seccion h3 {
+        margin-bottom: 14px;
+        text-align: left;
+    }
+
+    .cognicion-pdf-documento .pdf-firmas {
+        display: grid !important;
+        grid-template-columns: repeat(var(--cantidad-columnas, 1), minmax(0, 1fr)) !important;
+        grid-auto-flow: row;
+        gap: 8mm 5mm;
+        width: 100%;
+        align-items: start;
+    }
+
+    .cognicion-pdf-documento .pdf-firma {
         min-width: 0;
         text-align: center;
-        break-inside: avoid;
-        page-break-inside: avoid;
+        font-size: 12px;
+        line-height: 1.35;
+        overflow-wrap: anywhere;
+        break-inside: avoid !important;
+        page-break-inside: avoid !important;
     }
 
-    .cognicion-pdf-documento .firma-campo-header {
-        justify-content: center;
-        text-align: center;
+    .cognicion-pdf-documento .pdf-firma-nombre {
+        font-weight: 700;
     }
 
-    .cognicion-pdf-documento .firma-campo label,
-    .cognicion-pdf-documento .firma-campo .valor-campo-pdf-cognicion {
-        text-align: center;
+    .cognicion-pdf-documento .pdf-firma-cargo,
+    .cognicion-pdf-documento .pdf-firma-cedula {
+        margin-top: 4px;
     }
 
-    .cognicion-pdf-documento .firma-campo .valor-campo-pdf-cognicion {
-        overflow-wrap: normal;
-        word-break: keep-all;
-        hyphens: none;
-    }
-
-    .cognicion-pdf-documento .tabla-diagnosticos,
-    .cognicion-pdf-documento .seccion-firmas {
+    .cognicion-pdf-documento .tabla-diagnosticos {
         break-inside: avoid;
         page-break-inside: avoid;
     }

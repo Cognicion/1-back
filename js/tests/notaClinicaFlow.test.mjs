@@ -25,7 +25,7 @@ assert.match(modulo, /window\.cargarNotaComoBorrador[\s\S]*?notaEditandoId = nul
 assert.match(modulo, /edicionVersionadaActiva = true/);
 assert.match(modulo, /actualizarNota\(uidPaciente, notaEditandoId/);
 assert.match(html, /<option value="cognicion">PDF Cognicion<\/option>/);
-assert.match(modulo, /window\.descargarNotaSeleccionada\s*=\s*async function\(\)\s*\{\s*if \(!esFormatoFray\(\)\) \{\s*window\.generarPDFNota\(\);\s*return;/);
+assert.match(modulo, /window\.descargarNotaSeleccionada\s*=\s*async function\(\)\s*\{\s*if \(!esFormatoFray\(\)\) \{\s*return window\.generarPDFNota\(\);/);
 assert.equal(/window\.descargarNotaSeleccionada[\s\S]{0,800}window\.print\(\)/.test(modulo), false);
 
 assert.match(servicio, /const COLECCION_NOTAS = "notasMedicas"/);
