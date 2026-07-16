@@ -43,7 +43,8 @@ const categorias = {
   urgencias: "Urgencias",
   critico: "Sepsis y cuidados críticos",
   gastro: "Gastroenterología y hepatología",
-  infectologia: "Infectología"
+  infectologia: "Infectología",
+  farmacologia: "Farmacología"
 };
 
 const bibliography = {
@@ -73,6 +74,29 @@ function sofaPoints(value, ranges) {
 export const CATEGORIAS_CALCULADORAS_MEDICAS = Object.entries(categorias).map(([id, nombre]) => ({ id, nombre }));
 
 export const CALCULADORAS_MEDICAS = [
+  {
+    id: "calculadora-benzodiacepinas",
+    name: "Equivalencias de benzodiacepinas",
+    abbreviation: "BZD",
+    category: "farmacologia",
+    type: "Módulo",
+    specialties: ["psiquiatría", "medicina-general", "medicina-interna", "farmacología"],
+    aliases: ["benzodiacepinas", "diazepam", "lorazepam", "clonazepam", "alprazolam", "equivalencias", "conversión de dosis"],
+    version: "1.0.0",
+    status: "active",
+    duration: "2 min",
+    description: "Convierte dosis diarias aproximadas entre benzodiacepinas, compara vida media y muestra advertencias de seguridad.",
+    externalUrl: "calculadora-benzodiacepinas.html",
+    inputs: [],
+    calculate() {
+      return result({
+        value: "Abrir módulo",
+        category: "Equivalencias de benzodiacepinas",
+        interpretation: "Este elemento abre el módulo especializado de equivalencias de benzodiacepinas."
+      });
+    },
+    bibliography: []
+  },
   {
     id: "calculadoras-pediatricas",
     name: "Calculadoras pediátricas",
