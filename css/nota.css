@@ -1150,66 +1150,66 @@ button:hover{
     font-size: 0.76rem;
 }
 
-@media print {
+.cognicion-pdf-documento {
+    display: none;
+}
 
-    body {
-        background: white;
-        color: black;
+@page {
+    size: A4 portrait;
+    margin: 0;
+}
+
+@media print {
+    html,
+    body.modo-impresion-cognicion {
+        width: 210mm;
+        margin: 0;
         padding: 0;
-        font-family: Arial, Helvetica, sans-serif;
+        background: white;
     }
 
-    .barra-superior,
-    .notas-flotantes-costado,
-    .panel-notas-flotantes-paciente,
-    #fondoNotasFlotantesPaciente,
-    .panel-escala-nota,
-    button,
-    select,
-    #bloqueSelectorPaciente,
-    #historialNotas,
-    .separador-vertical-nota,
-    .controles-tamano-nota,
-    h2:last-of-type {
+    body.modo-impresion-cognicion > * {
         display: none !important;
     }
 
-    .contenedor {
+    body.modo-impresion-cognicion > .cognicion-pdf-documento {
+        display: block !important;
+        width: 210mm;
         max-width: none;
         margin: 0;
+        padding: 40px;
+        box-sizing: border-box;
         border: none;
+        border-radius: 0;
+        box-shadow: none;
+        backdrop-filter: none;
         background: white;
         color: black;
-        padding: 40px;
+        font-family: Arial, Helvetica, sans-serif;
     }
 
-    .contenedor::before {
-        content: "COGNICIÓN";
-        display: block;
-        text-align: center;
-        font-size: 26px;
-        font-weight: bold;
-        margin-bottom: 6px;
+    .cognicion-pdf-documento .oculto,
+    .cognicion-pdf-documento button,
+    .cognicion-pdf-documento select,
+    .cognicion-pdf-documento .separador-vertical-nota,
+    .cognicion-pdf-documento .controles-tamano-nota {
+        display: none !important;
     }
 
-    .contenedor::after {
-        content: "Documento clínico generado desde Cognición";
-        display: block;
-        margin-top: 40px;
-        text-align: center;
-        font-size: 11px;
-        color: #555;
-    }
-
-    h1 {
+    .cognicion-pdf-documento h1 {
         text-align: center;
         font-size: 22px;
+        color: black;
         margin-bottom: 30px;
         border-bottom: 2px solid #111;
         padding-bottom: 14px;
     }
 
-    label {
+    .cognicion-pdf-documento > h2 {
+        color: black;
+    }
+
+    .cognicion-pdf-documento label {
         display: block;
         margin-top: 18px;
         margin-bottom: 6px;
@@ -1217,24 +1217,101 @@ button:hover{
         color: black;
     }
 
-    input,
-    textarea {
+    .cognicion-pdf-documento .valor-campo-pdf-cognicion {
+        width: 100%;
+        min-height: 1em;
+        margin-bottom: 14px;
+        padding: 0;
+        box-sizing: border-box;
         border: none;
         background: white;
         color: black;
-        padding: 0;
         font-size: 14px;
-        resize: none;
-        overflow: visible;
+        line-height: normal;
+        overflow-wrap: anywhere;
     }
 
-    textarea {
+    .cognicion-pdf-documento .valor-textarea-pdf-cognicion {
         height: auto;
-        min-height: 80px;
+        min-height: 0;
         white-space: pre-wrap;
     }
 
-    hr {
+    .cognicion-pdf-documento .seccion-nota-redimensionable,
+    .cognicion-pdf-documento .panel-nota-redimensionable {
+        height: auto !important;
+        min-height: 0 !important;
+        max-height: none !important;
+        padding-bottom: 0;
+        overflow: visible !important;
+    }
+
+    .cognicion-pdf-documento .bloque-observacion {
+        display: contents;
+    }
+
+    .cognicion-pdf-documento .bloque-observacion > .observacion-seccion:first-child {
+        margin-top: 22px;
+    }
+
+    .cognicion-pdf-documento .bloque-observacion > .observacion-seccion:last-child {
+        margin-bottom: 30px;
+    }
+
+    .cognicion-pdf-documento > .observacion-seccion:first-of-type {
+        margin-top: 22px;
+    }
+
+    .cognicion-pdf-documento > .observacion-seccion:last-of-type {
+        margin-bottom: 30px;
+    }
+
+    .cognicion-pdf-documento .observacion-seccion + .observacion-seccion {
+        margin-top: 16px;
+    }
+
+    .cognicion-pdf-documento .grid-vitales {
+        grid-template-columns: repeat(4, minmax(110px, 1fr)) !important;
+    }
+
+    .cognicion-pdf-documento .seccion-firmas {
+        display: grid !important;
+        grid-template-columns: repeat(var(--cantidad-firmas, 1), minmax(0, 1fr)) !important;
+        grid-auto-flow: row;
+        gap: 14px;
+        align-items: stretch;
+    }
+
+    .cognicion-pdf-documento .firma-campo {
+        min-width: 0;
+        text-align: center;
+        break-inside: avoid;
+        page-break-inside: avoid;
+    }
+
+    .cognicion-pdf-documento .firma-campo-header {
+        justify-content: center;
+        text-align: center;
+    }
+
+    .cognicion-pdf-documento .firma-campo label,
+    .cognicion-pdf-documento .firma-campo .valor-campo-pdf-cognicion {
+        text-align: center;
+    }
+
+    .cognicion-pdf-documento .firma-campo .valor-campo-pdf-cognicion {
+        overflow-wrap: normal;
+        word-break: keep-all;
+        hyphens: none;
+    }
+
+    .cognicion-pdf-documento .tabla-diagnosticos,
+    .cognicion-pdf-documento .seccion-firmas {
+        break-inside: avoid;
+        page-break-inside: avoid;
+    }
+
+    .cognicion-pdf-documento hr {
         border: none;
         border-top: 1px solid #999;
         margin: 28px 0;

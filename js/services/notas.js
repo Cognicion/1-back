@@ -42,7 +42,7 @@ export async function guardarBorradorNotaClinica(uidPaciente, notaId, payload) {
   await runTransaction(db, async (transaction) => {
     const actual = await transaction.get(referencia);
     const datosActuales = actual.exists() ? actual.data() : null;
-    if (datosActuales?.estadoNota === "definitiva" || datosActuales?.bloqueada === true) {
+    if (datosActuales && estadoPersistidoNota(datosActuales) === "definitiva") {
       throw new Error("La nota definitiva esta bloqueada y no puede volver a borrador.");
     }
 
@@ -82,7 +82,7 @@ export async function finalizarNotaClinica(uidPaciente, notaId, payload, cierre)
   await runTransaction(db, async (transaction) => {
     const actual = await transaction.get(referencia);
     const datosActuales = actual.exists() ? actual.data() : null;
-    if (datosActuales?.estadoNota === "definitiva" || datosActuales?.bloqueada === true) {
+    if (datosActuales && estadoPersistidoNota(datosActuales) === "definitiva") {
       throw new Error("Esta nota ya fue cerrada como definitiva.");
     }
 
@@ -132,9 +132,8 @@ export async function buscarBorradorNotaClinica(uidPaciente, contexto = {}) {
   const candidatos = snap.docs
     .map((documento) => ({ id: documento.id, ...documento.data() }))
     .filter((nota) => {
-      const vigente = nota.notaEditada || nota;
-      const estado = vigente.estadoNota || (vigente.esBorrador ? "borrador" : "definitiva");
-      return estado === "borrador"
+      const vigente = datosVigentesNota(nota);
+      return estadoPersistidoNota(nota) === "borrador"
         && (!contexto.atencionId || (vigente.atencionId || nota.atencionId) === contexto.atencionId)
         && (!contexto.tipoNotaClave || (vigente.tipoNotaClave || nota.tipoNotaClave) === contexto.tipoNotaClave)
         && (!contexto.tipoNota || (vigente.tipoNota || nota.tipoNota) === contexto.tipoNota)
@@ -155,17 +154,43 @@ export async function guardarNota(uidPaciente, datosNota) {
   return referencia.id;
 }
 
-function fechaNotaEnMs(datos = {}) {
-  const vigente = datos.notaEditada || datos;
-  const valor = vigente.fecha || vigente.fechaNotaDefinitiva || vigente.fechaGuardadoBorrador
-    || vigente.fechaEdicion || vigente.fechaUltimaModificacion
-    || datos.fecha || datos.fechaNotaDefinitiva || datos.fechaGuardadoBorrador
-    || datos.fechaCreacion || datos.createdAt || datos.fechaRegistro;
+const ESTADOS_BORRADOR = new Set(["borrador", "draft"]);
+const ESTADOS_DEFINITIVOS = new Set([
+  "definitiva", "definitivo", "firmada", "firmado", "cerrada", "cerrado", "final"
+]);
+
+function valorEstadoPersistido(datos = {}) {
+  return String(datos.estadoNota || datos.estado || "").trim().toLowerCase();
+}
+
+function estadoPersistidoNota(datos = {}) {
+  const estadoRaiz = valorEstadoPersistido(datos);
+  if (datos.bloqueada === true || ESTADOS_DEFINITIVOS.has(estadoRaiz)) return "definitiva";
+  if (ESTADOS_BORRADOR.has(estadoRaiz) || datos.esBorrador === true) return "borrador";
+  if (datos.esBorrador === false || (datos.notaEditada && Array.isArray(datos.ediciones))) return "definitiva";
+  return ESTADOS_BORRADOR.has(valorEstadoPersistido(datos.notaEditada || {})) ? "borrador" : "definitiva";
+}
+
+function fechaPropiaNotaEnMs(datos = {}) {
+  const valor = datos.fechaUltimaModificacion || datos.fechaEdicion || datos.fechaGuardadoBorrador
+    || datos.fechaNotaDefinitiva || datos.fecha || datos.fechaCreacion || datos.createdAt || datos.fechaRegistro;
   if (!valor) return 0;
   if (typeof valor.toDate === "function") return valor.toDate().getTime();
   if (typeof valor.seconds === "number") return valor.seconds * 1000;
   const fecha = new Date(valor);
   return Number.isNaN(fecha.getTime()) ? 0 : fecha.getTime();
+}
+
+function datosVigentesNota(datos = {}) {
+  if (!datos.notaEditada || typeof datos.notaEditada !== "object") return datos;
+  if (estadoPersistidoNota(datos) !== "borrador") return datos.notaEditada;
+  return fechaPropiaNotaEnMs(datos.notaEditada) > fechaPropiaNotaEnMs(datos)
+    ? datos.notaEditada
+    : datos;
+}
+
+function fechaNotaEnMs(datos = {}) {
+  return fechaPropiaNotaEnMs(datosVigentesNota(datos));
 }
 
 function crearSnapshotNotaCompatible(nota, raiz, nombreColeccion) {
@@ -290,6 +315,9 @@ export async function actualizarNota(uidPaciente, notaId, datosEdicion, editor =
     if (!actual.exists()) throw new Error("No se encontro la nota que se desea editar.");
 
     const datosActuales = actual.data() || {};
+    if (estadoPersistidoNota(datosActuales) !== "definitiva") {
+      throw new Error("Los borradores deben actualizarse sobre el mismo documento sin crear historial.");
+    }
     const versionesPrevias = Array.isArray(datosActuales.ediciones) ? datosActuales.ediciones : [];
     const versionMayorEnHistorial = versionesPrevias.reduce(
       (mayor, version) => Math.max(mayor, Number(version?.version || 0)),

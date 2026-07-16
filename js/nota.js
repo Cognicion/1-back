@@ -92,6 +92,7 @@ let uidPacienteActual = null;
 let diagnosticosSeleccionados = [];
 let notaEditandoId = null;
 let edicionVersionadaActiva = false;
+let modoEdicionNota = null;
 let notasHistorial = {};
 let notasHistorialOrdenadas = [];
 let historiaClinicaActual = {};
@@ -2526,6 +2527,7 @@ function llenarFormularioNota(datos) {
 function limpiarFormularioNota() {
   notaEditandoId = null;
   edicionVersionadaActiva = false;
+  modoEdicionNota = null;
   estadoNotaActual = "nueva";
   escalasAplicadasPendientesNota = [];
   llenarFormularioNota({ tipoNota: "completa" });
@@ -2576,6 +2578,7 @@ function guardarRespaldoTemporalNota() {
       actualizadoEn: Date.now(),
       notaId: notaEditandoId || "",
       edicionVersionada: edicionVersionadaActiva,
+      modoEdicion: modoEdicionNota,
       datos: collectNoteData()
     }));
   } catch (error) {
@@ -3043,8 +3046,45 @@ function versionesEditadasNota(datos = {}) {
   });
 }
 
+const ESTADOS_BORRADOR_NOTA = new Set(["borrador", "draft"]);
+const ESTADOS_DEFINITIVOS_NOTA = new Set([
+  "definitiva", "definitivo", "firmada", "firmado", "cerrada", "cerrado", "final"
+]);
+
+function valorEstadoPersistidoNota(datos = {}) {
+  return String(datos.estadoNota || datos.estado || "").trim().toLowerCase();
+}
+
+function estadoPersistidoNota(datos = {}) {
+  const estadoRaiz = valorEstadoPersistidoNota(datos);
+  if (datos.bloqueada === true || ESTADOS_DEFINITIVOS_NOTA.has(estadoRaiz)) return "definitiva";
+  if (ESTADOS_BORRADOR_NOTA.has(estadoRaiz) || datos.esBorrador === true) return "borrador";
+  if (datos.esBorrador === false || (datos.notaEditada && Array.isArray(datos.ediciones))) return "definitiva";
+
+  const estadoVigente = valorEstadoPersistidoNota(datos.notaEditada || {});
+  return ESTADOS_BORRADOR_NOTA.has(estadoVigente) ? "borrador" : "definitiva";
+}
+
+function fechaPropiaNotaEnMs(datos = {}) {
+  const valor = datos.fechaUltimaModificacion || datos.fechaEdicion || datos.fechaGuardadoBorrador
+    || datos.fechaNotaDefinitiva || datos.fecha || datos.fechaCreacion || datos.createdAt || datos.fechaRegistro;
+  if (!valor) return 0;
+  if (typeof valor.toDate === "function") return valor.toDate().getTime();
+  if (typeof valor.seconds === "number") return valor.seconds * 1000;
+  const fecha = new Date(valor);
+  return Number.isNaN(fecha.getTime()) ? 0 : fecha.getTime();
+}
+
+function datosVigentesNota(datos = {}) {
+  if (!datos.notaEditada || typeof datos.notaEditada !== "object") return datos;
+  if (estadoPersistidoNota(datos) !== "borrador") return datos.notaEditada;
+  return fechaPropiaNotaEnMs(datos.notaEditada) > fechaPropiaNotaEnMs(datos)
+    ? datos.notaEditada
+    : datos;
+}
+
 function fechaNotaHistorial(datos = {}) {
-  const vigente = datos.notaEditada || datos;
+  const vigente = datosVigentesNota(datos);
   const valor = vigente.fecha || vigente.fechaNotaDefinitiva || vigente.fechaGuardadoBorrador
     || vigente.fechaEdicion || vigente.fechaUltimaModificacion
     || datos.fecha || datos.fechaNotaDefinitiva || datos.fechaGuardadoBorrador
@@ -3059,9 +3099,14 @@ function fechaNotaHistorial(datos = {}) {
 window.editarNotaDesdeHistorial = function(notaId) {
   const datos = notasHistorial[notaId];
   if (!datos) return;
-  const vigente = datos.notaEditada || datos;
+  if (estadoPersistidoNota(datos) === "borrador") {
+    alert("Esta nota sigue siendo borrador. Usa Continuar borrador para editar el mismo documento sin crear historial.");
+    return;
+  }
+  const vigente = datosVigentesNota(datos);
   notaEditandoId = notaId;
   edicionVersionadaActiva = true;
+  modoEdicionNota = "editar-definitiva";
   estadoNotaActual = "borrador";
   escalasAplicadasPendientesNota = [];
   llenarFormularioNota(vigente);
@@ -3072,6 +3117,30 @@ window.editarNotaDesdeHistorial = function(notaId) {
   alert(`Edicion versionada iniciada. La version ${vigente.version || datos.version || 1} permanecera en el historial cuando guardes.`);
 };
 
+window.continuarBorradorDesdeHistorial = function(notaId) {
+  const datos = notasHistorial[notaId];
+  if (!datos) {
+    alert("No se encontro el borrador seleccionado.");
+    return;
+  }
+  if (estadoPersistidoNota(datos) !== "borrador") {
+    alert("Solo las notas en estado borrador pueden continuarse sin historial.");
+    return;
+  }
+
+  notaEditandoId = notaId;
+  edicionVersionadaActiva = false;
+  modoEdicionNota = "continuar-borrador";
+  estadoNotaActual = "borrador";
+  escalasAplicadasPendientesNota = [];
+  llenarFormularioNota(datosVigentesNota(datos));
+  establecerModoLecturaNota(false);
+  marcarNotaGuardada();
+  btnCancelarEdicion?.classList.remove("oculto");
+  document.getElementById("tipoNota")?.scrollIntoView({ behavior: "smooth", block: "center" });
+  alert("Borrador abierto. Los siguientes guardados actualizaran esta misma nota sin crear historial.");
+};
+
 function cargarDatosNotaComoBorrador(notaId, opciones = {}) {
   const datosNota = notasHistorial[notaId];
 
@@ -3080,7 +3149,7 @@ function cargarDatosNotaComoBorrador(notaId, opciones = {}) {
     return;
   }
 
-  const datos = datosNota.notaEditada || datosNota;
+  const datos = datosVigentesNota(datosNota);
   const formatoActual = formatoNota?.value || "cognicion";
   llenarFormularioNota({
     ...datos,
@@ -3093,6 +3162,7 @@ function cargarDatosNotaComoBorrador(notaId, opciones = {}) {
 
   notaEditandoId = null;
   edicionVersionadaActiva = false;
+  modoEdicionNota = null;
   estadoNotaActual = "nueva";
   establecerModoLecturaNota(false);
   marcarCambiosNotaPendientes();
@@ -3152,9 +3222,10 @@ async function recuperarBorradorCorrespondiente() {
     });
     let fechaFirebase = 0;
     if (borrador) {
-      const borradorVigente = borrador.notaEditada || borrador;
+      const borradorVigente = datosVigentesNota(borrador);
       notaEditandoId = borrador.id;
-      edicionVersionadaActiva = Boolean(borrador.notaEditada);
+      edicionVersionadaActiva = false;
+      modoEdicionNota = "continuar-borrador";
       estadoNotaActual = "borrador";
       llenarFormularioNota(borradorVigente);
       establecerModoLecturaNota(false);
@@ -3174,6 +3245,8 @@ async function recuperarBorradorCorrespondiente() {
       llenarFormularioNota(respaldo.datos || {});
       notaEditandoId = respaldo.notaId || borrador?.id || null;
       edicionVersionadaActiva = Boolean(respaldo.edicionVersionada && respaldo.notaId);
+      modoEdicionNota = respaldo.modoEdicion
+        || (edicionVersionadaActiva ? "editar-definitiva" : (notaEditandoId ? "continuar-borrador" : null));
       estadoNotaActual = notaEditandoId ? "borrador" : "nueva";
       cambiosNotaPendientes = true;
     } else {
@@ -3289,11 +3362,12 @@ async function cargarListaPacientes() {
     }
     if (cambiosNotaPendientes) guardarRespaldoTemporalNota();
     uidPacienteActual = selector.value;
-    if (!uidPacienteActual) return;
     notaEditandoId = null;
     edicionVersionadaActiva = false;
+    modoEdicionNota = null;
     estadoNotaActual = "nueva";
     cambiosNotaPendientes = false;
+    if (!uidPacienteActual) return;
     await cargarPaciente(uidPacienteActual);
     await cargarHistorial(uidPacienteActual);
     await recuperarBorradorCorrespondiente();
@@ -3539,7 +3613,9 @@ async function guardarNotaClinicaSeguro(estadoNota = "definitiva") {
   const selector = document.getElementById("uidPaciente");
   const uidPaciente = uidPacienteActual || selector?.value;
   const esBorrador = estadoNota === "borrador";
-  const esEdicionVersionada = Boolean(edicionVersionadaActiva && notaEditandoId);
+  const esEdicionVersionada = Boolean(
+    modoEdicionNota === "editar-definitiva" && edicionVersionadaActiva && notaEditandoId
+  );
   const boton = document.getElementById(esBorrador ? "btnGuardarBorradorNota" : "btnGuardarNotaDefinitiva");
   const textoOriginal = boton?.textContent || "";
 
@@ -3634,7 +3710,11 @@ async function guardarNotaClinicaSeguro(estadoNota = "definitiva") {
     estadoNotaActual = esEdicionVersionada
       ? confirmada.notaEditada?.estadoNota || estadoNota
       : confirmada.estadoNota;
-    if (esEdicionVersionada && !esBorrador) edicionVersionadaActiva = false;
+    if (!esEdicionVersionada) modoEdicionNota = esBorrador ? "continuar-borrador" : null;
+    if (esEdicionVersionada && !esBorrador) {
+      edicionVersionadaActiva = false;
+      modoEdicionNota = null;
+    }
     if (eraNueva) await vincularEscalasPendientesANota(uidPaciente, confirmada.id);
 
     try {
@@ -3774,11 +3854,19 @@ async function cargarHistorial(uidPaciente) {
       minute: "2-digit",
       hour12: false
     });
-    const notaVigente = datos.notaEditada || datos;
-    const estadoNota = notaVigente.estadoNota || (notaVigente.esBorrador ? "borrador" : "definitiva");
+    const notaVigente = datosVigentesNota(datos);
+    const estadoNota = estadoPersistidoNota(datos);
     const estadoTexto = estadoNota === "borrador" ? "Borrador" : "Definitiva";
-    const versionesEditadas = versionesEditadasNota(datos);
-    const accionesNota = `
+    const versionesEditadas = estadoNota === "borrador" ? [] : versionesEditadasNota(datos);
+    const notaPrincipalHistorial = estadoNota === "borrador" ? notaVigente : datos;
+    const accionesNota = estadoNota === "borrador" ? `
+      <button type="button" class="boton-secundario" onclick="continuarBorradorDesdeHistorial('${nota.id}')">
+        Continuar borrador
+      </button>
+      <button type="button" class="boton-secundario" onclick="cargarNotaComoBorrador('${nota.id}')">
+        Usar como borrador (nueva nota)
+      </button>
+    ` : `
       <button type="button" class="boton-secundario" onclick="cargarNotaComoBorrador('${nota.id}')">
         Usar como borrador (nueva nota)
       </button>
@@ -3789,14 +3877,14 @@ async function cargarHistorial(uidPaciente) {
 
     let diagnosticosTexto = "";
 
-    if (Array.isArray(datos.historialDiagnosticos)) {
-      diagnosticosTexto = datos.historialDiagnosticos
+    if (Array.isArray(notaVigente.historialDiagnosticos)) {
+      diagnosticosTexto = notaVigente.historialDiagnosticos
         .map((dx) => dx.texto || "")
         .join("<br>");
-    } else if (typeof datos.diagnostico === "object" && datos.diagnostico !== null) {
-      diagnosticosTexto = datos.diagnostico.texto || "";
+    } else if (typeof notaVigente.diagnostico === "object" && notaVigente.diagnostico !== null) {
+      diagnosticosTexto = notaVigente.diagnostico.texto || "";
     } else {
-      diagnosticosTexto = datos.diagnostico || "";
+      diagnosticosTexto = notaVigente.diagnostico || "";
     }
 
     contenedor.innerHTML += `
@@ -3823,7 +3911,7 @@ async function cargarHistorial(uidPaciente) {
             ${diagnosticosTexto}
           </p>
 
-          ${bloqueContenidoNota(datos, "Nota original")}
+          ${bloqueContenidoNota(notaPrincipalHistorial, estadoNota === "borrador" ? "Borrador actual" : "Nota original")}
 
           ${versionesEditadas.map((version, indice) => bloqueContenidoNota(
             version,
@@ -3857,8 +3945,134 @@ window.regresarDesdeNota = function() {
   }
 };
 
-window.generarPDFNota = function() {
-  window.print();
+let contenedorPdfCognicionActivo = null;
+
+function clonarNodoPdfCognicion(nodo) {
+  if (!nodo) return null;
+  const clon = nodo.cloneNode(true);
+  const selectorControles = "input, textarea, select";
+  const controlesOrigen = nodo.matches?.(selectorControles)
+    ? [nodo, ...nodo.querySelectorAll(selectorControles)]
+    : [...nodo.querySelectorAll(selectorControles)];
+  const controlesClon = clon.matches?.(selectorControles)
+    ? [clon, ...clon.querySelectorAll(selectorControles)]
+    : [...clon.querySelectorAll(selectorControles)];
+
+  controlesOrigen.forEach((control, indice) => {
+    const copia = controlesClon[indice];
+    if (!copia) return;
+    if (control.matches("input[type='checkbox'], input[type='radio']")) copia.checked = control.checked;
+    else if (control.tagName === "SELECT") copia.selectedIndex = control.selectedIndex;
+    else copia.value = control.value;
+  });
+  return clon;
+}
+
+function convertirControlesPdfCognicion(contenedor) {
+  contenedor.querySelectorAll("button, datalist, select, input[type='hidden'], .controles-tamano-nota, .separador-vertical-nota, .pediatria-omitir")
+    .forEach((elemento) => elemento.remove());
+
+  contenedor.querySelectorAll("input:not([type='hidden']), textarea").forEach((control) => {
+    const salida = document.createElement("div");
+    salida.className = `valor-campo-pdf-cognicion${control.tagName === "TEXTAREA" ? " valor-textarea-pdf-cognicion" : ""}`;
+    salida.textContent = control.value || "";
+    control.replaceWith(salida);
+  });
+
+  contenedor.querySelectorAll(".seccion-nota-redimensionable, .panel-nota-redimensionable").forEach((seccion) => {
+    seccion.style.removeProperty("height");
+    seccion.style.removeProperty("min-height");
+    seccion.style.removeProperty("max-height");
+    seccion.style.removeProperty("overflow");
+  });
+  contenedor.querySelectorAll("[id]").forEach((elemento) => elemento.removeAttribute("id"));
+}
+
+function construirContenedorPdfCognicion() {
+  const fuente = document.querySelector(".contenedor");
+  if (!fuente) throw new Error("No se encontro el contenedor de la nota clinica Cognicion.");
+
+  const documento = document.createElement("main");
+  documento.className = "contenedor cognicion-pdf-documento";
+  documento.setAttribute("aria-label", "Nota clinica Cognicion para PDF");
+
+  const agregarNodo = (nodo) => {
+    const clon = clonarNodoPdfCognicion(nodo);
+    if (clon) documento.appendChild(clon);
+    return clon;
+  };
+  const agregarCampo = (id) => {
+    const campo = document.getElementById(id);
+    if (!campo) return;
+    const etiqueta = campo.previousElementSibling;
+    if (etiqueta?.tagName === "LABEL" && !etiqueta.contains(campo)) agregarNodo(etiqueta);
+    agregarNodo(campo);
+  };
+
+  agregarNodo(fuente.querySelector(":scope > .logo-nota"));
+  agregarNodo(fuente.querySelector(":scope > h1"));
+  ["tratamiento", "medico", "ultimaConsulta", "proximaConsulta"].forEach(agregarCampo);
+
+  const bloqueObservacion = agregarNodo(document.getElementById("bloqueObservacionFray"));
+  bloqueObservacion?.classList.remove("oculto");
+  bloqueObservacion?.querySelectorAll("details").forEach((detalle) => { detalle.open = true; });
+  if (bloqueObservacion) bloqueObservacion.replaceWith(...bloqueObservacion.childNodes);
+
+  const bloquePediatria = document.getElementById("bloquePediatriaNota");
+  const omitirPediatria = document.getElementById("omitirPediatriaNota")?.checked;
+  if (bloquePediatria && !bloquePediatria.classList.contains("oculto") && !omitirPediatria) {
+    agregarNodo(bloquePediatria)?.classList.remove("oculto");
+  }
+
+  const tituloNota = [...fuente.children].find((elemento) => (
+    elemento.tagName === "H2" && /nota interna medica/i.test(elemento.textContent || "")
+  ));
+  agregarNodo(tituloNota);
+  const bloqueNota = tipoNota?.value === "rapida" ? bloqueNotaRapida : bloqueNotaCompleta;
+  agregarNodo(bloqueNota)?.classList.remove("oculto");
+
+  const firmas = [...documento.querySelectorAll(".seccion-firmas .firma-campo")];
+  const contenedorFirmas = documento.querySelector(".seccion-firmas");
+  if (contenedorFirmas && firmas.length) {
+    contenedorFirmas.style.setProperty("--cantidad-firmas", String(Math.min(firmas.length, 6)));
+    firmas.forEach((firma, indice) => {
+      firma.style.order = String(indice);
+      firma.dataset.ordenFirmaPdf = String(indice + 1);
+    });
+  }
+
+  convertirControlesPdfCognicion(documento);
+  return documento;
+}
+
+function limpiarContenedorPdfCognicion() {
+  document.body.classList.remove("modo-impresion-cognicion");
+  contenedorPdfCognicionActivo?.remove();
+  contenedorPdfCognicionActivo = null;
+}
+
+window.generarPDFNota = async function() {
+  if (esFormatoFray()) {
+    console.error("El generador PDF Cognicion no puede utilizarse para formatos Word.");
+    alert("Selecciona PDF Cognicion para generar este documento.");
+    return;
+  }
+
+  try {
+    limpiarContenedorPdfCognicion();
+    contenedorPdfCognicionActivo = construirContenedorPdfCognicion();
+    document.body.appendChild(contenedorPdfCognicionActivo);
+    document.body.classList.add("modo-impresion-cognicion");
+    if (document.fonts?.ready) await document.fonts.ready;
+
+    window.addEventListener("afterprint", limpiarContenedorPdfCognicion, { once: true });
+    window.print();
+    window.setTimeout(limpiarContenedorPdfCognicion, 1000);
+  } catch (error) {
+    console.error("No se pudo generar el PDF del formato Cognicion:", error);
+    limpiarContenedorPdfCognicion();
+    alert("No se pudo preparar el PDF de la nota. El contenido permanece sin cambios.");
+  }
 };
 
 function textoWord(valor) {

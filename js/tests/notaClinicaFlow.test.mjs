@@ -19,6 +19,7 @@ assert.match(modulo, /finalizarNotaClinica\(uidPaciente, notaEditandoId, notaPay
 assert.match(modulo, /window\.confirm\("¿Confirma que desea cerrar esta nota como definitiva\?/);
 assert.match(modulo, /crearDocumentoWordFray\(/);
 assert.match(modulo, /Usar como borrador \(nueva nota\)/);
+assert.match(modulo, /Continuar borrador/);
 assert.match(modulo, /Editar esta nota/);
 assert.match(modulo, /window\.cargarNotaComoBorrador[\s\S]*?notaEditandoId = null;/);
 assert.match(modulo, /edicionVersionadaActiva = true/);
