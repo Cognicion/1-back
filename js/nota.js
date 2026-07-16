@@ -66,8 +66,15 @@ import {
 import {
   guardarNota,
   obtenerHistorialNotas,
-  actualizarNota
-} from "./services/notas.js?v=20260715-1240";
+  actualizarNota,
+  guardarBorradorNotaClinica,
+  finalizarNotaClinica,
+  buscarBorradorNotaClinica
+} from "./services/notas.js?v=20260716-1";
+import {
+  crearDocumentoWordFray,
+  nombreSeguroNotaWord
+} from "./services/frayDocx.js?v=20260716-1";
 
 import {
   obtenerHistoriaClinica
@@ -89,6 +96,7 @@ let notasHistorialOrdenadas = [];
 let historiaClinicaActual = {};
 let pacienteActualDatos = {};
 let uidMedicoActual = "";
+let perfilMedicoActual = {};
 let rolUsuarioActual = "";
 let permisosFormatosActual = {};
 let apuntesMedicoCache = [];
@@ -100,6 +108,11 @@ let escalasAplicadasPendientesNota = [];
 const proveedorNotas = createNoteGenerationProvider({ provider: "local" });
 let borradorNotaAutomaticaActual = null;
 let snapshotAntesInsercionAutomatica = null;
+let estadoNotaActual = "nueva";
+let cambiosNotaPendientes = false;
+let inicializacionFlujoNotasCompleta = false;
+let temporizadorRespaldoNota = null;
+const PREFIJO_RESPALDO_NOTA = "cognicion_respaldo_nota_v1";
 
 const IDS_PRUEBAS_INTERACTIVAS = new Set(PRUEBAS_INTERACTIVAS.map((escala) => escala.id));
 
@@ -2404,30 +2417,80 @@ function datosPersistentesDesdeObservacion(observacion = {}) {
   };
 }
 
-function leerFormularioNota() {
+function valorNormalizadoElemento(elemento) {
+  if (!elemento) return "";
+  if (elemento.matches?.("input[type='checkbox']")) return Boolean(elemento.checked);
+  if (elemento.matches?.("input[type='radio']")) return elemento.checked ? elemento.value : "";
+  if (elemento.isContentEditable) return elemento.innerHTML || elemento.textContent || "";
+  return typeof elemento.value === "string" ? elemento.value : elemento.textContent || "";
+}
+
+function camposDinamicosNota() {
+  return [...document.querySelectorAll("[data-note-field]")].reduce((salida, elemento) => {
+    const clave = elemento.dataset.noteField;
+    if (clave) salida[clave] = valorNormalizadoElemento(elemento);
+    return salida;
+  }, {});
+}
+
+function obtenerContextoAtencion(uidPaciente = uidPacienteActual) {
+  const parametros = new URLSearchParams(location.search);
+  const candidatos = [
+    ["encuentro", parametros.get("encounterId")],
+    ["atencion", parametros.get("atencionId")],
+    ["consulta", parametros.get("consultaId")],
+    ["ingreso", parametros.get("ingresoId")],
+    ["expediente", parametros.get("expedienteId")],
+    ["atencion", pacienteActualDatos.atencionActivaId],
+    ["consulta", pacienteActualDatos.consultaActivaId],
+    ["ingreso", pacienteActualDatos.ingresoActivoId],
+    ["expediente", pacienteActualDatos.expediente || pacienteActualDatos.numeroExpediente]
+  ];
+  const encontrado = candidatos.find(([, id]) => String(id || "").trim());
+  if (encontrado) return { tipo: encontrado[0], id: String(encontrado[1]).trim() };
+  return uidPaciente ? { tipo: "expediente", id: `paciente:${uidPaciente}` } : { tipo: "", id: "" };
+}
+
+function collectNoteData() {
   const formato = formatoNota?.value || "cognicion";
-  const observacionFray = esFormatoFray()
-    ? leerFormularioObservacionFray()
-    : leerFormularioObservacionFray();
+  const observacionFray = leerFormularioObservacionFray();
+  const contexto = obtenerContextoAtencion();
 
   return {
     formatoNota: formato,
     formatoInstitucional: esFormatoFray() ? "fray_bernardino_observacion" : "",
     exportacionWord: {
-      habilitada: esFormatoFray(),
+      habilitada: true,
       formato,
-      plantillaSuger
+      plantillaSugerida: observacionFray.plantillaSugerida || formato
     },
+    pacienteId: uidPacienteActual || document.getElementById("uidPaciente")?.value || "",
+    expedienteId: observacionFray.expediente || contexto.id,
+    atencionId: contexto.id,
+    tipoAtencion: contexto.tipo,
+    usuarioId: uidMedicoActual || auth.currentUser?.uid || "",
+    usuarioNombre: perfilMedicoActual.nombre || perfilMedicoActual.nombreCompleto || auth.currentUser?.displayName || auth.currentUser?.email || "",
+    medicoResponsable: valorCampo("medico") || observacionFray.firma1Nombre || perfilMedicoActual.nombre || perfilMedicoActual.nombreCompleto || "",
+    servicio: observacionFray.servicio || pacienteActualDatos.servicio || "",
+    tratamiento: valorCampo("tratamiento"),
+    diagnosticos: normalizarDiagnosticosNota(diagnosticosSeleccionados),
+    diagnosticoCatalogoVisible: diagnosticoCatalogoVisible?.value || "auto",
+    ultimaConsulta: valorCampo("ultimaConsulta"),
+    proximaConsulta: valorCampo("proximaConsulta"),
     observacionFray,
     tipoNota: tipoNota?.value || "completa",
+    tipoNotaClave: `${tipoNota?.value || "completa"}:${observacionFray.tipoNota || formato}`,
     notaRapida: document.getElementById("notaRapida")?.value || "",
     subjetivo: document.getElementById("subjetivo").value,
     objetivo: document.getElementById("objetivo").value,
     analisis: document.getElementById("analisis").value,
     plan: document.getElementById("plan").value,
-    pediatriaNota: leerParametrosPediatriaNota()
+    pediatriaNota: leerParametrosPediatriaNota(),
+    camposDinamicos: camposDinamicosNota()
   };
 }
+
+const leerFormularioNota = collectNoteData;
 
 function llenarFormularioNota(datos) {
   if (formatoNota) formatoNota.value = datos.formatoNota || "cognicion";
@@ -2437,6 +2500,22 @@ function llenarFormularioNota(datos) {
   document.getElementById("objetivo").value = datos.objetivo || "";
   document.getElementById("analisis").value = datos.analisis || "";
   document.getElementById("plan").value = datos.plan || "";
+  asignarValor("tratamiento", datos.tratamiento || "");
+  asignarValor("medico", datos.medicoResponsable || datos.autor || datos.medico || "");
+  asignarValor("ultimaConsulta", datos.ultimaConsulta || "");
+  asignarValor("proximaConsulta", datos.proximaConsulta || "");
+  if (diagnosticoCatalogoVisible) diagnosticoCatalogoVisible.value = datos.diagnosticoCatalogoVisible || "auto";
+  if (Array.isArray(datos.diagnosticos || datos.historialDiagnosticos)) {
+    diagnosticosSeleccionados = normalizarDiagnosticosNota(datos.diagnosticos || datos.historialDiagnosticos);
+    renderizarDiagnosticosSeleccionados();
+  }
+  document.querySelectorAll("[data-note-field]").forEach((elemento) => {
+    const valor = datos.camposDinamicos?.[elemento.dataset.noteField];
+    if (valor === undefined) return;
+    if (elemento.matches("input[type='checkbox']")) elemento.checked = Boolean(valor);
+    else if (elemento.isContentEditable) elemento.innerHTML = String(valor);
+    else elemento.value = String(valor);
+  });
   llenarFormularioObservacionFray(datos.observacionFray || {});
   sincronizarParametrosPediatriaNota(datos.pediatriaNota || datos["ped?atriaNota"] || null);
   sincronizarTipoNota();
@@ -2445,14 +2524,91 @@ function llenarFormularioNota(datos) {
 
 function limpiarFormularioNota() {
   notaEditandoId = null;
+  estadoNotaActual = "nueva";
   escalasAplicadasPendientesNota = [];
   llenarFormularioNota({ tipoNota: "completa" });
+  establecerModoLecturaNota(false);
+  marcarNotaGuardada();
   btnCancelarEdicion?.classList.add("oculto");
 }
 
 window.cancelarEdicionNota = function() {
   limpiarFormularioNota();
 };
+
+function elementosEditablesNota() {
+  const selectores = [
+    "#bloqueNotaRapida input, #bloqueNotaRapida textarea, #bloqueNotaRapida select, #bloqueNotaRapida [contenteditable]",
+    "#bloqueNotaCompleta input, #bloqueNotaCompleta textarea, #bloqueNotaCompleta select, #bloqueNotaCompleta [contenteditable]",
+    "#bloqueObservacionFray input, #bloqueObservacionFray textarea, #bloqueObservacionFray select, #bloqueObservacionFray [contenteditable]",
+    "#tratamiento, #medico, #ultimaConsulta, #proximaConsulta, #tipoNota",
+    "[data-note-field]"
+  ];
+  return [...new Set([...document.querySelectorAll(selectores.join(","))])];
+}
+
+function establecerModoLecturaNota(bloqueada) {
+  elementosEditablesNota().forEach((elemento) => {
+    if (elemento.isContentEditable) {
+      elemento.contentEditable = bloqueada ? "false" : "true";
+    } else {
+      elemento.disabled = Boolean(bloqueada);
+    }
+  });
+  document.getElementById("btnGuardarBorradorNota")?.toggleAttribute("disabled", Boolean(bloqueada));
+  document.getElementById("btnGuardarNotaDefinitiva")?.toggleAttribute("disabled", Boolean(bloqueada));
+}
+
+function claveRespaldoNota() {
+  const pacienteId = uidPacienteActual || document.getElementById("uidPaciente")?.value || "sin-paciente";
+  const atencionId = obtenerContextoAtencion(pacienteId).id || "sin-atencion";
+  return `${PREFIJO_RESPALDO_NOTA}:${uidMedicoActual || "sin-usuario"}:${pacienteId}:${atencionId}`;
+}
+
+function guardarRespaldoTemporalNota() {
+  if (!cambiosNotaPendientes || estadoNotaActual === "definitiva") return;
+  try {
+    sessionStorage.setItem(claveRespaldoNota(), JSON.stringify({
+      pacienteId: uidPacienteActual || document.getElementById("uidPaciente")?.value || "",
+      atencionId: obtenerContextoAtencion().id,
+      actualizadoEn: Date.now(),
+      notaId: notaEditandoId || "",
+      datos: collectNoteData()
+    }));
+  } catch (error) {
+    console.warn("No se pudo crear el respaldo temporal de la nota:", error?.name || "error");
+  }
+}
+
+function marcarCambiosNotaPendientes() {
+  if (estadoNotaActual === "definitiva") return;
+  cambiosNotaPendientes = true;
+  clearTimeout(temporizadorRespaldoNota);
+  temporizadorRespaldoNota = setTimeout(guardarRespaldoTemporalNota, 500);
+}
+
+function marcarNotaGuardada() {
+  cambiosNotaPendientes = false;
+  clearTimeout(temporizadorRespaldoNota);
+  try { sessionStorage.removeItem(claveRespaldoNota()); } catch (_) { /* Respaldo opcional. */ }
+}
+
+function configurarPrevencionPerdidaNota() {
+  if (inicializacionFlujoNotasCompleta) return;
+  inicializacionFlujoNotasCompleta = true;
+  document.addEventListener("input", (evento) => {
+    if (elementosEditablesNota().includes(evento.target)) marcarCambiosNotaPendientes();
+  });
+  document.addEventListener("change", (evento) => {
+    if (elementosEditablesNota().includes(evento.target)) marcarCambiosNotaPendientes();
+  });
+  window.addEventListener("beforeunload", (evento) => {
+    if (!cambiosNotaPendientes) return;
+    guardarRespaldoTemporalNota();
+    evento.preventDefault();
+    evento.returnValue = "";
+  });
+}
 
 function referenciaApuntesMedico() {
   if (!uidMedicoActual) return null;
@@ -2875,9 +3031,23 @@ function fechaNotaHistorial(datos = {}) {
 window.editarNotaDesdeHistorial = function(notaId) {
   const datos = notasHistorial[notaId];
   if (!datos) return;
+  const vigente = datos.notaEditada || datos;
+  const estado = vigente.estadoNota || (vigente.esBorrador ? "borrador" : "definitiva");
+  if (estado === "definitiva" || vigente.bloqueada === true) {
+    notaEditandoId = notaId;
+    estadoNotaActual = "definitiva";
+    llenarFormularioNota(vigente);
+    establecerModoLecturaNota(true);
+    marcarNotaGuardada();
+    alert("La nota definitiva se abrio en modo lectura. Para corregirla se requiere una adenda separada.");
+    return;
+  }
   notaEditandoId = notaId;
+  estadoNotaActual = "borrador";
   escalasAplicadasPendientesNota = [];
-  llenarFormularioNota(datos.notaEditada || datos);
+  llenarFormularioNota(vigente);
+  establecerModoLecturaNota(false);
+  marcarNotaGuardada();
   btnCancelarEdicion?.classList.remove("oculto");
   document.getElementById("tipoNota")?.scrollIntoView({ behavior: "smooth", block: "center" });
 };
@@ -2891,6 +3061,11 @@ function cargarDatosNotaComoBorrador(notaId, opciones = {}) {
   }
 
   const datos = datosNota.notaEditada || datosNota;
+  const estado = datos.estadoNota || (datos.esBorrador ? "borrador" : "definitiva");
+  if (estado === "definitiva" || datos.bloqueada === true) {
+    alert("Una nota definitiva no puede reutilizarse como borrador sin una adenda trazable.");
+    return false;
+  }
   const formatoActual = formatoNota?.value || "cognicion";
   llenarFormularioNota({
     ...datos,
@@ -2901,15 +3076,20 @@ function cargarDatosNotaComoBorrador(notaId, opciones = {}) {
   aplicarTiempoActualNota();
   aplicarDatosInstitucionalesPaciente(pacienteActualDatos || {}, { forzarSignosVitales: true });
 
-  notaEditandoId = null;
-  btnCancelarEdicion?.classList.add("oculto");
+  notaEditandoId = notaId;
+  estadoNotaActual = "borrador";
+  establecerModoLecturaNota(false);
+  marcarNotaGuardada();
+  btnCancelarEdicion?.classList.remove("oculto");
   sincronizarFormatoNota();
   document.getElementById("tipoNota")?.scrollIntoView({ behavior: "smooth", block: "center" });
+  return true;
 }
 
 window.cargarNotaComoBorrador = function(notaId) {
-  cargarDatosNotaComoBorrador(notaId);
-  alert("Nota cargada como borrador. Al guardar se creara una nota nueva.");
+  if (cargarDatosNotaComoBorrador(notaId)) {
+    alert("Borrador cargado. Los siguientes guardados actualizaran el mismo documento.");
+  }
 };
 
 window.cargarNotaPreviaEnFormulario = function() {
@@ -2921,7 +3101,9 @@ window.cargarNotaPreviaEnFormulario = function() {
   }
 
   cargarDatosNotaComoBorrador(previa.id, { mantenerFormatoActual: true });
-  alert("Datos de la nota previa cargados. Se guardara como una nota nueva.");
+  if ((previa.datos.estadoNota || (previa.datos.esBorrador ? "borrador" : "definitiva")) === "definitiva") {
+    alert("La nota previa definitiva no se copio: debe conservarse sin cambios. Use una nueva nota o una futura adenda.");
+  }
 };
 
 function escaparHTML(valor) {
@@ -2943,6 +3125,47 @@ async function usuarioActualPuedeAccederPaciente(uidPaciente) {
 
   return await medicoPuedeVer(usuarioAuth.uid, uidPaciente);
 }
+
+async function recuperarBorradorCorrespondiente() {
+  if (!uidPacienteActual || !uidMedicoActual || cambiosNotaPendientes) return;
+  const contexto = obtenerContextoAtencion(uidPacienteActual);
+  try {
+    const borrador = await buscarBorradorNotaClinica(uidPacienteActual, {
+      atencionId: contexto.id,
+      tipoNotaClave: `${tipoNota?.value || "completa"}:${valorCampo("obsTipoNota") || formatoNota?.value || "cognicion"}`,
+      usuarioId: uidMedicoActual
+    });
+    let fechaFirebase = 0;
+    if (borrador) {
+      notaEditandoId = borrador.id;
+      estadoNotaActual = "borrador";
+      llenarFormularioNota(borrador);
+      establecerModoLecturaNota(false);
+      btnCancelarEdicion?.classList.remove("oculto");
+      fechaFirebase = fechaNotaHistorial(borrador).getTime();
+    }
+
+    let respaldo = null;
+    try { respaldo = JSON.parse(sessionStorage.getItem(claveRespaldoNota()) || "null"); } catch (error) {
+      console.warn("El respaldo temporal de la nota no pudo leerse:", error?.name || "error");
+    }
+    const respaldoValido = respaldo
+      && respaldo.pacienteId === uidPacienteActual
+      && respaldo.atencionId === contexto.id
+      && Number(respaldo.actualizadoEn || 0) > fechaFirebase;
+    if (respaldoValido && window.confirm("Existe un respaldo local mas reciente de esta misma atencion. ¿Desea recuperarlo?")) {
+      llenarFormularioNota(respaldo.datos || {});
+      notaEditandoId = respaldo.notaId || borrador?.id || null;
+      estadoNotaActual = notaEditandoId ? "borrador" : "nueva";
+      cambiosNotaPendientes = true;
+    } else {
+      marcarNotaGuardada();
+    }
+  } catch (error) {
+    console.error("No se pudo recuperar el borrador clinico:", error);
+  }
+}
+
 onAuthStateChanged(auth, async (user) => {
   if (!user) {
     window.location.href = "login.html";
@@ -2958,7 +3181,9 @@ onAuthStateChanged(auth, async (user) => {
 }
 
   uidMedicoActual = user.uid;
+  perfilMedicoActual = usuario;
   rolUsuarioActual = usuario.rol || "";
+  configurarPrevencionPerdidaNota();
   permisosFormatosActual = await obtenerPermisosFormatosUsuario(user.uid, usuario);
   aplicarPermisosFormatoNota();
   await cargarBorradoresMedico();
@@ -2990,6 +3215,7 @@ onAuthStateChanged(auth, async (user) => {
 
     await cargarPaciente(uidPacienteActual);
     await cargarHistorial(uidPacienteActual);
+    await recuperarBorradorCorrespondiente();
   } else {
     await cargarListaPacientes();
   }
@@ -3038,10 +3264,20 @@ async function cargarListaPacientes() {
   }
 
   selector.addEventListener("change", async () => {
+    const uidAnterior = uidPacienteActual || "";
+    if (cambiosNotaPendientes && !window.confirm("Hay cambios de la nota sin guardar. ¿Desea cambiar de paciente y conservar solo el respaldo temporal?")) {
+      selector.value = uidAnterior;
+      return;
+    }
+    if (cambiosNotaPendientes) guardarRespaldoTemporalNota();
     uidPacienteActual = selector.value;
     if (!uidPacienteActual) return;
+    notaEditandoId = null;
+    estadoNotaActual = "nueva";
+    cambiosNotaPendientes = false;
     await cargarPaciente(uidPacienteActual);
     await cargarHistorial(uidPacienteActual);
+    await recuperarBorradorCorrespondiente();
   });
 }
 
@@ -3152,7 +3388,7 @@ function actualizarContextoPacienteDictado() {
   });
 }
 
-async function guardarNotaMedicaConEstado(estadoNota = "definitiva") {
+async function guardarNotaMedicaConEstadoLegacy(estadoNota = "definitiva") {
   const selector = document.getElementById("uidPaciente");
   const uidPaciente = uidPacienteActual || selector?.value;
 
@@ -3280,16 +3516,172 @@ async function guardarNotaMedicaConEstado(estadoNota = "definitiva") {
   }
 }
 
+async function guardarNotaClinicaSeguro(estadoNota = "definitiva") {
+  const selector = document.getElementById("uidPaciente");
+  const uidPaciente = uidPacienteActual || selector?.value;
+  const esBorrador = estadoNota === "borrador";
+  const boton = document.getElementById(esBorrador ? "btnGuardarBorradorNota" : "btnGuardarNotaDefinitiva");
+  const textoOriginal = boton?.textContent || "";
+
+  if (!uidPaciente) {
+    alert("Selecciona un paciente antes de guardar la nota.");
+    return;
+  }
+  if (!auth.currentUser) {
+    alert("La sesion expiro. Inicia sesion nuevamente; el contenido permanecera en pantalla.");
+    return;
+  }
+  const contexto = obtenerContextoAtencion(uidPaciente);
+  if (!contexto.id) {
+    alert("No se encontro una atencion, consulta, ingreso o expediente activo para esta nota.");
+    return;
+  }
+  if (estadoNotaActual === "definitiva") {
+    alert("La nota definitiva esta bloqueada. Para corregirla se requiere una adenda separada.");
+    return;
+  }
+
+  try {
+    if (boton) {
+      boton.disabled = true;
+      boton.textContent = esBorrador ? "Guardando borrador..." : "Cerrando nota...";
+      boton.setAttribute("aria-busy", "true");
+    }
+    if (!(await usuarioActualPuedeAccederPaciente(uidPaciente))) throw new Error("PERMISO_PACIENTE");
+    aplicarPermisosFormatoNota();
+    if (formatoNota && !puedeUsarFormatoNota(formatoNota.value)) throw new Error("FORMATO_NO_AUTORIZADO");
+
+    diagnosticosSeleccionados = normalizarDiagnosticosNota(diagnosticosSeleccionados);
+    const diagnostico = diagnosticoActual();
+    const datosNotaClinica = collectNoteData();
+    const tratamiento = datosNotaClinica.tratamiento;
+    const medico = datosNotaClinica.medicoResponsable || perfilMedicoActual.nombre || perfilMedicoActual.nombreCompleto || auth.currentUser.displayName || "";
+    const ultimaConsulta = datosNotaClinica.ultimaConsulta;
+    const proximaConsulta = datosNotaClinica.proximaConsulta;
+    const catalogoVisible = datosNotaClinica.diagnosticoCatalogoVisible;
+    const contenidoClinico = [
+      datosNotaClinica.notaRapida, datosNotaClinica.subjetivo, datosNotaClinica.objetivo,
+      datosNotaClinica.analisis, datosNotaClinica.plan,
+      datosNotaClinica.observacionFray?.exploracionFisicaNeurologica,
+      datosNotaClinica.observacionFray?.resultadosEstudios,
+      datosNotaClinica.observacionFray?.pronostico, tratamiento,
+      ...Object.values(datosNotaClinica.camposDinamicos || {})
+    ].some((valor) => String(valor || "").replace(/<[^>]*>/g, "").trim());
+    if (!esBorrador && !contenidoClinico) throw new Error("CONTENIDO_CLINICO_REQUERIDO");
+    if (!esBorrador && !window.confirm("¿Confirma que desea cerrar esta nota como definitiva? Despues no podra editarse sin una adenda trazable.")) return;
+
+    const notaPayload = {
+      autor: medico,
+      medicoResponsable: medico,
+      usuarioId: auth.currentUser.uid,
+      usuarioNombre: perfilMedicoActual.nombre || perfilMedicoActual.nombreCompleto || auth.currentUser.displayName || auth.currentUser.email || "",
+      pacienteId: uidPaciente,
+      expedienteId: datosNotaClinica.expedienteId || contexto.id,
+      atencionId: contexto.id,
+      tipoAtencion: contexto.tipo,
+      ...datosNotaClinica,
+      diagnostico,
+      diagnosticoCatalogoVisible: catalogoVisible,
+      diagnosticos: diagnosticosSeleccionados,
+      historialDiagnosticos: diagnosticosSeleccionados,
+      tratamiento,
+      ultimaConsulta,
+      proximaConsulta
+    };
+    const eraNueva = !notaEditandoId;
+    const confirmada = esBorrador
+      ? await guardarBorradorNotaClinica(uidPaciente, notaEditandoId, notaPayload)
+      : await finalizarNotaClinica(uidPaciente, notaEditandoId, notaPayload, {
+          usuarioId: auth.currentUser.uid,
+          usuarioNombre: notaPayload.usuarioNombre
+        });
+
+    notaEditandoId = confirmada.id;
+    estadoNotaActual = confirmada.estadoNota;
+    if (eraNueva) await vincularEscalasPendientesANota(uidPaciente, confirmada.id);
+
+    try {
+      await actualizarUsuario(uidPaciente, {
+        diagnostico,
+        diagnosticoCatalogoVisible: catalogoVisible,
+        diagnosticos: diagnosticosSeleccionados,
+        historialDiagnosticos: diagnosticosSeleccionados,
+        tratamiento,
+        medicoTratante: medico,
+        ultimaConsulta,
+        proximaConsulta,
+        ...(esFormatoFray() ? datosPersistentesDesdeObservacion(datosNotaClinica.observacionFray) : {})
+      });
+    } catch (errorPerfil) {
+      console.warn("La nota se guardo, pero no se pudo actualizar el resumen del paciente:", errorPerfil);
+    }
+
+    try {
+      const pacienteActual = await obtenerUsuario(uidPaciente);
+      await registrarEventoAuditoria({
+        accion: eraNueva
+          ? (esBorrador ? "crear_borrador_nota_medica" : "crear_nota_medica_definitiva")
+          : (esBorrador ? "editar_borrador_nota_medica" : "cerrar_borrador_como_nota_definitiva"),
+        modulo: "Nota medica",
+        descripcion: esBorrador
+          ? (eraNueva ? "El medico creo un borrador clinico." : "El medico actualizo el mismo borrador clinico.")
+          : (eraNueva ? "El medico creo y cerro una nota definitiva." : "El medico convirtio el borrador existente en nota definitiva."),
+        usuarioUid: auth.currentUser.uid,
+        usuarioNombre: notaPayload.usuarioNombre,
+        usuarioRol: perfilMedicoActual.rol || "",
+        pacienteUid: uidPaciente,
+        pacienteNombre: pacienteActual?.nombre || "",
+        exito: true,
+        detalles: {
+          notaId: confirmada.id,
+          estadoNota,
+          tipoNota: datosNotaClinica.tipoNota || "",
+          formatoNota: datosNotaClinica.formatoNota || "cognicion",
+          version: confirmada.version || 1
+        }
+      });
+    } catch (errorAuditoria) {
+      console.error("La nota se guardo, pero fallo el registro de auditoria:", errorAuditoria);
+    }
+
+    marcarNotaGuardada();
+    btnCancelarEdicion?.classList.remove("oculto");
+    if (!esBorrador) establecerModoLecturaNota(true);
+    await cargarHistorial(uidPaciente);
+    alert(esBorrador
+      ? `Borrador ${eraNueva ? "guardado" : "actualizado"} y verificado en Firebase.`
+      : "Nota definitiva cerrada y verificada en Firebase. Quedo en modo lectura.");
+  } catch (error) {
+    console.error(`Error al ${esBorrador ? "guardar borrador" : "cerrar nota definitiva"}:`, error);
+    guardarRespaldoTemporalNota();
+    const codigo = error?.code || "";
+    let mensaje = "No se pudo guardar la nota. El contenido permanece en pantalla.";
+    if (error?.message === "PERMISO_PACIENTE" || codigo === "permission-denied") mensaje = "No tienes permiso para guardar notas de este paciente.";
+    else if (error?.message === "FORMATO_NO_AUTORIZADO") mensaje = "No tienes autorizacion para usar este formato institucional.";
+    else if (error?.message === "CONTENIDO_CLINICO_REQUERIDO") mensaje = "Falta contenido clinico: captura al menos un apartado de la nota antes de cerrarla.";
+    else if (codigo === "unauthenticated") mensaje = "La sesion expiro. Inicia sesion nuevamente; el contenido permanece en pantalla.";
+    else if (["unavailable", "deadline-exceeded"].includes(codigo)) mensaje = "No hay conexion con Firebase. Se conservo un respaldo temporal y el contenido sigue en pantalla.";
+    else if (/definitiva|bloqueada|cerrada/i.test(error?.message || "")) mensaje = error.message;
+    alert(mensaje);
+  } finally {
+    if (boton) {
+      boton.disabled = estadoNotaActual === "definitiva";
+      boton.textContent = textoOriginal;
+      boton.removeAttribute("aria-busy");
+    }
+  }
+}
+
 window.guardarBorradorNota = function() {
-  guardarNotaMedicaConEstado("borrador");
+  return guardarNotaClinicaSeguro("borrador");
 };
 
 window.guardarNotaDefinitiva = function() {
-  guardarNotaMedicaConEstado("definitiva");
+  return guardarNotaClinicaSeguro("definitiva");
 };
 
 window.guardarNotaMedica = function() {
-  guardarNotaMedicaConEstado("definitiva");
+  return guardarNotaClinicaSeguro("definitiva");
 };
 
 async function cargarHistorial(uidPaciente) {
@@ -3340,6 +3732,9 @@ async function cargarHistorial(uidPaciente) {
     const notaVigente = datos.notaEditada || datos;
     const estadoNota = notaVigente.estadoNota || (notaVigente.esBorrador ? "borrador" : "definitiva");
     const estadoTexto = estadoNota === "borrador" ? "Borrador" : "Definitiva";
+    const accionesNota = estadoNota === "borrador" && notaVigente.bloqueada !== true
+      ? `<button type="button" class="boton-secundario" onclick="editarNotaDesdeHistorial('${nota.id}')">Continuar borrador</button>`
+      : `<button type="button" class="boton-secundario" onclick="editarNotaDesdeHistorial('${nota.id}')">Ver nota (solo lectura)</button>`;
 
     let diagnosticosTexto = "";
 
@@ -3382,13 +3777,7 @@ async function cargarHistorial(uidPaciente) {
           ${datos.notaEditada ? bloqueContenidoNota(datos.notaEditada, "Versión editada") : ""}
 
           <div class="acciones-historial-nota">
-            <button type="button" class="boton-secundario" onclick="cargarNotaComoBorrador('${nota.id}')">
-              Usar como borrador
-            </button>
-
-            <button type="button" class="boton-secundario" onclick="editarNotaDesdeHistorial('${nota.id}')">
-              Editar esta nota
-            </button>
+            ${accionesNota}
           </div>
 
         </div>
@@ -3405,6 +3794,8 @@ async function cargarHistorial(uidPaciente) {
 }
 
 window.regresarDesdeNota = function() {
+  if (cambiosNotaPendientes && !window.confirm("Hay cambios sin guardar. ¿Desea salir y conservar solo el respaldo temporal?")) return;
+  if (cambiosNotaPendientes) guardarRespaldoTemporalNota();
   if (uidPacienteActual) {
     window.location.href = `paciente.html?id=${uidPacienteActual}`;
   } else {
@@ -3931,24 +4322,116 @@ async function htmlWordFrayObservacion() {
 }
 
 window.descargarNotaFrayObservacion = async function() {
-  const datos = leerFormularioObservacionFray();
-  const html = await htmlWordFrayObservacion();
-  const blob = crearDocxNotaDesdeHtml(html);
-  const url = URL.createObjectURL(blob);
-  const enlace = document.createElement("a");
-  enlace.href = url;
-  enlace.download = nombreArchivoWordFray(datos);
-  document.body.appendChild(enlace);
-  enlace.click();
-  enlace.remove();
-  URL.revokeObjectURL(url);
+  return window.descargarNotaSeleccionada();
 };
 
 window.descargarNotaSeleccionada = async function() {
-  if (esFormatoFray()) {
-    await window.descargarNotaFrayObservacion();
-    return;
-  }
+  const boton = document.getElementById("btnDescargarNota");
+  const textoOriginal = boton?.textContent || "Descargar nota";
+  try {
+    if (boton) {
+      boton.disabled = true;
+      boton.textContent = "Generando Word...";
+      boton.setAttribute("aria-busy", "true");
+    }
+    const datosNota = collectNoteData();
+    const observacion = datosNota.observacionFray || {};
+    const identificacion = datosInstitucionalesPaciente(pacienteActualDatos || {});
+    const fecha = observacion.fechaNota || new Date().toISOString().slice(0, 10);
+    const hora = observacion.horaNota || new Date().toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit", hour12: false });
+    const tipoInstitucional = esFormatoFray()
+      ? (observacion.tipoNota || "evolucion")
+      : (datosNota.tipoNota || "clinica");
+    const secciones = datosNota.tipoNota === "rapida"
+      ? [{ titulo: "NOTA RÁPIDA", contenido: datosNota.notaRapida }]
+      : [
+          { titulo: "PADECIMIENTO ACTUAL / EVOLUCIÓN", contenido: datosNota.subjetivo },
+          { titulo: "EXPLORACIÓN FÍSICA Y NEUROLÓGICA", contenido: observacion.exploracionFisicaNeurologica },
+          { titulo: "EXAMEN MENTAL", contenido: datosNota.objetivo },
+          { titulo: "RESULTADOS RELEVANTES DE ESTUDIOS", contenido: observacion.resultadosEstudios },
+          { titulo: "COMENTARIO Y ANÁLISIS CLÍNICO", contenido: datosNota.analisis },
+          { titulo: "PLAN", contenido: datosNota.plan },
+          { titulo: "TRATAMIENTO E INDICACIONES", contenido: datosNota.tratamiento },
+          { titulo: "PRONÓSTICO", contenido: observacion.pronostico },
+          { titulo: "DESTINO", contenido: observacion.destino }
+        ];
+    Object.entries(datosNota.camposDinamicos || {}).forEach(([clave, contenido]) => {
+      if (String(contenido || "").trim()) secciones.push({ titulo: clave.replace(/[_-]+/g, " ").toUpperCase(), contenido });
+    });
 
-  window.generarPDFNota();
+    const recursos = [];
+    for (const ruta of ["assets/fray-observacion-salud-conasama-stack.png", "assets/fray-observacion-image2.png"]) {
+      try {
+        const respuesta = await fetch(ruta);
+        if (!respuesta.ok) throw new Error(`HTTP ${respuesta.status}`);
+        recursos.push({ bytes: new Uint8Array(await respuesta.arrayBuffer()), extension: "png" });
+      } catch (errorRecurso) {
+        console.warn("El logotipo no se pudo incluir; el Word se generara sin ese recurso:", ruta, errorRecurso);
+      }
+    }
+
+    const documento = crearDocumentoWordFray({
+      institucion: 'HOSPITAL PSIQUIÁTRICO "FRAY BERNARDINO ÁLVAREZ"',
+      titulo: esFormatoFray() ? tituloNotaFray(tipoInstitucional) : "NOTA CLÍNICA",
+      servicio: observacion.servicio || datosNota.servicio || "",
+      fechaHora: `${formatoFechaFray(fecha)} ${hora}`.trim(),
+      estadoNota: estadoNotaActual === "nueva" ? "Sin guardar" : estadoNotaActual,
+      paciente: {
+        nombre: observacion.nombrePaciente || identificacion.nombrePaciente,
+        expediente: observacion.expediente || identificacion.expediente,
+        fechaNacimiento: formatoFechaFray(observacion.fechaNacimiento || identificacion.fechaNacimiento),
+        edad: observacion.edad || identificacion.edad,
+        sexo: observacion.sexo || identificacion.sexo,
+        cama: observacion.cama || identificacion.cama
+      },
+      medico: {
+        nombre: datosNota.medicoResponsable,
+        cargo: observacion.firma1Cargo || perfilMedicoActual.cargo || "",
+        especialidad: perfilMedicoActual.especialidad || "",
+        cedula: observacion.firma1Cedula || perfilMedicoActual.cedulaProfesional || perfilMedicoActual.cedula || ""
+      },
+      secciones,
+      diagnosticos: observacion.diagnosticosCIE10?.length
+        ? observacion.diagnosticosCIE10
+        : datosNota.diagnosticos,
+      firmas: [1, 2, 3].map((indice) => ({
+        nombre: observacion[`firma${indice}Nombre`] || (indice === 1 ? datosNota.medicoResponsable : ""),
+        cargo: observacion[`firma${indice}Cargo`] || "",
+        especialidad: indice === 1 ? perfilMedicoActual.especialidad || "" : "",
+        cedula: observacion[`firma${indice}Cedula`] || ""
+      }))
+    }, recursos);
+    if (!(documento instanceof Blob) || documento.size < 1000) throw new Error("El generador produjo un archivo Word incompleto.");
+
+    const nombrePaciente = observacion.nombrePaciente || identificacion.nombrePaciente || "Paciente";
+    const partesNombre = nombrePaciente.trim().split(/\s+/);
+    const nombreArchivo = nombreSeguroNotaWord({
+      tipoNota: tipoInstitucional,
+      apellidoPaciente: partesNombre.length > 1 ? partesNombre[partesNombre.length - 1] : partesNombre[0],
+      fecha
+    });
+    const url = URL.createObjectURL(documento);
+    const enlace = document.createElement("a");
+    enlace.href = url;
+    enlace.download = nombreArchivo;
+    enlace.style.display = "none";
+    document.body.appendChild(enlace);
+    enlace.click();
+    enlace.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    alert(`Documento Word generado correctamente: ${nombreArchivo}`);
+  } catch (error) {
+    console.error("Error al generar o descargar la nota Word:", error);
+    let mensaje = "No se pudo generar el documento Word. La nota permanece intacta.";
+    if (/paciente/i.test(error?.message || "")) mensaje = "No se pudieron obtener los datos del paciente para el documento Word.";
+    else if (/incompleto|zip|xml|documento/i.test(error?.message || "")) mensaje = "No se pudo construir un archivo Word valido. La nota permanece intacta.";
+    else if (typeof Blob === "undefined" || typeof URL?.createObjectURL !== "function") mensaje = "El navegador no admite la descarga de documentos Word.";
+    alert(mensaje);
+  } finally {
+    if (boton) {
+      boton.disabled = false;
+      boton.textContent = textoOriginal;
+      boton.removeAttribute("aria-busy");
+    }
+  }
 };

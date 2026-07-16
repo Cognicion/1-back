@@ -485,7 +485,7 @@
 <section class="selector-formato-nota">
     <label for="formatoNota">Formato de descarga</label>
     <select id="formatoNota">
-        <option value="cognicion">PDF Cognicion</option>
+        <option value="cognicion">Word Cognicion</option>
         <option value="fray_observacion_ingreso">Fray Bernardino - Observacion - Nota de ingreso</option>
         <option value="fray_observacion_evolucion">Fray Bernardino - Observacion - Nota de evolucion</option>
         <option value="fray_observacion_envio_piso">Fray Bernardino - Observacion - Nota de envio a Hospitalizacion continua</option>
@@ -496,20 +496,20 @@
 </section>
 
 <div class="acciones-guardado-nota">
-    <button type="button" class="boton-secundario" onclick="guardarBorradorNota()">
+    <button id="btnGuardarBorradorNota" type="button" class="boton-secundario" onclick="guardarBorradorNota()">
         Guardar borrador
     </button>
 
-    <button type="button" onclick="guardarNotaDefinitiva()">
+    <button id="btnGuardarNotaDefinitiva" type="button" onclick="guardarNotaDefinitiva()">
         Guardar nota definitiva
     </button>
 </div>
 
-<button id="btnCancelarEdicion" class="boton-secundario oculto" onclick="cancelarEdicionNota()">
+<button id="btnCancelarEdicion" type="button" class="boton-secundario oculto" onclick="cancelarEdicionNota()">
 Cancelar edicion
 </button>
 
-<button id="btnDescargarNota" class="boton-pdf" onclick="descargarNotaSeleccionada()">
+<button id="btnDescargarNota" type="button" class="boton-pdf" onclick="descargarNotaSeleccionada()">
     Descargar nota
 </button>
 

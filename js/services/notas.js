@@ -4,13 +4,145 @@ import {
   collection,
   addDoc,
   doc,
+  getDoc,
   getDocs,
   query,
   orderBy,
   where,
   updateDoc,
-  arrayUnion
+  arrayUnion,
+  runTransaction,
+  serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const COLECCION_NOTAS = "notasMedicas";
+
+function referenciaNota(uidPaciente, notaId = "") {
+  if (!uidPaciente) throw new Error("No se pudo identificar al paciente.");
+  if (!notaId) return doc(collection(db, "usuarios", uidPaciente, COLECCION_NOTAS));
+  const { raiz, coleccion: nombreColeccion, idOriginal } = descomponerIdNota(notaId);
+  if (raiz !== "usuarios" || nombreColeccion !== COLECCION_NOTAS) {
+    throw new Error("La nota heredada debe copiarse a la coleccion clinica antes de editarse.");
+  }
+  return doc(db, "usuarios", uidPaciente, COLECCION_NOTAS, idOriginal);
+}
+
+function datosVerificacion(snapshot) {
+  if (!snapshot.exists()) throw new Error("Firebase no confirmo la escritura de la nota.");
+  return { id: snapshot.id, ...snapshot.data() };
+}
+
+/**
+ * Crea o actualiza el mismo borrador. Una nota definitiva nunca puede volver a
+ * borrador ni modificarse por esta via.
+ */
+export async function guardarBorradorNotaClinica(uidPaciente, notaId, payload) {
+  const referencia = referenciaNota(uidPaciente, notaId);
+  const ahoraIso = new Date().toISOString();
+
+  await runTransaction(db, async (transaction) => {
+    const actual = await transaction.get(referencia);
+    const datosActuales = actual.exists() ? actual.data() : null;
+    if (datosActuales?.estadoNota === "definitiva" || datosActuales?.bloqueada === true) {
+      throw new Error("La nota definitiva esta bloqueada y no puede volver a borrador.");
+    }
+
+    const version = Math.max(1, Number(datosActuales?.version || 1));
+    transaction.set(referencia, {
+      ...payload,
+      notaId: referencia.id,
+      estadoNota: "borrador",
+      esBorrador: true,
+      bloqueada: false,
+      version,
+      fecha: ahoraIso,
+      fechaGuardadoBorrador: ahoraIso,
+      fechaUltimaModificacion: ahoraIso,
+      actualizadoEn: serverTimestamp(),
+      ...(actual.exists()
+        ? {}
+        : {
+            fechaCreacion: ahoraIso,
+            creadoEn: serverTimestamp()
+          })
+    }, { merge: true });
+  });
+
+  const confirmado = datosVerificacion(await getDoc(referencia));
+  if (confirmado.estadoNota !== "borrador") {
+    throw new Error("Firebase respondio, pero no confirmo el estado borrador.");
+  }
+  return confirmado;
+}
+
+/** Convierte atomicamente el mismo documento de borrador a definitivo. */
+export async function finalizarNotaClinica(uidPaciente, notaId, payload, cierre) {
+  const referencia = referenciaNota(uidPaciente, notaId);
+  const ahoraIso = new Date().toISOString();
+
+  await runTransaction(db, async (transaction) => {
+    const actual = await transaction.get(referencia);
+    const datosActuales = actual.exists() ? actual.data() : null;
+    if (datosActuales?.estadoNota === "definitiva" || datosActuales?.bloqueada === true) {
+      throw new Error("Esta nota ya fue cerrada como definitiva.");
+    }
+
+    const versionAnterior = Number(datosActuales?.version || 0);
+    const version = Math.max(1, versionAnterior + (actual.exists() ? 1 : 0));
+    const eventoCierre = {
+      tipo: "cierre_definitivo",
+      fecha: ahoraIso,
+      usuarioId: cierre.usuarioId || "",
+      usuarioNombre: cierre.usuarioNombre || "",
+      version
+    };
+
+    transaction.set(referencia, {
+      ...payload,
+      notaId: referencia.id,
+      estadoNota: "definitiva",
+      esBorrador: false,
+      bloqueada: true,
+      version,
+      fecha: ahoraIso,
+      fechaNotaDefinitiva: ahoraIso,
+      fechaCierre: ahoraIso,
+      fechaUltimaModificacion: ahoraIso,
+      cerradoPorId: cierre.usuarioId || "",
+      cerradoPorNombre: cierre.usuarioNombre || "",
+      actualizadoEn: serverTimestamp(),
+      historialEstados: arrayUnion(eventoCierre),
+      ...(actual.exists()
+        ? {}
+        : {
+            fechaCreacion: ahoraIso,
+            creadoEn: serverTimestamp()
+          })
+    }, { merge: true });
+  });
+
+  const confirmado = datosVerificacion(await getDoc(referencia));
+  if (confirmado.estadoNota !== "definitiva" || confirmado.bloqueada !== true) {
+    throw new Error("Firebase respondio, pero no confirmo el cierre definitivo.");
+  }
+  return confirmado;
+}
+
+export async function buscarBorradorNotaClinica(uidPaciente, contexto = {}) {
+  const snap = await getDocs(collection(db, "usuarios", uidPaciente, COLECCION_NOTAS));
+  const candidatos = snap.docs
+    .map((documento) => ({ id: documento.id, ...documento.data() }))
+    .filter((nota) => {
+      const estado = nota.estadoNota || (nota.esBorrador ? "borrador" : "definitiva");
+      return estado === "borrador"
+        && (!contexto.atencionId || nota.atencionId === contexto.atencionId)
+        && (!contexto.tipoNotaClave || nota.tipoNotaClave === contexto.tipoNotaClave)
+        && (!contexto.tipoNota || nota.tipoNota === contexto.tipoNota)
+        && (!contexto.usuarioId || nota.usuarioId === contexto.usuarioId);
+    })
+    .sort((a, b) => fechaNotaEnMs(b) - fechaNotaEnMs(a));
+  return candidatos[0] || null;
+}
 
 export async function guardarNota(uidPaciente, datosNota) {
   const referencia = await addDoc(

@@ -1,0 +1,31 @@
+import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
+
+const [html, modulo, servicio] = await Promise.all([
+  readFile(new URL("../../nota.html", import.meta.url), "utf8"),
+  readFile(new URL("../nota.js", import.meta.url), "utf8"),
+  readFile(new URL("../services/notas.js", import.meta.url), "utf8")
+]);
+
+for (const id of ["btnGuardarBorradorNota", "btnGuardarNotaDefinitiva", "btnDescargarNota"]) {
+  assert.equal((html.match(new RegExp(`id=["']${id}["']`, "g")) || []).length, 1, `${id} debe ser unico`);
+  assert.match(html, new RegExp(`<button[^>]*id=["']${id}["'][^>]*type=["']button["']`));
+}
+
+assert.equal(/\bplantillaSuger\b(?!ida)/.test(modulo), false, "no debe reaparecer la variable inexistente plantillaSuger");
+assert.match(modulo, /function collectNoteData\(\)/);
+assert.match(modulo, /guardarBorradorNotaClinica\(uidPaciente, notaEditandoId, notaPayload\)/);
+assert.match(modulo, /finalizarNotaClinica\(uidPaciente, notaEditandoId, notaPayload/);
+assert.match(modulo, /window\.confirm\("¿Confirma que desea cerrar esta nota como definitiva\?/);
+assert.match(modulo, /crearDocumentoWordFray\(/);
+assert.equal(/window\.descargarNotaSeleccionada[\s\S]{0,800}window\.print\(\)/.test(modulo), false);
+
+assert.match(servicio, /const COLECCION_NOTAS = "notasMedicas"/);
+assert.match(servicio, /runTransaction\(db/);
+assert.match(servicio, /estadoNota: "borrador"/);
+assert.match(servicio, /estadoNota: "definitiva"/);
+assert.match(servicio, /bloqueada: true/);
+assert.match(servicio, /getDoc\(referencia\)/);
+assert.match(servicio, /no puede volver a borrador/i);
+
+console.log("notaClinicaFlow: ok");
