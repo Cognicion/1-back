@@ -206,6 +206,35 @@ button:hover{
 .acciones-ingreso button{
     margin-top:0;
 }
+
+.selector-hora-clinica{
+    display:grid;
+    grid-template-columns:minmax(72px,96px) auto minmax(72px,96px) minmax(120px,1fr);
+    gap:8px;
+    align-items:center;
+}
+
+.selector-hora-clinica span{
+    color:#d8e6f7;
+    font-weight:900;
+    text-align:center;
+}
+
+.selector-hora-clinica select,
+.selector-hora-clinica input{
+    width:100%;
+    min-height:42px;
+}
+
+@media (max-width:640px){
+    .selector-hora-clinica{
+        grid-template-columns:1fr auto 1fr;
+    }
+
+    .selector-hora-clinica input{
+        grid-column:1 / -1;
+    }
+}
 </style>
   <link rel="stylesheet" href="css/reportes.css">
 </head>
@@ -217,7 +246,7 @@ button:hover{
 <h1>Nuevo paciente</h1>
 
 <div class="tarjeta">
-<h2>Datos de identificación</h2>
+<h2>Datos de identificaciÃ³n</h2>
 
 <div class="grid">
     <div>
@@ -257,12 +286,12 @@ button:hover{
     </div>
 
     <div>
-        <label>Teléfono</label>
+        <label>TelÃ©fono</label>
         <input id="telefono">
     </div>
 
     <div>
-        <label>Correo electrónico</label>
+        <label>Correo electrÃ³nico</label>
         <input id="email" type="email">
     </div>
 
@@ -277,7 +306,7 @@ button:hover{
     </div>
 
     <div>
-        <label>Ocupación</label>
+        <label>OcupaciÃ³n</label>
         <input id="ocupacion">
     </div>
 
@@ -358,21 +387,21 @@ button:hover{
 </div>
 
 <div class="tarjeta">
-<h2>Información clínica inicial</h2>
+<h2>InformaciÃ³n clÃ­nica inicial</h2>
 
 <div class="grid">
     <div>
-        <label>Médico tratante</label>
-        <input id="medicoTratante" placeholder="Se tomará de tu perfil profesional">
+        <label>MÃ©dico tratante</label>
+        <input id="medicoTratante" placeholder="Se tomarÃ¡ de tu perfil profesional">
     </div>
 
     <div>
-        <label>Diagnóstico principal</label>
+        <label>DiagnÃ³stico principal</label>
         <input id="diagnostico">
     </div>
 
     <div>
-        <label>Última consulta</label>
+        <label>Ãšltima consulta</label>
         <input id="ultimaConsulta" type="date">
     </div>
 </div>
@@ -402,7 +431,7 @@ Guardar paciente
                 <p>Fecha de ingreso</p>
                 <h3 id="tituloIngresoNuevo">Seleccionar ingreso</h3>
             </div>
-            <button type="button" id="cerrarIngresoNuevo" aria-label="Cerrar selector">×</button>
+            <button type="button" id="cerrarIngresoNuevo" aria-label="Cerrar selector">Ã—</button>
         </div>
 
         <label>Dia
@@ -410,7 +439,13 @@ Guardar paciente
         </label>
 
           <label>Hora
-              <select id="ingresoNuevoHora"></select>
+              <div class="selector-hora-clinica">
+                  <select id="ingresoNuevoHoraHH" aria-label="Hora"></select>
+                  <span>:</span>
+                  <select id="ingresoNuevoHoraMM" aria-label="Minuto"></select>
+                  <input id="ingresoNuevoHoraManual" type="text" inputmode="numeric" placeholder="HH:mm" aria-label="Hora manual">
+                  <input id="ingresoNuevoHora" type="hidden">
+              </div>
           </label>
 
         <small>Si no seleccionas hora, se tomara el inicio del dia.</small>
@@ -424,6 +459,7 @@ Guardar paciente
 
 <script type="module" src="js/nuevoPaciente.js"></script>
 
+  <script type="module" src="js/components/accesosRapidos.js"></script>
   <script type="module" src="js/reportes.js"></script>
 </body>
 </html>

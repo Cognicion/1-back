@@ -1924,7 +1924,12 @@ function renderizarReportesUsuariosAdmin() {
       reporte.usuarioRegistrado?.unidad,
       reporte.usuarioRegistrado?.institucion,
       reporte.pagina,
-      reporte.url
+      reporte.url,
+      reporte.recursoTipo,
+      reporte.recursoId,
+      reporte.pacienteUid,
+      reporte.pacienteNombre,
+      reporte.motivoSolicitud
     ].join(" ")).includes(texto);
 
     const coincideEstado = !estado || (reporte.estado || "nuevo") === estado;
@@ -1966,6 +1971,7 @@ function renderizarReportesUsuariosAdmin() {
           <span>${escaparHTML(reporte.pagina || "Sin pagina")}</span>
         </div>
         ${datosUsuarioReporteHTML(reporte)}
+        ${detalleSolicitudEliminacionHTML(reporte)}
         ${reporte.respuestaAdminUltima?.mensaje ? `
           <div class="respuesta-reporte-admin">
             <strong>Ultima respuesta enviada</strong>
@@ -2011,10 +2017,39 @@ function etiquetaTipoReporte(tipo) {
     problema: "Problema",
     sugerencia: "Sugerencia",
     peticion_personal: "Peticion personal",
-    nueva_funcionalidad: "Nueva funcionalidad"
+    nueva_funcionalidad: "Nueva funcionalidad",
+    solicitud_eliminacion: "Solicitud de eliminacion"
   };
 
   return etiquetas[tipo] || "Reporte";
+}
+
+function detalleSolicitudEliminacionHTML(reporte = {}) {
+  if (reporte.tipo !== "solicitud_eliminacion" && reporte.categoria !== "solicitud_eliminacion") return "";
+
+  const etiquetas = {
+    nota_medica: "Nota medica",
+    paciente: "Paciente",
+    estudio: "Estudio",
+    tratamiento: "Tratamiento",
+    usuario: "Usuario"
+  };
+  const recurso = etiquetas[reporte.recursoTipo] || reporte.recursoTipo || "Registro";
+
+  return `
+    <div class="reporte-usuario-detalle">
+      <div>
+        <strong>Datos de la solicitud</strong>
+        <span>${escaparHTML(recurso)}</span>
+      </div>
+      <div class="reporte-usuario-grid">
+        <span>ID del recurso: ${escaparHTML(reporte.recursoId || "Sin ID")}</span>
+        <span>Paciente: ${escaparHTML(reporte.pacienteNombre || "Sin nombre")}</span>
+        <span>UID paciente: ${escaparHTML(reporte.pacienteUid || "Sin UID")}</span>
+        <span>Motivo: ${escaparHTML(reporte.motivoSolicitud || "No indicado")}</span>
+      </div>
+    </div>
+  `;
 }
 
 function opcionEstadoReporte(valor, actual) {

@@ -1,20 +1,38 @@
-const CLAVE_DESTINO = "cognicion.accesosRapidos.destino";
+const CLAVE_ACCESOS = "cognicion.accesosRapidos.lista";
+const CLAVE_DESTINO_LEGADO = "cognicion.accesosRapidos.destino";
+const LIMITE_RESULTADOS = 8;
 
 export const OPCIONES_ACCESOS_RAPIDOS = Object.freeze([
-  { value: "dashboard.html", label: "Dashboard" },
-  { value: "medico.html", label: "Panel médico" },
-  { value: "pacientes.html", label: "Pacientes" },
-  { value: "nuevo-paciente.html", label: "Nuevo paciente" },
-  { value: "agenda.html", label: "Agenda" },
-  { value: "nota.html", label: "Notas clínicas" },
-  { value: "calculadoras-medicas.html", label: "Calculadoras médicas" },
-  { value: "calculadora-benzodiacepinas.html", label: "Benzodiacepinas" },
-  { value: "calculadoras-pediatricas.html", label: "Calculadoras pediátricas" },
-  { value: "escalas.html", label: "Escalas clínicas" },
-  { value: "laboratorio-farmacologia.html", label: "Laboratorio de farmacología" },
-  { value: "biblioteca.html", label: "Biblioteca" },
-  { value: "sofia.html", label: "SOFIA" },
-  { value: "configuracion.html", label: "Configuración" }
+  { value: "dashboard.html", label: "Dashboard", keywords: "inicio panel principal" },
+  { value: "medico.html", label: "Panel médico", keywords: "pacientes médico hospital" },
+  { value: "paciente.html", label: "Expediente de paciente", keywords: "paciente expediente datos generales" },
+  { value: "pacientes.html", label: "Pacientes", keywords: "lista pacientes" },
+  { value: "nuevo-paciente.html", label: "Nuevo paciente", keywords: "registro crear paciente" },
+  { value: "nota.html", label: "Nota clínica", keywords: "notas dictado evolución" },
+  { value: "historia.html", label: "Historia clínica", keywords: "antecedentes ficha exploración" },
+  { value: "agenda.html", label: "Agenda médica", keywords: "citas calendario" },
+  { value: "apuntes.html", label: "Mis apuntes", keywords: "apuntes notas personales" },
+  { value: "mi-salud.html", label: "Mi Salud", keywords: "paciente salud tratamiento" },
+  { value: "escalas.html", label: "Escalas clínicas", keywords: "tamizajes phq gad ciwa cognitivo" },
+  { value: "calculadoras-medicas.html", label: "Calculadoras y escalas clínicas", keywords: "calculadoras medicina riesgo dosis" },
+  { value: "calculadora-benzodiacepinas.html", label: "Calculadora de benzodiacepinas", keywords: "benzodiacepinas equivalencias diazepam" },
+  { value: "calculadoras-pediatricas.html", label: "Calculadoras pediátricas", keywords: "pediatría dosis niños percentiles" },
+  { value: "pediatria.html", label: "Centro pediátrico", keywords: "pediatría niño menor edad" },
+  { value: "laboratorio-farmacologia.html", label: "Laboratorio de farmacología", keywords: "interacciones medicamentos farmacología" },
+  { value: "laboratorio-neurofisiologia.html", label: "Laboratorio de neurofisiología", keywords: "neuronas sinapsis membrana iones" },
+  { value: "rehabilitacion-cognitiva.html", label: "Rehabilitación cognitiva", keywords: "cognición memoria atención ejercicios" },
+  { value: "nback.html", label: "1-Back", keywords: "memoria trabajo atención" },
+  { value: "stroop.html", label: "Stroop", keywords: "inhibición atención" },
+  { value: "go-nogo.html", label: "Go / No-Go", keywords: "impulsividad inhibición" },
+  { value: "busqueda-visual.html", label: "Búsqueda visual", keywords: "atención visual" },
+  { value: "reconocimiento-emociones.html", label: "Reconocimiento de emociones", keywords: "emociones cognición social" },
+  { value: "respiracion.html", label: "Asistente de respiración", keywords: "mindfulness respiración" },
+  { value: "biblioteca.html", label: "Biblioteca médica", keywords: "biblioteca recursos lectura medicina" },
+  { value: "foro.html", label: "Foro Cognición", keywords: "foro comunidad mensajes" },
+  { value: "sofia.html", label: "SOFÍA", keywords: "asistente inteligencia artificial" },
+  { value: "perfil-profesional.html", label: "Perfil profesional", keywords: "perfil cédula especialidad" },
+  { value: "configuracion.html", label: "Configuración", keywords: "apariencia tema cuenta" },
+  { value: "admin.html", label: "Centro de Control", keywords: "admin administración reportes usuarios" }
 ]);
 
 function asegurarEstilos() {
@@ -26,23 +44,6 @@ function asegurarEstilos() {
   document.head.appendChild(link);
 }
 
-function destinoGuardado() {
-  try {
-    const value = localStorage.getItem(CLAVE_DESTINO) || "dashboard.html";
-    return OPCIONES_ACCESOS_RAPIDOS.some((opcion) => opcion.value === value) ? value : "dashboard.html";
-  } catch {
-    return "dashboard.html";
-  }
-}
-
-function guardarDestino(value) {
-  try {
-    localStorage.setItem(CLAVE_DESTINO, value);
-  } catch {
-    // La navegación sigue funcionando aunque el navegador bloquee el almacenamiento.
-  }
-}
-
 function escaparHTML(value = "") {
   return String(value)
     .replaceAll("&", "&amp;")
@@ -52,10 +53,42 @@ function escaparHTML(value = "") {
     .replaceAll("'", "&#039;");
 }
 
-function cerrarOtros(actual) {
-  document.querySelectorAll("[data-accesos-rapidos].abierto").forEach((contenedor) => {
-    if (contenedor !== actual) cerrarPanel(contenedor);
+function accesosPorDefecto() {
+  return ["medico.html", "laboratorio-farmacologia.html", "calculadoras-medicas.html", "dashboard.html"];
+}
+
+function normalizarLista(lista = []) {
+  const permitidos = new Set(OPCIONES_ACCESOS_RAPIDOS.map((opcion) => opcion.value));
+  const unicos = [];
+  lista.forEach((value) => {
+    if (permitidos.has(value) && !unicos.includes(value)) unicos.push(value);
   });
+  return unicos.length ? unicos : accesosPorDefecto();
+}
+
+function leerAccesos() {
+  try {
+    const guardado = JSON.parse(localStorage.getItem(CLAVE_ACCESOS) || "null");
+    if (Array.isArray(guardado)) return normalizarLista(guardado);
+
+    const legado = localStorage.getItem(CLAVE_DESTINO_LEGADO);
+    if (legado) return normalizarLista([legado, ...accesosPorDefecto()]);
+  } catch {
+    // Si el almacenamiento falla, se usan accesos por defecto.
+  }
+  return accesosPorDefecto();
+}
+
+function guardarAccesos(lista) {
+  try {
+    localStorage.setItem(CLAVE_ACCESOS, JSON.stringify(normalizarLista(lista)));
+  } catch {
+    // La navegación sigue funcionando aunque el navegador bloquee localStorage.
+  }
+}
+
+function obtenerOpcion(value) {
+  return OPCIONES_ACCESOS_RAPIDOS.find((opcion) => opcion.value === value);
 }
 
 function cerrarPanel(contenedor) {
@@ -64,61 +97,142 @@ function cerrarPanel(contenedor) {
   contenedor.querySelector("[data-acceso-panel]")?.setAttribute("aria-hidden", "true");
 }
 
-function actualizarPreferencia(contenedor, value) {
-  const opcion = OPCIONES_ACCESOS_RAPIDOS.find((item) => item.value === value) || OPCIONES_ACCESOS_RAPIDOS[0];
-  const estado = contenedor.querySelector("[data-acceso-estado]");
-  if (estado) estado.textContent = `Destino guardado: ${opcion.label}`;
+function cerrarOtros(actual) {
+  document.querySelectorAll("[data-accesos-rapidos].abierto").forEach((contenedor) => {
+    if (contenedor !== actual) cerrarPanel(contenedor);
+  });
+}
+
+function coincideBusqueda(opcion, texto) {
+  if (!texto) return true;
+  const base = `${opcion.label} ${opcion.value} ${opcion.keywords || ""}`.toLowerCase();
+  return base.includes(texto.toLowerCase());
+}
+
+function renderizarGuardados(contenedor, lista) {
+  const guardados = contenedor.querySelector("[data-acceso-guardados]");
+  if (!guardados) return;
+
+  guardados.innerHTML = lista.map((value) => {
+    const opcion = obtenerOpcion(value);
+    if (!opcion) return "";
+    return `
+      <li>
+        <button type="button" data-acceso-abrir="${escaparHTML(opcion.value)}">${escaparHTML(opcion.label)}</button>
+        <button type="button" class="quitar" data-acceso-quitar="${escaparHTML(opcion.value)}" aria-label="Quitar ${escaparHTML(opcion.label)}">×</button>
+      </li>
+    `;
+  }).join("");
+}
+
+function renderizarResultados(contenedor, texto = "") {
+  const listaGuardada = leerAccesos();
+  const resultados = contenedor.querySelector("[data-acceso-resultados]");
+  if (!resultados) return;
+
+  const encontrados = OPCIONES_ACCESOS_RAPIDOS
+    .filter((opcion) => coincideBusqueda(opcion, texto))
+    .slice(0, LIMITE_RESULTADOS);
+
+  resultados.innerHTML = encontrados.length
+    ? encontrados.map((opcion) => {
+      const agregado = listaGuardada.includes(opcion.value);
+      return `
+        <button type="button" data-acceso-agregar="${escaparHTML(opcion.value)}" ${agregado ? "disabled" : ""}>
+          <span>${escaparHTML(opcion.label)}</span>
+          <small>${agregado ? "Agregado" : "Agregar"}</small>
+        </button>
+      `;
+    }).join("")
+    : `<p class="sin-resultados">No se encontraron páginas.</p>`;
+}
+
+function crearContenedorAutomatico() {
+  if (document.querySelector("[data-accesos-rapidos]")) return;
+  const destino = document.querySelector("header nav") || document.querySelector("nav") || document.querySelector("header");
+  if (!destino) return;
+
+  const contenedor = document.createElement("div");
+  contenedor.dataset.accesosRapidos = "";
+  contenedor.dataset.accesosAuto = "true";
+  destino.classList.add("nav-accesos-rapidos");
+  destino.appendChild(contenedor);
 }
 
 function renderizar(contenedor) {
   if (contenedor.dataset.accesosInicializados === "true") return;
-  const guardado = destinoGuardado();
-  const opciones = OPCIONES_ACCESOS_RAPIDOS.map((opcion) => (
-    `<option value="${escaparHTML(opcion.value)}"${opcion.value === guardado ? " selected" : ""}>${escaparHTML(opcion.label)}</option>`
-  )).join("");
+  contenedor.parentElement?.classList.add("nav-accesos-rapidos");
   contenedor.classList.add("accesos-rapidos");
   contenedor.innerHTML = `
     <button class="accesos-rapidos-toggle" type="button" data-acceso-toggle aria-expanded="false">
       <span aria-hidden="true">⚡</span> Accesos rápidos
     </button>
     <div class="accesos-rapidos-panel" data-acceso-panel aria-hidden="true">
-      <strong>Elige tu destino</strong>
-      <p>Selecciona a dónde quieres ir y guárdalo para la próxima vez.</p>
+      <strong>Accesos rápidos</strong>
+      <p>Busca una página y agrégala para abrirla desde cualquier pestaña.</p>
       <label>
-        Destino
-        <select data-acceso-select>${opciones}</select>
+        Buscar página
+        <input type="search" data-acceso-busqueda placeholder="Ej. notas, farmacia, panel, escalas">
       </label>
-      <div class="accesos-rapidos-acciones">
-        <button type="button" data-acceso-ir>Ir ahora</button>
-        <button type="button" class="secundario" data-acceso-guardar>Guardar</button>
-      </div>
-      <small data-acceso-estado></small>
+      <div class="accesos-rapidos-resultados" data-acceso-resultados></div>
+      <div class="accesos-rapidos-separador"></div>
+      <strong class="titulo-secundario">Mis accesos</strong>
+      <ul class="accesos-rapidos-guardados" data-acceso-guardados></ul>
     </div>`;
+
   contenedor.dataset.accesosInicializados = "true";
-  actualizarPreferencia(contenedor, guardado);
+  renderizarResultados(contenedor);
+  renderizarGuardados(contenedor, leerAccesos());
 
   const toggle = contenedor.querySelector("[data-acceso-toggle]");
   const panel = contenedor.querySelector("[data-acceso-panel]");
-  const select = contenedor.querySelector("[data-acceso-select]");
+  const buscador = contenedor.querySelector("[data-acceso-busqueda]");
+
   toggle.addEventListener("click", () => {
     const abrir = !contenedor.classList.contains("abierto");
     cerrarOtros(contenedor);
     contenedor.classList.toggle("abierto", abrir);
     toggle.setAttribute("aria-expanded", String(abrir));
     panel.setAttribute("aria-hidden", String(!abrir));
-    if (abrir) select.focus();
+    if (abrir) {
+      renderizarResultados(contenedor, buscador.value);
+      renderizarGuardados(contenedor, leerAccesos());
+      window.setTimeout(() => buscador.focus(), 40);
+    }
   });
-  contenedor.querySelector("[data-acceso-ir]").addEventListener("click", () => {
-    window.location.href = select.value;
-  });
-  contenedor.querySelector("[data-acceso-guardar]").addEventListener("click", () => {
-    guardarDestino(select.value);
-    actualizarPreferencia(contenedor, select.value);
+
+  buscador.addEventListener("input", () => renderizarResultados(contenedor, buscador.value));
+
+  contenedor.addEventListener("click", (event) => {
+    const agregar = event.target.closest("[data-acceso-agregar]");
+    const abrir = event.target.closest("[data-acceso-abrir]");
+    const quitar = event.target.closest("[data-acceso-quitar]");
+
+    if (agregar) {
+      const lista = normalizarLista([agregar.dataset.accesoAgregar, ...leerAccesos()]);
+      guardarAccesos(lista);
+      renderizarResultados(contenedor, buscador.value);
+      renderizarGuardados(contenedor, lista);
+      return;
+    }
+
+    if (abrir) {
+      window.location.href = abrir.dataset.accesoAbrir;
+      return;
+    }
+
+    if (quitar) {
+      const lista = leerAccesos().filter((value) => value !== quitar.dataset.accesoQuitar);
+      guardarAccesos(lista);
+      renderizarResultados(contenedor, buscador.value);
+      renderizarGuardados(contenedor, lista);
+    }
   });
 }
 
 export function inicializarAccesosRapidos(root = document) {
   asegurarEstilos();
+  crearContenedorAutomatico();
   root.querySelectorAll("[data-accesos-rapidos]").forEach(renderizar);
 }
 

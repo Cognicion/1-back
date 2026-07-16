@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Laboratorio de Farmacología | Cognición</title>
+  <title>Laboratorio de FarmacologÃ­a | CogniciÃ³n</title>
   <link rel="icon" href="assets/favicon-cognicion.png">
   <link rel="stylesheet" href="css/theme.css">
   <link rel="stylesheet" href="css/laboratorio-farmacologia.css">
@@ -12,10 +12,10 @@
 <body>
   <header class="farmaco-header">
     <a href="dashboard.html" class="farmaco-brand">
-      <img src="assets/favicon-cognicion.png" alt="Cognición">
+      <img src="assets/favicon-cognicion.png" alt="CogniciÃ³n">
       <div>
-        <strong>COGNICIÓN Labs</strong>
-        <span>Laboratorio de Farmacología</span>
+        <strong>COGNICIÃ“N Labs</strong>
+        <span>Laboratorio de FarmacologÃ­a</span>
       </div>
     </a>
     <nav>
@@ -26,10 +26,10 @@
 
   <main class="farmaco-shell">
     <section class="farmaco-hero">
-      <span class="farmaco-kicker">Simulación clínica educativa</span>
-      <h1>Laboratorio de Farmacología</h1>
-      <p>Selecciona medicamentos, agrega comorbilidades opcionales y revisa interacciones farmacológicas relevantes antes de prescribir.</p>
-      <small>Herramienta de apoyo clínico. No sustituye el juicio médico ni fuentes farmacológicas institucionales.</small>
+      <span class="farmaco-kicker">SimulaciÃ³n clÃ­nica educativa</span>
+      <h1>Laboratorio de FarmacologÃ­a</h1>
+      <p>Selecciona medicamentos, agrega comorbilidades opcionales y revisa interacciones farmacolÃ³gicas relevantes antes de prescribir.</p>
+      <small>Herramienta de apoyo clÃ­nico. No sustituye el juicio mÃ©dico ni fuentes farmacolÃ³gicas institucionales.</small>
     </section>
 
     <section class="farmaco-grid">
@@ -38,7 +38,7 @@
         <div class="form-grid">
           <label>Edad<input id="farmacoEdad" type="number" min="0" max="120" placeholder="Ej. 45"></label>
           <label>Sexo<select id="farmacoSexo"><option value="">No especificado</option><option value="femenino">Femenino</option><option value="masculino">Masculino</option><option value="otro">Otro</option></select></label>
-          <label>Función renal / eGFR<input id="farmacoEGFR" type="number" min="0" max="180" placeholder="mL/min/1.73m²"></label>
+          <label>FunciÃ³n renal / eGFR<input id="farmacoEGFR" type="number" min="0" max="180" placeholder="mL/min/1.73mÂ²"></label>
           <label>Creatinina<input id="farmacoCreatinina" type="number" min="0" step="0.1" placeholder="mg/dL"></label>
           <label class="farmaco-search-field">
             Alergias
@@ -47,7 +47,7 @@
           </label>
           <label class="farmaco-search-field">
             Comorbilidades
-            <textarea id="farmacoComorbilidades" autocomplete="off" placeholder="Busca por CIE-10 o escribe libremente, ej. I10 hipertensión"></textarea>
+            <textarea id="farmacoComorbilidades" autocomplete="off" placeholder="Busca por CIE-10 o escribe libremente, ej. I10 hipertensiÃ³n"></textarea>
             <div id="farmacoComorbilidadesMenu" class="farmaco-search-menu" hidden></div>
           </label>
         </div>
@@ -56,8 +56,8 @@
       <article class="farmaco-panel">
         <div class="panel-heading"><span>Paso 2</span><h2>Medicamentos</h2></div>
         <label class="farmaco-search-field">
-          Buscar en catálogo
-          <input id="farmacoBuscador" autocomplete="off" placeholder="Ej. Losartán, Enalapril, Sertralina">
+          Buscar en catÃ¡logo
+          <input id="farmacoBuscador" autocomplete="off" placeholder="Ej. LosartÃ¡n, Enalapril, Sertralina">
           <div id="farmacoCatalogoMenu" class="farmaco-search-menu" hidden></div>
         </label>
         <div class="farmaco-add-row">
@@ -69,16 +69,17 @@
     </section>
 
     <section class="farmaco-panel resultados-panel">
-      <div class="panel-heading"><span>Revisión</span><h2>Interacciones y alertas clínicas</h2></div>
+      <div class="panel-heading"><span>RevisiÃ³n</span><h2>Interacciones y alertas clÃ­nicas</h2></div>
       <div class="farmaco-actions">
         <button id="evaluarFarmacos" type="button">Evaluar interacciones</button>
         <button id="limpiarFarmacos" type="button" class="ghost-action">Limpiar</button>
       </div>
-      <div id="resultadoInteraccionesFarmaco" class="resultado-interacciones">Agrega al menos un medicamento para iniciar la revisión.</div>
+      <div id="resultadoInteraccionesFarmaco" class="resultado-interacciones">Agrega al menos un medicamento para iniciar la revisiÃ³n.</div>
     </section>
   </main>
 
   <script type="module" src="js/laboratorio-farmacologia.js"></script>
+  <script type="module" src="js/components/accesosRapidos.js"></script>
   <script type="module" src="js/reportes.js"></script>
 </body>
 </html>

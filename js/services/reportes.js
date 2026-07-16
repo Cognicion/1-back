@@ -25,10 +25,57 @@ export async function guardarReporteUsuario(datosReporte = {}) {
     usuarioUid: datosReporte.usuarioUid || "",
     usuarioEmail: datosReporte.usuarioEmail || "",
     usuarioNombre: datosReporte.usuarioNombre || "",
+    usuarioRol: datosReporte.usuarioRol || "",
+    categoria: datosReporte.categoria || "",
+    recursoTipo: datosReporte.recursoTipo || "",
+    recursoId: datosReporte.recursoId || "",
+    pacienteUid: datosReporte.pacienteUid || "",
+    pacienteNombre: datosReporte.pacienteNombre || "",
+    motivoSolicitud: datosReporte.motivoSolicitud || "",
+    detallesSolicitud: datosReporte.detallesSolicitud || {},
     userAgent: datosReporte.userAgent || "",
     fechaISO: new Date().toISOString(),
     fechaCreacion: serverTimestamp()
   });
+}
+
+export function crearDatosSolicitudEliminacion(datosSolicitud = {}) {
+  const recursoTipo = datosSolicitud.recursoTipo || "registro";
+  const etiquetas = {
+    nota_medica: "nota medica",
+    paciente: "paciente",
+    estudio: "estudio",
+    tratamiento: "tratamiento",
+    usuario: "usuario"
+  };
+  const recurso = etiquetas[recursoTipo] || recursoTipo.replaceAll("_", " ");
+  const paciente = datosSolicitud.pacienteNombre || datosSolicitud.pacienteUid || "sin identificar";
+  const motivo = String(datosSolicitud.motivoSolicitud || "").trim();
+
+  return {
+    tipo: "solicitud_eliminacion",
+    categoria: "solicitud_eliminacion",
+    titulo: `Solicitud para eliminar ${recurso}`,
+    mensaje: `Se solicito eliminar ${recurso} del paciente ${paciente}.${motivo ? ` Motivo: ${motivo}` : ""}`,
+    pagina: datosSolicitud.pagina || "",
+    url: datosSolicitud.url || "",
+    estado: "nuevo",
+    usuarioUid: datosSolicitud.usuarioUid || "",
+    usuarioEmail: datosSolicitud.usuarioEmail || "",
+    usuarioNombre: datosSolicitud.usuarioNombre || "",
+    usuarioRol: datosSolicitud.usuarioRol || "",
+    recursoTipo,
+    recursoId: datosSolicitud.recursoId || "",
+    pacienteUid: datosSolicitud.pacienteUid || "",
+    pacienteNombre: datosSolicitud.pacienteNombre || "",
+    motivoSolicitud: motivo,
+    detallesSolicitud: datosSolicitud.detallesSolicitud || {},
+    userAgent: datosSolicitud.userAgent || ""
+  };
+}
+
+export async function guardarSolicitudEliminacion(datosSolicitud = {}) {
+  return await guardarReporteUsuario(crearDatosSolicitudEliminacion(datosSolicitud));
 }
 
 export async function listarReportesUsuarios() {

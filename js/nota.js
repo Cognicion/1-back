@@ -1,5 +1,6 @@
 import { auth, db } from "./firebase.js";
 import { registrarEventoAuditoria } from "./services/auditoria.js";
+import { guardarSolicitudEliminacion } from "./services/reportes.js?v=20260716-1";
 import { iniciarMonitoreoSesion } from "./services/sesion.js";
 import { CIE10 } from "./data/cie10.js";
 import { CIE11 } from "./data/cie11.js";
@@ -3874,6 +3875,11 @@ async function cargarHistorial(uidPaciente) {
         Editar esta nota
       </button>
     `;
+    const accionSolicitarEliminacion = `
+      <button type="button" class="boton-secundario" onclick="solicitarEliminarNotaDesdeHistorial('${nota.id}')">
+        Solicitar eliminacion
+      </button>
+    `;
 
     let diagnosticosTexto = "";
 
@@ -3920,6 +3926,7 @@ async function cargarHistorial(uidPaciente) {
 
           <div class="acciones-historial-nota">
             ${accionesNota}
+            ${accionSolicitarEliminacion}
           </div>
 
         </div>
@@ -3934,6 +3941,49 @@ async function cargarHistorial(uidPaciente) {
     return fechaB - fechaA;
   });
 }
+
+window.solicitarEliminarNotaDesdeHistorial = async function(notaId) {
+  const nota = notasHistorial[notaId];
+  if (!nota || !uidPacienteActual) {
+    alert("No se pudo identificar la nota o el paciente.");
+    return;
+  }
+
+  const confirmar = confirm(
+    "La nota no se eliminara de inmediato. Se enviara una solicitud al administrador para su revision. ¿Deseas continuar?"
+  );
+  if (!confirmar) return;
+
+  const motivoSolicitud = prompt("Motivo de la solicitud de eliminacion (opcional):") || "";
+  const pacienteNombre = pacienteActualDatos?.nombre || document.getElementById("nombre")?.value || "";
+
+  try {
+    await guardarSolicitudEliminacion({
+      recursoTipo: "nota_medica",
+      recursoId: notaId,
+      pacienteUid: uidPacienteActual,
+      pacienteNombre,
+      motivoSolicitud,
+      usuarioUid: auth.currentUser?.uid || uidMedicoActual,
+      usuarioEmail: auth.currentUser?.email || perfilMedicoActual.email || perfilMedicoActual.correo || "",
+      usuarioNombre: perfilMedicoActual.nombre || perfilMedicoActual.nombreCompleto
+        || auth.currentUser?.displayName || auth.currentUser?.email || "",
+      usuarioRol: rolUsuarioActual,
+      pagina: window.location.pathname,
+      url: window.location.href,
+      userAgent: navigator.userAgent || "",
+      detallesSolicitud: {
+        estadoNota: estadoPersistidoNota(nota),
+        fechaNota: nota.fecha || nota.fechaCreacion || "",
+        autorNota: nota.autor || nota.medico || ""
+      }
+    });
+    alert("Solicitud enviada. Ya aparece en Reportes del administrador.");
+  } catch (error) {
+    console.error("No se pudo solicitar la eliminacion de la nota:", error);
+    alert("No se pudo enviar la solicitud de eliminacion: " + error.message);
+  }
+};
 
 window.regresarDesdeNota = function() {
   if (cambiosNotaPendientes && !window.confirm("Hay cambios sin guardar. ¿Desea salir y conservar solo el respaldo temporal?")) return;

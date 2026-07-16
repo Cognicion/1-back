@@ -59,7 +59,7 @@ import {
   listarPermisosMedicos,
   cambiarRolPermisoMedico,
   revocarPermisoMedico
-} from "./services/usuarios.js";
+} from "./services/usuarios.js?v=20260716-1";
 
 import {
   crearTratamiento,
@@ -1130,6 +1130,64 @@ async function guardarMedicoFirmaIndicaciones(numeroFirma) {
 
   await cargarCatalogoMedicosFirmasIndicaciones();
   alert("Médico agregado al catálogo de firmas.");
+}
+
+async function guardarMedicoCatalogoIndicaciones({ nombre, cargo, cedula, firmaDestino = "" } = {}) {
+  const uidMedico = auth.currentUser?.uid;
+  const ref = referenciaCatalogoMedicosFirmasIndicaciones();
+
+  if (!ref || !uidMedico) {
+    alert("No se pudo identificar al médico para guardar el catálogo.");
+    return null;
+  }
+
+  if (!nombre?.trim()) {
+    alert("Escribe el nombre del médico antes de agregarlo al catálogo.");
+    return null;
+  }
+
+  const payload = {
+    nombre: nombre.trim(),
+    cargo: (cargo || "").trim(),
+    cedula: (cedula || "").trim(),
+    actualizadoEn: serverTimestamp()
+  };
+  const existente = buscarMedicoFirmaIndicacionesPorNombre(payload.nombre);
+
+  if (existente?.id) {
+    const confirmar = confirm("Este médico ya existe en el catálogo. ¿Deseas actualizar cargo y cédula?");
+    if (!confirmar) return null;
+    await updateDoc(doc(db, "usuarios", uidMedico, "catalogoMedicosFirmas", existente.id), payload);
+  } else {
+    await addDoc(ref, {
+      ...payload,
+      creadoEn: serverTimestamp()
+    });
+  }
+
+  await cargarCatalogoMedicosFirmasIndicaciones();
+  const actualizado = buscarMedicoFirmaIndicacionesPorNombre(payload.nombre) || payload;
+  if (firmaDestino) aplicarMedicoFirmaIndicaciones(firmaDestino, actualizado);
+  return actualizado;
+}
+
+async function guardarNuevoMedicoIndicaciones() {
+  const medico = await guardarMedicoCatalogoIndicaciones({
+    nombre: valorCampo("nuevoMedicoIndicacionesNombre"),
+    cargo: valorCampo("nuevoMedicoIndicacionesCargo"),
+    cedula: valorCampo("nuevoMedicoIndicacionesCedula"),
+    firmaDestino: valorCampo("nuevoMedicoIndicacionesFirmaDestino")
+  });
+
+  if (!medico) return;
+
+  [
+    "nuevoMedicoIndicacionesNombre",
+    "nuevoMedicoIndicacionesCargo",
+    "nuevoMedicoIndicacionesCedula"
+  ].forEach((id) => ponerValor(id, ""));
+  ponerValor("nuevoMedicoIndicacionesFirmaDestino", "");
+  alert("Médico guardado en el catálogo del usuario.");
 }
 
 function referenciaApuntesMedicoPaciente() {
@@ -4191,13 +4249,13 @@ function construirTextoIndicaciones(medicamentos = medicamentosActivosIndicacion
     : "-Sin medicamentos activos registrados.";
 
   return [
-    `1. Dieta ${dieta}`,
-    `2. ${cuidados}`,
-    `3. Alergias: ${alergias}`,
-    `4. Riesgo de caida: ${riesgoCaida}`,
-    `5. Vigilancia por: ${vigilancia}`,
-    `6. Medicamentos${notaMedicamentos ? ` (${notaMedicamentos})` : ""}`,
+    `1. Medicamentos${notaMedicamentos ? ` (${notaMedicamentos})` : ""}`,
     listaMedicamentos,
+    `2. Dieta ${dieta}`,
+    `3. ${cuidados}`,
+    `4. Alergias: ${alergias}`,
+    `5. Riesgo de caida: ${riesgoCaida}`,
+    `6. Vigilancia por: ${vigilancia}`,
     `7. ${eventualidades}`
   ].join("\n");
 }
@@ -4243,6 +4301,37 @@ function tratamientosActivosParaInteracciones() {
     .filter((t) => t.medicamento && t.medicamento !== "Medicamento sin nombre");
 }
 
+function tratamientosSeleccionadosIndicacionesParaInteracciones() {
+  const seleccionados = [...document.querySelectorAll("[data-medicamento-indicacion]")]
+    .filter((check) => check.checked)
+    .map((check) => check.value)
+    .filter(Boolean);
+  const activos = tratamientosCache.filter((t) => (t.estado || "activo") === "activo");
+
+  if (!seleccionados.length) return tratamientosActivosParaInteracciones();
+
+  return seleccionados
+    .map((indicacionSeleccionada, index) => {
+      const tratamiento = activos.find((t) => formatearIndicacionTratamiento(t, true) === indicacionSeleccionada);
+      if (tratamiento) {
+        return {
+          id: tratamiento.id || `indicacion-${index}`,
+          medicamento: tratamiento.medicamento || "Medicamento sin nombre",
+          indicacion: formatearIndicacionTratamiento(tratamiento, false),
+          dosisDia: tratamiento.dosisTotalDia || calcularDosisTotalDiaTratamiento(tratamiento).texto || ""
+        };
+      }
+
+      return {
+        id: `indicacion-${index}`,
+        medicamento: indicacionSeleccionada,
+        indicacion: indicacionSeleccionada,
+        dosisDia: ""
+      };
+    })
+    .filter((t) => t.medicamento && t.medicamento !== "Medicamento sin nombre");
+}
+
 function cerrarInteraccionesFarmacologicas() {
   const modal = document.getElementById("modalInteraccionesFarmacologicas");
   if (!modal) return;
@@ -4267,6 +4356,19 @@ function renderizarInteraccionesFarmacologicas(medicamentos = [], origen = "trat
       </li>
     `).join("")
     : "<li>No hay medicamentos activos registrados.</li>";
+  const diagnosticosEvaluados = evaluacionClinica.diagnosticosEvaluados || [];
+  const diagnosticosDetectados = evaluacionClinica.diagnosticosDetectados || [];
+  const contextoDiagnostico = diagnosticosEvaluados.length
+    ? diagnosticosEvaluados.map((dx) => `
+      <li>
+        ${escaparHTML(dx.texto || dx.nombre || "Diagnostico sin texto")}
+        ${dx.estado ? `<small>${escaparHTML(dx.estado)}</small>` : ""}
+      </li>
+    `).join("")
+    : "<li>Sin diagnosticos estructurados evaluables.</li>";
+  const categoriasDiagnosticas = diagnosticosDetectados.length
+    ? diagnosticosDetectados.map((dx) => escaparHTML(dx.nombre || dx.id || "")).filter(Boolean).join(", ")
+    : "Sin categorias clinicas detectadas por las reglas locales.";
 
   contenedor.innerHTML = `
     <p class="texto-suave">Revisión orientativa basada en los ${escaparHTML(tituloOrigen)}. No sustituye el juicio clínico ni la revisión de fuentes farmacológicas institucionales.</p>
@@ -4277,6 +4379,11 @@ function renderizarInteraccionesFarmacologicas(medicamentos = [], origen = "trat
     <div class="interacciones-medicamentos-revisados">
       <strong>Medicamentos revisados</strong>
       <ul>${listaMedicamentos}</ul>
+    </div>
+    <div class="interacciones-medicamentos-revisados">
+      <strong>Diagnosticos usados para contexto clinico</strong>
+      <small>Categorias detectadas: ${categoriasDiagnosticas}</small>
+      <ul>${contextoDiagnostico}</ul>
     </div>
     ${alertasClinicas.length ? `
       <div class="interacciones-lista">
@@ -4332,7 +4439,10 @@ async function abrirInteraccionesFarmacologicas(origen = "tratamiento") {
   if (contenedor) contenedor.innerHTML = "<p>Cargando revision de interacciones...</p>";
 
   await asegurarTratamientosCache();
-  renderizarInteraccionesFarmacologicas(tratamientosActivosParaInteracciones(), origen);
+  const medicamentos = origen === "indicaciones"
+    ? tratamientosSeleccionadosIndicacionesParaInteracciones()
+    : tratamientosActivosParaInteracciones();
+  renderizarInteraccionesFarmacologicas(medicamentos, origen);
 }
 function autollenarIndicaciones() {
   const paciente = datosPacienteActual || {};
@@ -4816,10 +4926,20 @@ window.solicitarEliminarPaciente = async function() {
   try {
     await solicitarEliminacionPaciente(
       uidPaciente,
-      auth.currentUser.uid
+      auth.currentUser.uid,
+      {
+        pacienteNombre: datosPacienteActual?.nombre || "",
+        usuarioUid: auth.currentUser.uid,
+        usuarioEmail: auth.currentUser.email || medicoActualDatos.email || medicoActualDatos.correo || "",
+        usuarioNombre: medicoActualDatos.nombre || auth.currentUser.displayName || auth.currentUser.email || "",
+        usuarioRol: rolUsuarioActual,
+        pagina: window.location.pathname,
+        url: window.location.href,
+        userAgent: navigator.userAgent || ""
+      }
     );
 
-    alert("Paciente suspendido. Eliminación pendiente de autorización.");
+    alert("Paciente suspendido. La solicitud de eliminación ya aparece en Reportes del administrador.");
 
     window.location.href = "medico.html";
   } catch (error) {
@@ -5144,10 +5264,50 @@ function extraerPresentacionMedicamento(medicamento = "") {
   };
 }
 
+function unidadDosisDesdePresentacion(medicamento = "") {
+  const texto = normalizarTextoBusqueda(medicamento);
+  if (!texto) return { singular: "unidad", plural: "unidades" };
+
+  if (/\bgota(s)?\b/.test(texto)) return { singular: "gota", plural: "gotas" };
+  if (/\bcapsula(s)?\b|\bcaps\b/.test(texto)) return { singular: "capsula", plural: "capsulas" };
+  if (/\btableta(s)?\b|\btab(s)?\b|\bcomprimido(s)?\b/.test(texto)) return { singular: "tableta", plural: "tabletas" };
+  if (/\bampolleta(s)?\b|\bampula(s)?\b|\bfrasco ampula\b/.test(texto)) return { singular: "ampolleta", plural: "ampolletas" };
+  if (/\bparche(s)?\b/.test(texto)) return { singular: "parche", plural: "parches" };
+  if (/\bsolucion\b|\bsuspension\b|\bjarabe\b|\bmg\/ml\b|\bmg\/5 ml\b/.test(texto)) return { singular: "ml", plural: "ml" };
+
+  return { singular: "unidad", plural: "unidades" };
+}
+
+function esCantidadSimple(valor = "") {
+  return /^\s*\d+(?:[.,]\d+)?\s*$/.test(valor) || /^\s*\d+\s*\/\s*\d+\s*$/.test(valor);
+}
+
+function cantidadNumericaSimple(valor = "") {
+  return numeroDesdeTexto(String(valor || "").replace(/\s*a\s+las\s+\d{1,2}:\d{2}.*/i, ""));
+}
+
+function formatearCantidadConPresentacion(cantidad = "", medicamento = "") {
+  const limpio = String(cantidad || "").trim();
+  if (!limpio || !esCantidadSimple(limpio)) return limpio;
+
+  const numero = cantidadNumericaSimple(limpio);
+  const unidad = unidadDosisDesdePresentacion(medicamento);
+  const etiqueta = numero > 0 && numero <= 1 ? unidad.singular : unidad.plural;
+  return `${limpio} ${etiqueta}`;
+}
+
 function extraerCantidadesDosis(dosis = "") {
   const texto = String(dosis || "");
-  const matches = [...texto.matchAll(/(\d+\s*\/\s*\d+|\d+(?:[.,]\d+)?)\s*(?:tabletas?|tabs?|comprimidos?|capsulas?|caps?|gotas?|ampolletas?|ml|mg|mg\.|capsula|tableta)\b/gi)];
-  return matches.map((match) => numeroDesdeTexto(match[1])).filter((valor) => valor > 0);
+  const conUnidad = [...texto.matchAll(/(\d+\s*\/\s*\d+|\d+(?:[.,]\d+)?)\s*(?:tabletas?|tabs?|comprimidos?|capsulas?|caps?|gotas?|ampolletas?|ml|mg|mg\.|capsula|tableta|unidades?)\b/gi)]
+    .map((match) => numeroDesdeTexto(match[1]));
+  if (conUnidad.length) return conUnidad.filter((valor) => valor > 0);
+
+  return texto
+    .split(/[,;]/)
+    .map((parte) => parte.replace(/\s*a\s+las\s+\d{1,2}:\d{2}.*/i, "").trim())
+    .filter(esCantidadSimple)
+    .map(cantidadNumericaSimple)
+    .filter((valor) => valor > 0);
 }
 
 const HORARIOS_TRATAMIENTO_DEFAULT = ["08:00", "15:00", "22:00", "22:00"];
@@ -5188,7 +5348,10 @@ function sincronizarCamposTratamientoDesdeTomas() {
   const total = Math.max(tomas.length, numeroTomasTratamiento());
   const frecuencia = etiquetaFrecuenciaTratamiento(modo, total);
   const dosis = tomas
-    .map((toma) => [toma.cantidad, toma.horario ? `a las ${toma.horario}` : ""].filter(Boolean).join(" "))
+    .map((toma) => [
+      formatearCantidadConPresentacion(toma.cantidad, valorCampo("tratamientoMedicamento")),
+      toma.horario ? `a las ${toma.horario}` : ""
+    ].filter(Boolean).join(" "))
     .filter(Boolean)
     .join(", ");
 
@@ -5210,11 +5373,11 @@ function renderizarTomasTratamiento(tomasIniciales = null) {
 
   contenedor.innerHTML = Array.from({ length: total }, (_, index) => {
     const toma = tomasActuales[index] || {};
-    const cantidad = toma.cantidad || (index === 0 ? "1 tableta" : "");
+    const cantidad = toma.cantidad || (index === 0 ? "1" : "");
     const horario = toma.horario || horarios[index] || "";
     return `
       <div class="tratamiento-toma-row" data-toma-tratamiento>
-        <label><span>Dosis ${index + 1}</span><input data-toma-cantidad placeholder="Ej. 1 tableta" value="${escaparHTML(cantidad)}"></label>
+        <label><span>Dosis ${index + 1}</span><input data-toma-cantidad placeholder="Ej. 1" value="${escaparHTML(cantidad)}"></label>
         <label><span>Horario</span><input data-toma-horario list="catalogoHorariosTratamiento" placeholder="08:00" value="${escaparHTML(horario)}"></label>
       </div>
     `;
@@ -5315,6 +5478,57 @@ function actualizarDosisTotalDiaTratamiento(evento = null) {
   ponerValor("tratamientoDosisTotalDia", calculo.texto);
 }
 
+function configurarMenuFrecuenciaTratamiento() {
+  const input = document.getElementById("tratamientoFrecuencia");
+  const boton = document.getElementById("abrirOpcionesFrecuenciaTratamiento");
+  const menu = document.getElementById("opcionesFrecuenciaTratamientoMenu");
+  if (!input || !menu) return;
+
+  const abrir = () => {
+    menu.classList.add("abierto");
+    input.setAttribute("aria-expanded", "true");
+  };
+  const cerrar = () => {
+    menu.classList.remove("abierto");
+    input.setAttribute("aria-expanded", "false");
+  };
+
+  input.addEventListener("focus", abrir);
+  input.addEventListener("click", abrir);
+  boton?.addEventListener("click", (evento) => {
+    evento.preventDefault();
+    input.focus();
+    abrir();
+  });
+
+  menu.querySelectorAll("[data-frecuencia-tratamiento]").forEach((opcion) => {
+    opcion.addEventListener("mousedown", (evento) => evento.preventDefault());
+    opcion.addEventListener("click", () => {
+      const valor = opcion.dataset.frecuenciaTratamiento || "";
+      ponerValor("tratamientoFrecuencia", valor);
+      const veces = obtenerVecesPorDia(valor);
+      if (veces) ponerValor("tratamientoVecesDia", String(veces));
+      actualizarDosisTotalDiaTratamiento();
+      renderizarTomasTratamiento();
+      cerrar();
+    });
+  });
+
+  document.addEventListener("click", (evento) => {
+    const objetivo = evento.target instanceof Element ? evento.target : null;
+    if (objetivo?.closest(".tratamiento-frecuencia-combo")) return;
+    cerrar();
+  });
+
+  input.addEventListener("keydown", (evento) => {
+    if (evento.key === "Escape") cerrar();
+    if (evento.key === "ArrowDown") {
+      abrir();
+      menu.querySelector("button")?.focus();
+    }
+  });
+}
+
 function limpiarPuntoFinal(texto = "") {
   return String(texto).trim().replace(/[.\s]+$/, "");
 }
@@ -5351,11 +5565,14 @@ function formatearIndicacionTratamiento(t = {}, incluirMedicamento = true) {
   const frecuencia = limpiarPuntoFinal(t.frecuencia || "");
   const dosisTomas = Array.isArray(t.tomas) && t.tomas.length
     ? t.tomas
-      .map((toma) => [limpiarPuntoFinal(toma.cantidad || ""), toma.horario ? `a las ${limpiarPuntoFinal(toma.horario)}` : ""].filter(Boolean).join(" "))
+      .map((toma) => [
+        limpiarPuntoFinal(formatearCantidadConPresentacion(toma.cantidad || "", t.medicamento || "")),
+        toma.horario ? `a las ${limpiarPuntoFinal(toma.horario)}` : ""
+      ].filter(Boolean).join(" "))
       .filter(Boolean)
       .join(", ")
     : "";
-  const dosis = limpiarPuntoFinal(dosisTomas || t.dosis || "");
+  const dosis = limpiarPuntoFinal(dosisTomas || formatearCantidadConPresentacion(t.dosis || "", t.medicamento || "") || "");
   const horarios = formatearHorariosTratamiento(t.horarios || "");
 
   const tomar = [via, frecuencia].filter(Boolean).join(" ");
@@ -6020,6 +6237,7 @@ document.getElementById("tratamientoVecesDia")?.addEventListener("change", () =>
   renderizarTomasTratamiento();
 });
 renderizarTomasTratamiento();
+configurarMenuFrecuenciaTratamiento();
 document.getElementById("abrirMedicamentoManual")?.addEventListener("click", abrirMedicamentoManual);
 document.getElementById("cerrarMedicamentoManual")?.addEventListener("click", cerrarMedicamentoManual);
 document.getElementById("cancelarMedicamentoManual")?.addEventListener("click", cerrarMedicamentoManual);
@@ -6126,6 +6344,7 @@ document.querySelectorAll("[data-firma-indicaciones-select]").forEach((selector)
 document.querySelectorAll("[data-guardar-medico-indicaciones]").forEach((boton) => {
   boton.addEventListener("click", () => guardarMedicoFirmaIndicaciones(boton.dataset.guardarMedicoIndicaciones));
 });
+document.getElementById("guardarNuevoMedicoIndicaciones")?.addEventListener("click", guardarNuevoMedicoIndicaciones);
 document.getElementById("cerrarIngresoPaciente")?.addEventListener("click", cerrarSelectorIngresoPaciente);
 document.getElementById("guardarIngresoPaciente")?.addEventListener("click", guardarIngresoPacienteDesdeModal);
 document.getElementById("limpiarIngresoPaciente")?.addEventListener("click", limpiarIngresoPacienteDesdeModal);

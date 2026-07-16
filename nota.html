@@ -31,7 +31,7 @@
     </button>
 
     <button class="boton-secundario" onclick="window.location.href='apuntes.html'">
-        Página de apuntes
+        PÃ¡gina de apuntes
     </button>
 </div>
 
@@ -143,7 +143,7 @@
     <summary class="panel-escala-header panel-escala-summary">
         <div>
             <h3>Aplicar escala</h3>
-            <p>Registrar resultado clínico del paciente desde la nota.</p>
+            <p>Registrar resultado clÃ­nico del paciente desde la nota.</p>
         </div>
         <span class="indicador-panel-escala">Abrir</span>
     </summary>
@@ -153,10 +153,10 @@
         <label>Tipo de escala
             <select id="filtroTipoEscalaNota">
                 <option value="todas">Todas</option>
-                <option value="psiquiatrica">Psiquiatría</option>
+                <option value="psiquiatrica">PsiquiatrÃ­a</option>
                 <option value="medicina_general">Medicina general</option>
-                <option value="cardiologia">Cardiología</option>
-                <option value="pediatrica">Pediatría</option>
+                <option value="cardiologia">CardiologÃ­a</option>
+                <option value="pediatrica">PediatrÃ­a</option>
                 <option value="cognitiva">Cognitiva</option>
             </select>
         </label>
@@ -204,10 +204,10 @@
 <section class="dictado-clinico-card" aria-labelledby="tituloDictadoClinico">
     <div class="dictado-clinico-header">
         <div>
-            <span class="dictado-clinico-etiqueta">Transcripción asistida</span>
+            <span class="dictado-clinico-etiqueta">TranscripciÃ³n asistida</span>
             <h2 id="tituloDictadoClinico">
-                Dictado clínico
-                <span class="dictado-alfa-badge">Versión alfa · En desarrollo</span>
+                Dictado clÃ­nico
+                <span class="dictado-alfa-badge">VersiÃ³n alfa Â· En desarrollo</span>
             </h2>
             <p>Dicta, revisa y corrige antes de integrar el texto a la nota actual.</p>
         </div>
@@ -215,20 +215,20 @@
     </div>
 
     <div class="dictado-clinico-alertas">
-        <p>El dictado por voz puede contener errores. Revise y corrija el texto antes de guardar la nota clínica.</p>
-        <p>Utilice esta función únicamente con autorización del paciente.</p>
-        <p><strong>Versión alfa:</strong> esta función se encuentra en desarrollo. Revise y valide el contenido antes de incorporarlo al expediente.</p>
-        <p><strong>Privacidad y compatibilidad:</strong> Web Speech API depende del navegador y puede enviar audio a servicios de su proveedor. No se garantiza procesamiento local. Si no hay proveedor externo configurado, se utiliza únicamente el respaldo local por reglas.</p>
+        <p>El dictado por voz puede contener errores. Revise y corrija el texto antes de guardar la nota clÃ­nica.</p>
+        <p>Utilice esta funciÃ³n Ãºnicamente con autorizaciÃ³n del paciente.</p>
+        <p><strong>VersiÃ³n alfa:</strong> esta funciÃ³n se encuentra en desarrollo. Revise y valide el contenido antes de incorporarlo al expediente.</p>
+        <p><strong>Privacidad y compatibilidad:</strong> Web Speech API depende del navegador y puede enviar audio a servicios de su proveedor. No se garantiza procesamiento local. Si no hay proveedor externo configurado, se utiliza Ãºnicamente el respaldo local por reglas.</p>
     </div>
 
     <div id="contextoPacienteDictado" class="dictado-contexto-paciente" aria-live="polite">
-        <strong>Paciente:</strong> pendiente de selección · <strong>Edad:</strong> pendiente · <strong>Identificador:</strong> pendiente · <strong>Encuentro:</strong> actual
+        <strong>Paciente:</strong> pendiente de selecciÃ³n Â· <strong>Edad:</strong> pendiente Â· <strong>Identificador:</strong> pendiente Â· <strong>Encuentro:</strong> actual
     </div>
 
     <textarea
         id="textoDictadoClinico"
         class="dictado-clinico-texto"
-        placeholder="El texto dictado aparecerá aquí. Revise y corrija antes de insertarlo en la nota."
+        placeholder="El texto dictado aparecerÃ¡ aquÃ­. Revise y corrija antes de insertarlo en la nota."
     ></textarea>
 
     <div class="dictado-clinico-acciones">
@@ -236,14 +236,14 @@
         <button id="btnPausarDictado" type="button" class="boton-secundario">Pausar dictado</button>
         <button id="btnLimpiarDictado" type="button" class="boton-secundario">Limpiar dictado</button>
         <button id="btnInsertarDictado" type="button">Insertar en nota</button>
-        <button id="btnGenerarNotaAutomatica" type="button" class="boton-secundario">Generar nota automática</button>
+        <button id="btnGenerarNotaAutomatica" type="button" class="boton-secundario">Generar nota automÃ¡tica</button>
     </div>
 
     <details class="nota-automatica-configuracion">
-        <summary>Configuración del borrador</summary>
+        <summary>ConfiguraciÃ³n del borrador</summary>
         <div class="nota-automatica-config-grid">
-            <label>Resultado<select id="resultadoNotaAutomatica"><option value="nota_medica_estructurada">Nota médica estructurada</option><option value="redaccion_clinica_conservadora">Redacción clínica conservadora</option><option value="literal_corregida">Transcripción literal corregida</option></select></label>
-            <label>Tipo de nota<select id="tipoNotaAutomatica"><option value="evolucion">Evolución</option><option value="ingreso">Ingreso</option><option value="urgencias">Urgencias</option><option value="nota_rapida">Nota rápida</option><option value="paidopsiquiatria">Paidopsiquiatría</option></select></label>
+            <label>Resultado<select id="resultadoNotaAutomatica"><option value="nota_medica_estructurada">Nota mÃ©dica estructurada</option><option value="redaccion_clinica_conservadora">RedacciÃ³n clÃ­nica conservadora</option><option value="literal_corregida">TranscripciÃ³n literal corregida</option></select></label>
+            <label>Tipo de nota<select id="tipoNotaAutomatica"><option value="evolucion">EvoluciÃ³n</option><option value="ingreso">Ingreso</option><option value="urgencias">Urgencias</option><option value="nota_rapida">Nota rÃ¡pida</option><option value="paidopsiquiatria">PaidopsiquiatrÃ­a</option></select></label>
             <label>Nivel de detalle<select id="detalleNotaAutomatica"><option value="medio">Medio</option><option value="breve">Breve</option><option value="amplio">Amplio</option></select></label>
             <label>Formato<select id="formatoNotaAutomatica"><option value="mixto">Mixto</option><option value="narrativo">Narrativo</option><option value="estructurado">Estructurado</option></select></label>
             <label>Plantilla institucional<input id="plantillaNotaAutomatica" value="sin_plantilla"></label>
@@ -256,10 +256,10 @@
         <div class="nota-automatica-header">
             <div>
                 <span class="dictado-clinico-etiqueta">Sugerencias por reglas locales</span>
-                <h3>Nota automática preliminar</h3>
-                <p>Revise, modifique o rechace cada sección. Generar no inserta contenido en la nota.</p>
+                <h3>Nota automÃ¡tica preliminar</h3>
+                <p>Revise, modifique o rechace cada secciÃ³n. Generar no inserta contenido en la nota.</p>
             </div>
-            <button id="btnAceptarTodosDxAutomaticos" type="button" class="boton-secundario">Aceptar diagnósticos sugeridos</button>
+            <button id="btnAceptarTodosDxAutomaticos" type="button" class="boton-secundario">Aceptar diagnÃ³sticos sugeridos</button>
         </div>
         <div id="riesgosNotaAutomatica" class="riesgos-nota-automatica"></div>
         <div id="diagnosticosNotaAutomatica" class="diagnosticos-nota-automatica"></div>
@@ -344,7 +344,7 @@
         <div class="grid-vitales">
             <label class="campo-vital">Presion arterial <input id="obsPresionArterial" placeholder="Ej. 120/80 mmHg"></label>
             <label class="campo-vital">Temperatura <input id="obsTemperatura" placeholder="Ej. 36.5 C"></label>
-            <label class="campo-vital">Frecuencia cardíaca <input id="obsFrecuenciaCardiaca" placeholder="lpm"></label>
+            <label class="campo-vital">Frecuencia cardÃ­aca <input id="obsFrecuenciaCardiaca" placeholder="lpm"></label>
             <label class="campo-vital">Frecuencia respiratoria <input id="obsFrecuenciaRespiratoria" placeholder="rpm"></label>
             <label class="campo-vital">Saturacion O2 <input id="obsSaturacionO2" placeholder="%"></label>
             <label class="campo-vital">Peso <input id="obsPeso" placeholder="kg"></label>
@@ -408,8 +408,8 @@
 <section id="bloquePediatriaNota" class="bloque-pediatria-nota oculto">
     <div class="pediatria-nota-header">
         <div>
-            <span>Parámetros pediátricos</span>
-            <small>Se muestran automáticamente en pacientes menores de 18 años.</small>
+            <span>ParÃ¡metros pediÃ¡tricos</span>
+            <small>Se muestran automÃ¡ticamente en pacientes menores de 18 aÃ±os.</small>
         </div>
         <label class="pediatria-omitir">
             <input id="omitirPediatriaNota" type="checkbox">
@@ -417,8 +417,8 @@
         </label>
     </div>
     <div class="pediatria-nota-grid">
-        <label>Edad pediátrica <input id="notaPedEdad" readonly></label>
-        <label>Día de vida <input id="notaPedDiaVida" readonly></label>
+        <label>Edad pediÃ¡trica <input id="notaPedEdad" readonly></label>
+        <label>DÃ­a de vida <input id="notaPedDiaVida" readonly></label>
         <label>Peso <input id="notaPedPeso" readonly></label>
         <label>Talla <input id="notaPedTalla" readonly></label>
         <label>IMC <input id="notaPedIMC" readonly></label>
@@ -426,7 +426,7 @@
         <label>Mantenimiento <input id="notaPedMantenimiento" readonly></label>
         <label>Regla 4-2-1 <input id="notaPedRegla421" readonly></label>
     </div>
-    <textarea id="notaPediatriaResumen" readonly placeholder="Resumen pediátrico automático"></textarea>
+    <textarea id="notaPediatriaResumen" readonly placeholder="Resumen pediÃ¡trico automÃ¡tico"></textarea>
 </section>
 
 <h2>Nota interna medica</h2>
@@ -523,9 +523,10 @@ Cancelar edicion
 
 </div>
 
-<script type="module" src="js/nota.js?v=20260716-5"></script>
+<script type="module" src="js/nota.js?v=20260716-6"></script>
 <script type="module" src="js/dictado.js?v=20260715-1505"></script>
 
+  <script type="module" src="js/components/accesosRapidos.js"></script>
   <script type="module" src="js/reportes.js"></script>
 </body>
 </html>

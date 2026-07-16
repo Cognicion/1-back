@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>COGNICIÓN Labs | Centro pediátrico</title>
+  <title>COGNICIÃ“N Labs | Centro pediÃ¡trico</title>
   <link rel="icon" type="image/png" href="assets/favicon-cognicion.png">
   <link rel="stylesheet" href="css/apariencia.css">
   <link rel="stylesheet" href="css/reportes.css">
@@ -13,17 +13,17 @@
   <main class="ped-shell">
     <header class="ped-header">
       <div class="ped-brand">
-        <img src="assets/favicon-cognicion.png" alt="COGNICIÓN">
+        <img src="assets/favicon-cognicion.png" alt="COGNICIÃ“N">
         <div>
-          <div class="ped-kicker">COGNICIÓN Labs</div>
-          <h1>Centro pediátrico</h1>
-          <p>Evalúa crecimiento, somatometría, líquidos, dosis y seguimiento desde el expediente pediátrico.</p>
-          <small id="estadoPaciente">Selecciona un paciente o inicia una evaluación temporal.</small>
+          <div class="ped-kicker">COGNICIÃ“N Labs</div>
+          <h1>Centro pediÃ¡trico</h1>
+          <p>EvalÃºa crecimiento, somatometrÃ­a, lÃ­quidos, dosis y seguimiento desde el expediente pediÃ¡trico.</p>
+          <small id="estadoPaciente">Selecciona un paciente o inicia una evaluaciÃ³n temporal.</small>
         </div>
       </div>
       <div class="ped-actions">
         <a class="ped-secondary" href="dashboard.html">Dashboard</a>
-        <a class="ped-secondary" href="medico.html">Panel médico</a>
+        <a class="ped-secondary" href="medico.html">Panel mÃ©dico</a>
       </div>
     </header>
 
@@ -31,14 +31,14 @@
       <div>
         <div class="ped-kicker">Flujo principal</div>
         <h2>Selecciona paciente</h2>
-        <p>Busca por nombre, expediente, CURP, teléfono, correo o fecha de nacimiento. El expediente es la fuente principal; el modo temporal solo se usa si todavía no existe paciente.</p>
+        <p>Busca por nombre, expediente, CURP, telÃ©fono, correo o fecha de nacimiento. El expediente es la fuente principal; el modo temporal solo se usa si todavÃ­a no existe paciente.</p>
       </div>
       <div class="ped-patient-search">
         <input id="buscadorPacientePediatria" placeholder="Buscar paciente...">
         <button class="ped-primary" type="button" id="btnBuscarPaciente">Seleccionar</button>
         <a class="ped-secondary" href="nuevo-paciente.html">Crear paciente</a>
-        <button class="ped-secondary" type="button" id="btnModoTemporal">Usar evaluación sin expediente</button>
-        <button class="ped-secondary" type="button" id="btnUltimosPacientes">Últimos pacientes</button>
+        <button class="ped-secondary" type="button" id="btnModoTemporal">Usar evaluaciÃ³n sin expediente</button>
+        <button class="ped-secondary" type="button" id="btnUltimosPacientes">Ãšltimos pacientes</button>
       </div>
       <div class="ped-search-results" id="resultadosBusquedaPacientes"></div>
     </section>
@@ -46,10 +46,10 @@
     <section class="ped-layout">
       <aside class="ped-sidebar">
         <div class="ped-kicker">Paciente activo</div>
-        <p id="usuarioSesion">Validando sesión...</p>
+        <p id="usuarioSesion">Validando sesiÃ³n...</p>
         <div class="ped-active-patient" id="pacienteActivoCard">
           <strong>Sin paciente seleccionado</strong>
-          <span>Selecciona un expediente o usa evaluación temporal.</span>
+          <span>Selecciona un expediente o usa evaluaciÃ³n temporal.</span>
         </div>
         <div class="ped-nav" id="pediatriaNav"></div>
 
@@ -61,7 +61,7 @@
           <label>Nombre
             <input id="nombrePaciente" data-ped-calc placeholder="Nombre del paciente">
           </label>
-          <label>Sexo clínico
+          <label>Sexo clÃ­nico
             <select id="sexoPaciente" data-ped-calc>
               <option value="">Seleccionar</option>
               <option value="Femenino">Femenino</option>
@@ -72,7 +72,7 @@
           <label>Fecha de nacimiento
             <input id="fechaNacimiento" data-ped-calc type="date">
           </label>
-          <label>Fecha de medición
+          <label>Fecha de mediciÃ³n
             <input id="fechaMedicion" data-ped-calc type="date">
           </label>
           <label>Edad gestacional al nacimiento (semanas)
@@ -90,7 +90,7 @@
               </select>
             </span>
           </label>
-          <label>Perímetro cefálico (cm)
+          <label>PerÃ­metro cefÃ¡lico (cm)
             <input id="perimetroCefalico" data-ped-calc type="number" min="0" step="0.1" placeholder="cm">
           </label>
           <label>Alergias
@@ -102,10 +102,10 @@
       <section class="ped-main">
         <div class="ped-tools-head">
           <div>
-            <div class="ped-kicker">Centro de trabajo pediátrico</div>
+            <div class="ped-kicker">Centro de trabajo pediÃ¡trico</div>
             <h2 id="tituloSeccionPediatria">Resumen</h2>
           </div>
-          <input class="ped-search" id="busquedaPediatria" placeholder="Buscar herramienta, cálculo o resultado...">
+          <input class="ped-search" id="busquedaPediatria" placeholder="Buscar herramienta, cÃ¡lculo o resultado...">
         </div>
 
         <div class="ped-summary" id="resumenPediatria"></div>
@@ -129,6 +129,7 @@
   </section>
 
   <script type="module" src="js/pediatria/pediatria.js"></script>
+  <script type="module" src="js/components/accesosRapidos.js"></script>
   <script type="module" src="js/reportes.js"></script>
 </body>
 </html>

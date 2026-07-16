@@ -1,4 +1,5 @@
 import { db } from "../firebase.js";
+import { crearDatosSolicitudEliminacion } from "./reportes.js?v=20260716-1";
 
 import {
     doc,
@@ -12,7 +13,9 @@ import {
     getDocs,
     query,
     where,
-    addDoc
+    addDoc,
+    serverTimestamp,
+    writeBatch
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 
@@ -167,17 +170,32 @@ export async function crearPacienteProvisional(datos){
 
 }
 
-export async function solicitarEliminacionPaciente(uid, solicitadoPor){
+export async function solicitarEliminacionPaciente(uid, solicitadoPor, datosSolicitud = {}){
+    const fechaSolicitud = new Date().toISOString();
+    const datosReporte = crearDatosSolicitudEliminacion({
+        ...datosSolicitud,
+        recursoTipo:"paciente",
+        recursoId:uid,
+        pacienteUid:uid,
+        usuarioUid:datosSolicitud.usuarioUid || solicitadoPor || ""
+    });
+    const referenciaReporte = doc(collection(db, "reportesUsuarios"));
+    const lote = writeBatch(db);
 
-    await updateDoc(
-        doc(db,"usuarios",uid),
-        {
-            estado:"suspendido",
-            eliminacionSolicitada:true,
-            fechaSolicitudEliminacion:new Date().toISOString(),
-            solicitadoPor:solicitadoPor
-        }
-    );
+    lote.update(doc(db,"usuarios",uid), {
+        estado:"suspendido",
+        eliminacionSolicitada:true,
+        fechaSolicitudEliminacion:fechaSolicitud,
+        solicitadoPor:solicitadoPor
+    });
+    lote.set(referenciaReporte, {
+        ...datosReporte,
+        fechaISO:fechaSolicitud,
+        fechaCreacion:serverTimestamp()
+    });
+
+    await lote.commit();
+    return referenciaReporte;
 
 }
 

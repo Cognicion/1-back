@@ -211,11 +211,68 @@ function poblarSelectorHora24h(selector, valorActual = "") {
   selector.innerHTML = opciones.join("");
 }
 
+function normalizarHoraClinica(valor = "", fallback = "00:00") {
+  const limpio = String(valor || "").trim();
+  const coincidencia = /^(\d{1,2}):(\d{1,2})$/.exec(limpio);
+  if (!coincidencia) return fallback;
+
+  const hora = Number(coincidencia[1]);
+  const minuto = Number(coincidencia[2]);
+  if (hora < 0 || hora > 23 || minuto < 0 || minuto > 59) return fallback;
+  return `${String(hora).padStart(2, "0")}:${String(minuto).padStart(2, "0")}`;
+}
+
+function poblarSelectorHoraExacta(inputOculto, valorActual = "") {
+  const selectorHora = document.getElementById("ingresoNuevoHoraHH");
+  const selectorMinuto = document.getElementById("ingresoNuevoHoraMM");
+  const inputManual = document.getElementById("ingresoNuevoHoraManual");
+  if (!inputOculto || !selectorHora || !selectorMinuto) return;
+
+  const valor = normalizarHoraClinica(valorActual, "00:00");
+  const [horaActual, minutoActual] = valor.split(":");
+  selectorHora.innerHTML = Array.from({ length: 24 }, (_, h) => {
+    const hora = String(h).padStart(2, "0");
+    return `<option value="${hora}" ${hora === horaActual ? "selected" : ""}>${hora}</option>`;
+  }).join("");
+  selectorMinuto.innerHTML = Array.from({ length: 60 }, (_, m) => {
+    const minuto = String(m).padStart(2, "0");
+    return `<option value="${minuto}" ${minuto === minutoActual ? "selected" : ""}>${minuto}</option>`;
+  }).join("");
+  inputOculto.value = valor;
+  if (inputManual) inputManual.value = valor;
+
+  const sincronizarDesdeSelectores = () => {
+    inputOculto.value = normalizarHoraClinica(`${selectorHora.value || "00"}:${selectorMinuto.value || "00"}`, "00:00");
+    if (inputManual) inputManual.value = inputOculto.value;
+  };
+  const sincronizarDesdeManual = () => {
+    const hora = normalizarHoraClinica(inputManual?.value || "", inputOculto.value || "00:00");
+    inputOculto.value = hora;
+    const [h, m] = hora.split(":");
+    selectorHora.value = h;
+    selectorMinuto.value = m;
+    if (inputManual) inputManual.value = inputOculto.value;
+  };
+
+  selectorHora.onchange = sincronizarDesdeSelectores;
+  selectorMinuto.onchange = sincronizarDesdeSelectores;
+  if (inputManual) inputManual.onblur = sincronizarDesdeManual;
+}
+
+function obtenerHoraIngresoNuevo() {
+  const inputOculto = document.getElementById("ingresoNuevoHora");
+  const inputManual = document.getElementById("ingresoNuevoHoraManual");
+  const hora = normalizarHoraClinica(inputManual?.value || inputOculto?.value || "", "00:00");
+  if (inputOculto) inputOculto.value = hora;
+  if (inputManual) inputManual.value = hora;
+  return hora;
+}
+
 function abrirSelectorIngresoNuevo() {
   const modal = document.getElementById("modalIngresoNuevo");
   if (!modal) return;
 
-  poblarSelectorHora24h(document.getElementById("ingresoNuevoHora"), document.getElementById("ingresoNuevoHora")?.value || "");
+  poblarSelectorHoraExacta(document.getElementById("ingresoNuevoHora"), document.getElementById("ingresoNuevoHora")?.value || "");
   modal.classList.add("abierto");
   modal.setAttribute("aria-hidden", "false");
 }
@@ -230,7 +287,7 @@ function cerrarSelectorIngresoNuevo() {
 
 function aplicarIngresoNuevo() {
   const fecha = document.getElementById("ingresoNuevoFecha")?.value || "";
-  const hora = document.getElementById("ingresoNuevoHora")?.value || "";
+  const hora = obtenerHoraIngresoNuevo();
 
   if (!fecha) {
     alert("Selecciona el dia de ingreso.");

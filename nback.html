@@ -233,7 +233,7 @@ button {
     opacity: 0.75;
 }
 
-/* PEGA AQUÍ */
+/* PEGA AQUÃ */
 
 .icono{
 
@@ -288,26 +288,26 @@ letter-spacing:1px;
 <h1>Dual N-Back</h1>
 <p class="autor">Dr. Aldo Sandokan Aguilar Valenzuela</p>
 
-<p><b>A</b> = sonido / izquierda | <b>D</b> = posición / derecha</p>
+<p><b>A</b> = sonido / izquierda | <b>D</b> = posiciÃ³n / derecha</p>
 
 <section id="panelInstrucciones" class="instrucciones-nback">
   <h2>Instrucciones Dual N-Back</h2>
-  <p>Observa la posición del cuadro iluminado y escucha el número. Compara cada estímulo con el que apareció N turnos antes.</p>
+  <p>Observa la posiciÃ³n del cuadro iluminado y escucha el nÃºmero. Compara cada estÃ­mulo con el que apareciÃ³ N turnos antes.</p>
   <div class="instrucciones-grid">
     <article class="instruccion-card">
       <h3>Sonido</h3>
-      <p>Presiona <strong>A</strong> o el botón <strong>SONIDO</strong> solo cuando el número actual coincida con el de N turnos antes.</p>
+      <p>Presiona <strong>A</strong> o el botÃ³n <strong>SONIDO</strong> solo cuando el nÃºmero actual coincida con el de N turnos antes.</p>
     </article>
     <article class="instruccion-card">
-      <h3>Posición</h3>
-      <p>Presiona <strong>D</strong> o el botón <strong>POSICIÓN</strong> solo cuando el cuadro actual coincida con el de N turnos antes.</p>
+      <h3>PosiciÃ³n</h3>
+      <p>Presiona <strong>D</strong> o el botÃ³n <strong>POSICIÃ“N</strong> solo cuando el cuadro actual coincida con el de N turnos antes.</p>
     </article>
     <article class="instruccion-card">
       <h3>Sin coincidencia</h3>
       <p>No presiones nada. Esa respuesta cuenta como rechazo correcto de no coincidencia.</p>
     </article>
   </div>
-  <p><strong>Acierto:</strong> respondes a una coincidencia. <strong>Comisión/falsa alarma:</strong> respondes cuando no había coincidencia. <strong>Omisión:</strong> no respondes a una coincidencia.</p>
+  <p><strong>Acierto:</strong> respondes a una coincidencia. <strong>ComisiÃ³n/falsa alarma:</strong> respondes cuando no habÃ­a coincidencia. <strong>OmisiÃ³n:</strong> no respondes a una coincidencia.</p>
 </section>
 <div class="controls">
   <label>Nivel:</label>
@@ -328,9 +328,9 @@ letter-spacing:1px;
   <br>
 
     <button class="boton-secundario" onclick="verInstrucciones()">Ver instrucciones</button>
-  <button class="boton-practica" onclick="iniciarPractica()">Iniciar práctica</button>
-  <button class="boton-practica" onclick="repetirPractica()">Repetir práctica</button>
-  <button onclick="comenzarEvaluacion()">Comenzar evaluación</button>
+  <button class="boton-practica" onclick="iniciarPractica()">Iniciar prÃ¡ctica</button>
+  <button class="boton-practica" onclick="repetirPractica()">Repetir prÃ¡ctica</button>
+  <button onclick="comenzarEvaluacion()">Comenzar evaluaciÃ³n</button>
   <button class="stop" onclick="detener()">Detener</button>
 </div>
 
@@ -341,17 +341,17 @@ letter-spacing:1px;
 </div>
 
 <div id="feedback"></div>
-<p id="resultado">Lee las instrucciones o inicia una práctica.</p>
+<p id="resultado">Lee las instrucciones o inicia una prÃ¡ctica.</p>
 
 <div id="graficas">
-  <h2>Gráficas de resultados</h2>
+  <h2>GrÃ¡ficas de resultados</h2>
 
   <h3>Sonido</h3>
   <div class="barra-contenedor"><div id="barAudioAciertos" class="barra verde"></div></div>
   <div class="barra-contenedor"><div id="barAudioComision" class="barra rojo"></div></div>
   <div class="barra-contenedor"><div id="barAudioOmision" class="barra naranja"></div></div>
 
-  <h3>Posición</h3>
+  <h3>PosiciÃ³n</h3>
   <div class="barra-contenedor"><div id="barVisualAciertos" class="barra verde"></div></div>
   <div class="barra-contenedor"><div id="barVisualComision" class="barra rojo"></div></div>
   <div class="barra-contenedor"><div id="barVisualOmision" class="barra naranja"></div></div>
@@ -363,7 +363,7 @@ letter-spacing:1px;
 
     <div id="tapLeft" onclick="responderAudio()">
 
-        <div class="icono">🎧</div>
+        <div class="icono">ðŸŽ§</div>
 
         <div class="textoBoton">
             SONIDO
@@ -374,10 +374,10 @@ letter-spacing:1px;
 
     <div id="tapRight" onclick="responderVisual()">
 
-        <div class="icono">⬜</div>
+        <div class="icono">â¬œ</div>
 
         <div class="textoBoton">
-            POSICIÓN
+            POSICIÃ“N
         </div>
 
     </div>
@@ -417,7 +417,7 @@ let trAudio = [];
 
 function verInstrucciones() {
   document.getElementById("panelInstrucciones")?.classList.remove("oculto");
-  document.getElementById("resultado").innerText = "Lee las instrucciones y realiza una práctica breve antes de la evaluación.";
+  document.getElementById("resultado").innerText = "Lee las instrucciones y realiza una prÃ¡ctica breve antes de la evaluaciÃ³n.";
 }
 
 function iniciarPractica() {
@@ -466,7 +466,7 @@ function iniciar(modo = "evaluacion") {
   generarSecuencias();
 
   document.getElementById("feedback").innerText = "";
-  document.getElementById("resultado").innerText = modoPractica ? "Práctica iniciada: estos resultados no se guardan." : "Evaluación iniciada...";
+  document.getElementById("resultado").innerText = modoPractica ? "PrÃ¡ctica iniciada: estos resultados no se guardan." : "EvaluaciÃ³n iniciada...";
   mostrarEstimulo();
 }
 
@@ -529,8 +529,8 @@ function mostrarEstimulo() {
 
   document.getElementById("resultado").innerText =
     "Ensayo " + (indice + 1) + " de " + maxEnsayos + "\n" +
-    "A = sonido | D = posición\n" +
-    (indice < nivel ? "Memoriza los primeros estímulos." : "Compara con el estímulo de hace " + nivel + " turno(s). Si no coincide, no presiones nada.");
+    "A = sonido | D = posiciÃ³n\n" +
+    (indice < nivel ? "Memoriza los primeros estÃ­mulos." : "Compara con el estÃ­mulo de hace " + nivel + " turno(s). Si no coincide, no presiones nada.");
 
   temporizador = setTimeout(() => {
     evaluarSinRespuesta();
@@ -612,11 +612,11 @@ function responderVisual() {
 
   if (coincideVisual()) {
     visualAciertos++;
-    mostrarFeedback("D: posición CORRECTA", "correcto");
+    mostrarFeedback("D: posiciÃ³n CORRECTA", "correcto");
     flashLado("derecha", true);
   } else {
     visualComision++;
-    mostrarFeedback("D: posición INCORRECTA", "incorrecto");
+    mostrarFeedback("D: posiciÃ³n INCORRECTA", "incorrecto");
     flashLado("derecha", false);
   }
 }
@@ -645,7 +645,7 @@ function evaluarSinRespuesta() {
   }
 
   if (huboOmision) {
-    mostrarFeedback("Omisión: no respondiste una coincidencia", "incorrecto");
+    mostrarFeedback("OmisiÃ³n: no respondiste una coincidencia", "incorrecto");
   }
 }
 
@@ -656,7 +656,7 @@ function finalizar() {
   document.getElementById("feedback").innerText = "Prueba terminada";
   document.getElementById("feedback").className = "info";
 
-  mostrarResultados(modoPractica ? "Práctica finalizada" : "Prueba finalizada");
+  mostrarResultados(modoPractica ? "PrÃ¡ctica finalizada" : "Prueba finalizada");
 }
 
 function promedio(lista) {
@@ -685,27 +685,27 @@ function mostrarResultados(titulo) {
   let promedioAudio = promedio(trAudio);
 
   document.getElementById("resultado").innerText =
-    titulo + (modoPractica ? " (no se guarda como resultado clínico)" : "") + "\n\n" +
+    titulo + (modoPractica ? " (no se guarda como resultado clÃ­nico)" : "") + "\n\n" +
     "Nivel: " + nivel + "-Back\n" +
     "Ensayos completados: " + indice + " de " + maxEnsayos + "\n\n" +
 
     "SONIDO / A / IZQUIERDA\n" +
     "Coincidencias reales: " + totalAudio + "\n" +
     "Aciertos: " + audioAciertos + "\n" +
-    "Errores por comisión: " + audioComision + "\n" +
-    "Errores por omisión: " + audioOmision + "\n" +
+    "Errores por comisiÃ³n: " + audioComision + "\n" +
+    "Errores por omisiÃ³n: " + audioOmision + "\n" +
     "Rechazos correctos: " + audioRechazosCorrectos + "\n" +
-    "Precisión sonido: " + precisionAudio + "%\n" +
+    "PrecisiÃ³n sonido: " + precisionAudio + "%\n" +
     "TR sonido promedio: " + promedioAudio + " ms\n\n" +
 
-    "POSICIÓN / D / DERECHA\n" +
+    "POSICIÃ“N / D / DERECHA\n" +
     "Coincidencias reales: " + totalVisual + "\n" +
     "Aciertos: " + visualAciertos + "\n" +
-    "Errores por comisión: " + visualComision + "\n" +
-    "Errores por omisión: " + visualOmision + "\n" +
+    "Errores por comisiÃ³n: " + visualComision + "\n" +
+    "Errores por omisiÃ³n: " + visualOmision + "\n" +
     "Rechazos correctos: " + visualRechazosCorrectos + "\n" +
-    "Precisión posición: " + precisionVisual + "%\n" +
-    "TR posición promedio: " + promedioVisual + " ms";
+    "PrecisiÃ³n posiciÃ³n: " + precisionVisual + "%\n" +
+    "TR posiciÃ³n promedio: " + promedioVisual + " ms";
 
   graficar();
 }
@@ -720,12 +720,12 @@ function graficar() {
   );
 
   ponerBarra("barAudioAciertos", audioAciertos, maximo, "Aciertos: ");
-  ponerBarra("barAudioComision", audioComision, maximo, "Comisión: ");
-  ponerBarra("barAudioOmision", audioOmision, maximo, "Omisión: ");
+  ponerBarra("barAudioComision", audioComision, maximo, "ComisiÃ³n: ");
+  ponerBarra("barAudioOmision", audioOmision, maximo, "OmisiÃ³n: ");
 
   ponerBarra("barVisualAciertos", visualAciertos, maximo, "Aciertos: ");
-  ponerBarra("barVisualComision", visualComision, maximo, "Comisión: ");
-  ponerBarra("barVisualOmision", visualOmision, maximo, "Omisión: ");
+  ponerBarra("barVisualComision", visualComision, maximo, "ComisiÃ³n: ");
+  ponerBarra("barVisualOmision", visualOmision, maximo, "OmisiÃ³n: ");
 }
 
 function ponerBarra(id, valor, maximo, texto) {
@@ -743,6 +743,7 @@ document.addEventListener("keydown", function(event) {
 });
 </script>
 
+  <script type="module" src="js/components/accesosRapidos.js"></script>
   <script type="module" src="js/reportes.js"></script>
 </body>
 </html>

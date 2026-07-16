@@ -13,7 +13,7 @@
 
 <noscript>
   <div style="padding:24px;color:white;background:#7f1d1d;font-family:Arial">
-    Acceso restringido. Esta página requiere JavaScript y autenticación.
+    Acceso restringido. Esta pÃ¡gina requiere JavaScript y autenticaciÃ³n.
   </div>
 </noscript>
 
@@ -218,7 +218,7 @@
     <div class="tabla-header">
       <div>
         <h2>Reportes, peticiones y sugerencias</h2>
-        <p>Mensajes enviados desde el boton flotante global de Cognicion.</p>
+        <p>Mensajes enviados desde Cognicion y solicitudes administrativas de eliminacion.</p>
       </div>
       <button id="btnActualizarReportesAdmin">Actualizar reportes</button>
     </div>
@@ -241,6 +241,7 @@
         <option value="sugerencia">Sugerencias</option>
         <option value="peticion_personal">Peticiones personales</option>
         <option value="nueva_funcionalidad">Nuevas funcionalidades</option>
+        <option value="solicitud_eliminacion">Solicitudes de eliminacion</option>
       </select>
       <select id="filtroReportesArchivo">
         <option value="activos">Solo activos</option>
@@ -385,7 +386,8 @@
 
 </main>
 
-<script type="module" src="js/admin.js"></script>
+<script type="module" src="js/admin.js?v=20260716-1"></script>
 <script type="module" src="js/reportes.js"></script>
+  <script type="module" src="js/components/accesosRapidos.js"></script>
 </body>
 </html>
