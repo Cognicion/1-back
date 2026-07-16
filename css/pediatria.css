@@ -1203,10 +1203,10 @@ body {
 }
 
 .ped-search-results.compact {
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  grid-template-columns: 1fr;
   max-height: 380px;
-  overflow: auto;
-  padding-right: 4px;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .ped-load-more {
@@ -1292,6 +1292,134 @@ body {
   border-color: rgba(52, 211, 153, 0.36);
 }
 
+/* ==================================================
+   COMBOBOX ÚNICO DE MEDICAMENTOS PEDIÁTRICOS
+   ================================================== */
+
+.ped-rx-medication-combobox {
+  position: relative;
+  min-width: 0;
+  grid-column: span 2;
+  display: grid;
+  gap: 6px;
+  z-index: 30;
+}
+
+.ped-rx-medication-combobox > label {
+  color: var(--ped-muted);
+  font-size: 0.84rem;
+  font-weight: 800;
+}
+
+.ped-medication-search-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.ped-medication-search-wrapper input[type="search"] {
+  width: 100%;
+  padding-right: 44px;
+}
+
+/* Quitar la X automática de algunos navegadores */
+.ped-medication-search-wrapper input[type="search"]::-webkit-search-cancel-button {
+  appearance: none;
+  display: none;
+}
+
+.ped-medication-clear {
+  position: absolute;
+  top: 50%;
+  right: 9px;
+  z-index: 35;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  transform: translateY(-50%);
+  border: 1px solid rgba(125, 211, 252, 0.32);
+  border-radius: 999px;
+  color: var(--ped-text);
+  background: rgba(15, 23, 42, 0.9);
+  cursor: pointer;
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.ped-medication-clear:hover {
+  color: #fff;
+  border-color: rgba(34, 211, 238, 0.8);
+  background: rgba(14, 165, 233, 0.28);
+}
+
+/* Lista desplegable real */
+.ped-rx-medication-combobox .ped-search-results.compact {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  right: 0;
+  z-index: 2000;
+
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 7px;
+
+  max-height: 340px;
+  margin: 0;
+  padding: 8px;
+  overflow-y: auto;
+  overflow-x: hidden;
+
+  border: 1px solid rgba(34, 211, 238, 0.42);
+  border-radius: 14px;
+  background: rgba(5, 13, 28, 0.98);
+  box-shadow:
+    0 18px 45px rgba(0, 0, 0, 0.55),
+    0 0 0 1px rgba(34, 211, 238, 0.08);
+  backdrop-filter: blur(18px);
+}
+
+.ped-rx-medication-combobox .ped-search-results.compact.oculto {
+  display: none !important;
+}
+
+.ped-rx-medication-combobox .ped-search-pill {
+  width: 100%;
+  display: grid;
+  gap: 3px;
+  margin: 0;
+  padding: 10px 12px;
+  border: 1px solid rgba(125, 211, 252, 0.16);
+  border-radius: 11px;
+  color: var(--ped-text);
+  background: rgba(15, 23, 42, 0.74);
+  cursor: pointer;
+  text-align: left;
+}
+
+.ped-rx-medication-combobox .ped-search-pill:hover,
+.ped-rx-medication-combobox .ped-search-pill.activa,
+.ped-rx-medication-combobox .ped-search-pill:focus-visible {
+  border-color: rgba(34, 211, 238, 0.72);
+  background: rgba(14, 165, 233, 0.16);
+  box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.1);
+  outline: none;
+}
+
+.ped-rx-medication-combobox small {
+  color: var(--ped-muted);
+  font-size: 0.76rem;
+  line-height: 1.35;
+}
+
+/* Evita que la tarjeta recorte el desplegable */
+.ped-prescription-compact,
+.ped-medication-box,
+.ped-rx-grid-compact {
+  overflow: visible;
+}
+
 @media (max-width: 980px) {
   .ped-layout,
   .ped-summary,
@@ -1306,6 +1434,10 @@ body {
   }
 
   .ped-rx-search-field {
+    grid-column: span 1;
+  }
+
+  .ped-rx-medication-combobox {
     grid-column: span 1;
   }
 

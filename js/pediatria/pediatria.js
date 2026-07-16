@@ -69,8 +69,13 @@ const estado = {
     weightConfirmed: false
   },
   prescripcionCalculada: null,
-  busquedaMedicamento: ""
+  busquedaMedicamento: "",
+  comboboxMedicamentoAbierto: false,
+  medicamentoActivoIndex: -1,
+  prescripcionSearchPage: 1
 };
+
+let listenerCierreComboboxRegistrado = false;
 
 const secciones = [
   ["resumen", "Resumen"],
@@ -683,7 +688,7 @@ function renderMedicamentosPanelAvanzado() {
   sincronizarPrescripcionConPaciente();
   const rx = buildPediatricPrescription(leerInputPrescripcion());
   estado.prescripcionCalculada = rx;
-  const med = rx.medicationInfo || loadMedicationInformation(estado.prescripcion.medicationId) || CATALOGO_FARMACOLOGICO_PEDIATRIA[0];
+  const med = rx.medicationInfo || loadMedicationInformation(estado.prescripcion.medicationId);
   const indicaciones = med?.indications || [];
   const indicacion = indicaciones.find((item) => item.indicationId === estado.prescripcion.indicationId) || indicaciones[0];
   const esquemas = indicacion?.dosingSchemes || [];
@@ -710,15 +715,38 @@ function renderMedicamentosPanelAvanzado() {
       </div>
 
       <div class="ped-rx-grid-compact">
-        <label class="ped-rx-search-field">Medicamento
-          <input id="buscadorMedicamentoPediatrico" data-ped-rx-search="1" value="${escapeAttr(estado.busquedaMedicamento || "")}" placeholder="Buscar por genérico, marca, clase o indicación">
-          <small>Mostrando ${visibles.length} de ${resultados.length} medicamentos del catálogo maestro.</small>
-        </label>
-        <label>Seleccionado
-          <select data-ped-rx="medicationId">
-            ${CATALOGO_FARMACOLOGICO_PEDIATRIA.map((item) => `<option value="${item.medicationId}" ${item.medicationId === med.medicationId ? "selected" : ""}>${item.genericName}</option>`).join("")}
-          </select>
-        </label>
+        <div class="ped-rx-medication-combobox" data-ped-medication-combobox="1">
+          <label for="buscadorMedicamentoPediatrico">Medicamento</label>
+          <div class="ped-medication-search-wrapper">
+            <input
+              id="buscadorMedicamentoPediatrico"
+              type="search"
+              autocomplete="off"
+              role="combobox"
+              aria-autocomplete="list"
+              aria-expanded="${estado.comboboxMedicamentoAbierto ? "true" : "false"}"
+              aria-controls="resultadosMedicamentoPediatrico"
+              aria-activedescendant=""
+              data-ped-rx-search="1"
+              value="${escapeAttr(estado.busquedaMedicamento || med?.genericName || "")}"
+              placeholder="Buscar por genérico, marca, clase o indicación"
+            >
+            <button
+              type="button"
+              class="ped-medication-clear ${med?.medicationId || estado.busquedaMedicamento ? "" : "oculto"}"
+              data-ped-rx-clear-medication="1"
+              aria-label="Limpiar medicamento"
+              title="Limpiar medicamento"
+            >×</button>
+            <input type="hidden" data-ped-rx="medicationId" value="${escapeAttr(med?.medicationId || "")}">
+            <div
+              id="resultadosMedicamentoPediatrico"
+              class="ped-search-results compact ${estado.comboboxMedicamentoAbierto ? "" : "oculto"}"
+              role="listbox"
+            >${estado.comboboxMedicamentoAbierto ? renderResultadosMedicamentosPediatricos(visibles, resultados.length) : ""}</div>
+          </div>
+          <small data-ped-rx-search-status="1">${textoEstadoBusquedaMedicamento({ med, resultados, visibles })}</small>
+        </div>
         <label>Indicación
           ${indicaciones.length ? `
             <select data-ped-rx="indicationId">
@@ -753,7 +781,7 @@ function renderMedicamentosPanelAvanzado() {
         ${estado.prescripcion.presentationId === "manual" ? renderPresentacionManualCompacta() : ""}
         <label>Via
           <select data-ped-rx="route">
-            ${Array.from(new Set([...(med.routes || []), "oral", "intravenosa", "rectal"])).filter(Boolean).map((route) => `<option value="${route}" ${route === rx.route ? "selected" : ""}>${route}</option>`).join("")}
+            ${Array.from(new Set([...(med?.routes || []), "oral", "intravenosa", "rectal"])).filter(Boolean).map((route) => `<option value="${route}" ${route === rx.route ? "selected" : ""}>${route}</option>`).join("")}
           </select>
         </label>
         <label>Dosis final
@@ -791,9 +819,6 @@ function renderMedicamentosPanelAvanzado() {
       ${estado.prescripcion.panelAbierto === "info" ? renderInfoMedicamentoDrawer(med) : ""}
       ${estado.prescripcion.panelAbierto === "doses" ? renderDosisHabitualesDrawer(esquemas) : ""}
 
-      <div class="ped-search-results compact ${estado.busquedaMedicamento ? "" : "oculto"}" id="resultadosMedicamentoPediatrico">
-        ${estado.busquedaMedicamento ? renderResultadosMedicamentosPediatricos(visibles, resultados.length, porPagina) : ""}
-      </div>
 
       <div class="ped-rx-med-summary">
         <div>
@@ -825,18 +850,28 @@ function renderMedicamentosPanelAvanzado() {
   `;
 }
 
-function renderResultadosMedicamentosPediatricos(resultados, total, porPagina) {
+function renderResultadosMedicamentosPediatricos(resultados, total) {
   if (!resultados.length) return `<div class="ped-empty-mini">No se encontraron medicamentos.</div>`;
   return `
-    ${resultados.map((item) => `
-      <button type="button" class="ped-search-pill" data-ped-pick-med="${item.medicationId}">
+    ${resultados.map((item, index) => `
+      <button type="button" id="ped-med-option-${index}" class="ped-search-pill" data-ped-medication-id="${escapeAttr(item.medicationId)}" role="option" aria-selected="false" tabindex="-1">
         <b>${escapeHTML(item.genericName)}</b>
         <small>${escapeHTML((item.presentations || []).flatMap((p) => p.brands || []).slice(0, 4).join(", ") || "Sin marcas registradas")}</small>
         <small>${escapeHTML(item.drugClass || "Clase no especificada")} · ${escapeHTML(estadoPediatricoMedicamento(item))} · ${(item.presentations || []).length} presentaciones</small>
       </button>
     `).join("")}
-    ${resultados.length < total ? `<button type="button" class="ped-secondary ped-load-more" data-rx-action="more-results">Cargar más</button>` : ""}
+    ${resultados.length < total ? `<button type="button" class="ped-secondary ped-load-more" data-ped-rx-load-more="1">Cargar más</button>` : ""}
   `;
+}
+
+function textoEstadoBusquedaMedicamento({ med, resultados, visibles }) {
+  if (estado.busquedaMedicamento) {
+    return resultados.length
+      ? `Mostrando ${visibles.length} de ${resultados.length} resultados.`
+      : "No se encontraron medicamentos.";
+  }
+  if (med?.genericName) return `Seleccionado: ${escapeHTML(med.genericName)}.`;
+  return `${CATALOGO_FARMACOLOGICO_PEDIATRIA.length} medicamentos disponibles.`;
 }
 
 function renderDuracionCompacta(rx) {
@@ -1033,13 +1068,24 @@ function leerInputPrescripcion() {
 function bindPrescripcionPediatrica() {
   const buscadorMedicamento = document.querySelector("[data-ped-rx-search]");
   if (buscadorMedicamento) {
-    const actualizarBusqueda = debounce(() => {
+    buscadorMedicamento.addEventListener("focus", () => {
+      abrirComboboxMedicamentos();
+      if (estado.prescripcion.medicationId && !estado.busquedaMedicamento) buscadorMedicamento.select();
+    });
+    buscadorMedicamento.addEventListener("input", () => {
+      const medSeleccionado = loadMedicationInformation(estado.prescripcion.medicationId);
+      if (medSeleccionado && buscadorMedicamento.value !== medSeleccionado.genericName) {
+        limpiarDatosMedicamentoSeleccionado();
+      }
       estado.busquedaMedicamento = buscadorMedicamento.value;
       estado.prescripcionSearchPage = 1;
+      estado.medicamentoActivoIndex = -1;
+      estado.comboboxMedicamentoAbierto = true;
       renderResultadosBusquedaMedicamentos();
-    }, 120);
-    buscadorMedicamento.addEventListener("input", actualizarBusqueda);
+    });
+    buscadorMedicamento.addEventListener("keydown", manejarTecladoComboboxMedicamentos);
   }
+  document.querySelector("[data-ped-rx-clear-medication]")?.addEventListener("click", limpiarComboboxMedicamentos);
   document.querySelectorAll("[data-ped-rx]").forEach((input) => {
     input.addEventListener("input", () => actualizarPrescripcionDesdeInput(input.dataset.pedRx, input.value, "input"));
     input.addEventListener("change", () => actualizarPrescripcionDesdeInput(input.dataset.pedRx, input.value, "change"));
@@ -1054,6 +1100,12 @@ function bindPrescripcionPediatrica() {
     input.addEventListener("change", () => actualizarPrescripcionDesdeInput(input.dataset.pedRxCheck, input.checked, "check"));
   });
   bindResultadosMedicamentosPediatricos();
+  if (!listenerCierreComboboxRegistrado) {
+    document.addEventListener("click", (event) => {
+      if (!event.target.closest("[data-ped-medication-combobox]")) cerrarComboboxMedicamentos();
+    });
+    listenerCierreComboboxRegistrado = true;
+  }
   document.querySelectorAll("[data-rx-scheme]").forEach((button) => {
     button.addEventListener("click", () => actualizarPrescripcionDesdeInput("schemeIndex", button.dataset.rxScheme, "scheme"));
   });
@@ -1090,6 +1142,12 @@ function actualizarPrescripcionDesdeInput(key, value, trigger = "") {
   estado.prescripcion[key] = value;
   if (key === "medicationId") {
     const med = loadMedicationInformation(value);
+    if (!med) {
+      estado.prescripcion.medicationId = "";
+      return;
+    }
+    limpiarDatosMedicamentoSeleccionado();
+    estado.prescripcion.medicationId = value;
     const indication = med?.indications?.[0];
     const scheme = indication?.dosingSchemes?.[0];
     const route = scheme?.routes?.[0] || med?.routes?.[0] || "oral";
@@ -1104,6 +1162,8 @@ function actualizarPrescripcionDesdeInput(key, value, trigger = "") {
     estado.prescripcion.finalDoseMg = "";
     estado.busquedaMedicamento = "";
     estado.prescripcionSearchPage = 1;
+    estado.comboboxMedicamentoAbierto = false;
+    estado.medicamentoActivoIndex = -1;
   }
   if (key === "indicationId") {
     const med = loadMedicationInformation(estado.prescripcion.medicationId);
@@ -1146,19 +1206,139 @@ function renderResultadosBusquedaMedicamentos() {
   const resultados = searchPediatricMedication(estado.busquedaMedicamento || "");
   const porPagina = 20;
   const pagina = Number(estado.prescripcionSearchPage || 1);
-  contenedor.innerHTML = renderResultadosMedicamentosPediatricos(resultados.slice(0, pagina * porPagina), resultados.length, porPagina);
-  bindResultadosMedicamentosPediatricos();
+  const visibles = resultados.slice(0, pagina * porPagina);
+  const med = loadMedicationInformation(estado.prescripcion.medicationId);
+  contenedor.innerHTML = renderResultadosMedicamentosPediatricos(visibles, resultados.length);
+  contenedor.classList.toggle("oculto", !estado.comboboxMedicamentoAbierto);
+  const buscador = document.querySelector("[data-ped-rx-search]");
+  buscador?.setAttribute("aria-expanded", String(estado.comboboxMedicamentoAbierto));
+  const hidden = document.querySelector("input[type='hidden'][data-ped-rx='medicationId']");
+  if (hidden) hidden.value = estado.prescripcion.medicationId || "";
+  const estadoBusqueda = document.querySelector("[data-ped-rx-search-status]");
+  if (estadoBusqueda) estadoBusqueda.innerHTML = textoEstadoBusquedaMedicamento({ med, resultados, visibles });
+  const limpiar = document.querySelector("[data-ped-rx-clear-medication]");
+  limpiar?.classList.toggle("oculto", !estado.prescripcion.medicationId && !estado.busquedaMedicamento);
+  actualizarOpcionActivaMedicamento();
 }
 
 function bindResultadosMedicamentosPediatricos() {
-  document.querySelectorAll("[data-ped-pick-med]").forEach((button) => {
-    button.addEventListener("click", () => actualizarPrescripcionDesdeInput("medicationId", button.dataset.pedPickMed, "pick"));
-  });
-  document.querySelectorAll("[data-rx-action='more-results']").forEach((button) => {
-    button.addEventListener("click", () => {
+  const contenedor = $("resultadosMedicamentoPediatrico");
+  if (!contenedor) return;
+  contenedor.addEventListener("click", (event) => {
+    const opcion = event.target.closest("[data-ped-medication-id]");
+    if (opcion) {
+      seleccionarMedicamentoPediatrico(opcion.dataset.pedMedicationId);
+      return;
+    }
+    if (event.target.closest("[data-ped-rx-load-more]")) {
       estado.prescripcionSearchPage = Number(estado.prescripcionSearchPage || 1) + 1;
       renderResultadosBusquedaMedicamentos();
-    });
+    }
+  });
+}
+
+function abrirComboboxMedicamentos() {
+  estado.comboboxMedicamentoAbierto = true;
+  estado.medicamentoActivoIndex = -1;
+  renderResultadosBusquedaMedicamentos();
+}
+
+function cerrarComboboxMedicamentos() {
+  if (!estado.comboboxMedicamentoAbierto) return;
+  estado.comboboxMedicamentoAbierto = false;
+  estado.medicamentoActivoIndex = -1;
+  const contenedor = $("resultadosMedicamentoPediatrico");
+  contenedor?.classList.add("oculto");
+  const buscador = document.querySelector("[data-ped-rx-search]");
+  buscador?.setAttribute("aria-expanded", "false");
+  buscador?.removeAttribute("aria-activedescendant");
+}
+
+function manejarTecladoComboboxMedicamentos(event) {
+  if (event.key === "Escape") {
+    event.preventDefault();
+    cerrarComboboxMedicamentos();
+    return;
+  }
+  if (!["ArrowDown", "ArrowUp", "Enter"].includes(event.key)) return;
+  if (!estado.comboboxMedicamentoAbierto) abrirComboboxMedicamentos();
+  const opciones = Array.from(document.querySelectorAll("#resultadosMedicamentoPediatrico [data-ped-medication-id]"));
+  if (!opciones.length) return;
+  if (event.key === "Enter") {
+    if (estado.medicamentoActivoIndex < 0) return;
+    event.preventDefault();
+    seleccionarMedicamentoPediatrico(opciones[estado.medicamentoActivoIndex]?.dataset.pedMedicationId);
+    return;
+  }
+  event.preventDefault();
+  const delta = event.key === "ArrowDown" ? 1 : -1;
+  estado.medicamentoActivoIndex = estado.medicamentoActivoIndex < 0
+    ? (delta > 0 ? 0 : opciones.length - 1)
+    : (estado.medicamentoActivoIndex + delta + opciones.length) % opciones.length;
+  actualizarOpcionActivaMedicamento();
+}
+
+function actualizarOpcionActivaMedicamento() {
+  const buscador = document.querySelector("[data-ped-rx-search]");
+  const opciones = Array.from(document.querySelectorAll("#resultadosMedicamentoPediatrico [data-ped-medication-id]"));
+  if (estado.medicamentoActivoIndex >= opciones.length) estado.medicamentoActivoIndex = opciones.length - 1;
+  opciones.forEach((opcion, index) => {
+    const activa = index === estado.medicamentoActivoIndex;
+    opcion.classList.toggle("activa", activa);
+    opcion.setAttribute("aria-selected", String(activa));
+  });
+  const activa = opciones[estado.medicamentoActivoIndex];
+  if (activa) {
+    buscador?.setAttribute("aria-activedescendant", activa.id);
+    activa.scrollIntoView({ block: "nearest" });
+  } else {
+    buscador?.removeAttribute("aria-activedescendant");
+  }
+}
+
+function seleccionarMedicamentoPediatrico(medicationId) {
+  if (!loadMedicationInformation(medicationId)) return;
+  cerrarComboboxMedicamentos();
+  actualizarPrescripcionDesdeInput("medicationId", medicationId, "pick");
+}
+
+function limpiarDatosMedicamentoSeleccionado() {
+  Object.assign(estado.prescripcion, {
+    medicationId: "",
+    indicationId: "",
+    schemeIndex: 0,
+    dosingMode: "mg_kg_dosis",
+    route: "",
+    presentationId: "",
+    brandName: "",
+    brandMode: "catalog",
+    manualBrandName: "",
+    manualPresentationText: "",
+    manualPharmaceuticalForm: "",
+    manualActiveIngredientAmount: "",
+    manualActiveIngredientUnit: "mg",
+    manualReferenceVolume: "",
+    manualReferenceVolumeUnit: "mL",
+    manualPackageContent: "",
+    manualPackageUnit: "mL",
+    finalDoseMg: "",
+    panelAbierto: ""
+  });
+}
+
+function limpiarComboboxMedicamentos(event) {
+  event?.preventDefault();
+  event?.stopPropagation();
+  limpiarDatosMedicamentoSeleccionado();
+  estado.busquedaMedicamento = "";
+  estado.prescripcionSearchPage = 1;
+  estado.comboboxMedicamentoAbierto = true;
+  estado.medicamentoActivoIndex = -1;
+  calcularTodo();
+  requestAnimationFrame(() => {
+    const buscador = document.querySelector("[data-ped-rx-search]");
+    buscador?.focus();
+    abrirComboboxMedicamentos();
   });
 }
 
