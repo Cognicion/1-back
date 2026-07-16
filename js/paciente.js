@@ -3081,11 +3081,23 @@ function fechaHoraLocalParaInput(fecha = new Date()) {
   const d = fecha instanceof Date ? fecha : new Date(fecha);
   if (Number.isNaN(d.getTime())) return "";
   const pad = (valor) => String(valor).padStart(2, "0");
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
-function isoDesdeFechaHoraLocal(valor = "") {
-  const fecha = valor ? new Date(valor) : new Date();
+function isoDesdeFechaHoraSignoVital(valor = "") {
+  const texto = String(valor || "").trim();
+  const match = texto.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})(?:\s+(\d{1,2}):(\d{2}))?$/);
+  const fecha = match
+    ? new Date(
+      Number(match[3]),
+      Number(match[2]) - 1,
+      Number(match[1]),
+      Number(match[4] || 0),
+      Number(match[5] || 0)
+    )
+    : texto
+      ? new Date(texto)
+      : new Date();
   return Number.isNaN(fecha.getTime()) ? new Date().toISOString() : fecha.toISOString();
 }
 
@@ -3175,8 +3187,8 @@ function construirGraficaSeriesSignos(series = [], opciones = {}) {
 function construirGraficaSignoVital(clave, registros = []) {
   if (clave === "presionArterial") {
     return construirGraficaSeriesSignos([
-      { id: "pa_sistolica", nombre: "PA sistólica", puntos: puntosSerieSigno(clave, registros, { componente: "sistolica" }), color: "#22d3ee" },
-      { id: "pa_diastolica", nombre: "PA diastólica", puntos: puntosSerieSigno(clave, registros, { componente: "diastolica" }), color: "#f97316" }
+      { id: "ta_sistolica", nombre: "TA sistólica", puntos: puntosSerieSigno(clave, registros, { componente: "sistolica" }), color: "#22d3ee" },
+      { id: "ta_diastolica", nombre: "TA diastólica", puntos: puntosSerieSigno(clave, registros, { componente: "diastolica" }), color: "#f97316" }
     ]);
   }
 
@@ -3195,10 +3207,10 @@ window.registrarSignoVitalPaciente = async function(clave, opciones = {}) {
   if (valor === null) return;
   const nota = prompt("Nota clinica opcional para este valor:", "") || "";
   const fechaToma = opciones.previo
-    ? prompt("Fecha y hora de toma (AAAA-MM-DDTHH:mm):", fechaHoraLocalParaInput())
+    ? prompt("Fecha y hora de toma (DD/MM/AAAA HH:mm):", fechaHoraLocalParaInput())
     : null;
   if (opciones.previo && fechaToma === null) return;
-  const fechaRegistro = opciones.previo ? isoDesdeFechaHoraLocal(fechaToma) : new Date().toISOString();
+  const fechaRegistro = opciones.previo ? isoDesdeFechaHoraSignoVital(fechaToma) : new Date().toISOString();
   const historial = {
     ...(datos?.historialSignosVitales || {}),
     [clave]: [
@@ -3311,8 +3323,8 @@ function seriesGlobalesSignosVitales(datos = {}, opciones = {}) {
     const registros = obtenerHistorialSignoVital(datos, clave);
     if (clave === "presionArterial") {
       [
-        ["pa_sistolica", "PA sistólica", "sistolica", "#22d3ee"],
-        ["pa_diastolica", "PA diastólica", "diastolica", "#f97316"]
+        ["ta_sistolica", "TA sistólica", "sistolica", "#22d3ee"],
+        ["ta_diastolica", "TA diastólica", "diastolica", "#f97316"]
       ].forEach(([id, nombre, componente, color]) => {
         if (tieneFiltroSeries && !incluir.has(id)) return;
         series.push({ id, nombre, color, puntos: filtrar(puntosSerieSigno(clave, registros, { componente })) });
@@ -3347,8 +3359,8 @@ window.abrirGraficaGlobalSignosVitalesPaciente = function() {
   modalPrevio?.remove();
   const rango = rangoFechasSignosVitales(datos);
   const opcionesSeries = [
-    ["pa_sistolica", "PA sistólica"],
-    ["pa_diastolica", "PA diastólica"],
+    ["ta_sistolica", "TA sistólica"],
+    ["ta_diastolica", "TA diastólica"],
     ...Object.entries(SIGNOS_VITALES_LAB)
       .filter(([clave]) => clave !== "presionArterial")
       .map(([clave, signo]) => [clave, signo.titulo])
