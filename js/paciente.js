@@ -744,8 +744,8 @@ function renderizarGaugeVital(clave, datos = {}) {
       <span>${escaparHTML(signo.etiqueta)}</span>
       <strong>${escaparHTML(valor)}</strong>
       <div class="lab-gauge-actions">
-        <button type="button" onclick="registrarSignoVitalPaciente('${clave}')">Registrar</button>
-        <button type="button" onclick="registrarSignoVitalPaciente('${clave}', { previo: true })">Previo</button>
+        <button type="button" onclick="registrarSignoVitalPaciente('${clave}', {}, this)">Registrar</button>
+        <button type="button" onclick="registrarSignoVitalPaciente('${clave}', { previo: true }, this)">Previo</button>
         <button type="button" onclick="abrirHistorialSignoVitalPaciente('${clave}')">Curva</button>
       </div>
     </div>
@@ -3084,6 +3084,16 @@ function fechaHoraLocalParaInput(fecha = new Date()) {
   return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
+function partesFechaHoraLocal(fecha = new Date()) {
+  const d = fecha instanceof Date ? fecha : new Date(fecha);
+  if (Number.isNaN(d.getTime())) return { fecha: "", hora: "" };
+  const pad = (valor) => String(valor).padStart(2, "0");
+  return {
+    fecha: `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`,
+    hora: `${pad(d.getHours())}:${pad(d.getMinutes())}`
+  };
+}
+
 function isoDesdeFechaHoraSignoVital(valor = "") {
   const texto = String(valor || "").trim();
   const match = texto.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})(?:\s+(\d{1,2}):(\d{2}))?$/);
@@ -3198,26 +3208,136 @@ function construirGraficaSignoVital(clave, registros = []) {
   ]);
 }
 
-window.registrarSignoVitalPaciente = async function(clave, opciones = {}) {
+function posicionarPopoverSignoVital(popover, ancla) {
+  const rect = ancla?.getBoundingClientRect?.();
+  if (!rect) {
+    popover.style.top = "120px";
+    popover.style.left = "50%";
+    popover.style.transform = "translateX(-50%)";
+    return;
+  }
+
+  const margen = 14;
+  const ancho = popover.offsetWidth || 320;
+  const alto = popover.offsetHeight || 260;
+  let left = rect.right + margen;
+  let top = rect.top - 12;
+
+  if (left + ancho > window.innerWidth - margen) {
+    left = Math.max(margen, rect.left - ancho - margen);
+  }
+  if (left < margen) {
+    left = Math.min(window.innerWidth - ancho - margen, rect.left);
+    top = rect.bottom + margen;
+  }
+  if (top + alto > window.innerHeight - margen) top = window.innerHeight - alto - margen;
+  if (top < margen) top = margen;
+
+  popover.style.left = `${Math.max(margen, left)}px`;
+  popover.style.top = `${Math.max(margen, top)}px`;
+}
+
+function abrirPopoverSignoVitalPaciente({ clave, signo, valorActual = "", previo = false, ancla = null } = {}) {
+  document.getElementById("popoverSignoVitalPaciente")?.remove();
+
+  return new Promise((resolve) => {
+    const fechaHoraActual = partesFechaHoraLocal();
+    const popover = document.createElement("div");
+    popover.id = "popoverSignoVitalPaciente";
+    popover.className = "popover-signo-vital";
+    popover.innerHTML = `
+      <form>
+        <header>
+          <div>
+            <span>${previo ? "Valor previo" : "Signo vital"}</span>
+            <strong>${escaparHTML(signo?.titulo || clave || "Signo vital")}</strong>
+          </div>
+          <button type="button" data-cancelar-signo aria-label="Cerrar">×</button>
+        </header>
+        <label>
+          Valor ${signo?.unidad ? `<small>${escaparHTML(signo.unidad)}</small>` : ""}
+          <input data-signo-valor value="${escaparHTML(valorActual || "")}" placeholder="${clave === "presionArterial" ? "Ej. 120/80" : "Ej. 80"}">
+        </label>
+        ${previo ? `
+          <div class="popover-signo-fecha-hora">
+            <label>
+              Fecha
+              <input data-signo-fecha type="date" value="${escaparHTML(fechaHoraActual.fecha)}">
+            </label>
+            <label>
+              Hora
+              <input data-signo-hora type="time" lang="en-GB" step="60" value="${escaparHTML(fechaHoraActual.hora)}">
+            </label>
+          </div>
+        ` : ""}
+        <label>
+          Nota clinica
+          <textarea data-signo-nota placeholder="Opcional"></textarea>
+        </label>
+        <div class="popover-signo-actions">
+          <button type="button" data-cancelar-signo>Cancelar</button>
+          <button type="submit">Guardar</button>
+        </div>
+      </form>
+    `;
+
+    const cerrar = (resultado = null) => {
+      popover.remove();
+      document.removeEventListener("keydown", manejarEscape);
+      resolve(resultado);
+    };
+    const manejarEscape = (evento) => {
+      if (evento.key === "Escape") cerrar(null);
+    };
+
+    popover.querySelectorAll("[data-cancelar-signo]").forEach((boton) => {
+      boton.addEventListener("click", () => cerrar(null));
+    });
+    popover.querySelector("form")?.addEventListener("submit", (evento) => {
+      evento.preventDefault();
+      const valor = popover.querySelector("[data-signo-valor]")?.value?.trim() || "";
+      if (!valor) {
+        popover.querySelector("[data-signo-valor]")?.focus();
+        return;
+      }
+      cerrar({
+        valor,
+        nota: popover.querySelector("[data-signo-nota]")?.value?.trim() || "",
+        fechaToma: previo
+          ? `${popover.querySelector("[data-signo-fecha]")?.value || ""}T${popover.querySelector("[data-signo-hora]")?.value || "00:00"}`
+          : ""
+      });
+    });
+
+    document.body.appendChild(popover);
+    posicionarPopoverSignoVital(popover, ancla);
+    document.addEventListener("keydown", manejarEscape);
+    popover.querySelector("[data-signo-valor]")?.focus();
+    popover.querySelector("[data-signo-valor]")?.select();
+  });
+}
+
+window.registrarSignoVitalPaciente = async function(clave, opciones = {}, ancla = null) {
   const signo = SIGNOS_VITALES_LAB[clave];
   if (!signo) return;
   const datos = datosPacienteActual || await obtenerUsuario(uidPaciente);
   const valorActual = valorPaciente(datos, signo.rutas, "");
-  const valor = prompt(`${signo.titulo}${signo.unidad ? ` (${signo.unidad})` : ""}:`, valorActual);
-  if (valor === null) return;
-  const nota = prompt("Nota clinica opcional para este valor:", "") || "";
-  const fechaToma = opciones.previo
-    ? prompt("Fecha y hora de toma (DD/MM/AAAA HH:mm):", fechaHoraLocalParaInput())
-    : null;
-  if (opciones.previo && fechaToma === null) return;
-  const fechaRegistro = opciones.previo ? isoDesdeFechaHoraSignoVital(fechaToma) : new Date().toISOString();
+  const captura = await abrirPopoverSignoVitalPaciente({
+    clave,
+    signo,
+    valorActual,
+    previo: opciones.previo === true,
+    ancla
+  });
+  if (!captura) return;
+  const fechaRegistro = opciones.previo ? isoDesdeFechaHoraSignoVital(captura.fechaToma) : new Date().toISOString();
   const historial = {
     ...(datos?.historialSignosVitales || {}),
     [clave]: [
       ...obtenerHistorialSignoVital(datos, clave),
       {
-        valor: valor.trim(),
-        nota: nota.trim(),
+        valor: captura.valor,
+        nota: captura.nota,
         fecha: fechaRegistro,
         esPrevio: opciones.previo === true,
         uidRegistro: auth.currentUser?.uid || ""
@@ -3229,19 +3349,19 @@ window.registrarSignoVitalPaciente = async function(clave, opciones = {}) {
   };
 
   if (!opciones.previo) {
-    actualizacion[clave] = valor.trim();
+    actualizacion[clave] = captura.valor;
     actualizacion.datosInstitucionales = {
       ...(datos?.datosInstitucionales || {}),
-      [clave]: valor.trim()
+      [clave]: captura.valor
     };
     actualizacion.signosVitales = {
       ...(datos?.signosVitales || {}),
-      [clave]: valor.trim()
+      [clave]: captura.valor
     };
     if (clave === "imc") {
       actualizacion.somatometria = {
         ...(datos?.somatometria || {}),
-        imc: valor.trim()
+        imc: captura.valor
       };
     }
   }

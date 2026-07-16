@@ -397,6 +397,121 @@
   padding: 8px 12px;
 }
 
+.popover-signo-vital {
+  position: fixed;
+  z-index: 5000;
+  width: min(330px, calc(100vw - 28px));
+  border: 1px solid rgba(103, 232, 249, 0.32);
+  border-radius: 18px;
+  background:
+    radial-gradient(circle at top left, rgba(34, 211, 238, 0.16), transparent 38%),
+    rgba(2, 8, 23, 0.97);
+  box-shadow: 0 26px 70px rgba(0, 0, 0, 0.45), inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(18px);
+  padding: 14px;
+}
+
+.popover-signo-vital form {
+  display: grid;
+  gap: 10px;
+}
+
+.popover-signo-vital header {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.popover-signo-vital header span {
+  display: block;
+  color: #67e8f9;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.popover-signo-vital header strong {
+  display: block;
+  margin-top: 3px;
+  color: #f8fafc;
+  font-size: 15px;
+}
+
+.popover-signo-vital header button {
+  width: 28px;
+  height: 28px;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.72);
+  color: #cbd5e1;
+  cursor: pointer;
+}
+
+.popover-signo-vital label {
+  display: grid;
+  gap: 5px;
+  color: #9fb4c9;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.popover-signo-vital label small {
+  color: #67e8f9;
+  font-weight: 800;
+}
+
+.popover-signo-fecha-hora {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 120px;
+  gap: 8px;
+}
+
+.popover-signo-vital input,
+.popover-signo-vital textarea {
+  width: 100%;
+  border: 1px solid rgba(103, 232, 249, 0.22);
+  border-radius: 12px;
+  background: rgba(15, 23, 42, 0.82);
+  color: #e5f7ff;
+  padding: 9px 10px;
+  outline: none;
+}
+
+.popover-signo-vital textarea {
+  min-height: 58px;
+  resize: vertical;
+}
+
+.popover-signo-vital input:focus,
+.popover-signo-vital textarea:focus {
+  border-color: rgba(103, 232, 249, 0.76);
+  box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.14);
+}
+
+.popover-signo-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.popover-signo-actions button {
+  border: 1px solid rgba(103, 232, 249, 0.28);
+  border-radius: 999px;
+  background: rgba(14, 165, 233, 0.14);
+  color: #e0f7ff;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 900;
+  padding: 8px 12px;
+}
+
+.popover-signo-actions button[type="submit"] {
+  background: linear-gradient(135deg, rgba(34, 211, 238, 0.78), rgba(14, 165, 233, 0.58));
+  color: #02111f;
+}
+
 .lab-info-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -688,6 +803,10 @@
   }
 
   .lab-gauge-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .popover-signo-fecha-hora {
     grid-template-columns: 1fr;
   }
 
