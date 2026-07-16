@@ -70,7 +70,7 @@ function med({
 }
 
 export const MEDICAMENTOS_SUPLEMENTARIOS = [
-  med({ id: "enalapril", nombre: "Enalapril", clase: "IECA", especialidades: ["Cardiología", "Medicina interna"], presentaciones: ["tabletas de 5 mg", "tabletas de 10 mg", "tabletas de 20 mg"], dosisHabitual: "5-40 mg/día", notas: "Antihipertensivo; vigilar presión arterial, potasio y función renal.", contraindicaciones: ["Embarazo", "antecedente de angioedema por IECA"], monitoreo: ["Creatinina", "potasio"] }),
+  med({ id: "enalapril", nombre: "Enalapril", clase: "IECA", especialidades: ["Cardiología", "Medicina interna", "Nefrología"], presentaciones: ["tabletas de 5 mg", "tabletas de 10 mg", "tabletas de 20 mg"], dosisHabitual: "5-40 mg/día", notas: "Antihipertensivo; vigilar presión arterial, potasio y función renal.", contraindicaciones: ["Embarazo", "antecedente de angioedema por IECA"], monitoreo: ["Creatinina", "potasio"] }),
   med({ id: "captopril", nombre: "Captopril", clase: "IECA", especialidades: ["Cardiología"], presentaciones: ["tabletas de 25 mg", "tabletas de 50 mg"], dosisHabitual: "25-150 mg/día divididos", notas: "IECA de acción corta; vigilar hipotensión, potasio y función renal." }),
   med({ id: "lisinopril", nombre: "Lisinopril", clase: "IECA", especialidades: ["Cardiología"], presentaciones: ["tabletas de 10 mg", "tabletas de 20 mg"], dosisHabitual: "10-40 mg cada 24 horas", notas: "IECA; ajustar según respuesta y función renal." }),
   med({ id: "losartan", nombre: "Losartán", clase: "ARA-II", especialidades: ["Cardiología", "Nefrología"], presentaciones: ["tabletas de 50 mg", "tabletas de 100 mg"], dosisHabitual: "50-100 mg/día", notas: "ARA-II; vigilar potasio y función renal.", monitoreo: ["Creatinina", "potasio"] }),
