@@ -8,6 +8,7 @@ import {
   ETIQUETAS_ESTADO_DICTADO
 } from "./services/dictadoStateMachine.js";
 import { TranscriptAssembler } from "./services/transcriptAssembler.js";
+import { WebSpeechTranscriptionProvider, PROVIDER_STATUS } from "./services/transcriptionProviders.js";
 
 const SILENCIO_MS = 8500;
 const REINICIOS_MAXIMOS = 6;
@@ -32,7 +33,10 @@ const runtime = {
   actualizacionInterna: false,
   stopSolicitado: false,
   wakeLock: null,
-  inicializado: false
+  inicializado: false,
+  provider: null,
+  errores: [],
+  persistenceStatus: "sin_cambios"
 };
 
 function $(id) {
@@ -53,7 +57,7 @@ function crearId(prefijo) {
 }
 
 function pacienteActualId() {
-  return new URLSearchParams(window.location.search).get("id") || "sin-paciente";
+  return $("uidPaciente")?.value || new URLSearchParams(window.location.search).get("id") || "sin-paciente";
 }
 
 function encuentroActualId() {
@@ -217,6 +221,7 @@ function actualizarMetricas() {
   if (segmentos) segmentos.textContent = `${stats.finalSegments || 0} segmentos`;
   if (confianza) confianza.textContent = stats.averageConfidence ? `${Math.round(stats.averageConfidence * 100)}% confianza` : "Confianza no disponible";
   if (sesion) sesion.textContent = runtime.sessionId ? `Sesión: ${runtime.sessionId.slice(-8)}` : "Sin sesión";
+  actualizarDiagnosticoSeguro();
 }
 
 function actualizarBotonRecuperar() {
@@ -235,6 +240,7 @@ function guardarBorradorTemporal() {
     sessionId: runtime.sessionId,
     updatedAt: new Date().toISOString()
   });
+  runtime.persistenceStatus = "guardado_local";
   actualizarBotonRecuperar();
 }
 
@@ -282,8 +288,9 @@ function ejecutarComandos(comandos = []) {
   }
 }
 
-function procesarResultado(evento) {
+function procesarResultado(evento, providerContext = null) {
   if (!runtime.ensamblador) asegurarContexto();
+  if (providerContext && (providerContext.sessionId !== runtime.sessionId || providerContext.patientId !== runtime.patientId)) return;
   let provisional = "";
 
   for (let i = evento.resultIndex; i < evento.results.length; i += 1) {
@@ -294,6 +301,8 @@ function procesarResultado(evento) {
     if (!limpio.normalizedText) continue;
 
     const agregado = runtime.ensamblador.addRecognitionResult({
+      sessionId: providerContext?.sessionId || runtime.sessionId,
+      patientId: providerContext?.patientId || runtime.patientId,
       resultIndex: i,
       transcript: limpio.normalizedText,
       confidence: alternativa.confidence || 0,
@@ -425,6 +434,35 @@ function crearReconocimiento() {
   return reconocimiento;
 }
 
+function crearProveedorTranscripcion() {
+  runtime.provider?.dispose?.();
+  runtime.provider = new WebSpeechTranscriptionProvider({
+    onResult: procesarResultado,
+    onError: (error) => {
+      runtime.errores.push({ code: error.code, at: new Date().toISOString() });
+      runtime.errores = runtime.errores.slice(-8);
+      if (["not-allowed", "service-not-allowed", "audio-capture"].includes(error.code)) {
+        runtime.maquina.transition(ESTADOS_DICTADO.FATAL_ERROR, { error: error.code });
+        mostrarAdvertencia(error.code === "audio-capture" ? "No se encontró una entrada de audio disponible." : "El permiso del micrófono fue rechazado. Autorízalo en el navegador para continuar.", "error");
+        detenerCapturaMicrofono();
+        pausarCronometro();
+      } else {
+        runtime.maquina.transition(ESTADOS_DICTADO.RECOVERABLE_ERROR, { error: error.code });
+        mostrarAdvertencia(error.code === "network" ? "El reconocimiento perdió la conexión. El texto acumulado se conserva." : `Interrupción del reconocimiento (${error.code}). El texto acumulado se conserva.`, "warning");
+      }
+      actualizarBotones();
+      actualizarDiagnosticoSeguro();
+    },
+    onState: ({ state, retryCount }) => {
+      runtime.reinicios = retryCount || 0;
+      if (state === "reconnecting") runtime.maquina.transition(ESTADOS_DICTADO.RECONNECTING, { reinicios: runtime.reinicios });
+      if (state === "listening" && runtime.maquina.current !== ESTADOS_DICTADO.LISTENING) runtime.maquina.transition(ESTADOS_DICTADO.LISTENING, { reinicios: runtime.reinicios });
+      actualizarDiagnosticoSeguro();
+    }
+  });
+  return runtime.provider;
+}
+
 async function solicitarWakeLock() {
   try {
     runtime.wakeLock = await navigator.wakeLock?.request?.("screen");
@@ -460,8 +498,8 @@ export async function iniciarDictado() {
     await cargarDispositivosAudio();
     await iniciarCapturaMicrofono();
     await solicitarWakeLock();
-    runtime.reconocimiento = crearReconocimiento();
-    runtime.reconocimiento?.start();
+    const provider = crearProveedorTranscripcion();
+    provider.start({ sessionId: runtime.sessionId, patientId: runtime.patientId, encounterId: runtime.encounterId });
     runtime.maquina.transition(ESTADOS_DICTADO.LISTENING, { reason: "start" });
     iniciarCronometro();
     mostrarAdvertencia("");
@@ -478,11 +516,8 @@ export async function iniciarDictado() {
 export function pausarDictado() {
   runtime.stopSolicitado = true;
   if (runtime.reinicioTimer) window.clearTimeout(runtime.reinicioTimer);
-  try {
-    runtime.reconocimiento?.stop();
-  } catch {
-    // SpeechRecognition may already be stopped.
-  }
+  runtime.provider?.stop();
+  runtime.reconocimiento = null;
   detenerCapturaMicrofono();
   pausarCronometro();
   liberarWakeLock();
@@ -498,11 +533,8 @@ export async function reanudarDictado() {
 export function finalizarDictado() {
   runtime.stopSolicitado = true;
   if (runtime.reinicioTimer) window.clearTimeout(runtime.reinicioTimer);
-  try {
-    runtime.reconocimiento?.stop();
-  } catch {
-    // SpeechRecognition may already be stopped.
-  }
+  runtime.provider?.stop();
+  runtime.reconocimiento = null;
   detenerCapturaMicrofono();
   pausarCronometro();
   liberarWakeLock();
@@ -622,8 +654,60 @@ function crearPanelAvanzado() {
       <strong>Texto provisional</strong>
       <p id="dictadoTextoProvisional">Sin texto provisional.</p>
     </div>
+    <details class="dictado-diagnostico-seguro">
+      <summary>Diagnóstico seguro y lista de prueba</summary>
+      <pre id="dictadoDiagnosticoSeguro">Sin iniciar</pre>
+      <ul class="dictado-checklist-manual">
+        <li>Permitir y rechazar micrófono: verificar estados y mensajes.</li>
+        <li>Dictar, pausar, reanudar y finalizar: conservar texto final y provisional.</li>
+        <li>Editar durante el dictado: la edición manual debe permanecer.</li>
+        <li>Cancelar o limpiar: exigir confirmación y liberar micrófono.</li>
+        <li>Recargar: recuperar únicamente el borrador del mismo paciente y encuentro.</li>
+        <li>Cambiar de paciente: confirmar y rechazar eventos tardíos del paciente anterior.</li>
+        <li>Desconectar red: conservar texto y aplicar reintentos limitados con backoff.</li>
+        <li>Navegar fuera: detener reconocimiento y tracks.</li>
+      </ul>
+      <p>La captura de voz, permisos reales y comportamiento al desconectar requieren intervención del usuario en un navegador compatible.</p>
+    </details>
   `;
   acciones.insertAdjacentElement("beforebegin", panel);
+}
+
+function actualizarDiagnosticoSeguro() {
+  const panel = $("dictadoDiagnosticoSeguro");
+  if (!panel) return;
+  const stats = runtime.ensamblador?.stats?.() || {};
+  const session = runtime.sessionId ? `${runtime.sessionId.slice(0, 8)}…${runtime.sessionId.slice(-4)}` : "sin sesión";
+  panel.textContent = [
+    `estado=${runtime.maquina.current}`,
+    `sessionId=${session}`,
+    `segmentos=${stats.total || 0}`,
+    `pendientes=${stats.pending || 0}`,
+    `errores=${runtime.errores.length}`,
+    `reintentos=${runtime.provider?.retryCount || 0}`,
+    `micrófono=${runtime.audio?.stream?.active ? "activo" : "liberado"}`,
+    `persistencia=${runtime.persistenceStatus}`,
+    `proveedor=${runtime.provider?.capability?.().status || (navegadorSoportaDictado() ? PROVIDER_STATUS.AVAILABLE : PROVIDER_STATUS.NOT_SUPPORTED)}`
+  ].join("\n");
+}
+
+function conectarCambioPaciente() {
+  const selector = $("uidPaciente");
+  if (!selector || selector.dataset.dictadoContextListener === "true") return;
+  selector.addEventListener("change", (event) => {
+    const nuevo = event.target.value || "sin-paciente";
+    if (runtime.patientId && nuevo !== runtime.patientId && [ESTADOS_DICTADO.LISTENING, ESTADOS_DICTADO.PAUSED, ESTADOS_DICTADO.RECONNECTING].includes(runtime.maquina.current)) {
+      const continuar = confirm("Hay una sesión de dictado activa. ¿Finalizarla y cambiar al nuevo paciente? El borrador anterior se conservará aislado.");
+      if (!continuar) { event.target.value = runtime.patientId === "sin-paciente" ? "" : runtime.patientId; return; }
+      finalizarDictado();
+    }
+    asegurarContexto({ nuevaSesion: true });
+    escribirTextarea("");
+    mostrarTextoProvisional("");
+    actualizarBotonRecuperar();
+    actualizarDiagnosticoSeguro();
+  });
+  selector.dataset.dictadoContextListener = "true";
 }
 
 function conectarBotones() {
@@ -681,12 +765,18 @@ export function inicializarDictadoClinico() {
 
   conectarBotones();
   conectarTextarea();
+  conectarCambioPaciente();
   cargarDispositivosAudio();
   actualizarBotonRecuperar();
   actualizarBotones();
   actualizarMetricas();
 
-  window.addEventListener("pagehide", finalizarDictado);
+  window.addEventListener("pagehide", () => {
+    runtime.provider?.dispose?.();
+    detenerCapturaMicrofono();
+    liberarWakeLock();
+  });
+  actualizarDiagnosticoSeguro();
 }
 
 document.addEventListener("DOMContentLoaded", inicializarDictadoClinico);
@@ -699,6 +789,11 @@ window.finalizarDictado = finalizarDictado;
 window.cancelarDictado = cancelarDictado;
 window.limpiarDictado = limpiarDictado;
 window.insertarDictadoEnNota = insertarDictadoEnNota;
+window.cognicionDictado = {
+  get sessionId() { return runtime.sessionId; },
+  get patientId() { return runtime.patientId; },
+  diagnostico: () => ({ state: runtime.maquina.current, sessionId: runtime.sessionId, stats: runtime.ensamblador?.stats?.() })
+};
 window.navegadorSoportaDictado = navegadorSoportaDictado;
 window.recuperarUltimoDictado = recuperarUltimoDictado;
 window.probarMicrofono = probarMicrofono;

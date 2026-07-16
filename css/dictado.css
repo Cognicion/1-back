@@ -387,3 +387,48 @@
     flex-direction: column;
   }
 }
+
+.dictado-contexto-paciente,
+.nota-automatica-configuracion,
+.dictado-diagnostico-seguro {
+  margin: 12px 0;
+  padding: 12px;
+  border: 1px solid rgba(125, 211, 252, 0.2);
+  border-radius: 12px;
+  background: rgba(15, 23, 42, 0.64);
+  color: #cbd5e1;
+}
+
+.nota-automatica-config-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.nota-automatica-config-grid label,
+.propuesta-orden {
+  display: grid;
+  gap: 6px;
+}
+
+.revision-tres-columnas section { min-width: 0; }
+.revision-transcripcion {
+  max-height: 260px;
+  overflow: auto;
+  white-space: pre-wrap;
+  color: #e2e8f0;
+  font-family: inherit;
+}
+
+.revision-secciones { display: grid; gap: 12px; margin: 16px 0; }
+.revision-seccion-card { padding: 14px; border: 1px solid rgba(125, 211, 252, 0.2); border-radius: 12px; }
+.revision-seccion-card header { display: flex; justify-content: space-between; gap: 12px; color: #bae6fd; }
+.revision-seccion-card textarea { width: 100%; min-height: 110px; margin: 10px 0; }
+.dictado-diagnostico-seguro pre { white-space: pre-wrap; color: #bae6fd; }
+.dictado-checklist-manual { line-height: 1.5; }
+
+@media (max-width: 860px) {
+  .nota-automatica-config-grid { grid-template-columns: 1fr; }
+  .revision-seccion-card header { flex-direction: column; }
+}

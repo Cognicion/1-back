@@ -7,6 +7,7 @@ import {
   crearProvenanceRecord,
   validarTextoClinico
 } from "./clinicalValidationService.js";
+import { ejecutarPipelineClinico } from "./clinicalPipeline.js";
 
 const CIE10_BASE = {
   "F32.1": "Episodio depresivo moderado",
@@ -724,10 +725,29 @@ export function generarPlanSugerido(diagnosticos = [], riesgos = [], sintomas = 
   return plan.join("\n");
 }
 
-export function generarNotaAutomatica(textoDictado = "", datosPaciente = {}) {
-  const datosClinicos = crearBaseHechosClinicos(datosPaciente, textoDictado);
-  const sintomas = detectarSintomas(textoDictado);
-  const riesgosDetectados = detectarRiesgoSuicida(textoDictado);
+/**
+ * Genera un borrador clínico trazable. Nunca inserta ni confirma contenido.
+ * @param {string|Array<object>} textoDictado Transcripción o TranscriptSegment[]
+ * @param {object} datosPaciente Datos identificados del expediente
+ * @param {object} options tipoNota, nivelDetalle, formato, plantilla, especialidad y servicio
+ * @returns {object} GeneratedNote pendiente de revisión humana
+ */
+export function generarNotaAutomatica(textoDictado = "", datosPaciente = {}, options = {}) {
+  const textoFuente = Array.isArray(textoDictado)
+    ? textoDictado.map((s) => s.originalText || s.text || s.normalizedText || "").join(" ")
+    : String(textoDictado || "");
+  const pipeline = ejecutarPipelineClinico(textoDictado, {
+    patientId: options.patientId || datosPaciente.id || datosPaciente.uid || "",
+    sessionId: options.sessionId || "",
+    encounterId: options.encounterId || ""
+  }, {
+    noteType: options.tipoNota || "evolucion",
+    detailLevel: options.nivelDetalle || "medio",
+    format: options.formato || "mixto"
+  });
+  const datosClinicos = crearBaseHechosClinicos(datosPaciente, textoFuente);
+  const sintomas = detectarSintomas(textoFuente);
+  const riesgosDetectados = detectarRiesgoSuicida(textoFuente);
   const diagnosticosSugeridos = sugerirDiagnosticos(sintomas, riesgosDetectados);
   const impresion = generarDiagnosticosDiferenciales({
     diagnosticos: diagnosticosSugeridos,
@@ -735,11 +755,11 @@ export function generarNotaAutomatica(textoDictado = "", datosPaciente = {}) {
   });
 
   datosClinicos.impresionDiagnostica.texto = datosClinicos.impresionDiagnostica.texto || impresion;
-  const validationIssues = validarTextoClinico(textoDictado, datosClinicos);
+  const validationIssues = [...validarTextoClinico(textoFuente, datosClinicos), ...pipeline.validationIssues];
   const provenanceRecords = [
     crearProvenanceRecord({
       concept: "texto fuente de dictado",
-      originalText: textoDictado,
+      originalText: textoFuente,
       sourceType: "dictado_por_voz",
       status: "requires_clinical_review",
       confidence: "media"
@@ -755,19 +775,45 @@ export function generarNotaAutomatica(textoDictado = "", datosPaciente = {}) {
     }));
   }
 
+  provenanceRecords.push(...pipeline.provenanceRecords);
+  const porSeccion = Object.fromEntries(pipeline.sections.map((section) => [section.section, section.content]));
+  const literalCorregida = pipeline.segments.map((segment) => segment.normalizedText).join(" ").trim();
+  const clinicaConservadora = pipeline.sections.map((section) => section.content).join("\n\n");
+  const estructurada = pipeline.sections.map((section) => `${section.title.toUpperCase()}\n${section.content}`).join("\n\n");
+
   return {
+    id: globalThis.crypto?.randomUUID?.() || `nota-${Date.now()}`,
+    provider: "rule_based_local",
+    providerStatus: "disponible",
     datosClinicos,
     metadata: {
       version: "alfa",
       generatedAt: new Date().toISOString(),
       reviewRequired: true,
       generatedStatus: "en_revision",
-      sourcePriority: ["expediente", "dictado", "campo_vacio"]
+      sourcePriority: ["expediente", "dictado", "campo_vacio"],
+      tipoNota: options.tipoNota || "evolucion",
+      nivelDetalle: options.nivelDetalle || "medio",
+      formato: options.formato || "mixto",
+      plantilla: options.plantilla || "sin_plantilla",
+      especialidad: options.especialidad || "no_especificada",
+      servicio: options.servicio || "no_especificado"
     },
-    estructuraClinica: estructurarTextoClinico(textoDictado, datosPaciente),
-    padecimientoActual: generarPadecimientoActual(datosClinicos),
-    exploracionMental: generarExploracionMental(datosClinicos),
-    comentarioClinico: generarComentarioClinico(datosClinicos),
+    estructuraClinica: estructurarTextoClinico(textoFuente, datosPaciente),
+    transcriptSegments: pipeline.segments,
+    clinicalStatements: pipeline.statements,
+    medicationStatements: pipeline.medicationStatements,
+    substanceUseStatements: pipeline.substanceUseStatements,
+    mentalStatusFindings: pipeline.mentalStatusFindings,
+    riskStatements: pipeline.riskStatements,
+    diagnosisStatements: pipeline.diagnosisStatements,
+    planItems: pipeline.planItems,
+    medicalOrderProposals: pipeline.orderProposals,
+    generatedSections: pipeline.sections,
+    contradictions: pipeline.contradictions,
+    padecimientoActual: porSeccion.padecimiento_actual || "",
+    exploracionMental: porSeccion.examen_mental || "",
+    comentarioClinico: porSeccion.comentario_clinico || porSeccion.impresion_clinica || "",
     impresionDiagnostica: datosClinicos.impresionDiagnostica.texto,
     diagnosticosDiferenciales: impresion,
     diagnosticosSugeridos: diagnosticosSugeridos.map((dx) => dx.nombre),
@@ -775,6 +821,13 @@ export function generarNotaAutomatica(textoDictado = "", datosPaciente = {}) {
     planSugerido: generarPlanSugerido(diagnosticosSugeridos, riesgosDetectados, sintomas, datosClinicos),
     riesgosDetectados,
     validationIssues,
-    provenanceRecords
+    provenanceRecords,
+    outputs: {
+      literal_corregida: literalCorregida,
+      redaccion_clinica_conservadora: clinicaConservadora,
+      nota_medica_estructurada: estructurada
+    },
+    reviewStatus: "pendiente",
+    insertionAllowed: false
   };
 }

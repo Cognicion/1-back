@@ -115,6 +115,8 @@ export class TranscriptAssembler {
   }
 
   addRecognitionResult({
+    sessionId = this.sessionId,
+    patientId = this.patientId,
     resultIndex,
     transcript,
     confidence = null,
@@ -122,6 +124,9 @@ export class TranscriptAssembler {
     provider = "web_speech_api",
     speaker = "hablante_no_identificado"
   } = {}) {
+    if (sessionId !== this.sessionId || patientId !== this.patientId) {
+      return { changed: false, rejected: true, reason: "context_mismatch", text: this.manualText, provisional: this.provisional };
+    }
     const normalizado = normalizarTextoClinicoConservador(transcript || "");
     const texto = normalizado.normalizedText;
     const id = crearIdSegmento({ sessionId: this.sessionId, resultIndex, isFinal });

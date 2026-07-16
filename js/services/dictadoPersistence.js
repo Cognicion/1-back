@@ -39,9 +39,10 @@ export class DraftPersistenceService {
   load() {
     try {
       const directo = localStorage.getItem(this.key());
-      if (directo) return JSON.parse(directo);
-      const indice = localStorage.getItem(this.indexKey());
-      return indice ? JSON.parse(localStorage.getItem(indice) || "null") : null;
+      if (!directo) return null;
+      const payload = JSON.parse(directo);
+      if (payload?.userId !== this.userId || payload?.patientId !== this.patientId || payload?.encounterId !== this.encounterId) return null;
+      return payload;
     } catch (error) {
       console.warn("No se pudo recuperar el borrador de dictado:", error);
       return null;

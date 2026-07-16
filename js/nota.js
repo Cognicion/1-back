@@ -22,7 +22,8 @@ import {
   obtenerPruebaInteractiva,
   puntajesDominioPruebaInteractiva
 } from "./data/pruebasInteractivas.js";
-import { generarNotaAutomatica } from "./services/notaAutomatica.js";
+import { createNoteGenerationProvider } from "./services/noteGenerationProviders.js";
+import { evaluarMedicamentosPaciente } from "./services/motorClinicoMedicamentos.js";
 import {
   calcularPuntajeEscala,
   crearResumenEscala,
@@ -96,6 +97,9 @@ let catalogoMedicosFirmasCache = [];
 let diagnosticosAutomaticosSugeridos = [];
 let escalasPreviasNotaCache = [];
 let escalasAplicadasPendientesNota = [];
+const proveedorNotas = createNoteGenerationProvider({ provider: "local" });
+let borradorNotaAutomaticaActual = null;
+let snapshotAntesInsercionAutomatica = null;
 
 const IDS_PRUEBAS_INTERACTIVAS = new Set(PRUEBAS_INTERACTIVAS.map((escala) => escala.id));
 
@@ -1162,6 +1166,7 @@ function renderizarDiagnosticosAutomaticos() {
         <div>
           <span class="badge-sugerido">${escaparHTML(dx.certeza || "sugerido")}</span>
           <strong>${escaparHTML(dx.codigo || "")}</strong>
+          ${dx.cie11 ? `<p>Coincidencia CIE-11: <b>${escaparHTML(dx.cie11.codigo)} · ${escaparHTML(dx.cie11.nombre)}</b></p>` : ""}
         </div>
         <label>Codigo
           <input value="${escaparHTML(dx.codigo || "")}" data-dx-auto="${index}" data-campo-auto="codigo">
@@ -1174,6 +1179,7 @@ function renderizarDiagnosticosAutomaticos() {
         </label>
         <div class="diagnostico-automatico-acciones">
           <button type="button" class="boton-secundario" data-aceptar-dx-auto="${index}">Aceptar</button>
+          ${dx.cie11 ? `<button type="button" class="boton-secundario" data-aceptar-dx11-auto="${index}">Seleccionar CIE-11</button>` : ""}
           <button type="button" class="boton-secundario boton-peligro-suave" data-eliminar-dx-auto="${index}">Eliminar</button>
         </div>
       </article>
@@ -1194,6 +1200,9 @@ function renderizarDiagnosticosAutomaticos() {
   contenedor.querySelectorAll("[data-aceptar-dx-auto]").forEach((boton) => {
     boton.addEventListener("click", () => aceptarDiagnosticoAutomatico(Number(boton.dataset.aceptarDxAuto)));
   });
+  contenedor.querySelectorAll("[data-aceptar-dx11-auto]").forEach((boton) => {
+    boton.addEventListener("click", () => aceptarDiagnosticoAutomatico(Number(boton.dataset.aceptarDx11Auto), "CIE-11"));
+  });
 
   contenedor.querySelectorAll("[data-eliminar-dx-auto]").forEach((boton) => {
     boton.addEventListener("click", () => {
@@ -1203,22 +1212,25 @@ function renderizarDiagnosticosAutomaticos() {
   });
 }
 
-function aceptarDiagnosticoAutomatico(index) {
+function aceptarDiagnosticoAutomatico(index, catalogo = "CIE-10") {
   const dx = diagnosticosAutomaticosSugeridos.diagnosticos?.[index];
   if (!dx) return;
+  const seleccionado = catalogo === "CIE-11" && dx.cie11
+    ? { ...dx, codigo: dx.cie11.codigo, nombre: dx.cie11.nombre, texto: `${dx.cie11.codigo} - ${dx.cie11.nombre}` }
+    : dx;
 
   const yaExiste = diagnosticosSeleccionados.some((item) =>
-    item.codigo === dx.codigo && (item.catalogo || "CIE-10") === "CIE-10"
+    item.codigo === seleccionado.codigo && (item.catalogo || "CIE-10") === catalogo
   );
 
   if (!yaExiste) {
     diagnosticosSeleccionados = normalizarDiagnosticosNota(diagnosticosSeleccionados);
     diagnosticosSeleccionados.push(normalizarDiagnosticoNota({
-      codigo: dx.codigo || "",
-      nombre: dx.nombre || "",
-      catalogo: "CIE-10",
-      texto: dx.texto || `${dx.codigo || ""}${dx.codigo && dx.nombre ? " - " : ""}${dx.nombre || ""}`.trim(),
-      estado: dx.estado || "Probable",
+      codigo: seleccionado.codigo || "",
+      nombre: seleccionado.nombre || "",
+      catalogo,
+      texto: seleccionado.texto || `${seleccionado.codigo || ""}${seleccionado.codigo && seleccionado.nombre ? " - " : ""}${seleccionado.nombre || ""}`.trim(),
+      estado: seleccionado.estado || "Probable",
       sugerido: true,
       certeza: dx.certeza || "sugerido",
       razon: dx.razon || "",
@@ -1229,6 +1241,13 @@ function aceptarDiagnosticoAutomatico(index) {
   diagnosticosAutomaticosSugeridos.diagnosticos.splice(index, 1);
   renderizarDiagnosticosSeleccionados();
   renderizarDiagnosticosAutomaticos();
+}
+
+function coincidenciaCIE11(dx = {}) {
+  const codigo = String(dx.codigo || "");
+  const mapa = { F20: "6A20", F25: "6A21", F23: "6A23", F31: "6A40", F32: "6A60", F33: "6A70", "F41.1": "6B00", "F41.0": "6B01", "F43.1": "6B40", F10: "6C40", F12: "6C41", F15: "6C45" };
+  const clave = Object.keys(mapa).sort((a, b) => b.length - a.length).find((prefix) => codigo.startsWith(prefix));
+  return clave ? CIE11.find((item) => item.codigo === mapa[clave]) || null : null;
 }
 
 function aceptarTodosDiagnosticosAutomaticos() {
@@ -1250,6 +1269,7 @@ function obtenerIdentificacionPaciente() {
   const edadCalculada = calcularEdadDesdeFecha(fechaNacimiento);
 
   return {
+    id: uidPacienteActual || pacienteActualDatos?.id || pacienteActualDatos?.uid || "",
     nombreCompleto: pacienteActualDatos?.nombreCompleto || pacienteActualDatos?.nombre || institucional.nombrePaciente || "",
     sexo: pacienteActualDatos?.sexo || institucional.sexo || historia.sexo || "",
     fechaNacimiento,
@@ -1269,31 +1289,100 @@ function aplicarNotaAutomatica() {
     return;
   }
 
-  const confirmado = confirm("La nota automatica es solo una sugerencia por reglas locales. Revise y corrija todo antes de guardar.");
-  if (!confirmado) return;
-
-  const generada = generarNotaAutomatica(texto, obtenerIdentificacionPaciente());
-  renderizarRevisionNotaAutomatica(generada);
-  anexarTextoGenerado("subjetivo", generada.padecimientoActual, "Padecimiento actual sugerido");
-  anexarTextoGenerado("objetivo", generada.exploracionMental, "Exploracion mental sugerida");
-  anexarTextoGenerado("plan", generada.planSugerido, "Plan terapeutico sugerido");
-
-  const riesgos = textoRiesgosAutomaticos(generada.riesgosDetectados);
-  const analisisAutomatico = [
-    `Comentario clinico:\n${generada.comentarioClinico || ""}`,
-    `Impresión diagnóstica sugerida:\n${generada.impresionDiagnostica || ""}`,
-    riesgos ? `Riesgo sugerido:\n${riesgos}` : ""
-  ].filter((bloque) => bloque.trim()).join("\n\n");
-  anexarTextoGenerado("analisis", analisisAutomatico, "Analisis automatico sugerido");
+  const identificacion = obtenerIdentificacionPaciente();
+  const selectorTipoNota = document.getElementById("tipoNotaAutomatica");
+  if (Number.isFinite(identificacion.edad) && identificacion.edad < 18 && selectorTipoNota?.value === "evolucion") {
+    selectorTipoNota.value = "paidopsiquiatria";
+  }
+  const generada = proveedorNotas.generate(texto, identificacion, {
+    patientId: identificacion.id,
+    sessionId: window.cognicionDictado?.sessionId || "",
+    encounterId: new URLSearchParams(location.search).get("encounterId") || new URLSearchParams(location.search).get("notaId") || "actual",
+    tipoNota: selectorTipoNota?.value || "evolucion",
+    nivelDetalle: document.getElementById("detalleNotaAutomatica")?.value || "medio",
+    formato: document.getElementById("formatoNotaAutomatica")?.value || "mixto",
+    plantilla: document.getElementById("plantillaNotaAutomatica")?.value || "sin_plantilla",
+    especialidad: document.getElementById("especialidadNotaAutomatica")?.value || "no_especificada",
+    servicio: document.getElementById("servicioNotaAutomatica")?.value || "no_especificado"
+  });
+  const medicamentosPropuestos = (generada.medicationStatements || []).map((med) => ({
+    ...med, dosis: med.dose, unidad: med.unit, via: med.route, frecuencia: med.frequency
+  }));
+  if (medicamentosPropuestos.length) {
+    const evaluacion = evaluarMedicamentosPaciente({
+      paciente: { ...pacienteActualDatos, ...historiaClinicaActual, edad: identificacion.edad },
+      medicamentos: [...(pacienteActualDatos?.tratamientos || []), ...medicamentosPropuestos]
+    });
+    generada.medicationValidation = evaluacion;
+    generada.medicalOrderProposals.forEach((order) => {
+      if (order.type !== "medicamento") return;
+      order.validationStatus = evaluacion.bloqueosTecnicos?.length ? "bloqueado_dato_incompleto"
+        : evaluacion.alertas?.length ? "requiere_revision_alertas" : evaluacion.indicador?.estado || "sin_alerta_base_actual";
+      order.validationAlerts = evaluacion.alertas || [];
+    });
+  }
+  borradorNotaAutomaticaActual = generada;
+  renderizarRevisionNotaAutomatica(generada, texto);
 
   diagnosticosAutomaticosSugeridos = {
-    diagnosticos: generada.cie10Sugeridos || [],
+    diagnosticos: (generada.cie10Sugeridos || []).map((dx) => ({ ...dx, cie11: coincidenciaCIE11(dx) })),
     riesgos: generada.riesgosDetectados || []
   };
   renderizarDiagnosticosAutomaticos();
 }
 
-function renderizarRevisionNotaAutomatica(generada = {}) {
+function campoDestinoSeccion(seccion = "") {
+  return {
+    motivo_consulta: "subjetivo", padecimiento_actual: "subjetivo", antecedentes_psiquiatricos: "subjetivo",
+    antecedentes_personales_patologicos: "subjetivo", medicamentos: "subjetivo", adherencia: "subjetivo",
+    alergias: "subjetivo", consumo_sustancias: "subjetivo", examen_mental: "objetivo",
+    exploracion_fisica: "obsExploracionFisicaNeurologica", signos_vitales: "obsExploracionFisicaNeurologica",
+    resultados_auxiliares: "obsResultadosEstudios", evaluacion_riesgo: "analisis", impresion_clinica: "analisis",
+    comentario_clinico: "analisis", plan: "plan", indicaciones: "plan", pronostico: "obsPronostico", destino: "obsDestino"
+  }[seccion] || "";
+}
+
+function insertarSeccionesRevisadas() {
+  const borrador = borradorNotaAutomaticaActual;
+  if (!borrador) return;
+  const criticosSinConfirmar = (borrador.validationIssues || []).filter((issue) =>
+    issue.requiresExplicitReview && !document.querySelector(`[data-confirmar-issue="${issue.id}"]`)?.checked
+  );
+  if (criticosSinConfirmar.length) {
+    alert("Confirme individualmente todos los datos críticos antes de insertar secciones.");
+    return;
+  }
+  const aceptadas = (borrador.generatedSections || []).filter((section) => section.accepted);
+  if (!aceptadas.length) {
+    alert("Seleccione al menos una sección revisada.");
+    return;
+  }
+  snapshotAntesInsercionAutomatica = {};
+  aceptadas.forEach((section) => {
+    const fieldId = campoDestinoSeccion(section.section);
+    const field = document.getElementById(fieldId);
+    if (!field) return;
+    if (!(fieldId in snapshotAntesInsercionAutomatica)) snapshotAntesInsercionAutomatica[fieldId] = field.value;
+    const content = String(section.content || "").trim();
+    field.value = field.value.trim() ? `${field.value.trim()}\n\n${content}` : content;
+    field.dispatchEvent(new Event("input", { bubbles: true }));
+    section.reviewStatus = "insertada";
+  });
+  borrador.insertionAllowed = true;
+  renderizarRevisionNotaAutomatica(borrador, document.getElementById("textoDictadoClinico")?.value || "");
+}
+
+function deshacerInsercionAutomatica() {
+  if (!snapshotAntesInsercionAutomatica) return;
+  Object.entries(snapshotAntesInsercionAutomatica).forEach(([id, value]) => {
+    const field = document.getElementById(id);
+    if (field) field.value = value;
+  });
+  snapshotAntesInsercionAutomatica = null;
+  alert("Se restauró la versión anterior de los campos modificados.");
+}
+
+function renderizarRevisionNotaAutomatica(generada = {}, transcripcionOriginal = "") {
   const panel = document.getElementById("panelNotaAutomatica");
   if (!panel) return;
 
@@ -1306,31 +1395,89 @@ function renderizarRevisionNotaAutomatica(generada = {}) {
   }
 
   const issues = generada.validationIssues || [];
-  const procedencia = generada.provenanceRecords || [];
+  const secciones = generada.generatedSections || [];
+  const salidaElegida = document.getElementById("resultadoNotaAutomatica")?.value || "nota_medica_estructurada";
+  const capability = proveedorNotas.capability();
   revision.innerHTML = `
-    <div class="revision-nota-automatica-grid">
+    <div class="revision-nota-automatica-grid revision-tres-columnas">
       <section>
-        <strong>Estado</strong>
-        <p>VERSIÓN ALFA · EN DESARROLLO. Revisión clínica obligatoria antes de guardar.</p>
+        <strong>Transcripción original</strong>
+        <pre class="revision-transcripcion">${escaparHTML(transcripcionOriginal)}</pre>
       </section>
       <section>
-        <strong>Validación</strong>
-        ${
-          issues.length
-            ? `<ul>${issues.map((issue) => `<li><b>${issue.severity || "info"}:</b> ${issue.message}</li>`).join("")}</ul>`
-            : "<p>Sin contradicciones automáticas detectadas. Verifique de todos modos el contenido clínico.</p>"
-        }
+        <strong>Nota propuesta · ${escaparHTML(salidaElegida.replaceAll("_", " "))}</strong>
+        <pre class="revision-transcripcion">${escaparHTML(generada.outputs?.[salidaElegida] || "Sin contenido sustentado.")}</pre>
       </section>
       <section>
-        <strong>Procedencia</strong>
-        ${
-          procedencia.length
-            ? `<ul>${procedencia.map((item) => `<li>${item.concept}: ${item.sourceType} (${item.status})</li>`).join("")}</ul>`
-            : "<p>Sin metadatos de procedencia disponibles.</p>"
-        }
+        <strong>Alertas y pendientes</strong>
+        ${issues.length ? `<ul>${issues.map((issue) => `<li><label><input type="checkbox" data-confirmar-issue="${issue.id}" ${issue.requiresExplicitReview ? "" : "checked"}> <b>${escaparHTML(issue.severity || "info")}:</b> ${escaparHTML(issue.message || "")}</label><details><summary>Fuente</summary>${escaparHTML((issue.evidence || []).join(" · "))}</details></li>`).join("")}</ul>` : "<p>Sin contradicciones automáticas detectadas; la revisión clínica sigue siendo obligatoria.</p>"}
       </section>
     </div>
+    <p><b>VERSIÓN ALFA · EN DESARROLLO.</b> ${escaparHTML(capability.notice || "")} Estado del proveedor: ${escaparHTML(capability.status)}.</p>
+    <div class="revision-secciones">
+      ${secciones.length ? secciones.map((section, index) => `
+        <article class="revision-seccion-card">
+          <header><label><input type="checkbox" data-aceptar-seccion="${index}" ${section.accepted ? "checked" : ""}> Aceptar ${escaparHTML(section.title)}</label><span>Confianza ${Math.round((section.confidence || 0) * 100)}%</span></header>
+          <textarea data-contenido-seccion="${index}">${escaparHTML(section.content)}</textarea>
+          <details><summary>Fragmentos de origen e informante</summary><ul>${section.sourceStatementIds.map((statementId) => {
+            const s = generada.clinicalStatements?.find((item) => item.id === statementId);
+            return `<li>${escaparHTML(s?.originalText || "")} · ${escaparHTML(s?.informant || "no identificado")} · ${escaparHTML(s?.assertionStatus || "")} · ${s?.timestamp ?? "sin marca de tiempo"}</li>`;
+          }).join("")}</ul></details>
+          <details><summary>Comparar versiones</summary><p><b>Original:</b> ${escaparHTML(section.originalContent || section.content)}</p><p><b>Actual (v${section.version}):</b> ${escaparHTML(section.content)}</p></details>
+          <button type="button" class="boton-secundario" data-regenerar-seccion="${index}">Regenerar solo esta sección</button>
+          <button type="button" class="boton-secundario" data-restaurar-seccion="${index}">Restaurar</button>
+        </article>`).join("") : "<p>No se generaron secciones porque no se identificó contenido sustentado.</p>"}
+    </div>
+    <div class="diagnostico-automatico-acciones">
+      <button id="btnInsertarSeccionesRevisadas" type="button">Insertar secciones revisadas</button>
+      <button id="btnDeshacerInsercionAutomatica" type="button" class="boton-secundario" ${snapshotAntesInsercionAutomatica ? "" : "disabled"}>Deshacer inserción</button>
+    </div>
+    <section><strong>Propuestas de indicaciones</strong><p>${generada.medicalOrderProposals?.length ? "Requieren confirmación individual y validadores clínicos antes de enviarse al módulo de indicaciones." : "No se extrajeron propuestas."}</p>
+      ${(generada.medicalOrderProposals || []).map((order) => `<div class="propuesta-orden"><label><input type="checkbox" data-confirmar-orden="${order.id}"> Confirmar propuesta individual</label><span>${escaparHTML(order.type)}: ${escaparHTML(order.data?.observations || order.data?.text || "")} · ${escaparHTML(order.validationStatus)}</span>${order.validationAlerts?.length ? `<details><summary>${order.validationAlerts.length} alertas de alergias/interacciones/duplicidad/contexto</summary><ul>${order.validationAlerts.map((alerta) => `<li>${escaparHTML(alerta.titulo || alerta.efecto || alerta.id || "Alerta clínica")}</li>`).join("")}</ul></details>` : ""}</div>`).join("")}
+    </section>
   `;
+  secciones.forEach((section) => { section.originalContent ||= section.content; });
+  revision.querySelectorAll("[data-aceptar-seccion]").forEach((input) => input.addEventListener("change", () => {
+    secciones[Number(input.dataset.aceptarSeccion)].accepted = input.checked;
+    secciones[Number(input.dataset.aceptarSeccion)].reviewStatus = input.checked ? "aceptada" : "rechazada";
+  }));
+  revision.querySelectorAll("[data-contenido-seccion]").forEach((input) => input.addEventListener("input", () => {
+    const section = secciones[Number(input.dataset.contenidoSeccion)];
+    section.content = input.value; section.reviewStatus = "editada"; section.version += 1;
+  }));
+  revision.querySelectorAll("[data-restaurar-seccion]").forEach((button) => button.addEventListener("click", () => {
+    const section = secciones[Number(button.dataset.restaurarSeccion)];
+    section.content = section.originalContent; section.version += 1;
+    renderizarRevisionNotaAutomatica(generada, transcripcionOriginal);
+  }));
+  revision.querySelectorAll("[data-regenerar-seccion]").forEach((button) => button.addEventListener("click", () => {
+    const index = Number(button.dataset.regenerarSeccion);
+    const actual = secciones[index];
+    const regenerada = proveedorNotas.generate(transcripcionOriginal, obtenerIdentificacionPaciente(), {
+      patientId: obtenerIdentificacionPaciente().id,
+      sessionId: window.cognicionDictado?.sessionId || "",
+      tipoNota: generada.metadata?.tipoNota,
+      nivelDetalle: generada.metadata?.nivelDetalle,
+      formato: generada.metadata?.formato,
+      plantilla: generada.metadata?.plantilla,
+      especialidad: generada.metadata?.especialidad,
+      servicio: generada.metadata?.servicio
+    });
+    const nueva = regenerada.generatedSections?.find((item) => item.section === actual.section);
+    if (!nueva) { alert("No se encontró contenido sustentado para regenerar esta sección."); return; }
+    actual.content = nueva.content;
+    actual.sourceStatementIds = nueva.sourceStatementIds;
+    actual.version += 1;
+    actual.accepted = false;
+    actual.reviewStatus = "regenerada_pendiente";
+    renderizarRevisionNotaAutomatica(generada, transcripcionOriginal);
+  }));
+  revision.querySelector("#btnInsertarSeccionesRevisadas")?.addEventListener("click", insertarSeccionesRevisadas);
+  revision.querySelector("#btnDeshacerInsercionAutomatica")?.addEventListener("click", deshacerInsercionAutomatica);
+  revision.querySelectorAll("[data-confirmar-orden]").forEach((input) => input.addEventListener("change", () => {
+    const order = generada.medicalOrderProposals?.find((item) => item.id === input.dataset.confirmarOrden);
+    if (order) order.confirmed = input.checked;
+  }));
   panel.classList.remove("oculto");
 }
 
@@ -1452,6 +1599,9 @@ renderizarDiagnosticosSeleccionados = renderizarDiagnosticosSeleccionadosEditabl
 
 document.getElementById("btnGenerarNotaAutomatica")?.addEventListener("click", aplicarNotaAutomatica);
 document.getElementById("btnAceptarTodosDxAutomaticos")?.addEventListener("click", aceptarTodosDiagnosticosAutomaticos);
+document.getElementById("resultadoNotaAutomatica")?.addEventListener("change", () => {
+  if (borradorNotaAutomaticaActual) renderizarRevisionNotaAutomatica(borradorNotaAutomaticaActual, document.getElementById("textoDictadoClinico")?.value || "");
+});
 
 window.actualizarDiagnosticoSeleccionado = function(campo) {
   const index = Number(campo.dataset.dxIndex);
@@ -2918,6 +3068,8 @@ async function cargarPaciente(uidPaciente) {
     historiaClinicaActual = {};
   }
 
+  actualizarContextoPacienteDictado();
+
   const tratamiento = document.getElementById("tratamiento");
   const medico = document.getElementById("medico");
   const ultimaConsulta = document.getElementById("ultimaConsulta");
@@ -2979,6 +3131,25 @@ async function cargarPaciente(uidPaciente) {
   }
 
   sincronizarFormatoNota();
+}
+
+function actualizarContextoPacienteDictado() {
+  const contenedor = document.getElementById("contextoPacienteDictado");
+  if (!contenedor) return;
+  const identificacion = obtenerIdentificacionPaciente();
+  const encuentro = new URLSearchParams(location.search).get("encounterId") || new URLSearchParams(location.search).get("notaId") || "actual";
+  contenedor.replaceChildren();
+  const valores = [
+    ["Paciente", identificacion.nombreCompleto || "sin nombre"],
+    ["Edad", Number.isFinite(identificacion.edad) ? `${identificacion.edad} años` : "pendiente"],
+    ["Identificador", identificacion.id || "pendiente"],
+    ["Encuentro", encuentro]
+  ];
+  valores.forEach(([label, value], index) => {
+    if (index) contenedor.append(" · ");
+    const strong = document.createElement("strong"); strong.textContent = `${label}: `;
+    contenedor.append(strong, document.createTextNode(value));
+  });
 }
 
 async function guardarNotaMedicaConEstado(estadoNota = "definitiva") {

@@ -218,6 +218,11 @@
         <p>El dictado por voz puede contener errores. Revise y corrija el texto antes de guardar la nota clínica.</p>
         <p>Utilice esta función únicamente con autorización del paciente.</p>
         <p><strong>Versión alfa:</strong> esta función se encuentra en desarrollo. Revise y valide el contenido antes de incorporarlo al expediente.</p>
+        <p><strong>Privacidad y compatibilidad:</strong> Web Speech API depende del navegador y puede enviar audio a servicios de su proveedor. No se garantiza procesamiento local. Si no hay proveedor externo configurado, se utiliza únicamente el respaldo local por reglas.</p>
+    </div>
+
+    <div id="contextoPacienteDictado" class="dictado-contexto-paciente" aria-live="polite">
+        <strong>Paciente:</strong> pendiente de selección · <strong>Edad:</strong> pendiente · <strong>Identificador:</strong> pendiente · <strong>Encuentro:</strong> actual
     </div>
 
     <textarea
@@ -234,12 +239,25 @@
         <button id="btnGenerarNotaAutomatica" type="button" class="boton-secundario">Generar nota automática</button>
     </div>
 
+    <details class="nota-automatica-configuracion">
+        <summary>Configuración del borrador</summary>
+        <div class="nota-automatica-config-grid">
+            <label>Resultado<select id="resultadoNotaAutomatica"><option value="nota_medica_estructurada">Nota médica estructurada</option><option value="redaccion_clinica_conservadora">Redacción clínica conservadora</option><option value="literal_corregida">Transcripción literal corregida</option></select></label>
+            <label>Tipo de nota<select id="tipoNotaAutomatica"><option value="evolucion">Evolución</option><option value="ingreso">Ingreso</option><option value="urgencias">Urgencias</option><option value="nota_rapida">Nota rápida</option><option value="paidopsiquiatria">Paidopsiquiatría</option></select></label>
+            <label>Nivel de detalle<select id="detalleNotaAutomatica"><option value="medio">Medio</option><option value="breve">Breve</option><option value="amplio">Amplio</option></select></label>
+            <label>Formato<select id="formatoNotaAutomatica"><option value="mixto">Mixto</option><option value="narrativo">Narrativo</option><option value="estructurado">Estructurado</option></select></label>
+            <label>Plantilla institucional<input id="plantillaNotaAutomatica" value="sin_plantilla"></label>
+            <label>Especialidad<input id="especialidadNotaAutomatica" value="psiquiatria"></label>
+            <label>Servicio<input id="servicioNotaAutomatica" value="no_especificado"></label>
+        </div>
+    </details>
+
     <section id="panelNotaAutomatica" class="nota-automatica-panel oculto" aria-live="polite">
         <div class="nota-automatica-header">
             <div>
                 <span class="dictado-clinico-etiqueta">Sugerencias por reglas locales</span>
                 <h3>Nota automática preliminar</h3>
-                <p>Revise, modifique o elimine cada sugerencia antes de guardar.</p>
+                <p>Revise, modifique o rechace cada sección. Generar no inserta contenido en la nota.</p>
             </div>
             <button id="btnAceptarTodosDxAutomaticos" type="button" class="boton-secundario">Aceptar diagnósticos sugeridos</button>
         </div>
