@@ -9,7 +9,6 @@ import {
   query,
   orderBy,
   where,
-  updateDoc,
   arrayUnion,
   runTransaction,
   serverTimestamp
@@ -133,12 +132,13 @@ export async function buscarBorradorNotaClinica(uidPaciente, contexto = {}) {
   const candidatos = snap.docs
     .map((documento) => ({ id: documento.id, ...documento.data() }))
     .filter((nota) => {
-      const estado = nota.estadoNota || (nota.esBorrador ? "borrador" : "definitiva");
+      const vigente = nota.notaEditada || nota;
+      const estado = vigente.estadoNota || (vigente.esBorrador ? "borrador" : "definitiva");
       return estado === "borrador"
-        && (!contexto.atencionId || nota.atencionId === contexto.atencionId)
-        && (!contexto.tipoNotaClave || nota.tipoNotaClave === contexto.tipoNotaClave)
-        && (!contexto.tipoNota || nota.tipoNota === contexto.tipoNota)
-        && (!contexto.usuarioId || nota.usuarioId === contexto.usuarioId);
+        && (!contexto.atencionId || (vigente.atencionId || nota.atencionId) === contexto.atencionId)
+        && (!contexto.tipoNotaClave || (vigente.tipoNotaClave || nota.tipoNotaClave) === contexto.tipoNotaClave)
+        && (!contexto.tipoNota || (vigente.tipoNota || nota.tipoNota) === contexto.tipoNota)
+        && (!contexto.usuarioId || (vigente.usuarioId || nota.usuarioId) === contexto.usuarioId);
     })
     .sort((a, b) => fechaNotaEnMs(b) - fechaNotaEnMs(a));
   return candidatos[0] || null;
@@ -156,7 +156,11 @@ export async function guardarNota(uidPaciente, datosNota) {
 }
 
 function fechaNotaEnMs(datos = {}) {
-  const valor = datos.fecha || datos.fechaNotaDefinitiva || datos.fechaGuardadoBorrador || datos.fechaCreacion || datos.createdAt || datos.fechaRegistro;
+  const vigente = datos.notaEditada || datos;
+  const valor = vigente.fecha || vigente.fechaNotaDefinitiva || vigente.fechaGuardadoBorrador
+    || vigente.fechaEdicion || vigente.fechaUltimaModificacion
+    || datos.fecha || datos.fechaNotaDefinitiva || datos.fechaGuardadoBorrador
+    || datos.fechaCreacion || datos.createdAt || datos.fechaRegistro;
   if (!valor) return 0;
   if (typeof valor.toDate === "function") return valor.toDate().getTime();
   if (typeof valor.seconds === "number") return valor.seconds * 1000;
@@ -272,18 +276,64 @@ export async function obtenerHistorialNotas(uidPaciente) {
   };
 }
 
-export async function actualizarNota(uidPaciente, notaId, datosEdicion) {
+export async function actualizarNota(uidPaciente, notaId, datosEdicion, editor = {}) {
   const { raiz, coleccion: nombreColeccion, idOriginal } = descomponerIdNota(notaId);
   const referencia = raiz === "root"
     ? doc(db, nombreColeccion, idOriginal)
     : doc(db, raiz, uidPaciente, nombreColeccion, idOriginal);
 
-  await updateDoc(
-    referencia,
-    {
-      notaEditada: datosEdicion,
-      ediciones: arrayUnion(datosEdicion),
-      fechaUltimaEdicion: new Date().toISOString()
-    }
-  );
+  const ahoraIso = new Date().toISOString();
+  let versionGuardada = 0;
+
+  await runTransaction(db, async (transaction) => {
+    const actual = await transaction.get(referencia);
+    if (!actual.exists()) throw new Error("No se encontro la nota que se desea editar.");
+
+    const datosActuales = actual.data() || {};
+    const versionesPrevias = Array.isArray(datosActuales.ediciones) ? datosActuales.ediciones : [];
+    const versionMayorEnHistorial = versionesPrevias.reduce(
+      (mayor, version) => Math.max(mayor, Number(version?.version || 0)),
+      0
+    );
+    const versionActual = Math.max(
+      1,
+      Number(datosActuales.notaEditada?.version || 0),
+      Number(datosActuales.version || 0),
+      versionMayorEnHistorial
+    );
+    versionGuardada = versionActual + 1;
+
+    const nuevaVersion = {
+      ...datosEdicion,
+      version: versionGuardada,
+      versionAnterior: versionActual,
+      fechaEdicion: ahoraIso,
+      editadoPorId: editor.usuarioId || "",
+      editadoPorNombre: editor.usuarioNombre || ""
+    };
+    const eventoEdicion = {
+      tipo: datosEdicion.estadoNota === "definitiva" ? "edicion_definitiva" : "edicion_borrador",
+      fecha: ahoraIso,
+      usuarioId: editor.usuarioId || "",
+      usuarioNombre: editor.usuarioNombre || "",
+      version: versionGuardada,
+      versionAnterior: versionActual
+    };
+
+    transaction.update(referencia, {
+      notaEditada: nuevaVersion,
+      ediciones: arrayUnion(nuevaVersion),
+      version: versionGuardada,
+      fechaUltimaEdicion: ahoraIso,
+      fechaUltimaModificacion: ahoraIso,
+      actualizadoEn: serverTimestamp(),
+      historialEstados: arrayUnion(eventoEdicion)
+    });
+  });
+
+  const confirmado = datosVerificacion(await getDoc(referencia));
+  if (Number(confirmado.notaEditada?.version || 0) !== versionGuardada) {
+    throw new Error("Firebase respondio, pero no confirmo la nueva version de la nota.");
+  }
+  return { ...confirmado, id: notaId };
 }

@@ -70,7 +70,7 @@ import {
   guardarBorradorNotaClinica,
   finalizarNotaClinica,
   buscarBorradorNotaClinica
-} from "./services/notas.js?v=20260716-1";
+} from "./services/notas.js?v=20260716-2";
 import {
   crearDocumentoWordFray,
   nombreSeguroNotaWord
@@ -91,6 +91,7 @@ import {
 let uidPacienteActual = null;
 let diagnosticosSeleccionados = [];
 let notaEditandoId = null;
+let edicionVersionadaActiva = false;
 let notasHistorial = {};
 let notasHistorialOrdenadas = [];
 let historiaClinicaActual = {};
@@ -2524,6 +2525,7 @@ function llenarFormularioNota(datos) {
 
 function limpiarFormularioNota() {
   notaEditandoId = null;
+  edicionVersionadaActiva = false;
   estadoNotaActual = "nueva";
   escalasAplicadasPendientesNota = [];
   llenarFormularioNota({ tipoNota: "completa" });
@@ -2573,6 +2575,7 @@ function guardarRespaldoTemporalNota() {
       atencionId: obtenerContextoAtencion().id,
       actualizadoEn: Date.now(),
       notaId: notaEditandoId || "",
+      edicionVersionada: edicionVersionadaActiva,
       datos: collectNoteData()
     }));
   } catch (error) {
@@ -3019,8 +3022,33 @@ function bloqueContenidoNota(datos, titulo) {
   `;
 }
 
+function versionesEditadasNota(datos = {}) {
+  const versiones = Array.isArray(datos.ediciones)
+    ? [...datos.ediciones].filter((version) => version && typeof version === "object")
+    : [];
+  if (datos.notaEditada && typeof datos.notaEditada === "object") {
+    const versionActual = Number(datos.notaEditada.version || 0);
+    const fechaActual = datos.notaEditada.fechaEdicion || datos.notaEditada.fechaUltimaModificacion || "";
+    const yaIncluida = versiones.some((version) => (
+      (versionActual && Number(version.version || 0) === versionActual)
+      || (fechaActual && (version.fechaEdicion || version.fechaUltimaModificacion) === fechaActual)
+    ));
+    if (!yaIncluida) versiones.push(datos.notaEditada);
+  }
+  return versiones.sort((a, b) => {
+    const versionA = Number(a.version || 0);
+    const versionB = Number(b.version || 0);
+    if (versionA !== versionB) return versionA - versionB;
+    return fechaNotaHistorial(a).getTime() - fechaNotaHistorial(b).getTime();
+  });
+}
+
 function fechaNotaHistorial(datos = {}) {
-  const valor = datos.fecha || datos.fechaNotaDefinitiva || datos.fechaGuardadoBorrador || datos.fechaCreacion || datos.createdAt || datos.fechaRegistro;
+  const vigente = datos.notaEditada || datos;
+  const valor = vigente.fecha || vigente.fechaNotaDefinitiva || vigente.fechaGuardadoBorrador
+    || vigente.fechaEdicion || vigente.fechaUltimaModificacion
+    || datos.fecha || datos.fechaNotaDefinitiva || datos.fechaGuardadoBorrador
+    || datos.fechaUltimaEdicion || datos.fechaCreacion || datos.createdAt || datos.fechaRegistro;
   if (!valor) return new Date();
   if (typeof valor.toDate === "function") return valor.toDate();
   if (typeof valor.seconds === "number") return new Date(valor.seconds * 1000);
@@ -3032,17 +3060,8 @@ window.editarNotaDesdeHistorial = function(notaId) {
   const datos = notasHistorial[notaId];
   if (!datos) return;
   const vigente = datos.notaEditada || datos;
-  const estado = vigente.estadoNota || (vigente.esBorrador ? "borrador" : "definitiva");
-  if (estado === "definitiva" || vigente.bloqueada === true) {
-    notaEditandoId = notaId;
-    estadoNotaActual = "definitiva";
-    llenarFormularioNota(vigente);
-    establecerModoLecturaNota(true);
-    marcarNotaGuardada();
-    alert("La nota definitiva se abrio en modo lectura. Para corregirla se requiere una adenda separada.");
-    return;
-  }
   notaEditandoId = notaId;
+  edicionVersionadaActiva = true;
   estadoNotaActual = "borrador";
   escalasAplicadasPendientesNota = [];
   llenarFormularioNota(vigente);
@@ -3050,6 +3069,7 @@ window.editarNotaDesdeHistorial = function(notaId) {
   marcarNotaGuardada();
   btnCancelarEdicion?.classList.remove("oculto");
   document.getElementById("tipoNota")?.scrollIntoView({ behavior: "smooth", block: "center" });
+  alert(`Edicion versionada iniciada. La version ${vigente.version || datos.version || 1} permanecera en el historial cuando guardes.`);
 };
 
 function cargarDatosNotaComoBorrador(notaId, opciones = {}) {
@@ -3061,11 +3081,6 @@ function cargarDatosNotaComoBorrador(notaId, opciones = {}) {
   }
 
   const datos = datosNota.notaEditada || datosNota;
-  const estado = datos.estadoNota || (datos.esBorrador ? "borrador" : "definitiva");
-  if (estado === "definitiva" || datos.bloqueada === true) {
-    alert("Una nota definitiva no puede reutilizarse como borrador sin una adenda trazable.");
-    return false;
-  }
   const formatoActual = formatoNota?.value || "cognicion";
   llenarFormularioNota({
     ...datos,
@@ -3076,10 +3091,11 @@ function cargarDatosNotaComoBorrador(notaId, opciones = {}) {
   aplicarTiempoActualNota();
   aplicarDatosInstitucionalesPaciente(pacienteActualDatos || {}, { forzarSignosVitales: true });
 
-  notaEditandoId = notaId;
-  estadoNotaActual = "borrador";
+  notaEditandoId = null;
+  edicionVersionadaActiva = false;
+  estadoNotaActual = "nueva";
   establecerModoLecturaNota(false);
-  marcarNotaGuardada();
+  marcarCambiosNotaPendientes();
   btnCancelarEdicion?.classList.remove("oculto");
   sincronizarFormatoNota();
   document.getElementById("tipoNota")?.scrollIntoView({ behavior: "smooth", block: "center" });
@@ -3088,7 +3104,7 @@ function cargarDatosNotaComoBorrador(notaId, opciones = {}) {
 
 window.cargarNotaComoBorrador = function(notaId) {
   if (cargarDatosNotaComoBorrador(notaId)) {
-    alert("Borrador cargado. Los siguientes guardados actualizaran el mismo documento.");
+    alert("Nota cargada como borrador nuevo. Al guardar se creara un documento distinto y la nota previa permanecera intacta.");
   }
 };
 
@@ -3100,9 +3116,8 @@ window.cargarNotaPreviaEnFormulario = function() {
     return;
   }
 
-  cargarDatosNotaComoBorrador(previa.id, { mantenerFormatoActual: true });
-  if ((previa.datos.estadoNota || (previa.datos.esBorrador ? "borrador" : "definitiva")) === "definitiva") {
-    alert("La nota previa definitiva no se copio: debe conservarse sin cambios. Use una nueva nota o una futura adenda.");
+  if (cargarDatosNotaComoBorrador(previa.id, { mantenerFormatoActual: true })) {
+    alert("Datos de la nota previa cargados. Se guardaran como una nota nueva.");
   }
 };
 
@@ -3137,12 +3152,14 @@ async function recuperarBorradorCorrespondiente() {
     });
     let fechaFirebase = 0;
     if (borrador) {
+      const borradorVigente = borrador.notaEditada || borrador;
       notaEditandoId = borrador.id;
+      edicionVersionadaActiva = Boolean(borrador.notaEditada);
       estadoNotaActual = "borrador";
-      llenarFormularioNota(borrador);
+      llenarFormularioNota(borradorVigente);
       establecerModoLecturaNota(false);
       btnCancelarEdicion?.classList.remove("oculto");
-      fechaFirebase = fechaNotaHistorial(borrador).getTime();
+      fechaFirebase = fechaNotaHistorial(borradorVigente).getTime();
     }
 
     let respaldo = null;
@@ -3156,6 +3173,7 @@ async function recuperarBorradorCorrespondiente() {
     if (respaldoValido && window.confirm("Existe un respaldo local mas reciente de esta misma atencion. ¿Desea recuperarlo?")) {
       llenarFormularioNota(respaldo.datos || {});
       notaEditandoId = respaldo.notaId || borrador?.id || null;
+      edicionVersionadaActiva = Boolean(respaldo.edicionVersionada && respaldo.notaId);
       estadoNotaActual = notaEditandoId ? "borrador" : "nueva";
       cambiosNotaPendientes = true;
     } else {
@@ -3273,6 +3291,7 @@ async function cargarListaPacientes() {
     uidPacienteActual = selector.value;
     if (!uidPacienteActual) return;
     notaEditandoId = null;
+    edicionVersionadaActiva = false;
     estadoNotaActual = "nueva";
     cambiosNotaPendientes = false;
     await cargarPaciente(uidPacienteActual);
@@ -3520,6 +3539,7 @@ async function guardarNotaClinicaSeguro(estadoNota = "definitiva") {
   const selector = document.getElementById("uidPaciente");
   const uidPaciente = uidPacienteActual || selector?.value;
   const esBorrador = estadoNota === "borrador";
+  const esEdicionVersionada = Boolean(edicionVersionadaActiva && notaEditandoId);
   const boton = document.getElementById(esBorrador ? "btnGuardarBorradorNota" : "btnGuardarNotaDefinitiva");
   const textoOriginal = boton?.textContent || "";
 
@@ -3536,7 +3556,7 @@ async function guardarNotaClinicaSeguro(estadoNota = "definitiva") {
     alert("No se encontro una atencion, consulta, ingreso o expediente activo para esta nota.");
     return;
   }
-  if (estadoNotaActual === "definitiva") {
+  if (estadoNotaActual === "definitiva" && !esEdicionVersionada) {
     alert("La nota definitiva esta bloqueada. Para corregirla se requiere una adenda separada.");
     return;
   }
@@ -3589,15 +3609,32 @@ async function guardarNotaClinicaSeguro(estadoNota = "definitiva") {
       proximaConsulta
     };
     const eraNueva = !notaEditandoId;
-    const confirmada = esBorrador
-      ? await guardarBorradorNotaClinica(uidPaciente, notaEditandoId, notaPayload)
-      : await finalizarNotaClinica(uidPaciente, notaEditandoId, notaPayload, {
-          usuarioId: auth.currentUser.uid,
-          usuarioNombre: notaPayload.usuarioNombre
-        });
+    const datosEditor = {
+      usuarioId: auth.currentUser.uid,
+      usuarioNombre: notaPayload.usuarioNombre
+    };
+    const ahoraIso = new Date().toISOString();
+    const confirmada = esEdicionVersionada
+      ? await actualizarNota(uidPaciente, notaEditandoId, {
+          ...notaPayload,
+          estadoNota,
+          esBorrador,
+          bloqueada: !esBorrador,
+          fecha: ahoraIso,
+          fechaUltimaModificacion: ahoraIso,
+          ...(esBorrador
+            ? { fechaGuardadoBorrador: ahoraIso }
+            : { fechaNotaDefinitiva: ahoraIso, fechaCierre: ahoraIso })
+        }, datosEditor)
+      : esBorrador
+        ? await guardarBorradorNotaClinica(uidPaciente, notaEditandoId, notaPayload)
+        : await finalizarNotaClinica(uidPaciente, notaEditandoId, notaPayload, datosEditor);
 
     notaEditandoId = confirmada.id;
-    estadoNotaActual = confirmada.estadoNota;
+    estadoNotaActual = esEdicionVersionada
+      ? confirmada.notaEditada?.estadoNota || estadoNota
+      : confirmada.estadoNota;
+    if (esEdicionVersionada && !esBorrador) edicionVersionadaActiva = false;
     if (eraNueva) await vincularEscalasPendientesANota(uidPaciente, confirmada.id);
 
     try {
@@ -3619,13 +3656,17 @@ async function guardarNotaClinicaSeguro(estadoNota = "definitiva") {
     try {
       const pacienteActual = await obtenerUsuario(uidPaciente);
       await registrarEventoAuditoria({
-        accion: eraNueva
-          ? (esBorrador ? "crear_borrador_nota_medica" : "crear_nota_medica_definitiva")
-          : (esBorrador ? "editar_borrador_nota_medica" : "cerrar_borrador_como_nota_definitiva"),
+        accion: esEdicionVersionada
+          ? (esBorrador ? "guardar_version_borrador_nota_medica" : "guardar_version_definitiva_nota_medica")
+          : eraNueva
+            ? (esBorrador ? "crear_borrador_nota_medica" : "crear_nota_medica_definitiva")
+            : (esBorrador ? "editar_borrador_nota_medica" : "cerrar_borrador_como_nota_definitiva"),
         modulo: "Nota medica",
-        descripcion: esBorrador
-          ? (eraNueva ? "El medico creo un borrador clinico." : "El medico actualizo el mismo borrador clinico.")
-          : (eraNueva ? "El medico creo y cerro una nota definitiva." : "El medico convirtio el borrador existente en nota definitiva."),
+        descripcion: esEdicionVersionada
+          ? `El medico guardo la version ${confirmada.notaEditada?.version || confirmada.version || ""} sin sobrescribir las versiones anteriores.`
+          : esBorrador
+            ? (eraNueva ? "El medico creo un borrador clinico." : "El medico actualizo el mismo borrador clinico.")
+            : (eraNueva ? "El medico creo y cerro una nota definitiva." : "El medico convirtio el borrador existente en nota definitiva."),
         usuarioUid: auth.currentUser.uid,
         usuarioNombre: notaPayload.usuarioNombre,
         usuarioRol: perfilMedicoActual.rol || "",
@@ -3649,8 +3690,12 @@ async function guardarNotaClinicaSeguro(estadoNota = "definitiva") {
     if (!esBorrador) establecerModoLecturaNota(true);
     await cargarHistorial(uidPaciente);
     alert(esBorrador
-      ? `Borrador ${eraNueva ? "guardado" : "actualizado"} y verificado en Firebase.`
-      : "Nota definitiva cerrada y verificada en Firebase. Quedo en modo lectura.");
+      ? (esEdicionVersionada
+          ? `Version ${confirmada.notaEditada?.version || confirmada.version} guardada como borrador y verificada en Firebase.`
+          : `Borrador ${eraNueva ? "guardado" : "actualizado"} y verificado en Firebase.`)
+      : (esEdicionVersionada
+          ? `Version ${confirmada.notaEditada?.version || confirmada.version} definitiva guardada sin sobrescribir el historial.`
+          : "Nota definitiva cerrada y verificada en Firebase. Quedo en modo lectura."));
   } catch (error) {
     console.error(`Error al ${esBorrador ? "guardar borrador" : "cerrar nota definitiva"}:`, error);
     guardarRespaldoTemporalNota();
@@ -3732,9 +3777,15 @@ async function cargarHistorial(uidPaciente) {
     const notaVigente = datos.notaEditada || datos;
     const estadoNota = notaVigente.estadoNota || (notaVigente.esBorrador ? "borrador" : "definitiva");
     const estadoTexto = estadoNota === "borrador" ? "Borrador" : "Definitiva";
-    const accionesNota = estadoNota === "borrador" && notaVigente.bloqueada !== true
-      ? `<button type="button" class="boton-secundario" onclick="editarNotaDesdeHistorial('${nota.id}')">Continuar borrador</button>`
-      : `<button type="button" class="boton-secundario" onclick="editarNotaDesdeHistorial('${nota.id}')">Ver nota (solo lectura)</button>`;
+    const versionesEditadas = versionesEditadasNota(datos);
+    const accionesNota = `
+      <button type="button" class="boton-secundario" onclick="cargarNotaComoBorrador('${nota.id}')">
+        Usar como borrador (nueva nota)
+      </button>
+      <button type="button" class="boton-secundario" onclick="editarNotaDesdeHistorial('${nota.id}')">
+        Editar esta nota
+      </button>
+    `;
 
     let diagnosticosTexto = "";
 
@@ -3774,7 +3825,10 @@ async function cargarHistorial(uidPaciente) {
 
           ${bloqueContenidoNota(datos, "Nota original")}
 
-          ${datos.notaEditada ? bloqueContenidoNota(datos.notaEditada, "Versión editada") : ""}
+          ${versionesEditadas.map((version, indice) => bloqueContenidoNota(
+            version,
+            `Versión ${version.version || indice + 2}${version.editadoPorNombre ? ` · ${escaparHTML(version.editadoPorNombre)}` : ""}`
+          )).join("")}
 
           <div class="acciones-historial-nota">
             ${accionesNota}
