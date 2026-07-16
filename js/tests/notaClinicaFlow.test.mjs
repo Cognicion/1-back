@@ -18,6 +18,8 @@ assert.match(modulo, /guardarBorradorNotaClinica\(uidPaciente, notaEditandoId, n
 assert.match(modulo, /finalizarNotaClinica\(uidPaciente, notaEditandoId, notaPayload/);
 assert.match(modulo, /window\.confirm\("¿Confirma que desea cerrar esta nota como definitiva\?/);
 assert.match(modulo, /crearDocumentoWordFray\(/);
+assert.match(html, /<option value="cognicion">PDF Cognicion<\/option>/);
+assert.match(modulo, /window\.descargarNotaSeleccionada\s*=\s*async function\(\)\s*\{\s*if \(!esFormatoFray\(\)\) \{\s*window\.generarPDFNota\(\);\s*return;/);
 assert.equal(/window\.descargarNotaSeleccionada[\s\S]{0,800}window\.print\(\)/.test(modulo), false);
 
 assert.match(servicio, /const COLECCION_NOTAS = "notasMedicas"/);

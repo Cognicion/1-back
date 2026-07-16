@@ -32,6 +32,7 @@ function run(texto, opciones = {}) {
   const propiedades = [
     opciones.bold ? "<w:b/>" : "",
     opciones.italic ? "<w:i/>" : "",
+    opciones.color ? `<w:color w:val="${opciones.color}"/>` : "",
     opciones.size ? `<w:sz w:val="${opciones.size}"/><w:szCs w:val="${opciones.size}"/>` : ""
   ].join("");
   return `<w:r>${propiedades ? `<w:rPr>${propiedades}</w:rPr>` : ""}<w:t xml:space="preserve">${xml(texto)}</w:t></w:r>`;
@@ -87,9 +88,18 @@ function parrafo(texto = "", opciones = {}) {
     opciones.align ? `<w:jc w:val="${opciones.align}"/>` : "",
     opciones.keepNext ? "<w:keepNext/>" : "",
     opciones.bullet ? '<w:numPr><w:ilvl w:val="0"/><w:numId w:val="1"/></w:numPr>' : "",
-    '<w:spacing w:before="0" w:after="100" w:line="276" w:lineRule="auto"/>'
+    `<w:spacing w:before="${opciones.before ?? 0}" w:after="${opciones.after ?? 0}" w:line="${opciones.line ?? 180}" w:lineRule="${opciones.lineRule || "exact"}"/>`
   ].join("");
   return `<w:p><w:pPr>${propiedades}</w:pPr>${contenido || run("")}</w:p>`;
+}
+
+function parrafoRuns(items = [], opciones = {}) {
+  const propiedades = [
+    opciones.align ? `<w:jc w:val="${opciones.align}"/>` : "",
+    opciones.keepNext ? "<w:keepNext/>" : "",
+    `<w:spacing w:before="${opciones.before ?? 0}" w:after="${opciones.after ?? 0}" w:line="${opciones.line ?? 180}" w:lineRule="${opciones.lineRule || "exact"}"/>`
+  ].join("");
+  return `<w:p><w:pPr>${propiedades}</w:pPr>${items.map((item) => run(item.texto ?? "", item)).join("") || run("")}</w:p>`;
 }
 
 function parrafosContenido(valor = "") {
@@ -107,79 +117,145 @@ function parrafosContenido(valor = "") {
 }
 
 function celda(contenido, ancho = 0, opciones = {}) {
-  return `<w:tc><w:tcPr>${ancho ? `<w:tcW w:w="${ancho}" w:type="dxa"/>` : ""}${opciones.sinBorde ? '<w:tcBorders><w:top w:val="nil"/><w:left w:val="nil"/><w:bottom w:val="nil"/><w:right w:val="nil"/></w:tcBorders>' : ""}</w:tcPr>${contenido}</w:tc>`;
+  const margenes = opciones.margen !== undefined
+    ? `<w:tcMar><w:top w:w="${opciones.margen}" w:type="dxa"/><w:left w:w="${opciones.margen}" w:type="dxa"/><w:bottom w:w="${opciones.margen}" w:type="dxa"/><w:right w:w="${opciones.margen}" w:type="dxa"/></w:tcMar>`
+    : "";
+  return `<w:tc><w:tcPr>${ancho ? `<w:tcW w:w="${ancho}" w:type="dxa"/>` : ""}${opciones.vAlign ? `<w:vAlign w:val="${opciones.vAlign}"/>` : ""}${margenes}</w:tcPr>${contenido}</w:tc>`;
 }
 
-function tabla(filas, anchos = []) {
-  const bordes = '<w:tblBorders><w:top w:val="single" w:sz="4" w:color="777777"/><w:left w:val="single" w:sz="4" w:color="777777"/><w:bottom w:val="single" w:sz="4" w:color="777777"/><w:right w:val="single" w:sz="4" w:color="777777"/><w:insideH w:val="single" w:sz="4" w:color="AAAAAA"/><w:insideV w:val="single" w:sz="4" w:color="AAAAAA"/></w:tblBorders>';
-  return `<w:tbl><w:tblPr><w:tblW w:w="0" w:type="auto"/>${bordes}</w:tblPr>${filas.map((fila) => `<w:tr><w:trPr><w:cantSplit/></w:trPr>${fila.map((contenido, indice) => celda(contenido, anchos[indice] || 0)).join("")}</w:tr>`).join("")}</w:tbl>`;
+function tabla(filas, anchos = [], opciones = {}) {
+  const borde = opciones.sinBordes
+    ? '<w:tblBorders><w:top w:val="nil"/><w:left w:val="nil"/><w:bottom w:val="nil"/><w:right w:val="nil"/><w:insideH w:val="nil"/><w:insideV w:val="nil"/></w:tblBorders>'
+    : opciones.soloBordeInferior
+      ? '<w:tblBorders><w:top w:val="nil"/><w:left w:val="nil"/><w:bottom w:val="dashed" w:sz="4" w:color="777777"/><w:right w:val="nil"/><w:insideH w:val="nil"/><w:insideV w:val="nil"/></w:tblBorders>'
+      : '<w:tblBorders><w:top w:val="single" w:sz="4" w:color="222222"/><w:left w:val="single" w:sz="4" w:color="222222"/><w:bottom w:val="single" w:sz="4" w:color="222222"/><w:right w:val="single" w:sz="4" w:color="222222"/><w:insideH w:val="single" w:sz="4" w:color="222222"/><w:insideV w:val="single" w:sz="4" w:color="222222"/></w:tblBorders>';
+  const grid = anchos.length ? `<w:tblGrid>${anchos.map((ancho) => `<w:gridCol w:w="${ancho}"/>`).join("")}</w:tblGrid>` : "";
+  return `<w:tbl><w:tblPr><w:tblW w:w="${opciones.ancho || anchos.reduce((suma, ancho) => suma + ancho, 0) || 10800}" w:type="dxa"/><w:tblLayout w:type="fixed"/>${borde}</w:tblPr>${grid}${filas.map((fila) => `<w:tr><w:trPr><w:cantSplit/>${opciones.alturaMinima ? `<w:trHeight w:val="${opciones.alturaMinima}" w:hRule="atLeast"/>` : ""}</w:trPr>${fila.map((contenido, indice) => celda(contenido, anchos[indice] || 0, { margen: opciones.margenCelda, vAlign: opciones.vAlign })).join("")}</w:tr>`).join("")}</w:tbl>`;
 }
 
-function imagenInline(relId, nombre, cx, cy) {
-  return `<w:p><w:pPr><w:jc w:val="center"/></w:pPr><w:r><w:drawing><wp:inline distT="0" distB="0" distL="0" distR="0"><wp:extent cx="${cx}" cy="${cy}"/><wp:docPr id="${relId === "rIdLogo1" ? 1 : 2}" name="${xml(nombre)}"/><a:graphic><a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture"><pic:pic><pic:nvPicPr><pic:cNvPr id="0" name="${xml(nombre)}"/><pic:cNvPicPr/></pic:nvPicPr><pic:blipFill><a:blip r:embed="${relId}"/><a:stretch><a:fillRect/></a:stretch></pic:blipFill><pic:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="${cx}" cy="${cy}"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></pic:spPr></pic:pic></a:graphicData></a:graphic></wp:inline></w:drawing></w:r></w:p>`;
+function imagenInline(relId, nombre, cx, cy, align = "center") {
+  const altoLinea = Math.max(180, Math.ceil(cy / 635));
+  return `<w:p><w:pPr><w:jc w:val="${align}"/><w:spacing w:before="0" w:after="0" w:line="${altoLinea}" w:lineRule="atLeast"/></w:pPr><w:r><w:drawing><wp:inline distT="0" distB="0" distL="0" distR="0"><wp:extent cx="${cx}" cy="${cy}"/><wp:docPr id="${relId === "rIdLogo1" ? 1 : 2}" name="${xml(nombre)}"/><a:graphic><a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture"><pic:pic><pic:nvPicPr><pic:cNvPr id="0" name="${xml(nombre)}"/><pic:cNvPicPr/></pic:nvPicPr><pic:blipFill><a:blip r:embed="${relId}"/><a:stretch><a:fillRect/></a:stretch></pic:blipFill><pic:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="${cx}" cy="${cy}"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></pic:spPr></pic:pic></a:graphicData></a:graphic></wp:inline></w:drawing></w:r></w:p>`;
 }
 
 function encabezadoInstitucional(datos, imagenes) {
-  const izquierda = imagenes[0] ? imagenInline("rIdLogo1", "Logotipo Salud", 1500000, 500000) : parrafo("");
-  const derecha = imagenes[1] ? imagenInline("rIdLogo2", "Logotipo Fray", 650000, 650000) : parrafo("");
+  const izquierda = imagenes[0] ? imagenInline("rIdLogo1", "Logotipo Salud", 1066800, 548640, "left") : parrafo("");
+  const derecha = imagenes[1] ? imagenInline("rIdLogo2", "Logotipo Fray", 552450, 501650, "right") : parrafo("");
   const centro = [
-    parrafo(datos.institucionSuperior || "SECRETARÍA DE SALUD", { bold: true, align: "center", size: 18 }),
-    parrafo(datos.institucionIntermedia || "COMISIÓN NACIONAL DE SALUD MENTAL Y ADICCIONES", { bold: true, align: "center", size: 17 }),
-    parrafo(datos.institucion || 'HOSPITAL PSIQUIÁTRICO "FRAY BERNARDINO ÁLVAREZ"', { bold: true, align: "center", size: 18 })
+    parrafo(datos.institucionSuperior || "SECRETARÍA DE SALUD", { bold: true, align: "center", size: 22, line: 220 }),
+    parrafo(datos.institucionIntermedia || "COMISIÓN NACIONAL DE SALUD MENTAL Y ADICCIONES", { bold: true, align: "center", size: 22, line: 220 }),
+    parrafo(datos.institucion || 'HOSPITAL PSIQUIÁTRICO "FRAY BERNARDINO ÁLVAREZ"', { bold: true, align: "center", size: 22, line: 220 })
   ].join("");
-  return tabla([[izquierda, centro, derecha]], [1900, 6100, 1400]);
+  return tabla([[izquierda, centro, derecha]], [2160, 7128, 1512], {
+    soloBordeInferior: true,
+    margenCelda: 0,
+    vAlign: "center",
+    ancho: 10800
+  });
 }
 
-function tablaIdentificacion(datos) {
+function identificacionFray(datos) {
   const paciente = datos.paciente || {};
   const pares = [
-    ["Paciente", paciente.nombre], ["Expediente", paciente.expediente],
-    ["Fecha de nacimiento", paciente.fechaNacimiento], ["Edad", paciente.edad],
-    ["Sexo", paciente.sexo], ["Cama", paciente.cama],
-    ["Servicio", datos.servicio], ["Fecha y hora", datos.fechaHora],
-    ["Médico responsable", datos.medico?.nombre], ["Estado", datos.estadoNota]
+    ["Nombre del paciente:", paciente.nombre], ["Fecha de nacimiento:", paciente.fechaNacimiento],
+    ["Edad:", paciente.edad ? `${paciente.edad} AÑOS` : ""], ["Cama:", paciente.cama],
+    ["Expediente:", paciente.expediente], ["Sexo:", paciente.sexo], ["Género:", paciente.genero],
+    ["Servicio:", datos.servicio], ["Alergias:", paciente.alergias],
+    ["Fecha:", datos.fecha], ["Hora:", datos.hora ? `${datos.hora} H` : ""],
+    ["Días estancia:", paciente.diasEstancia]
   ].filter(([, valor]) => String(valor ?? "").trim());
-  const filas = [];
-  for (let i = 0; i < pares.length; i += 2) {
-    const izquierda = pares[i];
-    const derecha = pares[i + 1];
-    filas.push([
-      parrafo(izquierda[0], { bold: true }), parrafo(izquierda[1]),
-      derecha ? parrafo(derecha[0], { bold: true }) : parrafo(""),
-      derecha ? parrafo(derecha[1]) : parrafo("")
-    ]);
-  }
-  return tabla(filas, [1600, 3000, 1600, 3000]);
+  const items = [];
+  pares.forEach(([etiqueta, valor], indice) => {
+    if (indice) items.push({ texto: "   " });
+    items.push({ texto: `${etiqueta} `, bold: true, size: 17 });
+    items.push({ texto: String(valor), size: 17 });
+  });
+  return parrafoRuns(items, { before: 40, after: 140, line: 230, lineRule: "auto" });
+}
+
+function tablaVitalesFray(vitales = {}) {
+  const campos = [
+    ["Presión arterial", vitales.presionArterial], ["Temperatura", vitales.temperatura],
+    ["Frecuencia cardíaca", vitales.frecuenciaCardiaca], ["Frecuencia respiratoria", vitales.frecuenciaRespiratoria],
+    ["SatO2", vitales.saturacionO2], ["Peso", vitales.peso], ["Talla", vitales.talla], ["IMC", vitales.imc]
+  ];
+  return tabla([
+    campos.map(([titulo]) => parrafo(titulo, { bold: true, align: "center", size: 13, line: 150 })),
+    campos.map(([, valor]) => parrafo(valor || "", { align: "center", size: 15, line: 160 }))
+  ], Array(8).fill(1350), { margenCelda: 28, vAlign: "center", ancho: 10800 });
+}
+
+function bloqueTextoFray(titulo, contenido) {
+  if (!String(contenido || "").trim()) return "";
+  return [
+    parrafo(titulo, { bold: true, size: 19, before: 200, after: 60, line: 190, keepNext: true }),
+    tabla([[parrafosContenido(contenido)]], [10800], { margenCelda: 80, alturaMinima: 840, ancho: 10800 })
+  ].join("");
+}
+
+function buscarSeccion(secciones, patron) {
+  return secciones.find((seccion) => patron.test(String(seccion?.titulo || "")))?.contenido || "";
 }
 
 function contenidoDocumento(datos, imagenes) {
+  const secciones = datos.secciones || [];
+  const padecimiento = buscarSeccion(secciones, /PADECIMIENTO|MOTIVO DE ATENCI|NOTA R[ÁA]PIDA/i);
+  const exploracion = buscarSeccion(secciones, /EXPLORACI[ÓO]N F[ÍI]SICA/i);
+  const mental = buscarSeccion(secciones, /EXAMEN MENTAL/i);
+  const estudios = buscarSeccion(secciones, /RESULTADOS.*ESTUDIOS/i);
+  const plan = buscarSeccion(secciones, /^PLAN$/i);
+  const tratamiento = buscarSeccion(secciones, /TRATAMIENTO E INDICACIONES/i);
+  const analisis = buscarSeccion(secciones, /AN[ÁA]LISIS CL[ÍI]NICO|COMENTARIO Y AN[ÁA]LISIS/i);
+  const pronostico = buscarSeccion(secciones, /PRON[ÓO]STICO/i);
+  const destino = buscarSeccion(secciones, /DESTINO/i);
   const partes = [
     encabezadoInstitucional(datos, imagenes),
-    parrafo(datos.titulo || "NOTA CLÍNICA", { style: "Title", align: "center", keepNext: true }),
-    tablaIdentificacion(datos)
+    parrafo(datos.titulo || "NOTA CLÍNICA", { bold: true, color: "7B7B7B", size: 23, align: "center", keepNext: true, before: 160, after: 240, line: 230 }),
+    identificacionFray(datos),
+    tablaVitalesFray(datos.vitales || {}),
+    bloqueTextoFray("MOTIVO DE ATENCIÓN / ACTUALIZACIÓN DEL CUADRO CLÍNICO", padecimiento),
+    bloqueTextoFray("EXPLORACIÓN FÍSICA Y NEUROLÓGICA", exploracion),
+    bloqueTextoFray("EXAMEN MENTAL", mental),
+    bloqueTextoFray("RESULTADOS RELEVANTES DE LOS ESTUDIOS DE DIAGNÓSTICO", estudios)
   ];
 
-  (datos.secciones || []).forEach((seccion) => {
-    if (!String(seccion?.contenido || "").trim()) return;
-    partes.push(parrafo(seccion.titulo || "SECCIÓN", { style: "Heading1", keepNext: true }));
-    partes.push(parrafosContenido(seccion.contenido));
-  });
-
   if (datos.diagnosticos?.length) {
-    partes.push(parrafo("DIAGNÓSTICOS", { style: "Heading1", keepNext: true }));
+    partes.push(parrafo("DIAGNÓSTICOS DE ACUERDO A CIE-10 (PRIMARIO Y COMORBILIDADES)", { bold: true, size: 19, before: 200, after: 60, line: 190, keepNext: true }));
     partes.push(tabla([
-      [parrafo("Código", { bold: true }), parrafo("Diagnóstico", { bold: true })],
-      ...datos.diagnosticos.map((dx) => [parrafo(dx.codigo || ""), parrafo(dx.diagnostico || dx.nombre || dx.texto || "")])
-    ], [1800, 7400]));
+      [parrafo("DIAGNÓSTICO", { bold: true, size: 17 }), parrafo("CIE-10", { bold: true, size: 17 })],
+      [
+        parrafo(datos.diagnosticos.map((dx) => dx.diagnostico || dx.nombre || dx.texto || "").join("\n"), { size: 18 }),
+        parrafo(datos.diagnosticos.map((dx) => dx.codigo || "").join("\n"), { size: 18 })
+      ]
+    ], [9288, 1512], { margenCelda: 80, ancho: 10800 }));
+  }
+
+  partes.push(bloqueTextoFray("PLAN TERAPÉUTICO (MEDIDAS GENERALES Y TRATAMIENTO FARMACOLÓGICO)", [plan, tratamiento].filter((valor) => String(valor || "").trim()).join("\n")));
+  partes.push(bloqueTextoFray("COMENTARIO Y/O ANÁLISIS CLÍNICO Y FUNDAMENTACIÓN DIAGNÓSTICA Y TERAPÉUTICA", analisis));
+  secciones
+    .filter((seccion) => !/PADECIMIENTO|MOTIVO DE ATENCI|NOTA R[ÁA]PIDA|EXPLORACI[ÓO]N F[ÍI]SICA|EXAMEN MENTAL|RESULTADOS.*ESTUDIOS|^PLAN$|TRATAMIENTO E INDICACIONES|AN[ÁA]LISIS CL[ÍI]NICO|COMENTARIO Y AN[ÁA]LISIS|PRON[ÓO]STICO|DESTINO/i.test(String(seccion?.titulo || "")))
+    .forEach((seccion) => partes.push(bloqueTextoFray(seccion.titulo || "SECCIÓN", seccion.contenido)));
+  if (String(pronostico || "").trim()) {
+    partes.push(parrafoRuns([{ texto: "PRONÓSTICO: ", bold: true, size: 18 }, { texto: pronostico, size: 18 }], { before: 120, line: 180 }));
+  }
+  if (String(destino || "").trim()) {
+    partes.push(parrafoRuns([{ texto: "DESTINO: ", bold: true, size: 18 }, { texto: destino, size: 18 }], { before: 120, line: 180 }));
   }
 
   const firmas = (datos.firmas || []).filter((firma) => firma?.nombre || firma?.cedula || firma?.cargo);
   if (firmas.length) {
-    partes.push(parrafo("NOMBRE, FIRMA Y CÉDULA PROFESIONAL", { style: "Heading1", keepNext: true }));
-    partes.push(tabla([firmas.map((firma) => parrafo([firma.nombre, firma.cargo, firma.especialidad, firma.cedula ? `Céd. Prof. ${firma.cedula}` : ""].filter(Boolean).join("\n"), { align: "center" }))]));
+    partes.push(parrafo("NOMBRE, FIRMA Y CÉDULA PROFESIONAL DEL MÉDICO QUE REALIZA Y SUPERVISA:", { bold: true, size: 19, before: 200, after: 60, line: 190, keepNext: true }));
+    const tresFirmas = [...firmas, {}, {}].slice(0, 3);
+    partes.push(tabla([tresFirmas.map((firma) => parrafo([firma.nombre, firma.cargo, firma.especialidad, firma.cedula ? `Céd. Prof. ${firma.cedula}` : ""].filter(Boolean).join("\n"), { align: "center", size: 17, line: 180 }))], [3600, 3600, 3600], {
+      sinBordes: true,
+      margenCelda: 40,
+      alturaMinima: 960,
+      vAlign: "bottom",
+      ancho: 10800
+    }));
   }
 
-  partes.push(`<w:sectPr><w:footerReference w:type="default" r:id="rIdFooter"/><w:pgSz w:w="12240" w:h="15840"/><w:pgMar w:top="900" w:right="900" w:bottom="900" w:left="900" w:header="450" w:footer="450" w:gutter="0"/></w:sectPr>`);
+  partes.push('<w:sectPr><w:pgSz w:w="12240" w:h="15840"/><w:pgMar w:top="720" w:right="720" w:bottom="720" w:left="720" w:header="720" w:footer="720" w:gutter="0"/></w:sectPr>');
   return partes.join("");
 }
 
@@ -228,17 +304,15 @@ export function crearDocumentoWordFray(datos, imagenes = []) {
   const extensionesImagen = [...new Set(logos.map((imagen) => imagen.extension || "png"))]
     .map((extension) => `<Default Extension="${xml(extension)}" ContentType="image/${extension === "jpg" ? "jpeg" : xml(extension)}"/>`).join("");
   const documento = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture"><w:body>${contenidoDocumento(datos, logos)}</w:body></w:document>`;
-  const estilos = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:docDefaults><w:rPrDefault><w:rPr><w:rFonts w:ascii="Arial" w:hAnsi="Arial"/><w:sz w:val="20"/></w:rPr></w:rPrDefault><w:pPrDefault><w:pPr><w:spacing w:after="100" w:line="276" w:lineRule="auto"/></w:pPr></w:pPrDefault></w:docDefaults><w:style w:type="paragraph" w:default="1" w:styleId="Normal"><w:name w:val="Normal"/></w:style><w:style w:type="paragraph" w:styleId="Title"><w:name w:val="Title"/><w:basedOn w:val="Normal"/><w:rPr><w:b/><w:sz w:val="24"/></w:rPr></w:style><w:style w:type="paragraph" w:styleId="Heading1"><w:name w:val="heading 1"/><w:basedOn w:val="Normal"/><w:next w:val="Normal"/><w:rPr><w:b/><w:sz w:val="20"/></w:rPr></w:style><w:style w:type="paragraph" w:styleId="Empty"><w:name w:val="Empty"/><w:basedOn w:val="Normal"/><w:rPr><w:i/><w:color w:val="777777"/></w:rPr></w:style></w:styles>`;
+  const estilos = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:docDefaults><w:rPrDefault><w:rPr><w:rFonts w:ascii="Arial" w:hAnsi="Arial"/><w:sz w:val="18"/><w:szCs w:val="18"/></w:rPr></w:rPrDefault><w:pPrDefault><w:pPr><w:spacing w:before="0" w:after="0" w:line="180" w:lineRule="exact"/></w:pPr></w:pPrDefault></w:docDefaults><w:style w:type="paragraph" w:default="1" w:styleId="Normal"><w:name w:val="Normal"/><w:pPr><w:spacing w:before="0" w:after="0" w:line="180" w:lineRule="exact"/></w:pPr><w:rPr><w:rFonts w:ascii="Arial" w:hAnsi="Arial"/><w:sz w:val="18"/><w:szCs w:val="18"/></w:rPr></w:style><w:style w:type="paragraph" w:styleId="Empty"><w:name w:val="Empty"/><w:basedOn w:val="Normal"/><w:rPr><w:i/><w:color w:val="777777"/></w:rPr></w:style></w:styles>`;
   const numeracion = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:numbering xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:abstractNum w:abstractNumId="1"><w:multiLevelType w:val="singleLevel"/><w:lvl w:ilvl="0"><w:numFmt w:val="bullet"/><w:lvlText w:val="•"/><w:lvlJc w:val="left"/><w:pPr><w:tabs><w:tab w:val="num" w:pos="720"/></w:tabs><w:ind w:left="720" w:hanging="360"/></w:pPr></w:lvl></w:abstractNum><w:num w:numId="1"><w:abstractNumId w:val="1"/></w:num></w:numbering>`;
-  const footer = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:ftr xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:p><w:pPr><w:jc w:val="center"/></w:pPr><w:r><w:t>Página </w:t></w:r><w:fldSimple w:instr="PAGE"><w:r><w:t>1</w:t></w:r></w:fldSimple><w:r><w:t> de </w:t></w:r><w:fldSimple w:instr="NUMPAGES"><w:r><w:t>1</w:t></w:r></w:fldSimple></w:p></w:ftr>`;
   const archivos = [
-    { nombre: "[Content_Types].xml", contenido: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/>${extensionesImagen}<Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/><Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/><Override PartName="/word/numbering.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.numbering+xml"/><Override PartName="/word/footer1.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.footer+xml"/></Types>` },
+    { nombre: "[Content_Types].xml", contenido: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/>${extensionesImagen}<Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/><Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/><Override PartName="/word/numbering.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.numbering+xml"/></Types>` },
     { nombre: "_rels/.rels", contenido: '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>' },
     { nombre: "word/document.xml", contenido: documento },
     { nombre: "word/styles.xml", contenido: estilos },
     { nombre: "word/numbering.xml", contenido: numeracion },
-    { nombre: "word/footer1.xml", contenido: footer },
-    { nombre: "word/_rels/document.xml.rels", contenido: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rIdStyles" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/><Relationship Id="rIdNumbering" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/numbering" Target="numbering.xml"/><Relationship Id="rIdFooter" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/footer" Target="footer1.xml"/>${relacionesImagen}</Relationships>` },
+    { nombre: "word/_rels/document.xml.rels", contenido: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rIdStyles" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/><Relationship Id="rIdNumbering" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/numbering" Target="numbering.xml"/>${relacionesImagen}</Relationships>` },
     ...logos.map((imagen, indice) => ({ nombre: `word/media/logo${indice + 1}.${imagen.extension || "png"}`, contenido: imagen.bytes }))
   ];
   return new Blob([zipSinCompresion(archivos)], { type: MIME_DOCX });

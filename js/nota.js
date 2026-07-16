@@ -4326,6 +4326,10 @@ window.descargarNotaFrayObservacion = async function() {
 };
 
 window.descargarNotaSeleccionada = async function() {
+  if (!esFormatoFray()) {
+    window.generarPDFNota();
+    return;
+  }
   const boton = document.getElementById("btnDescargarNota");
   const textoOriginal = boton?.textContent || "Descargar nota";
   try {
@@ -4374,6 +4378,8 @@ window.descargarNotaSeleccionada = async function() {
       institucion: 'HOSPITAL PSIQUIÁTRICO "FRAY BERNARDINO ÁLVAREZ"',
       titulo: esFormatoFray() ? tituloNotaFray(tipoInstitucional) : "NOTA CLÍNICA",
       servicio: observacion.servicio || datosNota.servicio || "",
+      fecha: formatoFechaFray(fecha),
+      hora,
       fechaHora: `${formatoFechaFray(fecha)} ${hora}`.trim(),
       estadoNota: estadoNotaActual === "nueva" ? "Sin guardar" : estadoNotaActual,
       paciente: {
@@ -4382,7 +4388,20 @@ window.descargarNotaSeleccionada = async function() {
         fechaNacimiento: formatoFechaFray(observacion.fechaNacimiento || identificacion.fechaNacimiento),
         edad: observacion.edad || identificacion.edad,
         sexo: observacion.sexo || identificacion.sexo,
-        cama: observacion.cama || identificacion.cama
+        genero: observacion.genero || identificacion.genero,
+        alergias: observacion.alergias || identificacion.alergias,
+        cama: observacion.cama || identificacion.cama,
+        diasEstancia: observacion.diasEstancia || identificacion.diasEstancia
+      },
+      vitales: {
+        presionArterial: observacion.presionArterial,
+        temperatura: observacion.temperatura,
+        frecuenciaCardiaca: observacion.frecuenciaCardiaca,
+        frecuenciaRespiratoria: observacion.frecuenciaRespiratoria,
+        saturacionO2: observacion.saturacionO2,
+        peso: observacion.peso,
+        talla: observacion.talla,
+        imc: observacion.imc
       },
       medico: {
         nombre: datosNota.medicoResponsable,

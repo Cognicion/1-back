@@ -55,7 +55,7 @@ if (process.env.DOCX_TEST_OUTPUT_SHORT) {
 assert.ok(cortaEntradas.has("[Content_Types].xml"));
 assert.ok(cortaEntradas.has("word/document.xml"));
 assert.ok(cortaEntradas.has("word/styles.xml"));
-assert.ok(cortaEntradas.has("word/footer1.xml"));
+assert.equal(cortaEntradas.has("word/footer1.xml"), false);
 const documentXml = new TextDecoder().decode(cortaEntradas.get("word/document.xml"));
 assert.match(documentXml, /María José García Ñúñez/);
 assert.match(documentXml, /½ tableta, SpO₂ 98%/);
@@ -88,14 +88,35 @@ for (const estadoNota of ["Sin guardar", "borrador", "definitiva"]) {
     ]
   });
   const xmlEstado = new TextDecoder().decode(entradasZipSinCompresion(new Uint8Array(await blob.arrayBuffer())).get("word/document.xml"));
-  assert.match(xmlEstado, new RegExp(estadoNota));
-  assert.match(xmlEstado, /w:numId w:val="1"/);
-  assert.match(xmlEstado, /TRATAMIENTO E INDICACIONES/);
+  assert.match(xmlEstado, /PLAN TERAPÉUTICO/);
 }
 
 assert.equal(
   nombreSeguroNotaWord({ tipoNota: "Evolución/Ingreso", apellidoPaciente: 'García:*?"', fecha: "2026-07-16" }),
   "Nota_Evolucion_Ingreso_Garcia_2026-07-16.docx"
 );
+
+if (process.env.DOCX_TEST_OUTPUT_LAYOUT) {
+  const textoClinico = Array.from({ length: 8 }, (_, i) => `Párrafo clínico ${i + 1} con evolución, acentos, Ñ, ½, SpO₂ y seguimiento.`).join("\n\n");
+  const layout = crearDocumentoWordFray({
+    ...datosBase,
+    fecha: "16/07/2026",
+    hora: "12:03",
+    paciente: { ...datosBase.paciente, genero: "Femenino-cis", alergias: "Sin alergias registradas", diasEstancia: "1 día" },
+    vitales: { presionArterial: "120/80", temperatura: "36.5", frecuenciaCardiaca: "72", frecuenciaRespiratoria: "18", saturacionO2: "98%", peso: "60", talla: "1.65", imc: "22.04" },
+    secciones: [
+      { titulo: "PADECIMIENTO ACTUAL / EVOLUCIÓN", contenido: textoClinico },
+      { titulo: "EXPLORACIÓN FÍSICA Y NEUROLÓGICA", contenido: textoClinico },
+      { titulo: "EXAMEN MENTAL", contenido: textoClinico },
+      { titulo: "RESULTADOS RELEVANTES DE ESTUDIOS", contenido: "Electrocardiograma sin alteraciones agudas." },
+      { titulo: "PLAN", contenido: "1. Vigilancia clínica\n2. Seguimiento por turno" },
+      { titulo: "TRATAMIENTO E INDICACIONES", contenido: "Tratamiento de prueba sin datos reales." },
+      { titulo: "COMENTARIO Y ANÁLISIS CLÍNICO", contenido: textoClinico },
+      { titulo: "PRONÓSTICO", contenido: "Reservado a evolución." },
+      { titulo: "DESTINO", contenido: "Continúa en observación." }
+    ]
+  }, logos);
+  await writeFile(process.env.DOCX_TEST_OUTPUT_LAYOUT, new Uint8Array(await layout.arrayBuffer()));
+}
 
 console.log("frayDocx: ok");
