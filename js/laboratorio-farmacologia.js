@@ -1,11 +1,10 @@
-import { MEDICAMENTOS_MAESTROS, MEDICAMENTOS_PRESENTACIONES, medicamentoPorTexto } from "./data/medicamentos.js";
+import { COBERTURA_FARMACOLOGICA, MEDICAMENTOS_MAESTROS, MEDICAMENTOS_PRESENTACIONES, medicamentoPorTexto } from "./data/medicamentos.js";
 import { CIE10 } from "./data/cie10.js";
 import {
   evaluarMedicamentosPaciente,
   normalizarMedicamentoClinico,
   obtenerIndicadorSeguridadMedicamento
 } from "./services/motorClinicoMedicamentos.js";
-import { enriquecerMedicamentoClinico } from "./data/vinculosClinicos.js";
 
 const seleccionados = [];
 const MENUS_ACTIVOS = [];
@@ -264,11 +263,12 @@ function renderAlerta(item, tipo = "alerta") {
       <strong>${escapar(item.titulo || item.nombre || "Alerta clínica")}</strong>
       <p><b>Medicamentos:</b> ${escapar((item.medicamentos || []).join(" + ") || "No especificados")}</p>
       ${item.diagnosticos?.length ? `<p><b>Diagnóstico/comorbilidad:</b> ${escapar(item.diagnosticos.join(", "))}</p>` : ""}
+      ${item.mecanismo ? `<p><b>Mecanismo:</b> ${escapar(textoVisible(item.mecanismo))}</p>` : ""}
       <p>${escapar(item.efecto || item.descripcion || "")}</p>
       ${item.recomendacion ? `<p><b>Recomendación:</b> ${escapar(item.recomendacion)}</p>` : ""}
       ${item.parametrosVigilancia?.length ? `<p><b>Vigilar:</b> ${escapar(item.parametrosVigilancia.join(", "))}</p>` : ""}
       ${item.fuentes?.length ? `<small>Fuente local: ${escapar(item.fuentes.join("; "))}</small>` : ""}
-      <small>${escapar(etiquetaTipo)} · Severidad: ${escapar(item.severidad || "no especificada")}</small>
+      <small>${escapar(etiquetaTipo)} · Severidad: ${escapar(item.severidad || "no especificada")} · Evidencia: ${escapar(textoVisible(item.evidencia || "no especificada"))} · Confianza: ${escapar(textoVisible(item.confianza || "no especificada"))}</small>
     </article>
   `;
 }
@@ -310,7 +310,7 @@ function renderSeccion(titulo, items, tipo, vacio = "No se encontraron alertas e
 
 function renderFichaMedicamento(medEvaluado) {
   const fichaBase = medicamentoPorTexto(medEvaluado.textoOriginal || medEvaluado.nombre || medEvaluado.medicamento || "");
-  const ficha = fichaBase ? enriquecerMedicamentoClinico(fichaBase) : null;
+  const ficha = fichaBase || null;
   if (!ficha) {
     return `<li>${escapar(medEvaluado.textoOriginal || "Medicamento no identificado en catálogo maestro")}</li>`;
   }
@@ -333,19 +333,37 @@ function renderFichaMedicamento(medEvaluado) {
     ficha.ajusteHepatico ? `Ajuste hepático: ${ficha.ajusteHepatico}` : ""
   ]);
   const vigilancia = unir(ficha.monitoring || ficha.monitorizacion || [], ficha.parametrosVigilancia || []);
+  if (ficha.estadoFuente !== "verificada_local") {
+    return `
+      <li>
+        <strong>${valor(ficha.nombre)}</strong>
+        <small>${valor(ficha.clase || "Medicamento")}</small>
+        ${campo("Dosis de catálogo (no verificada en fuente farmacológica)", ficha.dosisHabitual)}
+        ${campo("Vida media", "fuente pendiente")}
+        ${campo("Metabolismo/CYP", "fuente pendiente")}
+        ${campo("Indicaciones, contraindicaciones, precauciones y vigilancia", "fuente pendiente")}
+        ${campo("Fuente", "fuente pendiente")}
+      </li>
+    `;
+  }
   return `
     <li>
       <strong>${valor(ficha.nombre)}</strong>
       <small>${valor(ficha.clase || "Medicamento")}</small>
       ${ficha.brandNames?.length ? campo("Marcas", ficha.brandNames.slice(0, 6).join(", ")) : ""}
       ${campo("Dosis habitual", ficha.dosisHabitual)}
+      ${campo("Rango de dosis", ficha.rangoDosis)}
       ${campo("Mecanismo", ficha.mecanismoAccion)}
       ${farmacocinetica.length ? lista("Farmacocinética", farmacocinetica) : campo("Vida media", ficha.vidaMedia)}
       ${lista("Indicaciones", ficha.indicaciones || ficha.indications)}
       ${lista("Contraindicaciones", ficha.contraindicaciones || ficha.contraindications)}
+      ${lista("Contraindicaciones relativas", ficha.contraindicacionesRelativas)}
       ${lista("Precaución", ficha.precauciones || ficha.precautions)}
       ${lista("Efectos adversos", ficha.efectosAdversos)}
       ${lista("Vigilancia sugerida", vigilancia)}
+      ${lista("Laboratorios sugeridos", ficha.parametrosLaboratorio)}
+      ${campo("Fuente", `${ficha.fuente}; ${ficha.paginaSeccion}`)}
+      ${campo("Confianza", ficha.confianza)}
     </li>
   `;
 }
@@ -378,7 +396,7 @@ function renderResumen(evaluacion, indicador, paciente) {
     <article class="farmaco-resumen ${severidadClase(indicador.clase || "")}">
       <div>
         <strong>Resumen de seguridad: ${escapar(indicador.etiqueta || "Revisión sin alertas críticas")}</strong>
-        <p>Catálogo activo: ${MEDICAMENTOS_MAESTROS.length} medicamentos y ${MEDICAMENTOS_PRESENTACIONES.length} presentaciones.</p>
+        <p>Catálogo activo: ${MEDICAMENTOS_MAESTROS.length} medicamentos y ${MEDICAMENTOS_PRESENTACIONES.length} presentaciones. Fuente verificada: ${COBERTURA_FARMACOLOGICA.conFuenteVerificada}; fuente pendiente: ${COBERTURA_FARMACOLOGICA.fuentePendiente}.</p>
       </div>
       <dl>
         <div><dt>Principios activos únicos</dt><dd>${medicamentosUnicos.length}</dd></div>
@@ -390,6 +408,10 @@ function renderResumen(evaluacion, indicador, paciente) {
         <div><dt>Datos faltantes</dt><dd>${faltantes.length}</dd></div>
       </dl>
     </article>
+    <details class="farmaco-details">
+      <summary>Cómo se calculan las cargas acumulativas</summary>
+      <p>${escapar(evaluacion.metodologiaCargas || "Dato insuficiente")}</p>
+    </details>
     <details class="farmaco-details" open>
       <summary>Medicamentos evaluados</summary>
       <ul>${medicamentosUnicos.map(renderFichaMedicamento).join("") || "<li>Sin medicamentos evaluados.</li>"}</ul>
@@ -415,17 +437,20 @@ function evaluar() {
   }
   const paciente = pacienteSimulado();
   const evaluacion = evaluarMedicamentosPaciente({ paciente, medicamentos: lista });
-  const indicador = obtenerIndicadorSeguridadMedicamento(evaluacion.alertas || []);
+  const indicador = obtenerIndicadorSeguridadMedicamento(evaluacion.alertas || [], evaluacion.cobertura || {});
   const grupos = clasificarAlertas(evaluacion.alertas || []);
+  const vacio = evaluacion.cobertura?.fuentePendiente || evaluacion.cobertura?.sinReglaIngrediente
+    ? "Sin regla cargada para parte de la selección; fuente pendiente o dato insuficiente."
+    : "Sin alerta encontrada con la base actual.";
   salida.innerHTML = [
     renderResumen(evaluacion, indicador, paciente),
-    renderSeccion("A. Interacciones medicamento-medicamento", grupos.interacciones, "interaccion"),
-    renderSeccion("B. Alertas medicamento-diagnóstico", grupos.diagnosticos, "diagnostico"),
-    renderSeccion("C. Contraindicaciones absolutas", grupos.absolutas, "contraindicacion"),
-    renderSeccion("D. Contraindicaciones relativas y precauciones", grupos.precauciones, "precaucion"),
-    renderSeccion("E. Duplicidades terapéuticas", grupos.duplicidades, "duplicidad"),
-    renderSeccion("F. Efectos farmacodinámicos acumulativos", grupos.acumulativos, "acumulativo"),
-    renderSeccion("G. Ajustes y monitorización", grupos.monitorizacion, "monitorizacion")
+    renderSeccion("A. Interacciones medicamento-medicamento", grupos.interacciones, "interaccion", vacio),
+    renderSeccion("B. Alertas medicamento-diagnóstico", grupos.diagnosticos, "diagnostico", vacio),
+    renderSeccion("C. Contraindicaciones absolutas", grupos.absolutas, "contraindicacion", vacio),
+    renderSeccion("D. Contraindicaciones relativas y precauciones", grupos.precauciones, "precaucion", vacio),
+    renderSeccion("E. Duplicidades terapéuticas", grupos.duplicidades, "duplicidad", vacio),
+    renderSeccion("F. Cargas acumulativas", grupos.acumulativos, "acumulativo", vacio),
+    renderSeccion("G. Ajustes y monitorización", grupos.monitorizacion, "monitorizacion", vacio)
   ].join("");
 }
 

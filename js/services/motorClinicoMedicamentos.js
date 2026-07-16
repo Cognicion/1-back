@@ -5,6 +5,7 @@ import {
   REGLAS_MEDICAMENTO_DIAGNOSTICO,
   UMBRALES_RIESGO_ACUMULATIVO
 } from "../data/reglasClinicasMedicamentosExtendidas.js";
+import { FARMACOLOGIA_VERIFICADA } from "../data/farmacologiaUnificada.js";
 
 const SEVERIDAD_ORDEN = {
   informativa: 1,
@@ -397,9 +398,11 @@ function crearAlerta(base) {
     titulo: base.titulo,
     medicamentos: base.medicamentos || [],
     diagnosticos: base.diagnosticos || [],
+    mecanismo: base.mecanismo || "Mecanismo no especificado en la regla local",
     efecto: base.efecto || "",
     recomendacion: base.recomendacion || "",
     evidencia: base.evidencia || "regla_local",
+    confianza: base.confianza || (base.evidencia === "documentada_en_fuente_local" ? "alta" : "requiere validación clínica"),
     fuentes: base.fuentes || [],
     fechaFuente: base.fechaFuente || base.actualizado || "",
     parametrosVigilancia: base.parametrosVigilancia || [],
@@ -476,6 +479,33 @@ function deduplicarMedicamentosParaAnalisis(medicamentosNormalizados = []) {
   });
   gruposPrincipio.forEach((grupo, clave) => {
     if (grupo.length > 1) alertasDuplicidad.push(crearAlertaDuplicidad(clave, grupo, false));
+  });
+
+  const clasesConDuplicidadClinica = new Map([
+    ["antipsicotico", "antipsicóticos"],
+    ["benzodiacepina", "benzodiacepinas"],
+    ["isrs", "ISRS"],
+    ["irsn", "IRSN"],
+    ["aine", "AINE"],
+    ["opioide", "opioides"]
+  ]);
+  clasesConDuplicidadClinica.forEach((etiqueta, clase) => {
+    const grupo = medicamentosUnicos.filter((med) => med.clases.includes(clase));
+    const principios = new Set(grupo.flatMap((med) => med.ingredienteIds));
+    if (grupo.length < 2 || principios.size < 2) return;
+    alertasDuplicidad.push(crearAlerta({
+      id: `duplicidad_clase:${clase}:${[...principios].sort().join("+")}`,
+      tipo: "duplicidad_terapeutica",
+      severidad: "moderada",
+      titulo: `Posible duplicidad de clase: ${etiqueta}`,
+      medicamentos: grupo.map((med) => med.textoOriginal),
+      mecanismo: `Los medicamentos comparten la clase terapéutica ${etiqueta} y pueden sumar efectos farmacológicos y adversos.`,
+      efecto: "No implica que la combinación sea siempre incorrecta, pero requiere una indicación, duración y plan de vigilancia explícitos.",
+      recomendacion: "Confirmar objetivo de cada medicamento, duración prevista, respuesta y cargas acumulativas antes de continuar la combinación.",
+      evidencia: "regla_local_de_clase",
+      confianza: "moderada",
+      fuentes: ["Regla local de Cognición para detectar polifarmacia por clase; validar contra las monografías de cada medicamento."]
+    }));
   });
 
   return { medicamentosUnicos, alertasDuplicidad };
@@ -605,8 +635,18 @@ export function evaluarRiesgosAcumulativos(medicamentosNormalizados = []) {
     });
   });
 
-  return Object.entries(UMBRALES_RIESGO_ACUMULATIVO)
+  const activados = new Set(Object.entries(UMBRALES_RIESGO_ACUMULATIVO)
     .filter(([riesgo, regla]) => Number(acumulados[riesgo] || 0) >= regla.minimo)
+    .map(([riesgo]) => riesgo));
+
+  return Object.entries(UMBRALES_RIESGO_ACUMULATIVO)
+    .filter(([riesgo, regla]) => {
+      const contribuyentes = medicamentosNormalizados.filter((med) => Number(med.riesgos[riesgo] || 0) > 0);
+      if (contribuyentes.length < 2 || Number(acumulados[riesgo] || 0) < regla.minimo) return false;
+      if (riesgo === "glucosa" && activados.has("metabolico")) return false;
+      if (riesgo === "cardiovascular" && activados.has("presion")) return false;
+      return true;
+    })
     .map(([riesgo, regla]) => crearAlerta({
       id: `riesgo_acumulativo:${riesgo}:${Math.round(acumulados[riesgo])}`,
       tipo: "riesgo_acumulativo",
@@ -615,9 +655,12 @@ export function evaluarRiesgosAcumulativos(medicamentosNormalizados = []) {
       medicamentos: medicamentosNormalizados
         .filter((med) => Number(med.riesgos[riesgo] || 0) > 0)
         .map((med) => med.textoOriginal),
+      mecanismo: regla.mecanismo || regla.descripcion || "Los medicamentos comparten un efecto farmacodinámico o toxicológico que puede acumularse.",
       efecto: regla.descripcion || "Varios medicamentos seleccionados comparten un efecto farmacodinámico o toxicológico que puede acumularse. El valor interno solo se usa para priorizar la alerta y no representa una escala clínica validada.",
       recomendacion: regla.recomendacion || "Revisar necesidad de cada fármaco, dosis, factores de riesgo y vigilancia clínica.",
       parametrosVigilancia: regla.parametrosVigilancia || [],
+      evidencia: "regla_acumulativa_local",
+      confianza: "moderada",
       fuentes: regla.fuentes || ["Regla local de riesgo farmacodinámico acumulativo; requiere validación clínica e institucional."]
     }));
 }
@@ -663,13 +706,16 @@ function deduplicarAlertas(alertas = []) {
   return [...indice.values()].sort((a, b) => (b.prioridad || 0) - (a.prioridad || 0));
 }
 
-export function obtenerIndicadorSeguridadMedicamento(alertas = []) {
+export function obtenerIndicadorSeguridadMedicamento(alertas = [], cobertura = {}) {
   const max = Math.max(0, ...alertas.map((alerta) => alerta.prioridad || 0));
   if (max >= 5) return { estado: "bloqueo", etiqueta: "Riesgo crítico", clase: "critico" };
   if (max >= 4) return { estado: "alto", etiqueta: "Revisión obligatoria", clase: "alto" };
   if (max >= 3) return { estado: "precaucion", etiqueta: "Precaución", clase: "precaucion" };
   if (max >= 2) return { estado: "bajo", etiqueta: "Vigilancia", clase: "bajo" };
-  return { estado: "sin_alertas", etiqueta: "Sin alertas locales", clase: "ok" };
+  if (Number(cobertura.fuentePendiente || 0) > 0) {
+    return { estado: "datos_insuficientes", etiqueta: "Sin regla cargada para parte de la selección", clase: "precaucion" };
+  }
+  return { estado: "sin_alertas", etiqueta: "Sin alerta encontrada con la base actual", clase: "ok" };
 }
 
 export function evaluarMedicamentosPaciente({ paciente = {}, medicamentos = [], medicamentoNuevo = null } = {}) {
@@ -707,6 +753,12 @@ export function evaluarMedicamentosPaciente({ paciente = {}, medicamentos = [], 
     ...evaluarAlergiasPaciente(medicamentosNormalizados, paciente),
     ...evaluarContextoDirectoPaciente(medicamentosNormalizados, paciente)
   ]);
+  const cobertura = {
+    total: medicamentosNormalizados.length,
+    fuenteVerificada: medicamentosNormalizados.filter((med) => med.ingredienteIds.some((id) => FARMACOLOGIA_VERIFICADA[id])).length,
+    fuentePendiente: medicamentosNormalizados.filter((med) => !med.ingredienteIds.some((id) => FARMACOLOGIA_VERIFICADA[id])).length,
+    sinReglaIngrediente: medicamentosNormalizados.filter((med) => !med.ingredienteIds.length).length
+  };
 
   return {
     alertas,
@@ -719,7 +771,9 @@ export function evaluarMedicamentosPaciente({ paciente = {}, medicamentos = [], 
     diagnosticosProbables: contextoDiagnostico.diagnosticosProbables || [],
     textosDiagnosticosEvaluados: textosDiagnosticos,
     modificadores: contextoDiagnostico.modificadores,
-    indicador: obtenerIndicadorSeguridadMedicamento(alertas)
+    cobertura,
+    metodologiaCargas: "Priorización interna cualitativa 0-3 por medicamento (0 sin señal cargada, 1 baja, 2 moderada, 3 alta), sumada solo para activar reglas locales. No es una escala clínica validada; cada alerta muestra mecanismo, vigilancia y fuente.",
+    indicador: obtenerIndicadorSeguridadMedicamento(alertas, cobertura)
   };
 }
 

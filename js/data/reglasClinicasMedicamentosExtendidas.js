@@ -10,6 +10,8 @@ const FUENTES_BASE = [
   "Motor local educativo de Cognición. Verificar con ficha técnica, guías clínicas y juicio clínico antes de prescribir."
 ];
 
+const STAHL_LOCAL = "Stahl, Prescriber's Guide, 6th ed. (2017), fuente local fuentes_farmacologicas/stahl_prescribers_guide.pdf";
+
 function unirPorId(base = [], extra = []) {
   const mapa = new Map();
   [...base, ...extra].forEach((item) => {
@@ -41,8 +43,8 @@ const INGREDIENTES_EXTRA = [
   { id: "duloxetina", nombre: "Duloxetina", sinonimos: ["duloxetina", "cymbalta"], clases: ["irsn", "serotoninergico", "inhibidor_cyp2d6"], riesgos: { sangrado: 1, hepatotoxico: 1 } },
   { id: "mirtazapina", nombre: "Mirtazapina", sinonimos: ["mirtazapina", "remeron"], clases: ["antidepresivo", "depresor_snc"], riesgos: { sedacion: 2, peso: 2 } },
   { id: "trazodona", nombre: "Trazodona", sinonimos: ["trazodona"], clases: ["antidepresivo", "serotoninergico", "depresor_snc"], riesgos: { sedacion: 2, qt: 1 } },
-  { id: "risperidona", nombre: "Risperidona", sinonimos: ["risperidona", "risperdal"], clases: ["antipsicotico", "sustrato_cyp2d6"], riesgos: { qt: 1, sedacion: 1, hiperprolactina: 2, peso: 1, glucosa: 1 } },
-  { id: "olanzapina", nombre: "Olanzapina", sinonimos: ["olanzapina", "zyprexa"], clases: ["antipsicotico", "sustrato_cyp1a2"], riesgos: { sedacion: 2, anticolinergico: 1, peso: 3, glucosa: 2 } },
+  { id: "risperidona", nombre: "Risperidona", sinonimos: ["risperidona", "risperdal"], clases: ["antipsicotico", "sustrato_cyp2d6"], riesgos: { qt: 1, sedacion: 1, hiperprolactina: 3, prolactina: 3, eps: 2, peso: 1, glucosa: 1, metabolico: 1, hipotension: 2, cardiovascular: 1 } },
+  { id: "olanzapina", nombre: "Olanzapina", sinonimos: ["olanzapina", "zyprexa"], clases: ["antipsicotico", "sustrato_cyp1a2"], riesgos: { sedacion: 2, anticolinergico: 1, peso: 3, glucosa: 2, metabolico: 3, hipotension: 1, cardiovascular: 1, eps: 1 } },
   { id: "ziprasidona", nombre: "Ziprasidona", sinonimos: ["ziprasidona", "geodon"], clases: ["antipsicotico"], riesgos: { qt: 3 } },
   { id: "aripiprazol", nombre: "Aripiprazol", sinonimos: ["aripiprazol", "abilify"], clases: ["antipsicotico", "sustrato_cyp2d6", "sustrato_cyp3a4"], riesgos: { akatisia: 2 } },
   { id: "quetiapina", nombre: "Quetiapina", sinonimos: ["quetiapina", "seroquel"], clases: ["antipsicotico", "sustrato_cyp3a4"], riesgos: { qt: 2, sedacion: 2, anticolinergico: 1, peso: 2, glucosa: 1 } },
@@ -59,8 +61,8 @@ const INGREDIENTES_EXTRA = [
   { id: "pregabalina", nombre: "Pregabalina", sinonimos: ["pregabalina", "lyrica"], clases: ["gabapentinoide", "depresor_snc"], riesgos: { sedacion: 2, respiratorio: 1, caidas: 2 } },
   { id: "gabapentina", nombre: "Gabapentina", sinonimos: ["gabapentina", "neurontin"], clases: ["gabapentinoide", "depresor_snc"], riesgos: { sedacion: 2, respiratorio: 1, caidas: 2, renal: 1 } },
   { id: "levetiracetam", nombre: "Levetiracetam", sinonimos: ["levetiracetam", "keppra"], clases: ["antiepileptico"], riesgos: { conducta: 1 } },
-  { id: "metilfenidato", nombre: "Metilfenidato", sinonimos: ["metilfenidato", "ritalin", "concerta"], clases: ["estimulante"], riesgos: { presion: 2, ansiedad: 1, apetito: 1 } },
-  { id: "atomoxetina", nombre: "Atomoxetina", sinonimos: ["atomoxetina", "strattera"], clases: ["noradrenergico", "sustrato_cyp2d6"], riesgos: { presion: 1 } },
+  { id: "metilfenidato", nombre: "Metilfenidato", sinonimos: ["metilfenidato", "ritalin", "concerta"], clases: ["estimulante"], riesgos: { presion: 2, cardiovascular: 2, ansiedad: 1, apetito: 1 } },
+  { id: "atomoxetina", nombre: "Atomoxetina", sinonimos: ["atomoxetina", "strattera"], clases: ["noradrenergico", "sustrato_cyp2d6"], riesgos: { presion: 1, cardiovascular: 1, hipotension: 1 } },
   { id: "zolpidem", nombre: "Zolpidem", sinonimos: ["zolpidem", "stilnox"], clases: ["hipnotico_z", "depresor_snc"], riesgos: { sedacion: 2, caidas: 2 } },
   { id: "fentanilo", nombre: "Fentanilo", sinonimos: ["fentanilo", "fentanyl"], clases: ["opioide", "depresor_snc", "sustrato_cyp3a4"], riesgos: { sedacion: 3, respiratorio: 3 } },
   { id: "oxicodona", nombre: "Oxicodona", sinonimos: ["oxicodona", "oxycodone"], clases: ["opioide", "depresor_snc", "sustrato_cyp3a4"], riesgos: { sedacion: 3, respiratorio: 3 } },
@@ -113,6 +115,34 @@ const MED_DX_EXTRA = [
   { id: "litio_deshidratacion", ingrediente: "litio", diagnosticoCategoria: "hidratacion", severidad: "alta", titulo: "Litio con deshidratación o pérdidas gastrointestinales", efecto: "La deshidratación puede elevar litio y precipitar toxicidad.", recomendacion: "Valorar suspensión temporal, hidratación, función renal y nivel sérico." },
   { id: "ieca_lactancia", clases: ["ieca", "ara2"], diagnosticoCategoria: "lactancia", severidad: "moderada", titulo: "IECA/ARA-II durante lactancia", efecto: "Requiere valoración del fármaco específico, edad del lactante y alternativas.", recomendacion: "Confirmar compatibilidad y vigilar al lactante si procede." },
   {
+    id: "olanzapina_riesgo_cardiovascular",
+    ingrediente: "olanzapina",
+    diagnosticoCategoria: "hipertension",
+    severidad: "moderada",
+    titulo: "Olanzapina en hipertensión o riesgo cardiovascular",
+    mecanismo: "La carga metabólica puede agravar el riesgo cardiovascular a largo plazo y el antagonismo alfa-1 puede favorecer hipotensión u ortostatismo; además puede potenciar antihipertensivos.",
+    efecto: "Puede aumentar peso, glucosa y lípidos y, en paralelo, producir mareo o hipotensión ortostática.",
+    recomendacion: "Registrar presión arterial sentado/de pie, peso/IMC, cintura, glucosa/HbA1c y lípidos; revisar antihipertensivos y síntomas ortostáticos.",
+    parametrosVigilancia: ["Presión arterial y ortostatismo", "Peso/IMC", "Glucosa/HbA1c", "Perfil de lípidos"],
+    evidencia: "documentada_en_fuente_local",
+    confianza: "alta",
+    fuentes: [`${STAHL_LOCAL}, monografía de olanzapina, PDF 545-553 (impresas 527-535).`]
+  },
+  {
+    id: "risperidona_riesgo_cardiovascular",
+    ingrediente: "risperidona",
+    diagnosticoCategoria: "hipertension",
+    severidad: "moderada",
+    titulo: "Risperidona en hipertensión o riesgo cardiovascular",
+    mecanismo: "El antagonismo alfa-1 puede causar hipotensión ortostática y risperidona puede potenciar el efecto de antihipertensivos; QTc debe valorarse según factores coexistentes.",
+    efecto: "Mayor riesgo de mareo, síncope u ortostatismo, especialmente con deshidratación, calor o antihipertensivos.",
+    recomendacion: "Medir presión arterial sentado/de pie, revisar fármacos antihipertensivos, electrolitos y ECG/QTc cuando existan factores de riesgo.",
+    parametrosVigilancia: ["Presión arterial y ortostatismo", "Frecuencia cardiaca", "ECG/QTc si hay factores de riesgo", "Potasio y magnesio si procede"],
+    evidencia: "documentada_en_fuente_local",
+    confianza: "alta",
+    fuentes: [`${STAHL_LOCAL}, monografía de risperidona, PDF 664-672 (impresas 646-654).`]
+  },
+  {
     id: "estimulante_noradrenergico_hipertension",
     clases: ["estimulante", "noradrenergico"],
     diagnosticoCategoria: "hipertension",
@@ -121,14 +151,52 @@ const MED_DX_EXTRA = [
     efecto: "Los fármacos estimulantes o noradrenérgicos pueden elevar presión arterial y frecuencia cardiaca, o reducir la tolerancia cardiovascular en pacientes con hipertensión, taquiarritmias o cardiopatía.",
     recomendacion: "Verificar presión arterial y frecuencia cardiaca basal, control de hipertensión, antecedentes cardiovasculares y necesidad de ECG o valoración cardiológica según el contexto clínico.",
     parametrosVigilancia: ["Presión arterial", "Frecuencia cardiaca", "Palpitaciones", "Dolor torácico", "Insomnio/ansiedad"],
+    mecanismo: "Metilfenidato aumenta señal dopaminérgica/noradrenérgica y atomoxetina inhibe la recaptura de noradrenalina; ambos pueden elevar presión arterial o frecuencia cardiaca.",
+    evidencia: "documentada_en_fuente_local",
+    confianza: "alta",
     fuentes: [
-      "DailyMed/FDA atomoxetina: advertencias sobre aumento de presión arterial/frecuencia cardiaca y precaución en hipertensión o enfermedad cardiovascular.",
-      "DailyMed/FDA metilfenidato: estimulantes del SNC pueden aumentar presión arterial y frecuencia cardiaca; monitorizar hipertensión/taquicardia."
+      `${STAHL_LOCAL}, atomoxetina PDF 95-99 (impresas 77-81).`,
+      `${STAHL_LOCAL}, metilfenidato PDF 471-479 (impresas 453-461).`
     ]
   }
 ];
 
 const INTERACCIONES_EXTRA = [
+  {
+    id: "olanzapina_risperidona_polifarmacia",
+    ingredientesA: ["olanzapina"],
+    ingredientesB: ["risperidona"],
+    severidad: "alta",
+    titulo: "Olanzapina + risperidona: duplicidad antipsicótica y cargas aditivas",
+    mecanismo: "Polifarmacia con bloqueo dopaminérgico, serotoninérgico y alfa-adrenérgico; las cargas sedante, ortostática, metabólica y extrapiramidal pueden sumarse.",
+    efecto: "Puede aumentar sedación, hipotensión/ortostatismo, aumento de peso o alteraciones glucolipídicas, EPS e hiperprolactinemia. El riesgo de QT depende de dosis y factores coexistentes.",
+    recomendacion: "Confirmar indicación y duración de la combinación; vigilar estado de alerta, presión sentado/de pie, peso, glucosa/HbA1c, lípidos, EPS, prolactina si síntomas y ECG/electrolitos si hay riesgo de QT.",
+    parametrosVigilancia: ["Sedación/SNC", "Presión arterial y ortostatismo", "Peso/IMC", "Glucosa/HbA1c", "Lípidos", "EPS/acatisia", "Prolactina si síntomas", "ECG/QTc si riesgo"],
+    evidencia: "mecanismo_y_monografias_locales",
+    confianza: "moderada",
+    fuentes: [
+      `${STAHL_LOCAL}, olanzapina PDF 545-553 (impresas 527-535).`,
+      `${STAHL_LOCAL}, risperidona PDF 664-672 (impresas 646-654).`
+    ],
+    requiereJustificacion: true
+  },
+  {
+    id: "metilfenidato_atomoxetina_cardiovascular",
+    ingredientesA: ["metilfenidato"],
+    ingredientesB: ["atomoxetina"],
+    severidad: "moderada",
+    titulo: "Metilfenidato + atomoxetina: vigilancia cardiovascular combinada",
+    mecanismo: "Ambos aumentan señal catecolaminérgica. Stahl señala una posibilidad teórica de potenciación cardiovascular, pero también resume que la coadministración no aumentó los efectos cardiovasculares más allá de metilfenidato solo.",
+    efecto: "La combinación requiere vigilancia de presión arterial, frecuencia cardiaca, palpitaciones, ansiedad e insomnio, sin presentar la interacción como daño demostrado.",
+    recomendacion: "Documentar el motivo de la combinación y medir presión arterial y frecuencia cardiaca basal y durante la titulación; reevaluar ante hipertensión, taquicardia, dolor torácico o síncope.",
+    parametrosVigilancia: ["Presión arterial", "Frecuencia cardiaca", "Palpitaciones", "Dolor torácico o síncope", "Sueño/ansiedad"],
+    evidencia: "mixta_en_fuente_local",
+    confianza: "moderada",
+    fuentes: [
+      `${STAHL_LOCAL}, atomoxetina PDF 95-99 (impresas 77-81).`,
+      `${STAHL_LOCAL}, metilfenidato PDF 471-479 (impresas 453-461).`
+    ]
+  },
   {
     id: "bloqueo_dual_sraa_ieca_ara2",
     clasesA: ["ieca"],
@@ -221,9 +289,63 @@ export const UMBRALES_RIESGO_ACUMULATIVO = {
     recomendacion: "Medir presión arterial y frecuencia cardiaca basal y durante el seguimiento. Valorar antecedentes cardiovasculares, hipertensión, taquiarritmias, ansiedad intensa, insomnio y ajuste de dosis según respuesta clínica.",
     parametrosVigilancia: ["Presión arterial", "Frecuencia cardiaca", "Síntomas cardiovasculares", "Insomnio/ansiedad"],
     fuentes: [
-      "DailyMed/FDA atomoxetina: puede aumentar presión arterial y frecuencia cardiaca; medir basal y periódicamente.",
-      "DailyMed/FDA metilfenidato: los estimulantes del SNC pueden aumentar presión arterial y frecuencia cardiaca."
+      `${STAHL_LOCAL}, atomoxetina PDF 95-99.`,
+      `${STAHL_LOCAL}, metilfenidato PDF 471-479.`
     ]
+  },
+  metabolico: {
+    minimo: 3,
+    severidad: "moderada",
+    titulo: "Carga metabólica acumulativa",
+    descripcion: "Dos o más tratamientos pueden sumar aumento de peso, dislipidemia o alteración de glucosa.",
+    recomendacion: "Vigilar peso/IMC, cintura, glucosa/HbA1c, lípidos y presión arterial; revisar necesidad de polifarmacia.",
+    parametrosVigilancia: ["Peso/IMC", "Cintura", "Glucosa/HbA1c", "Perfil de lípidos"],
+    fuentes: [`${STAHL_LOCAL}, monografías de los fármacos implicados.`]
+  },
+  cardiovascular: {
+    minimo: 3,
+    severidad: "moderada",
+    titulo: "Carga cardiovascular acumulativa",
+    descripcion: "La combinación reúne efectos sobre presión arterial, frecuencia cardiaca, ortostatismo o tolerancia cardiovascular.",
+    recomendacion: "Revisar antecedentes, presión arterial, frecuencia cardiaca y ECG/electrolitos según el mecanismo implicado.",
+    parametrosVigilancia: ["Presión arterial", "Frecuencia cardiaca", "Síntomas cardiovasculares"],
+    fuentes: [`${STAHL_LOCAL}, monografías de los fármacos implicados.`]
+  },
+  hipotension: {
+    minimo: 3,
+    severidad: "moderada",
+    titulo: "Carga hipotensora/ortostática acumulativa",
+    descripcion: "Varios medicamentos pueden sumar hipotensión, mareo o síncope.",
+    recomendacion: "Medir presión sentado/de pie, revisar hidratación y ajustar fármacos según síntomas.",
+    parametrosVigilancia: ["Presión arterial sentado/de pie", "Mareo", "Síncope", "Caídas"],
+    fuentes: [`${STAHL_LOCAL}, monografías de los fármacos implicados.`]
+  },
+  eps: {
+    minimo: 3,
+    severidad: "moderada",
+    titulo: "Carga extrapiramidal acumulativa",
+    descripcion: "El bloqueo dopaminérgico combinado puede aumentar parkinsonismo, distonía, acatisia o discinesia.",
+    recomendacion: "Evaluar EPS/acatisia basal y periódicamente y revisar dosis o polifarmacia.",
+    parametrosVigilancia: ["EPS", "Acatisia", "Marcha", "Movimientos involuntarios"],
+    fuentes: [`${STAHL_LOCAL}, monografías de los antipsicóticos implicados.`]
+  },
+  prolactina: {
+    minimo: 3,
+    severidad: "moderada",
+    titulo: "Carga de hiperprolactinemia",
+    descripcion: "La combinación puede aumentar la probabilidad de síntomas relacionados con prolactina.",
+    recomendacion: "Preguntar por síntomas y solicitar prolactina cuando esté clínicamente indicada.",
+    parametrosVigilancia: ["Síntomas sexuales/reproductivos", "Prolactina si síntomas"],
+    fuentes: [`${STAHL_LOCAL}, monografía de risperidona PDF 664-672.`]
+  },
+  serotoninergico: {
+    minimo: 3,
+    severidad: "alta",
+    titulo: "Carga serotoninérgica acumulativa",
+    descripcion: "Múltiples fármacos serotoninérgicos pueden aumentar toxicidad serotoninérgica.",
+    recomendacion: "Revisar combinaciones, dosis y síntomas autonómicos, neuromusculares y mentales.",
+    parametrosVigilancia: ["Estado mental", "Clonus/hiperreflexia", "Temperatura", "Signos autonómicos"],
+    fuentes: ["Regla farmacodinámica local; verificar las monografías de los fármacos implicados."]
   },
   sangrado: { minimo: 4, severidad: "alta", titulo: "Carga hemorrágica acumulativa" },
   glucosa: { minimo: 3, severidad: "moderada", titulo: "Carga metabólica glucémica acumulativa" }

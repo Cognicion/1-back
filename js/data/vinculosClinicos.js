@@ -102,7 +102,7 @@ const PERFIL_FARMACOLOGICO_POR_CLASE = [
     clases: ["isrs"],
     datos: {
       mecanismoAccion: "Inhibición selectiva de la recaptura de serotonina por bloqueo funcional de SERT.",
-      vidaMedia: "Variable por fármaco; fluoxetina/norfluoxetina tiene vida media prolongada.",
+      vidaMedia: "fuente pendiente",
       inicioAccion: "Efecto clínico usualmente gradual; valorar respuesta en semanas, no en horas.",
       duracionAccion: "Depende de la vida media y del metabolito activo; fluoxetina puede persistir más tiempo.",
       metabolismo: "Predomina metabolismo hepático, con participación variable de CYP según molécula.",
@@ -120,7 +120,7 @@ const PERFIL_FARMACOLOGICO_POR_CLASE = [
     clases: ["irsn"],
     datos: {
       mecanismoAccion: "Inhibición de recaptura de serotonina y noradrenalina con efecto dependiente de dosis.",
-      vidaMedia: "Variable; revisar ficha técnica de la molécula.",
+      vidaMedia: "fuente pendiente",
       inicioAccion: "Respuesta clínica gradual; los efectos noradrenérgicos pueden depender de dosis.",
       duracionAccion: "Depende de formulación inmediata o prolongada y vida media específica.",
       metabolismo: "Metabolismo hepático; venlafaxina depende de CYP2D6 para metabolito activo, duloxetina de CYP1A2/CYP2D6.",
@@ -138,7 +138,7 @@ const PERFIL_FARMACOLOGICO_POR_CLASE = [
     clases: ["benzodiacepina", "hipnótico"],
     datos: {
       mecanismoAccion: "Modulación alostérica positiva del receptor GABA-A, aumentando la acción inhibitoria de GABA.",
-      vidaMedia: "Variable; depende de la molécula y metabolitos activos.",
+      vidaMedia: "fuente pendiente",
       inicioAccion: "Usualmente rápido por vía oral o parenteral, según formulación y absorción.",
       duracionAccion: "No siempre coincide con vida media; depende de redistribución y metabolitos activos.",
       metabolismo: "Hepático en muchas moléculas; lorazepam/oxazepam/temazepam dependen más de glucuronidación.",
@@ -156,7 +156,7 @@ const PERFIL_FARMACOLOGICO_POR_CLASE = [
     clases: ["antipsicótico", "antipsicotico"],
     datos: {
       mecanismoAccion: "Modulación dopaminérgica D2 y de otros receptores según molécula; algunos tienen acción serotoninérgica 5-HT2A.",
-      vidaMedia: "Variable; revisar molécula y formulación.",
+      vidaMedia: "fuente pendiente",
       inicioAccion: "Sedación o control conductual puede ser temprano; respuesta antipsicótica suele requerir días a semanas.",
       duracionAccion: "Depende de molécula, formulación oral o depot y afinidad receptorial.",
       metabolismo: "Predomina metabolismo hepático con CYP variables; algunas moléculas tienen metabolitos activos.",
@@ -174,7 +174,7 @@ const PERFIL_FARMACOLOGICO_POR_CLASE = [
     clases: ["ieca", "inhibidor_enzima_convertidora_angiotensina"],
     datos: {
       mecanismoAccion: "Inhibición de la enzima convertidora de angiotensina, disminuyendo angiotensina II y aldosterona.",
-      vidaMedia: "Variable; muchos tienen metabolitos activos.",
+      vidaMedia: "fuente pendiente",
       inicioAccion: "Efecto antihipertensivo inicial en horas; efecto pleno puede requerir ajuste progresivo.",
       duracionAccion: "Generalmente permite dosificación diaria o cada 12 horas según molécula.",
       metabolismo: "Varios son profármacos convertidos a metabolitos activos; captopril no sigue el mismo patrón.",
@@ -192,7 +192,7 @@ const PERFIL_FARMACOLOGICO_POR_CLASE = [
     clases: ["ara-ii", "ara2", "antagonista_receptor_angiotensina_ii"],
     datos: {
       mecanismoAccion: "Antagonismo del receptor AT1 de angiotensina II.",
-      vidaMedia: "Variable por molécula.",
+      vidaMedia: "fuente pendiente",
       inicioAccion: "Efecto antihipertensivo inicial en horas; estabilización con uso continuo.",
       duracionAccion: "Usualmente dosificación diaria, aunque depende de molécula y respuesta.",
       metabolismo: "Variable; losartán tiene metabolito activo, otras moléculas tienen menor biotransformación.",
@@ -210,7 +210,7 @@ const PERFIL_FARMACOLOGICO_POR_CLASE = [
     clases: ["aine", "antiinflamatorio"],
     datos: {
       mecanismoAccion: "Inhibición de ciclooxigenasas y síntesis de prostaglandinas.",
-      vidaMedia: "Variable por molécula.",
+      vidaMedia: "fuente pendiente",
       inicioAccion: "Analgesia en horas; efecto antiinflamatorio requiere exposición sostenida según indicación.",
       duracionAccion: "Depende de molécula y formulación; naproxeno suele durar más que ibuprofeno.",
       metabolismo: "Predomina metabolismo hepático.",
@@ -228,11 +228,11 @@ const PERFIL_FARMACOLOGICO_POR_CLASE = [
     clases: ["antiepiléptico", "antiepileptico", "estabilizador"],
     datos: {
       mecanismoAccion: "Modulación de excitabilidad neuronal por canales iónicos, GABA, glutamato o proteínas vesiculares según molécula.",
-      vidaMedia: "Variable por molécula; algunas requieren titulación y monitorización.",
+      vidaMedia: "fuente pendiente",
       inicioAccion: "Depende de indicación; control de crisis puede requerir niveles o titulación, estabilización afectiva suele ser gradual.",
       duracionAccion: "Depende de vida media, formulación y unión a proteínas.",
       metabolismo: "Variable: hepático en valproato/carbamazepina/lamotrigina; renal predominante en gabapentinoides y levetiracetam.",
-      eliminacion: "Variable por molécula; revisar función renal o hepática según fármaco.",
+      eliminacion: "fuente pendiente",
       ajusteRenal: "Necesario o recomendable en gabapentinoides, levetiracetam y otros con eliminación renal.",
       ajusteHepatico: "Crítico para valproato, carbamazepina y fármacos con metabolismo hepático relevante.",
       monitorizacion: ["Somnolencia/ataxia", "exantema", "BH/PFH si aplica", "sodio si carbamazepina/oxcarbazepina", "función renal si gabapentinoide/levetiracetam"],
@@ -306,7 +306,7 @@ export function enriquecerMedicamentoClinico(medicamento = {}) {
     return {
       ...medicamento,
       mecanismoAccion: medicamento.mecanismoAccion || medicamento.mechanismOfAction || "Consultar mecanismo específico en ficha técnica o referencia institucional.",
-      vidaMedia: medicamento.vidaMedia || medicamento.halfLife || "Variable; consultar ficha técnica.",
+      vidaMedia: medicamento.vidaMedia || medicamento.halfLife || "fuente pendiente",
       inicioAccion: medicamento.inicioAccion || medicamento.onset || "",
       duracionAccion: medicamento.duracionAccion || medicamento.duration || "",
       metabolismo: medicamento.metabolismo || medicamento.metabolism || "",

@@ -4243,7 +4243,7 @@ function renderizarInteraccionesFarmacologicas(medicamentos = [], origen = "trat
   contenedor.innerHTML = `
     <p class="texto-suave">Revisión orientativa basada en los ${escaparHTML(tituloOrigen)}. No sustituye el juicio clínico ni la revisión de fuentes farmacológicas institucionales.</p>
     <article class="interaccion-card severidad-${escaparHTML(evaluacionClinica.indicador?.clase || "ok")}">
-      <strong>Indicador contextual: ${escaparHTML(evaluacionClinica.indicador?.etiqueta || "Sin alertas locales")}</strong>
+          <strong>Indicador contextual: ${escaparHTML(evaluacionClinica.indicador?.etiqueta || "Sin alerta encontrada con la base actual")}</strong>
       <p>${alertasClinicas.length ? "Se detectaron alertas por diagnósticos, comorbilidades, interacciones o carga acumulativa." : "No se detectaron alertas clínicas contextuales con las reglas locales actuales."}</p>
     </article>
     <div class="interacciones-medicamentos-revisados">
@@ -4991,7 +4991,7 @@ function indicadorSeguridadTratamiento(tratamiento) {
   const alertasRelacionadas = (evaluacion.alertas || []).filter((alerta) =>
     !alerta.medicamentos?.length || alerta.medicamentos.some((med) => String(med || "").toLowerCase().includes(nombre) || nombre.includes(String(med || "").toLowerCase()))
   );
-  return alertasRelacionadas.length ? evaluacion.indicador : { estado: "sin_alertas", etiqueta: "Sin alertas locales", clase: "ok" };
+  return alertasRelacionadas.length ? evaluacion.indicador : { estado: "sin_alertas", etiqueta: "Sin alerta encontrada con la base actual", clase: "ok" };
 }
 
 function vincularAccionesTratamientos() {

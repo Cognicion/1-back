@@ -1,5 +1,9 @@
 import { MEDICAMENTOS_SUPLEMENTARIOS } from "./medicamentosSuplementarios.js";
 import { enriquecerMedicamentoClinico } from "./vinculosClinicos.js";
+import {
+  construirCapaFarmacologicaUnificada,
+  resumirCoberturaFarmacologica
+} from "./farmacologiaUnificada.js";
 
 export const MEDICAMENTOS = [
   {
@@ -570,6 +574,22 @@ function unirMedicamentos(medicamentos) {
         }
       });
 
+      const formulaciones = [...(existente.formulations || []), ...(medicamento.formulations || [])]
+        .filter((formulacion, index, lista) => {
+          const claveFormulacion = [
+            normalizarNombreMedicamento(formulacion.presentationDescription || formulacion.texto || ""),
+            normalizarNombreMedicamento(formulacion.route || formulacion.via || "")
+          ].join("|");
+          return lista.findIndex((item) => [
+            normalizarNombreMedicamento(item.presentationDescription || item.texto || ""),
+            normalizarNombreMedicamento(item.route || item.via || "")
+          ].join("|") === claveFormulacion) === index;
+        })
+        .map((formulacion, index) => ({
+          ...formulacion,
+          id: `${existente.id}-p${index + 1}`
+        }));
+
       indice.set(clave, {
         ...existente,
         ...medicamento,
@@ -578,7 +598,7 @@ function unirMedicamentos(medicamentos) {
         genericName: existente.genericName || medicamento.genericName,
         clase: existente.clase || medicamento.clase,
         presentaciones,
-        formulations: [...(existente.formulations || []), ...(medicamento.formulations || [])],
+        formulations: formulaciones,
         brandNames: Array.from(new Set([...(existente.brandNames || []), ...(medicamento.brandNames || [])])),
         synonyms: Array.from(new Set([...(existente.synonyms || []), ...(medicamento.synonyms || [])])),
         especialidades: Array.from(new Set([...(existente.especialidades || []), ...(medicamento.especialidades || [])])),
@@ -630,10 +650,12 @@ function normalizarBusquedaMedicamento(valor = "") {
   return normalizarNombreMedicamento(valor).replace(/[^a-z0-9]+/g, " ");
 }
 
-export const MEDICAMENTOS_MAESTROS = unirMedicamentos([
+export const MEDICAMENTOS_MAESTROS = construirCapaFarmacologicaUnificada(unirMedicamentos([
   ...MEDICAMENTOS.map((medicamento) => ({ ...medicamento, origen: "catalogo_legacy" })),
   ...MEDICAMENTOS_SUPLEMENTARIOS.map((medicamento) => ({ ...medicamento, origen: "catalogo_suplementario" }))
-]);
+]));
+
+export const COBERTURA_FARMACOLOGICA = resumirCoberturaFarmacologica(MEDICAMENTOS_MAESTROS);
 
 export const MEDICAMENTOS_PRESENTACIONES = MEDICAMENTOS_MAESTROS.flatMap((medicamento) => {
   const presentaciones = medicamento.presentaciones?.length
