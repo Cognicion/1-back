@@ -91,6 +91,7 @@ let medicoActualDatos = {};
 let rolUsuarioActual = "";
 let permisosFormatosUsuarioActual = {};
 let tratamientosCache = [];
+let tratamientosCacheCargado = false;
 let estudiosCache = [];
 let escalasAsignadasCache = new Map();
 let diagnosticosCatalogoActual = [];
@@ -168,6 +169,31 @@ const CATALOGO_SOLICITUD_ESTUDIOS = {
 };
 
 ejecutarSeguroPaciente("monitoreo de sesión del expediente", () => iniciarMonitoreoSesion("Expediente paciente"));
+
+function diferirPaciente(callback, timeout = 600) {
+  if (typeof callback !== "function") return;
+  if ("requestIdleCallback" in window) {
+    window.requestIdleCallback(callback, { timeout: Math.max(timeout, 1200) });
+    return;
+  }
+  window.setTimeout(callback, timeout);
+}
+
+function debouncePaciente(callback, espera = 180) {
+  let timer = null;
+  return (...args) => {
+    window.clearTimeout(timer);
+    timer = window.setTimeout(() => callback(...args), espera);
+  };
+}
+
+function cargarReporteGlobalDiferido() {
+  diferirPaciente(() => {
+    import("./reportes.js").catch((error) => {
+      console.warn("No se pudo cargar el widget global de reportes", error);
+    });
+  }, 1000);
+}
 
 function cargarCatalogoManualDiagnosticos() {
   try {
@@ -4127,9 +4153,11 @@ function datosIndicacionesFormulario() {
 
 async function asegurarTratamientosCache() {
   if (!uidPaciente) return;
+  if (tratamientosCacheCargado) return;
 
   try {
     tratamientosCache = await listarTratamientos(uidPaciente);
+    tratamientosCacheCargado = true;
   } catch (error) {
     console.warn("No se pudieron cargar tratamientos para indicaciones:", error);
   }
@@ -4926,6 +4954,7 @@ async function cargarTratamientosPaciente() {
 
   try {
     tratamientosCache = await listarTratamientos(uidPaciente);
+    tratamientosCacheCargado = true;
     const listaActivos = tratamientosCache.filter((t) => (t.estado || "activo") === "activo");
     const listaSuspendidos = tratamientosCache.filter((t) => t.estado === "suspendido");
 
@@ -6020,7 +6049,7 @@ configurarTamañoNotaRapida();
 document.getElementById("guardarTareaMiSalud")?.addEventListener("click", guardarTareaMiSaludPaciente);
 document.getElementById("btnGenerarCodigoPaciente")?.addEventListener("click", generarCodigoVinculacionDesdeMedico);
 document.getElementById("btnVincularCodigoPaciente")?.addEventListener("click", vincularCuentaPacienteDesdeMedico);
-document.getElementById("diagnosticoBusqueda")?.addEventListener("input", renderizarResultadosBusquedaDiagnosticos);
+document.getElementById("diagnosticoBusqueda")?.addEventListener("input", debouncePaciente(renderizarResultadosBusquedaDiagnosticos, 160));
 document.getElementById("diagnosticoCatalogo")?.addEventListener("change", () => {
   ponerValor("diagnosticoBusqueda", "");
   renderizarResultadosBusquedaDiagnosticos();
@@ -6028,7 +6057,7 @@ document.getElementById("diagnosticoCatalogo")?.addEventListener("change", () =>
 document.getElementById("agregarDiagnosticoManual")?.addEventListener("click", agregarDiagnosticoManualPaciente);
 document.getElementById("crearCarpetaPaciente")?.addEventListener("click", () => asignarCarpetaPorNombre(valorCampo("nuevaCarpetaPaciente")));
 document.getElementById("asignarCarpetaPaciente")?.addEventListener("click", () => asignarCarpetaPorNombre(valorCampo("selectorCarpetasPaciente")));
-document.getElementById("buscadorApuntesPaciente")?.addEventListener("input", renderizarListaApuntesMedicoPaciente);
+document.getElementById("buscadorApuntesPaciente")?.addEventListener("input", debouncePaciente(renderizarListaApuntesMedicoPaciente, 160));
 document.getElementById("apunteMedicoPacienteTitulo")?.addEventListener("input", () => ponerEstadoApuntesPaciente("Cambios sin guardar"));
 document.getElementById("apunteMedicoPacienteContenido")?.addEventListener("input", () => ponerEstadoApuntesPaciente("Cambios sin guardar"));
 document.getElementById("guardarNotaFlotante")?.addEventListener("click", guardarNotaFlotantePaciente);
@@ -6185,3 +6214,4 @@ async function registrarAccionExpediente({ accion, descripcion, detalles = {} })
 }
 
 iniciarCargaExpedientePaciente();
+cargarReporteGlobalDiferido();

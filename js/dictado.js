@@ -167,6 +167,13 @@ function mostrarTextoProvisional(texto = "") {
   nodo.classList.toggle("activo", Boolean(texto));
 }
 
+function mostrarTextoPendiente(texto = "") {
+  const nodo = $("dictadoTextoPendiente");
+  if (!nodo) return;
+  nodo.textContent = texto || "Sin texto pendiente.";
+  nodo.classList.toggle("activo", Boolean(texto));
+}
+
 function mostrarAdvertencia(texto = "", tipo = "info") {
   const nodo = $("dictadoAdvertencias");
   if (!nodo) return;
@@ -227,12 +234,16 @@ function actualizarMetricas() {
 function actualizarBotonRecuperar() {
   const boton = $("btnRecuperarDictado");
   if (!boton || !runtime.persistencia) return;
-  boton.disabled = !runtime.persistencia.load()?.text;
+  const borrador = runtime.persistencia.load();
+  const tieneContenido = Boolean(
+    borrador?.text || borrador?.pendingText || borrador?.provisional
+    || borrador?.pendingSegments?.length || borrador?.interimResults?.length
+  );
+  boton.disabled = !tieneContenido;
 }
 
 function guardarBorradorTemporal() {
   asegurarContexto();
-  runtime.ensamblador?.setManualText(textoActual());
   runtime.persistencia?.save({
     ...runtime.ensamblador?.toJSON(),
     text: textoActual(),
@@ -291,9 +302,13 @@ function ejecutarComandos(comandos = []) {
 function procesarResultado(evento, providerContext = null) {
   if (!runtime.ensamblador) asegurarContexto();
   if (providerContext && (providerContext.sessionId !== runtime.sessionId || providerContext.patientId !== runtime.patientId)) return;
-  let provisional = "";
+  const streamId = providerContext?.streamId || `${runtime.sessionId}:stream-legacy`;
+  const streamSequence = Number(providerContext?.streamSequence || 0);
+  const indicesProvisionales = [];
 
-  for (let i = evento.resultIndex; i < evento.results.length; i += 1) {
+  // Web Speech entrega una instantánea acumulada. Se reconstruyen todos los
+  // resultados del ciclo, no solamente las últimas palabras desde resultIndex.
+  for (let i = 0; i < evento.results.length; i += 1) {
     const resultado = evento.results[i];
     const alternativa = elegirMejorAlternativa(resultado);
     const limpio = aplicarComandosDeVozSeguros(alternativa.transcript || "");
@@ -303,18 +318,23 @@ function procesarResultado(evento, providerContext = null) {
     const agregado = runtime.ensamblador.addRecognitionResult({
       sessionId: providerContext?.sessionId || runtime.sessionId,
       patientId: providerContext?.patientId || runtime.patientId,
+      streamId,
+      streamSequence,
       resultIndex: i,
       transcript: limpio.normalizedText,
-      confidence: alternativa.confidence || 0,
+      confidence: Number.isFinite(Number(alternativa.confidence)) && Number(alternativa.confidence) > 0
+        ? Number(alternativa.confidence) : null,
       isFinal: resultado.isFinal,
       provider: "web_speech_api"
     });
 
-    if (!resultado.isFinal) provisional = agregado?.normalizedText || limpio.normalizedText;
+    if (!resultado.isFinal) indicesProvisionales.push(i);
   }
 
+  runtime.ensamblador.retainInterimResults(streamId, indicesProvisionales);
   escribirTextarea(runtime.ensamblador.getText());
-  mostrarTextoProvisional(provisional);
+  mostrarTextoProvisional(runtime.ensamblador.getProvisional());
+  mostrarTextoPendiente(runtime.ensamblador.getPendingText());
   guardarBorradorTemporal();
   actualizarMetricas();
 }
@@ -458,6 +478,13 @@ function crearProveedorTranscripcion() {
       if (state === "reconnecting") runtime.maquina.transition(ESTADOS_DICTADO.RECONNECTING, { reinicios: runtime.reinicios });
       if (state === "listening" && runtime.maquina.current !== ESTADOS_DICTADO.LISTENING) runtime.maquina.transition(ESTADOS_DICTADO.LISTENING, { reinicios: runtime.reinicios });
       actualizarDiagnosticoSeguro();
+    },
+    onStreamEnd: ({ streamId }) => {
+      runtime.ensamblador?.preserveInterimsAsPending({ streamId });
+      mostrarTextoProvisional(runtime.ensamblador?.getProvisional() || "");
+      mostrarTextoPendiente(runtime.ensamblador?.getPendingText() || "");
+      guardarBorradorTemporal();
+      actualizarMetricas();
     }
   });
   return runtime.provider;
@@ -516,6 +543,11 @@ export async function iniciarDictado() {
 export function pausarDictado() {
   runtime.stopSolicitado = true;
   if (runtime.reinicioTimer) window.clearTimeout(runtime.reinicioTimer);
+  runtime.ensamblador?.preserveInterimsAsPending({ streamId: runtime.provider?.recognition?.cognicionStreamContext?.streamId || "" });
+  runtime.ensamblador?.includePendingInText();
+  escribirTextarea(runtime.ensamblador?.getText() || "");
+  mostrarTextoProvisional("");
+  mostrarTextoPendiente(runtime.ensamblador?.getPendingText() || "");
   runtime.provider?.stop();
   runtime.reconocimiento = null;
   detenerCapturaMicrofono();
@@ -533,6 +565,10 @@ export async function reanudarDictado() {
 export function finalizarDictado() {
   runtime.stopSolicitado = true;
   if (runtime.reinicioTimer) window.clearTimeout(runtime.reinicioTimer);
+  runtime.ensamblador?.preserveInterimsAsPending({ streamId: runtime.provider?.recognition?.cognicionStreamContext?.streamId || "" });
+  runtime.ensamblador?.includePendingInText();
+  escribirTextarea(runtime.ensamblador?.getText() || "");
+  mostrarTextoPendiente(runtime.ensamblador?.getPendingText() || "");
   runtime.provider?.stop();
   runtime.reconocimiento = null;
   detenerCapturaMicrofono();
@@ -553,6 +589,7 @@ export function cancelarDictado() {
   runtime.persistencia.clear();
   escribirTextarea("");
   mostrarTextoProvisional("");
+  mostrarTextoPendiente("");
   reiniciarCronometro();
   runtime.maquina.transition(ESTADOS_DICTADO.READY, { reason: "cancel" });
   actualizarBotonRecuperar();
@@ -567,6 +604,7 @@ export function limpiarDictado() {
   runtime.persistencia.clear();
   escribirTextarea("");
   mostrarTextoProvisional("");
+  mostrarTextoPendiente("");
   actualizarBotonRecuperar();
   actualizarBotones();
   actualizarMetricas();
@@ -575,15 +613,24 @@ export function limpiarDictado() {
 export function recuperarUltimoDictado() {
   asegurarContexto();
   const borrador = runtime.persistencia?.load();
-  if (!borrador?.text) {
+  const tieneContenido = Boolean(
+    borrador?.text || borrador?.pendingText || borrador?.provisional
+    || borrador?.pendingSegments?.length || borrador?.interimResults?.length
+  );
+  if (!tieneContenido) {
     alert("No hay un dictado temporal para recuperar en este paciente y encuentro.");
     return;
   }
   const actual = textoActual().trim();
-  const texto = actual ? `${actual}\n\n${borrador.text}`.trim() : borrador.text;
   runtime.ensamblador.restore(borrador);
-  runtime.ensamblador.setManualText(texto);
+  runtime.ensamblador.preserveInterimsAsPending();
+  runtime.ensamblador.includePendingInText();
+  const recuperado = runtime.ensamblador.getText();
+  const texto = actual && !recuperado.includes(actual) ? `${actual}\n\n${recuperado}`.trim() : recuperado || actual;
+  runtime.ensamblador.setManualText(texto, { recordEdit: false });
   escribirTextarea(texto);
+  mostrarTextoProvisional("");
+  mostrarTextoPendiente(runtime.ensamblador.getPendingText());
   runtime.maquina.transition(ESTADOS_DICTADO.COMPLETED, { reason: "restored" });
   actualizarBotones();
   actualizarMetricas();
@@ -651,6 +698,8 @@ function crearPanelAvanzado() {
     <p id="advertenciaAudioDictado" class="dictado-advertencia-audio" hidden></p>
     <p id="dictadoAdvertencias" class="dictado-advertencia-audio" hidden></p>
     <div class="dictado-provisional">
+      <strong>Texto pendiente de confirmación</strong>
+      <p id="dictadoTextoPendiente">Sin texto pendiente.</p>
       <strong>Texto provisional</strong>
       <p id="dictadoTextoProvisional">Sin texto provisional.</p>
     </div>
@@ -683,6 +732,7 @@ function actualizarDiagnosticoSeguro() {
     `sessionId=${session}`,
     `segmentos=${stats.total || 0}`,
     `pendientes=${stats.pending || 0}`,
+    `provisionales=${stats.provisional || 0}`,
     `errores=${runtime.errores.length}`,
     `reintentos=${runtime.provider?.retryCount || 0}`,
     `micrófono=${runtime.audio?.stream?.active ? "activo" : "liberado"}`,
@@ -704,6 +754,7 @@ function conectarCambioPaciente() {
     asegurarContexto({ nuevaSesion: true });
     escribirTextarea("");
     mostrarTextoProvisional("");
+    mostrarTextoPendiente("");
     actualizarBotonRecuperar();
     actualizarDiagnosticoSeguro();
   });

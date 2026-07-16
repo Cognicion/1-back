@@ -59,6 +59,27 @@ assert.equal(rejected.rejected, true);
 assert.equal(assembler.getText(), "");
 assert.equal(validarAislamientoContexto({ patientId: "paciente-a", sessionId: "sesion-a" }, { patientId: "paciente-b", sessionId: "sesion-b" }), false);
 
+// La instantánea provisional conserva todos los índices activos y no depende de onend.
+const streaming = new TranscriptAssembler({ sessionId: "streaming", patientId: "paciente-a" });
+streaming.addRecognitionResult({ sessionId: "streaming", patientId: "paciente-a", streamId: "ciclo-1", streamSequence: 1, resultIndex: 0, transcript: "primer fragmento", isFinal: false });
+streaming.addRecognitionResult({ sessionId: "streaming", patientId: "paciente-a", streamId: "ciclo-1", streamSequence: 1, resultIndex: 1, transcript: "segundo fragmento", isFinal: false });
+assert.equal(streaming.getProvisional().toLowerCase(), "primer fragmento segundo fragmento");
+streaming.addRecognitionResult({ sessionId: "streaming", patientId: "paciente-a", streamId: "ciclo-1", streamSequence: 1, resultIndex: 1, transcript: "segundo fragmento ampliado", isFinal: false });
+assert.equal(streaming.getProvisional().toLowerCase(), "primer fragmento segundo fragmento ampliado");
+streaming.addRecognitionResult({ sessionId: "streaming", patientId: "paciente-a", streamId: "ciclo-1", streamSequence: 1, resultIndex: 0, transcript: "primer fragmento", isFinal: true });
+assert.equal(streaming.getText().toLowerCase(), "primer fragmento");
+assert.equal(streaming.getProvisional().toLowerCase(), "segundo fragmento ampliado");
+streaming.preserveInterimsAsPending({ streamId: "ciclo-1" });
+assert.equal(streaming.getPendingText().toLowerCase(), "segundo fragmento ampliado");
+streaming.includePendingInText();
+assert.equal(streaming.getText().toLowerCase(), "primer fragmento segundo fragmento ampliado");
+streaming.addRecognitionResult({ sessionId: "streaming", patientId: "paciente-a", streamId: "ciclo-2", streamSequence: 2, resultIndex: 0, transcript: "tercer fragmento", isFinal: true });
+assert.match(streaming.getText(), /tercer fragmento/i);
+const restoredStreaming = new TranscriptAssembler({ sessionId: "otro", patientId: "paciente-a" });
+restoredStreaming.restore(streaming.toJSON());
+assert.equal(restoredStreaming.getText(), streaming.getText());
+assert.equal(restoredStreaming.pendingSegments.length, 1);
+
 // Edición manual, duplicados y secuencia iniciar -> pausar -> reanudar -> finalizar.
 assembler.setManualText("Texto manual");
 assembler.addRecognitionResult({ sessionId: "sesion-b", patientId: "paciente-b", resultIndex: 1, transcript: "nuevo hallazgo", isFinal: true });
@@ -95,6 +116,34 @@ assert.equal(note.insertionAllowed, false);
 assert.ok(note.generatedSections.every((section) => section.accepted === false));
 assert.ok(note.provenanceRecords.length >= note.clinicalStatements.length);
 
+// Caso real: fuente breve, medicamento estructurado, riesgo atómico y ningún plan inferido.
+const realCase = generarNotaAutomatica(
+  "Pareja: luego dice que es que yo tengo muchos dispositivos, que si está la Guardia Nacional afuera. " +
+  "Refiere que tomó quetiapina, luego agua e hizo gárgaras y presentó conducta desorganizada. " +
+  "En la entrega de guardia mencionan nacimiento del bebé, cannabis, posible cocaína, posible violación y agitación. " +
+  "Antecedente de depresión, clonazepam y cita previa.",
+  { id: "a" }, { patientId: "a", sessionId: "s" }
+);
+const sourceSection = realCase.generatedSections.find((section) => section.section === "fuente_confiabilidad");
+assert.match(sourceSection.content, /confiabilidad no fue especificada/i);
+assert.equal(sourceSection.content.includes("dispositivos"), false);
+const medicationSection = realCase.generatedSections.find((section) => section.section === "medicamentos");
+assert.match(medicationSection.content, /Quetiapina/i);
+assert.match(medicationSection.content, /dosis no especificada/i);
+assert.equal(medicationSection.content.includes("gárgaras"), false);
+assert.equal(realCase.planItems.length, 0);
+assert.equal(realCase.generatedSections.some((section) => section.section === "plan"), false);
+assert.ok(realCase.riskStatements.some((risk) => risk.type === "agresion_sexual"));
+const riskSection = realCase.generatedSections.find((section) => section.section === "evaluacion_riesgo");
+assert.equal(riskSection.content.includes("nacimiento del bebé"), false);
+assert.equal(riskSection.content.includes("clonazepam"), false);
+assert.ok(realCase.validationIssues.some((issue) => issue.type === "incertidumbre_transcripcion"));
+assert.ok(realCase.generatedSections.every((section) => section.confidence === null));
+
+const explicitPlan = generarNotaAutomatica("Solicitar biometría hemática. Citar en una semana.", { id: "a" }, { patientId: "a", sessionId: "s" });
+assert.equal(explicitPlan.planItems.length, 2);
+assert.ok(explicitPlan.generatedSections.some((section) => section.section === "plan"));
+
 // Generación por secciones y riesgos críticos requieren confirmación.
 const riskNote = generarNotaAutomatica("Actualmente presenta ideación suicida con plan.", { id: "a" }, { patientId: "a", sessionId: "s" });
 assert.ok(riskNote.generatedSections.some((section) => section.section === "evaluacion_riesgo"));
@@ -108,7 +157,14 @@ class FakeRecognition {
 }
 const fakeWindow = { SpeechRecognition: FakeRecognition, setTimeout, clearTimeout };
 let providerResults = 0;
-const webProvider = new WebSpeechTranscriptionProvider({ windowRef: fakeWindow, onResult: () => { providerResults += 1; } });
+const providerContexts = [];
+let endedStreams = 0;
+const webProvider = new WebSpeechTranscriptionProvider({
+  windowRef: fakeWindow,
+  baseBackoffMs: 1,
+  onResult: (_event, context) => { providerResults += 1; providerContexts.push(context); },
+  onStreamEnd: () => { endedStreams += 1; }
+});
 webProvider.start({ sessionId: "s", patientId: "a" });
 assert.equal(webProvider.recognition.lang, "es-MX");
 assert.equal(webProvider.recognition.continuous, true);
@@ -116,6 +172,11 @@ assert.equal(webProvider.recognition.interimResults, true);
 const lateHandler = webProvider.recognition.onresult;
 lateHandler({ resultIndex: 0, results: [] });
 assert.equal(providerResults, 1);
+const firstRecognition = webProvider.recognition;
+firstRecognition.onend();
+await new Promise((resolve) => setTimeout(resolve, 10));
+assert.equal(endedStreams, 1);
+assert.notEqual(webProvider.recognition.cognicionStreamContext.streamId, firstRecognition.cognicionStreamContext.streamId);
 webProvider.stop();
 lateHandler({ resultIndex: 0, results: [] });
 assert.equal(providerResults, 1);

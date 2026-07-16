@@ -745,33 +745,24 @@ export function generarNotaAutomatica(textoDictado = "", datosPaciente = {}, opt
     detailLevel: options.nivelDetalle || "medio",
     format: options.formato || "mixto"
   });
-  const datosClinicos = crearBaseHechosClinicos(datosPaciente, textoFuente);
-  const sintomas = detectarSintomas(textoFuente);
-  const riesgosDetectados = detectarRiesgoSuicida(textoFuente);
-  const diagnosticosSugeridos = sugerirDiagnosticos(sintomas, riesgosDetectados);
-  const impresion = generarDiagnosticosDiferenciales({
-    diagnosticos: diagnosticosSugeridos,
-    sintomas: datosClinicos.sintomas
-  });
-
-  datosClinicos.impresionDiagnostica.texto = datosClinicos.impresionDiagnostica.texto || impresion;
-  const validationIssues = [...validarTextoClinico(textoFuente, datosClinicos), ...pipeline.validationIssues];
-  const provenanceRecords = [
-    crearProvenanceRecord({
-      concept: "texto fuente de dictado",
-      originalText: textoFuente,
-      sourceType: "dictado_por_voz",
-      status: "requires_clinical_review",
-      confidence: "media"
-    })
-  ];
+  // La nota automática nueva usa únicamente afirmaciones sustentadas por el
+  // dictado. Las inferencias diagnósticas y el plan sugerido del motor legado
+  // quedan deliberadamente fuera: no son equivalentes a información dictada.
+  const datosClinicos = crearDatosVacios();
+  datosClinicos.identificacion = normalizarIdentificacionPaciente(datosPaciente);
+  datosClinicos.riesgoSuicida = { nivel: "no_evaluado", marcadores: [], severidad: "no_evaluada" };
+  const diagnosticosSugeridos = [];
+  const impresion = pipeline.sections.find((section) => section.section === "impresion_clinica")?.content || "";
+  datosClinicos.impresionDiagnostica.texto = impresion;
+  const validationIssues = [...pipeline.validationIssues];
+  const provenanceRecords = [];
   if (datosClinicos?.identificacion?.nombreCompleto) {
     provenanceRecords.push(crearProvenanceRecord({
       concept: "identificación del paciente",
       originalText: datosClinicos.identificacion.nombreCompleto,
       sourceType: "expediente",
       status: "structured_source",
-      confidence: "alta"
+      confidence: null
     }));
   }
 
@@ -791,6 +782,9 @@ export function generarNotaAutomatica(textoDictado = "", datosPaciente = {}, opt
       generatedAt: new Date().toISOString(),
       reviewRequired: true,
       generatedStatus: "en_revision",
+      generationMethod: "reglas_locales_conservadoras",
+      externalAIUsed: false,
+      processingDisclosure: "Borrador generado en el navegador con reglas locales; no se utilizó IA externa.",
       sourcePriority: ["expediente", "dictado", "campo_vacio"],
       tipoNota: options.tipoNota || "evolucion",
       nivelDetalle: options.nivelDetalle || "medio",
@@ -799,7 +793,7 @@ export function generarNotaAutomatica(textoDictado = "", datosPaciente = {}, opt
       especialidad: options.especialidad || "no_especificada",
       servicio: options.servicio || "no_especificado"
     },
-    estructuraClinica: estructurarTextoClinico(textoFuente, datosPaciente),
+    estructuraClinica: Object.fromEntries(pipeline.sections.map((section) => [section.section, section.content])),
     transcriptSegments: pipeline.segments,
     clinicalStatements: pipeline.statements,
     medicationStatements: pipeline.medicationStatements,
@@ -816,10 +810,16 @@ export function generarNotaAutomatica(textoDictado = "", datosPaciente = {}, opt
     comentarioClinico: porSeccion.comentario_clinico || porSeccion.impresion_clinica || "",
     impresionDiagnostica: datosClinicos.impresionDiagnostica.texto,
     diagnosticosDiferenciales: impresion,
-    diagnosticosSugeridos: diagnosticosSugeridos.map((dx) => dx.nombre),
+    diagnosticosSugeridos: [],
     cie10Sugeridos: diagnosticosSugeridos,
-    planSugerido: generarPlanSugerido(diagnosticosSugeridos, riesgosDetectados, sintomas, datosClinicos),
-    riesgosDetectados,
+    planSugerido: porSeccion.plan || "",
+    riesgosDetectados: pipeline.riskStatements.map((risk) => ({
+      tipo: risk.type.replaceAll("_", " "),
+      severidad: risk.critical ? "requiere confirmación prioritaria" : "requiere revisión",
+      marcadores: [risk.text],
+      informante: risk.informant,
+      estado: risk.status
+    })),
     validationIssues,
     provenanceRecords,
     outputs: {

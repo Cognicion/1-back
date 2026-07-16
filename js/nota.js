@@ -1417,7 +1417,7 @@ function renderizarRevisionNotaAutomatica(generada = {}, transcripcionOriginal =
     <div class="revision-secciones">
       ${secciones.length ? secciones.map((section, index) => `
         <article class="revision-seccion-card">
-          <header><label><input type="checkbox" data-aceptar-seccion="${index}" ${section.accepted ? "checked" : ""}> Aceptar ${escaparHTML(section.title)}</label><span>Confianza ${Math.round((section.confidence || 0) * 100)}%</span></header>
+          <header><label><input type="checkbox" data-aceptar-seccion="${index}" ${section.accepted ? "checked" : ""}> Aceptar ${escaparHTML(section.title)}</label><span>Revisión humana obligatoria</span></header>
           <textarea data-contenido-seccion="${index}">${escaparHTML(section.content)}</textarea>
           <details><summary>Fragmentos de origen e informante</summary><ul>${section.sourceStatementIds.map((statementId) => {
             const s = generada.clinicalStatements?.find((item) => item.id === statementId);

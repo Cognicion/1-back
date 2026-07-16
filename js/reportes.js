@@ -42,7 +42,11 @@ onAuthStateChanged(auth, (user) => {
   if (user?.uid) sincronizarAparienciaUsuario(user.uid);
 });
 
-document.addEventListener("DOMContentLoaded", inicializarReporteGlobal);
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", inicializarReporteGlobal, { once: true });
+} else {
+  inicializarReporteGlobal();
+}
 
 
 function asegurarCssReporte() {

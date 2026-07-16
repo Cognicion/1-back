@@ -20,7 +20,7 @@ export class TranscriptionProvider {
 }
 
 export class WebSpeechTranscriptionProvider extends TranscriptionProvider {
-  constructor({ windowRef = globalThis.window, maxRetries = 6, baseBackoffMs = 450, onResult, onError, onState } = {}) {
+  constructor({ windowRef = globalThis.window, maxRetries = 6, baseBackoffMs = 450, onResult, onError, onState, onStreamEnd } = {}) {
     super({ maxRetries, baseBackoffMs });
     this.windowRef = windowRef;
     this.Recognition = windowRef?.SpeechRecognition || windowRef?.webkitSpeechRecognition || null;
@@ -28,12 +28,14 @@ export class WebSpeechTranscriptionProvider extends TranscriptionProvider {
     this.onResult = onResult;
     this.onError = onError;
     this.onState = onState;
+    this.onStreamEnd = onStreamEnd;
     this.recognition = null;
     this.retryCount = 0;
     this.timer = null;
     this.activeContext = null;
     this.userStopped = true;
     this.lastError = "";
+    this.streamSequence = 0;
   }
 
   capability() {
@@ -49,6 +51,8 @@ export class WebSpeechTranscriptionProvider extends TranscriptionProvider {
   }
 
   createRecognition(context) {
+    const streamSequence = this.streamSequence;
+    const streamContext = { ...context, streamId: `${context.sessionId}:stream-${streamSequence}`, streamSequence };
     const recognition = new this.Recognition();
     recognition.lang = "es-MX";
     recognition.continuous = true;
@@ -57,10 +61,11 @@ export class WebSpeechTranscriptionProvider extends TranscriptionProvider {
     recognition.onresult = (event) => {
       if (!this.contextMatches(context) || this.userStopped) return;
       this.retryCount = 0;
-      this.onResult?.(event, { ...context, provider: "web_speech_api" });
+      this.onResult?.(event, { ...streamContext, provider: "web_speech_api" });
     };
-    recognition.onerror = (event) => this.handleError(event, context);
-    recognition.onend = () => this.handleEnd(context);
+    recognition.onerror = (event) => this.handleError(event, streamContext);
+    recognition.onend = () => this.handleEnd(streamContext);
+    recognition.cognicionStreamContext = streamContext;
     return recognition;
   }
 
@@ -73,6 +78,7 @@ export class WebSpeechTranscriptionProvider extends TranscriptionProvider {
     this.activeContext = { sessionId: context.sessionId || "", patientId: context.patientId || "", encounterId: context.encounterId || "" };
     this.userStopped = false;
     this.lastError = "";
+    this.streamSequence += 1;
     this.recognition = this.createRecognition(this.activeContext);
     this.recognition.start();
     this.status = PROVIDER_STATUS.AVAILABLE;
@@ -98,6 +104,7 @@ export class WebSpeechTranscriptionProvider extends TranscriptionProvider {
 
   handleEnd(context) {
     if (!this.contextMatches(context) || this.userStopped) return;
+    this.onStreamEnd?.({ ...context, reason: this.lastError || "recognition-ended" });
     if (["not-allowed", "service-not-allowed", "audio-capture"].includes(this.lastError)) return;
     if (this.retryCount >= this.config.maxRetries) {
       this.status = PROVIDER_STATUS.LIMIT_REACHED;
@@ -111,7 +118,8 @@ export class WebSpeechTranscriptionProvider extends TranscriptionProvider {
     this.timer = this.windowRef.setTimeout(() => {
       if (!this.contextMatches(context) || this.userStopped) return;
       try {
-        this.recognition = this.createRecognition(context);
+        this.streamSequence += 1;
+        this.recognition = this.createRecognition(this.activeContext);
         this.recognition.start();
         this.onState?.({ state: "listening", retryCount: this.retryCount, context: { ...context } });
       } catch (error) {
@@ -142,6 +150,7 @@ export class WebSpeechTranscriptionProvider extends TranscriptionProvider {
     this.onResult = null;
     this.onError = null;
     this.onState = null;
+    this.onStreamEnd = null;
   }
 }
 
