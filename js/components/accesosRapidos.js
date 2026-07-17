@@ -102,10 +102,10 @@ function normalizarLista(lista = []) {
 
 function leerAccesos() {
   try {
-    const guardado = JSON.parse(localStorage.getItem(CLAVE_ACCESOS) || "null");
+    const guardado = JSON.parse(localStorage.getItem(claveAccesosUsuario()) || "null");
     if (Array.isArray(guardado)) return normalizarLista(guardado);
 
-    const legado = localStorage.getItem(CLAVE_DESTINO_LEGADO);
+    const legado = obtenerUidFirebaseLocal() ? "" : localStorage.getItem(CLAVE_DESTINO_LEGADO);
     if (legado) return normalizarLista([legado, ...accesosPorDefecto()]);
   } catch {
     // Si el almacenamiento falla, se usan accesos por defecto.
@@ -115,7 +115,7 @@ function leerAccesos() {
 
 function guardarAccesos(lista) {
   try {
-    localStorage.setItem(CLAVE_ACCESOS, JSON.stringify(normalizarLista(lista)));
+    localStorage.setItem(claveAccesosUsuario(), JSON.stringify(normalizarLista(lista)));
   } catch {
     // La navegación sigue funcionando aunque el navegador bloquee localStorage.
   }
@@ -274,6 +274,7 @@ function renderizar(contenedor) {
 }
 
 export function inicializarAccesosRapidos(root = document) {
+  if (debeOmitirAccesosRapidos()) return;
   asegurarEstilos();
   crearContenedorAutomatico();
   root.querySelectorAll("[data-accesos-rapidos]").forEach(renderizar);
