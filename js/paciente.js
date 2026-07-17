@@ -4688,24 +4688,68 @@ function construirTextoIndicaciones(medicamentos = medicamentosActivosIndicacion
   const notaMedicamentos = valorCampo("indicacionesNotaMedicamentos") || "EN CASO DE NEGATIVISMO, ADMINISTRAR MOLIDOS Y DISUELTOS";
   const eventualidades = valorCampo("indicacionesEventualidades") || "Reportar Eventualidades";
   const listaMedicamentos = medicamentos.length
-    ? medicamentos.map((medicamento) => `-${medicamento}`).join("\n")
+    ? medicamentos.map((medicamento, indice) => `6.${indice + 1} ${medicamento}`).join("\n")
     : "-Sin medicamentos activos registrados.";
 
   return [
-    `1. Medicamentos${notaMedicamentos ? ` (${notaMedicamentos})` : ""}`,
-    listaMedicamentos,
-    `2. Dieta ${dieta}`,
-    `3. ${cuidados}`,
-    `4. Alergias: ${alergias}`,
-    `5. Riesgo de caida: ${riesgoCaida}`,
-    `6. Vigilancia por: ${vigilancia}`,
-    `7. ${eventualidades}`
-  ].join("\n");
+    `1. Dieta\n${dieta}`,
+    `2. Signos vitales y cuidados generales por enfermeria\n${cuidados}`,
+    `3. Vigilancia por\n${vigilancia}`,
+    `4. Riesgo de caida\n${riesgoCaida}`,
+    `5. Alergias\n${alergias}`,
+    `6. Medicamentos\n${notaMedicamentos}\n${listaMedicamentos}`,
+    `7. Reportar eventualidades\n${eventualidades}`
+  ].join("\n\n");
+}
+
+function guardarIndicacionesGeneradasParaNota() {
+  const texto = valorCampo("indicacionesTexto").trim();
+  const pacienteId = uidPaciente || document.getElementById("uidPaciente")?.value || "";
+  try {
+    localStorage.setItem("cognicion_indicaciones_generadas_ultimo", JSON.stringify({
+      pacienteId,
+      texto,
+      actualizadoEn: new Date().toISOString()
+    }));
+  } catch (error) {
+    console.warn("No se pudo sincronizar indicaciones generadas con nota:", error?.name || "error");
+  }
 }
 
 function actualizarTextoIndicaciones() {
   ponerValor("indicacionesTexto", construirTextoIndicaciones());
   textoIndicacionesEditado = false;
+  guardarIndicacionesGeneradasParaNota();
+}
+
+function configurarControlesIndicacionesGeneradas() {
+  const textarea = document.getElementById("indicacionesTexto");
+  const controles = document.querySelector("[data-controles-indicaciones-texto]");
+  if (!textarea || !controles) return;
+
+  const minimo = 90;
+  const base = 150;
+  const aplicarAltura = (altura) => {
+    textarea.style.height = `${Math.max(minimo, Math.round(altura))}px`;
+    textarea.closest(".indicaciones-generadas-control")?.classList.remove("seccion-contraida");
+  };
+
+  controles.addEventListener("click", (evento) => {
+    const boton = evento.target.closest("button");
+    if (!boton) return;
+    const accion = boton.dataset.accion;
+    const actual = textarea.getBoundingClientRect().height || base;
+
+    if (accion === "menos") aplicarAltura(actual - 48);
+    if (accion === "mas") aplicarAltura(actual + 48);
+    if (accion === "contraer") {
+      const seccion = textarea.closest(".indicaciones-generadas-control");
+      const contraer = !seccion?.classList.contains("seccion-contraida");
+      textarea.style.height = `${contraer ? minimo : base}px`;
+      seccion?.classList.toggle("seccion-contraida", contraer);
+    }
+    if (accion === "reiniciar") aplicarAltura(base);
+  });
 }
 
 function renderizarMedicamentosIndicaciones() {
@@ -6737,7 +6781,9 @@ document.getElementById("descargarIndicaciones")?.addEventListener("click", desc
 document.getElementById("actualizarTextoIndicaciones")?.addEventListener("click", actualizarTextoIndicaciones);
 document.getElementById("indicacionesTexto")?.addEventListener("input", () => {
   textoIndicacionesEditado = true;
+  guardarIndicacionesGeneradasParaNota();
 });
+configurarControlesIndicacionesGeneradas();
 [
   "indicacionesDieta",
   "indicacionesCuidados",

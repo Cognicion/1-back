@@ -178,6 +178,60 @@ body
     padding:0;
 }
 
+.indicaciones-generadas-control {
+    display: grid;
+    gap: 8px;
+    margin-top: 14px;
+}
+
+.indicaciones-generadas-header {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.indicaciones-generadas-header label {
+    margin: 0;
+}
+
+.indicaciones-generadas-control textarea {
+    min-height: 90px;
+    height: 150px;
+    resize: none;
+}
+
+.indicaciones-generadas-control.seccion-contraida textarea {
+    opacity: 0.74;
+}
+
+.indicaciones-generadas-control .controles-tamano-nota {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    justify-content: flex-end;
+    margin: 0;
+}
+
+.indicaciones-generadas-control .controles-tamano-nota button {
+    width: auto;
+    min-width: 38px;
+    margin: 0;
+    padding: 7px 10px;
+    border-radius: 999px;
+    border: 1px solid rgba(125, 211, 252, 0.28);
+    background: rgba(15, 23, 42, 0.92);
+    color: #dbeafe;
+    font-size: 12px;
+    line-height: 1;
+}
+
+.indicaciones-generadas-control .controles-tamano-nota button[data-accion="contraer"],
+.indicaciones-generadas-control .controles-tamano-nota button[data-accion="reiniciar"] {
+    min-width: 78px;
+}
+
 h1{
     font-size:30px;
     font-weight:800;

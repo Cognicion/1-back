@@ -741,9 +741,18 @@
           </label>
         </div>
 
-        <label>Indicaciones generadas
+        <section class="indicaciones-generadas-control">
+          <div class="indicaciones-generadas-header">
+            <label for="indicacionesTexto">Indicaciones generadas</label>
+            <div class="controles-tamano-nota" data-controles-indicaciones-texto>
+              <button type="button" data-accion="menos" title="Hacer mas pequeno">-</button>
+              <button type="button" data-accion="mas" title="Hacer mas grande">+</button>
+              <button type="button" data-accion="contraer" title="Contraer o expandir">Contraer</button>
+              <button type="button" data-accion="reiniciar" title="Restablecer tamano">Reiniciar</button>
+            </div>
+          </div>
           <textarea id="indicacionesTexto" placeholder="Aqui se arma automaticamente el texto de indicaciones. Puedes ajustarlo antes de guardar o descargar."></textarea>
-        </label>
+        </section>
         <div class="form-actions">
           <button id="actualizarTextoIndicaciones" type="button" class="boton-secundario">Actualizar texto</button>
         </div>

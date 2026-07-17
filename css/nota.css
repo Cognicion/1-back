@@ -1317,16 +1317,19 @@ button:hover{
 
     .cognicion-pdf-documento .pdf-firmas {
         display: grid !important;
-        grid-template-columns: repeat(var(--cantidad-columnas, 1), minmax(0, 1fr)) !important;
+        grid-template-columns: repeat(var(--columnas-firmas, 1), minmax(0, 1fr)) !important;
         grid-auto-flow: row;
-        gap: 8mm 5mm;
+        column-gap: 14mm !important;
+        row-gap: 12mm !important;
         width: 100%;
         align-items: start;
     }
 
     .cognicion-pdf-documento .pdf-firma {
         min-width: 0;
+        padding: 0 3mm;
         text-align: center;
+        box-sizing: border-box;
         font-size: 12px;
         line-height: 1.35;
         overflow-wrap: anywhere;

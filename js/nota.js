@@ -231,6 +231,30 @@ function alternarContraerSeccionNota(clave, objetivo, minimo = 80) {
   aplicarAlturaSeccionNota(clave, objetivo, alturaGuardadaSeccion(estado) || 130, minimo);
 }
 
+function indicacionesGeneradasGuardadasNota() {
+  try {
+    const guardado = JSON.parse(localStorage.getItem("cognicion_indicaciones_generadas_ultimo") || "{}");
+    const pacienteId = uidPacienteActual || document.getElementById("uidPaciente")?.value || "";
+    if (guardado.pacienteId && pacienteId && guardado.pacienteId !== pacienteId) return "";
+    return String(guardado.texto || "").trim();
+  } catch (error) {
+    console.warn("No se pudieron leer las indicaciones generadas:", error?.name || "error");
+    return "";
+  }
+}
+
+async function actualizarTratamientoIndicacionesDesdeIndicacionesGeneradas() {
+  const campoTratamiento = document.getElementById("tratamiento");
+  if (!campoTratamiento) return;
+
+  const pacienteId = uidPacienteActual || document.getElementById("uidPaciente")?.value || "";
+  const indicaciones = indicacionesGeneradasGuardadasNota()
+    || (pacienteId ? await resumenTratamientoIndicacionesNota(pacienteId) : "");
+  campoTratamiento.value = indicaciones || "";
+  campoTratamiento.dispatchEvent(new Event("input", { bubbles: true }));
+  campoTratamiento.dispatchEvent(new Event("change", { bubbles: true }));
+}
+
 function crearControlesTactilesSeccion(clave, objetivo, minimo = 80, alturaBase = 130) {
   const controles = document.createElement("div");
   controles.className = "controles-tamano-nota";
@@ -239,6 +263,7 @@ function crearControlesTactilesSeccion(clave, objetivo, minimo = 80, alturaBase 
     <button type="button" data-accion="mas" title="Hacer mas grande">+</button>
     <button type="button" data-accion="contraer" title="Contraer o expandir">Contraer</button>
     <button type="button" data-accion="reiniciar" title="Restablecer tamano">Reiniciar</button>
+    ${clave === "campo:plan" ? '<button type="button" data-accion="actualizar-tratamiento-indicaciones" title="Actualizar tratamiento e indicaciones">Actualizar texto</button>' : ""}
   `;
 
   controles.addEventListener("click", (evento) => {
@@ -251,6 +276,7 @@ function crearControlesTactilesSeccion(clave, objetivo, minimo = 80, alturaBase 
     if (accion === "mas") aplicarAlturaSeccionNota(clave, objetivo, actual + 48, minimo);
     if (accion === "contraer") alternarContraerSeccionNota(clave, objetivo, minimo);
     if (accion === "reiniciar") aplicarAlturaSeccionNota(clave, objetivo, alturaBase, minimo);
+    if (accion === "actualizar-tratamiento-indicaciones") actualizarTratamientoIndicacionesDesdeIndicacionesGeneradas();
   });
 
   return controles;
@@ -4202,13 +4228,16 @@ function obtenerFirmasPdfCognicion() {
       orden: indice,
       nombre: valorFirmaPdfCognicion(tarjeta, "nombre"),
       cargo: valorFirmaPdfCognicion(tarjeta, "cargo"),
-      cedula: valorFirmaPdfCognicion(tarjeta, "cedula")
-    }))
-    .filter((firma) => firma.nombre || firma.cargo || firma.cedula);
+      cedula: valorFirmaPdfCognicion(tarjeta, "cedula"),
+      vacia: !valorFirmaPdfCognicion(tarjeta, "nombre") &&
+        !valorFirmaPdfCognicion(tarjeta, "cargo") &&
+        !valorFirmaPdfCognicion(tarjeta, "cedula")
+    }));
 }
 
 function crearSeccionFirmasPdfCognicion(firmas = []) {
-  if (!firmas.length) return null;
+  const firmasParaPdf = Array.isArray(firmas) ? firmas : [];
+  if (!firmasParaPdf.some((firma) => firma.nombre || firma.cargo || firma.cedula)) return null;
 
   const seccion = document.createElement("section");
   seccion.className = "observacion-seccion pdf-firmas-seccion";
@@ -4219,12 +4248,17 @@ function crearSeccionFirmasPdfCognicion(firmas = []) {
 
   const contenedor = document.createElement("div");
   contenedor.className = "pdf-firmas";
-  contenedor.style.setProperty("--cantidad-columnas", String(Math.min(Math.max(firmas.length, 1), 4)));
+  contenedor.style.setProperty("--columnas-firmas", String(Math.min(Math.max(firmasParaPdf.length, 1), 4)));
 
-  firmas.forEach((firma) => {
+  firmasParaPdf.forEach((firma) => {
     const bloque = document.createElement("div");
     bloque.className = "pdf-firma";
     bloque.dataset.ordenFirmaPdf = String(firma.orden + 1);
+    if (firma.vacia) {
+      bloque.setAttribute("aria-hidden", "true");
+      contenedor.appendChild(bloque);
+      return;
+    }
 
     if (firma.nombre) {
       const nombre = document.createElement("div");
