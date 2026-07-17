@@ -1,6 +1,6 @@
 ﻿import { auth, db } from "./firebase.js";
 import { ESCALAS_PSIQUIATRICAS } from "./data/escalasPsiquiatricas.js";
-import { ESCALAS_COGNITIVAS } from "./data/escalasCognitivas.js";
+import { ESCALAS_COGNITIVAS } from "./data/escalasCognitivas.js?v=20260717-syntaxfix";
 import {
   crearResumenEscala,
   formatearFechaEscala,
