@@ -1807,6 +1807,65 @@ function calcularEstanciaDesdeIngresoNota(fechaIngreso = "") {
   return `${horas} h`;
 }
 
+function fechaLocalInputNota(fecha = new Date()) {
+  const d = fecha instanceof Date ? fecha : new Date(fecha);
+  if (Number.isNaN(d.getTime())) return "";
+  const pad = (valor) => String(valor).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+}
+
+function horaLocalInputNota(fecha = new Date()) {
+  const d = fecha instanceof Date ? fecha : new Date(fecha);
+  if (Number.isNaN(d.getTime())) return "";
+  const pad = (valor) => String(valor).padStart(2, "0");
+  return `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+function fechaRegistroSignoNota(registro = {}) {
+  const fecha = new Date(registro.fechaToma || registro.fecha || registro.creadoEn || "");
+  return Number.isNaN(fecha.getTime()) ? null : fecha;
+}
+
+function ultimoRegistroSignoNota(paciente = {}, clave = "") {
+  const historial = paciente.historialSignosVitales?.[clave];
+  if (!Array.isArray(historial)) return null;
+  return historial
+    .map((registro) => ({ ...registro, fechaObjeto: fechaRegistroSignoNota(registro) }))
+    .filter((registro) => registro.fechaObjeto && String(registro.valor || "").trim())
+    .sort((a, b) => b.fechaObjeto - a.fechaObjeto)[0] || null;
+}
+
+function signosVitalesVinculadosNota(paciente = {}) {
+  const vitales = paciente.signosVitales || paciente.vitales || {};
+  const mapa = {
+    presionArterial: ["presionArterial", "pa"],
+    temperatura: ["temperatura"],
+    frecuenciaCardiaca: ["frecuenciaCardiaca", "fc"],
+    frecuenciaRespiratoria: ["frecuenciaRespiratoria", "fr"],
+    saturacionO2: ["saturacionO2", "saturacionOxigeno", "spo2"],
+    peso: ["peso"],
+    talla: ["talla"],
+    imc: ["imc"]
+  };
+
+  return Object.entries(mapa).reduce((salida, [clave, aliases]) => {
+    const registro = ultimoRegistroSignoNota(paciente, clave);
+    const valorFallback = aliases
+      .map((alias) => vitales[alias] || paciente[alias] || paciente.datosInstitucionales?.[alias] || paciente.somatometria?.[alias])
+      .find((valor) => valor !== undefined && valor !== null && String(valor).trim() !== "");
+    const fechaFallback = paciente.signosVitalesMeta?.[clave]?.fecha || paciente.signosVitalesMeta?.[aliases[0]]?.fecha || "";
+    const fecha = registro?.fechaObjeto || (fechaFallback ? new Date(fechaFallback) : null);
+    const valor = registro?.valor || valorFallback || "";
+    salida[clave] = {
+      valor,
+      fechaToma: fecha && !Number.isNaN(fecha.getTime()) ? fecha.toISOString() : "",
+      horaToma: fecha && !Number.isNaN(fecha.getTime()) ? horaLocalInputNota(fecha) : "",
+      origen: registro ? "historialSignosVitales" : (valor ? "signosVitales" : "")
+    };
+    return salida;
+  }, {});
+}
+
 const tipoNota = document.getElementById("tipoNota");
 const bloqueNotaRapida = document.getElementById("bloqueNotaRapida");
 const bloqueNotaCompleta = document.getElementById("bloqueNotaCompleta");
@@ -1819,6 +1878,7 @@ const camposObservacionFray = {
   tipoNota: "obsTipoNota",
   fechaNota: "obsFechaNota",
   horaNota: "obsHoraNota",
+  diasEstancia: "obsDiasEstancia",
   presionArterial: "obsPresionArterial",
   temperatura: "obsTemperatura",
   frecuenciaCardiaca: "obsFrecuenciaCardiaca",
@@ -2021,6 +2081,10 @@ function valorClinicoDesdePaciente(paciente = {}, clave) {
   return paciente[clave] || signos[clave] || somatometria[clave] || institucional[clave] || "";
 }
 
+function valorSignoVinculadoNota(paciente = {}, clave = "") {
+  return signosVitalesVinculadosNota(paciente)[clave]?.valor || "";
+}
+
 function fechaNacimientoPacienteNota(paciente = pacienteActualDatos || {}) {
   const institucional = paciente.datosInstitucionales || {};
   return paciente.fechaNacimiento ||
@@ -2157,20 +2221,90 @@ function sincronizarFormatoNota() {
     }
   }
 
-  if (!valorCampo("obsFechaNota")) asignarValor("obsFechaNota", new Date().toISOString().slice(0, 10));
-  if (!valorCampo("obsHoraNota")) {
-    const ahora = new Date();
-    asignarValor("obsHoraNota", `${String(ahora.getHours()).padStart(2, "0")}:${String(ahora.getMinutes()).padStart(2, "0")}`);
-  }
+  if (!valorCampo("obsFechaNota")) asignarValor("obsFechaNota", fechaLocalInputNota());
+  if (!valorCampo("obsHoraNota")) asignarValor("obsHoraNota", horaLocalInputNota());
   sincronizarDiagnosticosObservacion();
 }
 
 function aplicarTiempoActualNota() {
   const ahora = new Date();
-  asignarValor("obsFechaNota", ahora.toISOString().slice(0, 10));
-  asignarValor("obsHoraNota", `${String(ahora.getHours()).padStart(2, "0")}:${String(ahora.getMinutes()).padStart(2, "0")}`);
+  asignarValor("obsFechaNota", fechaLocalInputNota(ahora));
+  asignarValor("obsHoraNota", horaLocalInputNota(ahora));
   const estanciaActual = datosInstitucionalesPaciente(pacienteActualDatos || {}).diasEstancia || "";
   asignarValor("obsDiasEstancia", estanciaActual);
+}
+
+function formatearIndicacionTratamientoNota(t = {}) {
+  const medicamento = String(t.medicamento || t.nombre || "").trim();
+  const via = String(t.via || "").trim();
+  const frecuencia = String(t.frecuencia || "").trim();
+  const dosis = Array.isArray(t.tomas) && t.tomas.length
+    ? t.tomas
+      .map((toma) => [toma.cantidad, toma.horario ? `a las ${toma.horario}` : ""].filter(Boolean).join(" "))
+      .filter(Boolean)
+      .join(", ")
+    : String(t.dosis || "").trim();
+  return [
+    medicamento,
+    [via, frecuencia].filter(Boolean).join(" "),
+    dosis
+  ].filter(Boolean).join(" - ");
+}
+
+async function resumenTratamientoIndicacionesNota(uidPaciente) {
+  const partes = [];
+  try {
+    const tratamientos = await listarTratamientos(uidPaciente);
+    const activos = tratamientos
+      .filter((t) => String(t.estado || "activo").toLowerCase() === "activo")
+      .map(formatearIndicacionTratamientoNota)
+      .filter(Boolean);
+    if (activos.length) {
+      partes.push(`Tratamiento farmacológico actual:\n${activos.map((item) => `- ${item}`).join("\n")}`);
+    }
+  } catch (error) {
+    console.warn("No se pudo cargar tratamiento activo para la nota:", error);
+  }
+
+  try {
+    const snap = await getDocs(query(collection(db, "usuarios", uidPaciente, "indicaciones"), orderBy("fechaCreacion", "desc")));
+    const ultima = snap.docs.map((docIndicacion) => ({ id: docIndicacion.id, ...docIndicacion.data() }))[0];
+    if (ultima?.indicaciones) {
+      partes.push(`Indicaciones vigentes:\n${ultima.indicaciones}`);
+    }
+  } catch (error) {
+    console.warn("No se pudieron cargar indicaciones vigentes para la nota:", error);
+  }
+
+  const resumenPaciente = pacienteActualDatos?.tratamiento || pacienteActualDatos?.datosClinicosResumen?.tratamientoActivo || "";
+  if (!partes.length && resumenPaciente) partes.push(`Tratamiento farmacológico actual:\n${resumenPaciente}`);
+  return partes.join("\n\n");
+}
+
+async function aplicarPlanTratamientoIndicacionesNota(uidPaciente, opciones = {}) {
+  const resumen = await resumenTratamientoIndicacionesNota(uidPaciente);
+  if (!resumen) return "";
+  if (opciones.forzar || !valorCampo("plan")) asignarValor("plan", resumen);
+  if (opciones.forzar || !valorCampo("tratamiento")) asignarValor("tratamiento", resumen);
+  return resumen;
+}
+
+async function refrescarDatosVivosParaNota(uidPaciente, opciones = {}) {
+  if (!uidPaciente) return;
+  try {
+    const actualizados = await obtenerUsuario(uidPaciente);
+    if (actualizados) pacienteActualDatos = actualizados;
+  } catch (error) {
+    console.warn("No se pudieron refrescar datos vivos del paciente para la nota:", error);
+  }
+
+  aplicarTiempoActualNota();
+  aplicarDatosInstitucionalesPaciente(pacienteActualDatos || {}, {
+    forzarSignosVitales: opciones.forzarSignosVitales !== false
+  });
+  await aplicarPlanTratamientoIndicacionesNota(uidPaciente, {
+    forzar: Boolean(opciones.forzarPlan)
+  });
 }
 
 formatoNota?.addEventListener("change", sincronizarFormatoNota);
@@ -2327,16 +2461,15 @@ function datosInstitucionalesPaciente(paciente = {}) {
 
 function aplicarDatosInstitucionalesPaciente(paciente = {}, opciones = {}) {
   const datos = datosInstitucionalesPaciente(paciente);
-  const vitales = paciente.signosVitales || paciente.vitales || {};
   const forzarSignos = Boolean(opciones.forzarSignosVitales);
 
-  const valorPA = vitales.presionArterial || vitales.pa || paciente.presionArterial || paciente.pa || "";
-  const valorTemp = vitales.temperatura || paciente.temperatura || "";
-  const valorFC = vitales.frecuenciaCardiaca || vitales.fc || paciente.frecuenciaCardiaca || paciente.fc || "";
-  const valorFR = vitales.frecuenciaRespiratoria || vitales.fr || paciente.frecuenciaRespiratoria || paciente.fr || "";
-  const valorSpO2 = vitales.saturacionO2 || vitales.spo2 || paciente.saturacionO2 || paciente.spo2 || "";
-  const valorPeso = paciente.peso || paciente.signosVitales?.peso || paciente.datosInstitucionales?.peso || "";
-  const valorTalla = paciente.talla || paciente.signosVitales?.talla || paciente.datosInstitucionales?.talla || "";
+  const valorPA = valorSignoVinculadoNota(paciente, "presionArterial") || paciente.presionArterial || paciente.pa || "";
+  const valorTemp = valorSignoVinculadoNota(paciente, "temperatura") || paciente.temperatura || "";
+  const valorFC = valorSignoVinculadoNota(paciente, "frecuenciaCardiaca") || paciente.frecuenciaCardiaca || paciente.fc || "";
+  const valorFR = valorSignoVinculadoNota(paciente, "frecuenciaRespiratoria") || paciente.frecuenciaRespiratoria || paciente.fr || "";
+  const valorSpO2 = valorSignoVinculadoNota(paciente, "saturacionO2") || paciente.saturacionO2 || paciente.spo2 || "";
+  const valorPeso = valorSignoVinculadoNota(paciente, "peso") || paciente.peso || paciente.signosVitales?.peso || paciente.datosInstitucionales?.peso || "";
+  const valorTalla = valorSignoVinculadoNota(paciente, "talla") || paciente.talla || paciente.signosVitales?.talla || paciente.datosInstitucionales?.talla || "";
 
   if (forzarSignos || !valorCampo("obsPresionArterial")) asignarValor("obsPresionArterial", valorPA);
   if (forzarSignos || !valorCampo("obsTemperatura")) asignarValor("obsTemperatura", valorTemp);
@@ -2489,6 +2622,7 @@ function collectNoteData() {
     objetivo: document.getElementById("objetivo").value,
     analisis: document.getElementById("analisis").value,
     plan: document.getElementById("plan").value,
+    signosVitalesVinculados: signosVitalesVinculadosNota(pacienteActualDatos || {}),
     pediatriaNota: leerParametrosPediatriaNota(),
     camposDinamicos: camposDinamicosNota()
   };
@@ -3143,7 +3277,7 @@ window.continuarBorradorDesdeHistorial = function(notaId) {
   alert("Borrador abierto. Los siguientes guardados actualizaran esta misma nota sin crear historial.");
 };
 
-function cargarDatosNotaComoBorrador(notaId, opciones = {}) {
+async function cargarDatosNotaComoBorrador(notaId, opciones = {}) {
   const datosNota = notasHistorial[notaId];
 
   if (!datosNota) {
@@ -3159,8 +3293,10 @@ function cargarDatosNotaComoBorrador(notaId, opciones = {}) {
       ? formatoActual
       : datos.formatoNota || formatoActual
   });
-  aplicarTiempoActualNota();
-  aplicarDatosInstitucionalesPaciente(pacienteActualDatos || {}, { forzarSignosVitales: true });
+  await refrescarDatosVivosParaNota(uidPacienteActual || document.getElementById("uidPaciente")?.value || "", {
+    forzarSignosVitales: true,
+    forzarPlan: true
+  });
 
   notaEditandoId = null;
   edicionVersionadaActiva = false;
@@ -3174,13 +3310,13 @@ function cargarDatosNotaComoBorrador(notaId, opciones = {}) {
   return true;
 }
 
-window.cargarNotaComoBorrador = function(notaId) {
-  if (cargarDatosNotaComoBorrador(notaId)) {
+window.cargarNotaComoBorrador = async function(notaId) {
+  if (await cargarDatosNotaComoBorrador(notaId)) {
     alert("Nota cargada como borrador nuevo. Al guardar se creara un documento distinto y la nota previa permanecera intacta.");
   }
 };
 
-window.cargarNotaPreviaEnFormulario = function() {
+window.cargarNotaPreviaEnFormulario = async function() {
   const previa = notasHistorialOrdenadas.find((nota) => nota?.datos);
 
   if (!previa) {
@@ -3188,7 +3324,7 @@ window.cargarNotaPreviaEnFormulario = function() {
     return;
   }
 
-  if (cargarDatosNotaComoBorrador(previa.id, { mantenerFormatoActual: true })) {
+  if (await cargarDatosNotaComoBorrador(previa.id, { mantenerFormatoActual: true })) {
     alert("Datos de la nota previa cargados. Se guardaran como una nota nueva.");
   }
 };
@@ -3450,7 +3586,9 @@ async function cargarPaciente(uidPaciente) {
   }
 
   aplicarDatosInstitucionalesPaciente(datos);
+  aplicarTiempoActualNota();
   await autollenarResultadosEstudiosDiagnosticos(uidPaciente);
+  await aplicarPlanTratamientoIndicacionesNota(uidPaciente, { forzar: false });
   aplicarHistoriaClinicaObservacion(historiaClinicaActual);
   sincronizarParametrosPediatriaNota();
   cargarNotasFlotantesParaNota();
@@ -3509,6 +3647,10 @@ async function guardarNotaMedicaConEstadoLegacy(estadoNota = "definitiva") {
   const esBorrador = estadoNota === "borrador";
 
   diagnosticosSeleccionados = normalizarDiagnosticosNota(diagnosticosSeleccionados);
+  await refrescarDatosVivosParaNota(uidPaciente, {
+    forzarSignosVitales: true,
+    forzarPlan: false
+  });
   const diagnostico = diagnosticoActual();
 
   const tratamiento = document.getElementById("tratamiento").value;
@@ -3650,6 +3792,10 @@ async function guardarNotaClinicaSeguro(estadoNota = "definitiva") {
     if (formatoNota && !puedeUsarFormatoNota(formatoNota.value)) throw new Error("FORMATO_NO_AUTORIZADO");
 
     diagnosticosSeleccionados = normalizarDiagnosticosNota(diagnosticosSeleccionados);
+    await refrescarDatosVivosParaNota(uidPaciente, {
+      forzarSignosVitales: true,
+      forzarPlan: false
+    });
     const diagnostico = diagnosticoActual();
     const datosNotaClinica = collectNoteData();
     const tratamiento = datosNotaClinica.tratamiento;
@@ -4479,7 +4625,7 @@ function nombreArchivoWordFray(datos) {
     : datos.tipoNota === "evolucion"
       ? "evolucion"
       : "ingreso";
-  const fecha = datos.fechaNota || new Date().toISOString().slice(0, 10);
+  const fecha = datos.fechaNota || fechaLocalInputNota();
   return `Fray_Observacion_${tipo}_${paciente}_${fecha}.docx`;
 }
 
@@ -4777,8 +4923,8 @@ window.descargarNotaSeleccionada = async function() {
     const datosNota = collectNoteData();
     const observacion = datosNota.observacionFray || {};
     const identificacion = datosInstitucionalesPaciente(pacienteActualDatos || {});
-    const fecha = observacion.fechaNota || new Date().toISOString().slice(0, 10);
-    const hora = observacion.horaNota || new Date().toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit", hour12: false });
+    const fecha = observacion.fechaNota || fechaLocalInputNota();
+    const hora = observacion.horaNota || horaLocalInputNota();
     const tipoInstitucional = esFormatoFray()
       ? (observacion.tipoNota || "evolucion")
       : (datosNota.tipoNota || "clinica");
