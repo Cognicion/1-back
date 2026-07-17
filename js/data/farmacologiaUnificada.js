@@ -359,7 +359,8 @@ function listaUnica(...listas) {
 
 export function enriquecerFarmacologiaUnificada(medicamento = {}) {
   const id = textoNormalizado(medicamento.id || medicamento.nombre).replace(/[^a-z0-9]+/g, "-");
-  const verificada = FARMACOLOGIA_VERIFICADA[id];
+  const idConGuionBajo = textoNormalizado(medicamento.id || medicamento.nombre).replace(/[^a-z0-9]+/g, "_");
+  const verificada = FARMACOLOGIA_VERIFICADA[id] || FARMACOLOGIA_VERIFICADA[idConGuionBajo];
   if (!verificada) {
     const vidaMedia = medicamento.vidaMedia && !esValorGenerico(medicamento.vidaMedia)
       ? medicamento.vidaMedia

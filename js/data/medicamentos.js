@@ -1,9 +1,16 @@
 import { MEDICAMENTOS_SUPLEMENTARIOS } from "./medicamentosSuplementarios.js";
 import { enriquecerMedicamentoClinico } from "./vinculosClinicos.js";
 import {
+  FARMACOLOGIA_VERIFICADA,
   construirCapaFarmacologicaUnificada,
   resumirCoberturaFarmacologica
 } from "./farmacologiaUnificada.js";
+import {
+  agruparMedicamentosPorClase,
+  construirCatalogoFarmacologicoNormalizado,
+  crearPresentacionesPlanas,
+  normalizarPrincipioActivo
+} from "./farmacologiaMerge.js";
 
 export const MEDICAMENTOS = [
   {
@@ -650,35 +657,37 @@ function normalizarBusquedaMedicamento(valor = "") {
   return normalizarNombreMedicamento(valor).replace(/[^a-z0-9]+/g, " ");
 }
 
-export const MEDICAMENTOS_MAESTROS = construirCapaFarmacologicaUnificada(unirMedicamentos([
-  ...MEDICAMENTOS.map((medicamento) => ({ ...medicamento, origen: "catalogo_legacy" })),
-  ...MEDICAMENTOS_SUPLEMENTARIOS.map((medicamento) => ({ ...medicamento, origen: "catalogo_suplementario" }))
-]));
+export const CATALOGO_FARMACOLOGICO_NORMALIZADO = construirCatalogoFarmacologicoNormalizado({
+  medicamentos: MEDICAMENTOS.map((medicamento) => ({ ...medicamento, origen: "catalogo_legacy" })),
+  suplementarios: MEDICAMENTOS_SUPLEMENTARIOS.map((medicamento) => ({ ...medicamento, origen: "catalogo_suplementario" })),
+  farmacologiaVerificada: FARMACOLOGIA_VERIFICADA
+});
+
+export const MEDICAMENTOS_MAESTROS = construirCapaFarmacologicaUnificada(CATALOGO_FARMACOLOGICO_NORMALIZADO.medicamentos);
 
 export const COBERTURA_FARMACOLOGICA = resumirCoberturaFarmacologica(MEDICAMENTOS_MAESTROS);
 
-export const MEDICAMENTOS_PRESENTACIONES = MEDICAMENTOS_MAESTROS.flatMap((medicamento) => {
-  const presentaciones = medicamento.presentaciones?.length
-    ? medicamento.presentaciones
-    : [{ texto: "presentación no especificada", via: "" }];
+export const MEDICAMENTOS_PRESENTACIONES = crearPresentacionesPlanas(MEDICAMENTOS_MAESTROS);
 
-  return presentaciones.map((presentacion) => ({
-    ...medicamento,
-    presentacion: presentacion.texto,
-    via: presentacion.via || "",
-    texto: `${medicamento.nombre}, ${presentacion.texto}.`
-  }));
-});
+export const MEDICAMENTOS_AGRUPADOS_POR_CLASE = agruparMedicamentosPorClase(MEDICAMENTOS_MAESTROS);
 
 export function buscarMedicamentos(query = "", opciones = {}) {
   const limite = opciones.limit || 40;
   const filtro = normalizarNombreMedicamento(query);
   const filtroFlexible = normalizarBusquedaMedicamento(query);
+  const principio = normalizarPrincipioActivo(query);
+  const tokens = filtroFlexible.split(" ").filter((token) => token.length > 1);
   const resultados = filtro
-    ? MEDICAMENTOS_MAESTROS.filter((medicamento) =>
-      normalizarNombreMedicamento(textoMedicamentoParaBusqueda(medicamento)).includes(filtro) ||
-      normalizarBusquedaMedicamento(textoMedicamentoParaBusqueda(medicamento)).includes(filtroFlexible)
-    )
+    ? MEDICAMENTOS_MAESTROS.filter((medicamento) => {
+      const texto = textoMedicamentoParaBusqueda(medicamento);
+      const textoNormalizado = normalizarNombreMedicamento(texto);
+      const textoFlexible = normalizarBusquedaMedicamento(texto);
+      return textoNormalizado.includes(filtro) ||
+        textoFlexible.includes(filtroFlexible) ||
+        (tokens.length > 1 && tokens.every((token) => textoFlexible.includes(token))) ||
+        (principio && normalizarPrincipioActivo(medicamento.nombre) === principio) ||
+        (principio && normalizarPrincipioActivo(medicamento.genericName) === principio);
+    })
     : MEDICAMENTOS_MAESTROS;
 
   return resultados.slice(0, limite);
@@ -686,8 +695,27 @@ export function buscarMedicamentos(query = "", opciones = {}) {
 
 export function medicamentoPorTexto(texto = "") {
   const normalizado = normalizarNombreMedicamento(texto);
+  const principio = normalizarPrincipioActivo(texto);
+  const presentacion = MEDICAMENTOS_PRESENTACIONES.find((medicamento) =>
+    (
+      principio &&
+      (
+        normalizarPrincipioActivo(medicamento.nombre) === principio ||
+        normalizarPrincipioActivo(medicamento.genericName) === principio
+      )
+    ) ||
+    normalizado.includes(normalizarNombreMedicamento(medicamento.texto)) ||
+    normalizarNombreMedicamento(medicamento.texto).includes(normalizado)
+  );
+  if (presentacion) {
+    return MEDICAMENTOS_MAESTROS.find((medicamento) => medicamento.id === presentacion.clinicalMedicationId) || presentacion;
+  }
+
   return MEDICAMENTOS_MAESTROS.find((medicamento) =>
+    (principio && normalizarPrincipioActivo(medicamento.nombre) === principio) ||
+    (principio && normalizarPrincipioActivo(medicamento.genericName) === principio) ||
     normalizado.includes(normalizarNombreMedicamento(medicamento.nombre)) ||
-    (medicamento.brandNames || []).some((marca) => normalizado.includes(normalizarNombreMedicamento(marca)))
+    (medicamento.brandNames || []).some((marca) => normalizado.includes(normalizarNombreMedicamento(marca))) ||
+    (medicamento.synonyms || []).some((sinonimo) => normalizado.includes(normalizarNombreMedicamento(sinonimo)))
   ) || null;
 }

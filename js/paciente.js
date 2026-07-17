@@ -21,6 +21,7 @@ import {
   construirNombreCompletoPaciente,
   obtenerNombrePacienteParaMostrar
 } from "./utils/nombresPacientes.js";
+import { normalizarTextoFrecuencia } from "./utils/frecuencias.js";
 import { calcularEdadPediatrica } from "./pediatria/edad.js";
 import {
   calcularIMC as calcularIMCPediatrico,
@@ -5683,6 +5684,7 @@ function limpiarFormularioTratamiento() {
   ponerValor("tratamientoEstado", "activo");
   ponerValor("tratamientoModoFrecuencia", "horas_especificas");
   ponerValor("tratamientoVecesDia", "3");
+  ponerValor("tratamientoFrecuencia", "3 veces al día");
   renderizarTomasTratamiento();
 }
 
@@ -5754,7 +5756,7 @@ async function cargarTratamientosPaciente() {
   suspendidos.textContent = "Cargando tratamientos...";
 
   try {
-    tratamientosCache = await listarTratamientos(uidPaciente);
+    tratamientosCache = (await listarTratamientos(uidPaciente)).map(normalizarTratamientoFrecuenciaPaciente);
     tratamientosCacheCargado = true;
     const listaActivos = tratamientosCache.filter((t) => (t.estado || "activo") === "activo");
     const listaSuspendidos = tratamientosCache.filter((t) => t.estado === "suspendido");
@@ -5776,9 +5778,10 @@ async function cargarTratamientosPaciente() {
 }
 
 function renderizarTratamiento(t) {
-  const indicacion = formatearIndicacionTratamiento(t, false);
-  const dosisTotalDia = t.dosisTotalDia || calcularDosisTotalDiaTratamiento(t).texto || "";
-  const indicador = indicadorSeguridadTratamiento(t);
+  const tratamiento = normalizarTratamientoFrecuenciaPaciente(t);
+  const indicacion = formatearIndicacionTratamiento(tratamiento, false);
+  const dosisTotalDia = tratamiento.dosisTotalDia || calcularDosisTotalDiaTratamiento(tratamiento).texto || "";
+  const indicador = indicadorSeguridadTratamiento(tratamiento);
   const alertaHTML = indicador.estado !== "sin_alertas"
     ? `<button type="button" class="med-alerta-badge med-alerta-${escaparHTML(indicador.clase)}" title="${escaparHTML(indicador.etiqueta)}" data-ver-interacciones>⚠ ${escaparHTML(indicador.etiqueta)}</button>`
     : "";
@@ -5788,15 +5791,15 @@ function renderizarTratamiento(t) {
     <article class="registro-card">
       <div class="registro-top">
         <div>
-          <strong>${escaparHTML(t.medicamento || "Medicamento")} ${alertaHTML}</strong>
+          <strong>${escaparHTML(tratamiento.medicamento || "Medicamento")} ${alertaHTML}</strong>
           <span>${escaparHTML(indicacion || "Sin indicacion completa")}</span>
         </div>
-        <span class="estado-badge ${t.estado === "suspendido" ? "suspendido" : "activo"}">${escaparHTML(t.estado || "activo")}</span>
+        <span class="estado-badge ${tratamiento.estado === "suspendido" ? "suspendido" : "activo"}">${escaparHTML(tratamiento.estado || "activo")}</span>
       </div>
-      <p><b>Inicio:</b> ${escaparHTML(formatearFecha(t.fechaInicio) || "Sin fecha")}</p>
+      <p><b>Inicio:</b> ${escaparHTML(formatearFecha(tratamiento.fechaInicio) || "Sin fecha")}</p>
       ${dosisTotalDia ? `<p><b>Dosis total al día:</b> ${escaparHTML(dosisTotalDia)}</p>` : ""}
-      ${t.estado === "suspendido" ? `<p><b>Suspensión:</b> ${escaparHTML(formatearFecha(fechaSuspension))} · ${escaparHTML(motivoSuspension || "Sin motivo registrado")}</p>` : ""}
-      ${t.observaciones ? `<p>${escaparHTML(t.observaciones)}</p>` : ""}
+      ${tratamiento.estado === "suspendido" ? `<p><b>Suspensión:</b> ${escaparHTML(formatearFecha(fechaSuspension))} · ${escaparHTML(motivoSuspension || "Sin motivo registrado")}</p>` : ""}
+      ${tratamiento.observaciones ? `<p>${escaparHTML(tratamiento.observaciones)}</p>` : ""}
       <div class="registro-actions">
         <button type="button" data-editar-tratamiento="${t.id}">Editar</button>
         <button type="button" class="boton-peligro" data-eliminar-tratamiento="${t.id}">Eliminar</button>
@@ -6036,7 +6039,7 @@ function sincronizarCamposTratamientoDesdeTomas() {
     .filter(Boolean)
     .join(", ");
 
-  ponerValor("tratamientoFrecuencia", frecuencia);
+  ponerValor("tratamientoFrecuencia", normalizarTextoFrecuenciaTratamiento(frecuencia));
   ponerValor("tratamientoDosis", dosis);
   ponerValor("tratamientoHorarios", tomas.map((toma) => toma.horario).filter(Boolean).join(", "));
 }
@@ -6159,6 +6162,12 @@ function actualizarDosisTotalDiaTratamiento(evento = null) {
   ponerValor("tratamientoDosisTotalDia", calculo.texto);
 }
 
+function corregirCampoFrecuenciaTratamiento() {
+  const actual = valorCampo("tratamientoFrecuencia");
+  const normalizado = normalizarTextoFrecuenciaTratamiento(actual);
+  if (actual !== normalizado) ponerValor("tratamientoFrecuencia", normalizado);
+}
+
 function configurarMenuFrecuenciaTratamiento() {
   const input = document.getElementById("tratamientoFrecuencia");
   const boton = document.getElementById("abrirOpcionesFrecuenciaTratamiento");
@@ -6185,7 +6194,7 @@ function configurarMenuFrecuenciaTratamiento() {
   menu.querySelectorAll("[data-frecuencia-tratamiento]").forEach((opcion) => {
     opcion.addEventListener("mousedown", (evento) => evento.preventDefault());
     opcion.addEventListener("click", () => {
-      const valor = opcion.dataset.frecuenciaTratamiento || "";
+      const valor = normalizarTextoFrecuenciaTratamiento(opcion.dataset.frecuenciaTratamiento || "");
       ponerValor("tratamientoFrecuencia", valor);
       const veces = obtenerVecesPorDia(valor);
       if (veces) ponerValor("tratamientoVecesDia", String(veces));
@@ -6215,10 +6224,14 @@ function limpiarPuntoFinal(texto = "") {
 }
 
 function normalizarTextoFrecuenciaTratamiento(texto = "") {
-  return String(texto || "")
-    .replace(/\bveces\b/gi, "veces")
-    .replace(/\b1\s+veces\b/gi, "1 vez")
-    .trim();
+  return normalizarTextoFrecuencia(texto);
+}
+
+function normalizarTratamientoFrecuenciaPaciente(tratamiento = {}) {
+  return {
+    ...tratamiento,
+    frecuencia: normalizarTextoFrecuenciaTratamiento(tratamiento.frecuencia)
+  };
 }
 
 function asegurarPunto(texto = "") {
@@ -6916,8 +6929,12 @@ document.addEventListener("click", (evento) => {
   "cantidadTotalDia"
 ].forEach((id) => {
   document.getElementById(id)?.addEventListener("input", actualizarDosisTotalDiaTratamiento);
-  document.getElementById(id)?.addEventListener("change", actualizarDosisTotalDiaTratamiento);
+  document.getElementById(id)?.addEventListener("change", (evento) => {
+    if (id === "tratamientoFrecuencia") corregirCampoFrecuenciaTratamiento();
+    actualizarDosisTotalDiaTratamiento(evento);
+  });
 });
+document.getElementById("tratamientoFrecuencia")?.addEventListener("blur", corregirCampoFrecuenciaTratamiento);
 document.getElementById("tratamientoModoFrecuencia")?.addEventListener("change", () => {
   renderizarTomasTratamiento();
 });

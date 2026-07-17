@@ -25,6 +25,7 @@ import {
 } from "./data/pruebasInteractivas.js";
 import { createNoteGenerationProvider } from "./services/noteGenerationProviders.js";
 import { obtenerNombrePacienteParaMostrar } from "./utils/nombresPacientes.js";
+import { normalizarTextoFrecuencia } from "./utils/frecuencias.js";
 import { evaluarMedicamentosPaciente } from "./services/motorClinicoMedicamentos.js";
 import {
   calcularPuntajeEscala,
@@ -2397,7 +2398,7 @@ function aplicarTiempoActualNota() {
 function formatearIndicacionTratamientoNota(t = {}) {
   const medicamento = String(t.medicamento || t.nombre || "").trim();
   const via = String(t.via || "").trim();
-  const frecuencia = String(t.frecuencia || "").trim();
+  const frecuencia = normalizarTextoFrecuencia(t.frecuencia);
   const dosis = Array.isArray(t.tomas) && t.tomas.length
     ? t.tomas
       .map((toma) => [toma.cantidad, toma.horario ? `a las ${toma.horario}` : ""].filter(Boolean).join(" "))

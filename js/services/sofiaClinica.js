@@ -1,5 +1,6 @@
 import { db } from "../firebase.js";
 import { obtenerNombrePacienteParaMostrar } from "../utils/nombresPacientes.js";
+import { normalizarTextoFrecuencia } from "../utils/frecuencias.js";
 import { collection, doc, getDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const CAMPOS_FECHA = ["fechaAplicacion", "fecha", "createdAt", "updatedAt", "fechaNota", "fechaCreacion", "fechaInicio", "fechaSuspension"];
@@ -341,7 +342,7 @@ function estaActivo(tratamiento) {
   const estado = normalizarTexto(tratamiento.estado || tratamiento.estatus || "activo");
   return !/suspend|elimin|inactivo|finaliz/.test(estado) && !tratamiento.fechaSuspension;
 }
-function resumenTratamiento(t) { return [t.medicamento, t.dosis, t.frecuencia, t.via].filter(Boolean).join(". ") || "Tratamiento registrado"; }
+function resumenTratamiento(t) { return [t.medicamento, t.dosis, normalizarTextoFrecuencia(t.frecuencia), t.via].filter(Boolean).join(". ") || "Tratamiento registrado"; }
 function extraerDiagnosticos(expediente) {
   const paciente = expediente?.paciente || {};
   const dx = [];

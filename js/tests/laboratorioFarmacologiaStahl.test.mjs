@@ -17,9 +17,9 @@ const sinAcentos = (valor) => String(valor).normalize("NFD").replace(/[\u0300-\u
 
 test("Stahl local existe y el seed prioritario tiene fuentes trazables", () => {
   assert.equal(fs.existsSync("fuentes_farmacologicas/stahl_prescribers_guide.pdf"), true);
-  assert.equal(COBERTURA_FARMACOLOGICA.totalNormalizados, 207);
-  assert.equal(COBERTURA_FARMACOLOGICA.conFuenteVerificada, 53);
-  assert.equal(COBERTURA_FARMACOLOGICA.fuentePendiente, 154);
+  assert.equal(COBERTURA_FARMACOLOGICA.totalNormalizados, 210);
+  assert.equal(COBERTURA_FARMACOLOGICA.conFuenteVerificada, 57);
+  assert.equal(COBERTURA_FARMACOLOGICA.fuentePendiente, 153);
   [
     "atomoxetina",
     "metilfenidato",

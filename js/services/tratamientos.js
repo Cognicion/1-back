@@ -1,4 +1,5 @@
 import { db } from "../firebase.js";
+import { normalizarTratamientoFrecuencia } from "../utils/frecuencias.js";
 
 import {
   collection,
@@ -16,7 +17,7 @@ const coleccionTratamientos = (uidPaciente) =>
 
 export async function crearTratamiento(uidPaciente, datos) {
   return await addDoc(coleccionTratamientos(uidPaciente), {
-    ...datos,
+    ...normalizarTratamientoFrecuencia(datos),
     fechaCreacion: new Date().toISOString(),
     fechaActualizacion: new Date().toISOString()
   });
@@ -28,7 +29,7 @@ export async function listarTratamientos(uidPaciente) {
 
   return snap.docs.map((docTratamiento) => ({
     id: docTratamiento.id,
-    ...docTratamiento.data()
+    ...normalizarTratamientoFrecuencia(docTratamiento.data())
   }));
 }
 
@@ -36,7 +37,7 @@ export async function actualizarTratamiento(uidPaciente, tratamientoId, datos) {
   await updateDoc(
     doc(db, "usuarios", uidPaciente, "tratamientos", tratamientoId),
     {
-      ...datos,
+      ...normalizarTratamientoFrecuencia(datos),
       fechaActualizacion: new Date().toISOString()
     }
   );

@@ -13,6 +13,7 @@ import { medicoPuedeVer, obtenerUsuario } from "./services/usuarios.js";
 import { registrarEventoAuditoria } from "./services/auditoria.js";
 import { iniciarMonitoreoSesion } from "./services/sesion.js";
 import { crearCodigoPacienteParaMedico } from "./services/vinculacion.js";
+import { normalizarTextoFrecuencia } from "./utils/frecuencias.js";
 
 import {
   onAuthStateChanged
@@ -598,7 +599,7 @@ function formatearHorariosTratamiento(horarios = "") {
 function formatearIndicacionTratamiento(t = {}, incluirMedicamento = true) {
   const medicamento = incluirMedicamento ? asegurarPunto(t.medicamento || "") : "";
   const via = limpiarPuntoFinal(t.via || "");
-  const frecuencia = limpiarPuntoFinal(t.frecuencia || "");
+  const frecuencia = limpiarPuntoFinal(normalizarTextoFrecuencia(t.frecuencia));
   const dosis = limpiarPuntoFinal(t.dosis || "");
   const horarios = formatearHorariosTratamiento(t.horarios || "");
 
