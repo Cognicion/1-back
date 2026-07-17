@@ -3,12 +3,22 @@ import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/f
 import { collection, doc, serverTimestamp, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { loadDichoticCorpus, validateDichoticAudioFiles } from "./dichotic/dichotic-corpus-loader.js";
 import { StereoAudioEngine } from "./dichotic/stereo-audio-engine.js";
+import rehabilitationModeManager from "./rehabilitation-mode-manager.js";
 import {
   DICHOTIC_ACTIVITY_VERSION,
   calculateDichoticMetrics,
   dichoticTrialsToCsv,
   scoreDichoticTrial
 } from "./dichotic/dichotic-core.js";
+
+const DICHOTIC_ACTIVITY_ID = "escucha_dicotica_derecho";
+rehabilitationModeManager.registerActivity(DICHOTIC_ACTIVITY_ID, {
+  supportsTraining: true,
+  supportsRehabilitation: true,
+  supportsClinical: true,
+  supportsResearch: true,
+  activityVersion: DICHOTIC_ACTIVITY_VERSION
+});
 
 let usuarioId = "";
 let pacienteId = "";
@@ -58,6 +68,7 @@ const $ = (id) => document.getElementById(id);
 document.addEventListener("DOMContentLoaded", async () => {
   pacienteId = new URLSearchParams(window.location.search).get("id") || new URLSearchParams(window.location.search).get("paciente") || "";
   wireEvents();
+  applyModeDefaults($("configModo")?.value || "clinical");
   await initializeCorpus();
 });
 
@@ -91,6 +102,7 @@ function wireEvents() {
   $("dominanciaLinguistica")?.addEventListener("change", () => $("dominanciaOtra")?.classList.toggle("oculta", $("dominanciaLinguistica").value !== "otra"));
   $("btnContinuarPractica")?.addEventListener("click", () => startPractice());
   $("btnPractica")?.addEventListener("click", () => startPractice());
+  $("btnIniciarModalidad")?.addEventListener("click", startSelectedMode);
   $("btnEntrenamiento")?.addEventListener("click", startTraining);
   $("btnIniciar")?.addEventListener("click", startExperimental);
   $("btnInvestigacion")?.addEventListener("click", startResearch);
@@ -128,6 +140,7 @@ function wireEvents() {
     el.addEventListener("change", syncConfigTotals);
     el.addEventListener("input", syncConfigTotals);
   });
+  $("configModo")?.addEventListener("change", () => applyModeDefaults($("configModo").value));
   $("btnMostrarCorpus")?.addEventListener("click", toggleCorpusDetails);
   $("buscadorCorpus")?.addEventListener("input", () => {
     corpusSearch = $("buscadorCorpus").value.trim().toLowerCase();
@@ -644,6 +657,7 @@ function updateStartButtons() {
   $("btnContinuarPractica")?.toggleAttribute("disabled", !prepReady);
   $("btnEntrenamiento")?.toggleAttribute("disabled", !demoReady);
   $("btnInvestigacion")?.toggleAttribute("disabled", !demoReady);
+  $("btnIniciarModalidad")?.toggleAttribute("disabled", !demoReady);
 }
 
 function syncConfigTotals(event) {
@@ -656,13 +670,39 @@ function syncConfigTotals(event) {
   }
 }
 
+function applyModeDefaults(modeId) {
+  rehabilitationModeManager.setCurrentMode(modeId, DICHOTIC_ACTIVITY_ID);
+  const config = rehabilitationModeManager.getConfiguration({}, DICHOTIC_ACTIVITY_ID);
+  setChecked("configFeedback", config.immediateFeedback);
+  setChecked("configRespuestaCorrecta", config.showCorrectAnswer);
+  setChecked("configMostrarClasificacion", config.showClassification);
+  setChecked("configRepetirEstimulo", config.allowStimulusRepeat);
+  setChecked("configReconocimientoAuto", config.voiceCapture !== false && config.manualCaptureMode !== true);
+  setChecked("configCapturaManual", config.manualCaptureMode === true);
+  setChecked("configPausaAutomatica", config.automaticPause === true);
+  setChecked("configPausaManual", config.freePauses || config.manualPause);
+  setChecked("configPantallaCompleta", config.fullscreen === true);
+  setChecked("configSonidos", config.sounds !== false);
+  setChecked("configAnimaciones", config.animations !== false);
+  const maxReps = $("configMaxRepeticiones");
+  if (maxReps) maxReps.value = String(config.maxRepetitions ?? 0);
+  const response = $("configTiempoRespuesta");
+  if (response) response.value = String(config.responseMaxSeconds || 15);
+}
+
+function setChecked(id, value) {
+  const el = $(id);
+  if (el) el.checked = Boolean(value);
+}
+
 function getTestConfig(modeOverride = "") {
   const blocks = clampNumber($("configBloques")?.value, 1, 4, 4);
   const trialsPerBlock = clampNumber($("configEnsayosBloque")?.value, 1, 30, 30);
   const maxTotal = Math.min(120, blocks * trialsPerBlock);
   const totalTrials = clampNumber($("configTotalEnsayos")?.value, 1, maxTotal, maxTotal);
-  const mode = modeOverride || $("configModo")?.value || "experimental";
-  return {
+  const mode = modeOverride || $("configModo")?.value || "clinical";
+  rehabilitationModeManager.setCurrentMode(mode, DICHOTIC_ACTIVITY_ID);
+  const overrides = {
     attendedEar: "right",
     blocks,
     trialsPerBlock,
@@ -670,9 +710,18 @@ function getTestConfig(modeOverride = "") {
     interTrialMs: clampNumber($("configTiempoEntreEnsayos")?.value, 300, 5000, 700),
     fixationMs: clampNumber($("configTiempoFijacion")?.value, 0, 5000, 700),
     responseMaxSeconds: clampNumber($("configTiempoRespuesta")?.value, 3, 60, 15),
-    immediateFeedback: Boolean($("configFeedback")?.checked) || mode === "training",
+    immediateFeedback: Boolean($("configFeedback")?.checked) || mode === "training" || mode === "rehabilitation",
+    showCorrectAnswer: Boolean($("configRespuestaCorrecta")?.checked) || mode === "training",
+    showClassification: Boolean($("configMostrarClasificacion")?.checked) || mode === "training",
+    allowStimulusRepeat: Boolean($("configRepetirEstimulo")?.checked),
+    maxRepetitions: clampNumber($("configMaxRepeticiones")?.value, 0, 10, 0),
     automaticRecognition: Boolean($("configReconocimientoAuto")?.checked) && !Boolean($("configCapturaManual")?.checked),
     manualCaptureMode: Boolean($("configCapturaManual")?.checked),
+    automaticPause: Boolean($("configPausaAutomatica")?.checked),
+    manualPause: Boolean($("configPausaManual")?.checked),
+    fullscreen: Boolean($("configPantallaCompleta")?.checked),
+    sounds: Boolean($("configSonidos")?.checked),
+    animations: Boolean($("configAnimaciones")?.checked),
     showFixation: Boolean($("configCruz")?.checked),
     showCounter: Boolean($("configContador")?.checked),
     showProgress: Boolean($("configProgreso")?.checked),
@@ -681,6 +730,7 @@ function getTestConfig(modeOverride = "") {
     sequenceMode: corpus?.sequenceMode,
     randomized: false
   };
+  return rehabilitationModeManager.getConfiguration(overrides, DICHOTIC_ACTIVITY_ID);
 }
 
 function buildSessionPairs(pairList, config) {
@@ -726,6 +776,19 @@ function startTraining() {
   beginSession("training", buildSessionPairs(corpus.pairs, config), config);
 }
 
+function startSelectedMode() {
+  const mode = $("configModo")?.value || "clinical";
+  if (mode === "training") return startTraining();
+  if (mode === "rehabilitation") return startRehabilitation();
+  if (mode === "research") return startResearch();
+  return startExperimental();
+}
+
+function startRehabilitation() {
+  const config = getTestConfig("rehabilitation");
+  beginSession("rehabilitation", buildSessionPairs(corpus.pairs, config), config);
+}
+
 function startResearch() {
   const config = getTestConfig("research");
   beginSession("research", buildSessionPairs(corpus.pairs, config), config);
@@ -761,8 +824,8 @@ function closeExperimentalModal() {
 
 function continueExperimental() {
   closeExperimentalModal();
-  const config = getTestConfig("experimental");
-  beginSession("experimental", buildSessionPairs(corpus.pairs, config), config);
+  const config = getTestConfig("clinical");
+  beginSession("clinical", buildSessionPairs(corpus.pairs, config), config);
 }
 
 function startDemo() {
@@ -776,6 +839,12 @@ function beginSession(mode, pairList, config = getTestConfig()) {
   sessionMode = mode;
   sessionConfig = config;
   sessionStartedAt = performance.now();
+  rehabilitationModeManager.clearResearchEvents();
+  if (config.researchLogging) {
+    rehabilitationModeManager.attachResearchLogging(document);
+  } else {
+    rehabilitationModeManager.detachResearchLogging(document);
+  }
   trials = [];
   breaks = [];
   currentIndex = -1;
@@ -944,10 +1013,17 @@ function finishSession() {
   const responseTimes = trials.map((trial) => trial.reactionTime ?? trial.responseLatencyMs).filter(Number.isFinite);
   const meanResponseTimeMs = responseTimes.length ? Math.round(responseTimes.reduce((a, b) => a + b, 0) / responseTimes.length) : null;
   const incorrectResponses = metrics.totalErrors + metrics.technicalFailures;
+  const modalityMetadata = rehabilitationModeManager.getSessionMetadata({
+    activityId: DICHOTIC_ACTIVITY_ID,
+    activityVersion: DICHOTIC_ACTIVITY_VERSION,
+    stimulusVersion: corpus?.corpusVersion || "",
+    overrides: sessionConfig || {}
+  });
   result = {
-    activityId: "escucha_dicotica_derecho",
+    activityId: DICHOTIC_ACTIVITY_ID,
     activityName: "Prueba de Escucha Dicotica",
     activityVersion: DICHOTIC_ACTIVITY_VERSION,
+    ...modalityMetadata,
     sessionId,
     patientId: pacienteId || usuarioId,
     uidProfesional: usuarioId,
@@ -968,8 +1044,11 @@ function finishSession() {
     trialHistory: trials,
     breaks,
     interruptions,
+    researchEvents: sessionConfig?.researchLogging ? rehabilitationModeManager.getResearchEvents() : [],
+    browserInfo: sessionConfig?.recordBrowserInfo ? collectBrowserInfo() : null,
     voicePrivacy: { voiceRecordingConsent: false, consentDate: null, consentVersion: "no_audio_storage_default" }
   };
+  rehabilitationModeManager.detachResearchLogging(document);
   saveLocal(result);
   saveRemote(result);
   renderResults(result);
@@ -980,11 +1059,11 @@ function renderResults(r) {
   $("pantallaResultados").classList.remove("oculta");
   const m = r.results;
   const cards = [["Total de ensayos", m.totalTrials],["Correctas", m.correctResponses],["Incorrectas", m.incorrectResponses ?? m.totalErrors],["Intrusiones oido izquierdo", m.leftEarIntrusions],["Palabras no presentadas", m.nonPresentedWords],["Omisiones", m.omissions],["Tiempo promedio", formatMs(m.meanResponseTimeMs)],["Tiempo total", formatMs(m.totalTimeMs)],["Porcentaje de aciertos", m.accuracyPercentage ?? "N/A"]];
-  cards.push(["Modo", sessionModeLabel(r.sessionMode)]);
+  cards.push(["Modalidad", r.applicationModeLabel || sessionModeLabel(r.sessionMode)]);
   $("resultadosGrid").innerHTML = cards.map(([k,v]) => `<div class="resultado-card"><span>${k}</span><strong>${v}</strong></div>`).join("");
   renderBlockSummary(m.blockResults || []);
   $("bloquesResumenGrid")?.classList.toggle("oculta", r.configuration?.showBlockResults === false);
-  $("interpretacionDicotica").innerHTML = `<strong>Descripcion objetiva</strong><p>${objectiveSummary(m)}</p>`;
+  $("interpretacionDicotica").innerHTML = `<strong>Descripcion objetiva</strong><p>${objectiveSummary(m)}</p><p>${escapeHtml(r.modalityNotice || "")}</p>`;
   $("tablaBloques").innerHTML = m.blockResults.map((b) => `<tr><td>${b.blockNumber}</td><td>${b.correctResponses}</td><td>${b.leftEarIntrusions}</td><td>${b.nonPresentedWords}</td><td>${b.omissions}</td><td>${b.technicalFailures}</td></tr>`).join("");
   renderTrialDetails();
   renderBars("graficaBloques", m.blockResults.map((b) => [`B${b.blockNumber}`, b.correctResponses]));
@@ -1148,6 +1227,8 @@ function sessionModeLabel(value) {
     demo_technical: "Demostracion tecnica",
     practice_demo: "Practica",
     training: "Entrenamiento",
+    rehabilitation: "Rehabilitacion",
+    clinical: "Evaluacion Clinica",
     experimental: "Experimental con corpus provisional",
     validated_experimental: "Experimental validada",
     research: "Investigacion"
@@ -1156,6 +1237,20 @@ function sessionModeLabel(value) {
 function captureMethodLabel(trial) { return trial?.scoringMethod?.startsWith("speech") ? "Voz" : "Manual"; }
 function formatMs(value) {
   return Number.isFinite(value) ? `${value} ms` : "N/A";
+}
+function collectBrowserInfo() {
+  return {
+    userAgent: navigator.userAgent,
+    language: navigator.language,
+    platform: navigator.platform,
+    hardwareConcurrency: navigator.hardwareConcurrency ?? null,
+    deviceMemory: navigator.deviceMemory ?? null,
+    screen: {
+      width: window.screen?.width ?? null,
+      height: window.screen?.height ?? null,
+      pixelRatio: window.devicePixelRatio ?? null
+    }
+  };
 }
 function renderBars(id, data) { const max = Math.max(...data.map(([,v]) => v), 1); $(id).innerHTML = data.map(([k,v]) => `<div class="barra-metrica"><span>${k}</span><i style="width:${Math.max(4,(v/max)*100)}%"></i><strong>${v}</strong></div>`).join(""); }
 function download(name, content, type) { const blob = new Blob([content], { type }); const url = URL.createObjectURL(blob); const a = document.createElement("a"); a.href = url; a.download = name; a.click(); URL.revokeObjectURL(url); }

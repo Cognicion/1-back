@@ -174,19 +174,28 @@
         <label>Tiempo entre ensayos (ms) <input id="configTiempoEntreEnsayos" type="number" min="300" max="5000" step="100" value="700"></label>
         <label>Tiempo de fijacion (ms) <input id="configTiempoFijacion" type="number" min="0" max="5000" step="100" value="700"></label>
         <label>Tiempo maximo para responder (s) <input id="configTiempoRespuesta" type="number" min="3" max="60" value="15"></label>
-        <label>Modo
+        <label>Modalidad de aplicacion
           <select id="configModo">
             <option value="training">Entrenamiento</option>
-            <option value="demo">Demostracion</option>
-            <option value="experimental" selected>Experimental</option>
+            <option value="rehabilitation">Rehabilitacion</option>
+            <option value="clinical" selected>Evaluacion Clinica</option>
             <option value="research">Investigacion</option>
           </select>
         </label>
       </div>
       <div class="config-checks">
         <label><input id="configFeedback" type="checkbox"> Mostrar retroalimentacion inmediata</label>
+        <label><input id="configRespuestaCorrecta" type="checkbox"> Mostrar respuesta correcta</label>
+        <label><input id="configMostrarClasificacion" type="checkbox"> Mostrar clasificacion</label>
+        <label><input id="configRepetirEstimulo" type="checkbox"> Permitir repetir estimulo</label>
+        <label>Maximo de repeticiones <input id="configMaxRepeticiones" type="number" min="0" max="10" value="0"></label>
         <label><input id="configReconocimientoAuto" type="checkbox" checked> Reconocimiento automatico</label>
         <label><input id="configCapturaManual" type="checkbox"> Modo captura manual</label>
+        <label><input id="configPausaAutomatica" type="checkbox"> Pausa automatica</label>
+        <label><input id="configPausaManual" type="checkbox"> Pausa manual</label>
+        <label><input id="configPantallaCompleta" type="checkbox"> Modo pantalla completa</label>
+        <label><input id="configSonidos" type="checkbox" checked> Sonidos</label>
+        <label><input id="configAnimaciones" type="checkbox" checked> Animaciones</label>
         <label><input id="configCruz" type="checkbox" checked> Mostrar cruz de fijacion</label>
         <label><input id="configContador" type="checkbox" checked> Mostrar contador</label>
         <label><input id="configProgreso" type="checkbox" checked> Mostrar progreso</label>
@@ -198,6 +207,7 @@
     <section class="panel-dicotica">
       <h2>Inicio</h2>
       <div class="acciones-dicotica">
+        <button id="btnIniciarModalidad" type="button">Iniciar modalidad seleccionada</button>
         <button id="btnEntrenamiento" type="button">Iniciar modo entrenamiento</button>
         <button id="btnContinuarPractica" type="button" class="boton-principal-grande" disabled>Continuar a la practica</button>
         <button id="btnPractica" type="button" class="oculta">Iniciar practica</button>
