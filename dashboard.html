@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>COGNICIÓN | Dashboard médico</title>
-<link rel="icon" type="image/png" href="assets/favicon-cognicion.png">
+<link rel="icon" type="image/png" href="assets/favicon-cognicion-128.png">
 <link rel="stylesheet" href="css/apariencia.css">
 
 <style>
@@ -1261,7 +1261,7 @@ footer {
     <div class="app-shell topbar">
 
         <div class="brand">
-            <img src="assets/favicon-cognicion.png" alt="Cognición" width="64" height="64" decoding="async" fetchpriority="high">
+            <img src="assets/favicon-cognicion-128.png" alt="Cognición" width="64" height="64" decoding="async" fetchpriority="high">
 
             <div>
                 <div class="brand-name">Cognición</div>
@@ -1629,13 +1629,28 @@ footer {
     </div>
 </footer>
 
+<script>
+performance.mark?.("cognicion:dashboard:html-end");
+console.time?.("COGNICION dashboard | primera fase HTML");
+document.addEventListener("DOMContentLoaded", function () {
+  performance.mark?.("cognicion:dashboard:dom-content-loaded");
+  performance.measure?.("COGNICION dashboard | DOMContentLoaded", "cognicion:dashboard:html-end", "cognicion:dashboard:dom-content-loaded");
+  console.timeEnd?.("COGNICION dashboard | primera fase HTML");
+}, { once: true });
+</script>
 <script type="module" src="js/dashboard.js"></script>
 <script type="module" src="js/components/accesosRapidos.js"></script>
 <script>
 (function () {
   function cargarReportesGlobales() {
+    performance.mark?.("cognicion:dashboard:reportes:start");
+    console.time?.("COGNICION dashboard | reportes diferidos");
     import("./js/reportes.js").catch(function (error) {
       console.error("No se pudo cargar el modulo de reportes.", error);
+    }).finally(function () {
+      performance.mark?.("cognicion:dashboard:reportes:end");
+      performance.measure?.("COGNICION dashboard | reportes diferidos", "cognicion:dashboard:reportes:start", "cognicion:dashboard:reportes:end");
+      console.timeEnd?.("COGNICION dashboard | reportes diferidos");
     });
   }
 

@@ -39,6 +39,8 @@ import {
   enviarMensajeConversacion
 } from "./services/mensajes.js";
 
+performance.mark?.("cognicion:dashboard:module:start");
+console.time?.("COGNICION dashboard | modulo JS");
 aplicarAparienciaGuardada();
 
 const frasesClinicas = [
@@ -143,6 +145,34 @@ const perfilCargaDashboard = {
   inicio: performance.now(),
   etapas: []
 };
+const metricasDashboard = {
+  inicio: performance.now(),
+  medidas: [],
+  estado: {
+    pacientes: "no aplica: dashboard.html no carga pacientes en el arranque",
+    estadisticas: "no aplica: dashboard.html no carga estadisticas en el arranque"
+  }
+};
+
+function marcarDashboard(nombre) {
+  performance.mark?.(`cognicion:dashboard:${nombre}`);
+}
+
+function medirDashboard(nombre, inicio, fin = null) {
+  const marcaInicio = `cognicion:dashboard:${inicio}`;
+  const marcaFin = `cognicion:dashboard:${fin || `${inicio}:fin`}`;
+  if (!fin) performance.mark?.(marcaFin);
+  try {
+    performance.measure?.(`COGNICION dashboard | ${nombre}`, marcaInicio, marcaFin);
+  } catch (error) {
+    return null;
+  }
+  const entradas = performance.getEntriesByName?.(`COGNICION dashboard | ${nombre}`);
+  const ultima = entradas?.[entradas.length - 1];
+  const ms = ultima ? Math.round(ultima.duration) : null;
+  metricasDashboard.medidas.push({ fase: nombre, ms });
+  return ms;
+}
 
 function medirEtapaDashboard(nombre, inicio) {
   perfilCargaDashboard.etapas.push({
@@ -158,6 +188,20 @@ function reportarPerfilCargaDashboard() {
     porcentaje: `${Math.round((etapa.ms / total) * 1000) / 10}%`
   }));
   console.table([{ etapa: "total", ms: total, porcentaje: "100%" }, ...etapas]);
+}
+
+function reportarMetricasDashboard() {
+  const total = Math.round(performance.now() - metricasDashboard.inicio);
+  console.groupCollapsed?.("COGNICION dashboard | rendimiento movil");
+  console.table?.([
+    { fase: "total observado", ms: total },
+    ...metricasDashboard.medidas
+  ]);
+  console.table?.([
+    { recurso: "pacientes", estado: metricasDashboard.estado.pacientes },
+    { recurso: "estadisticas", estado: metricasDashboard.estado.estadisticas }
+  ]);
+  console.groupEnd?.();
 }
 
 function ejecutarEnReposoDashboard(callback, timeout = 2200) {
@@ -179,13 +223,20 @@ function iniciarMonitoreoSesionDashboard(user, datos) {
 
 function programarDatosSecundariosDashboard(rolUsuario, uidUsuario) {
   ejecutarEnReposoDashboard(async () => {
+    marcarDashboard("consultas-secundarias:start");
+    console.time?.("COGNICION dashboard | consultas secundarias");
     const inicioDatosSecundarios = performance.now();
     await Promise.allSettled([
       asegurarAvisosDashboard(rolUsuario, uidUsuario),
       asegurarConversacionesDashboard()
     ]);
+    console.timeEnd?.("COGNICION dashboard | consultas secundarias");
+    medirDashboard("consultas secundarias", "consultas-secundarias:start");
     medirEtapaDashboard("datosSecundariosDiferidos", inicioDatosSecundarios);
     reportarPerfilCargaDashboard();
+    marcarDashboard("fin-carga");
+    medirDashboard("final carga dashboard", "html-end", "fin-carga");
+    reportarMetricasDashboard();
   });
 }
 
@@ -303,13 +354,19 @@ document.addEventListener("keydown", (evento) => {
 });
 
 onAuthStateChanged(auth, async (user) => {
+  marcarDashboard("auth-resuelta");
+  medirDashboard("resolucion autenticacion", "html-end", "auth-resuelta");
   const inicioAuth = performance.now();
   if (!user) {
     window.location.href = "login.html";
     return;
   }
 
+  marcarDashboard("usuario:start");
+  console.time?.("COGNICION dashboard | usuario");
   const datos = await obtenerUsuario(user.uid);
+  console.timeEnd?.("COGNICION dashboard | usuario");
+  medirDashboard("carga datos usuario", "usuario:start");
   medirEtapaDashboard("obtenerUsuario", inicioAuth);
   const inicioApariencia = performance.now();
   await sincronizarAparienciaUsuario(user.uid, datos);
@@ -1070,3 +1127,15 @@ document.querySelector("[data-mensajes-admin]")?.addEventListener("click", async
   await cargarDatosMensajesDashboard();
   await hablarConAdminDashboard();
 });
+
+marcarDashboard("botones-operativos");
+medirDashboard("botones operativos", "module:start", "botones-operativos");
+marcarDashboard("tarjetas-renderizadas");
+metricasDashboard.medidas.push({
+  fase: "tarjetas renderizadas",
+  ms: 0,
+  detalle: `${document.querySelectorAll(".module-card").length} tarjetas estaticas en HTML`
+});
+performance.mark?.("cognicion:dashboard:module:end");
+performance.measure?.("COGNICION dashboard | modulo JS", "cognicion:dashboard:module:start", "cognicion:dashboard:module:end");
+console.timeEnd?.("COGNICION dashboard | modulo JS");
