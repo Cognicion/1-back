@@ -1,11 +1,4 @@
 ﻿import { auth, db } from "./firebase.js";
-import { ESCALAS_PSIQUIATRICAS } from "./data/escalasPsiquiatricas.js";
-import { ESCALAS_COGNITIVAS } from "./data/escalasCognitivas.js?v=20260717-syntaxfix";
-import {
-  crearResumenEscala,
-  formatearFechaEscala,
-  listarEscalasAplicadas
-} from "./services/escalas.js";
 import { MEDICAMENTOS_PRESENTACIONES } from "./data/medicamentos.js";
 import { CIE10 } from "./data/cie10.js";
 import { CIE11 } from "./data/cie11.js";
@@ -84,6 +77,57 @@ import {
   crearCodigoExpedienteParaPaciente,
   vincularExpedienteConCodigoPaciente
 } from "./services/vinculacion.js";
+
+let ESCALAS_PSIQUIATRICAS = [];
+let ESCALAS_COGNITIVAS = [];
+let crearResumenEscala = null;
+let listarEscalasAplicadas = null;
+let dependenciasEscalasPacientePromise = null;
+
+function formatearFechaEscalaFallback(valor, conHora = false) {
+  if (!valor) return "Sin fecha";
+  const fecha = typeof valor?.toDate === "function" ? valor.toDate() : new Date(valor);
+  if (Number.isNaN(fecha.getTime())) return "Sin fecha";
+  return fecha.toLocaleString("es-MX", conHora ? {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false
+  } : {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit"
+  });
+}
+
+let formatearFechaEscala = formatearFechaEscalaFallback;
+
+async function cargarDependenciasEscalasPaciente() {
+  if (!dependenciasEscalasPacientePromise) {
+    dependenciasEscalasPacientePromise = Promise.all([
+      import("./data/escalasPsiquiatricas.js?v=20260716-expediente-fix-1"),
+      import("./data/escalasCognitivas.js?v=20260716-expediente-fix-1"),
+      import("./services/escalas.js?v=20260716-expediente-fix-1")
+    ]).then(([psiquiatricas, cognitivas, servicioEscalas]) => {
+      ESCALAS_PSIQUIATRICAS = psiquiatricas.ESCALAS_PSIQUIATRICAS || [];
+      ESCALAS_COGNITIVAS = cognitivas.ESCALAS_COGNITIVAS || [];
+      crearResumenEscala = servicioEscalas.crearResumenEscala;
+      formatearFechaEscala = servicioEscalas.formatearFechaEscala || formatearFechaEscalaFallback;
+      listarEscalasAplicadas = servicioEscalas.listarEscalasAplicadas;
+
+      if (typeof crearResumenEscala !== "function" || typeof listarEscalasAplicadas !== "function") {
+        throw new Error("El servicio de escalas no expone las funciones requeridas.");
+      }
+    }).catch((error) => {
+      dependenciasEscalasPacientePromise = null;
+      throw error;
+    });
+  }
+
+  return dependenciasEscalasPacientePromise;
+}
 
 let uidPaciente = "";
 let datosPacienteActual = null;
@@ -2163,6 +2207,7 @@ async function cargarResultadosEscalasPaciente() {
   contenedor.innerHTML = "Cargando resultados...";
 
   try {
+    await cargarDependenciasEscalasPaciente();
     const escalas = await listarEscalasAplicadas(uidPaciente, 80);
 
     if (!escalas.length) {
@@ -2295,6 +2340,7 @@ async function cargarRehabilitacionCognitivaPaciente() {
   if (recomendaciones) recomendaciones.textContent = "Cargando recomendaciones...";
 
   try {
+    await cargarDependenciasEscalasPaciente();
     const escalas = await listarEscalasAplicadas(uidPaciente, 120);
     const cognitivas = escalas.filter((escala) => String(escala.tipoEscala || "").toLowerCase() === "cognitiva");
 
@@ -2387,6 +2433,7 @@ async function cargarEscalasAsignablesPaciente() {
   contenedor.textContent = "Cargando escalas...";
 
   try {
+    await cargarDependenciasEscalasPaciente();
     const snap = await getDocs(collection(db, "usuarios", uidPaciente, "escalasAsignadas"));
     escalasAsignadasCache = new Map(snap.docs.map((docEscala) => [docEscala.id, docEscala.data()]));
 
@@ -2425,6 +2472,15 @@ async function cargarEscalasAsignablesPaciente() {
 }
 
 async function actualizarVisibilidadEscala(control) {
+  try {
+    await cargarDependenciasEscalasPaciente();
+  } catch (error) {
+    console.error("No se pudo cargar el módulo de escalas:", error);
+    control.checked = !control.checked;
+    alert("El módulo de escalas no está disponible. El resto del expediente continúa funcionando.");
+    return;
+  }
+
   const escalaId = control.dataset.escalaVisible;
   const escala = [
     ...ESCALAS_PSIQUIATRICAS,
