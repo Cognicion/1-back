@@ -15,6 +15,14 @@ import {
 import { obtenerUsuario } from "./services/usuarios.js";
 import { registrarEventoAuditoria, resumenError } from "./services/auditoria.js";
 
+function conTiempoLimiteAuth(promesa, ms = 12000) {
+  let temporizador = null;
+  const limite = new Promise((_, reject) => {
+    temporizador = setTimeout(() => reject(new Error("Tiempo de espera agotado")), ms);
+  });
+  return Promise.race([promesa, limite]).finally(() => clearTimeout(temporizador));
+}
+
 window.registrarUsuario = async function() {
   const nombre = document.getElementById("nombre").value;
   const email = document.getElementById("email").value;
@@ -44,7 +52,13 @@ window.iniciarSesion = async function() {
 
 try {
   const cred = await signInWithEmailAndPassword(auth, email, password);
-  const datos = await obtenerUsuario(cred.user.uid);
+  let datos = null;
+
+  try {
+    datos = await conTiempoLimiteAuth(obtenerUsuario(cred.user.uid));
+  } catch (errorUsuario) {
+    console.warn("No se pudo cargar el perfil despues del inicio de sesion; se continuara al dashboard.", errorUsuario);
+  }
 
   try {
     await registrarEventoAuditoria({
@@ -176,4 +190,3 @@ window.recuperarPassword = async function() {
     }
   }
 };
-    

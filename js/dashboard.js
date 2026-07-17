@@ -158,6 +158,14 @@ function marcarDashboard(nombre) {
   performance.mark?.(`cognicion:dashboard:${nombre}`);
 }
 
+function conTiempoLimiteDashboard(promesa, ms = 12000) {
+  let temporizador = null;
+  const limite = new Promise((_, reject) => {
+    temporizador = setTimeout(() => reject(new Error("Tiempo de espera agotado")), ms);
+  });
+  return Promise.race([promesa, limite]).finally(() => clearTimeout(temporizador));
+}
+
 function medirDashboard(nombre, inicio, fin = null) {
   const marcaInicio = `cognicion:dashboard:${inicio}`;
   const marcaFin = `cognicion:dashboard:${fin || `${inicio}:fin`}`;
@@ -364,12 +372,19 @@ onAuthStateChanged(auth, async (user) => {
 
   marcarDashboard("usuario:start");
   console.time?.("COGNICION dashboard | usuario");
-  const datos = await obtenerUsuario(user.uid);
+  let datos = null;
+  try {
+    datos = await conTiempoLimiteDashboard(obtenerUsuario(user.uid));
+  } catch (errorUsuario) {
+    console.warn("No se pudo cargar el perfil del usuario en dashboard; se continuara con datos de autenticacion.", errorUsuario);
+  }
   console.timeEnd?.("COGNICION dashboard | usuario");
   medirDashboard("carga datos usuario", "usuario:start");
   medirEtapaDashboard("obtenerUsuario", inicioAuth);
   const inicioApariencia = performance.now();
-  await sincronizarAparienciaUsuario(user.uid, datos);
+  await conTiempoLimiteDashboard(sincronizarAparienciaUsuario(user.uid, datos)).catch((errorApariencia) => {
+    console.warn("No se pudo sincronizar la apariencia del usuario en dashboard.", errorApariencia);
+  });
   medirEtapaDashboard("sincronizarApariencia", inicioApariencia);
   const rolOriginalUsuario = obtenerRolUsuarioDashboard(datos || {});
   const rolUsuario = normalizarRolUsuario(rolOriginalUsuario);
