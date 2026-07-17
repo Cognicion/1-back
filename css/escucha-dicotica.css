@@ -490,7 +490,7 @@ td {
 
 .hud-dicotica {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 12px;
   text-align: left;
 }
@@ -518,8 +518,98 @@ td {
 }
 
 .captura-respuesta {
-  width: min(720px, 100%);
+  width: min(820px, 100%);
   margin: 0 auto;
+}
+
+.estado-voz {
+  display: grid;
+  gap: 8px;
+  min-height: 94px;
+  margin-bottom: 16px;
+  padding: 18px;
+  border: 1px solid rgba(125, 211, 252, .18);
+  border-radius: 22px;
+  color: #dbeafe;
+  background: rgba(2, 6, 23, .42);
+}
+
+.estado-voz strong {
+  font-size: clamp(1.35rem, 4vw, 2.1rem);
+}
+
+.estado-voz span {
+  color: var(--muted);
+}
+
+.estado-voz.escuchando {
+  border-color: rgba(248, 113, 113, .62);
+  color: #fecaca;
+  background: rgba(127, 29, 29, .2);
+}
+
+.estado-voz.escuchando strong::before {
+  content: "";
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  margin-right: 10px;
+  border-radius: 50%;
+  background: #ef4444;
+  animation: pulso-dicotica 1s infinite;
+}
+
+.estado-voz.completado {
+  border-color: rgba(52, 211, 153, .52);
+  color: #bbf7d0;
+  background: rgba(6, 78, 59, .22);
+}
+
+.estado-voz.error {
+  border-color: rgba(251, 191, 36, .42);
+  color: #fde68a;
+  background: rgba(113, 63, 18, .18);
+}
+
+.boton-microfono {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  width: min(280px, 100%);
+  min-height: 58px;
+  margin: 0 auto 16px;
+  font-size: 1.08rem;
+}
+
+.boton-microfono.detener {
+  color: #fee2e2;
+  background: linear-gradient(135deg, #b91c1c, #ef4444);
+}
+
+.transcripcion-panel {
+  display: grid;
+  gap: 8px;
+  margin: 12px 0;
+  padding: 16px;
+  border: 1px solid rgba(52, 211, 153, .28);
+  border-radius: 18px;
+  text-align: left;
+  background: rgba(6, 78, 59, .18);
+}
+
+.transcripcion-panel span {
+  color: var(--muted);
+  font-weight: 800;
+}
+
+.transcripcion-panel strong {
+  color: #f8fafc;
+  font-size: 1.6rem;
+  text-transform: uppercase;
+}
+
+.acciones-respuesta {
+  justify-content: center;
 }
 
 .descanso-bloque {
@@ -534,6 +624,27 @@ td {
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 14px;
   margin: 18px 0;
+}
+
+.detalle-respuestas {
+  margin-top: 22px;
+}
+
+.filtros-detalle {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+  margin: 12px 0;
+}
+
+.resultado-ok {
+  color: #bbf7d0;
+  font-weight: 900;
+}
+
+.resultado-error {
+  color: #fecaca;
+  font-weight: 900;
 }
 
 .graficas-dicotica article {

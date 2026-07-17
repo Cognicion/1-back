@@ -45,7 +45,8 @@ assert.equal(metrics.validTrials, 4);
 
 const csv = dichoticTrialsToCsv(scored);
 assert.equal(csv.trim().split("\n").length, scored.length + 1);
-assert.ok(csv.includes("sessionId,blockNumber,trialNumber"));
+assert.ok(csv.includes("sessionId,trialNumber,blockNumber"));
+assert.ok(csv.includes("speechTranscriptOriginal"));
 
 const corpus = JSON.parse(await readFile(new URL("../data/rehabilitacion/escucha-dicotica-pares.json", import.meta.url), "utf8"));
 const validation = validateDichoticCorpus(corpus);

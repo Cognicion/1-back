@@ -21,7 +21,6 @@ let sessionId = "";
 let currentIndex = -1;
 let currentTrial = null;
 let responseWindowStartPerf = 0;
-let responseWindowTimer = null;
 let currentPlayback = null;
 let trials = [];
 let breaks = [];
@@ -38,9 +37,18 @@ let microphoneChecked = false;
 let manualCaptureSelected = false;
 let corpusPage = 1;
 let corpusSearch = "";
+let trialSpeechTranscriptOriginal = "";
+let trialCaptureMethod = "";
+let trialRecognitionStartedAt = null;
+let trialRecognitionEndedAt = null;
+let trialRecognitionActive = false;
+let suppressRecognitionCallbacks = false;
+let detailFilter = "all";
+let detailSearch = "";
+let detailSort = "trialNumber";
 
-const RESPONSE_WINDOW_MS = 5000;
 const CORPUS_PAGE_SIZE = 10;
+const AUTO_RECOGNITION_DELAY_MS = 300;
 
 const $ = (id) => document.getElementById(id);
 
@@ -84,14 +92,31 @@ function wireEvents() {
   $("btnDemo")?.addEventListener("click", openDemoModal);
   $("btnCancelarDemo")?.addEventListener("click", closeDemoModal);
   $("btnContinuarDemo")?.addEventListener("click", startDemo);
-  $("btnEscucharRespuesta")?.addEventListener("click", startSpeechRecognition);
+  $("btnHablar")?.addEventListener("click", toggleTrialSpeechRecognition);
   $("btnConfirmarRespuesta")?.addEventListener("click", () => submitTrial($("respuestaManual").value, {}));
+  $("btnEditarRespuesta")?.addEventListener("click", showManualResponseInput);
+  $("btnRepetirCaptura")?.addEventListener("click", () => startSpeechRecognition({ manual: true }));
+  $("btnEscribirManual")?.addEventListener("click", showManualResponseInput);
   $("btnSinRespuesta")?.addEventListener("click", () => submitTrial("", {}));
   $("btnIninteligible")?.addEventListener("click", () => submitTrial($("respuestaManual").value, { unintelligible: true }));
   $("btnFalloTecnico")?.addEventListener("click", () => submitTrial($("respuestaManual").value, { technicalFailure: true }));
   $("btnExportarJson")?.addEventListener("click", exportJson);
   $("btnExportarCsv")?.addEventListener("click", exportCsv);
+  $("btnExportarCompleto")?.addEventListener("click", exportCompleteResults);
+  $("btnCopiarResultados")?.addEventListener("click", copyResultsToClipboard);
   $("btnImprimir")?.addEventListener("click", () => window.print());
+  $("filtroDetalle")?.addEventListener("change", () => {
+    detailFilter = $("filtroDetalle").value;
+    renderTrialDetails();
+  });
+  $("buscadorDetalle")?.addEventListener("input", () => {
+    detailSearch = $("buscadorDetalle").value.trim().toLowerCase();
+    renderTrialDetails();
+  });
+  $("ordenDetalle")?.addEventListener("change", () => {
+    detailSort = $("ordenDetalle").value;
+    renderTrialDetails();
+  });
   $("btnMostrarCorpus")?.addEventListener("click", toggleCorpusDetails);
   $("buscadorCorpus")?.addEventListener("input", () => {
     corpusSearch = $("buscadorCorpus").value.trim().toLowerCase();
@@ -119,7 +144,6 @@ function wireEvents() {
     if (document.hidden && currentTrial) interruptions.push({ type: "visibilitychange", at: new Date().toISOString(), trialId: currentTrial.trialId });
   });
   window.addEventListener("pagehide", () => {
-    window.clearTimeout(responseWindowTimer);
     activeRecognition?.abort?.();
     engine.close();
   });
@@ -462,34 +486,140 @@ function renderCorpusTable() {
   $("btnCorpusNext")?.toggleAttribute("disabled", corpusPage >= totalPages);
 }
 
-function startSpeechRecognition() {
+function toggleTrialSpeechRecognition() {
+  if (trialRecognitionActive) {
+    activeRecognition?.stop?.();
+    activeRecognition?.abort?.();
+    return;
+  }
+  startSpeechRecognition({ manual: true });
+}
+
+function startSpeechRecognition({ manual = false } = {}) {
+  if (!currentTrial) return;
+  if (trialRecognitionActive) return;
   const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
   if (!SpeechRecognition) {
-    toast("El navegador no ofrece reconocimiento de voz. Usa puntuacion manual.");
+    showVoiceStatus("error", "Este navegador no soporta reconocimiento de voz.", "Puedes continuar escribiendo manualmente.");
+    showManualResponseInput();
     return;
   }
   activeRecognition?.abort?.();
   const recognition = new SpeechRecognition();
   activeRecognition = recognition;
+  suppressRecognitionCallbacks = false;
+  trialRecognitionActive = true;
+  trialRecognitionStartedAt = performance.now();
+  trialRecognitionEndedAt = null;
+  recognitionRaw = "";
+  recognitionConfidence = null;
   recognition.lang = "es-MX";
   recognition.interimResults = false;
   recognition.maxAlternatives = 1;
-  $("estadoEnsayo").textContent = "Escuchando respuesta";
+  recognition.continuous = false;
+  $("btnHablar").textContent = "Detener captura";
+  $("btnHablar").classList.add("detener");
+  $("btnConfirmarRespuesta")?.toggleAttribute("disabled", true);
+  $("btnEditarRespuesta")?.toggleAttribute("disabled", true);
+  $("panelTranscripcion")?.classList.add("oculta");
+  $("campoRespuestaManual")?.classList.add("oculta");
+  $("estadoEnsayo").textContent = "Procesando voz";
+  showVoiceStatus("escuchando", "Escuchando...", "Pronuncia unicamente la palabra del oido derecho.");
   recognition.onresult = (event) => {
     const item = event.results?.[0]?.[0];
     recognitionRaw = item?.transcript || "";
     recognitionConfidence = item?.confidence ?? null;
+    trialSpeechTranscriptOriginal = recognitionRaw;
+    trialCaptureMethod = "voice";
     $("respuestaManual").value = recognitionRaw;
-    $("estadoEnsayo").textContent = "Confirma o corrige la transcripcion";
+    renderRecognizedText(recognitionRaw);
   };
   recognition.onerror = () => {
-    $("estadoEnsayo").textContent = "Reconocimiento no disponible";
-    toast("No se pudo transcribir automaticamente. Usa captura manual.");
+    if (suppressRecognitionCallbacks) return;
+    if (activeRecognition !== recognition && !currentTrial) return;
+    trialRecognitionActive = false;
+    trialRecognitionEndedAt = performance.now();
+    $("btnHablar").textContent = "Hablar";
+    $("btnHablar").classList.remove("detener");
+    $("estadoEnsayo").textContent = "Confirmacion";
+    showVoiceStatus("error", "No fue posible reconocer la palabra.", "Permite el acceso desde el navegador o utiliza captura manual.");
+    $("btnConfirmarRespuesta")?.toggleAttribute("disabled", true);
+    $("btnEditarRespuesta")?.toggleAttribute("disabled", true);
   };
   recognition.onend = () => {
+    if (suppressRecognitionCallbacks) return;
+    if (activeRecognition !== recognition && !currentTrial) return;
+    trialRecognitionActive = false;
+    trialRecognitionEndedAt = performance.now();
     if (activeRecognition === recognition) activeRecognition = null;
+    $("btnHablar").textContent = "Hablar";
+    $("btnHablar").classList.remove("detener");
+    if (recognitionRaw) {
+      $("estadoEnsayo").textContent = "Confirmacion";
+      showVoiceStatus("completado", "Voz capturada", "Reconocimiento finalizado. Confirma, edita o repite la captura.");
+      $("btnConfirmarRespuesta")?.toggleAttribute("disabled", false);
+      $("btnEditarRespuesta")?.toggleAttribute("disabled", false);
+      return;
+    }
+    showVoiceStatus("error", "No fue posible reconocer la palabra.", manual ? "Intenta nuevamente o escribe manualmente." : "Puedes intentar nuevamente o escribir manualmente.");
+    $("estadoEnsayo").textContent = "Confirmacion";
   };
-  recognition.start();
+  try {
+    recognition.start();
+  } catch (error) {
+    trialRecognitionActive = false;
+    activeRecognition = null;
+    $("btnHablar").textContent = "Hablar";
+    $("btnHablar").classList.remove("detener");
+    showVoiceStatus("error", "No fue posible acceder al microfono.", "Permite el acceso desde el navegador o utiliza captura manual.");
+    showManualResponseInput();
+  }
+}
+
+function showVoiceStatus(kind, title, message) {
+  const box = $("estadoVoz");
+  if (!box) return;
+  box.className = `estado-voz ${kind || ""}`.trim();
+  box.innerHTML = `<strong>${escapeHtml(title)}</strong><span>${escapeHtml(message)}</span>`;
+}
+
+function renderRecognizedText(text) {
+  $("panelTranscripcion")?.classList.remove("oculta");
+  $("textoReconocido").textContent = text || "Sin respuesta";
+}
+
+function showManualResponseInput() {
+  trialCaptureMethod = trialSpeechTranscriptOriginal ? "voice_edited" : "manual";
+  $("campoRespuestaManual")?.classList.remove("oculta");
+  $("respuestaManual")?.focus();
+  $("btnConfirmarRespuesta")?.toggleAttribute("disabled", false);
+  $("btnEditarRespuesta")?.toggleAttribute("disabled", true);
+  showVoiceStatus(
+    trialSpeechTranscriptOriginal ? "completado" : "error",
+    trialSpeechTranscriptOriginal ? "Editando respuesta" : "Captura manual",
+    trialSpeechTranscriptOriginal ? "Corrige la palabra reconocida y confirma." : "Escribe la palabra que dijo el paciente."
+  );
+}
+
+function resetResponseCaptureUi() {
+  trialSpeechTranscriptOriginal = "";
+  trialCaptureMethod = "";
+  trialRecognitionStartedAt = null;
+  trialRecognitionEndedAt = null;
+  trialRecognitionActive = false;
+  suppressRecognitionCallbacks = false;
+  recognitionConfidence = null;
+  recognitionRaw = "";
+  activeRecognition?.abort?.();
+  $("respuestaManual").value = "";
+  $("campoRespuestaManual")?.classList.add("oculta");
+  $("panelTranscripcion")?.classList.add("oculta");
+  $("textoReconocido").textContent = "Sin respuesta";
+  $("btnHablar").textContent = "Hablar";
+  $("btnHablar").classList.remove("detener");
+  $("btnConfirmarRespuesta")?.toggleAttribute("disabled", true);
+  $("btnEditarRespuesta")?.toggleAttribute("disabled", true);
+  showVoiceStatus("pendiente", "Esperando audio", "La captura por voz iniciara automaticamente al terminar el audio.");
 }
 
 function updateStartButtons() {
@@ -581,26 +711,27 @@ async function runTrialList(list, isPractice) {
 }
 
 async function runCurrentTrial(list, isPractice) {
+  $("modoEnsayo").textContent = sessionMode === "demo_technical" ? "Modo demostracion" : (isPractice ? "Practica" : "Prueba validada");
   $("bloqueActual").textContent = `${Math.max(1, currentTrial.blockNumber)}/4`;
-  $("ensayoActual").textContent = `${currentIndex + 1}/${list.length}`;
-  $("estadoEnsayo").textContent = "Fijacion";
+  const blockTrial = currentTrial.trialNumber || currentIndex + 1;
+  $("ensayoActual").textContent = `${activeIsPractice ? currentIndex + 1 : blockTrial}/${activeIsPractice ? list.length : 30}`;
+  $("estadoEnsayo").textContent = "Esperando";
   $("fijacion").textContent = "+";
-  $("respuestaManual").value = "";
-  recognitionConfidence = null;
-  recognitionRaw = "";
+  $("indicacionRespuesta").textContent = "Espera el audio.";
+  resetResponseCaptureUi();
   currentPlayback = null;
-  window.clearTimeout(responseWindowTimer);
   await delay(700);
   responseWindowStartPerf = null;
   try {
     if (!currentTrial.leftAudio || !currentTrial.rightAudio) throw new Error("Audios de ensayo no disponibles.");
     const playback = await engine.playDichoticPair(currentTrial);
     currentPlayback = playback;
-    $("estadoEnsayo").textContent = "Escucha";
+    $("estadoEnsayo").textContent = "Escuchando";
     await playback.completed;
     responseWindowStartPerf = performance.now();
     $("indicacionRespuesta").textContent = "Responde ahora con una sola palabra.";
-    responseWindowTimer = window.setTimeout(() => submitTrial("", {}), RESPONSE_WINDOW_MS);
+    await delay(AUTO_RECOGNITION_DELAY_MS);
+    startSpeechRecognition();
   } catch (error) {
     submitTrial("", { technicalFailure: true, technicalError: error.message });
   }
@@ -608,21 +739,28 @@ async function runCurrentTrial(list, isPractice) {
 
 function submitTrial(rawResponse, flags = {}) {
   if (!currentTrial) return;
-  window.clearTimeout(responseWindowTimer);
-  activeRecognition?.abort?.();
+  const recognitionToAbort = activeRecognition;
+  activeRecognition = null;
+  trialRecognitionActive = false;
+  suppressRecognitionCallbacks = true;
+  recognitionToAbort?.abort?.();
   const now = performance.now();
+  const responseText = String(rawResponse || "").trim();
+  const originalTranscript = trialSpeechTranscriptOriginal.trim();
+  const editedTranscript = originalTranscript && responseText && responseText !== originalTranscript ? responseText : "";
+  const captureMethod = originalTranscript && trialCaptureMethod !== "manual" ? "Voz" : "Manual";
   const scored = scoreDichoticTrial({
     sessionId,
     trial: currentTrial,
-    rawResponse,
+    rawResponse: responseText,
     timing: {
       scheduledStartTime: currentPlayback?.scheduledStartTime ?? null,
       actualStartTime: currentPlayback?.actualStartTime ?? null,
       synchronizationErrorMs: currentPlayback?.synchronizationErrorMs ?? null,
       responseWindowStartedAt: responseWindowStartPerf,
-      responseStartedAt: rawResponse ? now : null,
+      responseStartedAt: responseText ? (trialRecognitionStartedAt ?? now) : null,
       responseEndedAt: now,
-      responseLatencyMs: rawResponse && Number.isFinite(responseWindowStartPerf) ? Math.round(now - responseWindowStartPerf) : null,
+      responseLatencyMs: responseText && Number.isFinite(responseWindowStartPerf) ? Math.round(now - responseWindowStartPerf) : null,
       leftAudioLoaded: Boolean(currentPlayback?.leftAudioLoaded) && !flags.technicalFailure,
       rightAudioLoaded: Boolean(currentPlayback?.rightAudioLoaded) && !flags.technicalFailure,
       audioPlaybackCompleted: Boolean(currentPlayback?.completed) && !flags.technicalFailure
@@ -630,7 +768,7 @@ function submitTrial(rawResponse, flags = {}) {
     scoring: {
       ...flags,
       recognitionConfidence,
-      scoringMethod: recognitionRaw ? "speech_recognition_corrected" : "manual",
+      scoringMethod: originalTranscript ? (editedTranscript ? "speech_recognition_corrected" : "speech_recognition") : "manual",
       manuallyReviewed: true,
       scorerId: usuarioId
     },
@@ -640,10 +778,21 @@ function submitTrial(rawResponse, flags = {}) {
       corpusVersion: corpus?.corpusVersion || "practice"
     }
   });
-  trials.push(scored);
+  trials.push({
+    ...scored,
+    speechTranscriptOriginal: originalTranscript,
+    speechTranscriptEdited: editedTranscript,
+    captureMethod,
+    patientResponse: responseText,
+    reactionTime: scored.responseLatencyMs,
+    recognitionStartedAt: trialRecognitionStartedAt,
+    recognitionEndedAt: trialRecognitionEndedAt
+  });
+  $("estadoEnsayo").textContent = "Siguiente ensayo";
+  showVoiceStatus("completado", "Ensayo registrado", "Avanzando automaticamente al siguiente ensayo.");
   currentTrial = null;
   currentPlayback = null;
-  window.setTimeout(() => runTrialList(activeList, activeIsPractice), 650);
+  window.setTimeout(() => runTrialList(activeList, activeIsPractice), 700);
 }
 
 function showBreak(blockNumber, onContinue) {
@@ -699,9 +848,56 @@ function renderResults(r) {
   $("resultadosGrid").innerHTML = cards.map(([k,v]) => `<div class="resultado-card"><span>${k}</span><strong>${v}</strong></div>`).join("");
   $("interpretacionDicotica").innerHTML = `<strong>Descripcion objetiva</strong><p>${objectiveSummary(m)}</p>`;
   $("tablaBloques").innerHTML = m.blockResults.map((b) => `<tr><td>${b.blockNumber}</td><td>${b.correctResponses}</td><td>${b.leftEarIntrusions}</td><td>${b.nonPresentedWords}</td><td>${b.omissions}</td><td>${b.technicalFailures}</td></tr>`).join("");
-  $("tablaEnsayos").innerHTML = r.trialHistory.map((t) => `<tr><td>${t.blockNumber}</td><td>${t.trialNumber}</td><td>${escapeHtml(t.leftWord)}</td><td>${escapeHtml(t.rightWord)}</td><td>${escapeHtml(t.rawResponse)}</td><td>${t.classification}</td><td>${t.scoringMethod}</td><td>${t.recognitionConfidence ?? ""}</td><td>${t.manuallyReviewed ? "Si" : "No"}</td><td>${t.responseLatencyMs ?? ""}</td><td>${t.isTechnicalFailure ? "Fallo" : "OK"}</td></tr>`).join("");
+  renderTrialDetails();
   renderBars("graficaBloques", m.blockResults.map((b) => [`B${b.blockNumber}`, b.correctResponses]));
   renderBars("graficaCategorias", [["Aciertos", m.correctResponses],["Izquierdo", m.leftEarIntrusions],["No presentadas", m.nonPresentedWords],["Omisiones", m.omissions],["Tecnicos", m.technicalFailures]]);
+}
+
+function renderTrialDetails() {
+  if (!result || !$("tablaEnsayos")) return;
+  const rows = filteredTrialDetails();
+  $("tablaEnsayos").innerHTML = rows.map((t) => {
+    const visual = t.isCorrect ? `<span class="resultado-ok">✓ Correcta</span>` : `<span class="resultado-error">✗ Incorrecta</span>`;
+    return `<tr>
+      <td>${t.trialNumber}</td>
+      <td>${t.blockNumber}</td>
+      <td>${escapeHtml(t.leftWord)}</td>
+      <td>${escapeHtml(t.rightWord)}</td>
+      <td>${escapeHtml(t.speechTranscriptOriginal || "")}</td>
+      <td>${escapeHtml(t.speechTranscriptEdited || "")}</td>
+      <td>${escapeHtml(t.captureMethod || captureMethodLabel(t))}</td>
+      <td>${escapeHtml(classificationLabel(t.classification))}</td>
+      <td>${visual}</td>
+      <td>${t.reactionTime ?? t.responseLatencyMs ?? ""}</td>
+      <td>${t.recognitionConfidence ?? ""}</td>
+    </tr>`;
+  }).join("");
+}
+
+function filteredTrialDetails() {
+  const rows = [...(result?.trialHistory || [])].filter((trial) => {
+    if (detailFilter === "correct" && !trial.isCorrect) return false;
+    if (detailFilter === "incorrect" && trial.isCorrect) return false;
+    if (!["all", "correct", "incorrect"].includes(detailFilter) && trial.classification !== detailFilter) return false;
+    if (!detailSearch) return true;
+    const haystack = [
+      trial.leftWord,
+      trial.rightWord,
+      trial.rawResponse,
+      trial.speechTranscriptOriginal,
+      trial.speechTranscriptEdited,
+      trial.captureMethod,
+      classificationLabel(trial.classification)
+    ].join(" ").toLowerCase();
+    return haystack.includes(detailSearch);
+  });
+  rows.sort((a, b) => {
+    const av = detailSort === "patientResponse" ? (a.patientResponse || a.rawResponse || "") : (a[detailSort] ?? "");
+    const bv = detailSort === "patientResponse" ? (b.patientResponse || b.rawResponse || "") : (b[detailSort] ?? "");
+    if (typeof av === "number" && typeof bv === "number") return av - bv;
+    return String(av).localeCompare(String(bv), "es", { numeric: true, sensitivity: "base" });
+  });
+  return rows;
 }
 
 async function saveRemote(payload) {
@@ -724,6 +920,50 @@ function saveLocal(payload) {
 
 function exportJson() { if (result) download(`escucha_dicotica_${sessionId}.json`, JSON.stringify(result, null, 2), "application/json"); }
 function exportCsv() { if (result) download(`escucha_dicotica_${sessionId}.csv`, dichoticTrialsToCsv(result.trialHistory), "text/csv;charset=utf-8"); }
+function exportCompleteResults() {
+  if (!result) return;
+  const payload = {
+    ...result,
+    detailedResponses: result.trialHistory.map(toExportTrial)
+  };
+  download(`escucha_dicotica_resultados_completos_${sessionId}.json`, JSON.stringify(payload, null, 2), "application/json");
+}
+
+async function copyResultsToClipboard() {
+  if (!result) return;
+  const text = result.trialHistory.map((trial) => {
+    const response = trial.patientResponse || trial.rawResponse || "";
+    return [
+      `Ensayo ${trial.trialNumber} / Bloque ${trial.blockNumber}`,
+      `Oido izquierdo: ${trial.leftWord}`,
+      `Oido derecho (objetivo): ${trial.rightWord}`,
+      `Paciente dijo: "${response}"`,
+      `Clasificacion: ${trial.isCorrect ? "✓" : "✗"} ${classificationLabel(trial.classification)}`
+    ].join("\n");
+  }).join("\n\n");
+  try {
+    await navigator.clipboard.writeText(text);
+    toast("Resultados copiados al portapapeles.");
+  } catch (error) {
+    toast("No se pudo copiar al portapapeles.");
+  }
+}
+
+function toExportTrial(trial) {
+  return {
+    trialNumber: trial.trialNumber,
+    blockNumber: trial.blockNumber,
+    leftWord: trial.leftWord,
+    rightWord: trial.rightWord,
+    speechTranscriptOriginal: trial.speechTranscriptOriginal || "",
+    speechTranscriptEdited: trial.speechTranscriptEdited || "",
+    captureMethod: trial.captureMethod || captureMethodLabel(trial),
+    classification: trial.classification,
+    correct: Boolean(trial.isCorrect),
+    reactionTime: trial.reactionTime ?? trial.responseLatencyMs ?? null,
+    recognitionConfidence: trial.recognitionConfidence ?? null
+  };
+}
 
 function showTrialScreen() { $("pantallaPreparacion").classList.add("oculta"); $("pantallaResultados").classList.add("oculta"); $("pantallaEnsayo").classList.remove("oculta"); }
 function collectConditions() {
@@ -733,6 +973,18 @@ function collectConditions() {
   return conditions.concat(dominance ? [`dominancia:${dominance}`] : []);
 }
 function objectiveSummary(m) { return `Se registraron ${m.correctResponses} aciertos, ${m.leftEarIntrusions} respuestas correspondientes al oido izquierdo, ${m.nonPresentedWords} palabras no presentadas y ${m.omissions} omisiones. Estos resultados dependen del corpus, audicion, auriculares e idioma.`; }
+function classificationLabel(value) {
+  return {
+    correct: "Correcta",
+    left_ear_intrusion: "Intrusion del oido izquierdo",
+    non_presented_word: "Palabra no presentada",
+    omission: "Omision",
+    unintelligible: "Ininteligible",
+    technical_failure: "Fallo tecnico",
+    multiple_response: "Respuesta multiple"
+  }[value] || value || "";
+}
+function captureMethodLabel(trial) { return trial?.scoringMethod?.startsWith("speech") ? "Voz" : "Manual"; }
 function renderBars(id, data) { const max = Math.max(...data.map(([,v]) => v), 1); $(id).innerHTML = data.map(([k,v]) => `<div class="barra-metrica"><span>${k}</span><i style="width:${Math.max(4,(v/max)*100)}%"></i><strong>${v}</strong></div>`).join(""); }
 function download(name, content, type) { const blob = new Blob([content], { type }); const url = URL.createObjectURL(blob); const a = document.createElement("a"); a.href = url; a.download = name; a.click(); URL.revokeObjectURL(url); }
 function createSessionId() { return `dicotica-${Date.now()}-${Math.random().toString(16).slice(2)}`; }
