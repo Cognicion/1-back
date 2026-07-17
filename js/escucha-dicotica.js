@@ -21,6 +21,7 @@ let sessionId = "";
 let currentIndex = -1;
 let currentTrial = null;
 let responseWindowStartPerf = 0;
+let responseTimeoutTimer = null;
 let currentPlayback = null;
 let trials = [];
 let breaks = [];
@@ -46,6 +47,8 @@ let suppressRecognitionCallbacks = false;
 let detailFilter = "all";
 let detailSearch = "";
 let detailSort = "trialNumber";
+let sessionConfig = null;
+let sessionStartedAt = null;
 
 const CORPUS_PAGE_SIZE = 10;
 const AUTO_RECOGNITION_DELAY_MS = 300;
@@ -88,10 +91,14 @@ function wireEvents() {
   $("dominanciaLinguistica")?.addEventListener("change", () => $("dominanciaOtra")?.classList.toggle("oculta", $("dominanciaLinguistica").value !== "otra"));
   $("btnContinuarPractica")?.addEventListener("click", () => startPractice());
   $("btnPractica")?.addEventListener("click", () => startPractice());
+  $("btnEntrenamiento")?.addEventListener("click", startTraining);
   $("btnIniciar")?.addEventListener("click", startExperimental);
+  $("btnInvestigacion")?.addEventListener("click", startResearch);
   $("btnDemo")?.addEventListener("click", openDemoModal);
   $("btnCancelarDemo")?.addEventListener("click", closeDemoModal);
   $("btnContinuarDemo")?.addEventListener("click", startDemo);
+  $("btnCancelarExperimental")?.addEventListener("click", closeExperimentalModal);
+  $("btnContinuarExperimental")?.addEventListener("click", continueExperimental);
   $("btnHablar")?.addEventListener("click", toggleTrialSpeechRecognition);
   $("btnConfirmarRespuesta")?.addEventListener("click", () => submitTrial($("respuestaManual").value, {}));
   $("btnEditarRespuesta")?.addEventListener("click", showManualResponseInput);
@@ -116,6 +123,10 @@ function wireEvents() {
   $("ordenDetalle")?.addEventListener("change", () => {
     detailSort = $("ordenDetalle").value;
     renderTrialDetails();
+  });
+  document.querySelectorAll("[id^='config']").forEach((el) => {
+    el.addEventListener("change", syncConfigTotals);
+    el.addEventListener("input", syncConfigTotals);
   });
   $("btnMostrarCorpus")?.addEventListener("click", toggleCorpusDetails);
   $("buscadorCorpus")?.addEventListener("input", () => {
@@ -144,6 +155,7 @@ function wireEvents() {
     if (document.hidden && currentTrial) interruptions.push({ type: "visibilitychange", at: new Date().toISOString(), trialId: currentTrial.trialId });
   });
   window.addEventListener("pagehide", () => {
+    window.clearTimeout(responseTimeoutTimer);
     activeRecognition?.abort?.();
     engine.close();
   });
@@ -168,7 +180,7 @@ function renderCorpusState() {
     : "Corpus autorizado cargado.";
   $("estadoValidado").textContent = corpusValidation?.authorizedMaterial && corpusValidation?.clinicallyValidated
     ? "Material autorizado disponible para prueba experimental validada."
-    : "Actividad pendiente de material auditivo bibliografico autorizado.";
+    : "Prueba experimental habilitada con corpus provisional. Resultados sin referencia normativa.";
   const audioCount = new Set((corpus?.pairs || []).flatMap((pair) => [pair.leftAudio, pair.rightAudio]).filter(Boolean)).size;
   const blockCount = new Set((corpus?.pairs || []).map((pair) => pair.blockNumber)).size;
   $("resumenAdminCorpus").innerHTML = `
@@ -626,22 +638,79 @@ function updateStartButtons() {
   const captureReady = microphoneChecked || manualCaptureSelected;
   const prepReady = Boolean(corpusValidation?.ok && headphoneCheck.headphoneCheckCompleted && volumeConfirmed && captureReady);
   const demoReady = Boolean(prepReady && audioValidation.ok);
-  const validatedReady = Boolean(demoReady && corpusValidation?.authorizedMaterial && corpusValidation?.clinicallyValidated);
-  $("btnIniciar")?.toggleAttribute("disabled", !validatedReady);
+  $("btnIniciar")?.toggleAttribute("disabled", !demoReady);
   $("btnDemo")?.toggleAttribute("disabled", !demoReady);
   $("btnPractica")?.toggleAttribute("disabled", !prepReady);
   $("btnContinuarPractica")?.toggleAttribute("disabled", !prepReady);
+  $("btnEntrenamiento")?.toggleAttribute("disabled", !demoReady);
+  $("btnInvestigacion")?.toggleAttribute("disabled", !demoReady);
+}
+
+function syncConfigTotals(event) {
+  if (!event?.target) return;
+  const blocks = clampNumber($("configBloques")?.value, 1, 4, 4);
+  const perBlock = clampNumber($("configEnsayosBloque")?.value, 1, 30, 30);
+  const totalInput = $("configTotalEnsayos");
+  if (event.target.id === "configBloques" || event.target.id === "configEnsayosBloque") {
+    totalInput.value = String(Math.min(120, blocks * perBlock));
+  }
+}
+
+function getTestConfig(modeOverride = "") {
+  const blocks = clampNumber($("configBloques")?.value, 1, 4, 4);
+  const trialsPerBlock = clampNumber($("configEnsayosBloque")?.value, 1, 30, 30);
+  const maxTotal = Math.min(120, blocks * trialsPerBlock);
+  const totalTrials = clampNumber($("configTotalEnsayos")?.value, 1, maxTotal, maxTotal);
+  const mode = modeOverride || $("configModo")?.value || "experimental";
+  return {
+    attendedEar: "right",
+    blocks,
+    trialsPerBlock,
+    totalTrials,
+    interTrialMs: clampNumber($("configTiempoEntreEnsayos")?.value, 300, 5000, 700),
+    fixationMs: clampNumber($("configTiempoFijacion")?.value, 0, 5000, 700),
+    responseMaxSeconds: clampNumber($("configTiempoRespuesta")?.value, 3, 60, 15),
+    immediateFeedback: Boolean($("configFeedback")?.checked) || mode === "training",
+    automaticRecognition: Boolean($("configReconocimientoAuto")?.checked) && !Boolean($("configCapturaManual")?.checked),
+    manualCaptureMode: Boolean($("configCapturaManual")?.checked),
+    showFixation: Boolean($("configCruz")?.checked),
+    showCounter: Boolean($("configContador")?.checked),
+    showProgress: Boolean($("configProgreso")?.checked),
+    showBlockResults: Boolean($("configResultadosBloque")?.checked),
+    mode,
+    sequenceMode: corpus?.sequenceMode,
+    randomized: false
+  };
+}
+
+function buildSessionPairs(pairList, config) {
+  return (pairList || []).slice(0, config.totalTrials).map((pair, index) => ({
+    ...pair,
+    sessionTrialNumber: index + 1,
+    blockNumber: Math.floor(index / config.trialsPerBlock) + 1,
+    trialNumber: (index % config.trialsPerBlock) + 1
+  }));
+}
+
+function clampNumber(value, min, max, fallback) {
+  const number = Number(value);
+  if (!Number.isFinite(number)) return fallback;
+  return Math.min(max, Math.max(min, Math.round(number)));
 }
 
 function startPractice() {
+  const config = { ...getTestConfig("demo"), blocks: 1, trialsPerBlock: 6, totalTrials: 6, immediateFeedback: true };
   const practicePairs = (corpus?.pairs || []).slice(0, 6).map((pair, index) => ({
     ...pair,
     trialId: `practice-${index + 1}`,
-    blockNumber: 0,
-    trialNumber: index + 1
+    blockNumber: 1,
+    trialNumber: index + 1,
+    sessionTrialNumber: index + 1
   }));
   sessionId = createSessionId();
   sessionMode = "practice_demo";
+  sessionConfig = config;
+  sessionStartedAt = performance.now();
   trials = [];
   currentIndex = -1;
   activeList = practicePairs;
@@ -652,16 +721,26 @@ function startPractice() {
   runTrialList(practicePairs, true);
 }
 
+function startTraining() {
+  const config = getTestConfig("training");
+  beginSession("training", buildSessionPairs(corpus.pairs, config), config);
+}
+
+function startResearch() {
+  const config = getTestConfig("research");
+  beginSession("research", buildSessionPairs(corpus.pairs, config), config);
+}
+
 function startExperimental() {
-  if (!(corpusValidation?.authorizedMaterial && corpusValidation?.clinicallyValidated)) {
-    toast("Actividad pendiente de material auditivo bibliografico autorizado.");
-    return;
-  }
   if (!(corpusValidation?.ok && audioValidation.ok && headphoneCheck.headphoneCheckCompleted)) {
     toast("No se puede iniciar: corpus, audios y auriculares deben estar validados.");
     return;
   }
-  beginSession("validated_experimental", corpus.pairs);
+  if (!(corpusValidation?.authorizedMaterial && corpusValidation?.clinicallyValidated)) {
+    openExperimentalModal();
+    return;
+  }
+  continueExperimental();
 }
 
 function openDemoModal() {
@@ -672,14 +751,31 @@ function closeDemoModal() {
   $("modalDemo")?.classList.add("oculta");
 }
 
-function startDemo() {
-  closeDemoModal();
-  beginSession("demo_technical", corpus.pairs);
+function openExperimentalModal() {
+  $("modalExperimental")?.classList.remove("oculta");
 }
 
-function beginSession(mode, pairList) {
+function closeExperimentalModal() {
+  $("modalExperimental")?.classList.add("oculta");
+}
+
+function continueExperimental() {
+  closeExperimentalModal();
+  const config = getTestConfig("experimental");
+  beginSession("experimental", buildSessionPairs(corpus.pairs, config), config);
+}
+
+function startDemo() {
+  closeDemoModal();
+  const config = getTestConfig("demo");
+  beginSession("demo_technical", buildSessionPairs(corpus.pairs, config), config);
+}
+
+function beginSession(mode, pairList, config = getTestConfig()) {
   sessionId = createSessionId();
   sessionMode = mode;
+  sessionConfig = config;
+  sessionStartedAt = performance.now();
   trials = [];
   breaks = [];
   currentIndex = -1;
@@ -703,7 +799,7 @@ async function runTrialList(list, isPractice) {
     return;
   }
   currentTrial = list[currentIndex];
-  if (!isPractice && currentIndex > 0 && currentIndex % 30 === 0) {
+  if (!isPractice && currentIndex > 0 && currentIndex % (sessionConfig?.trialsPerBlock || 30) === 0) {
     showBreak(currentTrial.blockNumber - 1, () => runCurrentTrial(list, isPractice));
     return;
   }
@@ -711,16 +807,20 @@ async function runTrialList(list, isPractice) {
 }
 
 async function runCurrentTrial(list, isPractice) {
-  $("modoEnsayo").textContent = sessionMode === "demo_technical" ? "Modo demostracion" : (isPractice ? "Practica" : "Prueba validada");
-  $("bloqueActual").textContent = `${Math.max(1, currentTrial.blockNumber)}/4`;
-  const blockTrial = currentTrial.trialNumber || currentIndex + 1;
-  $("ensayoActual").textContent = `${activeIsPractice ? currentIndex + 1 : blockTrial}/${activeIsPractice ? list.length : 30}`;
+  $("modoEnsayo").textContent = isPractice ? "Practica" : sessionModeLabel(sessionMode);
+  $("bloqueActual").textContent = `${Math.max(1, currentTrial.blockNumber)}/${sessionConfig?.blocks || 4}`;
+  const blockTrial = currentTrial.trialNumber || ((currentIndex % (sessionConfig?.trialsPerBlock || 30)) + 1);
+  $("ensayoActual").textContent = `${blockTrial}/${sessionConfig?.trialsPerBlock || list.length}`;
+  $("fijacion").classList.toggle("oculta", sessionConfig?.showFixation === false);
+  document.querySelector(".hud-dicotica")?.classList.toggle("oculta", sessionConfig?.showCounter === false);
   $("estadoEnsayo").textContent = "Esperando";
-  $("fijacion").textContent = "+";
+  $("fijacion").textContent = sessionConfig?.showFixation === false ? "" : "+";
   $("indicacionRespuesta").textContent = "Espera el audio.";
+  $("retroalimentacionEnsayo")?.classList.add("oculta");
   resetResponseCaptureUi();
   currentPlayback = null;
-  await delay(700);
+  window.clearTimeout(responseTimeoutTimer);
+  await delay(sessionConfig?.fixationMs ?? 700);
   responseWindowStartPerf = null;
   try {
     if (!currentTrial.leftAudio || !currentTrial.rightAudio) throw new Error("Audios de ensayo no disponibles.");
@@ -731,7 +831,15 @@ async function runCurrentTrial(list, isPractice) {
     responseWindowStartPerf = performance.now();
     $("indicacionRespuesta").textContent = "Responde ahora con una sola palabra.";
     await delay(AUTO_RECOGNITION_DELAY_MS);
-    startSpeechRecognition();
+    if (sessionConfig?.automaticRecognition !== false) {
+      startSpeechRecognition();
+    } else {
+      showManualResponseInput();
+    }
+    responseTimeoutTimer = window.setTimeout(() => {
+      const hasResponse = Boolean(trialSpeechTranscriptOriginal || $("respuestaManual")?.value.trim());
+      if (currentTrial && !hasResponse) submitTrial("", {});
+    }, (sessionConfig?.responseMaxSeconds || 15) * 1000);
   } catch (error) {
     submitTrial("", { technicalFailure: true, technicalError: error.message });
   }
@@ -739,6 +847,7 @@ async function runCurrentTrial(list, isPractice) {
 
 function submitTrial(rawResponse, flags = {}) {
   if (!currentTrial) return;
+  window.clearTimeout(responseTimeoutTimer);
   const recognitionToAbort = activeRecognition;
   activeRecognition = null;
   trialRecognitionActive = false;
@@ -778,21 +887,28 @@ function submitTrial(rawResponse, flags = {}) {
       corpusVersion: corpus?.corpusVersion || "practice"
     }
   });
-  trials.push({
+  const finalTrial = {
     ...scored,
     speechTranscriptOriginal: originalTranscript,
     speechTranscriptEdited: editedTranscript,
     captureMethod,
     patientResponse: responseText,
+    correct: Boolean(scored.isCorrect),
     reactionTime: scored.responseLatencyMs,
     recognitionStartedAt: trialRecognitionStartedAt,
     recognitionEndedAt: trialRecognitionEndedAt
-  });
+  };
+  trials.push(finalTrial);
   $("estadoEnsayo").textContent = "Siguiente ensayo";
-  showVoiceStatus("completado", "Ensayo registrado", "Avanzando automaticamente al siguiente ensayo.");
+  if (sessionConfig?.immediateFeedback) {
+    showImmediateFeedback(finalTrial);
+  } else {
+    $("retroalimentacionEnsayo")?.classList.add("oculta");
+    showVoiceStatus("completado", "Ensayo registrado", "Avanzando automaticamente al siguiente ensayo.");
+  }
   currentTrial = null;
   currentPlayback = null;
-  window.setTimeout(() => runTrialList(activeList, activeIsPractice), 700);
+  window.setTimeout(() => runTrialList(activeList, activeIsPractice), sessionConfig?.immediateFeedback ? 1000 : (sessionConfig?.interTrialMs ?? 700));
 }
 
 function showBreak(blockNumber, onContinue) {
@@ -806,8 +922,28 @@ function showBreak(blockNumber, onContinue) {
   }, { once: true });
 }
 
+function showImmediateFeedback(trial) {
+  const box = $("retroalimentacionEnsayo");
+  if (!box) return;
+  const response = trial.patientResponse || trial.rawResponse || "Sin respuesta";
+  box.className = `retroalimentacion-ensayo ${trial.isCorrect ? "correcta" : "incorrecta"}`;
+  box.innerHTML = `
+    <strong>${trial.isCorrect ? "✓ Correcto" : "✗ Incorrecto"}</strong>
+    <p><b>Palabra objetivo:</b> ${escapeHtml(trial.rightWord)}</p>
+    <p><b>Tu respondiste:</b> ${escapeHtml(response)}</p>
+    <p><b>Clasificacion:</b> ${escapeHtml(classificationLabel(trial.classification))}</p>
+  `;
+  showVoiceStatus("completado", "Ensayo registrado", "Avanzando automaticamente al siguiente ensayo.");
+}
+
 function finishSession() {
   const metrics = calculateDichoticMetrics(trials);
+  const configuredBlocks = sessionConfig?.blocks || 4;
+  const blockResults = (metrics.blockResults || []).filter((block) => Number(block.blockNumber) <= configuredBlocks);
+  const durationMs = sessionStartedAt ? Math.round(performance.now() - sessionStartedAt) : null;
+  const responseTimes = trials.map((trial) => trial.reactionTime ?? trial.responseLatencyMs).filter(Number.isFinite);
+  const meanResponseTimeMs = responseTimes.length ? Math.round(responseTimes.reduce((a, b) => a + b, 0) / responseTimes.length) : null;
+  const incorrectResponses = metrics.totalErrors + metrics.technicalFailures;
   result = {
     activityId: "escucha_dicotica_derecho",
     activityName: "Prueba de Escucha Dicotica",
@@ -823,12 +959,12 @@ function finishSession() {
     authorizedMaterial: corpus?.authorizedMaterial === true,
     sessionMode,
     demoWarning: sessionMode === "demo_technical" ? "MODO DEMOSTRACION - NO VALIDO PARA INTERPRETACION CLINICA" : "",
-    configuration: { attendedEar: "right", totalTrials: 120, blocks: 4, trialsPerBlock: 30, sequenceMode: corpus?.sequenceMode, randomized: false },
+    configuration: sessionConfig || { attendedEar: "right", totalTrials: 120, blocks: 4, trialsPerBlock: 30, sequenceMode: corpus?.sequenceMode, randomized: false },
     headphoneCheck,
     volumeSetting: Number($("volumenDicotica").value),
     exclusionFlags: collectConditions(),
-    results: metrics,
-    blockResults: metrics.blockResults,
+    results: { ...metrics, blockResults, incorrectResponses, meanResponseTimeMs, totalTimeMs: durationMs },
+    blockResults,
     trialHistory: trials,
     breaks,
     interruptions,
@@ -843,9 +979,11 @@ function renderResults(r) {
   $("pantallaEnsayo").classList.add("oculta");
   $("pantallaResultados").classList.remove("oculta");
   const m = r.results;
-  const cards = [["Aciertos", m.correctResponses],["Errores", m.totalErrors],["Intrusiones oido izquierdo", m.leftEarIntrusions],["No presentadas", m.nonPresentedWords],["Omisiones", m.omissions],["Validos", m.validTrials],["Fallos tecnicos", m.technicalFailures],["% aciertos", m.accuracyPercentage ?? "N/A"]];
-  cards.push(["Modo", r.sessionMode === "demo_technical" ? "Demostracion tecnica" : "Validado"]);
+  const cards = [["Total de ensayos", m.totalTrials],["Correctas", m.correctResponses],["Incorrectas", m.incorrectResponses ?? m.totalErrors],["Intrusiones oido izquierdo", m.leftEarIntrusions],["Palabras no presentadas", m.nonPresentedWords],["Omisiones", m.omissions],["Tiempo promedio", formatMs(m.meanResponseTimeMs)],["Tiempo total", formatMs(m.totalTimeMs)],["Porcentaje de aciertos", m.accuracyPercentage ?? "N/A"]];
+  cards.push(["Modo", sessionModeLabel(r.sessionMode)]);
   $("resultadosGrid").innerHTML = cards.map(([k,v]) => `<div class="resultado-card"><span>${k}</span><strong>${v}</strong></div>`).join("");
+  renderBlockSummary(m.blockResults || []);
+  $("bloquesResumenGrid")?.classList.toggle("oculta", r.configuration?.showBlockResults === false);
   $("interpretacionDicotica").innerHTML = `<strong>Descripcion objetiva</strong><p>${objectiveSummary(m)}</p>`;
   $("tablaBloques").innerHTML = m.blockResults.map((b) => `<tr><td>${b.blockNumber}</td><td>${b.correctResponses}</td><td>${b.leftEarIntrusions}</td><td>${b.nonPresentedWords}</td><td>${b.omissions}</td><td>${b.technicalFailures}</td></tr>`).join("");
   renderTrialDetails();
@@ -871,6 +1009,27 @@ function renderTrialDetails() {
       <td>${t.reactionTime ?? t.responseLatencyMs ?? ""}</td>
       <td>${t.recognitionConfidence ?? ""}</td>
     </tr>`;
+  }).join("");
+}
+
+function renderBlockSummary(blocks = []) {
+  const container = $("bloquesResumenGrid");
+  if (!container) return;
+  container.innerHTML = blocks.map((block) => {
+    const blockTrials = (result?.trialHistory || []).filter((trial) => Number(trial.blockNumber) === Number(block.blockNumber));
+    const latencies = blockTrials.map((trial) => trial.reactionTime ?? trial.responseLatencyMs).filter(Number.isFinite);
+    const meanLatency = latencies.length ? Math.round(latencies.reduce((a, b) => a + b, 0) / latencies.length) : null;
+    const errors = (block.leftEarIntrusions || 0) + (block.nonPresentedWords || 0) + (block.omissions || 0) + (block.unintelligibleResponses || 0) + (block.technicalFailures || 0);
+    return `<article class="bloque-resumen-card">
+      <h4>Bloque ${block.blockNumber}</h4>
+      <dl>
+        <dt>Aciertos</dt><dd>${block.correctResponses || 0}</dd>
+        <dt>Errores</dt><dd>${errors}</dd>
+        <dt>Intrusiones</dt><dd>${block.leftEarIntrusions || 0}</dd>
+        <dt>Omisiones</dt><dd>${block.omissions || 0}</dd>
+        <dt>Tiempo promedio</dt><dd>${formatMs(meanLatency)}</dd>
+      </dl>
+    </article>`;
   }).join("");
 }
 
@@ -984,7 +1143,20 @@ function classificationLabel(value) {
     multiple_response: "Respuesta multiple"
   }[value] || value || "";
 }
+function sessionModeLabel(value) {
+  return {
+    demo_technical: "Demostracion tecnica",
+    practice_demo: "Practica",
+    training: "Entrenamiento",
+    experimental: "Experimental con corpus provisional",
+    validated_experimental: "Experimental validada",
+    research: "Investigacion"
+  }[value] || value || "";
+}
 function captureMethodLabel(trial) { return trial?.scoringMethod?.startsWith("speech") ? "Voz" : "Manual"; }
+function formatMs(value) {
+  return Number.isFinite(value) ? `${value} ms` : "N/A";
+}
 function renderBars(id, data) { const max = Math.max(...data.map(([,v]) => v), 1); $(id).innerHTML = data.map(([k,v]) => `<div class="barra-metrica"><span>${k}</span><i style="width:${Math.max(4,(v/max)*100)}%"></i><strong>${v}</strong></div>`).join(""); }
 function download(name, content, type) { const blob = new Blob([content], { type }); const url = URL.createObjectURL(blob); const a = document.createElement("a"); a.href = url; a.download = name; a.click(); URL.revokeObjectURL(url); }
 function createSessionId() { return `dicotica-${Date.now()}-${Math.random().toString(16).slice(2)}`; }

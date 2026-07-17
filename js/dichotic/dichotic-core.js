@@ -162,7 +162,7 @@ export function calculateDichoticBlocks(trials = []) {
 }
 
 export function dichoticTrialsToCsv(trials = []) {
-  const cols = ["sessionId","trialNumber","blockNumber","leftWord","rightWord","speechTranscriptOriginal","speechTranscriptEdited","captureMethod","classification","isCorrect","rawResponse","patientResponse","responseLatencyMs","reactionTime","recognitionConfidence","scoringMethod","normalizedResponse","isLeftEarIntrusion","isNonPresentedWord","isOmission","isUnintelligible","isTechnicalFailure","manuallyReviewed","corpusVersion"];
+  const cols = ["sessionId","trialNumber","blockNumber","leftWord","rightWord","speechTranscriptOriginal","speechTranscriptEdited","captureMethod","classification","correct","isCorrect","rawResponse","patientResponse","responseLatencyMs","reactionTime","recognitionConfidence","scoringMethod","normalizedResponse","isLeftEarIntrusion","isNonPresentedWord","isOmission","isUnintelligible","isTechnicalFailure","manuallyReviewed","corpusVersion"];
   return [cols.join(","), ...trials.map((trial) => cols.map((col) => csv(trial[col])).join(","))].join("\n");
 }
 
