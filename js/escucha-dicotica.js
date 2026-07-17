@@ -33,8 +33,14 @@ let sessionMode = "validated";
 let recognitionConfidence = null;
 let recognitionRaw = "";
 let activeRecognition = null;
+let volumeConfirmed = false;
+let microphoneChecked = false;
+let manualCaptureSelected = false;
+let corpusPage = 1;
+let corpusSearch = "";
 
 const RESPONSE_WINDOW_MS = 5000;
+const CORPUS_PAGE_SIZE = 10;
 
 const $ = (id) => document.getElementById(id);
 
@@ -50,14 +56,29 @@ onAuthStateChanged(auth, (user) => {
 });
 
 function wireEvents() {
-  $("volumenDicotica")?.addEventListener("input", () => engine.setVolume(Number($("volumenDicotica").value)));
+  $("volumenDicotica")?.addEventListener("input", () => {
+    engine.setVolume(Number($("volumenDicotica").value));
+    setVolumeConfirmed(false);
+  });
   $("btnProbarIzquierdo")?.addEventListener("click", () => testChannel("left"));
   $("btnProbarDerecho")?.addEventListener("click", () => testChannel("right"));
   $("btnConfirmarIzquierdo")?.addEventListener("click", () => updateHeadphoneCheck({ leftChannelConfirmed: true }));
   $("btnConfirmarDerecho")?.addEventListener("click", () => updateHeadphoneCheck({ rightChannelConfirmed: true }));
+  $("btnNegarIzquierdo")?.addEventListener("click", () => resetChannel("left", "Repite la prueba y confirma solo si el sonido fue exclusivamente por el oido izquierdo."));
+  $("btnNegarDerecho")?.addEventListener("click", () => resetChannel("right", "Repite la prueba y confirma solo si el sonido fue exclusivamente por el oido derecho."));
+  $("btnRepetirIzquierdo")?.addEventListener("click", () => testChannel("left"));
+  $("btnRepetirDerecho")?.addEventListener("click", () => testChannel("right"));
   $("overrideAuriculares")?.addEventListener("change", () => updateHeadphoneCheck({ overrideUsed: $("overrideAuriculares").checked }));
-  $("motivoOverride")?.addEventListener("input", () => updateHeadphoneCheck({ overrideReason: $("motivoOverride").value.trim() }));
+  $("motivoOverrideSelect")?.addEventListener("change", updateOverrideReason);
+  $("motivoOverride")?.addEventListener("input", updateOverrideReason);
+  $("btnAudioVolumen")?.addEventListener("click", playVolumeCheck);
+  $("btnVolumenBajo")?.addEventListener("click", () => adjustVolume(-0.05));
+  $("btnVolumenAlto")?.addEventListener("click", () => adjustVolume(0.05));
+  $("btnVolumenCorrecto")?.addEventListener("click", () => setVolumeConfirmed(true));
   $("btnMicrofono")?.addEventListener("click", checkMicrophone);
+  $("btnCapturaManual")?.addEventListener("click", selectManualCapture);
+  $("dominanciaLinguistica")?.addEventListener("change", () => $("dominanciaOtra")?.classList.toggle("oculta", $("dominanciaLinguistica").value !== "otra"));
+  $("btnContinuarPractica")?.addEventListener("click", () => startPractice());
   $("btnPractica")?.addEventListener("click", () => startPractice());
   $("btnIniciar")?.addEventListener("click", startExperimental);
   $("btnDemo")?.addEventListener("click", openDemoModal);
@@ -71,6 +92,29 @@ function wireEvents() {
   $("btnExportarJson")?.addEventListener("click", exportJson);
   $("btnExportarCsv")?.addEventListener("click", exportCsv);
   $("btnImprimir")?.addEventListener("click", () => window.print());
+  $("btnMostrarCorpus")?.addEventListener("click", toggleCorpusDetails);
+  $("buscadorCorpus")?.addEventListener("input", () => {
+    corpusSearch = $("buscadorCorpus").value.trim().toLowerCase();
+    corpusPage = 1;
+    renderCorpusTable();
+  });
+  $("btnCorpusPrev")?.addEventListener("click", () => {
+    corpusPage = Math.max(1, corpusPage - 1);
+    renderCorpusTable();
+  });
+  $("btnCorpusNext")?.addEventListener("click", () => {
+    corpusPage += 1;
+    renderCorpusTable();
+  });
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") {
+      activeRecognition?.abort?.();
+      if ($("detalleMicrofono")?.classList.contains("escuchando")) {
+        $("detalleMicrofono").classList.remove("escuchando");
+        $("detalleMicrofono").textContent = "Prueba de microfono cancelada.";
+      }
+    }
+  });
   document.addEventListener("visibilitychange", () => {
     if (document.hidden && currentTrial) interruptions.push({ type: "visibilitychange", at: new Date().toISOString(), trialId: currentTrial.trialId });
   });
@@ -101,57 +145,321 @@ function renderCorpusState() {
   $("estadoValidado").textContent = corpusValidation?.authorizedMaterial && corpusValidation?.clinicallyValidated
     ? "Material autorizado disponible para prueba experimental validada."
     : "Actividad pendiente de material auditivo bibliografico autorizado.";
+  const audioCount = new Set((corpus?.pairs || []).flatMap((pair) => [pair.leftAudio, pair.rightAudio]).filter(Boolean)).size;
+  const blockCount = new Set((corpus?.pairs || []).map((pair) => pair.blockNumber)).size;
   $("resumenAdminCorpus").innerHTML = `
-    <p><strong>Version:</strong> ${escapeHtml(corpus?.corpusVersion || "Sin version")}</p>
-    <p><strong>Tipo:</strong> ${escapeHtml(corpus?.corpusType || "sin tipo")}</p>
-    <p><strong>Validado clinicamente:</strong> ${corpus?.clinicallyValidated ? "Si" : "No"}</p>
-    <p><strong>Material autorizado:</strong> ${corpus?.authorizedMaterial ? "Si" : "No"}</p>
-    <p><strong>Pares:</strong> ${corpusValidation?.totalPairs || 0}</p>
-    <p><strong>Estado:</strong> ${corpusValidation?.ok ? "Estructura valida" : "Bloqueado por validacion"}</p>
+    ${corpusSummaryItem("Version", corpus?.corpusVersion || "Sin version")}
+    ${corpusSummaryItem("Tipo", corpus?.corpusType || "sin tipo")}
+    ${corpusSummaryItem("Material autorizado", corpus?.authorizedMaterial ? "Si" : "No")}
+    ${corpusSummaryItem("Estado", corpusValidation?.ok ? "Estructura valida" : "Bloqueado por validacion")}
+    ${corpusSummaryItem("Numero de pares", corpusValidation?.totalPairs || 0)}
+    ${corpusSummaryItem("Numero de bloques", blockCount || 0)}
+    ${corpusSummaryItem("Numero de audios", audioCount)}
+    ${corpusSummaryItem("Archivos de audio", audioValidation.ok ? "Encontrados" : "Pendiente")}
     ${(corpusValidation?.issues || []).map((issue) => `<p class="alerta-dicotica advertencia">${escapeHtml(issue)}</p>`).join("")}
-    <button type="button" id="btnValidarAudios">Validar audios decodificables</button>
+    <div class="corpus-resumen-item"><span>Integridad</span><button type="button" id="btnValidarAudios">Comprobar que todos los archivos de audio existen</button></div>
   `;
   $("btnValidarAudios")?.addEventListener("click", validateAudioAssets);
-  $("tablaCorpus").innerHTML = (corpus?.pairs || []).map((p) => `<tr><td>${escapeHtml(p.trialId)}</td><td>${p.blockNumber}</td><td>${p.trialNumber}</td><td>${escapeHtml(p.leftWord)}</td><td>${escapeHtml(p.rightWord)}</td><td>${escapeHtml(p.leftAudio)}</td><td>${escapeHtml(p.rightAudio)}</td></tr>`).join("");
+  renderCorpusTable();
   updateStartButtons();
 }
 
 async function validateAudioAssets() {
   try {
+    $("estadoAudios").textContent = "Comprobando archivos...";
     const ctx = await engine.ensureContext();
     audioValidation = await validateDichoticAudioFiles(corpus, ctx);
   } catch (error) {
     audioValidation = { ok: false, issues: [error.message] };
   }
-  $("estadoAudios").textContent = audioValidation.ok ? "Audios decodificables" : "Audios faltantes/no validos";
+  $("estadoAudios").textContent = audioValidation.ok ? "Archivos encontrados" : "Archivos faltantes";
+  toast(audioValidation.ok ? "Todos los archivos de audio fueron encontrados." : `Faltan ${audioValidation.issues.length} archivos de audio.`);
   renderCorpusState();
   updateStartButtons();
 }
 
 function updateHeadphoneCheck(update) {
   headphoneCheck = { ...headphoneCheck, ...update };
-  headphoneCheck.headphoneCheckCompleted = (headphoneCheck.leftChannelConfirmed && headphoneCheck.rightChannelConfirmed) || (headphoneCheck.overrideUsed && headphoneCheck.overrideReason);
+  const overrideValid = Boolean(headphoneCheck.overrideUsed && headphoneCheck.overrideReason);
+  headphoneCheck.headphoneCheckCompleted = (headphoneCheck.leftChannelConfirmed && headphoneCheck.rightChannelConfirmed) || overrideValid;
+  renderHeadphoneState();
   updateStartButtons();
 }
 
 async function testChannel(channel) {
-  toast("La prueba de canal requiere audios de verificacion cargados. Se reproducira un tono lateral provisional.");
+  setStepState("pasoAuriculares", "estadoPasoAuriculares", "en-proceso", "En proceso");
+  setChannelPlaying(channel);
   const ctx = await engine.ensureContext();
   const buffer = ctx.createBuffer(1, ctx.sampleRate * 0.35, ctx.sampleRate);
   const data = buffer.getChannelData(0);
   for (let i = 0; i < data.length; i += 1) data[i] = Math.sin((i / ctx.sampleRate) * Math.PI * 2 * 440) * 0.2;
   await engine.playSingleChannel(buffer, channel);
+  await delay(520);
+  setChannelAwaitingConfirmation(channel);
 }
 
 async function checkMicrophone() {
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  manualCaptureSelected = false;
+  microphoneChecked = false;
+  setStepState("pasoMicrofono", "estadoPasoMicrofono", "en-proceso", "En proceso");
+  $("estadoCaptura").textContent = "Probando microfono";
+  $("detalleMicrofono").className = "microfono-estado escuchando";
+  $("detalleMicrofono").textContent = "Escuchando...";
+  if (!SpeechRecognition) {
+    $("estadoMicrofono").textContent = "No disponible";
+    $("estadoCaptura").textContent = "Captura manual requerida";
+    $("detalleMicrofono").className = "microfono-estado";
+    $("detalleMicrofono").innerHTML = `<p>Tu navegador no soporta reconocimiento de voz.</p><button type="button" id="btnManualDesdeAviso">Continuar con captura manual</button>`;
+    $("btnManualDesdeAviso")?.addEventListener("click", selectManualCapture);
+    updateStartButtons();
+    return;
+  }
   try {
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
     stream.getTracks().forEach((track) => track.stop());
-    $("estadoMicrofono").textContent = "Disponible";
+    activeRecognition?.abort?.();
+    const recognition = new SpeechRecognition();
+    activeRecognition = recognition;
+    let gotMicrophoneResult = false;
+    recognition.lang = "es-MX";
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+    recognition.onresult = (event) => {
+      gotMicrophoneResult = true;
+      const item = event.results?.[0]?.[0];
+      const transcript = item?.transcript || "";
+      const confidence = item?.confidence ?? null;
+      $("detalleMicrofono").className = "microfono-estado";
+      $("detalleMicrofono").innerHTML = `<p>Se reconocio:</p><blockquote>"${escapeHtml(transcript || "Sin texto reconocido")}"</blockquote>`;
+      if (transcript && (confidence === null || confidence >= 0.55)) {
+        microphoneChecked = true;
+        $("estadoMicrofono").textContent = "Disponible";
+        $("estadoCaptura").textContent = "Microfono confirmado";
+        $("detalleMicrofono").innerHTML += `<p class="estado-exito">✓ Microfono funcionando correctamente</p>`;
+        setStepState("pasoMicrofono", "estadoPasoMicrofono", "completado", "Completado");
+      } else {
+        $("estadoMicrofono").textContent = "Poco claro";
+        $("estadoCaptura").textContent = "Repetir o usar captura manual";
+        $("detalleMicrofono").innerHTML += `<p class="alerta-dicotica advertencia">El reconocimiento fue poco claro.</p><div class="acciones-dicotica"><button type="button" id="btnRepetirMicrofono">Repetir prueba</button><button type="button" id="btnManualMicrofono" class="boton-secundario">Continuar con captura manual</button></div>`;
+        $("btnRepetirMicrofono")?.addEventListener("click", checkMicrophone);
+        $("btnManualMicrofono")?.addEventListener("click", selectManualCapture);
+      }
+      updateStartButtons();
+    };
+    recognition.onerror = () => {
+      $("estadoMicrofono").textContent = "No disponible";
+      $("estadoCaptura").textContent = "Captura manual disponible";
+      $("detalleMicrofono").className = "microfono-estado";
+      $("detalleMicrofono").innerHTML = `<p class="alerta-dicotica advertencia">No se pudo reconocer la voz.</p><div class="acciones-dicotica"><button type="button" id="btnRepetirMicrofono">Repetir prueba</button><button type="button" id="btnManualMicrofono" class="boton-secundario">Continuar con captura manual</button></div>`;
+      $("btnRepetirMicrofono")?.addEventListener("click", checkMicrophone);
+      $("btnManualMicrofono")?.addEventListener("click", selectManualCapture);
+      updateStartButtons();
+    };
+    recognition.onend = () => {
+      if (activeRecognition === recognition) activeRecognition = null;
+      $("detalleMicrofono")?.classList.remove("escuchando");
+      if (!gotMicrophoneResult && !$("detalleMicrofono")?.textContent.includes("No se pudo")) {
+        $("estadoMicrofono").textContent = "Sin reconocimiento";
+        $("estadoCaptura").textContent = "Repetir o usar captura manual";
+        $("detalleMicrofono").className = "microfono-estado";
+        $("detalleMicrofono").innerHTML = `<p>Se reconocio:</p><blockquote>"Sin texto reconocido"</blockquote><p class="alerta-dicotica advertencia">El reconocimiento fue poco claro.</p><div class="acciones-dicotica"><button type="button" id="btnRepetirMicrofono">Repetir prueba</button><button type="button" id="btnManualMicrofono" class="boton-secundario">Continuar con captura manual</button></div>`;
+        $("btnRepetirMicrofono")?.addEventListener("click", checkMicrophone);
+        $("btnManualMicrofono")?.addEventListener("click", selectManualCapture);
+        updateStartButtons();
+      }
+    };
+    recognition.start();
   } catch (error) {
     $("estadoMicrofono").textContent = "No disponible";
-    toast("No se pudo acceder al microfono. Puede usarse puntuacion manual.");
+    $("estadoCaptura").textContent = "Captura manual disponible";
+    $("detalleMicrofono").className = "microfono-estado";
+    $("detalleMicrofono").innerHTML = `<p class="alerta-dicotica advertencia">No se pudo acceder al microfono. Puede usarse captura manual.</p><button type="button" id="btnManualMicrofono" class="boton-secundario">Continuar con captura manual</button>`;
+    $("btnManualMicrofono")?.addEventListener("click", selectManualCapture);
+    updateStartButtons();
   }
+}
+
+function selectManualCapture() {
+  activeRecognition?.abort?.();
+  manualCaptureSelected = true;
+  microphoneChecked = false;
+  $("estadoMicrofono").textContent = "Captura manual";
+  $("estadoCaptura").textContent = "Captura manual seleccionada";
+  $("detalleMicrofono").className = "microfono-estado";
+  $("detalleMicrofono").innerHTML = `<p>Se continuara con captura manual de respuestas.</p><p class="estado-exito">✓ Captura manual disponible</p>`;
+  setStepState("pasoMicrofono", "estadoPasoMicrofono", "completado", "Completado");
+  updateStartButtons();
+}
+
+function updateOverrideReason() {
+  const selected = $("motivoOverrideSelect")?.value || "";
+  const isOther = selected === "otra";
+  $("motivoOverride")?.classList.toggle("oculta", !isOther);
+  const reason = isOther ? $("motivoOverride").value.trim() : selected;
+  updateHeadphoneCheck({ overrideReason: reason });
+}
+
+function renderHeadphoneState() {
+  const overrideOn = Boolean(headphoneCheck.overrideUsed);
+  $("panelOverrideAuriculares")?.classList.toggle("oculta", !overrideOn);
+  if (!overrideOn) {
+    headphoneCheck.overrideReason = "";
+    if ($("motivoOverrideSelect")) $("motivoOverrideSelect").value = "";
+    if ($("motivoOverride")) $("motivoOverride").value = "";
+  }
+  setChannelConfirmed("left", headphoneCheck.leftChannelConfirmed);
+  setChannelConfirmed("right", headphoneCheck.rightChannelConfirmed);
+  const leftText = headphoneCheck.leftChannelConfirmed ? "Canal izquierdo ✓" : "Canal izquierdo pendiente";
+  const rightText = headphoneCheck.rightChannelConfirmed ? "Canal derecho ✓" : "Canal derecho pendiente";
+  $("resumenAuriculares").textContent = overrideOn && headphoneCheck.overrideReason
+    ? "Verificacion omitida por profesional"
+    : `${leftText} | ${rightText}`;
+  $("btnProbarDerecho")?.toggleAttribute("disabled", !headphoneCheck.leftChannelConfirmed && !overrideOn);
+  $("auricularesVerificados")?.classList.toggle("oculta", !headphoneCheck.headphoneCheckCompleted);
+  setStepState(
+    "pasoAuriculares",
+    "estadoPasoAuriculares",
+    headphoneCheck.headphoneCheckCompleted ? "completado" : (headphoneCheck.leftChannelConfirmed || overrideOn ? "en-proceso" : "pendiente"),
+    headphoneCheck.headphoneCheckCompleted ? "Completado" : (headphoneCheck.leftChannelConfirmed || overrideOn ? "En proceso" : "Pendiente")
+  );
+}
+
+function setChannelPlaying(channel) {
+  const isLeft = channel === "left";
+  const card = $(isLeft ? "cardCanalIzquierdo" : "cardCanalDerecho");
+  const status = $(isLeft ? "estadoCanalIzquierdo" : "estadoCanalDerecho");
+  const message = $(isLeft ? "mensajeCanalIzquierdo" : "mensajeCanalDerecho");
+  const confirmation = $(isLeft ? "confirmacionIzquierdo" : "confirmacionDerecho");
+  card?.classList.remove("pendiente", "confirmado");
+  card?.classList.add("reproduciendo");
+  if (status) status.textContent = `Reproduciendo canal ${isLeft ? "izquierdo" : "derecho"}...`;
+  if (message) message.textContent = `Reproduciendo canal ${isLeft ? "izquierdo" : "derecho"}...`;
+  confirmation?.classList.add("oculta");
+}
+
+function setChannelAwaitingConfirmation(channel) {
+  const isLeft = channel === "left";
+  const card = $(isLeft ? "cardCanalIzquierdo" : "cardCanalDerecho");
+  const status = $(isLeft ? "estadoCanalIzquierdo" : "estadoCanalDerecho");
+  const message = $(isLeft ? "mensajeCanalIzquierdo" : "mensajeCanalDerecho");
+  const confirmation = $(isLeft ? "confirmacionIzquierdo" : "confirmacionDerecho");
+  card?.classList.remove("reproduciendo");
+  card?.classList.add("pendiente");
+  if (status) status.textContent = "Confirmacion requerida";
+  if (message) message.textContent = `Escuchaste el sonido unicamente por el oido ${isLeft ? "izquierdo" : "derecho"}?`;
+  confirmation?.classList.remove("oculta");
+}
+
+function setChannelConfirmed(channel, confirmed) {
+  const isLeft = channel === "left";
+  const card = $(isLeft ? "cardCanalIzquierdo" : "cardCanalDerecho");
+  const status = $(isLeft ? "estadoCanalIzquierdo" : "estadoCanalDerecho");
+  const message = $(isLeft ? "mensajeCanalIzquierdo" : "mensajeCanalDerecho");
+  const confirmation = $(isLeft ? "confirmacionIzquierdo" : "confirmacionDerecho");
+  if (!card || !status || !message) return;
+  card.classList.toggle("confirmado", confirmed);
+  card.classList.toggle("pendiente", !confirmed);
+  confirmation?.classList.add("oculta");
+  status.textContent = confirmed ? `Canal ${isLeft ? "izquierdo" : "derecho"} ✓` : "Pendiente";
+  message.textContent = confirmed
+    ? `Canal ${isLeft ? "izquierdo" : "derecho"} confirmado.`
+    : (isLeft ? "Presiona reproducir para escuchar el canal izquierdo." : "Cuando confirmes el izquierdo, verifica el canal derecho.");
+}
+
+function resetChannel(channel, message) {
+  if (channel === "left") {
+    updateHeadphoneCheck({ leftChannelConfirmed: false, rightChannelConfirmed: false });
+  } else {
+    updateHeadphoneCheck({ rightChannelConfirmed: false });
+  }
+  const target = $(channel === "left" ? "mensajeCanalIzquierdo" : "mensajeCanalDerecho");
+  if (target) target.textContent = message;
+}
+
+async function playVolumeCheck() {
+  setStepState("pasoVolumen", "estadoPasoVolumen", "en-proceso", "En proceso");
+  $("estadoVolumen").textContent = "Reproduciendo prueba";
+  $("confirmacionVolumen")?.classList.add("oculta");
+  await playVolumePrompt();
+  $("estadoVolumen").textContent = "Confirmacion requerida";
+  $("confirmacionVolumen")?.classList.remove("oculta");
+}
+
+async function playVolumePrompt() {
+  if ("speechSynthesis" in window) {
+    await new Promise((resolve) => {
+      const utterance = new SpeechSynthesisUtterance("Esta es una prueba de volumen.");
+      utterance.lang = "es-MX";
+      utterance.volume = Number($("volumenDicotica").value);
+      utterance.onend = resolve;
+      utterance.onerror = resolve;
+      window.speechSynthesis.cancel();
+      window.speechSynthesis.speak(utterance);
+      window.setTimeout(resolve, 2600);
+    });
+    return;
+  }
+  const ctx = await engine.ensureContext();
+  const oscillator = ctx.createOscillator();
+  const gain = ctx.createGain();
+  oscillator.frequency.value = 440;
+  gain.gain.value = Math.max(0.02, Number($("volumenDicotica").value) * 0.18);
+  oscillator.connect(gain).connect(ctx.destination);
+  oscillator.start();
+  oscillator.stop(ctx.currentTime + 0.45);
+  await delay(550);
+}
+
+function adjustVolume(delta) {
+  const input = $("volumenDicotica");
+  const next = Math.min(1, Math.max(0, Number(input.value) + delta));
+  input.value = String(Math.round(next * 100) / 100);
+  engine.setVolume(Number(input.value));
+  setVolumeConfirmed(false);
+  playVolumeCheck();
+}
+
+function setVolumeConfirmed(confirmed) {
+  volumeConfirmed = confirmed;
+  $("estadoVolumen").textContent = confirmed ? "Volumen confirmado" : "Sin confirmar";
+  setStepState("pasoVolumen", "estadoPasoVolumen", confirmed ? "completado" : "pendiente", confirmed ? "Completado" : "Pendiente");
+  updateStartButtons();
+}
+
+function setStepState(panelId, labelId, state, label) {
+  const panel = $(panelId);
+  const badge = $(labelId);
+  panel?.classList.remove("pendiente", "en-proceso", "completado");
+  panel?.classList.add(state);
+  if (badge) badge.textContent = label;
+}
+
+function corpusSummaryItem(label, value) {
+  return `<div class="corpus-resumen-item"><span>${escapeHtml(label)}</span><strong>${escapeHtml(value)}</strong></div>`;
+}
+
+function toggleCorpusDetails() {
+  $("detalleCorpus")?.classList.toggle("oculta");
+  $("btnMostrarCorpus").textContent = $("detalleCorpus")?.classList.contains("oculta") ? "Mostrar detalles del corpus" : "Ocultar detalles del corpus";
+  renderCorpusTable();
+}
+
+function renderCorpusTable() {
+  const pairs = (corpus?.pairs || []).filter((pair) => {
+    const haystack = `${pair.trialId} ${pair.leftWord} ${pair.rightWord} ${pair.leftAudio} ${pair.rightAudio}`.toLowerCase();
+    return !corpusSearch || haystack.includes(corpusSearch);
+  });
+  const totalPages = Math.max(1, Math.ceil(pairs.length / CORPUS_PAGE_SIZE));
+  corpusPage = Math.min(corpusPage, totalPages);
+  const start = (corpusPage - 1) * CORPUS_PAGE_SIZE;
+  const visible = pairs.slice(start, start + CORPUS_PAGE_SIZE);
+  if ($("tablaCorpus")) {
+    $("tablaCorpus").innerHTML = visible.map((p) => `<tr><td>${escapeHtml(p.trialId)}</td><td>${p.blockNumber}</td><td>${p.trialNumber}</td><td>${escapeHtml(p.leftWord)}</td><td>${escapeHtml(p.rightWord)}</td><td>${escapeHtml(p.leftAudio)}</td><td>${escapeHtml(p.rightAudio)}</td></tr>`).join("");
+  }
+  if ($("paginaCorpus")) $("paginaCorpus").textContent = `Pagina ${corpusPage} de ${totalPages}`;
+  $("btnCorpusPrev")?.toggleAttribute("disabled", corpusPage <= 1);
+  $("btnCorpusNext")?.toggleAttribute("disabled", corpusPage >= totalPages);
 }
 
 function startSpeechRecognition() {
@@ -185,11 +493,14 @@ function startSpeechRecognition() {
 }
 
 function updateStartButtons() {
-  const demoReady = Boolean(corpusValidation?.ok && audioValidation.ok && headphoneCheck.headphoneCheckCompleted);
+  const captureReady = microphoneChecked || manualCaptureSelected;
+  const prepReady = Boolean(corpusValidation?.ok && headphoneCheck.headphoneCheckCompleted && volumeConfirmed && captureReady);
+  const demoReady = Boolean(prepReady && audioValidation.ok);
   const validatedReady = Boolean(demoReady && corpusValidation?.authorizedMaterial && corpusValidation?.clinicallyValidated);
   $("btnIniciar")?.toggleAttribute("disabled", !validatedReady);
   $("btnDemo")?.toggleAttribute("disabled", !demoReady);
-  $("btnPractica")?.toggleAttribute("disabled", !demoReady);
+  $("btnPractica")?.toggleAttribute("disabled", !prepReady);
+  $("btnContinuarPractica")?.toggleAttribute("disabled", !prepReady);
 }
 
 function startPractice() {
@@ -415,7 +726,12 @@ function exportJson() { if (result) download(`escucha_dicotica_${sessionId}.json
 function exportCsv() { if (result) download(`escucha_dicotica_${sessionId}.csv`, dichoticTrialsToCsv(result.trialHistory), "text/csv;charset=utf-8"); }
 
 function showTrialScreen() { $("pantallaPreparacion").classList.add("oculta"); $("pantallaResultados").classList.add("oculta"); $("pantallaEnsayo").classList.remove("oculta"); }
-function collectConditions() { return [...document.querySelectorAll("[data-condicion]:checked")].map((el) => el.dataset.condicion).concat($("dominanciaLinguistica").value ? [`dominancia:${$("dominanciaLinguistica").value}`] : []); }
+function collectConditions() {
+  const conditions = [...document.querySelectorAll("[data-condicion]:checked")].map((el) => el.dataset.condicion);
+  const selectedDominance = $("dominanciaLinguistica")?.value || "";
+  const dominance = selectedDominance === "otra" ? $("dominanciaOtra")?.value.trim() : selectedDominance;
+  return conditions.concat(dominance ? [`dominancia:${dominance}`] : []);
+}
 function objectiveSummary(m) { return `Se registraron ${m.correctResponses} aciertos, ${m.leftEarIntrusions} respuestas correspondientes al oido izquierdo, ${m.nonPresentedWords} palabras no presentadas y ${m.omissions} omisiones. Estos resultados dependen del corpus, audicion, auriculares e idioma.`; }
 function renderBars(id, data) { const max = Math.max(...data.map(([,v]) => v), 1); $(id).innerHTML = data.map(([k,v]) => `<div class="barra-metrica"><span>${k}</span><i style="width:${Math.max(4,(v/max)*100)}%"></i><strong>${v}</strong></div>`).join(""); }
 function download(name, content, type) { const blob = new Blob([content], { type }); const url = URL.createObjectURL(blob); const a = document.createElement("a"); a.href = url; a.download = name; a.click(); URL.revokeObjectURL(url); }

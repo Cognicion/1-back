@@ -23,9 +23,10 @@
     <span class="kicker">Actividad auditiva</span>
     <h1>Escucha Dicotica</h1>
     <p>En cada ensayo escucharas dos palabras diferentes al mismo tiempo: una por el oido izquierdo y otra por el oido derecho. Repite en voz alta unicamente la palabra presentada por el oido derecho.</p>
-    <p class="alerta-dicotica">Esta actividad debe realizarse con auriculares estereo correctamente colocados. Verifica que el auricular marcado como R este sobre el oido derecho y el auricular marcado como L este sobre el oido izquierdo.</p>
+    <p class="alerta-dicotica">Antes de iniciar, completa la preparacion guiada. La prueba requiere auriculares estereo correctamente colocados, volumen comodo y una forma definida para capturar respuestas.</p>
     <p class="alerta-dicotica advertencia" id="advertenciaCorpus">Cargando corpus...</p>
-    <div class="preparacion-grid">
+
+    <div class="preparacion-grid" aria-label="Resumen de preparacion">
       <article><strong>Ensayos</strong><span>120</span></article>
       <article><strong>Bloques</strong><span>4</span></article>
       <article><strong>Ensayos por bloque</strong><span>30</span></article>
@@ -34,33 +35,128 @@
       <article><strong>Microfono</strong><span id="estadoMicrofono">Pendiente</span></article>
     </div>
 
-    <section class="panel-dicotica">
-      <h2>Verificacion de auriculares</h2>
-      <p>Coloca el auricular marcado como R en el oido derecho y el marcado como L en el oido izquierdo.</p>
-      <div class="acciones-dicotica">
-        <button id="btnProbarIzquierdo" type="button">Reproducir izquierdo</button>
-        <button id="btnConfirmarIzquierdo" type="button">Si, fue izquierdo</button>
-        <button id="btnProbarDerecho" type="button">Reproducir derecho</button>
-        <button id="btnConfirmarDerecho" type="button">Si, fue derecho</button>
+    <section class="panel-dicotica paso-dicotica pendiente" id="pasoAuriculares">
+      <div class="panel-header">
+        <div>
+          <span class="estado-paso" id="estadoPasoAuriculares">Pendiente</span>
+          <h2>Verificacion de auriculares <span class="ayuda-dicotica" tabindex="0" aria-label="Ayuda sobre verificacion de auriculares" data-help="Confirma que el canal izquierdo se escuche solo en el oido izquierdo y el derecho solo en el oido derecho.">?</span></h2>
+        </div>
+        <strong id="resumenAuriculares">Canal izquierdo pendiente | Canal derecho pendiente</strong>
       </div>
-      <label class="override-dicotica"><input id="overrideAuriculares" type="checkbox"> Anulacion administrativa</label>
-      <textarea id="motivoOverride" placeholder="Motivo de anulacion administrativa"></textarea>
+      <p>Primero verificaremos que los auriculares esten colocados correctamente.</p>
+      <div class="canales-grid">
+        <article class="canal-card pendiente" id="cardCanalIzquierdo">
+          <span>Canal izquierdo</span>
+          <strong id="estadoCanalIzquierdo">Pendiente</strong>
+          <p id="mensajeCanalIzquierdo">Presiona reproducir para escuchar el canal izquierdo.</p>
+          <button id="btnProbarIzquierdo" type="button">Reproducir canal izquierdo</button>
+          <div class="acciones-dicotica confirmacion-canal oculta" id="confirmacionIzquierdo" aria-live="polite">
+            <button id="btnConfirmarIzquierdo" type="button">Si</button>
+            <button id="btnNegarIzquierdo" type="button" class="boton-secundario">No</button>
+            <button id="btnRepetirIzquierdo" type="button" class="boton-secundario">Repetir</button>
+          </div>
+        </article>
+        <article class="canal-card pendiente" id="cardCanalDerecho">
+          <span>Canal derecho</span>
+          <strong id="estadoCanalDerecho">Pendiente</strong>
+          <p id="mensajeCanalDerecho">Cuando confirmes el izquierdo, verifica el canal derecho.</p>
+          <button id="btnProbarDerecho" type="button" disabled>Reproducir canal derecho</button>
+          <div class="acciones-dicotica confirmacion-canal oculta" id="confirmacionDerecho" aria-live="polite">
+            <button id="btnConfirmarDerecho" type="button">Si</button>
+            <button id="btnNegarDerecho" type="button" class="boton-secundario">No</button>
+            <button id="btnRepetirDerecho" type="button" class="boton-secundario">Repetir</button>
+          </div>
+        </article>
+      </div>
+      <div class="estado-exito oculta" id="auricularesVerificados">✓ Auriculares correctamente verificados</div>
+      <details class="opciones-profesional">
+        <summary>Opciones para el profesional</summary>
+        <label class="override-dicotica"><input id="overrideAuriculares" type="checkbox"> Omitir verificacion de auriculares</label>
+        <div class="override-panel oculta" id="panelOverrideAuriculares">
+          <p class="alerta-dicotica advertencia">Utilice esta opcion unicamente cuando no sea posible realizar la verificacion (por ejemplo, pacientes con dificultades de comprension o fallos del equipo).</p>
+          <label>Motivo obligatorio
+            <select id="motivoOverrideSelect">
+              <option value="">Seleccionar motivo</option>
+              <option value="paciente no comprende instrucciones">Paciente no comprende instrucciones</option>
+              <option value="auriculares danados">Auriculares danados</option>
+              <option value="prueba supervisada">Prueba supervisada</option>
+              <option value="otra">Otra</option>
+            </select>
+          </label>
+          <textarea id="motivoOverride" class="oculta" placeholder="Especifica el motivo"></textarea>
+        </div>
+      </details>
+    </section>
+
+    <section class="panel-dicotica paso-dicotica pendiente" id="pasoVolumen">
+      <div class="panel-header">
+        <div>
+          <span class="estado-paso" id="estadoPasoVolumen">Pendiente</span>
+          <h2>Ajuste de volumen</h2>
+        </div>
+        <strong id="estadoVolumen">Sin confirmar</strong>
+      </div>
+      <p>Ajusta el volumen a un nivel comodo. No es necesario utilizar un volumen alto para realizar la actividad.</p>
+      <label>Volumen <input id="volumenDicotica" type="range" min="0" max="1" step="0.05" value="0.7"></label>
+      <div class="acciones-dicotica">
+        <button id="btnAudioVolumen" type="button">Reproducir audio de prueba</button>
+      </div>
+      <div class="volumen-confirmacion oculta" id="confirmacionVolumen" aria-live="polite">
+        <p>El volumen es comodo?</p>
+        <div class="acciones-dicotica">
+          <button id="btnVolumenBajo" type="button" class="boton-secundario">Mas bajo</button>
+          <button id="btnVolumenCorrecto" type="button">Correcto</button>
+          <button id="btnVolumenAlto" type="button" class="boton-secundario">Mas alto</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel-dicotica paso-dicotica pendiente" id="pasoMicrofono">
+      <div class="panel-header">
+        <div>
+          <span class="estado-paso" id="estadoPasoMicrofono">Pendiente</span>
+          <h2>Verificacion del microfono <span class="ayuda-dicotica" tabindex="0" aria-label="Ayuda sobre microfono" data-help="El microfono permite transcribir respuestas. Si no esta disponible, puedes continuar con captura manual.">?</span></h2>
+        </div>
+        <strong id="estadoCaptura">Sin comprobar</strong>
+      </div>
+      <p>Cuando presiones el boton se activara el microfono.</p>
+      <p>Pronuncia la siguiente frase: <strong>"Esta es una prueba de microfono"</strong></p>
+      <div class="acciones-dicotica">
+        <button id="btnMicrofono" type="button">Iniciar prueba de microfono</button>
+        <button id="btnCapturaManual" type="button" class="boton-secundario">Continuar con captura manual</button>
+      </div>
+      <div class="microfono-estado" id="detalleMicrofono" aria-live="polite"></div>
     </section>
 
     <section class="panel-dicotica">
-      <h2>Ajuste de volumen y condiciones</h2>
-      <p>Ajusta el volumen a un nivel comodo. No es necesario utilizar un volumen alto para realizar la actividad.</p>
-      <label>Volumen <input id="volumenDicotica" type="range" min="0" max="1" step="0.05" value="0.7"></label>
-      <div class="condiciones-grid">
-        <label><input type="checkbox" data-condicion="hipoacusia"> Hipoacusia conocida</label>
-        <label><input type="checkbox" data-condicion="auxiliar_auditivo"> Uso de auxiliar auditivo</label>
-        <label><input type="checkbox" data-condicion="implante_coclear"> Implante coclear</label>
-        <label><input type="checkbox" data-condicion="tinnitus"> Tinnitus activo</label>
-        <label><input type="checkbox" data-condicion="dolor_oido"> Dolor/infeccion de oido</label>
-        <label><input type="checkbox" data-condicion="dificultad_instrucciones"> Dificultad para instrucciones</label>
+      <h2>Condiciones clinicas</h2>
+      <div class="condiciones-secciones">
+        <fieldset>
+          <legend>Audicion</legend>
+          <label><input type="checkbox" data-condicion="hipoacusia"> Hipoacusia</label>
+          <label><input type="checkbox" data-condicion="auxiliar_auditivo"> Auxiliar auditivo</label>
+          <label><input type="checkbox" data-condicion="implante_coclear"> Implante coclear</label>
+          <label><input type="checkbox" data-condicion="tinnitus"> Tinnitus</label>
+          <label><input type="checkbox" data-condicion="dolor_oido"> Dolor o infeccion de oido</label>
+        </fieldset>
+        <fieldset>
+          <legend>Comprension</legend>
+          <label><input type="checkbox" data-condicion="dificultad_instrucciones"> Dificultad para comprender instrucciones</label>
+        </fieldset>
+        <fieldset>
+          <legend>Idioma</legend>
+          <label>Dominancia linguistica <span class="ayuda-dicotica" tabindex="0" aria-label="Ayuda sobre dominancia linguistica" data-help="Registra el idioma dominante para interpretar el rendimiento verbal con contexto clinico.">?</span>
+            <select id="dominanciaLinguistica">
+              <option value="">Seleccionar</option>
+              <option value="espanol dominante">Espanol dominante</option>
+              <option value="ingles dominante">Ingles dominante</option>
+              <option value="bilingue">Bilingue</option>
+              <option value="otra">Otra</option>
+            </select>
+          </label>
+          <input id="dominanciaOtra" class="oculta" placeholder="Especificar otra dominancia linguistica">
+        </fieldset>
       </div>
-      <label>Dominancia linguistica <input id="dominanciaLinguistica" placeholder="Ej. espanol dominante"></label>
-      <button id="btnMicrofono" type="button">Comprobar microfono</button>
     </section>
 
     <section class="panel-dicotica">
@@ -68,7 +164,8 @@
       <p><strong>Escucharas dos palabras diferentes al mismo tiempo: una por cada oido. Repite en voz alta unicamente la palabra que escuches por el oido derecho. Ignora la palabra del oido izquierdo.</strong></p>
       <p>Responde con una sola palabra. Habla de forma clara despues de escuchar cada par.</p>
       <div class="acciones-dicotica">
-        <button id="btnPractica" type="button">Iniciar practica</button>
+        <button id="btnContinuarPractica" type="button" class="boton-principal-grande" disabled>Continuar a la practica</button>
+        <button id="btnPractica" type="button" class="oculta">Iniciar practica</button>
         <button id="btnDemo" type="button">Ejecutar demostracion tecnica</button>
         <button id="btnIniciar" type="button">Iniciar prueba experimental validada</button>
       </div>
@@ -76,9 +173,20 @@
     </section>
 
     <details class="panel-dicotica admin-corpus">
-      <summary>Panel administrativo del corpus</summary>
+      <summary>Informacion tecnica del corpus (solo administrador) <span class="ayuda-dicotica" tabindex="0" aria-label="Ayuda sobre corpus" data-help="Este apartado muestra datos tecnicos del material auditivo y su integridad. No es necesario abrirlo durante una aplicacion rutinaria.">?</span></summary>
       <div id="resumenAdminCorpus"></div>
-      <div class="tabla-wrap"><table><thead><tr><th>ID</th><th>Bloque</th><th>Ensayo</th><th>Izquierdo</th><th>Derecho</th><th>Audio izq</th><th>Audio der</th></tr></thead><tbody id="tablaCorpus"></tbody></table></div>
+      <div class="acciones-dicotica">
+        <button type="button" id="btnMostrarCorpus">Mostrar detalles del corpus</button>
+      </div>
+      <div class="corpus-detalle oculta" id="detalleCorpus">
+        <label>Buscar en corpus <input id="buscadorCorpus" placeholder="Buscar palabra, ID o audio"></label>
+        <div class="tabla-wrap"><table><thead><tr><th>ID</th><th>Bloque</th><th>Ensayo</th><th>Izquierdo</th><th>Derecho</th><th>Audio izq</th><th>Audio der</th></tr></thead><tbody id="tablaCorpus"></tbody></table></div>
+        <div class="paginacion-corpus">
+          <button id="btnCorpusPrev" type="button" class="boton-secundario">Anterior</button>
+          <span id="paginaCorpus">Pagina 1 de 1</span>
+          <button id="btnCorpusNext" type="button" class="boton-secundario">Siguiente</button>
+        </div>
+      </div>
     </details>
   </section>
 
