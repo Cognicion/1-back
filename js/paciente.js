@@ -4858,25 +4858,39 @@ function medicamentosActivosIndicaciones() {
 
 function construirTextoIndicaciones(medicamentos = medicamentosActivosIndicaciones()) {
   const dieta = valorCampo("indicacionesDieta") || "NORMAL";
-  const cuidados = valorCampo("indicacionesCuidados") || "Signos vitales por turno y cuidados generales por enfermeria";
+  const cuidados = valorCampo("indicacionesCuidados") || "Signos vitales por turno y cuidados generales por enfermería";
   const alergias = valorCampo("indicacionesAlergias") || "Negadas";
   const riesgoCaida = valorCampo("indicacionesRiesgoCaida") || "MEDIO";
   const vigilancia = valorCampo("indicacionesVigilancia") || "RIESGO SUICIDA";
   const notaMedicamentos = valorCampo("indicacionesNotaMedicamentos") || "EN CASO DE NEGATIVISMO, ADMINISTRAR MOLIDOS Y DISUELTOS";
-  const eventualidades = valorCampo("indicacionesEventualidades") || "Reportar Eventualidades";
-  const listaMedicamentos = medicamentos.length
-    ? medicamentos.map((medicamento, indice) => `6.${indice + 1} ${medicamento}`).join("\n")
-    : "-Sin medicamentos activos registrados.";
+  const eventualidadesCapturadas = valorCampo("indicacionesEventualidades");
+  const eventualidades = !eventualidadesCapturadas || /^reportar eventualidades$/i.test(eventualidadesCapturadas.trim())
+    ? "Favor de reportar eventualidades. Gracias."
+    : eventualidadesCapturadas;
+  const lineas = [
+    `1. Dieta: ${dieta}`,
+    `2. Signos vitales y cuidados generales por enfermería: ${cuidados}`,
+    `3. Vigilancia por: ${vigilancia}`,
+    `4. Riesgo de caída: ${riesgoCaida}`,
+    `5. Alergias: ${alergias}`,
+    `6. Medicamentos${notaMedicamentos ? ` (${notaMedicamentos.toLowerCase()})` : ""}:`
+  ];
 
-  return [
-    `1. Dieta\n${dieta}`,
-    `2. Signos vitales y cuidados generales por enfermeria\n${cuidados}`,
-    `3. Vigilancia por\n${vigilancia}`,
-    `4. Riesgo de caida\n${riesgoCaida}`,
-    `5. Alergias\n${alergias}`,
-    `6. Medicamentos\n${notaMedicamentos}\n${listaMedicamentos}`,
-    `7. Reportar eventualidades\n${eventualidades}`
-  ].join("\n\n");
+  if (medicamentos.length) {
+    medicamentos.forEach((medicamento) => {
+      lineas.push(`   ${medicamento}`);
+    });
+  } else {
+    lineas.push("   -Sin medicamentos activos registrados.");
+  }
+
+  lineas.push(eventualidades || "Favor de reportar eventualidades. Gracias.");
+  const indiceEventualidades = lineas.length - 1;
+  lineas[indiceEventualidades] = /^7\./.test(lineas[indiceEventualidades])
+    ? lineas[indiceEventualidades]
+    : `7. ${lineas[indiceEventualidades]}`;
+
+  return lineas.join("\n");
 }
 
 function guardarIndicacionesGeneradasParaNota() {
