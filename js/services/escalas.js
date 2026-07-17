@@ -16,7 +16,7 @@ export function obtenerOpcionesItemEscala(escala, item) {
   const valores = item?.valores || escala?.valores || opciones.map((_, index) => index);
   return opciones.map((texto, index) => ({
     texto,
-    valor: Number(valores[index] ? index)
+    valor: Number(valores[index] ? index : "")
   }));
 }
 
