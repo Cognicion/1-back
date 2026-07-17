@@ -71,7 +71,7 @@ export function calcularDosisTotalDiaria(dosis, frecuencia = "total_diaria", tom
     cada_6: 4,
     personalizada: Number.isFinite(tomas) && tomas > 0 ? tomas : NaN
   };
-  const factor = factores[frecuencia] ? NaN;
+  const factor = factores[frecuencia] ?? NaN;
   return Number.isFinite(factor) ? dosisNumerica * factor : NaN;
 }
 

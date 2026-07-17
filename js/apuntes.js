@@ -155,7 +155,7 @@ function ponerEstado(texto) {
 }
 
 function escaparHTML(valor) {
-  return String(valor ? "")
+  return String(valor ?? "")
     .replaceAll("&", "&amp;")
     .replaceAll("<", "&lt;")
     .replaceAll(">", "&gt;")

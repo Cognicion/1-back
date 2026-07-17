@@ -258,7 +258,7 @@ function normalizarIdentificacionPaciente(datosPaciente = {}, identificacionDict
     identificacionDictado.fechaNacimiento
   );
   const edadCalculada = calcularEdad(fechaNacimiento);
-  const edad = edadCalculada ? (identificacionDictado.edad || null);
+  const edad = edadCalculada ?? (identificacionDictado.edad || null);
   const nombreCompleto = primerValor(datosPaciente.nombreCompleto, datosPaciente.nombre, institucional.nombrePaciente, identificacionDictado.nombreCompleto);
   const sexo = primerValor(datosPaciente.sexo, institucional.sexo, historia.sexo, identificacionDictado.sexo);
   const escolaridad = primerValor(datosPaciente.escolaridad, historia.escolaridad, institucional.escolaridad, identificacionDictado.escolaridad);
@@ -345,7 +345,7 @@ function extraerSecciones(texto, datos) {
     .sort((a, b) => a.marca - b.marca);
 
   marcas.forEach((marca, index) => {
-    const fin = marcas[index + 1]?.marca ? texto.length;
+    const fin = marcas[index + 1]?.marca ?? texto.length;
     const contenido = texto.slice(marca.inicio, fin);
     if (datos[marca.campo]) asignarTexto(datos[marca.campo], "texto", contenido);
   });

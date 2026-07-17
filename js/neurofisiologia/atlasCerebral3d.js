@@ -75,7 +75,7 @@ function inicializarAtlasCerebralFallback(root, error) {
   }
 
   function colorFor(item) {
-    const color = COLORES_NIVEL[nivelPrincipal(item)] ? 0x79d7ff;
+    const color = COLORES_NIVEL[nivelPrincipal(item)] ?? 0x79d7ff;
     return `#${color.toString(16).padStart(6, "0")}`;
   }
 
@@ -352,13 +352,13 @@ export async function inicializarAtlasCerebral3D() {
   const pointer = new THREE.Vector2();
 
   function materialFor(structure, options = {}) {
-    const color = options.color ? COLORES_NIVEL[nivelPrincipal(structure)] ? 0x79d7ff;
+    const color = options.color ?? COLORES_NIVEL[nivelPrincipal(structure)] ?? 0x79d7ff;
     return new THREE.MeshStandardMaterial({
       color,
-      roughness: options.roughness ? 0.62,
-      metalness: options.metalness ? 0.04,
-      transparent: options.transparent ? true,
-      opacity: options.opacity ? 0.82,
+      roughness: options.roughness ?? 0.62,
+      metalness: options.metalness ?? 0.04,
+      transparent: options.transparent ?? true,
+      opacity: options.opacity ?? 0.82,
       side: THREE.DoubleSide,
       clippingPlanes: []
     });

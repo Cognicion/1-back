@@ -52,7 +52,7 @@ function valorInstitucional(paciente = {}, campo, alternos = []) {
   const claves = [campo, ...alternos];
 
   for (const clave of claves) {
-    const valor = paciente[clave] ? institucional[clave] ? signosVitales[clave] ? somatometria[clave];
+    const valor = paciente[clave] ?? institucional[clave] ?? signosVitales[clave] ?? somatometria[clave];
     if (valor !== undefined && valor !== null && String(valor).trim() !== "") {
       return valor;
     }

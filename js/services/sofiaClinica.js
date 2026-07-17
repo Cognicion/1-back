@@ -62,7 +62,7 @@ export async function cargarExpedientePacienteSofia(idPaciente) {
 
 export function construirPacienteDigital(expediente) {
   const paciente = expediente?.paciente || {};
-  const edad = calcularEdad(paciente.fechaNacimiento || paciente.nacimiento) ? paciente.edad ? null;
+  const edad = calcularEdad(paciente.fechaNacimiento || paciente.nacimiento) ?? paciente.edad ?? null;
   const diagnosticos = extraerDiagnosticos(expediente);
   const tratamientosActivos = (expediente.tratamientos || []).filter((t) => estaActivo(t));
   const textoClinico = recolectarTextoClinico(expediente);
@@ -101,7 +101,7 @@ export function construirLineaTiempo(expediente) {
     if (t.fechaSuspension) agregarEvento(eventos, t.fechaSuspension, "Suspension", t.medicamento || "Medicamento", t.motivoSuspension || "Suspension registrada", "tratamiento", t.id);
   });
   (expediente.estudios || []).forEach((e) => agregarEvento(eventos, e.fecha || e.createdAt, "Estudio", e.nombre || e.tipo || "Estudio", e.resultado || e.resumen || "Sin resultado", "estudio", e.id));
-  (expediente.escalas || []).forEach((e) => agregarEvento(eventos, e.fechaAplicacion || e.createdAt, "Escala", e.nombreEscala || e.nombre || "Escala", `${e.puntajeTotal ? "--"} ${e.interpretacion || ""}`.trim(), "escala", e.id));
+  (expediente.escalas || []).forEach((e) => agregarEvento(eventos, e.fechaAplicacion || e.createdAt, "Escala", e.nombreEscala || e.nombre || "Escala", `${e.puntajeTotal ?? "--"} ${e.interpretacion || ""}`.trim(), "escala", e.id));
   (expediente.notasRapidas || []).forEach((n) => agregarEvento(eventos, n.fecha || n.createdAt, "Nota rapida", "Observacion breve", n.texto || n.nota || "Sin texto", "nota-rapida", n.id));
   return eventos.filter((evento) => evento.fechaOrden).sort((a, b) => b.fechaOrden - a.fechaOrden);
 }
@@ -353,13 +353,13 @@ function extraerDiagnosticos(expediente) {
   (paciente.diagnosticos || []).forEach(agregar);
   (paciente.historialDiagnosticos || []).forEach(agregar);
   (expediente.notas || []).forEach((nota) => (nota.diagnosticos || nota.diagnosticosSeleccionados || []).forEach?.(agregar));
-  return mezclarDiagnosticos(dx).sort((a, b) => (a.orden ? 999) - (b.orden ? 999));
+  return mezclarDiagnosticos(dx).sort((a, b) => (a.orden ?? 999) - (b.orden ?? 999));
 }
 function mezclarDiagnosticos(items) {
   const mapa = new Map();
   items.forEach((item, index) => {
     const clave = normalizarTexto(`${item.codigo || ""}-${item.nombre || item.texto || ""}`);
-    if (!mapa.has(clave)) mapa.set(clave, { ...item, orden: item.orden ? index });
+    if (!mapa.has(clave)) mapa.set(clave, { ...item, orden: item.orden ?? index });
   });
   return [...mapa.values()];
 }

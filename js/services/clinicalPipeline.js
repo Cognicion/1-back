@@ -119,14 +119,14 @@ export function segmentarTranscripcion(transcripcion, contexto = {}) {
   const entrada = Array.isArray(transcripcion) ? transcripcion : [{ originalText: transcripcion }];
   const segmentos = [];
   entrada.forEach((origen, sourceIndex) => {
-    const original = textoPlano(origen.originalText ? origen.text ? origen.normalizedText ? "");
+    const original = textoPlano(origen.originalText ?? origen.text ?? origen.normalizedText ?? "");
     original.split(/(?<=[.!?])\s+|\n+/u).filter(Boolean).forEach((parte, sentenceIndex) => {
       const normalizado = normalizarTextoClinicoConservador(parte);
       segmentos.push({
         id: origen.id || id("segmento"), sessionId: origen.sessionId || contexto.sessionId || "",
         patientId: origen.patientId || contexto.patientId || "", encounterId: origen.encounterId || contexto.encounterId || "",
         originalText: parte.trim(), normalizedText: normalizado.normalizedText, sourceIndex, sentenceIndex,
-        startTime: origen.startTime ? null, endTime: origen.endTime ? null, speaker: origen.speaker || "hablante_no_identificado",
+        startTime: origen.startTime ?? null, endTime: origen.endTime ?? null, speaker: origen.speaker || "hablante_no_identificado",
         confidence: Number.isFinite(Number(origen.confidence)) && Number(origen.confidence) > 0 ? Number(origen.confidence) : null,
         provider: origen.provider || "entrada_manual", transformations: normalizado.transformations || []
       });

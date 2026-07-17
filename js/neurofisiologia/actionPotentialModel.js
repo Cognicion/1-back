@@ -88,7 +88,7 @@ export function simularPotencialAccion(opciones = {}) {
 
 export function resumirPotencial(trazas, parametros) {
   const pico = trazas.reduce((max, p) => p.Vm > max.Vm ? p : max, trazas[0]);
-  const reposo = trazas[0]?.Vm ? -65;
+  const reposo = trazas[0]?.Vm ?? -65;
   const superoUmbral = trazas.some((p) => p.Vm > -20);
   const absoluto = trazas.filter((p) => p.h < 0.2).map((p) => p.t);
   const relativo = trazas.filter((p) => p.Vm < -72 || (p.h >= 0.2 && p.h < 0.55)).map((p) => p.t);

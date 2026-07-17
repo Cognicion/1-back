@@ -86,7 +86,7 @@ function hollidaySegar({ peso }) {
 }
 
 function regla421({ peso }) {
-  return mantenimientoHollidaySegarDetalle(peso)?.regla421 ? null;
+  return mantenimientoHollidaySegarDetalle(peso)?.regla421 ?? null;
 }
 
 function deficitLiquidos({ peso, deshidratacion }) {
@@ -122,7 +122,7 @@ function osmolaridad({ sodio, glucosa, bun }) {
 function egfrSchwartz({ tallaCm, creatinina, k = 0.413 }) {
   const t = normalizarTallaCm(tallaCm);
   const cr = numero(creatinina);
-  const constante = numero(k) ? 0.413;
+  const constante = numero(k) ?? 0.413;
   if (!t || !cr) return null;
   return (constante * t) / cr;
 }

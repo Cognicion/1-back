@@ -394,7 +394,7 @@ function dibujarFarmacoMolecula(ctx, x, y, farmaco, alpha = 1) {
 }
 
 function dibujarParticulaBio(ctx, p) {
-  const alpha = p.alpha ? 1;
+  const alpha = p.alpha ?? 1;
   const r = p.radio || 7;
   ctx.save();
   ctx.globalAlpha = alpha;

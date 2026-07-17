@@ -342,7 +342,7 @@ export function calcularPuntajePruebaInteractiva(prueba, respuestas = []) {
   if (prueba?.usarTiempoPrincipal) {
     const tmtB = respuestas.find((r) => /TMT-B tiempo/i.test(r.item || ""));
     const tmtA = respuestas.find((r) => /TMT-A tiempo/i.test(r.item || ""));
-    return Number(tmtB?.valor ? tmtA?.valor ? 0);
+    return Number(tmtB?.valor ?? tmtA?.valor ?? 0);
   }
   return respuestas.reduce((total, respuesta) => total + Number(respuesta.valor || 0), 0);
 }

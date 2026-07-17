@@ -138,9 +138,9 @@ export function limpiarFarmacosIntegrados(estado) {
 }
 
 export function estimularNeuronaIntegrada(estado, intensidad = null, opciones = {}) {
-  const intensidadPulso = Number(intensidad ? estado.controles.intensidad ? 12);
+  const intensidadPulso = Number(intensidad ?? estado.controles.intensidad ?? 12);
   if (opciones.unico) {
-    const duracion = Number(opciones.duracionMs ? 1.2);
+    const duracion = Number(opciones.duracionMs ?? 1.2);
     estado.pulsoUnico = { restanteMs: Math.max(0.1, duracion), intensidad: intensidadPulso };
     estado.soloPulsoUnico = true;
     estado.suspenderTrenHasta = estado.tiempo + Math.max(20, duracion + 12);

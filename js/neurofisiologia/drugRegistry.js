@@ -38,7 +38,7 @@ export function resumirEfectosFarmacos(farmacosActivos = [], tiempo = 0) {
   farmacosActivos.forEach((activo) => {
     const farmaco = obtenerFarmaco(activo.id);
     if (!farmaco) return;
-    const intensidad = Math.max(0, Math.min(1, Number(activo.intensidad ? 0.5)));
+    const intensidad = Math.max(0, Math.min(1, Number(activo.intensidad ?? 0.5)));
     const factorInicio = farmaco.inicio === "lento" ? (1 - Math.exp(-tiempo / 240)) : farmaco.inicio === "intermedio" ? (1 - Math.exp(-tiempo / 80)) : 1;
     const factor = intensidad * factorInicio;
     Object.entries(farmaco.efectos || {}).forEach(([clave, valor]) => {

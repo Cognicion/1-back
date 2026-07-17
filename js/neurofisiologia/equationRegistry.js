@@ -6,7 +6,7 @@ export const REGISTRO_ECUACIONES_NEURO = [
     formulaTexto: "Eion = (RT / zF) ln([ion]o / [ion]i)",
     descripcion: "Calcula el potencial de equilibrio de un ion segun concentraciones, valencia y temperatura.",
     variables: ["R", "T", "z", "F", "extra", "intra"],
-    calcular: ({ estado, ion = "k" }) => estado.equilibrio?.[ion] ? NaN,
+    calcular: ({ estado, ion = "k" }) => estado.equilibrio?.[ion] ?? NaN,
     sustitucion: ({ estado, ion = "k" }) => {
       const c = estado.membrana.concentraciones[ion];
       const e = estado.equilibrio[ion];

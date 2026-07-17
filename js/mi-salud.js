@@ -876,11 +876,10 @@ function limpiarCampo(id) {
 }
 
 function escaparHTML(valor) {
-  return String(valor ? "")
+  return String(valor ?? "")
     .replaceAll("&", "&amp;")
     .replaceAll("<", "&lt;")
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#039;");
 }
-

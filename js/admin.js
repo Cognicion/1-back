@@ -2459,7 +2459,7 @@ function diagnosticoTexto(paciente = {}) {
 }
 
 function escaparHTML(valor) {
-  return String(valor ? "")
+  return String(valor ?? "")
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
