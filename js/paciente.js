@@ -738,11 +738,16 @@ function renderizarEquipoClinicoLab(equipo = []) {
 function renderizarGaugeVital(clave, datos = {}) {
   const signo = SIGNOS_VITALES_LAB[clave];
   if (!signo) return "";
-  const valor = valorPaciente(datos, signo.rutas, "Sin registro");
+  const registroVisible = obtenerRegistroVisibleSignoVital(datos, clave);
+  const valor = registroVisible?.valor || valorPaciente(datos, signo.rutas, "Sin registro");
+  const meta = registroVisible?.texto
+    ? `<small class="lab-gauge-meta ${registroVisible.esHoy ? "es-hoy" : "es-ultimo"}">${escaparHTML(registroVisible.texto)}</small>`
+    : "";
   return `
     <div class="lab-gauge lab-gauge-interactivo">
       <span>${escaparHTML(signo.etiqueta)}</span>
       <strong>${escaparHTML(valor)}</strong>
+      ${meta}
       <div class="lab-gauge-actions">
         <button type="button" onclick="registrarSignoVitalPaciente('${clave}', {}, this)">Registrar</button>
         <button type="button" onclick="registrarSignoVitalPaciente('${clave}', { previo: true }, this)">Previo</button>
@@ -3077,6 +3082,54 @@ function obtenerHistorialSignoVital(datos = {}, clave = "") {
   return Array.isArray(historial) ? historial : [];
 }
 
+function fechaLocalISO(fecha = new Date()) {
+  const d = fecha instanceof Date ? fecha : new Date(fecha);
+  if (Number.isNaN(d.getTime())) return "";
+  const pad = (valor) => String(valor).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+}
+
+function horaLocalSignoVital(fecha = new Date()) {
+  const d = fecha instanceof Date ? fecha : new Date(fecha);
+  if (Number.isNaN(d.getTime())) return "";
+  return d.toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit", hour12: false });
+}
+
+function esFechaDeHoySignoVital(fecha) {
+  return fechaLocalISO(fecha) === fechaLocalISO(new Date());
+}
+
+function obtenerUltimoRegistroSignoVital(datos = {}, clave = "", filtro = null) {
+  return obtenerHistorialSignoVital(datos, clave)
+    .map((registro) => ({ ...registro, fechaObjeto: fechaRegistroSigno(registro) }))
+    .filter((registro) => registro.fechaObjeto && (!filtro || filtro(registro)))
+    .sort((a, b) => b.fechaObjeto - a.fechaObjeto)[0] || null;
+}
+
+function obtenerRegistroVisibleSignoVital(datos = {}, clave = "") {
+  const registroHoy = obtenerUltimoRegistroSignoVital(datos, clave, (registro) => esFechaDeHoySignoVital(registro.fechaObjeto));
+  if (registroHoy) {
+    return {
+      valor: registroHoy.valor || "",
+      fecha: registroHoy.fechaObjeto,
+      esHoy: true,
+      texto: `Hoy ${horaLocalSignoVital(registroHoy.fechaObjeto)}`
+    };
+  }
+
+  const ultimo = obtenerUltimoRegistroSignoVital(datos, clave);
+  if (ultimo) {
+    return {
+      valor: ultimo.valor || "",
+      fecha: ultimo.fechaObjeto,
+      esHoy: false,
+      texto: `Último registro ${fechaHoraLocalParaInput(ultimo.fechaObjeto)}`
+    };
+  }
+
+  return null;
+}
+
 function fechaHoraLocalParaInput(fecha = new Date()) {
   const d = fecha instanceof Date ? fecha : new Date(fecha);
   if (Number.isNaN(d.getTime())) return "";
@@ -3258,18 +3311,18 @@ function abrirPopoverSignoVitalPaciente({ clave, signo, valorActual = "", previo
           Valor ${signo?.unidad ? `<small>${escaparHTML(signo.unidad)}</small>` : ""}
           <input data-signo-valor value="${escaparHTML(valorActual || "")}" placeholder="${clave === "presionArterial" ? "Ej. 120/80" : "Ej. 80"}">
         </label>
-        ${previo ? `
-          <div class="popover-signo-fecha-hora">
-            <label>
-              Fecha
-              <input data-signo-fecha type="date" value="${escaparHTML(fechaHoraActual.fecha)}">
-            </label>
-            <label>
-              Hora
-              <input data-signo-hora type="time" lang="en-GB" step="60" value="${escaparHTML(fechaHoraActual.hora)}">
-            </label>
-          </div>
-        ` : ""}
+        <div class="popover-signo-fecha-hora ${previo ? "" : "solo-hora"}">
+          ${previo ? `
+          <label>
+            Fecha
+            <input data-signo-fecha type="date" value="${escaparHTML(fechaHoraActual.fecha)}">
+          </label>
+          ` : ""}
+          <label>
+            Hora de toma
+            <input data-signo-hora type="time" lang="en-GB" step="60" value="${escaparHTML(fechaHoraActual.hora)}">
+          </label>
+        </div>
         <label>
           Nota clinica
           <textarea data-signo-nota placeholder="Opcional"></textarea>
@@ -3303,9 +3356,7 @@ function abrirPopoverSignoVitalPaciente({ clave, signo, valorActual = "", previo
       cerrar({
         valor,
         nota: popover.querySelector("[data-signo-nota]")?.value?.trim() || "",
-        fechaToma: previo
-          ? `${popover.querySelector("[data-signo-fecha]")?.value || ""}T${popover.querySelector("[data-signo-hora]")?.value || "00:00"}`
-          : ""
+        fechaToma: `${(previo ? popover.querySelector("[data-signo-fecha]")?.value : fechaHoraActual.fecha) || fechaHoraActual.fecha}T${popover.querySelector("[data-signo-hora]")?.value || fechaHoraActual.hora || "00:00"}`
       });
     });
 
@@ -3321,7 +3372,8 @@ window.registrarSignoVitalPaciente = async function(clave, opciones = {}, ancla 
   const signo = SIGNOS_VITALES_LAB[clave];
   if (!signo) return;
   const datos = datosPacienteActual || await obtenerUsuario(uidPaciente);
-  const valorActual = valorPaciente(datos, signo.rutas, "");
+  const registroVisible = obtenerRegistroVisibleSignoVital(datos, clave);
+  const valorActual = registroVisible?.valor || valorPaciente(datos, signo.rutas, "");
   const captura = await abrirPopoverSignoVitalPaciente({
     clave,
     signo,
@@ -3330,7 +3382,7 @@ window.registrarSignoVitalPaciente = async function(clave, opciones = {}, ancla 
     ancla
   });
   if (!captura) return;
-  const fechaRegistro = opciones.previo ? isoDesdeFechaHoraSignoVital(captura.fechaToma) : new Date().toISOString();
+  const fechaRegistro = isoDesdeFechaHoraSignoVital(captura.fechaToma);
   const historial = {
     ...(datos?.historialSignosVitales || {}),
     [clave]: [
@@ -3339,6 +3391,7 @@ window.registrarSignoVitalPaciente = async function(clave, opciones = {}, ancla 
         valor: captura.valor,
         nota: captura.nota,
         fecha: fechaRegistro,
+        fechaToma: fechaRegistro,
         esPrevio: opciones.previo === true,
         uidRegistro: auth.currentUser?.uid || ""
       }
@@ -3357,6 +3410,14 @@ window.registrarSignoVitalPaciente = async function(clave, opciones = {}, ancla 
     actualizacion.signosVitales = {
       ...(datos?.signosVitales || {}),
       [clave]: captura.valor
+    };
+    actualizacion.signosVitalesMeta = {
+      ...(datos?.signosVitalesMeta || {}),
+      [clave]: {
+        fecha: fechaRegistro,
+        hora: horaLocalSignoVital(fechaRegistro),
+        uidRegistro: auth.currentUser?.uid || ""
+      }
     };
     if (clave === "imc") {
       actualizacion.somatometria = {

@@ -96,6 +96,25 @@
   min-height: 88px;
 }
 
+.lab-gauge-meta {
+  display: block;
+  margin-top: 2px;
+  color: #9fb4c9;
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 1.2;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.lab-gauge-meta.es-hoy {
+  color: #86efac;
+}
+
+.lab-gauge-meta.es-ultimo {
+  color: #bae6fd;
+}
+
 .lab-info-grid {
   position: relative;
   z-index: 1;
@@ -466,6 +485,10 @@
   display: grid;
   grid-template-columns: minmax(0, 1fr) 120px;
   gap: 8px;
+}
+
+.popover-signo-fecha-hora.solo-hora {
+  grid-template-columns: minmax(0, 150px);
 }
 
 .popover-signo-vital input,

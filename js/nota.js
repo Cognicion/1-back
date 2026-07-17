@@ -81,6 +81,7 @@ import {
   obtenerHistoriaClinica
 } from "./services/historias.js";
 import { listarEstudios } from "./services/estudios.js";
+import { listarTratamientos } from "./services/tratamientos.js";
 import { calcularEdadPediatrica, formatearFechaDDMMAAAA } from "./pediatria/edad.js";
 import {
   calcularIMC as calcularIMCPediatrico,
