@@ -7,7 +7,7 @@ import {
   listarEscalasAplicadas,
   obtenerOpcionesItemEscala,
   textoItemEscala
-} from "./services/escalas.js";
+} from "./services/escalas.js?v=20260716-expediente-fix-2";
 import { medicoPuedeVer, obtenerUsuario } from "./services/usuarios.js";
 import { registrarEventoAuditoria } from "./services/auditoria.js";
 import { iniciarMonitoreoSesion } from "./services/sesion.js";

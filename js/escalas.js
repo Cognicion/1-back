@@ -4,7 +4,7 @@ import { collection, doc } from "https://www.gstatic.com/firebasejs/10.12.2/fire
 import { ESCALAS_COGNITIVAS, calcularPuntajeEscalaCognitiva, interpretarEscalaCognitiva, obtenerPuntajesDominioCognitivo } from "./data/escalasCognitivas.js";
 import { PRUEBAS_INTERACTIVAS, calcularPuntajePruebaInteractiva, interpretarPruebaInteractiva, obtenerPruebaInteractiva, puntajesDominioPruebaInteractiva } from "./data/pruebasInteractivas.js";
 import { obtenerUsuario } from "./services/usuarios.js";
-import { guardarEscalaAplicada } from "./services/escalas.js";
+import { guardarEscalaAplicada } from "./services/escalas.js?v=20260716-expediente-fix-2";
 
 const escalas = [...ESCALAS_COGNITIVAS, ...PRUEBAS_INTERACTIVAS.filter((prueba) => !ESCALAS_COGNITIVAS.some((escala) => escala.id === prueba.id))];
 let escalaActual = null;

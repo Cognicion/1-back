@@ -25,7 +25,7 @@ import {
 } from "./data/pruebasInteractivas.js";
 
 import { obtenerUsuario } from "./services/usuarios.js";
-import { crearResumenEscala, guardarEscalaAplicada } from "./services/escalas.js";
+import { crearResumenEscala, guardarEscalaAplicada } from "./services/escalas.js?v=20260716-expediente-fix-2";
 
 aplicarAparienciaGuardada();
 

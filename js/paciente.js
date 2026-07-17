@@ -107,9 +107,9 @@ let formatearFechaEscala = formatearFechaEscalaFallback;
 async function cargarDependenciasEscalasPaciente() {
   if (!dependenciasEscalasPacientePromise) {
     dependenciasEscalasPacientePromise = Promise.all([
-      import("./data/escalasPsiquiatricas.js?v=20260716-expediente-fix-1"),
-      import("./data/escalasCognitivas.js?v=20260716-expediente-fix-1"),
-      import("./services/escalas.js?v=20260716-expediente-fix-1")
+      import("./data/escalasPsiquiatricas.js?v=20260716-expediente-fix-2"),
+      import("./data/escalasCognitivas.js?v=20260716-expediente-fix-2"),
+      import("./services/escalas.js?v=20260716-expediente-fix-2")
     ]).then(([psiquiatricas, cognitivas, servicioEscalas]) => {
       ESCALAS_PSIQUIATRICAS = psiquiatricas.ESCALAS_PSIQUIATRICAS || [];
       ESCALAS_COGNITIVAS = cognitivas.ESCALAS_COGNITIVAS || [];
@@ -5978,7 +5978,7 @@ function limpiarPuntoFinal(texto = "") {
 
 function normalizarTextoFrecuenciaTratamiento(texto = "") {
   return String(texto || "")
-    .replace(/\bvezes\b/gi, "veces")
+    .replace(/\bveces\b/gi, "veces")
     .replace(/\b1\s+veces\b/gi, "1 vez")
     .trim();
 }
