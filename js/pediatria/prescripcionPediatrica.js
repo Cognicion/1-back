@@ -74,9 +74,9 @@ export function normalizeCommercialPresentation(presentation = {}) {
   const amountMg = presentation.activeIngredientAmount && activeIngredientUnit
     ? convertirAMg(presentation.activeIngredientAmount, activeIngredientUnit)
     : numero(presentation.amountMg);
-  const referenceVolume = numero(presentation.referenceVolume ?? presentation.volumeMl);
+  const referenceVolume = numero(presentation.referenceVolume ? presentation.volumeMl);
   const concentrationMgPerMl = numero(presentation.concentrationMgPerMl)
-    ?? (amountMg && referenceVolume && referenceVolumeUnit.toLowerCase() === "ml" ? amountMg / referenceVolume : null);
+    ? (amountMg && referenceVolume && referenceVolumeUnit.toLowerCase() === "ml" ? amountMg / referenceVolume : null);
   const pharmaceuticalForm = presentation.pharmaceuticalForm || presentation.form || inferForm(presentation.unitStrength || presentation.commercialStrength || "");
   return {
     ...presentation,
@@ -346,8 +346,8 @@ export function parseManualPresentation(text) {
 }
 
 export function buildManualCommercialPresentation(input = {}) {
-  const activeIngredientAmount = numero(input.activeIngredientAmount ?? input.manualActiveIngredientAmount);
-  const referenceVolume = numero(input.referenceVolume ?? input.manualReferenceVolume);
+  const activeIngredientAmount = numero(input.activeIngredientAmount ? input.manualActiveIngredientAmount);
+  const referenceVolume = numero(input.referenceVolume ? input.manualReferenceVolume);
   const activeIngredientUnit = input.activeIngredientUnit || input.manualActiveIngredientUnit || "mg";
   const referenceVolumeUnit = input.referenceVolumeUnit || input.manualReferenceVolumeUnit || "mL";
   const amountMg = activeIngredientAmount ? convertirAMg(activeIngredientAmount, activeIngredientUnit) : null;
@@ -371,7 +371,7 @@ export function buildManualCommercialPresentation(input = {}) {
     concentrationMgPerMl,
     commercialStrength: input.commercialStrength || formatearFuerzaComercial({ activeIngredientAmount, activeIngredientUnit, referenceVolume, referenceVolumeUnit }),
     unitStrength: input.commercialStrength || formatearFuerzaComercial({ activeIngredientAmount, activeIngredientUnit, referenceVolume, referenceVolumeUnit }),
-    packageContent: numero(input.packageContent ?? input.manualPackageContent),
+    packageContent: numero(input.packageContent ? input.manualPackageContent),
     packageUnit: input.packageUnit || input.manualPackageUnit || "",
     routes: [input.route || "oral"],
     route: [input.route || "oral"],
@@ -404,7 +404,7 @@ export function calculateSolidUnits({ finalDoseMg, presentation }) {
 
 export function validateTabletSplitting({ unitsPerDose, presentation }) {
   if (!presentation || presentation.volumeMl) return { ok: true };
-  const units = numero(unitsPerDose?.exactUnits ?? unitsPerDose);
+  const units = numero(unitsPerDose?.exactUnits ? unitsPerDose);
   if (!units) return { ok: false, message: "No se pudo calcular unidades por toma." };
   const isFraction = Math.abs(units - Math.round(units)) > 0.001;
   if (isFraction && presentation.divisible === false) {
@@ -504,7 +504,7 @@ export function buildPediatricPrescription(input) {
   const scheme = selectDosingScheme(input.medicationId, indication?.indicationId, input.schemeIndex);
   const administrationsPerDay = calculateAdministrationsPerDay(input);
   const mode = input.dosingMode || scheme?.type || "mg_kg_dosis";
-  const schemeValue = numero(input.doseValue) ?? scheme?.usual ?? scheme?.maximum;
+  const schemeValue = numero(input.doseValue) ? scheme?.usual ? scheme?.maximum;
   let doseResult = null;
   if (mode === "mg_kg_dosis" || mode === "mg_kg_dia") {
     doseResult = calculateDoseByWeight({ pesoKg: input.weightKg, value: schemeValue, administrationsPerDay, mode });
@@ -581,7 +581,7 @@ export function buildPediatricPrescription(input) {
     liquidVolume,
     unitsPerDose,
     duration: input.duration || "",
-    durationValue: input.durationValue ?? input.duration ?? "",
+    durationValue: input.durationValue ? input.duration ? "",
     durationUnit: input.durationUnit || "días",
     durationManualText: input.durationManualText || "",
     isContinuous: input.durationUnit === "continuo" || Boolean(input.isContinuous),
@@ -642,7 +642,7 @@ export function durationText(p = {}) {
   if (p.isContinuous || p.durationUnit === "continuo") return " de forma continua hasta nueva indicación";
   if (p.durationUnit === "hasta_nueva_indicacion") return " hasta nueva indicación";
   if (p.durationUnit === "personalizado") return p.durationManualText ? ` ${p.durationManualText}` : "";
-  const value = p.durationValue ?? p.duration;
+  const value = p.durationValue ? p.duration;
   if (!value) return "";
   const unit = p.durationUnit === "dias" ? "días" : (p.durationUnit || "días");
   return ` durante ${value} ${unit}`;

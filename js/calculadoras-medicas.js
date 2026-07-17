@@ -342,7 +342,7 @@ function leerInputsFormulario() {
   const values = {};
   calc.inputs.forEach((input) => {
     const element = form.elements[input.id];
-    values[input.id] = input.type === "checkbox" ? Boolean(element?.checked) : (element?.value ?? "");
+    values[input.id] = input.type === "checkbox" ? Boolean(element?.checked) : (element?.value ? "");
   });
   estado.inputsActuales = values;
   return values;
@@ -563,7 +563,7 @@ function abrirVentanaImpresion({ empty = false } = {}) {
   const rows = calc.inputs.map((input) => `
     <tr>
       <td>${escaparHTML(input.label)}</td>
-      <td>${empty ? "" : escaparHTML(data?.inputs?.[input.id] ?? "")}</td>
+      <td>${empty ? "" : escaparHTML(data?.inputs?.[input.id] ? "")}</td>
       <td>${escaparHTML(input.unit || "")}</td>
     </tr>
   `).join("");

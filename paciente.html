@@ -750,58 +750,30 @@
 
         <datalist id="catalogoMedicosFirmasIndicaciones"></datalist>
 
-        <div class="catalogo-medicos-indicaciones">
-          <div class="registro-top">
-            <strong>Agregar medico al catalogo de este usuario</strong>
-            <span class="texto-suave">Disponible para firmas de indicaciones.</span>
-          </div>
-          <div class="form-grid">
-            <label>Nombre<input id="nuevoMedicoIndicacionesNombre" placeholder="Nombre completo"></label>
-            <label>Cargo<input id="nuevoMedicoIndicacionesCargo" placeholder="Ej. Medico adscrito"></label>
-            <label>Cedula<input id="nuevoMedicoIndicacionesCedula" placeholder="Cedula profesional"></label>
-            <label>Usar en firma
-              <select id="nuevoMedicoIndicacionesFirmaDestino">
-                <option value="">Solo guardar en catalogo</option>
-                <option value="1">Firma 1</option>
-                <option value="2">Firma 2</option>
-                <option value="3">Firma 3</option>
-              </select>
-            </label>
-          </div>
-          <div class="form-actions">
-            <button id="guardarNuevoMedicoIndicaciones" type="button" class="boton-secundario">Guardar medico en catalogo</button>
-          </div>
-        </div>
-
         <div class="form-grid firmas-indicaciones">
-          <label>Firma campo 1 - Cargar del catalogo
-            <select id="indicacionesFirma1Catalogo" data-firma-indicaciones-select="1">
-              <option value="">Seleccionar medico</option>
-            </select>
-          </label>
           <label>Firma campo 1 - Nombre
             <div class="campo-catalogo-inline">
-              <input id="indicacionesFirma1Nombre" data-firma-indicaciones-nombre="1" placeholder="Escribir mÃ©dico manualmente">
+              <input id="indicacionesFirma1Nombre" data-firma-indicaciones-nombre="1" placeholder="Escribir medico manualmente">
               <button type="button" class="boton-mini-catalogo" data-guardar-medico-indicaciones="1">Agregar</button>
             </div>
           </label>
           <label>Firma campo 1 - Cargo<input id="indicacionesFirma1Cargo" placeholder="Ej. Medico adscrito de urgencias"></label>
           <label>Firma campo 1 - Cedula<input id="indicacionesFirma1Cedula"></label>
-          <label>Firma campo 2 - Cargar del catalogo
-            <select id="indicacionesFirma2Catalogo" data-firma-indicaciones-select="2">
+          <label>Firma campo 1 - Cargar del catalogo
+            <select id="indicacionesFirma1Catalogo" data-firma-indicaciones-select="1">
               <option value="">Seleccionar medico</option>
             </select>
           </label>
           <label>Firma campo 2 - Nombre
             <div class="campo-catalogo-inline">
-              <input id="indicacionesFirma2Nombre" data-firma-indicaciones-nombre="2" placeholder="Escribir mÃ©dico manualmente">
+              <input id="indicacionesFirma2Nombre" data-firma-indicaciones-nombre="2" placeholder="Escribir medico manualmente">
               <button type="button" class="boton-mini-catalogo" data-guardar-medico-indicaciones="2">Agregar</button>
             </div>
           </label>
           <label>Firma campo 2 - Cargo<input id="indicacionesFirma2Cargo" placeholder="Ej. Medico residente de 3er ano"></label>
           <label>Firma campo 2 - Cedula<input id="indicacionesFirma2Cedula"></label>
-          <label>Firma campo 3 - Cargar del catalogo
-            <select id="indicacionesFirma3Catalogo" data-firma-indicaciones-select="3">
+          <label>Firma campo 2 - Cargar del catalogo
+            <select id="indicacionesFirma2Catalogo" data-firma-indicaciones-select="2">
               <option value="">Seleccionar medico</option>
             </select>
           </label>
@@ -813,6 +785,11 @@
           </label>
           <label>Firma campo 3 - Cargo<input id="indicacionesFirma3Cargo" placeholder="Ej. Medico residente de 2do ano"></label>
           <label>Firma campo 3 - Cedula<input id="indicacionesFirma3Cedula"></label>
+          <label>Firma campo 3 - Cargar del catalogo
+            <select id="indicacionesFirma3Catalogo" data-firma-indicaciones-select="3">
+              <option value="">Seleccionar medico</option>
+            </select>
+          </label>
         </div>
 
         <div class="form-actions">

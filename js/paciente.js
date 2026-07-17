@@ -1195,25 +1195,6 @@ async function guardarMedicoCatalogoIndicaciones({ nombre, cargo, cedula, firmaD
   return actualizado;
 }
 
-async function guardarNuevoMedicoIndicaciones() {
-  const medico = await guardarMedicoCatalogoIndicaciones({
-    nombre: valorCampo("nuevoMedicoIndicacionesNombre"),
-    cargo: valorCampo("nuevoMedicoIndicacionesCargo"),
-    cedula: valorCampo("nuevoMedicoIndicacionesCedula"),
-    firmaDestino: valorCampo("nuevoMedicoIndicacionesFirmaDestino")
-  });
-
-  if (!medico) return;
-
-  [
-    "nuevoMedicoIndicacionesNombre",
-    "nuevoMedicoIndicacionesCargo",
-    "nuevoMedicoIndicacionesCedula"
-  ].forEach((id) => ponerValor(id, ""));
-  ponerValor("nuevoMedicoIndicacionesFirmaDestino", "");
-  alert("Médico guardado en el catálogo del usuario.");
-}
-
 function referenciaApuntesMedicoPaciente() {
   const uidMedico = auth.currentUser?.uid;
   if (!uidMedico) return null;
@@ -6757,7 +6738,6 @@ document.querySelectorAll("[data-firma-indicaciones-select]").forEach((selector)
 document.querySelectorAll("[data-guardar-medico-indicaciones]").forEach((boton) => {
   boton.addEventListener("click", () => guardarMedicoFirmaIndicaciones(boton.dataset.guardarMedicoIndicaciones));
 });
-document.getElementById("guardarNuevoMedicoIndicaciones")?.addEventListener("click", guardarNuevoMedicoIndicaciones);
 document.getElementById("cerrarIngresoPaciente")?.addEventListener("click", cerrarSelectorIngresoPaciente);
 document.getElementById("guardarIngresoPaciente")?.addEventListener("click", guardarIngresoPacienteDesdeModal);
 document.getElementById("limpiarIngresoPaciente")?.addEventListener("click", limpiarIngresoPacienteDesdeModal);

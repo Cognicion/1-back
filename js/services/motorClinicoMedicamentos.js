@@ -280,7 +280,7 @@ export function extraerDiagnosticosEstructuradosPaciente(paciente = {}) {
 
 function numeroSeguro(valor) {
   if (valor === null || valor === undefined || String(valor).trim() === "") return null;
-  const numero = Number(String(valor ?? "").replace(",", ".").replace(/[^\d.-]/g, ""));
+  const numero = Number(String(valor ? "").replace(",", ".").replace(/[^\d.-]/g, ""));
   return Number.isFinite(numero) ? numero : null;
 }
 
@@ -297,7 +297,7 @@ function calcularEdadLocal(fechaNacimiento) {
 
 function extraerContextoDirectoPaciente(paciente = {}) {
   const textos = [];
-  const edad = numeroSeguro(paciente.edad) ?? calcularEdadLocal(paciente.fechaNacimiento || paciente.fecha_nacimiento);
+  const edad = numeroSeguro(paciente.edad) ? calcularEdadLocal(paciente.fechaNacimiento || paciente.fecha_nacimiento);
   const peso = numeroSeguro(paciente.peso || paciente.somatometria?.peso || paciente.signosVitales?.peso);
   const eGFR = numeroSeguro(paciente.eGFR || paciente.egfr || paciente.tfg || paciente.laboratorio?.eGFR || paciente.laboratorio?.tfg);
   const creatinina = numeroSeguro(paciente.creatinina || paciente.laboratorio?.creatinina);

@@ -105,7 +105,7 @@ function valorCelda(valor) {
 function csvDesdeTabla(tabla) {
   if (!tabla?.columnas?.length) return "";
   const escapeCSV = (valor) => {
-    const texto = String(valor ?? "");
+    const texto = String(valor ? "");
     return /[",\n\t]/.test(texto) ? `"${texto.replace(/"/g, '""')}"` : texto;
   };
   return [
@@ -121,7 +121,7 @@ function tablaDesdeDatos(filas, nombre = "Tabla 1", id = crearIdEstadistica("tab
     nombre,
     columnas: cols,
     filas: filas.length ? filas.map((fila) => cols.reduce((acc, col) => {
-      acc[col] = fila[col] ?? "";
+      acc[col] = fila[col] ? "";
       return acc;
     }, {})) : [cols.reduce((acc, col) => ({ ...acc, [col]: "" }), {})]
   };
@@ -285,7 +285,7 @@ function eliminarProyectoActivo() {
 
 function decidirImportacionTabla() {
   const tabla = tablaActiva();
-  const tieneDatos = tabla?.filas?.some((fila) => Object.values(fila).some((valor) => String(valor ?? "").trim() !== ""));
+  const tieneDatos = tabla?.filas?.some((fila) => Object.values(fila).some((valor) => String(valor ? "").trim() !== ""));
   if (!tieneDatos) return "reemplazar";
   const respuesta = prompt("Ya existe una tabla. Escribe R para reemplazarla, A para agregar el CSV como nueva tabla o C para cancelar.", "R");
   const opcion = String(respuesta || "").trim().toLowerCase();
@@ -363,7 +363,7 @@ function renderizarTablaEditable() {
       <thead><tr>${tabla.columnas.map((col) => `<th><input value="${escaparHTML(col)}" aria-label="Nombre de columna"></th>`).join("")}</tr></thead>
       <tbody>
         ${(tabla.filas.length ? tabla.filas : [{}]).map((fila, filaIdx) => `
-          <tr>${tabla.columnas.map((col, colIdx) => `<td contenteditable="true" data-row="${filaIdx}" data-col="${colIdx}">${escaparHTML(fila[col] ?? "")}</td>`).join("")}</tr>
+          <tr>${tabla.columnas.map((col, colIdx) => `<td contenteditable="true" data-row="${filaIdx}" data-col="${colIdx}">${escaparHTML(fila[col] ? "")}</td>`).join("")}</tr>
         `).join("")}
       </tbody>
     </table>
@@ -1152,7 +1152,7 @@ function combinarPreferenciasGraficas(sugeridas) {
   const previas = proyecto?.graficas || [];
   return sugeridas.map((grafica) => {
     const previa = previas.find((item) => item.id === grafica.id);
-    return { ...grafica, visible: previa?.visible ?? true };
+    return { ...grafica, visible: previa?.visible ? true };
   });
 }
 

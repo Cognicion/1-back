@@ -402,8 +402,8 @@ function renderizarFormularioTamizaje(escala, modo = "manual") {
   form.innerHTML = items.map((item, index) => {
     if (item.tipo === "select") {
       const opciones = (item.opciones || []).map((opcion, opcionIndex) => {
-        const valor = item.valores?.[opcionIndex] ?? opcion.valor ?? opcion;
-        const texto = opcion.texto ?? opcion;
+        const valor = item.valores?.[opcionIndex] ? opcion.valor ? opcion;
+        const texto = opcion.texto ? opcion;
         return `<option value="${escaparHTML(valor)}">${escaparHTML(texto)} (${escaparHTML(valor)})</option>`;
       }).join("");
       return `
@@ -417,7 +417,7 @@ function renderizarFormularioTamizaje(escala, modo = "manual") {
     return `
       <label class="item-tamizaje-cognitivo">
         <span>${index + 1}. ${escaparHTML(item.texto || `Item ${index + 1}`)}</span>
-        <input type="number" data-item-tamizaje="${index}" min="${item.min ?? 0}" max="${item.max ?? ""}" step="${item.step || 1}" placeholder="${item.min ?? 0}-${item.max ?? ""}">
+        <input type="number" data-item-tamizaje="${index}" min="${item.min ? 0}" max="${item.max ? ""}" step="${item.step || 1}" placeholder="${item.min ? 0}-${item.max ? ""}">
         <small>${escaparHTML(item.dominio || "")}${item.max !== undefined ? ` - max ${escaparHTML(item.max)}` : ""}${item.ayuda ? ` - ${escaparHTML(item.ayuda)}` : ""}</small>
       </label>
     `;
@@ -432,7 +432,7 @@ function leerRespuestasTamizaje(escala) {
     const index = Number(control.dataset.itemTamizaje);
     const item = items[index];
     const valor = control.value === "" ? null : Number(control.value || 0);
-    const min = Number(item.min ?? 0);
+    const min = Number(item.min ? 0);
     const max = item.max !== undefined ? Number(item.max) : null;
 
     if (valor === null || Number.isNaN(valor) || valor < min || (max !== null && valor > max)) {
@@ -514,7 +514,7 @@ async function guardarTamizajeCognitivoActual() {
     origen: "rehabilitacion_cognitiva",
     modoAplicacion: modoTamizajeActual === "manual" ? "captura_resultado_previo" : "aplicacion_interactiva",
     puntajeTotal: puntaje,
-    puntajeMaximo: escala.puntajeMaximo ?? "",
+    puntajeMaximo: escala.puntajeMaximo ? "",
     dominiosEvaluados: escala.dominiosEvaluados || [],
     puntajesPorDominio: dominios,
     rango: escala.rango,
@@ -554,7 +554,7 @@ function limpiarTamizajeCognitivoActual() {
 }
 
 function escaparHTML(valor) {
-  return String(valor ?? "")
+  return String(valor ? "")
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")

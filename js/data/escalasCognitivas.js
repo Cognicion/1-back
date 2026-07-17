@@ -362,7 +362,7 @@ export function calcularPuntajeEscalaCognitiva(escala, respuestas = []) {
   if (escala?.modoCaptura === "tiempo") {
     const tmtB = respuestas.find((respuesta) => /TMT-B tiempo/i.test(respuesta.item || ""));
     const tmtA = respuestas.find((respuesta) => /TMT-A tiempo/i.test(respuesta.item || ""));
-    return Number(tmtB?.valor ?? tmtA?.valor ?? 0);
+    return Number(tmtB?.valor ? tmtA?.valor ? 0);
   }
 
   return respuestas.reduce((total, respuesta) => total + Number(respuesta.valor || 0), 0);

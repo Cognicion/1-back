@@ -157,7 +157,7 @@ function renderPacienteDigital(digital) {
   cont.classList.remove("empty-state");
   cont.innerHTML = `
     ${metric("Paciente", digital.identificacion.nombre)}
-    ${metric("Edad / sexo", `${digital.identificacion.edad ?? "--"} anos · ${digital.identificacion.sexo}`)}
+    ${metric("Edad / sexo", `${digital.identificacion.edad ? "--"} anos · ${digital.identificacion.sexo}`)}
     ${metric("Institucion", digital.identificacion.institucion)}
     ${metric("Diagnostico principal", dx)}
     ${metric("Tratamientos activos", String(digital.tratamientosActivos.length))}
@@ -292,4 +292,4 @@ function metric(label, value) { return `<div class="metric-card"><small>${escape
 function lista(titulo, items = []) { return `<div class="reason-block"><b>${escapeHtml(titulo)}</b><ul>${items.map((i) => `<li>${escapeHtml(i)}</li>`).join("") || "<li>Sin datos</li>"}</ul></div>`; }
 function nombrePaciente(p) { return p.nombreCompleto || p.nombre || [p.nombres, p.apellidos].filter(Boolean).join(" ") || p.displayName || "Paciente sin nombre"; }
 function formatearDiagnostico(diag) { return [diag.codigo, diag.nombre || diag.texto || diag.diagnostico].filter(Boolean).join(" - ") || "Diagnostico sin nombre"; }
-function escapeHtml(value) { return String(value ?? "").replace(/[&<>'"]/g, (ch) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" }[ch])); }
+function escapeHtml(value) { return String(value ? "").replace(/[&<>'"]/g, (ch) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" }[ch])); }

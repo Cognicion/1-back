@@ -201,7 +201,7 @@ function renderResultados(resultado) {
 function renderGraficaPercentil(resultado) {
   if (!resultado || resultado.percentil === null || resultado.percentil === undefined) return "";
   const percentil = Math.max(0.01, Math.min(99.99, Number(resultado.percentil)));
-  const z = resultado.z ?? 0;
+  const z = resultado.z ? 0;
   return `
     <div class="calc-ped-panel percentil-card">
       <h3>Grafica de percentil</h3>

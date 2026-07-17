@@ -152,7 +152,7 @@ function mostrarAyudaParametroNeuro(meta, control, disparador) {
     panel.className = "panel-ayuda-parametro-neuro";
     document.body.appendChild(panel);
   }
-  const valor = control?.type === "checkbox" ? (control.checked ? "Activado" : "Desactivado") : (control?.value ?? "");
+  const valor = control?.type === "checkbox" ? (control.checked ? "Activado" : "Desactivado") : (control?.value ? "");
   panel.hidden = false;
   panel.inert = false;
   panel.setAttribute("aria-hidden", "false");
@@ -677,7 +677,7 @@ function datosNodoAxon(pos, indice) {
   const vmPorEstado = { reposo: -70, despolarizacion: -42, pico: 32, repolarizacion: -18, refractario: -66, hiperpolarizacion: -82 };
   const inaPorEstado = { reposo: 0.02, despolarizacion: -2.6, pico: -1.1, repolarizacion: -0.2, refractario: 0.01, hiperpolarizacion: 0.01 };
   const ikPorEstado = { reposo: 0.05, despolarizacion: 0.2, pico: 1.2, repolarizacion: 2.4, refractario: 1.4, hiperpolarizacion: 0.6 };
-  const llegada = resultadoAxon.tiempoLlegada?.find((t) => Math.abs(t.posicionMm - pos) < 0.1)?.tiempoMs ?? (pos / Math.max(0.1, resultadoAxon.velocidadMms));
+  const llegada = resultadoAxon.tiempoLlegada?.find((t) => Math.abs(t.posicionMm - pos) < 0.1)?.tiempoMs ? (pos / Math.max(0.1, resultadoAxon.velocidadMms));
   const desde = tiempoAxon - llegada;
   return { indice, pos, estado, vm: vmPorEstado[estado], ina: inaPorEstado[estado], ik: ikPorEstado[estado], desde, recuperacion: Math.max(0, 2.5 - desde) };
 }
@@ -782,8 +782,8 @@ function renderizarVelocidadAxon() {
   if (!box) return;
   const e = resultadoAxon.parametros.electrodos || [15, 40, 65];
   const d = Math.abs(e[1] - e[0]);
-  const t1 = resultadoAxon.electrodos?.[0]?.retraso ?? e[0] / resultadoAxon.velocidadMms;
-  const t2 = resultadoAxon.electrodos?.[1]?.retraso ?? e[1] / resultadoAxon.velocidadMms;
+  const t1 = resultadoAxon.electrodos?.[0]?.retraso ? e[0] / resultadoAxon.velocidadMms;
+  const t2 = resultadoAxon.electrodos?.[1]?.retraso ? e[1] / resultadoAxon.velocidadMms;
   const dt = Math.max(0.01, Math.abs(t2 - t1));
   box.innerHTML = `<strong>Como se calcula la velocidad</strong><span>Distancia entre E1 y E2: ${d.toFixed(1)} mm</span><span>Tiempo entre registros: ${dt.toFixed(2)} ms</span><span>Velocidad = distancia / tiempo = ${(d / dt).toFixed(2)} mm/ms</span>`;
 }

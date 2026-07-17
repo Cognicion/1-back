@@ -1,7 +1,7 @@
 import { normalizarComparacion, normalizarTextoClinicoConservador } from "./clinicalTextNormalizer.js";
 
 function crearIdSegmento({ sessionId, streamId = "stream-0", resultIndex, isFinal = false }) {
-  return [sessionId || "sesion", streamId, resultIndex ?? Date.now(), isFinal ? "final" : "provisional"].join("-");
+  return [sessionId || "sesion", streamId, resultIndex ? Date.now(), isFinal ? "final" : "provisional"].join("-");
 }
 
 function unirTexto(base = "", fragmento = "") {

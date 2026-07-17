@@ -395,9 +395,9 @@ function refrescarResultadosVisibles() {
 }
 
 function renderResumen(edad = null, calculos = {}) {
-  const imc = calculos.imc ?? calcularIMC($("pesoKg").value, $("tallaCm").value);
-  const sc = calculos.sc ?? superficieCorporal($("pesoKg").value, $("tallaCm").value);
-  const tallaInfo = calculos.tallaInfo ?? analizarTalla($("tallaCm").value);
+  const imc = calculos.imc ? calcularIMC($("pesoKg").value, $("tallaCm").value);
+  const sc = calculos.sc ? superficieCorporal($("pesoKg").value, $("tallaCm").value);
+  const tallaInfo = calculos.tallaInfo ? analizarTalla($("tallaCm").value);
   const diagnosticos = obtenerDiagnosticosPaciente();
   const medicamentos = obtenerMedicamentosActivos();
   $("resumenPediatria").innerHTML = `
@@ -564,7 +564,7 @@ function renderGrowthChart(indicator) {
   const pad = 22;
   const xScale = (x) => pad + ((Number(x) - minX) / Math.max(1, maxX - minX)) * (w - pad * 2);
   const yScale = (y) => h - pad - ((Number(y) - minY) / Math.max(1, maxY - minY)) * (h - pad * 2);
-  const currentX = Number(indicator.axisValue ?? indicator.ageMonths ?? indicator.heightCm ?? minX);
+  const currentX = Number(indicator.axisValue ? indicator.ageMonths ? indicator.heightCm ? minX);
   const currentY = Number(indicator.value);
   const currentVisible = Number.isFinite(currentX) && Number.isFinite(currentY) && currentX >= minX && currentX <= maxX;
 
@@ -609,7 +609,7 @@ function mostrarReferenciaCrecimiento(indicatorId = "") {
     `Referencia: ${referencia.label}`,
     `Institución: ${referencia.organization}`,
     `Año: ${referencia.publicationYear || referencia.version || "-"}`,
-    `Rango: ${referencia.ageRangeMonths?.[0] ?? "-"} a ${referencia.ageRangeMonths?.[1] ?? "-"} meses`,
+    `Rango: ${referencia.ageRangeMonths?.[0] ? "-"} a ${referencia.ageRangeMonths?.[1] ? "-"} meses`,
     `Indicador: ${indicador?.label || "-"}`,
     `Método: ${referencia.method}`,
     `Fuente: ${referencia.sourceUrl}`,
@@ -1021,7 +1021,7 @@ function renderDosisHabitualesDrawer(esquemas) {
         ${esquemas.length ? esquemas.map((esquema, index) => `
           <button type="button" class="ped-dose-option ${Number(estado.prescripcion.schemeIndex) === index ? "activo" : ""}" data-rx-scheme="${index}">
             <b>${escapeHTML(esquema.label)}</b>
-            <span>${esquema.minimum ?? "-"}-${esquema.maximum ?? "-"} ${escapeHTML(esquema.unit || "")}</span>
+            <span>${esquema.minimum ? "-"}-${esquema.maximum ? "-"} ${escapeHTML(esquema.unit || "")}</span>
             <small>${escapeHTML(esquema.source || "Validar protocolo local")}</small>
           </button>
         `).join("") : `<div class="ped-empty-mini">Sin dosis pediatrica validada para este medicamento.</div>`}
@@ -1524,7 +1524,7 @@ function formatNumber(value) {
 }
 
 function escapeAttr(value) {
-  return String(value ?? "")
+  return String(value ? "")
     .replace(/&/g, "&amp;")
     .replace(/"/g, "&quot;")
     .replace(/</g, "&lt;")
@@ -1532,7 +1532,7 @@ function escapeAttr(value) {
 }
 
 function escapeHTML(value) {
-  return String(value ?? "")
+  return String(value ? "")
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")

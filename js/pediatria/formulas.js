@@ -24,7 +24,7 @@ export function normalizarConcentracionMgMl(valor) {
 
 export function analizarTalla(valor, unidadExplicita = "") {
   const base = {
-    valorOriginal: valor ?? "",
+    valorOriginal: valor ? "",
     valorCm: null,
     valorM: null,
     unidadEntrada: "",

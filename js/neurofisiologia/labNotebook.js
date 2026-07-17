@@ -28,7 +28,7 @@ export function duplicarProyectoLaboratorio(id) {
 
 export function exportarCSVLaboratorio(filas = []) {
   const encabezados = Object.keys(filas[0] || { t: "", Vm: "" });
-  const contenido = [encabezados.join(","), ...filas.map((fila) => encabezados.map((h) => JSON.stringify(fila[h] ?? "")).join(","))].join("\n");
+  const contenido = [encabezados.join(","), ...filas.map((fila) => encabezados.map((h) => JSON.stringify(fila[h] ? "")).join(","))].join("\n");
   const blob = new Blob([contenido], { type: "text/csv;charset=utf-8" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");

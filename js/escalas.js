@@ -115,10 +115,10 @@ function renderizarFormulario() {
   document.getElementById("avisoEscala").innerHTML = `<p><strong>${modoActual === "manual" ? "Capturar resultado previo" : "Aplicar prueba ahora"}.</strong> Los resultados son apoyo clinico y no sustituyen valoracion medica o neuropsicologica.</p>${oficial}`;
   form.innerHTML = items.map((item, index) => {
     if (item.tipo === "select" || item.opciones) {
-      const opciones = (item.opciones || []).map((opcion) => `<option value="${Number(opcion.valor ?? 0)}">${escaparHTML(opcion.texto)} (${Number(opcion.valor ?? 0)})</option>`).join("");
+      const opciones = (item.opciones || []).map((opcion) => `<option value="${Number(opcion.valor ? 0)}">${escaparHTML(opcion.texto)} (${Number(opcion.valor ? 0)})</option>`).join("");
       return `<label class="item-escala"><span>${index + 1}. ${escaparHTML(item.texto || `Item ${index + 1}`)}</span><select data-item-escala="${index}"><option value="">Seleccionar</option>${opciones}</select><small>${escaparHTML(item.dominio || "")}</small></label>`;
     }
-    return `<label class="item-escala"><span>${index + 1}. ${escaparHTML(item.texto || `Item ${index + 1}`)}</span><input type="number" data-item-escala="${index}" min="${item.min ?? 0}" max="${item.max ?? ""}" step="${item.step || 1}" placeholder="${item.min ?? 0}-${item.max ?? ""}"><small>${escaparHTML(item.dominio || "")}${item.max !== undefined ? ` · max ${escaparHTML(item.max)}` : ""}</small></label>`;
+    return `<label class="item-escala"><span>${index + 1}. ${escaparHTML(item.texto || `Item ${index + 1}`)}</span><input type="number" data-item-escala="${index}" min="${item.min ? 0}" max="${item.max ? ""}" step="${item.step || 1}" placeholder="${item.min ? 0}-${item.max ? ""}"><small>${escaparHTML(item.dominio || "")}${item.max !== undefined ? ` · max ${escaparHTML(item.max)}` : ""}</small></label>`;
   }).join("");
 }
 
@@ -130,8 +130,8 @@ function leerRespuestas(base) {
     const index = Number(control.dataset.itemEscala);
     const item = items[index];
     const valor = control.value === "" ? null : Number(control.value || 0);
-    const max = item?.max ?? Number.POSITIVE_INFINITY;
-    const min = item?.min ?? 0;
+    const max = item?.max ? Number.POSITIVE_INFINITY;
+    const min = item?.min ? 0;
     const invalido = valor === null || Number.isNaN(valor) || valor < min || valor > max;
     control.classList.toggle("campo-error", invalido);
     if (invalido) valido = false;
@@ -192,7 +192,7 @@ async function guardarEscalaActual() {
     origen: "modulo_escalas",
     modoAplicacion: modoActual === "manual" ? "captura_resultado_previo" : "aplicacion_interactiva",
     puntajeTotal: puntaje,
-    puntajeMaximo: escala.puntajeMaximo ?? "",
+    puntajeMaximo: escala.puntajeMaximo ? "",
     dominiosEvaluados: escala.dominiosEvaluados || [],
     puntajesPorDominio: dominios || {},
     respuestasPorItem: respuestas,
@@ -242,5 +242,5 @@ function normalizarTexto(texto) {
 }
 
 function escaparHTML(valor) {
-  return String(valor ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+  return String(valor ? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
 }

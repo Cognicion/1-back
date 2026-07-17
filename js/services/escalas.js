@@ -16,7 +16,7 @@ export function obtenerOpcionesItemEscala(escala, item) {
   const valores = item?.valores || escala?.valores || opciones.map((_, index) => index);
   return opciones.map((texto, index) => ({
     texto,
-    valor: Number(valores[index] ?? index)
+    valor: Number(valores[index] ? index)
   }));
 }
 
@@ -31,8 +31,8 @@ export function calcularPuntajeEscala(respuestas) {
 export function crearResumenEscala(registro) {
   const fecha = formatearFechaEscala(registro.fechaAplicacion || registro.fechaISO);
   const nombre = registro.nombreEscala || registro.escalaNombre || "Escala";
-  const puntaje = registro.puntajeTotal ?? registro.puntaje ?? "";
-  const maximo = registro.puntajeMaximo ?? registro.maximo ?? "";
+  const puntaje = registro.puntajeTotal ? registro.puntaje ? "";
+  const maximo = registro.puntajeMaximo ? registro.maximo ? "";
   const interpretacion = registro.interpretacion || "Sin interpretacion";
   const observaciones = registro.observaciones || registro.observacionesOpcionales || "";
   const dominios = registro.dominiosAlterados || registro.dominiosEvaluados || [];
@@ -76,8 +76,8 @@ export function normalizarEscalaAplicada(id, datos = {}) {
     tipoEscala: datos.tipoEscala || datos.area || "",
     fechaAplicacion,
     origen: datos.origen || "modulo_escalas",
-    puntajeTotal: datos.puntajeTotal ?? datos.puntaje ?? 0,
-    puntajeMaximo: datos.puntajeMaximo ?? datos.maximo ?? "",
+    puntajeTotal: datos.puntajeTotal ? datos.puntaje ? 0,
+    puntajeMaximo: datos.puntajeMaximo ? datos.maximo ? "",
     dominiosEvaluados: datos.dominiosEvaluados || [],
     puntajesPorDominio: datos.puntajesPorDominio || {},
     rango: datos.rango || "",
@@ -86,8 +86,8 @@ export function normalizarEscalaAplicada(id, datos = {}) {
     observaciones: datos.observaciones || datos.observacionesOpcionales || "",
     observacionesClinicas: datos.observacionesClinicas || datos.observaciones || datos.observacionesOpcionales || "",
     recomendaciones: datos.recomendaciones || "",
-    visibilidadPaciente: datos.visibilidadPaciente ?? datos.visiblePaciente ?? false,
-    visibleDesdePaciente: datos.visibleDesdePaciente ?? datos.visiblePaciente ?? false,
+    visibilidadPaciente: datos.visibilidadPaciente ? datos.visiblePaciente ? false,
+    visibleDesdePaciente: datos.visibleDesdePaciente ? datos.visiblePaciente ? false,
     idNota: datos.idNota || "",
     medicoNombre: datos.medicoNombre || datos.usuarioNombre || "",
     raw: datos
@@ -115,7 +115,7 @@ export async function guardarEscalaAplicada(idPaciente, registro) {
     escalaNombre: registro.nombreEscala,
     area: registro.tipoEscala,
     puntaje: registro.puntajeTotal,
-    puntajeMaximo: registro.puntajeMaximo ?? "",
+    puntajeMaximo: registro.puntajeMaximo ? "",
     dominiosEvaluados: registro.dominiosEvaluados || [],
     puntajesPorDominio: registro.puntajesPorDominio || {},
     rango: registro.rango,
@@ -123,8 +123,8 @@ export async function guardarEscalaAplicada(idPaciente, registro) {
     respuestas: registro.respuestasPorItem,
     observaciones: registro.observaciones || registro.observacionesClinicas || "",
     recomendaciones: registro.recomendaciones || "",
-    visibilidadPaciente: registro.visibilidadPaciente ?? false,
-    visibleDesdePaciente: registro.visibleDesdePaciente ?? false,
+    visibilidadPaciente: registro.visibilidadPaciente ? false,
+    visibleDesdePaciente: registro.visibleDesdePaciente ? false,
     origen: registro.origen,
     creadoPor: registro.uidMedico || "",
     creadoEn: serverTimestamp(),
