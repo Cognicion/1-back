@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>COGNICION | Prueba de Escucha Dicotica</title>
+<link rel="icon" type="image/png" href="assets/favicon-cognicion.png">
+<link rel="stylesheet" href="css/escucha-dicotica.css">
+<link rel="stylesheet" href="css/reportes.css">
+</head>
+<body>
+<header class="topbar-dicotica">
+  <a class="marca-dicotica" href="rehabilitacion-cognitiva.html">
+    <img src="assets/favicon-cognicion.png" alt="COGNICION">
+    <div><strong>Prueba de Escucha Dicotica</strong><span>Atencion auditiva selectiva al oido derecho</span></div>
+  </a>
+  <nav><a href="rehabilitacion-cognitiva.html">Rehabilitacion</a><a href="dashboard.html">Dashboard</a></nav>
+</header>
+
+<main class="dicotica-shell">
+  <div class="demo-banner" id="demoBanner" hidden>MODO DEMOSTRACION - NO VALIDO PARA INTERPRETACION CLINICA</div>
+  <section class="dicotica-hero" id="pantallaPreparacion">
+    <span class="kicker">Actividad auditiva</span>
+    <h1>Escucha Dicotica</h1>
+    <p>En cada ensayo escucharas dos palabras diferentes al mismo tiempo: una por el oido izquierdo y otra por el oido derecho. Repite en voz alta unicamente la palabra presentada por el oido derecho.</p>
+    <p class="alerta-dicotica">Esta actividad debe realizarse con auriculares estereo correctamente colocados. Verifica que el auricular marcado como R este sobre el oido derecho y el auricular marcado como L este sobre el oido izquierdo.</p>
+    <p class="alerta-dicotica advertencia" id="advertenciaCorpus">Cargando corpus...</p>
+    <div class="preparacion-grid">
+      <article><strong>Ensayos</strong><span>120</span></article>
+      <article><strong>Bloques</strong><span>4</span></article>
+      <article><strong>Ensayos por bloque</strong><span>30</span></article>
+      <article><strong>Corpus</strong><span id="estadoCorpus">Sin validar</span></article>
+      <article><strong>Audios</strong><span id="estadoAudios">Pendiente</span></article>
+      <article><strong>Microfono</strong><span id="estadoMicrofono">Pendiente</span></article>
+    </div>
+
+    <section class="panel-dicotica">
+      <h2>Verificacion de auriculares</h2>
+      <p>Coloca el auricular marcado como R en el oido derecho y el marcado como L en el oido izquierdo.</p>
+      <div class="acciones-dicotica">
+        <button id="btnProbarIzquierdo" type="button">Reproducir izquierdo</button>
+        <button id="btnConfirmarIzquierdo" type="button">Si, fue izquierdo</button>
+        <button id="btnProbarDerecho" type="button">Reproducir derecho</button>
+        <button id="btnConfirmarDerecho" type="button">Si, fue derecho</button>
+      </div>
+      <label class="override-dicotica"><input id="overrideAuriculares" type="checkbox"> Anulacion administrativa</label>
+      <textarea id="motivoOverride" placeholder="Motivo de anulacion administrativa"></textarea>
+    </section>
+
+    <section class="panel-dicotica">
+      <h2>Ajuste de volumen y condiciones</h2>
+      <p>Ajusta el volumen a un nivel comodo. No es necesario utilizar un volumen alto para realizar la actividad.</p>
+      <label>Volumen <input id="volumenDicotica" type="range" min="0" max="1" step="0.05" value="0.7"></label>
+      <div class="condiciones-grid">
+        <label><input type="checkbox" data-condicion="hipoacusia"> Hipoacusia conocida</label>
+        <label><input type="checkbox" data-condicion="auxiliar_auditivo"> Uso de auxiliar auditivo</label>
+        <label><input type="checkbox" data-condicion="implante_coclear"> Implante coclear</label>
+        <label><input type="checkbox" data-condicion="tinnitus"> Tinnitus activo</label>
+        <label><input type="checkbox" data-condicion="dolor_oido"> Dolor/infeccion de oido</label>
+        <label><input type="checkbox" data-condicion="dificultad_instrucciones"> Dificultad para instrucciones</label>
+      </div>
+      <label>Dominancia linguistica <input id="dominanciaLinguistica" placeholder="Ej. espanol dominante"></label>
+      <button id="btnMicrofono" type="button">Comprobar microfono</button>
+    </section>
+
+    <section class="panel-dicotica">
+      <h2>Instrucciones</h2>
+      <p><strong>Escucharas dos palabras diferentes al mismo tiempo: una por cada oido. Repite en voz alta unicamente la palabra que escuches por el oido derecho. Ignora la palabra del oido izquierdo.</strong></p>
+      <p>Responde con una sola palabra. Habla de forma clara despues de escuchar cada par.</p>
+      <div class="acciones-dicotica">
+        <button id="btnPractica" type="button">Iniciar practica</button>
+        <button id="btnDemo" type="button">Ejecutar demostracion tecnica</button>
+        <button id="btnIniciar" type="button">Iniciar prueba experimental validada</button>
+      </div>
+      <p class="alerta-dicotica advertencia" id="estadoValidado">Actividad pendiente de material auditivo bibliografico autorizado.</p>
+    </section>
+
+    <details class="panel-dicotica admin-corpus">
+      <summary>Panel administrativo del corpus</summary>
+      <div id="resumenAdminCorpus"></div>
+      <div class="tabla-wrap"><table><thead><tr><th>ID</th><th>Bloque</th><th>Ensayo</th><th>Izquierdo</th><th>Derecho</th><th>Audio izq</th><th>Audio der</th></tr></thead><tbody id="tablaCorpus"></tbody></table></div>
+    </details>
+  </section>
+
+  <section class="arena-dicotica oculta" id="pantallaEnsayo">
+    <div class="hud-dicotica"><div><span>Bloque</span><strong id="bloqueActual">1/4</strong></div><div><span>Ensayo</span><strong id="ensayoActual">0/120</strong></div><div><span>Estado</span><strong id="estadoEnsayo">Preparado</strong></div></div>
+    <div class="fijacion" id="fijacion">+</div>
+    <p id="indicacionRespuesta">Espera el audio.</p>
+    <div class="captura-respuesta">
+      <label>Se registro:
+        <input id="respuestaManual" autocomplete="off" placeholder="Transcripcion o palabra repetida">
+      </label>
+      <div class="acciones-dicotica">
+        <button id="btnEscucharRespuesta" type="button">Escuchar respuesta</button>
+        <button id="btnConfirmarRespuesta" type="button">Confirmar</button>
+        <button id="btnSinRespuesta" type="button">Sin respuesta</button>
+        <button id="btnIninteligible" type="button">Ininteligible</button>
+        <button id="btnFalloTecnico" type="button">Fallo tecnico</button>
+      </div>
+    </div>
+    <div class="descanso-bloque oculta" id="descansoBloque"></div>
+  </section>
+
+  <section class="panel-dicotica resultados oculta" id="pantallaResultados">
+    <div class="seccion-titulo"><span class="kicker">Resultados</span><h2>Resumen de escucha dicotica</h2><p>Esta actividad evalua el desempeno en una tarea de escucha dicotica y atencion auditiva selectiva. No constituye por si sola un diagnostico.</p></div>
+    <div class="resultados-grid" id="resultadosGrid"></div>
+    <article class="interpretacion-dicotica" id="interpretacionDicotica"></article>
+    <div class="graficas-dicotica"><article><h3>Aciertos por bloque</h3><div id="graficaBloques"></div></article><article><h3>Categorias</h3><div id="graficaCategorias"></div></article></div>
+    <h3>Resultados por bloque</h3>
+    <div class="tabla-wrap"><table><thead><tr><th>Bloque</th><th>Aciertos</th><th>Oido izquierdo</th><th>No presentadas</th><th>Omisiones</th><th>Fallos tecnicos</th></tr></thead><tbody id="tablaBloques"></tbody></table></div>
+    <h3>Tabla detallada</h3>
+    <div class="tabla-wrap"><table><thead><tr><th>Bloque</th><th>Ensayo</th><th>Izquierda</th><th>Derecha</th><th>Respuesta</th><th>Clasificacion</th><th>Metodo</th><th>Confianza</th><th>Revision</th><th>Latencia</th><th>Tecnico</th></tr></thead><tbody id="tablaEnsayos"></tbody></table></div>
+    <div class="acciones-dicotica"><button id="btnExportarJson" type="button">Exportar JSON</button><button id="btnExportarCsv" type="button">Exportar CSV</button><button id="btnImprimir" type="button">Imprimir</button><a class="boton-secundario" href="rehabilitacion-cognitiva.html">Regresar</a></div>
+  </section>
+</main>
+
+<div class="modal-dicotica oculta" id="modalDemo">
+  <div class="modal-dicotica-card">
+    <h2>Demostracion tecnica</h2>
+    <p>Esta demostracion utiliza palabras y audios provisionales. Sirve unicamente para verificar el funcionamiento tecnico de la actividad y no debe utilizarse para evaluacion o interpretacion clinica.</p>
+    <div class="acciones-dicotica">
+      <button id="btnCancelarDemo" type="button" class="boton-secundario">Cancelar</button>
+      <button id="btnContinuarDemo" type="button">Continuar con demostracion</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-dicotica" id="toastDicotica"></div>
+<script type="module" src="js/escucha-dicotica.js"></script>
+<script type="module" src="js/reportes.js"></script>
+<script type="module" src="js/components/accesosRapidos.js"></script>
+</body>
+</html>

@@ -93,6 +93,15 @@ const actividades = [
     url: "cpt.html"
   },
   {
+    icono: "ED",
+    nombre: "Prueba de Escucha Dicotica",
+    descripcion: "Atencion auditiva selectiva al oido derecho con pares de palabras simultaneas por canales izquierdo y derecho.",
+    funciones: ["Atencion", "Lenguaje", "Funciones ejecutivas"],
+    estado: "Disponible",
+    accion: "Preparar",
+    url: "escucha-dicotica.html"
+  },
+  {
     icono: "SD",
     nombre: "Span de digitos",
     descripcion: "Recuerda secuencias numericas en orden directo o inverso.",
