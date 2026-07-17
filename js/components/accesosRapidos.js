@@ -1,6 +1,12 @@
-const CLAVE_ACCESOS = "cognicion.accesosRapidos.lista";
+const PREFIJO_CLAVE_ACCESOS = "cognicion.accesosRapidos.lista";
 const CLAVE_DESTINO_LEGADO = "cognicion.accesosRapidos.destino";
 const LIMITE_RESULTADOS = 8;
+const PAGINAS_SIN_ACCESOS_RAPIDOS = new Set([
+  "index.html",
+  "login.html",
+  "registro.html",
+  "recuperar.html"
+]);
 
 export const OPCIONES_ACCESOS_RAPIDOS = Object.freeze([
   { value: "dashboard.html", label: "Dashboard", keywords: "inicio panel principal" },
@@ -51,6 +57,34 @@ function escaparHTML(value = "") {
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#039;");
+}
+
+function paginaActual() {
+  const nombre = window.location.pathname.split("/").pop() || "index.html";
+  return nombre.toLowerCase();
+}
+
+function debeOmitirAccesosRapidos() {
+  return PAGINAS_SIN_ACCESOS_RAPIDOS.has(paginaActual());
+}
+
+function obtenerUidFirebaseLocal() {
+  try {
+    for (let index = 0; index < localStorage.length; index += 1) {
+      const key = localStorage.key(index) || "";
+      if (!key.startsWith("firebase:authUser:")) continue;
+      const datos = JSON.parse(localStorage.getItem(key) || "null");
+      if (datos?.uid) return datos.uid;
+    }
+  } catch {
+    // Si no se puede leer el usuario local, se usa una clave anónima aislada.
+  }
+  return "";
+}
+
+function claveAccesosUsuario() {
+  const uid = obtenerUidFirebaseLocal();
+  return `${PREFIJO_CLAVE_ACCESOS}.${uid || "anonimo"}`;
 }
 
 function accesosPorDefecto() {
