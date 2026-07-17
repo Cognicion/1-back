@@ -33,6 +33,7 @@ import {
   guardarEscalaAplicada,
   listarEscalasAplicadas,
   obtenerOpcionesItemEscala,
+  obtenerPuntajesDominioEscala,
   textoItemEscala
 } from "./services/escalas.js?v=20260716-expediente-fix-2";
 import {
@@ -244,16 +245,143 @@ function indicacionesGeneradasGuardadasNota() {
   }
 }
 
-async function actualizarTratamientoIndicacionesDesdeIndicacionesGeneradas() {
-  const campoTratamiento = document.getElementById("tratamiento");
-  if (!campoTratamiento) return;
+function obtenerIndicacionesGeneradasActuales() {
+  const campoVisible = document.getElementById("indicacionesTexto");
+  if (campoVisible) return String(campoVisible.value || campoVisible.textContent || "").trim();
+  return indicacionesGeneradasGuardadasNota();
+}
 
-  const pacienteId = uidPacienteActual || document.getElementById("uidPaciente")?.value || "";
-  const indicaciones = indicacionesGeneradasGuardadasNota()
-    || (pacienteId ? await resumenTratamientoIndicacionesNota(pacienteId) : "");
-  campoTratamiento.value = indicaciones || "";
-  campoTratamiento.dispatchEvent(new Event("input", { bubbles: true }));
-  campoTratamiento.dispatchEvent(new Event("change", { bubbles: true }));
+function asignarTextoCampoNotaDesdeIndicaciones(idCampo, etiquetaCampo) {
+  const texto = obtenerIndicacionesGeneradasActuales();
+  if (!texto) {
+    alert("No hay indicaciones generadas para actualizar.");
+    return;
+  }
+
+  const campo = document.getElementById(idCampo);
+  if (!campo) {
+    console.error(`No se encontró el campo ${etiquetaCampo}.`);
+    return;
+  }
+
+  campo.value = texto;
+  campo.dispatchEvent(new Event("input", { bubbles: true }));
+  campo.dispatchEvent(new Event("change", { bubbles: true }));
+  marcarCambiosNotaPendientes();
+  guardarRespaldoTemporalNota();
+}
+
+function actualizarPlanDesdeIndicaciones() {
+  asignarTextoCampoNotaDesdeIndicaciones("plan", "Plan");
+}
+
+function actualizarTratamientoDesdeIndicaciones() {
+  asignarTextoCampoNotaDesdeIndicaciones("tratamiento", "Tratamiento e indicaciones");
+}
+
+function claveCatalogoPronosticosNota() {
+  return `cognicion_catalogo_pronosticos:${uidMedicoActual || auth.currentUser?.uid || "sin_usuario"}`;
+}
+
+function cargarCatalogoPronosticosNota() {
+  try {
+    const datos = JSON.parse(localStorage.getItem(claveCatalogoPronosticosNota()) || "[]");
+    return Array.isArray(datos) ? datos.filter((item) => String(item || "").trim()) : [];
+  } catch (error) {
+    console.warn("No se pudo cargar el catalogo de pronosticos:", error);
+    return [];
+  }
+}
+
+function guardarCatalogoPronosticosNota(catalogo = []) {
+  localStorage.setItem(claveCatalogoPronosticosNota(), JSON.stringify(catalogo));
+}
+
+function normalizarPronosticoCatalogo(texto = "") {
+  return String(texto || "")
+    .trim()
+    .replace(/\s+/g, " ")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
+}
+
+function asignarPronosticoNota(texto = "") {
+  const campo = document.getElementById("obsPronostico");
+  if (!campo) return;
+  campo.value = texto;
+  campo.dispatchEvent(new Event("input", { bubbles: true }));
+  campo.dispatchEvent(new Event("change", { bubbles: true }));
+  marcarCambiosNotaPendientes();
+  guardarRespaldoTemporalNota();
+}
+
+function agregarPronosticoActualAlCatalogo() {
+  const texto = String(document.getElementById("obsPronostico")?.value || "").trim();
+  if (!texto) {
+    alert("Escribe un pronostico antes de agregarlo.");
+    return;
+  }
+
+  const catalogo = cargarCatalogoPronosticosNota();
+  const clave = normalizarPronosticoCatalogo(texto);
+  const existe = catalogo.some((item) => normalizarPronosticoCatalogo(item) === clave);
+  if (existe) {
+    alert("Este pronostico ya existe en el catalogo.");
+    return;
+  }
+
+  guardarCatalogoPronosticosNota([texto, ...catalogo]);
+  alert("Pronostico agregado al catalogo.");
+}
+
+function renderizarListaCatalogoPronosticos(modal) {
+  const lista = modal.querySelector("[data-lista-pronosticos]");
+  const busqueda = normalizarPronosticoCatalogo(modal.querySelector("[data-buscar-pronostico]")?.value || "");
+  const catalogo = cargarCatalogoPronosticosNota()
+    .filter((texto) => !busqueda || normalizarPronosticoCatalogo(texto).includes(busqueda));
+
+  if (!lista) return;
+  lista.innerHTML = catalogo.length
+    ? catalogo.map((texto, index) => `
+      <button type="button" data-pronostico-index="${index}">
+        ${escaparHTML(texto)}
+      </button>
+    `).join("")
+    : "<p>Sin pronosticos guardados.</p>";
+
+  lista.querySelectorAll("[data-pronostico-index]").forEach((boton) => {
+    boton.addEventListener("click", () => {
+      const texto = catalogo[Number(boton.dataset.pronosticoIndex)] || "";
+      asignarPronosticoNota(texto);
+      modal.remove();
+      alert("Pronostico insertado.");
+    });
+  });
+}
+
+function abrirCatalogoPronosticos() {
+  document.getElementById("modalCatalogoPronosticos")?.remove();
+  const modal = document.createElement("div");
+  modal.id = "modalCatalogoPronosticos";
+  modal.className = "modal-catalogo-pronosticos";
+  modal.innerHTML = `
+    <div class="panel-catalogo-pronosticos" role="dialog" aria-modal="true" aria-labelledby="tituloCatalogoPronosticos">
+      <div class="panel-catalogo-pronosticos-header">
+        <h3 id="tituloCatalogoPronosticos">Elegir pronostico</h3>
+        <button type="button" data-cerrar-catalogo-pronosticos aria-label="Cerrar">×</button>
+      </div>
+      <input data-buscar-pronostico placeholder="Buscar pronostico">
+      <div class="lista-catalogo-pronosticos" data-lista-pronosticos></div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+  renderizarListaCatalogoPronosticos(modal);
+  modal.querySelector("[data-cerrar-catalogo-pronosticos]")?.addEventListener("click", () => modal.remove());
+  modal.querySelector("[data-buscar-pronostico]")?.addEventListener("input", () => renderizarListaCatalogoPronosticos(modal));
+  modal.addEventListener("click", (evento) => {
+    if (evento.target === modal) modal.remove();
+  });
 }
 
 function crearControlesTactilesSeccion(clave, objetivo, minimo = 80, alturaBase = 130) {
@@ -264,7 +392,9 @@ function crearControlesTactilesSeccion(clave, objetivo, minimo = 80, alturaBase 
     <button type="button" data-accion="mas" title="Hacer mas grande">+</button>
     <button type="button" data-accion="contraer" title="Contraer o expandir">Contraer</button>
     <button type="button" data-accion="reiniciar" title="Restablecer tamano">Reiniciar</button>
-    ${clave === "campo:plan" ? '<button type="button" data-accion="actualizar-tratamiento-indicaciones" title="Actualizar tratamiento e indicaciones">Actualizar texto</button>' : ""}
+    ${clave === "campo:plan" ? '<button type="button" data-accion="actualizar-plan-indicaciones" title="Actualizar Plan desde indicaciones">Actualizar texto</button>' : ""}
+    ${clave === "campo:tratamiento" ? '<button type="button" data-accion="actualizar-tratamiento-indicaciones" title="Actualizar tratamiento e indicaciones">Actualizar texto</button>' : ""}
+    ${clave === "campo:obsPronostico" ? '<button type="button" data-accion="elegir-pronostico" title="Elegir pronostico">Elegir pronostico</button><button type="button" data-accion="agregar-pronostico" title="Agregar pronostico al catalogo">Agregar al catalogo</button>' : ""}
   `;
 
   controles.addEventListener("click", (evento) => {
@@ -277,7 +407,10 @@ function crearControlesTactilesSeccion(clave, objetivo, minimo = 80, alturaBase 
     if (accion === "mas") aplicarAlturaSeccionNota(clave, objetivo, actual + 48, minimo);
     if (accion === "contraer") alternarContraerSeccionNota(clave, objetivo, minimo);
     if (accion === "reiniciar") aplicarAlturaSeccionNota(clave, objetivo, alturaBase, minimo);
-    if (accion === "actualizar-tratamiento-indicaciones") actualizarTratamientoIndicacionesDesdeIndicacionesGeneradas();
+    if (accion === "actualizar-plan-indicaciones") actualizarPlanDesdeIndicaciones();
+    if (accion === "actualizar-tratamiento-indicaciones") actualizarTratamientoDesdeIndicaciones();
+    if (accion === "agregar-pronostico") agregarPronosticoActualAlCatalogo();
+    if (accion === "elegir-pronostico") abrirCatalogoPronosticos();
   });
 
   return controles;
@@ -629,7 +762,7 @@ function escalaNotaActual() {
 }
 
 function esEscalaCognitivaNota(escala = {}) {
-  return escala.tipoEscala === "cognitiva" || escala.area === "Cognitiva" || Boolean(escala.dominiosEvaluados?.length);
+  return escala.tipoEscala === "cognitiva" || escala.area === "Cognitiva";
 }
 
 function cambiarModoEscalaNota(modo) {
@@ -825,7 +958,7 @@ async function guardarEscalaDesdeNota() {
     ? puntajesDominioPruebaInteractiva(respuestas)
     : esCognitiva
       ? obtenerPuntajesDominioCognitivo(respuestas)
-      : {};
+      : obtenerPuntajesDominioEscala(respuestas);
   const usuario = auth.currentUser;
   const medicoActual = usuario ? await obtenerUsuario(usuario.uid) : null;
   const pacienteActual = await obtenerUsuario(uidPaciente);

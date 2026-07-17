@@ -6,6 +6,7 @@ import {
   guardarEscalaAplicada,
   listarEscalasAplicadas,
   obtenerOpcionesItemEscala,
+  obtenerPuntajesDominioEscala,
   textoItemEscala
 } from "./services/escalas.js?v=20260716-expediente-fix-2";
 import { medicoPuedeVer, obtenerUsuario } from "./services/usuarios.js";
@@ -240,6 +241,15 @@ function renderizarEscalaSeleccionada() {
   `;
 
   items.innerHTML = escala.items.map((item, index) => {
+    if (item.tipo === "numero") {
+      return `
+        <div class="item-escala">
+          <label>${index + 1}. ${textoItemEscala(item)}
+            <input data-item-escala="${index}" type="number" min="${item.min ?? ""}" max="${item.max ?? ""}" step="${item.step || 1}" ${modoVistaPrevia ? "disabled" : ""}>
+          </label>
+        </div>
+      `;
+    }
     const opciones = obtenerOpcionesItemEscala(escala, item);
     return `
       <div class="item-escala">
@@ -266,17 +276,32 @@ async function guardarResultadoEscala() {
   const selects = [...document.querySelectorAll("[data-item-escala]")];
   const respuestas = selects.map((select, index) => ({
     item: textoItemEscala(escala.items[index]),
+    dominio: escala.items[index]?.dominio || "",
     valor: select.value === "" ? null : Number(select.value),
-    respuesta: select.options[select.selectedIndex]?.textContent || ""
+    respuesta: select.tagName === "SELECT"
+      ? select.options[select.selectedIndex]?.textContent || ""
+      : select.value
   }));
 
   if (respuestas.some((r) => r.valor === null)) {
     alert("Responde todos los reactivos de la escala.");
     return;
   }
+  const fueraDeRango = respuestas.some((respuesta, index) => {
+    const item = escala.items[index] || {};
+    if (item.tipo !== "numero") return false;
+    if (item.min !== undefined && respuesta.valor < item.min) return true;
+    if (item.max !== undefined && respuesta.valor > item.max) return true;
+    return false;
+  });
+  if (fueraDeRango) {
+    alert("Revisa los puntajes: hay valores fuera del rango permitido.");
+    return;
+  }
 
   const puntaje = calcularPuntajeEscala(respuestas);
   const interpretacion = interpretarEscala(escala, puntaje);
+  const puntajesPorDominio = obtenerPuntajesDominioEscala(respuestas);
   const datosUsuario = await obtenerUsuario(usuarioActual.uid);
   const datosPaciente = await obtenerUsuario(uidSeguimiento);
   const fechaAplicacion = new Date().toISOString();
@@ -290,6 +315,9 @@ async function guardarResultadoEscala() {
     fechaAplicacion,
     origen: "modulo_escalas",
     puntajeTotal: puntaje,
+    puntajeMaximo: escala.puntajeMaximo ?? "",
+    dominiosEvaluados: escala.dominiosEvaluados || [],
+    puntajesPorDominio,
     rango: escala.rango,
     interpretacion,
     respuestasPorItem: respuestas,

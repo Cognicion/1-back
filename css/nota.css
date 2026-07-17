@@ -132,6 +132,63 @@ textarea{
     min-width: 78px;
 }
 
+.modal-catalogo-pronosticos {
+    position: fixed;
+    inset: 0;
+    z-index: 120;
+    display: grid;
+    place-items: center;
+    padding: 18px;
+    background: rgba(2,6,23,0.68);
+    backdrop-filter: blur(8px);
+}
+
+.panel-catalogo-pronosticos {
+    width: min(560px, 100%);
+    max-height: min(680px, 88vh);
+    overflow: auto;
+    padding: 18px;
+    border-radius: 18px;
+    border: 1px solid rgba(56,189,248,0.28);
+    background: rgba(8,12,20,0.98);
+    box-shadow: 0 22px 70px rgba(0,0,0,0.44), 0 0 26px rgba(56,189,248,0.12);
+}
+
+.panel-catalogo-pronosticos-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.panel-catalogo-pronosticos-header h3 {
+    margin: 0;
+}
+
+.panel-catalogo-pronosticos-header button {
+    width: 34px;
+    height: 34px;
+    margin: 0;
+    padding: 0;
+    border-radius: 999px;
+}
+
+.lista-catalogo-pronosticos {
+    display: grid;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.lista-catalogo-pronosticos button {
+    width: 100%;
+    margin: 0;
+    text-align: left;
+    white-space: normal;
+    line-height: 1.35;
+    background: rgba(15,23,42,0.92);
+}
+
 .seccion-contraida textarea,
 .seccion-contraida.panel-nota-redimensionable {
     opacity: 0.74;

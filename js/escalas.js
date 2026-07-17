@@ -1,12 +1,23 @@
 import { auth, db } from "./firebase.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { collection, doc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { ESCALAS_PSIQUIATRICAS, interpretarEscala } from "./data/escalasPsiquiatricas.js";
 import { ESCALAS_COGNITIVAS, calcularPuntajeEscalaCognitiva, interpretarEscalaCognitiva, obtenerPuntajesDominioCognitivo } from "./data/escalasCognitivas.js";
 import { PRUEBAS_INTERACTIVAS, calcularPuntajePruebaInteractiva, interpretarPruebaInteractiva, obtenerPruebaInteractiva, puntajesDominioPruebaInteractiva } from "./data/pruebasInteractivas.js";
 import { obtenerUsuario } from "./services/usuarios.js";
-import { guardarEscalaAplicada } from "./services/escalas.js?v=20260716-expediente-fix-2";
+import {
+  guardarEscalaAplicada,
+  calcularPuntajeEscala,
+  obtenerOpcionesItemEscala,
+  obtenerPuntajesDominioEscala,
+  textoItemEscala
+} from "./services/escalas.js?v=20260716-expediente-fix-2";
 
-const escalas = [...ESCALAS_COGNITIVAS, ...PRUEBAS_INTERACTIVAS.filter((prueba) => !ESCALAS_COGNITIVAS.some((escala) => escala.id === prueba.id))];
+const escalas = [
+  ...ESCALAS_PSIQUIATRICAS,
+  ...ESCALAS_COGNITIVAS,
+  ...PRUEBAS_INTERACTIVAS.filter((prueba) => !ESCALAS_COGNITIVAS.some((escala) => escala.id === prueba.id))
+];
 let escalaActual = null;
 let modoActual = "interactiva";
 let resultadoActual = null;
@@ -86,7 +97,7 @@ function abrirEscala(id, modo = "interactiva") {
 }
 
 function obtenerBaseInteractiva(escala) {
-  return obtenerPruebaInteractiva(escala.id) || (escala.reactivos?.length ? escala : null);
+  return obtenerPruebaInteractiva(escala.id) || ((escala.reactivos?.length || escala.items?.length) ? escala : null);
 }
 
 function cambiarModo(modo) {
@@ -110,27 +121,29 @@ function renderizarFormulario() {
   const form = document.getElementById("formEscala");
   if (!form || !escalaActual) return;
   const base = modoActual === "interactiva" ? obtenerBaseInteractiva(escalaActual) : escalaActual;
-  const items = modoActual === "interactiva" ? base?.reactivos || [] : base?.items || base?.reactivos || [];
+  const items = modoActual === "interactiva" ? base?.reactivos || base?.items || [] : base?.items || base?.reactivos || [];
+  const esPsiquiatrica = base?.tipoEscala === "psiquiatrica" || (base?.area && base.area !== "Cognitiva" && base.tipoEscala !== "cognitiva");
   const oficial = base?.requiereInstrumentoOficial ? "<p><strong>Instrumento oficial:</strong> use material autorizado. Cognicion guia la aplicacion/captura sin reproducir contenido protegido.</p>" : "";
   document.getElementById("avisoEscala").innerHTML = `<p><strong>${modoActual === "manual" ? "Capturar resultado previo" : "Aplicar prueba ahora"}.</strong> Los resultados son apoyo clinico y no sustituyen valoracion medica o neuropsicologica.</p>${oficial}`;
   form.innerHTML = items.map((item, index) => {
-    if (item.tipo === "select" || item.opciones) {
-      const opciones = (item.opciones || []).map((opcion) => {
+    const opcionesItem = obtenerOpcionesItemEscala(base, item);
+    if (item?.tipo === "select" || item?.opciones || (esPsiquiatrica && item?.tipo !== "numero" && opcionesItem.length)) {
+      const opciones = opcionesItem.map((opcion) => {
         const val = opcion.valor != null ? Number(opcion.valor) : 0;
         return `<option value="${val}">${escaparHTML(opcion.texto)} (${val})</option>`;
       }).join("");
-      return `<label class="item-escala"><span>${index + 1}. ${escaparHTML(item.texto || `Item ${index + 1}`)}</span><select data-item-escala="${index}"><option value="">Seleccionar</option>${opciones}</select><small>${escaparHTML(item.dominio || "")}</small></label>`;
+      return `<label class="item-escala"><span>${index + 1}. ${escaparHTML(textoItemEscala(item) || `Item ${index + 1}`)}</span><select data-item-escala="${index}"><option value="">Seleccionar</option>${opciones}</select><small>${escaparHTML(item?.dominio || "")}</small></label>`;
     }
-    const minAttr = item.min != null ? item.min : "";
-    const maxAttr = item.max != null ? item.max : "";
-    const stepAttr = item.step != null ? item.step : 1;
-    const placeholder = `${item.min != null ? item.min : ""}-${item.max != null ? item.max : ""}`;
+    const minAttr = item?.min != null ? item.min : "";
+    const maxAttr = item?.max != null ? item.max : "";
+    const stepAttr = item?.step != null ? item.step : 1;
+    const placeholder = `${item?.min != null ? item.min : ""}-${item?.max != null ? item.max : ""}`;
     return `<label class="item-escala"><span>${index + 1}. ${escaparHTML(item.texto || `Item ${index + 1}`)}</span><input type="number" data-item-escala="${index}" min="${minAttr}" max="${maxAttr}" step="${stepAttr}" placeholder="${placeholder}"><small>${escaparHTML(item.dominio || "")}${item.max !== undefined ? ` · max ${escaparHTML(item.max)}` : ""}</small></label>`;
   }).join("");
 }
 
 function leerRespuestas(base) {
-  const items = modoActual === "interactiva" ? base?.reactivos || [] : base?.items || base?.reactivos || [];
+  const items = modoActual === "interactiva" ? base?.reactivos || base?.items || [] : base?.items || base?.reactivos || [];
   const respuestas = [];
   let valido = true;
   document.querySelectorAll("[data-item-escala]").forEach((control) => {
@@ -142,7 +155,12 @@ function leerRespuestas(base) {
     const invalido = valor === null || Number.isNaN(valor) || valor < min || valor > max;
     control.classList.toggle("campo-error", invalido);
     if (invalido) valido = false;
-    respuestas.push({ item: item?.texto || `Item ${index + 1}`, dominio: item?.dominio || "", valor });
+    respuestas.push({
+      item: textoItemEscala(item) || `Item ${index + 1}`,
+      dominio: item?.dominio || "",
+      valor,
+      respuesta: control.tagName === "SELECT" ? control.options[control.selectedIndex]?.textContent || "" : control.value
+    });
   });
   return { respuestas, valido };
 }
@@ -155,9 +173,22 @@ function calcularEscalaActual() {
     mostrarToast("Responde todos los campos y revisa rangos marcados.");
     return;
   }
-  const puntaje = modoActual === "interactiva" ? calcularPuntajePruebaInteractiva(base, respuestas) : calcularPuntajeEscalaCognitiva(base, respuestas);
-  const interpretacion = modoActual === "interactiva" ? interpretarPruebaInteractiva(base, puntaje) : interpretarEscalaCognitiva(base, puntaje, respuestas);
-  const dominios = modoActual === "interactiva" ? puntajesDominioPruebaInteractiva(respuestas) : obtenerPuntajesDominioCognitivo(respuestas);
+  const esPsiquiatrica = base?.tipoEscala === "psiquiatrica" || (base?.area && base.area !== "Cognitiva" && base.tipoEscala !== "cognitiva");
+  const puntaje = esPsiquiatrica
+    ? calcularPuntajeEscala(respuestas)
+    : modoActual === "interactiva"
+      ? calcularPuntajePruebaInteractiva(base, respuestas)
+      : calcularPuntajeEscalaCognitiva(base, respuestas);
+  const interpretacion = esPsiquiatrica
+    ? interpretarEscala(base, puntaje)
+    : modoActual === "interactiva"
+      ? interpretarPruebaInteractiva(base, puntaje)
+      : interpretarEscalaCognitiva(base, puntaje, respuestas);
+  const dominios = esPsiquiatrica
+    ? obtenerPuntajesDominioEscala(respuestas)
+    : modoActual === "interactiva"
+      ? puntajesDominioPruebaInteractiva(respuestas)
+      : obtenerPuntajesDominioCognitivo(respuestas);
   const observaciones = document.getElementById("observacionesEscala")?.value.trim() || "";
   const fechaAplicacion = new Date().toISOString();
   resultadoActual = { escala: base, respuestas, puntaje, interpretacion, dominios, observaciones, fechaAplicacion };

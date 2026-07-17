@@ -28,6 +28,15 @@ export function calcularPuntajeEscala(respuestas) {
   return respuestas.reduce((total, respuesta) => total + Number(respuesta.valor || 0), 0);
 }
 
+export function obtenerPuntajesDominioEscala(respuestas = []) {
+  return respuestas.reduce((salida, respuesta) => {
+    const dominio = respuesta.dominio || "";
+    if (!dominio) return salida;
+    salida[dominio] = (salida[dominio] || 0) + Number(respuesta.valor || 0);
+    return salida;
+  }, {});
+}
+
 export function crearResumenEscala(registro) {
   const fecha = formatearFechaEscala(registro.fechaAplicacion || registro.fechaISO);
   const nombre = registro.nombreEscala || registro.escalaNombre || "Escala";
@@ -36,6 +45,7 @@ export function crearResumenEscala(registro) {
   const interpretacion = registro.interpretacion || "Sin interpretacion";
   const observaciones = registro.observaciones || registro.observacionesOpcionales || "";
   const dominios = registro.dominiosAlterados || registro.dominiosEvaluados || [];
+  const puntajesPorDominio = registro.puntajesPorDominio || {};
 
   return [
     `Escala aplicada: ${nombre}`,
@@ -43,6 +53,7 @@ export function crearResumenEscala(registro) {
     `Puntaje total: ${puntaje}${maximo ? `/${maximo}` : ""}`,
     `Interpretacion: ${interpretacion}`,
     Array.isArray(dominios) && dominios.length ? `Dominios evaluados: ${dominios.join(", ")}` : "",
+    Object.keys(puntajesPorDominio).length ? `Subtotales: ${Object.entries(puntajesPorDominio).map(([dominio, valor]) => `${dominio}: ${valor}`).join("; ")}` : "",
     observaciones ? `Observaciones: ${observaciones}` : ""
   ].filter(Boolean).join("\n");
 }
