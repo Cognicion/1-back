@@ -1,3 +1,17 @@
+.accesos-rapidos-global {
+  position: fixed;
+  top: 10px;
+  right: 14px;
+  z-index: 20000;
+  display: flex;
+  justify-content: flex-end;
+  pointer-events: none;
+}
+
+.accesos-rapidos-global .accesos-rapidos {
+  pointer-events: auto;
+}
+
 .accesos-rapidos {
   position: relative;
   display: inline-flex;
@@ -220,6 +234,16 @@ body.tema-claro .accesos-rapidos-guardados li {
 }
 
 @media (max-width: 760px) {
+  .accesos-rapidos-global {
+    top: 8px;
+    right: 10px;
+    left: 10px;
+  }
+
+  .accesos-rapidos-global .accesos-rapidos {
+    margin-left: auto;
+  }
+
   .accesos-rapidos-panel {
     position: fixed;
     top: 76px;

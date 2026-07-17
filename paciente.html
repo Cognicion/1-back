@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
@@ -81,8 +81,8 @@
       <button onclick="mostrarIndicaciones()" style="display:none;">Indicaciones</button>
       <button onclick="mostrarReceta()">Receta</button>
       <button onclick="mostrarResultadosEscalas()">Escalas</button>
-      <button onclick="mostrarRehabilitacionCognitivaPaciente()">RehabilitaciÃ³n cognitiva</button>
-      <button id="btnPediatriaPaciente" onclick="abrirModuloPediatriaPaciente()" style="display:none;">PediatrÃ­a</button>
+      <button onclick="mostrarRehabilitacionCognitivaPaciente()">RehabilitaciÃƒÂ³n cognitiva</button>
+      <button id="btnPediatriaPaciente" onclick="abrirModuloPediatriaPaciente()" style="display:none;">PediatrÃƒÂ­a</button>
       <button onclick="previsualizarMiSalud()">Ver Mi Salud</button>
       <button onclick="mostrarPermisos()">Permisos</button>
     </div>
@@ -341,7 +341,7 @@
           </div>
 
           <div class="form-grid">
-            <label>Tarea<input id="tareaMiSaludTitulo" placeholder="Ej. Registrar estado de Ã¡nimo diario"></label>
+            <label>Tarea<input id="tareaMiSaludTitulo" placeholder="Ej. Registrar estado de ÃƒÂ¡nimo diario"></label>
             <label>Fecha limite<input id="tareaMiSaludFecha" type="date"></label>
           </div>
           <label>Indicaciones
@@ -438,8 +438,8 @@
       <div class="tarjeta">
         <div class="panel-header">
           <div>
-            <h2>RehabilitaciÃ³n cognitiva</h2>
-            <p class="texto-suave">Perfil cognitivo, tamizajes aplicados y actividades orientativas para seguimiento clÃ­nico.</p>
+            <h2>RehabilitaciÃƒÂ³n cognitiva</h2>
+            <p class="texto-suave">Perfil cognitivo, tamizajes aplicados y actividades orientativas para seguimiento clÃƒÂ­nico.</p>
           </div>
           <button type="button" class="boton-secundario" onclick="abrirRehabilitacionCognitivaPaciente()">Aplicar escala cognitiva</button>
         </div>
@@ -512,7 +512,7 @@
           <label>Peso<input id="interconsultaPeso" placeholder="kg"></label>
           <label>Talla<input id="interconsultaTalla" placeholder="m"></label>
           <label>Perimetro abdominal<input id="interconsultaPerimetroAbdominal" placeholder="cm"></label>
-          <label>Sospecha diagnÃ³stica<input id="interconsultaSospechaDiagnostica"></label>
+          <label>Sospecha diagnÃƒÂ³stica<input id="interconsultaSospechaDiagnostica"></label>
           <label>Medico solicitante<input id="interconsultaMedicoSolicitante"></label>
           <label>Cedula profesional<input id="interconsultaCedulaSolicitante"></label>
         </div>
@@ -533,6 +533,125 @@
       <div class="tarjeta">
         <h2>Historial de interconsultas</h2>
         <div id="listaInterconsultasPaciente" class="panel-lista">Cargando interconsultas...</div>
+      </div>
+    </section>
+
+    <section id="seccionTratamiento" style="display:none;">
+      <div class="tarjeta">
+        <div class="panel-header">
+          <div>
+            <h2>Tratamiento</h2>
+            <p class="texto-suave">Registro farmacologico y clinico vinculado con Mi Salud.</p>
+          </div>
+          <button id="limpiarTratamiento" type="button" class="boton-secundario">Nuevo tratamiento</button>
+          <button id="abrirInteraccionesTratamiento" type="button" class="boton-secundario">Interacciones</button>
+          <button type="button" class="boton-secundario" onclick="abrirApuntesMedicoPaciente()">Mis apuntes</button>
+        </div>
+
+        <input id="tratamientoId" type="hidden">
+        <div class="form-grid">
+          <label>Medicamento
+            <input id="tratamientoMedicamento" placeholder="Ej. Sertralina, tabletas de 50 mg." list="catalogoMedicamentosPsiquiatricos">
+            <datalist id="catalogoMedicamentosPsiquiatricos"></datalist>
+            <small id="estadoCatalogoMedicamento" class="ayuda-catalogo-medicamento"></small>
+          </label>
+          <label>Via<input id="tratamientoVia" placeholder="Ej. via oral" list="opcionesViaTratamiento"></label>
+          <datalist id="opcionesViaTratamiento">
+            <option value="via oral"></option>
+            <option value="via sublingual"></option>
+            <option value="via intramuscular"></option>
+            <option value="via intravenosa"></option>
+            <option value="via topica"></option>
+            <option value="via inhalada"></option>
+             </datalist>
+          <label class="tratamiento-frecuencia-combo">Veces al dia
+            <div class="campo-combo-tratamiento">
+              <input
+                id="tratamientoFrecuencia"
+                placeholder="Ej. 1 vez al dia"
+                autocomplete="off"
+                aria-haspopup="listbox"
+                aria-expanded="false"
+              >
+              <button id="abrirOpcionesFrecuenciaTratamiento" type="button" aria-label="Mostrar opciones de frecuencia">v</button>
+            </div>
+            <div id="opcionesFrecuenciaTratamientoMenu" class="combo-tratamiento-menu" role="listbox" aria-label="Opciones de frecuencia">
+              <button type="button" data-frecuencia-tratamiento="1 vez al dia">1 vez al dia</button>
+              <button type="button" data-frecuencia-tratamiento="2 veces al dia">2 veces al dia</button>
+              <button type="button" data-frecuencia-tratamiento="3 veces al dia">3 veces al dia</button>
+              <button type="button" data-frecuencia-tratamiento="4 veces al dia">4 veces al dia</button>
+            </div>
+          </label>
+          <label>Modo de frecuencia
+            <select id="tratamientoModoFrecuencia">
+              <option value="horas_especificas">Horas especificas</option>
+              <option value="cada_8_horas">Cada 8 horas</option>
+              <option value="cada_12_horas">Cada 12 horas</option>
+              <option value="manana_tarde_noche">MaÃƒÂ±ana / tarde / noche</option>
+            </select>
+          </label>
+          <label>Numero de tomas al dia
+            <select id="tratamientoVecesDia">
+              <option value="1">1 vez al dia</option>
+              <option value="2">2 veces al dia</option>
+              <option value="3" selected>3 veces al dia</option>
+              <option value="4">4 veces al dia</option>
+            </select>
+          </label>
+          <input id="tratamientoDosis" type="hidden">
+          <input id="tratamientoHorarios" type="hidden">
+          <div id="contenedorTomasTratamiento" class="tratamiento-tomas-grid"></div>
+          <datalist id="catalogoHorariosTratamiento">
+            <option value="06:00"></option>
+            <option value="08:00"></option>
+            <option value="12:00"></option>
+            <option value="15:00"></option>
+            <option value="18:00"></option>
+            <option value="20:00"></option>
+            <option value="22:00"></option>
+            <option value="00:00"></option>
+          </datalist>
+          <label>Fecha de inicio<input id="tratamientoFechaInicio" type="date"></label>
+          <label>Cantidad total al dÃƒÂ­a
+            <input
+              type="number"
+              id="cantidadTotalDia"
+              min="0"
+              step="0.5"
+              placeholder="Ej. 2"
+            >
+          </label>
+          <label>Dosis total al dÃƒÂ­a
+            <input id="tratamientoDosisTotalDia" placeholder="Se calcula automaticamente" readonly>
+          </label>
+
+          <label>Estado
+            <select id="tratamientoEstado">
+              <option value="activo">Activo</option>
+              <option value="suspendido">Suspendido</option>
+            </select>
+          </label>
+          <label>Fecha de suspension<input id="tratamientoFechaSuspension" type="date"></label>
+          <label>Motivo de suspension<input id="tratamientoMotivoSuspension" placeholder="Ej. efectos adversos"></label>
+        </div>
+        <label>Observaciones clinicas
+          <textarea id="tratamientoObservaciones" placeholder="Respuesta, tolerancia, indicaciones y comentarios clinicos."></textarea>
+        </label>
+        <div class="form-actions">
+          <button id="abrirMedicamentoManual" type="button" class="boton-secundario">AÃƒÂ±adir medicamento al catÃƒÂ¡logo</button>
+          <button id="guardarTratamiento" type="button">Guardar tratamiento</button>
+        </div>
+      </div>
+
+      <div class="panel-doble">
+        <div class="tarjeta">
+          <h2>Tratamientos activos</h2>
+          <div id="tratamientosActivos" class="panel-lista">Cargando tratamientos...</div>
+        </div>
+        <div class="tarjeta">
+          <h2>Tratamientos suspendidos</h2>
+          <div id="tratamientosSuspendidos" class="panel-lista">Cargando tratamientos...</div>
+        </div>
       </div>
     </section>
 
@@ -662,7 +781,7 @@
           </label>
           <label>Firma campo 1 - Nombre
             <div class="campo-catalogo-inline">
-              <input id="indicacionesFirma1Nombre" list="catalogoMedicosFirmasIndicaciones" data-firma-indicaciones-nombre="1">
+              <input id="indicacionesFirma1Nombre" data-firma-indicaciones-nombre="1" placeholder="Escribir mÃ©dico manualmente">
               <button type="button" class="boton-mini-catalogo" data-guardar-medico-indicaciones="1">Agregar</button>
             </div>
           </label>
@@ -675,7 +794,7 @@
           </label>
           <label>Firma campo 2 - Nombre
             <div class="campo-catalogo-inline">
-              <input id="indicacionesFirma2Nombre" list="catalogoMedicosFirmasIndicaciones" data-firma-indicaciones-nombre="2">
+              <input id="indicacionesFirma2Nombre" data-firma-indicaciones-nombre="2" placeholder="Escribir mÃ©dico manualmente">
               <button type="button" class="boton-mini-catalogo" data-guardar-medico-indicaciones="2">Agregar</button>
             </div>
           </label>
@@ -708,125 +827,6 @@
       </div>
     </section>
 
-    <section id="seccionTratamiento" style="display:none;">
-      <div class="tarjeta">
-        <div class="panel-header">
-          <div>
-            <h2>Tratamiento</h2>
-            <p class="texto-suave">Registro farmacologico y clinico vinculado con Mi Salud.</p>
-          </div>
-          <button id="limpiarTratamiento" type="button" class="boton-secundario">Nuevo tratamiento</button>
-          <button id="abrirInteraccionesTratamiento" type="button" class="boton-secundario">Interacciones</button>
-          <button type="button" class="boton-secundario" onclick="abrirApuntesMedicoPaciente()">Mis apuntes</button>
-        </div>
-
-        <input id="tratamientoId" type="hidden">
-        <div class="form-grid">
-          <label>Medicamento
-            <input id="tratamientoMedicamento" placeholder="Ej. Sertralina, tabletas de 50 mg." list="catalogoMedicamentosPsiquiatricos">
-            <datalist id="catalogoMedicamentosPsiquiatricos"></datalist>
-            <small id="estadoCatalogoMedicamento" class="ayuda-catalogo-medicamento"></small>
-          </label>
-          <label>Via<input id="tratamientoVia" placeholder="Ej. via oral" list="opcionesViaTratamiento"></label>
-          <datalist id="opcionesViaTratamiento">
-            <option value="via oral"></option>
-            <option value="via sublingual"></option>
-            <option value="via intramuscular"></option>
-            <option value="via intravenosa"></option>
-            <option value="via topica"></option>
-            <option value="via inhalada"></option>
-             </datalist>
-          <label class="tratamiento-frecuencia-combo">Veces al dia
-            <div class="campo-combo-tratamiento">
-              <input
-                id="tratamientoFrecuencia"
-                placeholder="Ej. 1 vez al dia"
-                autocomplete="off"
-                aria-haspopup="listbox"
-                aria-expanded="false"
-              >
-              <button id="abrirOpcionesFrecuenciaTratamiento" type="button" aria-label="Mostrar opciones de frecuencia">v</button>
-            </div>
-            <div id="opcionesFrecuenciaTratamientoMenu" class="combo-tratamiento-menu" role="listbox" aria-label="Opciones de frecuencia">
-              <button type="button" data-frecuencia-tratamiento="1 vez al dia">1 vez al dia</button>
-              <button type="button" data-frecuencia-tratamiento="2 veces al dia">2 veces al dia</button>
-              <button type="button" data-frecuencia-tratamiento="3 veces al dia">3 veces al dia</button>
-              <button type="button" data-frecuencia-tratamiento="4 veces al dia">4 veces al dia</button>
-            </div>
-          </label>
-          <label>Modo de frecuencia
-            <select id="tratamientoModoFrecuencia">
-              <option value="horas_especificas">Horas especificas</option>
-              <option value="cada_8_horas">Cada 8 horas</option>
-              <option value="cada_12_horas">Cada 12 horas</option>
-              <option value="manana_tarde_noche">MaÃ±ana / tarde / noche</option>
-            </select>
-          </label>
-          <label>Numero de tomas al dia
-            <select id="tratamientoVecesDia">
-              <option value="1">1 vez al dia</option>
-              <option value="2">2 veces al dia</option>
-              <option value="3" selected>3 veces al dia</option>
-              <option value="4">4 veces al dia</option>
-            </select>
-          </label>
-          <input id="tratamientoDosis" type="hidden">
-          <input id="tratamientoHorarios" type="hidden">
-          <div id="contenedorTomasTratamiento" class="tratamiento-tomas-grid"></div>
-          <datalist id="catalogoHorariosTratamiento">
-            <option value="06:00"></option>
-            <option value="08:00"></option>
-            <option value="12:00"></option>
-            <option value="15:00"></option>
-            <option value="18:00"></option>
-            <option value="20:00"></option>
-            <option value="22:00"></option>
-            <option value="00:00"></option>
-          </datalist>
-          <label>Fecha de inicio<input id="tratamientoFechaInicio" type="date"></label>
-          <label>Cantidad total al dÃ­a
-            <input
-              type="number"
-              id="cantidadTotalDia"
-              min="0"
-              step="0.5"
-              placeholder="Ej. 2"
-            >
-          </label>
-          <label>Dosis total al dÃ­a
-            <input id="tratamientoDosisTotalDia" placeholder="Se calcula automaticamente" readonly>
-          </label>
-
-          <label>Estado
-            <select id="tratamientoEstado">
-              <option value="activo">Activo</option>
-              <option value="suspendido">Suspendido</option>
-            </select>
-          </label>
-          <label>Fecha de suspension<input id="tratamientoFechaSuspension" type="date"></label>
-          <label>Motivo de suspension<input id="tratamientoMotivoSuspension" placeholder="Ej. efectos adversos"></label>
-        </div>
-        <label>Observaciones clinicas
-          <textarea id="tratamientoObservaciones" placeholder="Respuesta, tolerancia, indicaciones y comentarios clinicos."></textarea>
-        </label>
-        <div class="form-actions">
-          <button id="abrirMedicamentoManual" type="button" class="boton-secundario">AÃ±adir medicamento al catÃ¡logo</button>
-          <button id="guardarTratamiento" type="button">Guardar tratamiento</button>
-        </div>
-      </div>
-
-      <div class="panel-doble">
-        <div class="tarjeta">
-          <h2>Tratamientos activos</h2>
-          <div id="tratamientosActivos" class="panel-lista">Cargando tratamientos...</div>
-        </div>
-        <div class="tarjeta">
-          <h2>Tratamientos suspendidos</h2>
-          <div id="tratamientosSuspendidos" class="panel-lista">Cargando tratamientos...</div>
-        </div>
-      </div>
-    </section>
-
     <section id="seccionReceta" style="display:none;">
       <div class="tarjeta">
         <div class="panel-header">
@@ -847,14 +847,14 @@
             <input id="recetaFecha" type="date">
           </label>
           <label>Vigencia / indicacion administrativa
-            <input id="recetaVigencia" placeholder="Ej. Receta vigente por 30 dÃ­as">
+            <input id="recetaVigencia" placeholder="Ej. Receta vigente por 30 dÃƒÂ­as">
           </label>
           <label>Medicamento del catalogo
             <input id="recetaMedicamentoCatalogo" list="catalogoMedicamentosReceta" placeholder="Buscar medicamento o escribir libremente">
             <datalist id="catalogoMedicamentosReceta"></datalist>
           </label>
           <label>Indicacion del medicamento
-            <input id="recetaIndicacionManual" placeholder="Ej. Tomar vÃ­a oral 1 vez al dÃ­a. 1 tableta a las 08:00">
+            <input id="recetaIndicacionManual" placeholder="Ej. Tomar vÃƒÂ­a oral 1 vez al dÃƒÂ­a. 1 tableta a las 08:00">
           </label>
         </div>
 
@@ -1000,16 +1000,16 @@
       <div class="tarjeta">
         <div class="panel-header">
           <div>
-            <h2>Nota rÃ¡pida</h2>
-            <p class="texto-suave">ObservaciÃ³n breve del mÃ©dico, guardada sin sustituir notas mÃ©dicas completas.</p>
+            <h2>Nota rÃƒÂ¡pida</h2>
+            <p class="texto-suave">ObservaciÃƒÂ³n breve del mÃƒÂ©dico, guardada sin sustituir notas mÃƒÂ©dicas completas.</p>
           </div>
           <div class="nota-rapida-resize-actions">
             <button id="contraerNotaRapida" type="button" class="boton-secundario">Contraer</button>
             <button id="ampliarNotaRapida" type="button" class="boton-secundario">Ampliar</button>
           </div>
         </div>
-        <label>ObservaciÃ³n
-          <textarea id="notaRapidaTexto" class="nota-rapida-textarea" placeholder="Escribe una observaciÃ³n breve del seguimiento."></textarea>
+        <label>ObservaciÃƒÂ³n
+          <textarea id="notaRapidaTexto" class="nota-rapida-textarea" placeholder="Escribe una observaciÃƒÂ³n breve del seguimiento."></textarea>
         </label>
         <div class="form-actions">
           <button id="guardarNotaRapida" type="button">Guardar nota rapida</button>
@@ -1033,7 +1033,7 @@
         <p>Farmacologia clinica</p>
         <h3 id="tituloInteraccionesFarmacologicas">Interacciones farmacologicas</h3>
       </div>
-      <button id="cerrarInteraccionesFarmacologicas" type="button" aria-label="Cerrar">Ã—</button>
+      <button id="cerrarInteraccionesFarmacologicas" type="button" aria-label="Cerrar">Ãƒâ€”</button>
     </div>
     <div id="contenidoInteraccionesFarmacologicas" class="contenido-interacciones-farmacologicas">
       <p>Cargando revision de interacciones...</p>
@@ -1044,24 +1044,24 @@
   <div class="panel-ingreso panel-medicamento-manual" role="dialog" aria-modal="true" aria-labelledby="tituloMedicamentoManual">
     <div class="panel-ingreso-header">
       <div>
-        <p>CatÃ¡logo farmacolÃ³gico</p>
-        <h3 id="tituloMedicamentoManual">AÃ±adir medicamento manual</h3>
+        <p>CatÃƒÂ¡logo farmacolÃƒÂ³gico</p>
+        <h3 id="tituloMedicamentoManual">AÃƒÂ±adir medicamento manual</h3>
       </div>
-      <button id="cerrarMedicamentoManual" type="button" aria-label="Cerrar">Ã—</button>
+      <button id="cerrarMedicamentoManual" type="button" aria-label="Cerrar">Ãƒâ€”</button>
     </div>
 
     <div class="form-grid">
       <label>Medicamento<input id="medicamentoManualNombre" placeholder="Ej. Sertralina"></label>
-      <label>PresentaciÃ³n<input id="medicamentoManualPresentacion" placeholder="Ej. tabletas de 50 mg"></label>
+      <label>PresentaciÃƒÂ³n<input id="medicamentoManualPresentacion" placeholder="Ej. tabletas de 50 mg"></label>
       <label>Clase<input id="medicamentoManualClase" placeholder="Ej. ISRS"></label>
-      <label>Dosis habitual<input id="medicamentoManualDosisHabitual" placeholder="Ej. 50-200 mg/dÃ­a"></label>
+      <label>Dosis habitual<input id="medicamentoManualDosisHabitual" placeholder="Ej. 50-200 mg/dÃƒÂ­a"></label>
     </div>
-    <label>Notas clÃ­nicas
+    <label>Notas clÃƒÂ­nicas
       <textarea id="medicamentoManualNotas" placeholder="Indicaciones, vigilancia o comentarios breves."></textarea>
     </label>
 
     <div class="panel-ingreso-actions">
-      <button id="guardarMedicamentoManual" type="button">Guardar en catÃ¡logo</button>
+      <button id="guardarMedicamentoManual" type="button">Guardar en catÃƒÂ¡logo</button>
       <button id="cancelarMedicamentoManual" type="button" class="boton-secundario">Cancelar</button>
     </div>
   </div>
@@ -1074,7 +1074,7 @@
         <p>Fecha de ingreso</p>
         <h3 id="tituloIngresoPaciente">Seleccionar ingreso</h3>
       </div>
-      <button type="button" id="cerrarIngresoPaciente" aria-label="Cerrar selector">Ã—</button>
+      <button type="button" id="cerrarIngresoPaciente" aria-label="Cerrar selector">Ãƒâ€”</button>
     </div>
 
     <label>Dia
@@ -1091,7 +1091,7 @@
         </div>
       </label>
 
-    <small id="ayudaIngresoPaciente">Si no seleccionas hora, se tomarÃ¡ el inicio del dÃ­a.</small>
+    <small id="ayudaIngresoPaciente">Si no seleccionas hora, se tomarÃƒÂ¡ el inicio del dÃƒÂ­a.</small>
 
     <div class="acciones-ingreso">
       <button type="button" id="limpiarIngresoPaciente" class="boton-secundario">Quitar fecha</button>
@@ -1100,7 +1100,7 @@
   </div>
 </div>
 
-<script type="module" src="js/paciente.js?v=20260716-1"></script>
+<script type="module" src="js/paciente.js?v=20260717-tratamiento-orden"></script>
   <script type="module" src="js/components/accesosRapidos.js"></script>
 </body>
 </html>

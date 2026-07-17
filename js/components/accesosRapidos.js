@@ -148,15 +148,23 @@ function renderizarResultados(contenedor, texto = "") {
 }
 
 function crearContenedorAutomatico() {
-  if (document.querySelector("[data-accesos-rapidos]")) return;
-  const destino = document.querySelector("header nav") || document.querySelector("nav") || document.querySelector("header");
-  if (!destino) return;
+  let barra = document.querySelector("[data-accesos-rapidos-global]");
+  if (!barra) {
+    barra = document.createElement("div");
+    barra.className = "accesos-rapidos-global";
+    barra.dataset.accesosRapidosGlobal = "true";
+    document.body.prepend(barra);
+  }
 
-  const contenedor = document.createElement("div");
-  contenedor.dataset.accesosRapidos = "";
-  contenedor.dataset.accesosAuto = "true";
-  destino.classList.add("nav-accesos-rapidos");
-  destino.appendChild(contenedor);
+  let contenedor = document.querySelector("[data-accesos-rapidos]");
+  if (!contenedor) {
+    contenedor = document.createElement("div");
+    contenedor.dataset.accesosRapidos = "";
+    contenedor.dataset.accesosAuto = "true";
+  }
+
+  contenedor.dataset.accesosGlobal = "true";
+  barra.appendChild(contenedor);
 }
 
 function renderizar(contenedor) {
@@ -217,7 +225,8 @@ function renderizar(contenedor) {
     }
 
     if (abrir) {
-      window.location.href = abrir.dataset.accesoAbrir;
+      window.open(abrir.dataset.accesoAbrir, "_blank", "noopener");
+      cerrarPanel(contenedor);
       return;
     }
 

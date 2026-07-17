@@ -1542,6 +1542,15 @@ function ocultarSecciones() {
   });
 }
 
+function ordenarTratamientoEIndicaciones() {
+  const tratamiento = document.getElementById("seccionTratamiento");
+  const indicaciones = document.getElementById("seccionIndicaciones");
+  if (!tratamiento || !indicaciones || tratamiento.nextElementSibling === indicaciones) return;
+  tratamiento.insertAdjacentElement("afterend", indicaciones);
+}
+
+ordenarTratamientoEIndicaciones();
+
 const ESTADOS_DIAGNOSTICO = [
   "",
   "Se agrega",
@@ -5360,7 +5369,7 @@ function datosFormularioTratamiento() {
   return {
     medicamento: valorCampo("tratamientoMedicamento"),
     dosis: valorCampo("tratamientoDosis"),
-    frecuencia: valorCampo("tratamientoFrecuencia"),
+    frecuencia: normalizarTextoFrecuenciaTratamiento(valorCampo("tratamientoFrecuencia")),
     modoFrecuencia: valorCampo("tratamientoModoFrecuencia") || "horas_especificas",
     vecesDia: valorCampo("tratamientoVecesDia") || String(tomas.length || numeroTomasTratamiento()),
     tomas,
@@ -5565,7 +5574,7 @@ function editarTratamientoPaciente(id) {
   ponerValor("tratamientoId", t.id);
   ponerValor("tratamientoMedicamento", t.medicamento);
   ponerValor("tratamientoDosis", t.dosis);
-  ponerValor("tratamientoFrecuencia", t.frecuencia);
+  ponerValor("tratamientoFrecuencia", normalizarTextoFrecuenciaTratamiento(t.frecuencia));
   ponerValor("tratamientoModoFrecuencia", t.modoFrecuencia || "horas_especificas");
   const tomasGuardadas = Array.isArray(t.tomas) ? t.tomas.length : 0;
   ponerValor("tratamientoVecesDia", t.vecesDia || String(tomasGuardadas || obtenerVecesPorDia(t.frecuencia || "") || 1));
@@ -5930,6 +5939,13 @@ function limpiarPuntoFinal(texto = "") {
   return String(texto).trim().replace(/[.\s]+$/, "");
 }
 
+function normalizarTextoFrecuenciaTratamiento(texto = "") {
+  return String(texto || "")
+    .replace(/\bvezes\b/gi, "veces")
+    .replace(/\b1\s+veces\b/gi, "1 vez")
+    .trim();
+}
+
 function asegurarPunto(texto = "") {
   const limpio = String(texto).trim();
   if (!limpio) return "";
@@ -5959,7 +5975,7 @@ function formatearHorariosTratamiento(horarios = "") {
 function formatearIndicacionTratamiento(t = {}, incluirMedicamento = true) {
   const medicamento = incluirMedicamento ? asegurarPunto(t.medicamento || "") : "";
   const via = limpiarPuntoFinal(t.via || "");
-  const frecuencia = limpiarPuntoFinal(t.frecuencia || "");
+  const frecuencia = limpiarPuntoFinal(normalizarTextoFrecuenciaTratamiento(t.frecuencia || ""));
   const dosisTomas = Array.isArray(t.tomas) && t.tomas.length
     ? t.tomas
       .map((toma) => [
@@ -5984,7 +6000,7 @@ function formatearIndicacionTratamiento(t = {}, incluirMedicamento = true) {
   }
 
   if (!partes.length && !incluirMedicamento) {
-    return [t.dosis, t.frecuencia, t.via, t.horarios].filter(Boolean).join(" · ");
+    return [t.dosis, normalizarTextoFrecuenciaTratamiento(t.frecuencia), t.via, t.horarios].filter(Boolean).join(" · ");
   }
 
   return partes.join(" ");
