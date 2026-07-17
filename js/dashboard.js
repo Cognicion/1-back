@@ -135,6 +135,26 @@ let mensajesConversacionActiva = [];
 const CLAVE_LECTURAS_AVISOS_DASHBOARD = "cognicion_lecturas_avisos_dashboard";
 const CLAVE_LECTURAS_RESPUESTAS_REPORTES = "cognicion_lecturas_respuestas_reportes";
 const CLAVE_ESTADO_AVISOS_DASHBOARD = "cognicion_estado_avisos_dashboard";
+const perfilCargaDashboard = {
+  inicio: performance.now(),
+  etapas: []
+};
+
+function medirEtapaDashboard(nombre, inicio) {
+  perfilCargaDashboard.etapas.push({
+    etapa: nombre,
+    ms: Math.round(performance.now() - inicio)
+  });
+}
+
+function reportarPerfilCargaDashboard() {
+  const total = Math.max(1, Math.round(performance.now() - perfilCargaDashboard.inicio));
+  const etapas = perfilCargaDashboard.etapas.map((etapa) => ({
+    ...etapa,
+    porcentaje: `${Math.round((etapa.ms / total) * 1000) / 10}%`
+  }));
+  console.table([{ etapa: "total", ms: total, porcentaje: "100%" }, ...etapas]);
+}
 window.alternarModuloAvisos = function(forzarAbierto = null) {
   const modulo = document.getElementById("avisosDashboardModulo");
   const boton = document.getElementById("btnToggleAvisosDashboard");
@@ -156,7 +176,7 @@ window.alternarMensajes = async function(forzarAbierto = null) {
   boton?.setAttribute("aria-expanded", String(abrir));
 
   if (abrir) {
-    await cargarDatosMensajesDashboard();
+    await cargarDatosMensajesDashboard({ incluirUsuarios: true, incluirContactos: true, incluirConversaciones: true });
     renderizarConversacionesDashboard();
   }
 };
@@ -219,13 +239,17 @@ document.addEventListener("keydown", (evento) => {
 });
 
 onAuthStateChanged(auth, async (user) => {
+  const inicioAuth = performance.now();
   if (!user) {
     window.location.href = "login.html";
     return;
   }
 
   const datos = await obtenerUsuario(user.uid);
-  await sincronizarAparienciaUsuario(user.uid);
+  medirEtapaDashboard("obtenerUsuario", inicioAuth);
+  const inicioApariencia = performance.now();
+  await sincronizarAparienciaUsuario(user.uid, datos);
+  medirEtapaDashboard("sincronizarApariencia", inicioApariencia);
   const rolOriginalUsuario = obtenerRolUsuarioDashboard(datos || {});
   const rolUsuario = normalizarRolUsuario(rolOriginalUsuario);
   usuarioDashboardActual = { uid: user.uid, email: user.email || "", nombre: datos?.nombre || user.email || "", rol: rolOriginalUsuario || rolUsuario };
@@ -247,8 +271,13 @@ onAuthStateChanged(auth, async (user) => {
       "Bienvenido";
   }
 
-  await cargarAvisosDashboard(rolUsuario, user.uid);
-  await cargarDatosMensajesDashboard();
+  const inicioDatosSecundarios = performance.now();
+  await Promise.all([
+    cargarAvisosDashboard(rolUsuario, user.uid),
+    cargarDatosMensajesDashboard({ incluirUsuarios: false, incluirContactos: false, incluirConversaciones: true })
+  ]);
+  medirEtapaDashboard("avisosYBadgeMensajes", inicioDatosSecundarios);
+  reportarPerfilCargaDashboard();
 });
 
 window.cerrarSesion = async function() {
@@ -307,6 +336,7 @@ function textoDestinatarioAvisoDashboard(aviso = {}) {
 }
 
 async function obtenerLecturasAvisosDashboard(avisos = [], uidUsuario = "") {
+  const inicio = performance.now();
   const lecturasLocales = cargarLecturasLocalesAvisosDashboard();
   const lecturas = await Promise.all(avisos.map(async (aviso) => {
     if (lecturasLocales[uidUsuario]?.[aviso.id]) return [aviso.id, true];
@@ -327,7 +357,9 @@ async function obtenerLecturasAvisosDashboard(avisos = [], uidUsuario = "") {
     }
   }));
 
-  return new Set(lecturas.filter(([, leido]) => leido).map(([id]) => id));
+  const resultado = new Set(lecturas.filter(([, leido]) => leido).map(([id]) => id));
+  medirEtapaDashboard("obtenerLecturasAvisosDashboard", inicio);
+  return resultado;
 }
 
 function cargarObjetoLocalDashboard(clave = "") {
@@ -433,6 +465,7 @@ function renderizarAvisosDashboard() {
 }
 
 async function cargarRespuestasReportesComoAvisos(uidUsuario = "") {
+  const inicio = performance.now();
   if (!uidUsuario) return [];
 
   try {
@@ -462,7 +495,7 @@ async function cargarRespuestasReportesComoAvisos(uidUsuario = "") {
       }));
     }));
 
-    return respuestasPorReporte.flat().map(({ reporte, respuesta }) => ({
+    const avisos = respuestasPorReporte.flat().map(({ reporte, respuesta }) => ({
       id: `respuesta_reporte_${reporte.id}_${respuesta.fechaISO || respuesta.id || reporte.respondidoEn || ""}`,
       idAviso: `respuesta_reporte_${reporte.id}`,
       titulo: `Respuesta a tu reporte: ${reporte.titulo || "Reporte enviado"}`,
@@ -475,8 +508,11 @@ async function cargarRespuestasReportesComoAvisos(uidUsuario = "") {
       creadoEn: respuesta.fechaISO || reporte.respondidoEn || reporte.fechaActualizacionISO || "",
       adminNombre: respuesta.adminNombre || "Administrador"
     }));
+    medirEtapaDashboard("cargarRespuestasReportesComoAvisos", inicio);
+    return avisos;
   } catch (error) {
     console.warn("No se pudieron cargar respuestas de reportes como avisos:", error);
+    medirEtapaDashboard("cargarRespuestasReportesComoAvisos", inicio);
     return [];
   }
 }
@@ -567,6 +603,7 @@ document.addEventListener("click", (evento) => {
 });
 
 async function cargarAvisosDashboard(rolUsuario, uidUsuario) {
+  const inicio = performance.now();
   const contenedor = document.getElementById("listaAvisosDashboard");
   if (!contenedor) return;
   contenedor.innerHTML = "<p>Cargando avisos...</p>";
@@ -591,9 +628,11 @@ async function cargarAvisosDashboard(rolUsuario, uidUsuario) {
 
     avisosLeidosDashboard = await obtenerLecturasAvisosDashboard(avisosDashboardActuales, uidUsuario);
     renderizarAvisosDashboard();
+    medirEtapaDashboard("cargarAvisosDashboard", inicio);
   } catch (error) {
     console.error("Error al cargar avisos:", error);
     contenedor.innerHTML = `<article class="aviso-dashboard-item"><strong>Avisos no disponibles</strong><p>No se pudieron cargar los avisos por el momento.</p></article>`;
+    medirEtapaDashboard("cargarAvisosDashboard", inicio);
   }
 }
 
@@ -625,12 +664,13 @@ function integrarConversacionLocal(conversacion) {
   ];
 }
 
-async function cargarDatosMensajesDashboard() {
+async function cargarDatosMensajesDashboard({ incluirUsuarios = true, incluirContactos = true, incluirConversaciones = true } = {}) {
+  const inicio = performance.now();
   if (!usuarioDashboardActual?.uid) return;
   const [usuarios, contactos, conversaciones] = await Promise.allSettled([
-    usuariosMensajesDashboard.length ? Promise.resolve(usuariosMensajesDashboard) : listarUsuariosParaMensajes(usuarioDashboardActual.uid),
-    listarContactosMensajes(usuarioDashboardActual.uid),
-    listarConversacionesMensajes(usuarioDashboardActual.uid)
+    incluirUsuarios ? (usuariosMensajesDashboard.length ? Promise.resolve(usuariosMensajesDashboard) : listarUsuariosParaMensajes(usuarioDashboardActual.uid)) : Promise.resolve(usuariosMensajesDashboard),
+    incluirContactos ? listarContactosMensajes(usuarioDashboardActual.uid) : Promise.resolve(contactosMensajesDashboard),
+    incluirConversaciones ? listarConversacionesMensajes(usuarioDashboardActual.uid) : Promise.resolve(conversacionesMensajesDashboard)
   ]);
 
   if (usuarios.status === "fulfilled") {
@@ -652,6 +692,7 @@ async function cargarDatosMensajesDashboard() {
   }
 
   actualizarBadgeMensajesDashboard();
+  medirEtapaDashboard("cargarDatosMensajesDashboard", inicio);
 }
 
 function contenedorMensajes() {
