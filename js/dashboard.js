@@ -24,6 +24,7 @@ import {
 import { registrarEventoAuditoria } from "./services/auditoria.js";
 import { iniciarMonitoreoSesion } from "./services/sesion.js";
 import { aplicarAparienciaGuardada, sincronizarAparienciaUsuario } from "./services/apariencia.js";
+import { ROL_ENFERMERIA_SALUD_MENTAL, usuarioEsPersonalClinico } from "./utils/roles.js";
 import {
   agregarContactoMensaje,
   archivarConversacionMensaje,
@@ -446,7 +447,8 @@ function avisoVisibleParaUsuario(aviso = {}, rol = "", uid = "") {
   if (usuarioEsAdmin(rolNormalizado)) return true;
   if (tipo === "usuario") return uidDestino === uid;
   if (["todos", "todos_los_usuarios", "global"].includes(tipo)) return true;
-  if (["personal_salud", "medicos_psicologos", "medico_psicologo"].includes(tipo)) return ["medico", "psicologo"].includes(rolNormalizado);
+  if (["personal_salud", "medicos_psicologos", "medico_psicologo"].includes(tipo)) return usuarioEsPersonalClinico(rolNormalizado);
+  if (tipo === ROL_ENFERMERIA_SALUD_MENTAL) return rolNormalizado === ROL_ENFERMERIA_SALUD_MENTAL || rolNormalizado === "enfermeriasaludmental";
   if (tipo === "medicos") return rolNormalizado === "medico";
   if (tipo === "psicologos") return rolNormalizado === "psicologo";
   if (tipo === "pacientes") return rolNormalizado === "paciente";
@@ -460,8 +462,9 @@ function textoDestinatarioAvisoDashboard(aviso = {}) {
     todos: "todos",
     paciente: "pacientes",
     medico: "medicos",
+    [ROL_ENFERMERIA_SALUD_MENTAL]: "enfermeria / asesoria",
     psicologo: "psicologos",
-    personal_salud: "medicos y psicologos"
+    personal_salud: "personal clinico"
   };
   return mapa[destino] || destino;
 }

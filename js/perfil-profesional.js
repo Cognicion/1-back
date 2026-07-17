@@ -2,6 +2,7 @@ import { auth } from "./firebase.js";
 import { actualizarUsuario, obtenerUsuario } from "./services/usuarios.js";
 import { registrarEventoAuditoria } from "./services/auditoria.js";
 import { iniciarMonitoreoSesion } from "./services/sesion.js";
+import { usuarioEsPersonalClinico } from "./utils/roles.js";
 
 import {
   onAuthStateChanged
@@ -29,7 +30,8 @@ function normalizarRolPerfil(rol = "") {
 }
 
 function usuarioPuedeUsarPerfilProfesional(rol = "") {
-  return ["admin", "administrador", "medico", "psicologo"].includes(normalizarRolPerfil(rol));
+  const normalizado = normalizarRolPerfil(rol);
+  return ["admin", "administrador"].includes(normalizado) || usuarioEsPersonalClinico(normalizado);
 }
 
 onAuthStateChanged(auth, async (user) => {

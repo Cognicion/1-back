@@ -14,6 +14,7 @@ import { registrarEventoAuditoria } from "./services/auditoria.js";
 import { iniciarMonitoreoSesion } from "./services/sesion.js";
 import { crearCodigoPacienteParaMedico } from "./services/vinculacion.js";
 import { normalizarTextoFrecuencia } from "./utils/frecuencias.js";
+import { usuarioEsPersonalClinico, usuarioEsProfesionalTipoMedico } from "./utils/roles.js";
 
 import {
   onAuthStateChanged
@@ -65,7 +66,7 @@ onAuthStateChanged(auth, async (user) => {
     let datosSeguimiento = datos;
 
     if (modoVistaPrevia) {
-      if (!["medico", "psicologo"].includes(datos.rol)) {
+      if (!usuarioEsPersonalClinico(datos.rol)) {
         alert("La vista previa de Mi Salud es solo para personal clinico.");
         window.location.href = "dashboard.html";
         return;
@@ -88,7 +89,7 @@ onAuthStateChanged(auth, async (user) => {
       uidSeguimiento = pacientePreview;
       datosSeguimiento = snapPaciente.data();
       document.body.classList.add("modo-preview");
-    } else if (!["paciente", "medico"].includes(datos.rol)) {
+    } else if (datos.rol !== "paciente" && !usuarioEsProfesionalTipoMedico(datos.rol)) {
       alert("Este modulo esta disponible para pacientes y medicos.");
       window.location.href = "dashboard.html";
       return;

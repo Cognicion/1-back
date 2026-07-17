@@ -3,6 +3,7 @@ import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/f
 import { collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { medicoPuedeVer, obtenerUsuario } from "./services/usuarios.js";
 import { iniciarMonitoreoSesion } from "./services/sesion.js";
+import { usuarioEsPersonalClinico } from "./utils/roles.js";
 
 iniciarMonitoreoSesion("Estadistica");
 
@@ -60,7 +61,7 @@ onAuthStateChanged(auth, async (user) => {
   usuarioActual = usuario;
   const rolUsuario = normalizarRolEstadistica(usuario?.rol);
 
-  if (!usuario || !["admin", "administrador", "medico", "psicologo"].includes(rolUsuario)) {
+  if (!usuario || (!rolEsAdminEstadistica(rolUsuario) && !usuarioEsPersonalClinico(rolUsuario))) {
     alert("Acceso restringido al personal clinico.");
     window.location.href = "dashboard.html";
     return;

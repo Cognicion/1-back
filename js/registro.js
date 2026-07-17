@@ -17,6 +17,10 @@ import {
 
 import { registrarEventoAuditoria } from "./services/auditoria.js";
 import { vincularCuentaConCodigoMedico } from "./services/vinculacion.js";
+import {
+  ETIQUETA_ROL_ENFERMERIA_SALUD_MENTAL,
+  ROL_ENFERMERIA_SALUD_MENTAL
+} from "./utils/roles.js";
 
 const VERSION_AVISO_PRIVACIDAD = "beta-2026-06-29";
 
@@ -37,7 +41,7 @@ function configurarTipoCuenta() {
         item.classList.toggle("activo", item === boton);
       });
 
-      const esProfesional = ["medico", "psicologo"].includes(tipoCuentaSeleccionada);
+      const esProfesional = ["medico", "psicologo", ROL_ENFERMERIA_SALUD_MENTAL].includes(tipoCuentaSeleccionada);
       camposPaciente?.classList.toggle("oculto", esProfesional);
       camposMedico?.classList.toggle("oculto", !esProfesional);
 
@@ -46,7 +50,9 @@ function configurarTipoCuenta() {
           ? "Registro de medico"
           : tipoCuentaSeleccionada === "psicologo"
             ? "Registro de psicologo"
-            : "Registro de paciente";
+            : tipoCuentaSeleccionada === ROL_ENFERMERIA_SALUD_MENTAL
+              ? `Registro de ${ETIQUETA_ROL_ENFERMERIA_SALUD_MENTAL}`
+              : "Registro de paciente";
       }
       if (descripcion) {
         descripcion.textContent = esProfesional
@@ -82,8 +88,16 @@ async function validarCodigoAutorizacionMedico(codigo) {
 }
 
 async function crearCuentaProfesional({ nombre, email, password, codigoAutorizacion, aceptaAviso, mensaje, rol }) {
-  const rolProfesional = rol === "psicologo" ? "psicologo" : "medico";
-  const etiquetaRol = rolProfesional === "psicologo" ? "psicologo" : "medico";
+  const rolProfesional = rol === "psicologo"
+    ? "psicologo"
+    : rol === ROL_ENFERMERIA_SALUD_MENTAL
+      ? ROL_ENFERMERIA_SALUD_MENTAL
+      : "medico";
+  const etiquetaRol = rolProfesional === "psicologo"
+    ? "psicologo"
+    : rolProfesional === ROL_ENFERMERIA_SALUD_MENTAL
+      ? ETIQUETA_ROL_ENFERMERIA_SALUD_MENTAL
+      : "medico";
 
   if (!nombre || !email || !password || !codigoAutorizacion) {
     mensaje.textContent = "Completa nombre, correo, contrasena y codigo de autorizacion.";
@@ -115,7 +129,11 @@ async function crearCuentaProfesional({ nombre, email, password, codigoAutorizac
     tieneCuenta: true,
     estado: "activo",
     unidad: "",
-    especialidad: rolProfesional === "psicologo" ? "Psicologia" : "",
+    especialidad: rolProfesional === "psicologo"
+      ? "Psicologia"
+      : rolProfesional === ROL_ENFERMERIA_SALUD_MENTAL
+        ? "Enfermeria / Salud Mental"
+        : "",
     institucion: "",
     cedula: "",
     aceptoAvisoPrivacidad: true,
@@ -169,7 +187,7 @@ btnCrearCuenta.addEventListener("click", async () => {
   const aceptaAviso = document.getElementById("aceptaAviso").checked;
   const mensaje = document.getElementById("mensaje");
 
-  if (["medico", "psicologo"].includes(tipoCuentaSeleccionada)) {
+  if (["medico", "psicologo", ROL_ENFERMERIA_SALUD_MENTAL].includes(tipoCuentaSeleccionada)) {
     try {
       await crearCuentaProfesional({
         nombre,

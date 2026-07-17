@@ -51,6 +51,11 @@
     </div>
 
     <div class="card">
+      <h3>Enfermeria / Asesoria</h3>
+      <p id="totalEnfermeriaSaludMental">-</p>
+    </div>
+
+    <div class="card">
       <h3>Psicologos</h3>
       <p id="totalPsicologos">-</p>
     </div>
@@ -110,8 +115,9 @@
           <option value="todos">Para todos los usuarios</option>
           <option value="paciente">Para todos los pacientes</option>
           <option value="medico">Para todos los medicos</option>
+          <option value="enfermeria_salud_mental">Para Lic. en Enfermeria / Asesores en Salud Mental</option>
           <option value="psicologo">Para todos los psicologos</option>
-          <option value="personal_salud">Para todos los medicos y psicologos</option>
+          <option value="personal_salud">Para todo el personal clinico</option>
         </select>
       </label>
       <label id="campoAvisoUsuarioAdmin">Usuario destinatario
@@ -145,6 +151,7 @@
       <span>Total: <strong id="usuariosVistaTotal">-</strong></span>
       <span>Pacientes: <strong id="usuariosVistaPacientes">-</strong></span>
       <span>Medicos: <strong id="usuariosVistaMedicos">-</strong></span>
+      <span>Enfermeria / Asesoria: <strong id="usuariosVistaEnfermeriaSaludMental">-</strong></span>
       <span>Psicologos: <strong id="usuariosVistaPsicologos">-</strong></span>
       <span>Admin: <strong id="usuariosVistaAdmin">-</strong></span>
     </div>
@@ -155,6 +162,7 @@
         <option value="">Todos los roles</option>
         <option value="paciente">Pacientes</option>
         <option value="medico">Medicos</option>
+        <option value="enfermeria_salud_mental">Enfermeria / Asesoria</option>
         <option value="psicologo">Psicologos</option>
         <option value="admin">Admin</option>
       </select>
@@ -294,6 +302,7 @@
       <select id="filtroRol">
         <option value="">Todos los roles</option>
         <option value="medico">Medicos</option>
+        <option value="enfermeria_salud_mental">Enfermeria / Asesoria</option>
         <option value="psicologo">Psicologos</option>
         <option value="paciente">Pacientes</option>
         <option value="admin">Admin</option>

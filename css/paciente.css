@@ -913,6 +913,28 @@ textarea{
   transform: translateY(0) scale(1);
 }
 
+.leyenda-farmacologia-enfermeria {
+  margin: 0 0 14px;
+  color: #64748b;
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.panel-aviso-farmacologia {
+  width: min(560px, 100%);
+}
+
+.aviso-farmacologia-contenido p {
+  margin: 0 0 12px;
+  color: #dbeafe;
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.aviso-farmacologia-contenido p:last-child {
+  margin-bottom: 0;
+}
+
 .panel-ingreso-header {
   display: flex;
   align-items: flex-start;

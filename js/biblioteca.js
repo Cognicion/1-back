@@ -7,6 +7,7 @@ import { CRITERIOS_DIAGNOSTICOS, PSICOEDUCACION } from "./data/bibliotecaClinica
 import { CRITERIOS_DIAGNOSTICOS_EXTENDIDOS, GRUPOS_CIE10_BIBLIOTECA } from "./data/diagnosticosClinicosExtendidos.js";
 import { obtenerGrupoCie10 } from "./data/vinculosClinicos.js";
 import { iniciarMonitoreoSesion } from "./services/sesion.js";
+import { ROL_ENFERMERIA_SALUD_MENTAL } from "./utils/roles.js";
 
 import {
   onAuthStateChanged
@@ -27,6 +28,8 @@ const ROLES_ADMIN_VALIDOS = new Set([
 const ROLES_BIBLIOTECA_VALIDOS = new Set([
   "medico",
   "médico",
+  ROL_ENFERMERIA_SALUD_MENTAL,
+  "enfermeriasaludmental",
   "psicologo",
   "psicólogo",
   ...ROLES_ADMIN_VALIDOS

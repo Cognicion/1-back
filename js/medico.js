@@ -6,6 +6,7 @@ import {
   normalizarTextoBusquedaPaciente,
   textoBusquedaPaciente
 } from "./utils/nombresPacientes.js";
+import { usuarioEsPersonalClinico } from "./utils/roles.js";
 
 import { auth, db } from "./firebase.js";
 
@@ -225,7 +226,7 @@ async function cargarPerfilMedico(user) {
   const datos = snapUsuario.data();
   rolUsuarioActual = datos.rol || "";
 
-  if (!["medico", "psicologo", "admin"].includes(datos.rol)) {
+  if (datos.rol !== "admin" && !usuarioEsPersonalClinico(datos.rol)) {
     alert("Acceso restringido al personal clínico.");
     await auth.signOut();
     window.location.href = "login.html";

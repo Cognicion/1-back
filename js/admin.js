@@ -7,6 +7,12 @@ import {
   textoBusquedaPaciente
 } from "./utils/nombresPacientes.js";
 import {
+  ETIQUETA_ROL_ENFERMERIA_SALUD_MENTAL,
+  ROL_ENFERMERIA_SALUD_MENTAL,
+  etiquetaRolClinico,
+  usuarioEsProfesionalTipoMedico
+} from "./utils/roles.js";
+import {
   agregarContactoMensaje,
   archivarConversacionMensaje,
   eliminarConversacionMensaje,
@@ -370,8 +376,9 @@ function textoDestinatarioAviso(aviso = {}) {
     todos: "Todos los usuarios",
     paciente: "Todos los pacientes",
     medico: "Todos los medicos",
+    [ROL_ENFERMERIA_SALUD_MENTAL]: "Todos los Lic. en Enfermeria / Asesores en Salud Mental",
     psicologo: "Todos los psicologos",
-    personal_salud: "Todos los medicos y psicologos",
+    personal_salud: "Todos los medicos, enfermeria/asesoria y psicologos",
     admin: "Admin"
   };
   return mapa[aviso.destinatarioRol || aviso.destinatarioTipo] || "Todos los usuarios";
@@ -609,6 +616,7 @@ async function cargarResumen() {
   let totalUsuarios = 0;
   let totalPacientes = 0;
   let totalMedicos = 0;
+  let totalEnfermeriaSaludMental = 0;
   let totalPsicologos = 0;
   let totalInactividad = 0;
   let totalAuditoriaVisible = 0;
@@ -618,6 +626,7 @@ async function cargarResumen() {
     const datos = docUsuario.data();
     if (datos.rol === "paciente") totalPacientes++;
     if (datos.rol === "medico") totalMedicos++;
+    if (datos.rol === ROL_ENFERMERIA_SALUD_MENTAL) totalEnfermeriaSaludMental++;
     if (datos.rol === "psicologo") totalPsicologos++;
   });
 
@@ -631,6 +640,7 @@ async function cargarResumen() {
   ponerTexto("totalUsuarios", totalUsuarios);
   ponerTexto("totalPacientes", totalPacientes);
   ponerTexto("totalMedicos", totalMedicos);
+  ponerTexto("totalEnfermeriaSaludMental", totalEnfermeriaSaludMental);
   ponerTexto("totalPsicologos", totalPsicologos);
   ponerTexto("totalAuditoria", totalAuditoriaVisible);
   ponerTexto("totalInactividad", totalInactividad);
@@ -1227,6 +1237,7 @@ function renderizarUsuariosAdmin() {
           <select id="rol-${escaparHTML(usuario.id)}" ${esAdminActual ? "disabled" : ""}>
             ${opcionRol("paciente", rolActual)}
             ${opcionRol("medico", rolActual)}
+            ${opcionRol(ROL_ENFERMERIA_SALUD_MENTAL, rolActual)}
             ${opcionRol("psicologo", rolActual)}
             ${opcionRol("admin", rolActual)}
           </select>
@@ -1389,19 +1400,13 @@ function actualizarResumenUsuariosVista(usuarios = []) {
   ponerTexto("usuariosVistaTotal", usuarios.length);
   ponerTexto("usuariosVistaPacientes", usuarios.filter((usuario) => usuario.rol === "paciente").length);
   ponerTexto("usuariosVistaMedicos", usuarios.filter((usuario) => usuario.rol === "medico").length);
+  ponerTexto("usuariosVistaEnfermeriaSaludMental", usuarios.filter((usuario) => usuario.rol === ROL_ENFERMERIA_SALUD_MENTAL).length);
   ponerTexto("usuariosVistaPsicologos", usuarios.filter((usuario) => usuario.rol === "psicologo").length);
   ponerTexto("usuariosVistaAdmin", usuarios.filter((usuario) => usuario.rol === "admin").length);
 }
 
 function etiquetaRolUsuario(rol = "") {
-  const etiquetas = {
-    paciente: "Paciente",
-    medico: "Medico",
-    psicologo: "Psicologo",
-    admin: "Admin",
-    sin_rol: "Sin rol"
-  };
-  return etiquetas[rol] || rol || "Sin rol";
+  return etiquetaRolClinico(rol);
 }
 
 function fechaUsuarioAdmin(usuario = {}) {
@@ -1426,7 +1431,7 @@ function fechaUsuarioAdmin(usuario = {}) {
 }
 
 function opcionRol(rol, rolActual) {
-  return `<option value="${rol}" ${rolActual === rol ? "selected" : ""}>${rol}</option>`;
+  return `<option value="${rol}" ${rolActual === rol ? "selected" : ""}>${escaparHTML(etiquetaRolUsuario(rol))}</option>`;
 }
 
 window.cambiarRolUsuarioAdmin = async function(uidUsuario) {
@@ -1515,7 +1520,7 @@ async function eliminarUsuarioConDatos(uidUsuario, usuario = {}) {
 
   const resumen = {};
 
-  if (usuario.rol === "medico" || usuario.rol === "psicologo") {
+  if (usuarioEsProfesionalTipoMedico(usuario.rol) || usuario.rol === "psicologo") {
     for (const nombreColeccion of SUBCOLECCIONES_USUARIO_MEDICO) {
       resumen[nombreColeccion] = await eliminarDocumentosColeccion(
         collection(db, "usuarios", uidUsuario, nombreColeccion)

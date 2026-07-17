@@ -4,6 +4,7 @@ import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase
 import { httpsCallable } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-functions.js";
 import { aplicarAparienciaGuardada } from "./services/apariencia.js";
 import { obtenerNombrePacienteParaMostrar } from "./utils/nombresPacientes.js";
+import { usuarioEsPersonalClinico } from "./utils/roles.js";
 import {
   analizarInteraccionesMedicamentos,
   cargarExpedientePacienteSofia,
@@ -89,8 +90,8 @@ onAuthStateChanged(auth, async (user) => {
     }
     perfilActual = snapUsuario.data();
     const rol = String(perfilActual.rol || "").toLowerCase();
-    if (!["admin", "medico", "psicologo"].includes(rol)) {
-      bloquearAcceso("Acceso restringido. SOFIA v2 esta disponible para admin, medicos y psicologos.");
+    if (rol !== "admin" && !usuarioEsPersonalClinico(rol)) {
+      bloquearAcceso("Acceso restringido. SOFIA v2 esta disponible para admin y personal clinico autorizado.");
       return;
     }
     estadoAcceso.textContent = "Acceso concedido. SOFIA v2 trabaja en modo explicable y no modifica el expediente.";

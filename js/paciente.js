@@ -22,6 +22,10 @@ import {
   obtenerNombrePacienteParaMostrar
 } from "./utils/nombresPacientes.js";
 import { normalizarTextoFrecuencia } from "./utils/frecuencias.js";
+import {
+  ETIQUETA_ROL_ENFERMERIA_SALUD_MENTAL,
+  usuarioEsEnfermeriaSaludMental
+} from "./utils/roles.js";
 import { calcularEdadPediatrica } from "./pediatria/edad.js";
 import {
   calcularIMC as calcularIMCPediatrico,
@@ -1893,11 +1897,16 @@ function usuarioEsPsicologo() {
   return rolUsuarioActual === "psicologo";
 }
 
+function usuarioActualEsEnfermeriaSaludMental() {
+  return usuarioEsEnfermeriaSaludMental(rolUsuarioActual);
+}
+
 function aplicarRestriccionesRolExpediente() {
   const ocultarTratamiento = usuarioEsPsicologo();
   document.getElementById("btnTratamientoPaciente")?.classList.toggle("oculto", ocultarTratamiento);
   document.getElementById("datoResumenTratamiento")?.classList.toggle("oculto", ocultarTratamiento);
   document.getElementById("seccionTratamiento")?.classList.toggle("oculto", ocultarTratamiento);
+  actualizarAvisosFarmacologiaEnfermeria();
 }
 
 function normalizarTipoPaciente(valor = "") {
@@ -1907,6 +1916,75 @@ function normalizarTipoPaciente(valor = "") {
 function esTipoPacienteInstitucional(valor = "") {
   const tipo = normalizarTipoPaciente(valor);
   return tipo === "institucion" || tipo === "institucional" || tipo === "paciente de institucion";
+}
+
+function actualizarAvisosFarmacologiaEnfermeria() {
+  const leyenda = document.getElementById("leyendaFarmacologiaEnfermeria");
+  if (leyenda) {
+    leyenda.classList.toggle("oculto", !usuarioActualEsEnfermeriaSaludMental());
+  }
+}
+
+function avisoFarmacologiaVistoPaciente() {
+  return datosPacienteActual?.uiFlags?.farmacologiaAvisoVisto === true;
+}
+
+function asegurarModalAvisoFarmacologiaEnfermeria() {
+  let modal = document.getElementById("modalAvisoFarmacologiaEnfermeria");
+  if (modal) return modal;
+
+  modal = document.createElement("div");
+  modal.id = "modalAvisoFarmacologiaEnfermeria";
+  modal.className = "modal-ingreso aviso-farmacologia-enfermeria";
+  modal.setAttribute("aria-hidden", "true");
+  modal.innerHTML = `
+    <div class="panel-ingreso panel-aviso-farmacologia" role="dialog" aria-modal="true" aria-labelledby="tituloAvisoFarmacologiaEnfermeria">
+      <div class="panel-ingreso-header">
+        <div>
+          <p>${escaparHTML(ETIQUETA_ROL_ENFERMERIA_SALUD_MENTAL)}</p>
+          <h3 id="tituloAvisoFarmacologiaEnfermeria">Aviso importante</h3>
+        </div>
+        <button type="button" data-cerrar-aviso-farmacologia-enfermeria aria-label="Cerrar">×</button>
+      </div>
+      <div class="aviso-farmacologia-contenido">
+        <p>La prescripcion, inicio, modificacion y suspension de tratamientos farmacologicos corresponde exclusivamente al medico tratante conforme a la normatividad vigente.</p>
+        <p>Este modulo permite registrar el tratamiento indicado por el medico con fines de seguimiento clinico, monitoreo de adherencia terapeutica, registro de efectos adversos, continuidad de la atencion y documentacion del expediente.</p>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+  modal.querySelector("[data-cerrar-aviso-farmacologia-enfermeria]")?.addEventListener("click", cerrarAvisoFarmacologiaEnfermeria);
+  return modal;
+}
+
+async function cerrarAvisoFarmacologiaEnfermeria() {
+  const modal = document.getElementById("modalAvisoFarmacologiaEnfermeria");
+  modal?.classList.remove("abierto");
+  modal?.setAttribute("aria-hidden", "true");
+
+  if (!uidPaciente) return;
+  try {
+    await updateDoc(doc(db, "usuarios", uidPaciente), {
+      "uiFlags.farmacologiaAvisoVisto": true
+    });
+    datosPacienteActual = {
+      ...(datosPacienteActual || {}),
+      uiFlags: {
+        ...(datosPacienteActual?.uiFlags || {}),
+        farmacologiaAvisoVisto: true
+      }
+    };
+  } catch (error) {
+    console.warn("No se pudo guardar el estado del aviso de farmacologia:", error);
+  }
+}
+
+function mostrarAvisoFarmacologiaEnfermeriaSiCorresponde() {
+  actualizarAvisosFarmacologiaEnfermeria();
+  if (!usuarioActualEsEnfermeriaSaludMental() || avisoFarmacologiaVistoPaciente()) return;
+  const modal = asegurarModalAvisoFarmacologiaEnfermeria();
+  modal.classList.add("abierto");
+  modal.setAttribute("aria-hidden", "false");
 }
 
 function esTipoPacientePrivado(valor = "") {
@@ -2135,6 +2213,7 @@ window.mostrarTratamiento = async function() {
   ocultarSecciones();
   document.getElementById("seccionTratamiento").style.display = "block";
   document.getElementById("seccionIndicaciones").style.display = "block";
+  mostrarAvisoFarmacologiaEnfermeriaSiCorresponde();
   await cargarTratamientosPaciente();
   renderizarCatalogosIndicaciones();
   await cargarCatalogoMedicosFirmasIndicaciones();
@@ -2254,7 +2333,7 @@ function renderizarEscalaHistorialPaciente(escala) {
   const dominios = escala.puntajesPorDominio && Object.keys(escala.puntajesPorDominio).length
     ? `<p><strong>Puntajes por dominio:</strong> ${escaparHTML(Object.entries(escala.puntajesPorDominio).map(([dominio, valor]) => `${dominio}: ${valor}`).join("; "))}</p>`
     : "";
-  const puedeCambiarVisibilidad = ["medico", "psicologo", "admin"].includes(rolUsuarioActual);
+  const puedeCambiarVisibilidad = rolUsuarioActual === "admin" || rolUsuarioActual === "psicologo" || usuarioActualEsEnfermeriaSaludMental() || rolUsuarioActual === "medico";
   const visible = escala.visibilidadPaciente === true || escala.visibleDesdePaciente === true;
   const controlVisibilidad = puedeCambiarVisibilidad ? `
     <label class="switch-linea resultado-visibilidad">
@@ -5658,7 +5737,12 @@ function datosFormularioTratamiento() {
     fechaSuspension: valorCampo("tratamientoFechaSuspension"),
     motivoSuspension: valorCampo("tratamientoMotivoSuspension"),
     observaciones: valorCampo("tratamientoObservaciones"),
-    creadoPor: auth.currentUser?.uid || ""
+    creadoPor: auth.currentUser?.uid || "",
+    _auditoria: {
+      usuarioUid: auth.currentUser?.uid || "",
+      usuarioNombre: medicoActualDatos?.nombre || auth.currentUser?.email || "",
+      usuarioRol: rolUsuarioActual || medicoActualDatos?.rol || ""
+    }
   };
 }
 
@@ -5800,6 +5884,7 @@ function renderizarTratamiento(t) {
       ${dosisTotalDia ? `<p><b>Dosis total al día:</b> ${escaparHTML(dosisTotalDia)}</p>` : ""}
       ${tratamiento.estado === "suspendido" ? `<p><b>Suspensión:</b> ${escaparHTML(formatearFecha(fechaSuspension))} · ${escaparHTML(motivoSuspension || "Sin motivo registrado")}</p>` : ""}
       ${tratamiento.observaciones ? `<p>${escaparHTML(tratamiento.observaciones)}</p>` : ""}
+      ${tratamiento.modificadoPorRol || tratamiento.creadoPorRol ? `<p class="texto-suave"><b>Última modificación:</b> ${escaparHTML(tratamiento.modificadoPorNombre || tratamiento.creadoPorNombre || "Usuario")} · ${escaparHTML(tratamiento.modificadoPorRol || tratamiento.creadoPorRol || "")} · ${escaparHTML(formatearFecha(tratamiento.fechaActualizacion) || "")}</p>` : ""}
       <div class="registro-actions">
         <button type="button" data-editar-tratamiento="${t.id}">Editar</button>
         <button type="button" class="boton-peligro" data-eliminar-tratamiento="${t.id}">Eliminar</button>

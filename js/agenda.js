@@ -3,6 +3,7 @@ import { medicoPuedeVer, obtenerUsuario } from "./services/usuarios.js";
 import { registrarEventoAuditoria } from "./services/auditoria.js";
 import { iniciarMonitoreoSesion } from "./services/sesion.js";
 import { obtenerNombrePacienteParaMostrar } from "./utils/nombresPacientes.js";
+import { usuarioEsPersonalClinico } from "./utils/roles.js";
 
 import {
   onAuthStateChanged
@@ -37,7 +38,7 @@ onAuthStateChanged(auth, async (user) => {
   }
 
   const usuario = await obtenerUsuario(user.uid);
-  if (!usuario || !["medico", "psicologo"].includes(usuario.rol)) {
+  if (!usuario || !usuarioEsPersonalClinico(usuario.rol)) {
     alert("Agenda disponible solo para personal clinico.");
     window.location.href = "dashboard.html";
     return;

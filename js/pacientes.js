@@ -9,6 +9,7 @@ import {
   listarPacientes
 } from "./services/usuarios.js";
 import { obtenerNombrePacienteParaMostrar } from "./utils/nombresPacientes.js";
+import { usuarioEsPersonalClinico } from "./utils/roles.js";
 
 onAuthStateChanged(auth, async (user) => {
   if (!user) {
@@ -18,7 +19,7 @@ onAuthStateChanged(auth, async (user) => {
 
   const usuario = await obtenerUsuario(user.uid);
 
-  if (!usuario || !["medico", "psicologo", "admin"].includes(usuario.rol)) {
+  if (!usuario || (usuario.rol !== "admin" && !usuarioEsPersonalClinico(usuario.rol))) {
   alert("Acceso restringido al personal clinico");
   window.location.href = "dashboard.html";
   return;

@@ -2,6 +2,7 @@ import { auth, db } from "./firebase.js";
 import { registrarEventoAuditoria } from "./services/auditoria.js";
 import { guardarSolicitudEliminacion } from "./services/reportes.js?v=20260716-1";
 import { iniciarMonitoreoSesion } from "./services/sesion.js";
+import { usuarioEsPersonalClinico } from "./utils/roles.js";
 import { CIE10 } from "./data/cie10.js";
 import { CIE11 } from "./data/cie11.js";
 import { MEDICAMENTOS } from "./data/medicamentos.js";
@@ -3505,7 +3506,7 @@ async function usuarioActualPuedeAccederPaciente(uidPaciente) {
 
   const perfilUsuario = await obtenerUsuario(usuarioAuth.uid);
   if (perfilUsuario?.rol === "admin") return true;
-  if (!["medico", "psicologo"].includes(perfilUsuario?.rol)) return false;
+  if (!usuarioEsPersonalClinico(perfilUsuario?.rol)) return false;
 
   return await medicoPuedeVer(usuarioAuth.uid, uidPaciente);
 }
@@ -3564,7 +3565,7 @@ onAuthStateChanged(auth, async (user) => {
 
   const usuario = await obtenerUsuario(user.uid);
 
-  if (!usuario || !["medico", "psicologo", "admin"].includes(usuario.rol)) {
+  if (!usuario || (usuario.rol !== "admin" && !usuarioEsPersonalClinico(usuario.rol))) {
   alert("Acceso restringido al personal clinico");
   window.location.href = "dashboard.html";
   return;

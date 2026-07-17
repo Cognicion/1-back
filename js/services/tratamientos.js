@@ -9,17 +9,44 @@ import {
   query,
   orderBy,
   updateDoc,
-  deleteDoc
+  deleteDoc,
+  arrayUnion
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const coleccionTratamientos = (uidPaciente) =>
   collection(db, "usuarios", uidPaciente, "tratamientos");
 
+function fechaActualISO() {
+  return new Date().toISOString();
+}
+
+function separarAuditoriaTratamiento(datos = {}, accion = "actualizar") {
+  const { _auditoria, ...datosTratamiento } = datos;
+  const fecha = fechaActualISO();
+  const auditoria = {
+    accion,
+    usuarioUid: _auditoria?.usuarioUid || datos.creadoPor || "",
+    usuarioNombre: _auditoria?.usuarioNombre || "",
+    usuarioRol: _auditoria?.usuarioRol || "",
+    fecha,
+    hora: fecha
+  };
+
+  return { datosTratamiento, auditoria, fecha };
+}
+
 export async function crearTratamiento(uidPaciente, datos) {
+  const { datosTratamiento, auditoria, fecha } = separarAuditoriaTratamiento(datos, "crear");
   return await addDoc(coleccionTratamientos(uidPaciente), {
-    ...normalizarTratamientoFrecuencia(datos),
-    fechaCreacion: new Date().toISOString(),
-    fechaActualizacion: new Date().toISOString()
+    ...normalizarTratamientoFrecuencia(datosTratamiento),
+    creadoPorRol: auditoria.usuarioRol,
+    creadoPorNombre: auditoria.usuarioNombre,
+    modificadoPor: auditoria.usuarioUid,
+    modificadoPorRol: auditoria.usuarioRol,
+    modificadoPorNombre: auditoria.usuarioNombre,
+    historialCambios: [auditoria],
+    fechaCreacion: fecha,
+    fechaActualizacion: fecha
   });
 }
 
@@ -34,11 +61,16 @@ export async function listarTratamientos(uidPaciente) {
 }
 
 export async function actualizarTratamiento(uidPaciente, tratamientoId, datos) {
+  const { datosTratamiento, auditoria, fecha } = separarAuditoriaTratamiento(datos, "actualizar");
   await updateDoc(
     doc(db, "usuarios", uidPaciente, "tratamientos", tratamientoId),
     {
-      ...normalizarTratamientoFrecuencia(datos),
-      fechaActualizacion: new Date().toISOString()
+      ...normalizarTratamientoFrecuencia(datosTratamiento),
+      modificadoPor: auditoria.usuarioUid,
+      modificadoPorRol: auditoria.usuarioRol,
+      modificadoPorNombre: auditoria.usuarioNombre,
+      historialCambios: arrayUnion(auditoria),
+      fechaActualizacion: fecha
     }
   );
 }

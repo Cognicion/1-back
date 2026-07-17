@@ -1,6 +1,7 @@
 import { db } from "../firebase.js";
 import { crearDatosSolicitudEliminacion } from "./reportes.js?v=20260716-1";
 import { obtenerNombrePacienteParaMostrar } from "../utils/nombresPacientes.js";
+import { usuarioEsProfesionalTipoMedico } from "../utils/roles.js";
 
 import {
     doc,
@@ -286,19 +287,19 @@ export async function otorgarPermisoMedico(pacienteId, uidMedicoDestino, tipoPer
 }
 
 export async function buscarMedicoPorCorreo(correo) {
-    const q = query(
-        collection(db, "usuarios"),
-        where("email", "==", correo),
-        where("rol", "==", "medico")
-    );
+  const q = query(
+    collection(db, "usuarios"),
+    where("email", "==", correo)
+  );
 
-    const snap = await getDocs(q);
+  const snap = await getDocs(q);
 
-    if (snap.empty) return null;
+  if (snap.empty) return null;
 
-    const docMedico = snap.docs[0];
+  const docMedico = snap.docs.find((docUsuario) => usuarioEsProfesionalTipoMedico(docUsuario.data().rol));
+  if (!docMedico) return null;
 
-    return {
+  return {
         uid: docMedico.id,
         ...docMedico.data()
     };
