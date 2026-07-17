@@ -15,6 +15,7 @@ import {
 } from "./services/usuarios.js";
 import { registrarEventoAuditoria } from "./services/auditoria.js";
 import { iniciarMonitoreoSesion } from "./services/sesion.js";
+import { construirNombreCompletoPaciente } from "./utils/nombresPacientes.js";
 
 let uidMedico = "";
 let medicoActualDatos = {};
@@ -400,9 +401,18 @@ window.guardarPacienteNuevo = async function() {
   };
 
   const medicoTratanteNombre = document.getElementById("medicoTratante")?.value.trim() || obtenerNombreProfesional(medicoActualDatos, auth.currentUser);
+  const nombres = document.getElementById("nombresPaciente")?.value || "";
+  const apellidoPaterno = document.getElementById("apellidoPaternoPaciente")?.value || "";
+  const apellidoMaterno = document.getElementById("apellidoMaternoPaciente")?.value || "";
+  const nombreCompleto = construirNombreCompletoPaciente({ nombres, apellidoPaterno, apellidoMaterno });
+  if (document.getElementById("nombre")) document.getElementById("nombre").value = nombreCompleto;
 
   const paciente = {
-    nombre: document.getElementById("nombre").value,
+    nombre: nombreCompleto,
+    nombreCompleto,
+    nombres: nombres.trim().replace(/\s+/g, " "),
+    apellidoPaterno: apellidoPaterno.trim().replace(/\s+/g, " "),
+    apellidoMaterno: apellidoMaterno.trim().replace(/\s+/g, " "),
     expedienteCognicion,
     fechaNacimiento,
     edadManual,
@@ -433,7 +443,11 @@ window.guardarPacienteNuevo = async function() {
     somatometria,
     diasEstancia,
     datosInstitucionales: {
-      nombrePaciente: document.getElementById("nombre").value,
+      nombrePaciente: nombreCompleto,
+      nombreCompleto,
+      nombres: nombres.trim().replace(/\s+/g, " "),
+      apellidoPaterno: apellidoPaterno.trim().replace(/\s+/g, " "),
+      apellidoMaterno: apellidoMaterno.trim().replace(/\s+/g, " "),
       expedienteCognicion,
       tipoPaciente,
       institucionPaciente,

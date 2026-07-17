@@ -1,4 +1,5 @@
 import { db } from "../firebase.js";
+import { obtenerNombrePacienteParaMostrar } from "../utils/nombresPacientes.js";
 import { collection, doc, getDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const CAMPOS_FECHA = ["fechaAplicacion", "fecha", "createdAt", "updatedAt", "fechaNota", "fechaCreacion", "fechaInicio", "fechaSuspension"];
@@ -328,7 +329,7 @@ function formatearFecha(fecha) {
   return f.toLocaleDateString("es-MX", { day: "2-digit", month: "2-digit", year: "numeric" });
 }
 function nombrePaciente(paciente = {}) {
-  return paciente.nombreCompleto || paciente.nombre || [paciente.nombres, paciente.apellidos].filter(Boolean).join(" ") || paciente.displayName || "Paciente sin nombre";
+  return obtenerNombrePacienteParaMostrar(paciente) || "Paciente sin nombre";
 }
 function normalizarTexto(texto) { return String(texto || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase(); }
 function resumenCorto(texto, max = 180) {

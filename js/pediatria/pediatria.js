@@ -9,6 +9,10 @@ import {
   serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { aplicarAparienciaGuardada } from "../services/apariencia.js";
+import {
+  obtenerNombrePacienteParaMostrar,
+  textoBusquedaPaciente
+} from "../utils/nombresPacientes.js";
 import { buildGrowthAssessment, normalizeText } from "../services/growth/growthCalculationService.js";
 import { calcularEdadPediatrica, formatearFechaDDMMAAAA } from "./edad.js";
 import {
@@ -174,7 +178,7 @@ function llenarDatosPaciente() {
   const inst = p.datosInstitucionales || {};
   const signos = p.signosVitales || {};
   const somato = p.somatometria || {};
-  $("nombrePaciente").value = p.nombre || p.nombreCompleto || "";
+  $("nombrePaciente").value = obtenerNombrePacienteParaMostrar(p) || "";
   $("sexoPaciente").value = p.sexo || inst.sexo || "";
   $("fechaNacimiento").value = normalizarFechaInput(p.fechaNacimiento || inst.fechaNacimiento || "");
   $("edadGestacional").value = p.edadGestacional || p.edadGestacionalNacimiento || "";
@@ -224,9 +228,7 @@ async function buscarPacientes() {
       const data = documento.data();
       if (!parecePaciente(data) || !puedeVerPaciente(documento.id, data)) return;
       const texto = normalizeText([
-        data.nombre,
-        data.nombreCompleto,
-        data.apellidos,
+        textoBusquedaPaciente(data),
         data.expediente,
         data.expedienteCognicion,
         data.expedienteInstitucional,
@@ -279,7 +281,7 @@ function renderResultadosBusqueda() {
   }
   $("resultadosBusquedaPacientes").innerHTML = estado.pacientesBusqueda.map(({ id, data }) => `
     <button class="ped-patient-result" type="button" data-paciente-id="${id}">
-      <strong>${data.nombre || data.nombreCompleto || "Paciente sin nombre"}</strong>
+      <strong>${obtenerNombrePacienteParaMostrar(data) || "Paciente sin nombre"}</strong>
       <span>${data.expedienteCognicion || data.expediente || "Sin expediente"} · ${formatearFechaDDMMAAAA(data.fechaNacimiento) || "Sin fecha de nacimiento"}</span>
     </button>
   `).join("");
@@ -349,7 +351,7 @@ function mostrarUltimosPacientes() {
 function guardarUltimoPaciente(id, data = {}) {
   const item = {
     id,
-    nombre: data.nombre || data.nombreCompleto || "Paciente sin nombre",
+    nombre: obtenerNombrePacienteParaMostrar(data) || "Paciente sin nombre",
     fechaNacimiento: formatearFechaDDMMAAAA(data.fechaNacimiento) || "",
     fechaAcceso: new Date().toISOString()
   };

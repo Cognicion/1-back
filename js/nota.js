@@ -24,6 +24,7 @@ import {
   puntajesDominioPruebaInteractiva
 } from "./data/pruebasInteractivas.js";
 import { createNoteGenerationProvider } from "./services/noteGenerationProviders.js";
+import { obtenerNombrePacienteParaMostrar } from "./utils/nombresPacientes.js";
 import { evaluarMedicamentosPaciente } from "./services/motorClinicoMedicamentos.js";
 import {
   calcularPuntajeEscala,
@@ -838,7 +839,7 @@ async function guardarEscalaDesdeNota() {
     uidMedico: usuario?.uid || "",
     uidProfesional: usuario?.uid || "",
     rolProfesional: medicoActual?.rol || "",
-    nombrePaciente: pacienteActual?.nombre || "",
+    nombrePaciente: obtenerNombrePacienteParaMostrar(pacienteActual || {}) || "",
     nombreEscala: escala.nombre,
     tipoEscala: esCognitiva ? "cognitiva" : escala.tipoEscala || escala.area,
     fechaAplicacion,
@@ -885,7 +886,7 @@ async function guardarEscalaDesdeNota() {
     usuarioNombre: medicoActual?.nombre || usuario?.email || "",
     usuarioRol: medicoActual?.rol || "",
     pacienteUid: uidPaciente,
-    pacienteNombre: pacienteActual?.nombre || "",
+    pacienteNombre: obtenerNombrePacienteParaMostrar(pacienteActual || {}) || "",
     exito: true,
     detalles: {
       escalaId: escala.id,
@@ -1313,7 +1314,7 @@ function obtenerIdentificacionPaciente() {
 
   return {
     id: uidPacienteActual || pacienteActualDatos?.id || pacienteActualDatos?.uid || "",
-    nombreCompleto: pacienteActualDatos?.nombreCompleto || pacienteActualDatos?.nombre || institucional.nombrePaciente || "",
+    nombreCompleto: obtenerNombrePacienteParaMostrar(pacienteActualDatos || {}) || institucional.nombrePaciente || "",
     sexo: pacienteActualDatos?.sexo || institucional.sexo || historia.sexo || "",
     fechaNacimiento,
     edad: edadCalculada ? Number(edadCalculada) : null,
@@ -2459,7 +2460,7 @@ function datosInstitucionalesPaciente(paciente = {}) {
     calcularEstanciaDesdeIngresoNota(fechaIngreso);
 
   return {
-    nombrePaciente: paciente.nombre || institucional.nombrePaciente || "",
+    nombrePaciente: obtenerNombrePacienteParaMostrar(paciente) || institucional.nombrePaciente || "",
     tipoPaciente: paciente.tipoPaciente || institucional.tipoPaciente || "privada",
     institucionPaciente: paciente.institucionPaciente || paciente.institucion || institucional.institucionPaciente || "",
     servicioInstitucional: paciente.servicioInstitucional || paciente.servicio || institucional.servicioInstitucional || "",
@@ -3507,7 +3508,7 @@ async function cargarListaPacientes() {
       const opcion = document.createElement("option");
 
       opcion.value = paciente.id;
-      opcion.textContent = datos.nombre || datos.nombreCompleto || "Sin nombre";
+      opcion.textContent = obtenerNombrePacienteParaMostrar(datos) || "Sin nombre";
       selector.appendChild(opcion);
     });
   } catch (error) {
@@ -3752,7 +3753,7 @@ async function guardarNotaMedicaConEstadoLegacy(estadoNota = "definitiva") {
       usuarioNombre: medicoActual?.nombre || usuario?.email || medico || "",
       usuarioRol: medicoActual?.rol || "",
       pacienteUid: uidPaciente,
-      pacienteNombre: pacienteActual?.nombre || "",
+      pacienteNombre: obtenerNombrePacienteParaMostrar(pacienteActual || {}) || "",
       exito: true,
       detalles: {
         notaId: idNotaGuardada || "",
@@ -3925,7 +3926,7 @@ async function guardarNotaClinicaSeguro(estadoNota = "definitiva") {
         usuarioNombre: notaPayload.usuarioNombre,
         usuarioRol: perfilMedicoActual.rol || "",
         pacienteUid: uidPaciente,
-        pacienteNombre: pacienteActual?.nombre || "",
+        pacienteNombre: obtenerNombrePacienteParaMostrar(pacienteActual || {}) || "",
         exito: true,
         detalles: {
           notaId: confirmada.id,
@@ -4128,7 +4129,7 @@ window.solicitarEliminarNotaDesdeHistorial = async function(notaId) {
   if (!confirmar) return;
 
   const motivoSolicitud = prompt("Motivo de la solicitud de eliminacion (opcional):") || "";
-  const pacienteNombre = pacienteActualDatos?.nombre || document.getElementById("nombre")?.value || "";
+  const pacienteNombre = obtenerNombrePacienteParaMostrar(pacienteActualDatos || {}) || document.getElementById("nombre")?.value || "";
 
   try {
     await guardarSolicitudEliminacion({
@@ -4650,7 +4651,7 @@ function tablaCamposWord(filas) {
 }
 
 function nombreArchivoWordFray(datos) {
-  const paciente = (datos.nombrePaciente || pacienteActualDatos.nombre || document.getElementById("uidPaciente")?.selectedOptions?.[0]?.textContent || "paciente")
+  const paciente = (datos.nombrePaciente || obtenerNombrePacienteParaMostrar(pacienteActualDatos || {}) || document.getElementById("uidPaciente")?.selectedOptions?.[0]?.textContent || "paciente")
     .trim()
     .replace(/[\\/:*?"<>|]+/g, "")
     .replace(/\s+/g, "_");
@@ -4905,7 +4906,7 @@ async function htmlWordFrayObservacion() {
       <h1>${tituloNotaFray(datos.tipoNota)}</h1>
 
       <p class="identificacion">
-        <b>Nombre del paciente:</b> ${textoWord(datos.nombrePaciente || pacienteActualDatos.nombre)}
+        <b>Nombre del paciente:</b> ${textoWord(datos.nombrePaciente || obtenerNombrePacienteParaMostrar(pacienteActualDatos || {}))}
            <b>Fecha de nacimiento:</b> ${textoWord(formatoFechaFray(datos.fechaNacimiento))}
            <b>Edad:</b> ${textoWord(datos.edad)} AÑOS
            <b>Cama:</b> ${textoWord(datos.cama)}

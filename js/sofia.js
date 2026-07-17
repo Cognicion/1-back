@@ -3,6 +3,7 @@ import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/f
 import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { httpsCallable } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-functions.js";
 import { aplicarAparienciaGuardada } from "./services/apariencia.js";
+import { obtenerNombrePacienteParaMostrar } from "./utils/nombresPacientes.js";
 import {
   analizarInteraccionesMedicamentos,
   cargarExpedientePacienteSofia,
@@ -290,6 +291,6 @@ formSofia?.addEventListener("submit", async (e) => {
 
 function metric(label, value) { return `<div class="metric-card"><small>${escapeHtml(label)}</small><strong>${escapeHtml(value)}</strong></div>`; }
 function lista(titulo, items = []) { return `<div class="reason-block"><b>${escapeHtml(titulo)}</b><ul>${items.map((i) => `<li>${escapeHtml(i)}</li>`).join("") || "<li>Sin datos</li>"}</ul></div>`; }
-function nombrePaciente(p) { return p.nombreCompleto || p.nombre || [p.nombres, p.apellidos].filter(Boolean).join(" ") || p.displayName || "Paciente sin nombre"; }
+function nombrePaciente(p) { return obtenerNombrePacienteParaMostrar(p) || "Paciente sin nombre"; }
 function formatearDiagnostico(diag) { return [diag.codigo, diag.nombre || diag.texto || diag.diagnostico].filter(Boolean).join(" - ") || "Diagnostico sin nombre"; }
 function escapeHtml(value) { return String(value ?? "").replace(/[&<>'"]/g, (ch) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" }[ch])); }

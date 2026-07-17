@@ -1,6 +1,7 @@
 import { auth } from "./firebase.js";
 import { registrarEventoAuditoria } from "./services/auditoria.js";
 import { iniciarMonitoreoSesion } from "./services/sesion.js";
+import { obtenerNombrePacienteParaMostrar } from "./utils/nombresPacientes.js";
 
 import {
   onAuthStateChanged
@@ -119,7 +120,7 @@ async function cargarPaciente() {
   pacienteActual = paciente;
 
   document.getElementById("nombrePaciente").textContent =
-    paciente.nombre || "Paciente";
+    obtenerNombrePacienteParaMostrar(paciente) || "Paciente";
 
   document.getElementById("datosPaciente").textContent =
     `${calcularEdad(obtenerFechaNacimiento(paciente)) || ""} anos`;

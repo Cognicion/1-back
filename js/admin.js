@@ -3,6 +3,10 @@ import { iniciarMonitoreoSesion } from "./services/sesion.js";
 import { registrarEventoAuditoria, resumenError } from "./services/auditoria.js";
 import { FORMATOS_INSTITUCIONALES, permisosFormatosDesdeUsuario } from "./services/formatosInstitucionales.js";
 import {
+  obtenerNombrePacienteParaMostrar,
+  textoBusquedaPaciente
+} from "./utils/nombresPacientes.js";
+import {
   agregarContactoMensaje,
   archivarConversacionMensaje,
   eliminarConversacionMensaje,
@@ -1540,7 +1544,7 @@ async function cargarPacientesAdmin() {
       id: docPaciente.id,
       ...docPaciente.data()
     }))
-    .sort((a, b) => (a.nombre || "").localeCompare(b.nombre || ""));
+    .sort((a, b) => obtenerNombrePacienteParaMostrar(a).localeCompare(obtenerNombrePacienteParaMostrar(b), "es", { sensitivity: "base" }));
 
   renderizarPacientesAdmin();
 }
@@ -1556,7 +1560,7 @@ function renderizarPacientesAdmin() {
     const estadoPaciente = paciente.estado || "activo";
     const diagnostico = diagnosticoTexto(paciente);
     const coincideTexto = !texto || normalizar([
-      paciente.nombre,
+      textoBusquedaPaciente(paciente),
       paciente.email,
       paciente.medicoTratante,
       paciente.medicoTratanteUid,
@@ -1584,7 +1588,7 @@ function renderizarPacientesAdmin() {
       <article class="paciente-admin-card">
         <div class="paciente-admin-resumen">
           <div>
-            <h3>${escaparHTML(paciente.nombre || "Paciente sin nombre")}</h3>
+            <h3>${escaparHTML(obtenerNombrePacienteParaMostrar(paciente) || "Paciente sin nombre")}</h3>
             <p>${escaparHTML(paciente.email || "Sin correo")}</p>
             <small>ID: ${escaparHTML(paciente.id)}</small>
           </div>
@@ -2440,7 +2444,7 @@ function ponerTexto(id, texto) {
 }
 
 function normalizar(valor) {
-  return String(valor).trim().toLowerCase();
+  return String(valor).trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
 }
 
 function diagnosticoTexto(paciente = {}) {

@@ -1,5 +1,6 @@
 import { db } from "../firebase.js";
 import { crearDatosSolicitudEliminacion } from "./reportes.js?v=20260716-1";
+import { obtenerNombrePacienteParaMostrar } from "../utils/nombresPacientes.js";
 
 import {
     doc,
@@ -125,8 +126,8 @@ export async function listarPacientes(uidMedico = ""){
     }
 
     const docs = Array.from(pacientes.values()).sort((a,b) => {
-        const nombreA = (a.data().nombre || a.data().nombreCompleto || "").toString();
-        const nombreB = (b.data().nombre || b.data().nombreCompleto || "").toString();
+        const nombreA = obtenerNombrePacienteParaMostrar(a.data());
+        const nombreB = obtenerNombrePacienteParaMostrar(b.data());
         return nombreA.localeCompare(nombreB, "es", { sensitivity: "base" });
     });
 

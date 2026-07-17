@@ -17,6 +17,7 @@ import {
   obtenerTemaLocalCognicion,
   TEMAS_COGNICION
 } from "./services/apariencia.js";
+import { obtenerNombrePacienteParaMostrar } from "./utils/nombresPacientes.js";
 import { calcularEdadPediatrica } from "./pediatria/edad.js";
 import {
   calcularIMC as calcularIMCPediatrico,
@@ -857,7 +858,7 @@ function renderizarVistaLaboratorioPaciente(datos = datosPacienteActual || {}) {
       <div class="lab-paciente-top">
         <div>
           <span class="lab-kicker">Vista Laboratorio</span>
-          <h3>${escaparHTML(datos.nombre || "Paciente sin nombre")}</h3>
+          <h3>${escaparHTML(obtenerNombrePacienteParaMostrar(datos) || "Paciente sin nombre")}</h3>
           <p>Datos generales integrados del expediente. Los campos vacíos se muestran como sin registro.</p>
         </div>
         <div class="lab-paciente-id">
@@ -1986,7 +1987,7 @@ async function cargarDatosPaciente() {
     }
   }
 
-  ponerTexto("nombrePaciente", datos.nombre || "Paciente sin nombre");
+  ponerTexto("nombrePaciente", obtenerNombrePacienteParaMostrar(datos) || "Paciente sin nombre");
 
   ponerTexto("correoPaciente", datos.email || "Sin correo");
 
@@ -4259,7 +4260,7 @@ function datosInterconsultaFormulario() {
     motivo: valorCampo("interconsultaMotivo"),
     resumen: valorCampo("interconsultaResumen"),
     pregunta: valorCampo("interconsultaPregunta"),
-    pacienteNombre: paciente.nombre || "",
+    pacienteNombre: obtenerNombrePacienteParaMostrar(paciente) || "",
     fechaNacimiento,
     curp: valorCampo("interconsultaCurp") || paciente.curp || datosInst.curp || "",
     edad: edad !== "" ? `${edad}` : "",
@@ -4412,7 +4413,7 @@ function datosIdentificacionInstitucionalPaciente(paciente = {}) {
   const edad = calcularEdad(fechaNacimiento);
 
   return {
-    nombrePaciente: paciente.nombre || datosInst.nombrePaciente || "",
+    nombrePaciente: obtenerNombrePacienteParaMostrar(paciente) || datosInst.nombrePaciente || "",
     fechaNacimiento,
     edad: edad !== "" ? `${edad}` : "",
     cama: paciente.cama || datosInst.cama || "",
@@ -6095,7 +6096,7 @@ function fechaISOHoy() {
 }
 
 function obtenerNombrePacienteActual() {
-  return datosPacienteActual?.nombre || document.getElementById("nombrePaciente")?.textContent || "Paciente";
+  return obtenerNombrePacienteParaMostrar(datosPacienteActual || {}) || document.getElementById("nombrePaciente")?.textContent || "Paciente";
 }
 
 function datosRecetaActual() {

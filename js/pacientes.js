@@ -8,6 +8,7 @@ import {
   obtenerUsuario,
   listarPacientes
 } from "./services/usuarios.js";
+import { obtenerNombrePacienteParaMostrar } from "./utils/nombresPacientes.js";
 
 onAuthStateChanged(auth, async (user) => {
   if (!user) {
@@ -30,6 +31,7 @@ onAuthStateChanged(auth, async (user) => {
 
   pacientes.forEach((paciente) => {
     const datos = paciente.data();
+    const nombrePaciente = obtenerNombrePacienteParaMostrar(datos) || "Sin nombre";
 
     if (datos.estado === "suspendido") {
       return;
@@ -37,7 +39,7 @@ onAuthStateChanged(auth, async (user) => {
 
     lista.innerHTML += `
       <div class="tarjeta">
-        <div class="nombre">${datos.nombre || "Sin nombre"}</div>
+        <div class="nombre">${nombrePaciente}</div>
 
         <div class="info">${datos.email || "Sin correo"}</div>
 

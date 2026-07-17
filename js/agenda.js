@@ -2,6 +2,7 @@ import { auth, db } from "./firebase.js";
 import { medicoPuedeVer, obtenerUsuario } from "./services/usuarios.js";
 import { registrarEventoAuditoria } from "./services/auditoria.js";
 import { iniciarMonitoreoSesion } from "./services/sesion.js";
+import { obtenerNombrePacienteParaMostrar } from "./utils/nombresPacientes.js";
 
 import {
   onAuthStateChanged
@@ -59,7 +60,7 @@ async function cargarPacientes() {
     if (!puedeVer) continue;
     filas.push({
       id: docPaciente.id,
-      nombre: paciente.nombre || "Paciente sin nombre"
+      nombre: obtenerNombrePacienteParaMostrar(paciente) || "Paciente sin nombre"
     });
   }
 

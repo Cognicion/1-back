@@ -1,6 +1,11 @@
 import { listarPacientes } from "./services/usuarios.js";
 import { iniciarMonitoreoSesion } from "./services/sesion.js";
 import { aplicarAparienciaGuardada, sincronizarAparienciaUsuario } from "./services/apariencia.js";
+import {
+  obtenerNombrePacienteParaMostrar,
+  normalizarTextoBusquedaPaciente,
+  textoBusquedaPaciente
+} from "./utils/nombresPacientes.js";
 
 import { auth, db } from "./firebase.js";
 
@@ -1252,7 +1257,7 @@ function ordenarPacientes(pacientes) {
     const sinA = !valorA || valorA === "Sin cama";
     const sinB = !valorB || valorB === "Sin cama";
 
-    if (sinA && sinB) return compararTexto(a, b, (p) => p.nombre);
+    if (sinA && sinB) return compararTexto(a, b, obtenerNombrePacienteParaMostrar);
     if (sinA) return 1;
     if (sinB) return -1;
 
@@ -1267,17 +1272,17 @@ function ordenarPacientes(pacientes) {
   const compararFecha = (a, b, obtener, direccion = "desc") => {
     const fechaA = fechaOrdenable(obtener(a));
     const fechaB = fechaOrdenable(obtener(b));
-    if (fechaA === null && fechaB === null) return compararTexto(a, b, (p) => p.nombre);
+    if (fechaA === null && fechaB === null) return compararTexto(a, b, obtenerNombrePacienteParaMostrar);
     if (fechaA === null) return 1;
     if (fechaB === null) return -1;
-    if (fechaA === fechaB) return compararTexto(a, b, (p) => p.nombre);
+    if (fechaA === fechaB) return compararTexto(a, b, obtenerNombrePacienteParaMostrar);
     return direccion === "asc" ? fechaA - fechaB : fechaB - fechaA;
   };
 
   lista.sort((a, b) => {
     switch (ordenPacientesActual) {
       case "nombre_desc":
-        return compararTexto(b, a, (p) => p.nombre);
+        return compararTexto(b, a, obtenerNombrePacienteParaMostrar);
       case "cama_asc":
         return compararNatural(a, b, obtenerCamaPaciente, "asc");
       case "cama_desc":
@@ -1298,7 +1303,7 @@ function ordenarPacientes(pacientes) {
         return compararTexto(a, b, obtenerAtencionEn);
       case "nombre_asc":
       default:
-        return compararTexto(a, b, (p) => p.nombre);
+        return compararTexto(a, b, obtenerNombrePacienteParaMostrar);
     }
   });
 
@@ -1308,7 +1313,7 @@ function ordenarPacientes(pacientes) {
 function deduplicarPacientes(pacientes = []) {
   const vistos = new Set();
   return pacientes.filter((paciente) => {
-    const clave = paciente.id || `${paciente.nombre || ""}-${obtenerFechaNacimiento(paciente) || ""}-${obtenerCamaPaciente(paciente) || ""}`;
+    const clave = paciente.id || `${obtenerNombrePacienteParaMostrar(paciente)}-${obtenerFechaNacimiento(paciente) || ""}-${obtenerCamaPaciente(paciente) || ""}`;
     if (vistos.has(clave)) return false;
     vistos.add(clave);
     return true;
@@ -1344,7 +1349,7 @@ async function alternarArchivoPaciente(pacienteId, archivar) {
   if (!pacienteId || !uidMedicoActual) return;
 
   const paciente = pacientesGlobal.find((item) => item.id === pacienteId);
-  const nombre = paciente?.nombre || "este paciente";
+  const nombre = obtenerNombrePacienteParaMostrar(paciente || {}) || "este paciente";
   const mensaje = archivar
     ? `¿Archivar a ${nombre}? Podrás verlo después en "Ver archivados".`
     : `¿Restaurar a ${nombre} a la lista activa?`;
@@ -1390,7 +1395,7 @@ function mostrarPacientes(pacientes) {
   }
 
   const filas = pacientesUnicos.map((paciente) => {
-    const nombre = paciente.nombre || "Paciente sin nombre";
+    const nombre = obtenerNombrePacienteParaMostrar(paciente) || "Paciente sin nombre";
     const cama = obtenerCamaPaciente(paciente);
     const fechaIngresoRaw = obtenerFechaIngreso(paciente);
     const fechaIngreso = formatearFechaCorta(fechaIngresoRaw);
@@ -1479,7 +1484,7 @@ function mostrarPacientes(pacientes) {
 
 function filtrarPacientes() {
   const buscador = document.getElementById("buscadorPacientes");
-  const texto = buscador ? buscador.value.toLowerCase() : "";
+  const texto = buscador ? normalizarTextoBusquedaPaciente(buscador.value) : "";
 
   const filtrados = pacientesGlobal.filter((paciente) => {
     if (pacienteArchivadoParaMedico(paciente) !== mostrarPacientesArchivados) return false;
@@ -1498,7 +1503,7 @@ function filtrarPacientes() {
 
     if (!coincideFiltroAtencion) return false;
 
-    const nombre = (paciente.nombre || "").toLowerCase();
+    const nombre = textoBusquedaPaciente(paciente);
     const cama = obtenerCamaPaciente(paciente).toLowerCase();
     const fechaIngreso = formatearFechaCorta(obtenerFechaIngreso(paciente)).toLowerCase();
     const medicoAdscrito = obtenerMedicoAdscritoEncargado(paciente).toLowerCase();
