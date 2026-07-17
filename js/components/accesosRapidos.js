@@ -143,6 +143,15 @@ function coincideBusqueda(opcion, texto) {
   return base.includes(texto.toLowerCase());
 }
 
+function agregarAcceso(contenedor, value) {
+  if (!value) return;
+  const buscador = contenedor.querySelector("[data-acceso-busqueda]");
+  const lista = normalizarLista([value, ...leerAccesos()]);
+  guardarAccesos(lista);
+  renderizarResultados(contenedor, buscador?.value || "");
+  renderizarGuardados(contenedor, lista);
+}
+
 function renderizarGuardados(contenedor, lista) {
   const guardados = contenedor.querySelector("[data-acceso-guardados]");
   if (!guardados) return;
@@ -160,7 +169,6 @@ function renderizarGuardados(contenedor, lista) {
 }
 
 function renderizarResultados(contenedor, texto = "") {
-  const listaGuardada = leerAccesos();
   const resultados = contenedor.querySelector("[data-acceso-resultados]");
   if (!resultados) return;
 
@@ -170,11 +178,9 @@ function renderizarResultados(contenedor, texto = "") {
 
   resultados.innerHTML = encontrados.length
     ? encontrados.map((opcion) => {
-      const agregado = listaGuardada.includes(opcion.value);
       return `
-        <button type="button" data-acceso-agregar="${escaparHTML(opcion.value)}" ${agregado ? "disabled" : ""}>
+        <button type="button" data-acceso-agregar="${escaparHTML(opcion.value)}">
           <span>${escaparHTML(opcion.label)}</span>
-          <small>${agregado ? "Agregado" : "Agregar"}</small>
         </button>
       `;
     }).join("")
@@ -212,6 +218,9 @@ function renderizar(contenedor) {
     <div class="accesos-rapidos-panel" data-acceso-panel aria-hidden="true">
       <strong>Accesos rápidos</strong>
       <p>Busca una página y agrégala para abrirla desde cualquier pestaña.</p>
+      <button class="accesos-rapidos-actual" type="button" data-acceso-agregar-actual>
+        <span aria-hidden="true">+</span> Agregar página actual
+      </button>
       <label>
         Buscar página
         <input type="search" data-acceso-busqueda placeholder="Ej. notas, farmacia, panel, escalas">
@@ -247,14 +256,17 @@ function renderizar(contenedor) {
 
   contenedor.addEventListener("click", (event) => {
     const agregar = event.target.closest("[data-acceso-agregar]");
+    const agregarActual = event.target.closest("[data-acceso-agregar-actual]");
     const abrir = event.target.closest("[data-acceso-abrir]");
     const quitar = event.target.closest("[data-acceso-quitar]");
 
     if (agregar) {
-      const lista = normalizarLista([agregar.dataset.accesoAgregar, ...leerAccesos()]);
-      guardarAccesos(lista);
-      renderizarResultados(contenedor, buscador.value);
-      renderizarGuardados(contenedor, lista);
+      agregarAcceso(contenedor, agregar.dataset.accesoAgregar);
+      return;
+    }
+
+    if (agregarActual) {
+      agregarAcceso(contenedor, paginaActual());
       return;
     }
 
@@ -266,9 +278,13 @@ function renderizar(contenedor) {
 
     if (quitar) {
       const lista = leerAccesos().filter((value) => value !== quitar.dataset.accesoQuitar);
-      guardarAccesos(lista);
-      renderizarResultados(contenedor, buscador.value);
-      renderizarGuardados(contenedor, lista);
+      const item = quitar.closest("li");
+      item?.classList.add("quitando");
+      window.setTimeout(() => {
+        guardarAccesos(lista);
+        renderizarResultados(contenedor, buscador.value);
+        renderizarGuardados(contenedor, lista);
+      }, 120);
     }
   });
 }
