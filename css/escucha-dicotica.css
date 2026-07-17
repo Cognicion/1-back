@@ -222,6 +222,94 @@ body {
   gap: 12px;
 }
 
+.config-toolbar {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.indicador-protocolo {
+  padding: 14px 16px;
+  border: 1px solid rgba(52, 211, 153, .44);
+  border-radius: 18px;
+  color: #bbf7d0;
+  font-weight: 900;
+  background: rgba(6, 78, 59, .24);
+}
+
+.indicador-protocolo.personalizada {
+  border-color: rgba(251, 191, 36, .44);
+  color: #fde68a;
+  background: rgba(113, 63, 18, .2);
+}
+
+.config-field {
+  position: relative;
+  padding: 10px;
+  border: 1px solid transparent;
+  border-radius: 14px;
+}
+
+.config-field.modificado {
+  border-color: rgba(251, 191, 36, .36);
+  background: rgba(113, 63, 18, .14);
+}
+
+.config-field.modificado::after {
+  content: "Configuracion modificada";
+  color: #fde68a;
+  font-size: .75rem;
+  font-weight: 900;
+}
+
+.restaurar-parametro {
+  width: 100%;
+  margin-top: 8px;
+  color: #dbeafe;
+  background: rgba(15, 23, 42, .72);
+  border: 1px solid rgba(125, 211, 252, .2);
+}
+
+.tarjeta-modos {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+  margin: 14px 0;
+}
+
+.tarjeta-modos article,
+.atajos-dicotica,
+.resumen-configuracion {
+  padding: 14px;
+  border: 1px solid rgba(125, 211, 252, .16);
+  border-radius: 16px;
+  background: rgba(2, 6, 23, .34);
+}
+
+.tarjeta-modos h3,
+.atajos-dicotica h3,
+.resumen-configuracion h3 {
+  margin-top: 0;
+}
+
+.atajos-dicotica {
+  margin-top: 16px;
+}
+
+.atajos-dicotica ul {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 8px 18px;
+  margin: 0;
+  padding-left: 18px;
+}
+
+.resumen-configuracion {
+  margin-top: 14px;
+}
+
 .config-checks {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));

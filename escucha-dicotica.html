@@ -167,14 +167,23 @@
 
     <section class="panel-dicotica configuracion-prueba">
       <h2>Configuracion de la prueba</h2>
+      <div class="config-toolbar">
+        <div class="indicador-protocolo" id="indicadorProtocolo">Configuracion equivalente al protocolo estandar.</div>
+        <button id="btnRestaurarProtocolo" type="button" class="boton-principal-grande">Restaurar configuracion estandar (Protocolo validado)</button>
+      </div>
+      <div class="alerta-dicotica advertencia oculta" id="alertaConfiguracionClinica">
+        Modificar estos parametros puede hacer que la prueba deje de ser equivalente al protocolo estandar.
+        <button id="btnDesbloquearConfiguracion" type="button" class="boton-secundario">Modificar de todas formas</button>
+      </div>
       <div class="config-grid">
-        <label>Numero de bloques <input id="configBloques" type="number" min="1" max="4" value="4"></label>
-        <label>Ensayos por bloque <input id="configEnsayosBloque" type="number" min="1" max="30" value="30"></label>
-        <label>Total de ensayos <input id="configTotalEnsayos" type="number" min="1" max="120" value="120"></label>
-        <label>Tiempo entre ensayos (ms) <input id="configTiempoEntreEnsayos" type="number" min="300" max="5000" step="100" value="700"></label>
-        <label>Tiempo de fijacion (ms) <input id="configTiempoFijacion" type="number" min="0" max="5000" step="100" value="700"></label>
-        <label>Tiempo maximo para responder (s) <input id="configTiempoRespuesta" type="number" min="3" max="60" value="15"></label>
-        <label>Modalidad de aplicacion
+        <label class="config-field" data-config-for="configBloques">Numero de bloques <span class="ayuda-dicotica" tabindex="0" data-help="Un bloque es un conjunto de ensayos. El protocolo estandar utiliza 4 bloques de 30 ensayos para permitir pequenos descansos sin interrumpir la evaluacion.">?</span><input id="configBloques" type="number" min="1" max="4" value="4"></label>
+        <label class="config-field" data-config-for="configEnsayosBloque">Ensayos por bloque <span class="ayuda-dicotica" tabindex="0" data-help="Cantidad de pares de palabras presentados antes del siguiente descanso.">?</span><input id="configEnsayosBloque" type="number" min="1" max="30" value="30"></label>
+        <label class="config-field" data-config-for="configTotalEnsayos">Total de ensayos <span class="ayuda-dicotica" tabindex="0" data-help="Numero total de pares de palabras que escuchara el paciente durante toda la prueba.">?</span><input id="configTotalEnsayos" type="number" min="1" max="120" value="120"></label>
+        <label class="config-field" data-config-for="configTiempoEntreEnsayos">Tiempo entre ensayos (ms) <span class="ayuda-dicotica" tabindex="0" data-help="Tiempo que transcurre entre el final de un ensayo y el inicio del siguiente.">?</span><input id="configTiempoEntreEnsayos" type="number" min="300" max="5000" step="100" value="700"></label>
+        <label class="config-field" data-config-for="configTiempoFijacion">Tiempo de fijacion (ms) <span class="ayuda-dicotica" tabindex="0" data-help="Tiempo durante el cual se muestra la cruz de fijacion antes de reproducir el siguiente par de palabras.">?</span><input id="configTiempoFijacion" type="number" min="0" max="5000" step="100" value="700"></label>
+        <label class="config-field" data-config-for="configTiempoRespuesta">Tiempo maximo para responder (s) <span class="ayuda-dicotica" tabindex="0" data-help="Tiempo maximo disponible para responder antes de registrar una omision.">?</span><input id="configTiempoRespuesta" type="number" min="3" max="60" value="15"></label>
+        <label class="config-field" data-config-for="configModo">Modalidad de aplicacion
+          <span class="ayuda-dicotica" tabindex="0" data-help="La modalidad ajusta ayudas, retroalimentacion, repeticion de estimulos, tiempos y comparabilidad con el protocolo clinico.">?</span>
           <select id="configModo">
             <option value="training">Entrenamiento</option>
             <option value="rehabilitation">Rehabilitacion</option>
@@ -183,25 +192,43 @@
           </select>
         </label>
       </div>
+      <button id="btnAyudaModos" type="button" class="boton-secundario">Que significa cada modo?</button>
+      <div class="tarjeta-modos oculta" id="tarjetaModos">
+        <article><h3>Entrenamiento</h3><p><strong>Objetivo:</strong> Aprender la tarea.</p><ul><li>Retroalimentacion inmediata.</li><li>Permite repetir estimulos.</li><li>Practica sin limite.</li><li>No comparable con la prueba clinica.</li></ul></article>
+        <article><h3>Rehabilitacion</h3><p><strong>Objetivo:</strong> Entrenar funciones cognitivas.</p><ul><li>Puede repetir estimulos.</li><li>Puede modificar dificultad.</li><li>Guarda evolucion.</li><li>Permite ayudas.</li></ul></article>
+        <article><h3>Evaluacion clinica</h3><p><strong>Objetivo:</strong> Aplicacion estandarizada.</p><ul><li>Sin ayudas.</li><li>Sin repetir estimulos.</li><li>Configuracion fija.</li><li>Comparable con el protocolo.</li></ul><p>La modalidad experimental reproduce el protocolo estandar de la prueba. Los estimulos se presentan una sola vez. No existen ayudas ni retroalimentacion inmediata.</p></article>
+        <article><h3>Investigacion</h3><p><strong>Objetivo:</strong> Registro cientifico.</p><ul><li>Igual que la evaluacion clinica.</li><li>Guarda todos los eventos.</li><li>Registra tiempos detallados.</li></ul></article>
+      </div>
       <div class="config-checks">
-        <label><input id="configFeedback" type="checkbox"> Mostrar retroalimentacion inmediata</label>
-        <label><input id="configRespuestaCorrecta" type="checkbox"> Mostrar respuesta correcta</label>
-        <label><input id="configMostrarClasificacion" type="checkbox"> Mostrar clasificacion</label>
-        <label><input id="configRepetirEstimulo" type="checkbox"> Permitir repetir estimulo</label>
-        <label>Maximo de repeticiones <input id="configMaxRepeticiones" type="number" min="0" max="10" value="0"></label>
-        <label><input id="configReconocimientoAuto" type="checkbox" checked> Reconocimiento automatico</label>
-        <label><input id="configCapturaManual" type="checkbox"> Modo captura manual</label>
-        <label><input id="configPausaAutomatica" type="checkbox"> Pausa automatica</label>
-        <label><input id="configPausaManual" type="checkbox"> Pausa manual</label>
-        <label><input id="configPantallaCompleta" type="checkbox"> Modo pantalla completa</label>
-        <label><input id="configSonidos" type="checkbox" checked> Sonidos</label>
-        <label><input id="configAnimaciones" type="checkbox" checked> Animaciones</label>
-        <label><input id="configCruz" type="checkbox" checked> Mostrar cruz de fijacion</label>
-        <label><input id="configContador" type="checkbox" checked> Mostrar contador</label>
-        <label><input id="configProgreso" type="checkbox" checked> Mostrar progreso</label>
-        <label><input id="configResultadosBloque" type="checkbox" checked> Mostrar resultados por bloque</label>
+        <label class="config-field" data-config-for="configFeedback"><input id="configFeedback" type="checkbox"> Mostrar retroalimentacion inmediata <span class="ayuda-dicotica" tabindex="0" data-help="Muestra correcto o incorrecto despues de cada ensayo. Debe estar desactivado en evaluacion clinica.">?</span></label>
+        <label class="config-field" data-config-for="configRespuestaCorrecta"><input id="configRespuestaCorrecta" type="checkbox"> Mostrar respuesta correcta <span class="ayuda-dicotica" tabindex="0" data-help="Muestra la palabra objetivo al paciente. Solo se recomienda para entrenamiento o rehabilitacion.">?</span></label>
+        <label class="config-field" data-config-for="configMostrarClasificacion"><input id="configMostrarClasificacion" type="checkbox"> Mostrar clasificacion <span class="ayuda-dicotica" tabindex="0" data-help="Muestra si la respuesta fue correcta, intrusion, omision u otro tipo de error.">?</span></label>
+        <label class="config-field" data-config-for="configRepetirEstimulo"><input id="configRepetirEstimulo" type="checkbox"> Permitir repetir el par de palabras <span class="ayuda-dicotica" tabindex="0" data-help="En el protocolo estandar los estimulos se presentan una sola vez. Esta opcion solamente debe utilizarse durante entrenamiento o rehabilitacion.">?</span></label>
+        <label class="config-field" data-config-for="configMaxRepeticiones">Maximo de repeticiones <span class="ayuda-dicotica" tabindex="0" data-help="Numero maximo de veces que se puede repetir un estimulo cuando la modalidad lo permite.">?</span><input id="configMaxRepeticiones" type="number" min="0" max="10" value="0"></label>
+        <label class="config-field" data-config-for="configReconocimientoAuto"><input id="configReconocimientoAuto" type="checkbox" checked> Reconocimiento automatico <span class="ayuda-dicotica" tabindex="0" data-help="Activa automaticamente el microfono al terminar el audio del ensayo.">?</span></label>
+        <label class="config-field" data-config-for="configCapturaManual"><input id="configCapturaManual" type="checkbox"> Modo captura manual <span class="ayuda-dicotica" tabindex="0" data-help="Desactiva la captura automatica por voz y permite escribir la respuesta manualmente.">?</span></label>
+        <label class="config-field" data-config-for="configPausaAutomatica"><input id="configPausaAutomatica" type="checkbox"> Pausa automatica <span class="ayuda-dicotica" tabindex="0" data-help="Permite insertar pausas programadas durante la actividad.">?</span></label>
+        <label class="config-field" data-config-for="configPausaManual"><input id="configPausaManual" type="checkbox"> Pausa manual <span class="ayuda-dicotica" tabindex="0" data-help="Permite pausar la prueba manualmente con el atajo Ctrl + P.">?</span></label>
+        <label class="config-field" data-config-for="configPantallaCompleta"><input id="configPantallaCompleta" type="checkbox"> Modo pantalla completa <span class="ayuda-dicotica" tabindex="0" data-help="Indica que la prueba debe aplicarse con la menor distraccion visual posible.">?</span></label>
+        <label class="config-field" data-config-for="configSonidos"><input id="configSonidos" type="checkbox" checked> Sonidos <span class="ayuda-dicotica" tabindex="0" data-help="Mantiene activos los sonidos de la actividad.">?</span></label>
+        <label class="config-field" data-config-for="configAnimaciones"><input id="configAnimaciones" type="checkbox" checked> Animaciones <span class="ayuda-dicotica" tabindex="0" data-help="Controla animaciones visuales discretas de estados y ayudas.">?</span></label>
+        <label class="config-field" data-config-for="configCruz"><input id="configCruz" type="checkbox" checked> Mostrar cruz de fijacion <span class="ayuda-dicotica" tabindex="0" data-help="Muestra una cruz antes del estimulo para preparar la atencion del paciente.">?</span></label>
+        <label class="config-field" data-config-for="configContador"><input id="configContador" type="checkbox" checked> Mostrar contador <span class="ayuda-dicotica" tabindex="0" data-help="Muestra bloque, ensayo y estado durante la prueba.">?</span></label>
+        <label class="config-field" data-config-for="configProgreso"><input id="configProgreso" type="checkbox" checked> Mostrar progreso <span class="ayuda-dicotica" tabindex="0" data-help="Muestra el avance de la sesion para orientar al aplicador.">?</span></label>
+        <label class="config-field" data-config-for="configResultadosBloque"><input id="configResultadosBloque" type="checkbox" checked> Mostrar resultados por bloque <span class="ayuda-dicotica" tabindex="0" data-help="Muestra tarjetas por bloque al finalizar para revisar aciertos, errores e intrusiones.">?</span></label>
       </div>
       <p class="alerta-dicotica advertencia">Los valores predeterminados mantienen el protocolo de 4 bloques, 30 ensayos por bloque y 120 ensayos totales.</p>
+      <section class="atajos-dicotica">
+        <h3>Atajos de teclado</h3>
+        <ul><li>Espacio: confirmar respuesta y avanzar.</li><li>Enter: confirmar respuesta.</li><li>Esc: cancelar captura actual y volver a capturar.</li><li>Ctrl + M: activar captura manual.</li><li>Ctrl + R: repetir captura de voz.</li><li>Ctrl + P: pausar la prueba.</li></ul>
+      </section>
+      <section class="resumen-configuracion" id="resumenConfiguracion">
+        <h3>Resumen de configuracion</h3>
+        <p>Modo: <strong id="resumenModo">Evaluacion Clinica</strong></p>
+        <p>Bloques: <strong id="resumenBloques">4</strong></p>
+        <p>Ensayos: <strong id="resumenEnsayos">120</strong></p>
+        <p>Configuracion: <strong id="resumenEquivalencia">Estandar</strong></p>
+      </section>
     </section>
 
     <section class="panel-dicotica">
@@ -330,6 +357,17 @@
     <div class="acciones-dicotica">
       <button id="btnCancelarExperimental" type="button" class="boton-secundario">Cancelar</button>
       <button id="btnContinuarExperimental" type="button">Continuar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-dicotica oculta" id="modalRestaurarProtocolo">
+  <div class="modal-dicotica-card">
+    <h2>Restaurar protocolo estandar</h2>
+    <p>Deseas restaurar todos los parametros al protocolo estandar?</p>
+    <div class="acciones-dicotica">
+      <button id="btnCancelarRestaurar" type="button" class="boton-secundario">Cancelar</button>
+      <button id="btnConfirmarRestaurar" type="button">Restaurar</button>
     </div>
   </div>
 </div>

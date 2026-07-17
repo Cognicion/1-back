@@ -59,9 +59,49 @@ let detailSearch = "";
 let detailSort = "trialNumber";
 let sessionConfig = null;
 let sessionStartedAt = null;
+let clinicalConfigUnlocked = false;
+let trialPaused = false;
 
 const CORPUS_PAGE_SIZE = 10;
 const AUTO_RECOGNITION_DELAY_MS = 300;
+const STANDARD_PROTOCOL_CONFIG = {
+  configModo: "clinical",
+  configBloques: "4",
+  configEnsayosBloque: "30",
+  configTotalEnsayos: "120",
+  configTiempoEntreEnsayos: "700",
+  configTiempoFijacion: "700",
+  configTiempoRespuesta: "15",
+  configFeedback: false,
+  configRespuestaCorrecta: false,
+  configMostrarClasificacion: false,
+  configRepetirEstimulo: false,
+  configMaxRepeticiones: "0",
+  configReconocimientoAuto: true,
+  configCapturaManual: false,
+  configPausaAutomatica: false,
+  configPausaManual: false,
+  configPantallaCompleta: false,
+  configSonidos: true,
+  configAnimaciones: true,
+  configCruz: true,
+  configContador: true,
+  configProgreso: true,
+  configResultadosBloque: true
+};
+const CRITICAL_PROTOCOL_FIELDS = [
+  "configBloques",
+  "configEnsayosBloque",
+  "configTotalEnsayos",
+  "configTiempoEntreEnsayos",
+  "configTiempoFijacion",
+  "configTiempoRespuesta",
+  "configFeedback",
+  "configRespuestaCorrecta",
+  "configMostrarClasificacion",
+  "configRepetirEstimulo",
+  "configMaxRepeticiones"
+];
 
 const $ = (id) => document.getElementById(id);
 
@@ -111,6 +151,14 @@ function wireEvents() {
   $("btnContinuarDemo")?.addEventListener("click", startDemo);
   $("btnCancelarExperimental")?.addEventListener("click", closeExperimentalModal);
   $("btnContinuarExperimental")?.addEventListener("click", continueExperimental);
+  $("btnRestaurarProtocolo")?.addEventListener("click", openRestoreProtocolModal);
+  $("btnCancelarRestaurar")?.addEventListener("click", closeRestoreProtocolModal);
+  $("btnConfirmarRestaurar")?.addEventListener("click", restoreStandardProtocol);
+  $("btnDesbloquearConfiguracion")?.addEventListener("click", () => {
+    clinicalConfigUnlocked = true;
+    updateConfigurationUi();
+  });
+  $("btnAyudaModos")?.addEventListener("click", () => $("tarjetaModos")?.classList.toggle("oculta"));
   $("btnHablar")?.addEventListener("click", toggleTrialSpeechRecognition);
   $("btnConfirmarRespuesta")?.addEventListener("click", () => submitTrial($("respuestaManual").value, {}));
   $("btnEditarRespuesta")?.addEventListener("click", showManualResponseInput);
@@ -137,10 +185,20 @@ function wireEvents() {
     renderTrialDetails();
   });
   document.querySelectorAll("[id^='config']").forEach((el) => {
-    el.addEventListener("change", syncConfigTotals);
-    el.addEventListener("input", syncConfigTotals);
+    el.addEventListener("change", handleConfigChanged);
+    el.addEventListener("input", handleConfigChanged);
   });
   $("configModo")?.addEventListener("change", () => applyModeDefaults($("configModo").value));
+  document.querySelectorAll("[data-config-for]").forEach((label) => {
+    const id = label.dataset.configFor;
+    if (!id || label.querySelector(".restaurar-parametro")) return;
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "restaurar-parametro oculta";
+    button.textContent = "Restaurar solo este parametro";
+    button.addEventListener("click", () => restoreSingleParameter(id));
+    label.appendChild(button);
+  });
   $("btnMostrarCorpus")?.addEventListener("click", toggleCorpusDetails);
   $("buscadorCorpus")?.addEventListener("input", () => {
     corpusSearch = $("buscadorCorpus").value.trim().toLowerCase();
@@ -156,6 +214,7 @@ function wireEvents() {
     renderCorpusTable();
   });
   document.addEventListener("keydown", (event) => {
+    if (handleTrialShortcut(event)) return;
     if (event.key === "Escape") {
       activeRecognition?.abort?.();
       if ($("detalleMicrofono")?.classList.contains("escuchando")) {
@@ -520,6 +579,59 @@ function toggleTrialSpeechRecognition() {
   startSpeechRecognition({ manual: true });
 }
 
+function handleTrialShortcut(event) {
+  if (!$("pantallaEnsayo") || $("pantallaEnsayo").classList.contains("oculta")) return false;
+  const target = event.target;
+  const isTextEntry = ["INPUT", "TEXTAREA", "SELECT"].includes(target?.tagName || "");
+  if (event.ctrlKey && event.key.toLowerCase() === "m") {
+    event.preventDefault();
+    showManualResponseInput();
+    return true;
+  }
+  if (event.ctrlKey && event.key.toLowerCase() === "r") {
+    event.preventDefault();
+    startSpeechRecognition({ manual: true });
+    return true;
+  }
+  if (event.ctrlKey && event.key.toLowerCase() === "p") {
+    event.preventDefault();
+    toggleTrialPause();
+    return true;
+  }
+  if (event.key === "Escape") {
+    event.preventDefault();
+    activeRecognition?.abort?.();
+    startSpeechRecognition({ manual: true });
+    return true;
+  }
+  if (event.key === "Enter" || (event.code === "Space" && !isTextEntry)) {
+    if (!$("btnConfirmarRespuesta")?.disabled && currentTrial) {
+      event.preventDefault();
+      submitTrial($("respuestaManual").value, {});
+      return true;
+    }
+  }
+  return false;
+}
+
+function toggleTrialPause() {
+  if (!currentTrial) return;
+  trialPaused = !trialPaused;
+  if (trialPaused) {
+    window.clearTimeout(responseTimeoutTimer);
+    activeRecognition?.abort?.();
+    $("estadoEnsayo").textContent = "Pausa";
+    showVoiceStatus("error", "Prueba pausada", "Presiona Ctrl + P para continuar.");
+    return;
+  }
+  $("estadoEnsayo").textContent = "Confirmacion";
+  showVoiceStatus("completado", "Prueba reanudada", "Continua con la captura o confirma la respuesta.");
+  responseTimeoutTimer = window.setTimeout(() => {
+    const hasResponse = Boolean(trialSpeechTranscriptOriginal || $("respuestaManual")?.value.trim());
+    if (currentTrial && !hasResponse) submitTrial("", {});
+  }, (sessionConfig?.responseMaxSeconds || 15) * 1000);
+}
+
 function startSpeechRecognition({ manual = false } = {}) {
   if (!currentTrial) return;
   if (trialRecognitionActive) return;
@@ -627,6 +739,7 @@ function showManualResponseInput() {
 }
 
 function resetResponseCaptureUi() {
+  trialPaused = false;
   trialSpeechTranscriptOriginal = "";
   trialCaptureMethod = "";
   trialRecognitionStartedAt = null;
@@ -670,6 +783,14 @@ function syncConfigTotals(event) {
   }
 }
 
+function handleConfigChanged(event) {
+  syncConfigTotals(event);
+  if (event?.target?.id === "configModo") {
+    clinicalConfigUnlocked = false;
+  }
+  updateConfigurationUi();
+}
+
 function applyModeDefaults(modeId) {
   rehabilitationModeManager.setCurrentMode(modeId, DICHOTIC_ACTIVITY_ID);
   const config = rehabilitationModeManager.getConfiguration({}, DICHOTIC_ACTIVITY_ID);
@@ -688,11 +809,87 @@ function applyModeDefaults(modeId) {
   if (maxReps) maxReps.value = String(config.maxRepetitions ?? 0);
   const response = $("configTiempoRespuesta");
   if (response) response.value = String(config.responseMaxSeconds || 15);
+  if (modeId === "clinical") restoreStandardProtocol({ silent: true, keepModalClosed: true });
+  updateConfigurationUi();
 }
 
 function setChecked(id, value) {
   const el = $(id);
   if (el) el.checked = Boolean(value);
+}
+
+function openRestoreProtocolModal() {
+  $("modalRestaurarProtocolo")?.classList.remove("oculta");
+}
+
+function closeRestoreProtocolModal() {
+  $("modalRestaurarProtocolo")?.classList.add("oculta");
+}
+
+function restoreStandardProtocol(options = {}) {
+  Object.entries(STANDARD_PROTOCOL_CONFIG).forEach(([id, value]) => setControlValue(id, value));
+  clinicalConfigUnlocked = false;
+  closeRestoreProtocolModal();
+  updateConfigurationUi();
+  if (!options.silent) toast("Configuracion estandar restaurada.");
+}
+
+function restoreSingleParameter(id) {
+  if (!(id in STANDARD_PROTOCOL_CONFIG)) return;
+  setControlValue(id, STANDARD_PROTOCOL_CONFIG[id]);
+  updateConfigurationUi();
+}
+
+function setControlValue(id, value) {
+  const el = $(id);
+  if (!el) return;
+  if (el.type === "checkbox") {
+    el.checked = Boolean(value);
+  } else {
+    el.value = String(value);
+  }
+}
+
+function getControlValue(id) {
+  const el = $(id);
+  if (!el) return "";
+  return el.type === "checkbox" ? Boolean(el.checked) : String(el.value);
+}
+
+function isStandardProtocolEquivalent() {
+  return Object.entries(STANDARD_PROTOCOL_CONFIG).every(([id, value]) => getControlValue(id) === value);
+}
+
+function updateConfigurationUi() {
+  const isStandard = isStandardProtocolEquivalent();
+  const mode = $("configModo")?.value || "clinical";
+  const clinicalLocked = mode === "clinical" && !clinicalConfigUnlocked;
+  $("indicadorProtocolo").classList.toggle("personalizada", !isStandard);
+  $("indicadorProtocolo").textContent = isStandard
+    ? "Configuracion equivalente al protocolo estandar."
+    : "Configuracion personalizada. Esta configuracion ya no es estrictamente equivalente al protocolo estandar.";
+  $("alertaConfiguracionClinica")?.classList.toggle("oculta", mode !== "clinical" || clinicalConfigUnlocked);
+  CRITICAL_PROTOCOL_FIELDS.forEach((id) => {
+    const el = $(id);
+    if (el) el.disabled = clinicalLocked;
+  });
+  if (mode === "clinical") {
+    const repeat = $("configRepetirEstimulo");
+    if (repeat) {
+      repeat.checked = false;
+      repeat.disabled = true;
+    }
+  }
+  Object.keys(STANDARD_PROTOCOL_CONFIG).forEach((id) => {
+    const label = document.querySelector(`[data-config-for="${id}"]`);
+    const modified = getControlValue(id) !== STANDARD_PROTOCOL_CONFIG[id];
+    label?.classList.toggle("modificado", modified);
+    label?.querySelector(".restaurar-parametro")?.classList.toggle("oculta", !modified || (mode === "clinical" && !clinicalConfigUnlocked));
+  });
+  $("resumenModo").textContent = $("configModo")?.selectedOptions?.[0]?.textContent || "Evaluacion Clinica";
+  $("resumenBloques").textContent = $("configBloques")?.value || "4";
+  $("resumenEnsayos").textContent = $("configTotalEnsayos")?.value || "120";
+  $("resumenEquivalencia").textContent = isStandard ? "Estandar" : "Personalizada";
 }
 
 function getTestConfig(modeOverride = "") {
