@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>COGNICION | Test de Ejecucion Continua CPT</title>
+<link rel="icon" type="image/png" href="assets/favicon-cognicion.png">
+<link rel="stylesheet" href="css/cpt.css">
+<link rel="stylesheet" href="css/reportes.css">
+</head>
+<body>
+<header class="topbar-cpt">
+  <a class="marca-cpt" href="rehabilitacion-cognitiva.html">
+    <img src="assets/favicon-cognicion.png" alt="COGNICION">
+    <div><strong>Test de Ejecucion Continua, CPT</strong><span>Atencion sostenida, vigilancia e inhibicion</span></div>
+  </a>
+  <nav>
+    <a href="rehabilitacion-cognitiva.html">Rehabilitacion</a>
+    <a href="dashboard.html">Dashboard</a>
+  </nav>
+</header>
+
+<main class="cpt-shell">
+  <section class="cpt-hero" id="pantallaInicio">
+    <span class="kicker">Actividad neurocognitiva</span>
+    <h1>CPT</h1>
+    <p>En el centro de la pantalla aparecera un digito cada segundo. Responde unicamente cuando aparezca el numero 0. La actividad registra aciertos, omisiones, falsas alarmas, rechazos correctos y tiempos de reaccion.</p>
+    <p class="aviso-clinico-cpt">Esta actividad es una herramienta de rehabilitacion y evaluacion del desempeno. Los resultados deben interpretarse por un profesional y no constituyen por si solos un diagnostico.</p>
+    <div class="cpt-acciones">
+      <button id="btnIrConfiguracion" type="button">Configurar sesion</button>
+      <a class="boton-secundario" href="rehabilitacion-cognitiva.html">Volver</a>
+    </div>
+  </section>
+
+  <section class="panel-cpt" id="pantallaConfiguracion">
+    <div class="seccion-titulo">
+      <span class="kicker">Preparacion</span>
+      <h2>Configuracion de la sesion</h2>
+      <p>Selecciona modalidad, duracion, ensayos y parametros temporales. El mando es opcional.</p>
+    </div>
+    <form class="config-grid" id="formConfigCpt">
+      <label>Modalidad
+        <select id="modalidadCpt">
+          <option value="cpt_x">CPT-X</option>
+          <option value="degraded">CPT con estimulo visual degradado</option>
+        </select>
+      </label>
+      <label>Duracion total (segundos)<input id="duracionTotal" type="number" min="10" max="3600" value="120"></label>
+      <label>Numero total de ensayos<input id="totalEnsayos" type="number" min="5" max="1000" value="100"></label>
+      <label>Intervalo entre estimulos (ms)<input id="intervaloEstimulo" type="number" min="300" max="5000" value="1000"></label>
+      <label>Tiempo visible (ms)<input id="tiempoVisible" type="number" min="100" max="3000" value="500"></label>
+      <label>Estimulos objetivo (%)<input id="porcentajeObjetivo" type="number" min="1" max="80" value="20"></label>
+      <label>Degradacion visual (%)<input id="degradacionVisual" type="number" min="0" max="90" value="40"></label>
+      <label>Practica
+        <select id="usarPractica"><option value="si">Activada</option><option value="no">Desactivada</option></select>
+      </label>
+      <label>Ensayos de practica<input id="ensayosPractica" type="number" min="0" max="100" value="10"></label>
+      <label>Latencia minima valida (ms)<input id="latenciaMinima" type="number" min="0" max="1000" value="120"></label>
+      <label>Tamano de bloque<input id="tamanoBloque" type="number" min="5" max="100" value="20"></label>
+      <label>Modo pantalla
+        <select id="pantallaCompleta"><option value="si">Intentar pantalla completa</option><option value="no">Ventana normal</option></select>
+      </label>
+    </form>
+    <div class="estado-mando" id="estadoMando">Mando no detectado. Puedes usar espacio, Enter o el boton en pantalla.</div>
+    <article class="instrucciones-cpt" id="instruccionesCpt"></article>
+    <div class="cpt-acciones">
+      <button id="btnPractica" type="button">Iniciar practica</button>
+      <button id="btnSesion" type="button">Iniciar actividad</button>
+    </div>
+  </section>
+
+  <section class="arena-cpt" id="pantallaJuego" tabindex="-1" aria-live="polite">
+    <div class="hud-cpt">
+      <div><span>Modo</span><strong id="modoJuego">Practica</strong></div>
+      <div><span>Ensayo</span><strong id="contadorEnsayos">0/0</strong></div>
+      <div><span>Tiempo</span><strong id="tiempoRestante">00:00</strong></div>
+      <div><span>Mando</span><strong id="mandoHud">No detectado</strong></div>
+    </div>
+    <div class="barra-progreso"><span id="barraProgreso"></span></div>
+    <div class="zona-cpt" id="zonaEstimulo" aria-label="Area central del estimulo">
+      <div class="digito-cpt" id="digitoEstimulo"></div>
+      <canvas class="canvas-cpt" id="canvasEstimulo" width="320" height="320" aria-hidden="true"></canvas>
+    </div>
+    <button class="boton-respuesta" id="btnResponder" type="button">Responder</button>
+    <p class="feedback-cpt" id="feedbackCpt"></p>
+    <div class="cpt-acciones compactas">
+      <button id="btnPausar" type="button" class="boton-secundario">Pausar</button>
+      <button id="btnCancelar" type="button" class="boton-secundario">Cancelar sesion</button>
+    </div>
+  </section>
+
+  <section class="panel-cpt resultados" id="pantallaResultados">
+    <div class="seccion-titulo">
+      <span class="kicker">Resultados</span>
+      <h2>Resumen de rendimiento</h2>
+      <p>Los resultados describen desempeno en esta sesion y deben integrarse al contexto clinico.</p>
+    </div>
+    <div class="resultados-grid" id="resultadosGrid"></div>
+    <article class="interpretacion-cpt" id="interpretacionCpt"></article>
+    <div class="graficas-controles">
+      <button type="button" data-toggle-grafica="rt">Tiempo de reaccion</button>
+      <button type="button" data-toggle-grafica="bloques">Rendimiento por bloques</button>
+      <button type="button" data-toggle-grafica="respuestas">Tipos de respuesta</button>
+      <button type="button" data-toggle-grafica="comparacion">Inicio vs final</button>
+    </div>
+    <div class="graficas-cpt">
+      <article id="graficaRt"><h3>Tiempo de reaccion por ensayo</h3><div class="grafica-linea" id="lineaRt"></div></article>
+      <article id="graficaBloques"><h3>Rendimiento por bloques</h3><div class="grafica-barras" id="barrasBloques"></div></article>
+      <article id="graficaRespuestas"><h3>Aciertos, omisiones, falsas alarmas y rechazos</h3><div class="grafica-barras" id="barrasRespuestas"></div></article>
+      <article id="graficaComparacion"><h3>Primera y ultima parte</h3><div class="grafica-barras" id="barrasComparacion"></div></article>
+    </div>
+    <div class="tabla-cpt-wrap">
+      <table class="tabla-cpt">
+        <thead><tr><th>Ensayo</th><th>Estimulo</th><th>Tipo</th><th>Respondio</th><th>Respuesta</th><th>TR</th><th>Ruido</th><th>Tiempo relativo</th></tr></thead>
+        <tbody id="tablaEnsayos"></tbody>
+      </table>
+    </div>
+    <div class="cpt-acciones">
+      <button id="btnExportarJson" type="button">Exportar JSON</button>
+      <button id="btnExportarCsv" type="button">Exportar CSV</button>
+      <button id="btnImprimir" type="button" class="boton-secundario">Imprimir reporte</button>
+      <button id="btnContinuarSesion" type="button">Continuar a prueba experimental</button>
+      <button id="btnRepetir" type="button">Repetir</button>
+      <button id="btnCambiar" type="button" class="boton-secundario">Cambiar configuracion</button>
+      <a class="boton-secundario" href="rehabilitacion-cognitiva.html">Regresar</a>
+    </div>
+  </section>
+</main>
+
+<div class="toast-cpt" id="toastCpt" role="status" aria-live="polite"></div>
+<script type="module" src="js/cpt.js"></script>
+<script type="module" src="js/reportes.js"></script>
+<script type="module" src="js/components/accesosRapidos.js"></script>
+</body>
+</html>

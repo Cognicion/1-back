@@ -84,6 +84,15 @@ const actividades = [
     url: "go-nogo.html"
   },
   {
+    icono: "CPT",
+    nombre: "Test de Ejecucion Continua, CPT",
+    descripcion: "Evalua atencion sostenida, vigilancia, control inhibitorio y velocidad de respuesta con modalidad CPT-X o estimulo visual degradado.",
+    funciones: ["Atencion", "Funciones ejecutivas", "Velocidad de procesamiento"],
+    estado: "Disponible",
+    accion: "Entrenar",
+    url: "cpt.html"
+  },
+  {
     icono: "SD",
     nombre: "Span de digitos",
     descripcion: "Recuerda secuencias numericas en orden directo o inverso.",
@@ -622,12 +631,21 @@ function renderizarActividades() {
   grid.querySelectorAll("button").forEach((boton) => {
     boton.addEventListener("click", () => {
       if (boton.dataset.url) {
-        window.location.href = boton.dataset.url;
+        window.location.href = construirUrlActividadRehabilitacion(boton.dataset.url);
         return;
       }
       mostrarToast(`${boton.dataset.nombre} esta preparado para integrarse proximamente.`);
     });
   });
+}
+
+function construirUrlActividadRehabilitacion(url) {
+  const params = new URLSearchParams(window.location.search);
+  const idPaciente = params.get("id") || params.get("paciente") || "";
+  if (!idPaciente) return url;
+  const destino = new URL(url, window.location.href);
+  destino.searchParams.set("id", idPaciente);
+  return `${destino.pathname.split("/").pop()}${destino.search}`;
 }
 
 function normalizarTexto(texto) {
