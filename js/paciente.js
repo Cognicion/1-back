@@ -17,7 +17,10 @@ import {
   obtenerTemaLocalCognicion,
   TEMAS_COGNICION
 } from "./services/apariencia.js";
-import { obtenerNombrePacienteParaMostrar } from "./utils/nombresPacientes.js";
+import {
+  construirNombreCompletoPaciente,
+  obtenerNombrePacienteParaMostrar
+} from "./utils/nombresPacientes.js";
 import { calcularEdadPediatrica } from "./pediatria/edad.js";
 import {
   calcularIMC as calcularIMCPediatrico,
@@ -1988,6 +1991,7 @@ async function cargarDatosPaciente() {
   }
 
   ponerTexto("nombrePaciente", obtenerNombrePacienteParaMostrar(datos) || "Paciente sin nombre");
+  actualizarAvisoFormatoNombrePaciente(datos);
 
   ponerTexto("correoPaciente", datos.email || "Sin correo");
 
@@ -2719,18 +2723,190 @@ window.revocarPermiso = async function(uidMedico) {
   await cargarPermisosMedicos();
 };
 
+function limpiarParteNombrePaciente(valor = "") {
+  return String(valor || "").trim().replace(/\s+/g, " ");
+}
+
+function nombrePacienteEstructurado(datos = {}) {
+  return datos?.nombreEstructurado === true ||
+    Boolean(limpiarParteNombrePaciente(datos?.nombres) && limpiarParteNombrePaciente(datos?.apellidoPaterno));
+}
+
+function claveAvisoNombrePaciente() {
+  return `avisoNombreCerrado:${uidPaciente || "sin-paciente"}`;
+}
+
+function actualizarAvisoFormatoNombrePaciente(datos = datosPacienteActual || {}) {
+  const aviso = document.getElementById("avisoFormatoNombrePaciente");
+  if (!aviso) return;
+  const debeMostrarse = !nombrePacienteEstructurado(datos) && !sessionStorage.getItem(claveAvisoNombrePaciente());
+  aviso.classList.toggle("oculto", !debeMostrarse);
+}
+
+function actualizarNombrePacienteEnPantalla(datos = datosPacienteActual || {}) {
+  ponerTexto("nombrePaciente", obtenerNombrePacienteParaMostrar(datos) || "Paciente sin nombre");
+  actualizarAvisoFormatoNombrePaciente(datos);
+  renderizarVistaLaboratorioPaciente(datos);
+}
+
+function cerrarEditorNombrePaciente() {
+  document.getElementById("modalNombrePaciente")?.remove();
+}
+
+function campoEditorNombrePaciente(id, etiqueta, valor = "") {
+  return `
+    <label>${escaparHTML(etiqueta)}
+      <input id="${id}" value="${escaparHTML(valor)}">
+    </label>
+  `;
+}
+
+function htmlCamposNombreSeparado(datos = {}, valores = {}) {
+  return `
+    <div class="editor-nombre-paciente-grid">
+      ${campoEditorNombrePaciente("editorNombresPaciente", "Nombre(s)", valores.nombres ?? datos.nombres ?? datos.datosInstitucionales?.nombres ?? "")}
+      ${campoEditorNombrePaciente("editorApellidoPaternoPaciente", "Apellido paterno", valores.apellidoPaterno ?? datos.apellidoPaterno ?? datos.datosInstitucionales?.apellidoPaterno ?? "")}
+      ${campoEditorNombrePaciente("editorApellidoMaternoPaciente", "Apellido materno", valores.apellidoMaterno ?? datos.apellidoMaterno ?? datos.datosInstitucionales?.apellidoMaterno ?? "")}
+    </div>
+  `;
+}
+
+function renderizarEditorNombreSeparado(contenido, datos = {}, modoNormalizado = false) {
+  contenido.innerHTML = `
+    <h3>Editar nombre</h3>
+    ${!modoNormalizado ? `<div class="editor-nombre-paciente-referencia"><b>Nombre actual:</b><br>${escaparHTML(obtenerNombrePacienteParaMostrar(datos) || "")}</div>` : ""}
+    ${htmlCamposNombreSeparado(datos)}
+    <div class="modal-tipo-paciente-acciones">
+      <button type="button" id="guardarNombreSeparadoPaciente">${modoNormalizado ? "Guardar cambios" : "Guardar nombre separado"}</button>
+      <button type="button" class="boton-secundario" data-cancelar-nombre-paciente>Cancelar</button>
+    </div>
+  `;
+
+  contenido.querySelector("[data-cancelar-nombre-paciente]")?.addEventListener("click", cerrarEditorNombrePaciente);
+  contenido.querySelector("#guardarNombreSeparadoPaciente")?.addEventListener("click", guardarNombreSeparadoPacienteDesdeEditor);
+}
+
+async function guardarNombreCompletoAntiguoPacienteDesdeEditor() {
+  const campo = document.getElementById("editorNombreCompletoPaciente");
+  const nombreCompleto = limpiarParteNombrePaciente(campo?.value || "");
+  if (!nombreCompleto) {
+    alert("Escribe el nombre del paciente.");
+    return;
+  }
+
+  const datos = datosPacienteActual || {};
+  const datosInstitucionales = {
+    ...(datos.datosInstitucionales || {}),
+    nombrePaciente: nombreCompleto,
+    nombreCompleto
+  };
+  const actualizacion = {
+    nombre: nombreCompleto,
+    nombreCompleto,
+    datosInstitucionales
+  };
+
+  await actualizarUsuario(uidPaciente, actualizacion);
+  datosPacienteActual = {
+    ...datos,
+    ...actualizacion
+  };
+  cerrarEditorNombrePaciente();
+  actualizarNombrePacienteEnPantalla(datosPacienteActual);
+}
+
+async function guardarNombreSeparadoPacienteDesdeEditor() {
+  const nombres = limpiarParteNombrePaciente(document.getElementById("editorNombresPaciente")?.value || "");
+  const apellidoPaterno = limpiarParteNombrePaciente(document.getElementById("editorApellidoPaternoPaciente")?.value || "");
+  const apellidoMaterno = limpiarParteNombrePaciente(document.getElementById("editorApellidoMaternoPaciente")?.value || "");
+
+  if (!nombres) {
+    alert("Escribe el nombre o nombres del paciente.");
+    return;
+  }
+  if (!apellidoPaterno) {
+    alert("Escribe el apellido paterno del paciente.");
+    return;
+  }
+
+  const nombreCompleto = construirNombreCompletoPaciente({ nombres, apellidoPaterno, apellidoMaterno });
+  const datos = datosPacienteActual || {};
+  const datosInstitucionales = {
+    ...(datos.datosInstitucionales || {}),
+    nombrePaciente: nombreCompleto,
+    nombreCompleto,
+    nombres,
+    apellidoPaterno,
+    apellidoMaterno
+  };
+  const actualizacion = {
+    nombre: nombreCompleto,
+    nombreCompleto,
+    nombres,
+    apellidoPaterno,
+    apellidoMaterno,
+    nombreEstructurado: true,
+    fechaActualizacionNombre: serverTimestamp(),
+    datosInstitucionales
+  };
+
+  await actualizarUsuario(uidPaciente, actualizacion);
+  datosPacienteActual = {
+    ...datos,
+    ...actualizacion
+  };
+  cerrarEditorNombrePaciente();
+  actualizarNombrePacienteEnPantalla(datosPacienteActual);
+}
+
 window.editarNombrePaciente = async function() {
-  const nuevoNombre = prompt("Nuevo nombre:");
+  const datos = datosPacienteActual || await obtenerUsuario(uidPaciente) || {};
+  datosPacienteActual = datos;
+  const normalizado = nombrePacienteEstructurado(datos);
 
-  if (!nuevoNombre) return;
-
-  await actualizarUsuario(uidPaciente, {
-    nombre: nuevoNombre
+  cerrarEditorNombrePaciente();
+  const modal = document.createElement("div");
+  modal.id = "modalNombrePaciente";
+  modal.className = "modal-tipo-paciente";
+  modal.innerHTML = `
+    <div class="modal-tipo-paciente-contenido selector-campo-paciente">
+      <div data-contenido-editor-nombre></div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+  modal.addEventListener("click", (evento) => {
+    if (evento.target === modal) cerrarEditorNombrePaciente();
   });
 
-  await cargarDatosPaciente();
+  const contenido = modal.querySelector("[data-contenido-editor-nombre]");
+  if (normalizado) {
+    renderizarEditorNombreSeparado(contenido, datos, true);
+    return;
+  }
 
-  alert("Nombre actualizado");
+  contenido.innerHTML = `
+    <h3>Editar nombre</h3>
+    <div class="editor-nombre-paciente-opciones">
+      <div>
+        <label>Nombre actual
+          <input id="editorNombreCompletoPaciente" value="${escaparHTML(obtenerNombrePacienteParaMostrar(datos) || "")}">
+        </label>
+        <button type="button" id="guardarNombreCompletoAntiguoPaciente">Guardar nombre como está</button>
+      </div>
+      <div class="editor-nombre-paciente-referencia">
+        <b>Separar nombre por apellidos</b>
+        <p>Escribe manualmente cada parte. No se separará el nombre automáticamente.</p>
+        <button type="button" class="boton-secundario" id="separarNombrePacienteManual">Separar nombre por apellidos</button>
+      </div>
+      <div class="modal-tipo-paciente-acciones">
+        <button type="button" class="boton-secundario" data-cancelar-nombre-paciente>Cancelar</button>
+      </div>
+    </div>
+  `;
+
+  contenido.querySelector("[data-cancelar-nombre-paciente]")?.addEventListener("click", cerrarEditorNombrePaciente);
+  contenido.querySelector("#guardarNombreCompletoAntiguoPaciente")?.addEventListener("click", guardarNombreCompletoAntiguoPacienteDesdeEditor);
+  contenido.querySelector("#separarNombrePacienteManual")?.addEventListener("click", () => renderizarEditorNombreSeparado(contenido, datos, false));
 };
 
 window.editarDatosPaciente = async function() {
@@ -6775,6 +6951,10 @@ document.getElementById("apunteMedicoPacienteTitulo")?.addEventListener("input",
 document.getElementById("apunteMedicoPacienteContenido")?.addEventListener("input", () => ponerEstadoApuntesPaciente("Cambios sin guardar"));
 document.getElementById("guardarNotaFlotante")?.addEventListener("click", guardarNotaFlotantePaciente);
 document.getElementById("nuevaNotaFlotante")?.addEventListener("click", limpiarNotaFlotantePaciente);
+document.getElementById("cerrarAvisoNombrePaciente")?.addEventListener("click", () => {
+  sessionStorage.setItem(claveAvisoNombrePaciente(), "1");
+  actualizarAvisoFormatoNombrePaciente(datosPacienteActual || {});
+});
 document.getElementById("guardarInterconsulta")?.addEventListener("click", guardarInterconsultaPaciente);
 document.getElementById("descargarInterconsulta")?.addEventListener("click", descargarInterconsultaPaciente);
 document.getElementById("guardarIndicaciones")?.addEventListener("click", guardarIndicacionesPaciente);

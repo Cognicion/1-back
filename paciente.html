@@ -90,6 +90,11 @@
 
   <main class="contenido">
 
+    <div id="avisoFormatoNombrePaciente" class="aviso-nombre-paciente oculto">
+      <span>Actualizamos el formato de nombres. Puedes conservar el nombre actual o separarlo en nombre(s), apellido paterno y apellido materno.</span>
+      <button type="button" id="cerrarAvisoNombrePaciente" aria-label="Cerrar aviso de formato de nombre">Entendido</button>
+    </div>
+
     <h1 id="nombrePaciente">Cargando paciente...</h1>
 
     <button onclick="editarNombrePaciente()">Editar nombre</button>
@@ -103,7 +108,7 @@
     <section id="seccionResumen">
       <div class="tarjeta">
         <div class="datos-generales-encabezado">
-          <h2>Datos generales <button class="boton-editar-dato" onclick="editarCampoPaciente('nombre', 'Nombre', 'text')">Editar nombre</button></h2>
+          <h2>Datos generales</h2>
         </div>
 
         <div id="datosGeneralesClasicos" class="grid datos-generales-grid oculto" aria-hidden="true">

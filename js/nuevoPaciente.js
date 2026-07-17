@@ -413,6 +413,7 @@ window.guardarPacienteNuevo = async function() {
     nombres: nombres.trim().replace(/\s+/g, " "),
     apellidoPaterno: apellidoPaterno.trim().replace(/\s+/g, " "),
     apellidoMaterno: apellidoMaterno.trim().replace(/\s+/g, " "),
+    nombreEstructurado: true,
     expedienteCognicion,
     fechaNacimiento,
     edadManual,
