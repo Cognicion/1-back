@@ -1438,7 +1438,7 @@ function renderizarRevisionNotaAutomatica(generada = {}, transcripcionOriginal =
           <textarea data-contenido-seccion="${index}">${escaparHTML(section.content)}</textarea>
           <details><summary>Fragmentos de origen e informante</summary><ul>${section.sourceStatementIds.map((statementId) => {
             const s = generada.clinicalStatements?.find((item) => item.id === statementId);
-            return `<li>${escaparHTML(s?.originalText || "")} · ${escaparHTML(s?.informant || "no identificado")} · ${escaparHTML(s?.assertionStatus || "")} · ${s?.timestamp ? "sin marca de tiempo"}</li>`;
+            return `<li>${escaparHTML(s?.originalText || "")} · ${escaparHTML(s?.informant || "no identificado")} · ${escaparHTML(s?.assertionStatus || "")} · ${s?.timestamp ? escaparHTML(s.timestamp) : "sin marca de tiempo"}</li>`;
           }).join("")}</ul></details>
           <details><summary>Comparar versiones</summary><p><b>Original:</b> ${escaparHTML(section.originalContent || section.content)}</p><p><b>Actual (v${section.version}):</b> ${escaparHTML(section.content)}</p></details>
           <button type="button" class="boton-secundario" data-regenerar-seccion="${index}">Regenerar solo esta sección</button>
@@ -2137,8 +2137,8 @@ function textoResumenPediatriaNota(datos) {
   if (!datos) return "";
   return [
     `Edad pediátrica: ${datos.edadTexto} (${datos.diasVida} días de vida).`,
-    `Somatometría: peso ${datos.pesoKg ? "-"} kg, talla ${datos.tallaCm ? "-"} cm, IMC ${datos.imc ? "-"}, SC ${datos.superficieCorporalM2 ? "-"} m2.`,
-    `Líquidos de mantenimiento estimados: ${datos.mantenimientoMlDia || "-"} mL/día (${datos.mantenimientoMlHora || "-"} mL/h). Regla 4-2-1: ${datos.regla421MlHora || "-"} mL/h.`
+    `Somatometría: peso ${datos.pesoKg != null ? datos.pesoKg : "-"} kg, talla ${datos.tallaCm != null ? datos.tallaCm : "-"} cm, IMC ${datos.imc != null ? datos.imc : "-"}, SC ${datos.superficieCorporalM2 != null ? datos.superficieCorporalM2 : "-"} m2.`,
+    `Líquidos de mantenimiento estimados: ${datos.mantenimientoMlDia != null ? datos.mantenimientoMlDia : "-"} mL/día (${datos.mantenimientoMlHora != null ? datos.mantenimientoMlHora : "-"} mL/h). Regla 4-2-1: ${datos.regla421MlHora != null ? datos.regla421MlHora : "-"} mL/h.`
   ].join("\n");
 }
 
@@ -4193,7 +4193,7 @@ function valorFirmaPdfCognicion(tarjeta, campo) {
     cedula: "[data-firma-cedula], input[id*='Firma'][id$='Cedula']"
   };
   const control = tarjeta.querySelector(selectores[campo] || "");
-  return String(control?.value ? control?.textContent ? "").trim();
+  return String(control?.value || control?.textContent || "").trim();
 }
 
 function obtenerFirmasPdfCognicion() {

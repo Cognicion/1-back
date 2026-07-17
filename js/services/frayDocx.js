@@ -88,7 +88,7 @@ function parrafo(texto = "", opciones = {}) {
     opciones.align ? `<w:jc w:val="${opciones.align}"/>` : "",
     opciones.keepNext ? "<w:keepNext/>" : "",
     opciones.bullet ? '<w:numPr><w:ilvl w:val="0"/><w:numId w:val="1"/></w:numPr>' : "",
-    `<w:spacing w:before="${opciones.before ? 0}" w:after="${opciones.after ? 0}" w:line="${opciones.line ? 180}" w:lineRule="${opciones.lineRule || "exact"}"/>`
+    `<w:spacing w:before="${opciones.before ?? 0}" w:after="${opciones.after ?? 0}" w:line="${opciones.line ?? 180}" w:lineRule="${opciones.lineRule || "exact"}"/>`
   ].join("");
   return `<w:p><w:pPr>${propiedades}</w:pPr>${contenido || run("")}</w:p>`;
 }
@@ -97,9 +97,9 @@ function parrafoRuns(items = [], opciones = {}) {
   const propiedades = [
     opciones.align ? `<w:jc w:val="${opciones.align}"/>` : "",
     opciones.keepNext ? "<w:keepNext/>" : "",
-    `<w:spacing w:before="${opciones.before ? 0}" w:after="${opciones.after ? 0}" w:line="${opciones.line ? 180}" w:lineRule="${opciones.lineRule || "exact"}"/>`
+    `<w:spacing w:before="${opciones.before ?? 0}" w:after="${opciones.after ?? 0}" w:line="${opciones.line ?? 180}" w:lineRule="${opciones.lineRule || "exact"}"/>`
   ].join("");
-  return `<w:p><w:pPr>${propiedades}</w:pPr>${items.map((item) => run(item.texto ? "", item)).join("") || run("")}</w:p>`;
+  return `<w:p><w:pPr>${propiedades}</w:pPr>${items.map((item) => run(item.texto ?? "", item)).join("") || run("")}</w:p>`;
 }
 
 function parrafosContenido(valor = "") {
@@ -163,7 +163,7 @@ function identificacionFray(datos) {
     ["Servicio:", datos.servicio], ["Alergias:", paciente.alergias],
     ["Fecha:", datos.fecha], ["Hora:", datos.hora ? `${datos.hora} H` : ""],
     ["Días estancia:", paciente.diasEstancia]
-  ].filter(([, valor]) => String(valor ? "").trim());
+  ].filter(([, valor]) => String(valor ?? "").trim());
   const items = [];
   pares.forEach(([etiqueta, valor], indice) => {
     if (indice) items.push({ texto: "   " });
