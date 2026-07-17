@@ -6504,7 +6504,7 @@ async function cargarNotasRapidasPaciente() {
     const notas = await listarNotasRapidas(uidPaciente);
     contenedor.innerHTML = notas.length
       ? notas.map((nota) => {
-          const fecha = nota.fechaISO ? new Date(nota.fechaISO).toLocaleString("es-MX") : "Sin fecha";
+          const fecha = nota.fechaISO ? new Date(nota.fechaISO).toLocaleString("es-MX", { dateStyle: "short", timeStyle: "short", hour12: false }) : "Sin fecha";
           return `
             <article class="registro-card">
               <div class="registro-top">

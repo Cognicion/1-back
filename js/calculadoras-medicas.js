@@ -538,7 +538,7 @@ function resumenClinico(data = estado.resultadoActual) {
   const output = data.result || {};
   return [
     `Calculadora: ${data.calculatorName}`,
-    `Fecha: ${new Date(data.createdAtText || Date.now()).toLocaleString("es-MX")}`,
+    `Fecha: ${new Date(data.createdAtText || Date.now()).toLocaleString("es-MX", { dateStyle: "short", timeStyle: "short", hour12: false })}`,
     `Paciente: ${data.patientSnapshot?.nombre || "Sin paciente vinculado"}`,
     `Resultado: ${output.value} ${output.unit || ""}`,
     `Categoría: ${output.category || "Sin categoría"}`,
@@ -584,7 +584,7 @@ function abrirVentanaImpresion({ empty = false } = {}) {
     </style></head><body>
       <header><img src="assets/favicon-cognicion.png"><div><h1>COGNICIÓN Labs</h1><div class="muted">Calculadoras médicas</div></div></header>
       <h2>${escaparHTML(calc.name)}</h2>
-      <p><strong>Paciente:</strong> ${escaparHTML(paciente)} · <strong>Fecha:</strong> ${new Date().toLocaleString("es-MX")}</p>
+      <p><strong>Paciente:</strong> ${escaparHTML(paciente)} · <strong>Fecha:</strong> ${new Date().toLocaleString("es-MX", { dateStyle: "short", timeStyle: "short", hour12: false })}</p>
       <p>${escaparHTML(calc.description)}</p>
       <table><thead><tr><th>Variable</th><th>Valor</th><th>Unidad</th></tr></thead><tbody>${rows}</tbody></table>
       ${resultado}

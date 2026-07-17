@@ -839,7 +839,7 @@ async function cargarDiarioPersonal(uid) {
     }
 
     contenedor.innerHTML = entradas.map((entrada) => {
-      const fecha = entrada.fechaISO ? new Date(entrada.fechaISO).toLocaleString("es-MX") : "Sin fecha";
+      const fecha = entrada.fechaISO ? new Date(entrada.fechaISO).toLocaleString("es-MX", { dateStyle: "short", timeStyle: "short", hour12: false }) : "Sin fecha";
       return `
         <article class="resultado-item diario-item">
           <strong>${escaparHTML(fecha)}</strong>

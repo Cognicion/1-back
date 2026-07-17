@@ -119,6 +119,10 @@ function renderInput(input) {
     control = document.createElement("input");
     control.inputMode = "decimal";
     control.type = input.tipo || "text";
+    if (control.type === "time") {
+      control.lang = "en-GB";
+      control.step = "60";
+    }
   }
 
   control.id = `calc-${input.id}`;
@@ -222,7 +226,7 @@ function renderGraficaPercentil(resultado) {
 function construirResumen(calc, resultado, interpretacion) {
   const lineas = [
     `Calculadora pediatrica: ${calc.nombre}`,
-    `Fecha: ${new Date().toLocaleString("es-MX")}`,
+    `Fecha: ${new Date().toLocaleString("es-MX", { dateStyle: "short", timeStyle: "short", hour12: false })}`,
     `Resultado: ${Object.entries(resultado || {}).map(([clave, valor]) => `${etiquetaCampo(clave)} ${formatearValor(valor)}`).join("; ") || "sin calcular"}`,
     `Interpretacion: ${interpretacion || "sin interpretacion"}`
   ];

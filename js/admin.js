@@ -1616,7 +1616,7 @@ function renderizarNotasPacienteAdmin(uidPaciente, notas) {
   }
 
   return notas.map((nota) => {
-    const fecha = nota.fecha ? new Date(nota.fecha).toLocaleString("es-MX") : "Sin fecha";
+    const fecha = nota.fecha ? new Date(nota.fecha).toLocaleString("es-MX", { dateStyle: "short", timeStyle: "short", hour12: false }) : "Sin fecha";
     const contenido = nota.notaEditada || nota;
     const resumen = contenido.notaRapida ||
       contenido.subjetivo ||
@@ -1947,9 +1947,9 @@ function renderizarReportesUsuariosAdmin() {
 
   contenedor.innerHTML = reportes.map((reporte) => {
     const fecha = reporte.fechaCreacion?.toDate
-      ? reporte.fechaCreacion.toDate().toLocaleString("es-MX")
+      ? reporte.fechaCreacion.toDate().toLocaleString("es-MX", { dateStyle: "short", timeStyle: "short", hour12: false })
       : reporte.fechaISO
-        ? new Date(reporte.fechaISO).toLocaleString("es-MX")
+        ? new Date(reporte.fechaISO).toLocaleString("es-MX", { dateStyle: "short", timeStyle: "short", hour12: false })
         : "Sin fecha";
 
     const usuario = reporte.usuarioNombre || reporte.usuarioEmail || reporte.usuarioUid || "Usuario no identificado";
@@ -2398,7 +2398,7 @@ function renderizarAuditoria() {
 
   tabla.innerHTML = eventos.map((evento) => {
     const fecha = evento.fechaTexto
-      ? new Date(evento.fechaTexto).toLocaleString("es-MX")
+      ? new Date(evento.fechaTexto).toLocaleString("es-MX", { dateStyle: "short", timeStyle: "short", hour12: false })
       : "Sin fecha";
 
     const resultadoHTML = evento.exito

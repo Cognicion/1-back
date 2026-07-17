@@ -125,6 +125,14 @@ input[type="time"]::-webkit-calendar-picker-indicator:hover {
   filter: invert(1) brightness(3);
 }
 
+input[type="time"]::-webkit-datetime-edit-ampm-field {
+  display: none;
+}
+
+input[type="time"] {
+  font-variant-numeric: tabular-nums;
+}
+
 textarea {
   min-height: 86px;
   resize: vertical;
