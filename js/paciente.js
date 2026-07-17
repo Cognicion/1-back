@@ -4859,6 +4859,9 @@ function medicamentosActivosIndicaciones() {
 function construirTextoIndicaciones(medicamentos = medicamentosActivosIndicaciones()) {
   const dieta = valorCampo("indicacionesDieta") || "NORMAL";
   const cuidados = valorCampo("indicacionesCuidados") || "Signos vitales por turno y cuidados generales por enfermería";
+  const cuidadosMostrar = cuidados
+    .replace(/\s*y cuidados generales por enfermer[ií]a/i, "")
+    .trim();
   const alergias = valorCampo("indicacionesAlergias") || "Negadas";
   const riesgoCaida = valorCampo("indicacionesRiesgoCaida") || "MEDIO";
   const vigilancia = valorCampo("indicacionesVigilancia") || "RIESGO SUICIDA";
@@ -4869,7 +4872,7 @@ function construirTextoIndicaciones(medicamentos = medicamentosActivosIndicacion
     : eventualidadesCapturadas;
   const lineas = [
     `1. Dieta: ${dieta}`,
-    `2. Signos vitales y cuidados generales por enfermería: ${cuidados}`,
+    `2. Signos vitales y cuidados generales por enfermería: ${cuidadosMostrar}`,
     `3. Vigilancia por: ${vigilancia}`,
     `4. Riesgo de caída: ${riesgoCaida}`,
     `5. Alergias: ${alergias}`,
