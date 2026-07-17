@@ -12,10 +12,10 @@
 <header class="topbar-go">
   <a class="marca-go" href="rehabilitacion-cognitiva.html">
     <img src="assets/favicon-cognicion.png" alt="COGNICION">
-    <div><strong>Go / No-Go</strong><span>Control inhibitorio y atenciÃ³n sostenida</span></div>
+    <div><strong>Go / No-Go</strong><span>Control inhibitorio y atención sostenida</span></div>
   </a>
   <nav>
-    <a href="rehabilitacion-cognitiva.html">RehabilitaciÃ³n</a>
+    <a href="rehabilitacion-cognitiva.html">Rehabilitación</a>
     <a href="dashboard.html">Dashboard</a>
   </nav>
 </header>
@@ -24,35 +24,35 @@
   <section class="go-hero" id="pantallaInicio">
     <span class="kicker">Actividad neurocognitiva</span>
     <h1>Go / No-Go</h1>
-    <p>Responde ante los estÃ­mulos Go y detÃ©n la respuesta ante los No-Go. La tarea registra precisiÃ³n, impulsividad, omisiones y tiempo de reacciÃ³n.</p>
+    <p>Responde ante los estímulos Go y detén la respuesta ante los No-Go. La tarea registra precisión, impulsividad, omisiones y tiempo de reacción.</p>
     <div class="go-acciones">
-      <button id="btnIrConfiguracion" type="button">Configurar sesiÃ³n</button>
+      <button id="btnIrConfiguracion" type="button">Configurar sesión</button>
       <a class="boton-secundario" href="rehabilitacion-cognitiva.html">Volver</a>
     </div>
   </section>
 
   <section class="panel-go" id="pantallaConfiguracion">
     <div class="seccion-titulo">
-      <span class="kicker">PreparaciÃ³n</span>
-      <h2>ConfiguraciÃ³n de la sesiÃ³n</h2>
-      <p>Elige dificultad y parÃ¡metros. Puedes iniciar una prÃ¡ctica breve antes de la sesiÃ³n real.</p>
+      <span class="kicker">Preparación</span>
+      <h2>Configuración de la sesión</h2>
+      <p>Elige dificultad y parámetros. Puedes iniciar una práctica breve antes de la sesión real.</p>
     </div>
     <form class="config-grid" id="formConfigGo">
       <label>Nivel de dificultad
-        <select id="dificultad"><option value="facil">FÃ¡cil</option><option value="intermedio">Intermedio</option><option value="dificil">DifÃ­cil</option></select>
+        <select id="dificultad"><option value="facil">Fácil</option><option value="intermedio">Intermedio</option><option value="dificil">Difícil</option></select>
       </label>
-      <label>DuraciÃ³n de sesiÃ³n (segundos)<input id="duracionSesion" type="number" min="20" max="600" value="60"></label>
-      <label>NÃºmero de ensayos<input id="totalEnsayos" type="number" min="10" max="200" value="40"></label>
-      <label>DuraciÃ³n visible (ms)<input id="duracionEstimulo" type="number" min="200" max="2000" value="900"></label>
-      <label>Intervalo entre estÃ­mulos (ms)<input id="intervaloEstimulo" type="number" min="200" max="2500" value="800"></label>
+      <label>Duración de sesión (segundos)<input id="duracionSesion" type="number" min="20" max="600" value="60"></label>
+      <label>Número de ensayos<input id="totalEnsayos" type="number" min="10" max="200" value="40"></label>
+      <label>Duración visible (ms)<input id="duracionEstimulo" type="number" min="200" max="2000" value="900"></label>
+      <label>Intervalo entre estímulos (ms)<input id="intervaloEstimulo" type="number" min="200" max="2500" value="800"></label>
       <label>Porcentaje Go<input id="porcentajeGo" type="number" min="10" max="90" value="75"></label>
-      <label>Tipo de estÃ­mulos
-        <select id="tipoEstimulo"><option value="colores">CÃ­rculos de color</option><option value="formas">Figuras geomÃ©tricas</option><option value="flechas">Flechas</option><option value="letras">Letras</option></select>
+      <label>Tipo de estímulos
+        <select id="tipoEstimulo"><option value="colores">Círculos de color</option><option value="formas">Figuras geométricas</option><option value="flechas">Flechas</option><option value="letras">Letras</option></select>
       </label>
       <label>Sonido
         <select id="sonido"><option value="off">Desactivado</option><option value="on">Activado</option></select>
       </label>
-      <label>RetroalimentaciÃ³n inmediata
+      <label>Retroalimentación inmediata
         <select id="feedback"><option value="on">Activada</option><option value="off">Desactivada</option></select>
       </label>
       <label>Efectos visuales
@@ -60,17 +60,17 @@
       </label>
     </form>
     <div class="go-acciones">
-      <button id="btnPractica" type="button">Iniciar prÃ¡ctica</button>
-      <button id="btnSesion" type="button">Iniciar sesiÃ³n real</button>
+      <button id="btnPractica" type="button">Iniciar práctica</button>
+      <button id="btnSesion" type="button">Iniciar sesión real</button>
     </div>
   </section>
 
   <section class="arena-go" id="pantallaJuego" aria-live="polite">
     <div class="hud-go">
-      <div><span>Modo</span><strong id="modoJuego">PrÃ¡ctica</strong></div>
+      <div><span>Modo</span><strong id="modoJuego">Práctica</strong></div>
       <div><span>Ensayo</span><strong id="contadorEnsayos">0/0</strong></div>
       <div><span>Tiempo</span><strong id="tiempoRestante">00:00</strong></div>
-      <div><span>PrecisiÃ³n</span><strong id="precisionActual">--</strong></div>
+      <div><span>Precisión</span><strong id="precisionActual">--</strong></div>
     </div>
     <div class="barra-progreso"><span id="barraProgreso"></span></div>
     <div class="cuenta-regresiva" id="cuentaRegresiva"></div>
@@ -81,7 +81,7 @@
     <button class="boton-respuesta" id="btnResponder" type="button">Responder (espacio)</button>
     <p class="feedback-go" id="feedbackGo"></p>
     <div class="go-acciones compactas">
-      <button id="btnCancelar" type="button" class="boton-secundario">Cancelar sesiÃ³n</button>
+      <button id="btnCancelar" type="button" class="boton-secundario">Cancelar sesión</button>
     </div>
   </section>
 
@@ -89,26 +89,26 @@
     <div class="seccion-titulo">
       <span class="kicker">Resultados</span>
       <h2>Resumen de rendimiento</h2>
-      <p>Esta actividad es una herramienta de entrenamiento y registro del rendimiento. Sus resultados no sustituyen una evaluaciÃ³n clÃ­nica o neuropsicolÃ³gica profesional.</p>
+      <p>Esta actividad es una herramienta de entrenamiento y registro del rendimiento. Sus resultados no sustituyen una evaluación clínica o neuropsicológica profesional.</p>
     </div>
     <div class="resultados-grid" id="resultadosGrid"></div>
     <article class="interpretacion-go" id="interpretacionGo"></article>
     <div class="graficas-controles">
-      <button type="button" data-toggle-grafica="rt">Tiempo de reacciÃ³n</button>
+      <button type="button" data-toggle-grafica="rt">Tiempo de reacción</button>
       <button type="button" data-toggle-grafica="aciertos">Aciertos y errores</button>
-      <button type="button" data-toggle-grafica="distribucion">DistribuciÃ³n</button>
-      <button type="button" data-toggle-grafica="evolucion">EvoluciÃ³n</button>
+      <button type="button" data-toggle-grafica="distribucion">Distribución</button>
+      <button type="button" data-toggle-grafica="evolucion">Evolución</button>
     </div>
     <div class="graficas-go">
-      <article id="graficaRt"><h3>Tiempo de reacciÃ³n por ensayo</h3><div class="grafica-linea" id="lineaRt"></div></article>
+      <article id="graficaRt"><h3>Tiempo de reacción por ensayo</h3><div class="grafica-linea" id="lineaRt"></div></article>
       <article id="graficaAciertos"><h3>Aciertos y errores</h3><div class="grafica-barras" id="barrasAciertos"></div></article>
-      <article id="graficaDistribucion"><h3>DistribuciÃ³n de respuestas</h3><div class="grafica-barras" id="barrasDistribucion"></div></article>
-      <article id="graficaEvolucion"><h3>EvoluciÃ³n durante la sesiÃ³n</h3><div class="grafica-linea" id="lineaEvolucion"></div></article>
+      <article id="graficaDistribucion"><h3>Distribución de respuestas</h3><div class="grafica-barras" id="barrasDistribucion"></div></article>
+      <article id="graficaEvolucion"><h3>Evolución durante la sesión</h3><div class="grafica-linea" id="lineaEvolucion"></div></article>
     </div>
     <div class="go-acciones">
       <button id="btnRepetir" type="button">Repetir</button>
       <button id="btnCambiar" type="button" class="boton-secundario">Cambiar dificultad</button>
-      <a class="boton-secundario" href="rehabilitacion-cognitiva.html">Regresar a RehabilitaciÃ³n</a>
+      <a class="boton-secundario" href="rehabilitacion-cognitiva.html">Regresar a Rehabilitación</a>
     </div>
   </section>
 </main>

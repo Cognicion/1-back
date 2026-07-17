@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Historia clÃ­nica | CogniciÃ³n</title>
+<title>Historia clínica | Cognición</title>
 
 <link rel="stylesheet" href="css/theme.css">
 <link rel="stylesheet" href="css/historia.css">
@@ -13,22 +13,22 @@
 
 <body>
 
-<a href="medico.html" class="regresar">â† Panel mÃ©dico</a>
+<a href="medico.html" class="regresar">← Panel médico</a>
 
 <main class="historia-layout">
 
     <aside class="historia-sidebar">
-        <h1>CogniciÃ³n</h1>
-        <p>Historia clÃ­nica</p>
+        <h1>Cognición</h1>
+        <p>Historia clínica</p>
 
-        <button class="tab activo" data-seccion="ficha">ðŸ“‹ Ficha</button>
-        <button class="tab" data-seccion="antecedentes">ðŸ‘¨â€ðŸ‘©â€ðŸ‘§ Antecedentes</button>
-        <button class="tab" data-seccion="psiquiatria">ðŸ§  PsiquiatrÃ­a</button>
-        <button class="tab" data-seccion="sustancias">ðŸ’Š Sustancias</button>
-        <button class="tab" data-seccion="padecimiento">ðŸ“ Padecimiento actual</button>
-        <button class="tab" data-seccion="mental">ðŸ”Ž ExploraciÃ³n mental</button>
-        <button class="tab" data-seccion="diagnostico">ðŸ©º DiagnÃ³stico</button>
-        <button class="tab" data-seccion="plan">ðŸ“Œ Plan</button>
+        <button class="tab activo" data-seccion="ficha">📋 Ficha</button>
+        <button class="tab" data-seccion="antecedentes">👨‍👩‍👧 Antecedentes</button>
+        <button class="tab" data-seccion="psiquiatria">🧠 Psiquiatría</button>
+        <button class="tab" data-seccion="sustancias">💊 Sustancias</button>
+        <button class="tab" data-seccion="padecimiento">📝 Padecimiento actual</button>
+        <button class="tab" data-seccion="mental">🔎 Exploración mental</button>
+        <button class="tab" data-seccion="diagnostico">🩺 Diagnóstico</button>
+        <button class="tab" data-seccion="plan">📌 Plan</button>
 
         <button class="boton-secundario" onclick="descargarHistoriaPDF()">
             Descargar PDF
@@ -39,7 +39,7 @@
 
         <header class="historia-header">
             <div>
-                <h2 id="nombrePaciente">Historia clÃ­nica</h2>
+                <h2 id="nombrePaciente">Historia clínica</h2>
                 <p id="datosPaciente">Paciente seleccionado</p>
             </div>
 
@@ -51,18 +51,18 @@
         <form id="formHistoria">
 
             <section class="seccion activa" id="ficha">
-                <h3>Ficha de identificaciÃ³n</h3>
+                <h3>Ficha de identificación</h3>
 
                 <label>Escolaridad</label>
                 <input id="escolaridad">
 
-                <label>OcupaciÃ³n</label>
+                <label>Ocupación</label>
                 <input id="ocupacion">
 
                 <label>Estado civil</label>
                 <input id="estadoCivil">
 
-                <label>ReligiÃ³n</label>
+                <label>Religión</label>
                 <input id="religion">
 
                 <h3>Vinculacion institucional</h3>
@@ -116,17 +116,17 @@
                 <label>Antecedentes heredofamiliares</label>
                 <textarea id="ahf"></textarea>
 
-                <label>Antecedentes personales patolÃ³gicos</label>
+                <label>Antecedentes personales patológicos</label>
                 <textarea id="app"></textarea>
 
-                <label>Antecedentes personales no patolÃ³gicos</label>
+                <label>Antecedentes personales no patológicos</label>
                 <textarea id="apnp"></textarea>
             </section>
 
             <section class="seccion" id="psiquiatria">
-                <h3>Antecedentes psiquiÃ¡tricos</h3>
+                <h3>Antecedentes psiquiátricos</h3>
 
-                <label>DiagnÃ³sticos previos</label>
+                <label>Diagnósticos previos</label>
                 <textarea id="diagnosticosPrevios"></textarea>
 
                 <label>Tratamientos previos</label>
@@ -160,7 +160,7 @@
             </section>
 
             <section class="seccion" id="mental">
-                <h3>ExploraciÃ³n mental</h3>
+                <h3>Exploración mental</h3>
 
                 <label>Apariencia y conducta</label>
                 <textarea id="apariencia"></textarea>
@@ -168,13 +168,13 @@
                 <label>Lenguaje</label>
                 <textarea id="lenguaje"></textarea>
 
-                <label>Estado de Ã¡nimo y afecto</label>
+                <label>Estado de ánimo y afecto</label>
                 <textarea id="afecto"></textarea>
 
                 <label>Pensamiento</label>
                 <textarea id="pensamiento"></textarea>
 
-                <label>SensopercepciÃ³n</label>
+                <label>Sensopercepción</label>
                 <textarea id="sensopercepcion"></textarea>
 
                 <label>Funciones cognitivas</label>
@@ -185,9 +185,9 @@
             </section>
 
             <section class="seccion" id="diagnostico">
-                <h3>DiagnÃ³stico</h3>
+                <h3>Diagnóstico</h3>
 
-                <label>DiagnÃ³stico clÃ­nico</label>
+                <label>Diagnóstico clínico</label>
                 <textarea id="diagnosticoClinico"></textarea>
 
                 <label>CIE-10 / DSM-5</label>
@@ -195,12 +195,12 @@
             </section>
 
             <section class="seccion" id="plan">
-                <h3>Plan terapÃ©utico</h3>
+                <h3>Plan terapéutico</h3>
 
-                <label>Tratamiento farmacolÃ³gico</label>
+                <label>Tratamiento farmacológico</label>
                 <textarea id="tratamientoFarmacologico"></textarea>
 
-                <label>Psicoterapia / rehabilitaciÃ³n</label>
+                <label>Psicoterapia / rehabilitación</label>
                 <textarea id="psicoterapia"></textarea>
 
                 <label>Plan de seguimiento</label>

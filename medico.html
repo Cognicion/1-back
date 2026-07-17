@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Panel MÃ©dico | CogniciÃ³n</title>
+  <title>Panel Médico | Cognición</title>
   <link rel="icon" type="image/png" href="assets/favicon-cognicion.png">
   <link rel="stylesheet" href="css/medico.css?v=20260716-2">
   <link rel="stylesheet" href="css/reportes.css">
@@ -15,8 +15,8 @@
 <header class="header-medico">
   <img class="logo-header" src="assets/favicon-cognicion.png" alt="Cognicion">
   <div>
-  <h1>Panel MÃ©dico</h1>
-  <p>Base de operaciÃ³n clÃ­nica de CogniciÃ³n</p>
+  <h1>Panel Médico</h1>
+  <p>Base de operación clínica de Cognición</p>
   </div>
 </header>
 
@@ -29,9 +29,9 @@
         type="button"
         id="contraerPanelMedico"
         class="boton-contraer-panel"
-        aria-label="Contraer panel mÃ©dico"
+        aria-label="Contraer panel médico"
         aria-expanded="true">
-        â€¹
+        ‹
       </button>
 
       <div class="avatar" id="avatarMedico">M</div>
@@ -40,7 +40,7 @@
 
       <div class="dato">
         <span>Rol</span>
-        MÃ©dico
+        Médico
       </div>
 
       <div class="dato">
@@ -78,8 +78,8 @@
       type="button"
       id="expandirPanelMedico"
       class="pestana-panel-medico"
-      aria-label="Expandir panel mÃ©dico">
-      <span>â€º</span>
+      aria-label="Expandir panel médico">
+      <span>›</span>
       <small>Panel</small>
     </button>
 
@@ -170,13 +170,13 @@
                 <p class="etiqueta-filtro-atencion">Vista de pacientes</p>
                 <h3 id="tituloFiltroAtencion">Mostrar pacientes</h3>
               </div>
-              <button type="button" id="cerrarFiltroAtencion" class="cerrar-filtro-atencion" aria-label="Cerrar filtro">Ã—</button>
+              <button type="button" id="cerrarFiltroAtencion" class="cerrar-filtro-atencion" aria-label="Cerrar filtro">×</button>
             </div>
 
             <div class="opciones-filtro-atencion">
               <label>
                 <input type="checkbox" class="filtro-atencion-check" value="hospitalizados" checked>
-                <span>Hospitalizados / instituciÃ³n</span>
+                <span>Hospitalizados / institución</span>
               </label>
               <label>
                 <input type="checkbox" class="filtro-atencion-check" value="privado" checked>
@@ -211,7 +211,7 @@
                 <p class="etiqueta-filtro-atencion">Tabla de pacientes</p>
                 <h3 id="tituloColumnasPacientes">Mostrar columnas</h3>
               </div>
-              <button type="button" id="cerrarColumnasPacientes" class="cerrar-filtro-atencion" aria-label="Cerrar columnas">Ã—</button>
+              <button type="button" id="cerrarColumnasPacientes" class="cerrar-filtro-atencion" aria-label="Cerrar columnas">×</button>
             </div>
 
             <div id="opcionesColumnasPacientes" class="opciones-filtro-atencion"></div>
@@ -231,7 +231,7 @@
                 <p class="etiqueta-filtro-atencion">Organizacion de pacientes</p>
                 <h3 id="tituloCarpetasPacientes">Carpetas</h3>
               </div>
-              <button type="button" id="cerrarCarpetasPacientes" class="cerrar-filtro-atencion" aria-label="Cerrar carpetas">Ã—</button>
+              <button type="button" id="cerrarCarpetasPacientes" class="cerrar-filtro-atencion" aria-label="Cerrar carpetas">×</button>
             </div>
 
             <div class="carpetas-panel-cuerpo">
@@ -309,12 +309,12 @@
   <span class="celda-tabla">Ingreso <button class="resizer" data-col="--col-ingreso" aria-label="Ajustar columna Fecha de ingreso"></button></span>
   <span class="celda-tabla">Estancia <button class="resizer" data-col="--col-estancia" aria-label="Ajustar columna Dias de estancia"></button></span>
   <span class="celda-tabla">Edad <button class="resizer" data-col="--col-edad" aria-label="Ajustar columna Edad"></button></span>
-  <span class="celda-tabla">AtenciÃ³n en <button class="resizer" data-col="--col-atencion" aria-label="Ajustar columna AtenciÃ³n en"></button></span>
-  <span class="celda-tabla">DiagnÃ³stico <button class="resizer" data-col="--col-diagnostico" aria-label="Ajustar columna DiagnÃ³stico"></button></span>
+  <span class="celda-tabla">Atención en <button class="resizer" data-col="--col-atencion" aria-label="Ajustar columna Atención en"></button></span>
+  <span class="celda-tabla">Diagnóstico <button class="resizer" data-col="--col-diagnostico" aria-label="Ajustar columna Diagnóstico"></button></span>
   <span class="celda-tabla">Medicamento <button class="resizer" data-col="--col-medicamento" aria-label="Ajustar columna Medicamento"></button></span>
-  <span class="celda-tabla">Dosis/dÃ­a <button class="resizer" data-col="--col-dosis-dia" aria-label="Ajustar columna Dosis diaria"></button></span>
-  <span class="celda-tabla">Ãšltima consulta <button class="resizer" data-col="--col-ultima" aria-label="Ajustar columna Ãšltima consulta"></button></span>
-  <span class="celda-tabla">PrÃ³xima consulta <button class="resizer" data-col="--col-proxima" aria-label="Ajustar columna PrÃ³xima consulta"></button></span>
+  <span class="celda-tabla">Dosis/día <button class="resizer" data-col="--col-dosis-dia" aria-label="Ajustar columna Dosis diaria"></button></span>
+  <span class="celda-tabla">Última consulta <button class="resizer" data-col="--col-ultima" aria-label="Ajustar columna Última consulta"></button></span>
+  <span class="celda-tabla">Próxima consulta <button class="resizer" data-col="--col-proxima" aria-label="Ajustar columna Próxima consulta"></button></span>
 
   <span class="celda-tabla">Adscrito <button class="resizer" data-col="--col-adscrito" aria-label="Ajustar columna Medico adscrito encargado"></button></span>
   <span class="celda-tabla">Residente <button class="resizer" data-col="--col-residente" aria-label="Ajustar columna Residente encargado"></button></span>
@@ -337,10 +337,10 @@
       </div>
 
       <div class="card seccion graficas-medico">
-        <h2>GrÃ¡ficas clÃ­nicas</h2>
+        <h2>Gráficas clínicas</h2>
         <div class="grid-graficas">
           <div>
-            <h3>Todos los diagnÃ³sticos</h3>
+            <h3>Todos los diagnósticos</h3>
             <canvas id="graficaDiagnosticos" height="180"></canvas>
           </div>
           <div>
@@ -359,21 +359,21 @@
     <section class="card seccion">
       <h2>Resumen operativo</h2>
       <ul class="lista-simple">
-        <li>Pacientes ordenados automÃ¡ticamente por nombre.</li>
-        <li>Acceso rÃ¡pido al expediente clÃ­nico.</li>
-        <li>EstadÃ­sticas actualizadas desde Firestore.</li>
-        <li>Preparado para agregar pruebas cognitivas y grÃ¡ficas.</li>
+        <li>Pacientes ordenados automáticamente por nombre.</li>
+        <li>Acceso rápido al expediente clínico.</li>
+        <li>Estadísticas actualizadas desde Firestore.</li>
+        <li>Preparado para agregar pruebas cognitivas y gráficas.</li>
       </ul>
     </section>
 
     <section class="card seccion">
-      <h2>PrÃ³ximas funciones</h2>
+      <h2>Próximas funciones</h2>
       <ul class="lista-simple">
-        <li>Alertas clÃ­nicas.</li>
+        <li>Alertas clínicas.</li>
         <li>Resultados de N-Back por paciente.</li>
-        <li>GrÃ¡ficas de evoluciÃ³n.</li>
-        <li>Perfil mÃ©dico editable.</li>
-        <li>ExportaciÃ³n de notas en PDF.</li>
+        <li>Gráficas de evolución.</li>
+        <li>Perfil médico editable.</li>
+        <li>Exportación de notas en PDF.</li>
       </ul>
     </section>
 
