@@ -447,6 +447,13 @@ header {
     padding-top: 28px;
 }
 
+@supports (content-visibility: auto) {
+    .module-card {
+        content-visibility: auto;
+        contain-intrinsic-size: 320px 260px;
+    }
+}
+
 .module-subareas {
     display: flex;
     flex-wrap: wrap;
@@ -1246,7 +1253,6 @@ footer {
 }
 
 </style>
-  <link rel="stylesheet" href="css/reportes.css">
   <!-- dashboard-deploy: 2026-07-02 18:22:52 -06:00 -->
 </head>
 
@@ -1255,7 +1261,7 @@ footer {
     <div class="app-shell topbar">
 
         <div class="brand">
-            <img src="assets/favicon-cognicion.png" alt="Cognición">
+            <img src="assets/favicon-cognicion.png" alt="Cognición" width="64" height="64" decoding="async" fetchpriority="high">
 
             <div>
                 <div class="brand-name">Cognición</div>
@@ -1625,6 +1631,20 @@ footer {
 
 <script type="module" src="js/dashboard.js"></script>
 <script type="module" src="js/components/accesosRapidos.js"></script>
-  <script type="module" src="js/reportes.js"></script>
+<script>
+(function () {
+  function cargarReportesGlobales() {
+    import("./js/reportes.js").catch(function (error) {
+      console.error("No se pudo cargar el modulo de reportes.", error);
+    });
+  }
+
+  if ("requestIdleCallback" in window) {
+    window.requestIdleCallback(cargarReportesGlobales, { timeout: 3200 });
+  } else {
+    window.setTimeout(cargarReportesGlobales, 1200);
+  }
+}());
+</script>
 </body>
 </html>

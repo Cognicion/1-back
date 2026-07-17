@@ -40,7 +40,6 @@ import {
 } from "./services/mensajes.js";
 
 aplicarAparienciaGuardada();
-iniciarMonitoreoSesion("Dashboard");
 
 const frasesClinicas = [
   "La evidencia guia mejores decisiones clinicas.",
@@ -132,6 +131,11 @@ let contactosMensajesDashboard = [];
 let conversacionesMensajesDashboard = [];
 let conversacionActivaDashboard = null;
 let mensajesConversacionActiva = [];
+let monitoreoSesionDashboardIniciado = false;
+let avisosDashboardCargados = false;
+let avisosDashboardCargaPendiente = null;
+let conversacionesDashboardCargadas = false;
+let conversacionesDashboardCargaPendiente = null;
 const CLAVE_LECTURAS_AVISOS_DASHBOARD = "cognicion_lecturas_avisos_dashboard";
 const CLAVE_LECTURAS_RESPUESTAS_REPORTES = "cognicion_lecturas_respuestas_reportes";
 const CLAVE_ESTADO_AVISOS_DASHBOARD = "cognicion_estado_avisos_dashboard";
@@ -154,6 +158,65 @@ function reportarPerfilCargaDashboard() {
     porcentaje: `${Math.round((etapa.ms / total) * 1000) / 10}%`
   }));
   console.table([{ etapa: "total", ms: total, porcentaje: "100%" }, ...etapas]);
+}
+
+function ejecutarEnReposoDashboard(callback, timeout = 2200) {
+  if ("requestIdleCallback" in window) {
+    window.requestIdleCallback(callback, { timeout });
+    return;
+  }
+  window.setTimeout(callback, 700);
+}
+
+function iniciarMonitoreoSesionDashboard(user, datos) {
+  if (monitoreoSesionDashboardIniciado) return;
+  monitoreoSesionDashboardIniciado = true;
+  iniciarMonitoreoSesion("Dashboard", {
+    usuarioInicial: user,
+    datosUsuarioInicial: datos || null
+  });
+}
+
+function programarDatosSecundariosDashboard(rolUsuario, uidUsuario) {
+  ejecutarEnReposoDashboard(async () => {
+    const inicioDatosSecundarios = performance.now();
+    await Promise.allSettled([
+      asegurarAvisosDashboard(rolUsuario, uidUsuario),
+      asegurarConversacionesDashboard()
+    ]);
+    medirEtapaDashboard("datosSecundariosDiferidos", inicioDatosSecundarios);
+    reportarPerfilCargaDashboard();
+  });
+}
+
+function asegurarAvisosDashboard(rolUsuario = rolDashboardActual, uidUsuario = usuarioDashboardActual?.uid || "") {
+  if (avisosDashboardCargados) return Promise.resolve();
+  if (avisosDashboardCargaPendiente) return avisosDashboardCargaPendiente;
+  avisosDashboardCargaPendiente = cargarAvisosDashboard(rolUsuario, uidUsuario)
+    .then(() => {
+      avisosDashboardCargados = true;
+    })
+    .finally(() => {
+      avisosDashboardCargaPendiente = null;
+    });
+  return avisosDashboardCargaPendiente;
+}
+
+function asegurarConversacionesDashboard() {
+  if (conversacionesDashboardCargadas) return Promise.resolve();
+  if (conversacionesDashboardCargaPendiente) return conversacionesDashboardCargaPendiente;
+  conversacionesDashboardCargaPendiente = cargarDatosMensajesDashboard({
+    incluirUsuarios: false,
+    incluirContactos: false,
+    incluirConversaciones: true
+  })
+    .then(() => {
+      conversacionesDashboardCargadas = true;
+    })
+    .finally(() => {
+      conversacionesDashboardCargaPendiente = null;
+    });
+  return conversacionesDashboardCargaPendiente;
 }
 window.alternarModuloAvisos = function(forzarAbierto = null) {
   const modulo = document.getElementById("avisosDashboardModulo");
@@ -193,6 +256,7 @@ window.alternarNotificaciones = function() {
   panelAvisos?.classList.toggle("abierto", abierto);
   panelAvisos?.classList.remove("colapsado");
   panelAvisos?.setAttribute("aria-hidden", String(!abierto));
+  if (abierto) asegurarAvisosDashboard();
 };
 
 document.addEventListener("click", (evento) => {
@@ -271,13 +335,8 @@ onAuthStateChanged(auth, async (user) => {
       "Bienvenido";
   }
 
-  const inicioDatosSecundarios = performance.now();
-  await Promise.all([
-    cargarAvisosDashboard(rolUsuario, user.uid),
-    cargarDatosMensajesDashboard({ incluirUsuarios: false, incluirContactos: false, incluirConversaciones: true })
-  ]);
-  medirEtapaDashboard("avisosYBadgeMensajes", inicioDatosSecundarios);
-  reportarPerfilCargaDashboard();
+  iniciarMonitoreoSesionDashboard(user, datos);
+  programarDatosSecundariosDashboard(rolUsuario, user.uid);
 });
 
 window.cerrarSesion = async function() {
@@ -687,6 +746,7 @@ async function cargarDatosMensajesDashboard({ incluirUsuarios = true, incluirCon
 
   if (conversaciones.status === "fulfilled") {
     conversacionesMensajesDashboard = conversaciones.value;
+    if (incluirConversaciones) conversacionesDashboardCargadas = true;
   } else {
     console.warn("No se pudieron cargar conversaciones:", conversaciones.reason);
   }

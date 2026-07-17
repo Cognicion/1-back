@@ -8,15 +8,20 @@ const EVENTOS_ACTIVIDAD = ["click", "keydown", "mousemove", "scroll", "touchstar
 
 export function iniciarMonitoreoSesion(modulo, opciones = {}) {
   const inactividadMs = opciones.inactividadMs || INACTIVIDAD_MS;
-  let usuario = null;
-  let datosUsuario = null;
+  let usuario = opciones.usuarioInicial || null;
+  let datosUsuario = opciones.datosUsuarioInicial || null;
   let ultimoMovimiento = Date.now();
   let inactividadRegistrada = false;
+  const uidConDatosIniciales = usuario?.uid && datosUsuario ? usuario.uid : "";
 
   onAuthStateChanged(auth, async (user) => {
     usuario = user;
-    if (!user) return;
+    if (!user) {
+      datosUsuario = null;
+      return;
+    }
 
+    if (uidConDatosIniciales === user.uid && datosUsuario) return;
     datosUsuario = await obtenerUsuario(user.uid);
   });
 
