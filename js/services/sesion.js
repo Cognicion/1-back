@@ -1,12 +1,17 @@
-import { auth } from "../firebase.js";
-import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { obtenerUsuario } from "./usuarios.js";
+import { getAuthenticatedUserOnce } from "./authContextService.js";
 import { registrarEventoAuditoria } from "./auditoria.js";
 
 const INACTIVIDAD_MS = 15 * 60 * 1000;
 const EVENTOS_ACTIVIDAD = ["click", "keydown", "mousemove", "scroll", "touchstart"];
+const monitoreosActivos = new Map();
 
 export function iniciarMonitoreoSesion(modulo, opciones = {}) {
+  const claveMonitoreo = opciones.clave || modulo || "global";
+  if (monitoreosActivos.has(claveMonitoreo)) {
+    return monitoreosActivos.get(claveMonitoreo);
+  }
+
   const inactividadMs = opciones.inactividadMs || INACTIVIDAD_MS;
   let usuario = opciones.usuarioInicial || null;
   let datosUsuario = opciones.datosUsuarioInicial || null;
@@ -14,7 +19,7 @@ export function iniciarMonitoreoSesion(modulo, opciones = {}) {
   let inactividadRegistrada = false;
   const uidConDatosIniciales = usuario?.uid && datosUsuario ? usuario.uid : "";
 
-  onAuthStateChanged(auth, async (user) => {
+  getAuthenticatedUserOnce().then(async (user) => {
     usuario = user;
     if (!user) {
       datosUsuario = null;
@@ -23,6 +28,8 @@ export function iniciarMonitoreoSesion(modulo, opciones = {}) {
 
     if (uidConDatosIniciales === user.uid && datosUsuario) return;
     datosUsuario = await obtenerUsuario(user.uid);
+  }).catch((error) => {
+    console.warn("No se pudo resolver la sesion para auditoria:", error);
   });
 
   const marcarActividad = () => {
@@ -41,7 +48,7 @@ export function iniciarMonitoreoSesion(modulo, opciones = {}) {
     window.addEventListener(evento, marcarActividad, { passive: true });
   });
 
-  window.setInterval(() => {
+  const intervalo = window.setInterval(() => {
     if (!usuario || inactividadRegistrada) return;
 
     const msInactivo = Date.now() - ultimoMovimiento;
@@ -57,6 +64,17 @@ export function iniciarMonitoreoSesion(modulo, opciones = {}) {
       });
     }
   }, 60 * 1000);
+
+  const limpiar = () => {
+    EVENTOS_ACTIVIDAD.forEach((evento) => {
+      window.removeEventListener(evento, marcarActividad);
+    });
+    window.clearInterval(intervalo);
+    monitoreosActivos.delete(claveMonitoreo);
+  };
+
+  monitoreosActivos.set(claveMonitoreo, limpiar);
+  window.addEventListener("pagehide", limpiar, { once: true });
 
   async function registrarSesion(evento) {
     if (!usuario) return;
@@ -78,4 +96,6 @@ export function iniciarMonitoreoSesion(modulo, opciones = {}) {
       console.warn("No se pudo registrar auditoria de sesion:", error);
     }
   }
+
+  return limpiar;
 }

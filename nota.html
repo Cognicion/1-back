@@ -466,6 +466,17 @@ Cancelar edicion
 <script type="module" src="js/nota.js?v=20260716-6"></script>
 
   <script type="module" src="js/components/accesosRapidos.js"></script>
-  <script type="module" src="js/reportes.js"></script>
+  <script>
+    function cargarReportesGlobales() {
+      import("./js/reportes.js").catch(function (error) {
+        console.error("No se pudo cargar el modulo de reportes.", error);
+      });
+    }
+    if ("requestIdleCallback" in window) {
+      window.requestIdleCallback(cargarReportesGlobales, { timeout: 2500 });
+    } else {
+      window.setTimeout(cargarReportesGlobales, 1200);
+    }
+  </script>
 </body>
 </html>

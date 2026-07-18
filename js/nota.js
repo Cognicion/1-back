@@ -41,9 +41,7 @@ import {
   obtenerPermisosFormatosUsuario,
   usuarioPuedeUsarFormato
 } from "./services/formatosInstitucionales.js";
-import {
-  onAuthStateChanged
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getAuthenticatedUserOnce, getUserProfileOnce } from "./services/authContextService.js";
 
 import {
   doc,
@@ -3263,13 +3261,14 @@ async function recuperarBorradorCorrespondiente() {
   }
 }
 
-onAuthStateChanged(auth, async (user) => {
+async function inicializarNotaClinica() {
+  const user = await getAuthenticatedUserOnce();
   if (!user) {
     window.location.href = "login.html";
     return;
   }
 
-  const usuario = await obtenerUsuario(user.uid);
+  const usuario = await getUserProfileOnce(user.uid);
 
   if (!usuario || (usuario.rol !== "admin" && !usuarioEsPersonalClinico(usuario.rol))) {
   alert("Acceso restringido al personal clinico");
@@ -3316,6 +3315,11 @@ onAuthStateChanged(auth, async (user) => {
   } else {
     await cargarListaPacientes();
   }
+}
+
+inicializarNotaClinica().catch((error) => {
+  console.error("No se pudo inicializar la nota clinica:", error);
+  window.location.href = "dashboard.html";
 });
 
 async function cargarListaPacientes() {

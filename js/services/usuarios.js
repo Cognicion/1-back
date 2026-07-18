@@ -1,5 +1,4 @@
 import { db } from "../firebase.js";
-import { crearDatosSolicitudEliminacion } from "./reportes.js?v=20260716-1";
 import { obtenerNombrePacienteParaMostrar } from "../utils/nombresPacientes.js";
 import { usuarioEsProfesionalTipoMedico } from "../utils/roles.js";
 
@@ -21,16 +20,67 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 
+const TTL_USUARIO_MS = 2 * 60 * 1000;
+const TTL_LISTA_PACIENTES_MS = 45 * 1000;
+const cacheUsuarios = new Map();
+const solicitudesUsuariosPendientes = new Map();
+const cacheListasPacientes = new Map();
+const solicitudesListasPacientes = new Map();
+const cachePermisosMedico = new Map();
+const solicitudesPermisosMedico = new Map();
 
-export async function obtenerUsuario(uid){
+function leerCacheVigente(cache, clave, ttlMs) {
+    const registro = cache.get(clave);
+    if (!registro) return null;
+    if (Date.now() - registro.timestamp > ttlMs) {
+        cache.delete(clave);
+        return null;
+    }
+    return registro.data;
+}
 
-    const snap = await getDoc(
+function guardarCache(cache, clave, data) {
+    cache.set(clave, { data, timestamp: Date.now() });
+    return data;
+}
+
+export function invalidarCacheUsuario(uid = "") {
+    if (uid) {
+        cacheUsuarios.delete(uid);
+        solicitudesUsuariosPendientes.delete(uid);
+        return;
+    }
+    cacheUsuarios.clear();
+    solicitudesUsuariosPendientes.clear();
+}
+
+function invalidarListasPacientes() {
+    cacheListasPacientes.clear();
+    solicitudesListasPacientes.clear();
+    cachePermisosMedico.clear();
+    solicitudesPermisosMedico.clear();
+}
+
+export async function obtenerUsuario(uid, opciones = {}){
+
+    if (!uid) return null;
+    if (!opciones.forzar) {
+        const cache = leerCacheVigente(cacheUsuarios, uid, TTL_USUARIO_MS);
+        if (cache) return cache;
+        if (solicitudesUsuariosPendientes.has(uid)) return solicitudesUsuariosPendientes.get(uid);
+    }
+
+    const solicitud = getDoc(
         doc(db,"usuarios",uid)
-    );
+    )
+        .then((snap) => {
+            if(!snap.exists()) return guardarCache(cacheUsuarios, uid, null);
+            return guardarCache(cacheUsuarios, uid, snap.data());
+        })
+        .finally(() => solicitudesUsuariosPendientes.delete(uid));
 
-    if(!snap.exists()) return null;
-
-    return snap.data();
+    solicitudesUsuariosPendientes.set(uid, solicitud);
+    return solicitud;
 
 }
 
@@ -47,7 +97,25 @@ function crearResultadoPacientesDesdeDocs(docs) {
     };
 }
 
-export async function listarPacientes(uidMedico = ""){
+export async function listarPacientes(uidMedico = "", opciones = {}){
+
+    const claveCache = uidMedico || "__todos__";
+    if (!opciones.forzar) {
+        const cache = leerCacheVigente(cacheListasPacientes, claveCache, TTL_LISTA_PACIENTES_MS);
+        if (cache) return cache;
+        if (solicitudesListasPacientes.has(claveCache)) return solicitudesListasPacientes.get(claveCache);
+    }
+
+    const solicitud = listarPacientesSinCache(uidMedico)
+        .then((resultado) => guardarCache(cacheListasPacientes, claveCache, resultado))
+        .finally(() => solicitudesListasPacientes.delete(claveCache));
+
+    solicitudesListasPacientes.set(claveCache, solicitud);
+    return solicitud;
+
+}
+
+async function listarPacientesSinCache(uidMedico = ""){
 
     if (!uidMedico) {
         const q = query(
@@ -144,6 +212,8 @@ export async function actualizarUsuario(uid,datos){
         doc(db,"usuarios",uid),
         datos
     );
+    invalidarCacheUsuario(uid);
+    invalidarListasPacientes();
 
 }
 
@@ -155,12 +225,14 @@ export async function crearUsuario(uid,datos){
         doc(db,"usuarios",uid),
         datos
     );
+    invalidarCacheUsuario(uid);
+    invalidarListasPacientes();
 
 }
 
 export async function crearPacienteProvisional(datos){
 
-    return await addDoc(
+    const refPaciente = await addDoc(
         collection(db,"usuarios"),
         {
             ...datos,
@@ -169,10 +241,13 @@ export async function crearPacienteProvisional(datos){
             fechaCreacion:new Date().toISOString()
         }
     );
+    invalidarListasPacientes();
+    return refPaciente;
 
 }
 
 export async function solicitarEliminacionPaciente(uid, solicitadoPor, datosSolicitud = {}){
+    const { crearDatosSolicitudEliminacion } = await import("./reportes.js?v=20260716-1");
     const fechaSolicitud = new Date().toISOString();
     const datosReporte = crearDatosSolicitudEliminacion({
         ...datosSolicitud,
@@ -203,6 +278,21 @@ export async function solicitarEliminacionPaciente(uid, solicitadoPor, datosSoli
 
 export async function medicoPuedeVer(uidMedico, pacienteId) {
     if (!uidMedico || !pacienteId) return false;
+
+    const claveCache = `${uidMedico}:${pacienteId}`;
+    const permisoCache = leerCacheVigente(cachePermisosMedico, claveCache, TTL_LISTA_PACIENTES_MS);
+    if (permisoCache !== null) return permisoCache;
+    if (solicitudesPermisosMedico.has(claveCache)) return solicitudesPermisosMedico.get(claveCache);
+
+    const solicitud = medicoPuedeVerSinCache(uidMedico, pacienteId)
+        .then((resultado) => guardarCache(cachePermisosMedico, claveCache, resultado))
+        .finally(() => solicitudesPermisosMedico.delete(claveCache));
+
+    solicitudesPermisosMedico.set(claveCache, solicitud);
+    return solicitud;
+}
+
+async function medicoPuedeVerSinCache(uidMedico, pacienteId) {
 
     const pacienteRef = doc(db, "usuarios", pacienteId);
     const pacienteSnap = await getDoc(pacienteRef);
@@ -284,6 +374,7 @@ export async function otorgarPermisoMedico(pacienteId, uidMedicoDestino, tipoPer
         fechaOtorgamiento: new Date().toISOString(),
         otorgadoPor: otorgadoPor
     });
+    invalidarListasPacientes();
 }
 
 export async function buscarMedicoPorCorreo(correo) {
@@ -356,6 +447,7 @@ export async function cambiarRolPermisoMedico(
         fechaModificacion: new Date().toISOString(),
         modificadoPor
     });
+    invalidarListasPacientes();
 }
 
 export async function revocarPermisoMedico(
@@ -371,4 +463,5 @@ export async function revocarPermisoMedico(
     );
 
     await deleteDoc(permisoRef);
+    invalidarListasPacientes();
 }

@@ -7,6 +7,8 @@ const PAGINAS_SIN_ACCESOS_RAPIDOS = new Set([
   "registro.html",
   "recuperar.html"
 ]);
+let eventosGlobalesConfigurados = false;
+let inicializacionProgramada = false;
 
 export const OPCIONES_ACCESOS_RAPIDOS = Object.freeze([
   { value: "dashboard.html", label: "Dashboard", keywords: "inicio panel principal" },
@@ -291,24 +293,44 @@ function renderizar(contenedor) {
 
 export function inicializarAccesosRapidos(root = document) {
   if (debeOmitirAccesosRapidos()) return;
+  configurarEventosGlobalesAccesos();
   asegurarEstilos();
   crearContenedorAutomatico();
   root.querySelectorAll("[data-accesos-rapidos]").forEach(renderizar);
 }
 
-document.addEventListener("click", (event) => {
-  document.querySelectorAll("[data-accesos-rapidos].abierto").forEach((contenedor) => {
-    if (!contenedor.contains(event.target)) cerrarPanel(contenedor);
-  });
-});
+function configurarEventosGlobalesAccesos() {
+  if (eventosGlobalesConfigurados) return;
+  eventosGlobalesConfigurados = true;
 
-document.addEventListener("keydown", (event) => {
-  if (event.key !== "Escape") return;
-  document.querySelectorAll("[data-accesos-rapidos].abierto").forEach(cerrarPanel);
-});
+  document.addEventListener("click", (event) => {
+    document.querySelectorAll("[data-accesos-rapidos].abierto").forEach((contenedor) => {
+      if (!contenedor.contains(event.target)) cerrarPanel(contenedor);
+    });
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key !== "Escape") return;
+    document.querySelectorAll("[data-accesos-rapidos].abierto").forEach(cerrarPanel);
+  });
+}
+
+function ejecutarCuandoEsteDisponible(callback) {
+  if ("requestIdleCallback" in window) {
+    window.requestIdleCallback(callback, { timeout: 1800 });
+    return;
+  }
+  window.setTimeout(callback, 650);
+}
+
+function programarInicializacionAccesosRapidos() {
+  if (inicializacionProgramada) return;
+  inicializacionProgramada = true;
+  ejecutarCuandoEsteDisponible(() => inicializarAccesosRapidos());
+}
 
 if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", () => inicializarAccesosRapidos());
+  document.addEventListener("DOMContentLoaded", programarInicializacionAccesosRapidos, { once: true });
 } else {
-  inicializarAccesosRapidos();
+  programarInicializacionAccesosRapidos();
 }

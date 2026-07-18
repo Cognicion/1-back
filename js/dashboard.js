@@ -1,7 +1,6 @@
 import { auth, db } from "./firebase.js";
 
 import {
-  onAuthStateChanged,
   signOut
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
@@ -21,6 +20,7 @@ import {
 import {
   obtenerUsuario
 } from "./services/usuarios.js";
+import { getAuthenticatedUserOnce, getUserProfileOnce } from "./services/authContextService.js";
 import { registrarEventoAuditoria } from "./services/auditoria.js";
 import { iniciarMonitoreoSesion } from "./services/sesion.js";
 import { aplicarAparienciaGuardada, sincronizarAparienciaUsuario } from "./services/apariencia.js";
@@ -362,7 +362,8 @@ document.addEventListener("keydown", (evento) => {
   }
 });
 
-onAuthStateChanged(auth, async (user) => {
+async function inicializarDashboard() {
+  const user = await getAuthenticatedUserOnce();
   marcarDashboard("auth-resuelta");
   medirDashboard("resolucion autenticacion", "html-end", "auth-resuelta");
   const inicioAuth = performance.now();
@@ -375,7 +376,7 @@ onAuthStateChanged(auth, async (user) => {
   console.time?.("COGNICION dashboard | usuario");
   let datos = null;
   try {
-    datos = await conTiempoLimiteDashboard(obtenerUsuario(user.uid));
+    datos = await conTiempoLimiteDashboard(getUserProfileOnce(user.uid));
   } catch (errorUsuario) {
     console.warn("No se pudo cargar el perfil del usuario en dashboard; se continuara con datos de autenticacion.", errorUsuario);
   }
@@ -410,6 +411,11 @@ onAuthStateChanged(auth, async (user) => {
 
   iniciarMonitoreoSesionDashboard(user, datos);
   programarDatosSecundariosDashboard(rolUsuario, user.uid);
+}
+
+inicializarDashboard().catch((error) => {
+  console.error("No se pudo inicializar el dashboard:", error);
+  window.location.href = "login.html";
 });
 
 window.cerrarSesion = async function() {

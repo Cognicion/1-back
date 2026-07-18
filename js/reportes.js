@@ -84,20 +84,19 @@ function ejecutarCuandoEsteLibre(callback) {
 
 async function sincronizarUsuarioReporte() {
   try {
-    const [{ auth }, { onAuthStateChanged }] = await Promise.all([
-      import("./firebase.js"),
-      import("https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js")
-    ]);
-    onAuthStateChanged(auth, async (user) => {
-      usuarioActual = user || null;
-      if (!user?.uid) return;
-      try {
-        const { sincronizarAparienciaUsuario } = await import("./services/apariencia.js");
-        await sincronizarAparienciaUsuario(user.uid);
-      } catch (error) {
-        console.warn("No se pudo sincronizar apariencia en segundo plano.", error);
-      }
-    });
+    const { getAuthenticatedUserOnce, getUserProfileOnce } = await import("./services/authContextService.js");
+    const user = await getAuthenticatedUserOnce();
+    usuarioActual = user || null;
+    if (!user?.uid) return;
+    try {
+      const [{ sincronizarAparienciaUsuario }, datosUsuario] = await Promise.all([
+        import("./services/apariencia.js"),
+        getUserProfileOnce(user.uid).catch(() => null)
+      ]);
+      await sincronizarAparienciaUsuario(user.uid, datosUsuario);
+    } catch (error) {
+      console.warn("No se pudo sincronizar apariencia en segundo plano.", error);
+    }
   } catch (error) {
     console.warn("No se pudo preparar reportes en segundo plano.", error);
   }

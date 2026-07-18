@@ -3,10 +3,7 @@ import { registrarEventoAuditoria } from "./services/auditoria.js";
 import { iniciarMonitoreoSesion } from "./services/sesion.js";
 import { obtenerNombrePacienteParaMostrar } from "./utils/nombresPacientes.js";
 import { usuarioEsPersonalClinico } from "./utils/roles.js";
-
-import {
-  onAuthStateChanged
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getAuthenticatedUserOnce, getUserProfileOnce } from "./services/authContextService.js";
 
 import {
   obtenerUsuario,
@@ -93,13 +90,14 @@ function calcularIMCHistoria() {
   campoIMC.value = (peso / (talla * talla)).toFixed(2);
 }
 
-onAuthStateChanged(auth, async (user) => {
+async function inicializarHistoriaClinica() {
+  const user = await getAuthenticatedUserOnce();
   if (!user) {
     window.location.href = "login.html";
     return;
   }
 
-  const usuario = await obtenerUsuario(user.uid);
+  const usuario = await getUserProfileOnce(user.uid);
 
  if (!usuario || (usuario.rol !== "admin" && !usuarioEsPersonalClinico(usuario.rol))) {
   alert("Acceso restringido al personal clinico");
@@ -113,6 +111,11 @@ onAuthStateChanged(auth, async (user) => {
 
   await cargarPaciente();
   await cargarHistoria();
+}
+
+inicializarHistoriaClinica().catch((error) => {
+  console.error("No se pudo inicializar la historia clinica:", error);
+  window.location.href = "dashboard.html";
 });
 
 async function cargarPaciente() {

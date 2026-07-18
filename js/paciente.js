@@ -32,9 +32,7 @@ import {
   mantenimientoHollidaySegar,
   superficieCorporal
 } from "./pediatria/formulas.js";
-import {
-  onAuthStateChanged
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getAuthenticatedUserOnce, getUserProfileOnce } from "./services/authContextService.js";
 
 import {
   collection,
@@ -1830,7 +1828,7 @@ function renderizarPanelDiagnosticos() {
 }
 
 function iniciarCargaExpedientePaciente() {
-  onAuthStateChanged(auth, async (user) => {
+  getAuthenticatedUserOnce().then(async (user) => {
     if (!user) {
       window.location.href = "login.html";
       return;
@@ -1849,7 +1847,7 @@ function iniciarCargaExpedientePaciente() {
       parametros.get("user") ||
       "";
     try {
-      medicoActualDatos = await obtenerUsuario(user.uid) || {};
+      medicoActualDatos = await getUserProfileOnce(user.uid) || {};
     } catch (error) {
       console.warn("No se pudo cargar el perfil del usuario actual. Se continuará con la carga del paciente.", error);
       medicoActualDatos = { uid: user.uid, correo: user.email || "", email: user.email || "" };
@@ -1873,6 +1871,9 @@ function iniciarCargaExpedientePaciente() {
       console.error("No se pudieron cargar los datos del paciente:", error);
       ponerTexto("nombrePaciente", "No se pudieron cargar los datos del paciente");
     }
+  }).catch((error) => {
+    console.error("No se pudo inicializar el expediente del paciente:", error);
+    window.location.href = "dashboard.html";
   });
 }
 

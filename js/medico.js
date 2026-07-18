@@ -1,4 +1,5 @@
 import { listarPacientes } from "./services/usuarios.js";
+import { getAuthenticatedUserOnce, getUserProfileOnce } from "./services/authContextService.js";
 import { iniciarMonitoreoSesion } from "./services/sesion.js";
 import { aplicarAparienciaGuardada, sincronizarAparienciaUsuario } from "./services/apariencia.js";
 import {
@@ -11,14 +12,9 @@ import { usuarioEsPersonalClinico } from "./utils/roles.js";
 import { auth, db } from "./firebase.js";
 
 import {
-  onAuthStateChanged
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-
-import {
   collection,
   getDocs,
   doc,
-  getDoc,
   updateDoc,
   setDoc,
   deleteDoc,
@@ -105,15 +101,17 @@ const INSTITUCIONES_ATENCION = {
   }
 };
 
-onAuthStateChanged(auth, async (user) => {
+async function inicializarPanelMedico() {
+  const user = await getAuthenticatedUserOnce();
   if (!user) {
     window.location.href = "login.html";
     return;
   }
 
-  await sincronizarAparienciaUsuario(user.uid);
+  const perfilUsuario = await getUserProfileOnce(user.uid);
+  await sincronizarAparienciaUsuario(user.uid, perfilUsuario);
 
-  const accesoPermitido = await cargarPerfilMedico(user);
+  const accesoPermitido = await cargarPerfilMedico(user, perfilUsuario);
 
   if (!accesoPermitido) return;
 
@@ -170,6 +168,11 @@ onAuthStateChanged(auth, async (user) => {
 
   await cargarCarpetasMedico(user.uid);
   await cargarPacientes(user.uid);
+}
+
+inicializarPanelMedico().catch((error) => {
+  console.error("No se pudo inicializar el panel medico:", error);
+  window.location.href = "login.html";
 });
 
 function inicializarPanelMedicoColapsable() {
@@ -205,7 +208,7 @@ document.addEventListener("visibilitychange", () => {
   if (!document.hidden) refrescarPacientesSiCorresponde();
 });
 
-async function cargarPerfilMedico(user) {
+async function cargarPerfilMedico(user, datosIniciales = null) {
   const correo = user.email;
 
   document.getElementById("correoMedico").textContent = correo || "";
@@ -213,17 +216,15 @@ async function cargarPerfilMedico(user) {
   const inicial = correo ? correo.charAt(0).toUpperCase() : "M";
   document.getElementById("avatarMedico").textContent = inicial;
 
-  const refUsuario = doc(db, "usuarios", user.uid);
-  const snapUsuario = await getDoc(refUsuario);
+  const datos = datosIniciales || await getUserProfileOnce(user.uid);
 
-  if (!snapUsuario.exists()) {
+  if (!datos) {
     alert("Tu cuenta no está registrada en Cognición.");
     await auth.signOut();
     window.location.href = "login.html";
     return false;
   }
 
-  const datos = snapUsuario.data();
   rolUsuarioActual = datos.rol || "";
 
   if (datos.rol !== "admin" && !usuarioEsPersonalClinico(datos.rol)) {
