@@ -1,4 +1,4 @@
-import { auth } from "./firebaseAppService.js";
+import { auth, authPersistenceReady } from "./firebaseAppService.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { invalidarCacheUsuario, obtenerUsuario } from "./usuarios.js";
 
@@ -17,12 +17,12 @@ export function getAuthenticatedUserOnce(opciones = {}) {
   if (auth.currentUser) return Promise.resolve(auth.currentUser);
   if (authUserPromise) return authUserPromise;
 
-  authUserPromise = conTiempoLimite(new Promise((resolve) => {
+  authUserPromise = conTiempoLimite(Promise.resolve(authPersistenceReady).then(() => new Promise((resolve) => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       unsubscribe();
       resolve(user || null);
     });
-  }), timeoutMs).finally(() => {
+  })), timeoutMs).finally(() => {
     authUserPromise = null;
   });
 

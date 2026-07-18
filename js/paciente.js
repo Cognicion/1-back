@@ -33,6 +33,7 @@ import {
   superficieCorporal
 } from "./pediatria/formulas.js";
 import { getAuthenticatedUserOnce, getUserProfileOnce } from "./services/authContextService.js";
+import { guardarTransferenciaClinicaLocal } from "./services/clinicalLocalStore.js";
 
 import {
   collection,
@@ -4977,15 +4978,18 @@ function construirTextoIndicaciones(medicamentos = medicamentosActivosIndicacion
   return lineas.join("\n");
 }
 
-function guardarIndicacionesGeneradasParaNota() {
+const CLAVE_TRANSFERENCIA_INDICACIONES = "cognicion_indicaciones_generadas_ultimo";
+
+async function guardarIndicacionesGeneradasParaNota() {
   const texto = valorCampo("indicacionesTexto").trim();
   const pacienteId = uidPaciente || document.getElementById("uidPaciente")?.value || "";
   try {
-    localStorage.setItem("cognicion_indicaciones_generadas_ultimo", JSON.stringify({
+    await guardarTransferenciaClinicaLocal(CLAVE_TRANSFERENCIA_INDICACIONES, {
       pacienteId,
       texto,
       actualizadoEn: new Date().toISOString()
-    }));
+    });
+    localStorage.removeItem(CLAVE_TRANSFERENCIA_INDICACIONES);
   } catch (error) {
     console.warn("No se pudo sincronizar indicaciones generadas con nota:", error?.name || "error");
   }

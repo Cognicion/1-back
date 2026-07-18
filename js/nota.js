@@ -42,6 +42,12 @@ import {
   usuarioPuedeUsarFormato
 } from "./services/formatosInstitucionales.js";
 import { getAuthenticatedUserOnce, getUserProfileOnce } from "./services/authContextService.js";
+import {
+  eliminarBorradorClinicoLocal,
+  guardarBorradorClinicoLocal,
+  obtenerBorradorClinicoLocal,
+  obtenerTransferenciaClinicaLocal
+} from "./services/clinicalLocalStore.js";
 
 import {
   doc,
@@ -262,26 +268,33 @@ function alternarContraerSeccionNota(clave, objetivo, minimo = 80) {
   aplicarAlturaSeccionNota(clave, objetivo, alturaGuardadaSeccion(estado) || 130, minimo);
 }
 
-function indicacionesGeneradasGuardadasNota() {
+const CLAVE_TRANSFERENCIA_INDICACIONES = "cognicion_indicaciones_generadas_ultimo";
+
+async function indicacionesGeneradasGuardadasNota() {
   try {
-    const guardado = JSON.parse(localStorage.getItem("cognicion_indicaciones_generadas_ultimo") || "{}");
     const pacienteId = uidPacienteActual || document.getElementById("uidPaciente")?.value || "";
-    if (guardado.pacienteId && pacienteId && guardado.pacienteId !== pacienteId) return "";
-    return String(guardado.texto || "").trim();
+    const guardado = await obtenerTransferenciaClinicaLocal(CLAVE_TRANSFERENCIA_INDICACIONES, { consumir: false });
+    if (guardado?.pacienteId && pacienteId && guardado.pacienteId !== pacienteId) return "";
+    if (guardado?.texto) return String(guardado.texto || "").trim();
+
+    const legado = JSON.parse(localStorage.getItem(CLAVE_TRANSFERENCIA_INDICACIONES) || "{}");
+    localStorage.removeItem(CLAVE_TRANSFERENCIA_INDICACIONES);
+    if (legado.pacienteId && pacienteId && legado.pacienteId !== pacienteId) return "";
+    return String(legado.texto || "").trim();
   } catch (error) {
     console.warn("No se pudieron leer las indicaciones generadas:", error?.name || "error");
     return "";
   }
 }
 
-function obtenerIndicacionesGeneradasActuales() {
+async function obtenerIndicacionesGeneradasActuales() {
   const campoVisible = document.getElementById("indicacionesTexto");
   if (campoVisible) return String(campoVisible.value || campoVisible.textContent || "").trim();
   return indicacionesGeneradasGuardadasNota();
 }
 
-function asignarTextoCampoNotaDesdeIndicaciones(idCampo, etiquetaCampo) {
-  const texto = obtenerIndicacionesGeneradasActuales();
+async function asignarTextoCampoNotaDesdeIndicaciones(idCampo, etiquetaCampo) {
+  const texto = await obtenerIndicacionesGeneradasActuales();
   if (!texto) {
     alert("No hay indicaciones generadas para actualizar.");
     return;
@@ -2560,10 +2573,10 @@ function claveRespaldoNota() {
   return `${PREFIJO_RESPALDO_NOTA}:${uidMedicoActual || "sin-usuario"}:${pacienteId}:${atencionId}`;
 }
 
-function guardarRespaldoTemporalNota() {
+async function guardarRespaldoTemporalNota() {
   if (!cambiosNotaPendientes || estadoNotaActual === "definitiva") return;
   try {
-    sessionStorage.setItem(claveRespaldoNota(), JSON.stringify({
+    await guardarBorradorClinicoLocal(claveRespaldoNota(), {
       pacienteId: uidPacienteActual || document.getElementById("uidPaciente")?.value || "",
       atencionId: obtenerContextoAtencion().id,
       actualizadoEn: Date.now(),
@@ -2571,7 +2584,7 @@ function guardarRespaldoTemporalNota() {
       edicionVersionada: edicionVersionadaActiva,
       modoEdicion: modoEdicionNota,
       datos: collectNoteData()
-    }));
+    });
   } catch (error) {
     console.warn("No se pudo crear el respaldo temporal de la nota:", error?.name || "error");
   }
@@ -2587,7 +2600,7 @@ function marcarCambiosNotaPendientes() {
 function marcarNotaGuardada() {
   cambiosNotaPendientes = false;
   clearTimeout(temporizadorRespaldoNota);
-  try { sessionStorage.removeItem(claveRespaldoNota()); } catch (_) { /* Respaldo opcional. */ }
+  eliminarBorradorClinicoLocal(claveRespaldoNota()).catch(() => {});
 }
 
 function configurarPrevencionPerdidaNota() {
@@ -3238,7 +3251,7 @@ async function recuperarBorradorCorrespondiente() {
     }
 
     let respaldo = null;
-    try { respaldo = JSON.parse(sessionStorage.getItem(claveRespaldoNota()) || "null"); } catch (error) {
+    try { respaldo = await obtenerBorradorClinicoLocal(claveRespaldoNota()); } catch (error) {
       console.warn("El respaldo temporal de la nota no pudo leerse:", error?.name || "error");
     }
     const respaldoValido = respaldo

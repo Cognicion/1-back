@@ -1,6 +1,20 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import {
+  browserLocalPersistence,
+  getAuth,
+  setPersistence
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import {
+  getFirestore,
+  initializeFirestore,
+  memoryLocalCache,
+  persistentLocalCache,
+  persistentMultipleTabManager
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import {
+  FIRESTORE_DEVICE_PREF_KEY,
+  iniciarCacheCognicionDiferido
+} from "./cacheControlService.js";
 
 const medirDashboardFirebase = window.location.pathname.endsWith("/dashboard.html") || window.location.pathname.endsWith("dashboard.html");
 
@@ -20,7 +34,36 @@ const firebaseConfig = {
 
 export const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
-export const db = getFirestore(app);
+
+export const authPersistenceReady = setPersistence(auth, browserLocalPersistence).catch((error) => {
+  console.warn("No se pudo fijar persistencia local de Firebase Auth:", error?.code || error?.name || "error");
+  return null;
+});
+
+function dispositivoPersonalConfirmado() {
+  try {
+    return globalThis.localStorage?.getItem(FIRESTORE_DEVICE_PREF_KEY) === "1";
+  } catch (_) {
+    return false;
+  }
+}
+
+function crearFirestoreCompartido() {
+  const usarCachePersistente = dispositivoPersonalConfirmado();
+  try {
+    return initializeFirestore(app, {
+      localCache: usarCachePersistente
+        ? persistentLocalCache({ tabManager: persistentMultipleTabManager() })
+        : memoryLocalCache()
+    });
+  } catch (error) {
+    console.warn("No se pudo configurar cache local de Firestore; se usa configuracion predeterminada:", error?.code || error?.name || "error");
+    return getFirestore(app);
+  }
+}
+
+export const firestoreCacheMode = dispositivoPersonalConfirmado() ? "persistentLocalCache" : "memoryLocalCache";
+export const db = crearFirestoreCompartido();
 
 let functionsPromise = null;
 let storagePromise = null;
@@ -46,3 +89,5 @@ if (medirDashboardFirebase) {
   performance.measure?.("COGNICION dashboard | Firebase init", "cognicion:firebase:init:start", "cognicion:firebase:init:end");
   console.timeEnd?.("COGNICION dashboard | Firebase init");
 }
+
+iniciarCacheCognicionDiferido();

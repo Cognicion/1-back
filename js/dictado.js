@@ -79,13 +79,7 @@ function encuentroActualId() {
 }
 
 function usuarioActualId() {
-  return (
-    auth?.currentUser?.uid ||
-    localStorage.getItem("cognicion.uid") ||
-    localStorage.getItem("usuarioUid") ||
-    localStorage.getItem("uid") ||
-    "usuario-local"
-  );
+  return auth?.currentUser?.uid || "usuario-local";
 }
 
 function contextoActual() {
@@ -244,10 +238,10 @@ function actualizarMetricas() {
   actualizarDiagnosticoSeguro();
 }
 
-function actualizarBotonRecuperar() {
+async function actualizarBotonRecuperar() {
   const boton = $("btnRecuperarDictado");
   if (!boton || !runtime.persistencia) return;
-  const borrador = runtime.persistencia.load();
+  const borrador = await runtime.persistencia.load();
   const tieneContenido = Boolean(
     borrador?.text || borrador?.pendingText || borrador?.provisional
     || borrador?.pendingSegments?.length || borrador?.interimResults?.length
@@ -658,9 +652,9 @@ export function limpiarDictado() {
   actualizarMetricas();
 }
 
-export function recuperarUltimoDictado() {
+export async function recuperarUltimoDictado() {
   asegurarContexto();
-  const borrador = runtime.persistencia?.load();
+  const borrador = await runtime.persistencia?.load();
   const tieneContenido = Boolean(
     borrador?.text || borrador?.pendingText || borrador?.provisional
     || borrador?.pendingSegments?.length || borrador?.interimResults?.length
