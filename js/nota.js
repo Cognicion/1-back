@@ -1,5 +1,4 @@
-import { auth, db, functions } from "./firebase.js";
-import { httpsCallable } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-functions.js";
+import { auth, db, obtenerFunctions } from "./firebase.js";
 import { registrarEventoAuditoria } from "./services/auditoria.js";
 import { guardarSolicitudEliminacion } from "./services/reportes.js?v=20260716-1";
 import { iniciarMonitoreoSesion } from "./services/sesion.js";
@@ -25,10 +24,8 @@ import {
   obtenerPruebaInteractiva,
   puntajesDominioPruebaInteractiva
 } from "./data/pruebasInteractivas.js";
-import { createNoteGenerationProvider } from "./services/noteGenerationProviders.js";
 import { obtenerNombrePacienteParaMostrar } from "./utils/nombresPacientes.js";
 import { normalizarTextoFrecuencia } from "./utils/frecuencias.js";
-import { evaluarMedicamentosPaciente } from "./services/motorClinicoMedicamentos.js";
 import {
   calcularPuntajeEscala,
   crearResumenEscala,
@@ -114,13 +111,11 @@ let catalogoMedicosFirmasCache = [];
 let diagnosticosAutomaticosSugeridos = [];
 let escalasPreviasNotaCache = [];
 let escalasAplicadasPendientesNota = [];
-const proveedorNotas = createNoteGenerationProvider({
-  provider: "external",
-  external: {
-    callable: httpsCallable(functions, "generateStructuredNoteFromDictation"),
-    fallbackToLocal: true
-  }
-});
+let proveedorNotas = null;
+let proveedorNotasCapability = {
+  status: "pendiente",
+  notice: "El proveedor de nota automatica se cargara al solicitar la generacion."
+};
 let borradorNotaAutomaticaActual = null;
 let snapshotAntesInsercionAutomatica = null;
 let estadoNotaActual = "nueva";
@@ -1529,6 +1524,24 @@ function construirPayloadNotaDesdeDictado(identificacion = {}) {
   };
 }
 
+async function obtenerProveedorNotas() {
+  if (proveedorNotas) return proveedorNotas;
+  const [{ createNoteGenerationProvider }, { httpsCallable }, functionsInstance] = await Promise.all([
+    import("./services/noteGenerationProviders.js"),
+    import("https://www.gstatic.com/firebasejs/10.12.2/firebase-functions.js"),
+    obtenerFunctions()
+  ]);
+  proveedorNotas = createNoteGenerationProvider({
+    provider: "external",
+    external: {
+      callable: httpsCallable(functionsInstance, "generateStructuredNoteFromDictation"),
+      fallbackToLocal: true
+    }
+  });
+  proveedorNotasCapability = proveedorNotas.capability();
+  return proveedorNotas;
+}
+
 async function aplicarNotaAutomatica() {
   const identificacion = obtenerIdentificacionPaciente();
   const payload = construirPayloadNotaDesdeDictado(identificacion);
@@ -1555,7 +1568,8 @@ async function aplicarNotaAutomatica() {
     selectorTipoNota.value = "paidopsiquiatria";
     payload.selectedDocumentType = "paidopsiquiatria";
   }
-  const generada = await proveedorNotas.generate(payload, identificacion, {
+  const proveedor = await obtenerProveedorNotas();
+  const generada = await proveedor.generate(payload, identificacion, {
     patientId: identificacion.id,
     userId: payload.userId || auth.currentUser?.uid || "",
     sessionId: payload.transcriptSessionId || window.cognicionDictado?.sessionId || "",
@@ -1575,6 +1589,7 @@ async function aplicarNotaAutomatica() {
     ...med, dosis: med.dose, unidad: med.unit, via: med.route, frecuencia: med.frequency
   }));
   if (medicamentosPropuestos.length) {
+    const { evaluarMedicamentosPaciente } = await import("./services/motorClinicoMedicamentos.js");
     const evaluacion = evaluarMedicamentosPaciente({
       paciente: { ...pacienteActualDatos, ...historiaClinicaActual, edad: identificacion.edad },
       medicamentos: [...(pacienteActualDatos?.tratamientos || []), ...medicamentosPropuestos]
@@ -1696,7 +1711,7 @@ function renderizarRevisionNotaAutomatica(generada = {}, transcripcionOriginal =
   const issues = generada.validationIssues || [];
   const secciones = generada.generatedSections || [];
   const salidaElegida = document.getElementById("resultadoNotaAutomatica")?.value || "nota_medica_estructurada";
-  const capability = proveedorNotas.capability();
+  const capability = proveedorNotasCapability;
   revision.innerHTML = `
     <div class="revision-nota-automatica-grid revision-tres-columnas">
       <section>
@@ -1768,7 +1783,8 @@ function renderizarRevisionNotaAutomatica(generada = {}, transcripcionOriginal =
     const identificacion = obtenerIdentificacionPaciente();
     const payload = construirPayloadNotaDesdeDictado(identificacion);
     payload.correctedTranscript = transcripcionOriginal;
-    const regenerada = await proveedorNotas.generate(payload, identificacion, {
+    const proveedor = await obtenerProveedorNotas();
+    const regenerada = await proveedor.generate(payload, identificacion, {
       patientId: obtenerIdentificacionPaciente().id,
       sessionId: payload.transcriptSessionId || window.cognicionDictado?.sessionId || "",
       tipoNota: generada.metadata?.tipoNota,
@@ -1914,6 +1930,44 @@ function renderizarDiagnosticosSeleccionadosEditable() {
 
 renderizarDiagnosticosSeleccionados = renderizarDiagnosticosSeleccionadosEditable;
 
+let moduloDictadoPromise = null;
+
+async function cargarModuloDictadoClinico() {
+  if (!moduloDictadoPromise) {
+    moduloDictadoPromise = import("./dictado.js?v=20260715-1505");
+  }
+  const modulo = await moduloDictadoPromise;
+  modulo.inicializarDictadoClinico?.();
+  return modulo;
+}
+
+function conectarCargaDiferidaDictado() {
+  const acciones = {
+    btnIniciarDictado: "iniciarDictado",
+    btnPausarDictado: "pausarDictado",
+    btnLimpiarDictado: "limpiarDictado",
+    btnInsertarDictado: "insertarDictadoEnNota"
+  };
+  Object.entries(acciones).forEach(([id, metodo]) => {
+    const boton = document.getElementById(id);
+    if (!boton || boton.dataset.dictadoLazyListener === "true") return;
+    boton.addEventListener("click", async (event) => {
+      if (window.cognicionDictado?.snapshot) return;
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      boton.disabled = true;
+      try {
+        const modulo = await cargarModuloDictadoClinico();
+        await modulo[metodo]?.();
+      } finally {
+        boton.disabled = false;
+      }
+    }, { capture: true });
+    boton.dataset.dictadoLazyListener = "true";
+  });
+}
+
+conectarCargaDiferidaDictado();
 document.getElementById("btnGenerarNotaAutomatica")?.addEventListener("click", aplicarNotaAutomatica);
 document.getElementById("btnAceptarTodosDxAutomaticos")?.addEventListener("click", aceptarTodosDiagnosticosAutomaticos);
 document.getElementById("resultadoNotaAutomatica")?.addEventListener("change", () => {

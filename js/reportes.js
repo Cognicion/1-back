@@ -1,14 +1,6 @@
-import { auth } from "./firebase.js";
-import { guardarReporteUsuario } from "./services/reportes.js";
-import { aplicarAparienciaGuardada, sincronizarAparienciaUsuario } from "./services/apariencia.js";
-
-import {
-  onAuthStateChanged
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-
 asegurarCssReporte();
 asegurarCssApariencia();
-aplicarAparienciaGuardada();
+aplicarAparienciaLocalLigera();
 
 const TIPOS_REPORTE = [
   {
@@ -37,10 +29,7 @@ const STORAGE_REPORTE_CONTRAIDO = "cognicion.reporteGlobal.contraido";
 let usuarioActual = null;
 let tipoSeleccionado = TIPOS_REPORTE[0].valor;
 
-onAuthStateChanged(auth, (user) => {
-  usuarioActual = user || null;
-  if (user?.uid) sincronizarAparienciaUsuario(user.uid);
-});
+ejecutarCuandoEsteLibre(sincronizarUsuarioReporte);
 
 if (document.readyState === "loading") {
   document.addEventListener("DOMContentLoaded", inicializarReporteGlobal, { once: true });
@@ -62,6 +51,67 @@ function asegurarCssApariencia() {
   link.rel = "stylesheet";
   link.href = "css/apariencia.css";
   document.head.appendChild(link);
+}
+
+function obtenerLocalStorageSeguro(clave) {
+  try {
+    return localStorage.getItem(clave);
+  } catch {
+    return null;
+  }
+}
+
+function aplicarAparienciaLocalLigera() {
+  const tema = obtenerLocalStorageSeguro("cognicion.apariencia.tema") || "laboratorio";
+  const modo = obtenerLocalStorageSeguro("cognicion.apariencia.modoInterfaz") || "dark";
+  const esClaro = modo !== "dark";
+  document.documentElement.dataset.cognicionTheme = tema;
+  document.documentElement.dataset.theme = modo;
+  document.documentElement.dataset.cognicionInterface = modo;
+  document.documentElement.style.colorScheme = esClaro ? "light" : "dark";
+  document.body?.classList.toggle("tema-laboratorio", tema === "laboratorio");
+  document.body?.classList.toggle("tema-claro", esClaro);
+  document.body?.classList.toggle("tema-oscuro", !esClaro);
+}
+
+function ejecutarCuandoEsteLibre(callback) {
+  if ("requestIdleCallback" in window) {
+    window.requestIdleCallback(callback, { timeout: 2500 });
+  } else {
+    window.setTimeout(callback, 0);
+  }
+}
+
+async function sincronizarUsuarioReporte() {
+  try {
+    const [{ auth }, { onAuthStateChanged }] = await Promise.all([
+      import("./firebase.js"),
+      import("https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js")
+    ]);
+    onAuthStateChanged(auth, async (user) => {
+      usuarioActual = user || null;
+      if (!user?.uid) return;
+      try {
+        const { sincronizarAparienciaUsuario } = await import("./services/apariencia.js");
+        await sincronizarAparienciaUsuario(user.uid);
+      } catch (error) {
+        console.warn("No se pudo sincronizar apariencia en segundo plano.", error);
+      }
+    });
+  } catch (error) {
+    console.warn("No se pudo preparar reportes en segundo plano.", error);
+  }
+}
+
+async function obtenerUsuarioActualReporte() {
+  if (usuarioActual) return usuarioActual;
+  try {
+    const { auth } = await import("./firebase.js");
+    usuarioActual = auth.currentUser || null;
+  } catch (error) {
+    console.warn("No se pudo obtener usuario para reporte.", error);
+  }
+  return usuarioActual;
 }
 function inicializarReporteGlobal() {
   if (document.getElementById("reporteGlobalWidget")) return;
@@ -212,6 +262,10 @@ function conectarEventosReporte(raiz) {
     estado.className = "";
 
     try {
+      const [{ guardarReporteUsuario }, user] = await Promise.all([
+        import("./services/reportes.js"),
+        obtenerUsuarioActualReporte()
+      ]);
       await guardarReporteUsuario({
         tipo: tipoSeleccionado,
         titulo: tituloReporte,
@@ -219,9 +273,9 @@ function conectarEventosReporte(raiz) {
         pagina: window.location.pathname,
         url: window.location.href,
         estado: "nuevo",
-        usuarioUid: usuarioActual?.uid || "",
-        usuarioEmail: usuarioActual?.email || "",
-        usuarioNombre: usuarioActual?.displayName || "",
+        usuarioUid: user?.uid || "",
+        usuarioEmail: user?.email || "",
+        usuarioNombre: user?.displayName || "",
         userAgent: navigator.userAgent || ""
       });
 

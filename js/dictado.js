@@ -865,7 +865,11 @@ export function inicializarDictadoClinico() {
   actualizarDiagnosticoSeguro();
 }
 
-document.addEventListener("DOMContentLoaded", inicializarDictadoClinico);
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", inicializarDictadoClinico, { once: true });
+} else {
+  inicializarDictadoClinico();
+}
 
 window.inicializarDictadoClinico = inicializarDictadoClinico;
 window.iniciarDictado = iniciarDictado;

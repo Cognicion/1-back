@@ -1,7 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { getFirestore } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-import { getFunctions } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-functions.js";
 
 const medirDashboardFirebase = window.location.pathname.endsWith("/dashboard.html") || window.location.pathname.endsWith("dashboard.html");
 
@@ -23,7 +22,16 @@ const app = initializeApp(firebaseConfig);
 
 export const auth = getAuth(app);
 export const db = getFirestore(app);
-export const functions = getFunctions(app, "us-central1");
+
+let functionsPromise = null;
+
+export async function obtenerFunctions() {
+  if (!functionsPromise) {
+    functionsPromise = import("https://www.gstatic.com/firebasejs/10.12.2/firebase-functions.js")
+      .then(({ getFunctions }) => getFunctions(app, "us-central1"));
+  }
+  return functionsPromise;
+}
 
 if (medirDashboardFirebase) {
   performance.mark?.("cognicion:firebase:init:end");

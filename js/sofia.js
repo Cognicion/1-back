@@ -1,7 +1,6 @@
-import { auth, db, functions } from "./firebase.js";
+import { auth, db, obtenerFunctions } from "./firebase.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-import { httpsCallable } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-functions.js";
 import { aplicarAparienciaGuardada } from "./services/apariencia.js";
 import { obtenerNombrePacienteParaMostrar } from "./utils/nombresPacientes.js";
 import { usuarioEsPersonalClinico } from "./utils/roles.js";
@@ -40,6 +39,17 @@ let enviandoMensaje = false;
 let pacientesSofia = [];
 let expedienteActual = null;
 let timelineActual = [];
+let chatSofiaCallablePromise = null;
+
+async function obtenerCallableSofia() {
+  if (!chatSofiaCallablePromise) {
+    chatSofiaCallablePromise = Promise.all([
+      obtenerFunctions(),
+      import("https://www.gstatic.com/firebasejs/10.12.2/firebase-functions.js")
+    ]).then(([functionsInstance, { httpsCallable }]) => httpsCallable(functionsInstance, "chatSofia"));
+  }
+  return chatSofiaCallablePromise;
+}
 
 function agregarMensaje(texto, tipo, claseExtra = "") {
   const div = document.createElement("div");
@@ -275,7 +285,7 @@ formSofia?.addEventListener("submit", async (e) => {
   const mensajePensando = agregarMensaje("SOFIA esta pensando...", "sofia", "mensaje-pensando");
   activarCarga();
   try {
-    const chatSofia = httpsCallable(functions, "chatSofia");
+    const chatSofia = await obtenerCallableSofia();
     const resultado = await chatSofia({ mensaje });
     const respuesta = resultado?.data?.respuesta || "SOFIA respondio, pero no llego texto interpretable.";
     mensajePensando.className = "msg sofia";
