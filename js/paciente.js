@@ -5673,6 +5673,10 @@ window.abrirNota = function() {
   window.location.href = "nota.html?id=" + uidPaciente;
 };
 
+window.abrirNotaPorVozPaciente = function() {
+  window.location.href = "nota-por-voz.html?id=" + encodeURIComponent(uidPaciente || "");
+};
+
 window.previsualizarMiSalud = function() {
   window.location.href = `mi-salud.html?paciente=${uidPaciente}&preview=1`;
 };

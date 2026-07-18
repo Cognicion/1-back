@@ -43,10 +43,10 @@ function normalizarPayloadEntrada(transcript, patient = {}, options = {}) {
 
 function seccionesExternasAGeneratedSections(data = {}) {
   if (Array.isArray(data.generatedSections)) return data.generatedSections;
-  if (data.subjective || data.objective || data.analysis || data.plan) {
+  if (data.evolutionOrSubjective || data.subjective || data.objective || data.analysis || data.plan) {
     const soap = data;
     return [
-      { section: "soap_subjective", fieldTarget: "subjective", title: "SUBJETIVO", content: soap.subjective?.text, sourceStatementIds: soap.subjective?.sourceSegmentIds || [] },
+      { section: "soap_subjective", fieldTarget: "subjective", title: "EVOLUCION / SUBJETIVO", content: soap.evolutionOrSubjective?.text || soap.subjective?.text, sourceStatementIds: soap.evolutionOrSubjective?.sourceSegmentIds || soap.subjective?.sourceSegmentIds || [] },
       { section: "soap_physical_exam", fieldTarget: "physicalExam", title: "OBJETIVO - Exploración física y neurológica", content: soap.objective?.physicalNeurologicalExam, sourceStatementIds: soap.objective?.sourceSegmentIds || [] },
       { section: "soap_mental_status", fieldTarget: "mentalStatusExam", title: "OBJETIVO - Examen mental", content: soap.objective?.mentalStatusExam, sourceStatementIds: soap.objective?.sourceSegmentIds || [] },
       { section: "soap_results", fieldTarget: "results", title: "OBJETIVO - Resultados", content: soap.objective?.results, sourceStatementIds: soap.objective?.sourceSegmentIds || [] },
@@ -104,8 +104,9 @@ function normalizarSalidaExterna(data = {}, payload = {}) {
       redaccion_clinica_conservadora: generatedSections.map((section) => section.content).join("\n\n"),
       literal_corregida: payload.correctedTranscript || payload.confirmedTranscript || ""
     },
-    generatedClinicalText: data.subjective || data.objective || data.analysis || data.plan ? {
-      subjective: data.subjective || {},
+    generatedClinicalText: data.evolutionOrSubjective || data.subjective || data.objective || data.analysis || data.plan ? {
+      evolutionOrSubjective: data.evolutionOrSubjective || data.subjective || {},
+      subjective: data.subjective || data.evolutionOrSubjective || {},
       objective: data.objective || {},
       analysis: data.analysis || {},
       plan: data.plan || {}

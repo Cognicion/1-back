@@ -1,4 +1,4 @@
-﻿import { auth, db, obtenerFunctions } from "./firebase.js";
+import { auth, db, obtenerFunctions } from "./firebase.js";
 import { registrarEventoAuditoria } from "./services/auditoria.js";
 import { guardarSolicitudEliminacion } from "./services/reportes.js?v=20260716-1";
 import { iniciarMonitoreoSesion } from "./services/sesion.js";
@@ -108,16 +108,8 @@ let permisosFormatosActual = {};
 let apuntesMedicoCache = [];
 let notasFlotantesPacienteCache = [];
 let catalogoMedicosFirmasCache = [];
-let diagnosticosAutomaticosSugeridos = [];
 let escalasPreviasNotaCache = [];
 let escalasAplicadasPendientesNota = [];
-let proveedorNotas = null;
-let proveedorNotasCapability = {
-  status: "pendiente",
-  notice: "El proveedor de nota automatica se cargara al solicitar la generacion."
-};
-let borradorNotaAutomaticaActual = null;
-let snapshotAntesInsercionAutomatica = null;
 let estadoNotaActual = "nueva";
 
 const NOTE_FIELD_REGISTRY = Object.freeze({
@@ -1358,498 +1350,6 @@ function textoRiesgosAutomaticos(riesgos = []) {
   ).join("\n");
 }
 
-function renderizarDiagnosticosAutomaticos() {
-  const panel = document.getElementById("panelNotaAutomatica");
-  const contenedor = document.getElementById("diagnosticosNotaAutomatica");
-  const riesgos = document.getElementById("riesgosNotaAutomatica");
-  if (!panel || !contenedor || !riesgos) return;
-
-  panel.classList.remove("oculto");
-
-  riesgos.innerHTML = diagnosticosAutomaticosSugeridos.riesgos?.length
-    ? `
-      <strong>Riesgos detectados</strong>
-      ${diagnosticosAutomaticosSugeridos.riesgos.map((riesgo) => `
-        <p>${escaparHTML(riesgo.tipo)} · ${escaparHTML(riesgo.severidad)} · ${escaparHTML(riesgo.marcadores.join(", "))}</p>
-      `).join("")}
-    `
-    : "<p>No se detectaron datos de alarma directos por reglas. Esto no sustituye la exploracion clinica.</p>";
-
-  const sugeridos = diagnosticosAutomaticosSugeridos.diagnosticos || [];
-  contenedor.innerHTML = sugeridos.length
-    ? sugeridos.map((dx, index) => `
-      <article class="diagnostico-automatico-card">
-        <div>
-          <span class="badge-sugerido">${escaparHTML(dx.certeza || "sugerido")}</span>
-          <strong>${escaparHTML(dx.codigo || "")}</strong>
-          ${dx.cie11 ? `<p>Coincidencia CIE-11: <b>${escaparHTML(dx.cie11.codigo)} · ${escaparHTML(dx.cie11.nombre)}</b></p>` : ""}
-        </div>
-        <label>Codigo
-          <input value="${escaparHTML(dx.codigo || "")}" data-dx-auto="${index}" data-campo-auto="codigo">
-        </label>
-        <label>Diagnostico
-          <input value="${escaparHTML(dx.nombre || "")}" data-dx-auto="${index}" data-campo-auto="nombre">
-        </label>
-        <label>Motivo de sugerencia
-          <textarea data-dx-auto="${index}" data-campo-auto="razon">${escaparHTML(dx.razon || "")}</textarea>
-        </label>
-        <div class="diagnostico-automatico-acciones">
-          <button type="button" class="boton-secundario" data-aceptar-dx-auto="${index}">Aceptar</button>
-          ${dx.cie11 ? `<button type="button" class="boton-secundario" data-aceptar-dx11-auto="${index}">Seleccionar CIE-11</button>` : ""}
-          <button type="button" class="boton-secundario boton-peligro-suave" data-eliminar-dx-auto="${index}">Eliminar</button>
-        </div>
-      </article>
-    `).join("")
-    : "<p>No se generaron diagnosticos CIE-10 sugeridos con las reglas actuales.</p>";
-
-  contenedor.querySelectorAll("[data-dx-auto]").forEach((campo) => {
-    campo.addEventListener("input", () => {
-      const index = Number(campo.dataset.dxAuto);
-      const nombreCampo = campo.dataset.campoAuto;
-      if (!diagnosticosAutomaticosSugeridos.diagnosticos?.[index]) return;
-      diagnosticosAutomaticosSugeridos.diagnosticos[index][nombreCampo] = campo.value;
-      const dx = diagnosticosAutomaticosSugeridos.diagnosticos[index];
-      dx.texto = `${dx.codigo || ""}${dx.codigo && dx.nombre ? " - " : ""}${dx.nombre || ""}`.trim();
-    });
-  });
-
-  contenedor.querySelectorAll("[data-aceptar-dx-auto]").forEach((boton) => {
-    boton.addEventListener("click", () => aceptarDiagnosticoAutomatico(Number(boton.dataset.aceptarDxAuto)));
-  });
-  contenedor.querySelectorAll("[data-aceptar-dx11-auto]").forEach((boton) => {
-    boton.addEventListener("click", () => aceptarDiagnosticoAutomatico(Number(boton.dataset.aceptarDx11Auto), "CIE-11"));
-  });
-
-  contenedor.querySelectorAll("[data-eliminar-dx-auto]").forEach((boton) => {
-    boton.addEventListener("click", () => {
-      diagnosticosAutomaticosSugeridos.diagnosticos.splice(Number(boton.dataset.eliminarDxAuto), 1);
-      renderizarDiagnosticosAutomaticos();
-    });
-  });
-}
-
-function aceptarDiagnosticoAutomatico(index, catalogo = "CIE-10") {
-  const dx = diagnosticosAutomaticosSugeridos.diagnosticos?.[index];
-  if (!dx) return;
-  const seleccionado = catalogo === "CIE-11" && dx.cie11
-    ? { ...dx, codigo: dx.cie11.codigo, nombre: dx.cie11.nombre, texto: `${dx.cie11.codigo} - ${dx.cie11.nombre}` }
-    : dx;
-
-  const yaExiste = diagnosticosSeleccionados.some((item) =>
-    item.codigo === seleccionado.codigo && (item.catalogo || "CIE-10") === catalogo
-  );
-
-  if (!yaExiste) {
-    diagnosticosSeleccionados = normalizarDiagnosticosNota(diagnosticosSeleccionados);
-    diagnosticosSeleccionados.push(normalizarDiagnosticoNota({
-      codigo: seleccionado.codigo || "",
-      nombre: seleccionado.nombre || "",
-      catalogo,
-      texto: seleccionado.texto || `${seleccionado.codigo || ""}${seleccionado.codigo && seleccionado.nombre ? " - " : ""}${seleccionado.nombre || ""}`.trim(),
-      estado: seleccionado.estado || "Probable",
-      sugerido: true,
-      certeza: dx.certeza || "sugerido",
-      razon: dx.razon || "",
-      fechaSeleccion: new Date().toISOString()
-    }, diagnosticosSeleccionados.length));
-  }
-
-  diagnosticosAutomaticosSugeridos.diagnosticos.splice(index, 1);
-  renderizarDiagnosticosSeleccionados();
-  renderizarDiagnosticosAutomaticos();
-}
-
-function coincidenciaCIE11(dx = {}) {
-  const codigo = String(dx.codigo || "");
-  const mapa = { F20: "6A20", F25: "6A21", F23: "6A23", F31: "6A40", F32: "6A60", F33: "6A70", "F41.1": "6B00", "F41.0": "6B01", "F43.1": "6B40", F10: "6C40", F12: "6C41", F15: "6C45" };
-  const clave = Object.keys(mapa).sort((a, b) => b.length - a.length).find((prefix) => codigo.startsWith(prefix));
-  return clave ? CIE11.find((item) => item.codigo === mapa[clave]) || null : null;
-}
-
-function aceptarTodosDiagnosticosAutomaticos() {
-  const total = diagnosticosAutomaticosSugeridos.diagnosticos?.length || 0;
-  for (let i = total - 1; i >= 0; i -= 1) aceptarDiagnosticoAutomatico(i);
-}
-
-function obtenerIdentificacionPaciente() {
-  const institucional = pacienteActualDatos?.datosInstitucionales || {};
-  const historia = historiaClinicaActual || {};
-  const fechaNacimiento =
-    pacienteActualDatos?.fechaNacimiento ||
-    institucional.fechaNacimiento ||
-    pacienteActualDatos?.fecha_nacimiento ||
-    pacienteActualDatos?.fechaDeNacimiento ||
-    pacienteActualDatos?.fechaNac ||
-    pacienteActualDatos?.nacimiento ||
-    "";
-  const edadCalculada = calcularEdadDesdeFecha(fechaNacimiento);
-
-  return {
-    id: uidPacienteActual || pacienteActualDatos?.id || pacienteActualDatos?.uid || "",
-    nombreCompleto: obtenerNombrePacienteParaMostrar(pacienteActualDatos || {}) || institucional.nombrePaciente || "",
-    sexo: pacienteActualDatos?.sexo || institucional.sexo || historia.sexo || "",
-    fechaNacimiento,
-    edad: edadCalculada ? Number(edadCalculada) : null,
-    escolaridad: pacienteActualDatos?.escolaridad || historia.escolaridad || institucional.escolaridad || "",
-    estadoCivil: pacienteActualDatos?.estadoCivil || historia.estadoCivil || institucional.estadoCivil || "",
-    ocupacion: pacienteActualDatos?.ocupacion || historia.ocupacion || institucional.ocupacion || "",
-    religion: pacienteActualDatos?.religion || historia.religion || institucional.religion || "",
-    medicoTratante: pacienteActualDatos?.medicoTratante || institucional.medicoTratante || historia.medicoTratante || ""
-  };
-}
-
-function obtenerCamposActualesNota() {
-  return Object.fromEntries(Object.entries(NOTE_FIELD_REGISTRY).map(([key, meta]) => {
-    const field = document.getElementById(meta.fieldId);
-    return [key, { id: meta.fieldId, fieldId: meta.fieldId, label: meta.label, value: field?.value || "" }];
-  }));
-}
-
-function obtenerContextoPacienteAutorizado(identificacion = {}) {
-  return {
-    source: "expediente",
-    id: identificacion.id || "",
-    nombreCompleto: identificacion.nombreCompleto || "",
-    sexo: identificacion.sexo || "",
-    edad: identificacion.edad ?? null,
-    fechaNacimiento: identificacion.fechaNacimiento || "",
-    servicio: document.getElementById("servicioNotaAutomatica")?.value || "",
-    diaEstancia: document.getElementById("obsDiasEstancia")?.value || "",
-    diagnosticosActivos: diagnosticosSeleccionados.map((dx) => ({ ...dx, source: "expediente" })),
-    medicamentosActivos: pacienteActualDatos?.tratamientos || [],
-    alergias: pacienteActualDatos?.alergias || historiaClinicaActual?.alergias || []
-  };
-}
-
-function construirPayloadNotaDesdeDictado(identificacion = {}) {
-  const snapshot = window.cognicionDictado?.snapshot?.() || window.cognicionDictado?.getSnapshot?.() || null;
-  const textoManual = document.getElementById("textoDictadoClinico")?.value.trim() || "";
-  if (!snapshot) {
-    return {
-      transcriptSessionId: "",
-      userId: auth.currentUser?.uid || "",
-      patientId: identificacion.id || "",
-      encounterId: new URLSearchParams(location.search).get("encounterId") || new URLSearchParams(location.search).get("notaId") || "actual",
-      confirmedTranscript: textoManual,
-      pendingTranscript: "",
-      correctedTranscript: textoManual,
-      transcriptSegments: [],
-      speakers: [],
-      provenance: { source: "dictado_por_voz", status: "textarea_without_runtime_snapshot" }
-    };
-  }
-  return {
-    ...snapshot,
-    correctedTranscript: textoManual || snapshot.correctedTranscript || snapshot.confirmedTranscript || "",
-    selectedDocumentType: document.getElementById("tipoNotaAutomatica")?.value || "evolucion_observacion",
-    selectedWritingStyle: document.getElementById("estiloRedaccionNota")?.value || "formato_fray_narrativo",
-    existingNoteFields: obtenerCamposActualesNota(),
-    authorizedPatientContext: obtenerContextoPacienteAutorizado(identificacion)
-  };
-}
-
-async function obtenerProveedorNotas() {
-  if (proveedorNotas) return proveedorNotas;
-  const [{ createNoteGenerationProvider }, { httpsCallable }, functionsInstance] = await Promise.all([
-    import("./services/noteGenerationProviders.js"),
-    import("https://www.gstatic.com/firebasejs/10.12.2/firebase-functions.js"),
-    obtenerFunctions()
-  ]);
-  proveedorNotas = createNoteGenerationProvider({
-    provider: "external",
-    external: {
-      callable: httpsCallable(functionsInstance, "generateStructuredNoteFromDictation"),
-      fallbackToLocal: true
-    }
-  });
-  proveedorNotasCapability = proveedorNotas.capability();
-  return proveedorNotas;
-}
-
-async function aplicarNotaAutomatica() {
-  const identificacion = obtenerIdentificacionPaciente();
-  const payload = construirPayloadNotaDesdeDictado(identificacion);
-  const texto = String(payload.correctedTranscript || payload.confirmedTranscript || "").trim();
-  if (!texto) {
-    alert("Primero dicta o escribe texto en el area de dictado clinico.");
-    return;
-  }
-
-  if (payload.patientId && identificacion.id && payload.patientId !== identificacion.id) {
-    alert("La sesion de dictado pertenece a otro paciente. Finalice o recupere el dictado del paciente actual antes de generar la nota.");
-    return;
-  }
-
-  if (payload.pendingTranscript?.trim()) {
-    const incluirPendiente = confirm("Hay texto pendiente de confirmacion. Acepta incorporarlo a la propuesta?");
-    if (incluirPendiente && !texto.includes(payload.pendingTranscript.trim())) {
-      payload.correctedTranscript = `${texto}\n\n${payload.pendingTranscript.trim()}`.trim();
-    }
-  }
-
-  const selectorTipoNota = document.getElementById("tipoNotaAutomatica");
-  if (Number.isFinite(identificacion.edad) && identificacion.edad < 18 && selectorTipoNota?.value === "evolucion_observacion") {
-    selectorTipoNota.value = "paidopsiquiatria";
-    payload.selectedDocumentType = "paidopsiquiatria";
-  }
-  const proveedor = await obtenerProveedorNotas();
-  const generada = await proveedor.generate(payload, identificacion, {
-    patientId: identificacion.id,
-    userId: payload.userId || auth.currentUser?.uid || "",
-    sessionId: payload.transcriptSessionId || window.cognicionDictado?.sessionId || "",
-    encounterId: new URLSearchParams(location.search).get("encounterId") || new URLSearchParams(location.search).get("notaId") || "actual",
-    tipoNota: selectorTipoNota?.value || "evolucion_observacion",
-    selectedDocumentType: payload.selectedDocumentType,
-    selectedWritingStyle: payload.selectedWritingStyle,
-    nivelDetalle: document.getElementById("detalleNotaAutomatica")?.value || "detallado_sin_repeticiones",
-    formato: document.getElementById("formatoNotaAutomatica")?.value || "mixto",
-    plantilla: document.getElementById("plantillaNotaAutomatica")?.value || "sin_plantilla",
-    especialidad: document.getElementById("especialidadNotaAutomatica")?.value || "no_especificada",
-    servicio: document.getElementById("servicioNotaAutomatica")?.value || "no_especificado",
-    existingNoteFields: payload.existingNoteFields,
-    authorizedPatientContext: payload.authorizedPatientContext
-  });
-  const medicamentosPropuestos = (generada.medicationStatements || []).map((med) => ({
-    ...med, dosis: med.dose, unidad: med.unit, via: med.route, frecuencia: med.frequency
-  }));
-  if (medicamentosPropuestos.length) {
-    const { evaluarMedicamentosPaciente } = await import("./services/motorClinicoMedicamentos.js");
-    const evaluacion = evaluarMedicamentosPaciente({
-      paciente: { ...pacienteActualDatos, ...historiaClinicaActual, edad: identificacion.edad },
-      medicamentos: [...(pacienteActualDatos?.tratamientos || []), ...medicamentosPropuestos]
-    });
-    generada.medicationValidation = evaluacion;
-    generada.medicalOrderProposals.forEach((order) => {
-      if (order.type !== "medicamento") return;
-      order.validationStatus = evaluacion.bloqueosTecnicos?.length ? "bloqueado_dato_incompleto"
-        : evaluacion.alertas?.length ? "requiere_revision_alertas" : evaluacion.indicador?.estado || "sin_alerta_base_actual";
-      order.validationAlerts = evaluacion.alertas || [];
-    });
-  }
-  borradorNotaAutomaticaActual = generada;
-  renderizarRevisionNotaAutomatica(generada, payload.correctedTranscript || texto);
-
-  diagnosticosAutomaticosSugeridos = {
-    diagnosticos: (generada.cie10Sugeridos || []).map((dx) => ({ ...dx, cie11: coincidenciaCIE11(dx) })),
-    riesgos: generada.riesgosDetectados || []
-  };
-  renderizarDiagnosticosAutomaticos();
-}
-
-function campoDestinoSeccion(seccion = "") {
-  const section = typeof seccion === "object" ? seccion : { section: seccion };
-  if (section.fieldTarget && NOTE_FIELD_REGISTRY[section.fieldTarget]) return NOTE_FIELD_REGISTRY[section.fieldTarget].fieldId;
-  return {
-    soap_subjective: NOTE_FIELD_REGISTRY.subjective.fieldId,
-    soap_physical_exam: NOTE_FIELD_REGISTRY.physicalExam.fieldId,
-    soap_mental_status: NOTE_FIELD_REGISTRY.mentalStatusExam.fieldId,
-    soap_results: NOTE_FIELD_REGISTRY.results.fieldId,
-    soap_analysis: NOTE_FIELD_REGISTRY.analysis.fieldId,
-    soap_plan: NOTE_FIELD_REGISTRY.plan.fieldId,
-    motivo_consulta: "subjetivo", padecimiento_actual: "subjetivo", antecedentes_psiquiatricos: "subjetivo",
-    antecedentes_personales_patologicos: "subjetivo", medicamentos: "subjetivo", adherencia: "subjetivo",
-    alergias: "subjetivo", consumo_sustancias: "subjetivo", examen_mental: "objetivo",
-    exploracion_fisica: "obsExploracionFisicaNeurologica", signos_vitales: "obsExploracionFisicaNeurologica",
-    resultados_auxiliares: "obsResultadosEstudios", impresion_clinica: "analisis",
-    comentario_clinico: "analisis", plan: "plan", indicaciones: "plan", pronostico: "obsPronostico", destino: "obsDestino"
-  }[section.section] || "";
-}
-
-function nombreCampoDestino(fieldId = "") {
-  const meta = Object.values(NOTE_FIELD_REGISTRY).find((item) => item.fieldId === fieldId);
-  return meta?.label || fieldId || "sin destino";
-}
-
-function textoClinicoInsertable(texto = "") {
-  const limpio = String(texto || "").trim();
-  if (!limpio) return false;
-  return !/^Se detect[oó]\b/i.test(limpio)
-    && !/Confirmar con (?:paciente|madre|padre|pareja|informante)/i.test(limpio)
-    && !/posible error de reconocimiento/i.test(limpio);
-}
-
-function insertarSeccionesRevisadas() {
-  const borrador = borradorNotaAutomaticaActual;
-  if (!borrador) return;
-  const criticosSinConfirmar = (borrador.validationIssues || []).filter((issue) =>
-    issue.requiresExplicitReview && !document.querySelector(`[data-confirmar-issue="${issue.id}"]`)?.checked
-  );
-  if (criticosSinConfirmar.length) {
-    alert("Confirme individualmente todos los datos criticos antes de insertar secciones.");
-    return;
-  }
-  const aceptadas = (borrador.generatedSections || []).filter((section) => section.accepted && section.insertable !== false && textoClinicoInsertable(section.content));
-  if (!aceptadas.length) {
-    alert("Seleccione al menos una seccion revisada.");
-    return;
-  }
-  const operaciones = aceptadas.map((section) => {
-    const originalIndex = (borrador.generatedSections || []).indexOf(section);
-    const fieldId = campoDestinoSeccion(section);
-    const field = document.getElementById(fieldId);
-    const mode = document.querySelector(`[data-modo-insercion-seccion="${originalIndex}"]`)?.value || section.insertionMode || "combinar";
-    return { section, fieldId, field, mode };
-  }).filter((op) => op.field && op.fieldId && op.mode !== "excluir");
-  if (!operaciones.length) {
-    alert("No hay secciones aceptadas con campo destino valido.");
-    return;
-  }
-  const conContenidoPrevio = operaciones.filter((op) => op.field.value?.trim());
-  const reemplazos = operaciones.filter((op) => op.mode === "reemplazar" && op.field.value?.trim());
-  if (reemplazos.length) {
-    const ok = confirm(`Se reemplazara contenido existente en: ${reemplazos.map((op) => nombreCampoDestino(op.fieldId)).join(", ")}. Confirmas el reemplazo?`);
-    if (!ok) return;
-  } else if (conContenidoPrevio.length) {
-    const ok = confirm("Algunas secciones se combinaran con texto existente. Confirma que deseas insertar solo los apartados revisados.");
-    if (!ok) return;
-  }
-  snapshotAntesInsercionAutomatica = {};
-  let primerCampoInsertado = null;
-  operaciones.forEach(({ section, fieldId, field, mode }) => {
-    if (!(fieldId in snapshotAntesInsercionAutomatica)) snapshotAntesInsercionAutomatica[fieldId] = field.value;
-    const content = String(section.content || "").trim();
-    if (!textoClinicoInsertable(content)) return;
-    field.value = mode === "reemplazar" ? content : (field.value.trim() ? `${field.value.trim()}\n\n${content}` : content);
-    field.dispatchEvent(new Event("input", { bubbles: true }));
-    field.dispatchEvent(new Event("change", { bubbles: true }));
-    primerCampoInsertado ||= field;
-    field.classList.add("campo-actualizado-automatico");
-    window.setTimeout(() => field.classList.remove("campo-actualizado-automatico"), 2200);
-    section.reviewStatus = "insertada";
-    section.insertionMode = mode;
-  });
-  primerCampoInsertado?.scrollIntoView({ behavior: "smooth", block: "center" });
-  borrador.insertionAllowed = true;
-  renderizarRevisionNotaAutomatica(borrador, document.getElementById("textoDictadoClinico")?.value || "");
-}
-function deshacerInsercionAutomatica() {
-  if (!snapshotAntesInsercionAutomatica) return;
-  Object.entries(snapshotAntesInsercionAutomatica).forEach(([id, value]) => {
-    const field = document.getElementById(id);
-    if (field) field.value = value;
-  });
-  snapshotAntesInsercionAutomatica = null;
-  alert("Se restauró la versión anterior de los campos modificados.");
-}
-
-function renderizarRevisionNotaAutomatica(generada = {}, transcripcionOriginal = "") {
-  const panel = document.getElementById("panelNotaAutomatica");
-  if (!panel) return;
-
-  let revision = document.getElementById("revisionNotaAutomatica");
-  if (!revision) {
-    revision = document.createElement("div");
-    revision.id = "revisionNotaAutomatica";
-    revision.className = "revision-nota-automatica";
-    panel.insertBefore(revision, document.getElementById("riesgosNotaAutomatica"));
-  }
-
-  const issues = generada.validationIssues || [];
-  const secciones = generada.generatedSections || [];
-  const salidaElegida = document.getElementById("resultadoNotaAutomatica")?.value || "nota_medica_estructurada";
-  const capability = proveedorNotasCapability;
-  revision.innerHTML = `
-    <div class="revision-nota-automatica-grid revision-tres-columnas">
-      <section>
-        <strong>Transcripción original</strong>
-        <pre class="revision-transcripcion">${escaparHTML(transcripcionOriginal)}</pre>
-      </section>
-      <section>
-        <strong>Nota propuesta · ${escaparHTML(salidaElegida.replaceAll("_", " "))}</strong>
-        <pre class="revision-transcripcion">${escaparHTML(generada.outputs?.[salidaElegida] || "Sin contenido sustentado.")}</pre>
-      </section>
-      <section>
-        <strong>Alertas y pendientes</strong>
-        ${issues.length ? `<ul>${issues.map((issue) => `<li><label><input type="checkbox" data-confirmar-issue="${issue.id}" ${issue.requiresExplicitReview ? "" : "checked"}> <b>${escaparHTML(issue.severity || "info")}:</b> ${escaparHTML(issue.message || "")}</label><details><summary>Fuente</summary>${escaparHTML((issue.evidence || []).join(" · "))}</details></li>`).join("")}</ul>` : "<p>Sin contradicciones automáticas detectadas; la revisión clínica sigue siendo obligatoria.</p>"}
-      </section>
-    </div>
-    <p><b>VERSIÓN ALFA · EN DESARROLLO.</b> ${escaparHTML(capability.notice || "")} Estado del proveedor: ${escaparHTML(capability.status)}.</p>
-    <div class="revision-secciones">
-      ${secciones.length ? secciones.map((section, index) => `
-        <article class="revision-seccion-card">
-          <header><label><input type="checkbox" data-aceptar-seccion="${index}" ${section.accepted ? "checked" : ""}> Aceptar ${escaparHTML(section.title)}</label><span>Revisión humana obligatoria</span></header>
-          <p><b>Campo destino:</b> ${escaparHTML(nombreCampoDestino(campoDestinoSeccion(section)))}</p>
-          <details><summary>Contenido actual del campo destino</summary><pre class="revision-transcripcion">${escaparHTML(document.getElementById(campoDestinoSeccion(section))?.value || "Campo vacio.")}</pre></details>
-          <label>Insercion<select data-modo-insercion-seccion="${index}"><option value="combinar" ${section.insertionMode === "combinar" || !section.insertionMode ? "selected" : ""}>Combinar con contenido actual</option><option value="reemplazar" ${section.insertionMode === "reemplazar" ? "selected" : ""}>Reemplazar contenido actual</option><option value="excluir" ${section.insertionMode === "excluir" ? "selected" : ""}>Excluir este apartado</option></select></label>
-          <textarea data-contenido-seccion="${index}">${escaparHTML(section.content)}</textarea>
-          <details><summary>Fragmentos de origen e informante</summary><ul>${(section.sourceStatementIds || []).map((statementId) => {
-            const s = generada.clinicalStatements?.find((item) => item.id === statementId);
-            return `<li>${escaparHTML(s?.originalText || "")} · ${escaparHTML(s?.informant || "no identificado")} · ${escaparHTML(s?.assertionStatus || "")} · ${s?.timestamp ? escaparHTML(s.timestamp) : "sin marca de tiempo"}</li>`;
-          }).join("")}</ul></details>
-          <details><summary>Comparar versiones</summary><p><b>Original:</b> ${escaparHTML(section.originalContent || section.content)}</p><p><b>Actual (v${section.version}):</b> ${escaparHTML(section.content)}</p></details>
-          <button type="button" class="boton-secundario" data-regenerar-seccion="${index}">Regenerar solo esta sección</button>
-          <button type="button" class="boton-secundario" data-restaurar-seccion="${index}">Restaurar</button>
-        </article>`).join("") : "<p>No se generaron secciones porque no se identificó contenido sustentado.</p>"}
-    </div>
-    <div class="diagnostico-automatico-acciones">
-      <button id="btnInsertarSeccionesRevisadas" type="button">Insertar apartados revisados</button>
-      <button id="btnDeshacerInsercionAutomatica" type="button" class="boton-secundario" ${snapshotAntesInsercionAutomatica ? "" : "disabled"}>Deshacer inserción</button>
-    </div>
-    <section><strong>Propuestas de indicaciones</strong><p>${generada.medicalOrderProposals?.length ? "Requieren confirmación individual y validadores clínicos antes de enviarse al módulo de indicaciones." : "No se extrajeron propuestas."}</p>
-      ${(generada.medicalOrderProposals || []).map((order) => `<div class="propuesta-orden"><label><input type="checkbox" data-confirmar-orden="${order.id}"> Confirmar propuesta individual</label><span>${escaparHTML(order.type)}: ${escaparHTML(order.data?.observations || order.data?.text || "")} · ${escaparHTML(order.validationStatus)}</span>${order.validationAlerts?.length ? `<details><summary>${order.validationAlerts.length} alertas de alergias/interacciones/duplicidad/contexto</summary><ul>${order.validationAlerts.map((alerta) => `<li>${escaparHTML(alerta.titulo || alerta.efecto || alerta.id || "Alerta clínica")}</li>`).join("")}</ul></details>` : ""}</div>`).join("")}
-    </section>
-  `;
-  secciones.forEach((section) => { section.originalContent ||= section.content; });
-  revision.querySelectorAll("[data-aceptar-seccion]").forEach((input) => input.addEventListener("change", () => {
-    secciones[Number(input.dataset.aceptarSeccion)].accepted = input.checked;
-    secciones[Number(input.dataset.aceptarSeccion)].reviewStatus = input.checked ? "aceptada" : "rechazada";
-  }));
-  revision.querySelectorAll("[data-contenido-seccion]").forEach((input) => input.addEventListener("input", () => {
-    const section = secciones[Number(input.dataset.contenidoSeccion)];
-    section.content = input.value; section.reviewStatus = "editada"; section.version += 1;
-  }));
-  revision.querySelectorAll("[data-modo-insercion-seccion]").forEach((input) => input.addEventListener("change", () => {
-    const section = secciones[Number(input.dataset.modoInsercionSeccion)];
-    section.insertionMode = input.value;
-    if (input.value === "excluir") {
-      section.accepted = false;
-      section.reviewStatus = "excluida";
-      const checkbox = revision.querySelector(`[data-aceptar-seccion="${input.dataset.modoInsercionSeccion}"]`);
-      if (checkbox) checkbox.checked = false;
-    }
-  }));
-  revision.querySelectorAll("[data-restaurar-seccion]").forEach((button) => button.addEventListener("click", () => {
-    const section = secciones[Number(button.dataset.restaurarSeccion)];
-    section.content = section.originalContent; section.version += 1;
-    renderizarRevisionNotaAutomatica(generada, transcripcionOriginal);
-  }));
-  revision.querySelectorAll("[data-regenerar-seccion]").forEach((button) => button.addEventListener("click", async () => {
-    const index = Number(button.dataset.regenerarSeccion);
-    const actual = secciones[index];
-    const identificacion = obtenerIdentificacionPaciente();
-    const payload = construirPayloadNotaDesdeDictado(identificacion);
-    payload.correctedTranscript = transcripcionOriginal;
-    const proveedor = await obtenerProveedorNotas();
-    const regenerada = await proveedor.generate(payload, identificacion, {
-      patientId: obtenerIdentificacionPaciente().id,
-      sessionId: payload.transcriptSessionId || window.cognicionDictado?.sessionId || "",
-      tipoNota: generada.metadata?.tipoNota,
-      selectedDocumentType: generada.documentType || generada.metadata?.tipoNota,
-      selectedWritingStyle: generada.writingStyle,
-      nivelDetalle: generada.metadata?.nivelDetalle,
-      formato: generada.metadata?.formato,
-      plantilla: generada.metadata?.plantilla,
-      especialidad: generada.metadata?.especialidad,
-      servicio: generada.metadata?.servicio
-    });
-    const nueva = regenerada.generatedSections?.find((item) => item.section === actual.section);
-    if (!nueva) { alert("No se encontró contenido sustentado para regenerar esta sección."); return; }
-    actual.content = nueva.content;
-    actual.sourceStatementIds = nueva.sourceStatementIds;
-    actual.version += 1;
-    actual.accepted = false;
-    actual.reviewStatus = "regenerada_pendiente";
-    renderizarRevisionNotaAutomatica(generada, transcripcionOriginal);
-  }));
-  revision.querySelector("#btnInsertarSeccionesRevisadas")?.addEventListener("click", insertarSeccionesRevisadas);
-  revision.querySelector("#btnDeshacerInsercionAutomatica")?.addEventListener("click", deshacerInsercionAutomatica);
-  revision.querySelectorAll("[data-confirmar-orden]").forEach((input) => input.addEventListener("change", () => {
-    const order = generada.medicalOrderProposals?.find((item) => item.id === input.dataset.confirmarOrden);
-    if (order) order.confirmed = input.checked;
-  }));
-  panel.classList.remove("oculto");
-}
-
 function renderizarDiagnosticosSeleccionados() {
   const contenedor = document.getElementById("diagnosticosSeleccionados");
 
@@ -1966,49 +1466,16 @@ function renderizarDiagnosticosSeleccionadosEditable() {
 
 renderizarDiagnosticosSeleccionados = renderizarDiagnosticosSeleccionadosEditable;
 
-let moduloDictadoPromise = null;
-
-async function cargarModuloDictadoClinico() {
-  if (!moduloDictadoPromise) {
-    moduloDictadoPromise = import("./dictado.js?v=20260715-1505");
-  }
-  const modulo = await moduloDictadoPromise;
-  modulo.inicializarDictadoClinico?.();
-  return modulo;
-}
-
-function conectarCargaDiferidaDictado() {
-  const acciones = {
-    btnIniciarDictado: "iniciarDictado",
-    btnPausarDictado: "pausarDictado",
-    btnLimpiarDictado: "limpiarDictado",
-    btnInsertarDictado: "insertarDictadoEnNota"
-  };
-  Object.entries(acciones).forEach(([id, metodo]) => {
-    const boton = document.getElementById(id);
-    if (!boton || boton.dataset.dictadoLazyListener === "true") return;
-    boton.addEventListener("click", async (event) => {
-      if (window.cognicionDictado?.snapshot) return;
-      event.preventDefault();
-      event.stopImmediatePropagation();
-      boton.disabled = true;
-      try {
-        const modulo = await cargarModuloDictadoClinico();
-        await modulo[metodo]?.();
-      } finally {
-        boton.disabled = false;
-      }
-    }, { capture: true });
-    boton.dataset.dictadoLazyListener = "true";
-  });
-}
-
-conectarCargaDiferidaDictado();
-document.getElementById("btnGenerarNotaAutomatica")?.addEventListener("click", aplicarNotaAutomatica);
-document.getElementById("btnAceptarTodosDxAutomaticos")?.addEventListener("click", aceptarTodosDiagnosticosAutomaticos);
-document.getElementById("resultadoNotaAutomatica")?.addEventListener("change", () => {
-  if (borradorNotaAutomaticaActual) renderizarRevisionNotaAutomatica(borradorNotaAutomaticaActual, document.getElementById("textoDictadoClinico")?.value || "");
-});
+window.abrirModuloNotaPorVoz = function() {
+  const parametros = new URLSearchParams();
+  const pacienteId = uidPacienteActual || document.getElementById("uidPaciente")?.value || "";
+  const contexto = obtenerContextoAtencion(pacienteId);
+  if (pacienteId) parametros.set("id", pacienteId);
+  if (contexto.id) parametros.set("encounterId", contexto.id);
+  if (notaEditandoId) parametros.set("noteId", notaEditandoId);
+  parametros.set("returnUrl", `${location.pathname.split("/").pop() || "nota.html"}${location.search || ""}`);
+  window.location.href = `nota-por-voz.html?${parametros.toString()}`;
+};
 
 window.actualizarDiagnosticoSeleccionado = function(campo) {
   const index = Number(campo.dataset.dxIndex);
@@ -3643,15 +3110,15 @@ window.editarNotaDesdeHistorial = function(notaId) {
   alert(`Edicion versionada iniciada. La version ${vigente.version || datos.version || 1} permanecera en el historial cuando guardes.`);
 };
 
-window.continuarBorradorDesdeHistorial = function(notaId) {
+function continuarBorradorNota(notaId, { silencioso = false } = {}) {
   const datos = notasHistorial[notaId];
   if (!datos) {
-    alert("No se encontro el borrador seleccionado.");
-    return;
+    if (!silencioso) alert("No se encontro el borrador seleccionado.");
+    return false;
   }
   if (estadoPersistidoNota(datos) !== "borrador") {
-    alert("Solo las notas en estado borrador pueden continuarse sin historial.");
-    return;
+    if (!silencioso) alert("Solo las notas en estado borrador pueden continuarse sin historial.");
+    return false;
   }
 
   notaEditandoId = notaId;
@@ -3664,8 +3131,19 @@ window.continuarBorradorDesdeHistorial = function(notaId) {
   marcarNotaGuardada();
   btnCancelarEdicion?.classList.remove("oculto");
   document.getElementById("tipoNota")?.scrollIntoView({ behavior: "smooth", block: "center" });
-  alert("Borrador abierto. Los siguientes guardados actualizaran esta misma nota sin crear historial.");
+  if (!silencioso) alert("Borrador abierto. Los siguientes guardados actualizaran esta misma nota sin crear historial.");
+  return true;
+}
+
+window.continuarBorradorDesdeHistorial = function(notaId) {
+  return continuarBorradorNota(notaId);
 };
+
+function abrirNotaIndicadaEnUrl() {
+  const notaId = new URLSearchParams(location.search).get("notaId") || new URLSearchParams(location.search).get("noteId") || "";
+  if (!notaId || !notasHistorial[notaId]) return false;
+  return continuarBorradorNota(notaId, { silencioso: true });
+}
 
 async function cargarDatosNotaComoBorrador(notaId, opciones = {}) {
   const datosNota = notasHistorial[notaId];
@@ -3834,7 +3312,7 @@ onAuthStateChanged(auth, async (user) => {
 
     await cargarPaciente(uidPacienteActual);
     await cargarHistorial(uidPacienteActual);
-    await recuperarBorradorCorrespondiente();
+    if (!abrirNotaIndicadaEnUrl()) await recuperarBorradorCorrespondiente();
   } else {
     await cargarListaPacientes();
   }
@@ -3925,8 +3403,6 @@ async function cargarPaciente(uidPaciente) {
     historiaClinicaActual = {};
   }
 
-  actualizarContextoPacienteDictado();
-
   const tratamiento = document.getElementById("tratamiento");
   const medico = document.getElementById("medico");
   const ultimaConsulta = document.getElementById("ultimaConsulta");
@@ -3990,25 +3466,6 @@ async function cargarPaciente(uidPaciente) {
   }
 
   sincronizarFormatoNota();
-}
-
-function actualizarContextoPacienteDictado() {
-  const contenedor = document.getElementById("contextoPacienteDictado");
-  if (!contenedor) return;
-  const identificacion = obtenerIdentificacionPaciente();
-  const encuentro = new URLSearchParams(location.search).get("encounterId") || new URLSearchParams(location.search).get("notaId") || "actual";
-  contenedor.replaceChildren();
-  const valores = [
-    ["Paciente", identificacion.nombreCompleto || "sin nombre"],
-    ["Edad", Number.isFinite(identificacion.edad) ? `${identificacion.edad} años` : "pendiente"],
-    ["Identificador", identificacion.id || "pendiente"],
-    ["Encuentro", encuentro]
-  ];
-  valores.forEach(([label, value], index) => {
-    if (index) contenedor.append(" · ");
-    const strong = document.createElement("strong"); strong.textContent = `${label}: `;
-    contenedor.append(strong, document.createTextNode(value));
-  });
 }
 
 async function guardarNotaMedicaConEstadoLegacy(estadoNota = "definitiva") {

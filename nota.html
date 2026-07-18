@@ -7,7 +7,6 @@
 <link rel="stylesheet" href="css/theme.css">
 <link rel="icon" type="image/png" href="assets/favicon-cognicion.png">
 <link rel="stylesheet" href="css/nota.css?v=20260716-pdf2">
-<link rel="stylesheet" href="css/dictado.css">
 </head>
 
 <body>
@@ -133,6 +132,10 @@
 </div>
 
 <div class="acciones-escalas-nota">
+    <button id="btnAbrirNotaPorVoz" type="button" class="boton-secundario" onclick="abrirModuloNotaPorVoz()">
+        Generar desde dictado
+    </button>
+
     <button id="abrirEscalasPreviasNota" type="button" class="boton-secundario">
         Escalas previas
     </button>
@@ -200,71 +203,7 @@
     </div>
 </aside>
 
-<section class="dictado-clinico-card" aria-labelledby="tituloDictadoClinico">
-    <div class="dictado-clinico-header">
-        <div>
-            <span class="dictado-clinico-etiqueta">Transcripción asistida</span>
-            <h2 id="tituloDictadoClinico">
-                Dictado clínico
-                <span class="dictado-alfa-badge">Versión alfa · En desarrollo</span>
-            </h2>
-            <p>Dicta, revisa y corrige antes de integrar el texto a la nota actual.</p>
-        </div>
-        <div id="estadoDictadoClinico" class="dictado-clinico-estado">Dictado detenido</div>
-    </div>
 
-    <div class="dictado-clinico-alertas">
-        <p>El dictado por voz puede contener errores. Revise y corrija el texto antes de guardar la nota clínica.</p>
-        <p>Utilice esta función únicamente con autorización del paciente.</p>
-        <p><strong>Versión alfa:</strong> esta función se encuentra en desarrollo. Revise y valide el contenido antes de incorporarlo al expediente.</p>
-        <p><strong>Privacidad y compatibilidad:</strong> Web Speech API depende del navegador y puede enviar audio a servicios de su proveedor. No se garantiza procesamiento local. Si no hay proveedor externo configurado, se utiliza únicamente el respaldo local por reglas.</p>
-    </div>
-
-    <div id="contextoPacienteDictado" class="dictado-contexto-paciente" aria-live="polite">
-        <strong>Paciente:</strong> pendiente de selección · <strong>Edad:</strong> pendiente · <strong>Identificador:</strong> pendiente · <strong>Encuentro:</strong> actual
-    </div>
-
-    <textarea
-        id="textoDictadoClinico"
-        class="dictado-clinico-texto"
-        placeholder="El texto dictado aparecerá aquí. Revise y corrija antes de insertarlo en la nota."
-    ></textarea>
-
-    <div class="dictado-clinico-acciones">
-        <button id="btnIniciarDictado" type="button" class="boton-secundario">Iniciar dictado</button>
-        <button id="btnPausarDictado" type="button" class="boton-secundario">Pausar dictado</button>
-        <button id="btnLimpiarDictado" type="button" class="boton-secundario">Limpiar dictado</button>
-        <button id="btnInsertarDictado" type="button">Insertar transcripcion literal</button>
-        <button id="btnGenerarNotaAutomatica" type="button" class="boton-secundario">Generar nota desde el dictado</button>
-    </div>
-
-    <details class="nota-automatica-configuracion">
-        <summary>Configuración del borrador</summary>
-        <div class="nota-automatica-config-grid">
-            <label>Resultado<select id="resultadoNotaAutomatica"><option value="nota_medica_estructurada">Apartados existentes de la nota</option><option value="redaccion_clinica_conservadora">Redaccion clinica conservadora</option><option value="literal_corregida">Transcripcion literal corregida</option></select></label>
-            <label>Contexto clinico<select id="tipoNotaAutomatica"><option value="entrevista_inicial">Entrevista inicial</option><option value="ingreso_observacion">Ingreso a Observacion</option><option value="evolucion_observacion" selected>Evolucion de Observacion</option><option value="egreso_traslado_observacion">Egreso/traslado de Observacion</option><option value="ingreso_ucep">Ingreso a UCEP</option><option value="evolucion_ucep">Evolucion de UCEP</option><option value="urgencias">Urgencias</option><option value="referencia_navarro">Referencia tipo Navarro</option><option value="contrarreferencia">Contrarreferencia</option><option value="consulta_externa">Consulta externa</option><option value="pediatria">Pediatria</option><option value="paidopsiquiatria">Paidopsiquiatria</option><option value="dictado_libre_apartados">Dictado libre por apartados</option><option value="clase_academica">Clase academica (no genera nota)</option></select></label>
-            <label>Nivel de detalle<select id="detalleNotaAutomatica"><option value="detallado_sin_repeticiones" selected>Detallado, sin repeticiones</option><option value="medio">Medio</option><option value="breve">Breve</option><option value="amplio">Amplio</option></select></label>
-            <label>Formato<select id="formatoNotaAutomatica"><option value="narrativo" selected>Narrativo</option><option value="mixto">Mixto</option><option value="estructurado">Estructurado</option></select></label>
-            <label>Estilo<select id="estiloRedaccionNota"><option value="formato_fray_narrativo" selected>Formato Fray - narrativo institucional</option><option value="conservador_literal">Conservador literal</option><option value="clinico_resumido">Clinico resumido</option><option value="clinico_detallado">Clinico detallado</option><option value="urgencias_referencia_breve">Urgencias/referencia breve</option><option value="personalizado_usuario">Personalizado por el usuario</option></select></label>
-            <label>Plantilla institucional<input id="plantillaNotaAutomatica" value="sin_plantilla"></label>
-            <label>Especialidad<input id="especialidadNotaAutomatica" value="psiquiatria"></label>
-            <label>Servicio<input id="servicioNotaAutomatica" value="no_especificado"></label>
-        </div>
-    </details>
-
-    <section id="panelNotaAutomatica" class="nota-automatica-panel oculto" aria-live="polite">
-        <div class="nota-automatica-header">
-            <div>
-                <span class="dictado-clinico-etiqueta">Propuesta SOAP desde dictado</span>
-                <h3>Nota SOAP psiquiatrica preliminar</h3>
-                <p>Revise, modifique o rechace cada sección. Generar no inserta contenido en la nota.</p>
-            </div>
-            <button id="btnAceptarTodosDxAutomaticos" type="button" class="boton-secundario">Aceptar diagnósticos sugeridos</button>
-        </div>
-        <div id="riesgosNotaAutomatica" class="riesgos-nota-automatica"></div>
-        <div id="diagnosticosNotaAutomatica" class="diagnosticos-nota-automatica"></div>
-    </section>
-</section>
 
 <label for="buscadorDiagnostico">Diagnostico visible para paciente (CIE-10)</label>
 <input

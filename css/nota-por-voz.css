@@ -1,0 +1,339 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  min-height: 100vh;
+  margin: 0;
+  overflow-x: hidden;
+  background: #07111f;
+  color: #e8eef8;
+  font-family: Inter, "Segoe UI", Arial, sans-serif;
+}
+
+.voice-sidebar {
+  position: fixed;
+  inset: 0 auto 0 0;
+  z-index: 10;
+  width: 236px;
+  padding: 22px 14px;
+  border-right: 1px solid rgba(125, 211, 252, 0.14);
+  background: rgba(2, 6, 23, 0.92);
+  display: grid;
+  align-content: start;
+  gap: 8px;
+}
+
+.voice-sidebar a {
+  color: #cbd5e1;
+  text-decoration: none;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  padding: 11px 12px;
+  font-weight: 800;
+}
+
+.voice-sidebar a:hover,
+.voice-sidebar a.activo {
+  color: #e0f2fe;
+  border-color: rgba(56, 189, 248, 0.28);
+  background: rgba(14, 165, 233, 0.12);
+}
+
+.voice-shell {
+  width: min(1240px, calc(100% - 272px));
+  margin: 0 24px 64px 260px;
+  padding-top: 24px;
+}
+
+.voice-header,
+.voice-step-panel {
+  border: 1px solid rgba(125, 211, 252, 0.16);
+  border-radius: 14px;
+  background: rgba(15, 23, 42, 0.82);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.24);
+}
+
+.voice-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: clamp(20px, 4vw, 34px);
+}
+
+.voice-kicker,
+.voice-panel-heading span {
+  color: #7dd3fc;
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.voice-header h1,
+.voice-panel-heading h2 {
+  margin: 8px 0;
+  color: #f8fafc;
+  line-height: 1.08;
+}
+
+.voice-header h1 {
+  font-size: clamp(2rem, 5vw, 4rem);
+}
+
+.voice-header p,
+.voice-summary,
+.voice-card,
+.voice-warnings {
+  color: #a9b8cc;
+  line-height: 1.55;
+}
+
+.voice-steps {
+  position: sticky;
+  top: 0;
+  z-index: 8;
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  margin: 14px 0;
+  padding: 10px;
+  border: 1px solid rgba(125, 211, 252, 0.12);
+  border-radius: 12px;
+  background: rgba(2, 6, 23, 0.86);
+}
+
+.voice-steps button,
+.voice-actions button,
+.voice-card button,
+.voice-review-card button,
+.boton-secundario {
+  border: 1px solid rgba(125, 211, 252, 0.2);
+  border-radius: 8px;
+  background: rgba(8, 47, 73, 0.78);
+  color: #e0f2fe;
+  padding: 10px 14px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.voice-steps button {
+  flex: 0 0 auto;
+  color: #b8c7dc;
+  background: rgba(15, 23, 42, 0.72);
+}
+
+.voice-steps button.activo {
+  color: #04111f;
+  background: #67e8f9;
+}
+
+.voice-step-panel {
+  padding: clamp(18px, 3vw, 28px);
+}
+
+.voice-step-panel[hidden] {
+  display: none;
+}
+
+.voice-grid,
+.voice-two-columns,
+.voice-review-layout {
+  display: grid;
+  gap: 14px;
+}
+
+.voice-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.voice-two-columns,
+.voice-review-layout {
+  grid-template-columns: minmax(0, 1.55fr) minmax(280px, 0.75fr);
+}
+
+.voice-grid label,
+.voice-two-columns label,
+.voice-review-card label {
+  display: grid;
+  gap: 7px;
+  color: #cbd5e1;
+  font-weight: 800;
+}
+
+.voice-grid input,
+.voice-grid select,
+.voice-large-text,
+.voice-review-card textarea,
+.voice-review-card select {
+  width: 100%;
+  min-width: 0;
+  border: 1px solid rgba(125, 211, 252, 0.18);
+  border-radius: 8px;
+  background: rgba(2, 6, 23, 0.72);
+  color: #f8fafc;
+  padding: 10px 12px;
+  font: inherit;
+}
+
+.voice-large-text {
+  min-height: 340px;
+  resize: vertical;
+}
+
+.voice-summary,
+.voice-provider-status,
+.voice-card,
+.voice-warnings,
+.voice-transfer-options {
+  margin-top: 14px;
+  padding: 14px;
+  border: 1px solid rgba(125, 211, 252, 0.13);
+  border-radius: 10px;
+  background: rgba(2, 6, 23, 0.42);
+}
+
+.voice-provider-status {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.voice-provider-status span {
+  border-radius: 8px;
+  padding: 8px 10px;
+  background: rgba(15, 23, 42, 0.8);
+}
+
+.voice-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.voice-actions button:first-child,
+#btnGenerarNotaVoz,
+#btnTransferirNotaVoz {
+  border-color: rgba(34, 211, 238, 0.55);
+  background: linear-gradient(135deg, #38bdf8, #22d3ee);
+  color: #02111f;
+}
+
+.voice-segments,
+.voice-review-cards,
+#voiceWarningsList {
+  display: grid;
+  gap: 10px;
+}
+
+.voice-segment,
+.voice-warning-item,
+.voice-review-card {
+  border: 1px solid rgba(125, 211, 252, 0.14);
+  border-radius: 10px;
+  background: rgba(15, 23, 42, 0.62);
+  padding: 12px;
+}
+
+.voice-segment small,
+.voice-review-card small {
+  color: #7dd3fc;
+  font-weight: 800;
+}
+
+.voice-review-card {
+  display: grid;
+  gap: 12px;
+}
+
+.voice-review-card header {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+.voice-review-card h3,
+.voice-warnings h3 {
+  margin: 0;
+  color: #e0f2fe;
+}
+
+.voice-review-card textarea {
+  min-height: 150px;
+  max-height: 360px;
+  overflow: auto;
+  resize: vertical;
+}
+
+.voice-transfer-options {
+  display: grid;
+  gap: 10px;
+}
+
+.voice-transfer-options label {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  cursor: pointer;
+}
+
+.dictado-clinico-card {
+  margin: 0;
+}
+
+.dictado-metricas {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+@media (max-width: 980px) {
+  .voice-sidebar {
+    position: static;
+    width: 100%;
+    border-right: 0;
+    border-bottom: 1px solid rgba(125, 211, 252, 0.14);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .voice-shell {
+    width: min(100% - 24px, 960px);
+    margin: 0 auto 48px;
+  }
+
+  .voice-grid,
+  .voice-two-columns,
+  .voice-review-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .voice-header {
+    display: grid;
+  }
+}
+
+@media (max-width: 620px) {
+  .voice-sidebar {
+    grid-template-columns: 1fr;
+  }
+
+  .voice-header,
+  .voice-step-panel {
+    border-radius: 10px;
+  }
+
+  .dictado-clinico-header,
+  .voice-review-card header {
+    display: grid;
+  }
+
+  .dictado-metricas {
+    grid-template-columns: 1fr;
+  }
+
+  .voice-actions button,
+  .voice-steps button {
+    width: 100%;
+  }
+}

@@ -399,7 +399,7 @@ function detenerCapturaMicrofono() {
 function iniciarMedidorAudio() {
   if (runtime.meterTimer) window.clearInterval(runtime.meterTimer);
   runtime.meterTimer = window.setInterval(() => {
-    const medicion = runtime.audio.measure();
+    const medicion = runtime.audio.lastMeasurement || runtime.audio.measure();
     const barra = $("nivelAudioDictado");
     if (barra) barra.style.width = `${Math.min(100, Math.round(medicion.rms * 280))}%`;
 

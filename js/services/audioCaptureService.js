@@ -7,6 +7,7 @@ export class AudioCaptureService {
     this.analyser = null;
     this.frame = null;
     this.silenceSince = null;
+    this.lastMeasurement = { rms: 0, level: 0, warnings: [] };
   }
 
   async listDevices() {
@@ -41,7 +42,7 @@ export class AudioCaptureService {
   }
 
   measure() {
-    if (!this.analyser) return;
+    if (!this.analyser) return this.lastMeasurement;
     const data = new Uint8Array(this.analyser.frequencyBinCount);
     this.analyser.getByteTimeDomainData(data);
     let sum = 0;
@@ -65,7 +66,17 @@ export class AudioCaptureService {
       this.onWarning?.("Micrófono activo.");
     }
 
+    this.lastMeasurement = {
+      rms,
+      level,
+      warnings: level < 4
+        ? [Date.now() - (this.silenceSince || Date.now()) > 8500 ? "No se detecta voz. Revisa el microfono." : "Nivel bajo."]
+        : level > 92
+          ? ["Volumen muy alto; puede saturar."]
+          : ["Microfono activo."]
+    };
     this.frame = requestAnimationFrame(() => this.measure());
+    return this.lastMeasurement;
   }
 
   async stop() {
@@ -84,6 +95,7 @@ export class AudioCaptureService {
     }
     this.audioContext = null;
     this.analyser = null;
+    this.lastMeasurement = { rms: 0, level: 0, warnings: [] };
     this.onLevel?.(0);
   }
 }

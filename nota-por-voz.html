@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Nota por voz y automatica | Cognicion</title>
+  <link rel="stylesheet" href="css/theme.css">
+  <link rel="stylesheet" href="css/dictado.css">
+  <link rel="stylesheet" href="css/nota-por-voz.css">
+  <link rel="icon" type="image/png" href="assets/favicon-cognicion.png">
+</head>
+<body>
+  <aside class="voice-sidebar" aria-label="Navegacion principal">
+    <a href="dashboard.html">Inicio</a>
+    <a href="medico.html">Panel medico</a>
+    <a id="linkPacienteVoz" href="paciente.html">Paciente</a>
+    <a id="linkNotaTradicional" href="nota.html">Nota tradicional</a>
+    <a class="activo" id="linkNotaVoz" href="nota-por-voz.html">Nota por voz y automatica</a>
+  </aside>
+
+  <main class="voice-shell">
+    <header class="voice-header">
+      <div>
+        <span class="voice-kicker">COGNICION · DOCUMENTACION PSIQUIATRICA</span>
+        <h1>Nota por voz y automatica</h1>
+        <p>VERSIÓN ALFA · EN DESARROLLO. La transcripcion y la nota generada requieren revision del profesional.</p>
+      </div>
+      <button id="btnVolverVoz" type="button" class="boton-secundario">Volver</button>
+    </header>
+
+    <nav class="voice-steps" aria-label="Flujo de nota por voz">
+      <button type="button" data-step-target="preparar" class="activo">1. Preparar</button>
+      <button type="button" data-step-target="grabar">2. Grabar</button>
+      <button type="button" data-step-target="transcripcion">3. Revisar transcripcion</button>
+      <button type="button" data-step-target="generar">4. Generar nota</button>
+      <button type="button" data-step-target="revisar">5. Revisar nota</button>
+      <button type="button" data-step-target="transferir">6. Transferir</button>
+    </nav>
+
+    <section id="step-preparar" class="voice-step-panel">
+      <div class="voice-panel-heading">
+        <span>Preparar</span>
+        <h2>Paciente, contexto y microfono</h2>
+      </div>
+      <div class="voice-grid">
+        <label>Paciente
+          <select id="uidPaciente">
+            <option value="">Seleccionar paciente</option>
+          </select>
+        </label>
+        <label>Encuentro
+          <input id="voiceEncounterId" placeholder="actual">
+        </label>
+        <label>Nota destino
+          <input id="voiceNoteId" placeholder="nuevo borrador o notaId existente">
+        </label>
+        <label>Servicio
+          <input id="voiceServicio" placeholder="Observacion / UCEP / Urgencias">
+        </label>
+        <label>Tipo de nota
+          <select id="voiceDocumentType"></select>
+        </label>
+        <label>Estilo
+          <select id="voiceWritingStyle"></select>
+        </label>
+      </div>
+      <div id="voicePatientSummary" class="voice-summary">Selecciona un paciente para iniciar.</div>
+      <div class="voice-actions">
+        <button id="btnPrepararMicrofono" type="button">Probar microfono</button>
+        <button type="button" data-step-next="grabar" class="boton-secundario">Continuar a grabacion</button>
+      </div>
+    </section>
+
+    <section id="step-grabar" class="voice-step-panel" hidden>
+      <section class="dictado-clinico-card" aria-labelledby="tituloDictadoClinico">
+        <div class="dictado-clinico-header">
+          <div>
+            <span class="dictado-clinico-etiqueta">Transcripcion asistida</span>
+            <h2 id="tituloDictadoClinico">Dictado clinico <span class="dictado-alfa-badge">Version alfa</span></h2>
+            <p>Una sola sesion por paciente y encuentro. El texto queda guardado localmente aunque falle la red.</p>
+          </div>
+          <div id="estadoDictadoClinico" class="dictado-clinico-estado">Dictado detenido</div>
+        </div>
+        <div class="dictado-clinico-alertas">
+          <p><strong>Revision obligatoria:</strong> la transcripcion puede contener errores de reconocimiento o hablantes no identificados.</p>
+          <p><strong>Privacidad:</strong> Web Speech API depende del navegador y puede procesar audio con servicios del proveedor.</p>
+        </div>
+        <textarea id="textoDictadoClinico" class="dictado-clinico-texto" placeholder="La transcripcion confirmada aparecera aqui. Corrigela antes de generar."></textarea>
+        <div class="dictado-clinico-acciones">
+          <button id="btnIniciarDictado" type="button" class="boton-secundario">Iniciar dictado</button>
+          <button id="btnPausarDictado" type="button" class="boton-secundario">Pausar</button>
+          <button id="btnLimpiarDictado" type="button" class="boton-secundario">Limpiar</button>
+        </div>
+      </section>
+      <div class="voice-actions">
+        <button type="button" data-step-next="transcripcion">Finalizar y revisar transcripcion</button>
+      </div>
+    </section>
+
+    <section id="step-transcripcion" class="voice-step-panel" hidden>
+      <div class="voice-panel-heading">
+        <span>Revisar transcripcion</span>
+        <h2>Original, correccion conservadora y hablantes probables</h2>
+      </div>
+      <div class="voice-two-columns">
+        <label>Transcripcion integra revisada
+          <textarea id="voiceCorrectedTranscript" class="voice-large-text"></textarea>
+        </label>
+        <section class="voice-card">
+          <h3>Segmentacion conversacional</h3>
+          <div id="voiceConversationSegments" class="voice-segments">Sin segmentos.</div>
+        </section>
+      </div>
+      <div class="voice-actions">
+        <button type="button" data-step-next="generar">Usar esta transcripcion</button>
+      </div>
+    </section>
+
+    <section id="step-generar" class="voice-step-panel" hidden>
+      <div class="voice-panel-heading">
+        <span>Generar nota</span>
+        <h2>Proveedor estructurado y validacion</h2>
+      </div>
+      <div class="voice-provider-status">
+        <span id="voiceProviderStatus">Proveedor: pendiente</span>
+        <span id="voicePromptVersion">Prompt: pendiente</span>
+        <span id="voiceSchemaStatus">Esquema validado: pendiente</span>
+      </div>
+      <div class="voice-actions">
+        <button id="btnGenerarNotaVoz" type="button">Generar nota psiquiatrica</button>
+      </div>
+      <div id="voiceGenerationProgress" class="voice-summary">La generacion no modifica la nota tradicional.</div>
+    </section>
+
+    <section id="step-revisar" class="voice-step-panel" hidden>
+      <div class="voice-panel-heading">
+        <span>Revisar nota</span>
+        <h2>Apartados clinicos transferibles</h2>
+      </div>
+      <div class="voice-review-layout">
+        <section id="voiceReviewCards" class="voice-review-cards"></section>
+        <aside class="voice-warnings">
+          <h3>Revisar antes de transferir</h3>
+          <div id="voiceWarningsList">Sin advertencias agrupadas.</div>
+        </aside>
+      </div>
+      <div class="voice-actions">
+        <button type="button" data-step-next="transferir">Continuar a transferencia</button>
+      </div>
+    </section>
+
+    <section id="step-transferir" class="voice-step-panel" hidden>
+      <div class="voice-panel-heading">
+        <span>Transferir</span>
+        <h2>Borrador de nota tradicional</h2>
+      </div>
+      <div class="voice-transfer-options">
+        <label><input type="radio" name="voiceTransferTarget" value="new" checked> Crear una nota/borrador</label>
+        <label><input type="radio" name="voiceTransferTarget" value="existing"> Transferir a borrador existente</label>
+        <label><input type="radio" name="voiceTransferTarget" value="later"> Guardar y continuar despues</label>
+      </div>
+      <div id="voiceTransferSummary" class="voice-summary">Nada transferido todavia.</div>
+      <div class="voice-actions">
+        <button id="btnTransferirNotaVoz" type="button">Transferir a nota del paciente</button>
+        <button id="btnAbrirNotaTradicional" type="button" class="boton-secundario">Abrir nota tradicional</button>
+      </div>
+    </section>
+  </main>
+
+  <script type="module" src="js/dictado.js?v=20260718-voice"></script>
+  <script type="module" src="js/nota-por-voz.js?v=20260718-voice"></script>
+</body>
+</html>

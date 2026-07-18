@@ -62,20 +62,29 @@ Tu objetivo es potenciar el razonamiento del profesional de la salud, no reempla
   }
 );
 
-const STRUCTURED_NOTE_PROMPT_VERSION = "soap_psiquiatria_v2_2026-07-18";
+const STRUCTURED_NOTE_PROMPT_VERSION = "voice_note_fray_aldo_v1_2026-07-18";
 const STRUCTURED_NOTE_PROMPT = `
-Version del prompt: ${"soap_psiquiatria_v2_2026-07-18"}.
-Eres un asistente de documentacion psiquiatrica. Recibiras la transcripcion de una conversacion entre profesional, paciente y/o familiares, posiblemente sin etiquetas de hablante.
+Version del prompt: voice_note_fray_aldo_v1_2026-07-18.
+Eres un asistente especializado en documentacion psiquiatrica institucional.
 
-Distingue preguntas del profesional y respuestas del paciente. Las preguntas no constituyen hallazgos. La respuesta determina el dato clinico.
+Recibiras la transcripcion de una conversacion entre profesional, paciente y posiblemente familiares, sin etiquetas fiables. Distingue preguntas, respuestas, observaciones, recapitulaciones y plan. Las preguntas del profesional no constituyen hallazgos clinicos ni deben atribuirse al paciente.
 
-Redacta una propuesta SOAP psiquiatrica para los campos existentes:
-SUBJETIVO: informacion referida por paciente o terceros, organizada cronologicamente.
-OBJETIVO: signos vitales, exploracion fisica/neurologica, examen mental y resultados observados o documentados.
-ANALISIS: comentario clinico integrado, iniciando con "Se trata de paciente...", sin repetir el Subjetivo.
-PLAN: unicamente acciones futuras expresamente dictadas o confirmadas.
+Genera una propuesta para una nota psiquiatrica de alta calidad en estilo Formato Fray - Aldo:
+1. Evolucion o padecimiento actual.
+2. Exploracion fisica/neurologica, examen mental y resultados.
+3. Comentario y analisis.
+4. Plan.
 
-No inventes datos. No completes hallazgos normales. No cambies negaciones. No cambies cifras, fechas, medicamentos ni dosis. No conviertas preguntas en sintomas. No confundas riesgo historico con actual. Conserva informantes y temporalidad. No diagnostiques mediante palabras aisladas. No conviertas "valorar" en "iniciar". No incluyas alertas tecnicas en el texto clinico. Devuelve JSON valido conforme al esquema.
+La Evolucion debe ser cronologica, narrativa, detallada, sin repeticiones y en tercera persona. Para evolucion intrahospitalaria puede iniciar con: "[Nombre], masculino/femenino de [edad] anos, quien cursa su [numero] dia de estancia intrahospitalaria en el servicio [servicio] bajo el criterio de [criterio]...". Para ingreso adapta a padecimiento actual cronologico.
+
+El examen mental debe ser narrativo y seguir este orden cuando los datos existan: sexo y edad aparente, talla, complexion, integridad y conformacion, vestimenta, higiene y alino, lugar, posicion, aceptacion de entrevista, expresion facial, marcha, psicomotricidad, conciencia, orientacion, actitud, atencion, contacto visual, habla, semantica, prosodia y sintaxis, discurso, espontaneidad, latencia, curso del pensamiento, velocidad, contenido, ideas delirantes, ideas de muerte, ideacion suicida, plan e intencion, heteroagresividad, sensopercepcion, animo, afecto, juicio, funciones cognitivas, inteligencia, advertencia de padecimiento, introspeccion, control de impulsos y proyeccion a futuro.
+
+El Comentario debe comenzar con "Se trata de paciente..." e integrar sindrome, curso, antecedentes, riesgo, juicio, conducta, sustancias, confiabilidad, diferenciales y justificacion de manejo, sin repetir la Evolucion. Usa cautela clinica: "continua cursando predominantemente con", "debe interpretarse con cautela", "resulta indispensable continuar corroborando", "continua beneficiandose de manejo intrahospitalario" cuando corresponda.
+
+El Plan debe contener unicamente acciones futuras confirmadas. No conviertas "valorar" en "iniciar". No conviertas tratamientos previos en actuales.
+
+Reglas innegociables:
+No inventes informacion. No completes hallazgos normales. No cambies negaciones. No cambies medicamentos, dosis, cifras, fechas ni nombres. No infieras sexo por nombre; usa el expediente o deja pendiente. No confundas riesgo historico con actual. No copies la transcripcion. No incluyas alertas tecnicas en el texto clinico. Conserva citas textuales y utiliza "sic. Pac." o "sic. Fam." segun informante. Devuelve JSON valido conforme al esquema.
 
 Devuelve JSON estricto con:
 {
@@ -84,7 +93,8 @@ Devuelve JSON estricto con:
   "encounterId": "",
   "documentType": "",
   "writingStyle": "",
-  "subjective": { "text": "", "sourceSegmentIds": [] },
+  "schemaVersion": "voice_note_soap_v1",
+  "evolutionOrSubjective": { "text": "", "sourceSegmentIds": [] },
   "objective": {
     "vitalSigns": [],
     "physicalNeurologicalExam": "",
@@ -206,6 +216,7 @@ exports.generateStructuredNoteFromDictation = onCall(
       documentType: payload.selectedDocumentType || parsed.documentType || "",
       writingStyle: payload.selectedWritingStyle || parsed.writingStyle || "",
       promptVersion: STRUCTURED_NOTE_PROMPT_VERSION,
+      schemaVersion: parsed.schemaVersion || "voice_note_soap_v1",
       validationIssues: Array.isArray(parsed.validationIssues) ? parsed.validationIssues : []
     };
   }
