@@ -62,23 +62,21 @@ Tu objetivo es potenciar el razonamiento del profesional de la salud, no reempla
   }
 );
 
+const STRUCTURED_NOTE_PROMPT_VERSION = "soap_psiquiatria_v2_2026-07-18";
 const STRUCTURED_NOTE_PROMPT = `
-Redacta un borrador de nota psiquiatrica unicamente con informacion sustentada en la transcripcion y el contexto autorizado.
+Version del prompt: ${"soap_psiquiatria_v2_2026-07-18"}.
+Eres un asistente de documentacion psiquiatrica. Recibiras la transcripcion de una conversacion entre profesional, paciente y/o familiares, posiblemente sin etiquetas de hablante.
 
-No inventes datos.
-No completes hallazgos normales.
-No cambies negaciones.
-No cambies cifras, dosis, fechas ni medicamentos.
-Conserva informantes y temporalidad.
-No conviertas hipotesis en hechos.
-No confundas riesgo historico y actual.
-No copies la transcripcion literalmente.
-Elimina muletillas y repeticiones.
-Organiza cronologicamente.
-Usa lenguaje psiquiatrico institucional.
-Adapta la redaccion al Formato Fray - Aldo.
-El comentario debe analizar sin repetir.
-El plan debe incluir unicamente acciones futuras dictadas.
+Distingue preguntas del profesional y respuestas del paciente. Las preguntas no constituyen hallazgos. La respuesta determina el dato clinico.
+
+Redacta una propuesta SOAP psiquiatrica para los campos existentes:
+SUBJETIVO: informacion referida por paciente o terceros, organizada cronologicamente.
+OBJETIVO: signos vitales, exploracion fisica/neurologica, examen mental y resultados observados o documentados.
+ANALISIS: comentario clinico integrado, iniciando con "Se trata de paciente...", sin repetir el Subjetivo.
+PLAN: unicamente acciones futuras expresamente dictadas o confirmadas.
+
+No inventes datos. No completes hallazgos normales. No cambies negaciones. No cambies cifras, fechas, medicamentos ni dosis. No conviertas preguntas en sintomas. No confundas riesgo historico con actual. Conserva informantes y temporalidad. No diagnostiques mediante palabras aisladas. No conviertas "valorar" en "iniciar". No incluyas alertas tecnicas en el texto clinico. Devuelve JSON valido conforme al esquema.
+
 Devuelve JSON estricto con:
 {
   "transcriptSessionId": "",
@@ -86,29 +84,38 @@ Devuelve JSON estricto con:
   "encounterId": "",
   "documentType": "",
   "writingStyle": "",
-  "timeline": [],
-  "sections": {
-    "motivo": "",
-    "antecedentes": "",
-    "padecimientoActual": "",
-    "evolucion": "",
-    "exploracionFisica": "",
-    "examenMental": "",
-    "evaluacionRiesgo": "",
-    "resultados": "",
-    "comentarioClinico": "",
-    "plan": "",
-    "pronostico": "",
-    "destino": ""
+  "subjective": { "text": "", "sourceSegmentIds": [] },
+  "objective": {
+    "vitalSigns": [],
+    "physicalNeurologicalExam": "",
+    "mentalStatusExam": "",
+    "results": "",
+    "sourceSegmentIds": []
   },
-  "medications": [],
-  "substances": [],
+  "analysis": {
+    "text": "",
+    "riskAssessment": {
+      "deathIdeation": {},
+      "suicidalIdeation": {},
+      "plan": {},
+      "intent": {},
+      "meansAccess": {},
+      "attempts": {},
+      "selfHarm": {},
+      "protectiveFactors": {},
+      "currentRiskUncertainty": {}
+    },
+    "diagnosticReasoning": "",
+    "differentialDiagnoses": [],
+    "medicalConditionsToRuleOut": [],
+    "sourceSegmentIds": []
+  },
+  "plan": { "text": "", "items": [], "sourceSegmentIds": [] },
+  "unresolvedItems": [],
+  "validationIssues": [],
+  "speakerAssignments": [],
   "diagnosisProposals": [],
-  "indicationProposals": [],
-  "unresolvedFragments": [],
-  "contradictions": [],
-  "provenance": [],
-  "validationIssues": []
+  "indicationProposals": []
 }
 `;
 
@@ -198,6 +205,7 @@ exports.generateStructuredNoteFromDictation = onCall(
       encounterId: payload.encounterId || parsed.encounterId || "",
       documentType: payload.selectedDocumentType || parsed.documentType || "",
       writingStyle: payload.selectedWritingStyle || parsed.writingStyle || "",
+      promptVersion: STRUCTURED_NOTE_PROMPT_VERSION,
       validationIssues: Array.isArray(parsed.validationIssues) ? parsed.validationIssues : []
     };
   }

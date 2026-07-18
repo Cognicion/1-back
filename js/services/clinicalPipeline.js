@@ -46,6 +46,82 @@ function id(prefix = "item") { return globalThis.crypto?.randomUUID?.() || `${pr
 function textoPlano(value = "") { return String(value || "").replace(/\s+/g, " ").trim(); }
 function capitalizar(texto = "") { const t = textoPlano(texto); return t ? `${t[0].toUpperCase()}${t.slice(1)}` : ""; }
 
+const PREGUNTAS_CLINICAS = [
+  ["sensopercepcion_voces", /\b(?:escuchado|escucha|oye|oido)\s+voces\b|\balucinaciones?\b/i, "alucinaciones auditivas"],
+  ["ideas_muerte", /\bideas?\s+de\s+muerte\b/i, "ideas de muerte"],
+  ["ideacion_suicida", /\bideas?\s+suicidas?\b|\bideaci[oó]n\s+suicida\b/i, "ideación suicida"],
+  ["intencion_suicida", /\bintenci[oó]n\s+(?:de\s+morir|suicida)\b/i, "intención de morir"],
+  ["plan_suicida", /\bplan\b.*\b(?:morir|suicid|quitarse la vida)\b/i, "plan suicida"],
+  ["heteroagresividad", /\b(?:hacerle da[ñn]o|agredir|matar)\s+a\s+(?:alguien|otros|terceros)\b/i, "ideación heteroagresiva"],
+  ["consumo_sustancias", /\b(?:consume|consumo|alcohol|cannabis|marihuana|coca[ií]na|cristal)\b/i, "consumo de sustancias"]
+];
+
+function dividirTurnosConversacion(texto = "") {
+  return textoPlano(texto)
+    .match(/[^.!?¿¡]+[?!]?|[¿¡][^?!]+[?!]?/gu)
+    ?.map((item) => item.trim())
+    .filter(Boolean) || [];
+}
+
+function esPreguntaClinica(texto = "") {
+  return /[?¿]\s*$/.test(texto.trim()) || /^(?:ha|has|tiene|tienes|consume|cuando|desde cuando|cu[aá]nto|alguna vez)\b/i.test(texto.trim());
+}
+
+function conceptoDesdePregunta(texto = "") {
+  return PREGUNTAS_CLINICAS.find(([, regex]) => regex.test(texto)) || null;
+}
+
+function respuestaCorta(texto = "") {
+  return /^(?:s[ií]|no|nunca|ayer|hoy|actualmente|aqu[ií]|ninguna|ninguno|hace\b|desde\b|no,|s[ií],)/i.test(textoPlano(texto));
+}
+
+function textoClinicoDesdeRespuesta(pregunta = "", respuesta = "") {
+  const concepto = conceptoDesdePregunta(pregunta);
+  if (!concepto) return textoPlano(respuesta);
+  const [, , etiqueta] = concepto;
+  const r = normalizarComparacion(respuesta);
+  if (/^(?:no|nunca|ningun)/.test(r) || /\baqui no\b|\bactualmente no\b/.test(r)) {
+    return `Niega ${etiqueta}.`;
+  }
+  if (/ayer|previamente|antes|hace/.test(r)) {
+    return `Refiere ${etiqueta} de forma previa (${textoPlano(respuesta)}).`;
+  }
+  if (/^s[ií]\b|si,/.test(r)) {
+    return `Refiere ${etiqueta}.`;
+  }
+  return `${textoPlano(respuesta)} respecto a ${etiqueta}.`;
+}
+
+export function segmentarConversacionClinica(texto = "") {
+  const turnos = dividirTurnosConversacion(texto);
+  let ultimaPregunta = null;
+  let ultimaPreguntaConceptual = null;
+  return turnos.map((turno, index) => {
+    const concepto = conceptoDesdePregunta(turno);
+    const isQuestion = esPreguntaClinica(turno) && Boolean(concepto || /[?¿]/.test(turno));
+    const preguntaClinica = concepto ? turno : (/actualmente|ahora|hoy|aqui|aqu[ií]/i.test(turno) ? ultimaPreguntaConceptual?.text || turno : turno);
+    const isAnswer = !isQuestion && ultimaPregunta && respuestaCorta(turno);
+    const item = {
+      utteranceId: `utt-${index + 1}`,
+      probableRole: isQuestion ? "clinician" : "unknown",
+      text: turno,
+      clinicalQuestionText: preguntaClinica,
+      isQuestion,
+      isAnswer,
+      linkedQuestionId: isAnswer ? ultimaPregunta.utteranceId : "",
+      normalizedClinicalText: isAnswer ? textoClinicoDesdeRespuesta(ultimaPregunta.clinicalQuestionText || ultimaPregunta.text, turno) : turno,
+      confidence: isQuestion || isAnswer ? 0.82 : 0.75,
+      requiresReview: !isQuestion && !isAnswer && turno.split(/\s+/).length <= 3
+    };
+    if (isQuestion) {
+      ultimaPregunta = item;
+      if (concepto) ultimaPreguntaConceptual = item;
+    }
+    if (isAnswer) ultimaPregunta = null;
+    return item;
+  });
+}
+
 function detectarInformante(texto = "") {
   const t = normalizarComparacion(texto);
   if (/\b(?:la )?madre\b/.test(t)) return "madre";
@@ -84,14 +160,14 @@ function detectarEstado(texto = "", informante = "") {
 
 function esPlanExplicito(texto = "") {
   const t = normalizarComparacion(texto).replace(/^plan\s*:?\s*/, "");
-  return /^(?:se\s+)?(?:indicar|iniciar|continuar|mantener|suspender|ajustar|solicitar|realizar|citar|agendar|referir|vigilar|monitorizar|administrar|canalizar)\b/.test(t)
-    || /\b(?:se indica|se solicita|se agenda|se cita|debera|debe continuar|plan consiste en)\b/.test(t);
+  return /^(?:se\s+)?(?:indicar|iniciar|continuar|mantener|suspender|ajustar|solicitar|realizar|citar|agendar|referir|vigilar|monitorizar|administrar|canalizar|valorar|corroborar|ingreso|permanencia|vigilancia|medidas de seguridad|signos vitales|trabajo social|entrevistas|reevaluacion)\b/.test(t)
+    || /\b(?:se indica|se solicita|se agenda|se cita|debera|debe continuar|plan consiste en|valorar inicio|reevaluacion del riesgo)\b/.test(t);
 }
 
 function clasificarSeccion(texto = "") {
   if (/alerg/i.test(texto)) return "alergias";
-  if (RIESGOS.some(([, regex]) => regex.test(texto))) return "evaluacion_riesgo";
   if (esPlanExplicito(texto)) return "plan";
+  if (RIESGOS.some(([, regex]) => regex.test(texto))) return "evaluacion_riesgo";
   if (REGEX_MEDICAMENTO.test(texto)) return /suspend|adheren|abandono|no toma|omite/i.test(texto) ? "adherencia" : "medicamentos";
   if (/alcohol|cannabis|marihuana|coca[ií]na|cristal|metanfetamina|tabaco|consumo/i.test(texto)) return "consumo_sustancias";
   if (DOMINIOS_MENTALES.some(([, regex]) => regex.test(texto))) return "examen_mental";
@@ -116,7 +192,16 @@ function dividirClausulas(texto = "") {
 }
 
 export function segmentarTranscripcion(transcripcion, contexto = {}) {
-  const entrada = Array.isArray(transcripcion) ? transcripcion : [{ originalText: transcripcion }];
+  const entrada = Array.isArray(transcripcion)
+    ? transcripcion
+    : segmentarConversacionClinica(transcripcion)
+      .filter((utterance) => !utterance.isQuestion)
+      .map((utterance) => ({
+        originalText: utterance.normalizedClinicalText,
+        speaker: utterance.probableRole === "clinician" ? "profesional" : "hablante_no_identificado",
+        confidence: utterance.confidence,
+        utterance
+      }));
   const segmentos = [];
   entrada.forEach((origen, sourceIndex) => {
     const original = textoPlano(origen.originalText ?? origen.text ?? origen.normalizedText ?? "");

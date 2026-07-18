@@ -43,6 +43,25 @@ function normalizarPayloadEntrada(transcript, patient = {}, options = {}) {
 
 function seccionesExternasAGeneratedSections(data = {}) {
   if (Array.isArray(data.generatedSections)) return data.generatedSections;
+  if (data.subjective || data.objective || data.analysis || data.plan) {
+    const soap = data;
+    return [
+      { section: "soap_subjective", fieldTarget: "subjective", title: "SUBJETIVO", content: soap.subjective?.text, sourceStatementIds: soap.subjective?.sourceSegmentIds || [] },
+      { section: "soap_physical_exam", fieldTarget: "physicalExam", title: "OBJETIVO - Exploración física y neurológica", content: soap.objective?.physicalNeurologicalExam, sourceStatementIds: soap.objective?.sourceSegmentIds || [] },
+      { section: "soap_mental_status", fieldTarget: "mentalStatusExam", title: "OBJETIVO - Examen mental", content: soap.objective?.mentalStatusExam, sourceStatementIds: soap.objective?.sourceSegmentIds || [] },
+      { section: "soap_results", fieldTarget: "results", title: "OBJETIVO - Resultados", content: soap.objective?.results, sourceStatementIds: soap.objective?.sourceSegmentIds || [] },
+      { section: "soap_analysis", fieldTarget: "analysis", title: "ANÁLISIS", content: soap.analysis?.text, sourceStatementIds: soap.analysis?.sourceSegmentIds || [] },
+      { section: "soap_plan", fieldTarget: "plan", title: "PLAN", content: soap.plan?.text, sourceStatementIds: soap.plan?.sourceSegmentIds || [] }
+    ].map((section) => ({
+      ...section,
+      id: `external-${section.section}`,
+      content: String(section.content || "").trim(),
+      accepted: false,
+      reviewStatus: "pendiente_revision",
+      version: 1,
+      insertable: true
+    })).filter((section) => section.content);
+  }
   const sections = data.sections || {};
   const mapa = [
     ["motivo", "motivo_consulta", "Motivo / criterio"],
@@ -51,7 +70,6 @@ function seccionesExternasAGeneratedSections(data = {}) {
     ["evolucion", "padecimiento_actual", "Evolucion"],
     ["exploracionFisica", "exploracion_fisica", "Exploracion fisica y neurologica"],
     ["examenMental", "examen_mental", "Examen mental"],
-    ["evaluacionRiesgo", "evaluacion_riesgo", "Evaluacion de riesgo"],
     ["resultados", "resultados_auxiliares", "Resultados"],
     ["comentarioClinico", "comentario_clinico", "Comentario clinico"],
     ["plan", "plan", "Plan"],
@@ -67,7 +85,8 @@ function seccionesExternasAGeneratedSections(data = {}) {
       sourceStatementIds: [],
       accepted: false,
       reviewStatus: "pendiente_revision",
-      version: 1
+      version: 1,
+      insertable: true
     }))
     .filter((section) => section.content);
 }
@@ -85,6 +104,12 @@ function normalizarSalidaExterna(data = {}, payload = {}) {
       redaccion_clinica_conservadora: generatedSections.map((section) => section.content).join("\n\n"),
       literal_corregida: payload.correctedTranscript || payload.confirmedTranscript || ""
     },
+    generatedClinicalText: data.subjective || data.objective || data.analysis || data.plan ? {
+      subjective: data.subjective || {},
+      objective: data.objective || {},
+      analysis: data.analysis || {},
+      plan: data.plan || {}
+    } : data.generatedClinicalText,
     clinicalStatements: data.clinicalStatements || [],
     medicationStatements: data.medications || data.medicationStatements || [],
     substanceUseStatements: data.substances || data.substanceUseStatements || [],

@@ -1,4 +1,4 @@
-import assert from "node:assert/strict";
+﻿import assert from "node:assert/strict";
 import { DictadoStateMachine, ESTADOS_DICTADO } from "../services/dictadoStateMachine.js";
 import { TranscriptAssembler } from "../services/transcriptAssembler.js";
 import { DraftPersistenceService } from "../services/dictadoPersistence.js";
@@ -124,29 +124,24 @@ const realCase = generarNotaAutomatica(
   "Antecedente de depresión, clonazepam y cita previa.",
   { id: "a" }, { patientId: "a", sessionId: "s" }
 );
-const sourceSection = realCase.generatedSections.find((section) => section.section === "fuente_confiabilidad");
-assert.match(sourceSection.content, /confiabilidad no fue especificada/i);
-assert.equal(sourceSection.content.includes("dispositivos"), false);
-const medicationSection = realCase.generatedSections.find((section) => section.section === "medicamentos");
-assert.match(medicationSection.content, /Quetiapina/i);
-assert.match(medicationSection.content, /dosis no especificada/i);
-assert.equal(medicationSection.content.includes("gárgaras"), false);
+assert.match(realCase.estructuraClinica.fuente_confiabilidad, /confiabilidad no fue especificada/i);
+assert.equal(realCase.estructuraClinica.fuente_confiabilidad.includes("dispositivos"), false);
+assert.match(realCase.estructuraClinica.medicamentos, /Quetiapina/i);
+assert.match(realCase.estructuraClinica.medicamentos, /dosis no especificada/i);
+assert.equal(realCase.estructuraClinica.medicamentos.includes("gÃ¡rgaras"), false);
 assert.equal(realCase.planItems.length, 0);
 assert.equal(realCase.generatedSections.some((section) => section.section === "plan"), false);
 assert.ok(realCase.riskStatements.some((risk) => risk.type === "agresion_sexual"));
-const riskSection = realCase.generatedSections.find((section) => section.section === "evaluacion_riesgo");
-assert.equal(riskSection.content.includes("nacimiento del bebé"), false);
-assert.equal(riskSection.content.includes("clonazepam"), false);
+assert.equal(realCase.generatedSections.some((section) => section.section === "evaluacion_riesgo"), false);
 assert.ok(realCase.validationIssues.some((issue) => issue.type === "incertidumbre_transcripcion"));
-assert.ok(realCase.generatedSections.every((section) => section.confidence === null));
-
+assert.ok(realCase.generatedSections.every((section) => section.accepted === false));
 const explicitPlan = generarNotaAutomatica("Solicitar biometría hemática. Citar en una semana.", { id: "a" }, { patientId: "a", sessionId: "s" });
 assert.equal(explicitPlan.planItems.length, 2);
-assert.ok(explicitPlan.generatedSections.some((section) => section.section === "plan"));
+assert.ok(explicitPlan.generatedSections.some((section) => section.section === "soap_plan"));
 
 // Generación por secciones y riesgos críticos requieren confirmación.
 const riskNote = generarNotaAutomatica("Actualmente presenta ideación suicida con plan.", { id: "a" }, { patientId: "a", sessionId: "s" });
-assert.ok(riskNote.generatedSections.some((section) => section.section === "evaluacion_riesgo"));
+assert.equal(riskNote.generatedSections.some((section) => section.section === "evaluacion_riesgo"), false);
 assert.ok(riskNote.validationIssues.some((issue) => issue.requiresExplicitReview));
 
 // Web Speech configura es-MX, provisionales/continuo y rechaza eventos tardíos tras detenerse.

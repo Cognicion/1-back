@@ -1,4 +1,4 @@
-import { auth, db, obtenerFunctions } from "./firebase.js";
+﻿import { auth, db, obtenerFunctions } from "./firebase.js";
 import { registrarEventoAuditoria } from "./services/auditoria.js";
 import { guardarSolicitudEliminacion } from "./services/reportes.js?v=20260716-1";
 import { iniciarMonitoreoSesion } from "./services/sesion.js";
@@ -119,6 +119,41 @@ let proveedorNotasCapability = {
 let borradorNotaAutomaticaActual = null;
 let snapshotAntesInsercionAutomatica = null;
 let estadoNotaActual = "nueva";
+
+const NOTE_FIELD_REGISTRY = Object.freeze({
+  subjective: {
+    fieldId: "subjetivo",
+    label: "Subjetivo / Padecimiento actual o evolución"
+  },
+  physicalExam: {
+    fieldId: "obsExploracionFisicaNeurologica",
+    label: "Exploración física y neurológica"
+  },
+  mentalStatusExam: {
+    fieldId: "objetivo",
+    label: "Examen mental"
+  },
+  results: {
+    fieldId: "obsResultadosEstudios",
+    label: "Resultados de estudios"
+  },
+  analysis: {
+    fieldId: "analisis",
+    label: "Análisis clínico / comentario"
+  },
+  plan: {
+    fieldId: "plan",
+    label: "Plan"
+  },
+  prognosis: {
+    fieldId: "obsPronostico",
+    label: "Pronóstico"
+  },
+  destination: {
+    fieldId: "obsDestino",
+    label: "Destino"
+  }
+});
 let cambiosNotaPendientes = false;
 let inicializacionFlujoNotasCompleta = false;
 let temporizadorRespaldoNota = null;
@@ -1464,20 +1499,9 @@ function obtenerIdentificacionPaciente() {
 }
 
 function obtenerCamposActualesNota() {
-  const campos = [
-    ["subjetivo", "Padecimiento actual / evolucion"],
-    ["objetivo", "Examen mental"],
-    ["analisis", "Comentario clinico"],
-    ["plan", "Plan"],
-    ["tratamiento", "Tratamiento e indicaciones"],
-    ["obsExploracionFisicaNeurologica", "Exploracion fisica y neurologica"],
-    ["obsResultadosEstudios", "Resultados de estudios"],
-    ["obsPronostico", "Pronostico"],
-    ["obsDestino", "Destino"]
-  ];
-  return Object.fromEntries(campos.map(([id, label]) => {
-    const field = document.getElementById(id);
-    return [id, { id, label, value: field?.value || "" }];
+  return Object.fromEntries(Object.entries(NOTE_FIELD_REGISTRY).map(([key, meta]) => {
+    const field = document.getElementById(meta.fieldId);
+    return [key, { id: meta.fieldId, fieldId: meta.fieldId, label: meta.label, value: field?.value || "" }];
   }));
 }
 
@@ -1613,28 +1637,35 @@ async function aplicarNotaAutomatica() {
 }
 
 function campoDestinoSeccion(seccion = "") {
+  const section = typeof seccion === "object" ? seccion : { section: seccion };
+  if (section.fieldTarget && NOTE_FIELD_REGISTRY[section.fieldTarget]) return NOTE_FIELD_REGISTRY[section.fieldTarget].fieldId;
   return {
+    soap_subjective: NOTE_FIELD_REGISTRY.subjective.fieldId,
+    soap_physical_exam: NOTE_FIELD_REGISTRY.physicalExam.fieldId,
+    soap_mental_status: NOTE_FIELD_REGISTRY.mentalStatusExam.fieldId,
+    soap_results: NOTE_FIELD_REGISTRY.results.fieldId,
+    soap_analysis: NOTE_FIELD_REGISTRY.analysis.fieldId,
+    soap_plan: NOTE_FIELD_REGISTRY.plan.fieldId,
     motivo_consulta: "subjetivo", padecimiento_actual: "subjetivo", antecedentes_psiquiatricos: "subjetivo",
     antecedentes_personales_patologicos: "subjetivo", medicamentos: "subjetivo", adherencia: "subjetivo",
     alergias: "subjetivo", consumo_sustancias: "subjetivo", examen_mental: "objetivo",
     exploracion_fisica: "obsExploracionFisicaNeurologica", signos_vitales: "obsExploracionFisicaNeurologica",
-    resultados_auxiliares: "obsResultadosEstudios", evaluacion_riesgo: "analisis", impresion_clinica: "analisis",
+    resultados_auxiliares: "obsResultadosEstudios", impresion_clinica: "analisis",
     comentario_clinico: "analisis", plan: "plan", indicaciones: "plan", pronostico: "obsPronostico", destino: "obsDestino"
-  }[seccion] || "";
+  }[section.section] || "";
 }
 
 function nombreCampoDestino(fieldId = "") {
-  return {
-    subjetivo: "Subjetivo / padecimiento actual o evolucion",
-    objetivo: "Objetivo / examen mental",
-    analisis: "Analisis clinico / comentario",
-    plan: "Plan",
-    tratamiento: "Tratamiento e indicaciones",
-    obsExploracionFisicaNeurologica: "Exploracion fisica y neurologica",
-    obsResultadosEstudios: "Resultados de estudios",
-    obsPronostico: "Pronostico",
-    obsDestino: "Destino"
-  }[fieldId] || fieldId || "sin destino";
+  const meta = Object.values(NOTE_FIELD_REGISTRY).find((item) => item.fieldId === fieldId);
+  return meta?.label || fieldId || "sin destino";
+}
+
+function textoClinicoInsertable(texto = "") {
+  const limpio = String(texto || "").trim();
+  if (!limpio) return false;
+  return !/^Se detect[oó]\b/i.test(limpio)
+    && !/Confirmar con (?:paciente|madre|padre|pareja|informante)/i.test(limpio)
+    && !/posible error de reconocimiento/i.test(limpio);
 }
 
 function insertarSeccionesRevisadas() {
@@ -1647,14 +1678,14 @@ function insertarSeccionesRevisadas() {
     alert("Confirme individualmente todos los datos criticos antes de insertar secciones.");
     return;
   }
-  const aceptadas = (borrador.generatedSections || []).filter((section) => section.accepted);
+  const aceptadas = (borrador.generatedSections || []).filter((section) => section.accepted && section.insertable !== false && textoClinicoInsertable(section.content));
   if (!aceptadas.length) {
     alert("Seleccione al menos una seccion revisada.");
     return;
   }
   const operaciones = aceptadas.map((section) => {
     const originalIndex = (borrador.generatedSections || []).indexOf(section);
-    const fieldId = campoDestinoSeccion(section.section);
+    const fieldId = campoDestinoSeccion(section);
     const field = document.getElementById(fieldId);
     const mode = document.querySelector(`[data-modo-insercion-seccion="${originalIndex}"]`)?.value || section.insertionMode || "combinar";
     return { section, fieldId, field, mode };
@@ -1673,16 +1704,21 @@ function insertarSeccionesRevisadas() {
     if (!ok) return;
   }
   snapshotAntesInsercionAutomatica = {};
+  let primerCampoInsertado = null;
   operaciones.forEach(({ section, fieldId, field, mode }) => {
     if (!(fieldId in snapshotAntesInsercionAutomatica)) snapshotAntesInsercionAutomatica[fieldId] = field.value;
     const content = String(section.content || "").trim();
-    if (!content) return;
+    if (!textoClinicoInsertable(content)) return;
     field.value = mode === "reemplazar" ? content : (field.value.trim() ? `${field.value.trim()}\n\n${content}` : content);
     field.dispatchEvent(new Event("input", { bubbles: true }));
     field.dispatchEvent(new Event("change", { bubbles: true }));
+    primerCampoInsertado ||= field;
+    field.classList.add("campo-actualizado-automatico");
+    window.setTimeout(() => field.classList.remove("campo-actualizado-automatico"), 2200);
     section.reviewStatus = "insertada";
     section.insertionMode = mode;
   });
+  primerCampoInsertado?.scrollIntoView({ behavior: "smooth", block: "center" });
   borrador.insertionAllowed = true;
   renderizarRevisionNotaAutomatica(borrador, document.getElementById("textoDictadoClinico")?.value || "");
 }
@@ -1732,11 +1768,11 @@ function renderizarRevisionNotaAutomatica(generada = {}, transcripcionOriginal =
       ${secciones.length ? secciones.map((section, index) => `
         <article class="revision-seccion-card">
           <header><label><input type="checkbox" data-aceptar-seccion="${index}" ${section.accepted ? "checked" : ""}> Aceptar ${escaparHTML(section.title)}</label><span>Revisión humana obligatoria</span></header>
-          <p><b>Campo destino:</b> ${escaparHTML(nombreCampoDestino(campoDestinoSeccion(section.section)))}</p>
-          <details><summary>Contenido actual del campo destino</summary><pre class="revision-transcripcion">${escaparHTML(document.getElementById(campoDestinoSeccion(section.section))?.value || "Campo vacio.")}</pre></details>
+          <p><b>Campo destino:</b> ${escaparHTML(nombreCampoDestino(campoDestinoSeccion(section)))}</p>
+          <details><summary>Contenido actual del campo destino</summary><pre class="revision-transcripcion">${escaparHTML(document.getElementById(campoDestinoSeccion(section))?.value || "Campo vacio.")}</pre></details>
           <label>Insercion<select data-modo-insercion-seccion="${index}"><option value="combinar" ${section.insertionMode === "combinar" || !section.insertionMode ? "selected" : ""}>Combinar con contenido actual</option><option value="reemplazar" ${section.insertionMode === "reemplazar" ? "selected" : ""}>Reemplazar contenido actual</option><option value="excluir" ${section.insertionMode === "excluir" ? "selected" : ""}>Excluir este apartado</option></select></label>
           <textarea data-contenido-seccion="${index}">${escaparHTML(section.content)}</textarea>
-          <details><summary>Fragmentos de origen e informante</summary><ul>${section.sourceStatementIds.map((statementId) => {
+          <details><summary>Fragmentos de origen e informante</summary><ul>${(section.sourceStatementIds || []).map((statementId) => {
             const s = generada.clinicalStatements?.find((item) => item.id === statementId);
             return `<li>${escaparHTML(s?.originalText || "")} · ${escaparHTML(s?.informant || "no identificado")} · ${escaparHTML(s?.assertionStatus || "")} · ${s?.timestamp ? escaparHTML(s.timestamp) : "sin marca de tiempo"}</li>`;
           }).join("")}</ul></details>

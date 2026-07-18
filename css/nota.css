@@ -1753,3 +1753,28 @@ button:hover{
   opacity: 0.38;
   cursor: not-allowed;
 }
+
+.revision-nota-automatica,
+.revision-seccion-card,
+.revision-transcripcion {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+
+.revision-seccion-card textarea {
+  min-height: 110px;
+  max-height: 320px;
+  overflow: auto;
+}
+
+.campo-actualizado-automatico {
+  outline: 2px solid rgba(34, 211, 238, 0.85);
+  box-shadow: 0 0 0 4px rgba(34, 211, 238, 0.18);
+  transition: box-shadow 180ms ease, outline-color 180ms ease;
+}
+
+@media (max-width: 760px) {
+  .revision-tres-columnas {
+    grid-template-columns: 1fr;
+  }
+}

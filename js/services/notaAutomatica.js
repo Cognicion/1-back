@@ -1,4 +1,4 @@
-import {
+﻿import {
   PLANTILLAS_COMENTARIO,
   PLANTILLAS_EXPLORACION_MENTAL,
   PLANTILLAS_PADECIMIENTO
@@ -740,6 +740,208 @@ const MAPA_SALIDA_SECCIONES = {
   destino: ["destino"]
 };
 
+const SECCIONES_TECNICAS_NO_INSERTABLES = new Set(["evaluacion_riesgo", "diagnosticos", "indicaciones"]);
+
+function textoSeguroNota(texto = "") {
+  return String(texto || "")
+    .split(/\n+/)
+    .map((linea) => linea.trim())
+    .filter(Boolean)
+    .filter((linea) => !/^Se detect[oó]\b/i.test(linea))
+    .filter((linea) => !/^Confirmar con\b/i.test(linea))
+    .join("\n");
+}
+
+function unirAfirmacionesClinicas(statements = [], predicate = () => true) {
+  return statements
+    .filter(predicate)
+    .filter((statement) => !statement.uncertaintyReasons?.length)
+    .map((statement) => String(statement.normalizedText || statement.originalText || "").trim())
+    .filter(Boolean)
+    .map((texto) => texto.replace(/[. ]+$/, "."))
+    .filter((texto, index, arr) => arr.indexOf(texto) === index)
+    .join(" ");
+}
+
+function enSecciones(...secciones) {
+  const set = new Set(secciones);
+  return (statement) => set.has(statement.proposedSection);
+}
+
+function describirPaciente(datosPaciente = {}) {
+  const sexo = String(datosPaciente.sexo || "").toLowerCase();
+  const edad = Number(datosPaciente.edad);
+  const genero = /fem|mujer/.test(sexo) ? "femenina" : /masc|hombre/.test(sexo) ? "masculino" : "de sexo no especificado";
+  const decada = Number.isFinite(edad) ? `${Math.floor(edad / 10) + 1}a década de la vida` : "edad no especificada";
+  return { genero, decada };
+}
+
+function construirExamenMentalNarrativo(mentalStatusFindings = []) {
+  const orden = [
+    "apariencia", "conducta", "psicomotricidad", "actitud", "conciencia", "orientacion", "atencion",
+    "lenguaje", "pensamiento", "sensopercepcion", "animo", "afecto", "juicio", "introspeccion", "control_impulsos"
+  ];
+  const porDominio = new Map();
+  mentalStatusFindings.forEach((finding) => {
+    if (finding.evidenceType !== "observado" && finding.status !== "observado_durante_entrevista") return;
+    if (!porDominio.has(finding.domain)) porDominio.set(finding.domain, []);
+    porDominio.get(finding.domain).push(finding.text);
+  });
+  const partes = orden
+    .filter((domain) => porDominio.has(domain))
+    .map((domain) => `${domain.replaceAll("_", " ")}: ${Array.from(new Set(porDominio.get(domain))).join("; ")}`);
+  return partes.length ? partes.join(". ") + "." : "";
+}
+
+function construirRiesgoEstructurado(riskStatements = []) {
+  const porTipo = {};
+  riskStatements.forEach((risk) => {
+    porTipo[risk.type] ||= { status: risk.status, occurrences: [], informants: [], current: [], historical: [] };
+    porTipo[risk.type].occurrences.push(risk.text);
+    if (risk.informant) porTipo[risk.type].informants.push(risk.informant);
+    if (risk.status === "historico") porTipo[risk.type].historical.push(risk.text);
+    else porTipo[risk.type].current.push(risk.text);
+  });
+  return {
+    deathIdeation: porTipo.ideas_muerte || {},
+    suicidalIdeation: porTipo.ideacion_suicida || {},
+    plan: porTipo.plan_suicida || {},
+    intent: porTipo.intencion_suicida || {},
+    meansAccess: {},
+    attempts: porTipo.intento_suicida || {},
+    selfHarm: porTipo.autolesiones || {},
+    protectiveFactors: {},
+    currentRiskUncertainty: {}
+  };
+}
+
+function construirAnalisisClinico(statements = [], riskStatements = [], datosPaciente = {}) {
+  const { genero, decada } = describirPaciente(datosPaciente);
+  const antecedentes = unirAfirmacionesClinicas(statements, enSecciones("antecedentes_psiquiatricos", "antecedentes_personales_patologicos", "consumo_sustancias", "medicamentos", "adherencia"));
+  const padecimiento = unirAfirmacionesClinicas(statements, enSecciones("padecimiento_actual"));
+  const eem = unirAfirmacionesClinicas(statements, enSecciones("examen_mental"));
+  const riesgos = riskStatements
+    .filter((risk) => risk.status !== "negado")
+    .map((risk) => risk.text)
+    .filter((texto, index, arr) => arr.indexOf(texto) === index);
+  const negados = riskStatements
+    .filter((risk) => risk.status === "negado")
+    .map((risk) => risk.text)
+    .filter((texto, index, arr) => arr.indexOf(texto) === index);
+  const partes = [`Se trata de paciente ${genero} de la ${decada}`];
+  if (antecedentes) partes.push(`con antecedentes relevantes documentados en el dictado: ${antecedentes}`);
+  if (padecimiento) partes.push(`El cuadro actual se caracteriza por ${padecimiento[0].toLowerCase()}${padecimiento.slice(1)}`);
+  if (eem) partes.push(`Durante la valoración se integran datos del estado mental sustentados en el dictado: ${eem}`);
+  if (riesgos.length) partes.push(`En materia de riesgo, se identifican elementos que requieren integración clínica: ${riesgos.join(" ")}`);
+  if (negados.length) partes.push(`También se documentan negaciones referidas que deben conservarse en la valoración: ${negados.join(" ")}`);
+  partes.push("La impresión diagnóstica y el destino requieren revisión del profesional con base en la entrevista completa, factores protectores, red de apoyo y condiciones médicas por descartar.");
+  return partes.join(". ").replace(/\.\./g, ".").trim();
+}
+
+function crearGeneratedClinicalText(pipeline = {}, datosPaciente = {}) {
+  const statements = pipeline.statements || [];
+  const subjective = textoSeguroNota(unirAfirmacionesClinicas(statements, (s) =>
+    ["motivo_consulta", "padecimiento_actual", "antecedentes_psiquiatricos", "antecedentes_personales_patologicos", "medicamentos", "adherencia", "alergias", "consumo_sustancias", "evaluacion_riesgo"].includes(s.proposedSection)
+      && !["observado_durante_entrevista"].includes(s.assertionStatus)
+  ));
+  const physicalNeurologicalExam = textoSeguroNota(unirAfirmacionesClinicas(statements, enSecciones("exploracion_fisica", "signos_vitales")));
+  const mentalStatusExam = textoSeguroNota(construirExamenMentalNarrativo(pipeline.mentalStatusFindings || []));
+  const results = textoSeguroNota(unirAfirmacionesClinicas(statements, enSecciones("resultados_auxiliares")));
+  const analysisText = textoSeguroNota(construirAnalisisClinico(statements, pipeline.riskStatements || [], datosPaciente));
+  const planText = textoSeguroNota(unirAfirmacionesClinicas(pipeline.planItems || [], () => true));
+  return {
+    subjective: {
+      text: subjective,
+      sourceSegmentIds: statements.filter(enSecciones("motivo_consulta", "padecimiento_actual", "antecedentes_psiquiatricos", "antecedentes_personales_patologicos", "medicamentos", "adherencia", "alergias", "consumo_sustancias", "evaluacion_riesgo")).map((s) => s.id),
+      provenance: [], informants: [], unresolvedItems: [], validationIssues: []
+    },
+    objective: {
+      vitalSigns: "",
+      physicalNeurologicalExam,
+      mentalStatusExam,
+      results,
+      sourceSegmentIds: statements.filter(enSecciones("signos_vitales", "exploracion_fisica", "examen_mental", "resultados_auxiliares")).map((s) => s.id),
+      provenance: [], unresolvedItems: [], validationIssues: []
+    },
+    analysis: {
+      text: analysisText,
+      riskAssessment: construirRiesgoEstructurado(pipeline.riskStatements || []),
+      diagnosticReasoning: "",
+      differentialDiagnoses: [],
+      medicalConditionsToRuleOut: [],
+      sourceSegmentIds: statements.filter(enSecciones("padecimiento_actual", "antecedentes_psiquiatricos", "antecedentes_personales_patologicos", "evaluacion_riesgo", "examen_mental", "impresion_clinica")).map((s) => s.id),
+      provenance: [], unresolvedItems: [], validationIssues: []
+    },
+    plan: {
+      text: planText,
+      items: (pipeline.planItems || []).map((s) => s.originalText),
+      medicationProposals: [],
+      studyProposals: [],
+      monitoringProposals: [],
+      referralProposals: [],
+      destinationProposal: "",
+      sourceSegmentIds: (pipeline.planItems || []).map((s) => s.id),
+      provenance: [], unresolvedItems: [], validationIssues: []
+    }
+  };
+}
+
+function crearSeccionesSOAP(generatedClinicalText = {}) {
+  const soap = generatedClinicalText;
+  const items = [
+    { section: "soap_subjective", soapKey: "subjective", fieldTarget: "subjective", title: "SUBJETIVO", content: soap.subjective?.text, sourceStatementIds: soap.subjective?.sourceSegmentIds || [] },
+    { section: "soap_physical_exam", soapKey: "physicalNeurologicalExam", fieldTarget: "physicalExam", title: "OBJETIVO - Exploración física y neurológica", content: soap.objective?.physicalNeurologicalExam, sourceStatementIds: soap.objective?.sourceSegmentIds || [] },
+    { section: "soap_mental_status", soapKey: "mentalStatusExam", fieldTarget: "mentalStatusExam", title: "OBJETIVO - Examen mental", content: soap.objective?.mentalStatusExam, sourceStatementIds: soap.objective?.sourceSegmentIds || [] },
+    { section: "soap_results", soapKey: "results", fieldTarget: "results", title: "OBJETIVO - Resultados", content: soap.objective?.results, sourceStatementIds: soap.objective?.sourceSegmentIds || [] },
+    { section: "soap_analysis", soapKey: "analysis", fieldTarget: "analysis", title: "ANÁLISIS", content: soap.analysis?.text, sourceStatementIds: soap.analysis?.sourceSegmentIds || [] },
+    { section: "soap_plan", soapKey: "plan", fieldTarget: "plan", title: "PLAN", content: soap.plan?.text, sourceStatementIds: soap.plan?.sourceSegmentIds || [] }
+  ];
+  return items
+    .map((item) => ({ ...item, id: globalThis.crypto?.randomUUID?.() || `soap-${item.section}-${Date.now()}`, accepted: false, reviewStatus: "pendiente", version: 1, insertable: true }))
+    .filter((item) => textoSeguroNota(item.content));
+}
+
+const MENSAJES_VALIDACION = {
+  disfluencia_o_posible_error_reconocimiento: "Posible error de reconocimiento",
+  fragmento_extenso_sin_puntuacion: "Fragmento extenso sin puntuación",
+  confianza_baja_reportada_por_proveedor: "Baja confianza del reconocimiento",
+  riesgo_critico: "Riesgo clínico que requiere confirmación",
+  incertidumbre_transcripcion: "Transcripción incierta",
+  contradiccion: "Versiones clínicas contradictorias"
+};
+
+function humanizarIssue(issue = {}) {
+  const concepto = issue.concept || issue.type || "pendiente_revision";
+  const label = MENSAJES_VALIDACION[concepto] || MENSAJES_VALIDACION[issue.type] || concepto.replaceAll("_", " ");
+  return {
+    ...issue,
+    concept: concepto,
+    displayTitle: label,
+    message: issue.message?.replace(/disfluencia_o_posible_error_reconocimiento/g, MENSAJES_VALIDACION.disfluencia_o_posible_error_reconocimiento)
+      .replace(/fragmento_extenso_sin_puntuacion/g, MENSAJES_VALIDACION.fragmento_extenso_sin_puntuacion)
+      || label
+  };
+}
+
+function agruparValidationIssues(issues = []) {
+  const grupos = new Map();
+  issues.map(humanizarIssue).forEach((issue) => {
+    const key = issue.concept || issue.type || issue.displayTitle;
+    if (!grupos.has(key)) {
+      grupos.set(key, { ...issue, id: `grupo-${key}`, occurrences: [], evidence: [], grouped: true });
+    }
+    const grupo = grupos.get(key);
+    grupo.occurrences.push(issue);
+    grupo.evidence.push(...(issue.evidence || []));
+    grupo.requiresExplicitReview ||= issue.requiresExplicitReview;
+  });
+  return Array.from(grupos.values()).map((grupo) => ({
+    ...grupo,
+    summary: `${grupo.displayTitle}: se identificaron ${grupo.occurrences.length} fragmento(s) relacionado(s).`,
+    evidence: Array.from(new Set(grupo.evidence))
+  }));
+}
+
 function unirSeccionesPorClave(secciones = [], claves = []) {
   return secciones
     .filter((section) => claves.includes(section.section))
@@ -882,9 +1084,19 @@ export function generarNotaAutomatica(textoDictado = "", datosPaciente = {}, opt
   const porSeccion = Object.fromEntries(pipeline.sections.map((section) => [section.section, section.content]));
   const sections = crearSeccionesSalida(pipeline.sections, options.tipoNota || options.selectedDocumentType || "evolucion_observacion");
   const structuredExtraction = crearExtraccionEstructurada(pipeline);
+  const generatedClinicalText = crearGeneratedClinicalText(pipeline, datosClinicos.identificacion);
+  const generatedSections = crearSeccionesSOAP(generatedClinicalText);
+  const groupedValidationIssues = agruparValidationIssues(validationIssues);
   const literalCorregida = pipeline.segments.map((segment) => segment.normalizedText).join(" ").trim();
-  const clinicaConservadora = pipeline.sections.map((section) => section.content).join("\n\n");
-  const estructurada = pipeline.sections.map((section) => `${section.title.toUpperCase()}\n${section.content}`).join("\n\n");
+  const clinicaConservadora = generatedSections.map((section) => section.content).join("\n\n");
+  const estructurada = [
+    generatedClinicalText.subjective?.text ? `SUBJETIVO\n${generatedClinicalText.subjective.text}` : "",
+    generatedClinicalText.objective?.physicalNeurologicalExam ? `OBJETIVO - EXPLORACION FISICA Y NEUROLOGICA\n${generatedClinicalText.objective.physicalNeurologicalExam}` : "",
+    generatedClinicalText.objective?.mentalStatusExam ? `OBJETIVO - EXAMEN MENTAL\n${generatedClinicalText.objective.mentalStatusExam}` : "",
+    generatedClinicalText.objective?.results ? `OBJETIVO - RESULTADOS\n${generatedClinicalText.objective.results}` : "",
+    generatedClinicalText.analysis?.text ? `ANALISIS\n${generatedClinicalText.analysis.text}` : "",
+    generatedClinicalText.plan?.text ? `PLAN\n${generatedClinicalText.plan.text}` : ""
+  ].filter(Boolean).join("\n\n");
 
   return {
     id: globalThis.crypto?.randomUUID?.() || `nota-${Date.now()}`,
@@ -910,6 +1122,7 @@ export function generarNotaAutomatica(textoDictado = "", datosPaciente = {}, opt
       status: "structured_local_rules"
     },
     structuredExtraction,
+    generatedClinicalText,
     datosClinicos,
     metadata: {
       version: "alfa",
@@ -918,7 +1131,7 @@ export function generarNotaAutomatica(textoDictado = "", datosPaciente = {}, opt
       generatedStatus: "en_revision",
       generationMethod: "reglas_locales_conservadoras",
       externalAIUsed: false,
-      processingDisclosure: "Borrador generado en el navegador con reglas locales; no se utilizó IA externa.",
+      processingDisclosure: "La redaccion avanzada no esta disponible. Las reglas locales solo pueden organizar informacion y alertas.",
       sourcePriority: ["expediente", "dictado", "campo_vacio"],
       tipoNota: options.tipoNota || "evolucion",
       nivelDetalle: options.nivelDetalle || "medio",
@@ -937,7 +1150,7 @@ export function generarNotaAutomatica(textoDictado = "", datosPaciente = {}, opt
     diagnosisStatements: pipeline.diagnosisStatements,
     planItems: pipeline.planItems,
     medicalOrderProposals: pipeline.orderProposals,
-    generatedSections: pipeline.sections,
+    generatedSections,
     contradictions: pipeline.contradictions,
     padecimientoActual: porSeccion.padecimiento_actual || "",
     exploracionMental: porSeccion.examen_mental || "",
@@ -954,7 +1167,8 @@ export function generarNotaAutomatica(textoDictado = "", datosPaciente = {}, opt
       informante: risk.informant,
       estado: risk.status
     })),
-    validationIssues,
+    validationIssues: groupedValidationIssues,
+    rawValidationIssues: validationIssues,
     provenanceRecords,
     outputs: {
       literal_corregida: literalCorregida,
