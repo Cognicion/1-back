@@ -235,17 +235,18 @@
         <button id="btnIniciarDictado" type="button" class="boton-secundario">Iniciar dictado</button>
         <button id="btnPausarDictado" type="button" class="boton-secundario">Pausar dictado</button>
         <button id="btnLimpiarDictado" type="button" class="boton-secundario">Limpiar dictado</button>
-        <button id="btnInsertarDictado" type="button">Insertar en nota</button>
-        <button id="btnGenerarNotaAutomatica" type="button" class="boton-secundario">Generar nota automática</button>
+        <button id="btnInsertarDictado" type="button">Insertar transcripcion literal</button>
+        <button id="btnGenerarNotaAutomatica" type="button" class="boton-secundario">Generar nota desde el dictado</button>
     </div>
 
     <details class="nota-automatica-configuracion">
         <summary>Configuración del borrador</summary>
         <div class="nota-automatica-config-grid">
-            <label>Resultado<select id="resultadoNotaAutomatica"><option value="nota_medica_estructurada">Nota médica estructurada</option><option value="redaccion_clinica_conservadora">Redacción clínica conservadora</option><option value="literal_corregida">Transcripción literal corregida</option></select></label>
-            <label>Tipo de nota<select id="tipoNotaAutomatica"><option value="evolucion">Evolución</option><option value="ingreso">Ingreso</option><option value="urgencias">Urgencias</option><option value="nota_rapida">Nota rápida</option><option value="paidopsiquiatria">Paidopsiquiatría</option></select></label>
-            <label>Nivel de detalle<select id="detalleNotaAutomatica"><option value="medio">Medio</option><option value="breve">Breve</option><option value="amplio">Amplio</option></select></label>
-            <label>Formato<select id="formatoNotaAutomatica"><option value="mixto">Mixto</option><option value="narrativo">Narrativo</option><option value="estructurado">Estructurado</option></select></label>
+            <label>Resultado<select id="resultadoNotaAutomatica"><option value="nota_medica_estructurada">Apartados existentes de la nota</option><option value="redaccion_clinica_conservadora">Redaccion clinica conservadora</option><option value="literal_corregida">Transcripcion literal corregida</option></select></label>
+            <label>Contexto clinico<select id="tipoNotaAutomatica"><option value="entrevista_inicial">Entrevista inicial</option><option value="ingreso_observacion">Ingreso a Observacion</option><option value="evolucion_observacion" selected>Evolucion de Observacion</option><option value="egreso_traslado_observacion">Egreso/traslado de Observacion</option><option value="ingreso_ucep">Ingreso a UCEP</option><option value="evolucion_ucep">Evolucion de UCEP</option><option value="urgencias">Urgencias</option><option value="referencia_navarro">Referencia tipo Navarro</option><option value="contrarreferencia">Contrarreferencia</option><option value="consulta_externa">Consulta externa</option><option value="pediatria">Pediatria</option><option value="paidopsiquiatria">Paidopsiquiatria</option><option value="dictado_libre_apartados">Dictado libre por apartados</option><option value="clase_academica">Clase academica (no genera nota)</option></select></label>
+            <label>Nivel de detalle<select id="detalleNotaAutomatica"><option value="detallado_sin_repeticiones" selected>Detallado, sin repeticiones</option><option value="medio">Medio</option><option value="breve">Breve</option><option value="amplio">Amplio</option></select></label>
+            <label>Formato<select id="formatoNotaAutomatica"><option value="narrativo" selected>Narrativo</option><option value="mixto">Mixto</option><option value="estructurado">Estructurado</option></select></label>
+            <label>Estilo<select id="estiloRedaccionNota"><option value="formato_fray_narrativo" selected>Formato Fray - narrativo institucional</option><option value="conservador_literal">Conservador literal</option><option value="clinico_resumido">Clinico resumido</option><option value="clinico_detallado">Clinico detallado</option><option value="urgencias_referencia_breve">Urgencias/referencia breve</option><option value="personalizado_usuario">Personalizado por el usuario</option></select></label>
             <label>Plantilla institucional<input id="plantillaNotaAutomatica" value="sin_plantilla"></label>
             <label>Especialidad<input id="especialidadNotaAutomatica" value="psiquiatria"></label>
             <label>Servicio<input id="servicioNotaAutomatica" value="no_especificado"></label>

@@ -1,4 +1,5 @@
-import { auth, db } from "./firebase.js";
+import { auth, db, functions } from "./firebase.js";
+import { httpsCallable } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-functions.js";
 import { registrarEventoAuditoria } from "./services/auditoria.js";
 import { guardarSolicitudEliminacion } from "./services/reportes.js?v=20260716-1";
 import { iniciarMonitoreoSesion } from "./services/sesion.js";
@@ -113,7 +114,13 @@ let catalogoMedicosFirmasCache = [];
 let diagnosticosAutomaticosSugeridos = [];
 let escalasPreviasNotaCache = [];
 let escalasAplicadasPendientesNota = [];
-const proveedorNotas = createNoteGenerationProvider({ provider: "local" });
+const proveedorNotas = createNoteGenerationProvider({
+  provider: "external",
+  external: {
+    callable: httpsCallable(functions, "generateStructuredNoteFromDictation"),
+    fallbackToLocal: true
+  }
+});
 let borradorNotaAutomaticaActual = null;
 let snapshotAntesInsercionAutomatica = null;
 let estadoNotaActual = "nueva";
@@ -1461,28 +1468,108 @@ function obtenerIdentificacionPaciente() {
   };
 }
 
-function aplicarNotaAutomatica() {
-  const texto = document.getElementById("textoDictadoClinico")?.value.trim() || "";
+function obtenerCamposActualesNota() {
+  const campos = [
+    ["subjetivo", "Padecimiento actual / evolucion"],
+    ["objetivo", "Examen mental"],
+    ["analisis", "Comentario clinico"],
+    ["plan", "Plan"],
+    ["tratamiento", "Tratamiento e indicaciones"],
+    ["obsExploracionFisicaNeurologica", "Exploracion fisica y neurologica"],
+    ["obsResultadosEstudios", "Resultados de estudios"],
+    ["obsPronostico", "Pronostico"],
+    ["obsDestino", "Destino"]
+  ];
+  return Object.fromEntries(campos.map(([id, label]) => {
+    const field = document.getElementById(id);
+    return [id, { id, label, value: field?.value || "" }];
+  }));
+}
+
+function obtenerContextoPacienteAutorizado(identificacion = {}) {
+  return {
+    source: "expediente",
+    id: identificacion.id || "",
+    nombreCompleto: identificacion.nombreCompleto || "",
+    sexo: identificacion.sexo || "",
+    edad: identificacion.edad ?? null,
+    fechaNacimiento: identificacion.fechaNacimiento || "",
+    servicio: document.getElementById("servicioNotaAutomatica")?.value || "",
+    diaEstancia: document.getElementById("obsDiasEstancia")?.value || "",
+    diagnosticosActivos: diagnosticosSeleccionados.map((dx) => ({ ...dx, source: "expediente" })),
+    medicamentosActivos: pacienteActualDatos?.tratamientos || [],
+    alergias: pacienteActualDatos?.alergias || historiaClinicaActual?.alergias || []
+  };
+}
+
+function construirPayloadNotaDesdeDictado(identificacion = {}) {
+  const snapshot = window.cognicionDictado?.snapshot?.() || window.cognicionDictado?.getSnapshot?.() || null;
+  const textoManual = document.getElementById("textoDictadoClinico")?.value.trim() || "";
+  if (!snapshot) {
+    return {
+      transcriptSessionId: "",
+      userId: auth.currentUser?.uid || "",
+      patientId: identificacion.id || "",
+      encounterId: new URLSearchParams(location.search).get("encounterId") || new URLSearchParams(location.search).get("notaId") || "actual",
+      confirmedTranscript: textoManual,
+      pendingTranscript: "",
+      correctedTranscript: textoManual,
+      transcriptSegments: [],
+      speakers: [],
+      provenance: { source: "dictado_por_voz", status: "textarea_without_runtime_snapshot" }
+    };
+  }
+  return {
+    ...snapshot,
+    correctedTranscript: textoManual || snapshot.correctedTranscript || snapshot.confirmedTranscript || "",
+    selectedDocumentType: document.getElementById("tipoNotaAutomatica")?.value || "evolucion_observacion",
+    selectedWritingStyle: document.getElementById("estiloRedaccionNota")?.value || "formato_fray_narrativo",
+    existingNoteFields: obtenerCamposActualesNota(),
+    authorizedPatientContext: obtenerContextoPacienteAutorizado(identificacion)
+  };
+}
+
+async function aplicarNotaAutomatica() {
+  const identificacion = obtenerIdentificacionPaciente();
+  const payload = construirPayloadNotaDesdeDictado(identificacion);
+  const texto = String(payload.correctedTranscript || payload.confirmedTranscript || "").trim();
   if (!texto) {
     alert("Primero dicta o escribe texto en el area de dictado clinico.");
     return;
   }
 
-  const identificacion = obtenerIdentificacionPaciente();
-  const selectorTipoNota = document.getElementById("tipoNotaAutomatica");
-  if (Number.isFinite(identificacion.edad) && identificacion.edad < 18 && selectorTipoNota?.value === "evolucion") {
-    selectorTipoNota.value = "paidopsiquiatria";
+  if (payload.patientId && identificacion.id && payload.patientId !== identificacion.id) {
+    alert("La sesion de dictado pertenece a otro paciente. Finalice o recupere el dictado del paciente actual antes de generar la nota.");
+    return;
   }
-  const generada = proveedorNotas.generate(texto, identificacion, {
+
+  if (payload.pendingTranscript?.trim()) {
+    const incluirPendiente = confirm("Hay texto pendiente de confirmacion. Acepta incorporarlo a la propuesta?");
+    if (incluirPendiente && !texto.includes(payload.pendingTranscript.trim())) {
+      payload.correctedTranscript = `${texto}\n\n${payload.pendingTranscript.trim()}`.trim();
+    }
+  }
+
+  const selectorTipoNota = document.getElementById("tipoNotaAutomatica");
+  if (Number.isFinite(identificacion.edad) && identificacion.edad < 18 && selectorTipoNota?.value === "evolucion_observacion") {
+    selectorTipoNota.value = "paidopsiquiatria";
+    payload.selectedDocumentType = "paidopsiquiatria";
+  }
+  const generada = await proveedorNotas.generate(payload, identificacion, {
     patientId: identificacion.id,
-    sessionId: window.cognicionDictado?.sessionId || "",
+    userId: payload.userId || auth.currentUser?.uid || "",
+    sessionId: payload.transcriptSessionId || window.cognicionDictado?.sessionId || "",
     encounterId: new URLSearchParams(location.search).get("encounterId") || new URLSearchParams(location.search).get("notaId") || "actual",
-    tipoNota: selectorTipoNota?.value || "evolucion",
-    nivelDetalle: document.getElementById("detalleNotaAutomatica")?.value || "medio",
+    tipoNota: selectorTipoNota?.value || "evolucion_observacion",
+    selectedDocumentType: payload.selectedDocumentType,
+    selectedWritingStyle: payload.selectedWritingStyle,
+    nivelDetalle: document.getElementById("detalleNotaAutomatica")?.value || "detallado_sin_repeticiones",
     formato: document.getElementById("formatoNotaAutomatica")?.value || "mixto",
     plantilla: document.getElementById("plantillaNotaAutomatica")?.value || "sin_plantilla",
     especialidad: document.getElementById("especialidadNotaAutomatica")?.value || "no_especificada",
-    servicio: document.getElementById("servicioNotaAutomatica")?.value || "no_especificado"
+    servicio: document.getElementById("servicioNotaAutomatica")?.value || "no_especificado",
+    existingNoteFields: payload.existingNoteFields,
+    authorizedPatientContext: payload.authorizedPatientContext
   });
   const medicamentosPropuestos = (generada.medicationStatements || []).map((med) => ({
     ...med, dosis: med.dose, unidad: med.unit, via: med.route, frecuencia: med.frequency
@@ -1501,7 +1588,7 @@ function aplicarNotaAutomatica() {
     });
   }
   borradorNotaAutomaticaActual = generada;
-  renderizarRevisionNotaAutomatica(generada, texto);
+  renderizarRevisionNotaAutomatica(generada, payload.correctedTranscript || texto);
 
   diagnosticosAutomaticosSugeridos = {
     diagnosticos: (generada.cie10Sugeridos || []).map((dx) => ({ ...dx, cie11: coincidenciaCIE11(dx) })),
@@ -1521,6 +1608,20 @@ function campoDestinoSeccion(seccion = "") {
   }[seccion] || "";
 }
 
+function nombreCampoDestino(fieldId = "") {
+  return {
+    subjetivo: "Subjetivo / padecimiento actual o evolucion",
+    objetivo: "Objetivo / examen mental",
+    analisis: "Analisis clinico / comentario",
+    plan: "Plan",
+    tratamiento: "Tratamiento e indicaciones",
+    obsExploracionFisicaNeurologica: "Exploracion fisica y neurologica",
+    obsResultadosEstudios: "Resultados de estudios",
+    obsPronostico: "Pronostico",
+    obsDestino: "Destino"
+  }[fieldId] || fieldId || "sin destino";
+}
+
 function insertarSeccionesRevisadas() {
   const borrador = borradorNotaAutomaticaActual;
   if (!borrador) return;
@@ -1528,29 +1629,48 @@ function insertarSeccionesRevisadas() {
     issue.requiresExplicitReview && !document.querySelector(`[data-confirmar-issue="${issue.id}"]`)?.checked
   );
   if (criticosSinConfirmar.length) {
-    alert("Confirme individualmente todos los datos críticos antes de insertar secciones.");
+    alert("Confirme individualmente todos los datos criticos antes de insertar secciones.");
     return;
   }
   const aceptadas = (borrador.generatedSections || []).filter((section) => section.accepted);
   if (!aceptadas.length) {
-    alert("Seleccione al menos una sección revisada.");
+    alert("Seleccione al menos una seccion revisada.");
     return;
   }
-  snapshotAntesInsercionAutomatica = {};
-  aceptadas.forEach((section) => {
+  const operaciones = aceptadas.map((section) => {
+    const originalIndex = (borrador.generatedSections || []).indexOf(section);
     const fieldId = campoDestinoSeccion(section.section);
     const field = document.getElementById(fieldId);
-    if (!field) return;
+    const mode = document.querySelector(`[data-modo-insercion-seccion="${originalIndex}"]`)?.value || section.insertionMode || "combinar";
+    return { section, fieldId, field, mode };
+  }).filter((op) => op.field && op.fieldId && op.mode !== "excluir");
+  if (!operaciones.length) {
+    alert("No hay secciones aceptadas con campo destino valido.");
+    return;
+  }
+  const conContenidoPrevio = operaciones.filter((op) => op.field.value?.trim());
+  const reemplazos = operaciones.filter((op) => op.mode === "reemplazar" && op.field.value?.trim());
+  if (reemplazos.length) {
+    const ok = confirm(`Se reemplazara contenido existente en: ${reemplazos.map((op) => nombreCampoDestino(op.fieldId)).join(", ")}. Confirmas el reemplazo?`);
+    if (!ok) return;
+  } else if (conContenidoPrevio.length) {
+    const ok = confirm("Algunas secciones se combinaran con texto existente. Confirma que deseas insertar solo los apartados revisados.");
+    if (!ok) return;
+  }
+  snapshotAntesInsercionAutomatica = {};
+  operaciones.forEach(({ section, fieldId, field, mode }) => {
     if (!(fieldId in snapshotAntesInsercionAutomatica)) snapshotAntesInsercionAutomatica[fieldId] = field.value;
     const content = String(section.content || "").trim();
-    field.value = field.value.trim() ? `${field.value.trim()}\n\n${content}` : content;
+    if (!content) return;
+    field.value = mode === "reemplazar" ? content : (field.value.trim() ? `${field.value.trim()}\n\n${content}` : content);
     field.dispatchEvent(new Event("input", { bubbles: true }));
+    field.dispatchEvent(new Event("change", { bubbles: true }));
     section.reviewStatus = "insertada";
+    section.insertionMode = mode;
   });
   borrador.insertionAllowed = true;
   renderizarRevisionNotaAutomatica(borrador, document.getElementById("textoDictadoClinico")?.value || "");
 }
-
 function deshacerInsercionAutomatica() {
   if (!snapshotAntesInsercionAutomatica) return;
   Object.entries(snapshotAntesInsercionAutomatica).forEach(([id, value]) => {
@@ -1597,6 +1717,9 @@ function renderizarRevisionNotaAutomatica(generada = {}, transcripcionOriginal =
       ${secciones.length ? secciones.map((section, index) => `
         <article class="revision-seccion-card">
           <header><label><input type="checkbox" data-aceptar-seccion="${index}" ${section.accepted ? "checked" : ""}> Aceptar ${escaparHTML(section.title)}</label><span>Revisión humana obligatoria</span></header>
+          <p><b>Campo destino:</b> ${escaparHTML(nombreCampoDestino(campoDestinoSeccion(section.section)))}</p>
+          <details><summary>Contenido actual del campo destino</summary><pre class="revision-transcripcion">${escaparHTML(document.getElementById(campoDestinoSeccion(section.section))?.value || "Campo vacio.")}</pre></details>
+          <label>Insercion<select data-modo-insercion-seccion="${index}"><option value="combinar" ${section.insertionMode === "combinar" || !section.insertionMode ? "selected" : ""}>Combinar con contenido actual</option><option value="reemplazar" ${section.insertionMode === "reemplazar" ? "selected" : ""}>Reemplazar contenido actual</option><option value="excluir" ${section.insertionMode === "excluir" ? "selected" : ""}>Excluir este apartado</option></select></label>
           <textarea data-contenido-seccion="${index}">${escaparHTML(section.content)}</textarea>
           <details><summary>Fragmentos de origen e informante</summary><ul>${section.sourceStatementIds.map((statementId) => {
             const s = generada.clinicalStatements?.find((item) => item.id === statementId);
@@ -1608,7 +1731,7 @@ function renderizarRevisionNotaAutomatica(generada = {}, transcripcionOriginal =
         </article>`).join("") : "<p>No se generaron secciones porque no se identificó contenido sustentado.</p>"}
     </div>
     <div class="diagnostico-automatico-acciones">
-      <button id="btnInsertarSeccionesRevisadas" type="button">Insertar secciones revisadas</button>
+      <button id="btnInsertarSeccionesRevisadas" type="button">Insertar apartados revisados</button>
       <button id="btnDeshacerInsercionAutomatica" type="button" class="boton-secundario" ${snapshotAntesInsercionAutomatica ? "" : "disabled"}>Deshacer inserción</button>
     </div>
     <section><strong>Propuestas de indicaciones</strong><p>${generada.medicalOrderProposals?.length ? "Requieren confirmación individual y validadores clínicos antes de enviarse al módulo de indicaciones." : "No se extrajeron propuestas."}</p>
@@ -1624,18 +1747,33 @@ function renderizarRevisionNotaAutomatica(generada = {}, transcripcionOriginal =
     const section = secciones[Number(input.dataset.contenidoSeccion)];
     section.content = input.value; section.reviewStatus = "editada"; section.version += 1;
   }));
+  revision.querySelectorAll("[data-modo-insercion-seccion]").forEach((input) => input.addEventListener("change", () => {
+    const section = secciones[Number(input.dataset.modoInsercionSeccion)];
+    section.insertionMode = input.value;
+    if (input.value === "excluir") {
+      section.accepted = false;
+      section.reviewStatus = "excluida";
+      const checkbox = revision.querySelector(`[data-aceptar-seccion="${input.dataset.modoInsercionSeccion}"]`);
+      if (checkbox) checkbox.checked = false;
+    }
+  }));
   revision.querySelectorAll("[data-restaurar-seccion]").forEach((button) => button.addEventListener("click", () => {
     const section = secciones[Number(button.dataset.restaurarSeccion)];
     section.content = section.originalContent; section.version += 1;
     renderizarRevisionNotaAutomatica(generada, transcripcionOriginal);
   }));
-  revision.querySelectorAll("[data-regenerar-seccion]").forEach((button) => button.addEventListener("click", () => {
+  revision.querySelectorAll("[data-regenerar-seccion]").forEach((button) => button.addEventListener("click", async () => {
     const index = Number(button.dataset.regenerarSeccion);
     const actual = secciones[index];
-    const regenerada = proveedorNotas.generate(transcripcionOriginal, obtenerIdentificacionPaciente(), {
+    const identificacion = obtenerIdentificacionPaciente();
+    const payload = construirPayloadNotaDesdeDictado(identificacion);
+    payload.correctedTranscript = transcripcionOriginal;
+    const regenerada = await proveedorNotas.generate(payload, identificacion, {
       patientId: obtenerIdentificacionPaciente().id,
-      sessionId: window.cognicionDictado?.sessionId || "",
+      sessionId: payload.transcriptSessionId || window.cognicionDictado?.sessionId || "",
       tipoNota: generada.metadata?.tipoNota,
+      selectedDocumentType: generada.documentType || generada.metadata?.tipoNota,
+      selectedWritingStyle: generada.writingStyle,
       nivelDetalle: generada.metadata?.nivelDetalle,
       formato: generada.metadata?.formato,
       plantilla: generada.metadata?.plantilla,

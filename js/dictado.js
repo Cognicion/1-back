@@ -255,6 +255,41 @@ function guardarBorradorTemporal() {
   actualizarBotonRecuperar();
 }
 
+export function snapshotDictadoClinico() {
+  asegurarContexto();
+  const snapshot = runtime.ensamblador?.toJSON?.() || {};
+  const confirmedSegments = Array.isArray(snapshot.confirmedSegments) ? snapshot.confirmedSegments : [];
+  const pendingSegments = Array.isArray(snapshot.pendingSegments) ? snapshot.pendingSegments : [];
+  const interimSegments = Array.isArray(snapshot.interimResults)
+    ? snapshot.interimResults.map((entry) => Array.isArray(entry) ? entry[1] : entry).filter(Boolean)
+    : [];
+  const transcriptSegments = [...confirmedSegments, ...pendingSegments, ...interimSegments];
+  const speakers = Array.from(new Set(transcriptSegments.map((segment) => segment?.speaker).filter(Boolean)));
+  const correctedTranscript = textoActual().trim();
+  const confirmedTranscript = (runtime.ensamblador?.getText?.() || snapshot.text || correctedTranscript || "").trim();
+  const pendingTranscript = (runtime.ensamblador?.getPendingText?.() || snapshot.pendingText || "").trim();
+  return {
+    transcriptSessionId: runtime.sessionId,
+    userId: runtime.userId,
+    patientId: runtime.patientId,
+    encounterId: runtime.encounterId,
+    confirmedTranscript,
+    pendingTranscript,
+    correctedTranscript,
+    transcriptSegments,
+    speakers,
+    provenance: {
+      source: "dictado_por_voz",
+      provider: runtime.provider?.capability?.().id || "web_speech_api",
+      providerStatus: runtime.provider?.capability?.().status || PROVIDER_STATUS.NOT_CONFIGURED,
+      dictationState: runtime.maquina.current,
+      createdAt: snapshot.createdAt || null,
+      updatedAt: new Date().toISOString(),
+      manualRevision: snapshot.manualRevision || 0
+    }
+  };
+}
+
 function actualizarBotones() {
   const estado = runtime.maquina.current;
   const escuchando = estado === ESTADOS_DICTADO.LISTENING || estado === ESTADOS_DICTADO.REQUESTING_PERMISSION || estado === ESTADOS_DICTADO.RECONNECTING;
@@ -843,6 +878,9 @@ window.insertarDictadoEnNota = insertarDictadoEnNota;
 window.cognicionDictado = {
   get sessionId() { return runtime.sessionId; },
   get patientId() { return runtime.patientId; },
+  get encounterId() { return runtime.encounterId; },
+  snapshot: snapshotDictadoClinico,
+  getSnapshot: snapshotDictadoClinico,
   diagnostico: () => ({ state: runtime.maquina.current, sessionId: runtime.sessionId, stats: runtime.ensamblador?.stats?.() })
 };
 window.navegadorSoportaDictado = navegadorSoportaDictado;

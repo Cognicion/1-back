@@ -725,6 +725,115 @@ export function generarPlanSugerido(diagnosticos = [], riesgos = [], sintomas = 
   return plan.join("\n");
 }
 
+const MAPA_SALIDA_SECCIONES = {
+  motivo: ["motivo_consulta"],
+  antecedentes: ["antecedentes_psiquiatricos", "antecedentes_personales_patologicos", "alergias", "medicamentos", "consumo_sustancias"],
+  padecimientoActual: ["padecimiento_actual"],
+  evolucion: ["padecimiento_actual"],
+  exploracionFisica: ["exploracion_fisica", "signos_vitales"],
+  examenMental: ["examen_mental"],
+  evaluacionRiesgo: ["evaluacion_riesgo"],
+  resultados: ["resultados_auxiliares"],
+  comentarioClinico: ["comentario_clinico", "impresion_clinica"],
+  plan: ["plan", "indicaciones"],
+  pronostico: ["pronostico"],
+  destino: ["destino"]
+};
+
+function unirSeccionesPorClave(secciones = [], claves = []) {
+  return secciones
+    .filter((section) => claves.includes(section.section))
+    .map((section) => String(section.content || "").trim())
+    .filter(Boolean)
+    .join("\n\n");
+}
+
+function crearSeccionesSalida(secciones = [], tipoNota = "") {
+  const salida = Object.fromEntries(Object.entries(MAPA_SALIDA_SECCIONES).map(([key, claves]) => [key, unirSeccionesPorClave(secciones, claves)]));
+  if (!String(tipoNota || "").includes("evolucion")) salida.evolucion = "";
+  return salida;
+}
+
+function crearExtraccionEstructurada(pipeline = {}) {
+  return {
+    timeline: (pipeline.segments || []).map((segment) => ({
+      id: segment.id,
+      text: segment.normalizedText || segment.originalText || "",
+      sourceSegmentId: segment.id,
+      speaker: segment.speaker || "hablante_no_identificado",
+      timestamp: segment.startTime || segment.updatedAt || null
+    })),
+    informants: Array.from(new Set((pipeline.statements || []).map((statement) => statement.informant).filter(Boolean))),
+    clinicalStatements: pipeline.statements || [],
+    mentalStatusFindings: pipeline.mentalStatusFindings || [],
+    riskStatements: pipeline.riskStatements || [],
+    medications: pipeline.medicationStatements || [],
+    substances: pipeline.substanceUseStatements || [],
+    diagnoses: pipeline.diagnosisStatements || [],
+    planItems: pipeline.planItems || [],
+    unresolvedFragments: (pipeline.validationIssues || []).flatMap((issue) => issue.evidence || []),
+    contradictions: pipeline.contradictions || []
+  };
+}
+
+function salidaClaseAcademica(datosPaciente = {}, options = {}, textoFuente = "") {
+  const now = new Date().toISOString();
+  return {
+    id: globalThis.crypto?.randomUUID?.() || `nota-${Date.now()}`,
+    provider: "rule_based_local",
+    providerStatus: "disponible",
+    transcriptSessionId: options.sessionId || "",
+    patientId: options.patientId || datosPaciente.id || datosPaciente.uid || "",
+    encounterId: options.encounterId || "",
+    documentType: options.selectedDocumentType || options.tipoNota || "clase_academica",
+    writingStyle: options.selectedWritingStyle || "formato_fray_narrativo",
+    timeline: [],
+    sections: crearSeccionesSalida([], options.tipoNota),
+    medications: [],
+    substances: [],
+    diagnosisProposals: [],
+    indicationProposals: [],
+    unresolvedFragments: [textoFuente].filter(Boolean),
+    contradictions: [],
+    provenance: { source: "dictado_por_voz", status: "no_clinical_note_generated" },
+    validationIssues: [{
+      id: "clase_academica_no_nota",
+      severity: "info",
+      message: "El contexto seleccionado es clase academica; no se genero nota clinica ni se insertaran apartados.",
+      evidence: [textoFuente].filter(Boolean),
+      requiresExplicitReview: false
+    }],
+    metadata: {
+      version: "alfa",
+      generatedAt: now,
+      reviewRequired: true,
+      generatedStatus: "sin_nota_clinica",
+      generationMethod: "reglas_locales_conservadoras",
+      externalAIUsed: false,
+      processingDisclosure: "Procesamiento local basado en reglas. La redaccion avanzada no esta disponible.",
+      tipoNota: options.tipoNota || "clase_academica"
+    },
+    estructuraClinica: {},
+    transcriptSegments: [],
+    clinicalStatements: [],
+    medicationStatements: [],
+    substanceUseStatements: [],
+    mentalStatusFindings: [],
+    riskStatements: [],
+    diagnosisStatements: [],
+    planItems: [],
+    medicalOrderProposals: [],
+    generatedSections: [],
+    outputs: {
+      literal_corregida: textoFuente,
+      redaccion_clinica_conservadora: "",
+      nota_medica_estructurada: ""
+    },
+    reviewStatus: "pendiente",
+    insertionAllowed: false
+  };
+}
+
 /**
  * Genera un borrador clínico trazable. Nunca inserta ni confirma contenido.
  * @param {string|Array<object>} textoDictado Transcripción o TranscriptSegment[]
@@ -736,6 +845,9 @@ export function generarNotaAutomatica(textoDictado = "", datosPaciente = {}, opt
   const textoFuente = Array.isArray(textoDictado)
     ? textoDictado.map((s) => s.originalText || s.text || s.normalizedText || "").join(" ")
     : String(textoDictado || "");
+  if ((options.selectedDocumentType || options.tipoNota) === "clase_academica") {
+    return salidaClaseAcademica(datosPaciente, options, textoFuente);
+  }
   const pipeline = ejecutarPipelineClinico(textoDictado, {
     patientId: options.patientId || datosPaciente.id || datosPaciente.uid || "",
     sessionId: options.sessionId || "",
@@ -768,6 +880,8 @@ export function generarNotaAutomatica(textoDictado = "", datosPaciente = {}, opt
 
   provenanceRecords.push(...pipeline.provenanceRecords);
   const porSeccion = Object.fromEntries(pipeline.sections.map((section) => [section.section, section.content]));
+  const sections = crearSeccionesSalida(pipeline.sections, options.tipoNota || options.selectedDocumentType || "evolucion_observacion");
+  const structuredExtraction = crearExtraccionEstructurada(pipeline);
   const literalCorregida = pipeline.segments.map((segment) => segment.normalizedText).join(" ").trim();
   const clinicaConservadora = pipeline.sections.map((section) => section.content).join("\n\n");
   const estructurada = pipeline.sections.map((section) => `${section.title.toUpperCase()}\n${section.content}`).join("\n\n");
@@ -776,6 +890,26 @@ export function generarNotaAutomatica(textoDictado = "", datosPaciente = {}, opt
     id: globalThis.crypto?.randomUUID?.() || `nota-${Date.now()}`,
     provider: "rule_based_local",
     providerStatus: "disponible",
+    transcriptSessionId: options.sessionId || "",
+    patientId: options.patientId || datosPaciente.id || datosPaciente.uid || "",
+    encounterId: options.encounterId || "",
+    documentType: options.selectedDocumentType || options.tipoNota || "evolucion_observacion",
+    writingStyle: options.selectedWritingStyle || "formato_fray_narrativo",
+    timeline: structuredExtraction.timeline,
+    sections,
+    medications: pipeline.medicationStatements,
+    substances: pipeline.substanceUseStatements,
+    diagnosisProposals: pipeline.diagnosisStatements,
+    indicationProposals: pipeline.orderProposals,
+    unresolvedFragments: structuredExtraction.unresolvedFragments,
+    contradictions: pipeline.contradictions,
+    provenance: {
+      source: "dictado_por_voz",
+      transcriptSessionId: options.sessionId || "",
+      patientId: options.patientId || datosPaciente.id || datosPaciente.uid || "",
+      status: "structured_local_rules"
+    },
+    structuredExtraction,
     datosClinicos,
     metadata: {
       version: "alfa",
