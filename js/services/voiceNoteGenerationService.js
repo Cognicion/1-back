@@ -1,5 +1,6 @@
 import { db } from "../firebase.js";
 import { guardarBorradorNotaClinica } from "./notas.js?v=20260716-2";
+import { noteTypeOptions, writingStyleOptions } from "./voiceNoteCatalogService.js";
 import {
   doc,
   collection,
@@ -43,30 +44,9 @@ export const VOICE_NOTE_FIELD_REGISTRY = Object.freeze({
   }
 });
 
-export const VOICE_NOTE_TYPES = Object.freeze([
-  ["ingreso_observacion", "Ingreso a Observacion"],
-  ["evolucion_observacion", "Evolucion de Observacion"],
-  ["egreso_traslado_observacion", "Egreso/traslado de Observacion"],
-  ["ingreso_ucep", "Ingreso a UCEP"],
-  ["evolucion_ucep", "Evolucion de UCEP"],
-  ["urgencias", "Urgencias"],
-  ["referencia_navarro", "Referencia tipo Navarro"],
-  ["contrarreferencia", "Contrarreferencia"],
-  ["consulta_externa", "Consulta externa"],
-  ["pediatria", "Pediatria"],
-  ["paidopsiquiatria", "Paidopsiquiatria"],
-  ["dictado_libre", "Dictado libre"],
-  ["solo_transcripcion", "Solo transcripcion"]
-]);
+export const VOICE_NOTE_TYPES = Object.freeze(noteTypeOptions());
 
-export const VOICE_NOTE_STYLES = Object.freeze([
-  ["formato_fray_narrativo", "Formato Fray - narrativo institucional"],
-  ["clinico_detallado", "Clinico detallado"],
-  ["clinico_resumido", "Clinico resumido"],
-  ["conservador_literal", "Conservador literal"],
-  ["urgencias_referencia_breve", "Urgencias/referencia breve"],
-  ["personalizado", "Personalizado"]
-]);
+export const VOICE_NOTE_STYLES = Object.freeze(writingStyleOptions());
 
 export function calcularDecadaDeVida(edad) {
   if (!Number.isInteger(edad) || edad < 0) return null;
@@ -223,7 +203,7 @@ export function construirPayloadGeneracionVoz({ snapshot = {}, patientContext = 
     transcriptSessionId: snapshot.transcriptSessionId || snapshot.sessionId || "",
     userId: userId || snapshot.userId || "",
     patientId: options.patientId || snapshot.patientId || patientContext.id || "",
-    encounterId: options.encounterId || snapshot.encounterId || "actual",
+    encounterId: options.encounterId || snapshot.encounterId || "",
     noteId: options.noteId || "",
     confirmedTranscript: texto(snapshot.confirmedTranscript || correctedTranscript),
     pendingTranscript: texto(snapshot.pendingTranscript || snapshot.pendingText || ""),
@@ -232,7 +212,7 @@ export function construirPayloadGeneracionVoz({ snapshot = {}, patientContext = 
     speakers: snapshot.speakers || [],
     provenance: snapshot.provenance || { source: "dictado_por_voz" },
     selectedDocumentType: options.documentType || "evolucion_observacion",
-    selectedWritingStyle: options.writingStyle || "formato_fray_narrativo",
+    selectedWritingStyle: options.writingStyle || "institucional_psiquiatrico_detallado",
     existingNoteFields: options.existingNoteFields || {},
     authorizedPatientContext: {
       source: "expediente",

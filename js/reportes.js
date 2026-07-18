@@ -131,7 +131,7 @@ function inicializarReporteGlobal() {
       <span class="reporte-contraer-cerrado">&lt;</span>
     </button>
 
-    <div class="reporte-overlay" id="reporteGlobalOverlay" aria-hidden="true">
+    <div class="reporte-overlay" id="reporteGlobalOverlay" aria-hidden="true" hidden>
       <section class="reporte-modal" id="reporteGlobalModal" role="dialog" aria-modal="true" aria-labelledby="reporteGlobalTitulo">
         <button class="reporte-cerrar" type="button" aria-label="Cerrar reporte">x</button>
 
@@ -306,18 +306,26 @@ function alternarReporteContraido(raiz) {
 }
 
 function abrirModalReporte(overlay, primerCampo) {
-  overlay?.classList.add("abierto");
-  overlay?.setAttribute("aria-hidden", "false");
-  setTimeout(() => primerCampo?.focus(), 160);
+  if (!overlay) return;
+  overlay.hidden = false;
+  overlay.setAttribute("aria-hidden", "false");
+  requestAnimationFrame(() => {
+    overlay.classList.add("abierto");
+    setTimeout(() => primerCampo?.focus(), 160);
+  });
 }
 
 function cerrarModalReporte(overlay) {
-  overlay?.classList.remove("abierto");
-  overlay?.setAttribute("aria-hidden", "true");
+  if (!overlay) return;
+  overlay.classList.remove("abierto");
+  overlay.setAttribute("aria-hidden", "true");
+  window.setTimeout(() => {
+    if (!overlay.classList.contains("abierto")) overlay.hidden = true;
+  }, 240);
 }
 
 function escaparHTML(valor) {
-  return String(valor ? "" : "")
+  return String(valor ?? "")
     .replaceAll("&", "&amp;")
     .replaceAll("<", "&lt;")
     .replaceAll(">", "&gt;")

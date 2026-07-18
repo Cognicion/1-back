@@ -57,12 +57,25 @@ function crearId(prefijo) {
 }
 
 function pacienteActualId() {
-  return $("uidPaciente")?.value || new URLSearchParams(window.location.search).get("id") || "sin-paciente";
+  const params = new URLSearchParams(window.location.search);
+  return $("uidPaciente")?.value
+    || params.get("patientId")
+    || params.get("id")
+    || params.get("pacienteId")
+    || params.get("uidPaciente")
+    || "sin-paciente";
 }
 
 function encuentroActualId() {
   const params = new URLSearchParams(window.location.search);
-  return params.get("notaId") || params.get("encounterId") || new Date().toISOString().slice(0, 10);
+  const patientId = pacienteActualId();
+  return $("voiceEncounterId")?.value
+    || params.get("encounterId")
+    || params.get("atencionId")
+    || params.get("encuentro")
+    || params.get("encuentroId")
+    || params.get("notaId")
+    || (patientId && patientId !== "sin-paciente" ? `paciente:${patientId}` : "sin-encuentro");
 }
 
 function usuarioActualId() {

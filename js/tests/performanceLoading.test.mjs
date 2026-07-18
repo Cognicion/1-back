@@ -31,6 +31,22 @@ for (const jsPath of ["js/dashboard.js", "js/medico.js", "js/nota.js", "js/pacie
   );
 }
 
+const reportesSource = read("js/reportes.js");
+assert.match(
+  reportesSource,
+  /id="reporteGlobalOverlay" aria-hidden="true" hidden/,
+  "El modal de reportes debe montarse oculto para evitar parpadeo inicial"
+);
+assert.match(reportesSource, /overlay\.hidden = false/);
+assert.match(reportesSource, /overlay\.hidden = true/);
+
+const reportesCss = read("css/reportes.css");
+assert.match(
+  reportesCss,
+  /\.reporte-overlay\[hidden\]\s*\{[\s\S]*display:\s*none\s*!important/,
+  "El overlay oculto debe quedar fuera del layout incluso antes de abrirse"
+);
+
 const firebaseBridge = read("js/firebase.js");
 assert.match(firebaseBridge, /from "\.\/services\/firebaseAppService\.js"/);
 

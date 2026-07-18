@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Nota por voz y automatica | Cognicion</title>
+  <title>Nota por voz y automática | Cognición</title>
   <link rel="stylesheet" href="css/theme.css">
   <link rel="stylesheet" href="css/dictado.css">
   <link rel="stylesheet" href="css/nota-por-voz.css">
@@ -15,15 +15,15 @@
     <a href="medico.html">Panel medico</a>
     <a id="linkPacienteVoz" href="paciente.html">Paciente</a>
     <a id="linkNotaTradicional" href="nota.html">Nota tradicional</a>
-    <a class="activo" id="linkNotaVoz" href="nota-por-voz.html">Nota por voz y automatica</a>
+    <a class="activo" id="linkNotaVoz" href="nota-por-voz.html">Nota por voz y automática</a>
   </aside>
 
   <main class="voice-shell">
     <header class="voice-header">
       <div>
-        <span class="voice-kicker">COGNICION · DOCUMENTACION PSIQUIATRICA</span>
-        <h1>Nota por voz y automatica</h1>
-        <p>VERSIÓN ALFA · EN DESARROLLO. La transcripcion y la nota generada requieren revision del profesional.</p>
+        <span class="voice-kicker">COGNICIÓN · DOCUMENTACIÓN PSIQUIÁTRICA</span>
+        <h1>Nota por voz y automática</h1>
+        <p>VERSIÓN ALFA · EN DESARROLLO. La transcripción y la nota generada requieren revisión del profesional.</p>
       </div>
       <button id="btnVolverVoz" type="button" class="boton-secundario">Volver</button>
     </header>
@@ -49,7 +49,7 @@
           </select>
         </label>
         <label>Encuentro
-          <input id="voiceEncounterId" placeholder="actual">
+          <input id="voiceEncounterId" placeholder="encuentro activo o paciente:ID">
         </label>
         <label>Nota destino
           <input id="voiceNoteId" placeholder="nuevo borrador o notaId existente">
@@ -65,6 +65,8 @@
         </label>
       </div>
       <div id="voicePatientSummary" class="voice-summary">Selecciona un paciente para iniciar.</div>
+      <div id="voiceContextStatus" class="voice-summary">Cargando contexto del paciente...</div>
+      <div id="voiceTemplateSummary" class="voice-summary">Catálogo de notas pendiente.</div>
       <div class="voice-actions">
         <button id="btnPrepararMicrofono" type="button">Probar microfono</button>
         <button type="button" data-step-next="grabar" class="boton-secundario">Continuar a grabacion</button>
@@ -171,7 +173,7 @@
     </section>
   </main>
 
-  <script type="module" src="js/dictado.js?v=20260718-voice"></script>
-  <script type="module" src="js/nota-por-voz.js?v=20260718-voice"></script>
+  <script type="module" src="js/dictado.js?v=20260718-context"></script>
+  <script type="module" src="js/nota-por-voz.js?v=20260718-context"></script>
 </body>
 </html>

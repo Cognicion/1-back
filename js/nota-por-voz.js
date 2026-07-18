@@ -7,8 +7,6 @@ import { createNoteGenerationProvider } from "./services/noteGenerationProviders
 import { createConversationSegmentationProvider } from "./services/conversationSegmentationProviders.js";
 import { segmentarConversacionClinica } from "./services/clinicalPipeline.js";
 import {
-  VOICE_NOTE_TYPES,
-  VOICE_NOTE_STYLES,
   VOICE_NOTE_FIELD_REGISTRY,
   calcularDecadaDeVida,
   crearTransferSections,
@@ -19,18 +17,36 @@ import {
   leerNotaExistente,
   transferirNotaVozABorrador
 } from "./services/voiceNoteGenerationService.js";
+import { buscarBorradorNotaClinica } from "./services/notas.js?v=20260716-2";
+import {
+  VOICE_NOTE_CATALOG_VERSION,
+  VOICE_NOTE_STYLE_CATALOG_VERSION,
+  getCompatibleVoiceStyles,
+  getDefaultVoiceNoteType,
+  getDefaultVoiceStyle,
+  getVoiceNoteType,
+  getVoiceNoteStyle,
+  getVoiceNoteTypesForService
+} from "./services/voiceNoteCatalogService.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { httpsCallable } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-functions.js";
 
 const params = new URLSearchParams(location.search);
+const initialPatientId = params.get("patientId")
+  || params.get("id")
+  || params.get("pacienteId")
+  || params.get("uidPaciente")
+  || "";
 const state = {
   user: null,
   perfil: null,
-  patientId: params.get("id") || params.get("patientId") || "",
-  encounterId: params.get("encounterId") || params.get("atencionId") || params.get("encuentro") || "actual",
+  patientId: initialPatientId,
+  encounterId: params.get("encounterId") || params.get("atencionId") || params.get("encuentro") || params.get("encuentroId") || "",
   noteId: params.get("noteId") || params.get("notaId") || "",
   returnUrl: params.get("returnUrl") || "",
   patient: null,
+  contextReady: false,
+  initialPatientLocked: Boolean(initialPatientId),
   provider: null,
   segmentationProvider: null,
   generated: null,
@@ -92,7 +108,7 @@ function crearPatientContext(datos = state.patient || {}) {
     fechaNacimiento,
     edad: Number.isInteger(edad) ? edad : calcularEdad(fechaNacimiento),
     sexo: obtenerSexoExpediente(datos),
-    servicio: $("voiceServicio")?.value || datos.servicio || datos.servicioActual || "",
+    servicio: $("voiceServicio")?.value || obtenerServicioPaciente(datos),
     diagnosticosActivos: datos.historialDiagnosticos || datos.diagnosticos || [],
     medicamentosActivos: datos.tratamientos || datos.tratamiento || [],
     alergias: datos.alergias || datos.datosClinicosResumen?.alergias || []
@@ -101,19 +117,143 @@ function crearPatientContext(datos = state.patient || {}) {
 
 function opcionesSelect(select, opciones, selected = "") {
   if (!select) return;
-  select.innerHTML = opciones.map(([value, label]) =>
-    `<option value="${escaparHTML(value)}" ${value === selected ? "selected" : ""}>${escaparHTML(label)}</option>`
-  ).join("");
+  const normalizadas = (opciones || []).map((opcion) => Array.isArray(opcion)
+    ? { value: opcion[0], label: opcion[1] }
+    : { value: opcion.id || opcion.value || "", label: opcion.label || opcion.text || opcion.id || "" }
+  ).filter((opcion) => opcion.value);
+  select.innerHTML = normalizadas.length
+    ? normalizadas.map(({ value, label }) =>
+        `<option value="${escaparHTML(value)}" ${value === selected ? "selected" : ""}>${escaparHTML(label)}</option>`
+      ).join("")
+    : '<option value="">Sin opciones disponibles</option>';
+}
+
+function obtenerServicioPaciente(datos = {}) {
+  const institucional = datos.datosInstitucionales || {};
+  return datos.servicioInstitucional
+    || datos.servicio
+    || datos.servicioActual
+    || institucional.servicioInstitucional
+    || institucional.servicio
+    || institucional.servicioActual
+    || "";
+}
+
+function obtenerExpedientePaciente(datos = {}) {
+  const institucional = datos.datosInstitucionales || {};
+  return datos.expedienteCognicion
+    || institucional.expedienteCognicion
+    || datos.expediente
+    || datos.numeroExpediente
+    || institucional.expediente
+    || institucional.numeroExpediente
+    || "Sin expediente";
+}
+
+function resolverEncounterId(datos = {}, patientId = state.patientId) {
+  const institucional = datos.datosInstitucionales || {};
+  const actual = String(state.encounterId || "").trim();
+  if (actual && actual !== "actual") return actual;
+  return datos.encounterId
+    || datos.encuentroId
+    || datos.atencionId
+    || datos.encuentroActivoId
+    || datos.atencionActualId
+    || datos.ingresoActivoId
+    || institucional.encounterId
+    || institucional.encuentroId
+    || institucional.atencionId
+    || datos.ultimaConsulta
+    || (patientId ? `paciente:${patientId}` : "");
+}
+
+function construirQueryContexto(extra = {}) {
+  const qs = new URLSearchParams();
+  if (state.patientId) {
+    qs.set("patientId", state.patientId);
+    qs.set("id", state.patientId);
+  }
+  if (state.encounterId) qs.set("encounterId", state.encounterId);
+  if (state.noteId) qs.set("noteId", state.noteId);
+  Object.entries(extra).forEach(([key, value]) => {
+    if (value) qs.set(key, value);
+  });
+  return qs.toString();
 }
 
 function actualizarLinks() {
-  const qs = state.patientId ? `?id=${encodeURIComponent(state.patientId)}` : "";
-  $("linkPacienteVoz")?.setAttribute("href", state.patientId ? `paciente.html${qs}` : "paciente.html");
-  $("linkNotaTradicional")?.setAttribute("href", state.patientId ? `nota.html${qs}` : "nota.html");
-  $("linkNotaVoz")?.setAttribute("href", state.patientId ? `nota-por-voz.html${qs}` : "nota-por-voz.html");
+  const qsBase = construirQueryContexto();
+  const qsPaciente = state.patientId ? `?id=${encodeURIComponent(state.patientId)}` : "";
+  const qsNota = construirQueryContexto(state.noteId ? { notaId: state.noteId } : {});
+  $("linkPacienteVoz")?.setAttribute("href", state.patientId ? `paciente.html${qsPaciente}` : "paciente.html");
+  $("linkNotaTradicional")?.setAttribute("href", qsNota ? `nota.html?${qsNota}` : "nota.html");
+  $("linkNotaVoz")?.setAttribute("href", qsBase ? `nota-por-voz.html?${qsBase}` : "nota-por-voz.html");
+}
+
+function setPreparacionHabilitada(enabled, message = "") {
+  state.contextReady = Boolean(enabled);
+  ["btnPrepararMicrofono", "btnGenerarNotaVoz", "btnTransferirNotaVoz"].forEach((id) => {
+    const button = $(id);
+    if (button) button.disabled = !enabled;
+  });
+  document.querySelectorAll("[data-step-next='grabar'], [data-step-next='generar']").forEach((button) => {
+    button.disabled = !enabled;
+  });
+  if (message) setText("voiceContextStatus", message);
+}
+
+function actualizarResumenPlantilla() {
+  const typeId = $("voiceDocumentType")?.value || "";
+  const styleId = $("voiceWritingStyle")?.value || "";
+  const tipo = getVoiceNoteType(typeId);
+  const estilo = getVoiceNoteStyle(styleId);
+  const destino = tipo?.destinationFields?.length
+    ? tipo.destinationFields.map((key) => VOICE_NOTE_FIELD_REGISTRY[key]?.label || key).join(", ")
+    : "No transfiere apartados clínicos";
+  const summary = [
+    tipo ? `Tipo: ${tipo.label}` : "Tipo pendiente",
+    estilo ? `Estilo: ${estilo.label}` : "Estilo pendiente",
+    tipo?.templateId ? `Plantilla lógica: ${tipo.templateId}` : "",
+    `Destino: ${destino}`,
+    `Catálogo: ${VOICE_NOTE_CATALOG_VERSION} / ${VOICE_NOTE_STYLE_CATALOG_VERSION}`
+  ].filter(Boolean).join(" · ");
+  setText("voiceTemplateSummary", summary);
+}
+
+function cargarCatalogosVoz(servicio = "") {
+  const tipos = getVoiceNoteTypesForService(servicio);
+  const tipoActual = $("voiceDocumentType")?.value || state.documentType || "";
+  const tipoDefault = tipos.some((tipo) => tipo.id === tipoActual)
+    ? tipoActual
+    : getDefaultVoiceNoteType(servicio);
+  const tipoSeleccionado = tipos.some((tipo) => tipo.id === tipoDefault) ? tipoDefault : tipos[0]?.id || "nota_completa";
+  opcionesSelect($("voiceDocumentType"), tipos, tipoSeleccionado);
+
+  const estilos = getCompatibleVoiceStyles(tipoSeleccionado);
+  const estiloActual = $("voiceWritingStyle")?.value || state.writingStyle || "";
+  const estiloDefault = estilos.some((estilo) => estilo.id === estiloActual)
+    ? estiloActual
+    : getDefaultVoiceStyle(tipoSeleccionado);
+  const estiloSeleccionado = estilos.some((estilo) => estilo.id === estiloDefault) ? estiloDefault : estilos[0]?.id || "institucional_psiquiatrico_detallado";
+  opcionesSelect($("voiceWritingStyle"), estilos, estiloSeleccionado);
+  state.documentType = tipoSeleccionado;
+  state.writingStyle = estiloSeleccionado;
+  actualizarResumenPlantilla();
+}
+
+function hayDatosVoz() {
+  const textoDictado = $("textoDictadoClinico")?.value?.trim();
+  const textoCorregido = $("voiceCorrectedTranscript")?.value?.trim();
+  const dictadoActivo = ["listening", "paused", "reconnecting", "processing", "completed"]
+    .includes(window.cognicionDictado?.diagnostico?.().state || "");
+  return Boolean(textoDictado || textoCorregido || dictadoActivo);
 }
 
 function mostrarPaso(step) {
+  if (!state.contextReady && step !== "preparar") {
+    alert("Primero carga y valida el paciente.");
+    return;
+  }
   document.querySelectorAll(".voice-step-panel").forEach((panel) => {
     panel.hidden = panel.id !== `step-${step}`;
   });
@@ -127,18 +267,38 @@ function mostrarPaso(step) {
 function snapshotDictado() {
   const base = window.cognicionDictado?.snapshot?.() || {};
   const corrected = $("voiceCorrectedTranscript")?.value?.trim() || $("textoDictadoClinico")?.value?.trim() || base.correctedTranscript || base.confirmedTranscript || "";
+  const encounterId = $("voiceEncounterId")?.value?.trim() || state.encounterId || base.encounterId || "";
   return {
     ...base,
     correctedTranscript: corrected,
     confirmedTranscript: base.confirmedTranscript || corrected,
     patientId: state.patientId || base.patientId,
-    encounterId: state.encounterId || base.encounterId
+    encounterId
   };
+}
+
+function validarAislamientoSesion(snapshot = snapshotDictado()) {
+  if (!state.user?.uid) throw new Error("No se pudo validar la sesión del usuario.");
+  if (!state.patientId || !state.patient) throw new Error("Primero carga y valida el paciente.");
+  const snapshotPatientId = snapshot.patientId || "";
+  const snapshotEncounterId = snapshot.encounterId || "";
+  const encounterId = $("voiceEncounterId")?.value?.trim() || state.encounterId || "";
+  if (snapshotPatientId && snapshotPatientId !== state.patientId) {
+    throw new Error("La sesión de dictado pertenece a otro paciente. Recupera o limpia la transcripción antes de continuar.");
+  }
+  if (snapshotEncounterId && encounterId && snapshotEncounterId !== encounterId) {
+    throw new Error("La sesión de dictado pertenece a otro encuentro. Recupera o limpia la transcripción antes de continuar.");
+  }
+  return { encounterId };
 }
 
 function sincronizarTranscripcionRevision() {
   const textarea = $("voiceCorrectedTranscript");
   const texto = $("textoDictadoClinico")?.value || window.cognicionDictado?.snapshot?.().correctedTranscript || "";
+  if (textarea && !textarea.value.trim()) textarea.value = texto;
+  renderSegmentosConversacionales(textarea?.value || texto);
+}
+
 function renderSegmentosConversacionales(texto = "") {
   const contenedor = $("voiceConversationSegments");
   if (!contenedor) return;
@@ -173,14 +333,16 @@ async function segmentarConProveedor() {
   }
   setText("voiceSegmentationStatus", "Segmentando conversacion...");
   const provider = await obtenerProveedorSegmentacion();
+  const snapshot = snapshotDictado();
+  validarAislamientoSesion(snapshot);
   const result = await provider.segment({
-    transcriptId: snapshotDictado().transcriptSessionId || "manual",
-    transcriptSessionId: snapshotDictado().transcriptSessionId || "manual",
+    transcriptId: snapshot.transcriptSessionId || "manual",
+    transcriptSessionId: snapshot.transcriptSessionId || "manual",
     patientId: state.patientId,
     encounterId: state.encounterId,
     text: texto,
     correctedTranscript: texto,
-    transcriptSegments: snapshotDictado().transcriptSegments || []
+    transcriptSegments: snapshot.transcriptSegments || []
   });
   state.conversationSegments = result.utterances || [];
   state.conversationWarnings = result.warnings || [];
@@ -338,21 +500,30 @@ function rehacerSegmentacion() {
   state.conversationSegments = JSON.parse(siguiente);
   renderSegmentosConversacionalesActuales();
 }
-      ${segmento.linkedQuestionId ? `<small>Vinculado con: ${escaparHTML(segmento.linkedQuestionId)}</small>` : ""}
-    </article>
-  `).join("") : "Sin segmentos.";
-}
 
 async function cargarPaciente(patientId) {
-  if (!patientId) return;
+  setPreparacionHabilitada(false, "Validando paciente...");
+  if (!patientId || !state.user?.uid) {
+    state.patient = null;
+    setText("voicePatientSummary", "Selecciona un paciente para iniciar.");
+    setPreparacionHabilitada(false, "Paciente pendiente.");
+    return;
+  }
   if (!(await medicoPuedeVer(state.user.uid, patientId))) {
     alert("No tienes permiso para acceder a este paciente.");
     location.href = "medico.html";
     return;
   }
   const datos = await obtenerUsuario(patientId);
+  if (!datos) {
+    state.patient = null;
+    setText("voicePatientSummary", "No se encontró el paciente solicitado o no está disponible.");
+    setPreparacionHabilitada(false, "Paciente no disponible.");
+    return;
+  }
   state.patient = datos || {};
   state.patientId = patientId;
+  state.encounterId = resolverEncounterId(datos, patientId);
   const selector = $("uidPaciente");
   if (selector && !Array.from(selector.options).some((option) => option.value === patientId)) {
     const option = document.createElement("option");
@@ -364,13 +535,23 @@ async function cargarPaciente(patientId) {
   const ctx = crearPatientContext(datos || {});
   const decada = Number.isInteger(ctx.edad) ? calcularDecadaDeVida(ctx.edad) : null;
   const servicio = $("voiceServicio");
-  if (servicio) servicio.value ||= ctx.servicio || "";
-  $("voicePatientSummary").textContent = [
+  const servicioPaciente = obtenerServicioPaciente(datos);
+  if (servicio) servicio.value = servicio.value || servicioPaciente || "";
+  if ($("voiceEncounterId")) $("voiceEncounterId").value = state.encounterId;
+  const borrador = await buscarBorradorNotaClinica(patientId, { atencionId: state.encounterId, usuarioId: state.user.uid }).catch(() => null);
+  if (!state.noteId && borrador?.id) state.noteId = borrador.id;
+  if ($("voiceNoteId")) $("voiceNoteId").value = state.noteId || "";
+  cargarCatalogosVoz(servicio?.value || servicioPaciente);
+  setText("voicePatientSummary", [
     ctx.nombreCompleto || "Paciente sin nombre",
     Number.isInteger(ctx.edad) ? `${ctx.edad} anos (${decada}a decada)` : "edad pendiente",
     ctx.sexo ? `sexo expediente: ${ctx.sexo}` : "sexo pendiente en expediente",
-    `pacienteId: ${patientId}`
-  ].join(" · ");
+    `expediente: ${obtenerExpedientePaciente(datos)}`,
+    servicio?.value ? `servicio: ${servicio.value}` : "servicio pendiente",
+    `encuentro: ${state.encounterId}`,
+    state.noteId ? `borrador destino: ${state.noteId}` : "sin borrador destino"
+  ].join(" · "));
+  setPreparacionHabilitada(true, "Paciente validado. Puedes preparar el micrófono.");
   actualizarLinks();
 }
 
@@ -386,7 +567,7 @@ async function cargarListaPacientes() {
     option.textContent = obtenerNombrePacienteParaMostrar(datos || {}) || datos.nombre || docPaciente.id;
     selector.appendChild(option);
   });
-  if (state.patientId) await cargarPaciente(state.patientId);
+  if (state.patientId) selector.value = state.patientId;
 }
 
 async function obtenerProveedor() {
@@ -410,17 +591,24 @@ async function generarNota() {
     return;
   }
   const snapshot = snapshotDictado();
+  const { encounterId } = validarAislamientoSesion(snapshot);
   if (!snapshot.correctedTranscript?.trim()) {
     alert("Revisa la transcripcion antes de generar.");
     return;
   }
   const provider = await obtenerProveedor();
+  const documentType = $("voiceDocumentType")?.value || getDefaultVoiceNoteType($("voiceServicio")?.value || "");
+  const writingStyle = $("voiceWritingStyle")?.value || getDefaultVoiceStyle(documentType);
+  const tipo = getVoiceNoteType(documentType);
+  const estilo = getVoiceNoteStyle(writingStyle);
   const options = {
     patientId: state.patientId,
-    encounterId: $("voiceEncounterId")?.value || state.encounterId,
+    encounterId,
     noteId: $("voiceNoteId")?.value || state.noteId,
-    documentType: $("voiceDocumentType")?.value || "evolucion_observacion",
-    writingStyle: $("voiceWritingStyle")?.value || "formato_fray_narrativo",
+    documentType,
+    writingStyle,
+    templateId: tipo?.templateId || "",
+    promptVersion: estilo?.promptVersion || "",
     service: $("voiceServicio")?.value || "",
     existingNoteFields: await obtenerCamposDestinoExistentes()
   };
@@ -446,7 +634,11 @@ async function generarNota() {
     data: {
       provider: generated.provider || "",
       promptVersion: generated.promptVersion || "",
-      documentType: options.documentType
+      documentType: options.documentType,
+      writingStyle: options.writingStyle,
+      templateId: options.templateId,
+      catalogVersion: VOICE_NOTE_CATALOG_VERSION,
+      styleCatalogVersion: VOICE_NOTE_STYLE_CATALOG_VERSION
     }
   });
   await guardarTranscripcionVozFirestore({ userId: state.user.uid, sessionId: snapshot.transcriptSessionId || "manual", transcript: snapshot });
@@ -539,6 +731,8 @@ async function transferir() {
     alert("Primero genera y revisa la nota.");
     return;
   }
+  const snapshot = snapshotDictado();
+  const { encounterId } = validarAislamientoSesion(snapshot);
   const selectedTarget = document.querySelector("input[name='voiceTransferTarget']:checked")?.value || "new";
   if (selectedTarget === "later") {
     setText("voiceTransferSummary", "Sesion conservada. Puedes volver despues desde este paciente.");
@@ -562,16 +756,19 @@ async function transferir() {
       nombre: state.perfil?.nombre || state.perfil?.nombreCompleto || state.user.displayName || state.user.email
     },
     sections,
-    documentType: $("voiceDocumentType")?.value || "evolucion_observacion",
+    documentType: $("voiceDocumentType")?.value || getDefaultVoiceNoteType($("voiceServicio")?.value || ""),
     draftMetadata: {
-      sessionId: snapshotDictado().transcriptSessionId || "",
-      encounterId: $("voiceEncounterId")?.value || state.encounterId,
+      sessionId: snapshot.transcriptSessionId || "",
+      encounterId,
       provider: state.generated.provider || "",
       promptVersion: state.generated.promptVersion || "",
+      documentType: $("voiceDocumentType")?.value || "",
+      writingStyle: $("voiceWritingStyle")?.value || "",
       source: "nota_por_voz_y_automatica"
     }
   });
   state.transferredNoteId = confirmado.id;
+  state.noteId = confirmado.id;
   $("voiceNoteId").value = confirmado.id;
   await guardarDraftGeneradoVozFirestore({
     userId: state.user.uid,
@@ -586,6 +783,7 @@ async function transferir() {
 function abrirNotaTradicional() {
   const qs = new URLSearchParams();
   if (state.patientId) qs.set("id", state.patientId);
+  if (state.encounterId) qs.set("encounterId", state.encounterId);
   if (state.transferredNoteId || $("voiceNoteId")?.value) qs.set("notaId", state.transferredNoteId || $("voiceNoteId").value);
   location.href = `nota.html?${qs.toString()}`;
 }
@@ -598,8 +796,45 @@ function conectarEventos() {
     button.addEventListener("click", () => mostrarPaso(button.dataset.stepNext));
   });
   $("uidPaciente")?.addEventListener("change", async (event) => {
-    state.patientId = event.target.value;
+    const nuevoPaciente = event.target.value;
+    if (nuevoPaciente !== state.patientId && hayDatosVoz()) {
+      const continuar = confirm("Cambiar de paciente cerrará el contexto actual del dictado. Limpia o guarda la transcripción antes de continuar. ¿Deseas cambiar de todos modos?");
+      if (!continuar) {
+        event.target.value = state.patientId || "";
+        return;
+      }
+      state.generated = null;
+      state.transferSections = [];
+      state.conversationSegments = [];
+      state.conversationWarnings = [];
+    }
+    state.patientId = nuevoPaciente;
+    state.encounterId = "";
+    state.noteId = "";
     await cargarPaciente(state.patientId);
+  });
+  $("voiceDocumentType")?.addEventListener("change", () => {
+    const typeId = $("voiceDocumentType")?.value || "";
+    const estilos = getCompatibleVoiceStyles(typeId);
+    const actual = $("voiceWritingStyle")?.value || "";
+    const selected = estilos.some((style) => style.id === actual) ? actual : getDefaultVoiceStyle(typeId);
+    opcionesSelect($("voiceWritingStyle"), estilos, selected);
+    state.documentType = typeId;
+    state.writingStyle = $("voiceWritingStyle")?.value || selected;
+    actualizarResumenPlantilla();
+  });
+  $("voiceWritingStyle")?.addEventListener("change", () => {
+    state.writingStyle = $("voiceWritingStyle")?.value || "";
+    actualizarResumenPlantilla();
+  });
+  $("voiceServicio")?.addEventListener("change", () => cargarCatalogosVoz($("voiceServicio")?.value || ""));
+  $("voiceEncounterId")?.addEventListener("input", () => {
+    state.encounterId = $("voiceEncounterId")?.value?.trim() || "";
+    actualizarLinks();
+  });
+  $("voiceNoteId")?.addEventListener("input", () => {
+    state.noteId = $("voiceNoteId")?.value?.trim() || "";
+    actualizarLinks();
   });
   $("voiceCorrectedTranscript")?.addEventListener("input", (event) => renderSegmentosConversacionales(event.target.value));
   $("btnSegmentarConversacionVoz")?.addEventListener("click", () => segmentarConProveedor().catch((error) => {
@@ -625,10 +860,10 @@ function conectarEventos() {
 
 async function init() {
   iniciarMonitoreoSesion("Nota por voz y automatica");
-  opcionesSelect($("voiceDocumentType"), VOICE_NOTE_TYPES, "evolucion_observacion");
-  opcionesSelect($("voiceWritingStyle"), VOICE_NOTE_STYLES, "formato_fray_narrativo");
-  $("voiceEncounterId").value = state.encounterId;
-  $("voiceNoteId").value = state.noteId;
+  setPreparacionHabilitada(false, "Cargando contexto del paciente...");
+  cargarCatalogosVoz("");
+  if ($("voiceEncounterId")) $("voiceEncounterId").value = state.encounterId;
+  if ($("voiceNoteId")) $("voiceNoteId").value = state.noteId;
   conectarEventos();
   actualizarLinks();
 
@@ -645,9 +880,15 @@ async function init() {
       return;
     }
     state.perfil = perfil;
-    await cargarListaPacientes();
-    if (state.patientId) await cargarPaciente(state.patientId);
-    await obtenerProveedor();
+    if (state.patientId) {
+      await cargarPaciente(state.patientId);
+    } else {
+      await cargarListaPacientes();
+      setPreparacionHabilitada(false, "Selecciona un paciente para iniciar.");
+    }
+    window.setTimeout(() => obtenerProveedor().catch(() => {
+      setText("voiceProviderStatus", "Proveedor: local o pendiente");
+    }), 0);
   });
 }
 

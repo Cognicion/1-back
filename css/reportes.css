@@ -106,6 +106,10 @@
   transition: opacity 220ms ease;
 }
 
+.reporte-overlay[hidden] {
+  display: none !important;
+}
+
 .reporte-overlay.abierto {
   opacity: 1;
   pointer-events: auto;

@@ -5675,7 +5675,32 @@ window.abrirNota = function() {
 };
 
 window.abrirNotaPorVozPaciente = function() {
-  window.location.href = "nota-por-voz.html?id=" + encodeURIComponent(uidPaciente || "");
+  if (!uidPaciente) {
+    alert("Selecciona o recarga el expediente del paciente antes de abrir la nota por voz.");
+    return;
+  }
+  const datos = datosPacienteActual || {};
+  const institucional = datos.datosInstitucionales || {};
+  const encounterId = datos.encounterId
+    || datos.encuentroId
+    || datos.atencionId
+    || datos.encuentroActivoId
+    || datos.atencionActualId
+    || datos.ingresoActivoId
+    || institucional.encounterId
+    || institucional.encuentroId
+    || institucional.atencionId
+    || datos.ultimaConsulta
+    || `paciente:${uidPaciente}`;
+  const noteId = datos.notaActualId || datos.borradorNotaId || datos.notaId || "";
+  const qs = new URLSearchParams({
+    patientId: uidPaciente,
+    id: uidPaciente,
+    encounterId,
+    returnUrl: `paciente.html?id=${encodeURIComponent(uidPaciente)}`
+  });
+  if (noteId) qs.set("noteId", noteId);
+  window.location.href = `nota-por-voz.html?${qs.toString()}`;
 };
 
 window.previsualizarMiSalud = function() {
