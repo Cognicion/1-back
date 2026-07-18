@@ -107,7 +107,11 @@
           <textarea id="voiceCorrectedTranscript" class="voice-large-text"></textarea>
         </label>
         <section class="voice-card">
-          <h3>Segmentacion conversacional</h3>
+          <div class="voice-card-title-row">
+            <h3>Segmentacion conversacional</h3>
+            <button id="btnSegmentarConversacionVoz" type="button" class="boton-secundario">Segmentar con proveedor</button>
+          </div>
+          <p id="voiceSegmentationStatus" class="voice-summary">Segmentacion basica. Revise los hablantes.</p>
           <div id="voiceConversationSegments" class="voice-segments">Sin segmentos.</div>
         </section>
       </div>

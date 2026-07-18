@@ -63,6 +63,68 @@ Tu objetivo es potenciar el razonamiento del profesional de la salud, no reempla
 );
 
 const STRUCTURED_NOTE_PROMPT_VERSION = "voice_note_fray_aldo_v1_2026-07-18";
+const CONVERSATION_SEGMENTATION_PROMPT_VERSION = "conversation_segmentation_es_mx_v1_2026-07-18";
+const CONVERSATION_SEGMENTATION_PROMPT = `
+Version del prompt: conversation_segmentation_es_mx_v1_2026-07-18.
+Eres un asistente especializado en segmentacion conversacional clinica en espanol.
+
+Recibiras una transcripcion clinica posiblemente sin puntuacion ni etiquetas fiables de hablante.
+
+Divide la transcripcion en turnos conversacionales manejables.
+
+Identifica rol probable:
+- clinician
+- patient
+- relative
+- unknown
+
+Identifica acto comunicativo:
+- question
+- answer
+- observation
+- clinical_summary
+- clinical_assessment
+- plan
+- correction
+- other
+
+Reglas:
+Las preguntas clinicas suelen provenir del profesional.
+Las respuestas breves posteriores suelen provenir del paciente.
+No conviertas preguntas en sintomas.
+Vincula cada respuesta con su pregunta usando linkedUtteranceId.
+Las frases que empiezan con "durante la entrevista se observa" son observation del profesional.
+Las frases que empiezan con "voy a resumir" o "para confirmar que comprendi" son clinical_summary.
+Las frases de razonamiento clinico son clinical_assessment.
+Las acciones futuras son plan.
+No inventes hablantes.
+Cuando exista duda usa unknown y requiresReview true.
+Conserva el texto original de cada fragmento.
+Si detectas texto truncado al final, agrega una advertencia.
+
+Devuelve JSON estricto:
+{
+  "transcriptId": "",
+  "segmentationMode": "linguistic",
+  "schemaVersion": "conversation_segmentation_v1",
+  "utterances": [
+    {
+      "id": "",
+      "sequence": 1,
+      "startTime": null,
+      "endTime": null,
+      "text": "",
+      "probableRole": "clinician",
+      "speechAct": "question",
+      "linkedUtteranceId": "",
+      "confidence": null,
+      "sourceSegmentIds": [],
+      "requiresReview": true
+    }
+  ],
+  "warnings": []
+}
+`;
 const STRUCTURED_NOTE_PROMPT = `
 Version del prompt: voice_note_fray_aldo_v1_2026-07-18.
 Eres un asistente especializado en documentacion psiquiatrica institucional.
@@ -137,6 +199,75 @@ function extraerJson(texto = "") {
   if (!match) return null;
   return JSON.parse(match[0]);
 }
+
+function validarSegmentacionConversacionalBackend(parsed = {}, payload = {}) {
+  const roles = new Set(["clinician", "patient", "relative", "unknown"]);
+  const acts = new Set(["question", "answer", "observation", "clinical_summary", "clinical_assessment", "plan", "correction", "other"]);
+  const utterances = Array.isArray(parsed.utterances) ? parsed.utterances : [];
+  return {
+    transcriptId: String(payload.transcriptId || payload.transcriptSessionId || parsed.transcriptId || ""),
+    segmentationMode: ["acoustic", "linguistic", "hybrid", "manual"].includes(parsed.segmentationMode) ? parsed.segmentationMode : "linguistic",
+    schemaVersion: "conversation_segmentation_v1",
+    promptVersion: CONVERSATION_SEGMENTATION_PROMPT_VERSION,
+    provider: "external",
+    utterances: utterances.map((utterance, index) => ({
+      id: String(utterance.id || `utt-${index + 1}`),
+      sequence: Number.isFinite(Number(utterance.sequence)) ? Number(utterance.sequence) : index + 1,
+      startTime: Number.isFinite(Number(utterance.startTime)) ? Number(utterance.startTime) : null,
+      endTime: Number.isFinite(Number(utterance.endTime)) ? Number(utterance.endTime) : null,
+      text: String(utterance.text || "").trim(),
+      probableRole: roles.has(utterance.probableRole) ? utterance.probableRole : "unknown",
+      speechAct: acts.has(utterance.speechAct) ? utterance.speechAct : "other",
+      linkedUtteranceId: String(utterance.linkedUtteranceId || ""),
+      confidence: Number.isFinite(Number(utterance.confidence)) ? Number(utterance.confidence) : null,
+      sourceSegmentIds: Array.isArray(utterance.sourceSegmentIds) ? utterance.sourceSegmentIds : [],
+      requiresReview: utterance.requiresReview !== false
+    })).filter((utterance) => utterance.text),
+    warnings: Array.isArray(parsed.warnings) ? parsed.warnings : []
+  };
+}
+
+exports.segmentClinicalConversation = onCall(
+  {
+    secrets: [OPENAI_API_KEY],
+    timeoutSeconds: 90,
+    memory: "512MiB"
+  },
+  async (request) => {
+    if (!request.auth) {
+      throw new HttpsError("unauthenticated", "Debes iniciar sesion.");
+    }
+
+    const payload = request.data || {};
+    if (payload.userId && payload.userId !== request.auth.uid) {
+      throw new HttpsError("permission-denied", "La sesion de dictado pertenece a otro usuario.");
+    }
+    const transcript = String(payload.correctedTranscript || payload.text || payload.confirmedTranscript || "").trim();
+    if (!transcript) {
+      throw new HttpsError("invalid-argument", "No hay transcripcion para segmentar.");
+    }
+
+    const client = new OpenAI({ apiKey: OPENAI_API_KEY.value() });
+    const response = await client.responses.create({
+      model: process.env.OPENAI_SEGMENTATION_MODEL || process.env.OPENAI_NOTE_MODEL || "gpt-5.5",
+      instructions: CONVERSATION_SEGMENTATION_PROMPT,
+      input: JSON.stringify({
+        transcriptId: payload.transcriptId || payload.transcriptSessionId || "",
+        patientId: payload.patientId || "",
+        encounterId: payload.encounterId || "",
+        correctedTranscript: transcript,
+        transcriptSegments: payload.transcriptSegments || []
+      })
+    });
+
+    const parsed = extraerJson(response.output_text || "");
+    if (!parsed || typeof parsed !== "object") {
+      throw new HttpsError("internal", "El proveedor de segmentacion no devolvio JSON valido.");
+    }
+
+    return validarSegmentacionConversacionalBackend(parsed, payload);
+  }
+);
 
 exports.generateStructuredNoteFromDictation = onCall(
   {

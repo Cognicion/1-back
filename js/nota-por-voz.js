@@ -1,9 +1,10 @@
-import { auth, obtenerFunctions } from "./firebase.js";
+﻿import { auth, obtenerFunctions } from "./firebase.js";
 import { iniciarMonitoreoSesion } from "./services/sesion.js";
 import { obtenerUsuario, listarPacientes, medicoPuedeVer } from "./services/usuarios.js";
 import { usuarioEsPersonalClinico } from "./utils/roles.js";
 import { obtenerNombrePacienteParaMostrar } from "./utils/nombresPacientes.js";
 import { createNoteGenerationProvider } from "./services/noteGenerationProviders.js";
+import { createConversationSegmentationProvider } from "./services/conversationSegmentationProviders.js";
 import { segmentarConversacionClinica } from "./services/clinicalPipeline.js";
 import {
   VOICE_NOTE_TYPES,
@@ -31,9 +32,14 @@ const state = {
   returnUrl: params.get("returnUrl") || "",
   patient: null,
   provider: null,
+  segmentationProvider: null,
   generated: null,
   transferSections: [],
-  transferredNoteId: ""
+  transferredNoteId: "",
+  conversationSegments: [],
+  conversationWarnings: [],
+  conversationUndo: [],
+  conversationRedo: []
 };
 
 const $ = (id) => document.getElementById(id);
@@ -133,18 +139,205 @@ function snapshotDictado() {
 function sincronizarTranscripcionRevision() {
   const textarea = $("voiceCorrectedTranscript");
   const texto = $("textoDictadoClinico")?.value || window.cognicionDictado?.snapshot?.().correctedTranscript || "";
-  if (textarea && !textarea.value.trim()) textarea.value = texto;
-  renderSegmentosConversacionales(textarea?.value || texto);
-}
-
 function renderSegmentosConversacionales(texto = "") {
   const contenedor = $("voiceConversationSegments");
   if (!contenedor) return;
-  const segmentos = segmentarConversacionClinica(texto).slice(0, 80);
-  contenedor.innerHTML = segmentos.length ? segmentos.map((segmento) => `
-    <article class="voice-segment">
-      <small>${escaparHTML(segmento.probableRole)} · ${escaparHTML(segmento.speechAct || (segmento.isQuestion ? "question" : segmento.isAnswer ? "answer" : "other"))}</small>
-      <p>${escaparHTML(segmento.text)}</p>
+  const segmentos = segmentarConversacionClinica(texto);
+  state.conversationSegments = Array.from(segmentos);
+  state.conversationWarnings = segmentos.warnings || [];
+  renderSegmentosConversacionalesActuales();
+}
+
+async function obtenerProveedorSegmentacion() {
+  if (state.segmentationProvider) return state.segmentationProvider;
+  try {
+    const functionsInstance = await obtenerFunctions();
+    state.segmentationProvider = createConversationSegmentationProvider({
+      provider: "external",
+      external: {
+        callable: httpsCallable(functionsInstance, "segmentClinicalConversation"),
+        fallbackToLocal: true
+      }
+    });
+  } catch {
+    state.segmentationProvider = createConversationSegmentationProvider({ provider: "local" });
+  }
+  return state.segmentationProvider;
+}
+
+async function segmentarConProveedor() {
+  const texto = $("voiceCorrectedTranscript")?.value || $("textoDictadoClinico")?.value || "";
+  if (!texto.trim()) {
+    alert("No hay transcripcion para segmentar.");
+    return;
+  }
+  setText("voiceSegmentationStatus", "Segmentando conversacion...");
+  const provider = await obtenerProveedorSegmentacion();
+  const result = await provider.segment({
+    transcriptId: snapshotDictado().transcriptSessionId || "manual",
+    transcriptSessionId: snapshotDictado().transcriptSessionId || "manual",
+    patientId: state.patientId,
+    encounterId: state.encounterId,
+    text: texto,
+    correctedTranscript: texto,
+    transcriptSegments: snapshotDictado().transcriptSegments || []
+  });
+  state.conversationSegments = result.utterances || [];
+  state.conversationWarnings = result.warnings || [];
+  renderSegmentosConversacionalesActuales();
+  setText("voiceSegmentationStatus", `Proveedor: ${result.provider || "local"} · turnos: ${state.conversationSegments.length}${result.fallback ? " · fallback" : ""}`);
+}
+
+const ROLE_LABELS = {
+  clinician: "Profesional",
+  patient: "Paciente",
+  relative: "Familiar",
+  unknown: "Desconocido"
+};
+
+const ACT_LABELS = {
+  question: "Pregunta",
+  answer: "Respuesta",
+  observation: "Observacion",
+  clinical_summary: "Resumen",
+  clinical_assessment: "Analisis",
+  plan: "Plan",
+  correction: "Correccion",
+  other: "Otro"
+};
+
+function etiquetaRolActo(segmento = {}) {
+  return `${ROLE_LABELS[segmento.probableRole] || segmento.probableRole || "Desconocido"} · ${ACT_LABELS[segmento.speechAct] || segmento.speechAct || "Otro"}`;
+}
+
+function guardarHistorialSegmentacion() {
+  state.conversationUndo.push(JSON.stringify(state.conversationSegments));
+  if (state.conversationUndo.length > 30) state.conversationUndo.shift();
+  state.conversationRedo = [];
+}
+
+function normalizarSegmentosConversacion() {
+  state.conversationSegments.forEach((segmento, index) => {
+    segmento.sequence = index + 1;
+    segmento.id ||= `utt-${index + 1}`;
+    segmento.utteranceId ||= segmento.id;
+    segmento.isQuestion = segmento.speechAct === "question";
+    segmento.isAnswer = ["answer", "correction"].includes(segmento.speechAct);
+  });
+}
+
+function opcionesSegmentacion(options, value) {
+  return Object.entries(options).map(([key, label]) =>
+    `<option value="${escaparHTML(key)}" ${key === value ? "selected" : ""}>${escaparHTML(label)}</option>`
+  ).join("");
+}
+
+function renderSegmentosConversacionalesActuales() {
+  const contenedor = $("voiceConversationSegments");
+  if (!contenedor) return;
+  normalizarSegmentosConversacion();
+  const segmentos = state.conversationSegments.slice(0, 120);
+  const advertencias = state.conversationWarnings || [];
+  contenedor.innerHTML = `
+    <div class="voice-segmentation-summary">
+      <span>${segmentos.length} turnos</span>
+      <span>Modo: linguistico</span>
+      <span>${advertencias.length ? "Revisar advertencias" : "Segmentacion basica. Revise los hablantes."}</span>
+      <button type="button" data-seg-undo ${state.conversationUndo.length ? "" : "disabled"}>Deshacer</button>
+      <button type="button" data-seg-redo ${state.conversationRedo.length ? "" : "disabled"}>Rehacer</button>
+    </div>
+    ${advertencias.length ? `<div class="voice-segmentation-warnings">${advertencias.map((warning) => `<p>${escaparHTML(warning.message || "Requiere revision.")}</p>`).join("")}</div>` : ""}
+    ${segmentos.length ? segmentos.map((segmento, index) => `
+      <article class="voice-segment voice-segment-${escaparHTML(segmento.probableRole || "unknown")}">
+        <header>
+          <strong>${escaparHTML(etiquetaRolActo(segmento))}</strong>
+          <span>#${segmento.sequence}</span>
+        </header>
+        <p>${escaparHTML(segmento.text || segmento.originalText || "")}</p>
+        ${segmento.linkedUtteranceId || segmento.linkedQuestionId ? `<small>Vinculado con: ${escaparHTML(segmento.linkedUtteranceId || segmento.linkedQuestionId)}</small>` : ""}
+        <div class="voice-segment-controls">
+          <label>Rol
+            <select data-seg-role="${index}">${opcionesSegmentacion(ROLE_LABELS, segmento.probableRole || "unknown")}</select>
+          </label>
+          <label>Acto
+            <select data-seg-act="${index}">${opcionesSegmentacion(ACT_LABELS, segmento.speechAct || "other")}</select>
+          </label>
+          <button type="button" data-seg-split="${index}">Dividir</button>
+          <button type="button" data-seg-join="${index}" ${index === 0 ? "disabled" : ""}>Unir con anterior</button>
+        </div>
+      </article>
+    `).join("") : "Sin segmentos."}
+  `;
+
+  contenedor.querySelector("[data-seg-undo]")?.addEventListener("click", deshacerSegmentacion);
+  contenedor.querySelector("[data-seg-redo]")?.addEventListener("click", rehacerSegmentacion);
+  contenedor.querySelectorAll("[data-seg-role]").forEach((select) => {
+    select.addEventListener("change", () => {
+      guardarHistorialSegmentacion();
+      state.conversationSegments[Number(select.dataset.segRole)].probableRole = select.value;
+      renderSegmentosConversacionalesActuales();
+    });
+  });
+  contenedor.querySelectorAll("[data-seg-act]").forEach((select) => {
+    select.addEventListener("change", () => {
+      guardarHistorialSegmentacion();
+      state.conversationSegments[Number(select.dataset.segAct)].speechAct = select.value;
+      renderSegmentosConversacionalesActuales();
+    });
+  });
+  contenedor.querySelectorAll("[data-seg-split]").forEach((button) => {
+    button.addEventListener("click", () => dividirSegmentoConversacional(Number(button.dataset.segSplit)));
+  });
+  contenedor.querySelectorAll("[data-seg-join]").forEach((button) => {
+    button.addEventListener("click", () => unirSegmentoConversacional(Number(button.dataset.segJoin)));
+  });
+}
+
+function dividirSegmentoConversacional(index) {
+  const segmento = state.conversationSegments[index];
+  if (!segmento) return;
+  const base = segmento.text || segmento.originalText || "";
+  const palabras = base.split(/\s+/).filter(Boolean);
+  if (palabras.length < 4) return;
+  guardarHistorialSegmentacion();
+  const mitad = Math.max(2, Math.floor(palabras.length / 2));
+  const primero = palabras.slice(0, mitad).join(" ");
+  const segundo = palabras.slice(mitad).join(" ");
+  const idNuevo = `utt-manual-${Date.now()}`;
+  state.conversationSegments.splice(index, 1,
+    { ...segmento, text: primero, originalText: primero },
+    { ...segmento, id: idNuevo, utteranceId: idNuevo, text: segundo, originalText: segundo, requiresReview: true }
+  );
+  renderSegmentosConversacionalesActuales();
+}
+
+function unirSegmentoConversacional(index) {
+  if (index <= 0 || !state.conversationSegments[index]) return;
+  guardarHistorialSegmentacion();
+  const anterior = state.conversationSegments[index - 1];
+  const actual = state.conversationSegments[index];
+  anterior.text = `${anterior.text || anterior.originalText || ""} ${actual.text || actual.originalText || ""}`.trim();
+  anterior.originalText = `${anterior.originalText || ""} ${actual.originalText || actual.text || ""}`.trim();
+  anterior.requiresReview = true;
+  state.conversationSegments.splice(index, 1);
+  renderSegmentosConversacionalesActuales();
+}
+
+function deshacerSegmentacion() {
+  const previo = state.conversationUndo.pop();
+  if (!previo) return;
+  state.conversationRedo.push(JSON.stringify(state.conversationSegments));
+  state.conversationSegments = JSON.parse(previo);
+  renderSegmentosConversacionalesActuales();
+}
+
+function rehacerSegmentacion() {
+  const siguiente = state.conversationRedo.pop();
+  if (!siguiente) return;
+  state.conversationUndo.push(JSON.stringify(state.conversationSegments));
+  state.conversationSegments = JSON.parse(siguiente);
+  renderSegmentosConversacionalesActuales();
+}
       ${segmento.linkedQuestionId ? `<small>Vinculado con: ${escaparHTML(segmento.linkedQuestionId)}</small>` : ""}
     </article>
   `).join("") : "Sin segmentos.";
@@ -409,6 +602,10 @@ function conectarEventos() {
     await cargarPaciente(state.patientId);
   });
   $("voiceCorrectedTranscript")?.addEventListener("input", (event) => renderSegmentosConversacionales(event.target.value));
+  $("btnSegmentarConversacionVoz")?.addEventListener("click", () => segmentarConProveedor().catch((error) => {
+    console.error("No se pudo segmentar la conversacion:", error);
+    setText("voiceSegmentationStatus", "No se pudo segmentar con proveedor. Revise la transcripcion.");
+  }));
   $("btnPrepararMicrofono")?.addEventListener("click", () => window.probarMicrofono?.());
   $("btnGenerarNotaVoz")?.addEventListener("click", () => generarNota().catch((error) => {
     console.error("No se pudo generar nota por voz:", error);

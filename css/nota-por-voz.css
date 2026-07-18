@@ -200,6 +200,18 @@ body {
   flex-wrap: wrap;
 }
 
+.voice-card-title-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.voice-card-title-row h3 {
+  margin: 0;
+}
+
 .voice-provider-status span {
   border-radius: 8px;
   padding: 8px 10px;
@@ -228,6 +240,49 @@ body {
   gap: 10px;
 }
 
+#step-transcripcion .voice-two-columns {
+  grid-template-columns: minmax(300px, 0.85fr) minmax(420px, 1.15fr);
+  align-items: start;
+}
+
+.voice-segments {
+  max-height: min(68vh, 760px);
+  overflow: auto;
+  padding-right: 4px;
+}
+
+.voice-segmentation-summary {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  padding: 8px;
+  border: 1px solid rgba(125, 211, 252, 0.14);
+  border-radius: 10px;
+  background: rgba(2, 6, 23, 0.94);
+}
+
+.voice-segmentation-summary span {
+  padding: 5px 8px;
+  border-radius: 8px;
+  background: rgba(15, 23, 42, 0.86);
+  color: #cbd5e1;
+  font-size: 0.78rem;
+}
+
+.voice-segmentation-warnings {
+  display: grid;
+  gap: 6px;
+  padding: 10px;
+  border: 1px solid rgba(251, 191, 36, 0.24);
+  border-radius: 10px;
+  background: rgba(120, 53, 15, 0.22);
+  color: #fde68a;
+}
+
 .voice-segment,
 .voice-warning-item,
 .voice-review-card {
@@ -235,6 +290,64 @@ body {
   border-radius: 10px;
   background: rgba(15, 23, 42, 0.62);
   padding: 12px;
+}
+
+.voice-segment {
+  display: grid;
+  gap: 8px;
+}
+
+.voice-segment header {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+}
+
+.voice-segment strong {
+  color: #e0f2fe;
+}
+
+.voice-segment p {
+  margin: 0;
+  color: #dbeafe;
+  line-height: 1.55;
+}
+
+.voice-segment-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: end;
+}
+
+.voice-segment-controls label {
+  display: grid;
+  gap: 4px;
+  min-width: 136px;
+  color: #93c5fd;
+  font-size: 0.78rem;
+}
+
+.voice-segment-controls select {
+  min-height: 34px;
+  border-radius: 8px;
+}
+
+.voice-segment-clinician {
+  border-left: 3px solid #38bdf8;
+}
+
+.voice-segment-patient {
+  border-left: 3px solid #34d399;
+}
+
+.voice-segment-relative {
+  border-left: 3px solid #fbbf24;
+}
+
+.voice-segment-unknown {
+  border-left: 3px solid #94a3b8;
 }
 
 .voice-segment small,
@@ -306,6 +419,16 @@ body {
   .voice-two-columns,
   .voice-review-layout {
     grid-template-columns: 1fr;
+  }
+
+  #step-transcripcion .voice-two-columns {
+    grid-template-columns: 1fr;
+  }
+
+  .voice-segments {
+    max-height: none;
+    overflow: visible;
+    padding-right: 0;
   }
 
   .voice-header {
