@@ -154,7 +154,7 @@ function extraerJson(texto = "") {
 exports.segmentClinicalConversation = onCall(
   {
     secrets: [OPENAI_API_KEY],
-    timeoutSeconds: 90,
+    timeoutSeconds: 60,
     memory: "512MiB"
   },
   async (request) => {

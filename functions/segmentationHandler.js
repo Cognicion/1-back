@@ -4,48 +4,16 @@ const CONVERSATION_SEGMENTATION_PROMPT_VERSION = "conversation_segmentation_es_m
 const CONVERSATION_SEGMENTATION_SCHEMA_VERSION = "conversation_segmentation_v1";
 const DEFAULT_SEGMENTATION_MODEL = "gpt-4.1-mini";
 const MAX_TRANSCRIPT_CHARS = 120000;
-const PROVIDER_TIMEOUT_MS = 85000;
+const PROVIDER_TIMEOUT_MS = 35000;
 
 const CONVERSATION_SEGMENTATION_PROMPT = `
 Version del prompt: conversation_segmentation_es_mx_v2_2026-07-18.
-Eres un asistente especializado en segmentacion conversacional clinica en espanol.
-
-Recibiras una transcripcion clinica posiblemente sin puntuacion ni etiquetas fiables de hablante.
-
-Divide la transcripcion en turnos conversacionales manejables.
-
-Identifica rol probable:
-- clinician
-- patient
-- relative
-- unknown
-
-Identifica acto comunicativo:
-- question
-- answer
-- observation
-- clinical_summary
-- clinical_assessment
-- plan
-- correction
-- other
-
-Reglas:
-Las preguntas clinicas suelen provenir del profesional.
-Las respuestas breves posteriores suelen provenir del paciente.
-No conviertas preguntas en sintomas.
-Vincula cada respuesta con su pregunta usando linkedUtteranceId.
-Las frases que empiezan con "durante la entrevista se observa" son observation del profesional.
-Las frases que empiezan con "voy a resumir" o "para confirmar que comprendi" son clinical_summary.
-Las frases de razonamiento clinico son clinical_assessment.
-Las acciones futuras son plan.
-No inventes hablantes.
-Cuando exista duda usa unknown y requiresReview true.
-Conserva el texto original de cada fragmento.
-Si detectas texto truncado al final, agrega una advertencia.
-No uses valores combinados como "answer/correction"; elige answer o correction.
-
-Devuelve JSON estricto:
+Segmenta una transcripcion clinica en espanol, sin redactar nota ni diagnosticos.
+Divide solo en turnos conversacionales manejables.
+Roles permitidos: clinician, patient, relative, unknown.
+Actos permitidos: question, answer, observation, clinical_summary, clinical_assessment, plan, correction, other.
+Reglas clave: las preguntas no son sintomas; vincula respuestas breves con su pregunta; no inventes hablantes; conserva negaciones, fechas, dosis y texto original; si dudas usa unknown y requiresReview true; no uses "answer/correction".
+Devuelve solo JSON estricto:
 {
   "transcriptId": "",
   "segmentationMode": "linguistic",
@@ -83,8 +51,14 @@ const ALLOWED_SPEECH_ACTS = new Set([
 const ALLOWED_MODES = new Set(["acoustic", "linguistic", "hybrid", "manual"]);
 const ALLOWED_LOCALES = new Set(["es", "es-MX", "es-ES"]);
 
-function createRequestId() {
-  return `seg-${Date.now().toString(36)}-${crypto.randomBytes(4).toString("hex")}`;
+function sanitizeRequestId(value = "") {
+  return String(value || "")
+    .replace(/[^a-zA-Z0-9_.:-]/g, "")
+    .slice(0, 96);
+}
+
+function createRequestId(clientRequestId = "") {
+  return sanitizeRequestId(clientRequestId) || `seg-${Date.now().toString(36)}-${crypto.randomBytes(4).toString("hex")}`;
 }
 
 function hashText(value) {
@@ -98,6 +72,7 @@ function serializeDetails(details = {}) {
 function makeCallableError(HttpsErrorClass, code, safeMessage, details = {}) {
   return new HttpsErrorClass(code, safeMessage, serializeDetails({
     requestId: details.requestId || "",
+    clientRequestId: details.clientRequestId || details.requestId || "",
     stage: details.stage || "unknown",
     safeMessage,
     retryable: Boolean(details.retryable)
@@ -162,9 +137,15 @@ function validateInput({ data = {}, auth = null, HttpsErrorClass, requestId }) {
   return {
     transcript,
     transcriptId: String(data.transcriptId || data.transcriptSessionId || ""),
+    clientRequestId: sanitizeRequestId(data.clientRequestId || requestId),
+    blockId: sanitizeRequestId(data.blockId || ""),
+    chunkIndex: Number.isFinite(Number(data.chunkIndex)) ? Number(data.chunkIndex) : null,
+    chunkCount: Number.isFinite(Number(data.chunkCount)) ? Number(data.chunkCount) : null,
     sourceSegments,
     locale,
-    requestedMode: String(data.requestedMode || "linguistic")
+    requestedMode: String(data.requestedMode || "linguistic"),
+    contextBefore: String(data.contextBefore || "").slice(0, 600),
+    contextAfter: String(data.contextAfter || "").slice(0, 600)
   };
 }
 
@@ -370,12 +351,14 @@ async function runSegmentClinicalConversation({
   openaiClient = null,
   timeoutMs = PROVIDER_TIMEOUT_MS
 }) {
-  const requestId = createRequestId();
+  const requestId = createRequestId(data?.clientRequestId);
   const startedAt = Date.now();
   let stage = "input_validation";
   let transcriptLength = 0;
   let transcriptHash = "";
   let sourceSegmentCount = 0;
+  let chunkCount = 1;
+  let blockId = "";
   let model = env.OPENAI_SEGMENTATION_MODEL || env.OPENAI_NOTE_MODEL || DEFAULT_SEGMENTATION_MODEL;
 
   try {
@@ -383,6 +366,8 @@ async function runSegmentClinicalConversation({
     transcriptLength = payload.transcript.length;
     transcriptHash = hashText(payload.transcript);
     sourceSegmentCount = payload.sourceSegments.length;
+    chunkCount = payload.chunkCount || 1;
+    blockId = payload.blockId;
 
     stage = "configuration";
     if (!apiKey || typeof apiKey !== "string") {
@@ -398,8 +383,13 @@ async function runSegmentClinicalConversation({
       requestId,
       stage,
       transcriptLength,
+      transcriptCharacters: transcriptLength,
+      estimatedInputTokens: Math.ceil(transcriptLength / 4),
       transcriptHash,
       sourceSegmentCount,
+      chunkCount,
+      blockId,
+      elapsedMs: Date.now() - startedAt,
       model,
       provider: "openai"
     });
@@ -411,8 +401,14 @@ async function runSegmentClinicalConversation({
       timeoutMs,
       providerInput: {
         transcriptId: payload.transcriptId,
+        clientRequestId: payload.clientRequestId,
+        blockId: payload.blockId,
+        chunkIndex: payload.chunkIndex,
+        chunkCount: payload.chunkCount,
         locale: payload.locale,
         requestedMode: payload.requestedMode,
+        contextBefore: payload.contextBefore,
+        contextAfter: payload.contextAfter,
         transcript: payload.transcript,
         sourceSegments: payload.sourceSegments.map((segment, index) => ({
           id: String(segment?.id || `src-${index + 1}`),
@@ -459,9 +455,14 @@ async function runSegmentClinicalConversation({
       requestId,
       stage: "complete",
       durationMs: Date.now() - startedAt,
+      elapsedMs: Date.now() - startedAt,
       transcriptLength,
+      transcriptCharacters: transcriptLength,
+      estimatedInputTokens: Math.ceil(transcriptLength / 4),
       transcriptHash,
       sourceSegmentCount,
+      chunkCount,
+      blockId,
       utteranceCount: result.utterances.length,
       warningCount: result.warnings.length,
       model,
@@ -474,9 +475,14 @@ async function runSegmentClinicalConversation({
       requestId,
       stage: mappedError.details?.stage || stage,
       durationMs: Date.now() - startedAt,
+      elapsedMs: Date.now() - startedAt,
       transcriptLength,
+      transcriptCharacters: transcriptLength,
+      estimatedInputTokens: Math.ceil(transcriptLength / 4),
       transcriptHash,
       sourceSegmentCount,
+      chunkCount,
+      blockId,
       model,
       errorName: error?.name || mappedError?.name || "Error",
       errorCode: error?.code || mappedError?.code || "",

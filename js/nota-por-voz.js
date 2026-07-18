@@ -4,7 +4,7 @@ import { obtenerUsuario, listarPacientes, medicoPuedeVer } from "./services/usua
 import { usuarioEsPersonalClinico } from "./utils/roles.js";
 import { obtenerNombrePacienteParaMostrar } from "./utils/nombresPacientes.js";
 import { createNoteGenerationProvider } from "./services/noteGenerationProviders.js";
-import { createConversationSegmentationProvider } from "./services/conversationSegmentationProviders.js";
+import { createConversationSegmentationProvider, crearClientRequestId } from "./services/conversationSegmentationProviders.js";
 import { segmentarConversacionClinica } from "./services/clinicalPipeline.js";
 import {
   VOICE_NOTE_FIELD_REGISTRY,
@@ -55,7 +55,8 @@ const state = {
   conversationSegments: [],
   conversationWarnings: [],
   conversationUndo: [],
-  conversationRedo: []
+  conversationRedo: [],
+  activeSegmentationRequest: null
 };
 
 const $ = (id) => document.getElementById(id);
@@ -315,7 +316,7 @@ async function obtenerProveedorSegmentacion() {
     state.segmentationProvider = createConversationSegmentationProvider({
       provider: "external",
       external: {
-        callable: httpsCallable(functionsInstance, "segmentClinicalConversation"),
+        callable: httpsCallable(functionsInstance, "segmentClinicalConversation", { timeout: 55000 }),
         fallbackToLocal: true
       }
     });
@@ -331,29 +332,60 @@ async function segmentarConProveedor() {
     alert("No hay transcripcion para segmentar.");
     return;
   }
-  setText("voiceSegmentationStatus", "Segmentando conversacion...");
+  if (state.activeSegmentationRequest) return state.activeSegmentationRequest;
+  const clientRequestId = crearClientRequestId();
+  const button = $("btnSegmentarConversacionVoz");
+  if (button) button.disabled = true;
+  setText("voiceSegmentationStatus", "Preparando transcripcion...");
   renderDetalleTecnicoSegmentacion(null);
   const provider = await obtenerProveedorSegmentacion();
   const snapshot = snapshotDictado();
   validarAislamientoSesion(snapshot);
-  const result = await provider.segment({
+  const progressLabels = {
+    preparing: "Preparando transcripcion...",
+    cache_hit: "Segmentacion guardada.",
+    pending_reuse: "Ya hay una segmentacion en proceso...",
+    external_block: "Revisando fragmentos ambiguos..."
+  };
+  state.activeSegmentationRequest = provider.segment({
     transcriptId: snapshot.transcriptSessionId || "manual",
     transcriptSessionId: snapshot.transcriptSessionId || "manual",
-    patientId: state.patientId,
-    encounterId: state.encounterId,
+    clientRequestId,
     text: texto,
     correctedTranscript: texto,
-    transcriptSegments: snapshot.transcriptSegments || []
+    transcriptSegments: snapshot.transcriptSegments || [],
+    onProgress(progress = {}) {
+      const base = progressLabels[progress.stage] || "Identificando hablantes...";
+      const suffix = progress.blockCount
+        ? ` Bloques: ${progress.completedBlocks || 0}/${progress.blockCount}.`
+        : "";
+      setText("voiceSegmentationStatus", `${base}${suffix}`);
+      renderDetalleTecnicoSegmentacion(null, {
+        clientRequestId: progress.clientRequestId || clientRequestId,
+        stage: progress.stage || "preparing",
+        blockCount: progress.blockCount || 0,
+        completedBlocks: progress.completedBlocks || 0,
+        pendingBlocks: progress.pendingBlocks || 0
+      });
+    }
   });
-  state.conversationSegments = result.utterances || [];
-  state.conversationWarnings = result.warnings || [];
-  state.segmentationFailure = result.providerFailure || null;
-  renderSegmentosConversacionalesActuales();
-  renderDetalleTecnicoSegmentacion(state.segmentationFailure);
-  if (result.providerFailure) {
-    setText("voiceSegmentationStatus", `Segmentacion avanzada no disponible. Se utilizo segmentacion basica. Proveedor: ${result.provider || "local"} · turnos: ${state.conversationSegments.length}`);
-  } else {
-    setText("voiceSegmentationStatus", `Segmentacion avanzada completada. Proveedor: ${result.provider || "external"} · modo: ${result.segmentationMode || result.mode || "linguistic"} · turnos: ${state.conversationSegments.length}`);
+  try {
+    const result = await state.activeSegmentationRequest;
+    state.conversationSegments = result.utterances || [];
+    state.conversationWarnings = result.warnings || [];
+    state.segmentationFailure = result.providerFailure || null;
+    renderSegmentosConversacionalesActuales();
+    renderDetalleTecnicoSegmentacion(state.segmentationFailure, result.metrics || { clientRequestId });
+    if (result.providerFailure) {
+      setText("voiceSegmentationStatus", `Segmentacion avanzada parcialmente disponible. Proveedor: ${result.provider || "local"} · turnos: ${state.conversationSegments.length}`);
+    } else {
+      const cacheText = result.cacheHit ? " Segmentacion guardada reutilizada." : "";
+      setText("voiceSegmentationStatus", `Segmentacion completada. Proveedor: ${result.provider || "external"} · modo: ${result.segmentationMode || result.mode || "linguistic"} · turnos: ${state.conversationSegments.length}.${cacheText}`);
+    }
+    return result;
+  } finally {
+    state.activeSegmentationRequest = null;
+    if (button) button.disabled = false;
   }
 }
 
@@ -375,20 +407,22 @@ const ACT_LABELS = {
   other: "Otro"
 };
 
-function renderDetalleTecnicoSegmentacion(failure = null) {
+function renderDetalleTecnicoSegmentacion(failure = null, metrics = null) {
   const panel = $("voiceSegmentationTechnicalDetail");
   if (!panel) return;
-  if (!failure) {
+  if (!failure && !metrics) {
     panel.hidden = true;
     panel.open = false;
     return;
   }
-  const details = failure.details || {};
+  const details = failure?.details || {};
   panel.hidden = false;
-  setText("voiceSegmentationTechnicalCode", failure.code || failure.name || "sin_codigo");
-  setText("voiceSegmentationTechnicalStage", failure.stage || details.stage || "no_especificada");
-  setText("voiceSegmentationTechnicalRequestId", failure.requestId || details.requestId || "no_disponible");
-  setText("voiceSegmentationTechnicalRetryable", (failure.retryable || details.retryable) ? "si" : "no");
+  setText("voiceSegmentationTechnicalCode", failure?.code || failure?.name || (metrics?.cacheHit ? "cache_hit" : "ok"));
+  setText("voiceSegmentationTechnicalStage", failure?.stage || details.stage || metrics?.stage || "completada");
+  setText("voiceSegmentationTechnicalRequestId", failure?.requestId || details.requestId || metrics?.clientRequestId || "no_disponible");
+  setText("voiceSegmentationTechnicalRetryable", (failure?.retryable || details.retryable) ? "si" : "no");
+  setText("voiceSegmentationTechnicalDuration", Number.isFinite(Number(metrics?.elapsedMs)) ? `${Math.round(Number(metrics.elapsedMs))} ms` : "-");
+  setText("voiceSegmentationTechnicalBlocks", Number.isFinite(Number(metrics?.blockCount)) ? `${metrics.externalBlockCount || metrics.completedBlocks || 0}/${metrics.blockCount}` : "-");
 }
 
 function etiquetaRolActo(segmento = {}) {
