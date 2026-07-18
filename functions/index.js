@@ -2,6 +2,7 @@ const { onCall, HttpsError } = require("firebase-functions/v2/https");
 const { defineSecret } = require("firebase-functions/params");
 const OpenAI = require("openai");
 const { runSegmentClinicalConversation } = require("./segmentationHandler");
+const { runGenerateStructuredNoteFromDictation } = require("./noteGenerationHandler");
 
 const OPENAI_API_KEY = defineSecret("OPENAI_API_KEY");
 
@@ -173,85 +174,18 @@ exports.segmentClinicalConversation = onCall(
 exports.generateStructuredNoteFromDictation = onCall(
   {
     secrets: [OPENAI_API_KEY],
-    timeoutSeconds: 120,
+    timeoutSeconds: 90,
     memory: "512MiB"
   },
   async (request) => {
-    if (!request.auth) {
-      throw new HttpsError("unauthenticated", "Debes iniciar sesion.");
-    }
-
-    const payload = request.data || {};
-    if (!payload.patientId || typeof payload.patientId !== "string") {
-      throw new HttpsError("invalid-argument", "patientId invalido.");
-    }
-    if (payload.userId && payload.userId !== request.auth.uid) {
-      throw new HttpsError("permission-denied", "La sesion de dictado pertenece a otro usuario.");
-    }
-    const transcript = String(payload.correctedTranscript || payload.confirmedTranscript || "").trim();
-    if (!transcript) {
-      throw new HttpsError("invalid-argument", "No hay transcripcion confirmada para generar la nota.");
-    }
-    if (String(payload.selectedDocumentType || "") === "clase_academica") {
-      return {
-        transcriptSessionId: payload.transcriptSessionId || "",
-        patientId: payload.patientId,
-        encounterId: payload.encounterId || "",
-        documentType: "clase_academica",
-        writingStyle: payload.selectedWritingStyle || "",
-        timeline: [],
-        sections: {},
-        medications: [],
-        substances: [],
-        diagnosisProposals: [],
-        indicationProposals: [],
-        unresolvedFragments: [transcript],
-        contradictions: [],
-        provenance: [{ source: "dictado_por_voz", status: "no_clinical_note_generated" }],
-        validationIssues: [{ id: "clase_academica_no_nota", severity: "info", message: "Clase academica: no se genera nota clinica." }]
-      };
-    }
-
-    const client = new OpenAI({ apiKey: OPENAI_API_KEY.value() });
-    const response = await client.responses.create({
-      model: process.env.OPENAI_NOTE_MODEL || "gpt-5.5",
-      instructions: STRUCTURED_NOTE_PROMPT,
-      input: JSON.stringify({
-        transcriptSessionId: payload.transcriptSessionId,
-        userId: request.auth.uid,
-        patientId: payload.patientId,
-        encounterId: payload.encounterId,
-        confirmedTranscript: payload.confirmedTranscript,
-        correctedTranscript: transcript,
-        transcriptSegments: payload.transcriptSegments || [],
-        speakers: payload.speakers || [],
-        provenance: payload.provenance || {},
-        selectedDocumentType: payload.selectedDocumentType,
-        selectedWritingStyle: payload.selectedWritingStyle,
-        selectedTemplateId: payload.selectedTemplateId || "",
-        selectedPromptVersion: payload.selectedPromptVersion || "",
-        existingNoteFields: payload.existingNoteFields || {},
-        authorizedPatientContext: payload.authorizedPatientContext || {}
-      })
+    return runGenerateStructuredNoteFromDictation({
+      data: request.data || {},
+      auth: request.auth || null,
+      apiKey: OPENAI_API_KEY.value(),
+      env: process.env,
+      OpenAIClass: OpenAI,
+      HttpsErrorClass: HttpsError,
+      logger: console
     });
-
-    const parsed = extraerJson(response.output_text || "");
-    if (!parsed || typeof parsed !== "object") {
-      throw new HttpsError("internal", "El proveedor generativo no devolvio JSON valido.");
-    }
-    if (parsed.patientId && parsed.patientId !== payload.patientId) {
-      throw new HttpsError("internal", "El proveedor devolvio un patientId distinto.");
-    }
-    return {
-      ...parsed,
-      transcriptSessionId: payload.transcriptSessionId || parsed.transcriptSessionId || "",
-      patientId: payload.patientId,
-      encounterId: payload.encounterId || parsed.encounterId || "",
-      documentType: payload.selectedDocumentType || parsed.documentType || "",
-      writingStyle: payload.selectedWritingStyle || parsed.writingStyle || "",
-      promptVersion: STRUCTURED_NOTE_PROMPT_VERSION,
-      schemaVersion: parsed.schemaVersion || "voice_note_soap_v1",
-      validationIssues: Array.isArray(parsed.validationIssues) ? parsed.validationIssues : []
-    };
   }
 );

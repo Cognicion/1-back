@@ -3,11 +3,13 @@ import { iniciarMonitoreoSesion } from "./services/sesion.js";
 import { obtenerUsuario, listarPacientes, medicoPuedeVer } from "./services/usuarios.js";
 import { usuarioEsPersonalClinico } from "./utils/roles.js";
 import { obtenerNombrePacienteParaMostrar } from "./utils/nombresPacientes.js";
-import { createNoteGenerationProvider } from "./services/noteGenerationProviders.js";
+import { createNoteGenerationProvider } from "./services/noteGenerationProviders.js?v=20260718-note-generation";
 import { createConversationSegmentationProvider, crearClientRequestId } from "./services/conversationSegmentationProviders.js?v=20260718-seg-timeout";
 import { segmentarConversacionClinica } from "./services/clinicalPipeline.js";
 import {
   VOICE_NOTE_FIELD_REGISTRY,
+  VOICE_NOTE_PROMPT_VERSION,
+  VOICE_NOTE_SCHEMA_VERSION,
   calcularDecadaDeVida,
   crearTransferSections,
   generarNotaVoz,
@@ -16,7 +18,7 @@ import {
   guardarTranscripcionVozFirestore,
   leerNotaExistente,
   transferirNotaVozABorrador
-} from "./services/voiceNoteGenerationService.js";
+} from "./services/voiceNoteGenerationService.js?v=20260718-note-generation";
 import { buscarBorradorNotaClinica } from "./services/notas.js?v=20260716-2";
 import {
   VOICE_NOTE_CATALOG_VERSION,
@@ -54,9 +56,11 @@ const state = {
   transferredNoteId: "",
   conversationSegments: [],
   conversationWarnings: [],
+  conversationSegmentationMode: "rule_based",
   conversationUndo: [],
   conversationRedo: [],
-  activeSegmentationRequest: null
+  activeSegmentationRequest: null,
+  activeGenerationRequest: null
 };
 
 const $ = (id) => document.getElementById(id);
@@ -188,7 +192,7 @@ function actualizarLinks() {
   const qsNota = construirQueryContexto(state.noteId ? { notaId: state.noteId } : {});
   $("linkPacienteVoz")?.setAttribute("href", state.patientId ? `paciente.html${qsPaciente}` : "paciente.html");
   $("linkNotaTradicional")?.setAttribute("href", qsNota ? `nota.html?${qsNota}` : "nota.html");
-  const versionedVoiceUrl = qsBase ? `nota-por-voz.html?v=20260718-seg-timeout&${qsBase}` : "nota-por-voz.html?v=20260718-seg-timeout";
+  const versionedVoiceUrl = qsBase ? `nota-por-voz.html?v=20260718-note-generation&${qsBase}` : "nota-por-voz.html?v=20260718-note-generation";
   $("linkNotaVoz")?.setAttribute("href", versionedVoiceUrl);
 }
 
@@ -307,6 +311,7 @@ function renderSegmentosConversacionales(texto = "") {
   const segmentos = segmentarConversacionClinica(texto);
   state.conversationSegments = Array.from(segmentos);
   state.conversationWarnings = segmentos.warnings || [];
+  state.conversationSegmentationMode = "rule_based";
   renderSegmentosConversacionalesActuales();
 }
 
@@ -374,6 +379,7 @@ async function segmentarConProveedor() {
     const result = await state.activeSegmentationRequest;
     state.conversationSegments = result.utterances || [];
     state.conversationWarnings = result.warnings || [];
+    state.conversationSegmentationMode = result.segmentationMode || result.mode || result.provider || "hybrid";
     state.segmentationFailure = result.providerFailure || null;
     renderSegmentosConversacionalesActuales();
     renderDetalleTecnicoSegmentacion(state.segmentationFailure, result.metrics || { clientRequestId });
@@ -635,15 +641,18 @@ async function obtenerProveedor() {
     provider: "external",
     external: {
       callable: httpsCallable(functionsInstance, "generateStructuredNoteFromDictation"),
-      fallbackToLocal: true
+      fallbackToLocal: false
     }
   });
   const capability = state.provider.capability();
   setText("voiceProviderStatus", `Proveedor: ${capability.isExternalAI ? "externo" : "local"} · fallback disponible`);
+  setText("voicePromptVersion", `Prompt: listo · ${VOICE_NOTE_PROMPT_VERSION}`);
+  setText("voiceSchemaStatus", `Esquema: listo · ${VOICE_NOTE_SCHEMA_VERSION}`);
   return state.provider;
 }
 
 async function generarNota() {
+  if (state.activeGenerationRequest) return state.activeGenerationRequest;
   if (!state.patientId) {
     alert("Selecciona un paciente.");
     return;
@@ -659,7 +668,9 @@ async function generarNota() {
   const writingStyle = $("voiceWritingStyle")?.value || getDefaultVoiceStyle(documentType);
   const tipo = getVoiceNoteType(documentType);
   const estilo = getVoiceNoteStyle(writingStyle);
+  const clientRequestId = crearClientRequestId("note");
   const options = {
+    clientRequestId,
     patientId: state.patientId,
     encounterId,
     noteId: $("voiceNoteId")?.value || state.noteId,
@@ -669,23 +680,44 @@ async function generarNota() {
     promptVersion: estilo?.promptVersion || "",
     service: $("voiceServicio")?.value || "",
     conversationSegments: state.conversationSegments || [],
+    segmentationMode: state.conversationSegmentationMode || "hybrid",
     segmentationWarnings: state.conversationWarnings || [],
     existingNoteFields: await obtenerCamposDestinoExistentes()
   };
-  setText("voiceGenerationProgress", "Generando propuesta estructurada. No se modifica la nota tradicional.");
-  const generated = await generarNotaVoz({
+  const button = $("btnGenerarNotaVoz");
+  if (button) button.disabled = true;
+  const startedAt = Date.now();
+  setText("voiceProviderStatus", "Proveedor: externo · redactando");
+  setText("voicePromptVersion", `Prompt: listo · ${VOICE_NOTE_PROMPT_VERSION}`);
+  setText("voiceSchemaStatus", `Esquema: listo · ${VOICE_NOTE_SCHEMA_VERSION}`);
+  setText("voiceGenerationProgress", `Redactando Evolucion... Solicitud ${clientRequestId}. No se modifica la nota tradicional.`);
+  state.activeGenerationRequest = generarNotaVoz({
     provider,
     snapshot,
     patientContext: crearPatientContext(),
     options,
     userId: state.user.uid
   });
+  let generated;
+  try {
+    generated = await state.activeGenerationRequest;
+  } catch (error) {
+    const details = error?.details || {};
+    const code = error?.code || details.code || "sin_codigo";
+    setText("voiceProviderStatus", `Proveedor: externo · error: ${code}`);
+    setText("voiceSchemaStatus", `Esquema: no validado · ${VOICE_NOTE_SCHEMA_VERSION}`);
+    setText("voiceGenerationProgress", `Segmentacion conservada. No fue posible generar Evolucion externa. RequestId: ${details.requestId || clientRequestId}. Etapa: ${details.stage || "no_especificada"}. Puedes reintentar generacion.`);
+    return;
+  } finally {
+    state.activeGenerationRequest = null;
+    if (button) button.disabled = false;
+  }
   state.generated = generated;
   state.transferSections = generated.transferSections || crearTransferSections(generated, snapshot.correctedTranscript, crearPatientContext());
   const externalFailure = generated.metadata?.externalProviderFailure;
   setText("voiceProviderStatus", `Proveedor: ${generated.provider || "desconocido"} · estado: ${generated.providerStatus || generated.metadata?.generatedStatus || "en revision"}${externalFailure ? ` · causa fallback: ${externalFailure.code || externalFailure.name || "sin codigo"}` : ""}`);
   setText("voicePromptVersion", `Prompt: ${generated.promptVersion || generated.metadata?.promptVersion || "fallback local"}`);
-  setText("voiceSchemaStatus", `Esquema validado: ${state.transferSections.length ? "si" : "pendiente"}`);
+  setText("voiceSchemaStatus", `Esquema validado: ${state.transferSections.length ? generated.schemaVersion || VOICE_NOTE_SCHEMA_VERSION : "pendiente"}`);
   await guardarSesionVozFirestore({
     userId: state.user.uid,
     patientId: state.patientId,
@@ -704,7 +736,7 @@ async function generarNota() {
   });
   await guardarTranscripcionVozFirestore({ userId: state.user.uid, sessionId: snapshot.transcriptSessionId || "manual", transcript: snapshot });
   await guardarDraftGeneradoVozFirestore({ userId: state.user.uid, patientId: state.patientId, sessionId: snapshot.transcriptSessionId || "manual", generated });
-  setText("voiceGenerationProgress", generated.metadata?.processingDisclosure || "Propuesta generada. Revise cada apartado antes de transferir.");
+  setText("voiceGenerationProgress", generated.metadata?.processingDisclosure || `Evolucion generada en ${Math.round((Date.now() - startedAt) / 1000)} s. Revise el apartado antes de transferir.`);
   renderRevision();
   mostrarPaso("revisar");
 }

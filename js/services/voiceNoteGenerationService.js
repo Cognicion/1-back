@@ -10,7 +10,8 @@ import {
   serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-export const VOICE_NOTE_SCHEMA_VERSION = "voice_note_soap_v1";
+export const VOICE_NOTE_PROMPT_VERSION = "psychiatric_voice_note_es_mx_v1";
+export const VOICE_NOTE_SCHEMA_VERSION = "voice_note_evolution_v1";
 
 export const VOICE_NOTE_FIELD_REGISTRY = Object.freeze({
   evolutionOrSubjective: {
@@ -274,17 +275,57 @@ export function agruparAdvertenciasVoz(issues = []) {
 
 export function construirPayloadGeneracionVoz({ snapshot = {}, patientContext = {}, options = {}, userId = "" } = {}) {
   const correctedTranscript = texto(snapshot.correctedTranscript || snapshot.confirmedTranscript || snapshot.text || "");
+  const utterances = Array.isArray(options.conversationSegments) ? options.conversationSegments : [];
+  const patientId = options.patientId || snapshot.patientId || patientContext.id || "";
+  const encounterId = options.encounterId || snapshot.encounterId || "";
+  const clientRequestId = options.clientRequestId || `note-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+  const authorizedPatientContext = {
+    source: "expediente",
+    id: patientContext.id || patientId || "",
+    patientId,
+    encounterId,
+    name: patientContext.nombreCompleto || patientContext.name || "",
+    nombreCompleto: patientContext.nombreCompleto || patientContext.name || "",
+    age: Number.isInteger(patientContext.edad) ? patientContext.edad : null,
+    edad: Number.isInteger(patientContext.edad) ? patientContext.edad : null,
+    sex: patientContext.sexo || patientContext.sex || "",
+    sexo: patientContext.sexo || patientContext.sex || "",
+    fechaNacimiento: patientContext.fechaNacimiento || "",
+    service: options.service || patientContext.servicio || patientContext.service || "",
+    servicio: options.service || patientContext.servicio || patientContext.service || "",
+    hospitalizationDay: Number.isInteger(patientContext.diaEstancia) ? patientContext.diaEstancia : null,
+    diaEstancia: Number.isInteger(patientContext.diaEstancia) ? patientContext.diaEstancia : null,
+    admissionCriterion: patientContext.criterio || patientContext.admissionCriterion || "",
+    criterio: patientContext.criterio || patientContext.admissionCriterion || "",
+    diagnosticosActivos: patientContext.diagnosticosActivos || [],
+    medicamentosActivos: patientContext.medicamentosActivos || [],
+    alergias: patientContext.alergias || []
+  };
   return {
+    clientRequestId,
+    patientContext: authorizedPatientContext,
+    noteConfiguration: {
+      noteType: options.documentType || "evolucion_observacion",
+      styleId: options.writingStyle || "evolucion_narrativa_institucional",
+      templateId: options.templateId || "",
+      promptVersion: VOICE_NOTE_PROMPT_VERSION
+    },
+    transcript: {
+      transcriptId: snapshot.transcriptSessionId || snapshot.sessionId || "",
+      originalTextHash: options.originalTextHash || "",
+      segmentationMode: options.segmentationMode || "hybrid",
+      utterances
+    },
     transcriptSessionId: snapshot.transcriptSessionId || snapshot.sessionId || "",
     userId: userId || snapshot.userId || "",
-    patientId: options.patientId || snapshot.patientId || patientContext.id || "",
-    encounterId: options.encounterId || snapshot.encounterId || "",
+    patientId,
+    encounterId,
     noteId: options.noteId || "",
     confirmedTranscript: texto(snapshot.confirmedTranscript || correctedTranscript),
     pendingTranscript: texto(snapshot.pendingTranscript || snapshot.pendingText || ""),
     correctedTranscript,
     transcriptSegments: snapshot.transcriptSegments || snapshot.confirmedSegments || [],
-    conversationSegments: Array.isArray(options.conversationSegments) ? options.conversationSegments : [],
+    conversationSegments: utterances,
     segmentationWarnings: Array.isArray(options.segmentationWarnings) ? options.segmentationWarnings : [],
     speakers: snapshot.speakers || [],
     provenance: snapshot.provenance || { source: "dictado_por_voz" },
@@ -293,18 +334,7 @@ export function construirPayloadGeneracionVoz({ snapshot = {}, patientContext = 
     selectedTemplateId: options.templateId || "",
     selectedPromptVersion: options.promptVersion || "",
     existingNoteFields: options.existingNoteFields || {},
-    authorizedPatientContext: {
-      source: "expediente",
-      id: patientContext.id || options.patientId || "",
-      nombreCompleto: patientContext.nombreCompleto || "",
-      edad: Number.isInteger(patientContext.edad) ? patientContext.edad : null,
-      sexo: patientContext.sexo || "",
-      fechaNacimiento: patientContext.fechaNacimiento || "",
-      servicio: options.service || patientContext.servicio || "",
-      diagnosticosActivos: patientContext.diagnosticosActivos || [],
-      medicamentosActivos: patientContext.medicamentosActivos || [],
-      alergias: patientContext.alergias || []
-    }
+    authorizedPatientContext
   };
 }
 

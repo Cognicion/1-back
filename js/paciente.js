@@ -5704,7 +5704,7 @@ window.abrirNotaPorVozPaciente = function() {
     returnUrl: `paciente.html?id=${encodeURIComponent(uidPaciente)}`
   });
   if (noteId) qs.set("noteId", noteId);
-  qs.set("v", "20260718-seg-timeout");
+  qs.set("v", "20260718-note-generation");
   window.location.href = `nota-por-voz.html?${qs.toString()}`;
 };
 

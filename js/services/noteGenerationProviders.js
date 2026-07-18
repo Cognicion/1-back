@@ -15,6 +15,16 @@ export class NoteGenerationProvider {
 }
 
 function normalizarPayloadEntrada(transcript, patient = {}, options = {}) {
+  if (transcript && typeof transcript === "object" && !Array.isArray(transcript) && transcript.patientContext && transcript.noteConfiguration && transcript.transcript) {
+    return {
+      ...transcript,
+      authorizedPatientContext: transcript.authorizedPatientContext || transcript.patientContext || patient || {},
+      selectedDocumentType: transcript.selectedDocumentType || transcript.noteConfiguration?.noteType || options.tipoNota || options.selectedDocumentType || "evolucion_observacion",
+      selectedWritingStyle: transcript.selectedWritingStyle || transcript.noteConfiguration?.styleId || options.selectedWritingStyle || options.formato || "evolucion_narrativa_institucional",
+      correctedTranscript: transcript.correctedTranscript || (transcript.transcript?.utterances || []).map((utterance) => utterance.text || "").join("\n"),
+      confirmedTranscript: transcript.confirmedTranscript || (transcript.transcript?.utterances || []).map((utterance) => utterance.text || "").join("\n")
+    };
+  }
   if (transcript && typeof transcript === "object" && !Array.isArray(transcript) && ("confirmedTranscript" in transcript || "correctedTranscript" in transcript)) {
     return {
       ...transcript,
@@ -43,6 +53,23 @@ function normalizarPayloadEntrada(transcript, patient = {}, options = {}) {
 
 function seccionesExternasAGeneratedSections(data = {}) {
   if (Array.isArray(data.generatedSections)) return data.generatedSections;
+  if (data.sections?.evolution) {
+    const evolution = data.sections.evolution;
+    const content = String(evolution.text || "").trim();
+    return content ? [{
+      id: "external-evolution",
+      section: "soap_subjective",
+      fieldTarget: "evolutionOrSubjective",
+      title: "Evolucion/Subjetivo",
+      content,
+      sourceStatementIds: evolution.sourceUtteranceIds || [],
+      sourceUtteranceIds: evolution.sourceUtteranceIds || [],
+      accepted: false,
+      reviewStatus: "pendiente_revision",
+      version: 1,
+      insertable: true
+    }] : [];
+  }
   if (data.evolutionOrSubjective || data.subjective || data.objective || data.analysis || data.plan) {
     const soap = data;
     return [
@@ -94,23 +121,46 @@ function seccionesExternasAGeneratedSections(data = {}) {
 function normalizarSalidaExterna(data = {}, payload = {}) {
   const generatedSections = seccionesExternasAGeneratedSections(data);
   if (!generatedSections.length) throw new Error("El proveedor no devolvio secciones validas.");
+  const evolution = data.sections?.evolution;
   return {
     ...data,
-    provider: "external_structured_backend",
+    provider: data.provider || "external",
     providerStatus: "disponible",
+    promptVersion: data.promptVersion || payload.noteConfiguration?.promptVersion || "",
+    schemaVersion: data.schemaVersion || "voice_note_evolution_v1",
     generatedSections,
     outputs: data.outputs || {
       nota_medica_estructurada: generatedSections.map((section) => `${section.title.toUpperCase()}\n${section.content}`).join("\n\n"),
       redaccion_clinica_conservadora: generatedSections.map((section) => section.content).join("\n\n"),
       literal_corregida: payload.correctedTranscript || payload.confirmedTranscript || ""
     },
-    generatedClinicalText: data.evolutionOrSubjective || data.subjective || data.objective || data.analysis || data.plan ? {
+    generatedClinicalText: evolution ? {
+      evolutionOrSubjective: {
+        text: evolution.text || "",
+        sourceSegmentIds: evolution.sourceUtteranceIds || [],
+        sourceUtteranceIds: evolution.sourceUtteranceIds || [],
+        warnings: evolution.warnings || [],
+        requiresReview: evolution.requiresReview !== false,
+        confidence: evolution.confidence ?? null
+      },
+      subjective: {
+        text: evolution.text || "",
+        sourceSegmentIds: evolution.sourceUtteranceIds || [],
+        sourceUtteranceIds: evolution.sourceUtteranceIds || [],
+        warnings: evolution.warnings || [],
+        requiresReview: evolution.requiresReview !== false,
+        confidence: evolution.confidence ?? null
+      },
+      objective: {},
+      analysis: {},
+      plan: {}
+    } : (data.evolutionOrSubjective || data.subjective || data.objective || data.analysis || data.plan ? {
       evolutionOrSubjective: data.evolutionOrSubjective || data.subjective || {},
       subjective: data.subjective || data.evolutionOrSubjective || {},
       objective: data.objective || {},
       analysis: data.analysis || {},
       plan: data.plan || {}
-    } : data.generatedClinicalText,
+    } : data.generatedClinicalText),
     clinicalStatements: data.clinicalStatements || [],
     medicationStatements: data.medications || data.medicationStatements || [],
     substanceUseStatements: data.substances || data.substanceUseStatements || [],
@@ -118,7 +168,7 @@ function normalizarSalidaExterna(data = {}, payload = {}) {
     diagnosisStatements: data.diagnosisProposals || data.diagnosisStatements || [],
     planItems: data.planItems || [],
     medicalOrderProposals: data.indicationProposals || data.medicalOrderProposals || [],
-    validationIssues: data.validationIssues || [],
+    validationIssues: data.validationIssues || data.globalWarnings || evolution?.warnings || [],
     insertionAllowed: false,
     reviewStatus: "pendiente"
   };
