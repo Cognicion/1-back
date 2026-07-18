@@ -20,7 +20,7 @@ function normalizarPayloadEntrada(transcript, patient = {}, options = {}) {
       ...transcript,
       authorizedPatientContext: transcript.authorizedPatientContext || patient || {},
       selectedDocumentType: transcript.selectedDocumentType || options.tipoNota || options.selectedDocumentType || "evolucion_observacion",
-      selectedWritingStyle: transcript.selectedWritingStyle || options.selectedWritingStyle || options.formato || "formato_fray_narrativo"
+      selectedWritingStyle: transcript.selectedWritingStyle || options.selectedWritingStyle || options.formato || "evolucion_narrativa_institucional"
     };
   }
   return {
@@ -35,7 +35,7 @@ function normalizarPayloadEntrada(transcript, patient = {}, options = {}) {
     speakers: [],
     provenance: { source: "dictado_por_voz", status: "legacy_text_input" },
     selectedDocumentType: options.tipoNota || options.selectedDocumentType || "evolucion_observacion",
-    selectedWritingStyle: options.selectedWritingStyle || options.formato || "formato_fray_narrativo",
+    selectedWritingStyle: options.selectedWritingStyle || options.formato || "evolucion_narrativa_institucional",
     existingNoteFields: options.existingNoteFields || {},
     authorizedPatientContext: patient || {}
   };

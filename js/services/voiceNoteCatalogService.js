@@ -1,3 +1,8 @@
+import {
+  EVOLUTION_NARRATIVE_INSTITUTIONAL_TEMPLATE,
+  EVOLUTION_NARRATIVE_INSTITUTIONAL_VERSION
+} from "./voiceNoteStyleTemplates.js";
+
 export const VOICE_NOTE_CATALOG_VERSION = "voice_note_catalog_v1_2026-07-18";
 export const VOICE_NOTE_STYLE_CATALOG_VERSION = "voice_note_style_catalog_v1_2026-07-18";
 
@@ -182,6 +187,15 @@ export const VOICE_NOTE_TYPE_CATALOG = Object.freeze([
 
 export const VOICE_NOTE_STYLE_CATALOG = Object.freeze([
   {
+    id: "evolucion_narrativa_institucional",
+    label: "Evolución narrativa institucional",
+    description: "Evolución Fray selectiva, narrativa, intrahospitalaria, sin interrogatorio reconstruido ni examen mental completo.",
+    promptVersion: EVOLUTION_NARRATIVE_INSTITUTIONAL_TEMPLATE.promptVersion,
+    templateVersion: EVOLUTION_NARRATIVE_INSTITUTIONAL_VERSION,
+    compatibleTypes: ["evolucion_observacion", "evolucion_ucep", "observacion"],
+    rules: EVOLUTION_NARRATIVE_INSTITUTIONAL_TEMPLATE.styleRules
+  },
+  {
     id: "institucional_psiquiatrico_detallado",
     label: "Institucional psiquiátrico detallado",
     legacyIds: ["formato_fray_narrativo"],
@@ -288,6 +302,9 @@ export function getCompatibleVoiceStyles(typeId = "") {
 
 export function getDefaultVoiceStyle(typeId = "") {
   const compatible = getCompatibleVoiceStyles(typeId);
+  if (/evolucion/i.test(typeId) && compatible.some((style) => style.id === "evolucion_narrativa_institucional")) {
+    return "evolucion_narrativa_institucional";
+  }
   return compatible.some((style) => style.id === "institucional_psiquiatrico_detallado")
     ? "institucional_psiquiatrico_detallado"
     : compatible[0]?.id || "institucional_psiquiatrico_detallado";

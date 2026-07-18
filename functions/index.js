@@ -62,7 +62,7 @@ Tu objetivo es potenciar el razonamiento del profesional de la salud, no reempla
   }
 );
 
-const STRUCTURED_NOTE_PROMPT_VERSION = "voice_note_fray_aldo_v1_2026-07-18";
+const STRUCTURED_NOTE_PROMPT_VERSION = "voice_note_fray_aldo_evolucion_v2_2026-07-18";
 const CONVERSATION_SEGMENTATION_PROMPT_VERSION = "conversation_segmentation_es_mx_v1_2026-07-18";
 const CONVERSATION_SEGMENTATION_PROMPT = `
 Version del prompt: conversation_segmentation_es_mx_v1_2026-07-18.
@@ -126,7 +126,7 @@ Devuelve JSON estricto:
 }
 `;
 const STRUCTURED_NOTE_PROMPT = `
-Version del prompt: voice_note_fray_aldo_v1_2026-07-18.
+Version del prompt: voice_note_fray_aldo_evolucion_v2_2026-07-18.
 Eres un asistente especializado en documentacion psiquiatrica institucional.
 
 Recibiras la transcripcion de una conversacion entre profesional, paciente y posiblemente familiares, sin etiquetas fiables. Distingue preguntas, respuestas, observaciones, recapitulaciones y plan. Las preguntas del profesional no constituyen hallazgos clinicos ni deben atribuirse al paciente.
@@ -137,7 +137,19 @@ Genera una propuesta para una nota psiquiatrica de alta calidad en estilo Format
 3. Comentario y analisis.
 4. Plan.
 
-La Evolucion debe ser cronologica, narrativa, detallada, sin repeticiones y en tercera persona. Para evolucion intrahospitalaria puede iniciar con: "[Nombre], masculino/femenino de [edad] anos, quien cursa su [numero] dia de estancia intrahospitalaria en el servicio [servicio] bajo el criterio de [criterio]...". Para ingreso adapta a padecimiento actual cronologico.
+ESTILO OBLIGATORIO PARA EVOLUCION NARRATIVA INSTITUCIONAL:
+La Evolucion no debe redactarse como resumen exhaustivo por dominios, interrogatorio reconstruido ni acumulacion de respuestas. Debe imitar el estilo narrativo institucional de Observacion/UCEP.
+
+Para evolucion intrahospitalaria, redacta entre tres y cinco parrafos fluidos:
+1. Inicio con nombre, sexo, edad, dia de estancia, servicio y criterio clinico solo si estan disponibles en expediente o transcripcion. Si no hay criterio documentado, usa "bajo seguimiento por [problema clinico documentado]". Si no hay turno, usa "Durante la valoracion..." o "Durante el periodo evaluado...".
+2. Describe brevemente donde y como fue abordado el paciente, posicion si fue dictada, aceptacion de entrevista, cooperacion, actitud y conducta general durante el turno. Esto debe ocupar solo una o dos oraciones.
+3. Integra solo cambios y sintomas clinicamente relevantes: evolucion intrahospitalaria, sintomas principales, riesgo, respuesta al tratamiento, funcionamiento, red de apoyo, conciencia de enfermedad y proyeccion a futuro cuando existan.
+4. Diferencia antecedentes de situacion actual. Conserva negaciones, incertidumbre, temporalidad y procedencia. Incluye solo citas breves de valor clinico con "sic. Pac." o "sic. Fam.".
+5. Cierra con sueño, alimentacion, diuresis, evacuaciones, sintomas fisicos, efectos adversos y eventualidades medicas, si fueron documentados. Puede cerrar con "Sin otras eventualidades medicas reportadas durante el turno" solo si corresponde.
+
+No incluyas en Evolucion: preguntas copiadas, dialogos, "sabe aproximadamente que fecha es", "quiero preguntarle", "voy a resumir", instrucciones del profesional, ordenes del plan, analisis diagnostico extenso, examen mental completo, atencion/memoria/lenguaje/curso formal/afecto completo/juicio/introspeccion/funciones cognitivas/inteligencia, etiquetas tecnicas, advertencias automaticas, fragmentos truncados, parentesis rotos ni frases inconclusas.
+
+Para ingreso adapta a padecimiento actual cronologico, pero para documentType de evolucion usa siempre la evolucion narrativa institucional selectiva.
 
 El examen mental debe ser narrativo y seguir este orden cuando los datos existan: sexo y edad aparente, talla, complexion, integridad y conformacion, vestimenta, higiene y alino, lugar, posicion, aceptacion de entrevista, expresion facial, marcha, psicomotricidad, conciencia, orientacion, actitud, atencion, contacto visual, habla, semantica, prosodia y sintaxis, discurso, espontaneidad, latencia, curso del pensamiento, velocidad, contenido, ideas delirantes, ideas de muerte, ideacion suicida, plan e intencion, heteroagresividad, sensopercepcion, animo, afecto, juicio, funciones cognitivas, inteligencia, advertencia de padecimiento, introspeccion, control de impulsos y proyeccion a futuro.
 
@@ -327,6 +339,8 @@ exports.generateStructuredNoteFromDictation = onCall(
         provenance: payload.provenance || {},
         selectedDocumentType: payload.selectedDocumentType,
         selectedWritingStyle: payload.selectedWritingStyle,
+        selectedTemplateId: payload.selectedTemplateId || "",
+        selectedPromptVersion: payload.selectedPromptVersion || "",
         existingNoteFields: payload.existingNoteFields || {},
         authorizedPatientContext: payload.authorizedPatientContext || {}
       })

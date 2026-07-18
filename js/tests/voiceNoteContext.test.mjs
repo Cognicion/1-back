@@ -21,7 +21,7 @@ assert.ok(estilos.length >= 6, "El selector de estilo debe tener catalogo local 
 assert.equal(getDefaultVoiceNoteType("Observación"), "evolucion_observacion");
 assert.equal(getDefaultVoiceNoteType("UCEP"), "evolucion_ucep");
 assert.equal(getDefaultVoiceNoteType("Urgencias"), "urgencias");
-assert.equal(getDefaultVoiceStyle("evolucion_observacion"), "institucional_psiquiatrico_detallado");
+assert.equal(getDefaultVoiceStyle("evolucion_observacion"), "evolucion_narrativa_institucional");
 assert.ok(getVoiceNoteType("ingreso_observacion")?.destinationFields.includes("mentalStatusExam"));
 assert.ok(getVoiceNoteTypesForService("Observación").some((item) => item.id === "evolucion_observacion"));
 assert.ok(getCompatibleVoiceStyles("referencia_navarro").some((item) => item.id === "urgencias_referencia_breve"));

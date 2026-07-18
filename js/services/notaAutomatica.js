@@ -8,6 +8,7 @@ import {
   validarTextoClinico
 } from "./clinicalValidationService.js";
 import { ejecutarPipelineClinico } from "./clinicalPipeline.js";
+import { isEvolutionDocumentType, isEvolutionNarrativeStyle } from "./voiceNoteStyleTemplates.js";
 
 const CIE10_BASE = {
   "F32.1": "Episodio depresivo moderado",
@@ -258,7 +259,7 @@ function normalizarIdentificacionPaciente(datosPaciente = {}, identificacionDict
     identificacionDictado.fechaNacimiento
   );
   const edadCalculada = calcularEdad(fechaNacimiento);
-  const edad = edadCalculada ?? (identificacionDictado.edad || null);
+  const edad = edadCalculada ?? (datosPaciente.edad || institucional.edad || identificacionDictado.edad || null);
   const nombreCompleto = primerValor(datosPaciente.nombreCompleto, datosPaciente.nombre, institucional.nombrePaciente, identificacionDictado.nombreCompleto);
   const sexo = primerValor(datosPaciente.sexo, institucional.sexo, historia.sexo, identificacionDictado.sexo);
   const escolaridad = primerValor(datosPaciente.escolaridad, historia.escolaridad, institucional.escolaridad, identificacionDictado.escolaridad);
@@ -776,6 +777,153 @@ function describirPaciente(datosPaciente = {}) {
   return { genero, decada };
 }
 
+function sexoNarrativo(datosPaciente = {}) {
+  const sexo = normalizar(datosPaciente.sexo || "");
+  if (/fem|mujer/.test(sexo)) return "mujer";
+  if (/masc|hombre/.test(sexo)) return "hombre";
+  return "";
+}
+
+function estanciaPaciente(datosPaciente = {}) {
+  return primerValor(
+    datosPaciente.diaEstancia,
+    datosPaciente.diasEstancia,
+    datosPaciente.diaEstanciaIntrahospitalaria,
+    datosPaciente.estanciaDia,
+    datosPaciente.datosInstitucionales?.diaEstancia,
+    datosPaciente.datosInstitucionales?.diasEstancia
+  );
+}
+
+function servicioPaciente(datosPaciente = {}, options = {}) {
+  return primerValor(
+    options.servicio,
+    options.service,
+    datosPaciente.servicio,
+    datosPaciente.servicioActual,
+    datosPaciente.servicioInstitucional,
+    datosPaciente.datosInstitucionales?.servicio,
+    datosPaciente.datosInstitucionales?.servicioActual,
+    datosPaciente.datosInstitucionales?.servicioInstitucional
+  );
+}
+
+function criterioPaciente(datosPaciente = {}) {
+  return primerValor(
+    datosPaciente.criterio,
+    datosPaciente.criterioIngreso,
+    datosPaciente.criterioClinico,
+    datosPaciente.motivoIngreso,
+    datosPaciente.datosInstitucionales?.criterio,
+    datosPaciente.datosInstitucionales?.criterioIngreso,
+    datosPaciente.datosInstitucionales?.criterioClinico
+  );
+}
+
+function redactarInicioEvolucion(datosPaciente = {}, statements = [], options = {}) {
+  const partesIdentidad = [];
+  if (datosPaciente.nombreCompleto) partesIdentidad.push(datosPaciente.nombreCompleto);
+  const sexo = sexoNarrativo(datosPaciente);
+  const edad = Number(datosPaciente.edad);
+  const sexoEdad = [sexo, Number.isInteger(edad) ? `de ${edad} años` : ""].filter(Boolean).join(" ");
+  if (sexoEdad) partesIdentidad.push(sexoEdad);
+
+  const dia = estanciaPaciente(datosPaciente);
+  const servicio = servicioPaciente(datosPaciente, options);
+  const criterio = criterioPaciente(datosPaciente);
+  const problemaDocumentado = statements.find((s) =>
+    ["evaluacion_riesgo", "padecimiento_actual", "consumo_sustancias"].includes(s.proposedSection)
+    && s.assertionStatus !== "negado"
+  )?.normalizedText || "";
+  const seguimiento = criterio
+    ? `bajo el criterio de ${criterio}`
+    : problemaDocumentado
+      ? `bajo seguimiento por ${problemaDocumentado.replace(/[. ]+$/, "")}`
+      : "";
+
+  if (partesIdentidad.length || dia || servicio || seguimiento) {
+    const base = partesIdentidad.length ? partesIdentidad.join(", ") : "Paciente";
+    const estancia = dia ? `quien cursa su ${dia} día de estancia intrahospitalaria` : "quien continúa en seguimiento intrahospitalario";
+    const servicioTexto = servicio ? ` en el servicio especial de ${String(servicio).toUpperCase()}` : "";
+    return `${base}, ${estancia}${servicioTexto}${seguimiento ? ` ${seguimiento}` : ""}.`;
+  }
+  return "Durante la valoración se documenta evolución clínica intrahospitalaria con información sustentada en el dictado.";
+}
+
+function textoUnicoDeStatements(statements = []) {
+  return statements
+    .map((s) => String(s.normalizedText || s.originalText || "").trim().replace(/[. ]+$/, "."))
+    .filter(Boolean)
+    .filter((texto, index, arr) => arr.findIndex((item) => normalizar(item) === normalizar(texto)) === index)
+    .join(" ");
+}
+
+function textoUnicoDeSegmentos(segments = [], regex) {
+  return segments
+    .map((segment) => String(segment.normalizedText || segment.originalText || "").trim())
+    .filter((texto) => regex.test(texto))
+    .map((texto) => texto.replace(/[. ]+$/, "."))
+    .filter((texto, index, arr) => arr.findIndex((item) => normalizar(item) === normalizar(texto)) === index)
+    .join(" ");
+}
+
+function statementsParaEvolucion(statements = [], predicate = () => true) {
+  return statements
+    .filter(predicate)
+    .filter((s) => !s.uncertaintyReasons?.length)
+    .filter((s) => s.proposedSection !== "plan")
+    .filter((s) => !/\b(?:cursa \d+|dia de estancia|d[ií]a de estancia|servicio observacion|servicio observaci[oó]n|seguimiento por)\b/i.test(s.originalText || ""))
+    .filter((s) => !/\b(?:solicitar|continuar|indicar|se mantendra|signos vitales por turno|trabajo social|reevaluar)\b/i.test(s.originalText || ""))
+    .filter((s) => !/\b(?:atencion|memoria|lenguaje|curso del pensamiento|afecto|juicio|introspeccion|funciones cognitivas|inteligencia)\b/i.test(s.originalText || ""));
+}
+
+function construirEvolucionNarrativaInstitucional(pipeline = {}, datosPaciente = {}, options = {}) {
+  const statements = pipeline.statements || [];
+  const documentType = options.selectedDocumentType || options.tipoNota || "";
+  const writingStyle = options.selectedWritingStyle || options.formato || "";
+  if (!isEvolutionDocumentType(documentType) || !isEvolutionNarrativeStyle(writingStyle)) return "";
+
+  const inicio = redactarInicioEvolucion(datosPaciente, statements, options);
+  const conducta = textoUnicoDeStatements(statementsParaEvolucion(statements, (s) =>
+    /\b(?:abordad|valorad|cama|consultorio|sedente|decubito|acepta|cooperador|cooperadora|irritable|aislad|agitado|heteroagresiv|autolesiv|conducta)\b/i.test(s.originalText || "")
+  ));
+  const sintomas = textoUnicoDeStatements(statementsParaEvolucion(statements, (s) =>
+    ["padecimiento_actual", "consumo_sustancias", "medicamentos", "adherencia", "examen_mental"].includes(s.proposedSection)
+      && !/\b(?:antecedente|previamente|hist[oó]rico)\b/i.test(s.originalText || "")
+      && !/\b(?:abordad|valorad|cama|consultorio|sedente|decubito|acepta|cooperador|cooperadora)\b/i.test(s.originalText || "")
+      && !/\b(?:sue[ñn]o|duerme|dormi|apetito|alimentaci[oó]n|ingesta|diuresis|evacuaci[oó]n|urinari|dolor|nausea|mareo|efectos? adversos?|eventualidades medicas|eventualidad medica)\b/i.test(s.originalText || "")
+      && !/\b(?:niega actualmente ideaci[oó]n suicida|niega deseos de agredir|heteroagresiv)\b/i.test(s.originalText || "")
+      && (s.proposedSection !== "examen_mental" || /\b(?:niega actualmente.*(?:voces|ver cosas|sensopercep)|ausencia actual de alteraciones sensoperceptivas)\b/i.test(s.originalText || ""))
+  ));
+  const riesgo = textoUnicoDeStatements(statementsParaEvolucion(statements, (s) =>
+    s.proposedSection === "evaluacion_riesgo"
+      || /\b(?:ideaci[oó]n suicida|ideas suicidas|agredir|heteroagresiv|deseos de agredir|riesgo)\b/i.test(s.originalText || "")
+  ));
+  const redApoyo = textoUnicoDeStatements(statements
+    .filter((s) => !s.uncertaintyReasons?.length)
+    .filter((s) => /\b(?:red de apoyo|madre|hermano|familia|apoyo|dispuesto a continuar tratamiento|abstinencia|proyeccion|futuro)\b/i.test(s.originalText || ""))
+    .filter((s) => !/\b(?:solicitar|indicar|se mantendra|signos vitales por turno|trabajo social|reevaluar)\b/i.test(s.originalText || ""))
+  ) || textoUnicoDeSegmentos(pipeline.segments || [], /\b(?:red de apoyo|madre|hermano|familia|apoyo|dispuesto a continuar tratamiento|abstinencia|proyeccion|futuro)\b/i);
+  const fisiologico = textoUnicoDeStatements(statementsParaEvolucion(statements, (s) =>
+    /\b(?:sue[ñn]o|duerme|dormi|apetito|alimentaci[oó]n|ingesta|diuresis|evacuaci[oó]n|urinari|dolor|nausea|mareo|efecto adverso|eventualidades medicas|eventualidad medica)\b/i.test(s.originalText || "")
+  ));
+
+  const parrafos = [inicio];
+  if (conducta) {
+    parrafos[0] = `${parrafos[0]} Durante la valoración fue abordado en el área correspondiente, ${conducta[0].toLowerCase()}${conducta.slice(1)}`;
+  }
+  if (sintomas || redApoyo) {
+    parrafos.push(`Al interrogatorio dirigido, ${[sintomas, redApoyo].filter(Boolean).join(" ")}`.replace(/\s+/g, " ").trim());
+  }
+  if (riesgo) {
+    parrafos.push(`Al interrogatorio dirigido y propositivo, ${riesgo[0].toLowerCase()}${riesgo.slice(1)}`);
+  }
+  if (fisiologico) {
+    parrafos.push(`Desde el punto de vista médico, ${fisiologico[0].toLowerCase()}${fisiologico.slice(1)} Sin otras eventualidades médicas reportadas durante el turno.`);
+  }
+  return textoSeguroNota(parrafos.filter(Boolean).slice(0, 5).join("\n\n"));
+}
+
 function construirExamenMentalNarrativo(mentalStatusFindings = []) {
   const orden = [
     "apariencia", "conducta", "psicomotricidad", "actitud", "conciencia", "orientacion", "atencion",
@@ -838,9 +986,10 @@ function construirAnalisisClinico(statements = [], riskStatements = [], datosPac
   return partes.join(". ").replace(/\.\./g, ".").trim();
 }
 
-function crearGeneratedClinicalText(pipeline = {}, datosPaciente = {}) {
+function crearGeneratedClinicalText(pipeline = {}, datosPaciente = {}, options = {}) {
   const statements = pipeline.statements || [];
-  const subjective = textoSeguroNota(unirAfirmacionesClinicas(statements, (s) =>
+  const evolucionNarrativa = construirEvolucionNarrativaInstitucional(pipeline, datosPaciente, options);
+  const subjective = evolucionNarrativa || textoSeguroNota(unirAfirmacionesClinicas(statements, (s) =>
     ["motivo_consulta", "padecimiento_actual", "antecedentes_psiquiatricos", "antecedentes_personales_patologicos", "medicamentos", "adherencia", "alergias", "consumo_sustancias", "evaluacion_riesgo"].includes(s.proposedSection)
       && !["observado_durante_entrevista"].includes(s.assertionStatus)
   ));
@@ -988,7 +1137,7 @@ function salidaClaseAcademica(datosPaciente = {}, options = {}, textoFuente = ""
     patientId: options.patientId || datosPaciente.id || datosPaciente.uid || "",
     encounterId: options.encounterId || "",
     documentType: options.selectedDocumentType || options.tipoNota || "clase_academica",
-    writingStyle: options.selectedWritingStyle || "formato_fray_narrativo",
+    writingStyle: options.selectedWritingStyle || "evolucion_narrativa_institucional",
     timeline: [],
     sections: crearSeccionesSalida([], options.tipoNota),
     medications: [],
@@ -1084,7 +1233,11 @@ export function generarNotaAutomatica(textoDictado = "", datosPaciente = {}, opt
   const porSeccion = Object.fromEntries(pipeline.sections.map((section) => [section.section, section.content]));
   const sections = crearSeccionesSalida(pipeline.sections, options.tipoNota || options.selectedDocumentType || "evolucion_observacion");
   const structuredExtraction = crearExtraccionEstructurada(pipeline);
-  const generatedClinicalText = crearGeneratedClinicalText(pipeline, datosClinicos.identificacion);
+  const contextoEvolucion = {
+    ...(datosPaciente || {}),
+    ...(datosClinicos.identificacion || {})
+  };
+  const generatedClinicalText = crearGeneratedClinicalText(pipeline, contextoEvolucion, options);
   const generatedSections = crearSeccionesSOAP(generatedClinicalText);
   const groupedValidationIssues = agruparValidationIssues(validationIssues);
   const literalCorregida = pipeline.segments.map((segment) => segment.normalizedText).join(" ").trim();
@@ -1106,7 +1259,7 @@ export function generarNotaAutomatica(textoDictado = "", datosPaciente = {}, opt
     patientId: options.patientId || datosPaciente.id || datosPaciente.uid || "",
     encounterId: options.encounterId || "",
     documentType: options.selectedDocumentType || options.tipoNota || "evolucion_observacion",
-    writingStyle: options.selectedWritingStyle || "formato_fray_narrativo",
+    writingStyle: options.selectedWritingStyle || "evolucion_narrativa_institucional",
     timeline: structuredExtraction.timeline,
     sections,
     medications: pipeline.medicationStatements,

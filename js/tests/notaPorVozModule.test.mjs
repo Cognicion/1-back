@@ -34,7 +34,7 @@ assert.match(persistenceSource, /indexedDB/);
 assert.match(persistenceSource, /cognicionVoiceNoteDrafts/);
 
 const functionsSource = read("functions/index.js");
-assert.match(functionsSource, /voice_note_fray_aldo_v1_2026-07-18/);
+assert.match(functionsSource, /voice_note_fray_aldo_evolucion_v2_2026-07-18/);
 assert.match(functionsSource, /evolutionOrSubjective/);
 assert.match(functionsSource, /No conviertas "valorar" en "iniciar"/);
 

@@ -1,6 +1,7 @@
 import { db } from "../firebase.js";
 import { guardarBorradorNotaClinica } from "./notas.js?v=20260716-2";
 import { noteTypeOptions, writingStyleOptions } from "./voiceNoteCatalogService.js";
+import { EVOLUTION_NARRATIVE_INSTITUTIONAL_TEMPLATE, isEvolutionDocumentType, isEvolutionNarrativeStyle } from "./voiceNoteStyleTemplates.js";
 import {
   doc,
   collection,
@@ -83,6 +84,53 @@ function pareceCopiaExcesiva(transcripcion = "", apartado = "") {
   return fuente.includes(ventana);
 }
 
+function contarParrafos(valor = "") {
+  return texto(valor).split(/\n{2,}/).map((parte) => parte.trim()).filter(Boolean).length;
+}
+
+function validarEvolucionNarrativaInstitucional(contenido = "", generada = {}) {
+  const issues = [];
+  const documentType = generada.documentType || generada.selectedDocumentType || "";
+  const writingStyle = generada.writingStyle || generada.selectedWritingStyle || "";
+  if (!contenido || !isEvolutionDocumentType(documentType) || !isEvolutionNarrativeStyle(writingStyle)) return issues;
+
+  const forbidden = EVOLUTION_NARRATIVE_INSTITUTIONAL_TEMPLATE.validation.forbiddenPatterns
+    .map((pattern) => new RegExp(pattern, "i"));
+  if (forbidden.some((regex) => regex.test(contenido))) {
+    issues.push({
+      category: "Dato incierto",
+      section: "evolutionOrSubjective",
+      severity: "high",
+      message: "La evolución contiene preguntas, instrucciones, plan, examen mental completo o texto técnico; debe regenerarse con estilo narrativo institucional."
+    });
+  }
+  if (contarParrafos(contenido) > EVOLUTION_NARRATIVE_INSTITUTIONAL_TEMPLATE.validation.maxParagraphs) {
+    issues.push({
+      category: "Dato incierto",
+      section: "evolutionOrSubjective",
+      severity: "high",
+      message: "La evolución está excesivamente fragmentada; debe limitarse a tres a cinco párrafos narrativos."
+    });
+  }
+  if (/\b(?:profesional|doctor|m[eé]dico)\b.*\b(?:pregunta|interroga|indica)\b/i.test(contenido)) {
+    issues.push({
+      category: "Hablante no identificado",
+      section: "evolutionOrSubjective",
+      severity: "high",
+      message: "La evolución parece reconstruir el interrogatorio en lugar de redactar la evolución clínica."
+    });
+  }
+  if (/\b(?:clonazepam|sertralina|risperidona|olanzapina|quetiapina)\b/i.test(contenido) && /\b(?:iniciar|continuar|solicitar|indicar|mantener)\b/i.test(contenido)) {
+    issues.push({
+      category: "Medicamento o dosis por confirmar",
+      section: "evolutionOrSubjective",
+      severity: "medium",
+      message: "La evolución incluye lenguaje de indicación terapéutica; confirme que no corresponda al apartado Plan."
+    });
+  }
+  return issues;
+}
+
 function obtenerSeccionesNormalizadas(generada = {}) {
   const soap = generada.generatedClinicalText || generada;
   return {
@@ -148,6 +196,7 @@ export function validarCalidadNotaVoz(generada = {}, transcripcion = "", context
   if (/\bsertralina\b/i.test(secciones.plan) && /\bvalorar inicio de antidepresivo\b/i.test(transcripcion) && !/\biniciar sertralina\b/i.test(transcripcion)) {
     issues.push({ category: "Medicamento o dosis por confirmar", section: "plan", severity: "high", message: "El plan convirtio una valoracion de antidepresivo en una indicacion especifica." });
   }
+  issues.push(...validarEvolucionNarrativaInstitucional(secciones.evolutionOrSubjective, generada));
 
   return issues;
 }
@@ -213,6 +262,8 @@ export function construirPayloadGeneracionVoz({ snapshot = {}, patientContext = 
     provenance: snapshot.provenance || { source: "dictado_por_voz" },
     selectedDocumentType: options.documentType || "evolucion_observacion",
     selectedWritingStyle: options.writingStyle || "institucional_psiquiatrico_detallado",
+    selectedTemplateId: options.templateId || "",
+    selectedPromptVersion: options.promptVersion || "",
     existingNoteFields: options.existingNoteFields || {},
     authorizedPatientContext: {
       source: "expediente",
@@ -254,6 +305,8 @@ export async function generarNotaVoz({ provider, snapshot, patientContext, optio
     encounterId: payload.encounterId,
     selectedDocumentType: payload.selectedDocumentType,
     selectedWritingStyle: payload.selectedWritingStyle,
+    selectedTemplateId: payload.selectedTemplateId,
+    selectedPromptVersion: payload.selectedPromptVersion,
     existingNoteFields: payload.existingNoteFields,
     authorizedPatientContext: payload.authorizedPatientContext
   });
