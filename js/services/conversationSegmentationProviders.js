@@ -1,7 +1,7 @@
 import { segmentarConversacionClinica } from "./clinicalPipeline.js";
 
 export const CONVERSATION_SEGMENTATION_SCHEMA_VERSION = "conversation_segmentation_v1";
-export const CONVERSATION_SEGMENTATION_PROMPT_VERSION = "conversation_segmentation_es_mx_v1_2026-07-18";
+export const CONVERSATION_SEGMENTATION_PROMPT_VERSION = "conversation_segmentation_es_mx_v2_2026-07-18";
 
 function texto(valor = "") {
   return String(valor || "").trim();
@@ -93,7 +93,10 @@ export class ExternalConversationSegmentationProvider {
         name: error?.name || "",
         code: error?.code || error?.status || "",
         message: String(error?.message || error || "Error no especificado"),
-        details: error?.details || error?.customData || null
+        details: error?.details || error?.customData || null,
+        stage: error?.details?.stage || "",
+        requestId: error?.details?.requestId || "",
+        retryable: Boolean(error?.details?.retryable)
       };
       const local = this.local.segment(payload);
       return {

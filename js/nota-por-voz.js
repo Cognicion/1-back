@@ -332,6 +332,7 @@ async function segmentarConProveedor() {
     return;
   }
   setText("voiceSegmentationStatus", "Segmentando conversacion...");
+  renderDetalleTecnicoSegmentacion(null);
   const provider = await obtenerProveedorSegmentacion();
   const snapshot = snapshotDictado();
   validarAislamientoSesion(snapshot);
@@ -348,10 +349,12 @@ async function segmentarConProveedor() {
   state.conversationWarnings = result.warnings || [];
   state.segmentationFailure = result.providerFailure || null;
   renderSegmentosConversacionalesActuales();
-  const failureText = result.providerFailure
-    ? ` · causa: ${result.providerFailure.code || result.providerFailure.name || "sin codigo"}`
-    : "";
-  setText("voiceSegmentationStatus", `Proveedor: ${result.provider || "local"} · turnos: ${state.conversationSegments.length}${result.fallback ? " · fallback" : ""}${failureText}`);
+  renderDetalleTecnicoSegmentacion(state.segmentationFailure);
+  if (result.providerFailure) {
+    setText("voiceSegmentationStatus", `Segmentacion avanzada no disponible. Se utilizo segmentacion basica. Proveedor: ${result.provider || "local"} · turnos: ${state.conversationSegments.length}`);
+  } else {
+    setText("voiceSegmentationStatus", `Segmentacion avanzada completada. Proveedor: ${result.provider || "external"} · modo: ${result.segmentationMode || result.mode || "linguistic"} · turnos: ${state.conversationSegments.length}`);
+  }
 }
 
 const ROLE_LABELS = {
@@ -371,6 +374,22 @@ const ACT_LABELS = {
   correction: "Correccion",
   other: "Otro"
 };
+
+function renderDetalleTecnicoSegmentacion(failure = null) {
+  const panel = $("voiceSegmentationTechnicalDetail");
+  if (!panel) return;
+  if (!failure) {
+    panel.hidden = true;
+    panel.open = false;
+    return;
+  }
+  const details = failure.details || {};
+  panel.hidden = false;
+  setText("voiceSegmentationTechnicalCode", failure.code || failure.name || "sin_codigo");
+  setText("voiceSegmentationTechnicalStage", failure.stage || details.stage || "no_especificada");
+  setText("voiceSegmentationTechnicalRequestId", failure.requestId || details.requestId || "no_disponible");
+  setText("voiceSegmentationTechnicalRetryable", (failure.retryable || details.retryable) ? "si" : "no");
+}
 
 function etiquetaRolActo(segmento = {}) {
   return `${ROLE_LABELS[segmento.probableRole] || segmento.probableRole || "Desconocido"} · ${ACT_LABELS[segmento.speechAct] || segmento.speechAct || "Otro"}`;

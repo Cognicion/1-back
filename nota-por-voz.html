@@ -114,6 +114,19 @@
             <button id="btnSegmentarConversacionVoz" type="button" class="boton-secundario">Segmentar con proveedor</button>
           </div>
           <p id="voiceSegmentationStatus" class="voice-summary">Segmentacion basica. Revise los hablantes.</p>
+          <details id="voiceSegmentationTechnicalDetail" class="voice-technical-detail" hidden>
+            <summary>Ver detalle tecnico</summary>
+            <dl>
+              <dt>Codigo</dt>
+              <dd id="voiceSegmentationTechnicalCode">-</dd>
+              <dt>Etapa</dt>
+              <dd id="voiceSegmentationTechnicalStage">-</dd>
+              <dt>RequestId</dt>
+              <dd id="voiceSegmentationTechnicalRequestId">-</dd>
+              <dt>Reintento</dt>
+              <dd id="voiceSegmentationTechnicalRetryable">-</dd>
+            </dl>
+          </details>
           <div id="voiceConversationSegments" class="voice-segments">Sin segmentos.</div>
         </section>
       </div>
