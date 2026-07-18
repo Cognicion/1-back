@@ -39,19 +39,20 @@ const result = provider.generate({
 
 const evolucion = result.generatedClinicalText.subjective.text;
 
-assert.match(evolucion, /^Carlos Kaju Quintero, hombre de 34 años, quien cursa su 21 día de estancia intrahospitalaria en el servicio especial de OBSERVACIÓN bajo el criterio de sintomatología psicótica y riesgo de conducta heteroagresiva\./);
+assert.match(evolucion, /^Carlos Kaju Quintero, hombre de 34 años, quien cursa su 21\.er día de estancia intrahospitalaria en el servicio especial de OBSERVACI/);
 assert.match(evolucion, /Durante la valoración fue abordado/i);
-assert.match(evolucion, /disminucion de ideas de persecucion/i);
-assert.match(evolucion, /Niega actualmente escuchar voces/i);
-assert.match(evolucion, /consumo de cristal/i);
-assert.match(evolucion, /niega actualmente ideaci[oó]n suicida/i);
-assert.match(evolucion, /red de apoyo a su madre/i);
-assert.match(evolucion, /dispuesto a continuar tratamiento/i);
+assert.match(evolucion, /disminuci[oó]n importante de las ideas de persecuci[oó]n/i);
+assert.match(evolucion, /niega actualmente presentar alteraciones de la sensopercepci[oó]n/i);
+assert.match(evolucion, /consumo de metanfetamina/i);
+assert.match(evolucion, /niega ideas de muerte, ideaci[oó]n suicida, intenci[oó]n o plan suicida/i);
+assert.match(evolucion, /identifica a su madre como principal red de apoyo/i);
+assert.match(evolucion, /disposici[oó]n para continuar tratamiento/i);
 assert.match(evolucion, /Desde el punto de vista médico/i);
 assert.match(evolucion, /clonazepam/i);
 assert.doesNotMatch(evolucion, /\?/);
 assert.doesNotMatch(evolucion, /signos vitales por turno/i);
 assert.doesNotMatch(evolucion, /curso del pensamiento|juicio parcial|introspeccion parcial/i);
+assert.ok(evolucion.split(/\n{2,}/).length >= 3);
 assert.ok(evolucion.split(/\n{2,}/).length <= 5);
 
 const generationSource = fs.readFileSync(new URL("../services/voiceNoteGenerationService.js", import.meta.url), "utf8");

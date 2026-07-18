@@ -47,6 +47,7 @@ function textoPlano(value = "") { return String(value || "").replace(/\s+/g, " "
 function capitalizar(texto = "") { const t = textoPlano(texto); return t ? `${t[0].toUpperCase()}${t.slice(1)}` : ""; }
 
 const PREGUNTAS_CLINICAS = [
+  ["referencia_medios", /\b(?:televisi[oó]n|tel[eé]fono|redes?|mensajes?)\b/i, "mensajes dirigidos por televisión, teléfono o redes"],
   ["sensopercepcion_voces", /\b(?:escuchado|escucha|oye|oido)\s+voces\b|\balucinaciones?\b/i, "alucinaciones auditivas"],
   ["ideas_muerte", /\bideas?\s+de\s+muerte\b/i, "ideas de muerte"],
   ["ideacion_suicida", /\bideas?\s+suicidas?\b|\bideaci[oÃ³]n\s+suicida\b/i, "ideaciÃ³n suicida"],
@@ -62,7 +63,9 @@ const PATRONES_PREGUNTA_CON_RESPUESTA = [
   /^(puede decir(?:me)? su nombre completo)\b\s+(.+)$/iu,
   /^(cu[aá]ntos? a[nñ]os tiene)\b\s+(.+)$/iu,
   /^(sabe d[oó]nde se encuentra)\b\s+(.+)$/iu,
+  /^(ha sentido que [^,.;?]+)\b\s+(no\b.+|s[ií]\b.+)$/iu,
   /^(ha pensado en quitarse la vida)\b\s+(.+)$/iu,
+  /^(ha pensado en agredir [^,.;?]+)\b\s+(no\b.+|s[ií]\b.+)$/iu,
   /^(ha presentado ideas? de muerte)\b\s+(.+)$/iu,
   /^(tiene ideas? suicidas?)\b\s+(.+)$/iu,
   /^(tiene intenci[oó]n de morir)\b\s+(.+)$/iu,
@@ -71,6 +74,9 @@ const PATRONES_PREGUNTA_CON_RESPUESTA = [
   /^(qu[eé] le dec[ií]a)\b\s+(.+)$/iu,
   /^(qu[eé] le decian)\b\s+(.+)$/iu,
   /^(consume [^,.;?]+)\b\s+(.+)$/iu,
+  /^(qui[eé]n es su red de apoyo)\b\s+(.+)$/iu,
+  /^(quiere continuar tratamiento)\b\s+(.+)$/iu,
+  /^(considera que [^,.;?]+ influy[oó])\b\s+(.+)$/iu,
   /^(est[aá] de acuerdo [^,.;?]+)\b\s+(.+)$/iu,
   /^(hay algo m[aá]s que quiera decir)\b\s+(.+)$/iu
 ];
@@ -143,6 +149,7 @@ function escaparRegexConversacion(valor = "") {
 function dividirPorConectoresConversacionales(parrafo = "") {
   const limpio = textoPlano(parrafo);
   if (!limpio) return [];
+  if (/^(?:quiere continuar tratamiento|considera que .+ influy[oó]|qui[eé]n es su red de apoyo)\b/i.test(limpio)) return [limpio];
   const normalizado = normalizarLigeroConversacion(limpio);
   const marcadores = [...PATRONES_INICIO_PREGUNTA, ...PATRONES_BLOQUES_CLINICOS]
     .sort((a, b) => b.length - a.length)
@@ -230,6 +237,7 @@ function conceptoDesdePregunta(texto = "") {
   if (/\b(?:escucha|ha escuchado|oye|oido|oido)\b.*\bvoces\b|\balucinaciones\b/.test(t)) {
     return ["sensopercepcion_voces", /./, "alucinaciones auditivas"];
   }
+  if (/\b(?:television|telefono|redes?|mensajes?)\b/.test(t)) return ["referencia_medios", /./, "mensajes dirigidos por televisión, teléfono o redes"];
   if (/\bideas? de muerte\b/.test(t)) return ["ideas_muerte", /./, "ideas de muerte"];
   if (/\bideas? suicidas?\b|\bideacion suicida\b|\bquitarse la vida\b/.test(t)) return ["ideacion_suicida", /./, "ideación suicida"];
   if (/\bintencion de morir\b|\bintencion suicida\b/.test(t)) return ["intencion_suicida", /./, "intención de morir"];
@@ -245,10 +253,29 @@ function respuestaCorta(texto = "") {
 
 function textoClinicoDesdeRespuesta(pregunta = "", respuesta = "") {
   const concepto = conceptoDesdePregunta(pregunta);
+  const r = normalizarComparacion(respuesta);
+  const q = normalizarComparacion(pregunta);
+  if (/\bconsumo\b.*\binfluyo\b|\bcristal\b|\bcannabis\b|\bmarihuana\b/.test(q)) {
+    const sustancias = [];
+    if (/\bcristal|metanfetamina\b/.test(q)) sustancias.push("cristal");
+    if (/\bcannabis|marihuana\b/.test(q)) sustancias.push("cannabis");
+    if (/^(?:s[ií]|si)\b|puede ser|pudo/.test(r)) {
+      return `Reconoce parcialmente que el consumo de ${sustancias.join(" y ") || "sustancias"} pudo influir.`;
+    }
+  }
+  if (/\bred de apoyo\b/.test(q)) return `Identifica como red de apoyo ${textoPlano(respuesta)}.`;
+  if (/\bcontinuar tratamiento\b/.test(q) && /^(?:s[ií]|si)\b/.test(r)) return "Se muestra dispuesto a continuar tratamiento y seguimiento al egreso.";
+  if (/\bagredir\b/.test(q) && /^(?:no|nunca)\b/.test(r)) {
+    return /\bmenos enojado|ya no tan enojado\b/.test(r)
+      ? "Refiere disminución del enojo hacia su hermano y niega intención heteroagresiva actual."
+      : "Niega intención heteroagresiva actual hacia su hermano.";
+  }
   if (!concepto) return textoPlano(respuesta);
   const [, , etiqueta] = concepto;
-  const r = normalizarComparacion(respuesta);
   if (/^(?:no|nunca|ningun)/.test(r) || /\baqui no\b|\bactualmente no\b/.test(r)) {
+    if (/\b(?:ya no|desde hace|hace)\b/.test(r)) {
+      return `Niega actualmente ${etiqueta}; refiere antecedente previo y última presencia ${textoPlano(respuesta)}.`;
+    }
     return `Niega ${etiqueta}.`;
   }
   if (/ayer|previamente|antes|hace/.test(r)) {

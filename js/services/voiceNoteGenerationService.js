@@ -92,11 +92,37 @@ function validarEvolucionNarrativaInstitucional(contenido = "", generada = {}) {
   const issues = [];
   const documentType = generada.documentType || generada.selectedDocumentType || "";
   const writingStyle = generada.writingStyle || generada.selectedWritingStyle || "";
-  if (!contenido || !isEvolutionDocumentType(documentType) || !isEvolutionNarrativeStyle(writingStyle)) return issues;
+  if (!isEvolutionDocumentType(documentType) || !isEvolutionNarrativeStyle(writingStyle)) return issues;
+  if (!contenido) {
+    issues.push({
+      category: "Dato incierto",
+      section: "evolutionOrSubjective",
+      severity: "high",
+      message: "No fue posible generar una evolución confiable. Revise la segmentación marcada."
+    });
+    return issues;
+  }
 
   const forbidden = EVOLUTION_NARRATIVE_INSTITUTIONAL_TEMPLATE.validation.forbiddenPatterns
     .map((pattern) => new RegExp(pattern, "i"));
-  if (forbidden.some((regex) => regex.test(contenido))) {
+  const blocking = [
+    ...forbidden,
+    /\bquiero revisar\b/i,
+    /\best[aá] seguro de que\b/i,
+    /\bdurante la entrevista se observa\b/i,
+    /\bcontacto visual\b/i,
+    /\bpsicomotricidad\b/i,
+    /\bcurso del pensamiento\b/i,
+    /\bjuicio comprometido\b/i,
+    /\briesgo din[aá]mico\b/i,
+    /\bpor el momento continuar[aá]\b/i,
+    /\bse mantendr[aá]n?\b/i,
+    /\bvigilar\b/i,
+    /\([^)]*$/i,
+    /\bde\)$/i,
+    /\bno solamente quiero\b/i
+  ];
+  if (blocking.some((regex) => regex.test(contenido))) {
     issues.push({
       category: "Dato incierto",
       section: "evolutionOrSubjective",
@@ -201,8 +227,8 @@ export function validarCalidadNotaVoz(generada = {}, transcripcion = "", context
   return issues;
 }
 
-export function crearTransferSections(generada = {}, transcripcion = "", contextoPaciente = {}) {
-  const qualityIssues = validarCalidadNotaVoz(generada, transcripcion, contextoPaciente);
+export function crearTransferSections(generada = {}, transcripcion = "", contextoPaciente = {}, extraIssues = []) {
+  const qualityIssues = [...validarCalidadNotaVoz(generada, transcripcion, contextoPaciente), ...extraIssues];
   const blocked = new Set(qualityIssues.filter((issue) => issue.severity === "high").map((issue) => issue.section));
   const secciones = obtenerSeccionesNormalizadas(generada);
   const items = [
@@ -258,6 +284,8 @@ export function construirPayloadGeneracionVoz({ snapshot = {}, patientContext = 
     pendingTranscript: texto(snapshot.pendingTranscript || snapshot.pendingText || ""),
     correctedTranscript,
     transcriptSegments: snapshot.transcriptSegments || snapshot.confirmedSegments || [],
+    conversationSegments: Array.isArray(options.conversationSegments) ? options.conversationSegments : [],
+    segmentationWarnings: Array.isArray(options.segmentationWarnings) ? options.segmentationWarnings : [],
     speakers: snapshot.speakers || [],
     provenance: snapshot.provenance || { source: "dictado_por_voz" },
     selectedDocumentType: options.documentType || "evolucion_observacion",
@@ -311,12 +339,30 @@ export async function generarNotaVoz({ provider, snapshot, patientContext, optio
     authorizedPatientContext: payload.authorizedPatientContext
   });
   const qualityIssues = validarCalidadNotaVoz(generada, payload.correctedTranscript, patientContext);
+  const additionalQualityIssues = [];
+  const segmentacionBasica = payload.segmentationWarnings.some((warning) =>
+    ["basic_segmentation", "external_segmentation_failed", "segmentation_low_resolution"].includes(warning.code)
+  );
+  const turnosAmbiguos = (payload.conversationSegments || []).filter((utterance) => {
+    const palabras = String(utterance.text || utterance.originalText || "").trim().split(/\s+/).filter(Boolean).length;
+    return utterance.probableRole === "unknown" || utterance.speechAct === "other" || palabras > 35;
+  });
+  if (segmentacionBasica && turnosAmbiguos.length) {
+    additionalQualityIssues.push({
+      category: "Hablante no identificado",
+      section: "evolutionOrSubjective",
+      severity: "high",
+      message: `Segmentación básica con ${turnosAmbiguos.length} fragmento(s) ambiguo(s). Revise esos turnos antes de aceptar Evolución.`,
+      evidence: turnosAmbiguos.slice(0, 6).map((utterance) => utterance.text || utterance.originalText || "")
+    });
+  }
+  const allQualityIssues = [...qualityIssues, ...additionalQualityIssues];
   return {
     ...generada,
     schemaVersion: VOICE_NOTE_SCHEMA_VERSION,
-    transferSections: crearTransferSections(generada, payload.correctedTranscript, patientContext),
-    validationIssues: agruparAdvertenciasVoz([...(generada.validationIssues || []), ...qualityIssues]),
-    rawQualityIssues: qualityIssues
+    transferSections: crearTransferSections(generada, payload.correctedTranscript, patientContext, additionalQualityIssues),
+    validationIssues: agruparAdvertenciasVoz([...(generada.validationIssues || []), ...allQualityIssues]),
+    rawQualityIssues: allQualityIssues
   };
 }
 

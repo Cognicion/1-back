@@ -346,8 +346,12 @@ async function segmentarConProveedor() {
   });
   state.conversationSegments = result.utterances || [];
   state.conversationWarnings = result.warnings || [];
+  state.segmentationFailure = result.providerFailure || null;
   renderSegmentosConversacionalesActuales();
-  setText("voiceSegmentationStatus", `Proveedor: ${result.provider || "local"} · turnos: ${state.conversationSegments.length}${result.fallback ? " · fallback" : ""}`);
+  const failureText = result.providerFailure
+    ? ` · causa: ${result.providerFailure.code || result.providerFailure.name || "sin codigo"}`
+    : "";
+  setText("voiceSegmentationStatus", `Proveedor: ${result.provider || "local"} · turnos: ${state.conversationSegments.length}${result.fallback ? " · fallback" : ""}${failureText}`);
 }
 
 const ROLE_LABELS = {
@@ -610,6 +614,8 @@ async function generarNota() {
     templateId: tipo?.templateId || "",
     promptVersion: estilo?.promptVersion || "",
     service: $("voiceServicio")?.value || "",
+    conversationSegments: state.conversationSegments || [],
+    segmentationWarnings: state.conversationWarnings || [],
     existingNoteFields: await obtenerCamposDestinoExistentes()
   };
   setText("voiceGenerationProgress", "Generando propuesta estructurada. No se modifica la nota tradicional.");
@@ -622,7 +628,8 @@ async function generarNota() {
   });
   state.generated = generated;
   state.transferSections = generated.transferSections || crearTransferSections(generated, snapshot.correctedTranscript, crearPatientContext());
-  setText("voiceProviderStatus", `Proveedor: ${generated.provider || "desconocido"} · estado: ${generated.providerStatus || generated.metadata?.generatedStatus || "en revision"}`);
+  const externalFailure = generated.metadata?.externalProviderFailure;
+  setText("voiceProviderStatus", `Proveedor: ${generated.provider || "desconocido"} · estado: ${generated.providerStatus || generated.metadata?.generatedStatus || "en revision"}${externalFailure ? ` · causa fallback: ${externalFailure.code || externalFailure.name || "sin codigo"}` : ""}`);
   setText("voicePromptVersion", `Prompt: ${generated.promptVersion || generated.metadata?.promptVersion || "fallback local"}`);
   setText("voiceSchemaStatus", `Esquema validado: ${state.transferSections.length ? "si" : "pendiente"}`);
   await guardarSesionVozFirestore({

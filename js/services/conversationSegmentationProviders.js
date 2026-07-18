@@ -71,7 +71,12 @@ export class ExternalConversationSegmentationProvider {
   async segment(payload = {}) {
     if (!this.callable) {
       const local = this.local.segment(payload);
-      return { ...local, provider: "rule_based", fallback: true };
+      return {
+        ...local,
+        provider: "rule_based",
+        fallback: true,
+        providerFailure: { code: "not_configured", message: "No hay callable de segmentacion configurada en frontend." }
+      };
     }
 
     try {
@@ -84,13 +89,20 @@ export class ExternalConversationSegmentationProvider {
       });
     } catch (error) {
       if (!this.fallbackToLocal) throw error;
+      const providerFailure = {
+        name: error?.name || "",
+        code: error?.code || error?.status || "",
+        message: String(error?.message || error || "Error no especificado"),
+        details: error?.details || error?.customData || null
+      };
       const local = this.local.segment(payload);
       return {
         ...local,
         fallback: true,
+        providerFailure,
         warnings: [
           ...(local.warnings || []),
-          { code: "external_segmentation_failed", message: "No se pudo usar el proveedor externo; se aplico segmentacion basica." }
+          { code: "external_segmentation_failed", message: `No se pudo usar el proveedor externo (${providerFailure.code || providerFailure.name || "sin_codigo"}): ${providerFailure.message}` }
         ]
       };
     }

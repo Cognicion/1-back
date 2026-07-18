@@ -124,6 +124,15 @@ function normalizarSalidaExterna(data = {}, payload = {}) {
   };
 }
 
+function describirErrorProveedor(error) {
+  return {
+    name: error?.name || "",
+    code: error?.code || error?.status || "",
+    message: String(error?.message || error || "Error no especificado"),
+    details: error?.details || error?.customData || null
+  };
+}
+
 export class RuleBasedNoteGenerationProvider extends NoteGenerationProvider {
   constructor(config = {}) {
     super(config);
@@ -194,12 +203,24 @@ export class ExternalStructuredNoteGenerationProvider extends NoteGenerationProv
       return normalizarSalidaExterna(response?.data || response || {}, payload);
     } catch (error) {
       if (this.config.fallbackToLocal === false) throw error;
+      const providerError = describirErrorProveedor(error);
       const fallback = this.fallback.generate(payload, patient, options);
       fallback.metadata = {
         ...(fallback.metadata || {}),
-        externalProviderError: String(error?.message || error),
+        externalProviderError: providerError.message,
+        externalProviderFailure: providerError,
         processingDisclosure: "Procesamiento local basado en reglas. La redaccion avanzada no esta disponible."
       };
+      fallback.validationIssues = [
+        ...(fallback.validationIssues || []),
+        {
+          id: "external_provider_failed",
+          category: "Dato incierto",
+          severity: "high",
+          message: `No se pudo usar el proveedor generativo externo (${providerError.code || providerError.name || "sin_codigo"}): ${providerError.message}`,
+          requiresExplicitReview: true
+        }
+      ];
       fallback.providerStatus = "fallback_local";
       return fallback;
     }

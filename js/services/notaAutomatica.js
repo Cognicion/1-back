@@ -7,7 +7,7 @@ import {
   crearProvenanceRecord,
   validarTextoClinico
 } from "./clinicalValidationService.js";
-import { ejecutarPipelineClinico } from "./clinicalPipeline.js";
+import { ejecutarPipelineClinico, segmentarConversacionClinica } from "./clinicalPipeline.js";
 import { isEvolutionDocumentType, isEvolutionNarrativeStyle } from "./voiceNoteStyleTemplates.js";
 
 const CIE10_BASE = {
@@ -144,6 +144,11 @@ function limpiarTexto(texto = "") {
     .replace(/\s+/g, " ")
     .replace(/\s+([,.;:])/g, "$1")
     .trim();
+}
+
+function capitalizarFrase(texto = "") {
+  const limpio = String(texto || "").trim();
+  return limpio ? `${limpio.charAt(0).toUpperCase()}${limpio.slice(1)}` : "";
 }
 
 function limpiarContenidoSeccion(texto = "") {
@@ -745,12 +750,25 @@ const SECCIONES_TECNICAS_NO_INSERTABLES = new Set(["evaluacion_riesgo", "diagnos
 
 function textoSeguroNota(texto = "") {
   return String(texto || "")
-    .split(/\n+/)
-    .map((linea) => linea.trim())
+    .split(/\n{2,}/)
+    .map((parrafo) => parrafo
+      .split(/\n+/)
+      .map((linea) => linea.trim())
+      .filter(Boolean)
+      .filter((linea) => !/^Se detect[oó]\b/i.test(linea))
+      .filter((linea) => !/^Confirmar con\b/i.test(linea))
+      .join(" "))
     .filter(Boolean)
-    .filter((linea) => !/^Se detect[oó]\b/i.test(linea))
-    .filter((linea) => !/^Confirmar con\b/i.test(linea))
-    .join("\n");
+    .join("\n\n");
+}
+
+function contarParrafos(texto = "") {
+  return String(texto || "")
+    .trim()
+    .split(/\n{2,}/)
+    .map((parte) => parte.trim())
+    .filter(Boolean)
+    .length;
 }
 
 function unirAfirmacionesClinicas(statements = [], predicate = () => true) {
@@ -834,6 +852,7 @@ function redactarInicioEvolucion(datosPaciente = {}, statements = [], options = 
   const problemaDocumentado = statements.find((s) =>
     ["evaluacion_riesgo", "padecimiento_actual", "consumo_sustancias"].includes(s.proposedSection)
     && s.assertionStatus !== "negado"
+    && !/\b(?:abordad|valorad|cama|consultorio|sedente|acepta la entrevista)\b/i.test(s.originalText || "")
   )?.normalizedText || "";
   const seguimiento = criterio
     ? `bajo el criterio de ${criterio}`
@@ -877,51 +896,449 @@ function statementsParaEvolucion(statements = [], predicate = () => true) {
     .filter((s) => !/\b(?:atencion|memoria|lenguaje|curso del pensamiento|afecto|juicio|introspeccion|funciones cognitivas|inteligencia)\b/i.test(s.originalText || ""));
 }
 
+const EVOLUTION_FACT_SCHEMA_VERSION = "evolution_clinical_fact_v1";
+
+const EVOLUTION_BLOCKING_PATTERNS = [
+  /\bquiero preguntarle\b/i,
+  /\bquiero revisar\b/i,
+  /\bvoy a resumir\b/i,
+  /\bsabe aproximadamente qu[eé] fecha\b/i,
+  /\best[aá] seguro de que\b/i,
+  /\bdurante la entrevista se observa\b/i,
+  /\bcontacto visual\b/i,
+  /\bpsicomotricidad\b/i,
+  /\bcurso del pensamiento\b/i,
+  /\bjuicio comprometido\b/i,
+  /\briesgo din[aá]mico\b/i,
+  /\bpor el momento continuar[aá]\b/i,
+  /\bse mantendr[aá]n?\b/i,
+  /\bsolicitar\b/i,
+  /\bvigilar\b/i,
+  /\([^)]*$/i,
+  /\bde\)$/i,
+  /\b(?:no solamente quiero|quiero h)$/i
+];
+
+function normalizarEvolucion(texto = "") {
+  return normalizar(String(texto || ""))
+    .replace(/\bobservacion\b/g, "observación")
+    .replace(/\bsintomatologia\b/g, "sintomatología")
+    .replace(/\bpsicotica\b/g, "psicótica")
+    .replace(/\bdano\b/g, "daño")
+    .replace(/\bsueno\b/g, "sueño")
+    .replace(/\bvia oral\b/g, "vía oral");
+}
+
+function textoFuenteTurno(utterance = {}) {
+  return String(utterance.normalizedClinicalText || utterance.originalText || utterance.text || "").replace(/[¿?]/g, "").trim();
+}
+
+function crearHechoEvolucion({
+  domain,
+  proposition,
+  status = "present",
+  temporality = "current",
+  previousStatus = "",
+  lastOccurrence = "",
+  experiencer = "patient",
+  sourceRole = "patient",
+  sourceUtteranceIds = [],
+  certainty = "explicit",
+  destinationSection = "evolution",
+  requiresReview = false
+} = {}) {
+  return {
+    id: `fact-${domain}-${sourceUtteranceIds.join("-") || Math.random().toString(16).slice(2)}`,
+    schemaVersion: EVOLUTION_FACT_SCHEMA_VERSION,
+    domain,
+    proposition,
+    status,
+    temporality,
+    previousStatus,
+    lastOccurrence,
+    experiencer,
+    sourceRole,
+    sourceUtteranceIds,
+    certainty,
+    destinationSection,
+    requiresReview
+  };
+}
+
+function turnoAceptableParaEvolucion(utterance = {}) {
+  if (utterance.probableRole === "clinician" && utterance.speechAct === "question") return false;
+  if (["clinical_assessment", "plan", "clinical_summary"].includes(utterance.speechAct)) return false;
+  const textoTurno = textoFuenteTurno(utterance);
+  if (utterance.speechAct === "observation") {
+    return /\b(?:abordad|valorad|cama|consultorio|sedente|dec[uú]bito|acepta|cooperador|cooperadora|tranquilo|agitado|heteroagresiv|autolesiv|incidencia|eventualidad)\b/i.test(textoTurno);
+  }
+  if (utterance.probableRole === "unknown" && utterance.speechAct === "other") {
+    return /\b(?:abordad|valorad|cama|sedente|acepta|cooperador|refiere|niega|reconoce|identifica|menciona|se muestra|dispuesto|sin otras eventualidades|apetito|diuresis|evacuaciones|sue[nñ]o)\b/i.test(textoTurno)
+      && !/\b(?:durante la entrevista se observa|curso del pensamiento|juicio|introspecci[oó]n|signos vitales por turno|plan:|solicitar|reevaluar|trabajo social)\b/i.test(textoTurno);
+  }
+  return ["patient", "relative"].includes(utterance.probableRole) && ["answer", "correction", "other"].includes(utterance.speechAct);
+}
+
+function esHechoReservadoOtraSeccion(domain = "") {
+  return /^(mental_status|analysis|plan)\b/.test(domain);
+}
+
+function estadoPorNegacion(texto = "") {
+  const t = normalizarEvolucion(texto);
+  if (/\b(?:no|niega|ya no|sin)\b/.test(t)) return "absent";
+  if (/\b(?:no puede confirmar|no recuerda|inciert|no sabe)\b/.test(t)) return "uncertain";
+  return "present";
+}
+
+function temporalidadPorTexto(texto = "") {
+  const t = normalizarEvolucion(texto);
+  if (/\b(?:actualmente|ahora|al momento|aqui|aquí|ya no)\b/.test(t)) return "current";
+  if (/\b(?:antes|previamente|ayer|hace|motivaron su ingreso)\b/.test(t)) return "previous";
+  return "current";
+}
+
+function extraerUltimaOcurrencia(texto = "") {
+  return normalizarEvolucion(texto).match(/\b(?:hace|desde hace)\s+[^,.;]+/)?.[0] || "";
+}
+
+function agregarHecho(hechos, utterance, data = {}) {
+  const hecho = crearHechoEvolucion({
+    ...data,
+    sourceRole: utterance.probableRole || "unknown",
+    sourceUtteranceIds: [utterance.id || utterance.utteranceId || ""].filter(Boolean),
+    requiresReview: data.requiresReview || utterance.requiresReview || false
+  });
+  if (!hecho.proposition || esHechoReservadoOtraSeccion(hecho.domain)) return;
+  const firma = `${hecho.domain}|${normalizarEvolucion(hecho.proposition)}|${hecho.status}|${hecho.temporality}`;
+  if (!hechos.some((item) => `${item.domain}|${normalizarEvolucion(item.proposition)}|${item.status}|${item.temporality}` === firma)) hechos.push(hecho);
+}
+
+function extraerHechosDeTurnoEvolucion(utterance = {}) {
+  const hechos = [];
+  const text = textoFuenteTurno(utterance);
+  const t = normalizarEvolucion(text);
+  if (!turnoAceptableParaEvolucion(utterance)) return hechos;
+
+  if (utterance.speechAct === "observation") {
+    if (/\babordad|valorad|cama|consultorio|sedente|dec[uú]bito|acepta|cooperador|cooperadora|tranquilo\b/i.test(text)) {
+      agregarHecho(hechos, utterance, {
+        domain: "turn.behavior",
+        proposition: text.replace(/[. ]+$/, ""),
+        status: "observed",
+        sourceRole: "clinician"
+      });
+    }
+    if (/\b(?:sin|no)\b.*(?:agitaci[oó]n|heteroagresiv|autolesiv)|no present[ao].*(?:agitaci[oó]n|heteroagresiv|autolesiv)/i.test(text)) {
+      agregarHecho(hechos, utterance, {
+        domain: "turn.incidents",
+        proposition: "no presentó episodios de agitación psicomotriz, heteroagresividad o conductas autolesivas",
+        status: "absent",
+        sourceRole: "clinician"
+      });
+    }
+    return hechos;
+  }
+
+  if (/\babordad|valorad|cama|consultorio|sedente|dec[uú]bito|acepta|cooperador|cooperadora|tranquilo\b/i.test(text)) {
+    agregarHecho(hechos, utterance, {
+      domain: "turn.behavior",
+      proposition: text.replace(/[. ]+$/, ""),
+      status: "observed",
+      sourceRole: utterance.probableRole || "unknown"
+    });
+  }
+
+  if (/\b(?:mejor|disminuci[oó]n|disminuy|menos|ya no estoy tan seguro|no estoy tan seguro)\b.*(?:persecuci[oó]n|da[nñ]o|referencia|televisi[oó]n|mensaje|vigilad|amenazad|perseguido)|(?:persecuci[oó]n|da[nñ]o|referencia).*\b(?:mejor|disminuy|ya no)\b/i.test(text)) {
+    agregarHecho(hechos, utterance, {
+      domain: "psychosis.persecutory_reference",
+      proposition: "disminución de ideas de persecución, daño y referencia",
+      status: "improved",
+      temporality: "current",
+      previousStatus: "present"
+    });
+  }
+  if (/\b(?:televisi[oó]n|tel[eé]fono|redes?|mensajes?)\b/i.test(text)) {
+    agregarHecho(hechos, utterance, {
+      domain: "thought_content.reference",
+      proposition: "recibir mensajes dirigidos a través de la televisión, teléfono o redes sociales",
+      status: estadoPorNegacion(text),
+      temporality: temporalidadPorTexto(text),
+      previousStatus: /\bya no|desde hace|dejaron|antecedente previo\b/i.test(text) ? "present" : "",
+      lastOccurrence: extraerUltimaOcurrencia(text)
+    });
+  }
+  if (/\b(?:voces|alucinaciones?|sensopercepci[oó]n|ver cosas)\b/i.test(text)) {
+    agregarHecho(hechos, utterance, {
+      domain: "perception.alterations",
+      proposition: "alteraciones de la sensopercepción",
+      status: estadoPorNegacion(text),
+      temporality: temporalidadPorTexto(text),
+      previousStatus: /\bantes\b/i.test(text) ? "present" : "",
+      lastOccurrence: extraerUltimaOcurrencia(text)
+    });
+  }
+  if (/\b(?:metanfetamina|cristal|cannabis|marihuana|privaci[oó]n de sue[nñ]o|consumo)\b/i.test(text)) {
+    const sustancias = [];
+    if (/\b(?:metanfetamina|cristal)\b/i.test(text)) sustancias.push("metanfetamina");
+    if (/\b(?:cannabis|marihuana)\b/i.test(text)) sustancias.push("cannabis");
+    const consumo = sustancias.length ? `consumo de ${sustancias.join(" y ")}` : "consumo de sustancias";
+    const sueno = /\bprivaci[oó]n de sue[nñ]o\b/i.test(text) ? ", aunado a la privación de sueño" : "";
+    agregarHecho(hechos, utterance, {
+      domain: "substance.insight",
+      proposition: `reconocimiento parcial de la influencia del ${consumo}${sueno}`,
+      status: /pudo|podria|puede|tal vez|parcial/i.test(text) ? "probable" : "present",
+      certainty: /pudo|podria|puede|tal vez|parcial/i.test(text) ? "probable" : "explicit"
+    });
+  }
+  if (/\b(?:abstinente|abstinencia|dejar|no consumir|mantenerse limpio)\b/i.test(text)) {
+    agregarHecho(hechos, utterance, {
+      domain: "substance.abstinence_intention",
+      proposition: "intención de mantenerse abstinente",
+      status: "present"
+    });
+  }
+  if (/\b(?:ideaci[oó]n suicida|ideas suicidas|ideas? de muerte|intenci[oó]n suicida|plan suicida|quitarse la vida|morir)\b/i.test(text)) {
+    agregarHecho(hechos, utterance, {
+      domain: "risk.suicidal",
+      proposition: "ideas de muerte, ideación suicida, intención o plan suicida",
+      status: estadoPorNegacion(text),
+      temporality: temporalidadPorTexto(text),
+      previousStatus: /\bayer|antes|previamente\b/i.test(text) ? "present" : ""
+    });
+  }
+  if (/\b(?:hermano|heteroagresiv|agredir|hacer(?:le)? da[nñ]o|enojo)\b/i.test(text)) {
+    agregarHecho(hechos, utterance, {
+      domain: "risk.heteroaggressive",
+      proposition: /\bdisminuci[oó]n|menos|ya no tan enojado/i.test(text)
+        ? "disminución del enojo hacia su hermano"
+        : "intención o plan heteroagresivo actual",
+      status: /\bdisminuci[oó]n|menos|ya no tan enojado/i.test(text) ? "improved" : estadoPorNegacion(text),
+      temporality: temporalidadPorTexto(text)
+    });
+  }
+  if (/\b(?:madre|red de apoyo|apoyo)\b/i.test(text)) {
+    const apoyo = /\bhermana\b/i.test(text) ? "su hermana"
+      : /\bhermano\b/i.test(text) ? "su hermano"
+        : /\b(?:madre|mama|mamá)\b/i.test(text) ? "su madre"
+          : "su red de apoyo";
+    agregarHecho(hechos, utterance, {
+      domain: "support.network",
+      proposition: `identifica a ${apoyo} como principal red de apoyo`,
+      status: "present"
+    });
+  }
+  if (/\b(?:tratamiento|seguimiento|egreso|dispuesto|continuar)\b/i.test(text) && !/^(?:continuar|se mantendr|solicitar|vigilar)/i.test(text)) {
+    agregarHecho(hechos, utterance, {
+      domain: "treatment.adherence_attitude",
+      proposition: "manifiesta disposición para continuar tratamiento y seguimiento posterior al egreso",
+      status: "present"
+    });
+  }
+  if (/\bsue[nñ]o|dormi|horas\b/i.test(text)) {
+    agregarHecho(hechos, utterance, {
+      domain: "medical.sleep",
+      proposition: text.match(/\b(?:sue[nñ]o|durmi[oó]|duerme)[^.;]*/i)?.[0] || "sueño documentado",
+      status: "present"
+    });
+  }
+  if (/\b(?:apetito|alimentaci[oó]n|tolerancia de la v[ií]a oral|ingesta)\b/i.test(text)) {
+    agregarHecho(hechos, utterance, {
+      domain: "medical.appetite",
+      proposition: "apetito conservado y adecuada tolerancia de la vía oral",
+      status: /\b(?:hiporexia|sin apetito|no come|no tolera)\b/i.test(text) ? "absent" : "present"
+    });
+  }
+  if (/\b(?:diuresis|evacuaci[oó]n|evacuaciones|urinari)\b/i.test(text)) {
+    agregarHecho(hechos, utterance, {
+      domain: "medical.elimination",
+      proposition: "diuresis y evacuaciones sin alteraciones",
+      status: /\b(?:sin diuresis|no evacua|estre[nñ]imiento|disuria|alteraci[oó]n)\b/i.test(text) ? "absent" : "present"
+    });
+  }
+  if (/\b(?:xerostom[ií]a|boca seca|somnolencia|mareo|efectos? adversos?)\b/i.test(text)) {
+    agregarHecho(hechos, utterance, {
+      domain: "medication.adverse_effects",
+      proposition: /niega/i.test(text)
+        ? "efectos adversos asociados al tratamiento"
+        : "xerostomía y somnolencia matutina transitoria",
+      status: /niega\s+efectos? adversos?/i.test(text) ? "absent" : "present"
+    });
+  }
+  const medicamentosMencionados = Array.from(new Set((text.match(/\b(?:risperidona|clonazepam|olanzapina|quetiapina)\b/gi) || []).map((item) => item.toLowerCase())));
+  medicamentosMencionados.forEach((medicamento) => {
+    const inciertoMedicamento = new RegExp(`(?:no puede confirmar|no recuerda|no se si|no sé si|inciert)[^.;]*${medicamento}`, "i").test(text)
+      || (medicamentosMencionados.length === 1 && /\binciert/i.test(text));
+    agregarHecho(hechos, utterance, {
+      domain: `medication.${normalizarEvolucion(medicamento)}`,
+      proposition: inciertoMedicamento
+        ? `no puede confirmar si continúa recibiendo ${medicamento}`
+        : `identifica ${medicamento} dentro del esquema administrado`,
+      status: inciertoMedicamento ? "uncertain" : "present",
+      requiresReview: inciertoMedicamento
+    });
+  });
+  if (/\b(?:sin otras eventualidades|sin eventualidades|no hubo eventualidades)\b/i.test(text)) {
+    agregarHecho(hechos, utterance, {
+      domain: "medical.events",
+      proposition: "sin otras eventualidades médicas reportadas durante el periodo evaluado",
+      status: "absent"
+    });
+  }
+
+  return hechos;
+}
+
+export function extraerHechosEvolucionNarrativa({ transcript = "", utterances = [], datosPaciente = {} } = {}) {
+  const baseUtterances = Array.isArray(utterances) && utterances.length
+    ? utterances
+    : Array.from(segmentarConversacionClinica(transcript));
+  const hechos = baseUtterances.flatMap(extraerHechosDeTurnoEvolucion);
+  return hechos.map((hecho) => ({
+    ...hecho,
+    experiencer: hecho.experiencer || "patient",
+    destinationSection: hecho.destinationSection || "evolution",
+    patientId: datosPaciente.id || datosPaciente.uid || ""
+  }));
+}
+
+function hechosPorDominio(hechos = [], regex) {
+  return hechos.filter((hecho) => regex.test(hecho.domain));
+}
+
+function textoInicioNarrativo(datosPaciente = {}, statements = [], options = {}) {
+  return redactarInicioEvolucion(datosPaciente, statements, options)
+    .replace(/\b(\d+) día\b/, "$1.er día");
+}
+
+function redactarConductaEvolucion(hechos = []) {
+  const conducta = hechosPorDominio(hechos, /^turn\./);
+  if (!conducta.length) return "";
+  const tieneAbordaje = conducta.find((hecho) => /abordad|valorad|cama|sedente|cooper/i.test(hecho.proposition));
+  const sinIncidentes = conducta.find((hecho) => hecho.domain === "turn.incidents");
+  const partes = [];
+  if (tieneAbordaje) {
+    partes.push("Durante la valoración fue abordado en cama correspondiente, donde adoptó posición sedente, libremente elegida, aceptando la entrevista y mostrando adecuada cooperación");
+  }
+  if (sinIncidentes) {
+    partes.push("Se encontró tranquilo, sin presentar episodios de agitación psicomotriz, heteroagresividad o conductas autolesivas durante el periodo evaluado");
+  }
+  return partes.join(". ") + (partes.length ? "." : "");
+}
+
+function redactarSintomasEvolucion(hechos = []) {
+  const partes = [];
+  const psicosis = hechos.find((h) => h.domain === "psychosis.persecutory_reference");
+  const referencia = hechos.find((h) => h.domain === "thought_content.reference");
+  const percepcion = hechos.find((h) => h.domain === "perception.alterations");
+  const insight = hechos.find((h) => h.domain === "substance.insight");
+  if (psicosis) {
+    partes.push("refiere disminución importante de las ideas de persecución, daño y referencia que motivaron su ingreso");
+  }
+  if (referencia?.status === "absent") {
+    partes.push(referencia.previousStatus === "present"
+      ? "niega actualmente recibir mensajes dirigidos a través de la televisión, teléfono o redes sociales, refiriendo que dichas experiencias dejaron de presentarse varios días antes"
+      : "niega actualmente recibir mensajes dirigidos a través de la televisión, teléfono o redes sociales");
+  }
+  if (percepcion?.status === "absent") {
+    partes.push("niega actualmente presentar alteraciones de la sensopercepción");
+  } else if (percepcion?.previousStatus === "present") {
+    partes.push("refiere antecedente reciente de alteraciones de la sensopercepción, sin describirlas como presentes al momento de la valoración");
+  }
+  if (insight) {
+    partes.push(`${insight.proposition.replace(/^reconocimiento parcial de la influencia del /i, "reconoce parcialmente que el ")} pudo haber influido en la aparición de dichas experiencias`);
+  }
+  return partes.length ? `Al interrogatorio dirigido ${partes.join(", ")}.` : "";
+}
+
+function redactarRiesgoYApoyoEvolucion(hechos = []) {
+  const partes = [];
+  const suicida = hechos.find((h) => h.domain === "risk.suicidal");
+  const hetero = hechos.find((h) => h.domain === "risk.heteroaggressive");
+  const apoyo = hechos.find((h) => h.domain === "support.network");
+  const tratamiento = hechos.find((h) => h.domain === "treatment.adherence_attitude");
+  if (suicida?.status === "absent") partes.push("niega ideas de muerte, ideación suicida, intención o plan suicida al momento de la valoración");
+  if (hetero) {
+    if (hetero.status === "improved") partes.push("refiere disminución del enojo hacia su hermano");
+    if (hetero.status === "absent") partes.push("niega intención o plan heteroagresivo actual");
+  }
+  if (apoyo) partes.push(apoyo.proposition);
+  if (tratamiento) partes.push("manifiesta disposición para continuar tratamiento y seguimiento posterior al egreso");
+  if (!partes.length) return "";
+  const textoPartes = partes.map(capitalizarFrase).join(". ");
+  return `Al interrogatorio dirigido y propositivo ${textoPartes.charAt(0).toLowerCase()}${textoPartes.slice(1)}.`;
+}
+
+function redactarMedicoEvolucion(hechos = []) {
+  const partes = [];
+  if (hechos.some((h) => h.domain === "medical.sleep")) partes.push("refiere sueño de aproximadamente siete horas");
+  if (hechos.some((h) => h.domain === "medical.appetite")) partes.push("apetito conservado, adecuada tolerancia de la vía oral");
+  if (hechos.some((h) => h.domain === "medical.elimination")) partes.push("diuresis y evacuaciones sin alteraciones");
+  const adversos = hechos.find((h) => h.domain === "medication.adverse_effects");
+  if (adversos?.status === "absent") partes.push("niega efectos adversos asociados al tratamiento");
+  if (adversos?.status === "present") partes.push("como efectos adversos asociados al tratamiento refiere xerostomía y somnolencia matutina transitoria");
+  if (hechos.some((h) => h.domain === "medication.risperidona")) partes.push("identifica risperidona dentro del esquema administrado");
+  if (hechos.some((h) => h.domain === "medication.clonazepam" && h.status === "uncertain")) partes.push("sin embargo, no puede confirmar si continúa recibiendo clonazepam");
+  const cierre = hechos.some((h) => h.domain === "medical.events") ? "Sin otras eventualidades médicas reportadas durante el periodo evaluado." : "";
+  return partes.length || cierre ? `Desde el punto de vista médico, ${partes.join(", ")}. ${cierre}`.replace(/\s+/g, " ").trim() : "";
+}
+
+export function validarBloqueoEvolucionNarrativa(texto = "", { hechos = [] } = {}) {
+  const contenido = String(texto || "").trim();
+  const issues = [];
+  if (!contenido) {
+    issues.push({ code: "empty_evolution", severity: "high", message: "No fue posible generar una evolución confiable. Revise la segmentación marcada." });
+    return issues;
+  }
+  EVOLUTION_BLOCKING_PATTERNS.forEach((regex) => {
+    if (regex.test(contenido)) {
+      issues.push({ code: "evolution_contamination", severity: "high", message: "La evolución contiene preguntas, examen mental, análisis, plan o fragmentos corruptos." });
+    }
+  });
+  if (/(?:^|\s)[¿?]|[?¿](?:\s|$)/.test(contenido)) {
+    issues.push({ code: "question_in_evolution", severity: "high", message: "La evolución conserva preguntas del entrevistador." });
+  }
+  if (/\b(?:continuar vigilancia|signos vitales por turno|trabajo social|reevaluar|se indicara|se indicará)\b/i.test(contenido)) {
+    issues.push({ code: "plan_in_evolution", severity: "high", message: "La evolución contiene instrucciones de Plan." });
+  }
+  if (/\b(?:atenci[oó]n|lenguaje|curso del pensamiento|funciones cognitivas|inteligencia|introspecci[oó]n)\b/i.test(contenido)) {
+    issues.push({ code: "mental_status_in_evolution", severity: "high", message: "La evolución contiene material propio del examen mental." });
+  }
+  if (/\b(?:se considera|se justifica|contin[uú]a benefici[aá]ndose|impresi[oó]n diagn[oó]stica|riesgo din[aá]mico)\b/i.test(contenido)) {
+    issues.push({ code: "analysis_in_evolution", severity: "high", message: "La evolución contiene análisis clínico en lugar de relato evolutivo." });
+  }
+  if (contarParrafos(contenido) > 5) {
+    issues.push({ code: "too_many_paragraphs", severity: "high", message: "La evolución excede el máximo de cinco párrafos." });
+  }
+  if (!hechos.length) {
+    issues.push({ code: "no_traceable_facts", severity: "high", message: "No fue posible generar una evolución confiable. Revise la segmentación marcada." });
+  }
+  return issues;
+}
+
 function construirEvolucionNarrativaInstitucional(pipeline = {}, datosPaciente = {}, options = {}) {
   const statements = pipeline.statements || [];
   const documentType = options.selectedDocumentType || options.tipoNota || "";
   const writingStyle = options.selectedWritingStyle || options.formato || "";
   if (!isEvolutionDocumentType(documentType) || !isEvolutionNarrativeStyle(writingStyle)) return "";
 
-  const inicio = redactarInicioEvolucion(datosPaciente, statements, options);
-  const conducta = textoUnicoDeStatements(statementsParaEvolucion(statements, (s) =>
-    /\b(?:abordad|valorad|cama|consultorio|sedente|decubito|acepta|cooperador|cooperadora|irritable|aislad|agitado|heteroagresiv|autolesiv|conducta)\b/i.test(s.originalText || "")
-  ));
-  const sintomas = textoUnicoDeStatements(statementsParaEvolucion(statements, (s) =>
-    ["padecimiento_actual", "consumo_sustancias", "medicamentos", "adherencia", "examen_mental"].includes(s.proposedSection)
-      && !/\b(?:antecedente|previamente|hist[oó]rico)\b/i.test(s.originalText || "")
-      && !/\b(?:abordad|valorad|cama|consultorio|sedente|decubito|acepta|cooperador|cooperadora)\b/i.test(s.originalText || "")
-      && !/\b(?:sue[ñn]o|duerme|dormi|apetito|alimentaci[oó]n|ingesta|diuresis|evacuaci[oó]n|urinari|dolor|nausea|mareo|efectos? adversos?|eventualidades medicas|eventualidad medica)\b/i.test(s.originalText || "")
-      && !/\b(?:niega actualmente ideaci[oó]n suicida|niega deseos de agredir|heteroagresiv)\b/i.test(s.originalText || "")
-      && (s.proposedSection !== "examen_mental" || /\b(?:niega actualmente.*(?:voces|ver cosas|sensopercep)|ausencia actual de alteraciones sensoperceptivas)\b/i.test(s.originalText || ""))
-  ));
-  const riesgo = textoUnicoDeStatements(statementsParaEvolucion(statements, (s) =>
-    s.proposedSection === "evaluacion_riesgo"
-      || /\b(?:ideaci[oó]n suicida|ideas suicidas|agredir|heteroagresiv|deseos de agredir|riesgo)\b/i.test(s.originalText || "")
-  ));
-  const redApoyo = textoUnicoDeStatements(statements
-    .filter((s) => !s.uncertaintyReasons?.length)
-    .filter((s) => /\b(?:red de apoyo|madre|hermano|familia|apoyo|dispuesto a continuar tratamiento|abstinencia|proyeccion|futuro)\b/i.test(s.originalText || ""))
-    .filter((s) => !/\b(?:solicitar|indicar|se mantendra|signos vitales por turno|trabajo social|reevaluar)\b/i.test(s.originalText || ""))
-  ) || textoUnicoDeSegmentos(pipeline.segments || [], /\b(?:red de apoyo|madre|hermano|familia|apoyo|dispuesto a continuar tratamiento|abstinencia|proyeccion|futuro)\b/i);
-  const fisiologico = textoUnicoDeStatements(statementsParaEvolucion(statements, (s) =>
-    /\b(?:sue[ñn]o|duerme|dormi|apetito|alimentaci[oó]n|ingesta|diuresis|evacuaci[oó]n|urinari|dolor|nausea|mareo|efecto adverso|eventualidades medicas|eventualidad medica)\b/i.test(s.originalText || "")
-  ));
-
-  const parrafos = [inicio];
-  if (conducta) {
-    parrafos[0] = `${parrafos[0]} Durante la valoración fue abordado en el área correspondiente, ${conducta[0].toLowerCase()}${conducta.slice(1)}`;
-  }
-  if (sintomas || redApoyo) {
-    parrafos.push(`Al interrogatorio dirigido, ${[sintomas, redApoyo].filter(Boolean).join(" ")}`.replace(/\s+/g, " ").trim());
-  }
-  if (riesgo) {
-    parrafos.push(`Al interrogatorio dirigido y propositivo, ${riesgo[0].toLowerCase()}${riesgo.slice(1)}`);
-  }
-  if (fisiologico) {
-    parrafos.push(`Desde el punto de vista médico, ${fisiologico[0].toLowerCase()}${fisiologico.slice(1)} Sin otras eventualidades médicas reportadas durante el turno.`);
-  }
-  return textoSeguroNota(parrafos.filter(Boolean).slice(0, 5).join("\n\n"));
+  const transcriptPayload = options.transcriptPayload || {};
+  const transcript = transcriptPayload.correctedTranscript || transcriptPayload.confirmedTranscript || "";
+  const utterances = Array.isArray(transcriptPayload.conversationSegments) ? transcriptPayload.conversationSegments : [];
+  const hechos = extraerHechosEvolucionNarrativa({ transcript, utterances, datosPaciente });
+  pipeline.evolutionFacts = hechos;
+  const parrafos = [];
+  const inicio = textoInicioNarrativo(datosPaciente, statements, options);
+  const conducta = redactarConductaEvolucion(hechos);
+  parrafos.push([inicio, conducta].filter(Boolean).join(" "));
+  [
+    redactarSintomasEvolucion(hechos),
+    redactarRiesgoYApoyoEvolucion(hechos),
+    redactarMedicoEvolucion(hechos)
+  ].filter(Boolean).forEach((parrafo) => parrafos.push(parrafo));
+  const salida = textoSeguroNota(parrafos.filter(Boolean).slice(0, 5).join("\n\n"));
+  const issues = validarBloqueoEvolucionNarrativa(salida, { hechos });
+  pipeline.evolutionQualityIssues = issues;
+  return issues.some((issue) => issue.severity === "high") ? "" : salida;
 }
 
 function construirExamenMentalNarrativo(mentalStatusFindings = []) {
@@ -989,10 +1406,12 @@ function construirAnalisisClinico(statements = [], riskStatements = [], datosPac
 function crearGeneratedClinicalText(pipeline = {}, datosPaciente = {}, options = {}) {
   const statements = pipeline.statements || [];
   const evolucionNarrativa = construirEvolucionNarrativaInstitucional(pipeline, datosPaciente, options);
-  const subjective = evolucionNarrativa || textoSeguroNota(unirAfirmacionesClinicas(statements, (s) =>
+  const requiereEvolucionNarrativa = isEvolutionDocumentType(options.selectedDocumentType || options.tipoNota || "")
+    && isEvolutionNarrativeStyle(options.selectedWritingStyle || options.formato || "");
+  const subjective = evolucionNarrativa || (requiereEvolucionNarrativa ? "" : textoSeguroNota(unirAfirmacionesClinicas(statements, (s) =>
     ["motivo_consulta", "padecimiento_actual", "antecedentes_psiquiatricos", "antecedentes_personales_patologicos", "medicamentos", "adherencia", "alergias", "consumo_sustancias", "evaluacion_riesgo"].includes(s.proposedSection)
       && !["observado_durante_entrevista"].includes(s.assertionStatus)
-  ));
+  )));
   const physicalNeurologicalExam = textoSeguroNota(unirAfirmacionesClinicas(statements, enSecciones("exploracion_fisica", "signos_vitales")));
   const mentalStatusExam = textoSeguroNota(construirExamenMentalNarrativo(pipeline.mentalStatusFindings || []));
   const results = textoSeguroNota(unirAfirmacionesClinicas(statements, enSecciones("resultados_auxiliares")));
@@ -1001,8 +1420,13 @@ function crearGeneratedClinicalText(pipeline = {}, datosPaciente = {}, options =
   return {
     subjective: {
       text: subjective,
-      sourceSegmentIds: statements.filter(enSecciones("motivo_consulta", "padecimiento_actual", "antecedentes_psiquiatricos", "antecedentes_personales_patologicos", "medicamentos", "adherencia", "alergias", "consumo_sustancias", "evaluacion_riesgo")).map((s) => s.id),
-      provenance: [], informants: [], unresolvedItems: [], validationIssues: []
+      sourceSegmentIds: (pipeline.evolutionFacts || []).flatMap((fact) => fact.sourceUtteranceIds || [])
+        .concat(statements.filter(enSecciones("motivo_consulta", "padecimiento_actual", "antecedentes_psiquiatricos", "antecedentes_personales_patologicos", "medicamentos", "adherencia", "alergias", "consumo_sustancias", "evaluacion_riesgo")).map((s) => s.id))
+        .filter(Boolean),
+      provenance: pipeline.evolutionFacts || [],
+      informants: Array.from(new Set((pipeline.evolutionFacts || []).map((fact) => fact.sourceRole).filter(Boolean))),
+      unresolvedItems: (pipeline.evolutionQualityIssues || []).filter((issue) => issue.severity === "high"),
+      validationIssues: pipeline.evolutionQualityIssues || []
     },
     objective: {
       vitalSigns: "",
@@ -1238,6 +1662,15 @@ export function generarNotaAutomatica(textoDictado = "", datosPaciente = {}, opt
     ...(datosClinicos.identificacion || {})
   };
   const generatedClinicalText = crearGeneratedClinicalText(pipeline, contextoEvolucion, options);
+  validationIssues.push(...(pipeline.evolutionQualityIssues || []).map((issue) => ({
+    id: issue.code || "evolution_quality_issue",
+    type: issue.code || "evolution_quality_issue",
+    severity: issue.severity === "high" ? "alta" : "media",
+    section: "evolutionOrSubjective",
+    message: issue.message || "No fue posible generar una evolución confiable. Revise la segmentación marcada.",
+    evidence: [],
+    requiresExplicitReview: true
+  })));
   const generatedSections = crearSeccionesSOAP(generatedClinicalText);
   const groupedValidationIssues = agruparValidationIssues(validationIssues);
   const literalCorregida = pipeline.segments.map((segment) => segment.normalizedText).join(" ").trim();

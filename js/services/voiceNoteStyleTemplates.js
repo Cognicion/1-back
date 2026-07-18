@@ -84,5 +84,7 @@ export function isEvolutionNarrativeStyle(styleId = "") {
 }
 
 export function isEvolutionDocumentType(documentType = "") {
-  return /evolucion|observacion/i.test(String(documentType || ""));
+  const value = String(documentType || "");
+  if (/ingreso|egreso|traslado|urgencias|referencia|contrarreferencia|consulta/i.test(value)) return false;
+  return /evolucion|observacion/i.test(value);
 }
