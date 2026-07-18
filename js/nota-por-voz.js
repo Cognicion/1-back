@@ -4,7 +4,7 @@ import { obtenerUsuario, listarPacientes, medicoPuedeVer } from "./services/usua
 import { usuarioEsPersonalClinico } from "./utils/roles.js";
 import { obtenerNombrePacienteParaMostrar } from "./utils/nombresPacientes.js";
 import { createNoteGenerationProvider } from "./services/noteGenerationProviders.js";
-import { createConversationSegmentationProvider, crearClientRequestId } from "./services/conversationSegmentationProviders.js";
+import { createConversationSegmentationProvider, crearClientRequestId } from "./services/conversationSegmentationProviders.js?v=20260718-seg-timeout";
 import { segmentarConversacionClinica } from "./services/clinicalPipeline.js";
 import {
   VOICE_NOTE_FIELD_REGISTRY,
@@ -188,7 +188,8 @@ function actualizarLinks() {
   const qsNota = construirQueryContexto(state.noteId ? { notaId: state.noteId } : {});
   $("linkPacienteVoz")?.setAttribute("href", state.patientId ? `paciente.html${qsPaciente}` : "paciente.html");
   $("linkNotaTradicional")?.setAttribute("href", qsNota ? `nota.html?${qsNota}` : "nota.html");
-  $("linkNotaVoz")?.setAttribute("href", qsBase ? `nota-por-voz.html?${qsBase}` : "nota-por-voz.html");
+  const versionedVoiceUrl = qsBase ? `nota-por-voz.html?v=20260718-seg-timeout&${qsBase}` : "nota-por-voz.html?v=20260718-seg-timeout";
+  $("linkNotaVoz")?.setAttribute("href", versionedVoiceUrl);
 }
 
 function setPreparacionHabilitada(enabled, message = "") {
