@@ -9,7 +9,7 @@ import {
   CONVERSATION_SEGMENTATION_PROMPT_VERSION,
   createConversationSegmentationProvider,
   crearClientRequestId
-} from "./services/conversationSegmentationProviders.js?v=20260719-adaptive-block-split";
+} from "./services/conversationSegmentationProviders.js?v=20260719-monotonic-block-retry";
 import { segmentarConversacionClinica } from "./services/clinicalPipeline.js";
 import {
   VOICE_NOTE_FIELD_REGISTRY,
@@ -734,7 +734,7 @@ function actualizarLinks() {
   const qsNota = construirQueryContexto(state.noteId ? { notaId: state.noteId } : {});
   $("linkPacienteVoz")?.setAttribute("href", state.patientId ? `paciente.html${qsPaciente}` : "paciente.html");
   $("linkNotaTradicional")?.setAttribute("href", qsNota ? `nota.html?${qsNota}` : "nota.html");
-  const versionedVoiceUrl = qsBase ? `nota-por-voz.html?v=20260719-adaptive-block-split&${qsBase}` : "nota-por-voz.html?v=20260719-adaptive-block-split";
+  const versionedVoiceUrl = qsBase ? `nota-por-voz.html?v=20260719-monotonic-block-retry&${qsBase}` : "nota-por-voz.html?v=20260719-monotonic-block-retry";
   $("linkNotaVoz")?.setAttribute("href", versionedVoiceUrl);
 }
 
@@ -1519,13 +1519,105 @@ function contarBloquesManifest(manifest = {}) {
   const blocks = Array.isArray(manifest?.blocks) ? manifest.blocks : [];
   const parentBlocks = blocks.filter((block) => !block.parentBlockId && !block.parentBlockKey);
   const rows = parentBlocks.length ? parentBlocks : blocks;
-  const completed = rows.filter((block) => ["completed", "success", "completed_from_children"].includes(block.status)).length;
+  const completed = rows.filter((block) => esBloqueSegmentacionCompletado(block)).length;
   const failed = rows.filter((block) => block.status === "failed").length;
   const requiresSplit = rows.filter((block) => block.status === "requires_split").length;
   const cancelled = rows.filter((block) => block.status === "cancelled").length;
   const total = Number(manifest.totalBlocks || rows.length || blocks.length || 0);
   const pending = Math.max(0, total - completed - failed - requiresSplit - cancelled);
   return { total, completed, failed, requiresSplit, cancelled, pending };
+}
+
+function esBloqueSegmentacionCompletado(block = {}) {
+  return ["completed", "success", "completed_from_children"].includes(block?.status);
+}
+
+function esBloquePadreSegmentacion(block = {}) {
+  return !block.parentBlockId && !block.parentBlockKey;
+}
+
+function prioridadBloqueSegmentacion(block = {}) {
+  if (esBloqueSegmentacionCompletado(block)) return 5;
+  if (block.status === "requires_split") return 4;
+  if (block.status === "processing") return 3;
+  if (block.status === "failed" || block.status === "cancelled") return 2;
+  if (block.status === "pending") return 1;
+  return 0;
+}
+
+function ordenarBloquesManifestSegmentacion(blocks = []) {
+  return [...blocks].sort((a, b) => {
+    const indexDiff = Number(a.blockIndex ?? a.blockNumber ?? 0) - Number(b.blockIndex ?? b.blockNumber ?? 0);
+    if (indexDiff) return indexDiff;
+    if (esBloquePadreSegmentacion(a) !== esBloquePadreSegmentacion(b)) return esBloquePadreSegmentacion(a) ? -1 : 1;
+    return String(a.blockKey || a.blockId || "").localeCompare(String(b.blockKey || b.blockId || ""));
+  });
+}
+
+function fusionarBloqueSegmentacion(prev = null, next = null) {
+  if (!prev) return next ? { ...next } : null;
+  if (!next) return { ...prev };
+  const prevCompleted = esBloqueSegmentacionCompletado(prev);
+  const nextCompleted = esBloqueSegmentacionCompletado(next);
+  if (prevCompleted && !nextCompleted) return { ...prev };
+  if (prev.status === "completed_from_children" && next.status !== "completed_from_children") return { ...prev };
+  if (nextCompleted && !prevCompleted) return { ...prev, ...next };
+  if (prioridadBloqueSegmentacion(next) < prioridadBloqueSegmentacion(prev)) return { ...prev };
+  return { ...prev, ...next };
+}
+
+function fusionarManifiestosSegmentacion(previousManifest = null, candidateManifest = null, options = {}) {
+  const previousBlocks = Array.isArray(previousManifest?.blocks) ? previousManifest.blocks : [];
+  const candidateBlocks = Array.isArray(candidateManifest?.blocks) ? candidateManifest.blocks : [];
+  if (!previousBlocks.length) return candidateManifest;
+  if (!candidateBlocks.length) return previousManifest;
+
+  const previousCounts = contarBloquesManifest(previousManifest);
+  const candidateCounts = contarBloquesManifest(candidateManifest);
+  const byKey = new Map();
+  previousBlocks.forEach((block) => {
+    const key = block.blockKey || block.blockId || `${block.blockIndex}:${block.parentBlockKey || ""}`;
+    byKey.set(key, { ...block });
+  });
+  candidateBlocks.forEach((block) => {
+    const key = block.blockKey || block.blockId || `${block.blockIndex}:${block.parentBlockKey || ""}`;
+    byKey.set(key, fusionarBloqueSegmentacion(byKey.get(key), block));
+  });
+  const mergedBlocks = ordenarBloquesManifestSegmentacion(Array.from(byKey.values()).filter(Boolean));
+  const mergedManifest = {
+    ...(previousManifest || {}),
+    ...(candidateManifest || {}),
+    totalBlocks: previousManifest?.totalBlocks || candidateManifest?.totalBlocks || mergedBlocks.filter(esBloquePadreSegmentacion).length || mergedBlocks.length,
+    blocks: mergedBlocks
+  };
+  const mergedCounts = contarBloquesManifest(mergedManifest);
+  if (candidateCounts.completed < previousCounts.completed) {
+    registrarPersistenciaVoz("manifest_regression_rejected", {
+      previousCompleted: previousCounts.completed,
+      candidateCompleted: candidateCounts.completed,
+      mergedCompleted: mergedCounts.completed,
+      pendingIdsCount: obtenerBlockKeysPendientesManifest(previousManifest).length,
+      requestedIdsCount: Array.isArray(options.requestedIds) ? options.requestedIds.length : 0,
+      cacheHits: previousCounts.completed
+    });
+  }
+  return mergedManifest;
+}
+
+function obtenerBlockKeysPendientesManifest(manifest = {}) {
+  const blocks = Array.isArray(manifest?.blocks) ? manifest.blocks : [];
+  const parentBlocks = blocks.filter(esBloquePadreSegmentacion);
+  const rows = parentBlocks.length ? parentBlocks : blocks;
+  return rows
+    .filter((block) => !esBloqueSegmentacionCompletado(block))
+    .filter((block) => ["pending", "failed", "cancelled", "requires_split", "processing"].includes(block.status || "pending"))
+    .map((block) => block.blockKey)
+    .filter(Boolean);
+}
+
+function tieneManifiestoActivoPendiente() {
+  const counts = contarBloquesManifest(state.segmentationMetadata?.blockManifest || {});
+  return Boolean(counts.total && (counts.pending || counts.failed || counts.requiresSplit || counts.cancelled));
 }
 
 function esActividadSignificativaVoz(reason = "") {
@@ -2510,7 +2602,32 @@ async function segmentarConProveedor(options = {}) {
   const cachedCounts = contarBloquesManifest(cached?.blockManifest || {});
   const cachedCompleted = cachedCounts.completed || 0;
   const cachedTotal = cached?.blockManifest?.totalBlocks || cached?.blockManifest?.blocks?.length || 0;
-  if (cached?.utterances?.length && (!cachedTotal || cachedCompleted >= cachedTotal)) {
+  const activeManifestBeforeRun = state.segmentationMetadata?.blockManifest || null;
+  if (cached?.blockManifest?.blocks?.length && activeManifestBeforeRun?.blocks?.length) {
+    cached.blockManifest = fusionarManifiestosSegmentacion(activeManifestBeforeRun, cached.blockManifest, { requestedIds: options.onlyBlockKeys || [] });
+    const reconciledCounts = contarBloquesManifest(cached.blockManifest);
+    cached.completedBlocks = reconciledCounts.completed;
+    cached.totalBlocks = reconciledCounts.total;
+    cached.pendingBlocks = reconciledCounts.pending + reconciledCounts.failed + reconciledCounts.requiresSplit;
+  } else if (!cached?.blockManifest?.blocks?.length && activeManifestBeforeRun?.blocks?.length) {
+    cached = {
+      provider: state.segmentationMetadata?.provider || "hybrid",
+      mode: state.segmentationMetadata?.mode || state.conversationSegmentationMode || "hybrid",
+      promptVersion: state.segmentationMetadata?.promptVersion || CONVERSATION_SEGMENTATION_PROMPT_VERSION,
+      model: state.segmentationMetadata?.model || "external_callable",
+      transcriptHash,
+      blockManifest: activeManifestBeforeRun,
+      completedBlocks: contarBloquesManifest(activeManifestBeforeRun).completed,
+      totalBlocks: contarBloquesManifest(activeManifestBeforeRun).total,
+      pendingBlocks: obtenerBlockKeysPendientesManifest(activeManifestBeforeRun).length,
+      utterances: state.conversationSegments || [],
+      warnings: state.conversationWarnings || []
+    };
+  }
+  const effectiveCachedCounts = contarBloquesManifest(cached?.blockManifest || {});
+  const effectiveCachedCompleted = effectiveCachedCounts.completed || 0;
+  const effectiveCachedTotal = cached?.blockManifest?.totalBlocks || cached?.blockManifest?.blocks?.length || 0;
+  if (cached?.utterances?.length && (!effectiveCachedTotal || effectiveCachedCompleted >= effectiveCachedTotal)) {
     state.conversationSegments = cached.utterances || [];
     state.conversationWarnings = cached.warnings || [];
     state.conversationSegmentationMode = cached.mode || cached.provider || "hybrid";
@@ -2540,7 +2657,7 @@ async function segmentarConProveedor(options = {}) {
     programarPersistenciaVoz("segmentation-cache-hit");
     return { provider: state.segmentationMetadata.provider, segmentationMode: state.conversationSegmentationMode, utterances: state.conversationSegments, warnings: state.conversationWarnings, cacheHit: true };
   }
-  if (cachedTotal && cachedCompleted < cachedTotal) {
+  if (effectiveCachedTotal && effectiveCachedCompleted < effectiveCachedTotal) {
     state.segmentationMetadata = {
       ...(state.segmentationMetadata || {}),
       provider: "hybrid",
@@ -2548,16 +2665,16 @@ async function segmentarConProveedor(options = {}) {
       promptVersion: cached.promptVersion || CONVERSATION_SEGMENTATION_PROMPT_VERSION,
       model: cached.model || "external_callable",
       transcriptHash,
-      completedBlocks: cachedCompleted,
-      totalBlocks: cachedTotal,
-      pendingBlocks: Math.max(0, cachedTotal - cachedCompleted),
+      completedBlocks: effectiveCachedCompleted,
+      totalBlocks: effectiveCachedTotal,
+      pendingBlocks: effectiveCachedCounts.pending + effectiveCachedCounts.failed + effectiveCachedCounts.requiresSplit,
       blockManifest: cached.blockManifest,
       generatedAt: cached.generatedAt || cached.updatedAt || new Date().toISOString()
     };
-    if (button) button.textContent = cachedCounts.requiresSplit
-      ? `Dividir y reintentar ${cachedCounts.requiresSplit} bloques`
-      : `Reintentar ${Math.max(0, cachedTotal - cachedCompleted)} bloques pendientes`;
-    setText("voiceSegmentationStatus", `${cachedCompleted} de ${cachedTotal} bloques completados. Los resultados obtenidos estan guardados.`);
+    if (button) button.textContent = effectiveCachedCounts.requiresSplit
+      ? `Dividir y reintentar ${effectiveCachedCounts.requiresSplit} bloques`
+      : `Reintentar ${state.segmentationMetadata.pendingBlocks} bloques pendientes`;
+    setText("voiceSegmentationStatus", `${effectiveCachedCompleted} de ${effectiveCachedTotal} bloques completados. Los resultados obtenidos estan guardados.`);
     renderBlockManifestSegmentacion(state.segmentationMetadata.blockManifest);
   }
   const progressLabels = {
@@ -2578,7 +2695,7 @@ async function segmentarConProveedor(options = {}) {
     sourceTranscriptHash: transcriptHash,
     correctedTranscript: texto,
     transcriptSegments: snapshot.transcriptSegments || [],
-    cachedBlocks: cached?.blockManifest?.blocks || [],
+    cachedBlocks: fusionarManifiestosSegmentacion(activeManifestBeforeRun, cached?.blockManifest || null, { requestedIds: options.onlyBlockKeys || [] })?.blocks || cached?.blockManifest?.blocks || [],
     onlyBlockKeys: options.onlyBlockKeys || [],
     abortSignal: abortController?.signal || null,
     async onBlockSettled(block = {}) {
@@ -2589,8 +2706,14 @@ async function segmentarConProveedor(options = {}) {
         ...block,
         status: block.status === "success" ? "completed" : block.status
       });
-      const blocks = Array.from(byKey.values()).sort((a, b) => Number(a.blockIndex ?? a.blockNumber ?? 0) - Number(b.blockIndex ?? b.blockNumber ?? 0));
-      const counts = contarBloquesManifest({ blocks, totalBlocks: state.segmentationMetadata?.totalBlocks || blocks.length });
+      const candidateManifest = {
+        ...(state.segmentationMetadata?.blockManifest || {}),
+        totalBlocks: state.segmentationMetadata?.totalBlocks || state.segmentationMetadata?.blockManifest?.totalBlocks || manifestBlocks.length,
+        blocks: Array.from(byKey.values())
+      };
+      const mergedManifest = fusionarManifiestosSegmentacion(state.segmentationMetadata?.blockManifest || activeManifestBeforeRun, candidateManifest, { requestedIds: options.onlyBlockKeys || [] });
+      const blocks = mergedManifest?.blocks || [];
+      const counts = contarBloquesManifest(mergedManifest);
       const completed = counts.completed;
       state.segmentationMetadata = {
         ...(state.segmentationMetadata || {}),
@@ -2600,14 +2723,15 @@ async function segmentarConProveedor(options = {}) {
         model: "external_callable",
         transcriptHash,
         completedBlocks: completed,
-        totalBlocks: blocks.length,
+        totalBlocks: counts.total,
         pendingBlocks: counts.pending + counts.failed + counts.requiresSplit,
         blockManifest: {
+          ...(mergedManifest || {}),
           sourceTranscriptHash: transcriptHash,
           promptVersion: CONVERSATION_SEGMENTATION_PROMPT_VERSION,
           model: "external_callable",
           segmenterVersion: CONVERSATION_SEGMENTATION_CLIENT_VERSION,
-          totalBlocks: blocks.length,
+          totalBlocks: counts.total,
           blocks
         },
         generatedAt: new Date().toISOString()
@@ -2630,7 +2754,9 @@ async function segmentarConProveedor(options = {}) {
         setText("voiceSegmentationStatus", `${base}${suffix} ${progress.blockCount || 0} bloques: ${cachedCount} recuperados, ${Math.max(0, (progress.blockCount || 0) - cachedCount - providerCount - failedCount)} por procesar.`);
       }
       if (progress.blockManifest?.length) {
-        const progressCounts = contarBloquesManifest({ totalBlocks: progress.blockCount || progress.blockManifest.length, blocks: progress.blockManifest });
+        const candidateManifest = { totalBlocks: progress.blockCount || progress.blockManifest.length, blocks: progress.blockManifest };
+        const mergedManifest = fusionarManifiestosSegmentacion(state.segmentationMetadata?.blockManifest || activeManifestBeforeRun, candidateManifest, { requestedIds: options.onlyBlockKeys || [] });
+        const progressCounts = contarBloquesManifest(mergedManifest);
         const completed = progressCounts.completed;
         state.segmentationMetadata = {
           ...(state.segmentationMetadata || {}),
@@ -2638,18 +2764,21 @@ async function segmentarConProveedor(options = {}) {
           model: "external_callable",
           transcriptHash,
           completedBlocks: completed,
-          totalBlocks: progress.blockCount || progress.blockManifest.length,
+          totalBlocks: progressCounts.total,
           pendingBlocks: progressCounts.pending + progressCounts.failed + progressCounts.requiresSplit,
           blockManifest: {
+            ...(mergedManifest || {}),
             sourceTranscriptHash: transcriptHash,
             promptVersion: CONVERSATION_SEGMENTATION_PROMPT_VERSION,
             model: "external_callable",
             segmenterVersion: CONVERSATION_SEGMENTATION_CLIENT_VERSION,
-            totalBlocks: progress.blockCount || progress.blockManifest.length,
-            blocks: progress.blockManifest
+            totalBlocks: progressCounts.total,
+            blocks: mergedManifest?.blocks || progress.blockManifest
           }
         };
         renderBlockManifestSegmentacion(state.segmentationMetadata.blockManifest);
+        const stableCounts = contarBloquesManifest(state.segmentationMetadata.blockManifest);
+        setText("voiceSegmentationStatus", `${base} Bloques: ${stableCounts.completed}/${stableCounts.total}. ${stableCounts.total} bloques: ${stableCounts.completed} recuperados o completados, ${stableCounts.pending + stableCounts.failed + stableCounts.requiresSplit} por procesar.`);
       }
       renderDetalleTecnicoSegmentacion(null, {
         clientRequestId: progress.clientRequestId || clientRequestId,
@@ -2665,6 +2794,8 @@ async function segmentarConProveedor(options = {}) {
   });
   try {
     const result = await state.activeSegmentationRequest;
+    const finalMergedManifest = fusionarManifiestosSegmentacion(state.segmentationMetadata?.blockManifest || activeManifestBeforeRun, result.blockManifest || null, { requestedIds: options.onlyBlockKeys || [] }) || state.segmentationMetadata?.blockManifest || result.blockManifest || null;
+    const finalMergedCounts = contarBloquesManifest(finalMergedManifest || {});
     state.conversationSegments = result.utterances || [];
     state.conversationWarnings = result.warnings || [];
     state.conversationSegmentationMode = result.segmentationMode || result.mode || result.provider || "hybrid";
@@ -2674,10 +2805,10 @@ async function segmentarConProveedor(options = {}) {
       promptVersion: result.promptVersion || "conversation_segmentation_es_mx_v2_2026-07-18",
       model: result.model || "external_callable",
       transcriptHash,
-      completedBlocks: result.metrics?.externalBlockCount || 0,
-      totalBlocks: result.metrics?.blockCount || 0,
-      pendingBlocks: Math.max(0, (result.metrics?.blockCount || 0) - (result.metrics?.externalBlockCount || 0)),
-      blockManifest: result.blockManifest || state.segmentationMetadata?.blockManifest || null,
+      completedBlocks: finalMergedCounts.completed || result.metrics?.externalBlockCount || 0,
+      totalBlocks: finalMergedCounts.total || result.metrics?.blockCount || 0,
+      pendingBlocks: finalMergedCounts.pending + finalMergedCounts.failed + finalMergedCounts.requiresSplit,
+      blockManifest: finalMergedManifest,
       generatedAt: new Date().toISOString()
     };
     state.segmentationFailure = result.providerFailure || null;
@@ -3558,10 +3689,15 @@ function conectarEventos() {
     if (event.inputType === "insertFromPaste") await flushPersistenciaVoz("transcript-paste");
     else programarPersistenciaVoz("transcript-edit");
   });
-  $("btnSegmentarConversacionVoz")?.addEventListener("click", () => segmentarConProveedor().catch((error) => {
+  $("btnSegmentarConversacionVoz")?.addEventListener("click", () => {
+    const pendingBlockKeys = tieneManifiestoActivoPendiente()
+      ? obtenerBlockKeysPendientesManifest(state.segmentationMetadata?.blockManifest || {})
+      : [];
+    segmentarConProveedor({ onlyBlockKeys: pendingBlockKeys }).catch((error) => {
     console.error("No se pudo segmentar la conversacion:", error);
     setText("voiceSegmentationStatus", "No se pudo segmentar con proveedor. Revise la transcripcion.");
-  }));
+    });
+  });
   $("btnCancelarPreparacionSegmentacionVoz")?.addEventListener("click", () => {
     state.activePreflightAbortController?.abort();
     setText("voiceSegmentationStatus", "Preparacion cancelada. La transcripcion se conserva.");

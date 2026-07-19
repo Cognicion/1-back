@@ -409,7 +409,9 @@ export class ExternalConversationSegmentationProvider {
     const onProgress = typeof payload.onProgress === "function" ? payload.onProgress : () => {};
     const clientRequestId = payload.clientRequestId || crearClientRequestId();
     const cacheKey = crearClaveCacheSegmentacion(payload);
-    if (SEGMENTATION_CACHE.has(cacheKey)) {
+    const blockRetryMode = Array.isArray(payload.cachedBlocks) && payload.cachedBlocks.length
+      || Array.isArray(payload.onlyBlockKeys) && payload.onlyBlockKeys.length;
+    if (!blockRetryMode && SEGMENTATION_CACHE.has(cacheKey)) {
       const cached = clonarResultado(SEGMENTATION_CACHE.get(cacheKey));
       onProgress({ stage: "cache_hit", clientRequestId, cacheKey });
       return {
@@ -424,7 +426,7 @@ export class ExternalConversationSegmentationProvider {
         }
       };
     }
-    if (PENDING_SEGMENTATION_REQUESTS.has(cacheKey)) {
+    if (!blockRetryMode && PENDING_SEGMENTATION_REQUESTS.has(cacheKey)) {
       onProgress({ stage: "pending_reuse", clientRequestId, cacheKey });
       const pending = await PENDING_SEGMENTATION_REQUESTS.get(cacheKey);
       return {
@@ -621,7 +623,6 @@ export class ExternalConversationSegmentationProvider {
       });
     };
 
-    emitProgress("block_manifest_ready", { recoveredBlocks: 0 });
     for (let index = 0; index < blocks.length; index += 1) {
       const cached = obtenerCacheBloque(blocks[index], index);
       if (!cacheBloqueValido(blocks[index], cached)) continue;
@@ -638,8 +639,8 @@ export class ExternalConversationSegmentationProvider {
         requestId: cached.requestId || `${clientRequestId}:cache:b${index + 1}`,
         durationMs: cached.durationMs || 0
       };
-      emitProgress("block_cache_hit", { blockId: blocks[index].blockId });
     }
+    emitProgress("block_manifest_ready", { recoveredBlocks: cachedCount });
 
     const processingUnits = [];
     const prepararSplit = (parent, parentIndex) => {

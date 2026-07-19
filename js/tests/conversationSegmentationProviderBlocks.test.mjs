@@ -245,6 +245,139 @@ assert.equal(reintentoCatorce.metrics.providerBlockCount, 4, "el reintento envia
 assert.equal(reintentoCatorce.metrics.failedBlockCount, 0, "el reintento no conserva fallos si los cuatro terminan");
 assert.equal(reintentoCatorce.blockManifest.blocks.filter((block) => block.status === "completed").length, 14, "el manifiesto recompuesto conserva catorce bloques completados");
 
+const manifestDoceDeCatorce = reintentoCatorce.blockManifest.blocks.map((block, index) => {
+  if (index === 3) {
+    return {
+      ...block,
+      status: "completed_from_children",
+      source: "cache",
+      childBlockIds: ["child-a", "child-b"],
+      utterances: block.utterances?.length ? block.utterances : [
+        {
+          text: "Bloque completado por subbloques.",
+          probableRole: "patient",
+          speechAct: "answer",
+          requiresReview: false
+        }
+      ]
+    };
+  }
+  if (index === 12 || index === 13) {
+    return {
+      ...block,
+      status: "pending",
+      source: "basic",
+      utterances: []
+    };
+  }
+  return {
+    ...block,
+    status: "completed",
+    source: "cache",
+    utterances: block.utterances?.length ? block.utterances : [
+      {
+        text: `Bloque ${index + 1} en cache.`,
+        probableRole: "clinician",
+        speechAct: "clinical_summary",
+        requiresReview: false
+      }
+    ]
+  };
+});
+let retryTwoProviderCallCount = 0;
+const requestedBlockIds = [];
+const completedProgressValues = [];
+const completedProgressStages = [];
+let manifestRegressionCount = 0;
+let manifestWasRebuilt = false;
+const pendingBlockKeys = manifestDoceDeCatorce
+  .filter((block) => block.status === "pending")
+  .map((block) => block.blockKey);
+const providerRetryTwo = new ExternalConversationSegmentationProvider({
+  callable: async (payload) => {
+    retryTwoProviderCallCount += 1;
+    requestedBlockIds.push(payload.blockKey);
+    return {
+      data: {
+        provider: "external",
+        segmentationMode: "linguistic",
+        requestId: payload.clientRequestId,
+        utterances: [
+          {
+            text: `Pendiente ${payload.chunkIndex} resuelto.`,
+            probableRole: "patient",
+            speechAct: "answer",
+            sourceSegmentIds: payload.sourceSegments.map((segment) => segment.id),
+            requiresReview: false
+          }
+        ],
+        warnings: []
+      }
+    };
+  }
+});
+providerRetryTwo.local = providerCatorce.local;
+const completedBeforeRetryTwo = manifestDoceDeCatorce.filter((block) => ["completed", "success", "completed_from_children"].includes(block.status)).length;
+const retryTwoResult = await providerRetryTwo.segment({
+  text: "fixture catorce bloques " + "contenido ".repeat(500),
+  transcriptId: "retry-14",
+  clientRequestId: "retry-two",
+  sourceTranscriptHash: reintentoCatorce.blockManifest.sourceTranscriptHash,
+  cachedBlocks: manifestDoceDeCatorce,
+  onlyBlockKeys: pendingBlockKeys,
+  onProgress: (progress) => {
+    if (!Array.isArray(progress.blockManifest)) return;
+    const parentRows = progress.blockManifest.filter((block) => !block.parentBlockId && !block.parentBlockKey);
+    const completed = parentRows.filter((block) => ["completed", "success", "completed_from_children"].includes(block.status)).length;
+    completedProgressValues.push(completed);
+    completedProgressStages.push(`${progress.stage}:${completed}`);
+    if (completed < completedBeforeRetryTwo) manifestRegressionCount += 1;
+    if (parentRows.length !== 14) manifestWasRebuilt = true;
+  }
+});
+const completedAfterRetryTwo = retryTwoResult.blockManifest.blocks
+  .filter((block) => !block.parentBlockId && !block.parentBlockKey)
+  .filter((block) => ["completed", "success", "completed_from_children"].includes(block.status)).length;
+assert.equal(retryTwoProviderCallCount, 2, "providerCallCount === 2");
+assert.equal(requestedBlockIds.length, 2, "requestedBlockIds.length === 2");
+assert.deepEqual(new Set(requestedBlockIds), new Set(pendingBlockKeys), "solo se solicitan los dos bloques pendientes");
+assert.equal(completedBeforeRetryTwo, 12, "completedBefore === 12");
+assert.equal(Math.min(...completedProgressValues), 12, `minimumCompletedDuringRun >= 12 (${completedProgressStages.join(", ")})`);
+assert.equal(completedAfterRetryTwo, 14, "completedAfter === 14");
+assert.equal(retryTwoResult.blockManifest.totalBlocks, 14, "totalParents === 14");
+assert.equal(manifestWasRebuilt, false, "manifestWasRebuilt === false");
+assert.equal(manifestRegressionCount, 0, "manifestRegressionCount === 0");
+
+let retryTwoFailureCallCount = 0;
+const providerRetryTwoFailure = new ExternalConversationSegmentationProvider({
+  callable: async (payload) => {
+    retryTwoFailureCallCount += 1;
+    const error = new Error("deadline");
+    error.code = "functions/deadline-exceeded";
+    error.details = {
+      requestId: payload.clientRequestId,
+      stage: "provider_request",
+      retryable: true
+    };
+    throw error;
+  }
+});
+providerRetryTwoFailure.local = providerCatorce.local;
+const retryTwoFailure = await providerRetryTwoFailure.segment({
+  text: "fixture catorce bloques " + "contenido ".repeat(500),
+  transcriptId: "retry-14",
+  clientRequestId: "retry-two-failure",
+  sourceTranscriptHash: reintentoCatorce.blockManifest.sourceTranscriptHash,
+  cachedBlocks: manifestDoceDeCatorce,
+  onlyBlockKeys: pendingBlockKeys
+});
+const completedAfterRetryTwoFailure = retryTwoFailure.blockManifest.blocks
+  .filter((block) => !block.parentBlockId && !block.parentBlockKey)
+  .filter((block) => ["completed", "success", "completed_from_children"].includes(block.status)).length;
+assert.equal(retryTwoFailureCallCount, 2, "si falla el reintento, providerCallCount sigue siendo 2");
+assert.equal(completedAfterRetryTwoFailure, 12, "si los pendientes fallan, el resultado permanece 12/14");
+assert.equal(retryTwoFailure.provider, "hybrid_review_required", "si los pendientes fallan, conserva modo hybrid_review_required");
+
 const failedParentIndexes = new Set([4, 5, 12]);
 const adaptiveModel = "adaptive_external_callable";
 const providerAdaptiveBase = new ExternalConversationSegmentationProvider({

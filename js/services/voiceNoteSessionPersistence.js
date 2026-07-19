@@ -43,7 +43,7 @@ function logPersistenciaLocal(stage, payload = {}, extra = {}) {
       transcriptLength: String(transcript.corrected || transcript.original || "").length,
       blockManifest: Boolean(blocks.length),
       totalBlocks: Number(manifest.totalBlocks || payload.totalBlocks || blocks.length || 0),
-      completedBlocks: blocks.filter((block) => ["completed", "success"].includes(block.status)).length || payload.completedBlocks || 0,
+      completedBlocks: blocks.filter((block) => ["completed", "success", "completed_from_children"].includes(block.status)).length || payload.completedBlocks || 0,
       failedBlocks: blocks.filter((block) => block.status === "failed").length || payload.failedBlocks || 0,
       pendingBlocks: payload.pendingBlocks || 0,
       ...extra
@@ -368,8 +368,8 @@ export async function guardarSegmentacionNotaVozLocal(payload = {}, { ttlMs = VO
   const key = crearSegmentationKeyVoz(payload);
   const previous = await obtener(STORE_SEGMENTATION_RESULTS, key);
   const previousPayload = previous?.payload || null;
-  const incomingCompleted = Number(payload.completedBlocks || payload.blockManifest?.blocks?.filter((block) => block.status === "completed").length || 0);
-  const previousCompleted = Number(previousPayload?.completedBlocks || previousPayload?.blockManifest?.blocks?.filter((block) => block.status === "completed").length || 0);
+  const incomingCompleted = Number(payload.completedBlocks || payload.blockManifest?.blocks?.filter((block) => ["completed", "success", "completed_from_children"].includes(block.status)).length || 0);
+  const previousCompleted = Number(previousPayload?.completedBlocks || previousPayload?.blockManifest?.blocks?.filter((block) => ["completed", "success", "completed_from_children"].includes(block.status)).length || 0);
   if (previousPayload && incomingCompleted < previousCompleted && !payload.allowOlderProgress) return previousPayload;
   logPersistenciaLocal("serialization_validated", payload);
   const safePayload = clonarSerializable(payload);
