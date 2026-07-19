@@ -9,7 +9,7 @@ import {
   CONVERSATION_SEGMENTATION_PROMPT_VERSION,
   createConversationSegmentationProvider,
   crearClientRequestId
-} from "./services/conversationSegmentationProviders.js?v=20260719-stop-save";
+} from "./services/conversationSegmentationProviders.js?v=20260719-preflight-unblock";
 import { segmentarConversacionClinica } from "./services/clinicalPipeline.js";
 import {
   VOICE_NOTE_FIELD_REGISTRY,
@@ -35,7 +35,7 @@ import {
   hashTextoVoz,
   limpiarSesionesNotaVozVencidas,
   obtenerSegmentacionNotaVozLocal
-} from "./services/voiceNoteSessionPersistence.js?v=20260719-stop-save";
+} from "./services/voiceNoteSessionPersistence.js?v=20260719-preflight-unblock";
 import {
   VOICE_NOTE_CATALOG_VERSION,
   VOICE_NOTE_STYLE_CATALOG_VERSION,
@@ -95,11 +95,13 @@ const state = {
   conversationRedo: [],
   activeSegmentationRequest: null,
   activeSegmentationAbortController: null,
+  activePreflightAbortController: null,
   activeGenerationRequest: null,
   isHydratingSession: true,
   persistenceReady: false,
   persistenceTimer: null,
   persistenceQueue: Promise.resolve(),
+  pendingPersistenceOperations: 0,
   saveStatus: "pending",
   lastSaveError: null,
   recoverableSession: null,
@@ -723,7 +725,7 @@ function actualizarLinks() {
   const qsNota = construirQueryContexto(state.noteId ? { notaId: state.noteId } : {});
   $("linkPacienteVoz")?.setAttribute("href", state.patientId ? `paciente.html${qsPaciente}` : "paciente.html");
   $("linkNotaTradicional")?.setAttribute("href", qsNota ? `nota.html?${qsNota}` : "nota.html");
-  const versionedVoiceUrl = qsBase ? `nota-por-voz.html?v=20260719-stop-save&${qsBase}` : "nota-por-voz.html?v=20260719-stop-save";
+  const versionedVoiceUrl = qsBase ? `nota-por-voz.html?v=20260719-preflight-unblock&${qsBase}` : "nota-por-voz.html?v=20260719-preflight-unblock";
   $("linkNotaVoz")?.setAttribute("href", versionedVoiceUrl);
 }
 
@@ -1542,6 +1544,8 @@ function registrarPersistenciaVoz(stage, extra = {}) {
     completedBlocks: counts.completed,
     failedBlocks: counts.failed,
     pendingBlocks: counts.pending,
+    queueState: state.pendingPersistenceOperations ? "busy" : "idle",
+    pendingOperations: state.pendingPersistenceOperations || 0,
     ...extra
   });
 }
@@ -1558,18 +1562,42 @@ function setSaveStatus(status, message = "") {
   if (segmentButton && !state.activeSegmentationRequest) segmentButton.disabled = status !== "saved" && hayDatosVoz();
 }
 
+function crearErrorLocalVoz(message, code = "local_error") {
+  const error = new Error(message);
+  error.code = code;
+  return error;
+}
+
+function conTimeoutLocal(promise, timeoutMs, code, onTimeout = null) {
+  let timeoutId = null;
+  return Promise.race([
+    promise.finally(() => {
+      if (timeoutId) window.clearTimeout(timeoutId);
+    }),
+    new Promise((_resolve, reject) => {
+      timeoutId = window.setTimeout(() => {
+        onTimeout?.();
+        reject(crearErrorLocalVoz("Operacion local agotada.", code));
+      }, timeoutMs);
+    })
+  ]);
+}
+
 function programarPersistenciaVoz(reason = "update") {
   if (state.isHydratingSession || !state.persistenceReady) return;
   if (state.persistenceTimer) window.clearTimeout(state.persistenceTimer);
   setSaveStatus("pending", "Guardado local pendiente.");
-  state.persistenceTimer = window.setTimeout(() => persistirSesionVoz(reason), 850);
+  state.persistenceTimer = window.setTimeout(() => enqueuePersistenciaVoz(reason), 850);
 }
 
-async function persistirSesionVoz(reason = "update") {
+async function persistSnapshotVozRaw(reason = "update") {
   if (state.isHydratingSession || !state.persistenceReady || !state.user?.uid || !state.patientId) return null;
   const draft = normalizarSnapshotSesionVoz(construirBorradorSesionVoz());
   if (!draft.transcript.corrected && !draft.transcript.original && !draft.segmentation.utterances.length && !draft.segmentation.blockManifest?.blocks?.length && !draft.generatedNote) return null;
   setSaveStatus("saving", "Guardando sesion local...");
+  registrarPersistenciaVoz("snapshot_built", { reason, incomingSaveVersion: draft.saveVersion });
+  JSON.parse(JSON.stringify(draft));
+  registrarPersistenciaVoz("serialization_validated", { reason, incomingSaveVersion: draft.saveVersion });
   registrarPersistenciaVoz("saveSession:start", { reason, incomingSaveVersion: draft.saveVersion });
   const saved = await guardarSesionNotaVozLocal(draft);
   if (!saved) {
@@ -1603,12 +1631,17 @@ async function persistirSesionVoz(reason = "update") {
   return saved;
 }
 
-function flushPersistenciaVoz(reason = "flush", options = {}) {
-  if (state.persistenceTimer) {
-    window.clearTimeout(state.persistenceTimer);
-    state.persistenceTimer = null;
-  }
-  const run = () => persistirSesionVoz(reason).catch((error) => {
+function enqueuePersistenciaVoz(reason = "update", options = {}) {
+  registrarPersistenciaVoz("save_queued", { reason });
+  const run = async () => {
+    state.pendingPersistenceOperations += 1;
+    try {
+      return await persistSnapshotVozRaw(reason);
+    } finally {
+      state.pendingPersistenceOperations = Math.max(0, state.pendingPersistenceOperations - 1);
+    }
+  };
+  const queued = state.persistenceQueue.catch(() => null).then(run).catch((error) => {
     state.lastSaveError = error;
     setSaveStatus("failed", "No fue posible guardar esta sesion. No recargue esta pagina.");
     registrarPersistenciaVoz("flushSessionSave:error", {
@@ -1619,8 +1652,19 @@ function flushPersistenciaVoz(reason = "flush", options = {}) {
     if (options.throwOnError) throw error;
     return null;
   });
-  state.persistenceQueue = state.persistenceQueue.catch(() => null).then(run);
-  return state.persistenceQueue;
+  const finalQueue = queued.finally(() => {
+    if (state.persistenceQueue === finalQueue) state.persistenceQueue = Promise.resolve();
+  });
+  state.persistenceQueue = finalQueue;
+  return finalQueue;
+}
+
+function flushPersistenciaVoz(reason = "flush", options = {}) {
+  if (state.persistenceTimer) {
+    window.clearTimeout(state.persistenceTimer);
+    state.persistenceTimer = null;
+  }
+  return enqueuePersistenciaVoz(reason, options);
 }
 
 function mostrarPanelRecuperacionSesion(session = null) {
@@ -2030,28 +2074,106 @@ async function segmentarConProveedor(options = {}) {
   if (state.activeSegmentationRequest) return state.activeSegmentationRequest;
   const clientRequestId = crearClientRequestId();
   const button = $("btnSegmentarConversacionVoz");
-  if (button) button.disabled = true;
+  const cancelPrepButton = $("btnCancelarPreparacionSegmentacionVoz");
+  if (button) {
+    button.disabled = true;
+    button.textContent = "Preparando...";
+  }
+  if (cancelPrepButton) {
+    cancelPrepButton.hidden = false;
+    cancelPrepButton.disabled = false;
+  }
+  if ($("btnDetenerSegmentacionVoz")) $("btnDetenerSegmentacionVoz").hidden = true;
+  const preflightAbort = typeof AbortController !== "undefined" ? new AbortController() : { signal: { aborted: false }, abort() { this.signal.aborted = true; } };
+  state.activePreflightAbortController = preflightAbort;
+  const preflightStartedAt = Date.now();
   setText("voiceSegmentationStatus", "Preparando transcripcion...");
   renderDetalleTecnicoSegmentacion(null);
-  const provider = await obtenerProveedorSegmentacion();
-  const snapshot = snapshotDictado();
-  validarAislamientoSesion(snapshot);
-  const transcriptHash = hashTextoVoz(texto);
-  let cached = await obtenerSegmentacionNotaVozLocal({
-    ...contextoPersistenciaVoz(),
-    transcriptHash,
-    promptVersion: CONVERSATION_SEGMENTATION_PROMPT_VERSION,
-    model: "external_callable",
-    segmenterVersion: CONVERSATION_SEGMENTATION_CLIENT_VERSION
-  });
-  if (!cached?.utterances?.length && !cached?.blockManifest?.blocks?.length) {
-    cached = await obtenerSegmentacionNotaVozLocal({
-      ...contextoPersistenciaVoz(),
-      transcriptHash,
-      promptVersion: CONVERSATION_SEGMENTATION_PROMPT_VERSION,
-      model: "external_callable",
-      segmenterVersion: "conversation_segmentation_client_blocks_v1_2026-07-18"
+  let snapshot;
+  let transcriptHash;
+  let cached;
+  try {
+    registrarPersistenciaVoz("preflight_started", { clientRequestId });
+    const preflight = await conTimeoutLocal((async () => {
+      snapshot = snapshotDictado();
+      validarAislamientoSesion(snapshot);
+      transcriptHash = hashTextoVoz(texto);
+      if (preflightAbort.signal?.aborted) throw crearErrorLocalVoz("Preparacion cancelada.", "preflight_cancelled");
+      let cachedResult = await obtenerSegmentacionNotaVozLocal({
+        ...contextoPersistenciaVoz(),
+        transcriptHash,
+        promptVersion: CONVERSATION_SEGMENTATION_PROMPT_VERSION,
+        model: "external_callable",
+        segmenterVersion: CONVERSATION_SEGMENTATION_CLIENT_VERSION
+      });
+      if (!cachedResult?.utterances?.length && !cachedResult?.blockManifest?.blocks?.length) {
+        cachedResult = await obtenerSegmentacionNotaVozLocal({
+          ...contextoPersistenciaVoz(),
+          transcriptHash,
+          promptVersion: CONVERSATION_SEGMENTATION_PROMPT_VERSION,
+          model: "external_callable",
+          segmenterVersion: "conversation_segmentation_client_blocks_v1_2026-07-18"
+        });
+      }
+      if (preflightAbort.signal?.aborted) throw crearErrorLocalVoz("Preparacion cancelada.", "preflight_cancelled");
+      const saved = await flushPersistenciaVoz("before-segmentation-start", { throwOnError: true });
+      if (!saved) throw crearErrorLocalVoz("IndexedDB no confirmo el snapshot previo.", "preflight_save_failed");
+      return { cachedResult, saved };
+    })(), 15000, "preflight_timeout", () => preflightAbort.abort());
+    cached = preflight.cachedResult;
+    registrarPersistenciaVoz("preflight_completed", {
+      clientRequestId,
+      elapsedMs: Date.now() - preflightStartedAt,
+      savedSaveVersion: preflight.saved?.saveVersion || 0
     });
+  } catch (error) {
+    registrarPersistenciaVoz("preflight_failed", {
+      clientRequestId,
+      elapsedMs: Date.now() - preflightStartedAt,
+      errorCode: error?.code || error?.name || "preflight_error"
+    });
+    setSaveStatus("failed", "No fue posible preparar y guardar la sesion.");
+    setText("voiceSegmentationStatus", "No fue posible preparar y guardar la sesion.");
+    renderDetalleTecnicoSegmentacion({
+      code: error?.code || error?.name || "preflight_error",
+      stage: "preflight_failed",
+      requestId: clientRequestId,
+      retryable: true,
+      details: { stage: "preflight_failed", requestId: clientRequestId, retryable: true }
+    }, { clientRequestId, elapsedMs: Date.now() - preflightStartedAt, blockCount: 0 });
+    if (button) {
+      button.disabled = false;
+      button.textContent = "Segmentar con proveedor";
+    }
+    if (cancelPrepButton) cancelPrepButton.hidden = true;
+    state.activePreflightAbortController = null;
+    return { provider: "rule_based", segmentationMode: "linguistic", utterances: state.conversationSegments, warnings: state.conversationWarnings, providerStarted: false };
+  } finally {
+    if (cancelPrepButton) cancelPrepButton.hidden = true;
+    state.activePreflightAbortController = null;
+  }
+  let provider;
+  try {
+    provider = await conTimeoutLocal(obtenerProveedorSegmentacion(), 15000, "provider_init_timeout");
+  } catch (error) {
+    registrarPersistenciaVoz("preflight_failed", {
+      clientRequestId,
+      elapsedMs: Date.now() - preflightStartedAt,
+      errorCode: error?.code || error?.name || "provider_init_error"
+    });
+    setText("voiceSegmentationStatus", "No fue posible preparar el proveedor de segmentacion.");
+    renderDetalleTecnicoSegmentacion({
+      code: error?.code || error?.name || "provider_init_error",
+      stage: "provider_init",
+      requestId: clientRequestId,
+      retryable: true,
+      details: { stage: "provider_init", requestId: clientRequestId, retryable: true }
+    }, { clientRequestId, elapsedMs: Date.now() - preflightStartedAt, blockCount: 0 });
+    if (button) {
+      button.disabled = false;
+      button.textContent = "Segmentar con proveedor";
+    }
+    return { provider: "rule_based", segmentationMode: "linguistic", utterances: state.conversationSegments, warnings: state.conversationWarnings, providerStarted: false };
   }
   const cachedCompleted = cached?.blockManifest?.blocks?.filter((block) => block.status === "completed").length || 0;
   const cachedTotal = cached?.blockManifest?.totalBlocks || cached?.blockManifest?.blocks?.length || 0;
@@ -2112,13 +2234,7 @@ async function segmentarConProveedor(options = {}) {
   const abortController = typeof AbortController !== "undefined" ? new AbortController() : null;
   state.activeSegmentationAbortController = abortController;
   if ($("btnDetenerSegmentacionVoz")) $("btnDetenerSegmentacionVoz").hidden = false;
-  const persistedBeforeProvider = await flushPersistenciaVoz("before-segmentation-start");
-  if (!persistedBeforeProvider) {
-    setSaveStatus("failed", "No fue posible guardar esta sesion. No recargue esta pagina.");
-    if (button) button.disabled = false;
-    if ($("btnDetenerSegmentacionVoz")) $("btnDetenerSegmentacionVoz").hidden = true;
-    return { provider: "rule_based", segmentationMode: "linguistic", utterances: state.conversationSegments, warnings: state.conversationWarnings, persistedBeforeProvider: false };
-  }
+  registrarPersistenciaVoz("provider_started", { clientRequestId });
   state.activeSegmentationRequest = provider.segment({
     transcriptId: snapshot.transcriptSessionId || "manual",
     transcriptSessionId: snapshot.transcriptSessionId || "manual",
@@ -2164,6 +2280,8 @@ async function segmentarConProveedor(options = {}) {
       await flushPersistenciaVoz(`segmentation-block-${block.status}`, { throwOnError: true });
     },
     onProgress(progress = {}) {
+      if (progress.stage === "block_manifest_ready") registrarPersistenciaVoz("manifest_completed", { clientRequestId, blockCount: progress.blockCount || 0 });
+      if (progress.stage === "preparing") registrarPersistenciaVoz("manifest_started", { clientRequestId });
       const base = progressLabels[progress.stage] || "Identificando hablantes...";
       const suffix = progress.blockCount
         ? ` Bloques: ${progress.completedBlocks || 0}/${progress.blockCount}.`
@@ -3094,6 +3212,17 @@ function conectarEventos() {
     console.error("No se pudo segmentar la conversacion:", error);
     setText("voiceSegmentationStatus", "No se pudo segmentar con proveedor. Revise la transcripcion.");
   }));
+  $("btnCancelarPreparacionSegmentacionVoz")?.addEventListener("click", () => {
+    state.activePreflightAbortController?.abort();
+    setText("voiceSegmentationStatus", "Preparacion cancelada. La transcripcion se conserva.");
+    const button = $("btnSegmentarConversacionVoz");
+    if (button) {
+      button.disabled = state.saveStatus !== "saved" && hayDatosVoz();
+      button.textContent = "Segmentar con proveedor";
+    }
+    const cancelButton = $("btnCancelarPreparacionSegmentacionVoz");
+    if (cancelButton) cancelButton.hidden = true;
+  });
   $("btnDetenerSegmentacionVoz")?.addEventListener("click", async () => {
     const stopButton = $("btnDetenerSegmentacionVoz");
     if (stopButton) {

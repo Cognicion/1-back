@@ -27,6 +27,30 @@ function clonarSerializable(payload = {}) {
   }
 }
 
+function logPersistenciaLocal(stage, payload = {}, extra = {}) {
+  try {
+    const transcript = payload.transcript || {};
+    const segmentation = payload.segmentation || payload || {};
+    const manifest = segmentation.blockManifest || {};
+    const blocks = Array.isArray(manifest.blocks) ? manifest.blocks : [];
+    console.info("[voice-session-indexeddb]", {
+      stage,
+      sessionId: payload.sessionId || "",
+      saveVersion: payload.saveVersion || 0,
+      transcriptHash: String(transcript.transcriptHash || payload.transcriptHash || "").slice(0, 10),
+      transcriptLength: String(transcript.corrected || transcript.original || "").length,
+      blockManifest: Boolean(blocks.length),
+      totalBlocks: Number(manifest.totalBlocks || payload.totalBlocks || blocks.length || 0),
+      completedBlocks: blocks.filter((block) => ["completed", "success"].includes(block.status)).length || payload.completedBlocks || 0,
+      failedBlocks: blocks.filter((block) => block.status === "failed").length || payload.failedBlocks || 0,
+      pendingBlocks: payload.pendingBlocks || 0,
+      ...extra
+    });
+  } catch {
+    // La telemetria tecnica nunca debe bloquear el guardado clinico local.
+  }
+}
+
 export function claveSeguraVoz(valor = "sin-id") {
   return String(valor || "sin-id").replace(/[^\w.-]+/g, "_");
 }
@@ -199,6 +223,7 @@ export async function guardarSesionNotaVozLocal(payload = {}, { ttlMs = VOICE_NO
   const previousUpdated = Number(previousPayload?.updatedAtMs || Date.parse(previousPayload?.updatedAt) || 0);
   if (previousPayload && incomingVersion < previousVersion) return previousPayload;
   if (previousPayload && incomingVersion === previousVersion && incomingUpdated < previousUpdated) return previousPayload;
+  logPersistenciaLocal("serialization_validated", payload);
   const safePayload = clonarSerializable(payload);
   const record = clonarSerializable({
     key,
@@ -216,11 +241,15 @@ export async function guardarSesionNotaVozLocal(payload = {}, { ttlMs = VOICE_NO
       expiresAt: now + ttlMs
     }
   });
+  logPersistenciaLocal("transaction_started", record.payload);
   await conStore(STORE_SESSIONS, "readwrite", (store) => store.put(record));
+  logPersistenciaLocal("transaction_completed", record.payload, { transactionStatus: "complete" });
+  logPersistenciaLocal("readback_started", record.payload);
   const verified = await obtener(STORE_SESSIONS, key);
   if (!verified?.payload || verified.payload.sessionId !== record.payload.sessionId) {
     throw crearErrorPersistencia("IndexedDB no confirmo la lectura posterior del snapshot.", "verification_failed");
   }
+  logPersistenciaLocal("readback_completed", verified.payload, { transactionStatus: "verified" });
   return record.payload;
 }
 
@@ -252,6 +281,7 @@ export async function guardarSegmentacionNotaVozLocal(payload = {}, { ttlMs = VO
   const incomingCompleted = Number(payload.completedBlocks || payload.blockManifest?.blocks?.filter((block) => block.status === "completed").length || 0);
   const previousCompleted = Number(previousPayload?.completedBlocks || previousPayload?.blockManifest?.blocks?.filter((block) => block.status === "completed").length || 0);
   if (previousPayload && incomingCompleted < previousCompleted && !payload.allowOlderProgress) return previousPayload;
+  logPersistenciaLocal("serialization_validated", payload);
   const safePayload = clonarSerializable(payload);
   const record = clonarSerializable({
     key,
@@ -267,11 +297,15 @@ export async function guardarSegmentacionNotaVozLocal(payload = {}, { ttlMs = VO
       expiresAt: now + ttlMs
     }
   });
+  logPersistenciaLocal("transaction_started", record.payload);
   await conStore(STORE_SEGMENTATION_RESULTS, "readwrite", (store) => store.put(record));
+  logPersistenciaLocal("transaction_completed", record.payload, { transactionStatus: "complete" });
+  logPersistenciaLocal("readback_started", record.payload);
   const verified = await obtener(STORE_SEGMENTATION_RESULTS, key);
   if (!verified?.payload) {
     throw crearErrorPersistencia("IndexedDB no confirmo la lectura posterior de la segmentacion.", "segmentation_verification_failed");
   }
+  logPersistenciaLocal("readback_completed", verified.payload, { transactionStatus: "verified" });
   return record.payload;
 }
 

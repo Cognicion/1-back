@@ -6,7 +6,7 @@
   <title>Nota por voz y automática | Cognición</title>
   <link rel="stylesheet" href="css/theme.css">
   <link rel="stylesheet" href="css/dictado.css">
-  <link rel="stylesheet" href="css/nota-por-voz.css?v=20260719-stop-save">
+  <link rel="stylesheet" href="css/nota-por-voz.css?v=20260719-preflight-unblock">
   <link rel="icon" type="image/png" href="assets/favicon-cognicion.png">
 </head>
 <body>
@@ -15,7 +15,7 @@
     <a href="medico.html">Panel medico</a>
     <a id="linkPacienteVoz" href="paciente.html">Paciente</a>
     <a id="linkNotaTradicional" href="nota.html">Nota tradicional</a>
-    <a class="activo" id="linkNotaVoz" href="nota-por-voz.html?v=20260719-stop-save">Nota por voz y automática</a>
+    <a class="activo" id="linkNotaVoz" href="nota-por-voz.html?v=20260719-preflight-unblock">Nota por voz y automática</a>
   </aside>
 
   <main class="voice-shell">
@@ -127,6 +127,7 @@
           <div class="voice-card-title-row">
             <h3>Segmentacion conversacional</h3>
             <button id="btnSegmentarConversacionVoz" type="button" class="boton-secundario">Segmentar con proveedor</button>
+            <button id="btnCancelarPreparacionSegmentacionVoz" type="button" class="boton-secundario" hidden>Cancelar preparacion</button>
             <button id="btnDetenerSegmentacionVoz" type="button" class="boton-secundario" hidden>Detener</button>
           </div>
           <p id="voiceSegmentationStatus" class="voice-summary">Segmentacion basica. Revise los hablantes.</p>
@@ -279,6 +280,6 @@
   </main>
 
   <script type="module" src="js/dictado.js?v=20260718-context"></script>
-  <script type="module" src="js/nota-por-voz.js?v=20260719-stop-save"></script>
+  <script type="module" src="js/nota-por-voz.js?v=20260719-preflight-unblock"></script>
 </body>
 </html>
