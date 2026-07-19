@@ -177,23 +177,23 @@
     <div class="tabla-header">
       <div>
         <h2>Permisos institucionales de formatos</h2>
-        <p>Autoriza por usuario paquetes de formatos institucionales. No concede acceso a pacientes ajenos.</p>
+        <p>Autoriza paquetes de formatos institucionales a medicos o perfiles medicos compatibles. No concede acceso a pacientes ajenos.</p>
       </div>
       <button id="btnActualizarFormatosAdmin" type="button">Actualizar formatos</button>
     </div>
 
     <div class="filtros-auditoria">
-      <input id="filtroFormatosAdmin" placeholder="Buscar usuario, correo, rol o institucion">
+      <input id="filtroFormatosAdmin" placeholder="Buscar medico, correo, cedula, rol o institucion">
       <select id="filtroFormatosInstitucionAdmin">
         <option value="">Todas las instituciones</option>
       </select>
     </div>
 
     <div class="acciones-admin-inline">
-      <button id="btnAutorizarFrayVisibles" type="button">Otorgar formatos Fray</button>
-      <button id="btnRetirarFrayVisibles" type="button">Revocar formatos Fray</button>
-      <button id="btnAutorizarNavarroVisibles" type="button">Otorgar referencia Navarro</button>
-      <button id="btnRetirarNavarroVisibles" type="button">Revocar referencia Navarro</button>
+      <button id="btnAutorizarFrayVisibles" type="button">Otorgar formatos Fray al medico</button>
+      <button id="btnRetirarFrayVisibles" type="button">Revocar formatos Fray al medico</button>
+      <button id="btnAutorizarNavarroVisibles" type="button">Otorgar formato Navarro al medico</button>
+      <button id="btnRetirarNavarroVisibles" type="button">Revocar formato Navarro al medico</button>
     </div>
 
     <div id="listaFormatosAdmin" class="lista-pacientes-admin">
@@ -396,7 +396,7 @@
 
 </main>
 
-<script type="module" src="js/admin.js?v=20260716-1"></script>
+<script type="module" src="js/admin.js?v=20260719-actor-format-permissions"></script>
 <script type="module" src="js/reportes.js"></script>
   <script type="module" src="js/components/accesosRapidos.js"></script>
 </body>

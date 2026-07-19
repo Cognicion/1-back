@@ -126,6 +126,37 @@ function permisoExplicitoVigente(usuario = {}, permissionId = "") {
   });
 }
 
+export function usuarioEsActorProfesionalFormato(usuario = {}) {
+  const texto = normalizar([
+    usuario.rol,
+    usuario.role,
+    usuario.profesion,
+    usuario.profession,
+    usuario.especialidad,
+    usuario.specialty,
+    usuario.cargo,
+    usuario.tipoCuenta
+  ].join(" "));
+  const tieneCedula = Boolean(usuario.cedulaProfesional || usuario.cedula || usuario.cedulaEspecialidad);
+  const rolMedico = [
+    "medico",
+    "medica",
+    "doctor",
+    "doctora",
+    "psiquiatra",
+    "medicina",
+    "medicina general",
+    "medicina interna",
+    "paidopsiquiatra"
+  ].some((termino) => texto.includes(termino));
+  if (usuario.perfilMedicoVerificado === true || usuario.medicoVerificado === true) return true;
+  return rolMedico || (tieneCedula && texto.includes("admin_medico"));
+}
+
+export function usuarioPuedeAdministrarPermisosFormato(usuario = {}) {
+  return ["admin", "administrador"].includes(normalizar(usuario.rol || usuario.role));
+}
+
 export function resolverFormatoClinico(formatId = "") {
   const id = normalizar(formatId);
   if (FRAY_FORMAT_IDS.includes(id)) {
@@ -178,19 +209,13 @@ export function permisosFormatosDesdeUsuario(usuario = {}) {
     usuario.formatPermissions.forEach((item) => { permisos[normalizarPermisoFormato(item)] = true; });
   }
 
-  if (usuario.rol === "admin") {
-    permisos[FORMAT_PERMISSION_FRAY] = true;
-    permisos[FORMAT_PERMISSION_NAVARRO] = true;
-    permisos.todos = true;
-  }
-
   return permisos;
 }
 
 export function usuarioTieneFormatoInstitucional(usuario = {}, permissionId = "") {
-  if (usuario.rol === "admin") return true;
   const formato = FORMATOS_INSTITUCIONALES.find((item) => item.id === permissionId || item.legacyId === permissionId);
   const idPermiso = formato?.id || permissionId;
+  if (!usuarioEsActorProfesionalFormato(usuario)) return false;
   if (!permisoExplicitoVigente(usuario, idPermiso)) return false;
   return membresiaInstitucionalActiva(usuario, formato?.institutionId || "");
 }
@@ -214,8 +239,9 @@ export async function obtenerPermisosFormatosUsuario(uid, usuarioPrecargado = nu
 export function usuarioPuedeUsarFormato(valor = "", permisos = {}, rol = "", usuario = null) {
   const resolved = resolverFormatoClinico(valor);
   if (!resolved.institutional) return true;
-  if (rol === "admin" || permisos.todos === true) return true;
   if (usuario) return usuarioTieneFormatoInstitucional(usuario, resolved.permissionId);
+  const rolNormalizado = normalizar(rol);
+  if (["admin", "administrador", "paciente"].includes(rolNormalizado)) return false;
   return permisos[resolved.permissionId] === true;
 }
 

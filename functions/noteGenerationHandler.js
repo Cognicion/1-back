@@ -440,16 +440,124 @@ function metadataIsActive(metadata = {}) {
   return true;
 }
 
+function normalizeForAccess(value = "") {
+  return normalizeString(value)
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
+}
+
+function profileIsMedicalActor(profile = {}) {
+  const text = normalizeForAccess([
+    profile.rol,
+    profile.role,
+    profile.profesion,
+    profile.profession,
+    profile.especialidad,
+    profile.specialty,
+    profile.cargo,
+    profile.tipoCuenta
+  ].join(" "));
+  const hasMedicalLicense = Boolean(profile.cedulaProfesional || profile.cedula || profile.cedulaEspecialidad);
+  const hasMedicalText = [
+    "medico",
+    "medica",
+    "doctor",
+    "doctora",
+    "psiquiatra",
+    "medicina",
+    "paidopsiquiatra"
+  ].some((term) => text.includes(term));
+  if (profile.perfilMedicoVerificado === true || profile.medicoVerificado === true) return true;
+  return hasMedicalText || (hasMedicalLicense && text.includes("admin_medico"));
+}
+
+function permissionMapHasExplicitPermission(permissions = {}, permission = "") {
+  if (!permissions || typeof permissions !== "object" || Array.isArray(permissions)) return false;
+  return Object.entries(permissions).some(([key, value]) => normalizeString(key) === permission && value === true);
+}
+
 function profileHasInstitutionalFormat(profile = {}, permission = "") {
-  const role = normalizeString(profile.rol || profile.role).toLowerCase();
-  if (role === "admin" || profile.admin === true) return true;
-  const permissions = profile.permisosFormatos || profile.formatPermissions || {};
+  if (!profileIsMedicalActor(profile)) return false;
   const metadata = profile.formatPermissionMetadata || profile.permisosFormatosMetadata || {};
-  if (permissions[permission] !== true) return false;
+  const mapPermission = permissionMapHasExplicitPermission(profile.permisosFormatos, permission) ||
+    permissionMapHasExplicitPermission(profile.formatosAutorizados, permission) ||
+    permissionMapHasExplicitPermission(profile.formatPermissions, permission);
+  const arrayPermission = [profile.formatPermissions, profile.permisosFormatosArray, profile.formatosAutorizadosArray]
+    .filter(Array.isArray)
+    .some((items) => items.some((item) => normalizeString(item) === permission));
+  if (!mapPermission && !arrayPermission) return false;
   return metadataIsActive(metadata[permission]);
 }
 
-async function validateFormatEntitlement({ payload, auth, adminDb, HttpsErrorClass, requestId, logger }) {
+function arrayIncludesUid(values, uid = "") {
+  if (!Array.isArray(values)) return false;
+  return values.some((item) => {
+    if (typeof item === "string") return item === uid;
+    if (!item || typeof item !== "object") return false;
+    return [item.uid, item.userId, item.medicoUid, item.id].includes(uid);
+  });
+}
+
+function patientAllowsActorAccess(patient = {}, actorUid = "", actorProfile = {}) {
+  if (!actorUid) return false;
+  const role = normalizeForAccess(actorProfile.rol || actorProfile.role);
+  if (["admin", "administrador"].includes(role) || actorProfile.admin === true) return true;
+  const ownerFields = [
+    patient.creadoPor,
+    patient.ownerUid,
+    patient.createdByUid,
+    patient.medicoUid,
+    patient.uidMedico,
+    patient.medicoTratanteUid,
+    patient.medicoTratanteUID,
+    patient.idMedico
+  ].filter(Boolean);
+  if (ownerFields.includes(actorUid)) return true;
+  if (arrayIncludesUid(patient.medicosAutorizados, actorUid)) return true;
+  if (arrayIncludesUid(patient.medicosAutorizadosUid, actorUid)) return true;
+  if (arrayIncludesUid(patient.profesionalesAutorizados, actorUid)) return true;
+  if (arrayIncludesUid(patient.clinicosAutorizados, actorUid)) return true;
+  if (patient.permisosMedicos && patient.permisosMedicos[actorUid]?.lectura === true) return true;
+  return false;
+}
+
+async function validateActorAndSubjectAccess({ payload, auth, adminDb, HttpsErrorClass, requestId, logger }) {
+  const stage = "actor_subject_access";
+  if (!adminDb || typeof adminDb.collection !== "function") {
+    throw makeCallableError(HttpsErrorClass, "failed-precondition", "No fue posible validar el acceso clinico.", {
+      requestId,
+      stage,
+      retryable: false
+    });
+  }
+  const actorUid = auth.uid;
+  const subjectPatientId = payload.patientContext?.patientId || "";
+  const [actorSnap, patientSnap] = await Promise.all([
+    adminDb.collection("usuarios").doc(actorUid).get(),
+    adminDb.collection("usuarios").doc(subjectPatientId).get()
+  ]);
+  const actorProfile = actorSnap.exists ? (actorSnap.data() || {}) : {};
+  const patientData = patientSnap.exists ? (patientSnap.data() || {}) : {};
+  const actorCanAccessPatient = patientSnap.exists && patientAllowsActorAccess(patientData, actorUid, actorProfile);
+  safeLog(logger, actorCanAccessPatient ? "info" : "warn", {
+    requestId,
+    stage,
+    actorHash: hashText(actorUid).slice(0, 16),
+    patientHash: hashText(subjectPatientId).slice(0, 16),
+    actorCanAccessPatient
+  });
+  if (!actorSnap.exists || !actorCanAccessPatient) {
+    throw makeCallableError(HttpsErrorClass, "permission-denied", "No tienes acceso autorizado a este expediente.", {
+      requestId,
+      stage,
+      retryable: false
+    });
+  }
+  return { actorUserId: actorUid, subjectPatientId, encounterId: payload.patientContext?.encounterId || "", actorProfile };
+}
+
+async function validateFormatEntitlement({ payload, auth, adminDb, HttpsErrorClass, requestId, logger, actorProfile = null }) {
   const formatId = normalizeString(payload.noteConfiguration?.formatId || payload.noteConfiguration?.noteType);
   const requiredPermission = requiredInstitutionalFormatPermission(formatId);
   if (!requiredPermission) return { allowed: true, formatId, requiredPermission: "" };
@@ -461,16 +569,17 @@ async function validateFormatEntitlement({ payload, auth, adminDb, HttpsErrorCla
       retryable: false
     });
   }
-  const snap = await adminDb.collection("usuarios").doc(auth.uid).get();
-  const profile = snap.exists ? (snap.data() || {}) : {};
-  const allowed = profileHasInstitutionalFormat(profile, requiredPermission);
+  const profile = actorProfile || null;
+  const snap = profile ? null : await adminDb.collection("usuarios").doc(auth.uid).get();
+  const resolvedProfile = profile || (snap?.exists ? (snap.data() || {}) : {});
+  const allowed = profileHasInstitutionalFormat(resolvedProfile, requiredPermission);
   safeLog(logger, allowed ? "info" : "warn", {
     requestId,
     stage,
     formatId,
     requiredPermission,
     allowed,
-    userHash: hashText(auth.uid).slice(0, 16)
+    actorHash: hashText(auth.uid).slice(0, 16)
   });
   if (!allowed) {
     throw makeCallableError(HttpsErrorClass, "permission-denied", "Este formato requiere autorizacion institucional.", {
@@ -1228,7 +1337,22 @@ async function runGenerateStructuredNoteFromDictation({
     payload = validateInput({ data, auth, HttpsErrorClass, requestId });
 
     stage = "configuration";
-    await validateFormatEntitlement({ payload, auth, adminDb, HttpsErrorClass, requestId, logger });
+    const actorContext = await validateActorAndSubjectAccess({ payload, auth, adminDb, HttpsErrorClass, requestId, logger });
+    payload = {
+      ...payload,
+      actorUserId: actorContext.actorUserId,
+      subjectPatientId: actorContext.subjectPatientId,
+      encounterId: actorContext.encounterId
+    };
+    await validateFormatEntitlement({
+      payload,
+      auth,
+      adminDb,
+      HttpsErrorClass,
+      requestId,
+      logger,
+      actorProfile: actorContext.actorProfile
+    });
     if (!apiKey || typeof apiKey !== "string") {
       throw makeCallableError(HttpsErrorClass, "failed-precondition", "No esta configurado el proveedor externo de notas.", {
         requestId,

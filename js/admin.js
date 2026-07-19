@@ -5,8 +5,9 @@ import {
   FORMATOS_INSTITUCIONALES,
   FORMAT_PERMISSION_FRAY,
   FORMAT_PERMISSION_NAVARRO,
-  permisosFormatosDesdeUsuario
-} from "./services/formatosInstitucionales.js";
+  permisosFormatosDesdeUsuario,
+  usuarioEsActorProfesionalFormato
+} from "./services/formatosInstitucionales.js?v=20260719-actor-format-permissions";
 import {
   obtenerNombrePacienteParaMostrar,
   textoBusquedaPaciente
@@ -1277,7 +1278,7 @@ function poblarInstitucionesFormatosAdmin() {
   const selector = document.getElementById("filtroFormatosInstitucionAdmin");
   if (!selector) return;
   const valorActual = selector.value || "";
-  const instituciones = [...new Set(usuariosAdmin.map(institucionUsuarioFormato).filter(Boolean))]
+  const instituciones = [...new Set(usuariosAdmin.filter(usuarioEsActorProfesionalFormato).map(institucionUsuarioFormato).filter(Boolean))]
     .sort((a, b) => a.localeCompare(b));
 
   selector.innerHTML = `<option value="">Todas las instituciones</option>` + instituciones.map((institucion) => `
@@ -1289,12 +1290,14 @@ function poblarInstitucionesFormatosAdmin() {
 function usuariosFiltradosFormatosAdmin() {
   const texto = normalizar(document.getElementById("filtroFormatosAdmin")?.value || "");
   const institucion = document.getElementById("filtroFormatosInstitucionAdmin")?.value || "";
-  return usuariosAdmin.filter((usuario) => {
+  return usuariosAdmin.filter(usuarioEsActorProfesionalFormato).filter((usuario) => {
     const institucionUsuario = institucionUsuarioFormato(usuario);
     const coincideInstitucion = !institucion || institucionUsuario === institucion;
     const coincideTexto = !texto || normalizar([
       usuario.nombre,
       usuario.email,
+      usuario.cedulaProfesional,
+      usuario.cedula,
       usuario.rol,
       usuario.id,
       institucionUsuario
@@ -1311,7 +1314,7 @@ function renderizarFormatosAdmin() {
   const usuarios = usuariosFiltradosFormatosAdmin();
 
   if (!usuarios.length) {
-    contenedor.innerHTML = "<p>No hay usuarios con esos filtros.</p>";
+    contenedor.innerHTML = "<p>No hay medicos o perfiles medicos compatibles con esos filtros.</p>";
     return;
   }
 
@@ -1319,14 +1322,13 @@ function renderizarFormatosAdmin() {
     const permisos = permisosFormatosDesdeUsuario(usuario);
     const institucionTexto = institucionUsuarioFormato(usuario);
     const controles = formatosControlables.map((formato) => {
-      const autorizado = usuario.rol === "admin" || permisos[formato.id] === true || permisos.todos === true;
-      const protegido = usuario.rol === "admin";
+      const autorizado = permisos[formato.id] === true;
       return `
         <div class="usuario-admin-meta formato-admin-control">
           <span>${escaparHTML(formato.nombre)}</span>
           <span>${autorizado ? "Autorizado" : "Sin acceso"}</span>
-          <button type="button" data-toggle-formato-admin="${escaparHTML(usuario.id)}" data-formato="${escaparHTML(formato.id)}" data-valor="${autorizado ? "false" : "true"}" ${protegido ? "disabled" : ""}>
-            ${autorizado ? "Retirar acceso" : "Autorizar"}
+          <button type="button" data-toggle-formato-admin="${escaparHTML(usuario.id)}" data-formato="${escaparHTML(formato.id)}" data-valor="${autorizado ? "false" : "true"}">
+            ${autorizado ? (formato.id === FORMAT_PERMISSION_NAVARRO ? "Revocar formato Navarro al medico" : "Revocar formatos Fray al medico") : (formato.id === FORMAT_PERMISSION_NAVARRO ? "Otorgar formato Navarro al medico" : "Otorgar formatos Fray al medico")}
           </button>
         </div>
       `;
@@ -1341,6 +1343,7 @@ function renderizarFormatosAdmin() {
           <div class="usuario-admin-meta">
             <span>${escaparHTML(etiquetaRolUsuario(usuario.rol || "sin_rol"))}</span>
             <span>Institucion: ${escaparHTML(institucionTexto)}</span>
+            <span>Cedula: ${escaparHTML(usuario.cedulaProfesional || usuario.cedula || "Sin registro")}</span>
           </div>
         </div>
         <div class="paciente-admin-acciones">
@@ -1363,6 +1366,10 @@ async function alternarFormatoUsuarioAdmin(evento) {
   const usuario = usuariosAdmin.find((item) => item.id === uid);
 
   if (!uid || !formato || !usuario) return;
+  if (!usuarioEsActorProfesionalFormato(usuario)) {
+    alert("Los permisos institucionales de formatos solo pueden otorgarse a medicos o perfiles medicos compatibles.");
+    return;
+  }
 
   const motivo = prompt(`Motivo administrativo para ${valor ? "otorgar" : "revocar"} este permiso:`, valor ? "Autorizacion institucional vigente" : "Revocacion administrativa") || "";
   const expiraEn = valor ? (prompt("Fecha de expiracion opcional (AAAA-MM-DD). Deja vacio para nunca expirar:", "") || "") : "";
@@ -1389,7 +1396,7 @@ async function alternarFormatoUsuarioAdmin(evento) {
 }
 
 async function aplicarFormatoUsuariosVisiblesAdmin(formato, valor) {
-  const usuarios = usuariosFiltradosFormatosAdmin().filter((usuario) => usuario.rol !== "admin");
+  const usuarios = usuariosFiltradosFormatosAdmin();
   if (!usuarios.length) {
     alert("No hay usuarios visibles para actualizar.");
     return;

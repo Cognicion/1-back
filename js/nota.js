@@ -40,7 +40,7 @@ import {
   aplicarPermisosFormatosSelect,
   obtenerPermisosFormatosUsuario,
   usuarioPuedeUsarFormato
-} from "./services/formatosInstitucionales.js";
+} from "./services/formatosInstitucionales.js?v=20260719-actor-format-permissions";
 import { getAuthenticatedUserOnce, getUserProfileOnce } from "./services/authContextService.js";
 import {
   eliminarBorradorClinicoLocal,
@@ -2056,12 +2056,13 @@ function leerParametrosPediatriaNota() {
 
 
 function puedeUsarFormatoNota(valor = formatoNota?.value || "") {
-  return usuarioPuedeUsarFormato(valor, permisosFormatosActual, rolUsuarioActual);
+  return usuarioPuedeUsarFormato(valor, permisosFormatosActual, rolUsuarioActual, perfilMedicoActual);
 }
 
 function aplicarPermisosFormatoNota() {
   aplicarPermisosFormatosSelect(formatoNota, permisosFormatosActual, {
     rol: rolUsuarioActual,
+    usuario: perfilMedicoActual,
     fallback: "cognicion",
     fallbackLabel: "PDF Cognicion"
   });

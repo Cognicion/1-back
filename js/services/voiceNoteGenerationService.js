@@ -344,6 +344,8 @@ export function construirPayloadGeneracionVoz({ snapshot = {}, patientContext = 
   };
   return {
     clientRequestId,
+    actorUserId: userId || snapshot.userId || "",
+    subjectPatientId: patientId,
     patientContext: authorizedPatientContext,
     noteConfiguration: {
       ...(options.noteConfiguration || {}),

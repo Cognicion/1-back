@@ -18,23 +18,44 @@ class TestHttpsError extends Error {
 }
 
 const auth = { uid: "clinico-1" };
-function fakeAdminDb(profile = {}) {
+const defaultPatientDoc = {
+  rol: "paciente",
+  medicoUid: auth.uid,
+  medicoTratanteUid: auth.uid,
+  medicosAutorizados: [auth.uid]
+};
+
+function professionalProfile(overrides = {}) {
+  return {
+    rol: "medico",
+    institucion: "Hospital Psiquiatrico Fray Bernardino Alvarez",
+    cedulaProfesional: "123456",
+    ...overrides
+  };
+}
+
+function fakeAdminDb(docsOrProfile = {}) {
+  const docs = docsOrProfile.__docs ? docsOrProfile.__docs : {
+    [auth.uid]: docsOrProfile,
+    "paciente-1": defaultPatientDoc,
+    "carlos-1": defaultPatientDoc
+  };
   return {
     collection: () => ({
-      doc: () => ({
+      doc: (id) => ({
         get: async () => ({
-          exists: true,
-          data: () => profile
+          exists: Object.prototype.hasOwnProperty.call(docs, id),
+          data: () => docs[id] || {}
         })
       })
     })
   };
 }
 
-const frayAllowedDb = fakeAdminDb({
+const frayAllowedDb = fakeAdminDb(professionalProfile({
   permisosFormatos: { [FORMAT_PERMISSION_FRAY]: true },
   formatPermissionMetadata: { [FORMAT_PERMISSION_FRAY]: { status: "active" } }
-});
+}));
 const baseUtterances = [
   { id: "utt-1", sequence: 1, text: "Durante la valoracion fue abordado en cama, acepta entrevista y se muestra cooperador.", probableRole: "clinician", speechAct: "observation" },
   { id: "utt-2", sequence: 2, text: "Refiere sentirse mas tranquilo y ya no estar tan seguro de que lo persigan.", probableRole: "patient", speechAct: "answer" },
@@ -501,7 +522,52 @@ await assert.rejects(
     HttpsErrorClass: TestHttpsError,
     openaiClient: fakeOpenAIWithOutput("{}"),
     logger: { info() {}, warn() {}, error() {} },
-    adminDb: fakeAdminDb({ permisosFormatos: {} }),
+    adminDb: fakeAdminDb(professionalProfile({ permisosFormatos: {} })),
+    timeoutMs: 500
+  }),
+  (error) => error.code === "permission-denied" && /autorizacion institucional/i.test(error.message)
+);
+
+await assert.rejects(
+  () => runGenerateStructuredNoteFromDictation({
+    data: basePayload(),
+    auth,
+    apiKey: "test-key",
+    OpenAIClass: class {},
+    HttpsErrorClass: TestHttpsError,
+    openaiClient: fakeOpenAIWithOutput("{}"),
+    logger: { info() {}, warn() {}, error() {} },
+    adminDb: fakeAdminDb(professionalProfile({
+      permisosFormatos: { [FORMAT_PERMISSION_FRAY]: true },
+      formatPermissionMetadata: { [FORMAT_PERMISSION_FRAY]: { status: "active", expiresAt: "2020-01-01T00:00:00.000Z" } }
+    })),
+    timeoutMs: 500
+  }),
+  (error) => error.code === "permission-denied"
+);
+
+await assert.rejects(
+  () => runGenerateStructuredNoteFromDictation({
+    data: basePayload({
+      formatPermissions: { [FORMAT_PERMISSION_FRAY]: true },
+      noteConfiguration: { formatId: "evolucion_observacion" }
+    }),
+    auth,
+    apiKey: "test-key",
+    OpenAIClass: class {},
+    HttpsErrorClass: TestHttpsError,
+    openaiClient: fakeOpenAIWithOutput("{}"),
+    logger: { info() {}, warn() {}, error() {} },
+    adminDb: fakeAdminDb({
+      __docs: {
+        [auth.uid]: professionalProfile({ permisosFormatos: {} }),
+        "paciente-1": {
+          ...defaultPatientDoc,
+          permisosFormatos: { [FORMAT_PERMISSION_FRAY]: true },
+          formatPermissions: { [FORMAT_PERMISSION_FRAY]: true }
+        }
+      }
+    }),
     timeoutMs: 500
   }),
   (error) => error.code === "permission-denied" && /autorizacion institucional/i.test(error.message)
@@ -517,9 +583,84 @@ await assert.rejects(
     openaiClient: fakeOpenAIWithOutput("{}"),
     logger: { info() {}, warn() {}, error() {} },
     adminDb: fakeAdminDb({
-      permisosFormatos: { [FORMAT_PERMISSION_FRAY]: true },
-      formatPermissionMetadata: { [FORMAT_PERMISSION_FRAY]: { status: "active", expiresAt: "2020-01-01T00:00:00.000Z" } }
+      __docs: {
+        [auth.uid]: professionalProfile({ permisosFormatos: { [FORMAT_PERMISSION_FRAY]: true } }),
+        "paciente-1": { rol: "paciente", medicoUid: "otro-medico", medicosAutorizados: [] }
+      }
     }),
+    timeoutMs: 500
+  }),
+  (error) => error.code === "permission-denied" && /expediente/i.test(error.message)
+);
+
+await assert.rejects(
+  () => runGenerateStructuredNoteFromDictation({
+    data: basePayload(),
+    auth,
+    apiKey: "test-key",
+    OpenAIClass: class {},
+    HttpsErrorClass: TestHttpsError,
+    openaiClient: fakeOpenAIWithOutput("{}"),
+    logger: { info() {}, warn() {}, error() {} },
+    adminDb: fakeAdminDb({
+      __docs: {
+        [auth.uid]: { rol: "admin", institucion: "Hospital Psiquiatrico Fray Bernardino Alvarez" },
+        "paciente-1": defaultPatientDoc
+      }
+    }),
+    timeoutMs: 500
+  }),
+  (error) => error.code === "permission-denied" && /autorizacion institucional/i.test(error.message)
+);
+
+const adminMedicoResult = await runGenerateStructuredNoteFromDictation({
+  data: basePayload(),
+  auth,
+  apiKey: "test-key",
+  OpenAIClass: class {},
+  HttpsErrorClass: TestHttpsError,
+  openaiClient: fakeOpenAIWithOutput(JSON.stringify({
+    sections: {
+      evolution: {
+        text: validEvolution,
+        sourceUtteranceIds: ["utt-1", "utt-2", "utt-3", "utt-4", "utt-5"],
+        confidence: 0.86,
+        requiresReview: true,
+        warnings: []
+      }
+    },
+    globalWarnings: []
+  })),
+  logger: { info() {}, warn() {}, error() {} },
+  adminDb: fakeAdminDb({
+    __docs: {
+      [auth.uid]: professionalProfile({
+        rol: "admin",
+        profesion: "Medico psiquiatra",
+        perfilMedicoVerificado: true,
+        permisosFormatos: { [FORMAT_PERMISSION_FRAY]: true },
+        formatPermissionMetadata: { [FORMAT_PERMISSION_FRAY]: { status: "active" } }
+      }),
+      "paciente-1": defaultPatientDoc
+    }
+  }),
+  timeoutMs: 500
+});
+assert.equal(adminMedicoResult.provider, "external");
+
+await assert.rejects(
+  () => runGenerateStructuredNoteFromDictation({
+    data: basePayload({ noteConfiguration: { formatId: "referencia_navarro", noteType: "referencia_navarro" } }),
+    auth,
+    apiKey: "test-key",
+    OpenAIClass: class {},
+    HttpsErrorClass: TestHttpsError,
+    openaiClient: fakeOpenAIWithOutput("{}"),
+    logger: { info() {}, warn() {}, error() {} },
+    adminDb: fakeAdminDb(professionalProfile({
+      permisosFormatos: { [FORMAT_PERMISSION_FRAY]: true },
+      formatPermissionMetadata: { [FORMAT_PERMISSION_FRAY]: { status: "active" } }
+    })),
     timeoutMs: 500
   }),
   (error) => error.code === "permission-denied"

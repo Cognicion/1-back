@@ -19,7 +19,7 @@ import {
   guardarTranscripcionVozFirestore,
   leerNotaExistente,
   transferirNotaVozABorrador
-} from "./services/voiceNoteGenerationService.js?v=20260719-format-entitlements";
+} from "./services/voiceNoteGenerationService.js?v=20260719-actor-format-permissions";
 import { buscarBorradorNotaClinica } from "./services/notas.js?v=20260716-2";
 import {
   VOICE_NOTE_SESSION_SCHEMA_VERSION,
@@ -45,7 +45,7 @@ import {
 import {
   permisosFormatosDesdeUsuario,
   usuarioPuedeUsarFormato
-} from "./services/formatosInstitucionales.js?v=20260719-format-entitlements";
+} from "./services/formatosInstitucionales.js?v=20260719-actor-format-permissions";
 import { resolverEntitlementsMembresia } from "./services/subscriptionEntitlementService.js?v=20260719-format-entitlements";
 import {
   crearConfiguracionSeguraExamenMental,
