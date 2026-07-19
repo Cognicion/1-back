@@ -23,6 +23,20 @@ const baseUtterances = [
   { id: "utt-5", sequence: 5, text: "Durmio siete horas, apetito conservado, diuresis y evacuaciones sin alteraciones.", probableRole: "patient", speechAct: "answer" }
 ];
 
+const carlosShortUtterances = [
+  { id: "car-1", sequence: 1, text: "Me siento mas tranquilo que ayer, aunque todavia quiero irme.", probableRole: "patient", speechAct: "answer" },
+  { id: "car-2", sequence: 2, text: "Dormi como seis horas, desperte una vez y volvi a dormirme.", probableRole: "patient", speechAct: "answer" },
+  { id: "car-3", sequence: 3, text: "Las voces ya no las escucho desde hace dos dias.", probableRole: "patient", speechAct: "answer" },
+  { id: "car-4", sequence: 4, text: "Ya no estoy tan seguro de que me persiguieran o me quisieran hacer dano.", probableRole: "patient", speechAct: "answer" },
+  { id: "car-5", sequence: 5, text: "Creo que la falta de sueno y la metanfetamina pudieron influir.", probableRole: "patient", speechAct: "answer" },
+  { id: "car-6", sequence: 6, text: "No tengo ideas suicidas y no quiero danar a mi hermano ni a otras personas.", probableRole: "patient", speechAct: "answer" },
+  { id: "car-7", sequence: 7, text: "He aceptado los medicamentos, me dan risperidona, pero siento somnolencia en la manana y boca seca.", probableRole: "patient", speechAct: "answer" },
+  { id: "car-8", sequence: 8, text: "No he tenido rigidez, temblor, mareo ni caidas.", probableRole: "patient", speechAct: "answer" },
+  { id: "car-9", sequence: 9, text: "Mi mama es mi apoyo y puede ayudarme con los medicamentos.", probableRole: "patient", speechAct: "answer" },
+  { id: "car-10", sequence: 10, text: "Quiero continuar tratamiento y evitar consumir metanfetamina y cannabis.", probableRole: "patient", speechAct: "answer" },
+  { id: "car-11", sequence: 11, text: "Buenas tardes.", probableRole: "unknown", speechAct: "other" }
+];
+
 function basePayload(overrides = {}) {
   return {
     clientRequestId: "note-test-1",
@@ -50,6 +64,29 @@ function basePayload(overrides = {}) {
     },
     ...overrides
   };
+}
+
+function carlosPayload(overrides = {}) {
+  return basePayload({
+    clientRequestId: "note-carlos-short",
+    patientContext: {
+      patientId: "carlos-1",
+      encounterId: "enc-carlos",
+      name: "Carlos Kaju Quintero",
+      age: 34,
+      sex: "hombre",
+      service: "OBSERVACION",
+      hospitalizationDay: 0,
+      admissionCriterion: null
+    },
+    transcript: {
+      transcriptId: "tx-carlos-short",
+      originalTextHash: "hash-carlos-short",
+      segmentationMode: "hybrid",
+      utterances: carlosShortUtterances
+    },
+    ...overrides
+  });
 }
 
 function fakeOpenAIWithOutput(outputText) {
@@ -95,6 +132,13 @@ const validEvolution = [
   "Paciente Prueba, hombre de 34 anos, quien cursa su 21.er dia de estancia intrahospitalaria en el servicio especial de OBSERVACION, bajo seguimiento por sintomatologia psicotica y riesgo de conducta heteroagresiva. Durante la valoracion fue abordado en cama correspondiente, aceptando la entrevista y mostrando adecuada cooperacion.",
   "Al interrogatorio dirigido refiere encontrarse mas tranquilo, con disminucion de las ideas de persecucion que motivaron su ingreso, mencionando que actualmente ya no se encuentra completamente convencido de dichas experiencias. Niega ideas suicidas y niega intencion heteroagresiva actual hacia su hermano.",
   "Identifica a su madre como principal red de apoyo. Desde el punto de vista medico, refiere sueno de aproximadamente siete horas, apetito conservado, diuresis y evacuaciones sin alteraciones."
+].join("\n\n");
+
+const correctedCarlosEvolution = [
+  "Carlos Kaju Quintero, hombre de 34 anos, quien permanece en estancia intrahospitalaria en el servicio especial de OBSERVACION. Durante la valoracion refiere sentirse mas tranquilo en comparacion con el dia previo, aunque persiste con deseos de egreso.",
+  "Refiere ausencia de alucinaciones auditivas durante los ultimos dos dias y disminucion de la conviccion respecto a las ideas de persecucion previamente referidas, mencionando que ya no se encuentra tan seguro de que lo persiguieran o quisieran hacerle dano. Atribuye de manera posible la aparicion de dichas experiencias a la falta de sueno y al consumo de metanfetamina.",
+  "Niega ideacion suicida actual y niega intencion de danar a su hermano o a otras personas. Identifica a su madre como red de apoyo, con posibilidad de ayudarle con los medicamentos, y manifiesta disposicion para continuar tratamiento y evitar el consumo de metanfetamina y cannabis.",
+  "Desde el punto de vista medico, refiere sueno aproximado de seis horas, con un despertar nocturno y recuperacion posterior del sueno. Refiere aceptacion de medicamentos e identifica risperidona dentro del esquema; como efectos adversos menciona somnolencia matutina y xerostomia. Niega rigidez, temblor, mareo y caidas."
 ].join("\n\n");
 
 async function main() {
@@ -221,6 +265,53 @@ await assert.rejects(
 
 assert.ok(validateEvolutionText("Durante la entrevista se observa contacto visual y curso del pensamiento lineal.").some((issue) => issue.severity === "high"));
 assert.ok(validateEvolutionText(validEvolution).length === 0);
+
+await assert.rejects(
+  () => runWithOutput(JSON.stringify({
+    sections: {
+      evolution: {
+        text: "Carlos Kaju Quintero, hombre de 34 anos, se encuentra en el dia 0 de estancia en el servicio de OBSERVACION. Durante la valoracion realizo la entrevista sentado y mostro buena cooperacion, con conducta tranquila y orientada. Refiere sentirse mas tranquilo.",
+        sourceUtteranceIds: ["car-1"],
+        requiresReview: true
+      }
+    },
+    globalWarnings: []
+  }), carlosPayload()),
+  (error) => error.code === "data-loss"
+);
+
+await assert.rejects(
+  () => runWithOutput(JSON.stringify({
+    sections: {
+      evolution: {
+        text: "Carlos Kaju Quintero, hombre de 34 anos, quien permanece en estancia intrahospitalaria en el servicio especial de OBSERVACION. Refiere sentirse mas tranquilo, niega ideacion suicida actual y niega intencion de danar a terceros.",
+        sourceUtteranceIds: ["car-1", "car-6"],
+        requiresReview: true
+      }
+    },
+    globalWarnings: []
+  }), carlosPayload()),
+  (error) => error.code === "data-loss"
+);
+
+const carlosAccepted = await runWithOutput(JSON.stringify({
+  sections: {
+    evolution: {
+      text: correctedCarlosEvolution,
+      sourceUtteranceIds: carlosShortUtterances.map((utterance) => utterance.id),
+      confidence: 0.82,
+      requiresReview: true,
+      warnings: [{ code: "minor_unknown_speaker", message: "Un fragmento no clinico tiene hablante incierto.", severity: "info" }]
+    }
+  },
+  globalWarnings: []
+}), carlosPayload());
+assert.equal(carlosAccepted.sections.evolution.text.includes("dia 0"), false);
+assert.match(carlosAccepted.sections.evolution.text, /risperidona/i);
+assert.match(carlosAccepted.sections.evolution.text, /somnolencia/i);
+assert.match(carlosAccepted.sections.evolution.text, /xerostomia/i);
+assert.match(carlosAccepted.sections.evolution.text, /madre/i);
+assert.match(carlosAccepted.sections.evolution.text, /evitar el consumo/i);
 
 console.log("noteGenerationHandler.test.js OK");
 }

@@ -19,6 +19,8 @@ Genera exclusivamente la seccion evolution para una nota psiquiatrica. No genere
 Reglas clinicas:
 - Redacta en tercera persona, con lenguaje medico formal e institucional.
 - Usa datos administrativos del patientContext como prioridad para nombre, edad, sexo, servicio, encuentro, dia de estancia y criterio.
+- Si patientContext.hospitalizationDay es null o no esta disponible, no escribas "dia 0" ni inventes dia de estancia. Usa una construccion como "quien permanece en estancia intrahospitalaria en el servicio especial de OBSERVACION" si el servicio esta disponible.
+- Si falta el criterio de ingreso, omitelo; no escribas "no especificado", "actual", "pendiente" ni sustitutos administrativos dentro del cuerpo clinico.
 - No infieras sexo por nombre.
 - No inventes informacion ni completes hallazgos normales.
 - Conserva negaciones, temporalidad, procedencia e incertidumbre.
@@ -27,6 +29,8 @@ Reglas clinicas:
 - No conviertas "valorar" en "iniciar".
 - No conviertas antecedentes o tratamientos previos en acciones actuales.
 - No incluyas indicaciones, ordenes medicas, analisis diagnostico extenso ni examen mental detallado.
+- No escribas postura, cama, consultorio, cooperacion, aceptacion, orientacion, tranquilidad conductual ni ausencia de agitacion si no existe una fuente explicita en patientContext, observation del profesional o registro estructurado confiable.
+- Usa evolutionCoverage como lista de hechos relevantes obligatorios. Cada hecho debe quedar incluido, marcado como incierto o explicado como excluido en warnings; no omitas medicamentos, efectos adversos, negaciones de riesgo, red de apoyo ni disposicion terapeutica si aparecen.
 - No emitas texto fuera del JSON.
 
 Estilo de evolution:
@@ -53,6 +57,8 @@ Devuelve JSON estricto con este esquema:
 `;
 
 const FORBIDDEN_EVOLUTION_PATTERNS = [
+  /\bd[iÃí]a\s+0\b/i,
+  /\bse encuentra en el d[iÃí]a\s+0\b/i,
   /\bquiero preguntarle\b/i,
   /\bquiero revisar\b/i,
   /\bvoy a resumir\b/i,
@@ -66,10 +72,30 @@ const FORBIDDEN_EVOLUTION_PATTERNS = [
   /\bsolicitar\b/i,
   /\breevaluar\b/i,
   /\bsignos vitales por turno\b/i,
-  /\bcontinuar tratamiento\b/i,
+  /\b(?:se indica|se indic[oÃó]|se mantendr[aÃá]|se decide|plan(?:ea)?|deber[aÃá]) continuar tratamiento\b/i,
   /\([^)]*$/i,
   /\bno solamente quiero\b/i
 ];
+
+const UNAVAILABLE_ADMIN_VALUES = new Set([
+  "",
+  "0",
+  "null",
+  "undefined",
+  "nan",
+  "actual",
+  "pendiente",
+  "sin registro",
+  "no especificado",
+  "no disponible"
+]);
+
+const CONTEXT_PATTERNS = {
+  posture: /\b(sentad[oa]|sedente|dec[uÃú]bito|de pie|en cama|cama correspondiente|consultorio)\b/i,
+  cooperation: /\b(cooperador(?:a)?|cooperaci[oÃó]n|acepta(?:ndo)?(?: la)? entrevista|aceptaci[oÃó]n (?:de|al) (?:la )?(?:entrevista|contacto cl[iÃí]nico)|abordable)\b/i,
+  orientation: /\b(orientad[oa]|orientaci[oÃó]n|ubicad[oa])\b/i,
+  agitationAbsence: /\b(sin (?:presentar )?(?:episodios de )?agitaci[oÃó]n|niega agitaci[oÃó]n|no se reporta agitaci[oÃó]n)\b/i
+};
 
 function sanitizeRequestId(value = "") {
   return String(value || "")
@@ -142,17 +168,30 @@ function normalizeString(value = "") {
   return String(value || "").trim();
 }
 
+function normalizeAdminString(value = "") {
+  const clean = normalizeString(value);
+  return UNAVAILABLE_ADMIN_VALUES.has(clean.toLowerCase()) ? "" : clean;
+}
+
+function normalizePositiveInteger(value) {
+  const clean = normalizeString(value);
+  if (UNAVAILABLE_ADMIN_VALUES.has(clean.toLowerCase())) return null;
+  const number = Number(value);
+  if (!Number.isInteger(number) || number <= 0) return null;
+  return number;
+}
+
 function normalizePatientContext(value = {}) {
   const ctx = value && typeof value === "object" ? value : {};
   return {
-    patientId: normalizeString(ctx.patientId || ctx.id),
-    encounterId: normalizeString(ctx.encounterId),
-    name: normalizeString(ctx.name || ctx.nombreCompleto || ctx.nombre),
-    age: Number.isInteger(Number(ctx.age ?? ctx.edad)) ? Number(ctx.age ?? ctx.edad) : null,
-    sex: normalizeString(ctx.sex || ctx.sexo),
-    service: normalizeString(ctx.service || ctx.servicio),
-    hospitalizationDay: Number.isInteger(Number(ctx.hospitalizationDay ?? ctx.diaEstancia)) ? Number(ctx.hospitalizationDay ?? ctx.diaEstancia) : null,
-    admissionCriterion: normalizeString(ctx.admissionCriterion || ctx.criterio)
+    patientId: normalizeAdminString(ctx.patientId || ctx.id),
+    encounterId: normalizeAdminString(ctx.encounterId),
+    name: normalizeAdminString(ctx.name || ctx.nombreCompleto || ctx.nombre),
+    age: normalizePositiveInteger(ctx.age ?? ctx.edad),
+    sex: normalizeAdminString(ctx.sex || ctx.sexo),
+    service: normalizeAdminString(ctx.service || ctx.servicio),
+    hospitalizationDay: normalizePositiveInteger(ctx.hospitalizationDay ?? ctx.diaEstancia),
+    admissionCriterion: normalizeAdminString(ctx.admissionCriterion || ctx.criterio)
   };
 }
 
@@ -248,9 +287,11 @@ function validateInput({ data = {}, auth = null, HttpsErrorClass, requestId }) {
 }
 
 function buildProviderInput(payload) {
+  const evolutionCoverage = buildEvolutionCoverage(payload);
   return {
     patientContext: payload.patientContext,
     noteConfiguration: payload.noteConfiguration,
+    evolutionCoverage: serializeEvolutionCoverage(evolutionCoverage),
     transcript: {
       transcriptId: payload.transcript.transcriptId,
       originalTextHash: payload.transcript.originalTextHash,
@@ -265,6 +306,272 @@ function buildProviderInput(payload) {
         requiresReview: utterance.requiresReview
       }))
     }
+  };
+}
+
+function hasAny(text = "", patterns = []) {
+  return patterns.some((pattern) => pattern.test(text));
+}
+
+function addCoverageFact(facts, fact) {
+  if (!fact || !fact.code || !fact.sourceUtteranceIds?.length) return;
+  const existing = facts.find((item) => item.code === fact.code);
+  if (existing) {
+    existing.sourceUtteranceIds = Array.from(new Set([...existing.sourceUtteranceIds, ...fact.sourceUtteranceIds]));
+    return;
+  }
+  facts.push({
+    domain: fact.domain,
+    code: fact.code,
+    proposition: fact.proposition,
+    status: fact.status || "present",
+    temporality: fact.temporality || "current",
+    sourceRole: fact.sourceRole || "",
+    sourceUtteranceIds: fact.sourceUtteranceIds,
+    required: fact.required !== false,
+    requiredPatterns: fact.requiredPatterns,
+    requiredPatternSources: fact.requiredPatterns.map((pattern) => pattern.source),
+    message: fact.message
+  });
+}
+
+function serializeEvolutionCoverage(coverage = {}) {
+  return {
+    facts: (coverage.facts || []).map((fact) => ({
+      domain: fact.domain,
+      code: fact.code,
+      proposition: fact.proposition,
+      status: fact.status,
+      temporality: fact.temporality,
+      sourceRole: fact.sourceRole,
+      sourceUtteranceIds: fact.sourceUtteranceIds,
+      required: fact.required,
+      message: fact.message
+    })),
+    contextSupport: coverage.contextSupport || {},
+    unknownUtterances: coverage.unknownUtterances || [],
+    blockingUnknownUtteranceIds: coverage.blockingUnknownUtteranceIds || []
+  };
+}
+
+function classifyUnknownImpact(text = "") {
+  if (/\b(suicid|matar|morir|da[nÃñ]ar|agredir|homicid|riesgo|risperidona|clonazepam|mg|dosis|niega|no|si|s[iÃí]|continuar|tratamiento|egreso)\b/i.test(text)) {
+    return "critical";
+  }
+  if (/\b(sue[nÃñ]o|apetito|madre|mam[aÃá]|consumo|metanfetamina|cannabis|voces|persecuci[oÃó]n)\b/i.test(text)) {
+    return "relevant";
+  }
+  return "minor";
+}
+
+function buildEvolutionCoverage(payload = {}) {
+  const facts = [];
+  const contextSupport = {
+    posture: false,
+    cooperation: false,
+    orientation: false,
+    agitationAbsence: false
+  };
+  const unknownUtterances = [];
+  for (const utterance of payload.transcript?.utterances || []) {
+    const text = normalizeString(utterance.text);
+    const role = normalizeString(utterance.probableRole).toLowerCase();
+    const act = normalizeString(utterance.speechAct).toLowerCase();
+    const id = utterance.id;
+    const allowedClinicalSource = role === "patient" || role === "relative";
+    const isObservation = role === "clinician" && act === "observation";
+
+    if (role === "unknown") {
+      unknownUtterances.push({ id, impact: classifyUnknownImpact(text) });
+    }
+    if (isObservation) {
+      Object.keys(contextSupport).forEach((key) => {
+        if (CONTEXT_PATTERNS[key].test(text)) contextSupport[key] = true;
+      });
+    }
+    if (!allowedClinicalSource) continue;
+
+    const source = { sourceRole: role, sourceUtteranceIds: [id] };
+    if (hasAny(text, [/\bm[aÃá]s tranquil[oa]\b/i, /\bmejor\b.*\btranquil/i])) {
+      addCoverageFact(facts, {
+        ...source,
+        domain: "evolucion_general",
+        code: "greater_tranquility",
+        proposition: "mayor tranquilidad respecto a valoracion o dia previo",
+        requiredPatterns: [/m[aÃá]s tranquil|mayor tranquilidad|se siente mejor|refiere mejor/i],
+        message: "Omitio mayor tranquilidad referida."
+      });
+    }
+    if (hasAny(text, [/\b(quiero|deseo|ganas).{0,25}(irme|salir|egreso|alta)\b/i, /\bpersiste.{0,25}(egreso|salir|irse)\b/i])) {
+      addCoverageFact(facts, {
+        ...source,
+        domain: "evolucion_general",
+        code: "discharge_wish",
+        proposition: "persistencia de deseos de egreso",
+        requiredPatterns: [/deseos? de egreso|deseo de (?:salir|irse)|quiere (?:salir|irse)|desea (?:salir|irse)/i],
+        message: "Omitio deseos de egreso."
+      });
+    }
+    if (hasAny(text, [/\b(seis|6)\s+horas\b/i])) {
+      addCoverageFact(facts, {
+        ...source,
+        domain: "sueno",
+        code: "sleep_six_hours",
+        proposition: "sueno aproximado de seis horas",
+        requiredPatterns: [/seis horas|6 horas/i],
+        message: "Omitio sueno aproximado de seis horas."
+      });
+    }
+    if (hasAny(text, [/\bdespert/i, /\bvolvi[oÃó] a dormir\b/i])) {
+      addCoverageFact(facts, {
+        ...source,
+        domain: "sueno",
+        code: "brief_awakening_sleep_recovered",
+        proposition: "un despertar con recuperacion del sueno",
+        requiredPatterns: [/despert|volvi[oÃó] a dormir|recuper[oÃó] el sue[nÃñ]o|sin dificultad para volver/i],
+        message: "Omitio despertar nocturno con recuperacion del sueno."
+      });
+    }
+    if (hasAny(text, [/\b(voces|alucinaciones auditivas).{0,80}(dos|2)\s+d[iÃí]as\b/i, /\b(dos|2)\s+d[iÃí]as.{0,80}(voces|alucinaciones auditivas)\b/i])) {
+      addCoverageFact(facts, {
+        ...source,
+        domain: "sensopercepcion",
+        code: "auditory_hallucinations_absent_two_days",
+        proposition: "ausencia referida de alucinaciones auditivas durante dos dias",
+        status: "absent",
+        requiredPatterns: [/ausencia.{0,60}(voces|alucinaciones auditivas)|no (?:ha )?(?:escucha|presenta).{0,60}(voces|alucinaciones auditivas)|durante los [uÃú]ltimos dos d[iÃí]as/i],
+        message: "Omitio ausencia de alucinaciones auditivas durante dos dias."
+      });
+    }
+    if (hasAny(text, [/\b(persecuci[oÃó]n|persegu[iÃí]|amenaz|da[nÃñ]o|televisi[oÃó]n|mensajes).{0,100}(ya no|no estoy|menos|disminu|duda|seguro)\b/i, /\b(ya no|no estoy|menos|disminu|duda).{0,100}(persecuci[oÃó]n|persegu[iÃí]|amenaz|da[nÃñ]o|televisi[oÃó]n|mensajes)\b/i])) {
+      addCoverageFact(facts, {
+        ...source,
+        domain: "sintomas_psicoticos",
+        code: "persecutory_ideas_less_conviction",
+        proposition: "disminucion de conviccion en ideas de persecucion previamente referidas",
+        requiredPatterns: [/disminuci[oÃó]n.{0,80}(ideas de persecuci[oÃó]n|convicci[oÃó]n|amenaz|persegu)|menos convencido|no est[aÃá] tan seguro|duda/i],
+        message: "Omitio disminucion de conviccion en ideas de persecucion."
+      });
+    }
+    if (hasAny(text, [/\b(metanfetamina|cristal|cannabis|marihuana|falta de sue[nÃñ]o|sin dormir).{0,120}(influy|relaci|tuvo que ver|pudo|contribuy)/i, /\b(influy|relaci|tuvo que ver|pudo|contribuy).{0,120}(metanfetamina|cristal|cannabis|marihuana|falta de sue[nÃñ]o|sin dormir)/i])) {
+      addCoverageFact(facts, {
+        ...source,
+        domain: "consumo",
+        code: "patient_links_symptoms_to_sleep_and_substances",
+        proposition: "posible relacion atribuida por el paciente con falta de sueno y consumo de sustancias",
+        requiredPatterns: [/refiere|reconoce|atribuye|considera|relaciona|pudo haber influido/i, /metanfetamina|cannabis|sustancias|falta de sue[nÃñ]o|privaci[oÃó]n de sue[nÃñ]o/i],
+        message: "Omitio posible relacion atribuida por el paciente con falta de sueno y sustancias."
+      });
+    }
+    if (hasAny(text, [/\b(no|niega).{0,60}(suicid|quitarse la vida|morir)\b/i])) {
+      addCoverageFact(facts, {
+        ...source,
+        domain: "riesgo_suicida",
+        code: "current_suicidal_ideation_negated",
+        proposition: "negacion de ideacion suicida actual",
+        status: "absent",
+        requiredPatterns: [/niega.{0,50}(ideaci[oÃó]n suicida|ideas suicidas|ideas de muerte)|sin ideaci[oÃó]n suicida|no refiere.{0,50}suicid/i],
+        message: "Omitio negacion de ideacion suicida actual."
+      });
+    }
+    if (hasAny(text, [/\b(no|niega).{0,80}(da[nÃñ]ar|agredir|lastimar).{0,80}(tercer|hermano|otra persona|alguien)\b/i])) {
+      addCoverageFact(facts, {
+        ...source,
+        domain: "riesgo_heteroagresivo",
+        code: "current_harm_intent_negated",
+        proposition: "negacion de intencion de danar a terceros",
+        status: "absent",
+        requiredPatterns: [/niega.{0,80}(intenci[oÃó]n|plan).{0,80}(da[nÃñ]ar|agredir|lastimar|heteroagresiv)|niega.{0,80}heteroagresiv|no refiere.{0,80}(da[nÃñ]ar|agredir|lastimar|heteroagresiv)/i],
+        message: "Omitio negacion de intencion de danar a terceros."
+      });
+    }
+    if (hasAny(text, [/\b(acepto|acepta|he tomado|me tomo|tomo).{0,60}(medicamento|tratamiento|pastilla)\b/i])) {
+      addCoverageFact(facts, {
+        ...source,
+        domain: "adherencia",
+        code: "medication_acceptance",
+        proposition: "aceptacion referida de medicamentos",
+        requiredPatterns: [/acepta.{0,50}medic|aceptaci[oÃó]n.{0,50}medic|ha tomado.{0,50}medic|toma.{0,50}medic/i],
+        message: "Omitio aceptacion referida de medicamentos."
+      });
+    }
+    if (/\brisperidona\b/i.test(text)) {
+      addCoverageFact(facts, {
+        ...source,
+        domain: "tratamiento",
+        code: "risperidone_mentioned",
+        proposition: "risperidona mencionada dentro del tratamiento",
+        requiredPatterns: [/risperidona/i],
+        message: "Omitio risperidona mencionada."
+      });
+    }
+    if (hasAny(text, [/\b(somnolencia|sue[nÃñ]o matutino|boca seca|xerostom[iÃí]a)\b/i])) {
+      addCoverageFact(facts, {
+        ...source,
+        domain: "efectos_adversos",
+        code: "somnolence_xerostomia",
+        proposition: "somnolencia y xerostomia referidas",
+        requiredPatterns: [/somnolencia|sue[nÃñ]o matutino/i, /xerostom[iÃí]a|boca seca/i],
+        message: "Omitio somnolencia o xerostomia."
+      });
+    }
+    if (hasAny(text, [/\b(no|niega).{0,80}(rigidez|temblor|mareo|ca[iÃí]das)\b/i])) {
+      addCoverageFact(facts, {
+        ...source,
+        domain: "efectos_adversos",
+        code: "eps_falls_negated",
+        proposition: "negacion de rigidez, temblor, mareo y caidas",
+        status: "absent",
+        requiredPatterns: [/niega.{0,120}(rigidez|temblor|mareo|ca[iÃí]das)|sin.{0,120}(rigidez|temblor|mareo|ca[iÃí]das)/i],
+        message: "Omitio negacion de rigidez, temblor, mareo o caidas."
+      });
+    }
+    if (/\b(madre|mam[aÃá])\b/i.test(text)) {
+      addCoverageFact(facts, {
+        ...source,
+        domain: "red_apoyo",
+        code: "mother_support",
+        proposition: "madre como red de apoyo",
+        requiredPatterns: [/madre|mam[aÃá]|red de apoyo/i],
+        message: "Omitio red de apoyo materna."
+      });
+      if (hasAny(text, [/\b(medicamento|tratamiento|pastilla)\b/i])) {
+        addCoverageFact(facts, {
+          ...source,
+          domain: "red_apoyo",
+          code: "mother_supports_medication",
+          proposition: "apoyo materno para medicamentos",
+          requiredPatterns: [/madre|mam[aÃá]/i, /medicamento|tratamiento|pastilla/i],
+          message: "Omitio apoyo materno para medicamentos."
+        });
+      }
+    }
+    if (hasAny(text, [/\b(continuar|seguir).{0,60}(tratamiento|medicamento|consulta|seguimiento)\b/i])) {
+      addCoverageFact(facts, {
+        ...source,
+        domain: "proyeccion_futura",
+        code: "willing_to_continue_treatment",
+        proposition: "disposicion para continuar tratamiento",
+        requiredPatterns: [/disposici[oÃó]n.{0,60}(continuar|seguir).{0,60}tratamiento|acepta.{0,60}(continuar|seguir).{0,60}tratamiento|continuar tratamiento/i],
+        message: "Omitio disposicion para continuar tratamiento."
+      });
+    }
+    if (hasAny(text, [/\b(evitar|dejar|no consumir|abstinencia).{0,80}(sustancia|metanfetamina|cristal|cannabis|marihuana)\b/i])) {
+      addCoverageFact(facts, {
+        ...source,
+        domain: "consumo",
+        code: "willing_to_avoid_substances",
+        proposition: "disposicion para evitar sustancias",
+        requiredPatterns: [/evitar.{0,60}(sustancia|metanfetamina|cannabis|consumo)|abstinencia|no consumir/i],
+        message: "Omitio disposicion para evitar sustancias."
+      });
+    }
+  }
+  return {
+    facts,
+    contextSupport,
+    unknownUtterances,
+    blockingUnknownUtteranceIds: unknownUtterances.filter((item) => item.impact === "critical").map((item) => item.id)
   };
 }
 
@@ -324,6 +631,61 @@ function validateEvolutionText(text = "", knownUtteranceIds = new Set()) {
   }));
 }
 
+function validateContextInventions(text = "", coverage = {}) {
+  const issues = [];
+  const clean = normalizeString(text);
+  const support = coverage.contextSupport || {};
+  const checks = [
+    ["posture_without_source", CONTEXT_PATTERNS.posture, support.posture, "La Evolucion describe postura, cama o consultorio sin fuente explicita."],
+    ["cooperation_without_source", CONTEXT_PATTERNS.cooperation, support.cooperation, "La Evolucion afirma cooperacion o aceptacion sin fuente explicita."],
+    ["orientation_without_source", CONTEXT_PATTERNS.orientation, support.orientation, "La Evolucion afirma orientacion sin fuente explicita."],
+    ["agitation_absence_without_source", CONTEXT_PATTERNS.agitationAbsence, support.agitationAbsence, "La Evolucion afirma ausencia de agitacion sin fuente explicita."]
+  ];
+  for (const [code, pattern, hasSupport, message] of checks) {
+    if (!hasSupport && pattern.test(clean)) {
+      issues.push({ code, message, severity: "high" });
+    }
+  }
+  if (/\bdesaparici[oÃó]n\b.{0,80}\b(voces|alucinaciones auditivas)\b/i.test(clean)) {
+    issues.push({
+      code: "absolute_disappearance_without_source",
+      message: "La Evolucion usa desaparicion como certeza absoluta; debe preferir ausencia referida durante el periodo documentado.",
+      severity: "high"
+    });
+  }
+  return issues;
+}
+
+function validateCoverageInclusion(text = "", coverage = {}) {
+  const issues = [];
+  const clean = normalizeString(text);
+  for (const fact of coverage.facts || []) {
+    if (fact.required === false) continue;
+    const patterns = Array.isArray(fact.requiredPatterns) ? fact.requiredPatterns : [];
+    if (!patterns.length) continue;
+    const included = patterns.every((pattern) => pattern.test(clean));
+    if (!included) {
+      issues.push({
+        code: `missing_coverage_${fact.code}`,
+        message: fact.message || `La Evolucion omitio el hecho relevante: ${fact.proposition}.`,
+        severity: "high",
+        sourceUtteranceIds: fact.sourceUtteranceIds || []
+      });
+    }
+  }
+  for (const unknown of coverage.unknownUtterances || []) {
+    if (unknown.impact === "critical") {
+      issues.push({
+        code: "critical_unknown_speaker",
+        message: "Existe un fragmento critico con hablante no identificado.",
+        severity: "high",
+        sourceUtteranceIds: [unknown.id].filter(Boolean)
+      });
+    }
+  }
+  return issues;
+}
+
 function validateProviderResult({ parsed, payload, requestId, HttpsErrorClass }) {
   const stage = "schema_validation";
   if (!parsed || typeof parsed !== "object") {
@@ -339,7 +701,12 @@ function validateProviderResult({ parsed, payload, requestId, HttpsErrorClass })
   const sourceUtteranceIds = normalizeSourceUtteranceIds(rawEvolution.sourceUtteranceIds)
     .filter((id) => knownUtteranceIds.has(id) || id === "patientContext");
   const warnings = normalizeWarnings(rawEvolution.warnings);
-  const blockingIssues = validateEvolutionText(text, knownUtteranceIds);
+  const coverage = buildEvolutionCoverage(payload);
+  const blockingIssues = [
+    ...validateEvolutionText(text, knownUtteranceIds),
+    ...validateContextInventions(text, coverage),
+    ...validateCoverageInclusion(text, coverage)
+  ];
 
   if (!text || blockingIssues.some((issue) => issue.severity === "high")) {
     throw makeCallableError(HttpsErrorClass, "data-loss", "No fue posible validar la Evolucion generada.", {
@@ -455,7 +822,7 @@ async function runGenerateStructuredNoteFromDictation({
         providerInput,
         timeoutMs,
         extraInstruction: attempt === 2
-          ? "Regenera solo evolution. La respuesta anterior no paso validacion. Elimina preguntas, examen mental detallado, analisis y plan."
+          ? "Regenera solo evolution. La respuesta anterior no paso validacion. Elimina preguntas, examen mental detallado, analisis y plan. No escribas dia 0. No inventes postura, cooperacion, orientacion ni ausencia de agitacion. Incluye los hechos requeridos en evolutionCoverage, especialmente medicamentos, efectos adversos, negaciones de riesgo, red de apoyo y disposicion terapeutica."
           : ""
       });
 
@@ -532,6 +899,9 @@ module.exports = {
   PROVIDER_TIMEOUT_MS,
   extractJsonFromText,
   extractResponseText,
+  buildEvolutionCoverage,
+  validateContextInventions,
+  validateCoverageInclusion,
   validateProviderResult,
   validateEvolutionText,
   runGenerateStructuredNoteFromDictation
