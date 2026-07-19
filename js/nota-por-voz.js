@@ -3,7 +3,7 @@ import { iniciarMonitoreoSesion } from "./services/sesion.js";
 import { obtenerUsuario, listarPacientes, medicoPuedeVer } from "./services/usuarios.js";
 import { usuarioEsPersonalClinico } from "./utils/roles.js";
 import { obtenerNombrePacienteParaMostrar } from "./utils/nombresPacientes.js";
-import { createNoteGenerationProvider } from "./services/noteGenerationProviders.js?v=20260718-note-generation";
+import { createNoteGenerationProvider } from "./services/noteGenerationProviders.js?v=20260718-session-persistence";
 import { createConversationSegmentationProvider, crearClientRequestId } from "./services/conversationSegmentationProviders.js?v=20260718-seg-timeout";
 import { segmentarConversacionClinica } from "./services/clinicalPipeline.js";
 import {
@@ -18,8 +18,18 @@ import {
   guardarTranscripcionVozFirestore,
   leerNotaExistente,
   transferirNotaVozABorrador
-} from "./services/voiceNoteGenerationService.js?v=20260718-note-generation";
+} from "./services/voiceNoteGenerationService.js?v=20260718-session-persistence";
 import { buscarBorradorNotaClinica } from "./services/notas.js?v=20260716-2";
+import {
+  VOICE_NOTE_SESSION_SCHEMA_VERSION,
+  buscarSesionesNotaVozLocales,
+  eliminarSesionNotaVozLocal,
+  guardarSegmentacionNotaVozLocal,
+  guardarSesionNotaVozLocal,
+  hashTextoVoz,
+  limpiarSesionesNotaVozVencidas,
+  obtenerSegmentacionNotaVozLocal
+} from "./services/voiceNoteSessionPersistence.js?v=20260718-session-persistence";
 import {
   VOICE_NOTE_CATALOG_VERSION,
   VOICE_NOTE_STYLE_CATALOG_VERSION,
@@ -57,10 +67,17 @@ const state = {
   conversationSegments: [],
   conversationWarnings: [],
   conversationSegmentationMode: "rule_based",
+  segmentationMetadata: null,
   conversationUndo: [],
   conversationRedo: [],
   activeSegmentationRequest: null,
-  activeGenerationRequest: null
+  activeGenerationRequest: null,
+  isHydratingSession: true,
+  persistenceReady: false,
+  persistenceTimer: null,
+  recoverableSession: null,
+  selectedStep: "preparar",
+  lastSavedSessionKey: ""
 };
 
 const $ = (id) => document.getElementById(id);
@@ -192,7 +209,7 @@ function actualizarLinks() {
   const qsNota = construirQueryContexto(state.noteId ? { notaId: state.noteId } : {});
   $("linkPacienteVoz")?.setAttribute("href", state.patientId ? `paciente.html${qsPaciente}` : "paciente.html");
   $("linkNotaTradicional")?.setAttribute("href", qsNota ? `nota.html?${qsNota}` : "nota.html");
-  const versionedVoiceUrl = qsBase ? `nota-por-voz.html?v=20260718-note-generation&${qsBase}` : "nota-por-voz.html?v=20260718-note-generation";
+  const versionedVoiceUrl = qsBase ? `nota-por-voz.html?v=20260718-session-persistence&${qsBase}` : "nota-por-voz.html?v=20260718-session-persistence";
   $("linkNotaVoz")?.setAttribute("href", versionedVoiceUrl);
 }
 
@@ -252,7 +269,298 @@ function hayDatosVoz() {
   const textoCorregido = $("voiceCorrectedTranscript")?.value?.trim();
   const dictadoActivo = ["listening", "paused", "reconnecting", "processing", "completed"]
     .includes(window.cognicionDictado?.diagnostico?.().state || "");
-  return Boolean(textoDictado || textoCorregido || dictadoActivo);
+  return Boolean(textoDictado || textoCorregido || state.conversationSegments.length || state.generated || dictadoActivo);
+}
+
+function contextoPersistenciaVoz() {
+  return {
+    userId: state.user?.uid || "",
+    patientId: state.patientId || "",
+    encounterId: $("voiceEncounterId")?.value?.trim() || state.encounterId || ""
+  };
+}
+
+function configuracionNotaActual() {
+  const noteType = $("voiceDocumentType")?.value || state.documentType || getDefaultVoiceNoteType($("voiceServicio")?.value || "");
+  const styleId = $("voiceWritingStyle")?.value || state.writingStyle || getDefaultVoiceStyle(noteType);
+  const tipo = getVoiceNoteType(noteType);
+  return {
+    noteType,
+    styleId,
+    templateId: tipo?.templateId || "",
+    promptVersion: VOICE_NOTE_PROMPT_VERSION
+  };
+}
+
+function generatedNotePersistible() {
+  const editedEvolution = state.transferSections?.find((section) => section.key === "evolutionOrSubjective" || section.fieldTarget === "evolutionOrSubjective");
+  const evolution = state.generated?.sections?.evolution
+    || state.generated?.generatedClinicalText?.evolutionOrSubjective
+    || state.generated?.generatedClinicalText?.subjective
+    || null;
+  const text = editedEvolution?.content || evolution?.text || "";
+  if (!text) return null;
+  return {
+    evolution: {
+      text,
+      sourceUtteranceIds: evolution.sourceUtteranceIds || evolution.sourceSegmentIds || [],
+      confidence: evolution.confidence ?? null,
+      requiresReview: evolution.requiresReview !== false,
+      warnings: evolution.warnings || []
+    },
+    provider: state.generated?.provider || "",
+    model: state.generated?.model || "",
+    promptVersion: state.generated?.promptVersion || VOICE_NOTE_PROMPT_VERSION,
+    schemaVersion: state.generated?.schemaVersion || VOICE_NOTE_SCHEMA_VERSION,
+    generatedAt: state.generated?.generatedAt || new Date().toISOString()
+  };
+}
+
+function construirBorradorSesionVoz() {
+  const context = contextoPersistenciaVoz();
+  const snapshot = snapshotDictado();
+  const corrected = $("voiceCorrectedTranscript")?.value?.trim() || snapshot.correctedTranscript || "";
+  const original = $("textoDictadoClinico")?.value?.trim() || snapshot.confirmedTranscript || corrected;
+  const transcriptHash = hashTextoVoz(corrected || original);
+  const sessionId = snapshot.transcriptSessionId || window.cognicionDictado?.sessionId || "manual";
+  return {
+    schemaVersion: VOICE_NOTE_SESSION_SCHEMA_VERSION,
+    sessionId,
+    ...context,
+    createdAt: snapshot.provenance?.createdAt || new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    currentStep: state.selectedStep || "preparar",
+    noteConfiguration: configuracionNotaActual(),
+    transcript: {
+      original,
+      corrected,
+      transcriptId: snapshot.transcriptSessionId || sessionId,
+      transcriptHash,
+      sourceSegments: snapshot.transcriptSegments || []
+    },
+    segmentation: {
+      provider: state.segmentationMetadata?.provider || (state.conversationSegments.length ? state.conversationSegmentationMode : ""),
+      mode: state.conversationSegmentationMode || "rule_based",
+      promptVersion: state.segmentationMetadata?.promptVersion || "",
+      model: state.segmentationMetadata?.model || "",
+      transcriptHash: state.segmentationMetadata?.transcriptHash || transcriptHash,
+      utterances: state.conversationSegments || [],
+      warnings: state.conversationWarnings || [],
+      completedBlocks: state.segmentationMetadata?.completedBlocks ?? state.segmentationMetadata?.externalBlockCount ?? 0,
+      totalBlocks: state.segmentationMetadata?.totalBlocks ?? state.segmentationMetadata?.blockCount ?? 0,
+      pendingBlocks: state.segmentationMetadata?.pendingBlocks ?? 0,
+      manuallyEdited: Boolean(state.segmentationMetadata?.manuallyEdited),
+      generatedAt: state.segmentationMetadata?.generatedAt || ""
+    },
+    generatedNote: generatedNotePersistible(),
+    uiState: {
+      selectedStep: state.selectedStep || "preparar",
+      expandedWarnings: []
+    }
+  };
+}
+
+function programarPersistenciaVoz(reason = "update") {
+  if (state.isHydratingSession || !state.persistenceReady) return;
+  if (state.persistenceTimer) window.clearTimeout(state.persistenceTimer);
+  state.persistenceTimer = window.setTimeout(() => persistirSesionVoz(reason), 850);
+}
+
+async function persistirSesionVoz(reason = "update") {
+  if (state.isHydratingSession || !state.persistenceReady || !state.user?.uid || !state.patientId) return null;
+  const draft = construirBorradorSesionVoz();
+  if (!draft.transcript.corrected && !draft.transcript.original && !draft.segmentation.utterances.length && !draft.generatedNote) return null;
+  const saved = await guardarSesionNotaVozLocal(draft);
+  state.lastSavedSessionKey = saved?.key || state.lastSavedSessionKey;
+  if (draft.segmentation.utterances.length && ["external", "hybrid"].includes(draft.segmentation.provider || draft.segmentation.mode)) {
+    await guardarSegmentacionNotaVozLocal({
+      ...contextoPersistenciaVoz(),
+      transcriptHash: draft.transcript.transcriptHash,
+      promptVersion: draft.segmentation.promptVersion || "conversation_segmentation_es_mx_v2_2026-07-18",
+      model: draft.segmentation.model || "external_callable",
+      segmenterVersion: "conversation_segmentation_client_blocks_v1_2026-07-18",
+      provider: draft.segmentation.provider,
+      mode: draft.segmentation.mode,
+      utterances: draft.segmentation.utterances,
+      warnings: draft.segmentation.warnings,
+      completedBlocks: draft.segmentation.completedBlocks,
+      totalBlocks: draft.segmentation.totalBlocks,
+      pendingBlocks: draft.segmentation.pendingBlocks,
+      generatedAt: draft.segmentation.generatedAt || new Date().toISOString(),
+      reason
+    });
+  }
+  return saved;
+}
+
+function flushPersistenciaVoz(reason = "flush") {
+  if (state.persistenceTimer) {
+    window.clearTimeout(state.persistenceTimer);
+    state.persistenceTimer = null;
+  }
+  return persistirSesionVoz(reason).catch((error) => {
+    console.warn("No se pudo guardar la sesion de nota por voz:", error?.name || "error");
+    return null;
+  });
+}
+
+function mostrarPanelRecuperacionSesion(session = null) {
+  const panel = $("voiceSessionRecovery");
+  if (!panel) return;
+  state.recoverableSession = session;
+  panel.hidden = !session;
+  if (!session) return;
+  const transcriptLength = String(session.transcript?.corrected || session.transcript?.original || "").length;
+  const utteranceCount = session.segmentation?.utterances?.length || 0;
+  const blocks = session.segmentation?.totalBlocks
+    ? `${session.segmentation.completedBlocks || 0}/${session.segmentation.totalBlocks} bloques`
+    : "bloques no registrados";
+  setText("voiceSessionRecoverySummary", [
+    `Paciente: ${session.patientId}`,
+    `Encuentro: ${session.encounterId}`,
+    `Fecha: ${session.updatedAt || session.createdAt || "sin fecha"}`,
+    `Etapa: ${session.currentStep || session.uiState?.selectedStep || "sin etapa"}`,
+    `Transcripcion: ${transcriptLength} caracteres`,
+    `Segmentacion: ${session.segmentation?.provider || session.segmentation?.mode || "pendiente"} · ${utteranceCount} turnos · ${blocks}`,
+    session.generatedNote?.evolution?.text ? "Evolucion generada: si" : "Evolucion generada: no"
+  ].join(" · "));
+}
+
+async function buscarSesionRecuperableVoz() {
+  if (!state.user?.uid || !state.patientId || !state.encounterId) return null;
+  const sesiones = await buscarSesionesNotaVozLocales(contextoPersistenciaVoz());
+  const session = sesiones[0] || null;
+  mostrarPanelRecuperacionSesion(session);
+  if (session) setText("voiceContextStatus", "Se encontro una sesion local de nota por voz para este paciente y encuentro.");
+  return session;
+}
+
+function reconstruirGeneratedDesdeSesion(session = {}) {
+  const evolution = session.generatedNote?.evolution;
+  if (!evolution?.text) return null;
+  return {
+    provider: session.generatedNote.provider || "external",
+    model: session.generatedNote.model || "",
+    promptVersion: session.generatedNote.promptVersion || VOICE_NOTE_PROMPT_VERSION,
+    schemaVersion: session.generatedNote.schemaVersion || VOICE_NOTE_SCHEMA_VERSION,
+    sections: {
+      evolution: {
+        text: evolution.text,
+        sourceUtteranceIds: evolution.sourceUtteranceIds || [],
+        confidence: evolution.confidence ?? null,
+        requiresReview: evolution.requiresReview !== false,
+        warnings: evolution.warnings || []
+      }
+    },
+    generatedClinicalText: {
+      evolutionOrSubjective: {
+        text: evolution.text,
+        sourceUtteranceIds: evolution.sourceUtteranceIds || [],
+        sourceSegmentIds: evolution.sourceUtteranceIds || [],
+        warnings: evolution.warnings || [],
+        requiresReview: evolution.requiresReview !== false
+      },
+      subjective: {
+        text: evolution.text,
+        sourceUtteranceIds: evolution.sourceUtteranceIds || [],
+        sourceSegmentIds: evolution.sourceUtteranceIds || [],
+        warnings: evolution.warnings || [],
+        requiresReview: evolution.requiresReview !== false
+      },
+      objective: {},
+      analysis: {},
+      plan: {}
+    },
+    validationIssues: evolution.warnings || []
+  };
+}
+
+async function recuperarSesionVoz(session = state.recoverableSession) {
+  if (!session) return;
+  state.isHydratingSession = true;
+  const context = contextoPersistenciaVoz();
+  if (session.userId !== context.userId || session.patientId !== context.patientId || session.encounterId !== context.encounterId) {
+    alert("La sesion guardada pertenece a otro paciente o encuentro.");
+    state.isHydratingSession = false;
+    return;
+  }
+  const restoredOriginal = session.transcript?.original || session.transcript?.corrected || "";
+  const restoredCorrected = session.transcript?.corrected || session.transcript?.original || "";
+  const restoredHash = hashTextoVoz(restoredCorrected || restoredOriginal);
+  const segmentationHash = session.segmentation?.transcriptHash || session.transcript?.transcriptHash || "";
+  const segmentationMatchesTranscript = !session.segmentation?.utterances?.length || !segmentationHash || segmentationHash === restoredHash;
+  $("textoDictadoClinico").value = restoredOriginal;
+  $("voiceCorrectedTranscript").value = restoredCorrected;
+  window.cognicionDictado?.restoreFromSnapshot?.({
+    sessionId: session.sessionId,
+    transcriptSessionId: session.transcript?.transcriptId || session.sessionId,
+    text: restoredOriginal,
+    correctedTranscript: restoredCorrected,
+    confirmedTranscript: restoredOriginal,
+    confirmedSegments: session.transcript?.sourceSegments || [],
+    patientId: session.patientId,
+    userId: session.userId,
+    encounterId: session.encounterId
+  });
+  if (session.noteConfiguration?.noteType && $("voiceDocumentType")) $("voiceDocumentType").value = session.noteConfiguration.noteType;
+  if (session.noteConfiguration?.styleId && $("voiceWritingStyle")) $("voiceWritingStyle").value = session.noteConfiguration.styleId;
+  state.documentType = $("voiceDocumentType")?.value || session.noteConfiguration?.noteType || state.documentType;
+  state.writingStyle = $("voiceWritingStyle")?.value || session.noteConfiguration?.styleId || state.writingStyle;
+  state.conversationSegments = segmentationMatchesTranscript ? (session.segmentation?.utterances || []) : [];
+  state.conversationWarnings = segmentationMatchesTranscript
+    ? (session.segmentation?.warnings || [])
+    : [{ code: "transcript_hash_mismatch", message: "La transcripcion cambio desde la segmentacion guardada. Reprocese los fragmentos afectados." }];
+  state.conversationSegmentationMode = segmentationMatchesTranscript
+    ? (session.segmentation?.mode || session.segmentation?.provider || "rule_based")
+    : "rule_based";
+  state.segmentationMetadata = {
+    provider: session.segmentation?.provider || state.conversationSegmentationMode,
+    mode: state.conversationSegmentationMode,
+    promptVersion: session.segmentation?.promptVersion || "",
+    model: session.segmentation?.model || "",
+    transcriptHash: segmentationMatchesTranscript ? (segmentationHash || restoredHash) : restoredHash,
+    completedBlocks: segmentationMatchesTranscript ? (session.segmentation?.completedBlocks || 0) : 0,
+    totalBlocks: segmentationMatchesTranscript ? (session.segmentation?.totalBlocks || 0) : 0,
+    pendingBlocks: segmentationMatchesTranscript ? (session.segmentation?.pendingBlocks || 0) : 0,
+    manuallyEdited: Boolean(session.segmentation?.manuallyEdited),
+    generatedAt: session.segmentation?.generatedAt || ""
+  };
+  state.generated = segmentationMatchesTranscript ? reconstruirGeneratedDesdeSesion(session) : null;
+  state.transferSections = state.generated
+    ? crearTransferSections(state.generated, $("voiceCorrectedTranscript")?.value || "", crearPatientContext())
+    : [];
+  state.lastSavedSessionKey = session.key || "";
+  actualizarResumenPlantilla();
+  renderSegmentosConversacionalesActuales();
+  renderRevision();
+  setText("voiceSegmentationStatus", state.conversationSegments.length
+    ? `Segmentacion recuperada. Proveedor: ${state.segmentationMetadata.provider || "local"} · modo: ${state.conversationSegmentationMode} · turnos: ${state.conversationSegments.length}.`
+    : "Transcripcion recuperada. Segmentacion pendiente o invalidada por cambios en el texto.");
+  setText("voiceGenerationProgress", state.generated ? "Evolucion recuperada. Revise antes de transferir." : "La generacion no modifica la nota tradicional.");
+  mostrarPanelRecuperacionSesion(null);
+  state.isHydratingSession = false;
+  state.persistenceReady = true;
+  mostrarPaso(session.uiState?.selectedStep || session.currentStep || "transcripcion");
+  await flushPersistenciaVoz("session-restored");
+}
+
+async function descartarSesionVoz(session = state.recoverableSession) {
+  if (!session) return;
+  const tieneContenido = Boolean(session.transcript?.corrected || session.transcript?.original || session.segmentation?.utterances?.length || session.generatedNote?.evolution?.text);
+  if (tieneContenido && !confirm("Se eliminara la sesion local recuperable de este paciente y encuentro. La nota tradicional no se modificara.")) return;
+  await eliminarSesionNotaVozLocal(session);
+  mostrarPanelRecuperacionSesion(null);
+  state.persistenceReady = true;
+  state.isHydratingSession = false;
+  setText("voiceContextStatus", "Sesion local descartada.");
+}
+
+async function iniciarNuevaSesionVoz() {
+  mostrarPanelRecuperacionSesion(null);
+  state.recoverableSession = null;
+  state.persistenceReady = true;
+  state.isHydratingSession = false;
+  setText("voiceContextStatus", "Nueva sesion lista. El borrador anterior se conserva aislado hasta vencer o descartarse.");
 }
 
 function mostrarPaso(step) {
@@ -260,6 +568,7 @@ function mostrarPaso(step) {
     alert("Primero carga y valida el paciente.");
     return;
   }
+  state.selectedStep = step;
   document.querySelectorAll(".voice-step-panel").forEach((panel) => {
     panel.hidden = panel.id !== `step-${step}`;
   });
@@ -268,6 +577,7 @@ function mostrarPaso(step) {
   });
   if (step === "transcripcion") sincronizarTranscripcionRevision();
   if (step === "revisar") renderRevision();
+  programarPersistenciaVoz("step-change");
 }
 
 function snapshotDictado() {
@@ -302,7 +612,13 @@ function sincronizarTranscripcionRevision() {
   const textarea = $("voiceCorrectedTranscript");
   const texto = $("textoDictadoClinico")?.value || window.cognicionDictado?.snapshot?.().correctedTranscript || "";
   if (textarea && !textarea.value.trim()) textarea.value = texto;
-  renderSegmentosConversacionales(textarea?.value || texto);
+  const textoRevision = textarea?.value || texto;
+  const hashActual = hashTextoVoz(textoRevision);
+  if (state.conversationSegments.length && state.segmentationMetadata?.transcriptHash === hashActual) {
+    renderSegmentosConversacionalesActuales();
+    return;
+  }
+  renderSegmentosConversacionales(textoRevision);
 }
 
 function renderSegmentosConversacionales(texto = "") {
@@ -312,7 +628,16 @@ function renderSegmentosConversacionales(texto = "") {
   state.conversationSegments = Array.from(segmentos);
   state.conversationWarnings = segmentos.warnings || [];
   state.conversationSegmentationMode = "rule_based";
+  state.segmentationMetadata = {
+    provider: "rule_based",
+    mode: "linguistic",
+    transcriptHash: hashTextoVoz(texto),
+    promptVersion: "",
+    model: "",
+    generatedAt: new Date().toISOString()
+  };
   renderSegmentosConversacionalesActuales();
+  programarPersistenciaVoz("local-segmentation");
 }
 
 async function obtenerProveedorSegmentacion() {
@@ -347,6 +672,42 @@ async function segmentarConProveedor() {
   const provider = await obtenerProveedorSegmentacion();
   const snapshot = snapshotDictado();
   validarAislamientoSesion(snapshot);
+  const transcriptHash = hashTextoVoz(texto);
+  const cached = await obtenerSegmentacionNotaVozLocal({
+    ...contextoPersistenciaVoz(),
+    transcriptHash,
+    promptVersion: "conversation_segmentation_es_mx_v2_2026-07-18",
+    model: "external_callable",
+    segmenterVersion: "conversation_segmentation_client_blocks_v1_2026-07-18"
+  });
+  if (cached?.utterances?.length) {
+    state.conversationSegments = cached.utterances || [];
+    state.conversationWarnings = cached.warnings || [];
+    state.conversationSegmentationMode = cached.mode || cached.provider || "hybrid";
+    state.segmentationMetadata = {
+      provider: cached.provider || state.conversationSegmentationMode,
+      mode: cached.mode || state.conversationSegmentationMode,
+      promptVersion: cached.promptVersion || "conversation_segmentation_es_mx_v2_2026-07-18",
+      model: cached.model || "external_callable",
+      transcriptHash: cached.transcriptHash || transcriptHash,
+      completedBlocks: cached.completedBlocks || 0,
+      totalBlocks: cached.totalBlocks || 0,
+      pendingBlocks: cached.pendingBlocks || 0,
+      generatedAt: cached.generatedAt || cached.updatedAt || new Date().toISOString()
+    };
+    renderSegmentosConversacionalesActuales();
+    setText("voiceSegmentationStatus", `Segmentacion recuperada. Proveedor: ${state.segmentationMetadata.provider || "hybrid"} · modo: ${state.conversationSegmentationMode} · turnos: ${state.conversationSegments.length}. No se consumio proveedor externo.`);
+    renderDetalleTecnicoSegmentacion(null, {
+      clientRequestId,
+      stage: "persistent_cache_hit",
+      blockCount: state.segmentationMetadata.totalBlocks || 0,
+      completedBlocks: state.segmentationMetadata.completedBlocks || 0,
+      pendingBlocks: state.segmentationMetadata.pendingBlocks || 0
+    });
+    if (button) button.disabled = false;
+    programarPersistenciaVoz("segmentation-cache-hit");
+    return { provider: state.segmentationMetadata.provider, segmentationMode: state.conversationSegmentationMode, utterances: state.conversationSegments, warnings: state.conversationWarnings, cacheHit: true };
+  }
   const progressLabels = {
     preparing: "Preparando transcripcion...",
     cache_hit: "Segmentacion guardada.",
@@ -380,6 +741,17 @@ async function segmentarConProveedor() {
     state.conversationSegments = result.utterances || [];
     state.conversationWarnings = result.warnings || [];
     state.conversationSegmentationMode = result.segmentationMode || result.mode || result.provider || "hybrid";
+    state.segmentationMetadata = {
+      provider: result.provider || state.conversationSegmentationMode,
+      mode: result.segmentationMode || result.mode || state.conversationSegmentationMode,
+      promptVersion: result.promptVersion || "conversation_segmentation_es_mx_v2_2026-07-18",
+      model: result.model || "external_callable",
+      transcriptHash,
+      completedBlocks: result.metrics?.externalBlockCount || 0,
+      totalBlocks: result.metrics?.blockCount || 0,
+      pendingBlocks: Math.max(0, (result.metrics?.blockCount || 0) - (result.metrics?.externalBlockCount || 0)),
+      generatedAt: new Date().toISOString()
+    };
     state.segmentationFailure = result.providerFailure || null;
     renderSegmentosConversacionalesActuales();
     renderDetalleTecnicoSegmentacion(state.segmentationFailure, result.metrics || { clientRequestId });
@@ -389,6 +761,7 @@ async function segmentarConProveedor() {
       const cacheText = result.cacheHit ? " Segmentacion guardada reutilizada." : "";
       setText("voiceSegmentationStatus", `Segmentacion completada. Proveedor: ${result.provider || "external"} · modo: ${result.segmentationMode || result.mode || "linguistic"} · turnos: ${state.conversationSegments.length}.${cacheText}`);
     }
+    programarPersistenciaVoz("segmentation-complete");
     return result;
   } finally {
     state.activeSegmentationRequest = null;
@@ -440,6 +813,7 @@ function guardarHistorialSegmentacion() {
   state.conversationUndo.push(JSON.stringify(state.conversationSegments));
   if (state.conversationUndo.length > 30) state.conversationUndo.shift();
   state.conversationRedo = [];
+  state.segmentationMetadata = { ...(state.segmentationMetadata || {}), manuallyEdited: true };
 }
 
 function normalizarSegmentosConversacion() {
@@ -467,7 +841,7 @@ function renderSegmentosConversacionalesActuales() {
   contenedor.innerHTML = `
     <div class="voice-segmentation-summary">
       <span>${segmentos.length} turnos</span>
-      <span>Modo: linguistico</span>
+      <span>Modo: ${escaparHTML(state.conversationSegmentationMode || "linguistico")}</span>
       <span>${advertencias.length ? "Revisar advertencias" : "Segmentacion basica. Revise los hablantes."}</span>
       <button type="button" data-seg-undo ${state.conversationUndo.length ? "" : "disabled"}>Deshacer</button>
       <button type="button" data-seg-redo ${state.conversationRedo.length ? "" : "disabled"}>Rehacer</button>
@@ -502,6 +876,7 @@ function renderSegmentosConversacionalesActuales() {
       guardarHistorialSegmentacion();
       state.conversationSegments[Number(select.dataset.segRole)].probableRole = select.value;
       renderSegmentosConversacionalesActuales();
+      programarPersistenciaVoz("manual-role-edit");
     });
   });
   contenedor.querySelectorAll("[data-seg-act]").forEach((select) => {
@@ -509,6 +884,7 @@ function renderSegmentosConversacionalesActuales() {
       guardarHistorialSegmentacion();
       state.conversationSegments[Number(select.dataset.segAct)].speechAct = select.value;
       renderSegmentosConversacionalesActuales();
+      programarPersistenciaVoz("manual-act-edit");
     });
   });
   contenedor.querySelectorAll("[data-seg-split]").forEach((button) => {
@@ -535,6 +911,7 @@ function dividirSegmentoConversacional(index) {
     { ...segmento, id: idNuevo, utteranceId: idNuevo, text: segundo, originalText: segundo, requiresReview: true }
   );
   renderSegmentosConversacionalesActuales();
+  programarPersistenciaVoz("manual-split");
 }
 
 function unirSegmentoConversacional(index) {
@@ -547,6 +924,7 @@ function unirSegmentoConversacional(index) {
   anterior.requiresReview = true;
   state.conversationSegments.splice(index, 1);
   renderSegmentosConversacionalesActuales();
+  programarPersistenciaVoz("manual-merge");
 }
 
 function deshacerSegmentacion() {
@@ -555,6 +933,8 @@ function deshacerSegmentacion() {
   state.conversationRedo.push(JSON.stringify(state.conversationSegments));
   state.conversationSegments = JSON.parse(previo);
   renderSegmentosConversacionalesActuales();
+  state.segmentationMetadata = { ...(state.segmentationMetadata || {}), manuallyEdited: true };
+  programarPersistenciaVoz("manual-undo");
 }
 
 function rehacerSegmentacion() {
@@ -563,14 +943,19 @@ function rehacerSegmentacion() {
   state.conversationUndo.push(JSON.stringify(state.conversationSegments));
   state.conversationSegments = JSON.parse(siguiente);
   renderSegmentosConversacionalesActuales();
+  state.segmentationMetadata = { ...(state.segmentationMetadata || {}), manuallyEdited: true };
+  programarPersistenciaVoz("manual-redo");
 }
 
 async function cargarPaciente(patientId) {
+  state.persistenceReady = false;
+  state.isHydratingSession = true;
   setPreparacionHabilitada(false, "Validando paciente...");
   if (!patientId || !state.user?.uid) {
     state.patient = null;
     setText("voicePatientSummary", "Selecciona un paciente para iniciar.");
     setPreparacionHabilitada(false, "Paciente pendiente.");
+    state.isHydratingSession = false;
     return;
   }
   if (!(await medicoPuedeVer(state.user.uid, patientId))) {
@@ -583,6 +968,7 @@ async function cargarPaciente(patientId) {
     state.patient = null;
     setText("voicePatientSummary", "No se encontró el paciente solicitado o no está disponible.");
     setPreparacionHabilitada(false, "Paciente no disponible.");
+    state.isHydratingSession = false;
     return;
   }
   state.patient = datos || {};
@@ -617,6 +1003,13 @@ async function cargarPaciente(patientId) {
   ].join(" · "));
   setPreparacionHabilitada(true, "Paciente validado. Puedes preparar el micrófono.");
   actualizarLinks();
+  await limpiarSesionesNotaVozVencidas();
+  const recuperable = await buscarSesionRecuperableVoz();
+  if (!recuperable) {
+    state.persistenceReady = true;
+    state.isHydratingSession = false;
+    programarPersistenciaVoz("context-ready");
+  }
 }
 
 async function cargarListaPacientes() {
@@ -737,6 +1130,7 @@ async function generarNota() {
   await guardarTranscripcionVozFirestore({ userId: state.user.uid, sessionId: snapshot.transcriptSessionId || "manual", transcript: snapshot });
   await guardarDraftGeneradoVozFirestore({ userId: state.user.uid, patientId: state.patientId, sessionId: snapshot.transcriptSessionId || "manual", generated });
   setText("voiceGenerationProgress", generated.metadata?.processingDisclosure || `Evolucion generada en ${Math.round((Date.now() - startedAt) / 1000)} s. Revise el apartado antes de transferir.`);
+  await flushPersistenciaVoz("generation-complete");
   renderRevision();
   mostrarPaso("revisar");
 }
@@ -790,6 +1184,7 @@ function renderRevision() {
   contenedor.querySelectorAll("[data-section-include]").forEach((input) => {
     input.addEventListener("change", () => {
       state.transferSections[Number(input.dataset.sectionInclude)].include = input.checked;
+      programarPersistenciaVoz("review-include-change");
     });
   });
   contenedor.querySelectorAll("[data-section-mode]").forEach((select) => {
@@ -797,12 +1192,14 @@ function renderRevision() {
       const section = state.transferSections[Number(select.dataset.sectionMode)];
       section.mode = select.value;
       if (select.value === "exclude") section.include = false;
+      programarPersistenciaVoz("review-mode-change");
       renderRevision();
     });
   });
   contenedor.querySelectorAll("[data-section-content]").forEach((textarea) => {
     textarea.addEventListener("input", () => {
       state.transferSections[Number(textarea.dataset.sectionContent)].content = textarea.value;
+      programarPersistenciaVoz("generated-note-edit");
     });
   });
 }
@@ -871,6 +1268,7 @@ async function transferir() {
     transferredNoteId: confirmado.id
   });
   setText("voiceTransferSummary", `Borrador ${confirmado.id} transferido y verificado. No se firmo ni se guardo como definitivo.`);
+  await eliminarSesionNotaVozLocal(construirBorradorSesionVoz());
 }
 
 function abrirNotaTradicional() {
@@ -896,10 +1294,12 @@ function conectarEventos() {
         event.target.value = state.patientId || "";
         return;
       }
+      await flushPersistenciaVoz("patient-change");
       state.generated = null;
       state.transferSections = [];
       state.conversationSegments = [];
       state.conversationWarnings = [];
+      state.segmentationMetadata = null;
     }
     state.patientId = nuevoPaciente;
     state.encounterId = "";
@@ -915,21 +1315,34 @@ function conectarEventos() {
     state.documentType = typeId;
     state.writingStyle = $("voiceWritingStyle")?.value || selected;
     actualizarResumenPlantilla();
+    programarPersistenciaVoz("document-type-change");
   });
   $("voiceWritingStyle")?.addEventListener("change", () => {
     state.writingStyle = $("voiceWritingStyle")?.value || "";
     actualizarResumenPlantilla();
+    programarPersistenciaVoz("style-change");
   });
-  $("voiceServicio")?.addEventListener("change", () => cargarCatalogosVoz($("voiceServicio")?.value || ""));
+  $("voiceServicio")?.addEventListener("change", () => {
+    cargarCatalogosVoz($("voiceServicio")?.value || "");
+    programarPersistenciaVoz("service-change");
+  });
   $("voiceEncounterId")?.addEventListener("input", () => {
     state.encounterId = $("voiceEncounterId")?.value?.trim() || "";
     actualizarLinks();
+    programarPersistenciaVoz("encounter-change");
   });
   $("voiceNoteId")?.addEventListener("input", () => {
     state.noteId = $("voiceNoteId")?.value?.trim() || "";
     actualizarLinks();
+    programarPersistenciaVoz("note-change");
   });
-  $("voiceCorrectedTranscript")?.addEventListener("input", (event) => renderSegmentosConversacionales(event.target.value));
+  $("textoDictadoClinico")?.addEventListener("input", () => {
+    programarPersistenciaVoz("dictation-input");
+  });
+  $("voiceCorrectedTranscript")?.addEventListener("input", (event) => {
+    renderSegmentosConversacionales(event.target.value);
+    programarPersistenciaVoz("transcript-edit");
+  });
   $("btnSegmentarConversacionVoz")?.addEventListener("click", () => segmentarConProveedor().catch((error) => {
     console.error("No se pudo segmentar la conversacion:", error);
     setText("voiceSegmentationStatus", "No se pudo segmentar con proveedor. Revise la transcripcion.");
@@ -944,10 +1357,27 @@ function conectarEventos() {
     alert(error.message || "No se pudo transferir la nota.");
   }));
   $("btnAbrirNotaTradicional")?.addEventListener("click", abrirNotaTradicional);
-  $("btnVolverVoz")?.addEventListener("click", () => {
+  $("btnRecuperarSesionVoz")?.addEventListener("click", () => recuperarSesionVoz().catch((error) => {
+    console.error("No se pudo recuperar la sesion de voz:", error);
+    alert(error.message || "No se pudo recuperar la sesion.");
+  }));
+  $("btnDescartarSesionVoz")?.addEventListener("click", () => descartarSesionVoz().catch((error) => {
+    console.error("No se pudo descartar la sesion de voz:", error);
+  }));
+  $("btnNuevaSesionVoz")?.addEventListener("click", () => iniciarNuevaSesionVoz().catch((error) => {
+    console.error("No se pudo iniciar nueva sesion de voz:", error);
+  }));
+  $("btnVolverVoz")?.addEventListener("click", async () => {
+    await flushPersistenciaVoz("internal-navigation");
     if (state.returnUrl) location.href = state.returnUrl;
     else if (state.patientId) location.href = `paciente.html?id=${encodeURIComponent(state.patientId)}`;
     else location.href = "medico.html";
+  });
+  window.addEventListener("pagehide", () => {
+    flushPersistenciaVoz("pagehide");
+  });
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "hidden") flushPersistenciaVoz("visibility-hidden");
   });
 }
 

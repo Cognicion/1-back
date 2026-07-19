@@ -116,6 +116,12 @@ window.cerrarSesion = async function() {
     });
   }
 
+  try {
+    const { limpiarDatosClinicosLocalesCognicion } = await import("./services/cacheControlService.js");
+    await limpiarDatosClinicosLocalesCognicion({ confirmar: false });
+  } catch (error) {
+    console.warn("No se pudo limpiar el almacenamiento clinico local al cerrar sesion:", error?.name || "error");
+  }
   await signOut(auth);
   window.location.href = "login.html";
 };

@@ -200,6 +200,11 @@ body {
   flex-wrap: wrap;
 }
 
+.voice-session-recovery {
+  border-color: rgba(56, 189, 248, 0.42);
+  background: rgba(8, 47, 73, 0.36);
+}
+
 .voice-card-title-row {
   display: flex;
   justify-content: space-between;

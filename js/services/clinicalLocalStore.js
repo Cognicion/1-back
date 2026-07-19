@@ -1,5 +1,5 @@
 const DB_NAME = "cognicionClinicalLocalStore";
-const LEGACY_DB_NAMES = ["cognicionVoiceNoteDrafts"];
+const LEGACY_DB_NAMES = ["cognicionVoiceNoteDrafts", "cognicionVoiceNoteSessionStore"];
 const DB_VERSION = 1;
 const STORE_HANDOFFS = "handoffs";
 const STORE_DRAFTS = "drafts";

@@ -678,6 +678,44 @@ export async function recuperarUltimoDictado() {
   actualizarMetricas();
 }
 
+export function restaurarDictadoClinicoDesdeSnapshot(snapshot = {}) {
+  const contexto = contextoActual();
+  runtime.userId = contexto.userId;
+  runtime.patientId = contexto.patientId;
+  runtime.encounterId = contexto.encounterId;
+  runtime.sessionId = snapshot.transcriptSessionId || snapshot.sessionId || runtime.sessionId || crearId("dictado");
+  runtime.ensamblador = new TranscriptAssembler({
+    sessionId: runtime.sessionId,
+    userId: runtime.userId,
+    patientId: runtime.patientId,
+    encounterId: runtime.encounterId
+  });
+  runtime.persistencia = new DraftPersistenceService({
+    userId: runtime.userId,
+    patientId: runtime.patientId,
+    encounterId: runtime.encounterId
+  });
+  runtime.ensamblador.restore({
+    ...snapshot,
+    sessionId: runtime.sessionId,
+    userId: runtime.userId,
+    patientId: runtime.patientId,
+    encounterId: runtime.encounterId,
+    text: snapshot.text || snapshot.correctedTranscript || snapshot.confirmedTranscript || snapshot.original || ""
+  });
+  runtime.ensamblador.preserveInterimsAsPending();
+  runtime.ensamblador.includePendingInText();
+  const texto = snapshot.correctedTranscript || snapshot.text || runtime.ensamblador.getText();
+  runtime.ensamblador.setManualText(texto, { recordEdit: false });
+  escribirTextarea(texto);
+  mostrarTextoProvisional("");
+  mostrarTextoPendiente(runtime.ensamblador.getPendingText());
+  runtime.maquina.transition(ESTADOS_DICTADO.COMPLETED, { reason: "voice-note-session-restored" });
+  guardarBorradorTemporal();
+  actualizarBotones();
+  actualizarMetricas();
+}
+
 export function insertarDictadoEnNota() {
   const texto = textoActual().trim();
   if (!texto) {
@@ -892,8 +930,10 @@ window.cognicionDictado = {
   get encounterId() { return runtime.encounterId; },
   snapshot: snapshotDictadoClinico,
   getSnapshot: snapshotDictadoClinico,
+  restoreFromSnapshot: restaurarDictadoClinicoDesdeSnapshot,
   diagnostico: () => ({ state: runtime.maquina.current, sessionId: runtime.sessionId, stats: runtime.ensamblador?.stats?.() })
 };
 window.navegadorSoportaDictado = navegadorSoportaDictado;
 window.recuperarUltimoDictado = recuperarUltimoDictado;
+window.restaurarDictadoClinicoDesdeSnapshot = restaurarDictadoClinicoDesdeSnapshot;
 window.probarMicrofono = probarMicrofono;

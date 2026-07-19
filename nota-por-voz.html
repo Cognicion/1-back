@@ -6,7 +6,7 @@
   <title>Nota por voz y automática | Cognición</title>
   <link rel="stylesheet" href="css/theme.css">
   <link rel="stylesheet" href="css/dictado.css">
-  <link rel="stylesheet" href="css/nota-por-voz.css?v=20260718-seg-timeout">
+  <link rel="stylesheet" href="css/nota-por-voz.css?v=20260718-session-persistence">
   <link rel="icon" type="image/png" href="assets/favicon-cognicion.png">
 </head>
 <body>
@@ -15,7 +15,7 @@
     <a href="medico.html">Panel medico</a>
     <a id="linkPacienteVoz" href="paciente.html">Paciente</a>
     <a id="linkNotaTradicional" href="nota.html">Nota tradicional</a>
-    <a class="activo" id="linkNotaVoz" href="nota-por-voz.html?v=20260718-note-generation">Nota por voz y automática</a>
+    <a class="activo" id="linkNotaVoz" href="nota-por-voz.html?v=20260718-session-persistence">Nota por voz y automática</a>
   </aside>
 
   <main class="voice-shell">
@@ -66,6 +66,17 @@
       </div>
       <div id="voicePatientSummary" class="voice-summary">Selecciona un paciente para iniciar.</div>
       <div id="voiceContextStatus" class="voice-summary">Cargando contexto del paciente...</div>
+      <section id="voiceSessionRecovery" class="voice-card voice-session-recovery" hidden>
+        <div class="voice-card-title-row">
+          <h3>Se encontró un dictado sin finalizar</h3>
+        </div>
+        <p id="voiceSessionRecoverySummary" class="voice-summary"></p>
+        <div class="voice-actions">
+          <button id="btnRecuperarSesionVoz" type="button">Recuperar sesión</button>
+          <button id="btnDescartarSesionVoz" type="button" class="boton-secundario">Descartar</button>
+          <button id="btnNuevaSesionVoz" type="button" class="boton-secundario">Iniciar nueva</button>
+        </div>
+      </section>
       <div id="voiceTemplateSummary" class="voice-summary">Catálogo de notas pendiente.</div>
       <div class="voice-actions">
         <button id="btnPrepararMicrofono" type="button">Probar microfono</button>
@@ -191,6 +202,6 @@
   </main>
 
   <script type="module" src="js/dictado.js?v=20260718-context"></script>
-  <script type="module" src="js/nota-por-voz.js?v=20260718-note-generation"></script>
+  <script type="module" src="js/nota-por-voz.js?v=20260718-session-persistence"></script>
 </body>
 </html>
