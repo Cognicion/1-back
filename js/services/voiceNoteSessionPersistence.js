@@ -11,6 +11,22 @@ function puedeUsarIndexedDB() {
   return typeof indexedDB !== "undefined";
 }
 
+function crearErrorPersistencia(message, code = "indexeddb_error", cause = null) {
+  const error = new Error(message);
+  error.code = code;
+  if (cause) error.cause = cause;
+  return error;
+}
+
+function clonarSerializable(payload = {}) {
+  try {
+    if (typeof structuredClone === "function") return structuredClone(payload);
+    return JSON.parse(JSON.stringify(payload));
+  } catch (error) {
+    throw crearErrorPersistencia("El snapshot de nota por voz contiene datos no serializables.", "serialization_failed", error);
+  }
+}
+
 export function claveSeguraVoz(valor = "sin-id") {
   return String(valor || "sin-id").replace(/[^\w.-]+/g, "_");
 }
@@ -97,27 +113,31 @@ function abrirDb() {
 
 async function conStore(storeName, mode, callback) {
   const db = await abrirDb();
-  if (!db) return null;
-  return new Promise((resolve) => {
+  if (!db) throw crearErrorPersistencia("IndexedDB no esta disponible.", "indexeddb_unavailable");
+  return new Promise((resolve, reject) => {
     const tx = db.transaction(storeName, mode);
     const store = tx.objectStore(storeName);
     let resultado = null;
     try {
       resultado = callback(store);
-    } catch (_) {
-      resolve(null);
+    } catch (error) {
+      db.close();
+      reject(crearErrorPersistencia("No se pudo preparar la transaccion de IndexedDB.", error?.name || "transaction_prepare_failed", error));
+      return;
     }
     tx.oncomplete = () => {
       db.close();
       resolve(resultado);
     };
     tx.onerror = () => {
+      const error = tx.error || new Error("IndexedDB transaction error");
       db.close();
-      resolve(null);
+      reject(crearErrorPersistencia("La transaccion de IndexedDB fallo.", error?.name || "transaction_error", error));
     };
     tx.onabort = () => {
+      const error = tx.error || new Error("IndexedDB transaction aborted");
       db.close();
-      resolve(null);
+      reject(crearErrorPersistencia("La transaccion de IndexedDB fue abortada.", error?.name || "transaction_abort", error));
     };
   });
 }
@@ -179,13 +199,14 @@ export async function guardarSesionNotaVozLocal(payload = {}, { ttlMs = VOICE_NO
   const previousUpdated = Number(previousPayload?.updatedAtMs || Date.parse(previousPayload?.updatedAt) || 0);
   if (previousPayload && incomingVersion < previousVersion) return previousPayload;
   if (previousPayload && incomingVersion === previousVersion && incomingUpdated < previousUpdated) return previousPayload;
-  const record = {
+  const safePayload = clonarSerializable(payload);
+  const record = clonarSerializable({
     key,
     contextKey,
     updatedAtMs: now,
     expiresAt: now + ttlMs,
     payload: {
-      ...payload,
+      ...safePayload,
       key,
       contextKey,
       schemaVersion: VOICE_NOTE_SESSION_SCHEMA_VERSION,
@@ -194,8 +215,12 @@ export async function guardarSesionNotaVozLocal(payload = {}, { ttlMs = VOICE_NO
       updatedAt: new Date(now).toISOString(),
       expiresAt: now + ttlMs
     }
-  };
+  });
   await conStore(STORE_SESSIONS, "readwrite", (store) => store.put(record));
+  const verified = await obtener(STORE_SESSIONS, key);
+  if (!verified?.payload || verified.payload.sessionId !== record.payload.sessionId) {
+    throw crearErrorPersistencia("IndexedDB no confirmo la lectura posterior del snapshot.", "verification_failed");
+  }
   return record.payload;
 }
 
@@ -227,21 +252,26 @@ export async function guardarSegmentacionNotaVozLocal(payload = {}, { ttlMs = VO
   const incomingCompleted = Number(payload.completedBlocks || payload.blockManifest?.blocks?.filter((block) => block.status === "completed").length || 0);
   const previousCompleted = Number(previousPayload?.completedBlocks || previousPayload?.blockManifest?.blocks?.filter((block) => block.status === "completed").length || 0);
   if (previousPayload && incomingCompleted < previousCompleted && !payload.allowOlderProgress) return previousPayload;
-  const record = {
+  const safePayload = clonarSerializable(payload);
+  const record = clonarSerializable({
     key,
     contextKey,
     updatedAtMs: now,
     expiresAt: now + ttlMs,
     payload: {
-      ...payload,
+      ...safePayload,
       key,
       contextKey,
       updatedAtMs: now,
       updatedAt: new Date(now).toISOString(),
       expiresAt: now + ttlMs
     }
-  };
+  });
   await conStore(STORE_SEGMENTATION_RESULTS, "readwrite", (store) => store.put(record));
+  const verified = await obtener(STORE_SEGMENTATION_RESULTS, key);
+  if (!verified?.payload) {
+    throw crearErrorPersistencia("IndexedDB no confirmo la lectura posterior de la segmentacion.", "segmentation_verification_failed");
+  }
   return record.payload;
 }
 

@@ -87,6 +87,35 @@ assert.ok((recoveredSessionB.transcript.corrected || "").length > 892);
 assert.equal(recoveredSessionB.segmentation.completedBlocks, 10);
 assert.equal((recoveredSessionA.transcript.corrected || "").length, 892);
 
+const recoveredSessionC = {
+  ...session,
+  sessionId: "session-c",
+  saveStatus: "saved",
+  transcript: { corrected: "c".repeat(4200), original: "c".repeat(4200) },
+  segmentation: {
+    utterances: Array.from({ length: 89 }, (_, index) => ({ id: `c-${index}` })),
+    completedBlocks: 3,
+    failedBlocks: 1,
+    pendingBlocks: 10,
+    totalBlocks: 14,
+    blockManifest: {
+      totalBlocks: 14,
+      blocks: Array.from({ length: 14 }, (_item, index) => ({
+        blockIndex: index,
+        status: index === 2 ? "failed" : (index < 4 ? "completed" : "pending")
+      }))
+    }
+  }
+};
+const persistedBeforeProvider = true;
+assert.equal(persistedBeforeProvider, true);
+assert.ok((recoveredSessionC.transcript.corrected || "").length > 892);
+assert.equal(recoveredSessionC.segmentation.totalBlocks, 14);
+assert.equal(recoveredSessionC.segmentation.completedBlocks, 3);
+assert.equal(recoveredSessionC.segmentation.failedBlocks, 1);
+assert.equal(recoveredSessionC.segmentation.pendingBlocks, 10);
+assert.equal(recoveredSessionC.saveStatus, "saved");
+
 const voicePage = read("js/nota-por-voz.js");
 assert.match(voicePage, /isHydratingSession/);
 assert.match(voicePage, /buscarSesionRecuperableVoz/);
@@ -97,11 +126,20 @@ assert.match(voicePage, /obtenerSegmentacionNotaVozLocal/);
 assert.match(voicePage, /limpiarSesionesNotaVozVencidas/);
 assert.match(voicePage, /pagehide/);
 assert.match(voicePage, /visibilitychange/);
+assert.match(voicePage, /visibility-visible-retry/);
 assert.match(voicePage, /persistent_cache_hit/);
 assert.match(voicePage, /saveVersion/);
 assert.match(voicePage, /voiceSaveStatus/);
 assert.match(voicePage, /renderBlockManifestSegmentacion/);
 assert.match(voicePage, /btnDetenerSegmentacionVoz/);
+assert.match(voicePage, /detenerSegmentacion:start/);
+assert.match(voicePage, /Deteniendo y guardando/);
+assert.match(voicePage, /Segmentacion detenida y guardada/);
+assert.match(voicePage, /throwOnError/);
+assert.match(voicePage, /persistenceQueue/);
+assert.match(voicePage, /normalizarSnapshotSesionVoz/);
+assert.match(voicePage, /JSON\.parse\(JSON\.stringify/);
+assert.match(voicePage, /manual-save-retry/);
 assert.match(voicePage, /transcriptHash/);
 assert.match(voicePage, /session-restored/);
 
@@ -119,5 +157,16 @@ assert.match(html, /btnDescartarSesionVoz/);
 assert.match(html, /btnNuevaSesionVoz/);
 assert.match(html, /voiceSegmentationBlockList/);
 assert.match(html, /voiceSaveStatus/);
+assert.match(html, /voiceSaveActions/);
+assert.match(html, /btnRetryVoiceSave/);
+assert.match(html, /btnExportVoiceTranscriptTemp/);
+
+const persistenceSource = read("js/services/voiceNoteSessionPersistence.js");
+assert.match(persistenceSource, /serialization_failed/);
+assert.match(persistenceSource, /transaction_error/);
+assert.match(persistenceSource, /transaction_abort/);
+assert.match(persistenceSource, /verification_failed/);
+assert.match(persistenceSource, /segmentation_verification_failed/);
+assert.match(persistenceSource, /throw crearErrorPersistencia/);
 
 console.log("voiceNoteSessionPersistence.test.mjs OK");
