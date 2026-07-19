@@ -5,6 +5,7 @@ const {
   FORMAT_PERMISSION_FRAY,
   FORMAT_PERMISSION_NAVARRO,
   validateEvolutionText,
+  buildMentalExamSection,
   requiredInstitutionalFormatPermission,
   runGenerateStructuredNoteFromDictation
 } = require("../noteGenerationHandler");
@@ -202,6 +203,21 @@ assert.equal(result.promptVersion, NOTE_PROMPT_VERSION);
 assert.equal(result.schemaVersion, NOTE_SCHEMA_VERSION);
 assert.equal(result.sections.evolution.text, validEvolution);
 assert.deepEqual(result.sections.evolution.sourceUtteranceIds, ["utt-1", "utt-2", "utt-3", "utt-4", "utt-5"]);
+assert.ok(result.sections.mentalExam);
+assert.ok(Array.isArray(result.sections.mentalExam.components));
+assert.equal(result.sections.mentalExam.components.some((component) => component.domain === "orientation"), false, "no debe inventar orientacion global");
+
+const mentalWithVisual = buildMentalExamSection(basePayload({
+  encounterObservation: {
+    location: "consultorio",
+    position: "sedente",
+    visualContact: [{ value: "adequate", label: "Adecuado", destinationSections: ["mentalStatusExam"] }],
+    gait: [{ value: "normal_gait_observed", label: "Sin alteraciones observables", destinationSections: ["mentalStatusExam"] }]
+  }
+}));
+assert.ok(mentalWithVisual.components.some((component) => component.domain === "visual_contact"));
+assert.ok(mentalWithVisual.components.some((component) => component.domain === "gait"));
+assert.match(mentalWithVisual.narrative, /Contacto visual|Marcha/);
 
 await assert.rejects(
   () => runGenerateStructuredNoteFromDictation({

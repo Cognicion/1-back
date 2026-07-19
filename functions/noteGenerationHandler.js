@@ -1,7 +1,7 @@
 const crypto = require("crypto");
 
-const NOTE_PROMPT_VERSION = "psychiatric_voice_note_es_mx_v2";
-const NOTE_SCHEMA_VERSION = "voice_note_evolution_v1";
+const NOTE_PROMPT_VERSION = "psychiatric_voice_note_es_mx_v3";
+const NOTE_SCHEMA_VERSION = "voice_note_evolution_mental_exam_v1";
 const EVOLUTION_VALIDATOR_VERSION = "evolution_semantic_validator_v2";
 const DEFAULT_NOTE_MODEL = "gpt-4.1-mini";
 const PROVIDER_TIMEOUT_MS = 65000;
@@ -14,12 +14,12 @@ const FRAY_FORMAT_IDS = new Set(["ingreso_observacion", "evolucion_observacion",
 const NAVARRO_FORMAT_IDS = new Set(["referencia_navarro"]);
 
 const NOTE_PROMPT = `
-Version del prompt: psychiatric_voice_note_es_mx_v2.
+Version del prompt: psychiatric_voice_note_es_mx_v3.
 Eres un asistente especializado en documentacion psiquiatrica institucional en espanol de Mexico.
 
 Recibiras una segmentacion conversacional revisada con roles y actos comunicativos. Usa esa segmentacion como fuente principal; no vuelvas a segmentar toda la entrevista.
 
-Genera exclusivamente la seccion evolution para una nota psiquiatrica. No generes examen mental, analisis ni plan.
+Genera la seccion evolution y, cuando existan datos sustentados, un Examen mental preliminar. No generes analisis ni plan.
 
 Reglas clinicas:
 - Redacta en tercera persona, con lenguaje medico formal e institucional.
@@ -51,6 +51,8 @@ Estilo de evolution:
 - Respeta generationPreferences.includePatientQuotes. Si es false, no uses comillas ni "sic. Pac."; parafrasea fielmente. Si es true, usa solo citas literales breves de utterances del paciente, maximo generationPreferences.maxPatientQuotes cuando sea mayor que 0; si maxPatientQuotes es 0, no hay maximo automatico, pero limita las citas a las clinicamente indispensables. No corrijas el texto dentro de la cita y coloca "sic. Pac." inmediatamente despues.
 - Usa el bloque OBSERVACIONES MANUALES DEL PROFESIONAL solo como hallazgos observados introducidos manualmente. No los atribuyas al paciente. No amplifiques su significado. No infieras orientacion, cooperacion, psicomotricidad, higiene, marcha, afecto ni riesgo a partir de otra observacion distinta. Respeta destinationSections y evita repetir literalmente la misma observacion.
 - Si modality es videollamada, redacta "valorado mediante videollamada" y limita hallazgos a lo observable por camara. Si modality es llamada telefonica, no generes apariencia, contacto visual, marcha, higiene ni psicomotricidad.
+- Para mentalExam, incluye solo componentes sustentados por transcript_explicit, transcript_clinical_inference revisable, clinician_visual_observation o clinician_manual_entry. No inventes hallazgos normales. No asumas orientacion global, juicio conservado, ausencia de riesgo ni ausencia de alteraciones sensoperceptivas si no fueron explorados.
+- La transcripcion Web Speech API no prueba volumen, prosodia, tono real, velocidad acustica ni latencia temporal exacta. No los presentes como observados salvo dictado explicito del profesional.
 
 Devuelve JSON estricto con este esquema:
 {
@@ -58,6 +60,16 @@ Devuelve JSON estricto con este esquema:
     "evolution": {
       "text": "",
       "sourceUtteranceIds": [],
+      "confidence": null,
+      "requiresReview": true,
+      "warnings": []
+    },
+    "mentalExam": {
+      "narrative": "",
+      "components": [],
+      "sourceUtteranceIds": [],
+      "sourceObservationIds": [],
+      "selectedQuoteIds": [],
       "confidence": null,
       "requiresReview": true,
       "warnings": []
@@ -316,7 +328,9 @@ function normalizeEncounterObservation(value = {}) {
     behaviors: normalizeObservationGroup(obs.behaviors),
     interactions: normalizeObservationGroup(obs.interactions),
     appearance: normalizeObservationGroup(obs.appearance),
+    visualContact: normalizeObservationGroup(obs.visualContact),
     psychomotor: normalizeObservationGroup(obs.psychomotor),
+    gait: normalizeObservationGroup(obs.gait),
     freeText: normalizeString(obs.freeText).replace(/[<>]/g, "").slice(0, 500),
     freeTextConfirmed: Boolean(obs.freeTextConfirmed)
   };
@@ -684,17 +698,17 @@ function buildManualObservationFacts(observation = {}) {
       createdAt: new Date(0).toISOString()
     });
   };
-  if (observation.modality) add({ domain: "encounter.modality", value: observation.modality, label: observation.modality, destinationSections: ["evolution"] });
+  if (observation.modality) add({ domain: "encounter.modality", value: observation.modality, label: observation.modality, destinationSections: ["mentalStatusExam"] });
   if (observation.location) {
     add({
       domain: "encounter.location",
       value: observation.location,
       label: observation.location === "otro" ? observation.locationOther : observation.location,
-      destinationSections: ["evolution"]
+      destinationSections: ["mentalStatusExam"]
     });
   }
-  if (observation.position) add({ domain: "encounter.position", value: observation.position, label: observation.position, destinationSections: ["evolution"] });
-  for (const group of ["activities", "behaviors", "interactions", "appearance", "psychomotor"]) {
+  if (observation.position) add({ domain: "encounter.position", value: observation.position, label: observation.position, destinationSections: ["mentalStatusExam"] });
+  for (const group of ["activities", "behaviors", "interactions", "appearance", "visualContact", "psychomotor", "gait"]) {
     for (const item of observation[group] || []) {
       add({
         domain: `visual.${group}`,
@@ -709,7 +723,7 @@ function buildManualObservationFacts(observation = {}) {
       domain: "visual.free_text",
       value: "clinician_free_text",
       label: observation.freeText,
-      destinationSections: ["evolution"]
+      destinationSections: ["mentalStatusExam"]
     });
   }
   return facts;
@@ -1201,16 +1215,279 @@ function warningsForUnknownSpeakers(coverage = {}) {
   return warnings;
 }
 
+function normalizeClinicalText(value = "") {
+  return normalizeString(value)
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+}
+
+function createMentalExamComponent({
+  domain,
+  label,
+  values = [],
+  status = "present",
+  sourceType = "transcript_explicit",
+  sourceRole = "patient",
+  sourceUtteranceIds = [],
+  sourceObservationIds = [],
+  confidence = null,
+  requiresReview = false,
+  includedInNarrative = true
+}) {
+  const cleanValues = (Array.isArray(values) ? values : [values])
+    .map((item) => normalizeString(item))
+    .filter(Boolean);
+  if (!domain || !cleanValues.length) return null;
+  return {
+    domain,
+    label: label || domain,
+    values: cleanValues,
+    status,
+    sourceType,
+    sourceRole,
+    sourceUtteranceIds: normalizeSourceUtteranceIds(sourceUtteranceIds),
+    sourceObservationIds: normalizeSourceUtteranceIds(sourceObservationIds),
+    confidence: Number.isFinite(Number(confidence)) ? Math.max(0, Math.min(1, Number(confidence))) : null,
+    requiresReview: Boolean(requiresReview),
+    includedInNarrative: includedInNarrative !== false
+  };
+}
+
+function mergeMentalExamComponents(components = []) {
+  const merged = new Map();
+  for (const component of components.filter(Boolean)) {
+    const key = component.domain;
+    if (!merged.has(key)) {
+      merged.set(key, { ...component });
+      continue;
+    }
+    const current = merged.get(key);
+    current.values = Array.from(new Set([...(current.values || []), ...(component.values || [])]));
+    current.sourceUtteranceIds = Array.from(new Set([...(current.sourceUtteranceIds || []), ...(component.sourceUtteranceIds || [])]));
+    current.sourceObservationIds = Array.from(new Set([...(current.sourceObservationIds || []), ...(component.sourceObservationIds || [])]));
+    current.requiresReview = current.requiresReview || component.requiresReview;
+    current.confidence = Math.min(
+      Number.isFinite(Number(current.confidence)) ? Number(current.confidence) : 1,
+      Number.isFinite(Number(component.confidence)) ? Number(component.confidence) : 1
+    );
+  }
+  return Array.from(merged.values());
+}
+
+function manualObservationToMentalComponent(observation = {}) {
+  const domain = normalizeString(observation.domain);
+  const value = normalizeString(observation.value);
+  const label = normalizeString(observation.label || value);
+  const id = normalizeString(observation.id);
+  const destination = observation.destinationSections || [];
+  if (!destination.includes("mentalStatusExam") && !destination.includes("both")) return null;
+  if (/encounter\.modality/.test(domain)) {
+    return createMentalExamComponent({ domain: "encounter.context", label: "Modalidad", values: [label], sourceType: "clinician_visual_observation", sourceRole: "clinician", sourceObservationIds: [id], confidence: 1 });
+  }
+  if (/encounter\.location/.test(domain)) {
+    return createMentalExamComponent({ domain: "encounter.context", label: "Lugar y contexto", values: [label], sourceType: "clinician_visual_observation", sourceRole: "clinician", sourceObservationIds: [id], confidence: 1 });
+  }
+  if (/encounter\.position/.test(domain)) {
+    return createMentalExamComponent({ domain: "position", label: "Posicion", values: [label], sourceType: "clinician_visual_observation", sourceRole: "clinician", sourceObservationIds: [id], confidence: 1 });
+  }
+  if (/visual\.appearance/.test(domain)) {
+    return createMentalExamComponent({ domain: "appearance", label: "Apariencia, higiene y alino", values: [label], sourceType: "clinician_visual_observation", sourceRole: "clinician", sourceObservationIds: [id], confidence: 1 });
+  }
+  if (/visual\.behaviors|visual\.activities|visual\.interactions/.test(domain)) {
+    return createMentalExamComponent({ domain: "observable_behavior", label: "Expresion y conducta observable", values: [label], sourceType: "clinician_visual_observation", sourceRole: "clinician", sourceObservationIds: [id], confidence: 1 });
+  }
+  if (/visual\.visualContact/.test(domain)) {
+    return createMentalExamComponent({ domain: "visual_contact", label: "Contacto visual", values: [label], sourceType: "clinician_visual_observation", sourceRole: "clinician", sourceObservationIds: [id], confidence: 1 });
+  }
+  if (/visual\.psychomotor/.test(domain)) {
+    return createMentalExamComponent({ domain: "psychomotricity", label: "Psicomotricidad", values: [label], sourceType: "clinician_visual_observation", sourceRole: "clinician", sourceObservationIds: [id], confidence: 1 });
+  }
+  if (/visual\.gait/.test(domain)) {
+    return createMentalExamComponent({ domain: "gait", label: "Marcha", values: [label], sourceType: "clinician_visual_observation", sourceRole: "clinician", sourceObservationIds: [id], confidence: 1 });
+  }
+  if (/visual\.free_text/.test(domain)) {
+    return createMentalExamComponent({ domain: "manual_observation", label: "Observacion manual", values: [label], sourceType: "clinician_manual_entry", sourceRole: "clinician", sourceObservationIds: [id], confidence: 1, requiresReview: true });
+  }
+  return null;
+}
+
+function buildMentalExamComponents(payload = {}, providerMental = {}) {
+  const utterances = payload.transcript?.utterances || [];
+  const manualObservations = buildManualObservationFacts(payload.encounterObservation || {});
+  const components = [];
+
+  for (const observation of manualObservations) {
+    components.push(manualObservationToMentalComponent(observation));
+  }
+
+  for (const utterance of utterances) {
+    const text = normalizeString(utterance.text);
+    const clean = normalizeClinicalText(text);
+    const role = normalizeString(utterance.probableRole).toLowerCase();
+    const act = normalizeString(utterance.speechAct).toLowerCase();
+    const id = utterance.id;
+    const patientSays = role === "patient" || role === "relative";
+    const clinicianObservation = role === "clinician" && act === "observation";
+    if (clinicianObservation && /\b(despiert|somnolient|obnubilad|estuporos|conciencia)\b/.test(clean)) {
+      components.push(createMentalExamComponent({ domain: "consciousness", label: "Conciencia", values: [text], sourceType: "transcript_explicit", sourceRole: "clinician", sourceUtteranceIds: [id], confidence: 0.9 }));
+    }
+    if (clinicianObservation && /\borientad|desorientad|orientacion\b/.test(clean)) {
+      components.push(createMentalExamComponent({ domain: "orientation", label: "Orientacion", values: [text], sourceType: "transcript_explicit", sourceRole: "clinician", sourceUtteranceIds: [id], confidence: 0.9 }));
+    }
+    if (clinicianObservation && /\b(cooperador|hostil|irritable|suspicaz|reticente|abordable|actitud)\b/.test(clean)) {
+      components.push(createMentalExamComponent({ domain: "attitude", label: "Actitud", values: [text], sourceType: "transcript_explicit", sourceRole: "clinician", sourceUtteranceIds: [id], confidence: 0.9 }));
+    }
+    if (!patientSays) continue;
+    const sourceType = "transcript_explicit";
+    if (/\b(triste|ansios|irritable|enojad|tranquil|harta|desesperanz|animo|me siento)\b/.test(clean)) {
+      components.push(createMentalExamComponent({ domain: "reported_mood", label: "Estado de animo referido", values: [text], sourceType, sourceRole: role, sourceUtteranceIds: [id], confidence: 0.82 }));
+    }
+    if (/\b(voces|alucin|veo|escucho|escuchaba|sombras|estimulos|mensajes)\b/.test(clean)) {
+      const denied = /\b(no|niega|ya no|desde hace|dejaron de)\b/.test(clean);
+      components.push(createMentalExamComponent({ domain: "perception_reported", label: "Sensopercepcion referida", values: [text], status: denied ? "denied" : "present", sourceType, sourceRole: role, sourceUtteranceIds: [id], confidence: 0.86 }));
+    }
+    if (/\b(persecuci|persegu|dan[oñ]|referencia|television|telefono|redes|me vigilan|me quieren)\b/.test(clean)) {
+      components.push(createMentalExamComponent({ domain: "thought_content", label: "Contenido del pensamiento", values: [text], sourceType, sourceRole: role, sourceUtteranceIds: [id], confidence: 0.86 }));
+    }
+    if (/\b(ya no estoy tan seguro|no estoy tan seguro|duda|puede haber influido|metanfetamina|cannabis|consumo)\b/.test(clean)) {
+      components.push(createMentalExamComponent({ domain: "illness_awareness", label: "Advertencia de padecimiento", values: [text], sourceType, sourceRole: role, sourceUtteranceIds: [id], confidence: 0.78, requiresReview: true }));
+    }
+    if (/\b(ideas de muerte|morir|suicid|quitarme|quitarse la vida)\b/.test(clean)) {
+      const denied = /\b(no|niega|nunca|ya no)\b/.test(clean);
+      components.push(createMentalExamComponent({ domain: "suicide_risk", label: "Riesgo suicida", values: [text], status: denied ? "denied" : "present", sourceType, sourceRole: role, sourceUtteranceIds: [id], confidence: 0.88 }));
+    }
+    if (/\b(agredir|lastimar|danar|dañar|homicid|hacerle dano|hacerle daño)\b/.test(clean)) {
+      const denied = /\b(no|niega|ya no)\b/.test(clean);
+      components.push(createMentalExamComponent({ domain: "heteroaggressive_risk", label: "Riesgo heteroagresivo", values: [text], status: denied ? "denied" : "present", sourceType, sourceRole: role, sourceUtteranceIds: [id], confidence: 0.86 }));
+    }
+    if (/\b(mama|madre|familia|hijo|pareja|trabaj|estudi|egreso|tratamiento|seguimiento|ayudarme|apoyo)\b/.test(clean)) {
+      components.push(createMentalExamComponent({ domain: "future_projection", label: "Proyeccion a futuro y red de apoyo", values: [text], sourceType, sourceRole: role, sourceUtteranceIds: [id], confidence: 0.74, requiresReview: true }));
+    }
+    if (/\bno recuerdo|no se|confund|fecha|donde estoy|fray|hospital\b/.test(clean)) {
+      components.push(createMentalExamComponent({ domain: "cognition_context", label: "Cognicion por intercambio", values: [text], sourceType: "transcript_clinical_inference", sourceRole: role, sourceUtteranceIds: [id], confidence: 0.62, requiresReview: true }));
+    }
+  }
+
+  for (const raw of Array.isArray(providerMental?.components) ? providerMental.components : []) {
+    const component = createMentalExamComponent({
+      domain: normalizeString(raw.domain),
+      label: normalizeString(raw.label || raw.domain),
+      values: raw.values || raw.value || [],
+      status: raw.status || "present",
+      sourceType: raw.sourceType || "transcript_clinical_inference",
+      sourceRole: raw.sourceRole || "unknown",
+      sourceUtteranceIds: raw.sourceUtteranceIds || [],
+      sourceObservationIds: raw.sourceObservationIds || [],
+      confidence: raw.confidence,
+      requiresReview: raw.requiresReview !== false,
+      includedInNarrative: raw.includedInNarrative !== false
+    });
+    components.push(component);
+  }
+
+  return mergeMentalExamComponents(components);
+}
+
+const MENTAL_EXAM_NARRATIVE_ORDER = [
+  "appearance",
+  "encounter.context",
+  "position",
+  "observable_behavior",
+  "gait",
+  "psychomotricity",
+  "consciousness",
+  "orientation",
+  "attitude",
+  "attention",
+  "visual_contact",
+  "speech",
+  "discourse",
+  "thought_course",
+  "thought_content",
+  "suicide_risk",
+  "heteroaggressive_risk",
+  "perception_reported",
+  "affect",
+  "reported_mood",
+  "judgment",
+  "cognition_context",
+  "intelligence",
+  "illness_awareness",
+  "future_projection",
+  "manual_observation"
+];
+
+function sentenceForMentalComponent(component = {}) {
+  const text = (component.values || []).join("; ");
+  if (!text || component.includedInNarrative === false) return "";
+  switch (component.domain) {
+    case "appearance": return text;
+    case "encounter.context": return `Valoracion en ${text}.`;
+    case "position": return `Posicion: ${text}.`;
+    case "observable_behavior": return `Conducta observable: ${text}.`;
+    case "gait": return `Marcha: ${text}.`;
+    case "psychomotricity": return `Psicomotricidad: ${text}.`;
+    case "consciousness": return text;
+    case "orientation": return text;
+    case "attitude": return text;
+    case "visual_contact": return `Contacto visual: ${text}.`;
+    case "reported_mood": return `Estado de animo referido: ${text}.`;
+    case "perception_reported": return component.status === "denied" ? `Sensopercepcion referida: ${text}.` : `Refiere alteraciones sensoperceptivas: ${text}.`;
+    case "thought_content": return `Contenido del pensamiento: ${text}.`;
+    case "suicide_risk": return `Riesgo suicida: ${text}.`;
+    case "heteroaggressive_risk": return `Riesgo heteroagresivo: ${text}.`;
+    case "illness_awareness": return `Advertencia de padecimiento: ${text}.`;
+    case "future_projection": return `Proyeccion y red de apoyo: ${text}.`;
+    case "cognition_context": return `Funciones cognitivas inferidas por intercambio: ${text}.`;
+    case "manual_observation": return text;
+    default: return `${component.label || component.domain}: ${text}.`;
+  }
+}
+
+function buildMentalExamNarrative(components = [], providerNarrative = "") {
+  const ordered = [...components]
+    .filter((component) => component && component.includedInNarrative !== false)
+    .sort((a, b) => {
+      const ia = MENTAL_EXAM_NARRATIVE_ORDER.indexOf(a.domain);
+      const ib = MENTAL_EXAM_NARRATIVE_ORDER.indexOf(b.domain);
+      return (ia === -1 ? 999 : ia) - (ib === -1 ? 999 : ib);
+    });
+  const deterministic = ordered.map(sentenceForMentalComponent).filter(Boolean).join(" ");
+  const providerText = normalizeString(providerNarrative);
+  if (providerText && providerText.length >= deterministic.length && ordered.length) return providerText;
+  return deterministic;
+}
+
+function buildMentalExamSection(payload = {}, providerMental = {}) {
+  const components = buildMentalExamComponents(payload, providerMental);
+  const narrative = buildMentalExamNarrative(components, providerMental?.narrative || providerMental?.text);
+  const sourceUtteranceIds = Array.from(new Set(components.flatMap((component) => component.sourceUtteranceIds || [])));
+  const sourceObservationIds = Array.from(new Set(components.flatMap((component) => component.sourceObservationIds || [])));
+  return {
+    text: narrative,
+    narrative,
+    components,
+    sourceUtteranceIds,
+    sourceObservationIds,
+    selectedQuoteIds: normalizeSourceUtteranceIds(providerMental?.selectedQuoteIds),
+    confidence: components.length ? Math.min(...components.map((component) => Number.isFinite(Number(component.confidence)) ? Number(component.confidence) : 1)) : null,
+    requiresReview: true,
+    warnings: normalizeWarnings(providerMental?.warnings)
+  };
+}
+
 function validateProviderResult({ parsed, payload, requestId, HttpsErrorClass, attempt = null }) {
   const stage = "schema_validation";
   if (!parsed || typeof parsed !== "object") {
     throw makeCallableError(HttpsErrorClass, "data-loss", "El proveedor no devolvio un objeto JSON interpretable.", { requestId, stage, retryable: true });
   }
-  const unknownSections = Object.keys(parsed.sections || {}).filter((key) => key !== "evolution");
+  const unknownSections = Object.keys(parsed.sections || {}).filter((key) => !["evolution", "mentalExam"].includes(key));
   if (unknownSections.length) {
     throw makeCallableError(HttpsErrorClass, "data-loss", "El proveedor devolvio secciones no solicitadas.", { requestId, stage, retryable: true });
   }
   const rawEvolution = parsed.sections?.evolution || {};
+  const mentalExam = buildMentalExamSection(payload, parsed.sections?.mentalExam || {});
   const text = applyDeterministicEvolutionCorrections(rawEvolution.text);
   const knownUtteranceIds = new Set(payload.transcript.utterances.map((utterance) => utterance.id));
   const manualObservationIds = new Set(buildManualObservationFacts(payload.encounterObservation || {}).map((item) => item.id));
@@ -1271,7 +1548,8 @@ function validateProviderResult({ parsed, payload, requestId, HttpsErrorClass, a
         confidence: Number.isFinite(Number(rawEvolution.confidence)) ? Math.max(0, Math.min(1, Number(rawEvolution.confidence))) : null,
         requiresReview: rawEvolution.requiresReview !== false,
         warnings
-      }
+      },
+      mentalExam
     },
     globalWarnings: normalizeWarnings(parsed.globalWarnings)
   };
@@ -1426,7 +1704,7 @@ async function runGenerateStructuredNoteFromDictation({
           promptVersion: NOTE_PROMPT_VERSION,
           schemaVersion: NOTE_SCHEMA_VERSION,
           validatorVersion: EVOLUTION_VALIDATOR_VERSION,
-          warningCount: result.globalWarnings.length + result.sections.evolution.warnings.length
+          warningCount: result.globalWarnings.length + result.sections.evolution.warnings.length + (result.sections.mentalExam?.warnings?.length || 0)
         });
         return result;
       } catch (error) {
@@ -1478,6 +1756,9 @@ module.exports = {
   validateContextInventions,
   validateSemanticFidelity,
   validateCoverageInclusion,
+  buildMentalExamComponents,
+  buildMentalExamNarrative,
+  buildMentalExamSection,
   validateProviderResult,
   requiredInstitutionalFormatPermission,
   validateEvolutionText,

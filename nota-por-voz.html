@@ -6,7 +6,7 @@
   <title>Nota por voz y automática | Cognición</title>
   <link rel="stylesheet" href="css/theme.css">
   <link rel="stylesheet" href="css/dictado.css">
-  <link rel="stylesheet" href="css/nota-por-voz.css?v=20260719-actor-format-permissions">
+  <link rel="stylesheet" href="css/nota-por-voz.css?v=20260719-mental-auto">
   <link rel="icon" type="image/png" href="assets/favicon-cognicion.png">
 </head>
 <body>
@@ -15,7 +15,7 @@
     <a href="medico.html">Panel medico</a>
     <a id="linkPacienteVoz" href="paciente.html">Paciente</a>
     <a id="linkNotaTradicional" href="nota.html">Nota tradicional</a>
-    <a class="activo" id="linkNotaVoz" href="nota-por-voz.html?v=20260719-actor-format-permissions">Nota por voz y automática</a>
+    <a class="activo" id="linkNotaVoz" href="nota-por-voz.html?v=20260719-mental-auto">Nota por voz y automática</a>
   </aside>
 
   <main class="voice-shell">
@@ -156,8 +156,8 @@
       </div>
       <div class="voice-provider-status">
         <span id="voiceProviderStatus">Proveedor: pendiente</span>
-        <span id="voicePromptVersion">Prompt: listo · psychiatric_voice_note_es_mx_v2</span>
-        <span id="voiceSchemaStatus">Esquema: listo · voice_note_evolution_v1</span>
+        <span id="voicePromptVersion">Prompt: listo · psychiatric_voice_note_es_mx_v3</span>
+        <span id="voiceSchemaStatus">Esquema: listo · voice_note_evolution_mental_exam_v1</span>
       </div>
       <section class="voice-card voice-preflight-card" aria-labelledby="voicePreflightTitle">
         <div class="voice-card-title-row">
@@ -205,49 +205,15 @@
           </div>
         </fieldset>
 
-        <section class="voice-observation-groups" aria-label="Observaciones visuales opcionales">
-          <details>
-            <summary>Observaciones visuales compactas</summary>
-            <div id="voiceObservationSelectRows" class="voice-select-rows"></div>
-          </details>
-        </section>
-
         <section class="voice-card voice-mental-config" aria-labelledby="voiceMentalExamTitle">
           <div class="voice-card-title-row">
             <div>
-              <h3 id="voiceMentalExamTitle">Configuracion del Examen mental</h3>
-              <p id="voiceMentalExamActiveConfig" class="voice-summary-inline">Configuracion activa: Configuracion segura por defecto</p>
+              <h3 id="voiceMentalExamTitle">Datos observables para el Examen mental (opcionales)</h3>
+              <p class="voice-summary-inline">Seleccione solo hallazgos comprobados directamente por el profesional. La transcripcion generara automaticamente los dominios sustentados.</p>
             </div>
-            <button id="btnUseSafeMentalConfig" type="button" class="boton-secundario">Usar configuracion por defecto</button>
           </div>
-          <div class="voice-grid voice-compact-grid">
-            <label>Plantilla inicial del Examen mental
-              <select id="voiceMentalExamTemplate">
-                <option value="safe_default">Omitir todos los componentes</option>
-                <option value="normal_institutional">Examen mental institucional sin alteraciones</option>
-                <option value="depressive">Sintomatologia depresiva</option>
-                <option value="psychotic">Sintomatologia psicotica</option>
-                <option value="agitation">Agitacion/irritabilidad</option>
-                <option value="telehealth">Valoracion por videollamada</option>
-                <option value="custom">Personalizado</option>
-              </select>
-            </label>
-            <label>Configuraciones del Examen mental
-              <select id="voiceMentalExamSavedConfig">
-                <option value="safe_default">Configuracion segura por defecto</option>
-                <option value="create_new">Crear nueva configuracion</option>
-              </select>
-            </label>
-          </div>
-          <label class="voice-inline-control"><input id="voiceMentalTemplateConfirmed" type="checkbox"> Confirmo que revisare y validare individualmente los hallazgos antes de generar la nota.</label>
-          <div class="voice-actions">
-            <button id="btnApplyMentalTemplate" type="button" class="boton-secundario">Aplicar plantilla</button>
-            <button id="btnSaveMentalConfig" type="button" class="boton-secundario">Guardar como nueva</button>
-            <button id="btnOmitAllMentalComponents" type="button" class="boton-secundario">Omitir todos</button>
-            <button id="btnRestoreHiddenMentalComponents" type="button" class="boton-secundario">Restaurar ocultos</button>
-          </div>
+          <div id="voiceObservationSelectRows" class="voice-select-rows"></div>
           <p id="voiceMentalExamSummary" class="voice-summary">0 incluidos · 49 omitidos · 0 ocultos</p>
-          <div id="voiceMentalExamGroups" class="voice-observation-groups"></div>
         </section>
 
         <fieldset class="voice-fieldset">
@@ -306,6 +272,6 @@
   </main>
 
   <script type="module" src="js/dictado.js?v=20260718-context"></script>
-  <script type="module" src="js/nota-por-voz.js?v=20260719-actor-format-permissions"></script>
+  <script type="module" src="js/nota-por-voz.js?v=20260719-mental-auto"></script>
 </body>
 </html>

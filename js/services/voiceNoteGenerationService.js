@@ -10,8 +10,8 @@ import {
   serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-export const VOICE_NOTE_PROMPT_VERSION = "psychiatric_voice_note_es_mx_v2";
-export const VOICE_NOTE_SCHEMA_VERSION = "voice_note_evolution_v1";
+export const VOICE_NOTE_PROMPT_VERSION = "psychiatric_voice_note_es_mx_v3";
+export const VOICE_NOTE_SCHEMA_VERSION = "voice_note_evolution_mental_exam_v1";
 export const VOICE_NOTE_VALIDATOR_VERSION = "evolution_semantic_validator_v2";
 
 function normalizarPreferenciasGeneracionVoz(value = {}) {
@@ -48,7 +48,9 @@ function normalizarObservacionEncuentroVoz(value = {}) {
     behaviors: normalizarGrupo(obs.behaviors),
     interactions: normalizarGrupo(obs.interactions),
     appearance: normalizarGrupo(obs.appearance),
+    visualContact: normalizarGrupo(obs.visualContact),
     psychomotor: normalizarGrupo(obs.psychomotor),
+    gait: normalizarGrupo(obs.gait),
     freeText: limpiar(obs.freeText).slice(0, 500),
     freeTextConfirmed: Boolean(obs.freeTextConfirmed)
   };

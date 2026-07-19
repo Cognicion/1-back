@@ -26,8 +26,8 @@ assert.match(vozHtml, /voiceQuoteMode/);
 assert.match(vozHtml, /Detectar y proponer automaticamente/);
 assert.match(vozHtml, /voiceQuoteCandidates/);
 assert.match(vozHtml, /voiceObservationSelectRows/);
-assert.match(vozHtml, /Configuracion del Examen mental/);
-assert.match(vozHtml, /voiceMentalExamGroups/);
+assert.match(vozHtml, /Datos observables para el Examen mental \(opcionales\)/);
+assert.equal(/Plantilla inicial del Examen mental/.test(vozHtml), false, "el formulario masivo no debe aparecer antes de generar");
 assert.match(vozHtml, /voiceFreeObservationConfirmed/);
 
 const vozJs = read("js/nota-por-voz.js");
@@ -36,7 +36,9 @@ assert.match(vozJs, /externalBlocks > 0/);
 assert.match(vozJs, /const MENTAL_EXAM_COMPONENTS = \[/);
 assert.match(vozJs, /futureProjection/);
 assert.match(vozJs, /detectarCitasCandidatas/);
-assert.match(vozJs, /generarExamenMentalLocal/);
+assert.match(vozJs, /registrarMentalExamGenerado/);
+assert.match(vozJs, /renderizarNarrativaMentalDesdeComponentes/);
+assert.match(vozJs, /Hallazgos estructurados/);
 
 const serviceSource = read("js/services/voiceNoteGenerationService.js");
 assert.match(serviceSource, /Math\.floor\(edad \/ 10\) \+ 1/);
@@ -69,12 +71,34 @@ const external = new ExternalStructuredNoteGenerationProvider({
       encounterId: "enc-voz",
       provider: "external",
       model: "gpt-4.1-mini",
-      promptVersion: "psychiatric_voice_note_es_mx_v2",
-      schemaVersion: "voice_note_evolution_v1",
+      promptVersion: "psychiatric_voice_note_es_mx_v3",
+      schemaVersion: "voice_note_evolution_mental_exam_v1",
       sections: {
         evolution: {
           text: "Paciente refiere evolucion cronologica.",
           sourceUtteranceIds: ["utt-1"],
+          requiresReview: true,
+          warnings: []
+        },
+        mentalExam: {
+          text: "Estado de animo referido: mejor.",
+          narrative: "Estado de animo referido: mejor.",
+          components: [{
+            domain: "reported_mood",
+            label: "Estado de animo referido",
+            values: ["mejor"],
+            status: "present",
+            sourceType: "transcript_explicit",
+            sourceRole: "patient",
+            sourceUtteranceIds: ["utt-1"],
+            confidence: 0.8,
+            requiresReview: true,
+            includedInNarrative: true
+          }],
+          sourceUtteranceIds: ["utt-1"],
+          sourceObservationIds: [],
+          selectedQuoteIds: [],
+          confidence: 0.8,
           requiresReview: true,
           warnings: []
         }
@@ -95,7 +119,7 @@ const generated = await external.generate({
   selectedDocumentType: "evolucion_observacion",
   selectedWritingStyle: "formato_fray_narrativo",
   patientContext: { patientId: "paciente-voz", encounterId: "enc-voz" },
-  noteConfiguration: { noteType: "evolucion_observacion", styleId: "formato_fray_narrativo", promptVersion: "psychiatric_voice_note_es_mx_v2" },
+  noteConfiguration: { noteType: "evolucion_observacion", styleId: "formato_fray_narrativo", promptVersion: "psychiatric_voice_note_es_mx_v3" },
   transcript: {
     transcriptId: "voz-1",
     segmentationMode: "hybrid",
@@ -104,6 +128,7 @@ const generated = await external.generate({
 });
 
 assert.ok(generated.generatedSections.some((section) => section.section === "soap_subjective"));
+assert.ok(generated.generatedSections.some((section) => section.section === "soap_mental_status"));
 assert.equal(generated.generatedSections.some((section) => section.fieldTarget === "analysis"), false);
 assert.equal(generated.generatedSections.some((section) => section.section === "evaluacion_riesgo"), false);
 

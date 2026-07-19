@@ -53,10 +53,13 @@ function normalizarPayloadEntrada(transcript, patient = {}, options = {}) {
 
 function seccionesExternasAGeneratedSections(data = {}) {
   if (Array.isArray(data.generatedSections)) return data.generatedSections;
-  if (data.sections?.evolution) {
+  if (data.sections?.evolution || data.sections?.mentalExam) {
     const evolution = data.sections.evolution;
-    const content = String(evolution.text || "").trim();
-    return content ? [{
+    const mentalExam = data.sections.mentalExam;
+    const content = String(evolution?.text || "").trim();
+    const mentalContent = String(mentalExam?.text || mentalExam?.narrative || "").trim();
+    return [
+      content ? {
       id: "external-evolution",
       section: "soap_subjective",
       fieldTarget: "evolutionOrSubjective",
@@ -68,7 +71,24 @@ function seccionesExternasAGeneratedSections(data = {}) {
       reviewStatus: "pendiente_revision",
       version: 1,
       insertable: true
-    }] : [];
+      } : null,
+      mentalContent ? {
+        id: "external-mental-status",
+        section: "soap_mental_status",
+        fieldTarget: "mentalStatusExam",
+        title: "Examen mental",
+        content: mentalContent,
+        sourceStatementIds: mentalExam.sourceUtteranceIds || [],
+        sourceUtteranceIds: mentalExam.sourceUtteranceIds || [],
+        sourceObservationIds: mentalExam.sourceObservationIds || [],
+        accepted: false,
+        reviewStatus: "pendiente_revision",
+        version: 1,
+        insertable: true,
+        structuredComponents: mentalExam.components || [],
+        warnings: mentalExam.warnings || []
+      } : null
+    ].filter(Boolean);
   }
   if (data.evolutionOrSubjective || data.subjective || data.objective || data.analysis || data.plan) {
     const soap = data;
@@ -122,12 +142,13 @@ function normalizarSalidaExterna(data = {}, payload = {}) {
   const generatedSections = seccionesExternasAGeneratedSections(data);
   if (!generatedSections.length) throw new Error("El proveedor no devolvio secciones validas.");
   const evolution = data.sections?.evolution;
+  const mentalExam = data.sections?.mentalExam;
   return {
     ...data,
     provider: data.provider || "external",
     providerStatus: "disponible",
     promptVersion: data.promptVersion || payload.noteConfiguration?.promptVersion || "",
-    schemaVersion: data.schemaVersion || "voice_note_evolution_v1",
+    schemaVersion: data.schemaVersion || "voice_note_evolution_mental_exam_v1",
     validatorVersion: data.validatorVersion || "",
     generatedSections,
     outputs: data.outputs || {
@@ -135,24 +156,27 @@ function normalizarSalidaExterna(data = {}, payload = {}) {
       redaccion_clinica_conservadora: generatedSections.map((section) => section.content).join("\n\n"),
       literal_corregida: payload.correctedTranscript || payload.confirmedTranscript || ""
     },
-    generatedClinicalText: evolution ? {
+    generatedClinicalText: (evolution || mentalExam) ? {
       evolutionOrSubjective: {
-        text: evolution.text || "",
-        sourceSegmentIds: evolution.sourceUtteranceIds || [],
-        sourceUtteranceIds: evolution.sourceUtteranceIds || [],
-        warnings: evolution.warnings || [],
-        requiresReview: evolution.requiresReview !== false,
-        confidence: evolution.confidence ?? null
+        text: evolution?.text || "",
+        sourceSegmentIds: evolution?.sourceUtteranceIds || [],
+        sourceUtteranceIds: evolution?.sourceUtteranceIds || [],
+        warnings: evolution?.warnings || [],
+        requiresReview: evolution?.requiresReview !== false,
+        confidence: evolution?.confidence ?? null
       },
       subjective: {
-        text: evolution.text || "",
-        sourceSegmentIds: evolution.sourceUtteranceIds || [],
-        sourceUtteranceIds: evolution.sourceUtteranceIds || [],
-        warnings: evolution.warnings || [],
-        requiresReview: evolution.requiresReview !== false,
-        confidence: evolution.confidence ?? null
+        text: evolution?.text || "",
+        sourceSegmentIds: evolution?.sourceUtteranceIds || [],
+        sourceUtteranceIds: evolution?.sourceUtteranceIds || [],
+        warnings: evolution?.warnings || [],
+        requiresReview: evolution?.requiresReview !== false,
+        confidence: evolution?.confidence ?? null
       },
-      objective: {},
+      objective: {
+        mentalStatusExam: mentalExam?.text || mentalExam?.narrative || "",
+        mentalExam
+      },
       analysis: {},
       plan: {}
     } : (data.evolutionOrSubjective || data.subjective || data.objective || data.analysis || data.plan ? {

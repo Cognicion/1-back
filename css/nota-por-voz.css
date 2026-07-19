@@ -78,6 +78,59 @@ body {
   line-height: 1.08;
 }
 
+.voice-mental-config #voiceMentalExamSummary,
+.voice-mental-config #voiceMentalExamGroups {
+  display: none;
+}
+
+.voice-mental-structured {
+  display: grid;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.voice-mental-finding {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(160px, 220px) auto auto;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  border: 1px solid rgba(125, 211, 252, 0.14);
+  border-radius: 8px;
+  background: rgba(2, 6, 23, 0.24);
+}
+
+.voice-chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 6px 0;
+}
+
+.voice-chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  padding: 3px 8px;
+  border: 1px solid rgba(34, 211, 238, 0.24);
+  border-radius: 999px;
+  color: #cffafe;
+  background: rgba(8, 145, 178, 0.15);
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.voice-edit-full {
+  width: max-content;
+  margin-bottom: 8px;
+}
+
+@media (max-width: 760px) {
+  .voice-mental-finding {
+    grid-template-columns: 1fr;
+  }
+}
+
 .voice-header h1 {
   font-size: clamp(2rem, 5vw, 4rem);
 }
