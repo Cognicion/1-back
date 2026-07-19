@@ -264,6 +264,58 @@ body {
   padding: 0 12px 12px;
 }
 
+.voice-select-rows,
+.voice-compact-list {
+  display: grid;
+  gap: 10px;
+}
+
+.voice-select-row {
+  display: grid;
+  grid-template-columns: minmax(160px, 1.1fr) minmax(150px, 1fr) minmax(120px, 0.7fr) auto;
+  gap: 10px;
+  align-items: end;
+  padding: 10px;
+  border: 1px solid rgba(125, 211, 252, 0.12);
+  border-radius: 8px;
+  background: rgba(2, 6, 23, 0.34);
+}
+
+.voice-select-row label {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+  color: #cbd5e1;
+  font-weight: 800;
+}
+
+.voice-select-row select,
+.voice-select-row input,
+.voice-quote-item textarea {
+  width: 100%;
+  min-width: 0;
+  border: 1px solid rgba(125, 211, 252, 0.18);
+  border-radius: 8px;
+  background: rgba(2, 6, 23, 0.72);
+  color: #f8fafc;
+  padding: 9px 10px;
+  font: inherit;
+}
+
+.voice-quote-item {
+  display: grid;
+  gap: 8px;
+  padding: 10px;
+  border: 1px solid rgba(125, 211, 252, 0.12);
+  border-radius: 8px;
+  background: rgba(15, 23, 42, 0.48);
+}
+
+.voice-quote-item p {
+  margin: 0;
+  color: #e0f2fe;
+}
+
 .voice-checkbox-item {
   display: grid;
   gap: 6px;
@@ -563,7 +615,8 @@ body {
   .voice-two-columns,
   .voice-review-layout,
   .voice-compact-grid,
-  .voice-checkbox-grid {
+  .voice-checkbox-grid,
+  .voice-select-row {
     grid-template-columns: 1fr;
   }
 

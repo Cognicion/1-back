@@ -1,9 +1,9 @@
-﻿import { auth, obtenerFunctions } from "./firebase.js";
+import { auth, obtenerFunctions } from "./firebase.js";
 import { iniciarMonitoreoSesion } from "./services/sesion.js";
 import { obtenerUsuario, listarPacientes, medicoPuedeVer } from "./services/usuarios.js";
 import { usuarioEsPersonalClinico } from "./utils/roles.js";
 import { obtenerNombrePacienteParaMostrar } from "./utils/nombresPacientes.js";
-import { createNoteGenerationProvider } from "./services/noteGenerationProviders.js?v=20260719-preflight-observations";
+import { createNoteGenerationProvider } from "./services/noteGenerationProviders.js?v=20260719-mental-exam-v1";
 import { createConversationSegmentationProvider, crearClientRequestId } from "./services/conversationSegmentationProviders.js?v=20260719-evolution-v2-validation";
 import { segmentarConversacionClinica } from "./services/clinicalPipeline.js";
 import {
@@ -19,7 +19,7 @@ import {
   guardarTranscripcionVozFirestore,
   leerNotaExistente,
   transferirNotaVozABorrador
-} from "./services/voiceNoteGenerationService.js?v=20260719-preflight-observations";
+} from "./services/voiceNoteGenerationService.js?v=20260719-mental-exam-v1";
 import { buscarBorradorNotaClinica } from "./services/notas.js?v=20260716-2";
 import {
   VOICE_NOTE_SESSION_SCHEMA_VERSION,
@@ -80,10 +80,14 @@ const state = {
   selectedStep: "preparar",
   lastSavedSessionKey: "",
   generationPreferences: {
+    quoteMode: "omit",
     includePatientQuotes: false,
     maxPatientQuotes: 1,
     quotePriority: "automatic"
   },
+  quoteCandidates: [],
+  acceptedQuotes: [],
+  manualQuotes: [],
   encounterObservation: {
     modality: "",
     location: "",
@@ -96,6 +100,17 @@ const state = {
     psychomotor: [],
     freeText: "",
     freeTextConfirmed: false
+  },
+  mentalExam: {
+    activeConfigId: "safe_default",
+    templateId: "safe_default",
+    templateConfirmed: false,
+    components: {},
+    hiddenDrafts: {},
+    generatedText: "",
+    generatedOriginalText: "",
+    editedManually: false,
+    history: []
   }
 };
 
@@ -162,6 +177,102 @@ const OBSERVATION_GROUPS = {
     ["other_psychomotor", "Otra", "mentalStatusExam"]
   ]
 };
+
+const QUOTE_CATEGORIES = [
+  ["mood", "Estado de animo"],
+  ["death_ideas", "Ideas de muerte"],
+  ["suicidal_ideation", "Ideacion suicida"],
+  ["suicidal_intent", "Intencion suicida"],
+  ["suicidal_plan", "Plan suicida"],
+  ["self_harm", "Autolesiones"],
+  ["heteroaggression", "Heteroagresividad"],
+  ["delusional_ideas", "Ideas delirantes"],
+  ["persecution", "Ideas de persecucion"],
+  ["reference", "Ideas de referencia"],
+  ["hallucinations", "Alteraciones sensoperceptivas"],
+  ["illness_awareness", "Conciencia de enfermedad"],
+  ["protective_factors", "Factores protectores"],
+  ["support_network", "Red de apoyo"],
+  ["future_projection", "Proyeccion a futuro"],
+  ["treatment_disposition", "Disposicion al tratamiento"],
+  ["substance_use", "Consumo de sustancias"],
+  ["clinical_relevance", "Relevancia clinica"]
+];
+
+const OBSERVATION_SELECT_COMPONENTS = [
+  { key: "modality", label: "Modalidad", group: "context", destination: "evolution", options: [["presencial", "Presencial"], ["videollamada", "Videollamada"], ["llamada_telefonica", "Llamada telefonica"], ["other", "Otra..."]] },
+  { key: "location", label: "Lugar", group: "context", destination: "evolution", options: [["cama_correspondiente", "Cama correspondiente"], ["consultorio", "Consultorio"], ["sala_entrevista", "Sala de entrevista"], ["area_comun", "Area comun"], ["domicilio", "Domicilio"], ["urgencias", "Urgencias"], ["other", "Otra..."]] },
+  { key: "position", label: "Posicion", group: "context", destination: "evolution", options: [["sedente", "Sedente"], ["decubito", "Decubito"], ["bipedestacion", "Bipedestacion"], ["deambulando", "Deambulando"], ["alterna_posiciones", "Alterna posiciones"], ["other", "Otra..."]] },
+  { key: "activity", label: "Actividad inicial", group: "activities", destination: "evolution", options: [["asleep", "Se encontraba dormido"], ["resting", "Se encontraba en reposo"], ["talking_other_person", "Conversando con otra persona"], ["eating", "Comiendo"], ["walking", "Deambulando"], ["isolated", "Aislado"], ["other", "Otra..."]] },
+  { key: "behavior", label: "Conducta observable", group: "behaviors", destination: "evolution", options: [["calm", "Tranquilo"], ["irritable", "Irritable"], ["restless", "Inquieto"], ["agitated", "Agitado"], ["crying", "Llorando"], ["somnolent", "Somnoliento"], ["hostile", "Hostil"], ["suspicious", "Suspicaz"], ["cooperative", "Cooperador"], ["poorly_cooperative", "Poco cooperador"], ["declined_interview", "No acepto la entrevista"], ["disorganized_behavior", "Conducta desorganizada"], ["other", "Otra..."]] },
+  { key: "interaction", label: "Interaccion", group: "interactions", destination: "evolution", options: [["alone", "Se encontraba solo"], ["talking_patient", "Conversaba con otro paciente"], ["talking_relative", "Conversaba con un familiar"], ["talking_staff", "Conversaba con personal de salud"], ["adequate_interaction", "Interactuaba adecuadamente"], ["isolated_from_users", "Permanecia aislado"], ["other", "Otra..."]] },
+  { key: "appearance", label: "Apariencia observable", group: "appearance", destination: "mentalStatusExam", options: [["institutional_clothing", "Vestimenta institucional"], ["personal_clothing", "Vestimenta particular"], ["adequate_grooming", "Adecuada higiene y alino"], ["partially_poor_grooming", "Higiene y alino parcialmente descuidados"], ["poor_grooming", "Higiene y alino descuidados"], ["visible_crying", "Llanto evidente"], ["visible_injury_manual", "Lesion visible descrita manualmente"], ["other", "Otra..."]] },
+  { key: "psychomotor", label: "Psicomotricidad", group: "psychomotor", destination: "mentalStatusExam", options: [["preserved", "Conservada"], ["increased", "Aumentada"], ["decreased", "Disminuida"], ["psychomotor_agitation", "Agitacion psicomotriz"], ["psychomotor_retardation", "Retardo psicomotor"], ["restlessness", "Inquietud"], ["observable_tremor", "Temblor observable"], ["involuntary_movements", "Movimientos involuntarios"], ["other", "Otra..."]] }
+];
+
+const MENTAL_EXAM_GROUPS = [
+  ["appearance", "Apariencia"],
+  ["context", "Contexto"],
+  ["behavior", "Conducta y psicomotricidad"],
+  ["consciousness", "Conciencia y cognicion"],
+  ["speech", "Habla y discurso"],
+  ["thought", "Pensamiento"],
+  ["risk", "Riesgo y sensopercepcion"],
+  ["affect", "Afecto y animo"],
+  ["judgment", "Juicio, advertencia y proyeccion"]
+];
+
+const MENTAL_EXAM_COMPONENTS = [
+  ["generalAppearance", "Apariencia general", "appearance", [["from_record", "Tomar del expediente"], ["male", "Hombre"], ["female", "Mujer"], ["neutral", "Redaccion neutral"], ["other", "Otra..."]]],
+  ["apparentAge", "Edad aparente", "appearance", [["chronological", "Similar a la cronologica"], ["younger", "Menor que la cronologica"], ["older", "Mayor que la cronologica"], ["not_assessable", "No valorable"], ["other", "Otra..."]]],
+  ["height", "Talla", "appearance", [["low", "Baja"], ["medium", "Media"], ["high", "Alta"], ["not_assessable", "No valorable"], ["other", "Otra..."]]],
+  ["build", "Complexion", "appearance", [["ectomorphic", "Ectomorfa"], ["mesomorphic", "Mesomorfa"], ["endomorphic", "Endomorfa"], ["not_assessable", "No valorable"], ["other", "Otra..."]]],
+  ["integrity", "Integridad", "appearance", [["intact", "Integro/a"], ["not_intact", "No integro/a"], ["not_assessable", "No valorable"], ["other", "Otra..."]]],
+  ["conformation", "Conformacion", "appearance", [["well_formed", "Bien conformado/a"], ["malformed", "Mal conformado/a"], ["altered", "Alterada a expensas de..."], ["not_assessable", "No valorable"], ["other", "Otra..."]]],
+  ["clothing", "Vestimenta", "appearance", [["institutional", "Institucional"], ["personal", "Particular"], ["hospital_non_institutional", "Hospitalaria no institucional"], ["inadequate", "Inadecuada para el contexto"], ["other", "Otra..."]]],
+  ["hygiene", "Higiene", "appearance", [["adequate", "Adecuada"], ["partially_poor", "Parcialmente descuidada"], ["poor", "Descuidada"], ["not_assessable", "No valorable"], ["other", "Otra..."]]],
+  ["grooming", "Alino", "appearance", [["adequate", "Adecuado"], ["partially_poor", "Parcialmente descuidado"], ["poor", "Descuidado"], ["not_assessable", "No valorable"], ["other", "Otra..."]]],
+  ["place", "Lugar de valoracion", "context", [["bed", "Cama correspondiente"], ["numbered_bed", "Cama con numero..."], ["office", "Consultorio"], ["interview_room", "Sala de entrevista"], ["common_area", "Area comun"], ["emergency", "Urgencias"], ["home", "Domicilio"], ["other", "Otra..."]]],
+  ["position", "Posicion", "context", [["sitting", "Sedente"], ["supine", "Decubito dorsal"], ["lateral", "Decubito lateral"], ["standing", "Bipedestacion"], ["walking", "Deambulando"], ["alternating", "Alterna posiciones"], ["other", "Otra..."]]],
+  ["accompaniment", "Acompanamiento", "context", [["alone", "Solo/a"], ["relative", "Acompanado/a por familiar"], ["user", "Acompanado/a por otro usuario"], ["staff", "Acompanado/a por personal"], ["other", "Otra..."]]],
+  ["initialContext", "Contexto del abordaje", "context", [["resting", "En reposo"], ["asleep", "Dormido/a"], ["talking", "Conversando con otra persona"], ["eating", "Comiendo"], ["walking", "Deambulando"], ["crying", "Llorando"], ["other", "Realizando otra actividad..."]]],
+  ["facialExpression", "Expresion facial", "behavior", [["calm", "Tranquila"], ["smiling", "Sonriente"], ["sad", "Triste"], ["angry", "Enojada"], ["irritable", "Irritable"], ["fearful", "Temerosa"], ["anxious", "Ansiosa"], ["perplexed", "Perpleja"], ["inexpressive", "Inexpresiva"], ["somnolent", "Somnolienta"], ["tearful", "Llorosa"], ["changing", "Cambiante"], ["other", "Otra..."]]],
+  ["emotionalReactivity", "Reactividad emocional", "behavior", [["adequate", "Adecuada"], ["decreased", "Disminuida"], ["increased", "Aumentada"], ["labile", "Label"], ["not_assessable", "No valorable"], ["other", "Otra..."]]],
+  ["gait", "Marcha", "behavior", [["normal", "Normal"], ["slow", "Lenta"], ["unstable", "Inestable"], ["ataxic", "Ataxica"], ["claudicant", "Claudicante"], ["not_assessable", "No valorable"], ["other", "Otra..."]]],
+  ["psychomotricity", "Psicomotricidad", "behavior", [["preserved", "Conservada"], ["mild_increased", "Levemente aumentada"], ["increased", "Aumentada"], ["mild_decreased", "Levemente disminuida"], ["decreased", "Disminuida"], ["agitation", "Agitacion psicomotriz"], ["retardation", "Retardo psicomotor"], ["restlessness", "Inquietud a expensas de..."], ["involuntary", "Movimientos involuntarios..."], ["other", "Otra..."]]],
+  ["consciousness", "Nivel de conciencia", "consciousness", [["awake", "Despierto/a"], ["somnolent", "Somnoliento/a"], ["obtunded", "Obnubilado/a"], ["stuporous", "Estuporoso/a"], ["fluctuating", "Fluctuante"], ["not_assessable", "No valorable"], ["other", "Otra..."]]],
+  ["orientation", "Orientacion", "consciousness", [["global", "Orientado/a globalmente"], ["disoriented_global", "Desorientado/a globalmente"], ["partial", "Orientacion parcialmente conservada"], ["not_assessable", "No valorable"], ["custom", "Personalizar"], ["other", "Otra..."]]],
+  ["attitude", "Actitud", "behavior", [["cooperative", "Cooperador/a"], ["partially_cooperative", "Parcialmente cooperador/a"], ["poorly_cooperative", "Poco cooperador/a"], ["not_cooperative", "No cooperador/a"], ["approachable", "Abordable"], ["reticent", "Reticente"], ["suspicious", "Suspicaz"], ["irritable", "Irritable"], ["hostile", "Hostil"], ["evasive", "Evasivo/a"], ["other", "Otra..."]]],
+  ["attention", "Atencion", "consciousness", [["adequate", "Dirige, fija y mantiene"], ["partial", "Parcialmente conservada"], ["brief", "Mantiene por periodos cortos"], ["fluctuating", "Fluctuante"], ["not_assessable", "No valorable"], ["other", "Otra..."]]],
+  ["visualContact", "Contacto visual", "behavior", [["adequate", "Adecuado"], ["intermittent", "Intermitente"], ["brief", "Por periodos cortos"], ["scarce", "Escaso"], ["avoidant", "Evitativo"], ["intense", "Intenso"], ["none", "No establece"], ["not_assessable", "No valorable"], ["other", "Otra..."]]],
+  ["speech", "Habla", "speech", [["preserved", "Bien articulada, fluente, volumen y velocidad conservados"], ["low_volume", "Volumen bajo"], ["high_volume", "Volumen alto"], ["slow", "Velocidad disminuida"], ["fast", "Velocidad aumentada"], ["dysarthric", "Disartrica"], ["not_fluent", "No fluente"], ["other", "Otra..."]]],
+  ["discourse", "Discurso", "speech", [["interview_directed", "Emitido a la entrevista"], ["spontaneous", "Espontaneo"], ["partially_spontaneous", "Parcialmente espontaneo"], ["goal_directed", "Dirigido a meta"], ["tangential", "Tangencial"], ["circumstantial", "Circunstancial"], ["disorganized", "Disgregado"], ["incoherent", "Incoherente"], ["other", "Otra..."]]],
+  ["latency", "Latencia de respuesta", "speech", [["preserved", "Conservada"], ["increased", "Aumentada"], ["decreased", "Disminuida"], ["variable", "Variable"], ["other", "Otra..."]]],
+  ["thoughtCourse", "Curso del pensamiento", "thought", [["linear", "Lineal"], ["coherent", "Coherente"], ["linear_coherent", "Lineal y coherente"], ["circumstantial", "Circunstancial"], ["tangential", "Tangencial"], ["disorganized", "Disgregado"], ["incoherent", "Incoherente"], ["blocking", "Bloqueos"], ["flight", "Fuga de ideas"], ["perseverative", "Perseverante"], ["other", "Otra..."]]],
+  ["thoughtSpeed", "Velocidad del pensamiento", "thought", [["normal", "Sin alteraciones"], ["bradypsychia", "Bradipsiquia"], ["tachypsychia", "Taquipsiquia"], ["variable", "Variable"], ["other", "Otra..."]]],
+  ["thoughtContent", "Contenido del pensamiento", "thought", [["congruent", "Congruente"], ["partially_congruent", "Parcialmente congruente"], ["incongruent", "Incongruente"], ["not_assessable", "No valorable"], ["other", "Otra..."]]],
+  ["delusionalIdeas", "Ideas delirantes", "thought", [["not_integrated", "No se integran"], ["persecution", "Persecucion"], ["harm", "Dano"], ["reference", "Referencia"], ["grandiosity", "Grandeza"], ["guilt", "Culpa"], ["somatic", "Somaticas"], ["religious", "Misticas/religiosas"], ["control", "Control"], ["thought_reading", "Lectura del pensamiento"], ["mixed", "Mixtas"], ["other", "Otra..."]]],
+  ["overvaluedIdeas", "Ideas sobrevaloradas", "thought", [["not_integrated", "No se integran"], ["guilt", "Culpa"], ["worthlessness", "Minusvalia"], ["hopelessness", "Desesperanza"], ["harm", "Perjuicio"], ["illness", "Enfermedad"], ["body_image", "Apariencia corporal"], ["religious", "Religiosas"], ["other", "Otra..."]]],
+  ["deathIdeas", "Ideas de muerte", "risk", [["denies", "Niega"], ["reports", "Refiere"], ["ambivalent", "Ambivalentes"], ["not_explored", "No exploradas"], ["other", "Otra..."]]],
+  ["suicidalIdeation", "Ideacion suicida", "risk", [["denies", "Niega"], ["without_plan", "Refiere sin plan"], ["partial_plan", "Refiere con plan parcialmente estructurado"], ["structured_plan", "Refiere con plan estructurado"], ["conditioned", "Condicionada"], ["ambivalent", "Ambivalente"], ["not_explored", "No explorada"], ["other", "Otra..."]]],
+  ["suicidalIntent", "Intencion suicida", "risk", [["denies", "Niega"], ["present", "Presente"], ["ambivalent", "Ambivalente"], ["undetermined", "No determinada"], ["not_explored", "No explorada"], ["other", "Otra..."]]],
+  ["suicidalPlan", "Plan suicida", "risk", [["denies", "Niega"], ["present", "Presente"], ["partial", "Parcialmente estructurado"], ["structured", "Estructurado"], ["not_explored", "No explorado"], ["other", "Otra..."]]],
+  ["preparatoryBehavior", "Conducta preparatoria", "risk", [["denies", "Niega"], ["present", "Presente"], ["undetermined", "No determinada"], ["not_explored", "No explorada"], ["other", "Otra..."]]],
+  ["selfHarm", "Autolesiones", "risk", [["denies", "Niega"], ["reports", "Refiere"], ["not_explored", "No exploradas"], ["other", "Otra..."]]],
+  ["heteroaggressiveIdeation", "Ideacion heteroagresiva", "risk", [["denies", "Niega ideas heteroagresivas"], ["without_plan", "Refiere ideas sin plan"], ["with_plan", "Refiere ideas con plan"], ["conditioned", "Riesgo condicionado"], ["not_explored", "No explorada"], ["other", "Otra..."]]],
+  ["heteroaggressiveIntent", "Intencion heteroagresiva", "risk", [["denies", "Niega"], ["present", "Presente"], ["ambivalent", "Ambivalente"], ["not_explored", "No explorada"], ["other", "Otra..."]]],
+  ["homicidalIdeation", "Ideacion homicida", "risk", [["denies", "Niega"], ["reports", "Refiere"], ["not_explored", "No explorada"], ["other", "Otra..."]]],
+  ["perceptionReported", "Sensopercepcion referida", "risk", [["denies", "Niega alteraciones"], ["auditory", "Alucinaciones auditivas"], ["visual", "Alucinaciones visuales"], ["tactile", "Alucinaciones tactiles"], ["olfactory", "Alucinaciones olfativas"], ["gustatory", "Alucinaciones gustativas"], ["illusions", "Ilusiones"], ["depersonalization", "Despersonalizacion"], ["derealization", "Desrealizacion"], ["other", "Otra..."]]],
+  ["perceptionObserved", "Sensopercepcion observada", "risk", [["no_apparent", "No impresiona alteraciones"], ["internal_stimuli", "Impresiona responder a estimulos internos"], ["hallucinatory_behavior", "Conducta alucinatoria"], ["not_assessable", "No valorable"], ["other", "Otra..."]]],
+  ["affect", "Afecto", "affect", [["euthymic", "Eutimico"], ["hypothymic", "Hipotimico"], ["hyperthymic", "Hipertimico"], ["dysphoric", "Disforico"], ["irritable", "Irritable"], ["anxious", "Ansioso"], ["labile", "Label"], ["flat", "Aplanado"], ["blunted", "Embotado"], ["restricted", "Restringido"], ["other", "Otra..."]]],
+  ["reportedMood", "Estado de animo referido", "affect", [["calm", "Tranquilo"], ["sad", "Triste"], ["angry", "Enojado"], ["irritable", "Irritable"], ["anxious", "Ansioso"], ["fearful", "Temeroso"], ["happy", "Alegre"], ["indifferent", "Indiferente"], ["other", "Otra..."]]],
+  ["affectiveCongruence", "Congruencia afectiva", "affect", [["congruent", "Congruente con el estado de animo"], ["partially_congruent", "Parcialmente congruente"], ["incongruent", "Incongruente"], ["not_assessable", "No valorable"], ["other", "Otra..."]]],
+  ["judgment", "Juicio", "judgment", [["preserved", "Conservado dentro del marco de la realidad"], ["partially_compromised", "Parcialmente comprometido"], ["decreased", "Disminuido"], ["compromised", "Comprometido"], ["outside_reality", "Fuera del marco de la realidad"], ["not_assessable", "No valorable"], ["other", "Otra..."]]],
+  ["cognitiveFunctions", "Funciones cognitivas", "judgment", [["preserved", "Impresionan conservadas"], ["partially_decreased", "Impresionan parcialmente disminuidas"], ["decreased", "Impresionan disminuidas"], ["not_assessable", "No valorables"], ["indirect_preserved", "Conservadas a valoracion indirecta"], ["other", "Otra..."]]],
+  ["intelligence", "Inteligencia", "judgment", [["average", "Impresiona promedio"], ["below_average", "Impresiona inferior al promedio"], ["above_average", "Impresiona superior al promedio"], ["not_assessable", "No valorable"], ["other", "Otra..."]]],
+  ["illnessAwareness", "Advertencia de padecimiento mental", "judgment", [["adequate", "Adecuada"], ["partial", "Parcial"], ["poor", "Pobre"], ["none", "Nula"], ["fluctuating", "Fluctuante"], ["not_assessable", "No valorable"], ["other", "Otra..."]]],
+  ["futureProjection", "Proyeccion a futuro", "judgment", [["present", "Verbaliza proyeccion a futuro"], ["initial", "Proyeccion inicial"], ["limited", "Proyeccion limitada"], ["none", "No verbaliza proyectos a futuro"], ["absent", "Verbaliza no tener proyeccion"], ["not_explored", "No explorada"], ["other", "Otra..."]]]
+];
 
 const $ = (id) => document.getElementById(id);
 
@@ -258,6 +369,44 @@ function defaultEncounterObservation() {
   };
 }
 
+function crearMentalExamComponentDefaults() {
+  return Object.fromEntries(MENTAL_EXAM_COMPONENTS.map(([key]) => [key, {
+    state: "omit",
+    value: "",
+    otherText: "",
+    confirmed: false,
+    destinationSections: ["mentalStatusExam"]
+  }]));
+}
+
+function ensureMentalExamDefaults() {
+  state.mentalExam.components = {
+    ...crearMentalExamComponentDefaults(),
+    ...(state.mentalExam.components || {})
+  };
+}
+
+function labelForOption(options = [], value = "") {
+  return options.find(([optionValue]) => optionValue === value)?.[1] || "";
+}
+
+function getMentalComponentDefinition(key = "") {
+  return MENTAL_EXAM_COMPONENTS.find(([componentKey]) => componentKey === key);
+}
+
+function getMentalComponent(key = "") {
+  ensureMentalExamDefaults();
+  return state.mentalExam.components[key] || crearMentalExamComponentDefaults()[key];
+}
+
+function setMentalComponent(key = "", patch = {}) {
+  ensureMentalExamDefaults();
+  state.mentalExam.components[key] = {
+    ...getMentalComponent(key),
+    ...patch
+  };
+}
+
 function normalizarDestinationSections(value = "evolution") {
   if (value === "both") return ["evolution", "mentalStatusExam"];
   if (value === "mentalStatusExam") return ["mentalStatusExam"];
@@ -299,29 +448,41 @@ function normalizarEncounterObservation(value = {}) {
 }
 
 function leerPreferenciasGeneracion() {
-  const includePatientQuotes = document.querySelector("input[name='voiceIncludeQuotes']:checked")?.value === "true";
+  const quoteMode = $("voiceQuoteMode")?.value || "omit";
+  const includePatientQuotes = quoteMode !== "omit";
   return {
+    quoteMode,
     includePatientQuotes,
-    maxPatientQuotes: includePatientQuotes ? Math.min(3, Math.max(1, Number($("voiceMaxPatientQuotes")?.value || 1))) : 0,
+    maxPatientQuotes: includePatientQuotes ? Math.max(0, Math.min(3, Number($("voiceMaxPatientQuotes")?.value ?? 1))) : 0,
     quotePriority: includePatientQuotes ? ($("voiceQuotePriority")?.value || "automatic") : "automatic"
   };
 }
 
 function leerObservacionEncuentro() {
   const obs = {
-    modality: $("voiceObservationModality")?.value || "",
-    location: $("voiceObservationLocation")?.value || "",
-    locationOther: $("voiceObservationLocationOther")?.value || "",
-    position: $("voiceObservationPosition")?.value || "",
     freeText: $("voiceFreeObservation")?.value || "",
     freeTextConfirmed: Boolean($("voiceFreeObservationConfirmed")?.checked)
   };
-  Object.keys(OBSERVATION_GROUPS).forEach((groupKey) => {
-    obs[groupKey] = Array.from(document.querySelectorAll(`[data-observation-group="${groupKey}"] input[type="checkbox"]:checked`)).map((input) => ({
-      value: input.value,
-      label: input.dataset.label || input.value,
-      destination: document.querySelector(`[data-observation-destination="${groupKey}:${input.value}"]`)?.value || input.dataset.defaultDestination || "evolution"
-    }));
+  Object.keys(OBSERVATION_GROUPS).forEach((groupKey) => { obs[groupKey] = []; });
+  OBSERVATION_SELECT_COMPONENTS.forEach((component) => {
+    const value = $(`voiceObs_${component.key}`)?.value || "";
+    if (!value) return;
+    const isOther = value === "other";
+    const manual = sanitizarObservacionLibre($(`voiceObsOther_${component.key}`)?.value || "").slice(0, 120);
+    const label = isOther ? manual : labelForOption(component.options, value);
+    if (!label) return;
+    if (component.key === "modality") obs.modality = value;
+    else if (component.key === "location") {
+      obs.location = value;
+      obs.locationOther = isOther ? manual : "";
+    } else if (component.key === "position") obs.position = value;
+    else {
+      obs[component.group].push({
+        value,
+        label,
+        destination: $(`voiceObsDest_${component.key}`)?.value || component.destination
+      });
+    }
   });
   return normalizarEncounterObservation(obs);
 }
@@ -365,6 +526,26 @@ function validarObservacionesPrevias(obs = state.encounterObservation, prefs = s
     const literalPatientUtterance = state.conversationSegments.some((utterance) => utterance.probableRole === "patient" && String(utterance.text || "").trim().length > 4);
     if (!literalPatientUtterance) issues.push("sic. Pac. sin utterances literales del paciente");
   }
+  leerMentalExamDesdeControles();
+  issues.push(...validarMentalExamContradicciones());
+  return issues;
+}
+
+function validarMentalExamContradicciones() {
+  const issues = [];
+  const included = (key, value) => {
+    const component = getMentalComponent(key);
+    return component.state === "include" && component.confirmed && component.value === value;
+  };
+  if (included("gait", "normal") && included("gait", "not_assessable")) issues.push("marcha normal + no valorable");
+  if (included("psychomotricity", "preserved") && included("psychomotricity", "agitation")) issues.push("psicomotricidad conservada + agitacion");
+  if (included("attitude", "cooperative") && included("attitude", "not_cooperative")) issues.push("cooperador + no cooperador");
+  if (included("orientation", "global") && included("orientation", "disoriented_global")) issues.push("orientado globalmente + desorientacion");
+  if (included("suicidalIdeation", "denies") && (included("suicidalPlan", "present") || included("suicidalPlan", "structured"))) issues.push("niega ideacion suicida + plan suicida");
+  if (included("perceptionReported", "denies") && ["auditory", "visual", "tactile", "olfactory", "gustatory"].some((value) => included("perceptionReported", value))) issues.push("niega sensopercepcion + alucinaciones actuales");
+  if (included("judgment", "preserved") && included("judgment", "outside_reality")) issues.push("juicio conservado + fuera de realidad");
+  if (included("illnessAwareness", "adequate") && included("illnessAwareness", "none")) issues.push("adecuada advertencia + nula");
+  if (included("futureProjection", "present") && included("futureProjection", "none")) issues.push("proyeccion presente + no verbaliza proyectos");
   return issues;
 }
 
@@ -377,10 +558,12 @@ function actualizarVistaPreviaConfiguracion() {
   if (maxSelect) maxSelect.disabled = !includeQuotes;
   if (prioritySelect) prioritySelect.disabled = !includeQuotes;
   setText("voiceQuoteDescription", includeQuotes
-    ? "Se podran incluir citas textuales breves y clinicamente relevantes pronunciadas por el paciente."
+    ? "Se podran incluir citas textuales breves, literales y clinicamente relevantes pronunciadas por el paciente."
     : "La informacion se redactara mediante parafrasis clinica, sin citas textuales.");
-  const locationOtherWrap = $("voiceObservationLocationOtherWrap");
-  if (locationOtherWrap) locationOtherWrap.hidden = state.encounterObservation.location !== "otro";
+  OBSERVATION_SELECT_COMPONENTS.forEach((component) => {
+    const otherWrap = $(`voiceObsOtherWrap_${component.key}`);
+    if (otherWrap) otherWrap.hidden = ($(`voiceObs_${component.key}`)?.value || "") !== "other";
+  });
   const counter = $("voiceFreeObservationCounter");
   if (counter) counter.textContent = `${($("voiceFreeObservation")?.value || "").length}/500`;
   const issues = validarObservacionesPrevias();
@@ -390,6 +573,8 @@ function actualizarVistaPreviaConfiguracion() {
     validation.textContent = issues.length ? `Estas observaciones son incompatibles. Revise la seleccion: ${issues.join("; ")}.` : "";
   }
   setText("voicePreflightSummary", `Se incorporaran ${contarObservacionesManuales()} observaciones manuales. Las citas textuales estan ${includeQuotes ? "activadas" : "desactivadas"}.`);
+  renderQuoteCandidates();
+  actualizarResumenMentalExam();
 }
 
 function invalidarNotaGeneradaPorConfiguracion() {
@@ -459,7 +644,7 @@ function actualizarLinks() {
   const qsNota = construirQueryContexto(state.noteId ? { notaId: state.noteId } : {});
   $("linkPacienteVoz")?.setAttribute("href", state.patientId ? `paciente.html${qsPaciente}` : "paciente.html");
   $("linkNotaTradicional")?.setAttribute("href", qsNota ? `nota.html?${qsNota}` : "nota.html");
-  const versionedVoiceUrl = qsBase ? `nota-por-voz.html?v=20260719-preflight-observations&${qsBase}` : "nota-por-voz.html?v=20260719-preflight-observations";
+  const versionedVoiceUrl = qsBase ? `nota-por-voz.html?v=20260719-mental-exam-v1&${qsBase}` : "nota-por-voz.html?v=20260719-mental-exam-v1";
   $("linkNotaVoz")?.setAttribute("href", versionedVoiceUrl);
 }
 
@@ -515,50 +700,399 @@ function cargarCatalogosVoz(servicio = "") {
 }
 
 function renderPreflightControls() {
-  Object.entries(OBSERVATION_GROUPS).forEach(([groupKey, options]) => {
-    const container = document.querySelector(`[data-observation-group="${groupKey}"]`);
-    if (!container) return;
-    container.innerHTML = options.map(([value, label, defaultDestination]) => `
-      <div class="voice-checkbox-item">
-        <label>
-          <input type="checkbox" value="${escaparHTML(value)}" data-label="${escaparHTML(label)}" data-default-destination="${escaparHTML(defaultDestination)}">
-          <span>${escaparHTML(label)}</span>
+  const observationRows = $("voiceObservationSelectRows");
+  if (observationRows) {
+    observationRows.innerHTML = OBSERVATION_SELECT_COMPONENTS.map((component) => `
+      <div class="voice-select-row">
+        <label>${escaparHTML(component.label)}
+          <select id="voiceObs_${escaparHTML(component.key)}">
+            <option value="">Omitir</option>
+            ${component.options.map(([value, label]) => `<option value="${escaparHTML(value)}">${escaparHTML(label)}</option>`).join("")}
+          </select>
         </label>
-        <select data-observation-destination="${escaparHTML(`${groupKey}:${value}`)}" aria-label="Destino de ${escaparHTML(label)}">
-          ${OBSERVATION_DESTINATIONS.map(([destValue, destLabel]) => `<option value="${escaparHTML(destValue)}" ${destValue === defaultDestination ? "selected" : ""}>${escaparHTML(destLabel)}</option>`).join("")}
-        </select>
+        <label id="voiceObsOtherWrap_${escaparHTML(component.key)}" hidden>Descripcion
+          <input id="voiceObsOther_${escaparHTML(component.key)}" maxlength="120" placeholder="Describa lo observado">
+        </label>
+        <label>Destino
+          <select id="voiceObsDest_${escaparHTML(component.key)}">
+            ${OBSERVATION_DESTINATIONS.map(([value, label]) => `<option value="${escaparHTML(value)}" ${value === component.destination ? "selected" : ""}>${escaparHTML(label)}</option>`).join("")}
+          </select>
+        </label>
+        <button type="button" class="boton-secundario" data-clear-observation="${escaparHTML(component.key)}">Limpiar</button>
       </div>
     `).join("");
-  });
+  }
+  renderMentalExamControls();
   aplicarPreflightStateAControles();
   actualizarVistaPreviaConfiguracion();
 }
 
+function renderMentalExamControls() {
+  ensureMentalExamDefaults();
+  const container = $("voiceMentalExamGroups");
+  if (!container) return;
+  container.innerHTML = MENTAL_EXAM_GROUPS.map(([groupKey, groupLabel]) => {
+    const components = MENTAL_EXAM_COMPONENTS.filter(([, , componentGroup]) => componentGroup === groupKey);
+    return `
+      <details>
+        <summary>${escaparHTML(groupLabel)}</summary>
+        <div class="voice-select-rows">
+          ${components.map(([key, label, _group, options]) => `
+            <div class="voice-select-row" data-mental-row="${escaparHTML(key)}">
+              <label>${escaparHTML(label)}
+                <select id="mentalState_${escaparHTML(key)}" data-mental-state="${escaparHTML(key)}">
+                  <option value="omit">Omitir de esta nota</option>
+                  <option value="include">Incluir y configurar</option>
+                  <option value="hidden">Ocultar del formulario</option>
+                </select>
+              </label>
+              <label class="mental-value-wrap" id="mentalValueWrap_${escaparHTML(key)}">Valor
+                <select id="mentalValue_${escaparHTML(key)}" data-mental-value="${escaparHTML(key)}">
+                  <option value="">Omitir</option>
+                  ${options.map(([value, optionLabel]) => `<option value="${escaparHTML(value)}">${escaparHTML(optionLabel)}</option>`).join("")}
+                </select>
+              </label>
+              <label id="mentalOtherWrap_${escaparHTML(key)}" hidden>Otra descripcion
+                <input id="mentalOther_${escaparHTML(key)}" data-mental-other="${escaparHTML(key)}" maxlength="160" placeholder="Describa el hallazgo">
+              </label>
+              <label class="voice-inline-control"><input id="mentalConfirmed_${escaparHTML(key)}" data-mental-confirmed="${escaparHTML(key)}" type="checkbox"> Revisado</label>
+            </div>
+          `).join("")}
+        </div>
+      </details>
+    `;
+  }).join("");
+}
+
+function aplicarMentalExamStateAControles() {
+  ensureMentalExamDefaults();
+  if ($("voiceMentalExamTemplate")) $("voiceMentalExamTemplate").value = state.mentalExam.templateId || "safe_default";
+  if ($("voiceMentalTemplateConfirmed")) $("voiceMentalTemplateConfirmed").checked = Boolean(state.mentalExam.templateConfirmed);
+  for (const [key, _label, _group, options] of MENTAL_EXAM_COMPONENTS) {
+    const component = getMentalComponent(key);
+    const row = document.querySelector(`[data-mental-row="${key}"]`);
+    if (row) row.hidden = component.state === "hidden";
+    const stateSelect = $(`mentalState_${key}`);
+    const valueSelect = $(`mentalValue_${key}`);
+    const otherInput = $(`mentalOther_${key}`);
+    const confirmed = $(`mentalConfirmed_${key}`);
+    const valueWrap = $(`mentalValueWrap_${key}`);
+    const otherWrap = $(`mentalOtherWrap_${key}`);
+    if (stateSelect) stateSelect.value = component.state || "omit";
+    if (valueSelect) valueSelect.value = component.value || "";
+    if (otherInput) otherInput.value = component.otherText || "";
+    if (confirmed) confirmed.checked = Boolean(component.confirmed);
+    if (valueWrap) valueWrap.hidden = component.state !== "include";
+    if (otherWrap) {
+      const needsOther = ["other", "altered", "numbered_bed", "restlessness", "involuntary"].includes(component.value);
+      otherWrap.hidden = component.state !== "include" || !needsOther;
+    }
+    if (valueSelect && component.state === "include" && component.value && !options.some(([value]) => value === component.value)) {
+      valueSelect.value = "";
+    }
+  }
+  actualizarResumenMentalExam();
+}
+
+function leerMentalExamDesdeControles() {
+  ensureMentalExamDefaults();
+  for (const [key] of MENTAL_EXAM_COMPONENTS) {
+    setMentalComponent(key, {
+      state: $(`mentalState_${key}`)?.value || "omit",
+      value: $(`mentalValue_${key}`)?.value || "",
+      otherText: sanitizarObservacionLibre($(`mentalOther_${key}`)?.value || "").slice(0, 160),
+      confirmed: Boolean($(`mentalConfirmed_${key}`)?.checked)
+    });
+  }
+  state.mentalExam.templateId = $("voiceMentalExamTemplate")?.value || state.mentalExam.templateId || "safe_default";
+  state.mentalExam.templateConfirmed = Boolean($("voiceMentalTemplateConfirmed")?.checked);
+  return state.mentalExam;
+}
+
+function actualizarResumenMentalExam() {
+  ensureMentalExamDefaults();
+  const counts = { include: 0, omit: 0, hidden: 0 };
+  for (const [key] of MENTAL_EXAM_COMPONENTS) {
+    const component = getMentalComponent(key);
+    counts[component.state || "omit"] = (counts[component.state || "omit"] || 0) + 1;
+  }
+  setText("voiceMentalExamSummary", `${counts.include || 0} incluidos · ${counts.omit || 0} omitidos · ${counts.hidden || 0} ocultos`);
+}
+
+function detectarCategoriaCita(text = "") {
+  const lower = normalizarTextoBusqueda(text);
+  if (/suicid|quitarme|morir|matarme/.test(lower)) return "suicidal_ideation";
+  if (/dano|agredir|lastimar|matar a/.test(lower)) return "heteroaggression";
+  if (/persig|vigila|amenaz|me quieren hacer/.test(lower)) return "persecution";
+  if (/voces|escucho|veo cosas|alucin/.test(lower)) return "hallucinations";
+  if (/tratamiento|medicamento|pastilla|acepto|no quiero/.test(lower)) return "treatment_disposition";
+  if (/mama|madre|familia|apoyo/.test(lower)) return "support_network";
+  if (/futuro|trabajar|vivir|seguir|quiero volver/.test(lower)) return "future_projection";
+  if (/triste|harta|ansios|enojad|tranquil|mal|bien/.test(lower)) return "mood";
+  if (/droga|metanfetamina|cannabis|alcohol|consumo/.test(lower)) return "substance_use";
+  if (/seguro|creo|entiendo|enfermedad|paso/.test(lower)) return "illness_awareness";
+  return "clinical_relevance";
+}
+
+function detectarCitasCandidatas() {
+  const candidates = [];
+  for (const utterance of state.conversationSegments || []) {
+    if (utterance.probableRole !== "patient" || !["answer", "correction"].includes(utterance.speechAct)) continue;
+    const text = String(utterance.text || "").trim();
+    if (text.length < 8 || text.length > 180) continue;
+    const category = detectarCategoriaCita(text);
+    if (category === "clinical_relevance" && text.length < 18) continue;
+    candidates.push({
+      id: `quote-${utterance.id}`,
+      text,
+      originalText: text,
+      category,
+      sourceRole: "patient",
+      sourceType: "utterance_literal_quote",
+      sourceUtteranceIds: [utterance.id],
+      confidence: category === "clinical_relevance" ? 0.62 : 0.82,
+      destinationSections: ["evolution", "mentalStatusExam"],
+      include: false,
+      manuallyEdited: false,
+      manuallyConfirmed: true
+    });
+  }
+  state.quoteCandidates = candidates.slice(0, 12);
+  renderQuoteCandidates();
+  programarPersistenciaVoz("quotes-detected");
+}
+
+function renderQuoteCandidates() {
+  const container = $("voiceQuoteCandidates");
+  if (!container) return;
+  const mode = state.generationPreferences?.quoteMode || "omit";
+  if (mode === "omit") {
+    container.textContent = "Citas omitidas.";
+    return;
+  }
+  const candidates = [...(state.quoteCandidates || []), ...(state.manualQuotes || [])];
+  if (!candidates.length) {
+    container.innerHTML = '<p class="voice-summary-inline">Sin citas candidatas. Puede detectar o agregar una cita manual.</p>';
+    return;
+  }
+  container.innerHTML = candidates.map((quote) => {
+    const categoryLabel = QUOTE_CATEGORIES.find(([id]) => id === quote.category)?.[1] || "Relevancia clinica";
+    return `
+      <article class="voice-quote-item">
+        <label class="voice-inline-control"><input type="checkbox" data-quote-include="${escaparHTML(quote.id)}" ${quote.include ? "checked" : ""}> Incluir</label>
+        <strong>${escaparHTML(categoryLabel)}</strong>
+        <p>“${escaparHTML(quote.text)}”</p>
+        <small>Paciente · ${escaparHTML((quote.sourceUtteranceIds || []).join(", ") || quote.sourceType)} · confianza ${Math.round((quote.confidence || 0.7) * 100)}%</small>
+        <textarea data-quote-edit="${escaparHTML(quote.id)}" maxlength="220">${escaparHTML(quote.text)}</textarea>
+        <label class="voice-inline-control"><input type="checkbox" data-quote-confirm="${escaparHTML(quote.id)}" ${quote.manuallyConfirmed !== false ? "checked" : ""}> Confirmo literalidad</label>
+      </article>
+    `;
+  }).join("");
+}
+
+function getAcceptedQuotes() {
+  const limit = Number(state.generationPreferences?.maxPatientQuotes ?? 1);
+  const quotes = [...(state.quoteCandidates || []), ...(state.manualQuotes || [])]
+    .filter((quote) => quote.include && quote.manuallyConfirmed !== false)
+    .slice(0, limit || undefined);
+  state.acceptedQuotes = quotes;
+  return quotes;
+}
+
+function generoPacienteParaEem() {
+  const sexo = normalizarTextoBusqueda(crearPatientContext().sexo || "");
+  if (/mujer|femenino|fem/.test(sexo)) return "f";
+  if (/hombre|masculino|masc/.test(sexo)) return "m";
+  const appearance = getMentalComponent("generalAppearance").value;
+  if (appearance === "female") return "f";
+  if (appearance === "male") return "m";
+  return "n";
+}
+
+function adjGenero(masc = "", fem = "", neutral = "") {
+  const g = generoPacienteParaEem();
+  if (g === "f") return fem || masc;
+  if (g === "m") return masc;
+  return neutral || masc;
+}
+
+function valorMental(key = "") {
+  const def = getMentalComponentDefinition(key);
+  if (!def) return "";
+  const component = getMentalComponent(key);
+  if (component.state !== "include" || !component.confirmed || !component.value) return "";
+  if (component.value === "other" || component.value === "altered" || component.value === "numbered_bed" || component.value === "restlessness" || component.value === "involuntary") {
+    return component.otherText || "";
+  }
+  return labelForOption(def[3], component.value);
+}
+
+function fraseMental(key = "", map = {}) {
+  const component = getMentalComponent(key);
+  if (component.state !== "include" || !component.confirmed || !component.value) return "";
+  if (map[component.value]) return typeof map[component.value] === "function" ? map[component.value](component) : map[component.value];
+  return valorMental(key);
+}
+
+function generarExamenMentalLocal() {
+  leerMentalExamDesdeControles();
+  const sourceObservationIds = [];
+  const include = (key) => {
+    const component = getMentalComponent(key);
+    if (component.state === "include" && component.confirmed && component.value) sourceObservationIds.push(`mental:${key}`);
+    return component.state === "include" && component.confirmed && component.value;
+  };
+  const frases = [];
+  const apariencia = [
+    fraseMental("generalAppearance", {
+      from_record: () => adjGenero("Hombre", "Mujer", "Persona"),
+      male: "Hombre",
+      female: "Mujer",
+      neutral: "Persona"
+    }),
+    fraseMental("apparentAge", {
+      chronological: `de edad aparente similar a la referida como cronologica`,
+      younger: "de edad aparente menor a la referida como cronologica",
+      older: "de edad aparente mayor a la referida como cronologica",
+      not_assessable: "de edad aparente no valorable"
+    }),
+    fraseMental("height", { low: "talla baja", medium: "talla media", high: "talla alta", not_assessable: "talla no valorable" }),
+    fraseMental("build", { ectomorphic: "complexion ectomorfa", mesomorphic: "complexion mesomorfa", endomorphic: "complexion endomorfa", not_assessable: "complexion no valorable" }),
+    fraseMental("integrity", { intact: adjGenero("integro", "integra", "integra"), not_intact: adjGenero("no integro", "no integra", "no integra"), not_assessable: "integridad corporal no valorable" }),
+    fraseMental("conformation", { well_formed: adjGenero("bien conformado", "bien conformada", "bien conformada"), malformed: adjGenero("mal conformado", "mal conformada", "mal conformada"), not_assessable: "conformacion no valorable" })
+  ].filter(Boolean);
+  if (apariencia.length) frases.push(`${apariencia.join(", ")}.`);
+
+  const vestido = [];
+  if (include("clothing")) vestido.push(`Porta ${valorMental("clothing").toLowerCase()}`);
+  const higiene = valorMental("hygiene");
+  const grooming = valorMental("grooming");
+  if (higiene || grooming) vestido.push(`en ${[higiene && `higiene ${higiene.toLowerCase()}`, grooming && `alino ${grooming.toLowerCase()}`].filter(Boolean).join(" y ")}`);
+  if (vestido.length) frases.push(`${vestido.join(", ")}.`);
+
+  const contexto = [];
+  if (include("place")) contexto.push(`valorado en ${valorMental("place").toLowerCase()}`);
+  if (include("position")) contexto.push(`en posicion ${valorMental("position").toLowerCase()}`);
+  if (include("accompaniment")) contexto.push(valorMental("accompaniment").toLowerCase());
+  if (include("initialContext")) contexto.push(valorMental("initialContext").toLowerCase());
+  if (contexto.length) frases.push(`Es ${adjGenero("valorado", "valorada", "valorada")} ${contexto.join(", ")}.`);
+
+  const conducta = [
+    include("facialExpression") && `Expresion facial ${valorMental("facialExpression").toLowerCase()}`,
+    include("emotionalReactivity") && `reactividad emocional ${valorMental("emotionalReactivity").toLowerCase()}`,
+    include("gait") && `marcha ${valorMental("gait").toLowerCase()}`,
+    include("psychomotricity") && `psicomotricidad ${valorMental("psychomotricity").toLowerCase()}`
+  ].filter(Boolean);
+  if (conducta.length) frases.push(`${conducta.join(". ")}.`);
+
+  const conciencia = [
+    include("consciousness") && valorMental("consciousness"),
+    include("orientation") && valorMental("orientation"),
+    include("attitude") && `actitud ${valorMental("attitude").toLowerCase()}`,
+    include("attention") && `atencion ${valorMental("attention").toLowerCase()}`,
+    include("visualContact") && `contacto visual ${valorMental("visualContact").toLowerCase()}`
+  ].filter(Boolean);
+  if (conciencia.length) frases.push(`${conciencia.join(". ")}.`);
+
+  const lenguaje = [
+    include("speech") && `Habla ${valorMental("speech").toLowerCase()}`,
+    include("discourse") && `discurso ${valorMental("discourse").toLowerCase()}`,
+    include("latency") && `latencia de respuesta ${valorMental("latency").toLowerCase()}`
+  ].filter(Boolean);
+  if (lenguaje.length) frases.push(`${lenguaje.join(". ")}.`);
+
+  const pensamiento = [
+    include("thoughtCourse") && `Curso del pensamiento ${valorMental("thoughtCourse").toLowerCase()}`,
+    include("thoughtSpeed") && `velocidad del pensamiento ${valorMental("thoughtSpeed").toLowerCase()}`,
+    include("thoughtContent") && `contenido del pensamiento ${valorMental("thoughtContent").toLowerCase()}`,
+    include("delusionalIdeas") && `ideas delirantes: ${valorMental("delusionalIdeas").toLowerCase()}`,
+    include("overvaluedIdeas") && `ideas sobrevaloradas: ${valorMental("overvaluedIdeas").toLowerCase()}`
+  ].filter(Boolean);
+  if (pensamiento.length) frases.push(`${pensamiento.join(". ")}.`);
+
+  const riesgo = ["deathIdeas", "suicidalIdeation", "suicidalIntent", "suicidalPlan", "preparatoryBehavior", "selfHarm", "heteroaggressiveIdeation", "heteroaggressiveIntent", "homicidalIdeation", "perceptionReported", "perceptionObserved"]
+    .filter(include)
+    .map((key) => `${getMentalComponentDefinition(key)[1]}: ${valorMental(key).toLowerCase()}`);
+  if (riesgo.length) frases.push(riesgo.join(". ") + ".");
+
+  const afecto = [
+    include("affect") && `Afecto ${valorMental("affect").toLowerCase()}`,
+    include("reportedMood") && `estado de animo referido como ${valorMental("reportedMood").toLowerCase()}`,
+    include("affectiveCongruence") && valorMental("affectiveCongruence")
+  ].filter(Boolean);
+  if (afecto.length) frases.push(`${afecto.join(". ")}.`);
+
+  const juicio = [
+    include("judgment") && `Juicio ${valorMental("judgment").toLowerCase()}`,
+    include("cognitiveFunctions") && `otras funciones cognitivas ${valorMental("cognitiveFunctions").toLowerCase()}`,
+    include("intelligence") && `inteligencia ${valorMental("intelligence").toLowerCase()}`,
+    include("illnessAwareness") && `${valorMental("illnessAwareness")} advertencia de padecimiento mental`,
+    include("futureProjection") && valorMental("futureProjection")
+  ].filter(Boolean);
+  if (juicio.length) frases.push(`${juicio.join(". ")}.`);
+
+  const text = frases.join(" ").replace(/\s+/g, " ").trim();
+  return {
+    text,
+    sourceObservationIds,
+    sourceUtteranceIds: [],
+    selectedQuoteIds: getAcceptedQuotes().map((quote) => quote.id),
+    confidence: text ? 0.9 : null,
+    requiresReview: true,
+    warnings: []
+  };
+}
+
+function aplicarPlantillaMentalExam(templateId = "safe_default") {
+  state.mentalExam.templateId = templateId;
+  state.mentalExam.components = crearMentalExamComponentDefaults();
+  const set = (key, value) => setMentalComponent(key, { state: "include", value, confirmed: false });
+  if (templateId === "normal_institutional") {
+    [["apparentAge", "chronological"], ["height", "medium"], ["build", "mesomorphic"], ["integrity", "intact"], ["conformation", "well_formed"], ["hygiene", "adequate"], ["grooming", "adequate"], ["facialExpression", "calm"], ["gait", "normal"], ["psychomotricity", "preserved"], ["consciousness", "awake"], ["orientation", "global"], ["attitude", "cooperative"], ["attention", "adequate"], ["visualContact", "adequate"], ["speech", "preserved"], ["latency", "preserved"], ["thoughtCourse", "linear_coherent"], ["thoughtSpeed", "normal"], ["thoughtContent", "congruent"], ["perceptionObserved", "no_apparent"], ["judgment", "preserved"], ["cognitiveFunctions", "indirect_preserved"], ["intelligence", "average"]].forEach(([key, value]) => set(key, value));
+  } else if (templateId === "depressive") {
+    [["facialExpression", "sad"], ["psychomotricity", "mild_decreased"], ["speech", "low_volume"], ["affect", "hypothymic"], ["reportedMood", "sad"], ["thoughtCourse", "linear_coherent"], ["deathIdeas", "not_explored"], ["suicidalIdeation", "not_explored"]].forEach(([key, value]) => set(key, value));
+  } else if (templateId === "psychotic") {
+    [["thoughtCourse", "linear_coherent"], ["thoughtContent", "partially_congruent"], ["delusionalIdeas", "persecution"], ["perceptionReported", "auditory"], ["judgment", "partially_compromised"], ["illnessAwareness", "partial"]].forEach(([key, value]) => set(key, value));
+  } else if (templateId === "agitation") {
+    [["facialExpression", "irritable"], ["psychomotricity", "agitation"], ["attitude", "irritable"], ["visualContact", "intense"], ["speech", "fast"], ["affect", "irritable"]].forEach(([key, value]) => set(key, value));
+  } else if (templateId === "telehealth") {
+    [["place", "office"], ["visualContact", "not_assessable"], ["gait", "not_assessable"], ["psychomotricity", "not_assessable"]].forEach(([key, value]) => set(key, value));
+  }
+  aplicarMentalExamStateAControles();
+}
+
 function aplicarPreflightStateAControles() {
   const prefs = state.generationPreferences || {};
-  const includeValue = prefs.includePatientQuotes ? "true" : "false";
-  const includeRadio = document.querySelector(`input[name="voiceIncludeQuotes"][value="${includeValue}"]`);
-  if (includeRadio) includeRadio.checked = true;
-  if ($("voiceMaxPatientQuotes")) $("voiceMaxPatientQuotes").value = String(prefs.maxPatientQuotes || 1);
+  if ($("voiceQuoteMode")) $("voiceQuoteMode").value = prefs.quoteMode || (prefs.includePatientQuotes ? "auto" : "omit");
+  if ($("voiceMaxPatientQuotes")) $("voiceMaxPatientQuotes").value = String(prefs.maxPatientQuotes ?? 1);
   if ($("voiceQuotePriority")) $("voiceQuotePriority").value = prefs.quotePriority || "automatic";
 
   const obs = normalizarEncounterObservation(state.encounterObservation);
-  if ($("voiceObservationModality")) $("voiceObservationModality").value = obs.modality;
-  if ($("voiceObservationLocation")) $("voiceObservationLocation").value = obs.location;
-  if ($("voiceObservationLocationOther")) $("voiceObservationLocationOther").value = obs.locationOther;
-  if ($("voiceObservationPosition")) $("voiceObservationPosition").value = obs.position;
+  OBSERVATION_SELECT_COMPONENTS.forEach((component) => {
+    const select = $(`voiceObs_${component.key}`);
+    const other = $(`voiceObsOther_${component.key}`);
+    const dest = $(`voiceObsDest_${component.key}`);
+    let selected = "";
+    let otherText = "";
+    let destination = component.destination;
+    if (component.key === "modality") selected = obs.modality;
+    else if (component.key === "location") {
+      selected = obs.location;
+      otherText = obs.locationOther;
+    } else if (component.key === "position") selected = obs.position;
+    else {
+      const item = obs[component.group]?.[0] || null;
+      selected = item?.value || "";
+      otherText = item?.value === "other" ? item.label : "";
+      destination = item?.destination || item?.destinationSections?.[0] || component.destination;
+    }
+    if (select) select.value = selected;
+    if (other) other.value = otherText;
+    if (dest) dest.value = destination === "mentalStatusExam" ? "mentalStatusExam" : destination === "both" ? "both" : "evolution";
+  });
   if ($("voiceFreeObservation")) $("voiceFreeObservation").value = obs.freeText;
   if ($("voiceFreeObservationConfirmed")) $("voiceFreeObservationConfirmed").checked = obs.freeTextConfirmed;
-  Object.keys(OBSERVATION_GROUPS).forEach((groupKey) => {
-    const selected = new Map(obs[groupKey].map((item) => [item.value, item.destination || (item.destinationSections?.length > 1 ? "both" : item.destinationSections?.[0] || "evolution")]));
-    document.querySelectorAll(`[data-observation-group="${groupKey}"] input[type="checkbox"]`).forEach((input) => {
-      input.checked = selected.has(input.value);
-    });
-    document.querySelectorAll(`[data-observation-destination^="${groupKey}:"]`).forEach((select) => {
-      const value = select.dataset.observationDestination.split(":").slice(1).join(":");
-      if (selected.has(value)) select.value = selected.get(value);
-    });
-  });
+  aplicarMentalExamStateAControles();
 }
 
 function hayDatosVoz() {
@@ -591,20 +1125,34 @@ function configuracionNotaActual() {
 
 function generatedNotePersistible() {
   const editedEvolution = state.transferSections?.find((section) => section.key === "evolutionOrSubjective" || section.fieldTarget === "evolutionOrSubjective");
+  const editedMental = state.transferSections?.find((section) => section.key === "mentalStatusExam" || section.fieldTarget === "mentalStatusExam");
   const evolution = state.generated?.sections?.evolution
     || state.generated?.generatedClinicalText?.evolutionOrSubjective
     || state.generated?.generatedClinicalText?.subjective
     || null;
+  const mental = state.generated?.sections?.mentalExam
+    || state.generated?.generatedClinicalText?.objective?.mentalStatusExam
+    || null;
   const text = editedEvolution?.content || evolution?.text || "";
-  if (!text) return null;
+  const mentalText = editedMental?.content || mental?.text || state.mentalExam.generatedText || "";
+  if (!text && !mentalText) return null;
   return {
     evolution: {
       text,
-      sourceUtteranceIds: evolution.sourceUtteranceIds || evolution.sourceSegmentIds || [],
-      confidence: evolution.confidence ?? null,
-      requiresReview: evolution.requiresReview !== false,
-      warnings: evolution.warnings || []
+      sourceUtteranceIds: evolution?.sourceUtteranceIds || evolution?.sourceSegmentIds || [],
+      confidence: evolution?.confidence ?? null,
+      requiresReview: evolution?.requiresReview !== false,
+      warnings: evolution?.warnings || []
     },
+    mentalExam: mentalText ? {
+      text: mentalText,
+      sourceObservationIds: mental?.sourceObservationIds || [],
+      sourceUtteranceIds: mental?.sourceUtteranceIds || [],
+      selectedQuoteIds: mental?.selectedQuoteIds || [],
+      confidence: mental?.confidence ?? null,
+      requiresReview: true,
+      warnings: mental?.warnings || []
+    } : null,
     provider: state.generated?.provider || "",
     model: state.generated?.model || "",
     promptVersion: state.generated?.promptVersion || VOICE_NOTE_PROMPT_VERSION,
@@ -632,6 +1180,20 @@ function construirBorradorSesionVoz() {
     noteConfiguration: configuracionNotaActual(),
     generationPreferences: state.generationPreferences || leerPreferenciasGeneracion(),
     encounterObservation: state.encounterObservation || leerObservacionEncuentro(),
+    quoteCandidates: state.quoteCandidates || [],
+    acceptedQuotes: state.acceptedQuotes || [],
+    manualQuotes: state.manualQuotes || [],
+    mentalExam: {
+      activeConfigId: state.mentalExam.activeConfigId || "safe_default",
+      templateId: state.mentalExam.templateId || "safe_default",
+      templateConfirmed: Boolean(state.mentalExam.templateConfirmed),
+      components: state.mentalExam.components || crearMentalExamComponentDefaults(),
+      hiddenDrafts: state.mentalExam.hiddenDrafts || {},
+      generatedText: state.mentalExam.generatedText || "",
+      generatedOriginalText: state.mentalExam.generatedOriginalText || "",
+      editedManually: Boolean(state.mentalExam.editedManually),
+      history: state.mentalExam.history || []
+    },
     transcript: {
       original,
       corrected,
@@ -738,41 +1300,53 @@ async function buscarSesionRecuperableVoz() {
 
 function reconstruirGeneratedDesdeSesion(session = {}) {
   const evolution = session.generatedNote?.evolution;
-  if (!evolution?.text) return null;
+  const mentalExam = session.generatedNote?.mentalExam;
+  if (!evolution?.text && !mentalExam?.text) return null;
   return {
     provider: session.generatedNote.provider || "external",
     model: session.generatedNote.model || "",
     promptVersion: session.generatedNote.promptVersion || VOICE_NOTE_PROMPT_VERSION,
     schemaVersion: session.generatedNote.schemaVersion || VOICE_NOTE_SCHEMA_VERSION,
     sections: {
-      evolution: {
+      evolution: evolution?.text ? {
         text: evolution.text,
         sourceUtteranceIds: evolution.sourceUtteranceIds || [],
         confidence: evolution.confidence ?? null,
         requiresReview: evolution.requiresReview !== false,
         warnings: evolution.warnings || []
-      }
+      } : null,
+      mentalExam: mentalExam?.text ? {
+        text: mentalExam.text,
+        sourceObservationIds: mentalExam.sourceObservationIds || [],
+        sourceUtteranceIds: mentalExam.sourceUtteranceIds || [],
+        selectedQuoteIds: mentalExam.selectedQuoteIds || [],
+        confidence: mentalExam.confidence ?? null,
+        requiresReview: true,
+        warnings: mentalExam.warnings || []
+      } : null
     },
     generatedClinicalText: {
       evolutionOrSubjective: {
-        text: evolution.text,
-        sourceUtteranceIds: evolution.sourceUtteranceIds || [],
-        sourceSegmentIds: evolution.sourceUtteranceIds || [],
-        warnings: evolution.warnings || [],
-        requiresReview: evolution.requiresReview !== false
+        text: evolution?.text || "",
+        sourceUtteranceIds: evolution?.sourceUtteranceIds || [],
+        sourceSegmentIds: evolution?.sourceUtteranceIds || [],
+        warnings: evolution?.warnings || [],
+        requiresReview: evolution?.requiresReview !== false
       },
       subjective: {
-        text: evolution.text,
-        sourceUtteranceIds: evolution.sourceUtteranceIds || [],
-        sourceSegmentIds: evolution.sourceUtteranceIds || [],
-        warnings: evolution.warnings || [],
-        requiresReview: evolution.requiresReview !== false
+        text: evolution?.text || "",
+        sourceUtteranceIds: evolution?.sourceUtteranceIds || [],
+        sourceSegmentIds: evolution?.sourceUtteranceIds || [],
+        warnings: evolution?.warnings || [],
+        requiresReview: evolution?.requiresReview !== false
       },
-      objective: {},
+      objective: {
+        mentalStatusExam: mentalExam?.text || ""
+      },
       analysis: {},
       plan: {}
     },
-    validationIssues: evolution.warnings || []
+    validationIssues: [...(evolution?.warnings || []), ...(mentalExam?.warnings || [])]
   };
 }
 
@@ -808,14 +1382,20 @@ async function recuperarSesionVoz(session = state.recoverableSession) {
   state.documentType = $("voiceDocumentType")?.value || session.noteConfiguration?.noteType || state.documentType;
   state.writingStyle = $("voiceWritingStyle")?.value || session.noteConfiguration?.styleId || state.writingStyle;
   state.generationPreferences = {
+    quoteMode: session.generationPreferences?.quoteMode || (session.generationPreferences?.includePatientQuotes ? "auto" : "omit"),
     includePatientQuotes: Boolean(session.generationPreferences?.includePatientQuotes),
-    maxPatientQuotes: Math.min(3, Math.max(1, Number(session.generationPreferences?.maxPatientQuotes || 1))),
+    maxPatientQuotes: Number(session.generationPreferences?.maxPatientQuotes) === 0
+      ? 0
+      : Math.min(3, Math.max(1, Number(session.generationPreferences?.maxPatientQuotes || 1))),
     quotePriority: session.generationPreferences?.quotePriority || "automatic"
   };
   if (!session.generationPreferences && session.generatedNote?.generationPreferences) {
     state.generationPreferences = {
+      quoteMode: session.generatedNote.generationPreferences.quoteMode || (session.generatedNote.generationPreferences.includePatientQuotes ? "auto" : "omit"),
       includePatientQuotes: Boolean(session.generatedNote.generationPreferences.includePatientQuotes),
-      maxPatientQuotes: Math.min(3, Math.max(1, Number(session.generatedNote.generationPreferences.maxPatientQuotes || 1))),
+      maxPatientQuotes: Number(session.generatedNote.generationPreferences.maxPatientQuotes) === 0
+        ? 0
+        : Math.min(3, Math.max(1, Number(session.generatedNote.generationPreferences.maxPatientQuotes || 1))),
       quotePriority: session.generatedNote.generationPreferences.quotePriority || "automatic"
     };
   }
@@ -823,6 +1403,17 @@ async function recuperarSesionVoz(session = state.recoverableSession) {
   if (!session.encounterObservation && session.generatedNote?.encounterObservation) {
     state.encounterObservation = normalizarEncounterObservation(session.generatedNote.encounterObservation);
   }
+  state.quoteCandidates = Array.isArray(session.quoteCandidates) ? session.quoteCandidates : [];
+  state.acceptedQuotes = Array.isArray(session.acceptedQuotes) ? session.acceptedQuotes : [];
+  state.manualQuotes = Array.isArray(session.manualQuotes) ? session.manualQuotes : [];
+  state.mentalExam = {
+    ...state.mentalExam,
+    ...(session.mentalExam || {}),
+    components: {
+      ...crearMentalExamComponentDefaults(),
+      ...(session.mentalExam?.components || {})
+    }
+  };
   aplicarPreflightStateAControles();
   actualizarVistaPreviaConfiguracion();
   state.conversationSegments = segmentationMatchesTranscript ? (session.segmentation?.utterances || []) : [];
@@ -1382,6 +1973,8 @@ async function generarNota() {
   }
   state.generationPreferences = leerPreferenciasGeneracion();
   state.encounterObservation = leerObservacionEncuentro();
+  leerMentalExamDesdeControles();
+  const selectedPatientQuotes = getAcceptedQuotes();
   const preflightIssues = validarObservacionesPrevias(state.encounterObservation, state.generationPreferences);
   actualizarVistaPreviaConfiguracion();
   if (preflightIssues.length) {
@@ -1409,6 +2002,8 @@ async function generarNota() {
     segmentationWarnings: state.conversationWarnings || [],
     generationPreferences: state.generationPreferences,
     encounterObservation: state.encounterObservation,
+    selectedPatientQuotes,
+    mentalExamConfiguration: state.mentalExam,
     existingNoteFields: await obtenerCamposDestinoExistentes()
   };
   const button = $("btnGenerarNotaVoz");
@@ -1445,7 +2040,21 @@ async function generarNota() {
   state.generated = generated;
   state.generated.generationPreferences = state.generationPreferences;
   state.generated.encounterObservation = state.encounterObservation;
-  state.transferSections = generated.transferSections || crearTransferSections(generated, snapshot.correctedTranscript, crearPatientContext());
+  const mentalExam = generarExamenMentalLocal();
+  if (mentalExam.text) {
+    state.mentalExam.generatedText = mentalExam.text;
+    state.mentalExam.generatedOriginalText = mentalExam.text;
+    state.mentalExam.history = [...(state.mentalExam.history || []), { at: new Date().toISOString(), text: mentalExam.text, source: "local" }].slice(-10);
+    state.generated.sections = { ...(state.generated.sections || {}), mentalExam };
+    state.generated.generatedClinicalText = {
+      ...(state.generated.generatedClinicalText || {}),
+      objective: {
+        ...(state.generated.generatedClinicalText?.objective || {}),
+        mentalStatusExam: mentalExam.text
+      }
+    };
+  }
+  state.transferSections = crearTransferSections(generated, snapshot.correctedTranscript, crearPatientContext());
   const externalFailure = generated.metadata?.externalProviderFailure;
   setText("voiceProviderStatus", `Proveedor: ${generated.provider || "desconocido"} · estado: ${generated.providerStatus || generated.metadata?.generatedStatus || "en revision"}${externalFailure ? ` · causa fallback: ${externalFailure.code || externalFailure.name || "sin codigo"}` : ""}`);
   setText("voicePromptVersion", `Prompt: ${generated.promptVersion || generated.metadata?.promptVersion || "fallback local"}`);
@@ -1676,7 +2285,7 @@ function conectarEventos() {
     programarPersistenciaVoz("note-change");
   });
   document.querySelectorAll(
-    "input[name='voiceIncludeQuotes'], #voiceMaxPatientQuotes, #voiceQuotePriority, #voiceObservationModality, #voiceObservationLocation, #voiceObservationLocationOther, #voiceObservationPosition, #voiceFreeObservation, #voiceFreeObservationConfirmed"
+    "#voiceQuoteMode, #voiceMaxPatientQuotes, #voiceQuotePriority, #voiceFreeObservation, #voiceFreeObservationConfirmed"
   ).forEach((node) => {
     const eventName = (node.tagName === "TEXTAREA" || (node.tagName === "INPUT" && node.type === "text")) ? "input" : "change";
     node.addEventListener(eventName, () => {
@@ -1685,15 +2294,141 @@ function conectarEventos() {
       programarPersistenciaVoz("preflight-change");
     });
   });
-  document.querySelectorAll("[data-observation-group] input, [data-observation-destination]").forEach((node) => {
-    node.addEventListener("change", () => {
+  document.querySelectorAll("[id^='voiceObs_'], [id^='voiceObsDest_'], [id^='voiceObsOther_']").forEach((node) => {
+    const eventName = node.tagName === "INPUT" ? "input" : "change";
+    node.addEventListener(eventName, () => {
       actualizarVistaPreviaConfiguracion();
       invalidarNotaGeneradaPorConfiguracion();
       programarPersistenciaVoz("preflight-observation-change");
     });
   });
+  document.querySelectorAll("[data-clear-observation]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const key = button.dataset.clearObservation;
+      if ($(`voiceObs_${key}`)) $(`voiceObs_${key}`).value = "";
+      if ($(`voiceObsOther_${key}`)) $(`voiceObsOther_${key}`).value = "";
+      actualizarVistaPreviaConfiguracion();
+      invalidarNotaGeneradaPorConfiguracion();
+      programarPersistenciaVoz("preflight-observation-clear");
+    });
+  });
+  $("btnDetectVoiceQuotes")?.addEventListener("click", () => detectarCitasCandidatas());
+  $("btnAddManualVoiceQuote")?.addEventListener("click", () => {
+    const text = prompt("Texto literal expresado por el paciente:");
+    if (!text?.trim()) return;
+    const confirmed = confirm("Confirme que corresponde literalmente a lo expresado por el paciente.");
+    if (!confirmed) return;
+    state.manualQuotes.push({
+      id: `manual-quote-${Date.now().toString(36)}`,
+      text: sanitizarObservacionLibre(text).slice(0, 220),
+      originalText: sanitizarObservacionLibre(text).slice(0, 220),
+      category: "clinical_relevance",
+      sourceRole: "patient",
+      sourceType: "manual_literal_quote",
+      sourceUtteranceIds: [],
+      confidence: 1,
+      destinationSections: ["evolution", "mentalStatusExam"],
+      include: true,
+      manuallyConfirmed: true
+    });
+    renderQuoteCandidates();
+    invalidarNotaGeneradaPorConfiguracion();
+    programarPersistenciaVoz("manual-quote-added");
+  });
+  $("voiceQuoteCandidates")?.addEventListener("change", (event) => {
+    const target = event.target;
+    const quoteId = target.dataset.quoteInclude || target.dataset.quoteConfirm;
+    if (!quoteId) return;
+    const quote = [...state.quoteCandidates, ...state.manualQuotes].find((item) => item.id === quoteId);
+    if (!quote) return;
+    if (target.dataset.quoteInclude) quote.include = target.checked;
+    if (target.dataset.quoteConfirm) quote.manuallyConfirmed = target.checked;
+    getAcceptedQuotes();
+    invalidarNotaGeneradaPorConfiguracion();
+    programarPersistenciaVoz("quote-change");
+  });
+  $("voiceQuoteCandidates")?.addEventListener("input", (event) => {
+    const quoteId = event.target.dataset.quoteEdit;
+    if (!quoteId) return;
+    const quote = [...state.quoteCandidates, ...state.manualQuotes].find((item) => item.id === quoteId);
+    if (!quote) return;
+    quote.text = sanitizarObservacionLibre(event.target.value).slice(0, 220);
+    quote.manuallyEdited = quote.text !== quote.originalText;
+    quote.manuallyConfirmed = false;
+    getAcceptedQuotes();
+    invalidarNotaGeneradaPorConfiguracion();
+    programarPersistenciaVoz("quote-edit");
+  });
+  document.querySelectorAll("[data-mental-state], [data-mental-value], [data-mental-other], [data-mental-confirmed], #voiceMentalExamTemplate, #voiceMentalTemplateConfirmed").forEach((node) => {
+    const eventName = node.tagName === "INPUT" && node.type === "text" ? "input" : "change";
+    node.addEventListener(eventName, () => {
+      leerMentalExamDesdeControles();
+      aplicarMentalExamStateAControles();
+      invalidarNotaGeneradaPorConfiguracion();
+      programarPersistenciaVoz("mental-exam-change");
+    });
+  });
+  $("btnOmitAllMentalComponents")?.addEventListener("click", () => {
+    state.mentalExam.components = crearMentalExamComponentDefaults();
+    aplicarMentalExamStateAControles();
+    invalidarNotaGeneradaPorConfiguracion();
+    programarPersistenciaVoz("mental-omit-all");
+  });
+  $("btnRestoreHiddenMentalComponents")?.addEventListener("click", () => {
+    for (const [key] of MENTAL_EXAM_COMPONENTS) {
+      if (getMentalComponent(key).state === "hidden") setMentalComponent(key, { state: "omit" });
+    }
+    aplicarMentalExamStateAControles();
+    programarPersistenciaVoz("mental-restore-hidden");
+  });
+  $("btnUseSafeMentalConfig")?.addEventListener("click", () => {
+    if (hayDatosVoz() && !confirm("Se restablecera solo la configuracion del Examen mental. La transcripcion, segmentacion y Evolucion se conservan.")) return;
+    state.mentalExam = { ...state.mentalExam, activeConfigId: "safe_default", templateId: "safe_default", templateConfirmed: false, components: crearMentalExamComponentDefaults(), hiddenDrafts: {} };
+    aplicarMentalExamStateAControles();
+    invalidarNotaGeneradaPorConfiguracion();
+    programarPersistenciaVoz("mental-safe-default");
+  });
+  $("btnApplyMentalTemplate")?.addEventListener("click", () => {
+    const templateId = $("voiceMentalExamTemplate")?.value || "safe_default";
+    if (templateId !== "safe_default" && !$("voiceMentalTemplateConfirmed")?.checked) {
+      alert("Confirme que revisara y validara individualmente los hallazgos antes de aplicar la plantilla.");
+      return;
+    }
+    aplicarPlantillaMentalExam(templateId);
+    invalidarNotaGeneradaPorConfiguracion();
+    programarPersistenciaVoz("mental-template-applied");
+  });
+  $("btnSaveMentalConfig")?.addEventListener("click", () => {
+    const name = prompt("Nombre de la configuracion:");
+    if (!name?.trim()) return;
+    leerMentalExamDesdeControles();
+    const config = {
+      id: `mental-config-${Date.now().toString(36)}`,
+      userId: state.user?.uid || "",
+      name: sanitizarObservacionLibre(name).slice(0, 80),
+      version: 1,
+      context: "cualquier_contexto",
+      type: "estructura_y_visibilidad",
+      isDefault: false,
+      componentStates: Object.fromEntries(Object.entries(state.mentalExam.components || {}).map(([key, value]) => [key, { state: value.state || "omit" }])),
+      containsClinicalDefaults: Object.values(state.mentalExam.components || {}).some((component) => component.value),
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+    state.mentalExam.savedConfigs = [...(state.mentalExam.savedConfigs || []), config];
+    const select = $("voiceMentalExamSavedConfig");
+    if (select) {
+      const option = document.createElement("option");
+      option.value = config.id;
+      option.textContent = config.name;
+      select.appendChild(option);
+      select.value = config.id;
+    }
+    programarPersistenciaVoz("mental-config-saved");
+  });
   $("btnResetVoiceObservation")?.addEventListener("click", () => {
     state.generationPreferences = {
+      quoteMode: "omit",
       includePatientQuotes: false,
       maxPatientQuotes: 1,
       quotePriority: "automatic"

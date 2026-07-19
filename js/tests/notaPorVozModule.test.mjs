@@ -17,17 +17,26 @@ assert.match(notaJs, /nota-por-voz\.html/);
 assert.match(notaJs, /abrirNotaIndicadaEnUrl/);
 
 const vozHtml = read("nota-por-voz.html");
-assert.match(vozHtml, /VERSIÓN ALFA · EN DESARROLLO/);
+assert.match(vozHtml, /ALFA/);
+assert.match(vozHtml, /EN DESARROLLO/);
 assert.match(vozHtml, /js\/dictado\.js/);
 assert.match(vozHtml, /js\/nota-por-voz\.js/);
 assert.match(vozHtml, /Configuracion previa de la nota/);
-assert.match(vozHtml, /sic\. Pac\./);
-assert.match(vozHtml, /voiceObservationModality/);
+assert.match(vozHtml, /voiceQuoteMode/);
+assert.match(vozHtml, /Detectar y proponer automaticamente/);
+assert.match(vozHtml, /voiceQuoteCandidates/);
+assert.match(vozHtml, /voiceObservationSelectRows/);
+assert.match(vozHtml, /Configuracion del Examen mental/);
+assert.match(vozHtml, /voiceMentalExamGroups/);
 assert.match(vozHtml, /voiceFreeObservationConfirmed/);
 
 const vozJs = read("js/nota-por-voz.js");
 assert.match(vozJs, /Segmentacion avanzada no disponible\. Se conservo la segmentacion basica\./);
 assert.match(vozJs, /externalBlocks > 0/);
+assert.match(vozJs, /const MENTAL_EXAM_COMPONENTS = \[/);
+assert.match(vozJs, /futureProjection/);
+assert.match(vozJs, /detectarCitasCandidatas/);
+assert.match(vozJs, /generarExamenMentalLocal/);
 
 const serviceSource = read("js/services/voiceNoteGenerationService.js");
 assert.match(serviceSource, /Math\.floor\(edad \/ 10\) \+ 1/);
@@ -38,6 +47,8 @@ assert.match(serviceSource, /obsExploracionFisicaNeurologica/);
 assert.match(serviceSource, /No se pudo identificar al paciente/);
 assert.match(serviceSource, /generationPreferences: normalizarPreferenciasGeneracionVoz/);
 assert.match(serviceSource, /encounterObservation: normalizarObservacionEncuentroVoz/);
+assert.match(serviceSource, /selectedPatientQuotes/);
+assert.match(serviceSource, /mentalExamConfiguration/);
 assert.match(serviceSource, /replace\(\s*\/<\[\^>\]\*>\/g/);
 
 const persistenceSource = read("js/services/dictadoPersistence.js");

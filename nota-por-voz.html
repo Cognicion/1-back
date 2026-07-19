@@ -6,7 +6,7 @@
   <title>Nota por voz y automática | Cognición</title>
   <link rel="stylesheet" href="css/theme.css">
   <link rel="stylesheet" href="css/dictado.css">
-  <link rel="stylesheet" href="css/nota-por-voz.css?v=20260719-preflight-observations">
+  <link rel="stylesheet" href="css/nota-por-voz.css?v=20260719-mental-exam-v1">
   <link rel="icon" type="image/png" href="assets/favicon-cognicion.png">
 </head>
 <body>
@@ -15,7 +15,7 @@
     <a href="medico.html">Panel medico</a>
     <a id="linkPacienteVoz" href="paciente.html">Paciente</a>
     <a id="linkNotaTradicional" href="nota.html">Nota tradicional</a>
-    <a class="activo" id="linkNotaVoz" href="nota-por-voz.html?v=20260719-preflight-observations">Nota por voz y automática</a>
+    <a class="activo" id="linkNotaVoz" href="nota-por-voz.html?v=20260719-mental-exam-v1">Nota por voz y automática</a>
   </aside>
 
   <main class="voice-shell">
@@ -171,8 +171,14 @@
 
         <fieldset class="voice-fieldset">
           <legend>Citas textuales</legend>
-          <label class="voice-inline-control"><input type="radio" name="voiceIncludeQuotes" value="false" checked> No incluir citas textuales</label>
-          <label class="voice-inline-control"><input type="radio" name="voiceIncludeQuotes" value="true"> Incluir citas textuales del paciente con "sic. Pac."</label>
+          <label>Uso de citas textuales
+            <select id="voiceQuoteMode">
+              <option value="omit">Omitir citas</option>
+              <option value="auto">Detectar y proponer automaticamente</option>
+              <option value="manual">Anadir citas manualmente</option>
+              <option value="auto_manual">Detectar automaticamente y permitir manuales</option>
+            </select>
+          </label>
           <p id="voiceQuoteDescription" class="voice-summary-inline">La informacion se redactara mediante parafrasis clinica, sin citas textuales.</p>
           <div class="voice-grid voice-compact-grid">
             <label>Cantidad maxima
@@ -180,6 +186,7 @@
                 <option value="1">Una cita</option>
                 <option value="2">Dos citas</option>
                 <option value="3">Tres citas</option>
+                <option value="0">Sin maximo automatico</option>
               </select>
             </label>
             <label>Prioridad
@@ -192,68 +199,56 @@
               </select>
             </label>
           </div>
-        </fieldset>
-
-        <fieldset class="voice-fieldset">
-          <legend>Contexto de la valoracion</legend>
-          <div class="voice-grid voice-compact-grid">
-            <label>Modalidad
-              <select id="voiceObservationModality">
-                <option value="">No especificar</option>
-                <option value="presencial">Presencial</option>
-                <option value="videollamada">Videollamada</option>
-                <option value="llamada_telefonica">Llamada telefonica</option>
-              </select>
-            </label>
-            <label>Lugar
-              <select id="voiceObservationLocation">
-                <option value="">No especificar</option>
-                <option value="cama_correspondiente">Cama correspondiente</option>
-                <option value="consultorio">Consultorio</option>
-                <option value="sala_entrevista">Sala de entrevista</option>
-                <option value="area_comun">Area comun</option>
-                <option value="domicilio">Domicilio</option>
-                <option value="urgencias">Urgencias</option>
-                <option value="otro">Otro</option>
-              </select>
-            </label>
-            <label id="voiceObservationLocationOtherWrap" hidden>Otro lugar
-              <input id="voiceObservationLocationOther" maxlength="80" placeholder="Lugar observado">
-            </label>
-            <label>Posicion
-              <select id="voiceObservationPosition">
-                <option value="">No especificar</option>
-                <option value="sedente">Sedente</option>
-                <option value="decubito">Decubito</option>
-                <option value="bipedestacion">Bipedestacion</option>
-                <option value="deambulando">Deambulando</option>
-                <option value="alterna_posiciones">Alterna posiciones</option>
-              </select>
-            </label>
+          <div id="voiceQuoteCandidates" class="voice-compact-list">Citas omitidas.</div>
+          <div class="voice-actions">
+            <button id="btnDetectVoiceQuotes" type="button" class="boton-secundario">Detectar citas</button>
+            <button id="btnAddManualVoiceQuote" type="button" class="boton-secundario">Agregar cita textual manual</button>
           </div>
         </fieldset>
 
         <section class="voice-observation-groups" aria-label="Observaciones visuales opcionales">
           <details>
-            <summary>Actividad al momento del abordaje</summary>
-            <div class="voice-checkbox-grid" data-observation-group="activities"></div>
+            <summary>Observaciones visuales compactas</summary>
+            <div id="voiceObservationSelectRows" class="voice-select-rows"></div>
           </details>
-          <details>
-            <summary>Conducta observable</summary>
-            <div class="voice-checkbox-grid" data-observation-group="behaviors"></div>
-          </details>
-          <details>
-            <summary>Interaccion</summary>
-            <div class="voice-checkbox-grid" data-observation-group="interactions"></div>
-          </details>
-          <details>
-            <summary>Apariencia observable</summary>
-            <div class="voice-checkbox-grid" data-observation-group="appearance"></div>
-          </details>
-          <details>
-            <summary>Psicomotricidad observable</summary>
-            <div class="voice-checkbox-grid" data-observation-group="psychomotor"></div>
-          </details>
+        </section>
+
+        <section class="voice-card voice-mental-config" aria-labelledby="voiceMentalExamTitle">
+          <div class="voice-card-title-row">
+            <div>
+              <h3 id="voiceMentalExamTitle">Configuracion del Examen mental</h3>
+              <p id="voiceMentalExamActiveConfig" class="voice-summary-inline">Configuracion activa: Configuracion segura por defecto</p>
+            </div>
+            <button id="btnUseSafeMentalConfig" type="button" class="boton-secundario">Usar configuracion por defecto</button>
+          </div>
+          <div class="voice-grid voice-compact-grid">
+            <label>Plantilla inicial del Examen mental
+              <select id="voiceMentalExamTemplate">
+                <option value="safe_default">Omitir todos los componentes</option>
+                <option value="normal_institutional">Examen mental institucional sin alteraciones</option>
+                <option value="depressive">Sintomatologia depresiva</option>
+                <option value="psychotic">Sintomatologia psicotica</option>
+                <option value="agitation">Agitacion/irritabilidad</option>
+                <option value="telehealth">Valoracion por videollamada</option>
+                <option value="custom">Personalizado</option>
+              </select>
+            </label>
+            <label>Configuraciones del Examen mental
+              <select id="voiceMentalExamSavedConfig">
+                <option value="safe_default">Configuracion segura por defecto</option>
+                <option value="create_new">Crear nueva configuracion</option>
+              </select>
+            </label>
+          </div>
+          <label class="voice-inline-control"><input id="voiceMentalTemplateConfirmed" type="checkbox"> Confirmo que revisare y validare individualmente los hallazgos antes de generar la nota.</label>
+          <div class="voice-actions">
+            <button id="btnApplyMentalTemplate" type="button" class="boton-secundario">Aplicar plantilla</button>
+            <button id="btnSaveMentalConfig" type="button" class="boton-secundario">Guardar como nueva</button>
+            <button id="btnOmitAllMentalComponents" type="button" class="boton-secundario">Omitir todos</button>
+            <button id="btnRestoreHiddenMentalComponents" type="button" class="boton-secundario">Restaurar ocultos</button>
+          </div>
+          <p id="voiceMentalExamSummary" class="voice-summary">0 incluidos · 49 omitidos · 0 ocultos</p>
+          <div id="voiceMentalExamGroups" class="voice-observation-groups"></div>
         </section>
 
         <fieldset class="voice-fieldset">
@@ -312,6 +307,6 @@
   </main>
 
   <script type="module" src="js/dictado.js?v=20260718-context"></script>
-  <script type="module" src="js/nota-por-voz.js?v=20260719-preflight-observations"></script>
+  <script type="module" src="js/nota-por-voz.js?v=20260719-mental-exam-v1"></script>
 </body>
 </html>

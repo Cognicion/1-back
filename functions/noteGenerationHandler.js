@@ -44,7 +44,7 @@ Estilo de evolution:
 - Describe brevemente el abordaje, lugar, posicion, aceptacion, cooperacion y conducta general si fueron documentados.
 - Integra evolucion de sintomas relevantes, riesgo referido, red de apoyo, respuesta/adherencia referidas, consumo si aparece y eventualidades medicas.
 - Cierra con sueno, alimentacion, diuresis, evacuaciones, sintomas fisicos, efectos adversos y eventualidades medicas si fueron documentados.
-- Respeta generationPreferences.includePatientQuotes. Si es false, no uses comillas ni "sic. Pac."; parafrasea fielmente. Si es true, usa solo citas literales breves de utterances del paciente, maximo generationPreferences.maxPatientQuotes, sin corregir el texto dentro de la cita y con "sic. Pac." inmediatamente despues.
+- Respeta generationPreferences.includePatientQuotes. Si es false, no uses comillas ni "sic. Pac."; parafrasea fielmente. Si es true, usa solo citas literales breves de utterances del paciente, maximo generationPreferences.maxPatientQuotes cuando sea mayor que 0; si maxPatientQuotes es 0, no hay maximo automatico, pero limita las citas a las clinicamente indispensables. No corrijas el texto dentro de la cita y coloca "sic. Pac." inmediatamente despues.
 - Usa el bloque OBSERVACIONES MANUALES DEL PROFESIONAL solo como hallazgos observados introducidos manualmente. No los atribuyas al paciente. No amplifiques su significado. No infieras orientacion, cooperacion, psicomotricidad, higiene, marcha, afecto ni riesgo a partir de otra observacion distinta. Respeta destinationSections y evita repetir literalmente la misma observacion.
 - Si modality es videollamada, redacta "valorado mediante videollamada" y limita hallazgos a lo observable por camara. Si modality es llamada telefonica, no generes apariencia, contacto visual, marcha, higiene ni psicomotricidad.
 
@@ -271,9 +271,14 @@ function normalizeNoteConfiguration(value = {}) {
 function normalizeGenerationPreferences(value = {}) {
   const prefs = value && typeof value === "object" ? value : {};
   const includePatientQuotes = Boolean(prefs.includePatientQuotes);
+  const rawMaxQuotes = Number(prefs.maxPatientQuotes);
+  const maxPatientQuotes = includePatientQuotes
+    ? (rawMaxQuotes === 0 ? 0 : Math.min(3, Math.max(1, Number.isFinite(rawMaxQuotes) ? rawMaxQuotes : 1)))
+    : 0;
   return {
+    quoteMode: normalizeString(prefs.quoteMode || (includePatientQuotes ? "auto" : "omit")),
     includePatientQuotes,
-    maxPatientQuotes: includePatientQuotes ? Math.min(3, Math.max(1, normalizePositiveInteger(prefs.maxPatientQuotes) || 1)) : 0,
+    maxPatientQuotes,
     quotePriority: includePatientQuotes ? normalizeString(prefs.quotePriority || "automatic") : "automatic"
   };
 }
@@ -309,6 +314,21 @@ function normalizeEncounterObservation(value = {}) {
     freeText: normalizeString(obs.freeText).replace(/[<>]/g, "").slice(0, 500),
     freeTextConfirmed: Boolean(obs.freeTextConfirmed)
   };
+}
+
+function normalizeSelectedPatientQuotes(value = []) {
+  if (!Array.isArray(value)) return [];
+  return value.slice(0, 12).map((quote, index) => ({
+    id: normalizeString(quote?.id || `quote-${index + 1}`).slice(0, 80),
+    text: normalizeString(quote?.text).slice(0, 240),
+    originalText: normalizeString(quote?.originalText || quote?.text).slice(0, 240),
+    category: normalizeString(quote?.category || "clinical_relevance").slice(0, 80),
+    sourceRole: quote?.sourceRole === "patient" ? "patient" : "unknown",
+    sourceType: normalizeString(quote?.sourceType || "utterance_literal_quote").slice(0, 80),
+    sourceUtteranceIds: normalizeSourceUtteranceIds(quote?.sourceUtteranceIds),
+    manuallyConfirmed: quote?.manuallyConfirmed !== false,
+    destinationSections: normalizeDestinationSections(quote?.destinationSections)
+  })).filter((quote) => quote.text && quote.sourceRole === "patient" && quote.manuallyConfirmed);
 }
 
 function normalizeSourceUtteranceIds(value) {
@@ -380,6 +400,8 @@ function validateInput({ data = {}, auth = null, HttpsErrorClass, requestId }) {
     noteConfiguration: { ...noteConfiguration, promptVersion: NOTE_PROMPT_VERSION },
     generationPreferences: normalizeGenerationPreferences(data.generationPreferences || {}),
     encounterObservation: normalizeEncounterObservation(data.encounterObservation || {}),
+    selectedPatientQuotes: normalizeSelectedPatientQuotes(data.selectedPatientQuotes || []),
+    mentalExamConfigurationVersion: data.mentalExamConfiguration ? "local_mental_exam_v1" : "",
     transcript: {
       transcriptId: normalizeString(transcriptObject.transcriptId || data.transcriptSessionId || data.sessionId),
       originalTextHash: normalizeString(transcriptObject.originalTextHash || data.originalTextHash || hashText(utterances.map((u) => u.text).join("\n"))),
@@ -401,6 +423,7 @@ function buildProviderInput(payload) {
     patientContext: payload.patientContext,
     noteConfiguration: payload.noteConfiguration,
     generationPreferences: payload.generationPreferences,
+    selectedPatientQuotes: payload.selectedPatientQuotes,
     manualObservationsBlockTitle: "OBSERVACIONES MANUALES DEL PROFESIONAL",
     manualObservations,
     evolutionCoverage: serializeEvolutionCoverage(evolutionCoverage),
@@ -1026,7 +1049,8 @@ function validateProviderResult({ parsed, payload, requestId, HttpsErrorClass, a
   }
   if (payload.generationPreferences?.includePatientQuotes) {
     const quoteCount = (text.match(/\bsic\.\s*Pac\./gi) || []).length;
-    if (quoteCount > Number(payload.generationPreferences.maxPatientQuotes || 1)) {
+    const maxQuotes = Number(payload.generationPreferences.maxPatientQuotes);
+    if (Number.isFinite(maxQuotes) && maxQuotes > 0 && quoteCount > maxQuotes) {
       quoteIssues.push({ code: "too_many_patient_quotes", message: "La Evolucion excedio el maximo de citas permitidas.", severity: "high" });
     }
   }

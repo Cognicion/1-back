@@ -15,10 +15,16 @@ export const VOICE_NOTE_SCHEMA_VERSION = "voice_note_evolution_v1";
 export const VOICE_NOTE_VALIDATOR_VERSION = "evolution_semantic_validator_v2";
 
 function normalizarPreferenciasGeneracionVoz(value = {}) {
-  const includePatientQuotes = Boolean(value.includePatientQuotes);
+  const quoteMode = String(value.quoteMode || (value.includePatientQuotes ? "auto" : "omit"));
+  const includePatientQuotes = quoteMode !== "omit" && Boolean(value.includePatientQuotes !== false);
+  const rawMaxQuotes = Number(value.maxPatientQuotes);
+  const maxPatientQuotes = includePatientQuotes
+    ? (rawMaxQuotes === 0 ? 0 : Math.min(3, Math.max(1, Number.isFinite(rawMaxQuotes) ? rawMaxQuotes : 1)))
+    : 0;
   return {
+    quoteMode,
     includePatientQuotes,
-    maxPatientQuotes: includePatientQuotes ? Math.min(3, Math.max(1, Number(value.maxPatientQuotes || 1))) : 0,
+    maxPatientQuotes,
     quotePriority: includePatientQuotes ? String(value.quotePriority || "automatic") : "automatic"
   };
 }
@@ -347,6 +353,8 @@ export function construirPayloadGeneracionVoz({ snapshot = {}, patientContext = 
     },
     generationPreferences: normalizarPreferenciasGeneracionVoz(options.generationPreferences || {}),
     encounterObservation: normalizarObservacionEncuentroVoz(options.encounterObservation || {}),
+    selectedPatientQuotes: Array.isArray(options.selectedPatientQuotes) ? options.selectedPatientQuotes : [],
+    mentalExamConfiguration: options.mentalExamConfiguration || {},
     transcript: {
       transcriptId: snapshot.transcriptSessionId || snapshot.sessionId || "",
       originalTextHash: options.originalTextHash || "",
