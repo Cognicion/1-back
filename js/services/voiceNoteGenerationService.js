@@ -14,6 +14,40 @@ export const VOICE_NOTE_PROMPT_VERSION = "psychiatric_voice_note_es_mx_v2";
 export const VOICE_NOTE_SCHEMA_VERSION = "voice_note_evolution_v1";
 export const VOICE_NOTE_VALIDATOR_VERSION = "evolution_semantic_validator_v2";
 
+function normalizarPreferenciasGeneracionVoz(value = {}) {
+  const includePatientQuotes = Boolean(value.includePatientQuotes);
+  return {
+    includePatientQuotes,
+    maxPatientQuotes: includePatientQuotes ? Math.min(3, Math.max(1, Number(value.maxPatientQuotes || 1))) : 0,
+    quotePriority: includePatientQuotes ? String(value.quotePriority || "automatic") : "automatic"
+  };
+}
+
+function normalizarObservacionEncuentroVoz(value = {}) {
+  const obs = value && typeof value === "object" ? value : {};
+  const limpiar = (text = "") => String(text || "").replace(/<[^>]*>/g, " ").replace(/[<>]/g, "").replace(/\s+/g, " ").trim();
+  const normalizarGrupo = (items = []) => Array.isArray(items)
+    ? items.map((item) => ({
+        value: limpiar(item?.value),
+        label: limpiar(item?.label || item?.value),
+        destinationSections: Array.isArray(item?.destinationSections) ? item.destinationSections.filter(Boolean) : []
+      })).filter((item) => item.value)
+    : [];
+  return {
+    modality: limpiar(obs.modality),
+    location: limpiar(obs.location),
+    locationOther: limpiar(obs.locationOther).slice(0, 80),
+    position: limpiar(obs.position),
+    activities: normalizarGrupo(obs.activities),
+    behaviors: normalizarGrupo(obs.behaviors),
+    interactions: normalizarGrupo(obs.interactions),
+    appearance: normalizarGrupo(obs.appearance),
+    psychomotor: normalizarGrupo(obs.psychomotor),
+    freeText: limpiar(obs.freeText).slice(0, 500),
+    freeTextConfirmed: Boolean(obs.freeTextConfirmed)
+  };
+}
+
 export const VOICE_NOTE_FIELD_REGISTRY = Object.freeze({
   evolutionOrSubjective: {
     fieldId: "subjetivo",
@@ -311,6 +345,8 @@ export function construirPayloadGeneracionVoz({ snapshot = {}, patientContext = 
       templateId: options.templateId || "",
       promptVersion: VOICE_NOTE_PROMPT_VERSION
     },
+    generationPreferences: normalizarPreferenciasGeneracionVoz(options.generationPreferences || {}),
+    encounterObservation: normalizarObservacionEncuentroVoz(options.encounterObservation || {}),
     transcript: {
       transcriptId: snapshot.transcriptSessionId || snapshot.sessionId || "",
       originalTextHash: options.originalTextHash || "",

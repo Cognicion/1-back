@@ -20,6 +20,10 @@ const vozHtml = read("nota-por-voz.html");
 assert.match(vozHtml, /VERSIÓN ALFA · EN DESARROLLO/);
 assert.match(vozHtml, /js\/dictado\.js/);
 assert.match(vozHtml, /js\/nota-por-voz\.js/);
+assert.match(vozHtml, /Configuracion previa de la nota/);
+assert.match(vozHtml, /sic\. Pac\./);
+assert.match(vozHtml, /voiceObservationModality/);
+assert.match(vozHtml, /voiceFreeObservationConfirmed/);
 
 const vozJs = read("js/nota-por-voz.js");
 assert.match(vozJs, /Segmentacion avanzada no disponible\. Se conservo la segmentacion basica\./);
@@ -32,6 +36,9 @@ assert.match(serviceSource, /voiceTranscripts/);
 assert.match(serviceSource, /generatedNoteDrafts/);
 assert.match(serviceSource, /obsExploracionFisicaNeurologica/);
 assert.match(serviceSource, /No se pudo identificar al paciente/);
+assert.match(serviceSource, /generationPreferences: normalizarPreferenciasGeneracionVoz/);
+assert.match(serviceSource, /encounterObservation: normalizarObservacionEncuentroVoz/);
+assert.match(serviceSource, /replace\(\s*\/<\[\^>\]\*>\/g/);
 
 const persistenceSource = read("js/services/dictadoPersistence.js");
 assert.match(persistenceSource, /indexedDB/);

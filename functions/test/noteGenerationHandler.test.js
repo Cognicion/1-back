@@ -330,6 +330,50 @@ const insomniaCorrected = await runWithOutput(JSON.stringify({
 assert.doesNotMatch(insomniaCorrected.sections.evolution.text, /\binsomnia\b/i);
 assert.match(insomniaCorrected.sections.evolution.text, /\binsomnio\b/i);
 
+await assert.rejects(
+  () => runWithOutput(JSON.stringify({
+    sections: {
+      evolution: {
+        text: correctedCarlosEvolution.replace("mencionando que ya no se encuentra tan seguro", "expresando: \"ya no estoy tan seguro\" sic. Pac."),
+        sourceUtteranceIds: carlosShortUtterances.map((utterance) => utterance.id),
+        requiresReview: true
+      }
+    },
+    globalWarnings: []
+  }), carlosPayload({ generationPreferences: { includePatientQuotes: false, maxPatientQuotes: 0, quotePriority: "automatic" } })),
+  (error) => error.details?.validationCodes?.includes("PATIENT_QUOTES_DISABLED")
+);
+
+const quotedAccepted = await runWithOutput(JSON.stringify({
+  sections: {
+    evolution: {
+      text: correctedCarlosEvolution.replace("mencionando que ya no se encuentra tan seguro", "expresando: \"ya no estoy tan seguro\" sic. Pac."),
+      sourceUtteranceIds: carlosShortUtterances.map((utterance) => utterance.id),
+      requiresReview: true
+    }
+  },
+  globalWarnings: []
+}), carlosPayload({ generationPreferences: { includePatientQuotes: true, maxPatientQuotes: 1, quotePriority: "illness_awareness" } }));
+assert.match(quotedAccepted.sections.evolution.text, /sic\. Pac\./);
+
+const manualObservationAccepted = await runWithOutput(JSON.stringify({
+  sections: {
+    evolution: {
+      text: correctedCarlosEvolution.replace("Durante la valoracion refiere", "Durante la valoracion fue abordado en cama correspondiente, donde se encontraba en posicion sedente y llorando. Refiere"),
+      sourceUtteranceIds: [...carlosShortUtterances.map((utterance) => utterance.id), "manualObservation:2", "manualObservation:3", "manualObservation:4"],
+      requiresReview: true
+    }
+  },
+  globalWarnings: []
+}), carlosPayload({
+  encounterObservation: {
+    location: "cama_correspondiente",
+    position: "sedente",
+    behaviors: [{ value: "crying", label: "Llorando", destinationSections: ["evolution"] }]
+  }
+}));
+assert.match(manualObservationAccepted.sections.evolution.text, /sedente y llorando/i);
+
 const badSemanticOutputs = [
   [
     "doble negacion",

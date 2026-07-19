@@ -44,7 +44,9 @@ Estilo de evolution:
 - Describe brevemente el abordaje, lugar, posicion, aceptacion, cooperacion y conducta general si fueron documentados.
 - Integra evolucion de sintomas relevantes, riesgo referido, red de apoyo, respuesta/adherencia referidas, consumo si aparece y eventualidades medicas.
 - Cierra con sueno, alimentacion, diuresis, evacuaciones, sintomas fisicos, efectos adversos y eventualidades medicas si fueron documentados.
-- Incluye citas breves utiles con "sic. Pac." o "sic. Fam.".
+- Respeta generationPreferences.includePatientQuotes. Si es false, no uses comillas ni "sic. Pac."; parafrasea fielmente. Si es true, usa solo citas literales breves de utterances del paciente, maximo generationPreferences.maxPatientQuotes, sin corregir el texto dentro de la cita y con "sic. Pac." inmediatamente despues.
+- Usa el bloque OBSERVACIONES MANUALES DEL PROFESIONAL solo como hallazgos observados introducidos manualmente. No los atribuyas al paciente. No amplifiques su significado. No infieras orientacion, cooperacion, psicomotricidad, higiene, marcha, afecto ni riesgo a partir de otra observacion distinta. Respeta destinationSections y evita repetir literalmente la misma observacion.
+- Si modality es videollamada, redacta "valorado mediante videollamada" y limita hallazgos a lo observable por camara. Si modality es llamada telefonica, no generes apariencia, contacto visual, marcha, higiene ni psicomotricidad.
 
 Devuelve JSON estricto con este esquema:
 {
@@ -149,6 +151,8 @@ const VALIDATION_CODE_MAP = {
   absolute_disappearance_without_source: "ABSOLUTE_DISAPPEARANCE",
   family_commitment_without_relative_source: "UNSUPPORTED_RELATIVE_COMMITMENT",
   generic_unexplored_normality: "UNEXPLORED_DOMAIN_ASSERTED",
+  patient_quote_disabled: "PATIENT_QUOTES_DISABLED",
+  too_many_patient_quotes: "TOO_MANY_PATIENT_QUOTES",
   critical_unknown_speaker: "INVALID_PROVENANCE",
   missing_traceability: "INVALID_PROVENANCE"
 };
@@ -264,6 +268,49 @@ function normalizeNoteConfiguration(value = {}) {
   };
 }
 
+function normalizeGenerationPreferences(value = {}) {
+  const prefs = value && typeof value === "object" ? value : {};
+  const includePatientQuotes = Boolean(prefs.includePatientQuotes);
+  return {
+    includePatientQuotes,
+    maxPatientQuotes: includePatientQuotes ? Math.min(3, Math.max(1, normalizePositiveInteger(prefs.maxPatientQuotes) || 1)) : 0,
+    quotePriority: includePatientQuotes ? normalizeString(prefs.quotePriority || "automatic") : "automatic"
+  };
+}
+
+function normalizeDestinationSections(value = []) {
+  const allowed = new Set(["evolution", "mentalStatusExam"]);
+  if (!Array.isArray(value)) return ["evolution"];
+  const normalized = Array.from(new Set(value.map((item) => normalizeString(item)).filter((item) => allowed.has(item))));
+  return normalized.length ? normalized : ["evolution"];
+}
+
+function normalizeObservationGroup(value = []) {
+  if (!Array.isArray(value)) return [];
+  return value.slice(0, 24).map((item) => ({
+    value: normalizeString(item?.value).slice(0, 80),
+    label: normalizeString(item?.label || item?.value).slice(0, 120),
+    destinationSections: normalizeDestinationSections(item?.destinationSections)
+  })).filter((item) => item.value && item.label);
+}
+
+function normalizeEncounterObservation(value = {}) {
+  const obs = value && typeof value === "object" ? value : {};
+  return {
+    modality: normalizeString(obs.modality).slice(0, 40),
+    location: normalizeString(obs.location).slice(0, 80),
+    locationOther: normalizeString(obs.locationOther).replace(/[<>]/g, "").slice(0, 80),
+    position: normalizeString(obs.position).slice(0, 80),
+    activities: normalizeObservationGroup(obs.activities),
+    behaviors: normalizeObservationGroup(obs.behaviors),
+    interactions: normalizeObservationGroup(obs.interactions),
+    appearance: normalizeObservationGroup(obs.appearance),
+    psychomotor: normalizeObservationGroup(obs.psychomotor),
+    freeText: normalizeString(obs.freeText).replace(/[<>]/g, "").slice(0, 500),
+    freeTextConfirmed: Boolean(obs.freeTextConfirmed)
+  };
+}
+
 function normalizeSourceUtteranceIds(value) {
   if (!Array.isArray(value)) return [];
   return value.map((item) => normalizeString(item?.id || item)).filter(Boolean);
@@ -331,6 +378,8 @@ function validateInput({ data = {}, auth = null, HttpsErrorClass, requestId }) {
     clientRequestId: sanitizeRequestId(data.clientRequestId || requestId),
     patientContext: { ...patientContext, patientId, encounterId },
     noteConfiguration: { ...noteConfiguration, promptVersion: NOTE_PROMPT_VERSION },
+    generationPreferences: normalizeGenerationPreferences(data.generationPreferences || {}),
+    encounterObservation: normalizeEncounterObservation(data.encounterObservation || {}),
     transcript: {
       transcriptId: normalizeString(transcriptObject.transcriptId || data.transcriptSessionId || data.sessionId),
       originalTextHash: normalizeString(transcriptObject.originalTextHash || data.originalTextHash || hashText(utterances.map((u) => u.text).join("\n"))),
@@ -347,9 +396,13 @@ function validateInput({ data = {}, auth = null, HttpsErrorClass, requestId }) {
 
 function buildProviderInput(payload) {
   const evolutionCoverage = buildEvolutionCoverage(payload);
+  const manualObservations = buildManualObservationFacts(payload.encounterObservation || {});
   return {
     patientContext: payload.patientContext,
     noteConfiguration: payload.noteConfiguration,
+    generationPreferences: payload.generationPreferences,
+    manualObservationsBlockTitle: "OBSERVACIONES MANUALES DEL PROFESIONAL",
+    manualObservations,
     evolutionCoverage: serializeEvolutionCoverage(evolutionCoverage),
     explorationMatrix: evolutionCoverage.explorationMatrix || [],
     transcript: {
@@ -415,6 +468,55 @@ function serializeEvolutionCoverage(coverage = {}) {
   };
 }
 
+function buildManualObservationFacts(observation = {}) {
+  const facts = [];
+  const add = ({ domain, value, label, destinationSections = ["evolution"] }) => {
+    if (!value && !label) return;
+    const safeValue = normalizeString(value || label);
+    const safeLabel = normalizeString(label || value);
+    if (!safeValue || !safeLabel) return;
+    facts.push({
+      id: `manualObservation:${facts.length + 1}`,
+      domain,
+      value: safeValue,
+      label: safeLabel,
+      sourceRole: "clinician",
+      sourceType: "manual_visual_observation",
+      destinationSections: normalizeDestinationSections(destinationSections),
+      createdAt: new Date(0).toISOString()
+    });
+  };
+  if (observation.modality) add({ domain: "encounter.modality", value: observation.modality, label: observation.modality, destinationSections: ["evolution"] });
+  if (observation.location) {
+    add({
+      domain: "encounter.location",
+      value: observation.location,
+      label: observation.location === "otro" ? observation.locationOther : observation.location,
+      destinationSections: ["evolution"]
+    });
+  }
+  if (observation.position) add({ domain: "encounter.position", value: observation.position, label: observation.position, destinationSections: ["evolution"] });
+  for (const group of ["activities", "behaviors", "interactions", "appearance", "psychomotor"]) {
+    for (const item of observation[group] || []) {
+      add({
+        domain: `visual.${group}`,
+        value: item.value,
+        label: item.label,
+        destinationSections: item.destinationSections
+      });
+    }
+  }
+  if (observation.freeText && observation.freeTextConfirmed) {
+    add({
+      domain: "visual.free_text",
+      value: "clinician_free_text",
+      label: observation.freeText,
+      destinationSections: ["evolution"]
+    });
+  }
+  return facts;
+}
+
 function buildExplorationMatrix(utterances = []) {
   return EXPLORATION_DOMAINS.map((definition) => {
     const matches = [];
@@ -461,12 +563,22 @@ function buildEvolutionCoverage(payload = {}) {
   const facts = [];
   const utterances = payload.transcript?.utterances || [];
   const explorationMatrix = buildExplorationMatrix(utterances);
+  const manualObservations = buildManualObservationFacts(payload.encounterObservation || {});
   const contextSupport = {
     posture: false,
     cooperation: false,
     orientation: false,
     agitationAbsence: false
   };
+  for (const observation of manualObservations) {
+    const domain = normalizeString(observation.domain);
+    const value = normalizeString(observation.value);
+    const label = normalizeString(observation.label);
+    const joined = `${domain} ${value} ${label}`;
+    if (/\b(encounter\.position|sedente|decubito|bipedestacion|deambulando|alterna_posiciones)\b/i.test(joined)) contextSupport.posture = true;
+    if (/\b(cooperador|poco_cooperador|declined_interview|no acepto)\b/i.test(joined)) contextSupport.cooperation = true;
+    if (/\b(calm|no_particular_behavior|tranquilo|sin conducta particular)\b/i.test(joined)) contextSupport.agitationAbsence = true;
+  }
   const unknownUtterances = [];
   for (const utterance of utterances) {
     const text = normalizeString(utterance.text);
@@ -903,15 +1015,27 @@ function validateProviderResult({ parsed, payload, requestId, HttpsErrorClass, a
   const rawEvolution = parsed.sections?.evolution || {};
   const text = applyDeterministicEvolutionCorrections(rawEvolution.text);
   const knownUtteranceIds = new Set(payload.transcript.utterances.map((utterance) => utterance.id));
+  const manualObservationIds = new Set(buildManualObservationFacts(payload.encounterObservation || {}).map((item) => item.id));
   const sourceUtteranceIds = normalizeSourceUtteranceIds(rawEvolution.sourceUtteranceIds)
-    .filter((id) => knownUtteranceIds.has(id) || id === "patientContext");
+    .filter((id) => knownUtteranceIds.has(id) || manualObservationIds.has(id) || id === "patientContext");
   const warnings = normalizeWarnings(rawEvolution.warnings);
   const coverage = buildEvolutionCoverage(payload);
+  const quoteIssues = [];
+  if (!payload.generationPreferences?.includePatientQuotes && /\bsic\.\s*Pac\./i.test(text)) {
+    quoteIssues.push({ code: "patient_quote_disabled", message: "La Evolucion incluyo sic. Pac. aunque las citas estan desactivadas.", severity: "high" });
+  }
+  if (payload.generationPreferences?.includePatientQuotes) {
+    const quoteCount = (text.match(/\bsic\.\s*Pac\./gi) || []).length;
+    if (quoteCount > Number(payload.generationPreferences.maxPatientQuotes || 1)) {
+      quoteIssues.push({ code: "too_many_patient_quotes", message: "La Evolucion excedio el maximo de citas permitidas.", severity: "high" });
+    }
+  }
   const blockingIssues = [
     ...validateEvolutionText(text, knownUtteranceIds),
     ...validateContextInventions(text, coverage),
     ...validateSemanticFidelity(text, coverage),
-    ...validateCoverageInclusion(text, coverage)
+    ...validateCoverageInclusion(text, coverage),
+    ...quoteIssues
   ];
 
   if (!text || blockingIssues.some((issue) => issue.severity === "high")) {

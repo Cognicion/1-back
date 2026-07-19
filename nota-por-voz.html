@@ -6,7 +6,7 @@
   <title>Nota por voz y automática | Cognición</title>
   <link rel="stylesheet" href="css/theme.css">
   <link rel="stylesheet" href="css/dictado.css">
-  <link rel="stylesheet" href="css/nota-por-voz.css?v=20260719-evolution-v2-validation">
+  <link rel="stylesheet" href="css/nota-por-voz.css?v=20260719-preflight-observations">
   <link rel="icon" type="image/png" href="assets/favicon-cognicion.png">
 </head>
 <body>
@@ -15,7 +15,7 @@
     <a href="medico.html">Panel medico</a>
     <a id="linkPacienteVoz" href="paciente.html">Paciente</a>
     <a id="linkNotaTradicional" href="nota.html">Nota tradicional</a>
-    <a class="activo" id="linkNotaVoz" href="nota-por-voz.html?v=20260719-evolution-v2-validation">Nota por voz y automática</a>
+    <a class="activo" id="linkNotaVoz" href="nota-por-voz.html?v=20260719-preflight-observations">Nota por voz y automática</a>
   </aside>
 
   <main class="voice-shell">
@@ -160,6 +160,116 @@
         <span id="voicePromptVersion">Prompt: listo · psychiatric_voice_note_es_mx_v2</span>
         <span id="voiceSchemaStatus">Esquema: listo · voice_note_evolution_v1</span>
       </div>
+      <section class="voice-card voice-preflight-card" aria-labelledby="voicePreflightTitle">
+        <div class="voice-card-title-row">
+          <div>
+            <h3 id="voicePreflightTitle">Configuracion previa de la nota</h3>
+            <p class="voice-summary-inline">Las observaciones visuales son opcionales y deben corresponder a hallazgos comprobados directamente por el profesional.</p>
+          </div>
+          <button id="btnResetVoiceObservation" type="button" class="boton-secundario">Restablecer observaciones</button>
+        </div>
+
+        <fieldset class="voice-fieldset">
+          <legend>Citas textuales</legend>
+          <label class="voice-inline-control"><input type="radio" name="voiceIncludeQuotes" value="false" checked> No incluir citas textuales</label>
+          <label class="voice-inline-control"><input type="radio" name="voiceIncludeQuotes" value="true"> Incluir citas textuales del paciente con "sic. Pac."</label>
+          <p id="voiceQuoteDescription" class="voice-summary-inline">La informacion se redactara mediante parafrasis clinica, sin citas textuales.</p>
+          <div class="voice-grid voice-compact-grid">
+            <label>Cantidad maxima
+              <select id="voiceMaxPatientQuotes" disabled>
+                <option value="1">Una cita</option>
+                <option value="2">Dos citas</option>
+                <option value="3">Tres citas</option>
+              </select>
+            </label>
+            <label>Prioridad
+              <select id="voiceQuotePriority" disabled>
+                <option value="automatic">Automatica</option>
+                <option value="main_symptoms">Sintomas principales</option>
+                <option value="risk">Riesgo</option>
+                <option value="illness_awareness">Conciencia de enfermedad</option>
+                <option value="future_projection">Proyeccion a futuro</option>
+              </select>
+            </label>
+          </div>
+        </fieldset>
+
+        <fieldset class="voice-fieldset">
+          <legend>Contexto de la valoracion</legend>
+          <div class="voice-grid voice-compact-grid">
+            <label>Modalidad
+              <select id="voiceObservationModality">
+                <option value="">No especificar</option>
+                <option value="presencial">Presencial</option>
+                <option value="videollamada">Videollamada</option>
+                <option value="llamada_telefonica">Llamada telefonica</option>
+              </select>
+            </label>
+            <label>Lugar
+              <select id="voiceObservationLocation">
+                <option value="">No especificar</option>
+                <option value="cama_correspondiente">Cama correspondiente</option>
+                <option value="consultorio">Consultorio</option>
+                <option value="sala_entrevista">Sala de entrevista</option>
+                <option value="area_comun">Area comun</option>
+                <option value="domicilio">Domicilio</option>
+                <option value="urgencias">Urgencias</option>
+                <option value="otro">Otro</option>
+              </select>
+            </label>
+            <label id="voiceObservationLocationOtherWrap" hidden>Otro lugar
+              <input id="voiceObservationLocationOther" maxlength="80" placeholder="Lugar observado">
+            </label>
+            <label>Posicion
+              <select id="voiceObservationPosition">
+                <option value="">No especificar</option>
+                <option value="sedente">Sedente</option>
+                <option value="decubito">Decubito</option>
+                <option value="bipedestacion">Bipedestacion</option>
+                <option value="deambulando">Deambulando</option>
+                <option value="alterna_posiciones">Alterna posiciones</option>
+              </select>
+            </label>
+          </div>
+        </fieldset>
+
+        <section class="voice-observation-groups" aria-label="Observaciones visuales opcionales">
+          <details>
+            <summary>Actividad al momento del abordaje</summary>
+            <div class="voice-checkbox-grid" data-observation-group="activities"></div>
+          </details>
+          <details>
+            <summary>Conducta observable</summary>
+            <div class="voice-checkbox-grid" data-observation-group="behaviors"></div>
+          </details>
+          <details>
+            <summary>Interaccion</summary>
+            <div class="voice-checkbox-grid" data-observation-group="interactions"></div>
+          </details>
+          <details>
+            <summary>Apariencia observable</summary>
+            <div class="voice-checkbox-grid" data-observation-group="appearance"></div>
+          </details>
+          <details>
+            <summary>Psicomotricidad observable</summary>
+            <div class="voice-checkbox-grid" data-observation-group="psychomotor"></div>
+          </details>
+        </section>
+
+        <fieldset class="voice-fieldset">
+          <legend>Otra observacion</legend>
+          <label>Otra observacion realizada por el profesional
+            <textarea id="voiceFreeObservation" maxlength="500" placeholder="Ej. Al inicio de la valoracion se encontraba llorando mientras conversaba por telefono con un familiar."></textarea>
+          </label>
+          <div class="voice-card-title-row">
+            <label class="voice-inline-control"><input id="voiceFreeObservationConfirmed" type="checkbox"> Confirmo que esta descripcion corresponde a algo observado directamente durante la valoracion.</label>
+            <small id="voiceFreeObservationCounter">0/500</small>
+          </div>
+        </fieldset>
+
+        <div id="voiceObservationValidation" class="voice-summary voice-validation-summary" hidden></div>
+        <div id="voicePreflightSummary" class="voice-summary">Se incorporaran 0 observaciones manuales. Las citas textuales estan desactivadas.</div>
+      </section>
       <div class="voice-actions">
         <button id="btnGenerarNotaVoz" type="button">Generar nota psiquiatrica</button>
       </div>
@@ -202,6 +312,6 @@
   </main>
 
   <script type="module" src="js/dictado.js?v=20260718-context"></script>
-  <script type="module" src="js/nota-por-voz.js?v=20260719-evolution-v2-validation"></script>
+  <script type="module" src="js/nota-por-voz.js?v=20260719-preflight-observations"></script>
 </body>
 </html>

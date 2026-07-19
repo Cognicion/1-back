@@ -1485,7 +1485,7 @@ window.abrirModuloNotaPorVoz = function() {
   if (contexto.id) parametros.set("encounterId", contexto.id);
   if (notaEditandoId) parametros.set("noteId", notaEditandoId);
   parametros.set("returnUrl", `${location.pathname.split("/").pop() || "nota.html"}${location.search || ""}`);
-  parametros.set("v", "20260719-evolution-v2-validation");
+  parametros.set("v", "20260719-preflight-observations");
   window.location.href = `nota-por-voz.html?${parametros.toString()}`;
 };
 

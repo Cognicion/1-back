@@ -3,7 +3,7 @@ import { iniciarMonitoreoSesion } from "./services/sesion.js";
 import { obtenerUsuario, listarPacientes, medicoPuedeVer } from "./services/usuarios.js";
 import { usuarioEsPersonalClinico } from "./utils/roles.js";
 import { obtenerNombrePacienteParaMostrar } from "./utils/nombresPacientes.js";
-import { createNoteGenerationProvider } from "./services/noteGenerationProviders.js?v=20260719-evolution-v2-validation";
+import { createNoteGenerationProvider } from "./services/noteGenerationProviders.js?v=20260719-preflight-observations";
 import { createConversationSegmentationProvider, crearClientRequestId } from "./services/conversationSegmentationProviders.js?v=20260719-evolution-v2-validation";
 import { segmentarConversacionClinica } from "./services/clinicalPipeline.js";
 import {
@@ -19,7 +19,7 @@ import {
   guardarTranscripcionVozFirestore,
   leerNotaExistente,
   transferirNotaVozABorrador
-} from "./services/voiceNoteGenerationService.js?v=20260719-evolution-v2-validation";
+} from "./services/voiceNoteGenerationService.js?v=20260719-preflight-observations";
 import { buscarBorradorNotaClinica } from "./services/notas.js?v=20260716-2";
 import {
   VOICE_NOTE_SESSION_SCHEMA_VERSION,
@@ -78,7 +78,89 @@ const state = {
   persistenceTimer: null,
   recoverableSession: null,
   selectedStep: "preparar",
-  lastSavedSessionKey: ""
+  lastSavedSessionKey: "",
+  generationPreferences: {
+    includePatientQuotes: false,
+    maxPatientQuotes: 1,
+    quotePriority: "automatic"
+  },
+  encounterObservation: {
+    modality: "",
+    location: "",
+    locationOther: "",
+    position: "",
+    activities: [],
+    behaviors: [],
+    interactions: [],
+    appearance: [],
+    psychomotor: [],
+    freeText: "",
+    freeTextConfirmed: false
+  }
+};
+
+const OBSERVATION_DESTINATIONS = [
+  ["evolution", "Evolucion"],
+  ["mentalStatusExam", "Examen mental"],
+  ["both", "Ambos"]
+];
+
+const OBSERVATION_GROUPS = {
+  activities: [
+    ["asleep", "Se encontraba dormido", "evolution"],
+    ["resting", "Se encontraba en reposo", "evolution"],
+    ["talking_other_person", "Se encontraba conversando con otra persona", "evolution"],
+    ["eating", "Se encontraba comiendo", "evolution"],
+    ["doing_activity", "Se encontraba realizando una actividad", "evolution"],
+    ["walking", "Se encontraba deambulando", "evolution"],
+    ["isolated", "Se encontraba aislado", "evolution"],
+    ["other_activity", "Otra actividad", "evolution"]
+  ],
+  behaviors: [
+    ["calm", "Tranquilo", "evolution"],
+    ["irritable", "Irritable", "evolution"],
+    ["restless", "Inquieto", "evolution"],
+    ["agitated", "Agitado", "evolution"],
+    ["crying", "Llorando", "evolution"],
+    ["somnolent", "Somnoliento", "evolution"],
+    ["hostile", "Hostil", "evolution"],
+    ["suspicious", "Suspicaz", "evolution"],
+    ["cooperative", "Cooperador", "evolution"],
+    ["poorly_cooperative", "Poco cooperador", "evolution"],
+    ["declined_interview", "No acepto la entrevista", "evolution"],
+    ["disorganized_behavior", "Conducta desorganizada", "evolution"],
+    ["no_particular_behavior", "Sin conducta particular que documentar", "evolution"]
+  ],
+  interactions: [
+    ["alone", "Se encontraba solo", "evolution"],
+    ["talking_patient", "Conversaba con otro paciente", "evolution"],
+    ["talking_relative", "Conversaba con un familiar", "evolution"],
+    ["talking_staff", "Conversaba con personal de salud", "evolution"],
+    ["adequate_interaction", "Interactuaba adecuadamente con otros usuarios", "evolution"],
+    ["isolated_from_users", "Permanecia aislado de otros usuarios", "evolution"],
+    ["other_interaction", "Otra interaccion", "evolution"]
+  ],
+  appearance: [
+    ["institutional_clothing", "Vestimenta institucional", "mentalStatusExam"],
+    ["personal_clothing", "Vestimenta particular", "mentalStatusExam"],
+    ["adequate_grooming", "Adecuada higiene y alino", "mentalStatusExam"],
+    ["partially_poor_grooming", "Higiene y alino parcialmente descuidados", "mentalStatusExam"],
+    ["poor_grooming", "Higiene y alino descuidados", "mentalStatusExam"],
+    ["visible_crying", "Llanto evidente", "both"],
+    ["visible_injury_manual", "Lesion visible descrita manualmente", "mentalStatusExam"],
+    ["other_appearance", "Otra observacion", "mentalStatusExam"]
+  ],
+  psychomotor: [
+    ["preserved", "Conservada", "mentalStatusExam"],
+    ["psychomotor_agitation", "Agitacion psicomotriz", "mentalStatusExam"],
+    ["psychomotor_retardation", "Retardo psicomotor", "mentalStatusExam"],
+    ["restlessness", "Inquietud", "mentalStatusExam"],
+    ["observable_tremor", "Temblor observable", "mentalStatusExam"],
+    ["involuntary_movements", "Movimientos involuntarios", "mentalStatusExam"],
+    ["normal_gait_observed", "Marcha observable sin alteraciones", "mentalStatusExam"],
+    ["gait_not_assessable", "Marcha no valorable", "mentalStatusExam"],
+    ["other_psychomotor", "Otra", "mentalStatusExam"]
+  ]
 };
 
 const $ = (id) => document.getElementById(id);
@@ -151,6 +233,173 @@ function opcionesSelect(select, opciones, selected = "") {
     : '<option value="">Sin opciones disponibles</option>';
 }
 
+function sanitizarObservacionLibre(value = "") {
+  return String(value || "")
+    .replace(/<[^>]*>/g, " ")
+    .replace(/[<>]/g, "")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 500);
+}
+
+function defaultEncounterObservation() {
+  return {
+    modality: "",
+    location: "",
+    locationOther: "",
+    position: "",
+    activities: [],
+    behaviors: [],
+    interactions: [],
+    appearance: [],
+    psychomotor: [],
+    freeText: "",
+    freeTextConfirmed: false
+  };
+}
+
+function normalizarDestinationSections(value = "evolution") {
+  if (value === "both") return ["evolution", "mentalStatusExam"];
+  if (value === "mentalStatusExam") return ["mentalStatusExam"];
+  return ["evolution"];
+}
+
+function normalizarObservationItem(item = {}, fallbackDestination = "evolution") {
+  if (!item || typeof item !== "object") return null;
+  const value = String(item.value || "").trim();
+  if (!value) return null;
+  return {
+    value,
+    label: String(item.label || value).trim(),
+    destination: item.destination || fallbackDestination,
+    destinationSections: Array.isArray(item.destinationSections)
+      ? item.destinationSections.filter(Boolean)
+      : normalizarDestinationSections(item.destination || fallbackDestination)
+  };
+}
+
+function normalizarEncounterObservation(value = {}) {
+  const base = defaultEncounterObservation();
+  const obs = value && typeof value === "object" ? value : {};
+  const normalizada = {
+    ...base,
+    modality: String(obs.modality || "").trim(),
+    location: String(obs.location || "").trim(),
+    locationOther: sanitizarObservacionLibre(obs.locationOther || "").slice(0, 80),
+    position: String(obs.position || "").trim(),
+    freeText: sanitizarObservacionLibre(obs.freeText || ""),
+    freeTextConfirmed: Boolean(obs.freeTextConfirmed)
+  };
+  Object.keys(OBSERVATION_GROUPS).forEach((groupKey) => {
+    normalizada[groupKey] = Array.isArray(obs[groupKey])
+      ? obs[groupKey].map((item) => normalizarObservationItem(item)).filter(Boolean)
+      : [];
+  });
+  return normalizada;
+}
+
+function leerPreferenciasGeneracion() {
+  const includePatientQuotes = document.querySelector("input[name='voiceIncludeQuotes']:checked")?.value === "true";
+  return {
+    includePatientQuotes,
+    maxPatientQuotes: includePatientQuotes ? Math.min(3, Math.max(1, Number($("voiceMaxPatientQuotes")?.value || 1))) : 0,
+    quotePriority: includePatientQuotes ? ($("voiceQuotePriority")?.value || "automatic") : "automatic"
+  };
+}
+
+function leerObservacionEncuentro() {
+  const obs = {
+    modality: $("voiceObservationModality")?.value || "",
+    location: $("voiceObservationLocation")?.value || "",
+    locationOther: $("voiceObservationLocationOther")?.value || "",
+    position: $("voiceObservationPosition")?.value || "",
+    freeText: $("voiceFreeObservation")?.value || "",
+    freeTextConfirmed: Boolean($("voiceFreeObservationConfirmed")?.checked)
+  };
+  Object.keys(OBSERVATION_GROUPS).forEach((groupKey) => {
+    obs[groupKey] = Array.from(document.querySelectorAll(`[data-observation-group="${groupKey}"] input[type="checkbox"]:checked`)).map((input) => ({
+      value: input.value,
+      label: input.dataset.label || input.value,
+      destination: document.querySelector(`[data-observation-destination="${groupKey}:${input.value}"]`)?.value || input.dataset.defaultDestination || "evolution"
+    }));
+  });
+  return normalizarEncounterObservation(obs);
+}
+
+function contarObservacionesManuales(obs = state.encounterObservation) {
+  const observation = normalizarEncounterObservation(obs);
+  let count = 0;
+  if (observation.modality) count += 1;
+  if (observation.location) count += 1;
+  if (observation.position) count += 1;
+  Object.keys(OBSERVATION_GROUPS).forEach((groupKey) => {
+    count += observation[groupKey].length;
+  });
+  if (observation.freeText && observation.freeTextConfirmed) count += 1;
+  return count;
+}
+
+function validarObservacionesPrevias(obs = state.encounterObservation, prefs = state.generationPreferences) {
+  const observation = normalizarEncounterObservation(obs);
+  const issues = [];
+  const has = (group, value) => observation[group]?.some((item) => item.value === value);
+  if (has("behaviors", "calm") && has("behaviors", "agitated")) issues.push("tranquilo + agitado");
+  if (has("behaviors", "cooperative") && has("behaviors", "declined_interview")) issues.push("cooperador + no acepto entrevista");
+  if (observation.position && observation.position !== "alterna_posiciones") {
+    const positionActivityConflict = observation.position === "sedente" && has("activities", "walking");
+    if (positionActivityConflict) issues.push("sedente + deambulando");
+  }
+  if (has("activities", "asleep") && (has("activities", "talking_other_person") || has("interactions", "talking_relative") || has("interactions", "talking_patient"))) issues.push("dormido + conversando");
+  if (has("interactions", "alone") && (has("interactions", "talking_relative") || has("interactions", "talking_patient") || has("interactions", "talking_staff"))) issues.push("solo + conversando");
+  if (has("psychomotor", "preserved") && has("psychomotor", "psychomotor_agitation")) issues.push("psicomotricidad conservada + agitacion psicomotriz");
+  if (has("appearance", "adequate_grooming") && (has("appearance", "partially_poor_grooming") || has("appearance", "poor_grooming"))) issues.push("higiene adecuada + higiene descuidada");
+  if (has("psychomotor", "normal_gait_observed") && has("psychomotor", "gait_not_assessable")) issues.push("marcha normal + marcha no valorable");
+  if (observation.freeText && !observation.freeTextConfirmed) issues.push("texto libre sin confirmacion profesional");
+  if (observation.modality === "llamada_telefonica") {
+    const visualGroups = ["appearance", "psychomotor"];
+    if (observation.location || observation.position || visualGroups.some((group) => observation[group]?.length)) {
+      issues.push("hallazgos visuales incompatibles con llamada telefonica");
+    }
+  }
+  if (prefs.includePatientQuotes) {
+    const literalPatientUtterance = state.conversationSegments.some((utterance) => utterance.probableRole === "patient" && String(utterance.text || "").trim().length > 4);
+    if (!literalPatientUtterance) issues.push("sic. Pac. sin utterances literales del paciente");
+  }
+  return issues;
+}
+
+function actualizarVistaPreviaConfiguracion() {
+  state.generationPreferences = leerPreferenciasGeneracion();
+  state.encounterObservation = leerObservacionEncuentro();
+  const includeQuotes = state.generationPreferences.includePatientQuotes;
+  const maxSelect = $("voiceMaxPatientQuotes");
+  const prioritySelect = $("voiceQuotePriority");
+  if (maxSelect) maxSelect.disabled = !includeQuotes;
+  if (prioritySelect) prioritySelect.disabled = !includeQuotes;
+  setText("voiceQuoteDescription", includeQuotes
+    ? "Se podran incluir citas textuales breves y clinicamente relevantes pronunciadas por el paciente."
+    : "La informacion se redactara mediante parafrasis clinica, sin citas textuales.");
+  const locationOtherWrap = $("voiceObservationLocationOtherWrap");
+  if (locationOtherWrap) locationOtherWrap.hidden = state.encounterObservation.location !== "otro";
+  const counter = $("voiceFreeObservationCounter");
+  if (counter) counter.textContent = `${($("voiceFreeObservation")?.value || "").length}/500`;
+  const issues = validarObservacionesPrevias();
+  const validation = $("voiceObservationValidation");
+  if (validation) {
+    validation.hidden = !issues.length;
+    validation.textContent = issues.length ? `Estas observaciones son incompatibles. Revise la seleccion: ${issues.join("; ")}.` : "";
+  }
+  setText("voicePreflightSummary", `Se incorporaran ${contarObservacionesManuales()} observaciones manuales. Las citas textuales estan ${includeQuotes ? "activadas" : "desactivadas"}.`);
+}
+
+function invalidarNotaGeneradaPorConfiguracion() {
+  if (!state.generated) return;
+  state.generated = null;
+  state.transferSections = [];
+  renderRevision();
+  setText("voiceGenerationProgress", "La configuracion previa cambio. La segmentacion se conserva; regenere la Evolucion.");
+}
+
 function obtenerServicioPaciente(datos = {}) {
   const institucional = datos.datosInstitucionales || {};
   return datos.servicioInstitucional
@@ -210,7 +459,7 @@ function actualizarLinks() {
   const qsNota = construirQueryContexto(state.noteId ? { notaId: state.noteId } : {});
   $("linkPacienteVoz")?.setAttribute("href", state.patientId ? `paciente.html${qsPaciente}` : "paciente.html");
   $("linkNotaTradicional")?.setAttribute("href", qsNota ? `nota.html?${qsNota}` : "nota.html");
-  const versionedVoiceUrl = qsBase ? `nota-por-voz.html?v=20260719-evolution-v2-validation&${qsBase}` : "nota-por-voz.html?v=20260719-evolution-v2-validation";
+  const versionedVoiceUrl = qsBase ? `nota-por-voz.html?v=20260719-preflight-observations&${qsBase}` : "nota-por-voz.html?v=20260719-preflight-observations";
   $("linkNotaVoz")?.setAttribute("href", versionedVoiceUrl);
 }
 
@@ -265,6 +514,53 @@ function cargarCatalogosVoz(servicio = "") {
   actualizarResumenPlantilla();
 }
 
+function renderPreflightControls() {
+  Object.entries(OBSERVATION_GROUPS).forEach(([groupKey, options]) => {
+    const container = document.querySelector(`[data-observation-group="${groupKey}"]`);
+    if (!container) return;
+    container.innerHTML = options.map(([value, label, defaultDestination]) => `
+      <div class="voice-checkbox-item">
+        <label>
+          <input type="checkbox" value="${escaparHTML(value)}" data-label="${escaparHTML(label)}" data-default-destination="${escaparHTML(defaultDestination)}">
+          <span>${escaparHTML(label)}</span>
+        </label>
+        <select data-observation-destination="${escaparHTML(`${groupKey}:${value}`)}" aria-label="Destino de ${escaparHTML(label)}">
+          ${OBSERVATION_DESTINATIONS.map(([destValue, destLabel]) => `<option value="${escaparHTML(destValue)}" ${destValue === defaultDestination ? "selected" : ""}>${escaparHTML(destLabel)}</option>`).join("")}
+        </select>
+      </div>
+    `).join("");
+  });
+  aplicarPreflightStateAControles();
+  actualizarVistaPreviaConfiguracion();
+}
+
+function aplicarPreflightStateAControles() {
+  const prefs = state.generationPreferences || {};
+  const includeValue = prefs.includePatientQuotes ? "true" : "false";
+  const includeRadio = document.querySelector(`input[name="voiceIncludeQuotes"][value="${includeValue}"]`);
+  if (includeRadio) includeRadio.checked = true;
+  if ($("voiceMaxPatientQuotes")) $("voiceMaxPatientQuotes").value = String(prefs.maxPatientQuotes || 1);
+  if ($("voiceQuotePriority")) $("voiceQuotePriority").value = prefs.quotePriority || "automatic";
+
+  const obs = normalizarEncounterObservation(state.encounterObservation);
+  if ($("voiceObservationModality")) $("voiceObservationModality").value = obs.modality;
+  if ($("voiceObservationLocation")) $("voiceObservationLocation").value = obs.location;
+  if ($("voiceObservationLocationOther")) $("voiceObservationLocationOther").value = obs.locationOther;
+  if ($("voiceObservationPosition")) $("voiceObservationPosition").value = obs.position;
+  if ($("voiceFreeObservation")) $("voiceFreeObservation").value = obs.freeText;
+  if ($("voiceFreeObservationConfirmed")) $("voiceFreeObservationConfirmed").checked = obs.freeTextConfirmed;
+  Object.keys(OBSERVATION_GROUPS).forEach((groupKey) => {
+    const selected = new Map(obs[groupKey].map((item) => [item.value, item.destination || (item.destinationSections?.length > 1 ? "both" : item.destinationSections?.[0] || "evolution")]));
+    document.querySelectorAll(`[data-observation-group="${groupKey}"] input[type="checkbox"]`).forEach((input) => {
+      input.checked = selected.has(input.value);
+    });
+    document.querySelectorAll(`[data-observation-destination^="${groupKey}:"]`).forEach((select) => {
+      const value = select.dataset.observationDestination.split(":").slice(1).join(":");
+      if (selected.has(value)) select.value = selected.get(value);
+    });
+  });
+}
+
 function hayDatosVoz() {
   const textoDictado = $("textoDictadoClinico")?.value?.trim();
   const textoCorregido = $("voiceCorrectedTranscript")?.value?.trim();
@@ -313,6 +609,8 @@ function generatedNotePersistible() {
     model: state.generated?.model || "",
     promptVersion: state.generated?.promptVersion || VOICE_NOTE_PROMPT_VERSION,
     schemaVersion: state.generated?.schemaVersion || VOICE_NOTE_SCHEMA_VERSION,
+    generationPreferences: state.generated?.generationPreferences || state.generationPreferences,
+    encounterObservation: state.generated?.encounterObservation || state.encounterObservation,
     generatedAt: state.generated?.generatedAt || new Date().toISOString()
   };
 }
@@ -332,6 +630,8 @@ function construirBorradorSesionVoz() {
     updatedAt: new Date().toISOString(),
     currentStep: state.selectedStep || "preparar",
     noteConfiguration: configuracionNotaActual(),
+    generationPreferences: state.generationPreferences || leerPreferenciasGeneracion(),
+    encounterObservation: state.encounterObservation || leerObservacionEncuentro(),
     transcript: {
       original,
       corrected,
@@ -507,6 +807,24 @@ async function recuperarSesionVoz(session = state.recoverableSession) {
   if (session.noteConfiguration?.styleId && $("voiceWritingStyle")) $("voiceWritingStyle").value = session.noteConfiguration.styleId;
   state.documentType = $("voiceDocumentType")?.value || session.noteConfiguration?.noteType || state.documentType;
   state.writingStyle = $("voiceWritingStyle")?.value || session.noteConfiguration?.styleId || state.writingStyle;
+  state.generationPreferences = {
+    includePatientQuotes: Boolean(session.generationPreferences?.includePatientQuotes),
+    maxPatientQuotes: Math.min(3, Math.max(1, Number(session.generationPreferences?.maxPatientQuotes || 1))),
+    quotePriority: session.generationPreferences?.quotePriority || "automatic"
+  };
+  if (!session.generationPreferences && session.generatedNote?.generationPreferences) {
+    state.generationPreferences = {
+      includePatientQuotes: Boolean(session.generatedNote.generationPreferences.includePatientQuotes),
+      maxPatientQuotes: Math.min(3, Math.max(1, Number(session.generatedNote.generationPreferences.maxPatientQuotes || 1))),
+      quotePriority: session.generatedNote.generationPreferences.quotePriority || "automatic"
+    };
+  }
+  state.encounterObservation = normalizarEncounterObservation(session.encounterObservation || {});
+  if (!session.encounterObservation && session.generatedNote?.encounterObservation) {
+    state.encounterObservation = normalizarEncounterObservation(session.generatedNote.encounterObservation);
+  }
+  aplicarPreflightStateAControles();
+  actualizarVistaPreviaConfiguracion();
   state.conversationSegments = segmentationMatchesTranscript ? (session.segmentation?.utterances || []) : [];
   state.conversationWarnings = segmentationMatchesTranscript
     ? (session.segmentation?.warnings || [])
@@ -1062,6 +1380,14 @@ async function generarNota() {
     alert("Revisa la transcripcion antes de generar.");
     return;
   }
+  state.generationPreferences = leerPreferenciasGeneracion();
+  state.encounterObservation = leerObservacionEncuentro();
+  const preflightIssues = validarObservacionesPrevias(state.encounterObservation, state.generationPreferences);
+  actualizarVistaPreviaConfiguracion();
+  if (preflightIssues.length) {
+    alert(`Estas observaciones son incompatibles. Revise la seleccion: ${preflightIssues.join("; ")}.`);
+    return;
+  }
   const provider = await obtenerProveedor();
   const documentType = $("voiceDocumentType")?.value || getDefaultVoiceNoteType($("voiceServicio")?.value || "");
   const writingStyle = $("voiceWritingStyle")?.value || getDefaultVoiceStyle(documentType);
@@ -1081,6 +1407,8 @@ async function generarNota() {
     conversationSegments: state.conversationSegments || [],
     segmentationMode: state.conversationSegmentationMode || "hybrid",
     segmentationWarnings: state.conversationWarnings || [],
+    generationPreferences: state.generationPreferences,
+    encounterObservation: state.encounterObservation,
     existingNoteFields: await obtenerCamposDestinoExistentes()
   };
   const button = $("btnGenerarNotaVoz");
@@ -1115,6 +1443,8 @@ async function generarNota() {
     if (button) button.disabled = false;
   }
   state.generated = generated;
+  state.generated.generationPreferences = state.generationPreferences;
+  state.generated.encounterObservation = state.encounterObservation;
   state.transferSections = generated.transferSections || crearTransferSections(generated, snapshot.correctedTranscript, crearPatientContext());
   const externalFailure = generated.metadata?.externalProviderFailure;
   setText("voiceProviderStatus", `Proveedor: ${generated.provider || "desconocido"} · estado: ${generated.providerStatus || generated.metadata?.generatedStatus || "en revision"}${externalFailure ? ` · causa fallback: ${externalFailure.code || externalFailure.name || "sin codigo"}` : ""}`);
@@ -1345,6 +1675,35 @@ function conectarEventos() {
     actualizarLinks();
     programarPersistenciaVoz("note-change");
   });
+  document.querySelectorAll(
+    "input[name='voiceIncludeQuotes'], #voiceMaxPatientQuotes, #voiceQuotePriority, #voiceObservationModality, #voiceObservationLocation, #voiceObservationLocationOther, #voiceObservationPosition, #voiceFreeObservation, #voiceFreeObservationConfirmed"
+  ).forEach((node) => {
+    const eventName = (node.tagName === "TEXTAREA" || (node.tagName === "INPUT" && node.type === "text")) ? "input" : "change";
+    node.addEventListener(eventName, () => {
+      actualizarVistaPreviaConfiguracion();
+      invalidarNotaGeneradaPorConfiguracion();
+      programarPersistenciaVoz("preflight-change");
+    });
+  });
+  document.querySelectorAll("[data-observation-group] input, [data-observation-destination]").forEach((node) => {
+    node.addEventListener("change", () => {
+      actualizarVistaPreviaConfiguracion();
+      invalidarNotaGeneradaPorConfiguracion();
+      programarPersistenciaVoz("preflight-observation-change");
+    });
+  });
+  $("btnResetVoiceObservation")?.addEventListener("click", () => {
+    state.generationPreferences = {
+      includePatientQuotes: false,
+      maxPatientQuotes: 1,
+      quotePriority: "automatic"
+    };
+    state.encounterObservation = defaultEncounterObservation();
+    aplicarPreflightStateAControles();
+    actualizarVistaPreviaConfiguracion();
+    invalidarNotaGeneradaPorConfiguracion();
+    programarPersistenciaVoz("preflight-reset");
+  });
   $("textoDictadoClinico")?.addEventListener("input", () => {
     programarPersistenciaVoz("dictation-input");
   });
@@ -1394,6 +1753,7 @@ async function init() {
   iniciarMonitoreoSesion("Nota por voz y automatica");
   setPreparacionHabilitada(false, "Cargando contexto del paciente...");
   cargarCatalogosVoz("");
+  renderPreflightControls();
   if ($("voiceEncounterId")) $("voiceEncounterId").value = state.encounterId;
   if ($("voiceNoteId")) $("voiceNoteId").value = state.noteId;
   conectarEventos();
