@@ -55,6 +55,7 @@ export function sesionVozTieneContenido(payload = {}) {
   return Boolean(
     String(transcript.original || transcript.corrected || "").trim()
     || Array.isArray(segmentation.utterances) && segmentation.utterances.length
+    || Array.isArray(segmentation.blockManifest?.blocks) && segmentation.blockManifest.blocks.length
     || String(generatedNote.evolution?.text || generatedNote.evolution || "").trim()
   );
 }
@@ -170,6 +171,14 @@ export async function guardarSesionNotaVozLocal(payload = {}, { ttlMs = VOICE_NO
   const now = Date.now();
   const contextKey = crearContextKeyVoz(payload);
   const key = crearSessionKeyVoz(payload);
+  const previous = await obtener(STORE_SESSIONS, key);
+  const previousPayload = previous?.payload || null;
+  const incomingVersion = Number(payload.saveVersion || 0);
+  const previousVersion = Number(previousPayload?.saveVersion || 0);
+  const incomingUpdated = Number(payload.updatedAtMs || Date.parse(payload.updatedAt) || now);
+  const previousUpdated = Number(previousPayload?.updatedAtMs || Date.parse(previousPayload?.updatedAt) || 0);
+  if (previousPayload && incomingVersion < previousVersion) return previousPayload;
+  if (previousPayload && incomingVersion === previousVersion && incomingUpdated < previousUpdated) return previousPayload;
   const record = {
     key,
     contextKey,
@@ -180,6 +189,7 @@ export async function guardarSesionNotaVozLocal(payload = {}, { ttlMs = VOICE_NO
       key,
       contextKey,
       schemaVersion: VOICE_NOTE_SESSION_SCHEMA_VERSION,
+      saveVersion: Math.max(incomingVersion, previousVersion + 1),
       updatedAtMs: now,
       updatedAt: new Date(now).toISOString(),
       expiresAt: now + ttlMs
@@ -206,10 +216,17 @@ export async function eliminarSesionNotaVozLocal(payloadOrContext = {}) {
 }
 
 export async function guardarSegmentacionNotaVozLocal(payload = {}, { ttlMs = VOICE_NOTE_SESSION_TTL_MS } = {}) {
-  if (!payload.transcriptHash || !Array.isArray(payload.utterances) || !payload.utterances.length) return null;
+  const hasUtterances = Array.isArray(payload.utterances) && payload.utterances.length;
+  const hasBlocks = Array.isArray(payload.blockManifest?.blocks) && payload.blockManifest.blocks.length;
+  if (!payload.transcriptHash || (!hasUtterances && !hasBlocks)) return null;
   const now = Date.now();
   const contextKey = crearContextKeyVoz(payload);
   const key = crearSegmentationKeyVoz(payload);
+  const previous = await obtener(STORE_SEGMENTATION_RESULTS, key);
+  const previousPayload = previous?.payload || null;
+  const incomingCompleted = Number(payload.completedBlocks || payload.blockManifest?.blocks?.filter((block) => block.status === "completed").length || 0);
+  const previousCompleted = Number(previousPayload?.completedBlocks || previousPayload?.blockManifest?.blocks?.filter((block) => block.status === "completed").length || 0);
+  if (previousPayload && incomingCompleted < previousCompleted && !payload.allowOlderProgress) return previousPayload;
   const record = {
     key,
     contextKey,

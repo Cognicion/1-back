@@ -52,6 +52,40 @@ assert.equal(validarSesionVozContexto(session, { ...context, encounterId: "otro"
 assert.equal(validarSesionVozContexto(session, { ...context, userId: "otro" }), false);
 assert.equal(sesionVozExpirada({ ...session, expiresAt: Date.now() - 1 }), true);
 assert.equal(sesionVozTieneContenido({ schemaVersion: VOICE_NOTE_SESSION_SCHEMA_VERSION, ...context }), false);
+assert.equal(sesionVozTieneContenido({
+  schemaVersion: VOICE_NOTE_SESSION_SCHEMA_VERSION,
+  ...context,
+  segmentation: {
+    blockManifest: {
+      totalBlocks: 14,
+      blocks: Array.from({ length: 10 }, (_item, index) => ({ blockIndex: index, status: "completed" }))
+    }
+  }
+}), true, "una sesion con manifiesto parcial debe considerarse recuperable");
+
+const recoveredSessionA = {
+  ...session,
+  sessionId: "session-a",
+  transcript: { corrected: "a".repeat(892), original: "a".repeat(892) },
+  segmentation: { utterances: Array.from({ length: 22 }, (_, index) => ({ id: `a-${index}` })), completedBlocks: 1, totalBlocks: 1 }
+};
+const recoveredSessionB = {
+  ...session,
+  sessionId: "session-b",
+  transcript: { corrected: "b".repeat(4200), original: "b".repeat(4200) },
+  segmentation: {
+    utterances: Array.from({ length: 89 }, (_, index) => ({ id: `b-${index}` })),
+    completedBlocks: 10,
+    totalBlocks: 14,
+    blockManifest: {
+      totalBlocks: 14,
+      blocks: Array.from({ length: 14 }, (_item, index) => ({ blockIndex: index, status: index < 10 ? "completed" : "failed" }))
+    }
+  }
+};
+assert.ok((recoveredSessionB.transcript.corrected || "").length > 892);
+assert.equal(recoveredSessionB.segmentation.completedBlocks, 10);
+assert.equal((recoveredSessionA.transcript.corrected || "").length, 892);
 
 const voicePage = read("js/nota-por-voz.js");
 assert.match(voicePage, /isHydratingSession/);
@@ -64,6 +98,10 @@ assert.match(voicePage, /limpiarSesionesNotaVozVencidas/);
 assert.match(voicePage, /pagehide/);
 assert.match(voicePage, /visibilitychange/);
 assert.match(voicePage, /persistent_cache_hit/);
+assert.match(voicePage, /saveVersion/);
+assert.match(voicePage, /voiceSaveStatus/);
+assert.match(voicePage, /renderBlockManifestSegmentacion/);
+assert.match(voicePage, /btnDetenerSegmentacionVoz/);
 assert.match(voicePage, /transcriptHash/);
 assert.match(voicePage, /session-restored/);
 
@@ -79,5 +117,7 @@ assert.match(html, /voiceSessionRecovery/);
 assert.match(html, /btnRecuperarSesionVoz/);
 assert.match(html, /btnDescartarSesionVoz/);
 assert.match(html, /btnNuevaSesionVoz/);
+assert.match(html, /voiceSegmentationBlockList/);
+assert.match(html, /voiceSaveStatus/);
 
 console.log("voiceNoteSessionPersistence.test.mjs OK");

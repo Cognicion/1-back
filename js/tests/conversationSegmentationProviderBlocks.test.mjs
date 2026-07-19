@@ -124,6 +124,127 @@ assert.ok(llamadasBloques >= 2, "debe procesar mas de un bloque");
 assert.ok(parcial.warnings.some((warning) => warning.code === "partial_external_segmentation_failed"));
 assert.ok(parcial.providerFailure.requestId.startsWith("carlos-test:b2"));
 
+function crearTurnosParaCatorceBloques() {
+  const problematicos = new Set([3, 8, 13, 18, 23, 28, 33, 38, 43, 48, 53, 58, 63, 68]);
+  return Array.from({ length: 69 }, (_item, index) => {
+    const sequence = index + 1;
+    const problematic = problematicos.has(sequence);
+    return {
+      id: `utt-${sequence}`,
+      utteranceId: `utt-${sequence}`,
+      sequence,
+      text: problematic
+        ? `turno ${sequence} mezclado quiero revisar riesgo no actualmente pregunta respuesta plan observacion con contenido ambiguo`
+        : `turno ${sequence} estable con contenido clinico suficientemente largo para que la entrevista supere el umbral local y permita bloques separados sin datos reales repetidos`,
+      probableRole: problematic ? "unknown" : (sequence % 2 ? "clinician" : "patient"),
+      speechAct: problematic ? "other" : (sequence % 2 ? "question" : "answer"),
+      confidence: problematic ? 0.35 : 0.88,
+      requiresReview: problematic,
+      sourceSegmentIds: []
+    };
+  });
+}
+
+const turnosCatorce = crearTurnosParaCatorceBloques();
+const bloquesCatorce = seleccionarBloquesProblematicos(turnosCatorce);
+assert.equal(bloquesCatorce.length, 14, "el fixture debe producir catorce bloques externos");
+
+let firstPassCalls = 0;
+const completedBlocksPersisted = [];
+const providerCatorce = new ExternalConversationSegmentationProvider({
+  callable: async (payload) => {
+    firstPassCalls += 1;
+    if (payload.chunkIndex > 10) {
+      const error = new Error("deadline");
+      error.code = "functions/deadline-exceeded";
+      error.details = {
+        requestId: payload.clientRequestId,
+        stage: "provider_request",
+        retryable: true
+      };
+      throw error;
+    }
+    return {
+      data: {
+        provider: "external",
+        segmentationMode: "linguistic",
+        requestId: payload.clientRequestId,
+        utterances: [
+          {
+            text: `Bloque ${payload.chunkIndex} externo completado.`,
+            probableRole: "clinician",
+            speechAct: "clinical_summary",
+            sourceSegmentIds: payload.sourceSegments.map((segment) => segment.id),
+            requiresReview: false
+          }
+        ],
+        warnings: []
+      }
+    };
+  }
+});
+
+providerCatorce.local = {
+  segment: () => ({
+    transcriptId: "retry-14",
+    segmentationMode: "linguistic",
+    schemaVersion: "conversation_segmentation_v1",
+    promptVersion: "rule_based",
+    provider: "rule_based",
+    utterances: turnosCatorce,
+    warnings: []
+  })
+};
+
+const primerCatorce = await providerCatorce.segment({
+  text: "fixture catorce bloques " + "contenido ".repeat(500),
+  transcriptId: "retry-14",
+  clientRequestId: "retry-first",
+  onBlockSettled: async (block) => {
+    if (block.status === "completed") completedBlocksPersisted.push(block);
+  }
+});
+assert.equal(firstPassCalls, 14, "el primer intento procesa los catorce bloques");
+assert.equal(primerCatorce.metrics.externalBlockCount, 10, "el primer intento conserva diez bloques externos");
+assert.equal(primerCatorce.metrics.failedBlockCount, 4, "el primer intento deja cuatro bloques pendientes/fallidos");
+assert.equal(completedBlocksPersisted.length, 10, "cada bloque exitoso se persiste inmediatamente");
+
+let providerCallCount = 0;
+const providerRetryCatorce = new ExternalConversationSegmentationProvider({
+  callable: async (payload) => {
+    providerCallCount += 1;
+    return {
+      data: {
+        provider: "external",
+        segmentationMode: "linguistic",
+        requestId: payload.clientRequestId,
+        utterances: [
+          {
+            text: `Bloque pendiente ${payload.chunkIndex} completado en reintento.`,
+            probableRole: "clinician",
+            speechAct: "clinical_summary",
+            sourceSegmentIds: payload.sourceSegments.map((segment) => segment.id),
+            requiresReview: false
+          }
+        ],
+        warnings: []
+      }
+    };
+  }
+});
+providerRetryCatorce.local = providerCatorce.local;
+const reintentoCatorce = await providerRetryCatorce.segment({
+  text: "fixture catorce bloques " + "contenido ".repeat(500),
+  transcriptId: "retry-14",
+  clientRequestId: "retry-second",
+  cachedBlocks: completedBlocksPersisted
+});
+assert.equal(providerCallCount, 4, "providerCallCount === 4 en reintento 10/14");
+assert.equal(reintentoCatorce.metrics.cachedBlockCount, 10, "el reintento recupera diez bloques desde cache");
+assert.equal(reintentoCatorce.metrics.providerBlockCount, 4, "el reintento envia solo cuatro bloques al proveedor");
+assert.equal(reintentoCatorce.metrics.failedBlockCount, 0, "el reintento no conserva fallos si los cuatro terminan");
+assert.equal(reintentoCatorce.blockManifest.blocks.filter((block) => block.status === "completed").length, 14, "el manifiesto recompuesto conserva catorce bloques completados");
+
 let llamadasRetry = 0;
 const providerRetry = new ExternalConversationSegmentationProvider({
   callable: async (payload) => {

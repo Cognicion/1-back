@@ -2,7 +2,7 @@ import { segmentarConversacionClinica } from "./clinicalPipeline.js";
 
 export const CONVERSATION_SEGMENTATION_SCHEMA_VERSION = "conversation_segmentation_v1";
 export const CONVERSATION_SEGMENTATION_PROMPT_VERSION = "conversation_segmentation_es_mx_v2_2026-07-18";
-export const CONVERSATION_SEGMENTATION_CLIENT_VERSION = "conversation_segmentation_client_blocks_v1_2026-07-18";
+export const CONVERSATION_SEGMENTATION_CLIENT_VERSION = "conversation_segmentation_client_blocks_v2_2026-07-19";
 
 const SEGMENTATION_CACHE = new Map();
 const PENDING_SEGMENTATION_REQUESTS = new Map();
@@ -42,6 +42,25 @@ export function crearClaveCacheSegmentacion(payload = {}) {
     CONVERSATION_SEGMENTATION_PROMPT_VERSION,
     payload.model || "external_callable",
     hashTextoEstable(fullText)
+  ].join(":");
+}
+
+export function crearClaveBloqueSegmentacion({
+  sourceTranscriptHash = "",
+  blockContentHash = "",
+  contextHash = "",
+  promptVersion = CONVERSATION_SEGMENTATION_PROMPT_VERSION,
+  model = "external_callable",
+  segmenterVersion = CONVERSATION_SEGMENTATION_CLIENT_VERSION
+} = {}) {
+  return [
+    "block",
+    segmenterVersion,
+    promptVersion,
+    model || "external_callable",
+    sourceTranscriptHash || "sin-transcript",
+    blockContentHash || "sin-block",
+    contextHash || "sin-context"
   ].join(":");
 }
 
@@ -168,6 +187,49 @@ function contextoRango(utterances, start, end) {
     before: textoRango(utterances, Math.max(0, start - 3), Math.max(0, start - 1)).slice(-BLOCK_CONTEXT_CHARS),
     after: textoRango(utterances, Math.min(utterances.length - 1, end + 1), Math.min(utterances.length - 1, end + 3)).slice(0, BLOCK_CONTEXT_CHARS)
   };
+}
+
+function describirBloque({ localUtterances = [], block = {}, index = 0, totalBlocks = 0, sourceTranscriptHash = "", model = "external_callable" } = {}) {
+  const context = contextoRango(localUtterances, block.start, block.end);
+  const blockText = textoRango(localUtterances, block.start, block.end);
+  const blockContentHash = hashTextoEstable(blockText);
+  const contextHash = hashTextoEstable(`${context.before}\n---\n${context.after}`);
+  const blockKey = crearClaveBloqueSegmentacion({
+    sourceTranscriptHash,
+    blockContentHash,
+    contextHash,
+    promptVersion: CONVERSATION_SEGMENTATION_PROMPT_VERSION,
+    model,
+    segmenterVersion: CONVERSATION_SEGMENTATION_CLIENT_VERSION
+  });
+  return {
+    ...block,
+    blockIndex: index,
+    blockNumber: index + 1,
+    totalBlocks,
+    blockId: `block-${index + 1}`,
+    blockKey,
+    sourceTranscriptHash,
+    blockContentHash,
+    contextHash,
+    promptVersion: CONVERSATION_SEGMENTATION_PROMPT_VERSION,
+    model,
+    segmenterVersion: CONVERSATION_SEGMENTATION_CLIENT_VERSION,
+    context,
+    blockText,
+    sourceSegmentIds: localUtterances.slice(block.start, block.end + 1).map((utterance) => utterance.id || utterance.utteranceId).filter(Boolean)
+  };
+}
+
+function cacheBloqueValido(block = {}, cached = null) {
+  if (!cached || cached.status !== "completed" || !Array.isArray(cached.utterances) || !cached.utterances.length) return false;
+  return cached.blockKey === block.blockKey
+    && cached.sourceTranscriptHash === block.sourceTranscriptHash
+    && cached.blockContentHash === block.blockContentHash
+    && cached.contextHash === block.contextHash
+    && cached.promptVersion === block.promptVersion
+    && cached.model === block.model
+    && cached.segmenterVersion === block.segmenterVersion;
 }
 
 function renumerarUtterances(utterances = [], prefix = "utt") {
@@ -312,8 +374,8 @@ export class ExternalConversationSegmentationProvider {
       };
     }
 
-    const blocks = seleccionarBloquesProblematicos(local.utterances, { forceExternal: payload.forceExternal });
-    if (!blocks.length) {
+    const rawBlocks = seleccionarBloquesProblematicos(local.utterances, { forceExternal: payload.forceExternal });
+    if (!rawBlocks.length) {
       return {
         ...local,
         clientRequestId,
@@ -327,25 +389,114 @@ export class ExternalConversationSegmentationProvider {
       };
     }
 
-    const blockResults = [];
+    const model = payload.model || "external_callable";
+    const sourceTranscriptHash = payload.sourceTranscriptHash || hashTextoEstable(texto(payload.text || payload.correctedTranscript || payload.confirmedTranscript));
+    const blocks = rawBlocks.map((block, index) => describirBloque({
+      localUtterances: local.utterances,
+      block,
+      index,
+      totalBlocks: rawBlocks.length,
+      sourceTranscriptHash,
+      model
+    }));
+    const cachedByKey = new Map((payload.cachedBlocks || payload.cachedBlockManifest?.blocks || [])
+      .filter(Boolean)
+      .map((block) => [block.blockKey, block]));
+    const onlyBlockKeys = new Set(Array.isArray(payload.onlyBlockKeys) ? payload.onlyBlockKeys.filter(Boolean) : []);
+    const blockResults = new Array(blocks.length);
+    const saveBlock = typeof payload.onBlockSettled === "function" ? payload.onBlockSettled : async () => {};
+    let successfulCount = 0;
+    let settledCount = 0;
+    let providerCount = 0;
+    let cachedCount = 0;
+    let failedCountRunning = 0;
+    const emitProgress = (stage = "external_block", extra = {}) => {
+      onProgress({
+        stage,
+        clientRequestId,
+        blockCount: blocks.length,
+        completedBlocks: successfulCount,
+        processedBlocks: settledCount,
+        pendingBlocks: Math.max(0, blocks.length - successfulCount - failedCountRunning),
+        cachedBlockCount: cachedCount,
+        providerBlockCount: providerCount,
+        failedBlockCount: failedCountRunning,
+        blockManifest: blocks.map((block, index) => {
+          const result = blockResults[index];
+          return result ? {
+            blockIndex: index,
+            blockNumber: block.blockNumber,
+            start: block.start,
+            end: block.end,
+            blockKey: block.blockKey,
+            status: result.status,
+            durationMs: result.durationMs || 0,
+            source: result.source || "",
+            requestId: result.requestId || ""
+          } : {
+            blockIndex: index,
+            blockNumber: block.blockNumber,
+            start: block.start,
+            end: block.end,
+            blockKey: block.blockKey,
+            status: "pending",
+            source: ""
+          };
+        }),
+        ...extra
+      });
+    };
+
+    emitProgress("block_manifest_ready", { recoveredBlocks: 0 });
     for (let index = 0; index < blocks.length; index += 1) {
+      const cached = cachedByKey.get(blocks[index].blockKey);
+      if (!cacheBloqueValido(blocks[index], cached)) continue;
+      cachedCount += 1;
+      successfulCount += 1;
+      settledCount += 1;
+      blockResults[index] = {
+        ...blocks[index],
+        ...cached,
+        status: "success",
+        source: "cache",
+        utterances: cached.utterances || [],
+        warnings: cached.warnings || [],
+        requestId: cached.requestId || `${clientRequestId}:cache:b${index + 1}`,
+        durationMs: cached.durationMs || 0
+      };
+      emitProgress("block_cache_hit", { blockId: blocks[index].blockId });
+    }
+
+    const processOne = async (index) => {
       const block = blocks[index];
-      const blockId = `${clientRequestId}:b${index + 1}`;
-      const context = contextoRango(local.utterances, block.start, block.end);
-      const blockText = textoRango(local.utterances, block.start, block.end);
-      onProgress({ stage: "external_block", clientRequestId, blockId, completedBlocks: index, pendingBlocks: blocks.length - index, blockCount: blocks.length });
+      if (blockResults[index]) return;
+      if (onlyBlockKeys.size && !onlyBlockKeys.has(block.blockKey)) {
+        blockResults[index] = { ...block, status: "pending", source: "basic", utterances: [] };
+        return;
+      }
+      if (payload.abortSignal?.aborted) {
+        const cancelled = { ...block, status: "cancelled", source: "basic", utterances: [], providerFailure: { code: "cancelled", requestId: clientRequestId, retryable: true } };
+        blockResults[index] = cancelled;
+        settledCount += 1;
+        await saveBlock(cancelled);
+        return;
+      }
+      const requestBlockId = `${clientRequestId}:b${index + 1}`;
+      emitProgress("external_block", { blockId: requestBlockId });
+      const blockStarted = Date.now();
       try {
         const response = await this.callable({
-          transcript: blockText,
+          transcript: block.blockText,
           transcriptId: payload.transcriptId || payload.transcriptSessionId || "",
-          clientRequestId: blockId,
-          blockId,
+          clientRequestId: requestBlockId,
+          blockId: requestBlockId,
+          blockKey: block.blockKey,
           chunkIndex: index + 1,
           chunkCount: blocks.length,
           locale: payload.locale || "es-MX",
           requestedMode: "linguistic",
-          contextBefore: context.before,
-          contextAfter: context.after,
+          contextBefore: block.context.before,
+          contextAfter: block.context.after,
           sourceSegments: local.utterances.slice(block.start, block.end + 1).map((utterance) => ({
             id: utterance.id || utterance.utteranceId,
             text: utterance.text,
@@ -358,15 +509,27 @@ export class ExternalConversationSegmentationProvider {
         ...data,
         provider: data.provider || "external",
         promptVersion: data.promptVersion || CONVERSATION_SEGMENTATION_PROMPT_VERSION
-      });
-        blockResults.push({
+        });
+        providerCount += 1;
+        successfulCount += 1;
+        settledCount += 1;
+        const completed = {
           ...block,
-          blockId,
+          blockId: requestBlockId,
           status: "success",
+          source: "provider",
           utterances: normalized.utterances,
           warnings: normalized.warnings || [],
-          requestId: data.requestId || blockId
+          requestId: data.requestId || requestBlockId,
+          durationMs: Date.now() - blockStarted,
+          completedAt: new Date().toISOString()
+        };
+        blockResults[index] = completed;
+        await saveBlock({
+          ...completed,
+          status: "completed"
         });
+        emitProgress("block_completed", { blockId: requestBlockId });
     } catch (error) {
       if (!this.fallbackToLocal) throw error;
       const providerFailure = {
@@ -375,28 +538,51 @@ export class ExternalConversationSegmentationProvider {
         message: String(error?.message || error || "Error no especificado"),
         details: error?.details || error?.customData || null,
         stage: error?.details?.stage || "client_or_callable",
-        requestId: error?.details?.requestId || blockId || clientRequestId,
+        requestId: error?.details?.requestId || requestBlockId || clientRequestId,
         retryable: Boolean(error?.details?.retryable)
       };
-        blockResults.push({
+        failedCountRunning += 1;
+        settledCount += 1;
+        const failed = {
           ...block,
-          blockId,
+          blockId: requestBlockId,
           status: "failed",
+          source: "basic",
           utterances: [],
-          providerFailure
-        });
+          providerFailure,
+          durationMs: Date.now() - blockStarted,
+          failedAt: new Date().toISOString()
+        };
+        blockResults[index] = failed;
+        await saveBlock(failed);
+        emitProgress("block_failed", { blockId: requestBlockId });
       }
-    }
+    };
 
-    const successCount = blockResults.filter((block) => block.status === "success").length;
-    const failedCount = blockResults.length - successCount;
-    const mergedUtterances = reconciliarBloques(local.utterances, blockResults);
+    let nextIndex = 0;
+    const workers = Array.from({ length: Math.min(2, blocks.length) }, async () => {
+      while (nextIndex < blocks.length) {
+        const index = nextIndex;
+        nextIndex += 1;
+        await processOne(index);
+        if (payload.abortSignal?.aborted) break;
+      }
+    });
+    await Promise.all(workers);
+
+    const normalizedBlockResults = blocks.map((block, index) => blockResults[index] || { ...block, status: "pending", source: "basic", utterances: [] });
+    const successCount = normalizedBlockResults.filter((block) => block.status === "success" || block.status === "completed").length;
+    const failedCount = normalizedBlockResults.filter((block) => !["success", "completed"].includes(block.status)).length;
+    const mergedUtterances = reconciliarBloques(local.utterances, normalizedBlockResults.map((block) => ({
+      ...block,
+      status: ["success", "completed"].includes(block.status) ? "success" : "failed"
+    })));
     const finalProvider = successCount === blocks.length && blocks.length === 1 && blocks[0].start === 0 && blocks[0].end === local.utterances.length - 1
       ? "external"
       : (successCount > 0 ? "hybrid" : "rule_based");
     const warnings = [
       ...(local.warnings || []),
-      ...blockResults.flatMap((block) => block.warnings || []),
+      ...normalizedBlockResults.flatMap((block) => block.warnings || []),
       ...(failedCount ? [{ code: "partial_external_segmentation_failed", message: `No se pudo procesar ${failedCount} bloque(s) con el proveedor externo; quedaron marcados para revision.` }] : [])
     ];
     const result = validarSegmentacionConversacional({
@@ -412,14 +598,45 @@ export class ExternalConversationSegmentationProvider {
       ...result,
       clientRequestId,
       fallback: finalProvider === "rule_based",
-      providerFailure: failedCount ? blockResults.find((block) => block.providerFailure)?.providerFailure || null : null,
-      failedBlocks: blockResults.filter((block) => block.status === "failed").map((block) => ({ start: block.start, end: block.end, blockId: block.blockId })),
+      providerFailure: failedCount ? normalizedBlockResults.find((block) => block.providerFailure)?.providerFailure || null : null,
+      failedBlocks: normalizedBlockResults.filter((block) => !["success", "completed"].includes(block.status)).map((block) => ({ start: block.start, end: block.end, blockId: block.blockId, blockKey: block.blockKey })),
+      blockManifest: {
+        sourceTranscriptHash,
+        promptVersion: CONVERSATION_SEGMENTATION_PROMPT_VERSION,
+        model,
+        segmenterVersion: CONVERSATION_SEGMENTATION_CLIENT_VERSION,
+        totalBlocks: blocks.length,
+        blocks: normalizedBlockResults.map((block, index) => ({
+          blockIndex: index,
+          blockNumber: index + 1,
+          start: block.start,
+          end: block.end,
+          blockKey: block.blockKey,
+          sourceTranscriptHash: block.sourceTranscriptHash,
+          blockContentHash: block.blockContentHash,
+          contextHash: block.contextHash,
+          promptVersion: block.promptVersion,
+          model: block.model,
+          segmenterVersion: block.segmenterVersion,
+          status: ["success", "completed"].includes(block.status) ? "completed" : block.status,
+          source: block.source || "basic",
+          durationMs: block.durationMs || 0,
+          requestId: block.requestId || "",
+          utterances: block.utterances || [],
+          warnings: block.warnings || [],
+          providerFailure: block.providerFailure || null
+        }))
+      },
       metrics: {
         clientRequestId,
         elapsedMs: Date.now() - startedAt,
         blockCount: blocks.length,
         externalBlockCount: successCount,
+        cachedBlockCount: cachedCount,
+        providerBlockCount: providerCount,
         failedBlockCount: failedCount,
+        basicFallbackBlockCount: failedCount,
+        totalBlockCount: blocks.length,
         localTurnCount: local.utterances.length,
         finalTurnCount: result.utterances.length,
         transcriptCharacters: texto(payload.text || payload.correctedTranscript || payload.confirmedTranscript).length,

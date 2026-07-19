@@ -125,8 +125,59 @@ body {
   margin-bottom: 8px;
 }
 
+.voice-block-list {
+  display: grid;
+  gap: 8px;
+  margin: 10px 0 14px;
+  padding: 10px;
+  border: 1px solid rgba(125, 211, 252, 0.14);
+  border-radius: 8px;
+  background: rgba(2, 6, 23, 0.2);
+}
+
+.voice-block-list[hidden] {
+  display: none;
+}
+
+.voice-block-list-header,
+.voice-block-row {
+  display: grid;
+  grid-template-columns: 0.85fr 1fr 0.8fr 0.85fr 0.8fr auto;
+  gap: 8px;
+  align-items: center;
+}
+
+.voice-block-list-header {
+  color: #dbeafe;
+  font-size: 0.82rem;
+}
+
+.voice-block-row {
+  min-height: 34px;
+  padding: 6px 8px;
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  border-radius: 8px;
+  color: #cbd5e1;
+  font-size: 0.78rem;
+  background: rgba(15, 23, 42, 0.52);
+}
+
+.voice-block-completed {
+  border-color: rgba(34, 197, 94, 0.28);
+}
+
+.voice-block-failed,
+.voice-block-cancelled {
+  border-color: rgba(248, 113, 113, 0.28);
+}
+
 @media (max-width: 760px) {
   .voice-mental-finding {
+    grid-template-columns: 1fr;
+  }
+
+  .voice-block-list-header,
+  .voice-block-row {
     grid-template-columns: 1fr;
   }
 }
