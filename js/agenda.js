@@ -3,7 +3,7 @@ import { listarPacientes, obtenerUsuario } from "./services/usuarios.js?v=202607
 import { registrarEventoAuditoria } from "./services/auditoria.js";
 import { iniciarMonitoreoSesion } from "./services/sesion.js";
 import { obtenerNombrePacienteParaMostrar } from "./utils/nombresPacientes.js";
-import { canManagePlatform, canUseMedicalAgenda } from "./utils/roles.js?v=20260719-admin-medical-agenda";
+import { canUseMedicalAgenda } from "./utils/roles.js?v=20260719-admin-universal-modules";
 
 import {
   onAuthStateChanged
@@ -39,11 +39,7 @@ onAuthStateChanged(auth, async (user) => {
 
   const usuario = await obtenerUsuario(user.uid);
   if (!usuario || !canUseMedicalAgenda(usuario)) {
-    const mensaje = canManagePlatform(usuario)
-      ? "Tu cuenta tiene permisos administrativos, pero no tiene un perfil clinico habilitado para utilizar Agenda medica."
-      : "Agenda medica disponible solo para perfiles clinicos habilitados.";
-    alert(mensaje);
-    window.location.href = "dashboard.html";
+    mostrarBloqueoAgenda("No tienes autorizacion para acceder a este servicio.");
     return;
   }
 
@@ -66,8 +62,8 @@ async function cargarPacientes() {
 
   pacientes = filas.sort((a, b) => a.nombre.localeCompare(b.nombre));
   pacienteCita.innerHTML = pacientes.length
-    ? pacientes.map((p) => `<option value="${p.id}">${escaparHTML(p.nombre)}</option>`).join("")
-    : "<option value=\"\">Sin pacientes autorizados</option>";
+    ? `<option value="">Sin paciente vinculado</option>${pacientes.map((p) => `<option value="${p.id}">${escaparHTML(p.nombre)}</option>`).join("")}`
+    : "<option value=\"\">Sin paciente vinculado</option>";
 }
 
 async function cargarCitas() {
@@ -81,11 +77,12 @@ async function cargarCitas() {
 
 formCita.addEventListener("submit", async (e) => {
   e.preventDefault();
-  if (!medicoUid || !pacienteCita.value) return;
+  if (!medicoUid) return;
 
-  const paciente = pacientes.find((p) => p.id === pacienteCita.value);
+  const pacienteId = pacienteCita.value || "";
+  const paciente = pacienteId ? pacientes.find((p) => p.id === pacienteId) : null;
   const datosCita = {
-    pacienteId: pacienteCita.value,
+    pacienteId,
     pacienteNombre: paciente?.nombre || "",
     fecha: document.getElementById("fechaCita").value,
     hora: document.getElementById("horaCita").value,
@@ -100,7 +97,7 @@ formCita.addEventListener("submit", async (e) => {
 
   await addDoc(collection(db, "usuarios", medicoUid, "agenda"), datosCita);
   await registrarEventoAgenda("crear_cita", "El medico creo una cita en agenda.", {
-    pacienteUid: pacienteCita.value,
+    pacienteUid: pacienteId,
     pacienteNombre: paciente?.nombre || "",
     detalles: datosCita
   });
@@ -117,7 +114,7 @@ function renderizarCitas() {
 
   listaCitas.innerHTML = citas.slice(0, 12).map((cita) => `
     <article class="cita">
-      <h3>${escaparHTML(cita.pacienteNombre || "Paciente")}</h3>
+      <h3>${escaparHTML(cita.pacienteNombre || "Evento sin paciente vinculado")}</h3>
       <p><strong>${escaparHTML(cita.fecha || "")} ${escaparHTML(cita.hora || "")}</strong> · ${escaparHTML(cita.tipo || "Consulta")}</p>
       <p>Estado: ${escaparHTML(cita.estado || "programada")}</p>
       ${cita.recordatorio ? `<p>Recordatorio: ${escaparHTML(cita.recordatorio)}</p>` : ""}
@@ -153,6 +150,24 @@ function renderizarCitas() {
       await cargarCitas();
     });
   });
+}
+
+function mostrarBloqueoAgenda(mensaje) {
+  document.body.classList.remove("bloqueado");
+  medicoUid = null;
+  pacientes = [];
+  citas = [];
+  if (formCita) formCita.style.display = "none";
+  if (pacienteCita) pacienteCita.innerHTML = "<option value=\"\">Sin acceso</option>";
+  if (listaCitas) {
+    listaCitas.innerHTML = `
+      <div class="estado-vacio">
+        <strong>${escaparHTML(mensaje)}</strong>
+        <p>Vuelve al panel principal o inicia sesion con una cuenta autorizada.</p>
+      </div>
+    `;
+  }
+  if (calendario) calendario.innerHTML = "";
 }
 
 function renderizarCalendario() {

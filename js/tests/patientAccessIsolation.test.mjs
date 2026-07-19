@@ -55,12 +55,18 @@ assert.doesNotMatch(usuariosService, /where\("rol","==","paciente"\)\s*\);\s*ret
 
 const medicoPanel = readFileSync(new URL("../medico.js", import.meta.url), "utf8");
 assert.doesNotMatch(medicoPanel, /rolUsuarioActual\s*===\s*["']admin["']\s*\?\s*[""]\s*:\s*uidMedico/, "admin no activa listado global en panel medico");
+assert.doesNotMatch(medicoPanel, /perfil clinico habilitado[^\\n]+Panel medico/i, "admin no queda bloqueado por falta de perfil clinico en panel medico");
+assert.match(medicoPanel, /canUseMedicalPanel\(datos\)/, "panel medico usa capacidad centralizada de servicio");
 
 const agenda = readFileSync(new URL("../agenda.js", import.meta.url), "utf8");
+const agendaHtml = readFileSync(new URL("../../agenda.html", import.meta.url), "utf8");
 assert.doesNotMatch(agenda, /getDocs\(collection\(db,\s*["']usuarios["']\)\)/, "agenda no descarga todos los usuarios");
 assert.match(agenda, /canUseMedicalAgenda\(usuario\)/, "agenda usa capacidad clinica compuesta");
 assert.match(agenda, /listarPacientes\(medicoUid/, "agenda lista pacientes con actorUserId");
 assert.doesNotMatch(agenda, /listarPacientes\(["']{0,2}\)/, "agenda no llama listarPacientes sin actor");
+assert.doesNotMatch(agenda, /perfil clinico habilitado[^\\n]+Agenda medica/i, "admin no queda bloqueado por falta de perfil clinico en agenda");
+assert.doesNotMatch(agenda, /!\s*medicoUid\s*\|\|\s*!\s*pacienteCita\.value/, "agenda permite eventos sin paciente vinculado");
+assert.doesNotMatch(agendaHtml, /<select id="pacienteCita" required/, "agenda no exige paciente para crear eventos propios");
 
 const estadistica = readFileSync(new URL("../estadistica.js", import.meta.url), "utf8");
 assert.doesNotMatch(estadistica, /getDocs\(collection\(db,\s*["']usuarios["']\)\)/, "estadistica no descarga todos los usuarios");

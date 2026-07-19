@@ -89,6 +89,11 @@ export function usuarioEsEnfermeriaSaludMental(rol = "") {
     normalizado === "lic_en_enfermeria_asesor_a_en_salud_mental" ||
     normalizado === "lic_en_enfermeria_asesor_en_salud_mental" ||
     normalizado === "enfermeria" ||
+    normalizado === "enfermero" ||
+    normalizado === "enfermera" ||
+    normalizado === "lic_enfermeria" ||
+    normalizado === "licenciada_en_enfermeria" ||
+    normalizado === "licenciado_en_enfermeria" ||
     normalizado === "asesor_salud_mental";
 }
 
@@ -151,12 +156,78 @@ export function hasClinicalProfessionalProfile(perfil = "") {
   return tieneRolClinico || clinicoExplicito;
 }
 
-export function canUseMedicalAgenda(perfil = {}) {
+export function isClinicalStaff(perfil = "") {
   return hasClinicalProfessionalProfile(perfil);
+}
+
+export function canUseMedicalPanel(perfil = {}) {
+  return isAdministrator(perfil) || isClinicalStaff(perfil);
+}
+
+export function canUseMedicalAgenda(perfil = {}) {
+  return isAdministrator(perfil) || isClinicalStaff(perfil);
 }
 
 export function canManagePlatform(perfil = {}) {
   return isAdministrator(perfil);
+}
+
+export function canAccessService(perfil = {}, serviceId = "") {
+  if (isAdministrator(perfil)) return true;
+
+  const service = normalizarRol(serviceId);
+  const serviciosClinicos = new Set([
+    "panel_medico",
+    "medico",
+    "agenda",
+    "agenda_medica",
+    "expediente",
+    "notas",
+    "nota",
+    "nota_por_voz",
+    "nota_rapida",
+    "historia_clinica",
+    "estudios",
+    "diagnosticos",
+    "tratamiento",
+    "indicaciones",
+    "escalas",
+    "rehabilitacion_cognitiva",
+    "interconsulta",
+    "recetas",
+    "estadisticas"
+  ]);
+
+  if (serviciosClinicos.has(service)) {
+    return isClinicalStaff(perfil);
+  }
+
+  if (service === "administracion" || service === "admin") {
+    return canManagePlatform(perfil);
+  }
+
+  return false;
+}
+
+export function canPrescribe(perfil = {}) {
+  if (typeof perfil !== "object" || perfil === null) {
+    return usuarioEsProfesionalTipoMedico(perfil) && !usuarioEsEnfermeriaSaludMental(perfil);
+  }
+
+  const valores = valoresPerfilUsuario(perfil);
+  const tienePerfilMedico = valores.some((valor) =>
+    usuarioEsProfesionalTipoMedico(valor) && !usuarioEsEnfermeriaSaludMental(valor)
+  );
+
+  if (isAdministrator(perfil)) {
+    return hasClinicalProfessionalProfile(perfil) && tienePerfilMedico;
+  }
+
+  return tienePerfilMedico;
+}
+
+export function canRecordExistingTreatment(perfil = {}) {
+  return canUseMedicalPanel(perfil) && !normalizarRol(typeof perfil === "object" ? perfil?.rol : perfil).includes("paciente");
 }
 
 export function etiquetaRolClinico(rol = "") {

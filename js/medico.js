@@ -7,7 +7,7 @@ import {
   normalizarTextoBusquedaPaciente,
   textoBusquedaPaciente
 } from "./utils/nombresPacientes.js";
-import { canManagePlatform, hasClinicalProfessionalProfile } from "./utils/roles.js?v=20260719-admin-medical-agenda";
+import { canUseMedicalPanel } from "./utils/roles.js?v=20260719-admin-universal-modules";
 
 import { auth, db } from "./firebase.js";
 
@@ -227,21 +227,33 @@ async function cargarPerfilMedico(user, datosIniciales = null) {
 
   rolUsuarioActual = datos.rol || "";
 
-  if (!hasClinicalProfessionalProfile(datos)) {
-    if (canManagePlatform(datos)) {
-      alert("Tu cuenta tiene permisos administrativos, pero no tiene un perfil clinico habilitado para utilizar el Panel medico.");
-      window.location.href = "dashboard.html";
-      return false;
-    }
-    alert("Acceso restringido al personal clinico.");
-    await auth.signOut();
-    window.location.href = "login.html";
+  if (!canUseMedicalPanel(datos)) {
+    mostrarBloqueoPanelMedico("No tienes autorizacion para acceder a este servicio.");
     return false;
   }
   document.getElementById("nombreMedico").textContent =
     datos.nombre || "Médico sin nombre";
 
   return true;
+}
+
+function mostrarBloqueoPanelMedico(mensaje) {
+  document.body.classList.remove("bloqueado");
+  pacientesGlobal = [];
+  const nombreMedico = document.getElementById("nombreMedico");
+  const listaPacientes = document.getElementById("listaPacientes");
+  const resumenTotal = document.getElementById("totalPacientes");
+
+  if (nombreMedico) nombreMedico.textContent = "Acceso no autorizado";
+  if (resumenTotal) resumenTotal.textContent = "0";
+  if (listaPacientes) {
+    listaPacientes.innerHTML = `
+      <div class="estado-vacio">
+        <strong>${escaparHTML(mensaje)}</strong>
+        <p>Verifica la sesion o vuelve al panel principal.</p>
+      </div>
+    `;
+  }
 }
 
 function debounceMedico(fn, espera = 300) {
