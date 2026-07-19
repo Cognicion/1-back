@@ -686,6 +686,22 @@ function validateCoverageInclusion(text = "", coverage = {}) {
   return issues;
 }
 
+function warningsForUnknownSpeakers(coverage = {}) {
+  const warnings = [];
+  for (const unknown of coverage.unknownUtterances || []) {
+    if (unknown.impact === "critical") continue;
+    warnings.push({
+      code: unknown.impact === "relevant" ? "relevant_unknown_speaker" : "minor_unknown_speaker",
+      message: unknown.impact === "relevant"
+        ? "Un fragmento clinico potencialmente relevante tiene hablante incierto."
+        : "Un fragmento no clinico tiene hablante incierto.",
+      severity: unknown.impact === "relevant" ? "medium" : "info",
+      sourceUtteranceIds: [unknown.id].filter(Boolean)
+    });
+  }
+  return warnings;
+}
+
 function validateProviderResult({ parsed, payload, requestId, HttpsErrorClass }) {
   const stage = "schema_validation";
   if (!parsed || typeof parsed !== "object") {
@@ -722,6 +738,7 @@ function validateProviderResult({ parsed, payload, requestId, HttpsErrorClass })
       severity: "medium"
     });
   }
+  warnings.push(...warningsForUnknownSpeakers(coverage));
 
   return {
     requestId,

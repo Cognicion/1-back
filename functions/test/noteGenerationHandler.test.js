@@ -301,17 +301,56 @@ const carlosAccepted = await runWithOutput(JSON.stringify({
       sourceUtteranceIds: carlosShortUtterances.map((utterance) => utterance.id),
       confidence: 0.82,
       requiresReview: true,
-      warnings: [{ code: "minor_unknown_speaker", message: "Un fragmento no clinico tiene hablante incierto.", severity: "info" }]
+      warnings: []
     }
   },
   globalWarnings: []
 }), carlosPayload());
 assert.equal(carlosAccepted.sections.evolution.text.includes("dia 0"), false);
+assert.ok(carlosAccepted.sections.evolution.warnings.some((warning) => warning.code === "minor_unknown_speaker"));
 assert.match(carlosAccepted.sections.evolution.text, /risperidona/i);
 assert.match(carlosAccepted.sections.evolution.text, /somnolencia/i);
 assert.match(carlosAccepted.sections.evolution.text, /xerostomia/i);
 assert.match(carlosAccepted.sections.evolution.text, /madre/i);
 assert.match(carlosAccepted.sections.evolution.text, /evitar el consumo/i);
+assert.deepEqual(carlosAccepted.sections.evolution.sourceUtteranceIds, carlosShortUtterances.map((utterance) => utterance.id));
+
+const nullDayAccepted = await runWithOutput(JSON.stringify({
+  sections: {
+    evolution: {
+      text: correctedCarlosEvolution,
+      sourceUtteranceIds: carlosShortUtterances.map((utterance) => utterance.id),
+      requiresReview: true,
+      warnings: []
+    }
+  },
+  globalWarnings: []
+}), carlosPayload({ patientContext: { ...carlosPayload().patientContext, hospitalizationDay: null } }));
+assert.equal(nullDayAccepted.sections.evolution.text.includes("dia 0"), false);
+
+await assert.rejects(
+  () => runWithOutput(JSON.stringify({
+    sections: {
+      evolution: {
+        text: correctedCarlosEvolution,
+        sourceUtteranceIds: carlosShortUtterances.map((utterance) => utterance.id),
+        requiresReview: true
+      }
+    },
+    globalWarnings: []
+  }), carlosPayload({
+    transcript: {
+      transcriptId: "tx-carlos-critical-unknown",
+      originalTextHash: "hash-carlos-critical-unknown",
+      segmentationMode: "hybrid",
+      utterances: [
+        ...carlosShortUtterances.filter((utterance) => utterance.id !== "car-11"),
+        { id: "car-x", sequence: 11, text: "No se si debo tomar risperidona 2 mg o si quiero salir hoy.", probableRole: "unknown", speechAct: "other" }
+      ]
+    }
+  })),
+  (error) => error.code === "data-loss"
+);
 
 console.log("noteGenerationHandler.test.js OK");
 }
