@@ -6,7 +6,9 @@ import {
   crearContextKeyVoz,
   crearSegmentationKeyVoz,
   crearSessionKeyVoz,
+  guardarSesionNotaVozLocal,
   hashTextoVoz,
+  buscarSesionesNotaVozLocales,
   sesionVozExpirada,
   sesionVozTieneContenido,
   validarSesionVozContexto
@@ -115,6 +117,136 @@ assert.equal(recoveredSessionC.segmentation.completedBlocks, 3);
 assert.equal(recoveredSessionC.segmentation.failedBlocks, 1);
 assert.equal(recoveredSessionC.segmentation.pendingBlocks, 10);
 assert.equal(recoveredSessionC.saveStatus, "saved");
+
+function instalarIndexedDbFalso() {
+  const databases = new Map();
+  globalThis.IDBKeyRange = {
+    only(value) {
+      return { only: value };
+    }
+  };
+  globalThis.indexedDB = {
+    open(name) {
+      const request = {};
+      setTimeout(() => {
+        let dbState = databases.get(name);
+        const isNew = !dbState;
+        if (!dbState) {
+          dbState = { stores: new Map(), indexes: new Map() };
+          databases.set(name, dbState);
+        }
+        const db = {
+          objectStoreNames: {
+            contains(storeName) {
+              return dbState.stores.has(storeName);
+            }
+          },
+          createObjectStore(storeName) {
+            if (!dbState.stores.has(storeName)) dbState.stores.set(storeName, new Map());
+            return {
+              createIndex(indexName, keyPath) {
+                dbState.indexes.set(`${storeName}.${indexName}`, keyPath);
+              }
+            };
+          },
+          transaction(storeName) {
+            const tx = {
+              objectStore(targetStoreName) {
+                const store = dbState.stores.get(targetStoreName);
+                return {
+                  put(record) {
+                    store.set(record.key, structuredClone(record));
+                    setTimeout(() => tx.oncomplete?.(), 0);
+                    return {};
+                  },
+                  get(key) {
+                    const req = {};
+                    setTimeout(() => {
+                      req.result = store.get(key) || null;
+                      req.onsuccess?.();
+                      setTimeout(() => tx.oncomplete?.(), 0);
+                    }, 0);
+                    return req;
+                  },
+                  delete(key) {
+                    store.delete(key);
+                    setTimeout(() => tx.oncomplete?.(), 0);
+                    return {};
+                  },
+                  index(indexName) {
+                    const keyPath = dbState.indexes.get(`${targetStoreName}.${indexName}`);
+                    return {
+                      openCursor(range) {
+                        const req = {};
+                        const values = [...store.values()].filter((record) => record[keyPath] === range.only);
+                        let cursorIndex = 0;
+                        const pump = () => {
+                          if (cursorIndex >= values.length) {
+                            req.result = null;
+                            req.onsuccess?.();
+                            setTimeout(() => tx.oncomplete?.(), 0);
+                            return;
+                          }
+                          const value = values[cursorIndex];
+                          req.result = {
+                            value,
+                            continue() {
+                              cursorIndex += 1;
+                              setTimeout(pump, 0);
+                            },
+                            delete() {
+                              store.delete(value.key);
+                            }
+                          };
+                          req.onsuccess?.();
+                        };
+                        setTimeout(pump, 0);
+                        return req;
+                      }
+                    };
+                  }
+                };
+              }
+            };
+            return tx;
+          },
+          close() {}
+        };
+        request.result = db;
+        if (isNew) request.onupgradeneeded?.();
+        request.onsuccess?.();
+      }, 0);
+      return request;
+    }
+  };
+}
+
+instalarIndexedDbFalso();
+const savedIntegration = await guardarSesionNotaVozLocal({
+  schemaVersion: VOICE_NOTE_SESSION_SCHEMA_VERSION,
+  userId: "user-integration",
+  patientId: "patient-integration",
+  encounterId: "enc-integration",
+  sessionId: "session-integration",
+  saveVersion: 0,
+  transcript: {
+    corrected: "x".repeat(21541),
+    original: "x".repeat(21541),
+    transcriptHash: "hash-integration"
+  },
+  segmentation: {
+    utterances: Array.from({ length: 89 }, (_, index) => ({ id: `utt-${index + 1}`, text: `turno ${index + 1}` }))
+  },
+  expiresAt: Date.now() + VOICE_NOTE_SESSION_TTL_MS
+});
+const listedIntegration = await buscarSesionesNotaVozLocales({
+  userId: "user-integration",
+  patientId: "patient-integration",
+  encounterId: "enc-integration"
+});
+assert.equal(savedIntegration.saveVersion, 1, "persistedSaveVersion === 1");
+assert.equal(listedIntegration.length, 1, "readbackVerified === true");
+assert.equal((listedIntegration[0].transcript.corrected || "").length, 21541);
 
 const voicePage = read("js/nota-por-voz.js");
 assert.match(voicePage, /isHydratingSession/);
