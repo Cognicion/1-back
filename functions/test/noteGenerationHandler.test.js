@@ -137,7 +137,7 @@ const validEvolution = [
 const correctedCarlosEvolution = [
   "Carlos Kaju Quintero, hombre de 34 anos, quien permanece en estancia intrahospitalaria en el servicio especial de OBSERVACION. Durante la valoracion refiere sentirse mas tranquilo en comparacion con el dia previo, aunque persiste con deseos de egreso.",
   "Refiere ausencia de alucinaciones auditivas durante los ultimos dos dias y disminucion de la conviccion respecto a las ideas de persecucion previamente referidas, mencionando que ya no se encuentra tan seguro de que lo persiguieran o quisieran hacerle dano. Atribuye de manera posible la aparicion de dichas experiencias a la falta de sueno y al consumo de metanfetamina.",
-  "Niega ideacion suicida actual y niega intencion de danar a su hermano o a otras personas. Identifica a su madre como red de apoyo, con posibilidad de ayudarle con los medicamentos, y manifiesta disposicion para continuar tratamiento y evitar el consumo de metanfetamina y cannabis.",
+  "Niega ideas de muerte, ideacion suicida e intencion de causar dano a su hermano o a otras personas. Considera que podria recibir apoyo de su madre para los medicamentos y manifiesta disposicion para continuar tratamiento y evitar el consumo de metanfetamina y cannabis.",
   "Desde el punto de vista medico, refiere sueno aproximado de seis horas, con un despertar nocturno y recuperacion posterior del sueno. Refiere aceptacion de medicamentos e identifica risperidona dentro del esquema; como efectos adversos menciona somnolencia matutina y xerostomia. Niega rigidez, temblor, mareo y caidas."
 ].join("\n\n");
 
@@ -312,8 +312,52 @@ assert.match(carlosAccepted.sections.evolution.text, /risperidona/i);
 assert.match(carlosAccepted.sections.evolution.text, /somnolencia/i);
 assert.match(carlosAccepted.sections.evolution.text, /xerostomia/i);
 assert.match(carlosAccepted.sections.evolution.text, /madre/i);
+assert.doesNotMatch(carlosAccepted.sections.evolution.text, /alimentaci[oó]n|diuresis|evacuaciones/i);
 assert.match(carlosAccepted.sections.evolution.text, /evitar el consumo/i);
 assert.deepEqual(carlosAccepted.sections.evolution.sourceUtteranceIds, carlosShortUtterances.map((utterance) => utterance.id));
+
+const badSemanticOutputs = [
+  [
+    "insomnia",
+    correctedCarlosEvolution.replace("falta de sueno", "insomnia")
+  ],
+  [
+    "doble negacion",
+    correctedCarlosEvolution.replace("Niega ideas de muerte, ideacion suicida e intencion de causar dano", "Niega ideacion suicida actual y ausencia de intencion de causar dano")
+  ],
+  [
+    "familiar no entrevistado",
+    correctedCarlosEvolution.replace("Considera que podria recibir apoyo de su madre para los medicamentos", "Su madre se compromete a colaborar con los medicamentos")
+  ],
+  [
+    "normalidad no explorada",
+    `${correctedCarlosEvolution}\n\nNo se reportan alteraciones en la alimentacion, diuresis o evacuaciones.`
+  ],
+  [
+    "construccion ideas delirantes",
+    correctedCarlosEvolution.replace("disminucion de la conviccion respecto a las ideas de persecucion previamente referidas", "presenta cuestionamientos respecto a ideas delirantes previas")
+  ],
+  [
+    "parrafo unico",
+    correctedCarlosEvolution.replace(/\n\n/g, " ")
+  ]
+];
+
+for (const [_name, text] of badSemanticOutputs) {
+  await assert.rejects(
+    () => runWithOutput(JSON.stringify({
+      sections: {
+        evolution: {
+          text,
+          sourceUtteranceIds: carlosShortUtterances.map((utterance) => utterance.id),
+          requiresReview: true
+        }
+      },
+      globalWarnings: []
+    }), carlosPayload()),
+    (error) => error.code === "data-loss"
+  );
+}
 
 const nullDayAccepted = await runWithOutput(JSON.stringify({
   sections: {

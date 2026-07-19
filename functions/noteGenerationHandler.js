@@ -31,10 +31,14 @@ Reglas clinicas:
 - No incluyas indicaciones, ordenes medicas, analisis diagnostico extenso ni examen mental detallado.
 - No escribas postura, cama, consultorio, cooperacion, aceptacion, orientacion, tranquilidad conductual ni ausencia de agitacion si no existe una fuente explicita en patientContext, observation del profesional o registro estructurado confiable.
 - Usa evolutionCoverage como lista de hechos relevantes obligatorios. Cada hecho debe quedar incluido, marcado como incierto o explicado como excluido en warnings; no omitas medicamentos, efectos adversos, negaciones de riesgo, red de apoyo ni disposicion terapeutica si aparecen.
+- Usa explorationMatrix para diferenciar dominios explorados, negados, inciertos, no mencionados y desconocidos. Si explored=false y status=unknown, omite el dominio; no escribas normalidad por ausencia de informacion.
+- Si el paciente refiere que su madre puede ayudarle, redacta "considera que podria recibir apoyo de su madre"; no escribas que la madre se compromete si no existe un segmento sourceRole=relative de la madre.
+- Redacta "privacion de sueno" o "insomnio" segun la fuente; nunca uses el anglicismo "insomnia".
+- Evita dobles negaciones clinicas. Redacta de forma directa: "niega ideas de muerte, ideacion suicida e intencion de causar dano a otras personas".
 - No emitas texto fuera del JSON.
 
 Estilo de evolution:
-- Entre tres y cinco parrafos narrativos, sin subtitulos internos y sin listas.
+- Entre dos y cuatro parrafos narrativos proporcionales a la informacion, sin subtitulos internos y sin listas. Si existen tres o mas dominios clinicos, no devuelvas un unico parrafo.
 - Inicio con nombre, sexo, edad, dia de estancia, servicio y criterio solo si estan disponibles.
 - Describe brevemente el abordaje, lugar, posicion, aceptacion, cooperacion y conducta general si fueron documentados.
 - Integra evolucion de sintomas relevantes, riesgo referido, red de apoyo, respuesta/adherencia referidas, consumo si aparece y eventualidades medicas.
@@ -57,6 +61,12 @@ Devuelve JSON estricto con este esquema:
 `;
 
 const FORBIDDEN_EVOLUTION_PATTERNS = [
+  /\binsomnia\b/i,
+  /\bniega\s+(?:la\s+)?ausencia\b/i,
+  /\bniega\s+no\s+presentar\b/i,
+  /\bsin\s+ausencia\b/i,
+  /\bniega\s+ideaci[oÃƒÃ³]n.{0,80}\bausencia\s+de\s+intenci[oÃƒÃ³]n\b/i,
+  /\bpresenta cuestionamientos respecto a ideas delirantes\b/i,
   /\bd[iÃí]a\s+0\b/i,
   /\bse encuentra en el d[iÃí]a\s+0\b/i,
   /\bquiero preguntarle\b/i,
@@ -96,6 +106,30 @@ const CONTEXT_PATTERNS = {
   orientation: /\b(orientad[oa]|orientaci[oÃó]n|ubicad[oa])\b/i,
   agitationAbsence: /\b(sin (?:presentar )?(?:episodios de )?agitaci[oÃó]n|niega agitaci[oÃó]n|no se reporta agitaci[oÃó]n)\b/i
 };
+
+const EXPLORATION_DOMAINS = [
+  { domain: "sueno", patterns: [/\bsue[nÃƒÃ±]o\b/i, /\bdorm/i, /\binsomnio\b/i, /\bprivaci[oÃƒÃ³]n de sue[nÃƒÃ±]o\b/i], absent: [/\bniega.{0,40}(insomnio|alteraciones del sue[nÃƒÃ±]o)\b/i] },
+  { domain: "alimentacion", patterns: [/\balimentaci[oÃƒÃ³]n\b/i, /\bapetito\b/i, /\btolerancia de la v[iÃƒÃ­]a oral\b/i], absent: [/\b(apetito conservado|alimentaci[oÃƒÃ³]n sin alteraciones|sin alteraciones en la alimentaci[oÃƒÃ³]n)\b/i] },
+  { domain: "diuresis", patterns: [/\bdiuresis\b/i, /\borina\b/i, /\bmicci[oÃƒÃ³]n\b/i], absent: [/\bdiuresis (?:conservada|sin alteraciones)\b/i] },
+  { domain: "evacuaciones", patterns: [/\bevacuaci[oÃƒÃ³]n|evacuaciones\b/i, /\bdeposiciones\b/i], absent: [/\bevacuaciones sin alteraciones\b/i] },
+  { domain: "sintomas_fisicos", patterns: [/\brigi?dez\b/i, /\btemblor\b/i, /\bmareo\b/i, /\bca[iÃƒÃ­]das\b/i, /\bxerostom[iÃƒÃ­]a\b/i, /\bboca seca\b/i, /\bsomnolencia\b/i], absent: [/\bniega.{0,80}(rigidez|temblor|mareo|ca[iÃƒÃ­]das)\b/i] },
+  { domain: "riesgo_suicida", patterns: [/\bsuicid|ideas de muerte|morir|quitarse la vida\b/i], absent: [/\bniega.{0,60}(suicid|ideas de muerte|morir|quitarse la vida)\b/i] },
+  { domain: "riesgo_heteroagresivo", patterns: [/\bda[nÃƒÃ±]ar|agredir|lastimar|heteroagresiv\b/i], absent: [/\bniega.{0,80}(da[nÃƒÃ±]ar|agredir|lastimar|heteroagresiv)\b/i, /\bno quiero da[nÃƒÃ±]ar\b/i] },
+  { domain: "red_apoyo", patterns: [/\bmadre|mam[aÃƒÃ¡]|familia|red de apoyo\b/i], absent: [] },
+  { domain: "tratamiento", patterns: [/\bmedicamento|tratamiento|risperidona|clonazepam\b/i], absent: [] },
+  { domain: "consumo", patterns: [/\bmetanfetamina|cannabis|marihuana|sustancia|consumo\b/i], absent: [] }
+];
+
+const UNEXPLORED_NORMALITY_PATTERNS = [
+  { domain: "alimentacion", pattern: /\b(?:no se reportan|sin|niega).{0,50}(?:alteraciones|cambios).{0,40}alimentaci[oÃƒÃ³]n\b/i },
+  { domain: "alimentacion", pattern: /\balimentaci[oÃƒÃ³]n (?:conservada|sin alteraciones)\b/i },
+  { domain: "diuresis", pattern: /\b(?:no se reportan|sin|niega).{0,50}(?:alteraciones|cambios).{0,40}diuresis\b/i },
+  { domain: "diuresis", pattern: /\bdiuresis (?:conservada|sin alteraciones)\b/i },
+  { domain: "evacuaciones", pattern: /\b(?:no se reportan|sin|niega).{0,50}(?:alteraciones|cambios).{0,40}evacuaciones\b/i },
+  { domain: "evacuaciones", pattern: /\bevacuaciones sin alteraciones\b/i },
+  { domain: "sintomas_fisicos", pattern: /\bno se reportan alteraciones.{0,60}(?:s[iÃƒÃ­]ntomas f[iÃƒÃ­]sicos|som[aÃƒÃ¡]ticas|m[eÃƒÃ©]dicas)\b/i },
+  { domain: "sueno", pattern: /\b(?:no se reportan|sin|niega).{0,50}(?:alteraciones|cambios).{0,40}sue[nÃƒÃ±]o\b/i }
+];
 
 function sanitizeRequestId(value = "") {
   return String(value || "")
@@ -292,6 +326,7 @@ function buildProviderInput(payload) {
     patientContext: payload.patientContext,
     noteConfiguration: payload.noteConfiguration,
     evolutionCoverage: serializeEvolutionCoverage(evolutionCoverage),
+    explorationMatrix: evolutionCoverage.explorationMatrix || [],
     transcript: {
       transcriptId: payload.transcript.transcriptId,
       originalTextHash: payload.transcript.originalTextHash,
@@ -349,9 +384,42 @@ function serializeEvolutionCoverage(coverage = {}) {
       message: fact.message
     })),
     contextSupport: coverage.contextSupport || {},
+    explorationMatrix: coverage.explorationMatrix || [],
     unknownUtterances: coverage.unknownUtterances || [],
     blockingUnknownUtteranceIds: coverage.blockingUnknownUtteranceIds || []
   };
+}
+
+function buildExplorationMatrix(utterances = []) {
+  return EXPLORATION_DOMAINS.map((definition) => {
+    const matches = [];
+    for (const utterance of utterances) {
+      const text = normalizeString(utterance.text);
+      if (!definition.patterns.some((pattern) => pattern.test(text))) continue;
+      matches.push({ utterance, text });
+    }
+    if (!matches.length) {
+      return {
+        domain: definition.domain,
+        explored: false,
+        status: "unknown",
+        sourceRole: "",
+        sourceUtteranceIds: []
+      };
+    }
+    const sourceRoles = Array.from(new Set(matches.map(({ utterance }) => normalizeString(utterance.probableRole || "unknown")).filter(Boolean)));
+    const sourceUtteranceIds = Array.from(new Set(matches.map(({ utterance }) => utterance.id).filter(Boolean)));
+    const joined = matches.map((match) => match.text).join(" ");
+    const hasAbsent = definition.absent.some((pattern) => pattern.test(joined)) || /\b(no|niega|sin)\b/i.test(joined);
+    const hasUncertain = /\b(no se|quiz[aÃƒÃ¡]s|tal vez|puede ser|incierto|no recuerdo)\b/i.test(joined);
+    return {
+      domain: definition.domain,
+      explored: true,
+      status: hasUncertain ? "uncertain" : (hasAbsent ? "absent" : "present"),
+      sourceRole: sourceRoles.length === 1 ? sourceRoles[0] : "mixed",
+      sourceUtteranceIds
+    };
+  });
 }
 
 function classifyUnknownImpact(text = "") {
@@ -366,6 +434,8 @@ function classifyUnknownImpact(text = "") {
 
 function buildEvolutionCoverage(payload = {}) {
   const facts = [];
+  const utterances = payload.transcript?.utterances || [];
+  const explorationMatrix = buildExplorationMatrix(utterances);
   const contextSupport = {
     posture: false,
     cooperation: false,
@@ -373,7 +443,7 @@ function buildEvolutionCoverage(payload = {}) {
     agitationAbsence: false
   };
   const unknownUtterances = [];
-  for (const utterance of payload.transcript?.utterances || []) {
+  for (const utterance of utterances) {
     const text = normalizeString(utterance.text);
     const role = normalizeString(utterance.probableRole).toLowerCase();
     const act = normalizeString(utterance.speechAct).toLowerCase();
@@ -481,7 +551,7 @@ function buildEvolutionCoverage(payload = {}) {
         code: "current_harm_intent_negated",
         proposition: "negacion de intencion de danar a terceros",
         status: "absent",
-        requiredPatterns: [/niega.{0,80}(intenci[oÃó]n|plan).{0,80}(da[nÃñ]ar|agredir|lastimar|heteroagresiv)|niega.{0,80}heteroagresiv|no refiere.{0,80}(da[nÃñ]ar|agredir|lastimar|heteroagresiv)/i],
+        requiredPatterns: [/niega.{0,80}(intenci[oÃó]n|plan).{0,80}(da[nÃñ]ar|causar da[nÃñ]o|agredir|lastimar|heteroagresiv)|niega.{0,80}heteroagresiv|no refiere.{0,80}(da[nÃñ]ar|causar da[nÃñ]o|agredir|lastimar|heteroagresiv)/i],
         message: "Omitio negacion de intencion de danar a terceros."
       });
     }
@@ -570,6 +640,7 @@ function buildEvolutionCoverage(payload = {}) {
   return {
     facts,
     contextSupport,
+    explorationMatrix,
     unknownUtterances,
     blockingUnknownUtteranceIds: unknownUtterances.filter((item) => item.impact === "critical").map((item) => item.id)
   };
@@ -656,6 +727,61 @@ function validateContextInventions(text = "", coverage = {}) {
   return issues;
 }
 
+function getExplorationDomain(coverage = {}, domain = "") {
+  return (coverage.explorationMatrix || []).find((item) => item.domain === domain) || {
+    domain,
+    explored: false,
+    status: "unknown",
+    sourceRole: "",
+    sourceUtteranceIds: []
+  };
+}
+
+function validateSemanticFidelity(text = "", coverage = {}) {
+  const issues = [];
+  const clean = normalizeString(text);
+  const paragraphs = clean.split(/\n{2,}/).map((part) => part.trim()).filter(Boolean);
+  const exploredDomains = (coverage.explorationMatrix || []).filter((item) => item.explored);
+  if (exploredDomains.length >= 3 && paragraphs.length < 2) {
+    issues.push({
+      code: "single_paragraph_multi_domain_evolution",
+      message: "La Evolucion contiene un unico parrafo pese a integrar tres o mas dominios clinicos.",
+      severity: "high"
+    });
+  }
+  for (const { domain, pattern } of UNEXPLORED_NORMALITY_PATTERNS) {
+    const item = getExplorationDomain(coverage, domain);
+    if (!item.explored && pattern.test(clean)) {
+      issues.push({
+        code: `unexplored_normality_${domain}`,
+        message: `La Evolucion genero normalidad de ${domain} sin exploracion documentada.`,
+        severity: "high"
+      });
+    }
+  }
+  if (/\b(?:madre|mam[aÃƒÃ¡]|familiar).{0,80}se compromete\b/i.test(clean) || /\bse compromete.{0,80}(?:madre|mam[aÃƒÃ¡]|familiar)\b/i.test(clean)) {
+    const hasRelativeSource = (coverage.facts || []).some((fact) => fact.sourceRole === "relative" && /madre|mam[aÃƒÃ¡]|familiar|red_apoyo/.test(`${fact.proposition} ${fact.domain}`));
+    if (!hasRelativeSource) {
+      issues.push({
+        code: "family_commitment_without_relative_source",
+        message: "La Evolucion atribuye compromiso a un familiar sin entrevista o fuente familiar.",
+        severity: "high"
+      });
+    }
+  }
+  if (/\bno se reportan alteraciones\b/i.test(clean)) {
+    const absentUnexplored = ["alimentacion", "diuresis", "evacuaciones", "sintomas_fisicos", "sueno"].some((domain) => !getExplorationDomain(coverage, domain).explored);
+    if (absentUnexplored) {
+      issues.push({
+        code: "generic_unexplored_normality",
+        message: "La Evolucion usa 'no se reportan alteraciones' para dominios no explorados.",
+        severity: "high"
+      });
+    }
+  }
+  return issues;
+}
+
 function validateCoverageInclusion(text = "", coverage = {}) {
   const issues = [];
   const clean = normalizeString(text);
@@ -721,6 +847,7 @@ function validateProviderResult({ parsed, payload, requestId, HttpsErrorClass })
   const blockingIssues = [
     ...validateEvolutionText(text, knownUtteranceIds),
     ...validateContextInventions(text, coverage),
+    ...validateSemanticFidelity(text, coverage),
     ...validateCoverageInclusion(text, coverage)
   ];
 
@@ -839,7 +966,7 @@ async function runGenerateStructuredNoteFromDictation({
         providerInput,
         timeoutMs,
         extraInstruction: attempt === 2
-          ? "Regenera solo evolution. La respuesta anterior no paso validacion. Elimina preguntas, examen mental detallado, analisis y plan. No escribas dia 0. No inventes postura, cooperacion, orientacion ni ausencia de agitacion. Incluye los hechos requeridos en evolutionCoverage, especialmente medicamentos, efectos adversos, negaciones de riesgo, red de apoyo y disposicion terapeutica."
+          ? "Regenera solo evolution. La respuesta anterior no paso validacion. Elimina preguntas, examen mental detallado, analisis y plan. No escribas dia 0. No uses insomnia. No uses dobles negaciones. No inventes postura, cooperacion, orientacion ni ausencia de agitacion. No atribuyas compromiso a familiares si la fuente es el paciente. No escribas normalidad de dominios no explorados segun explorationMatrix. Incluye los hechos requeridos en evolutionCoverage, especialmente medicamentos, efectos adversos, negaciones de riesgo, red de apoyo y disposicion terapeutica."
           : ""
       });
 
@@ -918,6 +1045,7 @@ module.exports = {
   extractResponseText,
   buildEvolutionCoverage,
   validateContextInventions,
+  validateSemanticFidelity,
   validateCoverageInclusion,
   validateProviderResult,
   validateEvolutionText,
