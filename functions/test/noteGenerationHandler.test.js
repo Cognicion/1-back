@@ -316,11 +316,21 @@ assert.doesNotMatch(carlosAccepted.sections.evolution.text, /alimentaci[oó]n|di
 assert.match(carlosAccepted.sections.evolution.text, /evitar el consumo/i);
 assert.deepEqual(carlosAccepted.sections.evolution.sourceUtteranceIds, carlosShortUtterances.map((utterance) => utterance.id));
 
+const insomniaCorrected = await runWithOutput(JSON.stringify({
+  sections: {
+    evolution: {
+      text: correctedCarlosEvolution.replace("falta de sueno", "insomnia"),
+      sourceUtteranceIds: carlosShortUtterances.map((utterance) => utterance.id),
+      requiresReview: true,
+      warnings: []
+    }
+  },
+  globalWarnings: []
+}), carlosPayload());
+assert.doesNotMatch(insomniaCorrected.sections.evolution.text, /\binsomnia\b/i);
+assert.match(insomniaCorrected.sections.evolution.text, /\binsomnio\b/i);
+
 const badSemanticOutputs = [
-  [
-    "insomnia",
-    correctedCarlosEvolution.replace("falta de sueno", "insomnia")
-  ],
   [
     "doble negacion",
     correctedCarlosEvolution.replace("Niega ideas de muerte, ideacion suicida e intencion de causar dano", "Niega ideacion suicida actual y ausencia de intencion de causar dano")
@@ -355,9 +365,23 @@ for (const [_name, text] of badSemanticOutputs) {
       },
       globalWarnings: []
     }), carlosPayload()),
-    (error) => error.code === "data-loss"
+    (error) => error.code === "data-loss" && Array.isArray(error.details?.validationCodes) && error.details.validationCodes.length > 0
   );
 }
+
+await assert.rejects(
+  () => runWithOutput(JSON.stringify({
+    sections: {
+      evolution: {
+        text: correctedCarlosEvolution.replace("Niega ideas de muerte, ideacion suicida e intencion de causar dano", "Niega ideacion suicida actual y ausencia de intencion de causar dano"),
+        sourceUtteranceIds: carlosShortUtterances.map((utterance) => utterance.id),
+        requiresReview: true
+      }
+    },
+    globalWarnings: []
+  }), carlosPayload()),
+  (error) => error.details?.validationCodes?.includes("DOUBLE_NEGATION")
+);
 
 const nullDayAccepted = await runWithOutput(JSON.stringify({
   sections: {

@@ -3,13 +3,14 @@ import { iniciarMonitoreoSesion } from "./services/sesion.js";
 import { obtenerUsuario, listarPacientes, medicoPuedeVer } from "./services/usuarios.js";
 import { usuarioEsPersonalClinico } from "./utils/roles.js";
 import { obtenerNombrePacienteParaMostrar } from "./utils/nombresPacientes.js";
-import { createNoteGenerationProvider } from "./services/noteGenerationProviders.js?v=20260718-session-persistence";
-import { createConversationSegmentationProvider, crearClientRequestId } from "./services/conversationSegmentationProviders.js?v=20260719-seg-abort";
+import { createNoteGenerationProvider } from "./services/noteGenerationProviders.js?v=20260719-evolution-v2-validation";
+import { createConversationSegmentationProvider, crearClientRequestId } from "./services/conversationSegmentationProviders.js?v=20260719-evolution-v2-validation";
 import { segmentarConversacionClinica } from "./services/clinicalPipeline.js";
 import {
   VOICE_NOTE_FIELD_REGISTRY,
   VOICE_NOTE_PROMPT_VERSION,
   VOICE_NOTE_SCHEMA_VERSION,
+  VOICE_NOTE_VALIDATOR_VERSION,
   calcularDecadaDeVida,
   crearTransferSections,
   generarNotaVoz,
@@ -18,7 +19,7 @@ import {
   guardarTranscripcionVozFirestore,
   leerNotaExistente,
   transferirNotaVozABorrador
-} from "./services/voiceNoteGenerationService.js?v=20260718-session-persistence";
+} from "./services/voiceNoteGenerationService.js?v=20260719-evolution-v2-validation";
 import { buscarBorradorNotaClinica } from "./services/notas.js?v=20260716-2";
 import {
   VOICE_NOTE_SESSION_SCHEMA_VERSION,
@@ -209,7 +210,7 @@ function actualizarLinks() {
   const qsNota = construirQueryContexto(state.noteId ? { notaId: state.noteId } : {});
   $("linkPacienteVoz")?.setAttribute("href", state.patientId ? `paciente.html${qsPaciente}` : "paciente.html");
   $("linkNotaTradicional")?.setAttribute("href", qsNota ? `nota.html?${qsNota}` : "nota.html");
-  const versionedVoiceUrl = qsBase ? `nota-por-voz.html?v=20260719-seg-abort&${qsBase}` : "nota-por-voz.html?v=20260719-seg-abort";
+  const versionedVoiceUrl = qsBase ? `nota-por-voz.html?v=20260719-evolution-v2-validation&${qsBase}` : "nota-por-voz.html?v=20260719-evolution-v2-validation";
   $("linkNotaVoz")?.setAttribute("href", versionedVoiceUrl);
 }
 
@@ -1102,9 +1103,12 @@ async function generarNota() {
   } catch (error) {
     const details = error?.details || {};
     const code = error?.code || details.code || "sin_codigo";
+    const validationCodes = Array.isArray(details.validationCodes) ? details.validationCodes : [];
+    const validationText = validationCodes.length ? ` Codigos: ${validationCodes.join(", ")}.` : "";
+    const attemptText = details.attempt ? ` Intento ${details.attempt}/2.` : "";
     setText("voiceProviderStatus", `Proveedor: externo · error: ${code}`);
     setText("voiceSchemaStatus", `Esquema: no validado · ${VOICE_NOTE_SCHEMA_VERSION}`);
-    setText("voiceGenerationProgress", `Segmentacion conservada. No fue posible generar Evolucion externa. RequestId: ${details.requestId || clientRequestId}. Etapa: ${details.stage || "no_especificada"}. Puedes reintentar generacion.`);
+    setText("voiceGenerationProgress", `No fue posible validar la Evolucion. Segmentacion conservada. RequestId: ${details.requestId || clientRequestId}. Etapa: ${details.stage || "no_especificada"}.${attemptText}${validationText} Validador: ${details.validatorVersion || VOICE_NOTE_VALIDATOR_VERSION}. Puedes reintentar generacion.`);
     return;
   } finally {
     state.activeGenerationRequest = null;
@@ -1115,7 +1119,7 @@ async function generarNota() {
   const externalFailure = generated.metadata?.externalProviderFailure;
   setText("voiceProviderStatus", `Proveedor: ${generated.provider || "desconocido"} · estado: ${generated.providerStatus || generated.metadata?.generatedStatus || "en revision"}${externalFailure ? ` · causa fallback: ${externalFailure.code || externalFailure.name || "sin codigo"}` : ""}`);
   setText("voicePromptVersion", `Prompt: ${generated.promptVersion || generated.metadata?.promptVersion || "fallback local"}`);
-  setText("voiceSchemaStatus", `Esquema validado: ${state.transferSections.length ? generated.schemaVersion || VOICE_NOTE_SCHEMA_VERSION : "pendiente"}`);
+  setText("voiceSchemaStatus", `Esquema validado: ${state.transferSections.length ? generated.schemaVersion || VOICE_NOTE_SCHEMA_VERSION : "pendiente"} · ${generated.validatorVersion || VOICE_NOTE_VALIDATOR_VERSION}`);
   await guardarSesionVozFirestore({
     userId: state.user.uid,
     patientId: state.patientId,

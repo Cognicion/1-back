@@ -1,7 +1,8 @@
 const crypto = require("crypto");
 
-const NOTE_PROMPT_VERSION = "psychiatric_voice_note_es_mx_v1";
+const NOTE_PROMPT_VERSION = "psychiatric_voice_note_es_mx_v2";
 const NOTE_SCHEMA_VERSION = "voice_note_evolution_v1";
+const EVOLUTION_VALIDATOR_VERSION = "evolution_semantic_validator_v2";
 const DEFAULT_NOTE_MODEL = "gpt-4.1-mini";
 const PROVIDER_TIMEOUT_MS = 65000;
 const MAX_UTTERANCES = 220;
@@ -9,7 +10,7 @@ const MAX_UTTERANCE_CHARS = 1800;
 const MAX_TOTAL_CHARS = 60000;
 
 const NOTE_PROMPT = `
-Version del prompt: psychiatric_voice_note_es_mx_v1.
+Version del prompt: psychiatric_voice_note_es_mx_v2.
 Eres un asistente especializado en documentacion psiquiatrica institucional en espanol de Mexico.
 
 Recibiras una segmentacion conversacional revisada con roles y actos comunicativos. Usa esa segmentacion como fuente principal; no vuelvas a segmentar toda la entrevista.
@@ -131,6 +132,27 @@ const UNEXPLORED_NORMALITY_PATTERNS = [
   { domain: "sueno", pattern: /\b(?:no se reportan|sin|niega).{0,50}(?:alteraciones|cambios).{0,40}sue[nÃƒÃ±]o\b/i }
 ];
 
+const VALIDATION_CODE_MAP = {
+  empty_evolution: "EMPTY_EVOLUTION",
+  invalid_day_zero: "INVALID_DAY_ZERO",
+  invalid_term_insomnia: "INVALID_TERM_INSOMNIA",
+  double_negation: "DOUBLE_NEGATION",
+  semantic_style_ideas: "SEMANTIC_STYLE_IDEAS",
+  contaminated_evolution: "CONTAMINATED_EVOLUTION",
+  question_in_evolution: "QUESTION_IN_EVOLUTION",
+  too_many_paragraphs: "TOO_MANY_PARAGRAPHS",
+  single_paragraph_multi_domain_evolution: "SINGLE_PARAGRAPH",
+  posture_without_source: "UNSUPPORTED_POSTURE",
+  cooperation_without_source: "UNSUPPORTED_COOPERATION",
+  orientation_without_source: "UNSUPPORTED_ORIENTATION",
+  agitation_absence_without_source: "UNSUPPORTED_NO_AGITATION",
+  absolute_disappearance_without_source: "ABSOLUTE_DISAPPEARANCE",
+  family_commitment_without_relative_source: "UNSUPPORTED_RELATIVE_COMMITMENT",
+  generic_unexplored_normality: "UNEXPLORED_DOMAIN_ASSERTED",
+  critical_unknown_speaker: "INVALID_PROVENANCE",
+  missing_traceability: "INVALID_PROVENANCE"
+};
+
 function sanitizeRequestId(value = "") {
   return String(value || "")
     .replace(/[^a-zA-Z0-9_.:-]/g, "")
@@ -155,7 +177,10 @@ function makeCallableError(HttpsErrorClass, code, safeMessage, details = {}) {
     clientRequestId: details.clientRequestId || details.requestId || "",
     stage: details.stage || "unknown",
     safeMessage,
-    retryable: Boolean(details.retryable)
+    retryable: Boolean(details.retryable),
+    validationCodes: Array.isArray(details.validationCodes) ? details.validationCodes : [],
+    attempt: details.attempt || null,
+    validatorVersion: details.validatorVersion || ""
   }));
 }
 
@@ -677,11 +702,49 @@ function normalizeWarnings(value = []) {
   });
 }
 
+function canonicalValidationCode(issue = {}) {
+  const code = normalizeString(issue.code);
+  if (VALIDATION_CODE_MAP[code]) return VALIDATION_CODE_MAP[code];
+  if (code.startsWith("missing_coverage_risperidone") || code.includes("medication") || code.includes("risperidone")) return "MISSING_MEDICATION";
+  if (code.startsWith("missing_coverage_somnolence") || code.startsWith("missing_coverage_eps") || code.includes("adverse")) return "MISSING_ADVERSE_EFFECT";
+  if (code.startsWith("missing_coverage_current_suicidal") || code.startsWith("missing_coverage_current_harm")) return "MISSING_CURRENT_RISK";
+  if (code.startsWith("missing_coverage_mother")) return "MISSING_SUPPORT_NETWORK";
+  if (code.startsWith("missing_coverage_willing")) return "MISSING_TREATMENT_DISPOSITION";
+  if (code.startsWith("missing_coverage_")) return "MISSING_REQUIRED_FACT";
+  if (code.startsWith("unexplored_normality_")) return "UNEXPLORED_DOMAIN_ASSERTED";
+  return code ? code.toUpperCase() : "UNKNOWN_VALIDATION_ERROR";
+}
+
+function validationCodesFromIssues(issues = []) {
+  return Array.from(new Set(issues.map(canonicalValidationCode).filter(Boolean)));
+}
+
+function applyDeterministicEvolutionCorrections(text = "") {
+  return normalizeString(text)
+    .replace(/\binsomnia\b/gi, "insomnio")
+    .replace(/[ \t]{2,}/g, " ")
+    .replace(/\n{3,}/g, "\n\n")
+    .replace(/[ \t]+\n/g, "\n")
+    .trim();
+}
+
 function validateEvolutionText(text = "", knownUtteranceIds = new Set()) {
   const issues = [];
   const clean = normalizeString(text);
   if (!clean) {
     issues.push({ code: "empty_evolution", message: "evolution.text esta vacio.", severity: "high" });
+  }
+  if (/\bd[iÃƒÃ­]a\s+0\b/i.test(clean) || /\bd[ií]a\s+0\b/i.test(clean)) {
+    issues.push({ code: "invalid_day_zero", message: "La Evolucion contiene dia 0.", severity: "high" });
+  }
+  if (/\binsomnia\b/i.test(clean)) {
+    issues.push({ code: "invalid_term_insomnia", message: "La Evolucion contiene el anglicismo insomnia.", severity: "high" });
+  }
+  if (/\bniega\s+(?:la\s+)?ausencia\b/i.test(clean) || /\bniega\s+no\s+presentar\b/i.test(clean) || /\bsin\s+ausencia\b/i.test(clean) || /\bniega\s+ideaci[oÃƒÃ³ó]n.{0,80}\bausencia\s+de\s+intenci[oÃƒÃ³ó]n\b/i.test(clean)) {
+    issues.push({ code: "double_negation", message: "La Evolucion contiene una doble negacion clinica.", severity: "high" });
+  }
+  if (/\bpresenta cuestionamientos respecto a ideas delirantes\b/i.test(clean)) {
+    issues.push({ code: "semantic_style_ideas", message: "La Evolucion usa una construccion poco fiel para ideas de persecucion.", severity: "high" });
   }
   for (const pattern of FORBIDDEN_EVOLUTION_PATTERNS) {
     if (pattern.test(clean)) {
@@ -828,7 +891,7 @@ function warningsForUnknownSpeakers(coverage = {}) {
   return warnings;
 }
 
-function validateProviderResult({ parsed, payload, requestId, HttpsErrorClass }) {
+function validateProviderResult({ parsed, payload, requestId, HttpsErrorClass, attempt = null }) {
   const stage = "schema_validation";
   if (!parsed || typeof parsed !== "object") {
     throw makeCallableError(HttpsErrorClass, "data-loss", "El proveedor no devolvio un objeto JSON interpretable.", { requestId, stage, retryable: true });
@@ -838,7 +901,7 @@ function validateProviderResult({ parsed, payload, requestId, HttpsErrorClass })
     throw makeCallableError(HttpsErrorClass, "data-loss", "El proveedor devolvio secciones no solicitadas.", { requestId, stage, retryable: true });
   }
   const rawEvolution = parsed.sections?.evolution || {};
-  const text = normalizeString(rawEvolution.text);
+  const text = applyDeterministicEvolutionCorrections(rawEvolution.text);
   const knownUtteranceIds = new Set(payload.transcript.utterances.map((utterance) => utterance.id));
   const sourceUtteranceIds = normalizeSourceUtteranceIds(rawEvolution.sourceUtteranceIds)
     .filter((id) => knownUtteranceIds.has(id) || id === "patientContext");
@@ -852,10 +915,14 @@ function validateProviderResult({ parsed, payload, requestId, HttpsErrorClass })
   ];
 
   if (!text || blockingIssues.some((issue) => issue.severity === "high")) {
+    const validationCodes = validationCodesFromIssues(blockingIssues);
     throw makeCallableError(HttpsErrorClass, "data-loss", "No fue posible validar la Evolucion generada.", {
       requestId,
       stage,
-      retryable: true
+      retryable: true,
+      validationCodes,
+      attempt,
+      validatorVersion: EVOLUTION_VALIDATOR_VERSION
     });
   }
   if (!sourceUtteranceIds.length) {
@@ -873,6 +940,7 @@ function validateProviderResult({ parsed, payload, requestId, HttpsErrorClass })
     model: "",
     promptVersion: NOTE_PROMPT_VERSION,
     schemaVersion: NOTE_SCHEMA_VERSION,
+    validatorVersion: EVOLUTION_VALIDATOR_VERSION,
     sections: {
       evolution: {
         text,
@@ -911,6 +979,19 @@ function mapProviderError({ error, HttpsErrorClass, requestId, stage }) {
   return makeCallableError(HttpsErrorClass, "internal", "Error inesperado al generar la Evolucion.", { requestId, stage, retryable: false });
 }
 
+function buildRetryInstruction(validationDetails = {}) {
+  const codes = Array.isArray(validationDetails.validationCodes) ? validationDetails.validationCodes : [];
+  const codesText = codes.length ? codes.join(", ") : "SCHEMA_VALIDATION_FAILED";
+  return [
+    "Regenera solo evolution corrigiendo exactamente estos codigos de validacion:",
+    codesText,
+    "Usa solo los hechos estructurados permitidos en evolutionCoverage y explorationMatrix.",
+    "No escribas dia 0. No uses dobles negaciones. No inventes postura, cooperacion, orientacion ni ausencia de agitacion.",
+    "No atribuyas compromiso a familiares si la fuente es el paciente. No escribas normalidad de dominios no explorados.",
+    "No generes examen mental, analisis ni plan. Devuelve solo JSON conforme al esquema."
+  ].join("\n");
+}
+
 async function runGenerateStructuredNoteFromDictation({
   data,
   auth,
@@ -942,6 +1023,7 @@ async function runGenerateStructuredNoteFromDictation({
 
     const client = openaiClient || new OpenAIClass({ apiKey });
     const providerInput = buildProviderInput(payload);
+    let lastValidationDetails = null;
 
     for (let attempt = 1; attempt <= 2; attempt += 1) {
       stage = attempt === 1 ? "provider_request" : "provider_retry";
@@ -957,6 +1039,8 @@ async function runGenerateStructuredNoteFromDictation({
         model,
         promptVersion: NOTE_PROMPT_VERSION,
         schemaVersion: NOTE_SCHEMA_VERSION,
+        validatorVersion: EVOLUTION_VALIDATOR_VERSION,
+        validationCodes: lastValidationDetails?.validationCodes || [],
         attempt
       });
 
@@ -965,9 +1049,7 @@ async function runGenerateStructuredNoteFromDictation({
         model,
         providerInput,
         timeoutMs,
-        extraInstruction: attempt === 2
-          ? "Regenera solo evolution. La respuesta anterior no paso validacion. Elimina preguntas, examen mental detallado, analisis y plan. No escribas dia 0. No uses insomnia. No uses dobles negaciones. No inventes postura, cooperacion, orientacion ni ausencia de agitacion. No atribuyas compromiso a familiares si la fuente es el paciente. No escribas normalidad de dominios no explorados segun explorationMatrix. Incluye los hechos requeridos en evolutionCoverage, especialmente medicamentos, efectos adversos, negaciones de riesgo, red de apoyo y disposicion terapeutica."
-          : ""
+        extraInstruction: attempt === 2 ? buildRetryInstruction(lastValidationDetails || {}) : ""
       });
 
       stage = "extract_response";
@@ -988,7 +1070,7 @@ async function runGenerateStructuredNoteFromDictation({
 
       stage = "schema_validation";
       try {
-        const result = validateProviderResult({ parsed, payload, requestId, HttpsErrorClass });
+        const result = validateProviderResult({ parsed, payload, requestId, HttpsErrorClass, attempt });
         result.model = model;
         result.durationMs = Date.now() - startedAt;
         safeLog(logger, "info", {
@@ -1003,11 +1085,15 @@ async function runGenerateStructuredNoteFromDictation({
           model,
           promptVersion: NOTE_PROMPT_VERSION,
           schemaVersion: NOTE_SCHEMA_VERSION,
+          validatorVersion: EVOLUTION_VALIDATOR_VERSION,
           warningCount: result.globalWarnings.length + result.sections.evolution.warnings.length
         });
         return result;
       } catch (error) {
-        if (attempt === 1) continue;
+        if (attempt === 1) {
+          lastValidationDetails = error?.details || null;
+          continue;
+        }
         throw error;
       }
     }
@@ -1025,6 +1111,8 @@ async function runGenerateStructuredNoteFromDictation({
       model,
       promptVersion: NOTE_PROMPT_VERSION,
       schemaVersion: NOTE_SCHEMA_VERSION,
+      validatorVersion: EVOLUTION_VALIDATOR_VERSION,
+      validationCodes: mappedError.details?.validationCodes || error?.details?.validationCodes || [],
       errorName: error?.name || mappedError?.name || "Error",
       errorCode: error?.code || mappedError?.code || "",
       providerStatus: error?.status || error?.response?.status || null,
@@ -1039,6 +1127,7 @@ module.exports = {
   NOTE_PROMPT,
   NOTE_PROMPT_VERSION,
   NOTE_SCHEMA_VERSION,
+  EVOLUTION_VALIDATOR_VERSION,
   DEFAULT_NOTE_MODEL,
   PROVIDER_TIMEOUT_MS,
   extractJsonFromText,

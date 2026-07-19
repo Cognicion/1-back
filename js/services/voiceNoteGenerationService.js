@@ -10,8 +10,9 @@ import {
   serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-export const VOICE_NOTE_PROMPT_VERSION = "psychiatric_voice_note_es_mx_v1";
+export const VOICE_NOTE_PROMPT_VERSION = "psychiatric_voice_note_es_mx_v2";
 export const VOICE_NOTE_SCHEMA_VERSION = "voice_note_evolution_v1";
+export const VOICE_NOTE_VALIDATOR_VERSION = "evolution_semantic_validator_v2";
 
 export const VOICE_NOTE_FIELD_REGISTRY = Object.freeze({
   evolutionOrSubjective: {

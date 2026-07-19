@@ -128,6 +128,7 @@ function normalizarSalidaExterna(data = {}, payload = {}) {
     providerStatus: "disponible",
     promptVersion: data.promptVersion || payload.noteConfiguration?.promptVersion || "",
     schemaVersion: data.schemaVersion || "voice_note_evolution_v1",
+    validatorVersion: data.validatorVersion || "",
     generatedSections,
     outputs: data.outputs || {
       nota_medica_estructurada: generatedSections.map((section) => `${section.title.toUpperCase()}\n${section.content}`).join("\n\n"),

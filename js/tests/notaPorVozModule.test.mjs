@@ -51,7 +51,7 @@ const external = new ExternalStructuredNoteGenerationProvider({
       encounterId: "enc-voz",
       provider: "external",
       model: "gpt-4.1-mini",
-      promptVersion: "psychiatric_voice_note_es_mx_v1",
+      promptVersion: "psychiatric_voice_note_es_mx_v2",
       schemaVersion: "voice_note_evolution_v1",
       sections: {
         evolution: {
@@ -77,7 +77,7 @@ const generated = await external.generate({
   selectedDocumentType: "evolucion_observacion",
   selectedWritingStyle: "formato_fray_narrativo",
   patientContext: { patientId: "paciente-voz", encounterId: "enc-voz" },
-  noteConfiguration: { noteType: "evolucion_observacion", styleId: "formato_fray_narrativo", promptVersion: "psychiatric_voice_note_es_mx_v1" },
+  noteConfiguration: { noteType: "evolucion_observacion", styleId: "formato_fray_narrativo", promptVersion: "psychiatric_voice_note_es_mx_v2" },
   transcript: {
     transcriptId: "voz-1",
     segmentationMode: "hybrid",
