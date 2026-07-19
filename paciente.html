@@ -1095,7 +1095,18 @@
   </div>
 </div>
 
-  <script type="module" src="js/paciente.js?v=20260718-patient-access"></script>
+  <script>
+    window.setTimeout(() => {
+      const titulo = document.getElementById("nombrePaciente");
+      if (!titulo || titulo.textContent.trim() !== "Cargando paciente...") return;
+      titulo.textContent = "No fue posible cargar el expediente.";
+      const correo = document.getElementById("correoPaciente");
+      if (correo) {
+        correo.innerHTML = '<button type="button" onclick="window.location.reload()">Reintentar</button>';
+      }
+    }, 15000);
+  </script>
+  <script type="module" src="js/paciente.js?v=20260719-patient-access-syntax"></script>
   <script type="module" src="js/components/accesosRapidos.js"></script>
 </body>
 </html>

@@ -7021,7 +7021,7 @@ async function cargarNotasRapidasPaciente() {
   }
 }
 
-function configurarTamañoNotaRapida() {
+function configurarTamanoNotaRapida() {
   const textarea = document.getElementById("notaRapidaTexto");
   const botonContraer = document.getElementById("contraerNotaRapida");
   const botonAmpliar = document.getElementById("ampliarNotaRapida");
@@ -7100,7 +7100,7 @@ document.getElementById("descargarSolicitudEstudios")?.addEventListener("click",
   document.getElementById(id)?.addEventListener("change", actualizarPreviewSolicitudEstudios);
 });
 document.getElementById("guardarNotaRapida")?.addEventListener("click", guardarNotaRapidaPaciente);
-configurarTamañoNotaRapida();
+configurarTamanoNotaRapida();
 document.getElementById("guardarTareaMiSalud")?.addEventListener("click", guardarTareaMiSaludPaciente);
 document.getElementById("btnGenerarCodigoPaciente")?.addEventListener("click", generarCodigoVinculacionDesdeMedico);
 document.getElementById("btnVincularCodigoPaciente")?.addEventListener("click", vincularCuentaPacienteDesdeMedico);
