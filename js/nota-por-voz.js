@@ -9,7 +9,7 @@ import {
   CONVERSATION_SEGMENTATION_PROMPT_VERSION,
   createConversationSegmentationProvider,
   crearClientRequestId
-} from "./services/conversationSegmentationProviders.js?v=20260719-save-visible";
+} from "./services/conversationSegmentationProviders.js?v=20260719-adaptive-block-split";
 import { segmentarConversacionClinica } from "./services/clinicalPipeline.js";
 import {
   VOICE_NOTE_FIELD_REGISTRY,
@@ -734,7 +734,7 @@ function actualizarLinks() {
   const qsNota = construirQueryContexto(state.noteId ? { notaId: state.noteId } : {});
   $("linkPacienteVoz")?.setAttribute("href", state.patientId ? `paciente.html${qsPaciente}` : "paciente.html");
   $("linkNotaTradicional")?.setAttribute("href", qsNota ? `nota.html?${qsNota}` : "nota.html");
-  const versionedVoiceUrl = qsBase ? `nota-por-voz.html?v=20260719-recovery-row-ttl72&${qsBase}` : "nota-por-voz.html?v=20260719-recovery-row-ttl72";
+  const versionedVoiceUrl = qsBase ? `nota-por-voz.html?v=20260719-adaptive-block-split&${qsBase}` : "nota-por-voz.html?v=20260719-adaptive-block-split";
   $("linkNotaVoz")?.setAttribute("href", versionedVoiceUrl);
 }
 
@@ -1517,12 +1517,15 @@ function construirBorradorSesionVoz() {
 
 function contarBloquesManifest(manifest = {}) {
   const blocks = Array.isArray(manifest?.blocks) ? manifest.blocks : [];
-  const completed = blocks.filter((block) => ["completed", "success"].includes(block.status)).length;
-  const failed = blocks.filter((block) => block.status === "failed").length;
-  const cancelled = blocks.filter((block) => block.status === "cancelled").length;
-  const total = Number(manifest.totalBlocks || blocks.length || 0);
-  const pending = Math.max(0, total - completed - failed - cancelled);
-  return { total, completed, failed, cancelled, pending };
+  const parentBlocks = blocks.filter((block) => !block.parentBlockId && !block.parentBlockKey);
+  const rows = parentBlocks.length ? parentBlocks : blocks;
+  const completed = rows.filter((block) => ["completed", "success", "completed_from_children"].includes(block.status)).length;
+  const failed = rows.filter((block) => block.status === "failed").length;
+  const requiresSplit = rows.filter((block) => block.status === "requires_split").length;
+  const cancelled = rows.filter((block) => block.status === "cancelled").length;
+  const total = Number(manifest.totalBlocks || rows.length || blocks.length || 0);
+  const pending = Math.max(0, total - completed - failed - requiresSplit - cancelled);
+  return { total, completed, failed, requiresSplit, cancelled, pending };
 }
 
 function esActividadSignificativaVoz(reason = "") {
@@ -2361,16 +2364,24 @@ function renderBlockManifestSegmentacion(manifest = null) {
     </div>
     ${blocks.map((block, index) => {
       const status = block.status || "pending";
+      const isChild = Boolean(block.parentBlockId || block.parentBlockKey);
       const source = block.source === "cache" ? "cache" : (block.source === "provider" ? "proveedor" : "basica");
-      const canRetry = ["failed", "cancelled", "pending"].includes(status) && block.blockKey;
+      const canRetry = !state.activeSegmentationRequest && ["failed", "cancelled", "pending", "requires_split"].includes(status) && block.blockKey;
+      const retryLabel = status === "requires_split" ? "Dividir y reintentar" : "Reintentar este bloque";
+      const blockLabel = isChild
+        ? `${Number(block.blockNumber || index + 1)}${String.fromCharCode(65 + Number(block.childIndex ?? 0))}`
+        : Number(block.blockNumber || index + 1);
+      const statusLabel = status === "requires_split"
+        ? "Este bloque no pudo procesarse completo. Requiere division"
+        : (status === "completed_from_children" ? "completado por subbloques" : status);
       return `
-        <div class="voice-block-row voice-block-${escaparHTML(status)}">
-          <span>Bloque ${Number(block.blockNumber || index + 1)}</span>
+        <div class="voice-block-row voice-block-${escaparHTML(status)} ${isChild ? "voice-block-child" : ""}">
+          <span>${isChild ? "Subbloque" : "Bloque"} ${escaparHTML(blockLabel)}</span>
           <span>Turnos ${Number(block.start ?? 0) + 1}-${Number(block.end ?? block.start ?? 0) + 1}</span>
-          <span>${escaparHTML(status)}</span>
+          <span>${escaparHTML(statusLabel)}</span>
           <span>${Number(block.durationMs || 0) ? `${Math.round(Number(block.durationMs))} ms` : "-"}</span>
           <span>${escaparHTML(source)}</span>
-          ${canRetry ? `<button type="button" data-retry-seg-block="${escaparHTML(block.blockKey)}">Reintentar este bloque</button>` : ""}
+          ${canRetry ? `<button type="button" data-retry-seg-block="${escaparHTML(block.blockKey)}">${retryLabel}</button>` : ""}
         </div>
       `;
     }).join("")}
@@ -2496,7 +2507,8 @@ async function segmentarConProveedor(options = {}) {
     }
     return { provider: "rule_based", segmentationMode: "linguistic", utterances: state.conversationSegments, warnings: state.conversationWarnings, providerStarted: false };
   }
-  const cachedCompleted = cached?.blockManifest?.blocks?.filter((block) => block.status === "completed").length || 0;
+  const cachedCounts = contarBloquesManifest(cached?.blockManifest || {});
+  const cachedCompleted = cachedCounts.completed || 0;
   const cachedTotal = cached?.blockManifest?.totalBlocks || cached?.blockManifest?.blocks?.length || 0;
   if (cached?.utterances?.length && (!cachedTotal || cachedCompleted >= cachedTotal)) {
     state.conversationSegments = cached.utterances || [];
@@ -2542,7 +2554,9 @@ async function segmentarConProveedor(options = {}) {
       blockManifest: cached.blockManifest,
       generatedAt: cached.generatedAt || cached.updatedAt || new Date().toISOString()
     };
-    if (button) button.textContent = `Reintentar ${Math.max(0, cachedTotal - cachedCompleted)} bloques pendientes`;
+    if (button) button.textContent = cachedCounts.requiresSplit
+      ? `Dividir y reintentar ${cachedCounts.requiresSplit} bloques`
+      : `Reintentar ${Math.max(0, cachedTotal - cachedCompleted)} bloques pendientes`;
     setText("voiceSegmentationStatus", `${cachedCompleted} de ${cachedTotal} bloques completados. Los resultados obtenidos estan guardados.`);
     renderBlockManifestSegmentacion(state.segmentationMetadata.blockManifest);
   }
@@ -2576,7 +2590,8 @@ async function segmentarConProveedor(options = {}) {
         status: block.status === "success" ? "completed" : block.status
       });
       const blocks = Array.from(byKey.values()).sort((a, b) => Number(a.blockIndex ?? a.blockNumber ?? 0) - Number(b.blockIndex ?? b.blockNumber ?? 0));
-      const completed = blocks.filter((item) => item.status === "completed").length;
+      const counts = contarBloquesManifest({ blocks, totalBlocks: state.segmentationMetadata?.totalBlocks || blocks.length });
+      const completed = counts.completed;
       state.segmentationMetadata = {
         ...(state.segmentationMetadata || {}),
         provider: completed ? "hybrid" : "rule_based",
@@ -2586,7 +2601,7 @@ async function segmentarConProveedor(options = {}) {
         transcriptHash,
         completedBlocks: completed,
         totalBlocks: blocks.length,
-        pendingBlocks: Math.max(0, blocks.length - completed),
+        pendingBlocks: counts.pending + counts.failed + counts.requiresSplit,
         blockManifest: {
           sourceTranscriptHash: transcriptHash,
           promptVersion: CONVERSATION_SEGMENTATION_PROMPT_VERSION,
@@ -2615,7 +2630,8 @@ async function segmentarConProveedor(options = {}) {
         setText("voiceSegmentationStatus", `${base}${suffix} ${progress.blockCount || 0} bloques: ${cachedCount} recuperados, ${Math.max(0, (progress.blockCount || 0) - cachedCount - providerCount - failedCount)} por procesar.`);
       }
       if (progress.blockManifest?.length) {
-        const completed = progress.blockManifest.filter((block) => block.status === "completed" || block.status === "success").length;
+        const progressCounts = contarBloquesManifest({ totalBlocks: progress.blockCount || progress.blockManifest.length, blocks: progress.blockManifest });
+        const completed = progressCounts.completed;
         state.segmentationMetadata = {
           ...(state.segmentationMetadata || {}),
           promptVersion: CONVERSATION_SEGMENTATION_PROMPT_VERSION,
@@ -2623,7 +2639,7 @@ async function segmentarConProveedor(options = {}) {
           transcriptHash,
           completedBlocks: completed,
           totalBlocks: progress.blockCount || progress.blockManifest.length,
-          pendingBlocks: Math.max(0, (progress.blockCount || progress.blockManifest.length) - completed),
+          pendingBlocks: progressCounts.pending + progressCounts.failed + progressCounts.requiresSplit,
           blockManifest: {
             sourceTranscriptHash: transcriptHash,
             promptVersion: CONVERSATION_SEGMENTATION_PROMPT_VERSION,
@@ -2685,7 +2701,12 @@ async function segmentarConProveedor(options = {}) {
     state.activeSegmentationRequest = null;
     state.activeSegmentationAbortController = null;
     if (button) button.disabled = !canUseProvider();
-    if (button) button.textContent = state.segmentationMetadata?.pendingBlocks ? `Reintentar ${state.segmentationMetadata.pendingBlocks} bloques pendientes` : "Segmentar con proveedor";
+    const finalCounts = contarBloquesManifest(state.segmentationMetadata?.blockManifest || {});
+    if (button) {
+      button.textContent = finalCounts.requiresSplit
+        ? `Dividir y reintentar ${finalCounts.requiresSplit} bloques`
+        : (state.segmentationMetadata?.pendingBlocks ? `Reintentar ${state.segmentationMetadata.pendingBlocks} bloques pendientes` : "Segmentar con proveedor");
+    }
     if ($("btnDetenerSegmentacionVoz")) $("btnDetenerSegmentacionVoz").hidden = true;
   }
 }

@@ -116,7 +116,7 @@ const parcial = await providerParcial.segment({
   transcriptId: "carlos-79",
   clientRequestId: "carlos-test"
 });
-assert.equal(parcial.provider, "hybrid");
+assert.equal(parcial.provider, "hybrid_review_required");
 assert.ok(parcial.failedBlocks.length >= 1, "debe conservar el bloque fallido");
 assert.ok(parcial.utterances.length > 0, "no debe descartar la segmentacion completa");
 assert.ok(parcial.metrics.externalBlockCount >= 1, "debe conservar bloques externos exitosos");
@@ -244,6 +244,193 @@ assert.equal(reintentoCatorce.metrics.cachedBlockCount, 10, "el reintento recupe
 assert.equal(reintentoCatorce.metrics.providerBlockCount, 4, "el reintento envia solo cuatro bloques al proveedor");
 assert.equal(reintentoCatorce.metrics.failedBlockCount, 0, "el reintento no conserva fallos si los cuatro terminan");
 assert.equal(reintentoCatorce.blockManifest.blocks.filter((block) => block.status === "completed").length, 14, "el manifiesto recompuesto conserva catorce bloques completados");
+
+const failedParentIndexes = new Set([4, 5, 12]);
+const adaptiveModel = "adaptive_external_callable";
+const providerAdaptiveBase = new ExternalConversationSegmentationProvider({
+  callable: async (payload) => {
+    if (failedParentIndexes.has(payload.chunkIndex - 1)) {
+      const error = new Error("deadline");
+      error.code = "functions/deadline-exceeded";
+      error.details = {
+        requestId: payload.clientRequestId,
+        stage: "provider_request",
+        retryable: true
+      };
+      throw error;
+    }
+    return {
+      data: {
+        provider: "external",
+        segmentationMode: "linguistic",
+        requestId: payload.clientRequestId,
+        utterances: [
+          {
+            text: `Bloque adaptativo ${payload.chunkIndex} cacheado.`,
+            probableRole: "clinician",
+            speechAct: "clinical_summary",
+            sourceSegmentIds: payload.sourceSegments.map((segment) => segment.id),
+            requiresReview: false
+          }
+        ],
+        warnings: []
+      }
+    };
+  }
+});
+providerAdaptiveBase.local = providerCatorce.local;
+const adaptiveBase = await providerAdaptiveBase.segment({
+  text: "fixture adaptativo catorce bloques " + "contenido ".repeat(500),
+  transcriptId: "retry-14",
+  clientRequestId: "adaptive-base",
+  model: adaptiveModel
+});
+const adaptiveCache = adaptiveBase.blockManifest.blocks.map((block, index) => {
+  if (failedParentIndexes.has(index)) {
+    return {
+      ...block,
+      status: "requires_split",
+      source: "basic",
+      attemptCount: 2,
+      consecutiveTimeouts: 2,
+      lastErrorCode: "functions/deadline-exceeded",
+      providerFailure: {
+        code: "functions/deadline-exceeded",
+        stage: "provider_request",
+        retryable: true
+      },
+      utterances: []
+    };
+  }
+  return {
+    ...block,
+    status: "completed",
+    source: "cache",
+    utterances: [
+      {
+        text: `Bloque ${index + 1} cacheado.`,
+        probableRole: "clinician",
+        speechAct: "clinical_summary",
+        sourceSegmentIds: block.sourceSegmentIds || [],
+        requiresReview: false
+      }
+    ]
+  };
+});
+
+let completedCachedParentCalls = 0;
+let failedParentRetryCalls = 0;
+let childProviderCalls = 0;
+let forcedChildFailure = false;
+const providerAdaptiveSplit = new ExternalConversationSegmentationProvider({
+  callable: async (payload) => {
+    if (/adaptive-split-1:b(?:1|2|3|4|7|8|9|10|11|12|14)$/.test(payload.blockId)) completedCachedParentCalls += 1;
+    if (/adaptive-split-1:b(?:5|6|13)$/.test(payload.blockId)) failedParentRetryCalls += 1;
+    childProviderCalls += 1;
+    if (!forcedChildFailure && /adaptive-split-1:b13[A-Z]/.test(payload.blockId)) {
+      forcedChildFailure = true;
+      const error = new Error("deadline");
+      error.code = "functions/deadline-exceeded";
+      error.details = {
+        requestId: payload.clientRequestId,
+        stage: "provider_request",
+        retryable: true
+      };
+      throw error;
+    }
+    return {
+      data: {
+        provider: "external",
+        segmentationMode: "linguistic",
+        requestId: payload.clientRequestId,
+        utterances: [
+          {
+            text: `Subbloque ${payload.blockId} completado.`,
+            probableRole: "clinician",
+            speechAct: "clinical_summary",
+            sourceSegmentIds: payload.sourceSegments.map((segment) => segment.id),
+            requiresReview: false
+          }
+        ],
+        warnings: []
+      }
+    };
+  }
+});
+providerAdaptiveSplit.local = providerCatorce.local;
+const splitAttempt = await providerAdaptiveSplit.segment({
+  text: "fixture adaptativo catorce bloques " + "contenido ".repeat(500),
+  transcriptId: "retry-14",
+  clientRequestId: "adaptive-split-1",
+  model: adaptiveModel,
+  sourceTranscriptHash: adaptiveBase.blockManifest.sourceTranscriptHash,
+  cachedBlocks: adaptiveCache
+});
+assert.equal(completedCachedParentCalls, 0, "completedCachedParentCalls === 0");
+assert.equal(failedParentRetryCalls, 0, "failedParentRetryCalls === 0");
+assert.ok(childProviderCalls > 0, "childProviderCalls > 0");
+assert.ok(splitAttempt.blockManifest.blocks.some((block) => block.parentBlockId && block.status === "failed"), "un hijo fallido queda persistible");
+
+const retryWithSecondLevelCache = splitAttempt.blockManifest.blocks.map((block) => {
+  if (block.parentBlockId && block.status === "failed") {
+    return {
+      ...block,
+      status: "requires_split",
+      attemptCount: 2,
+      consecutiveTimeouts: 2,
+      lastErrorCode: "functions/deadline-exceeded",
+      providerFailure: {
+        code: "functions/deadline-exceeded",
+        stage: "provider_request",
+        retryable: true
+      }
+    };
+  }
+  return block;
+});
+let secondLevelCalls = 0;
+const providerSecondLevel = new ExternalConversationSegmentationProvider({
+  callable: async (payload) => {
+    secondLevelCalls += 1;
+    return {
+      data: {
+        provider: "external",
+        segmentationMode: "linguistic",
+        requestId: payload.clientRequestId,
+        utterances: [
+          {
+            text: `Hoja ${payload.blockId} completada.`,
+            probableRole: "patient",
+            speechAct: "answer",
+            sourceSegmentIds: payload.sourceSegments.map((segment) => segment.id),
+            requiresReview: false
+          }
+        ],
+        warnings: []
+      }
+    };
+  }
+});
+providerSecondLevel.local = providerCatorce.local;
+const finalAdaptive = await providerSecondLevel.segment({
+  text: "fixture adaptativo catorce bloques " + "contenido ".repeat(500),
+  transcriptId: "retry-14",
+  clientRequestId: "adaptive-split-2",
+  model: adaptiveModel,
+  sourceTranscriptHash: adaptiveBase.blockManifest.sourceTranscriptHash,
+  cachedBlocks: retryWithSecondLevelCache
+});
+const finalParentRows = finalAdaptive.blockManifest.blocks.filter((block) => !block.parentBlockId && !block.parentBlockKey);
+const finalCompletedParentCount = finalParentRows.filter((block) => ["completed", "completed_from_children"].includes(block.status)).length;
+const orderedUtterances = finalAdaptive.utterances.every((utterance, index, list) => index === 0 || Number(utterance.sequence) > Number(list[index - 1].sequence));
+const utteranceIds = finalAdaptive.utterances.map((utterance) => utterance.id);
+const duplicateUtteranceCount = utteranceIds.length - new Set(utteranceIds).size;
+const coveredParentRanges = finalParentRows.every((block) => Number.isFinite(Number(block.start)) && Number.isFinite(Number(block.end)) && block.end >= block.start);
+assert.ok(secondLevelCalls > 0, "un hijo requiere una segunda subdivision y procesa hojas");
+assert.equal(finalCompletedParentCount, 14, "finalCompletedParentCount === 14");
+assert.equal(duplicateUtteranceCount, 0, "duplicateUtteranceCount === 0");
+assert.equal(coveredParentRanges, true, "missingUtteranceCount === 0 por cobertura de rangos padre");
+assert.equal(orderedUtterances, true, "orderedUtterances === true");
 
 let llamadasRetry = 0;
 const providerRetry = new ExternalConversationSegmentationProvider({

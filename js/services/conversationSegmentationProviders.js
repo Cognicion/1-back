@@ -9,6 +9,11 @@ const PENDING_SEGMENTATION_REQUESTS = new Map();
 const MAX_BLOCK_CHARS = 1800;
 const MAX_BLOCK_UTTERANCES = 14;
 const BLOCK_CONTEXT_CHARS = 420;
+const MAX_CHILD_BLOCK_CHARS = 900;
+const MAX_CHILD_BLOCK_UTTERANCES = 5;
+const MAX_BLOCK_ATTEMPTS = 2;
+const MAX_CHILD_ATTEMPTS = 2;
+const MAX_SPLIT_LEVEL = 2;
 
 function texto(valor = "") {
   return String(valor || "").trim();
@@ -51,9 +56,13 @@ export function crearClaveBloqueSegmentacion({
   contextHash = "",
   promptVersion = CONVERSATION_SEGMENTATION_PROMPT_VERSION,
   model = "external_callable",
-  segmenterVersion = CONVERSATION_SEGMENTATION_CLIENT_VERSION
+  segmenterVersion = CONVERSATION_SEGMENTATION_CLIENT_VERSION,
+  parentBlockContentHash = "",
+  childContentHash = "",
+  childContextHash = "",
+  splitLevel = 0
 } = {}) {
-  return [
+  const parts = [
     "block",
     segmenterVersion,
     promptVersion,
@@ -61,7 +70,16 @@ export function crearClaveBloqueSegmentacion({
     sourceTranscriptHash || "sin-transcript",
     blockContentHash || "sin-block",
     contextHash || "sin-context"
-  ].join(":");
+  ];
+  if (Number(splitLevel || 0) > 0) {
+    parts.push(
+      `split-${Number(splitLevel || 0)}`,
+      parentBlockContentHash || "sin-parent",
+      childContentHash || "sin-child",
+      childContextHash || "sin-child-context"
+    );
+  }
+  return parts.join(":");
 }
 
 function clonarResultado(resultado = {}) {
@@ -194,24 +212,40 @@ function describirBloque({ localUtterances = [], block = {}, index = 0, totalBlo
   const blockText = textoRango(localUtterances, block.start, block.end);
   const blockContentHash = hashTextoEstable(blockText);
   const contextHash = hashTextoEstable(`${context.before}\n---\n${context.after}`);
+  const splitLevel = Number(block.splitLevel || 0);
+  const parentBlockContentHash = block.parentBlockContentHash || "";
+  const childContentHash = splitLevel > 0 ? blockContentHash : "";
+  const childContextHash = splitLevel > 0 ? contextHash : "";
   const blockKey = crearClaveBloqueSegmentacion({
     sourceTranscriptHash,
     blockContentHash,
     contextHash,
     promptVersion: CONVERSATION_SEGMENTATION_PROMPT_VERSION,
     model,
-    segmenterVersion: CONVERSATION_SEGMENTATION_CLIENT_VERSION
+    segmenterVersion: CONVERSATION_SEGMENTATION_CLIENT_VERSION,
+    parentBlockContentHash,
+    childContentHash,
+    childContextHash,
+    splitLevel
   });
   return {
     ...block,
     blockIndex: index,
     blockNumber: index + 1,
     totalBlocks,
-    blockId: `block-${index + 1}`,
+    blockId: block.blockId || (splitLevel > 0 ? `block-${index + 1}${String.fromCharCode(65 + Number(block.childIndex || 0))}` : `block-${index + 1}`),
     blockKey,
     sourceTranscriptHash,
     blockContentHash,
     contextHash,
+    splitLevel,
+    parentBlockId: block.parentBlockId || "",
+    parentBlockKey: block.parentBlockKey || "",
+    parentBlockIndex: Number.isFinite(Number(block.parentBlockIndex)) ? Number(block.parentBlockIndex) : null,
+    parentBlockContentHash,
+    childContentHash,
+    childContextHash,
+    childIndex: Number.isFinite(Number(block.childIndex)) ? Number(block.childIndex) : null,
     promptVersion: CONVERSATION_SEGMENTATION_PROMPT_VERSION,
     model,
     segmenterVersion: CONVERSATION_SEGMENTATION_CLIENT_VERSION,
@@ -221,8 +255,71 @@ function describirBloque({ localUtterances = [], block = {}, index = 0, totalBlo
   };
 }
 
+function bloqueRequiereSplit(cached = {}) {
+  return cached?.status === "requires_split"
+    || (cached?.status === "failed" && Number(cached.consecutiveTimeouts || 0) >= 2)
+    || (cached?.providerFailure?.code === "functions/deadline-exceeded" && Number(cached.attemptCount || 0) >= MAX_BLOCK_ATTEMPTS);
+}
+
+function codigoTimeout(error = {}) {
+  const code = String(error?.code || error?.status || error?.providerFailure?.code || "");
+  return code.includes("deadline") || code.includes("timeout");
+}
+
+function siguienteLimiteSeguro(localUtterances = [], start = 0, parentEnd = 0) {
+  let end = start;
+  let chars = 0;
+  while (end <= parentEnd) {
+    const current = localUtterances[end] || {};
+    const next = localUtterances[end + 1] || null;
+    chars += texto(current.text).length + 1;
+    const count = end - start + 1;
+    const shouldKeepPair = current.speechAct === "question"
+      && next
+      && end < parentEnd
+      && ["answer", "correction"].includes(next.speechAct);
+    const shouldKeepCorrection = next
+      && end < parentEnd
+      && next.speechAct === "correction";
+    if (!shouldKeepPair && !shouldKeepCorrection && count >= 2 && (chars >= MAX_CHILD_BLOCK_CHARS || count >= MAX_CHILD_BLOCK_UTTERANCES)) break;
+    end += 1;
+  }
+  return Math.max(start, Math.min(parentEnd, end));
+}
+
+function subdividirBloqueSeguro(parent = {}, localUtterances = []) {
+  const splitLevel = Number(parent.splitLevel || 0) + 1;
+  if (splitLevel > MAX_SPLIT_LEVEL || parent.start >= parent.end) return [];
+  const children = [];
+  let start = parent.start;
+  while (start <= parent.end) {
+    const end = siguienteLimiteSeguro(localUtterances, start, parent.end);
+    children.push({
+      start,
+      end,
+      reason: "adaptive_split",
+      splitLevel,
+      parentBlockId: parent.blockId,
+      parentBlockKey: parent.blockKey,
+      parentBlockIndex: parent.blockIndex,
+      parentBlockContentHash: parent.blockContentHash,
+      childIndex: children.length,
+      blockId: `${parent.blockId}${String.fromCharCode(65 + children.length)}`
+    });
+    start = end + 1;
+  }
+  if (children.length < 2 && parent.end > parent.start) {
+    const middle = Math.max(parent.start, Math.floor((parent.start + parent.end) / 2));
+    return [
+      { ...children[0], start: parent.start, end: middle, childIndex: 0, blockId: `${parent.blockId}A` },
+      { ...children[0], start: middle + 1, end: parent.end, childIndex: 1, blockId: `${parent.blockId}B` }
+    ];
+  }
+  return children;
+}
+
 function cacheBloqueValido(block = {}, cached = null) {
-  if (!cached || cached.status !== "completed" || !Array.isArray(cached.utterances) || !cached.utterances.length) return false;
+  if (!cached || !["completed", "completed_from_children"].includes(cached.status) || !Array.isArray(cached.utterances) || !cached.utterances.length) return false;
   return cached.blockKey === block.blockKey
     && cached.sourceTranscriptHash === block.sourceTranscriptHash
     && cached.blockContentHash === block.blockContentHash
@@ -402,14 +499,112 @@ export class ExternalConversationSegmentationProvider {
     const cachedByKey = new Map((payload.cachedBlocks || payload.cachedBlockManifest?.blocks || [])
       .filter(Boolean)
       .map((block) => [block.blockKey, block]));
+    const cachedParentsByIndex = new Map((payload.cachedBlocks || payload.cachedBlockManifest?.blocks || [])
+      .filter((block) => block && !block.parentBlockId && !block.parentBlockKey && Number.isFinite(Number(block.blockIndex)))
+      .map((block) => [Number(block.blockIndex), block]));
+    const obtenerCacheBloque = (block, index) => {
+      const direct = cachedByKey.get(block.blockKey);
+      if (cacheBloqueValido(block, direct)) return direct;
+      const byIndex = cachedParentsByIndex.get(Number(index));
+      if (cacheBloqueValido(block, byIndex)) return byIndex;
+      return direct || byIndex || null;
+    };
     const onlyBlockKeys = new Set(Array.isArray(payload.onlyBlockKeys) ? payload.onlyBlockKeys.filter(Boolean) : []);
     const blockResults = new Array(blocks.length);
+    const childResultsByParent = new Map();
+    const splitChildrenByParent = new Map();
+    const splitLeafBlocksByParent = new Map();
     const saveBlock = typeof payload.onBlockSettled === "function" ? payload.onBlockSettled : async () => {};
     let successfulCount = 0;
     let settledCount = 0;
     let providerCount = 0;
     let cachedCount = 0;
     let failedCountRunning = 0;
+    const manifestBlocks = () => {
+      const rows = [];
+      blocks.forEach((block, index) => {
+        const result = blockResults[index];
+        rows.push(result ? {
+          blockIndex: index,
+          blockNumber: block.blockNumber,
+          start: block.start,
+          end: block.end,
+          blockKey: block.blockKey,
+          blockId: block.blockId || "",
+          sourceTranscriptHash: block.sourceTranscriptHash,
+          blockContentHash: block.blockContentHash,
+          contextHash: block.contextHash,
+          promptVersion: block.promptVersion,
+          model: block.model,
+          segmenterVersion: block.segmenterVersion,
+          parentBlockContentHash: block.parentBlockContentHash || "",
+          childContentHash: block.childContentHash || "",
+          childContextHash: block.childContextHash || "",
+          status: result.status,
+          durationMs: result.durationMs || 0,
+          source: result.source || "",
+          requestId: result.requestId || "",
+          attemptCount: result.attemptCount || 0,
+          consecutiveTimeouts: result.consecutiveTimeouts || 0,
+          lastErrorCode: result.lastErrorCode || result.providerFailure?.code || "",
+          lastDurationMs: result.lastDurationMs || result.durationMs || 0,
+          splitLevel: result.splitLevel || 0,
+          childBlockIds: result.childBlockIds || []
+        } : {
+          blockIndex: index,
+          blockNumber: block.blockNumber,
+          start: block.start,
+          end: block.end,
+          blockKey: block.blockKey,
+          blockId: block.blockId || "",
+          sourceTranscriptHash: block.sourceTranscriptHash,
+          blockContentHash: block.blockContentHash,
+          contextHash: block.contextHash,
+          promptVersion: block.promptVersion,
+          model: block.model,
+          segmenterVersion: block.segmenterVersion,
+          parentBlockContentHash: block.parentBlockContentHash || "",
+          childContentHash: block.childContentHash || "",
+          childContextHash: block.childContextHash || "",
+          status: "pending",
+          source: "",
+          attemptCount: obtenerCacheBloque(block, index)?.attemptCount || 0,
+          consecutiveTimeouts: obtenerCacheBloque(block, index)?.consecutiveTimeouts || 0,
+          splitLevel: block.splitLevel || 0
+        });
+        (splitChildrenByParent.get(index) || []).forEach((child) => {
+          const childResult = childResultsByParent.get(index)?.get(child.blockKey);
+          rows.push(childResult ? {
+            ...child,
+            ...childResult,
+            status: childResult.status,
+            sourceTranscriptHash: child.sourceTranscriptHash,
+            blockContentHash: child.blockContentHash,
+            contextHash: child.contextHash,
+            promptVersion: child.promptVersion,
+            model: child.model,
+            segmenterVersion: child.segmenterVersion,
+            parentBlockContentHash: child.parentBlockContentHash || "",
+            childContentHash: child.childContentHash || "",
+            childContextHash: child.childContextHash || "",
+            source: childResult.source || "",
+            durationMs: childResult.durationMs || 0,
+            requestId: childResult.requestId || "",
+            parentBlockId: block.blockId,
+            parentBlockKey: block.blockKey,
+            splitLevel: child.splitLevel || 1
+          } : {
+            ...child,
+            status: "pending",
+            source: "",
+            parentBlockId: block.blockId,
+            parentBlockKey: block.blockKey,
+            splitLevel: child.splitLevel || 1
+          });
+        });
+      });
+      return rows;
+    };
     const emitProgress = (stage = "external_block", extra = {}) => {
       onProgress({
         stage,
@@ -421,35 +616,14 @@ export class ExternalConversationSegmentationProvider {
         cachedBlockCount: cachedCount,
         providerBlockCount: providerCount,
         failedBlockCount: failedCountRunning,
-        blockManifest: blocks.map((block, index) => {
-          const result = blockResults[index];
-          return result ? {
-            blockIndex: index,
-            blockNumber: block.blockNumber,
-            start: block.start,
-            end: block.end,
-            blockKey: block.blockKey,
-            status: result.status,
-            durationMs: result.durationMs || 0,
-            source: result.source || "",
-            requestId: result.requestId || ""
-          } : {
-            blockIndex: index,
-            blockNumber: block.blockNumber,
-            start: block.start,
-            end: block.end,
-            blockKey: block.blockKey,
-            status: "pending",
-            source: ""
-          };
-        }),
+        blockManifest: manifestBlocks(),
         ...extra
       });
     };
 
     emitProgress("block_manifest_ready", { recoveredBlocks: 0 });
     for (let index = 0; index < blocks.length; index += 1) {
-      const cached = cachedByKey.get(blocks[index].blockKey);
+      const cached = obtenerCacheBloque(blocks[index], index);
       if (!cacheBloqueValido(blocks[index], cached)) continue;
       cachedCount += 1;
       successfulCount += 1;
@@ -467,21 +641,159 @@ export class ExternalConversationSegmentationProvider {
       emitProgress("block_cache_hit", { blockId: blocks[index].blockId });
     }
 
-    const processOne = async (index) => {
-      const block = blocks[index];
-      if (blockResults[index]) return;
-      if (onlyBlockKeys.size && !onlyBlockKeys.has(block.blockKey)) {
-        blockResults[index] = { ...block, status: "pending", source: "basic", utterances: [] };
+    const processingUnits = [];
+    const prepararSplit = (parent, parentIndex) => {
+      const childRanges = subdividirBloqueSeguro(parent, local.utterances);
+      const children = childRanges.map((childRange) => describirBloque({
+        localUtterances: local.utterances,
+        block: childRange,
+        index: parentIndex,
+        totalBlocks: blocks.length,
+        sourceTranscriptHash,
+        model
+      }));
+      const rows = [];
+      const leaves = [];
+      children.forEach((child) => {
+        rows.push(child);
+        const cachedChild = cachedByKey.get(child.blockKey);
+        if (bloqueRequiereSplit(cachedChild) && Number(child.splitLevel || 0) < MAX_SPLIT_LEVEL) {
+          const grandchildren = subdividirBloqueSeguro(child, local.utterances).map((grandchildRange) => describirBloque({
+            localUtterances: local.utterances,
+            block: grandchildRange,
+            index: parentIndex,
+            totalBlocks: blocks.length,
+            sourceTranscriptHash,
+            model
+          }));
+          rows.push(...grandchildren);
+          leaves.push(...grandchildren);
+        } else {
+          leaves.push(child);
+        }
+      });
+      splitChildrenByParent.set(parentIndex, rows);
+      splitLeafBlocksByParent.set(parentIndex, leaves);
+      childResultsByParent.set(parentIndex, new Map());
+      blockResults[parentIndex] = {
+        ...parent,
+        status: "requires_split",
+        source: "basic",
+        utterances: [],
+        attemptCount: obtenerCacheBloque(parent, parentIndex)?.attemptCount || MAX_BLOCK_ATTEMPTS,
+        consecutiveTimeouts: obtenerCacheBloque(parent, parentIndex)?.consecutiveTimeouts || MAX_BLOCK_ATTEMPTS,
+        splitLevel: parent.splitLevel || 0,
+        childBlockIds: children.map((child) => child.blockId),
+        providerFailure: obtenerCacheBloque(parent, parentIndex)?.providerFailure || null
+      };
+      leaves.forEach((child) => {
+        const cachedChild = cachedByKey.get(child.blockKey);
+        if (cacheBloqueValido(child, cachedChild)) {
+          cachedCount += 1;
+          const childCompleted = {
+            ...child,
+            ...cachedChild,
+            status: "success",
+            source: "cache",
+            utterances: cachedChild.utterances || [],
+            warnings: cachedChild.warnings || [],
+            requestId: cachedChild.requestId || `${clientRequestId}:cache:${child.blockId}`,
+            durationMs: cachedChild.durationMs || 0
+          };
+          childResultsByParent.get(parentIndex).set(child.blockKey, childCompleted);
+        } else {
+          processingUnits.push({ parentIndex, block: child, isChild: true });
+        }
+      });
+    };
+
+    blocks.forEach((block, index) => {
+      if (blockResults[index]?.status === "success") return;
+      const cached = obtenerCacheBloque(block, index);
+      if (bloqueRequiereSplit(cached)) {
+        prepararSplit(block, index);
+        return;
+      }
+      processingUnits.push({ parentIndex: index, block, isChild: false });
+    });
+
+    const finalizarPadreDesdeHijos = async (parentIndex) => {
+      const children = splitLeafBlocksByParent.get(parentIndex) || splitChildrenByParent.get(parentIndex) || [];
+      if (!children.length) return false;
+      const results = childResultsByParent.get(parentIndex) || new Map();
+      const childResults = children.map((child) => results.get(child.blockKey)).filter(Boolean);
+      if (childResults.length !== children.length) return false;
+      if (!childResults.every((child) => ["success", "completed"].includes(child.status))) return false;
+      const parent = blocks[parentIndex];
+      const completed = {
+        ...parent,
+        status: "success",
+        source: childResults.some((child) => child.source === "provider") ? "provider" : "cache",
+        utterances: childResults.flatMap((child) => child.utterances || []),
+        warnings: childResults.flatMap((child) => child.warnings || []),
+        durationMs: childResults.reduce((sum, child) => sum + Number(child.durationMs || 0), 0),
+        completedAt: new Date().toISOString(),
+        completedFromChildren: true,
+        childBlockIds: children.map((child) => child.blockId),
+        splitLevel: Math.max(...children.map((child) => Number(child.splitLevel || 1)))
+      };
+      blockResults[parentIndex] = completed;
+      successfulCount += 1;
+      await saveBlock({
+        ...completed,
+        status: "completed_from_children"
+      });
+      emitProgress("block_completed_from_children", { blockId: parent.blockId });
+      return true;
+    };
+
+    await Promise.all(blocks.map((_block, index) => finalizarPadreDesdeHijos(index)));
+
+    const processOne = async (unit) => {
+      const { parentIndex, block, isChild } = unit;
+      if (!isChild && blockResults[parentIndex]?.status === "success") return;
+      const allowedByFilter = !onlyBlockKeys.size
+        || onlyBlockKeys.has(block.blockKey)
+        || (isChild && onlyBlockKeys.has(block.parentBlockKey));
+      if (!allowedByFilter) {
+        if (!isChild && !blockResults[parentIndex]) blockResults[parentIndex] = { ...block, status: "pending", source: "basic", utterances: [] };
+        return;
+      }
+      const cachedPreviousForUnit = cachedByKey.get(block.blockKey) || {};
+      if (isChild && Number(cachedPreviousForUnit.attemptCount || 0) >= MAX_CHILD_ATTEMPTS && Number(block.splitLevel || 0) >= MAX_SPLIT_LEVEL) {
+        const exhausted = {
+          ...block,
+          status: "failed",
+          source: "basic",
+          utterances: [],
+          attemptCount: Number(cachedPreviousForUnit.attemptCount || 0),
+          consecutiveTimeouts: Number(cachedPreviousForUnit.consecutiveTimeouts || 0),
+          lastErrorCode: cachedPreviousForUnit.lastErrorCode || cachedPreviousForUnit.providerFailure?.code || "max_attempts_reached",
+          providerFailure: {
+            code: cachedPreviousForUnit.lastErrorCode || cachedPreviousForUnit.providerFailure?.code || "max_attempts_reached",
+            stage: "adaptive_split",
+            retryable: false
+          },
+          requiresReview: true
+        };
+        childResultsByParent.get(parentIndex)?.set(block.blockKey, exhausted);
+        failedCountRunning += 1;
+        settledCount += 1;
+        await saveBlock(exhausted);
+        emitProgress("block_failed_max_attempts", { blockId: block.blockId });
         return;
       }
       if (payload.abortSignal?.aborted) {
         const cancelled = { ...block, status: "cancelled", source: "basic", utterances: [], providerFailure: { code: "cancelled", requestId: clientRequestId, retryable: true } };
-        blockResults[index] = cancelled;
+        if (isChild) childResultsByParent.get(parentIndex)?.set(block.blockKey, cancelled);
+        else blockResults[parentIndex] = cancelled;
         settledCount += 1;
         await saveBlock(cancelled);
         return;
       }
-      const requestBlockId = `${clientRequestId}:b${index + 1}`;
+      const requestBlockId = isChild
+        ? `${clientRequestId}:b${parentIndex + 1}${String.fromCharCode(65 + Number(block.childIndex || 0))}`
+        : `${clientRequestId}:b${parentIndex + 1}`;
       emitProgress("external_block", { blockId: requestBlockId });
       const blockStarted = Date.now();
       try {
@@ -491,7 +803,7 @@ export class ExternalConversationSegmentationProvider {
           clientRequestId: requestBlockId,
           blockId: requestBlockId,
           blockKey: block.blockKey,
-          chunkIndex: index + 1,
+          chunkIndex: parentIndex + 1,
           chunkCount: blocks.length,
           locale: payload.locale || "es-MX",
           requestedMode: "linguistic",
@@ -511,7 +823,6 @@ export class ExternalConversationSegmentationProvider {
         promptVersion: data.promptVersion || CONVERSATION_SEGMENTATION_PROMPT_VERSION
         });
         providerCount += 1;
-        successfulCount += 1;
         settledCount += 1;
         const completed = {
           ...block,
@@ -524,11 +835,17 @@ export class ExternalConversationSegmentationProvider {
           durationMs: Date.now() - blockStarted,
           completedAt: new Date().toISOString()
         };
-        blockResults[index] = completed;
+        if (isChild) {
+          childResultsByParent.get(parentIndex)?.set(block.blockKey, completed);
+        } else {
+          successfulCount += 1;
+          blockResults[parentIndex] = completed;
+        }
         await saveBlock({
           ...completed,
           status: "completed"
         });
+        if (isChild) await finalizarPadreDesdeHijos(parentIndex);
         emitProgress("block_completed", { blockId: requestBlockId });
     } catch (error) {
       if (!this.fallbackToLocal) throw error;
@@ -543,28 +860,56 @@ export class ExternalConversationSegmentationProvider {
       };
         failedCountRunning += 1;
         settledCount += 1;
+        const cachedPrevious = cachedByKey.get(block.blockKey) || {};
+        const attemptCount = Number(cachedPrevious.attemptCount || 0) + 1;
+        const consecutiveTimeouts = codigoTimeout(error)
+          ? Number(cachedPrevious.consecutiveTimeouts || 0) + 1
+          : 0;
+        const shouldSplit = !isChild && consecutiveTimeouts >= MAX_BLOCK_ATTEMPTS && Number(block.splitLevel || 0) < MAX_SPLIT_LEVEL;
+        const childRanges = shouldSplit ? subdividirBloqueSeguro(block, local.utterances) : [];
+        if (shouldSplit && childRanges.length) {
+          const children = childRanges.map((childRange) => describirBloque({
+            localUtterances: local.utterances,
+            block: childRange,
+            index: parentIndex,
+            totalBlocks: blocks.length,
+            sourceTranscriptHash,
+            model
+          }));
+          splitChildrenByParent.set(parentIndex, children);
+          splitLeafBlocksByParent.set(parentIndex, children);
+          if (!childResultsByParent.has(parentIndex)) childResultsByParent.set(parentIndex, new Map());
+        }
         const failed = {
           ...block,
           blockId: requestBlockId,
-          status: "failed",
+          status: shouldSplit && childRanges.length ? "requires_split" : "failed",
           source: "basic",
           utterances: [],
           providerFailure,
+          attemptCount,
+          consecutiveTimeouts,
+          lastErrorCode: providerFailure.code,
+          lastDurationMs: Date.now() - blockStarted,
+          splitLevel: block.splitLevel || 0,
+          parentBlockId: block.parentBlockId || "",
+          childBlockIds: (splitChildrenByParent.get(parentIndex) || []).map((child) => child.blockId),
           durationMs: Date.now() - blockStarted,
           failedAt: new Date().toISOString()
         };
-        blockResults[index] = failed;
+        if (isChild) childResultsByParent.get(parentIndex)?.set(block.blockKey, failed);
+        else blockResults[parentIndex] = failed;
         await saveBlock(failed);
         emitProgress("block_failed", { blockId: requestBlockId });
       }
     };
 
     let nextIndex = 0;
-    const workers = Array.from({ length: Math.min(2, blocks.length) }, async () => {
-      while (nextIndex < blocks.length) {
-        const index = nextIndex;
+    const workers = Array.from({ length: Math.min(2, Math.max(1, processingUnits.length)) }, async () => {
+      while (nextIndex < processingUnits.length) {
+        const unit = processingUnits[nextIndex];
         nextIndex += 1;
-        await processOne(index);
+        await processOne(unit);
         if (payload.abortSignal?.aborted) break;
       }
     });
@@ -577,9 +922,12 @@ export class ExternalConversationSegmentationProvider {
       ...block,
       status: ["success", "completed"].includes(block.status) ? "success" : "failed"
     })));
-    const finalProvider = successCount === blocks.length && blocks.length === 1 && blocks[0].start === 0 && blocks[0].end === local.utterances.length - 1
+    const finalProvider = failedCount > 0 && successCount > 0
+      ? "hybrid_review_required"
+      : (successCount === blocks.length && blocks.length === 1 && blocks[0].start === 0 && blocks[0].end === local.utterances.length - 1
       ? "external"
-      : (successCount > 0 ? "hybrid" : "rule_based");
+      : (successCount > 0 ? "hybrid" : "rule_based"));
+    const finalManifestRows = manifestBlocks();
     const warnings = [
       ...(local.warnings || []),
       ...normalizedBlockResults.flatMap((block) => block.warnings || []),
@@ -587,7 +935,7 @@ export class ExternalConversationSegmentationProvider {
     ];
     const result = validarSegmentacionConversacional({
       transcriptId: payload.transcriptId || payload.transcriptSessionId || "",
-      segmentationMode: finalProvider === "external" ? "linguistic" : (finalProvider === "hybrid" ? "hybrid" : "linguistic"),
+      segmentationMode: finalProvider === "external" ? "linguistic" : (finalProvider.startsWith("hybrid") ? "hybrid" : "linguistic"),
       schemaVersion: CONVERSATION_SEGMENTATION_SCHEMA_VERSION,
       promptVersion: CONVERSATION_SEGMENTATION_PROMPT_VERSION,
       provider: finalProvider,
@@ -606,22 +954,35 @@ export class ExternalConversationSegmentationProvider {
         model,
         segmenterVersion: CONVERSATION_SEGMENTATION_CLIENT_VERSION,
         totalBlocks: blocks.length,
-        blocks: normalizedBlockResults.map((block, index) => ({
-          blockIndex: index,
-          blockNumber: index + 1,
+        blocks: finalManifestRows.map((block, index) => ({
+          blockIndex: Number.isFinite(Number(block.blockIndex)) ? Number(block.blockIndex) : index,
+          blockNumber: block.blockNumber || index + 1,
           start: block.start,
           end: block.end,
           blockKey: block.blockKey,
+          blockId: block.blockId || "",
+          parentBlockId: block.parentBlockId || "",
+          parentBlockKey: block.parentBlockKey || "",
+          parentBlockIndex: Number.isFinite(Number(block.parentBlockIndex)) ? Number(block.parentBlockIndex) : null,
           sourceTranscriptHash: block.sourceTranscriptHash,
           blockContentHash: block.blockContentHash,
           contextHash: block.contextHash,
+          parentBlockContentHash: block.parentBlockContentHash || "",
+          childContentHash: block.childContentHash || "",
+          childContextHash: block.childContextHash || "",
           promptVersion: block.promptVersion,
           model: block.model,
           segmenterVersion: block.segmenterVersion,
-          status: ["success", "completed"].includes(block.status) ? "completed" : block.status,
+          status: block.completedFromChildren ? "completed_from_children" : (["success", "completed"].includes(block.status) ? "completed" : block.status),
           source: block.source || "basic",
           durationMs: block.durationMs || 0,
           requestId: block.requestId || "",
+          attemptCount: block.attemptCount || 0,
+          consecutiveTimeouts: block.consecutiveTimeouts || 0,
+          lastErrorCode: block.lastErrorCode || block.providerFailure?.code || "",
+          lastDurationMs: block.lastDurationMs || block.durationMs || 0,
+          splitLevel: block.splitLevel || 0,
+          childBlockIds: block.childBlockIds || [],
           utterances: block.utterances || [],
           warnings: block.warnings || [],
           providerFailure: block.providerFailure || null
