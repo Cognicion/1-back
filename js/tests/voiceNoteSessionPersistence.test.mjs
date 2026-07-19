@@ -7,8 +7,10 @@ import {
   crearSegmentationKeyVoz,
   crearSessionKeyVoz,
   guardarSesionNotaVozLocal,
+  guardarSegmentacionNotaVozLocal,
   hashTextoVoz,
   buscarSesionesNotaVozLocales,
+  limpiarSesionesNotaVozVencidas,
   sesionVozExpirada,
   sesionVozTieneContenido,
   validarSesionVozContexto
@@ -47,12 +49,14 @@ const session = {
   expiresAt: Date.now() + VOICE_NOTE_SESSION_TTL_MS
 };
 
+assert.equal(VOICE_NOTE_SESSION_TTL_MS, 72 * 60 * 60 * 1000, "TTL de borradores locales debe ser 72 horas");
 assert.equal(sesionVozTieneContenido(session), true);
 assert.equal(validarSesionVozContexto(session, context), true);
 assert.equal(validarSesionVozContexto(session, { ...context, patientId: "otro" }), false);
 assert.equal(validarSesionVozContexto(session, { ...context, encounterId: "otro" }), false);
 assert.equal(validarSesionVozContexto(session, { ...context, userId: "otro" }), false);
-assert.equal(sesionVozExpirada({ ...session, expiresAt: Date.now() - 1 }), true);
+assert.equal(sesionVozExpirada({ ...session, sessionStatus: "in_progress", expiresAt: Date.now() - 1 }), true);
+assert.equal(sesionVozExpirada({ ...session, sessionStatus: "transferred", expiresAt: Date.now() - 1 }), false, "una sesion transferida no caduca por TTL local");
 assert.equal(sesionVozTieneContenido({ schemaVersion: VOICE_NOTE_SESSION_SCHEMA_VERSION, ...context }), false);
 assert.equal(sesionVozTieneContenido({
   schemaVersion: VOICE_NOTE_SESSION_SCHEMA_VERSION,
@@ -150,8 +154,10 @@ function instalarIndexedDbFalso() {
             };
           },
           transaction(storeName) {
+            const storeNames = Array.isArray(storeName) ? storeName : [storeName];
             const tx = {
               objectStore(targetStoreName) {
+                if (!storeNames.includes(targetStoreName)) throw new Error(`Store fuera de transaccion: ${targetStoreName}`);
                 const store = dbState.stores.get(targetStoreName);
                 return {
                   put(record) {
@@ -172,6 +178,33 @@ function instalarIndexedDbFalso() {
                     store.delete(key);
                     setTimeout(() => tx.oncomplete?.(), 0);
                     return {};
+                  },
+                  openCursor() {
+                    const req = {};
+                    const values = [...store.values()];
+                    let cursorIndex = 0;
+                    const pump = () => {
+                      if (cursorIndex >= values.length) {
+                        req.result = null;
+                        req.onsuccess?.();
+                        setTimeout(() => tx.oncomplete?.(), 0);
+                        return;
+                      }
+                      const value = values[cursorIndex];
+                      req.result = {
+                        value,
+                        continue() {
+                          cursorIndex += 1;
+                          setTimeout(pump, 0);
+                        },
+                        delete() {
+                          store.delete(value.key);
+                        }
+                      };
+                      req.onsuccess?.();
+                    };
+                    setTimeout(pump, 0);
+                    return req;
                   },
                   index(indexName) {
                     const keyPath = dbState.indexes.get(`${targetStoreName}.${indexName}`);
@@ -248,6 +281,70 @@ assert.equal(savedIntegration.saveVersion, 1, "persistedSaveVersion === 1");
 assert.equal(listedIntegration.length, 1, "readbackVerified === true");
 assert.equal((listedIntegration[0].transcript.corrected || "").length, 21541);
 
+const cleanupNow = Date.now();
+const baseCleanupContext = {
+  userId: "user-cleanup",
+  patientId: "patient-cleanup",
+  encounterId: "enc-cleanup"
+};
+const session71h = await guardarSesionNotaVozLocal({
+  schemaVersion: VOICE_NOTE_SESSION_SCHEMA_VERSION,
+  ...baseCleanupContext,
+  sessionId: "session-71h",
+  transcript: { corrected: "sesion vigente", original: "sesion vigente", transcriptHash: "hash-71h" },
+  segmentation: {},
+  sessionStatus: "in_progress",
+  lastMeaningfulActivityAt: new Date(cleanupNow - 71 * 60 * 60 * 1000).toISOString()
+});
+const session73h = await guardarSesionNotaVozLocal({
+  schemaVersion: VOICE_NOTE_SESSION_SCHEMA_VERSION,
+  ...baseCleanupContext,
+  sessionId: "session-73h",
+  transcript: { corrected: "sesion vencida", original: "sesion vencida", transcriptHash: "hash-73h" },
+  segmentation: {},
+  sessionStatus: "in_progress",
+  lastMeaningfulActivityAt: new Date(cleanupNow - 73 * 60 * 60 * 1000).toISOString()
+});
+const sessionTransferred = await guardarSesionNotaVozLocal({
+  schemaVersion: VOICE_NOTE_SESSION_SCHEMA_VERSION,
+  ...baseCleanupContext,
+  sessionId: "session-transferred",
+  transcript: { corrected: "sesion transferida", original: "sesion transferida", transcriptHash: "hash-transferred" },
+  segmentation: {},
+  sessionStatus: "transferred",
+  lastMeaningfulActivityAt: new Date(cleanupNow - 90 * 60 * 60 * 1000).toISOString()
+});
+await guardarSegmentacionNotaVozLocal({
+  ...baseCleanupContext,
+  sessionId: "session-73h",
+  sourceSessionId: "session-73h",
+  transcriptHash: "hash-73h",
+  promptVersion: "prompt-cleanup",
+  model: "model-cleanup",
+  segmenterVersion: "segmenter-cleanup",
+  utterances: [{ id: "utt-expired", text: "segmento" }]
+});
+await guardarSegmentacionNotaVozLocal({
+  ...baseCleanupContext,
+  sessionId: "session-71h",
+  sourceSessionId: "session-71h",
+  transcriptHash: "hash-71h",
+  promptVersion: "prompt-cleanup",
+  model: "model-cleanup",
+  segmenterVersion: "segmenter-cleanup",
+  utterances: [{ id: "utt-active", text: "segmento" }]
+});
+assert.ok(session71h.expiresAt > cleanupNow, "sesion de 71 horas permanece vigente");
+assert.ok(session73h.expiresAt <= cleanupNow, "sesion de mas de 72 horas queda vencida");
+assert.equal(sessionTransferred.sessionStatus, "transferred");
+const deletedByTtl = await limpiarSesionesNotaVozVencidas(cleanupNow);
+assert.equal(deletedByTtl, 2, "limpieza borra sesion vencida y cache de bloques perteneciente a esa sesion");
+const cleanupRemaining = await buscarSesionesNotaVozLocales(baseCleanupContext);
+assert.equal(cleanupRemaining.some((item) => item.sessionId === "session-71h"), true);
+assert.equal(cleanupRemaining.some((item) => item.sessionId === "session-73h"), false);
+assert.equal(cleanupRemaining.some((item) => item.sessionId === "session-transferred"), true);
+assert.equal(cleanupRemaining.find((item) => item.sessionId === "session-71h")?.lastMeaningfulActivityAt, session71h.lastMeaningfulActivityAt, "abrir/listar no prolonga TTL");
+
 const voicePage = read("js/nota-por-voz.js");
 assert.match(voicePage, /isHydratingSession/);
 assert.match(voicePage, /buscarSesionRecuperableVoz/);
@@ -292,6 +389,17 @@ assert.match(voicePage, /JSON\.parse\(JSON\.stringify/);
 assert.match(voicePage, /manual-save-retry/);
 assert.match(voicePage, /transcriptHash/);
 assert.match(voicePage, /session-restored/);
+assert.match(voicePage, /lastMeaningfulActivityAt/);
+assert.match(voicePage, /sessionStatus/);
+assert.match(voicePage, /esActividadSignificativaVoz/);
+assert.match(voicePage, /detectarDuplicadosSesionesVoz/);
+assert.match(voicePage, /aria-selected="false"/);
+assert.match(voicePage, /button\.setAttribute\("aria-selected", "true"\)/);
+assert.match(voicePage, /Selecciona un borrador para continuar/);
+assert.match(voicePage, /Recuperar este borrador de/);
+assert.match(voicePage, /Este borrador se eliminara automaticamente en/);
+assert.match(voicePage, /Posible duplicado/);
+assert.match(voicePage, /state\.lastMeaningfulActivityAt = session\.lastMeaningfulActivityAt/);
 
 const dictado = read("js/dictado.js");
 assert.match(dictado, /restaurarDictadoClinicoDesdeSnapshot/);
@@ -323,5 +431,9 @@ assert.match(persistenceSource, /transaction_abort/);
 assert.match(persistenceSource, /verification_failed/);
 assert.match(persistenceSource, /segmentation_verification_failed/);
 assert.match(persistenceSource, /throw crearErrorPersistencia/);
+assert.match(persistenceSource, /72 \* 60 \* 60 \* 1000/);
+assert.match(persistenceSource, /\["draft", "in_progress"\]\.includes\(status\)/);
+assert.match(persistenceSource, /ttl_cleanup/);
+assert.match(persistenceSource, /sourceSessionId/);
 
 console.log("voiceNoteSessionPersistence.test.mjs OK");

@@ -1,5 +1,5 @@
 export const VOICE_NOTE_SESSION_SCHEMA_VERSION = "voice_note_session_v1";
-export const VOICE_NOTE_SESSION_TTL_MS = 24 * 60 * 60 * 1000;
+export const VOICE_NOTE_SESSION_TTL_MS = 72 * 60 * 60 * 1000;
 export const VOICE_NOTE_SESSION_DB_NAME = "cognicionVoiceNoteSessionStore";
 const DB_VERSION = 1;
 const STORE_SESSIONS = "sessions";
@@ -101,7 +101,9 @@ export function sesionVozTieneContenido(payload = {}) {
 }
 
 export function sesionVozExpirada(payload = {}, now = Date.now()) {
-  return Boolean(payload.expiresAt && Number(payload.expiresAt) < now);
+  const status = String(payload.sessionStatus || "draft");
+  if (!["draft", "in_progress"].includes(status)) return false;
+  return Boolean(payload.expiresAt && Number(payload.expiresAt) <= now);
 }
 
 export function validarSesionVozContexto(payload = {}, context = {}) {
@@ -213,6 +215,14 @@ async function listarPorContexto(storeName, contextKey) {
 export async function guardarSesionNotaVozLocal(payload = {}, { ttlMs = VOICE_NOTE_SESSION_TTL_MS } = {}) {
   if (!sesionVozTieneContenido(payload)) return null;
   const now = Date.now();
+  const meaningfulActivityMs = Number(
+    payload.lastMeaningfulActivityAtMs
+    || Date.parse(payload.lastMeaningfulActivityAt)
+    || payload.updatedAtMs
+    || Date.parse(payload.updatedAt)
+    || now
+  );
+  const expiresAt = meaningfulActivityMs + ttlMs;
   const contextKey = crearContextKeyVoz(payload);
   const key = crearSessionKeyVoz(payload);
   const previous = await obtener(STORE_SESSIONS, key);
@@ -229,16 +239,19 @@ export async function guardarSesionNotaVozLocal(payload = {}, { ttlMs = VOICE_NO
     key,
     contextKey,
     updatedAtMs: now,
-    expiresAt: now + ttlMs,
+    expiresAt,
     payload: {
       ...safePayload,
       key,
       contextKey,
       schemaVersion: VOICE_NOTE_SESSION_SCHEMA_VERSION,
       saveVersion: Math.max(incomingVersion, previousVersion + 1),
+      sessionStatus: safePayload.sessionStatus || (safePayload.generatedNote ? "generated" : "in_progress"),
+      lastMeaningfulActivityAtMs: meaningfulActivityMs,
+      lastMeaningfulActivityAt: new Date(meaningfulActivityMs).toISOString(),
       updatedAtMs: now,
       updatedAt: new Date(now).toISOString(),
-      expiresAt: now + ttlMs
+      expiresAt
     }
   });
   logPersistenciaLocal("transaction_started", record.payload);
@@ -267,6 +280,34 @@ export async function eliminarSesionNotaVozLocal(payloadOrContext = {}) {
   const key = payloadOrContext.key || crearSessionKeyVoz(payloadOrContext);
   if (!key) return;
   await conStore(STORE_SESSIONS, "readwrite", (store) => store.delete(key));
+  const sessionId = payloadOrContext.sessionId || "";
+  if (!sessionId) return;
+  const db = await abrirDb();
+  if (!db) return;
+  await new Promise((resolve) => {
+    const tx = db.transaction(STORE_SEGMENTATION_RESULTS, "readwrite");
+    const store = tx.objectStore(STORE_SEGMENTATION_RESULTS);
+    const request = store.openCursor();
+    request.onsuccess = () => {
+      const cursor = request.result;
+      if (!cursor) return;
+      const payload = cursor.value?.payload || {};
+      if ((payload.sourceSessionId || payload.sessionId || "") === sessionId) cursor.delete();
+      cursor.continue();
+    };
+    tx.oncomplete = () => {
+      db.close();
+      resolve();
+    };
+    tx.onerror = () => {
+      db.close();
+      resolve();
+    };
+    tx.onabort = () => {
+      db.close();
+      resolve();
+    };
+  });
 }
 
 export async function guardarSegmentacionNotaVozLocal(payload = {}, { ttlMs = VOICE_NOTE_SESSION_TTL_MS } = {}) {
@@ -274,6 +315,13 @@ export async function guardarSegmentacionNotaVozLocal(payload = {}, { ttlMs = VO
   const hasBlocks = Array.isArray(payload.blockManifest?.blocks) && payload.blockManifest.blocks.length;
   if (!payload.transcriptHash || (!hasUtterances && !hasBlocks)) return null;
   const now = Date.now();
+  const meaningfulActivityMs = Number(
+    payload.lastMeaningfulActivityAtMs
+    || Date.parse(payload.lastMeaningfulActivityAt)
+    || payload.updatedAtMs
+    || Date.parse(payload.updatedAt)
+    || now
+  );
   const contextKey = crearContextKeyVoz(payload);
   const key = crearSegmentationKeyVoz(payload);
   const previous = await obtener(STORE_SEGMENTATION_RESULTS, key);
@@ -294,7 +342,9 @@ export async function guardarSegmentacionNotaVozLocal(payload = {}, { ttlMs = VO
       contextKey,
       updatedAtMs: now,
       updatedAt: new Date(now).toISOString(),
-      expiresAt: now + ttlMs
+      lastMeaningfulActivityAtMs: meaningfulActivityMs,
+      lastMeaningfulActivityAt: new Date(meaningfulActivityMs).toISOString(),
+      expiresAt: meaningfulActivityMs + ttlMs
     }
   });
   logPersistenciaLocal("transaction_started", record.payload);
@@ -323,23 +373,54 @@ export async function limpiarSesionesNotaVozVencidas(now = Date.now()) {
   if (!db) return 0;
   return new Promise((resolve) => {
     let deleted = 0;
-    const tx = db.transaction([STORE_SESSIONS, STORE_SEGMENTATION_RESULTS], "readwrite");
-    for (const storeName of [STORE_SESSIONS, STORE_SEGMENTATION_RESULTS]) {
-      const store = tx.objectStore(storeName);
-      const request = store.openCursor();
-      request.onsuccess = () => {
-        const cursor = request.result;
+    const expiredSessionIds = new Set();
+    const tx = db.transaction(STORE_SESSIONS, "readwrite");
+    const sessionStore = tx.objectStore(STORE_SESSIONS);
+    const sessionRequest = sessionStore.openCursor();
+    sessionRequest.onsuccess = () => {
+      const cursor = sessionRequest.result;
+      if (!cursor) return;
+      const payload = cursor.value?.payload || {};
+      if (sesionVozExpirada(payload, now)) {
+        expiredSessionIds.add(payload.sessionId);
+        cursor.delete();
+        deleted += 1;
+      }
+      cursor.continue();
+    };
+    tx.oncomplete = () => {
+      if (!expiredSessionIds.size) {
+        db.close();
+        resolve(0);
+        return;
+      }
+      const txSeg = db.transaction(STORE_SEGMENTATION_RESULTS, "readwrite");
+      const segmentationStore = txSeg.objectStore(STORE_SEGMENTATION_RESULTS);
+      const segmentationRequest = segmentationStore.openCursor();
+      segmentationRequest.onsuccess = () => {
+        const cursor = segmentationRequest.result;
         if (!cursor) return;
-        if (cursor.value?.expiresAt && cursor.value.expiresAt < now) {
+        const payload = cursor.value?.payload || {};
+        const sessionId = payload.sourceSessionId || payload.sessionId || "";
+        if (sessionId && expiredSessionIds.has(sessionId)) {
           cursor.delete();
           deleted += 1;
         }
         cursor.continue();
       };
-    }
-    tx.oncomplete = () => {
-      db.close();
-      resolve(deleted);
+      txSeg.oncomplete = () => {
+        db.close();
+        console.info("[voice-session-indexeddb]", { stage: "ttl_cleanup", deletedCount: deleted, reason: "ttl_expired" });
+        resolve(deleted);
+      };
+      txSeg.onerror = () => {
+        db.close();
+        resolve(deleted);
+      };
+      txSeg.onabort = () => {
+        db.close();
+        resolve(deleted);
+      };
     };
     tx.onerror = () => {
       db.close();
