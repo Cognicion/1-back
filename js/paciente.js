@@ -1,4 +1,4 @@
-ï»¿import { auth, db } from "./firebase.js";
+import { auth, db } from "./firebase.js";
 import { MEDICAMENTOS_PRESENTACIONES } from "./data/medicamentos.js";
 import { CIE10 } from "./data/cie10.js";
 import { CIE11 } from "./data/cie11.js";
@@ -220,7 +220,7 @@ const CATALOGO_SOLICITUD_ESTUDIOS = {
   ]
 };
 
-ejecutarSeguroPaciente("monitoreo de sesiÃ³n del expediente", () => iniciarMonitoreoSesion("Expediente paciente"));
+ejecutarSeguroPaciente("monitoreo de sesión del expediente", () => iniciarMonitoreoSesion("Expediente paciente"));
 
 function diferirPaciente(callback, timeout = 600) {
   if (typeof callback !== "function") return;
@@ -374,7 +374,7 @@ function formatearDiagnostico(diagnostico) {
       "";
 
     const base = `${codigo}${texto}`.trim();
-    const estado = diagnostico.estado ? ` â€” ${diagnostico.estado}` : "";
+    const estado = diagnostico.estado ? ` — ${diagnostico.estado}` : "";
     return `${base}${estado}`.trim() || "Sin diagnostico";
   }
 
@@ -551,7 +551,7 @@ function formatearEstancia(estancia) {
 
   const partes = [];
   if (estancia.dias > 0) {
-    partes.push(`${estancia.dias} dÃ­a${estancia.dias === 1 ? "" : "s"}`);
+    partes.push(`${estancia.dias} día${estancia.dias === 1 ? "" : "s"}`);
   }
   partes.push(`${estancia.horas} h`);
 
@@ -647,7 +647,7 @@ function listaDiagnosticosLaboratorio(datos = datosPacienteActual || {}) {
   const diagnosticos = obtenerHistorialDiagnosticos(datos)
     .map((dx) => formatearDiagnostico(dx))
     .filter((dx) => dx && dx !== "Sin diagnostico");
-  return diagnosticos.length ? diagnosticos : ["Sin diagnÃ³stico registrado"];
+  return diagnosticos.length ? diagnosticos : ["Sin diagnóstico registrado"];
 }
 
 function listaTratamientosLaboratorio(datos = datosPacienteActual || {}) {
@@ -681,7 +681,7 @@ function listaTimelineLaboratorio(datos = datosPacienteActual || {}) {
   if (datos.proximaConsulta) eventos.push({ etiqueta: "Proxima consulta", valor: formatearFecha(datos.proximaConsulta) });
   const ultimoIngreso = obtenerUltimoIngreso(datos);
   if (ultimoIngreso) eventos.push({ etiqueta: "Ultimo ingreso", valor: formatearFecha(ultimoIngreso) });
-  return eventos.length ? eventos : [{ etiqueta: "Seguimiento", valor: "Sin eventos cronolÃ³gicos registrados" }];
+  return eventos.length ? eventos : [{ etiqueta: "Seguimiento", valor: "Sin eventos cronológicos registrados" }];
 }
 
 function renderizarListaLab(items) {
@@ -692,27 +692,27 @@ const OPCIONES_SELECT_PACIENTE = {
   sexo: ["Femenino", "Masculino", "Intersexual", "No especificado", "Otro..."],
   genero: ["Femenino-CIS", "Masculino-CIS", "Mujer trans", "Hombre trans", "No binario", "Prefiere no decir", "Otro..."],
   tipoSangre: ["O+", "O-", "A+", "A-", "B+", "B-", "AB+", "AB-", "Desconocido", "Otro..."],
-  alergias: ["Negadas", "No conocidas", "A medicamentos", "A alimentos", "A lÃ¡tex", "Otro..."],
+  alergias: ["Negadas", "No conocidas", "A medicamentos", "A alimentos", "A látex", "Otro..."],
   institucionPaciente: [
-    "Hospital PsiquiÃ¡trico Fray Bernardino Ãlvarez",
-    "Hospital PsiquiÃ¡trico Infantil Juan N. Navarro",
-    "ClÃ­nica privada",
+    "Hospital Psiquiátrico Fray Bernardino Álvarez",
+    "Hospital Psiquiátrico Infantil Juan N. Navarro",
+    "Clínica privada",
     "Otra..."
   ],
-  servicioInstitucional: ["ObservaciÃ³n", "HospitalizaciÃ³n continua", "Consulta externa", "Urgencias", "Interconsulta", "Otro..."],
-  estadoCivil: ["Soltero/a", "Casado/a", "UniÃ³n libre", "Divorciado/a", "Separado/a", "Viudo/a", "Otro..."]
+  servicioInstitucional: ["Observación", "Hospitalización continua", "Consulta externa", "Urgencias", "Interconsulta", "Otro..."],
+  estadoCivil: ["Soltero/a", "Casado/a", "Unión libre", "Divorciado/a", "Separado/a", "Viudo/a", "Otro..."]
 };
 
 const OPCIONES_CARGO_CLINICO = [
-  "PsiquiatrÃ­a",
-  "PsicologÃ­a",
+  "Psiquiatría",
+  "Psicología",
   "Medicina interna",
   "Medicina general",
-  "CardiologÃ­a",
-  "NeurologÃ­a",
-  "NutriciÃ³n",
+  "Cardiología",
+  "Neurología",
+  "Nutrición",
   "Trabajo social",
-  "EnfermerÃ­a",
+  "Enfermería",
   "Terapia ocupacional",
   "Otro..."
 ];
@@ -720,20 +720,20 @@ const OPCIONES_CARGO_CLINICO = [
 const SIGNOS_VITALES_LAB = {
   presionArterial: {
     etiqueta: "PA",
-    titulo: "PresiÃ³n arterial",
+    titulo: "Presión arterial",
     rutas: ["presionArterial", "signosVitales.presionArterial", "datosInstitucionales.presionArterial"],
     unidad: "mmHg",
     tipo: "presion"
   },
   frecuenciaCardiaca: {
     etiqueta: "FC",
-    titulo: "Frecuencia cardÃ­aca",
+    titulo: "Frecuencia cardíaca",
     rutas: ["frecuenciaCardiaca", "signosVitales.frecuenciaCardiaca"],
     unidad: "lpm"
   },
   saturacionO2: {
     etiqueta: "SpO2",
-    titulo: "SaturaciÃ³n O2",
+    titulo: "Saturación O2",
     rutas: ["saturacionO2", "saturacionOxigeno", "signosVitales.saturacionO2", "signosVitales.saturacionOxigeno"],
     unidad: "%"
   },
@@ -747,13 +747,13 @@ const SIGNOS_VITALES_LAB = {
     etiqueta: "Temp",
     titulo: "Temperatura",
     rutas: ["temperatura", "signosVitales.temperatura", "datosInstitucionales.temperatura"],
-    unidad: "Â°C"
+    unidad: "°C"
   },
   imc: {
     etiqueta: "IMC",
     titulo: "IMC",
     rutas: ["imc", "somatometria.imc", "signosVitales.imc", "datosInstitucionales.imc"],
-    unidad: "kg/mÂ²"
+    unidad: "kg/m²"
   }
 };
 
@@ -771,14 +771,14 @@ function renderizarEquipoClinicoLab(equipo = []) {
   const lista = equipo.length
     ? equipo.map((item, index) => `
         <div class="lab-equipo-item" data-equipo-index="${index}">
-          <p><b>${escaparHTML(item.cargo || "Personal clÃ­nico")}:</b> ${escaparHTML(item.nombre || "Sin nombre")}</p>
+          <p><b>${escaparHTML(item.cargo || "Personal clínico")}:</b> ${escaparHTML(item.nombre || "Sin nombre")}</p>
           <div>
             <button class="boton-editar-dato" onclick="editarEquipoClinicoPaciente(${index})">Editar</button>
             <button class="boton-editar-dato" onclick="eliminarEquipoClinicoPaciente(${index})">Quitar</button>
           </div>
         </div>
       `).join("")
-    : `<p class="lab-muted">Sin integrantes registrados. Agrega personal clÃ­nico con el botÃ³n +.</p>`;
+    : `<p class="lab-muted">Sin integrantes registrados. Agrega personal clínico con el botón +.</p>`;
 
   return `
     <div class="lab-equipo-lista">
@@ -813,8 +813,8 @@ function renderizarBloqueInstitucionLab(datos = {}, mostrarInstitucional = false
   if (!mostrarInstitucional) return "";
   return `
     <article class="lab-card">
-      <span>InstituciÃ³n</span>
-      <p><b>InstituciÃ³n:</b> ${escaparHTML(valorPaciente(datos, ["institucionPaciente", "institucion"]))} <button class="boton-editar-dato" onclick="editarCampoPaciente('institucionPaciente', 'InstituciÃ³n', 'text')">Editar</button></p>
+      <span>Institución</span>
+      <p><b>Institución:</b> ${escaparHTML(valorPaciente(datos, ["institucionPaciente", "institucion"]))} <button class="boton-editar-dato" onclick="editarCampoPaciente('institucionPaciente', 'Institución', 'text')">Editar</button></p>
       <p><b>Expediente institucional:</b> ${escaparHTML(valorPaciente(datos, ["expediente", "numeroExpediente"], "Sin expediente"))} <button class="boton-editar-dato" onclick="editarCampoPaciente('expediente', 'Expediente institucional', 'text')">Editar</button></p>
       <p><b>Cama:</b> ${escaparHTML(valorPaciente(datos, ["cama"]))} <button class="boton-editar-dato" onclick="editarCampoPaciente('cama', 'Cama', 'text')">Editar</button></p>
     </article>
@@ -831,11 +831,11 @@ function renderizarBloqueIngresoLab(datos = {}, mostrarInstitucional = false) {
         <p><b>Fecha de ingreso:</b> ${escaparHTML(formatearFecha(fechaIngreso))} <button class="boton-editar-dato" onclick="abrirSelectorIngresoPaciente()">Editar</button></p>
         <p><b>Servicio:</b> ${escaparHTML(valorPaciente(datos, ["servicioInstitucional", "servicio"]))} <button class="boton-editar-dato" onclick="editarCampoPaciente('servicioInstitucional', 'Servicio institucional', 'text')">Editar</button></p>
         <p><b>Estancia:</b> <span id="labEstanciaPaciente">${escaparHTML(formatearEstancia(calcularDiasEstancia(fechaIngreso)))}</span></p>
-        <p><b>Ãšltimo ingreso:</b> ${escaparHTML(formatearFecha(obtenerUltimoIngreso(datos)))} <button class="boton-editar-dato" onclick="abrirSelectorUltimoIngresoPaciente()">Editar</button></p>
+        <p><b>Último ingreso:</b> ${escaparHTML(formatearFecha(obtenerUltimoIngreso(datos)))} <button class="boton-editar-dato" onclick="abrirSelectorUltimoIngresoPaciente()">Editar</button></p>
       ` : ""}
-      <p><b>Ãšltima consulta:</b> ${escaparHTML(formatearFecha(datos.ultimaConsulta) || "Sin fecha")} <button class="boton-editar-dato" onclick="editarCampoPaciente('ultimaConsulta', 'Ãšltima consulta', 'date')">Editar</button></p>
-      <p><b>NÃºmero de consultas:</b> ${escaparHTML(consultas)} <button class="boton-editar-dato" onclick="editarCampoPaciente('numeroConsultas', 'NÃºmero de consultas', 'number')">Editar</button></p>
-      <p><b>PrÃ³xima consulta:</b> ${escaparHTML(datos.proximaConsulta ? formatearFecha(datos.proximaConsulta) : "Sin programar")} <button class="boton-editar-dato" onclick="editarCampoPaciente('proximaConsulta', 'PrÃ³xima consulta', 'date')">Editar</button></p>
+      <p><b>Última consulta:</b> ${escaparHTML(formatearFecha(datos.ultimaConsulta) || "Sin fecha")} <button class="boton-editar-dato" onclick="editarCampoPaciente('ultimaConsulta', 'Última consulta', 'date')">Editar</button></p>
+      <p><b>Número de consultas:</b> ${escaparHTML(consultas)} <button class="boton-editar-dato" onclick="editarCampoPaciente('numeroConsultas', 'Número de consultas', 'number')">Editar</button></p>
+      <p><b>Próxima consulta:</b> ${escaparHTML(datos.proximaConsulta ? formatearFecha(datos.proximaConsulta) : "Sin programar")} <button class="boton-editar-dato" onclick="editarCampoPaciente('proximaConsulta', 'Próxima consulta', 'date')">Editar</button></p>
     </article>
   `;
 }
@@ -866,10 +866,10 @@ function renderizarVistaLaboratorioPaciente(datos = datosPacienteActual || {}) {
         <div>
           <span class="lab-kicker">Vista Laboratorio</span>
           <h3>${escaparHTML(obtenerNombrePacienteParaMostrar(datos) || "Paciente sin nombre")}</h3>
-          <p>Datos generales integrados del expediente. Los campos vacÃ­os se muestran como sin registro.</p>
+          <p>Datos generales integrados del expediente. Los campos vacíos se muestran como sin registro.</p>
         </div>
         <div class="lab-paciente-id">
-          <span>Expediente CogniciÃ³n</span>
+          <span>Expediente Cognición</span>
           <strong>${escaparHTML(valorPaciente(datos, ["expedienteCognicion", "datosInstitucionales.expedienteCognicion"], "Sin expediente"))}</strong>
         </div>
       </div>
@@ -877,7 +877,7 @@ function renderizarVistaLaboratorioPaciente(datos = datosPacienteActual || {}) {
       <div class="lab-metricas-panel lab-metricas-sin-modelo">
         <div class="lab-gauge principal">
           <span>Edad</span>
-          <strong>${edad !== "" ? `${escaparHTML(edad)} aÃ±os` : "Sin registro"}</strong>
+          <strong>${edad !== "" ? `${escaparHTML(edad)} años` : "Sin registro"}</strong>
         </div>
         ${renderizarGaugeVital("presionArterial", datos)}
         ${renderizarGaugeVital("frecuenciaCardiaca", datos)}
@@ -887,18 +887,18 @@ function renderizarVistaLaboratorioPaciente(datos = datosPacienteActual || {}) {
         ${renderizarGaugeVital("imc", datos)}
       </div>
       <div class="lab-vitales-global-actions">
-        <button type="button" onclick="abrirGraficaGlobalSignosVitalesPaciente()">Ver grÃ¡fica de signos vitales</button>
+        <button type="button" onclick="abrirGraficaGlobalSignosVitalesPaciente()">Ver gráfica de signos vitales</button>
       </div>
 
       <div class="lab-info-grid">
         <article class="lab-card">
-          <span>IdentificaciÃ³n</span>
+          <span>Identificación</span>
           <p><b>Correo:</b> ${escaparHTML(valorPaciente(datos, ["email", "correo"], "Sin correo"))}</p>
           <p><b>Fecha de nacimiento:</b> ${escaparHTML(formatearFecha(fechaNacimiento))} <button class="boton-editar-dato" onclick="abrirSelectorFechaNacimientoPaciente()">Editar</button></p>
           <p><b>Sexo:</b> ${escaparHTML(valorPaciente(datos, ["sexo"]))} <button class="boton-editar-dato" onclick="editarCampoPaciente('sexo', 'Sexo', 'text')">Editar</button></p>
-          <p><b>GÃ©nero:</b> ${escaparHTML(valorPaciente(datos, ["genero", "identidadGenero"]))} <button class="boton-editar-dato" onclick="editarCampoPaciente('genero', 'GÃ©nero', 'text')">Editar</button></p>
+          <p><b>Género:</b> ${escaparHTML(valorPaciente(datos, ["genero", "identidadGenero"]))} <button class="boton-editar-dato" onclick="editarCampoPaciente('genero', 'Género', 'text')">Editar</button></p>
           <p><b>CURP:</b> ${escaparHTML(valorPaciente(datos, ["curp", "datosInstitucionales.curp"]))} <button class="boton-editar-dato" onclick="editarCampoPaciente('curp', 'CURP', 'text')">Editar</button></p>
-          <p><b>TelÃ©fono:</b> ${escaparHTML(valorPaciente(datos, ["telefono"], "Sin telÃ©fono"))} <button class="boton-editar-dato" onclick="editarCampoPaciente('telefono', 'TelÃ©fono', 'text')">Editar</button></p>
+          <p><b>Teléfono:</b> ${escaparHTML(valorPaciente(datos, ["telefono"], "Sin teléfono"))} <button class="boton-editar-dato" onclick="editarCampoPaciente('telefono', 'Teléfono', 'text')">Editar</button></p>
           <p><b>Tipo:</b> ${escaparHTML(etiquetaTipoPaciente(tipoPaciente))}</p>
           <button class="boton-editar-dato" onclick="editarTipoPaciente()">Editar tipo</button>
         </article>
@@ -907,27 +907,27 @@ function renderizarVistaLaboratorioPaciente(datos = datosPacienteActual || {}) {
         ${renderizarBloqueIngresoLab(datos, mostrarInstitucional)}
 
         <article class="lab-card">
-          <span>Equipo clÃ­nico</span>
+          <span>Equipo clínico</span>
           ${renderizarEquipoClinicoLab(equipoClinico)}
-          <button class="lab-equipo-add" type="button" onclick="agregarEquipoClinicoPaciente()" aria-label="Agregar integrante al equipo clÃ­nico">+</button>
+          <button class="lab-equipo-add" type="button" onclick="agregarEquipoClinicoPaciente()" aria-label="Agregar integrante al equipo clínico">+</button>
         </article>
 
         <article class="lab-card">
-          <span>SomatometrÃ­a</span>
+          <span>Somatometría</span>
           <p><b>Peso:</b> ${escaparHTML(valorPaciente(datos, ["peso", "somatometria.peso", "signosVitales.peso", "datosInstitucionales.peso"]))} <button class="boton-editar-dato" onclick="editarCampoPaciente('peso', 'Peso', 'text')">Editar</button></p>
           <p><b>Talla:</b> ${escaparHTML(valorPaciente(datos, ["talla", "somatometria.talla", "signosVitales.talla", "datosInstitucionales.talla"]))} <button class="boton-editar-dato" onclick="editarCampoPaciente('talla', 'Talla', 'text')">Editar</button></p>
-          <p><b>PerÃ­metro abdominal:</b> ${escaparHTML(valorPaciente(datos, ["perimetroAbdominal", "somatometria.perimetroAbdominal", "signosVitales.perimetroAbdominal", "datosInstitucionales.perimetroAbdominal"]))} <button class="boton-editar-dato" onclick="editarCampoPaciente('perimetroAbdominal', 'PerÃ­metro abdominal', 'text')">Editar</button></p>
+          <p><b>Perímetro abdominal:</b> ${escaparHTML(valorPaciente(datos, ["perimetroAbdominal", "somatometria.perimetroAbdominal", "signosVitales.perimetroAbdominal", "datosInstitucionales.perimetroAbdominal"]))} <button class="boton-editar-dato" onclick="editarCampoPaciente('perimetroAbdominal', 'Perímetro abdominal', 'text')">Editar</button></p>
           <p><b>IMC:</b> ${escaparHTML(valorPaciente(datos, ["imc", "somatometria.imc", "signosVitales.imc", "datosInstitucionales.imc"], "Sin registro"))}</p>
         </article>
 
         <article class="lab-card">
-          <span>Seguridad clÃ­nica</span>
+          <span>Seguridad clínica</span>
           <p><b>Alergias:</b> ${escaparHTML(valorPaciente(datos, ["alergias", "datosInstitucionales.alergias"]))} <button class="boton-editar-dato" onclick="editarCampoPaciente('alergias', 'Alergias', 'textarea')">Editar</button></p>
           <p><b>Tipo de sangre:</b> ${escaparHTML(valorPaciente(datos, ["tipoSangre", "datosInstitucionales.tipoSangre"]))} <button class="boton-editar-dato" onclick="editarCampoPaciente('tipoSangre', 'Tipo de sangre', 'text')">Editar</button></p>
         </article>
 
         <article class="lab-card lab-card-lista">
-          <span>DiagnÃ³sticos</span>
+          <span>Diagnósticos</span>
           <ul>${renderizarListaLab(diagnosticos)}</ul>
         </article>
         <article class="lab-card lab-card-lista">
@@ -939,7 +939,7 @@ function renderizarVistaLaboratorioPaciente(datos = datosPacienteActual || {}) {
           <ul>${renderizarListaLab(estudios)}</ul>
         </article>
         <article class="lab-card lab-card-lista">
-          <span>LÃ­nea clÃ­nica</span>
+          <span>Línea clínica</span>
           <ul>${timelineFinal.map((item) => `<li><b>${escaparHTML(item.etiqueta)}:</b> ${escaparHTML(item.valor)}</li>`).join("")}</ul>
         </article>
       </div>
@@ -978,18 +978,18 @@ function renderizarResumenPediatricoPaciente(datos = datosPacienteActual || {}) 
 
   bloque.innerHTML = `
     <label>
-      PediatrÃ­a
-      <button class="boton-editar-dato" onclick="abrirModuloPediatriaPaciente()">Abrir mÃ³dulo</button>
+      Pediatría
+      <button class="boton-editar-dato" onclick="abrirModuloPediatriaPaciente()">Abrir módulo</button>
     </label>
     <div class="pediatria-resumen-grid">
       <span><b>Edad exacta</b>${escaparHTML(edad.edadCronologicaTexto)}</span>
-      <span><b>DÃ­a de vida</b>${escaparHTML(String(edad.diaDeVida))}</span>
+      <span><b>Día de vida</b>${escaparHTML(String(edad.diaDeVida))}</span>
       <span><b>IMC</b>${imc ? imc.toFixed(2) : "Sin calcular"}</span>
       <span><b>SC Mosteller</b>${sc ? `${sc.mosteller.toFixed(2)} m2` : "Sin calcular"}</span>
-      <span><b>Mantenimiento</b>${liquidos ? `${liquidos.mlDia.toFixed(0)} mL/dÃ­a` : "Sin peso"}</span>
+      <span><b>Mantenimiento</b>${liquidos ? `${liquidos.mlDia.toFixed(0)} mL/día` : "Sin peso"}</span>
       <span><b>Regla 4-2-1</b>${liquidos ? `${liquidos.regla421.toFixed(1)} mL/h` : "Sin peso"}</span>
     </div>
-    <small>Los percentiles se calculan solo con tablas LMS oficiales cargadas en PediatrÃ­a.</small>
+    <small>Los percentiles se calculan solo con tablas LMS oficiales cargadas en Pediatría.</small>
   `;
 }
 
@@ -1108,7 +1108,7 @@ function renderizarCatalogoMedicosFirmasIndicaciones() {
     .map((medico) => {
       const detalle = [medico.cargo, medico.cedula ? `Ced. ${medico.cedula}` : ""]
         .filter(Boolean)
-        .join(" Â· ");
+        .join(" · ");
       return `<option value="${escaparHTML(medico.nombre || "")}" label="${escaparHTML(detalle)}"></option>`;
     })
     .join("");
@@ -1121,12 +1121,12 @@ function renderizarCatalogoMedicosFirmasIndicaciones() {
     if (!selector) return;
 
     selector.innerHTML = `
-      <option value="">Seleccionar mÃ©dico</option>
+      <option value="">Seleccionar médico</option>
       ${catalogoMedicosFirmasIndicacionesCache.map((medico) => {
         const detalle = [medico.cargo, medico.cedula ? `Ced. ${medico.cedula}` : ""]
           .filter(Boolean)
-          .join(" Â· ");
-        return `<option value="${escaparHTML(medico.id)}">${escaparHTML(medico.nombre || "Sin nombre")}${detalle ? ` Â· ${escaparHTML(detalle)}` : ""}</option>`;
+          .join(" · ");
+        return `<option value="${escaparHTML(medico.id)}">${escaparHTML(medico.nombre || "Sin nombre")}${detalle ? ` · ${escaparHTML(detalle)}` : ""}</option>`;
       }).join("")}
     `;
     selector.value = valorActual;
@@ -1176,12 +1176,12 @@ async function guardarMedicoFirmaIndicaciones(numeroFirma) {
   const cedula = valorCampo(`indicacionesFirma${numeroFirma}Cedula`);
 
   if (!ref || !uidMedico) {
-    alert("No se pudo identificar al mÃ©dico para guardar el catÃ¡logo.");
+    alert("No se pudo identificar al médico para guardar el catálogo.");
     return;
   }
 
   if (!nombre) {
-    alert("Escribe el nombre del mÃ©dico antes de agregarlo al catÃ¡logo.");
+    alert("Escribe el nombre del médico antes de agregarlo al catálogo.");
     return;
   }
 
@@ -1194,7 +1194,7 @@ async function guardarMedicoFirmaIndicaciones(numeroFirma) {
   };
 
   if (existente?.id) {
-    const confirmar = confirm("Este mÃ©dico ya existe en el catÃ¡logo. Â¿Deseas actualizar cargo y cÃ©dula?");
+    const confirmar = confirm("Este médico ya existe en el catálogo. ¿Deseas actualizar cargo y cédula?");
     if (!confirmar) return;
     await updateDoc(doc(db, "usuarios", uidMedico, "catalogoMedicosFirmas", existente.id), payload);
   } else {
@@ -1205,7 +1205,7 @@ async function guardarMedicoFirmaIndicaciones(numeroFirma) {
   }
 
   await cargarCatalogoMedicosFirmasIndicaciones();
-  alert("MÃ©dico agregado al catÃ¡logo de firmas.");
+  alert("Médico agregado al catálogo de firmas.");
 }
 
 async function guardarMedicoCatalogoIndicaciones({ nombre, cargo, cedula, firmaDestino = "" } = {}) {
@@ -1213,12 +1213,12 @@ async function guardarMedicoCatalogoIndicaciones({ nombre, cargo, cedula, firmaD
   const ref = referenciaCatalogoMedicosFirmasIndicaciones();
 
   if (!ref || !uidMedico) {
-    alert("No se pudo identificar al mÃ©dico para guardar el catÃ¡logo.");
+    alert("No se pudo identificar al médico para guardar el catálogo.");
     return null;
   }
 
   if (!nombre?.trim()) {
-    alert("Escribe el nombre del mÃ©dico antes de agregarlo al catÃ¡logo.");
+    alert("Escribe el nombre del médico antes de agregarlo al catálogo.");
     return null;
   }
 
@@ -1231,7 +1231,7 @@ async function guardarMedicoCatalogoIndicaciones({ nombre, cargo, cedula, firmaD
   const existente = buscarMedicoFirmaIndicacionesPorNombre(payload.nombre);
 
   if (existente?.id) {
-    const confirmar = confirm("Este mÃ©dico ya existe en el catÃ¡logo. Â¿Deseas actualizar cargo y cÃ©dula?");
+    const confirmar = confirm("Este médico ya existe en el catálogo. ¿Deseas actualizar cargo y cédula?");
     if (!confirmar) return null;
     await updateDoc(doc(db, "usuarios", uidMedico, "catalogoMedicosFirmas", existente.id), payload);
   } else {
@@ -1370,7 +1370,7 @@ window.eliminarApunteMedicoPaciente = async function() {
     return;
   }
 
-  if (!confirm("Â¿Eliminar este apunte?")) return;
+  if (!confirm("¿Eliminar este apunte?")) return;
 
   await deleteDoc(doc(db, "usuarios", auth.currentUser.uid, "apuntesMedico", id));
   nuevoApunteMedicoPaciente();
@@ -1422,7 +1422,7 @@ function configurarCatalogoMedicamentosTratamiento() {
     .map((medicamento) => `
       <option
         value="${escaparHTML(medicamento.texto)}"
-        label="${escaparHTML(`${medicamento.agregadoManual ? "Agregado manualmente Â· " : ""}${medicamento.clase || "Sin clase"} Â· ${medicamento.dosisHabitual || "Sin dosis habitual"}`)}"
+        label="${escaparHTML(`${medicamento.agregadoManual ? "Agregado manualmente · " : ""}${medicamento.clase || "Sin clase"} · ${medicamento.dosisHabitual || "Sin dosis habitual"}`)}"
       ></option>
     `)
     .join("");
@@ -1441,8 +1441,8 @@ function configurarCatalogoMedicamentosTratamiento() {
       medicamento.texto.toLowerCase() === texto.toLowerCase()
     );
     estado.textContent = existe
-      ? "Medicamento encontrado en catÃ¡logo."
-      : "No estÃ¡ en el catÃ¡logo. Puedes aÃ±adirlo manualmente.";
+      ? "Medicamento encontrado en catálogo."
+      : "No está en el catálogo. Puedes añadirlo manualmente.";
     estado.classList.add("visible");
     estado.classList.toggle("alerta", !existe);
   };
@@ -1475,7 +1475,7 @@ function configurarCatalogoMedicamentosReceta() {
       .map((medicamento) => `
         <option
           value="${escaparHTML(medicamento.texto)}"
-          label="${escaparHTML(`${medicamento.agregadoManual ? "Agregado manualmente Â· " : ""}${medicamento.clase || "Medicamento"}`)}"
+          label="${escaparHTML(`${medicamento.agregadoManual ? "Agregado manualmente · " : ""}${medicamento.clase || "Medicamento"}`)}"
         ></option>
       `)
       .join("");
@@ -1525,7 +1525,7 @@ function guardarMedicamentoManual() {
   const notas = valorCampo("medicamentoManualNotas");
 
   if (!nombre || !presentacion) {
-    alert("Escribe medicamento y presentaciÃ³n.");
+    alert("Escribe medicamento y presentación.");
     return;
   }
 
@@ -1593,7 +1593,7 @@ const ESTADOS_DIAGNOSTICO = [
   "Confirmado",
   "En seguimiento",
   "Antecedente",
-  "RemisiÃ³n",
+  "Remisión",
   "Diferencial"
 ];
 
@@ -1735,7 +1735,7 @@ function renderizarResultadosBusquedaDiagnosticos() {
 
   if (!texto) {
     contenedor.textContent = diagnosticoReemplazoIndex === null
-      ? "Escribe para buscar en el catÃ¡logo."
+      ? "Escribe para buscar en el catálogo."
       : "Busca el diagnostico que sustituira al seleccionado.";
     return;
   }
@@ -1797,8 +1797,8 @@ function renderizarPanelDiagnosticos() {
               ${opcionesEstadoDiagnostico(dx.estado)}
             </select>
           </label>
-          <button type="button" data-mover-diagnostico="${index}" data-direccion="-1" ${index === 0 ? "disabled" : ""}>â†‘</button>
-          <button type="button" data-mover-diagnostico="${index}" data-direccion="1" ${index === historial.length - 1 ? "disabled" : ""}>â†“</button>
+          <button type="button" data-mover-diagnostico="${index}" data-direccion="-1" ${index === 0 ? "disabled" : ""}>?</button>
+          <button type="button" data-mover-diagnostico="${index}" data-direccion="1" ${index === historial.length - 1 ? "disabled" : ""}>?</button>
           <button type="button" data-reemplazar-diagnostico="${index}">Cambiar por catalogo</button>
           <button type="button" data-editar-diagnostico="${index}">Editar codigo/texto</button>
           <button type="button" class="boton-peligro" data-quitar-diagnostico="${index}">Quitar</button>
@@ -1850,7 +1850,7 @@ function iniciarCargaExpedientePaciente() {
     try {
       medicoActualDatos = await getUserProfileOnce(user.uid) || {};
     } catch (error) {
-      console.warn("No se pudo cargar el perfil del usuario actual. Se continuarÃ¡ con la carga del paciente.", error);
+      console.warn("No se pudo cargar el perfil del usuario actual. Se continuará con la carga del paciente.", error);
       medicoActualDatos = { uid: user.uid, correo: user.email || "", email: user.email || "" };
     }
     rolUsuarioActual = medicoActualDatos.rol || "";
@@ -1860,7 +1860,7 @@ function iniciarCargaExpedientePaciente() {
     try {
       permisosFormatosUsuarioActual = await obtenerPermisosFormatosUsuario(user.uid, medicoActualDatos);
     } catch (error) {
-      console.warn("No se pudieron cargar permisos de formatos. Se usarÃ¡n permisos bÃ¡sicos para no bloquear el expediente.", error);
+      console.warn("No se pudieron cargar permisos de formatos. Se usarán permisos básicos para no bloquear el expediente.", error);
       permisosFormatosUsuarioActual = {};
     }
     ejecutarSeguroPaciente("permisos de formatos del expediente", aplicarPermisosFormatosPaciente);
@@ -1946,7 +1946,7 @@ function asegurarModalAvisoFarmacologiaEnfermeria() {
           <p>${escaparHTML(ETIQUETA_ROL_ENFERMERIA_SALUD_MENTAL)}</p>
           <h3 id="tituloAvisoFarmacologiaEnfermeria">Aviso importante</h3>
         </div>
-        <button type="button" data-cerrar-aviso-farmacologia-enfermeria aria-label="Cerrar">Ã—</button>
+        <button type="button" data-cerrar-aviso-farmacologia-enfermeria aria-label="Cerrar">×</button>
       </div>
       <div class="aviso-farmacologia-contenido">
         <p>La prescripcion, inicio, modificacion y suspension de tratamientos farmacologicos corresponde exclusivamente al medico tratante conforme a la normatividad vigente.</p>
@@ -2002,7 +2002,7 @@ function etiquetaTipoPaciente(valor = "") {
   const tipo = normalizarTipoPaciente(valor);
   if (tipo === "privada" || tipo === "privado" || tipo === "consulta privada") return "Privado";
   if (esTipoPacienteInstitucional(valor)) return "Institucional";
-  if (tipo === "clÃ­nica" || tipo === "clinica") return "ClÃ­nica";
+  if (tipo === "clínica" || tipo === "clinica") return "Clínica";
   return String(valor || "").trim() || "Privado";
 }
 
@@ -2045,14 +2045,14 @@ async function cargarDatosPaciente() {
   try {
     datos = await obtenerUsuario(uidPaciente);
   } catch (error) {
-    console.warn("No se pudo leer el documento directo del paciente. Se intentarÃ¡ cargar desde la lista autorizada.", error);
+    console.warn("No se pudo leer el documento directo del paciente. Se intentará cargar desde la lista autorizada.", error);
     try {
       datos = await obtenerPacientePorListaAutorizada(uidPaciente);
     } catch (fallbackError) {
       console.error("No se pudo cargar el paciente desde la lista autorizada:", fallbackError);
       datosPacienteActual = null;
       ponerTexto("nombrePaciente", "No se pudo acceder al paciente");
-      ponerTexto("correoPaciente", "Revisa permisos de lectura o vÃ­nculo del paciente");
+      ponerTexto("correoPaciente", "Revisa permisos de lectura o vínculo del paciente");
       return;
     }
   }
@@ -2095,7 +2095,7 @@ async function cargarDatosPaciente() {
   ponerTexto(
     "edadPaciente",
     edadVisible !== "" && edadVisible !== null && edadVisible !== undefined
-      ? `${edadVisible} aÃ±os`
+      ? `${edadVisible} años`
       : "No registrada"
   );
 
@@ -2117,22 +2117,22 @@ async function cargarDatosPaciente() {
 
   ejecutarSeguroPaciente("selector de vista de datos generales", inicializarSelectorVistaDatosGeneralesPaciente);
 
-  ejecutarSeguroPaciente("diagnÃ³sticos del resumen", () => renderizarDiagnosticos(datos));
-  ejecutarSeguroPaciente("panel de diagnÃ³sticos", renderizarPanelDiagnosticos);
+  ejecutarSeguroPaciente("diagnósticos del resumen", () => renderizarDiagnosticos(datos));
+  ejecutarSeguroPaciente("panel de diagnósticos", renderizarPanelDiagnosticos);
 
   ponerTexto("tratamiento", datos.tratamiento || "Sin tratamiento registrado");
 
-  ponerTexto("medicoTratante", datos.medicoTratante || "Sin mÃ©dico tratante");
+  ponerTexto("medicoTratante", datos.medicoTratante || "Sin médico tratante");
 
   ponerTexto("ultimaConsulta", formatearFecha(datos.ultimaConsulta) || "Sin fecha");
 
   ponerTexto("proximaConsulta", datos.proximaConsulta ? formatearFecha(datos.proximaConsulta) : "Sin programar");
 
-  ponerTexto("telefonoPaciente", datos.telefono || "Sin telÃ©fono");
+  ponerTexto("telefonoPaciente", datos.telefono || "Sin teléfono");
 
   ponerTexto("tipoPaciente", etiquetaTipoPaciente(datos.tipoPaciente || datos.datosInstitucionales?.tipoPaciente));
 
-  ponerTexto("institucionPaciente", datos.institucionPaciente || datos.institucion || "Sin instituciÃ³n");
+  ponerTexto("institucionPaciente", datos.institucionPaciente || datos.institucion || "Sin institución");
 
   ponerTexto("servicioInstitucional", datos.servicioInstitucional || datos.servicio || "Sin servicio");
 
@@ -2143,7 +2143,7 @@ async function cargarDatosPaciente() {
   ponerTexto("curpPaciente", datos.curp || datos.datosInstitucionales?.curp || "Sin registro");
 
   ejecutarSeguroPaciente("estancia del paciente", () => actualizarEstanciaPaciente(datos));
-  ejecutarSeguroPaciente("actualizaciÃ³n automÃ¡tica de estancia", iniciarActualizacionEstanciaPaciente);
+  ejecutarSeguroPaciente("actualización automática de estancia", iniciarActualizacionEstanciaPaciente);
 
   ponerTexto("ultimoIngresoPaciente", formatearFecha(obtenerUltimoIngreso(datos)));
 
@@ -2182,7 +2182,7 @@ async function cargarDatosPaciente() {
   ejecutarSeguroPaciente("estancia del paciente", () => actualizarEstanciaPaciente(datos));
   ejecutarSeguroPaciente("visibilidad de campos institucionales", () => actualizarVisibilidadCamposInstitucionalesPaciente(datos));
   ejecutarSeguroPaciente("vista laboratorio de datos generales", () => renderizarVistaLaboratorioPaciente(datos));
-  ejecutarSeguroPaciente("resumen pediÃ¡trico del paciente", () => renderizarResumenPediatricoPaciente(datos));
+  ejecutarSeguroPaciente("resumen pediátrico del paciente", () => renderizarResumenPediatricoPaciente(datos));
 }
 
 window.mostrarResumen = function() {
@@ -2432,8 +2432,8 @@ async function cargarRehabilitacionCognitivaPaciente() {
     const cognitivas = escalas.filter((escala) => String(escala.tipoEscala || "").toLowerCase() === "cognitiva");
 
     if (!cognitivas.length) {
-      if (perfil) perfil.innerHTML = `<p>No hay tamizajes cognitivos aplicados todavÃ­a.</p>`;
-      if (historial) historial.innerHTML = `<p>Aplica una escala cognitiva desde nota clÃ­nica o desde el mÃ³dulo de rehabilitaciÃ³n cognitiva.</p>`;
+      if (perfil) perfil.innerHTML = `<p>No hay tamizajes cognitivos aplicados todavía.</p>`;
+      if (historial) historial.innerHTML = `<p>Aplica una escala cognitiva desde nota clínica o desde el módulo de rehabilitación cognitiva.</p>`;
       if (recomendaciones) recomendaciones.innerHTML = renderizarRecomendacionesCognitivas([]);
       return;
     }
@@ -2506,11 +2506,11 @@ function renderizarRecomendacionesCognitivas(dominios = []) {
     "Visuoespacial": "Copia de figuras, reloj, rutas visuales y memoria espacial tipo Corsi.",
     "Cognicion social": "Reconocimiento emocional y ejercicios de interpretacion de claves sociales."
   };
-  const claves = dominios.length ? dominios.map((item) => item.dominio) : ["AtenciÃ³n", "Memoria", "Funciones ejecutivas"];
+  const claves = dominios.length ? dominios.map((item) => item.dominio) : ["Atención", "Memoria", "Funciones ejecutivas"];
   return claves.slice(0, 6).map((dominio) => `
     <article class="registro-card">
       <strong>${escaparHTML(dominio)}</strong>
-      <p>${escaparHTML(mapa[dominio] || "Seleccionar actividades de rehabilitaciÃ³n segÃºn entrevista clÃ­nica y desempeÃ±o observado.")}</p>
+      <p>${escaparHTML(mapa[dominio] || "Seleccionar actividades de rehabilitación según entrevista clínica y desempeño observado.")}</p>
     </article>
   `).join("");
 }
@@ -2562,9 +2562,9 @@ async function actualizarVisibilidadEscala(control) {
   try {
     await cargarDependenciasEscalasPaciente();
   } catch (error) {
-    console.error("No se pudo cargar el mÃ³dulo de escalas:", error);
+    console.error("No se pudo cargar el módulo de escalas:", error);
     control.checked = !control.checked;
-    alert("El mÃ³dulo de escalas no estÃ¡ disponible. El resto del expediente continÃºa funcionando.");
+    alert("El módulo de escalas no está disponible. El resto del expediente continúa funcionando.");
     return;
   }
 
@@ -2590,7 +2590,7 @@ async function actualizarVisibilidadEscala(control) {
   await registrarAccionExpediente({
     accion: visiblePaciente ? "activar_escala_mi_salud" : "ocultar_escala_mi_salud",
     descripcion: visiblePaciente
-      ? "El mÃ©dico hizo visible una escala en Mi Salud."
+      ? "El médico hizo visible una escala en Mi Salud."
       : "El medico oculto una escala en Mi Salud.",
     detalles: {
       escalaId,
@@ -2660,7 +2660,7 @@ async function cargarTareasMiSaludMedico() {
           <div class="registro-top">
             <div>
               <strong>${escaparHTML(tarea.titulo || "Tarea")}</strong>
-              <span>${escaparHTML(tarea.fechaLimite ? `LÃ­mite: ${tarea.fechaLimite}` : "Sin fecha lÃ­mite")}</span>
+              <span>${escaparHTML(tarea.fechaLimite ? `Límite: ${tarea.fechaLimite}` : "Sin fecha límite")}</span>
             </div>
             <span class="estado-badge ${tarea.estado === "completada" ? "activo" : ""}">${escaparHTML(tarea.estado || "pendiente")}</span>
           </div>
@@ -2682,7 +2682,7 @@ async function cargarTareasMiSaludMedico() {
 }
 
 async function eliminarTareaMiSaludPaciente(tareaId) {
-  if (!confirm("Â¿Eliminar esta tarea de Mi Salud?")) return;
+  if (!confirm("¿Eliminar esta tarea de Mi Salud?")) return;
 
   await deleteDoc(doc(db, "usuarios", uidPaciente, "tareasMiSalud", tareaId));
   await registrarAccionExpediente({
@@ -2760,7 +2760,7 @@ window.agregarPermisoMedico = async function() {
   const medico = await buscarMedicoPorCorreo(correo);
 
   if (!medico) {
-    alert("No se encontrÃ³ un mÃ©dico registrado con ese correo.");
+    alert("No se encontró un médico registrado con ese correo.");
     return;
   }
 
@@ -2794,7 +2794,7 @@ window.cambiarRolPermiso = async function(uidMedico) {
 };
 
 window.revocarPermiso = async function(uidMedico) {
-  const confirmar = confirm("Â¿Seguro que deseas revocar el acceso de este mÃ©dico?");
+  const confirmar = confirm("¿Seguro que deseas revocar el acceso de este médico?");
 
   if (!confirmar) return;
 
@@ -2973,11 +2973,11 @@ window.editarNombrePaciente = async function() {
         <label>Nombre actual
           <input id="editorNombreCompletoPaciente" value="${escaparHTML(obtenerNombrePacienteParaMostrar(datos) || "")}">
         </label>
-        <button type="button" id="guardarNombreCompletoAntiguoPaciente">Guardar nombre como estÃ¡</button>
+        <button type="button" id="guardarNombreCompletoAntiguoPaciente">Guardar nombre como está</button>
       </div>
       <div class="editor-nombre-paciente-referencia">
         <b>Separar nombre por apellidos</b>
-        <p>Escribe manualmente cada parte. No se separarÃ¡ el nombre automÃ¡ticamente.</p>
+        <p>Escribe manualmente cada parte. No se separará el nombre automáticamente.</p>
         <button type="button" class="boton-secundario" id="separarNombrePacienteManual">Separar nombre por apellidos</button>
       </div>
       <div class="modal-tipo-paciente-acciones">
@@ -2994,19 +2994,19 @@ window.editarNombrePaciente = async function() {
 window.editarDatosPaciente = async function() {
   const datos = await obtenerUsuario(uidPaciente);
 
-  const nuevoTelefono = prompt("TelÃ©fono:", datos.telefono || "");
+  const nuevoTelefono = prompt("Teléfono:", datos.telefono || "");
   if (nuevoTelefono === null) return;
 
-  const nuevoDiagnostico = prompt("DiagnÃ³stico:", datos.diagnostico || "");
+  const nuevoDiagnostico = prompt("Diagnóstico:", datos.diagnostico || "");
   if (nuevoDiagnostico === null) return;
 
   const nuevoTratamiento = prompt("Tratamiento:", datos.tratamiento || "");
   if (nuevoTratamiento === null) return;
 
-  const nuevoMedico = prompt("MÃ©dico tratante:", datos.medicoTratante || "");
+  const nuevoMedico = prompt("Médico tratante:", datos.medicoTratante || "");
   if (nuevoMedico === null) return;
 
-  const nuevaConsulta = prompt("Ãšltima consulta:", datos.ultimaConsulta || "");
+  const nuevaConsulta = prompt("Última consulta:", datos.ultimaConsulta || "");
   if (nuevaConsulta === null) return;
 
   await actualizarUsuario(uidPaciente, {
@@ -3175,7 +3175,7 @@ async function guardarCampoPacienteInline(campo, nuevoValor, datos = {}) {
     "imc",
     "perimetroAbdominal",
     "diasEstancia",
-    "dÃ­asEstancia"
+    "díasEstancia"
   ]);
 
   if (campo === "fechaNacimiento") {
@@ -3330,7 +3330,7 @@ async function abrirEditorEquipoClinicoInline(index = null, item = {}) {
       <input data-equipo-nombre value="${escaparHTML(item.nombre || "")}" placeholder="Ej. Dr. Aldo Sandokan Aguilar Valenzuela">
     </label>
     <label>Escribir cargo manual
-      <input data-equipo-cargo-manual placeholder="Ej. PaidopsiquiatrÃ­a">
+      <input data-equipo-cargo-manual placeholder="Ej. Paidopsiquiatría">
     </label>
     <div class="editor-equipo-clinico-actions">
       <button type="button" data-equipo-guardar>Guardar</button>
@@ -3344,11 +3344,11 @@ async function abrirEditorEquipoClinicoInline(index = null, item = {}) {
     const datos = datosPacienteActual || await obtenerUsuario(uidPaciente);
     const equipo = obtenerEquipoClinicoPaciente(datos);
     const cargoManual = editor.querySelector("[data-equipo-cargo-manual]")?.value?.trim();
-    const cargo = cargoManual || editor.querySelector("[data-equipo-cargo]")?.value?.trim() || "Personal clÃ­nico";
+    const cargo = cargoManual || editor.querySelector("[data-equipo-cargo]")?.value?.trim() || "Personal clínico";
     const nombre = editor.querySelector("[data-equipo-nombre]")?.value?.trim() || "";
 
     if (!nombre) {
-      alert("Escribe el nombre del integrante del equipo clÃ­nico.");
+      alert("Escribe el nombre del integrante del equipo clínico.");
       return;
     }
 
@@ -3377,7 +3377,7 @@ window.eliminarEquipoClinicoPaciente = async function(index) {
   const datos = datosPacienteActual || await obtenerUsuario(uidPaciente);
   const equipo = obtenerEquipoClinicoPaciente(datos);
   if (!equipo[index]) return;
-  if (!confirm("Â¿Quitar este integrante del equipo clÃ­nico?")) return;
+  if (!confirm("¿Quitar este integrante del equipo clínico?")) return;
   equipo.splice(index, 1);
   await guardarEquipoClinicoPaciente(equipo);
 };
@@ -3428,7 +3428,7 @@ function obtenerRegistroVisibleSignoVital(datos = {}, clave = "") {
       valor: ultimo.valor || "",
       fecha: ultimo.fechaObjeto,
       esHoy: false,
-      texto: `Ãšltimo registro ${fechaHoraLocalParaInput(ultimo.fechaObjeto)}`
+      texto: `Último registro ${fechaHoraLocalParaInput(ultimo.fechaObjeto)}`
     };
   }
 
@@ -3507,7 +3507,7 @@ function construirGraficaSeriesSignos(series = [], opciones = {}) {
   const visibles = series.filter((serie) => serie.puntos.length);
   const puntos = visibles.flatMap((serie) => serie.puntos);
   if (!puntos.length || visibles.every((serie) => serie.puntos.length < 2)) {
-    return `<div class="historial-signo-vacio">Se necesitan al menos dos registros numÃ©ricos para dibujar la curva.</div>`;
+    return `<div class="historial-signo-vacio">Se necesitan al menos dos registros numéricos para dibujar la curva.</div>`;
   }
 
   const ancho = opciones.ancho || 840;
@@ -3528,7 +3528,7 @@ function construirGraficaSeriesSignos(series = [], opciones = {}) {
   const paleta = ["#22d3ee", "#f97316", "#a78bfa", "#10b981", "#f43f5e", "#eab308", "#38bdf8"];
 
   return `
-    <svg viewBox="0 0 ${ancho} ${alto}" class="historial-signo-svg" role="img" aria-label="Curva histÃ³rica de signos vitales">
+    <svg viewBox="0 0 ${ancho} ${alto}" class="historial-signo-svg" role="img" aria-label="Curva histórica de signos vitales">
       <line x1="${margen}" y1="${alto - margen}" x2="${ancho - margen}" y2="${alto - margen}" />
       <line x1="${margen}" y1="${margen}" x2="${margen}" y2="${alto - margen}" />
       <text x="${margen}" y="22">${max}</text>
@@ -3540,7 +3540,7 @@ function construirGraficaSeriesSignos(series = [], opciones = {}) {
           <polyline points="${coords}" style="stroke:${color}" />
           ${serie.puntos.map((punto) => `
             <circle cx="${xPunto(punto, serie).toFixed(1)}" cy="${yPunto(punto).toFixed(1)}" r="4" style="stroke:${color}">
-              <title>${escaparHTML(serie.nombre)}: ${escaparHTML(String(punto.texto || punto.valor))} Â· ${escaparHTML(formatearFecha(punto.fecha.toISOString()))}</title>
+              <title>${escaparHTML(serie.nombre)}: ${escaparHTML(String(punto.texto || punto.valor))} · ${escaparHTML(formatearFecha(punto.fecha.toISOString()))}</title>
             </circle>
           `).join("")}
         `;
@@ -3555,8 +3555,8 @@ function construirGraficaSeriesSignos(series = [], opciones = {}) {
 function construirGraficaSignoVital(clave, registros = []) {
   if (clave === "presionArterial") {
     return construirGraficaSeriesSignos([
-      { id: "ta_sistolica", nombre: "TA sistÃ³lica", puntos: puntosSerieSigno(clave, registros, { componente: "sistolica" }), color: "#22d3ee" },
-      { id: "ta_diastolica", nombre: "TA diastÃ³lica", puntos: puntosSerieSigno(clave, registros, { componente: "diastolica" }), color: "#f97316" }
+      { id: "ta_sistolica", nombre: "TA sistólica", puntos: puntosSerieSigno(clave, registros, { componente: "sistolica" }), color: "#22d3ee" },
+      { id: "ta_diastolica", nombre: "TA diastólica", puntos: puntosSerieSigno(clave, registros, { componente: "diastolica" }), color: "#f97316" }
     ]);
   }
 
@@ -3610,7 +3610,7 @@ function abrirPopoverSignoVitalPaciente({ clave, signo, valorActual = "", previo
             <span>${previo ? "Valor previo" : "Signo vital"}</span>
             <strong>${escaparHTML(signo?.titulo || clave || "Signo vital")}</strong>
           </div>
-          <button type="button" data-cancelar-signo aria-label="Cerrar">Ã—</button>
+          <button type="button" data-cancelar-signo aria-label="Cerrar">×</button>
         </header>
         <label>
           Valor ${signo?.unidad ? `<small>${escaparHTML(signo.unidad)}</small>` : ""}
@@ -3755,7 +3755,7 @@ window.abrirHistorialSignoVitalPaciente = function(clave) {
         </div>
         <div class="historial-signo-actions">
           <button type="button" data-ampliar-historial>Ampliar</button>
-          <button type="button" data-cerrar-historial>Ã—</button>
+          <button type="button" data-cerrar-historial>×</button>
         </div>
       </header>
       <div class="historial-signo-grafica">
@@ -3768,7 +3768,7 @@ window.abrirHistorialSignoVitalPaciente = function(clave) {
             <span>${escaparHTML(formatearFecha(registro.fecha) || registro.fecha || "Sin fecha")}</span>
             ${registro.nota ? `<p>${escaparHTML(registro.nota)}</p>` : ""}
           </article>
-        `).join("") : `<p class="lab-muted">AÃºn no hay registros histÃ³ricos para este signo vital.</p>`}
+        `).join("") : `<p class="lab-muted">Aún no hay registros históricos para este signo vital.</p>`}
       </div>
     </section>
   `;
@@ -3809,8 +3809,8 @@ function seriesGlobalesSignosVitales(datos = {}, opciones = {}) {
     const registros = obtenerHistorialSignoVital(datos, clave);
     if (clave === "presionArterial") {
       [
-        ["ta_sistolica", "TA sistÃ³lica", "sistolica", "#22d3ee"],
-        ["ta_diastolica", "TA diastÃ³lica", "diastolica", "#f97316"]
+        ["ta_sistolica", "TA sistólica", "sistolica", "#22d3ee"],
+        ["ta_diastolica", "TA diastólica", "diastolica", "#f97316"]
       ].forEach(([id, nombre, componente, color]) => {
         if (tieneFiltroSeries && !incluir.has(id)) return;
         series.push({ id, nombre, color, puntos: filtrar(puntosSerieSigno(clave, registros, { componente })) });
@@ -3845,8 +3845,8 @@ window.abrirGraficaGlobalSignosVitalesPaciente = function() {
   modalPrevio?.remove();
   const rango = rangoFechasSignosVitales(datos);
   const opcionesSeries = [
-    ["ta_sistolica", "TA sistÃ³lica"],
-    ["ta_diastolica", "TA diastÃ³lica"],
+    ["ta_sistolica", "TA sistólica"],
+    ["ta_diastolica", "TA diastólica"],
     ...Object.entries(SIGNOS_VITALES_LAB)
       .filter(([clave]) => clave !== "presionArterial")
       .map(([clave, signo]) => [clave, signo.titulo])
@@ -3856,14 +3856,14 @@ window.abrirGraficaGlobalSignosVitalesPaciente = function() {
   modal.id = "modalGraficaGlobalSignos";
   modal.className = "historial-signo-overlay";
   modal.innerHTML = `
-    <section class="historial-signo-card amplia" aria-label="GrÃ¡fica global de signos vitales">
+    <section class="historial-signo-card amplia" aria-label="Gráfica global de signos vitales">
       <header>
         <div>
           <span>Signos vitales</span>
-          <h3>GrÃ¡fica global</h3>
+          <h3>Gráfica global</h3>
         </div>
         <div class="historial-signo-actions">
-          <button type="button" data-cerrar-global-signos>Ã—</button>
+          <button type="button" data-cerrar-global-signos>×</button>
         </div>
       </header>
       <div class="signos-global-controles">
@@ -3915,21 +3915,21 @@ async function abrirSelectorFechaPaciente(campo = "fechaIngreso") {
     titulo.textContent = esNacimiento
       ? "Seleccionar fecha de nacimiento"
       : campo === "ultimoIngreso"
-        ? "Seleccionar Ãºltimo ingreso"
+        ? "Seleccionar último ingreso"
         : "Seleccionar ingreso";
   }
   if (subtitulo) {
     subtitulo.textContent = esNacimiento
       ? "Fecha de nacimiento"
       : campo === "ultimoIngreso"
-        ? "Ãšltimo ingreso"
+        ? "Último ingreso"
         : "Fecha de ingreso";
   }
   grupoHora?.classList.toggle("oculto", esNacimiento);
   if (ayuda) {
     ayuda.textContent = esNacimiento
       ? "Selecciona la fecha en formato DD-MM-AAAA."
-      : "Si no seleccionas hora, se tomarÃ¡ el inicio del dÃ­a.";
+      : "Si no seleccionas hora, se tomará el inicio del día.";
   }
   modal.classList.add("abierto");
   modal.setAttribute("aria-hidden", "false");
@@ -3960,7 +3960,7 @@ async function guardarIngresoPacienteDesdeModal() {
   const hora = document.getElementById("ingresoPacienteHora")?.value || "00:00";
 
   if (!fecha) {
-    alert(campoFechaIngresoModal === "fechaNacimiento" ? "Selecciona la fecha de nacimiento." : "Selecciona el dÃ­a de ingreso.");
+    alert(campoFechaIngresoModal === "fechaNacimiento" ? "Selecciona la fecha de nacimiento." : "Selecciona el día de ingreso.");
     return;
   }
 
@@ -4313,7 +4313,7 @@ async function quitarDiagnosticoPaciente(index) {
   const diagnostico = historial[index];
 
   if (!diagnostico) return;
-  if (!confirm("Â¿Quitar este diagnÃ³stico del expediente?")) return;
+  if (!confirm("¿Quitar este diagnóstico del expediente?")) return;
 
   const nuevoHistorial = historial.filter((_, i) => i !== index);
 
@@ -4424,7 +4424,7 @@ async function cargarNotasFlotantesPaciente() {
       <details class="nota-flotante-card"${abierta}>
         <summary>
           <strong>${escaparHTML(nota.titulo || "Nota flotante")}</strong>
-          <span>${nota.contraida ? "ContraÃ­da" : "Visible"}</span>
+          <span>${nota.contraida ? "Contraída" : "Visible"}</span>
         </summary>
         <p>${escaparHTML(nota.texto || "").replace(/\n/g, "<br>")}</p>
         <div class="registro-actions">
@@ -4633,7 +4633,7 @@ async function cargarInterconsultasPaciente() {
             <span class="estado-badge">${escaparHTML(item.formato || "cognicion")}</span>
           </div>
           <p>${escaparHTML(item.motivo || "")}</p>
-          <small>${escaparHTML(item.fecha || "")} Â· ${escaparHTML(item.prioridad || "")}</small>
+          <small>${escaparHTML(item.fecha || "")} · ${escaparHTML(item.prioridad || "")}</small>
         </article>
       `;
     }).join("");
@@ -4766,7 +4766,7 @@ function bloqueIdentificacionFrayPaciente(datos = {}) {
     <p class="identificacion">
       <b>Nombre del paciente:</b> ${textoWordPaciente(datos.nombrePaciente)}
          <b>Fecha de nacimiento:</b> ${textoWordPaciente(formatoFechaInterconsulta(datos.fechaNacimiento))}
-          <b>Edad:</b> ${textoWordPaciente(datos.edad)} AÃ‘OS
+          <b>Edad:</b> ${textoWordPaciente(datos.edad)} AÑOS
          <b>Cama:</b> ${textoWordPaciente(datos.cama)}
          <b>Expediente:</b> ${textoWordPaciente(datos.expediente)}
          <b>Sexo:</b> ${textoWordPaciente(datos.sexo)}
@@ -4794,11 +4794,11 @@ function firmasFrayPacienteHTML(firmas = []) {
 
 async function htmlInterconsultaWord(datos) {
   const encabezadoFray = datos.formato === "fray" ? await encabezadoFrayPacienteHTML() : "";
-  const encabezadoCognicion = `<h1>CogniciÃ³n - Solicitud de interconsulta</h1>`;
+  const encabezadoCognicion = `<h1>Cognición - Solicitud de interconsulta</h1>`;
   const motivoCompleto = [
     datos.motivo,
-    datos.resumen ? `Resumen clÃ­nico: ${datos.resumen}` : "",
-    datos.pregunta ? `Pregunta clÃ­nica: ${datos.pregunta}` : ""
+    datos.resumen ? `Resumen clínico: ${datos.resumen}` : "",
+    datos.pregunta ? `Pregunta clínica: ${datos.pregunta}` : ""
   ].filter(Boolean).join("\n\n");
   const identificacion = bloqueIdentificacionFrayPaciente({
     nombrePaciente: datos.pacienteNombre,
@@ -4841,7 +4841,7 @@ async function htmlInterconsultaWord(datos) {
           <p><b>Fecha:</b> ${textoWordPaciente(formatoFechaInterconsulta(datos.fecha))}    <b>Hora:</b> ${textoWordPaciente(datos.hora)}    <b>CURP:</b> ${textoWordPaciente(datos.curp)}</p>
           <p><b>Servicio solicitante:</b> ${textoWordPaciente(datos.servicioSolicitante)}    <b>Servicio interconsultante:</b> ${textoWordPaciente(datos.servicio)}    <b>Prioridad:</b> ${textoWordPaciente(datos.prioridad)}</p>
           <p><b>Peso:</b> ${textoWordPaciente(datos.peso)} Kg    <b>Talla:</b> ${textoWordPaciente(datos.talla)} m    <b>Perimetro abdominal:</b> ${textoWordPaciente(datos.perimetroAbdominal)} cm</p>
-          <h2>Sospecha diagnÃ³stica</h2>
+          <h2>Sospecha diagnóstica</h2>
           <p>${textoWordPaciente(datos.diagnostico)}</p>
           <h2>Motivo de la interconsulta</h2>
           <p class="contenido-largo">${textoMultilineaWordPaciente(motivoCompleto)}</p>
@@ -4940,9 +4940,9 @@ function medicamentosActivosIndicaciones() {
 
 function construirTextoIndicaciones(medicamentos = medicamentosActivosIndicaciones()) {
   const dieta = valorCampo("indicacionesDieta") || "NORMAL";
-  const cuidados = valorCampo("indicacionesCuidados") || "Signos vitales por turno y cuidados generales por enfermerÃ­a";
+  const cuidados = valorCampo("indicacionesCuidados") || "Signos vitales por turno y cuidados generales por enfermería";
   const cuidadosMostrar = cuidados
-    .replace(/\s*y cuidados generales por enfermer[iÃ­]a/i, "")
+    .replace(/\s*y cuidados generales por enfermer[ií]a/i, "")
     .trim();
   const alergias = valorCampo("indicacionesAlergias") || "Negadas";
   const riesgoCaida = valorCampo("indicacionesRiesgoCaida") || "MEDIO";
@@ -4954,9 +4954,9 @@ function construirTextoIndicaciones(medicamentos = medicamentosActivosIndicacion
     : eventualidadesCapturadas;
   const lineas = [
     `1. Dieta: ${dieta}`,
-    `2. Signos vitales y cuidados generales por enfermerÃ­a: ${cuidadosMostrar}`,
+    `2. Signos vitales y cuidados generales por enfermería: ${cuidadosMostrar}`,
     `3. Vigilancia por: ${vigilancia}`,
-    `4. Riesgo de caÃ­da: ${riesgoCaida}`,
+    `4. Riesgo de caída: ${riesgoCaida}`,
     `5. Alergias: ${alergias}`,
     `6. Medicamentos${notaMedicamentos ? ` (${notaMedicamentos.toLowerCase()})` : ""}:`
   ];
@@ -5118,7 +5118,7 @@ function renderizarInteraccionesFarmacologicas(medicamentos = [], origen = "trat
       <li>
         <strong>${escaparHTML(med.medicamento)}</strong>
         ${med.indicacion ? `<span>${escaparHTML(med.indicacion)}</span>` : ""}
-        ${med.dosisDia ? `<small>Dosis/dÃ­a: ${escaparHTML(med.dosisDia)}</small>` : ""}
+        ${med.dosisDia ? `<small>Dosis/día: ${escaparHTML(med.dosisDia)}</small>` : ""}
       </li>
     `).join("")
     : "<li>No hay medicamentos activos registrados.</li>";
@@ -5137,10 +5137,10 @@ function renderizarInteraccionesFarmacologicas(medicamentos = [], origen = "trat
     : "Sin categorias clinicas detectadas por las reglas locales.";
 
   contenedor.innerHTML = `
-    <p class="texto-suave">RevisiÃ³n orientativa basada en los ${escaparHTML(tituloOrigen)}. No sustituye el juicio clÃ­nico ni la revisiÃ³n de fuentes farmacolÃ³gicas institucionales.</p>
+    <p class="texto-suave">Revisión orientativa basada en los ${escaparHTML(tituloOrigen)}. No sustituye el juicio clínico ni la revisión de fuentes farmacológicas institucionales.</p>
     <article class="interaccion-card severidad-${escaparHTML(evaluacionClinica.indicador?.clase || "ok")}">
           <strong>Indicador contextual: ${escaparHTML(evaluacionClinica.indicador?.etiqueta || "Sin alerta encontrada con la base actual")}</strong>
-      <p>${alertasClinicas.length ? "Se detectaron alertas por diagnÃ³sticos, comorbilidades, interacciones o carga acumulativa." : "No se detectaron alertas clÃ­nicas contextuales con las reglas locales actuales."}</p>
+      <p>${alertasClinicas.length ? "Se detectaron alertas por diagnósticos, comorbilidades, interacciones o carga acumulativa." : "No se detectaron alertas clínicas contextuales con las reglas locales actuales."}</p>
     </article>
     <div class="interacciones-medicamentos-revisados">
       <strong>Medicamentos revisados</strong>
@@ -5158,14 +5158,14 @@ function renderizarInteraccionesFarmacologicas(medicamentos = [], origen = "trat
             <div class="registro-top">
               <div>
                 <strong>${escaparHTML(alerta.titulo)}</strong>
-                <span>${escaparHTML((alerta.medicamentos || []).join(" + ") || "Contexto clÃ­nico")}</span>
+                <span>${escaparHTML((alerta.medicamentos || []).join(" + ") || "Contexto clínico")}</span>
               </div>
               <em>${escaparHTML(alerta.severidad)}</em>
             </div>
             ${alerta.diagnosticos?.length ? `<small>Contexto: ${escaparHTML(alerta.diagnosticos.join(", "))}</small>` : ""}
             <p>${escaparHTML(alerta.efecto)}</p>
             <small>${escaparHTML(alerta.recomendacion)}</small>
-            ${alerta.requiereJustificacion ? "<small>Requiere justificaciÃ³n clÃ­nica si se decide continuar.</small>" : ""}
+            ${alerta.requiereJustificacion ? "<small>Requiere justificación clínica si se decide continuar.</small>" : ""}
           </article>
         `).join("")}
       </div>
@@ -5226,10 +5226,10 @@ function autollenarIndicaciones() {
     indicacionesNotaMedicamentos: "EN CASO DE NEGATIVISMO, ADMINISTRAR MOLIDOS Y DISUELTOS",
     indicacionesEventualidades: "Reportar Eventualidades",
     indicacionesFirma1Nombre: paciente.medicoAdscritoEncargado || paciente.medicoTratante || medicoActualDatos.nombre || "",
-    indicacionesFirma1Cargo: paciente.medicoAdscritoEncargado || paciente.medicoTratante || medicoActualDatos.nombre ? "MÃ©dico adscrito" : "",
+    indicacionesFirma1Cargo: paciente.medicoAdscritoEncargado || paciente.medicoTratante || medicoActualDatos.nombre ? "Médico adscrito" : "",
     indicacionesFirma1Cedula: medicoActualDatos.cedula || medicoActualDatos.cedulaProfesional || "",
     indicacionesFirma2Nombre: paciente.residenteEncargado || "",
-    indicacionesFirma2Cargo: paciente.residenteEncargado ? "MÃ©dico residente" : "",
+    indicacionesFirma2Cargo: paciente.residenteEncargado ? "Médico residente" : "",
     indicacionesFirma2Cedula: ""
   };
 
@@ -5253,7 +5253,7 @@ async function guardarIndicacionesPaciente() {
   }
 
   if (!datos.indicaciones) {
-    alert("Escribe las indicaciones mÃ©dicas.");
+    alert("Escribe las indicaciones médicas.");
     return;
   }
 
@@ -5265,7 +5265,7 @@ async function guardarIndicacionesPaciente() {
 
   await registrarAccionExpediente({
     accion: "crear_indicaciones",
-    descripcion: "El mÃ©dico registrÃ³ indicaciones mÃ©dicas del paciente.",
+    descripcion: "El médico registró indicaciones médicas del paciente.",
     detalles: { formato: datos.formato, servicio: datos.servicio }
   });
 
@@ -5293,7 +5293,7 @@ async function cargarIndicacionesPaciente() {
             <span class="estado-badge">${escaparHTML(item.formato || "fray")}</span>
           </div>
           <p>${escaparHTML(item.indicaciones || "").replace(/\n/g, "<br>")}</p>
-          <small>${escaparHTML(item.fecha || "")} Â· ${escaparHTML(item.hora || "")}</small>
+          <small>${escaparHTML(item.fecha || "")} · ${escaparHTML(item.hora || "")}</small>
           <div class="registro-actions">
             <button type="button" data-cargar-indicacion-borrador="${item.id}">Cargar como borrador</button>
           </div>
@@ -5714,7 +5714,7 @@ window.previsualizarMiSalud = function() {
 
 window.solicitarEliminarPaciente = async function() {
   const confirmar = confirm(
-    "Â¿Deseas suspender este paciente y solicitar eliminaciÃ³n al administrador?"
+    "¿Deseas suspender este paciente y solicitar eliminación al administrador?"
   );
 
   if (!confirmar) return;
@@ -5735,7 +5735,7 @@ window.solicitarEliminarPaciente = async function() {
       }
     );
 
-    alert("Paciente suspendido. La solicitud de eliminaciÃ³n ya aparece en Reportes del administrador.");
+    alert("Paciente suspendido. La solicitud de eliminación ya aparece en Reportes del administrador.");
 
     window.location.href = "medico.html";
   } catch (error) {
@@ -5745,7 +5745,7 @@ window.solicitarEliminarPaciente = async function() {
 
 window.abrirHistoriaClinica = function() {
   if (!uidPaciente) {
-    alert("No se encontrÃ³ el ID del paciente.");
+    alert("No se encontró el ID del paciente.");
     return;
   }
 
@@ -5803,7 +5803,7 @@ function limpiarFormularioTratamiento() {
   ponerValor("tratamientoEstado", "activo");
   ponerValor("tratamientoModoFrecuencia", "horas_especificas");
   ponerValor("tratamientoVecesDia", "3");
-  ponerValor("tratamientoFrecuencia", "3 veces al dÃ­a");
+  ponerValor("tratamientoFrecuencia", "3 veces al día");
   renderizarTomasTratamiento();
 }
 
@@ -5834,7 +5834,7 @@ async function guardarTratamientoPaciente() {
       .slice(0, 5)
       .map((alerta) => `- ${alerta.titulo}: ${alerta.efecto || alerta.recomendacion || ""}`)
       .join("\n");
-    const continuar = confirm(`Se detectaron alertas clÃ­nicas relevantes antes de guardar:\n\n${resumen}\n\nÂ¿Deseas guardar de todos modos con revisiÃ³n clÃ­nica documentada?`);
+    const continuar = confirm(`Se detectaron alertas clínicas relevantes antes de guardar:\n\n${resumen}\n\n¿Deseas guardar de todos modos con revisión clínica documentada?`);
     if (!continuar) return;
   }
 
@@ -5847,8 +5847,8 @@ async function guardarTratamientoPaciente() {
   await registrarAccionExpediente({
     accion: tratamientoId ? "editar_tratamiento" : "crear_tratamiento",
     descripcion: tratamientoId
-      ? "El mÃ©dico editÃ³ un tratamiento del expediente."
-      : "El mÃ©dico creÃ³ un tratamiento en el expediente.",
+      ? "El médico editó un tratamiento del expediente."
+      : "El médico creó un tratamiento en el expediente.",
     detalles: {
       tratamientoId,
       medicamento: datos.medicamento,
@@ -5882,7 +5882,7 @@ async function cargarTratamientosPaciente() {
 
     activos.innerHTML = listaActivos.length
       ? listaActivos.map(renderizarTratamiento).join("")
-      : "<p>AÃºn no hay tratamientos activos.</p>";
+      : "<p>Aún no hay tratamientos activos.</p>";
 
     suspendidos.innerHTML = listaSuspendidos.length
       ? listaSuspendidos.map(renderizarTratamiento).join("")
@@ -5902,7 +5902,7 @@ function renderizarTratamiento(t) {
   const dosisTotalDia = tratamiento.dosisTotalDia || calcularDosisTotalDiaTratamiento(tratamiento).texto || "";
   const indicador = indicadorSeguridadTratamiento(tratamiento);
   const alertaHTML = indicador.estado !== "sin_alertas"
-    ? `<button type="button" class="med-alerta-badge med-alerta-${escaparHTML(indicador.clase)}" title="${escaparHTML(indicador.etiqueta)}" data-ver-interacciones>âš  ${escaparHTML(indicador.etiqueta)}</button>`
+    ? `<button type="button" class="med-alerta-badge med-alerta-${escaparHTML(indicador.clase)}" title="${escaparHTML(indicador.etiqueta)}" data-ver-interacciones>? ${escaparHTML(indicador.etiqueta)}</button>`
     : "";
   const fechaSuspension = t.fechaSuspension || t["fechaSuspensi?n"] || "";
   const motivoSuspension = t.motivoSuspension || t["motivoSuspensi?n"] || "";
@@ -5916,10 +5916,10 @@ function renderizarTratamiento(t) {
         <span class="estado-badge ${tratamiento.estado === "suspendido" ? "suspendido" : "activo"}">${escaparHTML(tratamiento.estado || "activo")}</span>
       </div>
       <p><b>Inicio:</b> ${escaparHTML(formatearFecha(tratamiento.fechaInicio) || "Sin fecha")}</p>
-      ${dosisTotalDia ? `<p><b>Dosis total al dÃ­a:</b> ${escaparHTML(dosisTotalDia)}</p>` : ""}
-      ${tratamiento.estado === "suspendido" ? `<p><b>SuspensiÃ³n:</b> ${escaparHTML(formatearFecha(fechaSuspension))} Â· ${escaparHTML(motivoSuspension || "Sin motivo registrado")}</p>` : ""}
+      ${dosisTotalDia ? `<p><b>Dosis total al día:</b> ${escaparHTML(dosisTotalDia)}</p>` : ""}
+      ${tratamiento.estado === "suspendido" ? `<p><b>Suspensión:</b> ${escaparHTML(formatearFecha(fechaSuspension))} · ${escaparHTML(motivoSuspension || "Sin motivo registrado")}</p>` : ""}
       ${tratamiento.observaciones ? `<p>${escaparHTML(tratamiento.observaciones)}</p>` : ""}
-      ${tratamiento.modificadoPorRol || tratamiento.creadoPorRol ? `<p class="texto-suave"><b>Ãšltima modificaciÃ³n:</b> ${escaparHTML(tratamiento.modificadoPorNombre || tratamiento.creadoPorNombre || "Usuario")} Â· ${escaparHTML(tratamiento.modificadoPorRol || tratamiento.creadoPorRol || "")} Â· ${escaparHTML(formatearFecha(tratamiento.fechaActualizacion) || "")}</p>` : ""}
+      ${tratamiento.modificadoPorRol || tratamiento.creadoPorRol ? `<p class="texto-suave"><b>Última modificación:</b> ${escaparHTML(tratamiento.modificadoPorNombre || tratamiento.creadoPorNombre || "Usuario")} · ${escaparHTML(tratamiento.modificadoPorRol || tratamiento.creadoPorRol || "")} · ${escaparHTML(formatearFecha(tratamiento.fechaActualizacion) || "")}</p>` : ""}
       <div class="registro-actions">
         <button type="button" data-editar-tratamiento="${t.id}">Editar</button>
         <button type="button" class="boton-peligro" data-eliminar-tratamiento="${t.id}">Eliminar</button>
@@ -5991,12 +5991,12 @@ function editarTratamientoPaciente(id) {
 }
 
 async function eliminarTratamientoPaciente(id) {
-  if (!confirm("Â¿Eliminar este tratamiento del expediente?")) return;
+  if (!confirm("¿Eliminar este tratamiento del expediente?")) return;
   const tratamiento = tratamientosCache.find((item) => item.id === id);
   await eliminarTratamiento(uidPaciente, id);
   await registrarAccionExpediente({
     accion: "eliminar_tratamiento",
-    descripcion: "El mÃ©dico eliminÃ³ un tratamiento del expediente.",
+    descripcion: "El médico eliminó un tratamiento del expediente.",
     detalles: {
       tratamientoId: id,
       medicamento: tratamiento?.medicamento || ""
@@ -6133,8 +6133,8 @@ function horariosPorModoTratamiento(modo, total) {
 function etiquetaFrecuenciaTratamiento(modo, total) {
   if (modo === "cada_8_horas") return "cada 8 horas";
   if (modo === "cada_12_horas") return "cada 12 horas";
-  if (modo === "manana_tarde_noche") return "maÃ±ana, tarde y noche";
-  return `${total} vez${total === 1 ? "" : "es"} al dÃ­a`;
+  if (modo === "manana_tarde_noche") return "mañana, tarde y noche";
+  return `${total} vez${total === 1 ? "" : "es"} al día`;
 }
 
 function leerTomasTratamiento() {
@@ -6248,13 +6248,13 @@ function calcularDosisTotalDiaTratamiento(t = {}) {
     const totalRedondeado = Number.isInteger(total) ? total : Number(total.toFixed(2));
     return {
       cantidadTotal,
-      texto: `${totalRedondeado} ${presentacion.unidad}/dÃ­a`
+      texto: `${totalRedondeado} ${presentacion.unidad}/día`
     };
   }
 
   return {
     cantidadTotal,
-    texto: `${cantidadTotal} unidad${cantidadTotal === 1 ? "" : "es"}/dÃ­a`
+    texto: `${cantidadTotal} unidad${cantidadTotal === 1 ? "" : "es"}/día`
   };
 }
 
@@ -6408,7 +6408,7 @@ function formatearIndicacionTratamiento(t = {}, incluirMedicamento = true) {
   }
 
   if (!partes.length && !incluirMedicamento) {
-    return [t.dosis, normalizarTextoFrecuenciaTratamiento(t.frecuencia), t.via, t.horarios].filter(Boolean).join(" Â· ");
+    return [t.dosis, normalizarTextoFrecuenciaTratamiento(t.frecuencia), t.via, t.horarios].filter(Boolean).join(" · ");
   }
 
   return partes.join(" ");
@@ -6435,7 +6435,7 @@ function datosRecetaActual() {
     fechaNacimiento: obtenerFechaNacimiento(datosPacienteActual || {}),
     sexo: datosPacienteActual?.sexo || datosPacienteActual?.datosInstitucionales?.sexo || "",
     expediente: datosPacienteActual?.expedienteCognicion || datosPacienteActual?.datosInstitucionales?.expedienteCognicion || datosPacienteActual?.expediente || "",
-    medico: medicoActualDatos?.nombre || datosPacienteActual?.medicoTratante || "MÃ©dico tratante",
+    medico: medicoActualDatos?.nombre || datosPacienteActual?.medicoTratante || "Médico tratante",
     cedula: medicoActualDatos?.cedula || medicoActualDatos?.cedulaProfesional || "",
     institucion: datosPacienteActual?.institucionPaciente || datosPacienteActual?.institucion || "",
     medicamentos: medicamentosRecetaActual,
@@ -6491,7 +6491,7 @@ function htmlRecetaPreview(datos = datosRecetaActual()) {
 
     <div class="receta-datos">
       <p><b>Paciente:</b> ${escaparHTML(datos.pacienteNombre)}</p>
-      <p><b>Edad:</b> ${datos.edad !== "" ? escaparHTML(`${datos.edad} aÃ±os`) : "No registrada"}</p>
+      <p><b>Edad:</b> ${datos.edad !== "" ? escaparHTML(`${datos.edad} años`) : "No registrada"}</p>
       <p><b>Sexo:</b> ${escaparHTML(datos.sexo || "No registrado")}</p>
       <p><b>Expediente:</b> ${escaparHTML(datos.expediente || "No registrado")}</p>
     </div>
@@ -6505,7 +6505,7 @@ function htmlRecetaPreview(datos = datosRecetaActual()) {
     <div class="receta-firma">
       <span></span>
       <strong>${escaparHTML(datos.medico)}</strong>
-      <small>${datos.cedula ? `Ced. Prof. ${escaparHTML(datos.cedula)}` : "CÃ©dula profesional"}</small>
+      <small>${datos.cedula ? `Ced. Prof. ${escaparHTML(datos.cedula)}` : "Cédula profesional"}</small>
     </div>
   `;
 }
@@ -6646,7 +6646,7 @@ function datosSolicitudEstudiosActual() {
     institucion: datosPacienteActual?.institucionPaciente || datosPacienteActual?.institucion || "",
     prioridad: valorCampo("solicitudEstudioPrioridad") || "Ordinaria",
     motivo: valorCampo("solicitudEstudioMotivo"),
-    solicita: valorCampo("solicitudEstudioSolicita") || medicoActualDatos?.nombre || datosPacienteActual?.medicoTratante || "MÃ©dico solicitante",
+    solicita: valorCampo("solicitudEstudioSolicita") || medicoActualDatos?.nombre || datosPacienteActual?.medicoTratante || "Médico solicitante",
     cedula: medicoActualDatos?.cedula || medicoActualDatos?.cedulaProfesional || "",
     estudios: estudiosSolicitudActual
   };
@@ -6693,14 +6693,14 @@ function htmlSolicitudEstudiosPreview(datos = datosSolicitudEstudiosActual()) {
     <div class="receta-encabezado">
       <div>
         <h2>Solicitud de estudios</h2>
-        <p>Formato ${escaparHTML(datos.formato)} Â· ${escaparHTML(datos.prioridad)}</p>
+        <p>Formato ${escaparHTML(datos.formato)} · ${escaparHTML(datos.prioridad)}</p>
       </div>
       <span>${escaparHTML(formatearFecha(datos.fecha) || datos.fecha)}</span>
     </div>
 
     <div class="receta-datos">
       <p><b>Paciente:</b> ${escaparHTML(datos.pacienteNombre)}</p>
-      <p><b>Edad:</b> ${datos.edad !== "" ? escaparHTML(`${datos.edad} aÃ±os`) : "No registrada"}</p>
+      <p><b>Edad:</b> ${datos.edad !== "" ? escaparHTML(`${datos.edad} años`) : "No registrada"}</p>
       <p><b>Sexo:</b> ${escaparHTML(datos.sexo || "No registrado")}</p>
       <p><b>Expediente:</b> ${escaparHTML(datos.expediente || "No registrado")}</p>
       <p><b>Cama:</b> ${escaparHTML(datos.cama || "No registrada")}</p>
@@ -6710,12 +6710,12 @@ function htmlSolicitudEstudiosPreview(datos = datosSolicitudEstudiosActual()) {
     <h3>Estudios solicitados</h3>
     <ol class="receta-medicamentos">${estudios}</ol>
 
-    ${datos.motivo ? `<h3>IndicaciÃ³n clÃ­nica</h3><p>${escaparHTML(datos.motivo)}</p>` : ""}
+    ${datos.motivo ? `<h3>Indicación clínica</h3><p>${escaparHTML(datos.motivo)}</p>` : ""}
 
     <div class="receta-firma">
       <span></span>
       <strong>${escaparHTML(datos.solicita)}</strong>
-      <small>${datos.cedula ? `Ced. Prof. ${escaparHTML(datos.cedula)}` : "QuiÃ©n solicita"}</small>
+      <small>${datos.cedula ? `Ced. Prof. ${escaparHTML(datos.cedula)}` : "Quién solicita"}</small>
     </div>
   `;
 }
@@ -6863,7 +6863,7 @@ async function guardarEstudioPaciente() {
   await registrarAccionExpediente({
     accion: estudioId ? "editar_estudio" : "crear_estudio",
     descripcion: estudioId
-      ? "El mÃ©dico editÃ³ un estudio del expediente."
+      ? "El médico editó un estudio del expediente."
       : "El medico registro un estudio en el expediente.",
     detalles: {
       estudioId,
@@ -6900,7 +6900,7 @@ function renderizarEstudio(estudio) {
       <div class="registro-top">
         <div>
           <strong>${escaparHTML(estudio.nombre || "Estudio")}</strong>
-          <span>${escaparHTML(estudio.tipo || "Sin tipo")} Â· ${escaparHTML(formatearFecha(estudio.fecha))}</span>
+          <span>${escaparHTML(estudio.tipo || "Sin tipo")} · ${escaparHTML(formatearFecha(estudio.fecha))}</span>
         </div>
       </div>
       ${estudio.resultado ? `<p><b>Resultado:</b> ${escaparHTML(estudio.resultado)}</p>` : ""}
@@ -6938,7 +6938,7 @@ function editarEstudioPaciente(id) {
 }
 
 async function eliminarEstudioPaciente(id) {
-  if (!confirm("Â¿Eliminar este estudio del expediente?")) return;
+  if (!confirm("¿Eliminar este estudio del expediente?")) return;
   const estudio = estudiosCache.find((item) => item.id === id);
   await eliminarEstudio(uidPaciente, id);
   await registrarAccionExpediente({
@@ -6963,7 +6963,7 @@ async function guardarNotaRapidaPaciente() {
   await crearNotaRapida(uidPaciente, {
     texto,
     medicoUid: auth.currentUser.uid,
-    medicoNombre: medico?.nombre || medico?.email || "MÃ©dico",
+    medicoNombre: medico?.nombre || medico?.email || "Médico",
     pacienteId: uidPaciente
   });
 
@@ -7009,7 +7009,7 @@ async function cargarNotasRapidasPaciente() {
   }
 }
 
-function configurarTamaÃ±oNotaRapida() {
+function configurarTamañoNotaRapida() {
   const textarea = document.getElementById("notaRapidaTexto");
   const botonContraer = document.getElementById("contraerNotaRapida");
   const botonAmpliar = document.getElementById("ampliarNotaRapida");
@@ -7088,7 +7088,7 @@ document.getElementById("descargarSolicitudEstudios")?.addEventListener("click",
   document.getElementById(id)?.addEventListener("change", actualizarPreviewSolicitudEstudios);
 });
 document.getElementById("guardarNotaRapida")?.addEventListener("click", guardarNotaRapidaPaciente);
-configurarTamaÃ±oNotaRapida();
+configurarTamañoNotaRapida();
 document.getElementById("guardarTareaMiSalud")?.addEventListener("click", guardarTareaMiSaludPaciente);
 document.getElementById("btnGenerarCodigoPaciente")?.addEventListener("click", generarCodigoVinculacionDesdeMedico);
 document.getElementById("btnVincularCodigoPaciente")?.addEventListener("click", vincularCuentaPacienteDesdeMedico);
@@ -7215,7 +7215,7 @@ async function vincularCuentaPacienteDesdeMedico() {
     return;
   }
 
-  if (!confirm("Â¿Vincular este expediente con la cuenta del paciente?")) return;
+  if (!confirm("¿Vincular este expediente con la cuenta del paciente?")) return;
 
   try {
     const resultado = await vincularExpedienteConCodigoPaciente(
