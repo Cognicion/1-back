@@ -53,6 +53,7 @@ import {
 import {
   obtenerUsuario,
   listarPacientes,
+  medicoPuedeVer,
   actualizarUsuario,
   solicitarEliminacionPaciente,
   buscarMedicoPorCorreo,
@@ -60,7 +61,7 @@ import {
   listarPermisosMedicos,
   cambiarRolPermisoMedico,
   revocarPermisoMedico
-} from "./services/usuarios.js?v=20260716-1";
+} from "./services/usuarios.js?v=20260718-patient-access";
 
 import {
   crearTratamiento,
@@ -2017,8 +2018,7 @@ async function obtenerPacientePorListaAutorizada(uid) {
   const usuario = auth.currentUser;
   if (!uid || !usuario) return null;
 
-  const uidConsulta = rolUsuarioActual === "admin" ? "" : usuario.uid;
-  const resultado = await listarPacientes(uidConsulta);
+  const resultado = await listarPacientes(usuario.uid);
   let encontrado = null;
 
   resultado.forEach((docPaciente) => {
@@ -2069,6 +2069,18 @@ async function cargarDatosPaciente() {
       ponerTexto("nombrePaciente", "Paciente no encontrado");
       return;
     }
+  }
+
+  const usuario = auth.currentUser;
+  const accesoPropioPaciente = rolUsuarioActual === "paciente" && usuario?.uid === uidPaciente;
+  const accesoProfesional = usuario?.uid && await medicoPuedeVer(usuario.uid, uidPaciente);
+
+  if (!accesoPropioPaciente && !accesoProfesional) {
+    datosPacienteActual = null;
+    ponerTexto("nombrePaciente", "Acceso no autorizado");
+    ponerTexto("correoPaciente", "No tienes acceso autorizado a este expediente");
+    document.body.classList.add("bloqueado");
+    throw new Error("patient_access_denied");
   }
 
   ponerTexto("nombrePaciente", obtenerNombrePacienteParaMostrar(datos) || "Paciente sin nombre");

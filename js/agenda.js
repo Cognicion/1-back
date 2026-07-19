@@ -1,5 +1,5 @@
 import { auth, db } from "./firebase.js";
-import { medicoPuedeVer, obtenerUsuario } from "./services/usuarios.js";
+import { listarPacientes, obtenerUsuario } from "./services/usuarios.js?v=20260718-patient-access";
 import { registrarEventoAuditoria } from "./services/auditoria.js";
 import { iniciarMonitoreoSesion } from "./services/sesion.js";
 import { obtenerNombrePacienteParaMostrar } from "./utils/nombresPacientes.js";
@@ -51,19 +51,15 @@ onAuthStateChanged(auth, async (user) => {
 });
 
 async function cargarPacientes() {
-  const snap = await getDocs(collection(db, "usuarios"));
-  const filas = [];
-
-  for (const docPaciente of snap.docs) {
+  pacienteCita.innerHTML = "<option value=\"\">Cargando pacientes autorizados...</option>";
+  const snap = await listarPacientes(medicoUid, { forzar: true });
+  const filas = snap.docs.map((docPaciente) => {
     const paciente = docPaciente.data();
-    if (paciente.rol !== "paciente") continue;
-    const puedeVer = await medicoPuedeVer(medicoUid, docPaciente.id);
-    if (!puedeVer) continue;
-    filas.push({
+    return {
       id: docPaciente.id,
       nombre: obtenerNombrePacienteParaMostrar(paciente) || "Paciente sin nombre"
-    });
-  }
+    };
+  });
 
   pacientes = filas.sort((a, b) => a.nombre.localeCompare(b.nombre));
   pacienteCita.innerHTML = pacientes.length

@@ -1,7 +1,7 @@
 import { auth, db } from "./firebase.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-import { medicoPuedeVer, obtenerUsuario } from "./services/usuarios.js";
+import { listarPacientes, obtenerUsuario } from "./services/usuarios.js?v=20260718-patient-access";
 import { iniciarMonitoreoSesion } from "./services/sesion.js";
 import { usuarioEsPersonalClinico } from "./utils/roles.js";
 
@@ -48,7 +48,7 @@ function rolEsAdminEstadistica(rol = "") {
 }
 
 function usuarioTieneAccesoTotal() {
-  return rolEsAdminEstadistica(usuarioActual?.rol);
+  return false;
 }
 
 onAuthStateChanged(auth, async (user) => {
@@ -509,19 +509,13 @@ async function cargarPacientesDelMedico() {
   const user = auth.currentUser;
   if (!user) return;
 
-  resultados.textContent = usuarioTieneAccesoTotal()
-    ? "Cargando todos los pacientes..."
-    : "Cargando pacientes autorizados...";
+  resultados.textContent = "Cargando pacientes autorizados...";
 
-  const snapshot = await getDocs(collection(db, "usuarios"));
+  const snapshot = await listarPacientes(user.uid, { forzar: true });
   const filas = [];
 
   for (const docPaciente of snapshot.docs) {
     const paciente = docPaciente.data();
-    if (paciente.rol !== "paciente") continue;
-
-    const puedeVer = usuarioTieneAccesoTotal() || await medicoPuedeVer(user.uid, docPaciente.id);
-    if (!puedeVer) continue;
 
     const snapTratamientos = await getDocs(collection(db, "usuarios", docPaciente.id, "tratamientos"));
     const tratamientos = snapTratamientos.docs.map((docTratamiento) => docTratamiento.data());
@@ -547,9 +541,7 @@ async function cargarPacientesDelMedico() {
 
   const tabla = tablaDesdeDatos(filas, "Pacientes del panel medico");
   aplicarTablaAlProyecto(tabla, "reemplazar");
-  resumenDatos.textContent = usuarioTieneAccesoTotal()
-    ? `${datos.length} pacientes cargados desde Firestore.`
-    : `${datos.length} pacientes autorizados cargados desde Firestore.`;
+  resumenDatos.textContent = `${datos.length} pacientes autorizados cargados desde Firestore.`;
   resultados.textContent = "Datos clinicos cargados. Selecciona un analisis o grafica.";
 }
 

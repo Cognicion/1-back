@@ -7,7 +7,7 @@ import {
 import {
   obtenerUsuario,
   listarPacientes
-} from "./services/usuarios.js";
+} from "./services/usuarios.js?v=20260718-patient-access";
 import { obtenerNombrePacienteParaMostrar } from "./utils/nombresPacientes.js";
 import { usuarioEsPersonalClinico } from "./utils/roles.js";
 
@@ -28,7 +28,7 @@ onAuthStateChanged(auth, async (user) => {
   const lista = document.getElementById("listaPacientes");
   lista.innerHTML = "";
 
-  const pacientes = await listarPacientes();
+  const pacientes = await listarPacientes(user.uid);
 
   pacientes.forEach((paciente) => {
     const datos = paciente.data();

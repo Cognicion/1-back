@@ -1,6 +1,11 @@
 import { db } from "../firebase.js";
 import { obtenerNombrePacienteParaMostrar } from "../utils/nombresPacientes.js";
 import { usuarioEsProfesionalTipoMedico } from "../utils/roles.js";
+import {
+    createAuthorizedPatientQueryDescriptors,
+    patientAllowsProfessionalAccess,
+    patientListCacheKey
+} from "./patientAccessCore.js";
 
 import {
     doc,
@@ -99,7 +104,11 @@ function crearResultadoPacientesDesdeDocs(docs) {
 
 export async function listarPacientes(uidMedico = "", opciones = {}){
 
-    const claveCache = uidMedico || "__todos__";
+    if (!uidMedico) {
+        throw new Error("missing_actor_user_id");
+    }
+
+    const claveCache = patientListCacheKey(uidMedico);
     if (!opciones.forzar) {
         const cache = leerCacheVigente(cacheListasPacientes, claveCache, TTL_LISTA_PACIENTES_MS);
         if (cache) return cache;
@@ -118,33 +127,12 @@ export async function listarPacientes(uidMedico = "", opciones = {}){
 async function listarPacientesSinCache(uidMedico = ""){
 
     if (!uidMedico) {
-        const q = query(
-            collection(db,"usuarios"),
-            where("rol","==","paciente")
-        );
-
-        return await getDocs(q);
+        throw new Error("missing_actor_user_id");
     }
 
     const usuariosRef = collection(db,"usuarios");
-    const camposVinculo = [
-        "creadoPor",
-        "ownerUid",
-        "createdByUid",
-        "medicoUid",
-        "medicoTratanteUid",
-        "medicoTratanteUID"
-    ];
-    const consultas = camposVinculo.map((campo) =>
-        query(usuariosRef, where(campo,"==",uidMedico))
-    );
-
-    consultas.push(
-        query(usuariosRef, where("medicosAutorizados","array-contains",uidMedico))
-    );
-
-    consultas.push(
-        query(usuariosRef, where("medicosAutorizadosUid","array-contains",uidMedico))
+    const consultas = createAuthorizedPatientQueryDescriptors(uidMedico).map((descriptor) =>
+        query(usuariosRef, where(descriptor.field, descriptor.operator, descriptor.value))
     );
 
     const resultados = await Promise.allSettled(
@@ -161,7 +149,7 @@ async function listarPacientesSinCache(uidMedico = ""){
 
         resultado.value.forEach((docPaciente) => {
             const datos = docPaciente.data();
-            if (datos.rol === "paciente") {
+            if (patientAllowsProfessionalAccess(datos, uidMedico)) {
                 pacientes.set(docPaciente.id, docPaciente);
             }
         });
@@ -184,7 +172,13 @@ async function listarPacientesSinCache(uidMedico = ""){
             const pacienteSnap = await getDoc(pacienteRef);
             if (!pacienteSnap.exists()) return null;
             const datos = pacienteSnap.data();
-            return datos.rol === "paciente" ? pacienteSnap : null;
+            return patientAllowsProfessionalAccess({
+                ...datos,
+                permisosMedicos: {
+                    ...(datos.permisosMedicos || {}),
+                    [uidMedico]: permisoDoc.data()
+                }
+            }, uidMedico) ? pacienteSnap : null;
         }));
 
         pacientesPorPermiso
@@ -300,20 +294,7 @@ async function medicoPuedeVerSinCache(uidMedico, pacienteId) {
     if (!pacienteSnap.exists()) return false;
 
     const paciente = pacienteSnap.data();
-    const camposPropietario = [
-        paciente.creadoPor,
-        paciente.ownerUid,
-        paciente.createdByUid,
-        paciente.medicoUid,
-        paciente.medicoTratanteUid,
-        paciente.medicoTratanteUID
-    ].filter(Boolean);
-
-    if (camposPropietario.includes(uidMedico)) return true;
-
-    if (Array.isArray(paciente.medicosAutorizados) && paciente.medicosAutorizados.includes(uidMedico)) return true;
-    if (Array.isArray(paciente.medicosAutorizadosUid) && paciente.medicosAutorizadosUid.includes(uidMedico)) return true;
-    if (paciente.permisosMedicos && paciente.permisosMedicos[uidMedico]?.lectura === true) return true;
+    if (patientAllowsProfessionalAccess(paciente, uidMedico)) return true;
 
     const permisoRef = doc(
         db,
@@ -329,8 +310,16 @@ async function medicoPuedeVerSinCache(uidMedico, pacienteId) {
 
     if (!permisoSnap.exists()) return false;
 
-    return permisoSnap.data().lectura === true;
+    return permisoSnap.data().lectura === true && patientAllowsProfessionalAccess({
+        ...paciente,
+        permisosMedicos: {
+            ...(paciente.permisosMedicos || {}),
+            [uidMedico]: permisoSnap.data()
+        }
+    }, uidMedico);
 }
+
+export { patientAllowsProfessionalAccess as canProfessionalAccessPatient };
 
 export function permisosPorRol(tipoPermiso) {
     const permisos = {

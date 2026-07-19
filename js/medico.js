@@ -1,4 +1,4 @@
-import { listarPacientes } from "./services/usuarios.js";
+import { listarPacientes } from "./services/usuarios.js?v=20260718-patient-access";
 import { getAuthenticatedUserOnce, getUserProfileOnce } from "./services/authContextService.js";
 import { iniciarMonitoreoSesion } from "./services/sesion.js";
 import { aplicarAparienciaGuardada, sincronizarAparienciaUsuario } from "./services/apariencia.js";
@@ -794,9 +794,13 @@ function inicializarCarpetasInlineColapsables() {
 
 async function cargarPacientes(uidMedico, opciones = {}) {
   const lista = document.getElementById("listaPacientes");
-  if (!opciones.silencioso && lista) lista.innerHTML = "Cargando pacientes...";
+  if (!opciones.silencioso && lista) lista.innerHTML = "Verificando acceso...";
 
   try {
+    if (!uidMedico) {
+      throw new Error("missing_actor_user_id");
+    }
+
     const ahora = Date.now();
     const cacheVigente =
       !opciones.forzar &&
@@ -811,8 +815,8 @@ async function cargarPacientes(uidMedico, opciones = {}) {
       return;
     }
 
-    const uidConsulta = rolUsuarioActual === "admin" ? "" : uidMedico;
-    const snapshot = await listarPacientes(uidConsulta);
+    if (!opciones.silencioso && lista) lista.innerHTML = "Cargando pacientes autorizados...";
+    const snapshot = await listarPacientes(uidMedico);
 
     pacientesGlobal = deduplicarPacientes(snapshot.docs
       .map((docPaciente) => ({
