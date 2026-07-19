@@ -191,6 +191,16 @@ body {
   .voice-block-row {
     grid-template-columns: 1fr;
   }
+
+  .voice-save-bar {
+    position: static;
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .voice-save-detail dl {
+    grid-template-columns: 1fr;
+  }
 }
 
 .voice-header h1 {
@@ -242,6 +252,51 @@ body {
 .voice-steps button.activo {
   color: #04111f;
   background: #67e8f9;
+}
+
+.voice-save-bar {
+  position: sticky;
+  top: 66px;
+  z-index: 7;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0 0 14px;
+  padding: 10px 12px;
+  border: 1px solid rgba(125, 211, 252, 0.18);
+  border-radius: 10px;
+  background: rgba(2, 6, 23, 0.9);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.18);
+}
+
+.voice-save-bar span {
+  display: block;
+  color: #7dd3fc;
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.voice-save-bar strong {
+  color: #e8eef8;
+  font-size: 0.95rem;
+}
+
+.voice-save-detail summary {
+  color: #bae6fd;
+  cursor: pointer;
+  font-weight: 800;
+}
+
+.voice-save-detail dl {
+  display: grid;
+  grid-template-columns: max-content minmax(90px, 1fr);
+  gap: 4px 10px;
+  margin: 8px 0 0;
+  color: #cbd5e1;
+  font-size: 0.78rem;
 }
 
 .voice-step-panel {
@@ -772,5 +827,15 @@ body {
   .voice-actions button,
   .voice-steps button {
     width: 100%;
+  }
+
+  .voice-save-bar {
+    position: static;
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .voice-save-detail dl {
+    grid-template-columns: 1fr;
   }
 }

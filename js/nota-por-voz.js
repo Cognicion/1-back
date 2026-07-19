@@ -9,7 +9,7 @@ import {
   CONVERSATION_SEGMENTATION_PROMPT_VERSION,
   createConversationSegmentationProvider,
   crearClientRequestId
-} from "./services/conversationSegmentationProviders.js?v=20260719-save-contract";
+} from "./services/conversationSegmentationProviders.js?v=20260719-save-visible";
 import { segmentarConversacionClinica } from "./services/clinicalPipeline.js";
 import {
   VOICE_NOTE_FIELD_REGISTRY,
@@ -35,7 +35,7 @@ import {
   hashTextoVoz,
   limpiarSesionesNotaVozVencidas,
   obtenerSegmentacionNotaVozLocal
-} from "./services/voiceNoteSessionPersistence.js?v=20260719-save-contract";
+} from "./services/voiceNoteSessionPersistence.js?v=20260719-save-visible";
 import {
   VOICE_NOTE_CATALOG_VERSION,
   VOICE_NOTE_STYLE_CATALOG_VERSION,
@@ -104,6 +104,11 @@ const state = {
   pendingPersistenceOperations: 0,
   saveStatus: "pending",
   lastSaveError: null,
+  persistedSessionId: "",
+  persistedTranscriptHash: "",
+  persistedSaveVersion: 0,
+  persistedSavedAt: "",
+  persistedTranscriptLength: 0,
   recoverableSession: null,
   recoverableSessions: [],
   selectedStep: "preparar",
@@ -725,7 +730,7 @@ function actualizarLinks() {
   const qsNota = construirQueryContexto(state.noteId ? { notaId: state.noteId } : {});
   $("linkPacienteVoz")?.setAttribute("href", state.patientId ? `paciente.html${qsPaciente}` : "paciente.html");
   $("linkNotaTradicional")?.setAttribute("href", qsNota ? `nota.html?${qsNota}` : "nota.html");
-  const versionedVoiceUrl = qsBase ? `nota-por-voz.html?v=20260719-save-contract&${qsBase}` : "nota-por-voz.html?v=20260719-save-contract";
+  const versionedVoiceUrl = qsBase ? `nota-por-voz.html?v=20260719-save-visible&${qsBase}` : "nota-por-voz.html?v=20260719-save-visible";
   $("linkNotaVoz")?.setAttribute("href", versionedVoiceUrl);
 }
 
@@ -739,6 +744,7 @@ function setPreparacionHabilitada(enabled, message = "") {
     button.disabled = !enabled;
   });
   if (message) setText("voiceContextStatus", message);
+  actualizarHabilitacionPorGuardado();
 }
 
 function actualizarResumenPlantilla() {
@@ -1550,16 +1556,54 @@ function registrarPersistenciaVoz(stage, extra = {}) {
   });
 }
 
+function obtenerTextoTranscripcionActual() {
+  return $("voiceCorrectedTranscript")?.value || $("textoDictadoClinico")?.value || "";
+}
+
+function obtenerHashTranscripcionActual() {
+  return hashTextoVoz(obtenerTextoTranscripcionActual());
+}
+
+function canUseProvider() {
+  const transcript = obtenerTextoTranscripcionActual();
+  if (!transcript.trim()) return false;
+  return state.contextReady
+    && Boolean(state.user?.uid && state.patientId && state.encounterId)
+    && state.saveStatus === "saved"
+    && Boolean(state.persistedSessionId)
+    && state.persistedSessionId === state.voiceSessionId
+    && state.persistedTranscriptHash === obtenerHashTranscripcionActual();
+}
+
+function actualizarDetalleGuardadoSesion() {
+  const currentText = obtenerTextoTranscripcionActual();
+  setText("voiceSaveDetailSession", state.persistedSessionId ? `${String(state.persistedSessionId).slice(0, 12)}...` : "-");
+  setText("voiceSaveDetailVersion", state.persistedSaveVersion ? String(state.persistedSaveVersion) : "-");
+  setText("voiceSaveDetailSavedAt", state.persistedSavedAt ? new Date(state.persistedSavedAt).toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit", second: "2-digit" }) : "-");
+  setText("voiceSaveDetailHash", state.persistedTranscriptHash ? String(state.persistedTranscriptHash).slice(0, 10) : "-");
+  setText("voiceSaveDetailCharacters", String(currentText.length));
+  setText("voiceSaveDetailConfirmed", canUseProvider() ? "si" : "no");
+}
+
+function actualizarHabilitacionPorGuardado() {
+  const allowed = canUseProvider();
+  const segmentButton = $("btnSegmentarConversacionVoz");
+  if (segmentButton && !state.activeSegmentationRequest) segmentButton.disabled = !allowed;
+  const generateButton = $("btnGenerarNotaVoz");
+  if (generateButton && !state.activeGenerationRequest) generateButton.disabled = !allowed;
+  actualizarDetalleGuardadoSesion();
+}
+
 function setSaveStatus(status, message = "") {
   state.saveStatus = status;
-  if (status === "saving") setText("voiceSaveStatus", message || "Guardando sesion local...");
-  else if (status === "saved") setText("voiceSaveStatus", message || "Guardado.");
-  else if (status === "failed") setText("voiceSaveStatus", message || "No fue posible guardar esta sesion. No recargue esta pagina.");
-  else setText("voiceSaveStatus", message || "Guardado local pendiente.");
+  if (status === "idle") setText("voiceSaveStatus", message || "Sin cambios por guardar.");
+  else if (status === "saving") setText("voiceSaveStatus", message || "Guardando...");
+  else if (status === "saved") setText("voiceSaveStatus", message || "Guardado localmente.");
+  else if (status === "failed") setText("voiceSaveStatus", message || "Error al guardar.");
+  else setText("voiceSaveStatus", message || "Guardado pendiente.");
   const actions = $("voiceSaveActions");
   if (actions) actions.hidden = status !== "failed";
-  const segmentButton = $("btnSegmentarConversacionVoz");
-  if (segmentButton && !state.activeSegmentationRequest) segmentButton.disabled = status !== "saved" && hayDatosVoz();
+  actualizarHabilitacionPorGuardado();
 }
 
 function crearErrorLocalVoz(message, code = "local_error") {
@@ -1586,7 +1630,7 @@ function conTimeoutLocal(promise, timeoutMs, code, onTimeout = null) {
 function programarPersistenciaVoz(reason = "update") {
   if (state.isHydratingSession || !state.persistenceReady) return;
   if (state.persistenceTimer) window.clearTimeout(state.persistenceTimer);
-  setSaveStatus("pending", "Guardado local pendiente.");
+  setSaveStatus("saving", "Guardando...");
   state.persistenceTimer = window.setTimeout(() => enqueuePersistenciaVoz(reason), 850);
 }
 
@@ -1598,20 +1642,25 @@ async function persistSnapshotVozRaw(reason = "update") {
   }
   const draft = normalizarSnapshotSesionVoz(construirBorradorSesionVoz());
   if (!draft.transcript.corrected && !draft.transcript.original && !draft.segmentation.utterances.length && !draft.segmentation.blockManifest?.blocks?.length && !draft.generatedNote) return null;
-  setSaveStatus("saving", "Guardando sesion local...");
+  setSaveStatus("saving", "Guardando...");
   registrarPersistenciaVoz("snapshot_built", { reason, incomingSaveVersion: draft.saveVersion });
   JSON.parse(JSON.stringify(draft));
   registrarPersistenciaVoz("serialization_validated", { reason, incomingSaveVersion: draft.saveVersion });
   registrarPersistenciaVoz("saveSession:start", { reason, incomingSaveVersion: draft.saveVersion });
   const saved = await guardarSesionNotaVozLocal(draft);
   if (!saved) {
-    setSaveStatus("failed", "No fue posible guardar esta sesion. No recargue esta pagina.");
+    setSaveStatus("failed", "Error al guardar. No recargue esta pagina.");
     registrarPersistenciaVoz("saveSession:null", { reason });
     return null;
   }
   state.saveVersion = Math.max(state.saveVersion, Number(saved.saveVersion || draft.saveVersion || 0));
   state.lastSavedSessionKey = saved?.key || state.lastSavedSessionKey;
-  setSaveStatus("saved", `Guardado ${new Date(saved.updatedAt || Date.now()).toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}.`);
+  state.persistedSessionId = saved.sessionId || draft.sessionId || "";
+  state.persistedTranscriptHash = saved.transcript?.transcriptHash || draft.transcript.transcriptHash || "";
+  state.persistedSaveVersion = Number(saved.saveVersion || draft.saveVersion || 0);
+  state.persistedSavedAt = saved.updatedAt || new Date().toISOString();
+  state.persistedTranscriptLength = String(saved.transcript?.corrected || saved.transcript?.original || draft.transcript.corrected || draft.transcript.original || "").length;
+  setSaveStatus("saved", `Guardado localmente a las ${new Date(state.persistedSavedAt).toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}.`);
   if ((draft.segmentation.utterances.length || draft.segmentation.blockManifest?.blocks?.length) && ["external", "hybrid"].includes(draft.segmentation.provider || draft.segmentation.mode)) {
     await guardarSegmentacionNotaVozLocal({
       ...contextoPersistenciaVoz(),
@@ -1647,7 +1696,7 @@ function enqueuePersistenciaVoz(reason = "update", options = {}) {
   };
   const queued = state.persistenceQueue.catch(() => null).then(run).catch((error) => {
     state.lastSaveError = error;
-    setSaveStatus("failed", "No fue posible guardar esta sesion. No recargue esta pagina.");
+    setSaveStatus("failed", "Error al guardar. No recargue esta pagina.");
     registrarPersistenciaVoz("flushSessionSave:error", {
       reason,
       errorName: error?.name || "Error",
@@ -1744,7 +1793,12 @@ async function resolverNuevaTranscripcionPegada(nextText = "", inputType = "") {
   state.generatedNote = null;
   state.generationMetadata = null;
   state.segmentationFailure = null;
-  setText("voiceSaveStatus", "Nueva sesion local preparada.");
+  state.persistedSessionId = "";
+  state.persistedTranscriptHash = "";
+  state.persistedSaveVersion = 0;
+  state.persistedSavedAt = "";
+  state.persistedTranscriptLength = 0;
+  setSaveStatus("saving", "Guardando...");
 }
 
 async function buscarSesionRecuperableVoz() {
@@ -1901,6 +1955,7 @@ async function recuperarSesionVoz(session = state.recoverableSession) {
     completedBlocks: segmentationMatchesTranscript ? (session.segmentation?.completedBlocks || 0) : 0,
     totalBlocks: segmentationMatchesTranscript ? (session.segmentation?.totalBlocks || 0) : 0,
     pendingBlocks: segmentationMatchesTranscript ? (session.segmentation?.pendingBlocks || 0) : 0,
+    blockManifest: segmentationMatchesTranscript ? (session.segmentation?.blockManifest || null) : null,
     manuallyEdited: Boolean(session.segmentation?.manuallyEdited),
     generatedAt: session.segmentation?.generatedAt || ""
   };
@@ -1918,6 +1973,14 @@ async function recuperarSesionVoz(session = state.recoverableSession) {
     : "Transcripcion recuperada. Segmentacion pendiente o invalidada por cambios en el texto.");
   setText("voiceGenerationProgress", state.generated ? "Evolucion recuperada. Revise antes de transferir." : "La generacion no modifica la nota tradicional.");
   mostrarPanelRecuperacionSesion(null);
+  state.persistedSessionId = session.sessionId || "";
+  state.persistedTranscriptHash = session.transcript?.transcriptHash || restoredHash;
+  state.persistedSaveVersion = Number(session.saveVersion || 0);
+  state.persistedSavedAt = session.updatedAt || "";
+  state.persistedTranscriptLength = String(restoredCorrected || restoredOriginal || "").length;
+  setSaveStatus("saved", state.persistedSavedAt
+    ? `Guardado localmente a las ${new Date(state.persistedSavedAt).toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}.`
+    : "Guardado localmente.");
   state.isHydratingSession = false;
   state.persistenceReady = true;
   mostrarPaso(session.uiState?.selectedStep || session.currentStep || "transcripcion");
@@ -1940,6 +2003,12 @@ async function iniciarNuevaSesionVoz() {
   state.recoverableSession = null;
   state.persistenceReady = true;
   state.isHydratingSession = false;
+  state.persistedSessionId = "";
+  state.persistedTranscriptHash = "";
+  state.persistedSaveVersion = 0;
+  state.persistedSavedAt = "";
+  state.persistedTranscriptLength = 0;
+  setSaveStatus("idle", "Sin cambios por guardar.");
   setText("voiceContextStatus", "Nueva sesion lista. El borrador anterior se conserva aislado hasta vencer o descartarse.");
 }
 
@@ -2377,7 +2446,7 @@ async function segmentarConProveedor(options = {}) {
   } finally {
     state.activeSegmentationRequest = null;
     state.activeSegmentationAbortController = null;
-    if (button) button.disabled = state.saveStatus !== "saved" && hayDatosVoz();
+    if (button) button.disabled = !canUseProvider();
     if (button) button.textContent = state.segmentationMetadata?.pendingBlocks ? `Reintentar ${state.segmentationMetadata.pendingBlocks} bloques pendientes` : "Segmentar con proveedor";
     if ($("btnDetenerSegmentacionVoz")) $("btnDetenerSegmentacionVoz").hidden = true;
   }
@@ -2649,6 +2718,11 @@ async function generarNota() {
   if (!snapshot.correctedTranscript?.trim()) {
     alert("Revisa la transcripcion antes de generar.");
     return;
+  }
+  if (!canUseProvider()) {
+    setText("voiceGenerationProgress", "La sesion debe estar guardada localmente antes de generar la nota.");
+    await flushPersistenciaVoz("before-generation");
+    if (!canUseProvider()) return;
   }
   state.generationPreferences = leerPreferenciasGeneracion();
   state.encounterObservation = leerObservacionEncuentro();
@@ -3214,10 +3288,12 @@ function conectarEventos() {
     programarPersistenciaVoz("preflight-reset");
   });
   $("textoDictadoClinico")?.addEventListener("input", () => {
+    if ($("textoDictadoClinico")?.value?.trim()) activarPersistenciaParaTrabajoActual("dictation-input");
     programarPersistenciaVoz("dictation-input");
   });
   $("voiceCorrectedTranscript")?.addEventListener("input", async (event) => {
     await resolverNuevaTranscripcionPegada(event.target.value, event.inputType || "");
+    if (event.target.value.trim()) activarPersistenciaParaTrabajoActual("transcript-input");
     renderSegmentosConversacionales(event.target.value);
     if (event.inputType === "insertFromPaste") await flushPersistenciaVoz("transcript-paste");
     else programarPersistenciaVoz("transcript-edit");
@@ -3231,7 +3307,7 @@ function conectarEventos() {
     setText("voiceSegmentationStatus", "Preparacion cancelada. La transcripcion se conserva.");
     const button = $("btnSegmentarConversacionVoz");
     if (button) {
-      button.disabled = state.saveStatus !== "saved" && hayDatosVoz();
+      button.disabled = !canUseProvider();
       button.textContent = "Segmentar con proveedor";
     }
     const cancelButton = $("btnCancelarPreparacionSegmentacionVoz");
@@ -3269,11 +3345,11 @@ function conectarEventos() {
       if (!saved) throw new Error("IndexedDB no confirmo el guardado de la sesion detenida.");
       const counts = contarBloquesManifest(state.segmentationMetadata?.blockManifest || {});
       registrarPersistenciaVoz("detenerSegmentacion:saved", { transactionStatus: "complete", savedSaveVersion: saved.saveVersion });
-      setSaveStatus("saved", `Guardado ${new Date(saved.updatedAt || Date.now()).toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}.`);
+      setSaveStatus("saved", `Guardado localmente a las ${new Date(saved.updatedAt || Date.now()).toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}.`);
       setText("voiceSegmentationStatus", `Segmentacion detenida y guardada. ${counts.completed} de ${counts.total} bloques completados.`);
     } catch (error) {
       console.warn("No se pudo guardar al detener segmentacion:", error?.name || "error");
-      setSaveStatus("failed", "No fue posible guardar la sesion. No recargue esta pagina.");
+      setSaveStatus("failed", "Error al guardar. No recargue esta pagina.");
       setText("voiceSegmentationStatus", "No fue posible guardar la sesion. No recargue esta pagina.");
     } finally {
       if (stopButton) {
