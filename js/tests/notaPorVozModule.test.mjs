@@ -21,6 +21,10 @@ assert.match(vozHtml, /VERSIÓN ALFA · EN DESARROLLO/);
 assert.match(vozHtml, /js\/dictado\.js/);
 assert.match(vozHtml, /js\/nota-por-voz\.js/);
 
+const vozJs = read("js/nota-por-voz.js");
+assert.match(vozJs, /Segmentacion avanzada no disponible\. Se conservo la segmentacion basica\./);
+assert.match(vozJs, /externalBlocks > 0/);
+
 const serviceSource = read("js/services/voiceNoteGenerationService.js");
 assert.match(serviceSource, /Math\.floor\(edad \/ 10\) \+ 1/);
 assert.match(serviceSource, /voiceNoteSessions/);

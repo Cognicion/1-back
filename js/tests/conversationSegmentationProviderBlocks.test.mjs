@@ -124,4 +124,42 @@ assert.ok(llamadasBloques >= 2, "debe procesar mas de un bloque");
 assert.ok(parcial.warnings.some((warning) => warning.code === "partial_external_segmentation_failed"));
 assert.ok(parcial.providerFailure.requestId.startsWith("carlos-test:b2"));
 
+let llamadasRetry = 0;
+const providerRetry = new ExternalConversationSegmentationProvider({
+  callable: async (payload) => {
+    llamadasRetry += 1;
+    if (llamadasRetry === 1) {
+      const error = new Error("deadline");
+      error.code = "functions/deadline-exceeded";
+      error.details = {
+        requestId: payload.clientRequestId,
+        stage: "provider_request",
+        retryable: true
+      };
+      throw error;
+    }
+    return {
+      data: {
+        provider: "external",
+        segmentationMode: "linguistic",
+        requestId: payload.clientRequestId,
+        utterances: [
+          { text: "Buenas tardes, ¿cómo se encuentra?", probableRole: "clinician", speechAct: "question" },
+          { text: "Mejor, doctor.", probableRole: "patient", speechAct: "answer" }
+        ],
+        warnings: []
+      }
+    };
+  }
+});
+
+const textoMinimo = "Buenas tardes, como se encuentra. Mejor, doctor.";
+const fallo = await providerRetry.segment({ text: textoMinimo, transcriptId: "mini", clientRequestId: "mini-a" });
+assert.equal(fallo.provider, "rule_based");
+assert.equal(fallo.metrics.externalBlockCount, 0);
+assert.equal(fallo.metrics.failedBlockCount, 1);
+const reintento = await providerRetry.segment({ text: textoMinimo, transcriptId: "mini", clientRequestId: "mini-b" });
+assert.equal(reintento.provider, "external");
+assert.equal(llamadasRetry, 2, "la promesa fallida debe limpiarse y permitir un segundo intento");
+
 console.log("conversationSegmentationProviderBlocks.test.mjs OK");

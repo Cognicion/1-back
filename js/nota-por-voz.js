@@ -4,7 +4,7 @@ import { obtenerUsuario, listarPacientes, medicoPuedeVer } from "./services/usua
 import { usuarioEsPersonalClinico } from "./utils/roles.js";
 import { obtenerNombrePacienteParaMostrar } from "./utils/nombresPacientes.js";
 import { createNoteGenerationProvider } from "./services/noteGenerationProviders.js?v=20260718-session-persistence";
-import { createConversationSegmentationProvider, crearClientRequestId } from "./services/conversationSegmentationProviders.js?v=20260718-seg-timeout";
+import { createConversationSegmentationProvider, crearClientRequestId } from "./services/conversationSegmentationProviders.js?v=20260719-seg-abort";
 import { segmentarConversacionClinica } from "./services/clinicalPipeline.js";
 import {
   VOICE_NOTE_FIELD_REGISTRY,
@@ -209,7 +209,7 @@ function actualizarLinks() {
   const qsNota = construirQueryContexto(state.noteId ? { notaId: state.noteId } : {});
   $("linkPacienteVoz")?.setAttribute("href", state.patientId ? `paciente.html${qsPaciente}` : "paciente.html");
   $("linkNotaTradicional")?.setAttribute("href", qsNota ? `nota.html?${qsNota}` : "nota.html");
-  const versionedVoiceUrl = qsBase ? `nota-por-voz.html?v=20260718-session-persistence&${qsBase}` : "nota-por-voz.html?v=20260718-session-persistence";
+  const versionedVoiceUrl = qsBase ? `nota-por-voz.html?v=20260719-seg-abort&${qsBase}` : "nota-por-voz.html?v=20260719-seg-abort";
   $("linkNotaVoz")?.setAttribute("href", versionedVoiceUrl);
 }
 
@@ -756,7 +756,12 @@ async function segmentarConProveedor() {
     renderSegmentosConversacionalesActuales();
     renderDetalleTecnicoSegmentacion(state.segmentationFailure, result.metrics || { clientRequestId });
     if (result.providerFailure) {
-      setText("voiceSegmentationStatus", `Segmentacion avanzada parcialmente disponible. Proveedor: ${result.provider || "local"} · turnos: ${state.conversationSegments.length}`);
+      const externalBlocks = Number(result.metrics?.externalBlockCount || 0);
+      if (externalBlocks > 0) {
+        setText("voiceSegmentationStatus", `Segmentacion avanzada parcialmente disponible. Proveedor: ${result.provider || "hybrid"} · turnos: ${state.conversationSegments.length}`);
+      } else {
+        setText("voiceSegmentationStatus", "Segmentacion avanzada no disponible. Se conservo la segmentacion basica.");
+      }
     } else {
       const cacheText = result.cacheHit ? " Segmentacion guardada reutilizada." : "";
       setText("voiceSegmentationStatus", `Segmentacion completada. Proveedor: ${result.provider || "external"} · modo: ${result.segmentationMode || result.mode || "linguistic"} · turnos: ${state.conversationSegments.length}.${cacheText}`);

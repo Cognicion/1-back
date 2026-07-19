@@ -322,16 +322,24 @@ function mapProviderError({ error, HttpsErrorClass, requestId, stage }) {
 }
 
 async function callProvider({ client, model, providerInput, timeoutMs = PROVIDER_TIMEOUT_MS }) {
+  const controller = typeof AbortController !== "undefined" ? new AbortController() : null;
   let timeoutHandle;
   try {
     const timeoutPromise = new Promise((_, reject) => {
-      timeoutHandle = setTimeout(() => reject(new Error("provider_timeout")), timeoutMs);
+      timeoutHandle = setTimeout(() => {
+        reject(new Error("provider_timeout"));
+        if (controller) controller.abort();
+      }, timeoutMs);
     });
     return await Promise.race([
       client.responses.create({
         model,
         instructions: CONVERSATION_SEGMENTATION_PROMPT,
         input: JSON.stringify(providerInput)
+      }, {
+        signal: controller?.signal,
+        timeout: timeoutMs,
+        maxRetries: 0
       }),
       timeoutPromise
     ]);
@@ -394,7 +402,11 @@ async function runSegmentClinicalConversation({
       provider: "openai"
     });
 
-    const client = openaiClient || new OpenAIClass({ apiKey });
+    const client = openaiClient || new OpenAIClass({
+      apiKey,
+      timeout: timeoutMs,
+      maxRetries: 0
+    });
     const response = await callProvider({
       client,
       model,

@@ -157,6 +157,31 @@ async function callWithClient(client, data = {}) {
   })));
   await expectCode("timeout proveedor", "deadline-exceeded", () => callWithClient(createClient(() => new Promise(() => {}))));
 
+  let providerOptions = null;
+  const optioned = await callWithClient(createClient(async (_payload, options) => {
+    providerOptions = options;
+    return {
+      output_text: JSON.stringify({
+        utterances: [{ text: "Mejor, doctor.", probableRole: "patient", speechAct: "answer" }],
+        warnings: []
+      })
+    };
+  }));
+  assert.strictEqual(optioned.provider, "external");
+  assert.strictEqual(providerOptions?.timeout, 25);
+  assert.strictEqual(providerOptions?.maxRetries, 0);
+  assert.ok(providerOptions?.signal, "signal abortable faltante");
+
+  let aborted = false;
+  const slowClient = createClient((_payload, options) => new Promise((_resolve, reject) => {
+    options.signal.addEventListener("abort", () => {
+      aborted = true;
+      reject(new Error("AbortError"));
+    });
+  }));
+  await expectCode("timeout aborta proveedor", "deadline-exceeded", () => callWithClient(slowClient));
+  assert.strictEqual(aborted, true);
+
   console.log("segmentationHandler tests passed");
 })().catch((error) => {
   console.error(error);
