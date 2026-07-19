@@ -58,6 +58,9 @@ assert.doesNotMatch(medicoPanel, /rolUsuarioActual\s*===\s*["']admin["']\s*\?\s*
 
 const agenda = readFileSync(new URL("../agenda.js", import.meta.url), "utf8");
 assert.doesNotMatch(agenda, /getDocs\(collection\(db,\s*["']usuarios["']\)\)/, "agenda no descarga todos los usuarios");
+assert.match(agenda, /canUseMedicalAgenda\(usuario\)/, "agenda usa capacidad clinica compuesta");
+assert.match(agenda, /listarPacientes\(medicoUid/, "agenda lista pacientes con actorUserId");
+assert.doesNotMatch(agenda, /listarPacientes\(["']{0,2}\)/, "agenda no llama listarPacientes sin actor");
 
 const estadistica = readFileSync(new URL("../estadistica.js", import.meta.url), "utf8");
 assert.doesNotMatch(estadistica, /getDocs\(collection\(db,\s*["']usuarios["']\)\)/, "estadistica no descarga todos los usuarios");

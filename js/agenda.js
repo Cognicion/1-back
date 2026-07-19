@@ -3,7 +3,7 @@ import { listarPacientes, obtenerUsuario } from "./services/usuarios.js?v=202607
 import { registrarEventoAuditoria } from "./services/auditoria.js";
 import { iniciarMonitoreoSesion } from "./services/sesion.js";
 import { obtenerNombrePacienteParaMostrar } from "./utils/nombresPacientes.js";
-import { usuarioEsPersonalClinico } from "./utils/roles.js";
+import { canManagePlatform, canUseMedicalAgenda } from "./utils/roles.js?v=20260719-admin-medical-agenda";
 
 import {
   onAuthStateChanged
@@ -38,8 +38,11 @@ onAuthStateChanged(auth, async (user) => {
   }
 
   const usuario = await obtenerUsuario(user.uid);
-  if (!usuario || !usuarioEsPersonalClinico(usuario.rol)) {
-    alert("Agenda disponible solo para personal clinico.");
+  if (!usuario || !canUseMedicalAgenda(usuario)) {
+    const mensaje = canManagePlatform(usuario)
+      ? "Tu cuenta tiene permisos administrativos, pero no tiene un perfil clinico habilitado para utilizar Agenda medica."
+      : "Agenda medica disponible solo para perfiles clinicos habilitados.";
+    alert(mensaje);
     window.location.href = "dashboard.html";
     return;
   }

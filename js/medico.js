@@ -7,7 +7,7 @@ import {
   normalizarTextoBusquedaPaciente,
   textoBusquedaPaciente
 } from "./utils/nombresPacientes.js";
-import { usuarioEsPersonalClinico } from "./utils/roles.js";
+import { canManagePlatform, hasClinicalProfessionalProfile } from "./utils/roles.js?v=20260719-admin-medical-agenda";
 
 import { auth, db } from "./firebase.js";
 
@@ -227,8 +227,13 @@ async function cargarPerfilMedico(user, datosIniciales = null) {
 
   rolUsuarioActual = datos.rol || "";
 
-  if (datos.rol !== "admin" && !usuarioEsPersonalClinico(datos.rol)) {
-    alert("Acceso restringido al personal clínico.");
+  if (!hasClinicalProfessionalProfile(datos)) {
+    if (canManagePlatform(datos)) {
+      alert("Tu cuenta tiene permisos administrativos, pero no tiene un perfil clinico habilitado para utilizar el Panel medico.");
+      window.location.href = "dashboard.html";
+      return false;
+    }
+    alert("Acceso restringido al personal clinico.");
     await auth.signOut();
     window.location.href = "login.html";
     return false;
