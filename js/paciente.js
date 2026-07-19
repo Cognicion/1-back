@@ -5704,7 +5704,7 @@ window.abrirNotaPorVozPaciente = function() {
     returnUrl: `paciente.html?id=${encodeURIComponent(uidPaciente)}`
   });
   if (noteId) qs.set("noteId", noteId);
-  qs.set("v", "20260719-preflight-observations");
+  qs.set("v", "20260719-mental-exam-v1");
   window.location.href = `nota-por-voz.html?${qs.toString()}`;
 };
 
