@@ -6,7 +6,7 @@
   <title>Nota por voz y automática | Cognición</title>
   <link rel="stylesheet" href="css/theme.css">
   <link rel="stylesheet" href="css/dictado.css">
-  <link rel="stylesheet" href="css/nota-por-voz.css?v=20260719-recovery-ttl72">
+  <link rel="stylesheet" href="css/nota-por-voz.css?v=20260719-recovery-row-ttl72">
   <link rel="icon" type="image/png" href="assets/favicon-cognicion.png">
 </head>
 <body>
@@ -15,7 +15,7 @@
     <a href="medico.html">Panel medico</a>
     <a id="linkPacienteVoz" href="paciente.html">Paciente</a>
     <a id="linkNotaTradicional" href="nota.html">Nota tradicional</a>
-    <a class="activo" id="linkNotaVoz" href="nota-por-voz.html?v=20260719-recovery-ttl72">Nota por voz y automática</a>
+    <a class="activo" id="linkNotaVoz" href="nota-por-voz.html?v=20260719-recovery-row-ttl72">Nota por voz y automática</a>
   </aside>
 
   <main class="voice-shell">
@@ -101,6 +101,8 @@
         <div class="voice-actions">
           <button id="btnRecuperarSesionVoz" type="button" disabled>Recuperar sesión</button>
           <button id="btnDescartarSesionVoz" type="button" class="boton-secundario" disabled>Eliminar ahora</button>
+          <button id="btnDuplicarSesionVoz" type="button" class="boton-secundario" disabled>Duplicar como nueva</button>
+          <button id="btnConservarSesionEliminarDuplicados" type="button" class="boton-secundario" disabled>Conservar esta y eliminar duplicados</button>
           <button id="btnNuevaSesionVoz" type="button" class="boton-secundario">Iniciar nueva</button>
         </div>
       </section>
@@ -303,6 +305,6 @@
   </main>
 
   <script type="module" src="js/dictado.js?v=20260718-context"></script>
-  <script type="module" src="js/nota-por-voz.js?v=20260719-recovery-ttl72"></script>
+  <script type="module" src="js/nota-por-voz.js?v=20260719-recovery-row-ttl72"></script>
 </body>
 </html>

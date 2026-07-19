@@ -2,7 +2,9 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import {
   VOICE_NOTE_SESSION_SCHEMA_VERSION,
+  VOICE_NOTE_SESSION_TTL_HOURS,
   VOICE_NOTE_SESSION_TTL_MS,
+  VOICE_NOTE_SESSION_TTL_POLICY_VERSION,
   crearContextKeyVoz,
   crearSegmentationKeyVoz,
   crearSessionKeyVoz,
@@ -11,6 +13,7 @@ import {
   hashTextoVoz,
   buscarSesionesNotaVozLocales,
   limpiarSesionesNotaVozVencidas,
+  migrarPoliticaTtlSesionVoz,
   sesionVozExpirada,
   sesionVozTieneContenido,
   validarSesionVozContexto
@@ -49,6 +52,8 @@ const session = {
   expiresAt: Date.now() + VOICE_NOTE_SESSION_TTL_MS
 };
 
+assert.equal(VOICE_NOTE_SESSION_TTL_POLICY_VERSION, 2, "la politica TTL publicada debe estar versionada");
+assert.equal(VOICE_NOTE_SESSION_TTL_HOURS, 72, "TTL de borradores locales debe ser 72 horas");
 assert.equal(VOICE_NOTE_SESSION_TTL_MS, 72 * 60 * 60 * 1000, "TTL de borradores locales debe ser 72 horas");
 assert.equal(sesionVozTieneContenido(session), true);
 assert.equal(validarSesionVozContexto(session, context), true);
@@ -56,6 +61,7 @@ assert.equal(validarSesionVozContexto(session, { ...context, patientId: "otro" }
 assert.equal(validarSesionVozContexto(session, { ...context, encounterId: "otro" }), false);
 assert.equal(validarSesionVozContexto(session, { ...context, userId: "otro" }), false);
 assert.equal(sesionVozExpirada({ ...session, sessionStatus: "in_progress", expiresAt: Date.now() - 1 }), true);
+assert.equal(sesionVozExpirada({ ...session, sessionStatus: "generated", expiresAt: Date.now() - 1 }), true, "una nota generada no transferida tambien caduca localmente");
 assert.equal(sesionVozExpirada({ ...session, sessionStatus: "transferred", expiresAt: Date.now() - 1 }), false, "una sesion transferida no caduca por TTL local");
 assert.equal(sesionVozTieneContenido({ schemaVersion: VOICE_NOTE_SESSION_SCHEMA_VERSION, ...context }), false);
 assert.equal(sesionVozTieneContenido({
@@ -68,6 +74,22 @@ assert.equal(sesionVozTieneContenido({
     }
   }
 }), true, "una sesion con manifiesto parcial debe considerarse recuperable");
+
+const ttlMigrationBase = Date.parse("2026-07-19T00:00:00.000Z");
+const oldPolicySession = {
+  ...session,
+  sessionId: "old-ttl-session",
+  sessionStatus: "in_progress",
+  ttlPolicyVersion: 1,
+  ttlHours: 24,
+  lastMeaningfulActivityAt: new Date(ttlMigrationBase).toISOString(),
+  expiresAt: ttlMigrationBase + 24 * 60 * 60 * 1000
+};
+const migratedPolicySession = migrarPoliticaTtlSesionVoz(oldPolicySession, ttlMigrationBase + 60 * 60 * 1000);
+assert.equal(migratedPolicySession.ttlPolicyVersion, 2, "sesion antigua migra a politica TTL v2");
+assert.equal(migratedPolicySession.ttlHours, 72);
+assert.equal(migratedPolicySession.lastMeaningfulActivityAt, oldPolicySession.lastMeaningfulActivityAt, "listar no prolonga actividad significativa");
+assert.equal(migratedPolicySession.expiresAt, ttlMigrationBase + 72 * 60 * 60 * 1000, "expiresAt se recalcula desde lastMeaningfulActivityAt + 72h");
 
 const recoveredSessionA = {
   ...session,
@@ -280,6 +302,59 @@ const listedIntegration = await buscarSesionesNotaVozLocales({
 assert.equal(savedIntegration.saveVersion, 1, "persistedSaveVersion === 1");
 assert.equal(listedIntegration.length, 1, "readbackVerified === true");
 assert.equal((listedIntegration[0].transcript.corrected || "").length, 21541);
+assert.equal(savedIntegration.ttlPolicyVersion, 2);
+assert.equal(savedIntegration.ttlHours, 72);
+
+const duplicateContext = {
+  userId: "user-duplicates",
+  patientId: "patient-duplicates",
+  encounterId: "enc-duplicates"
+};
+for (const id of ["session-a", "session-b", "session-c", "session-d", "session-e"]) {
+  await guardarSesionNotaVozLocal({
+    schemaVersion: VOICE_NOTE_SESSION_SCHEMA_VERSION,
+    ...duplicateContext,
+    sessionId: id,
+    saveVersion: 0,
+    transcript: {
+      corrected: `${id} ${"x".repeat(21540)}`,
+      original: `${id} ${"x".repeat(21540)}`,
+      transcriptHash: id === "session-d" ? "same-hash" : `hash-${id}`
+    },
+    currentStep: "transcripcion",
+    sessionStatus: "in_progress"
+  });
+}
+const sessionsBeforeRecovery = await buscarSesionesNotaVozLocales(duplicateContext);
+const selectedSession = sessionsBeforeRecovery.find((item) => item.sessionId === "session-c");
+const originalRecordVersion = Number(selectedSession.saveVersion || 0);
+const updatedRecoveredSession = await guardarSesionNotaVozLocal({
+  ...selectedSession,
+  saveVersion: originalRecordVersion,
+  transcript: {
+    ...selectedSession.transcript,
+    corrected: `${selectedSession.transcript.corrected} editado`,
+    transcriptHash: "hash-session-c-edited"
+  },
+  currentStep: "generar"
+});
+const sessionsAfterRecovery = await buscarSesionesNotaVozLocales(duplicateContext);
+assert.equal(updatedRecoveredSession.sessionId, "session-c", "recoveredSessionId === selectedSessionId");
+assert.equal(sessionsAfterRecovery.length, sessionsBeforeRecovery.length, "sessionCountBefore === sessionCountAfter");
+assert.equal(sessionsAfterRecovery.filter((item) => item.sessionId === "session-c").length, 1, "no debe existir sexto registro al recuperar");
+assert.ok(Number(sessionsAfterRecovery.find((item) => item.sessionId === "session-c").saveVersion) > originalRecordVersion, "updatedRecord.saveVersion > originalRecord.saveVersion");
+await guardarSesionNotaVozLocal({
+  ...selectedSession,
+  sessionId: "session-explicit-new",
+  saveVersion: 0,
+  transcript: {
+    corrected: "nueva sesion explicita",
+    original: "nueva sesion explicita",
+    transcriptHash: "hash-explicit-new"
+  }
+});
+const sessionsAfterExplicitNew = await buscarSesionesNotaVozLocales(duplicateContext);
+assert.equal(sessionsAfterExplicitNew.length, sessionsBeforeRecovery.length + 1, "Iniciar nueva o duplicar como nueva aumenta exactamente un registro");
 
 const cleanupNow = Date.now();
 const baseCleanupContext = {
@@ -314,6 +389,15 @@ const sessionTransferred = await guardarSesionNotaVozLocal({
   sessionStatus: "transferred",
   lastMeaningfulActivityAt: new Date(cleanupNow - 90 * 60 * 60 * 1000).toISOString()
 });
+const sessionGeneratedExpired = await guardarSesionNotaVozLocal({
+  schemaVersion: VOICE_NOTE_SESSION_SCHEMA_VERSION,
+  ...baseCleanupContext,
+  sessionId: "session-generated-expired",
+  transcript: { corrected: "nota generada no transferida", original: "nota generada no transferida", transcriptHash: "hash-generated-expired" },
+  generatedNote: { evolution: { text: "Evolucion preliminar" } },
+  sessionStatus: "generated",
+  lastMeaningfulActivityAt: new Date(cleanupNow - 90 * 60 * 60 * 1000).toISOString()
+});
 await guardarSegmentacionNotaVozLocal({
   ...baseCleanupContext,
   sessionId: "session-73h",
@@ -337,11 +421,13 @@ await guardarSegmentacionNotaVozLocal({
 assert.ok(session71h.expiresAt > cleanupNow, "sesion de 71 horas permanece vigente");
 assert.ok(session73h.expiresAt <= cleanupNow, "sesion de mas de 72 horas queda vencida");
 assert.equal(sessionTransferred.sessionStatus, "transferred");
+assert.ok(sessionGeneratedExpired.expiresAt <= cleanupNow, "generated no transferida queda vencida");
 const deletedByTtl = await limpiarSesionesNotaVozVencidas(cleanupNow);
-assert.equal(deletedByTtl, 2, "limpieza borra sesion vencida y cache de bloques perteneciente a esa sesion");
+assert.equal(deletedByTtl, 3, "limpieza borra sesiones locales vencidas y cache de bloques perteneciente a esa sesion");
 const cleanupRemaining = await buscarSesionesNotaVozLocales(baseCleanupContext);
 assert.equal(cleanupRemaining.some((item) => item.sessionId === "session-71h"), true);
 assert.equal(cleanupRemaining.some((item) => item.sessionId === "session-73h"), false);
+assert.equal(cleanupRemaining.some((item) => item.sessionId === "session-generated-expired"), false);
 assert.equal(cleanupRemaining.some((item) => item.sessionId === "session-transferred"), true);
 assert.equal(cleanupRemaining.find((item) => item.sessionId === "session-71h")?.lastMeaningfulActivityAt, session71h.lastMeaningfulActivityAt, "abrir/listar no prolonga TTL");
 
@@ -398,8 +484,13 @@ assert.match(voicePage, /button\.setAttribute\("aria-selected", "true"\)/);
 assert.match(voicePage, /Selecciona un borrador para continuar/);
 assert.match(voicePage, /Recuperar este borrador de/);
 assert.match(voicePage, /Este borrador se eliminara automaticamente en/);
+assert.match(voicePage, /Disponible durante/);
 assert.match(voicePage, /Posible duplicado/);
 assert.match(voicePage, /state\.lastMeaningfulActivityAt = session\.lastMeaningfulActivityAt/);
+assert.match(voicePage, /state\.voiceSessionId = session\.sessionId/);
+assert.match(voicePage, /state\.saveVersion = Number\(session\.saveVersion/);
+assert.match(voicePage, /transcriptSessionId: session\.sessionId/);
+assert.match(voicePage, /Guardando sobre el borrador recuperado/);
 
 const dictado = read("js/dictado.js");
 assert.match(dictado, /restaurarDictadoClinicoDesdeSnapshot/);
@@ -413,6 +504,8 @@ assert.ok(html.indexOf("voiceSessionSaveBar") < html.indexOf("step-preparar"), "
 assert.match(html, /voiceSessionRecovery/);
 assert.match(html, /btnRecuperarSesionVoz/);
 assert.match(html, /btnDescartarSesionVoz/);
+assert.match(html, /btnDuplicarSesionVoz/);
+assert.match(html, /btnConservarSesionEliminarDuplicados/);
 assert.match(html, /btnNuevaSesionVoz/);
 assert.match(html, /voiceSegmentationBlockList/);
 assert.match(html, /voiceSaveStatus/);
@@ -431,8 +524,10 @@ assert.match(persistenceSource, /transaction_abort/);
 assert.match(persistenceSource, /verification_failed/);
 assert.match(persistenceSource, /segmentation_verification_failed/);
 assert.match(persistenceSource, /throw crearErrorPersistencia/);
-assert.match(persistenceSource, /72 \* 60 \* 60 \* 1000/);
-assert.match(persistenceSource, /\["draft", "in_progress"\]\.includes\(status\)/);
+assert.match(persistenceSource, /VOICE_NOTE_SESSION_TTL_HOURS \* 60 \* 60 \* 1000/);
+assert.match(persistenceSource, /\["draft", "in_progress", "generated"\]\.includes\(status\)/);
+assert.match(persistenceSource, /ttlPolicyVersion/);
+assert.match(persistenceSource, /ttl_policy_migrated/);
 assert.match(persistenceSource, /ttl_cleanup/);
 assert.match(persistenceSource, /sourceSessionId/);
 

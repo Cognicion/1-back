@@ -29,13 +29,14 @@ import { buscarBorradorNotaClinica } from "./services/notas.js?v=20260716-2";
 import {
   VOICE_NOTE_SESSION_SCHEMA_VERSION,
   buscarSesionesNotaVozLocales,
+  crearSessionKeyVoz,
   eliminarSesionNotaVozLocal,
   guardarSegmentacionNotaVozLocal,
   guardarSesionNotaVozLocal,
   hashTextoVoz,
   limpiarSesionesNotaVozVencidas,
   obtenerSegmentacionNotaVozLocal
-} from "./services/voiceNoteSessionPersistence.js?v=20260719-recovery-ttl72";
+} from "./services/voiceNoteSessionPersistence.js?v=20260719-recovery-row-ttl72";
 import {
   VOICE_NOTE_CATALOG_VERSION,
   VOICE_NOTE_STYLE_CATALOG_VERSION,
@@ -733,7 +734,7 @@ function actualizarLinks() {
   const qsNota = construirQueryContexto(state.noteId ? { notaId: state.noteId } : {});
   $("linkPacienteVoz")?.setAttribute("href", state.patientId ? `paciente.html${qsPaciente}` : "paciente.html");
   $("linkNotaTradicional")?.setAttribute("href", qsNota ? `nota.html?${qsNota}` : "nota.html");
-  const versionedVoiceUrl = qsBase ? `nota-por-voz.html?v=20260719-recovery-ttl72&${qsBase}` : "nota-por-voz.html?v=20260719-recovery-ttl72";
+  const versionedVoiceUrl = qsBase ? `nota-por-voz.html?v=20260719-recovery-row-ttl72&${qsBase}` : "nota-por-voz.html?v=20260719-recovery-row-ttl72";
   $("linkNotaVoz")?.setAttribute("href", versionedVoiceUrl);
 }
 
@@ -1557,8 +1558,11 @@ function formatoFechaSesionVoz(value = "") {
 
 function tiempoHumanoRestante(ms = 0) {
   const totalMinutes = Math.max(0, Math.ceil(Number(ms || 0) / 60000));
-  if (totalMinutes >= 2880) return `${Math.round(totalMinutes / 1440)} dias`;
-  if (totalMinutes >= 60) return `${Math.round(totalMinutes / 60)} horas`;
+  const days = Math.floor(totalMinutes / 1440);
+  const hours = Math.floor((totalMinutes % 1440) / 60);
+  if (days > 0 && hours > 0) return `${days} dias y ${hours} horas`;
+  if (days > 0) return `${days} dias`;
+  if (totalMinutes >= 60) return `${Math.max(1, hours)} horas`;
   return `${Math.max(1, totalMinutes)} minutos`;
 }
 
@@ -1581,17 +1585,22 @@ function resumenSesionVoz(item = {}) {
     styleId: item.noteConfiguration?.styleId || "estilo pendiente",
     hasEvolution: Boolean(item.generatedNote?.evolution?.text),
     hasMentalExam: Boolean(item.generatedNote?.mentalExam?.text),
-    expiresAt: item.expiresAt || 0
+    expiresAt: item.expiresAt || 0,
+    lastActivityLabel: formatoFechaSesionVoz(item.lastMeaningfulActivityAt || item.updatedAt || item.createdAt)
   };
 }
 
 function detectarDuplicadosSesionesVoz(sessions = []) {
-  const seen = new Map();
+  const counts = new Map();
+  sessions.forEach((session) => {
+    const hash = session.transcript?.transcriptHash || hashTextoVoz(session.transcript?.corrected || session.transcript?.original || "");
+    const key = `${session.userId}.${session.patientId}.${session.encounterId}.${hash}`;
+    if (hash) counts.set(key, (counts.get(key) || 0) + 1);
+  });
   return sessions.map((session) => {
     const hash = session.transcript?.transcriptHash || hashTextoVoz(session.transcript?.corrected || session.transcript?.original || "");
     const key = `${session.userId}.${session.patientId}.${session.encounterId}.${hash}`;
-    const duplicate = Boolean(hash && seen.has(key));
-    if (hash && !seen.has(key)) seen.set(key, session.sessionId);
+    const duplicate = Boolean(hash && counts.get(key) > 1);
     return { ...session, possibleDuplicate: duplicate };
   });
 }
@@ -1822,8 +1831,12 @@ function mostrarPanelRecuperacionSesion(session = null) {
   panel.hidden = !sessions.length;
   const btnRecuperar = $("btnRecuperarSesionVoz");
   const btnDescartar = $("btnDescartarSesionVoz");
+  const btnDuplicar = $("btnDuplicarSesionVoz");
+  const btnEliminarDuplicados = $("btnConservarSesionEliminarDuplicados");
   if (btnRecuperar) btnRecuperar.disabled = true;
   if (btnDescartar) btnDescartar.disabled = true;
+  if (btnDuplicar) btnDuplicar.disabled = true;
+  if (btnEliminarDuplicados) btnEliminarDuplicados.disabled = true;
   if (!sessions.length) return;
   const summary = $("voiceSessionRecoverySummary");
   if (!summary) return;
@@ -1844,6 +1857,45 @@ function mostrarPanelRecuperacionSesion(session = null) {
       ${sessionBadges}
     </button>`;
   }).join("");
+  const hasDuplicates = sessions.some((item) => item.possibleDuplicate);
+  summary.innerHTML = sessions.map((item, index) => {
+    const resumen = resumenSesionVoz(item);
+    const expiresInMs = Number(resumen.expiresAt || 0) - Date.now();
+    const expirationText = expiresInMs > 0 && expiresInMs <= 24 * 60 * 60 * 1000
+      ? `<span class="voice-session-warning">Este borrador se eliminara automaticamente en ${escaparHTML(tiempoHumanoRestante(expiresInMs))}.</span>`
+      : (expiresInMs > 24 * 60 * 60 * 1000
+        ? `<span class="voice-session-available">Disponible durante ${escaparHTML(tiempoHumanoRestante(expiresInMs))}.</span>`
+        : "");
+    const duplicate = item.possibleDuplicate ? `<span class="voice-session-duplicate">Posible duplicado</span>` : "";
+    return `<button type="button" role="option" aria-selected="false" class="voice-session-option" data-recover-session-index="${index}">
+      <span class="voice-session-radio" aria-hidden="true"></span>
+      <span class="voice-session-content">
+        <strong>${escaparHTML(resumen.dateLabel)}</strong>
+        <span class="voice-session-meta">
+          <span>${resumen.transcriptLength.toLocaleString("es-MX")} caracteres</span>
+          <span>${resumen.utteranceCount} turnos</span>
+          <span>${resumen.total ? `${resumen.completed} de ${resumen.total} bloques` : "Sin segmentar"}</span>
+        </span>
+        <span class="voice-session-meta">
+          <span>${escaparHTML(resumen.noteType)}</span>
+          <span>Paso: ${escaparHTML(resumen.step)}</span>
+        </span>
+        <span class="voice-session-meta">
+          <span>Ultima actividad: ${escaparHTML(resumen.lastActivityLabel)}</span>
+          <span>Evolucion: ${resumen.hasEvolution ? "si" : "no"}</span>
+          <span>Examen mental: ${resumen.hasMentalExam ? "si" : "no"}</span>
+        </span>
+        <span class="voice-session-meta">
+          ${expirationText}
+          ${duplicate}
+        </span>
+      </span>
+      <span class="voice-session-selected-label" aria-hidden="true">✓ Seleccionada</span>
+    </button>`;
+  }).join("");
+  if (hasDuplicates) {
+    summary.insertAdjacentHTML("afterbegin", `<div class="voice-session-duplicate-note">Se detectaron posibles duplicados. Puede conservarlos o eliminarlos individualmente.</div>`);
+  }
   summary.insertAdjacentHTML("beforeend", `
     <div id="voiceSelectedSessionSummary" class="voice-session-selection-summary">
       Selecciona un borrador para continuar.
@@ -1860,6 +1912,8 @@ function mostrarPanelRecuperacionSesion(session = null) {
       button.setAttribute("aria-selected", "true");
       if (btnRecuperar) btnRecuperar.disabled = !selected;
       if (btnDescartar) btnDescartar.disabled = !selected;
+      if (btnDuplicar) btnDuplicar.disabled = !selected;
+      if (btnEliminarDuplicados) btnEliminarDuplicados.disabled = !selected?.possibleDuplicate;
       const detail = $("voiceSelectedSessionSummary");
       if (detail && state.recoverySelectionSummary) {
         const s = state.recoverySelectionSummary;
@@ -2007,6 +2061,11 @@ async function recuperarSesionVoz(session = state.recoverableSession) {
   }
   const restoredOriginal = session.transcript?.original || session.transcript?.corrected || "";
   const restoredCorrected = session.transcript?.corrected || session.transcript?.original || "";
+  state.voiceSessionId = session.sessionId;
+  state.saveVersion = Number(session.saveVersion || 0);
+  state.lastSavedSessionKey = session.key || crearSessionKeyVoz(session);
+  state.persistedSessionId = session.sessionId || "";
+  state.persistedSaveVersion = Number(session.saveVersion || 0);
   state.attentionLabel = session.attentionLabel || state.attentionLabel;
   state.lastMeaningfulActivityAt = session.lastMeaningfulActivityAt || session.updatedAt || session.createdAt || state.lastMeaningfulActivityAt || new Date().toISOString();
   state.sessionStatus = session.sessionStatus || (session.generatedNote ? "generated" : "in_progress");
@@ -2018,7 +2077,7 @@ async function recuperarSesionVoz(session = state.recoverableSession) {
   $("voiceCorrectedTranscript").value = restoredCorrected;
   window.cognicionDictado?.restoreFromSnapshot?.({
     sessionId: session.sessionId,
-    transcriptSessionId: session.transcript?.transcriptId || session.sessionId,
+    transcriptSessionId: session.sessionId,
     text: restoredOriginal,
     correctedTranscript: restoredCorrected,
     confirmedTranscript: restoredOriginal,
@@ -2091,7 +2150,7 @@ async function recuperarSesionVoz(session = state.recoverableSession) {
   state.transferSections = state.generated
     ? crearTransferSections(state.generated, $("voiceCorrectedTranscript")?.value || "", crearPatientContext())
     : [];
-  state.lastSavedSessionKey = session.key || "";
+  state.lastSavedSessionKey = session.key || crearSessionKeyVoz(session);
   actualizarResumenPlantilla();
   renderSegmentosConversacionalesActuales();
   renderRevision();
@@ -2106,8 +2165,8 @@ async function recuperarSesionVoz(session = state.recoverableSession) {
   state.persistedSavedAt = session.updatedAt || "";
   state.persistedTranscriptLength = String(restoredCorrected || restoredOriginal || "").length;
   setSaveStatus("saved", state.persistedSavedAt
-    ? `Guardado localmente a las ${new Date(state.persistedSavedAt).toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}.`
-    : "Guardado localmente.");
+    ? `Sesion activa: ${resumen.dateLabel}. Guardando sobre el borrador recuperado. Ultimo guardado: ${new Date(state.persistedSavedAt).toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}.`
+    : `Sesion activa: ${resumen.dateLabel}. Guardando sobre el borrador recuperado.`);
   state.isHydratingSession = false;
   state.persistenceReady = true;
   mostrarPaso(session.uiState?.selectedStep || session.currentStep || "transcripcion");
@@ -2128,6 +2187,50 @@ async function descartarSesionVoz(session = state.recoverableSession) {
   setText("voiceContextStatus", restantes.length
     ? `Sesion local eliminada. Quedan ${restantes.length} borradores recuperables.`
     : "Sesion local descartada.");
+}
+
+async function duplicarSesionVoz(session = state.recoverableSession) {
+  if (!session) return;
+  if (!confirm("Se creara una copia independiente de este borrador local. La sesion original se conservara.")) return;
+  const now = new Date().toISOString();
+  const duplicated = JSON.parse(JSON.stringify(session));
+  duplicated.sessionId = nuevoVoiceSessionId();
+  duplicated.key = "";
+  duplicated.saveVersion = 0;
+  duplicated.createdAt = now;
+  duplicated.updatedAt = now;
+  duplicated.lastMeaningfulActivityAt = now;
+  duplicated.sessionStatus = duplicated.sessionStatus === "transferred" ? "draft" : (duplicated.sessionStatus || "in_progress");
+  const saved = await guardarSesionNotaVozLocal(duplicated);
+  registrarPersistenciaVoz("session_duplicated_explicitly", {
+    sessionId: saved?.sessionId || duplicated.sessionId,
+    saveVersion: saved?.saveVersion || 0
+  });
+  const sesiones = await buscarSesionesNotaVozLocales(contextoPersistenciaVoz());
+  mostrarPanelRecuperacionSesion(sesiones);
+}
+
+async function conservarSesionEliminarDuplicadosVoz(session = state.recoverableSession) {
+  if (!session) return;
+  const hash = session.transcript?.transcriptHash || hashTextoVoz(session.transcript?.corrected || session.transcript?.original || "");
+  if (!hash) return;
+  const duplicates = (state.recoverableSessions || []).filter((item) => {
+    const itemHash = item.transcript?.transcriptHash || hashTextoVoz(item.transcript?.corrected || item.transcript?.original || "");
+    return item.sessionId !== session.sessionId
+      && item.userId === session.userId
+      && item.patientId === session.patientId
+      && item.encounterId === session.encounterId
+      && itemHash === hash;
+  });
+  if (!duplicates.length) return;
+  if (!confirm(`Se conservara el borrador seleccionado y se eliminaran ${duplicates.length} duplicado(s) locales. La nota del expediente no se modificara.`)) return;
+  await Promise.all(duplicates.map((item) => eliminarSesionNotaVozLocal(item)));
+  registrarPersistenciaVoz("session_duplicates_removed_explicitly", {
+    keptSessionId: session.sessionId,
+    removedCount: duplicates.length
+  });
+  const sesiones = await buscarSesionesNotaVozLocales(contextoPersistenciaVoz());
+  mostrarPanelRecuperacionSesion(sesiones);
 }
 
 async function iniciarNuevaSesionVoz() {
@@ -3528,6 +3631,12 @@ function conectarEventos() {
   }));
   $("btnDescartarSesionVoz")?.addEventListener("click", () => descartarSesionVoz().catch((error) => {
     console.error("No se pudo descartar la sesion de voz:", error);
+  }));
+  $("btnDuplicarSesionVoz")?.addEventListener("click", () => duplicarSesionVoz().catch((error) => {
+    console.error("No se pudo duplicar la sesion de voz:", error);
+  }));
+  $("btnConservarSesionEliminarDuplicados")?.addEventListener("click", () => conservarSesionEliminarDuplicadosVoz().catch((error) => {
+    console.error("No se pudieron eliminar duplicados de la sesion de voz:", error);
   }));
   $("btnNuevaSesionVoz")?.addEventListener("click", () => iniciarNuevaSesionVoz().catch((error) => {
     console.error("No se pudo iniciar nueva sesion de voz:", error);

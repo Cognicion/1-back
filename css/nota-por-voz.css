@@ -635,6 +635,108 @@ body {
   color: #a5f3fc;
 }
 
+.voice-session-option {
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 12px;
+  padding: 12px 14px;
+  white-space: normal;
+  word-break: normal;
+  overflow-wrap: normal;
+}
+
+.voice-session-option::before,
+.voice-session-option::after {
+  content: none;
+  display: none;
+}
+
+.voice-session-radio {
+  display: inline-flex;
+  flex: 0 0 auto;
+  width: 16px;
+  height: 16px;
+  margin-top: 2px;
+  border-radius: 50%;
+  border: 2px solid rgba(125, 211, 252, 0.75);
+  background: rgba(2, 6, 23, 0.9);
+}
+
+.voice-session-option.activo .voice-session-radio,
+.voice-session-option[aria-selected="true"] .voice-session-radio {
+  border-color: #22d3ee;
+  box-shadow: inset 0 0 0 4px rgba(2, 6, 23, 0.95);
+  background: #22d3ee;
+}
+
+.voice-session-content {
+  display: grid;
+  min-width: 0;
+  gap: 4px;
+}
+
+.voice-session-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  min-width: 0;
+  white-space: normal;
+  word-break: normal;
+  overflow-wrap: normal;
+}
+
+.voice-session-meta span {
+  min-width: 0;
+  white-space: normal;
+  word-break: normal;
+  overflow-wrap: normal;
+}
+
+.voice-session-selected-label {
+  align-self: start;
+  grid-column: auto;
+  white-space: nowrap;
+  font-size: 0;
+}
+
+.voice-session-selected-label::before {
+  content: "\2713 Seleccionada";
+  font-size: 0.9rem;
+}
+
+.voice-session-available {
+  display: inline-flex;
+  width: fit-content;
+  margin-top: 6px;
+  border-radius: 999px;
+  padding: 4px 8px;
+  font-size: 0.82rem;
+  font-weight: 800;
+  background: rgba(15, 23, 42, 0.48);
+  color: rgba(226, 232, 240, 0.86);
+}
+
+.voice-session-duplicate-note {
+  border: 1px solid rgba(125, 211, 252, 0.28);
+  border-radius: 8px;
+  background: rgba(8, 47, 73, 0.24);
+  color: #bae6fd;
+  padding: 8px 10px;
+  margin: 6px 0 10px;
+  font-weight: 700;
+}
+
+@media (max-width: 760px) {
+  .voice-session-option {
+    grid-template-columns: auto minmax(0, 1fr);
+    padding: 12px;
+  }
+
+  .voice-session-selected-label {
+    grid-column: 2;
+    justify-self: start;
+  }
+}
+
 .voice-session-selection-summary {
   margin-top: 10px;
   border: 1px dashed rgba(125, 211, 252, 0.36);

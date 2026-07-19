@@ -1,5 +1,7 @@
 export const VOICE_NOTE_SESSION_SCHEMA_VERSION = "voice_note_session_v1";
-export const VOICE_NOTE_SESSION_TTL_MS = 72 * 60 * 60 * 1000;
+export const VOICE_NOTE_SESSION_TTL_POLICY_VERSION = 2;
+export const VOICE_NOTE_SESSION_TTL_HOURS = 72;
+export const VOICE_NOTE_SESSION_TTL_MS = VOICE_NOTE_SESSION_TTL_HOURS * 60 * 60 * 1000;
 export const VOICE_NOTE_SESSION_DB_NAME = "cognicionVoiceNoteSessionStore";
 const DB_VERSION = 1;
 const STORE_SESSIONS = "sessions";
@@ -102,8 +104,33 @@ export function sesionVozTieneContenido(payload = {}) {
 
 export function sesionVozExpirada(payload = {}, now = Date.now()) {
   const status = String(payload.sessionStatus || "draft");
-  if (!["draft", "in_progress"].includes(status)) return false;
+  if (!["draft", "in_progress", "generated"].includes(status)) return false;
   return Boolean(payload.expiresAt && Number(payload.expiresAt) <= now);
+}
+
+function obtenerActividadSignificativaMs(payload = {}, now = Date.now()) {
+  return Number(
+    payload.lastMeaningfulActivityAtMs
+    || Date.parse(payload.lastMeaningfulActivityAt)
+    || payload.updatedAtMs
+    || Date.parse(payload.updatedAt)
+    || payload.createdAtMs
+    || Date.parse(payload.createdAt)
+    || now
+  );
+}
+
+export function migrarPoliticaTtlSesionVoz(payload = {}, now = Date.now()) {
+  if (!payload || Number(payload.ttlPolicyVersion || 0) >= VOICE_NOTE_SESSION_TTL_POLICY_VERSION) return payload;
+  const meaningfulActivityMs = obtenerActividadSignificativaMs(payload, now);
+  return {
+    ...payload,
+    ttlPolicyVersion: VOICE_NOTE_SESSION_TTL_POLICY_VERSION,
+    ttlHours: VOICE_NOTE_SESSION_TTL_HOURS,
+    lastMeaningfulActivityAtMs: meaningfulActivityMs,
+    lastMeaningfulActivityAt: new Date(meaningfulActivityMs).toISOString(),
+    expiresAt: meaningfulActivityMs + VOICE_NOTE_SESSION_TTL_MS
+  };
 }
 
 export function validarSesionVozContexto(payload = {}, context = {}) {
@@ -215,13 +242,7 @@ async function listarPorContexto(storeName, contextKey) {
 export async function guardarSesionNotaVozLocal(payload = {}, { ttlMs = VOICE_NOTE_SESSION_TTL_MS } = {}) {
   if (!sesionVozTieneContenido(payload)) return null;
   const now = Date.now();
-  const meaningfulActivityMs = Number(
-    payload.lastMeaningfulActivityAtMs
-    || Date.parse(payload.lastMeaningfulActivityAt)
-    || payload.updatedAtMs
-    || Date.parse(payload.updatedAt)
-    || now
-  );
+  const meaningfulActivityMs = obtenerActividadSignificativaMs(payload, now);
   const expiresAt = meaningfulActivityMs + ttlMs;
   const contextKey = crearContextKeyVoz(payload);
   const key = crearSessionKeyVoz(payload);
@@ -245,6 +266,8 @@ export async function guardarSesionNotaVozLocal(payload = {}, { ttlMs = VOICE_NO
       key,
       contextKey,
       schemaVersion: VOICE_NOTE_SESSION_SCHEMA_VERSION,
+      ttlPolicyVersion: VOICE_NOTE_SESSION_TTL_POLICY_VERSION,
+      ttlHours: VOICE_NOTE_SESSION_TTL_HOURS,
       saveVersion: Math.max(incomingVersion, previousVersion + 1),
       sessionStatus: safePayload.sessionStatus || (safePayload.generatedNote ? "generated" : "in_progress"),
       lastMeaningfulActivityAtMs: meaningfulActivityMs,
@@ -269,7 +292,31 @@ export async function guardarSesionNotaVozLocal(payload = {}, { ttlMs = VOICE_NO
 export async function buscarSesionesNotaVozLocales(context = {}) {
   const contextKey = crearContextKeyVoz(context);
   const records = await listarPorContexto(STORE_SESSIONS, contextKey);
-  const validas = records
+  const migratedRecords = await Promise.all(records.map(async (record) => {
+    const payload = record.payload || null;
+    const migratedPayload = migrarPoliticaTtlSesionVoz(payload);
+    if (!payload || migratedPayload === payload) return record;
+    const migratedRecord = clonarSerializable({
+      ...record,
+      expiresAt: migratedPayload.expiresAt,
+      payload: migratedPayload
+    });
+    try {
+      await conStore(STORE_SESSIONS, "readwrite", (store) => store.put(migratedRecord));
+      logPersistenciaLocal("ttl_policy_migrated", migratedPayload, {
+        previousPolicyVersion: Number(payload.ttlPolicyVersion || 1),
+        newPolicyVersion: VOICE_NOTE_SESSION_TTL_POLICY_VERSION,
+        sessionId: String(payload.sessionId || "").slice(0, 12)
+      });
+      return migratedRecord;
+    } catch (error) {
+      logPersistenciaLocal("ttl_policy_migration_failed", payload, {
+        errorCode: error?.code || error?.name || "ttl_migration_failed"
+      });
+      return record;
+    }
+  }));
+  const validas = migratedRecords
     .map((record) => record.payload)
     .filter((payload) => validarSesionVozContexto(payload, context) && sesionVozTieneContenido(payload))
     .sort((a, b) => Number(b.updatedAtMs || Date.parse(b.updatedAt) || 0) - Number(a.updatedAtMs || Date.parse(a.updatedAt) || 0));
@@ -315,13 +362,8 @@ export async function guardarSegmentacionNotaVozLocal(payload = {}, { ttlMs = VO
   const hasBlocks = Array.isArray(payload.blockManifest?.blocks) && payload.blockManifest.blocks.length;
   if (!payload.transcriptHash || (!hasUtterances && !hasBlocks)) return null;
   const now = Date.now();
-  const meaningfulActivityMs = Number(
-    payload.lastMeaningfulActivityAtMs
-    || Date.parse(payload.lastMeaningfulActivityAt)
-    || payload.updatedAtMs
-    || Date.parse(payload.updatedAt)
-    || now
-  );
+  const meaningfulActivityMs = obtenerActividadSignificativaMs(payload, now);
+  const expiresAt = meaningfulActivityMs + ttlMs;
   const contextKey = crearContextKeyVoz(payload);
   const key = crearSegmentationKeyVoz(payload);
   const previous = await obtener(STORE_SEGMENTATION_RESULTS, key);
@@ -335,16 +377,18 @@ export async function guardarSegmentacionNotaVozLocal(payload = {}, { ttlMs = VO
     key,
     contextKey,
     updatedAtMs: now,
-    expiresAt: now + ttlMs,
+    expiresAt,
     payload: {
       ...safePayload,
       key,
       contextKey,
+      ttlPolicyVersion: VOICE_NOTE_SESSION_TTL_POLICY_VERSION,
+      ttlHours: VOICE_NOTE_SESSION_TTL_HOURS,
       updatedAtMs: now,
       updatedAt: new Date(now).toISOString(),
       lastMeaningfulActivityAtMs: meaningfulActivityMs,
       lastMeaningfulActivityAt: new Date(meaningfulActivityMs).toISOString(),
-      expiresAt: meaningfulActivityMs + ttlMs
+      expiresAt
     }
   });
   logPersistenciaLocal("transaction_started", record.payload);
@@ -381,8 +425,9 @@ export async function limpiarSesionesNotaVozVencidas(now = Date.now()) {
       const cursor = sessionRequest.result;
       if (!cursor) return;
       const payload = cursor.value?.payload || {};
-      if (sesionVozExpirada(payload, now)) {
-        expiredSessionIds.add(payload.sessionId);
+      const migratedPayload = migrarPoliticaTtlSesionVoz(payload, now);
+      if (sesionVozExpirada(migratedPayload, now)) {
+        expiredSessionIds.add(migratedPayload.sessionId);
         cursor.delete();
         deleted += 1;
       }
