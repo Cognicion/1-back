@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Crear estilo de nota | Cognicion</title>
+  <link rel="stylesheet" href="css/theme.css">
+  <link rel="stylesheet" href="css/editor-estilo-nota.css?v=20260719-format-entitlements">
+  <link rel="icon" type="image/png" href="assets/favicon-cognicion.png">
+</head>
+<body>
+  <main class="style-editor-shell">
+    <header class="style-editor-header">
+      <div>
+        <span>COGNICION · FORMATOS CLINICOS</span>
+        <h1>Crear estilo de nota</h1>
+        <p>Configure estructura, apartados y reglas reutilizables sin datos de pacientes.</p>
+      </div>
+      <div class="style-editor-actions">
+        <button id="btnReturnVoiceStyle" type="button" class="boton-secundario">Regresar</button>
+        <button id="btnSaveDraftStyle" type="button" class="boton-secundario">Guardar borrador</button>
+        <button id="btnPreviewStyle" type="button" class="boton-secundario">Vista previa</button>
+        <button id="btnSaveStyle" type="button">Guardar estilo</button>
+        <button id="btnCancelStyle" type="button" class="boton-secundario">Cancelar</button>
+      </div>
+    </header>
+
+    <section class="style-editor-card">
+      <h2>Datos generales del estilo</h2>
+      <div class="style-editor-grid">
+        <label>Nombre del estilo
+          <input id="styleName" maxlength="80" placeholder="Ej. Evolucion Observacion habitual">
+        </label>
+        <label>Descripcion
+          <input id="styleDescription" maxlength="180" placeholder="Uso y contexto recomendado">
+        </label>
+        <label>Especialidad
+          <select id="styleSpecialty">
+            <option value="psychiatry">Psiquiatria</option>
+            <option value="child_adolescent_psychiatry">Paidopsiquiatria</option>
+            <option value="general_medicine">Medicina general</option>
+            <option value="pediatrics">Pediatria</option>
+            <option value="internal_medicine">Medicina interna</option>
+          </select>
+        </label>
+        <label>Contexto
+          <select id="styleCareSetting">
+            <option value="private_practice">Consulta privada</option>
+            <option value="institutional_inpatient">Institucional hospitalario</option>
+            <option value="institutional_outpatient">Institucional ambulatorio</option>
+            <option value="emergency">Urgencias</option>
+            <option value="consultation_liaison">Interconsulta</option>
+            <option value="telemedicine">Telemedicina</option>
+          </select>
+        </label>
+        <label>Modalidad
+          <select id="styleModality">
+            <option value="in_person">Presencial</option>
+            <option value="video">Videollamada</option>
+            <option value="telephone">Telefonica</option>
+            <option value="not_applicable">No aplica</option>
+          </select>
+        </label>
+        <label>Nivel de detalle
+          <select id="styleDetailLevel">
+            <option value="detailed">Detallado</option>
+            <option value="intermediate">Intermedio</option>
+            <option value="brief">Breve</option>
+          </select>
+        </label>
+        <label>Tono
+          <select id="styleTone">
+            <option value="institutional">Institucional</option>
+            <option value="private">Privado</option>
+            <option value="narrative">Narrativo</option>
+            <option value="technical">Tecnico</option>
+            <option value="conservative">Conservador</option>
+          </select>
+        </label>
+        <label>Uso de citas
+          <select id="styleQuoteMode">
+            <option value="omit">Omitir</option>
+            <option value="auto">Automaticas</option>
+            <option value="manual">Manuales</option>
+            <option value="auto_manual">Ambas</option>
+          </select>
+        </label>
+        <label>Visibilidad
+          <select id="styleVisibility">
+            <option value="private">Solo yo</option>
+            <option value="shared">Compartido con usuarios seleccionados</option>
+            <option value="institutional">Institucional, solo Admin</option>
+            <option value="catalog">Publico dentro del catalogo, solo Admin</option>
+          </select>
+        </label>
+        <label>Configuracion predeterminada
+          <select id="styleDefault">
+            <option value="false">No</option>
+            <option value="true">Si</option>
+          </select>
+        </label>
+      </div>
+    </section>
+
+    <section class="style-editor-card">
+      <div class="style-editor-title-row">
+        <h2>Apartados de la nota</h2>
+        <button id="btnAddSection" type="button" class="boton-secundario">Anadir apartado</button>
+      </div>
+      <div id="styleSections" class="style-section-list"></div>
+    </section>
+
+    <section class="style-editor-card">
+      <h2>Vista previa — datos ficticios</h2>
+      <pre id="stylePreview" class="style-preview">Pulse Vista previa para revisar la estructura.</pre>
+      <p id="styleStatus" class="style-status">Borrador local.</p>
+    </section>
+  </main>
+
+  <script type="module" src="js/editor-estilo-nota.js?v=20260719-format-entitlements"></script>
+</body>
+</html>

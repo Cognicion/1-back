@@ -6,7 +6,7 @@
   <title>Nota por voz y automática | Cognición</title>
   <link rel="stylesheet" href="css/theme.css">
   <link rel="stylesheet" href="css/dictado.css">
-  <link rel="stylesheet" href="css/nota-por-voz.css?v=20260719-mental-exam-v1">
+  <link rel="stylesheet" href="css/nota-por-voz.css?v=20260719-format-entitlements">
   <link rel="icon" type="image/png" href="assets/favicon-cognicion.png">
 </head>
 <body>
@@ -15,7 +15,7 @@
     <a href="medico.html">Panel medico</a>
     <a id="linkPacienteVoz" href="paciente.html">Paciente</a>
     <a id="linkNotaTradicional" href="nota.html">Nota tradicional</a>
-    <a class="activo" id="linkNotaVoz" href="nota-por-voz.html?v=20260719-mental-exam-v1">Nota por voz y automática</a>
+    <a class="activo" id="linkNotaVoz" href="nota-por-voz.html?v=20260719-format-entitlements">Nota por voz y automática</a>
   </aside>
 
   <main class="voice-shell">
@@ -44,13 +44,12 @@
       </div>
       <div class="voice-grid">
         <label>Paciente
-          <select id="uidPaciente">
-            <option value="">Seleccionar paciente</option>
-          </select>
+          <input id="voicePatientReadonly" readonly placeholder="Abra Nota por voz desde el expediente">
         </label>
-        <label>Encuentro
-          <input id="voiceEncounterId" placeholder="encuentro activo o paciente:ID">
+        <label>Atencion actual
+          <input id="voiceAttentionLabel" readonly placeholder="Atencion actual pendiente">
         </label>
+        <input id="voiceEncounterId" type="hidden">
         <label>Nota destino
           <input id="voiceNoteId" placeholder="nuevo borrador o notaId existente">
         </label>
@@ -307,6 +306,6 @@
   </main>
 
   <script type="module" src="js/dictado.js?v=20260718-context"></script>
-  <script type="module" src="js/nota-por-voz.js?v=20260719-mental-exam-v1"></script>
+  <script type="module" src="js/nota-por-voz.js?v=20260719-format-entitlements"></script>
 </body>
 </html>

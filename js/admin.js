@@ -1,7 +1,12 @@
 ﻿import { auth, db } from "./firebase.js";
 import { iniciarMonitoreoSesion } from "./services/sesion.js";
 import { registrarEventoAuditoria, resumenError } from "./services/auditoria.js";
-import { FORMATOS_INSTITUCIONALES, permisosFormatosDesdeUsuario } from "./services/formatosInstitucionales.js";
+import {
+  FORMATOS_INSTITUCIONALES,
+  FORMAT_PERMISSION_FRAY,
+  FORMAT_PERMISSION_NAVARRO,
+  permisosFormatosDesdeUsuario
+} from "./services/formatosInstitucionales.js";
 import {
   obtenerNombrePacienteParaMostrar,
   textoBusquedaPaciente
@@ -249,8 +254,10 @@ function configurarFiltros() {
   document.getElementById("btnActualizarUsuariosAdmin")?.addEventListener("click", cargarUsuariosAdmin);
   document.getElementById("btnActualizarUsuariosRecientesAdmin")?.addEventListener("click", cargarUsuariosAdmin);
   document.getElementById("btnActualizarFormatosAdmin")?.addEventListener("click", cargarUsuariosAdmin);
-  document.getElementById("btnAutorizarFrayVisibles")?.addEventListener("click", () => aplicarFormatoUsuariosVisiblesAdmin("fray", true));
-  document.getElementById("btnRetirarFrayVisibles")?.addEventListener("click", () => aplicarFormatoUsuariosVisiblesAdmin("fray", false));
+  document.getElementById("btnAutorizarFrayVisibles")?.addEventListener("click", () => aplicarFormatoUsuariosVisiblesAdmin(FORMAT_PERMISSION_FRAY, true));
+  document.getElementById("btnRetirarFrayVisibles")?.addEventListener("click", () => aplicarFormatoUsuariosVisiblesAdmin(FORMAT_PERMISSION_FRAY, false));
+  document.getElementById("btnAutorizarNavarroVisibles")?.addEventListener("click", () => aplicarFormatoUsuariosVisiblesAdmin(FORMAT_PERMISSION_NAVARRO, true));
+  document.getElementById("btnRetirarNavarroVisibles")?.addEventListener("click", () => aplicarFormatoUsuariosVisiblesAdmin(FORMAT_PERMISSION_NAVARRO, false));
 
   ["filtroFormatosAdmin", "filtroFormatosInstitucionAdmin"].forEach((id) => {
     document.getElementById(id)?.addEventListener("input", renderizarFormatosAdmin);
@@ -1357,9 +1364,18 @@ async function alternarFormatoUsuarioAdmin(evento) {
 
   if (!uid || !formato || !usuario) return;
 
+  const motivo = prompt(`Motivo administrativo para ${valor ? "otorgar" : "revocar"} este permiso:`, valor ? "Autorizacion institucional vigente" : "Revocacion administrativa") || "";
+  const expiraEn = valor ? (prompt("Fecha de expiracion opcional (AAAA-MM-DD). Deja vacio para nunca expirar:", "") || "") : "";
   boton.disabled = true;
   await updateDoc(doc(db, "usuarios", uid), {
     [`permisosFormatos.${formato}`]: valor,
+    [`formatPermissionMetadata.${formato}`]: {
+      status: valor ? "active" : "revoked",
+      reason: motivo,
+      expiresAt: expiraEn,
+      updatedAt: new Date().toISOString(),
+      updatedBy: adminActual?.uid || ""
+    },
     formatosInstitucionalesActualizadosEn: new Date().toISOString(),
     formatosInstitucionalesActualizadoPor: adminActual?.uid || ""
   });
@@ -1382,9 +1398,18 @@ async function aplicarFormatoUsuariosVisiblesAdmin(formato, valor) {
   const accion = valor ? "autorizar" : "retirar";
   const confirmar = confirm(`¿Deseas ${accion} el formato ${formato} a ${usuarios.length} usuario(s) visibles?`);
   if (!confirmar) return;
+  const motivo = prompt(`Motivo administrativo para ${accion} este paquete:`, valor ? "Autorizacion institucional vigente" : "Revocacion administrativa") || "";
+  const expiraEn = valor ? (prompt("Fecha de expiracion opcional (AAAA-MM-DD). Deja vacio para nunca expirar:", "") || "") : "";
 
   await Promise.all(usuarios.map((usuario) => updateDoc(doc(db, "usuarios", usuario.id), {
     [`permisosFormatos.${formato}`]: valor,
+    [`formatPermissionMetadata.${formato}`]: {
+      status: valor ? "active" : "revoked",
+      reason: motivo,
+      expiresAt: expiraEn,
+      updatedAt: new Date().toISOString(),
+      updatedBy: adminActual?.uid || ""
+    },
     formatosInstitucionalesActualizadosEn: new Date().toISOString(),
     formatosInstitucionalesActualizadoPor: adminActual?.uid || ""
   })));

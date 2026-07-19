@@ -8,6 +8,10 @@ const PROVIDER_TIMEOUT_MS = 65000;
 const MAX_UTTERANCES = 220;
 const MAX_UTTERANCE_CHARS = 1800;
 const MAX_TOTAL_CHARS = 60000;
+const FORMAT_PERMISSION_FRAY = "fray_clinical_formats";
+const FORMAT_PERMISSION_NAVARRO = "navarro_referral_format";
+const FRAY_FORMAT_IDS = new Set(["ingreso_observacion", "evolucion_observacion", "egreso_traslado_observacion", "urgencias", "contrarreferencia"]);
+const NAVARRO_FORMAT_IDS = new Set(["referencia_navarro"]);
 
 const NOTE_PROMPT = `
 Version del prompt: psychiatric_voice_note_es_mx_v2.
@@ -260,9 +264,11 @@ function normalizePatientContext(value = {}) {
 
 function normalizeNoteConfiguration(value = {}) {
   const cfg = value && typeof value === "object" ? value : {};
+  const noteType = normalizeString(cfg.noteType || cfg.selectedDocumentType || "evolucion_observacion");
   return {
-    noteType: normalizeString(cfg.noteType || cfg.selectedDocumentType || "evolucion_observacion"),
+    noteType,
     styleId: normalizeString(cfg.styleId || cfg.selectedWritingStyle || "evolucion_narrativa_institucional"),
+    formatId: normalizeString(cfg.formatId || cfg.institutionalFormatId || noteType || cfg.templateId),
     templateId: normalizeString(cfg.templateId),
     promptVersion: normalizeString(cfg.promptVersion || NOTE_PROMPT_VERSION)
   };
@@ -414,6 +420,66 @@ function validateInput({ data = {}, auth = null, HttpsErrorClass, requestId }) {
       estimatedInputTokens: Math.ceil(allTextLength / 4)
     }
   };
+}
+
+function requiredInstitutionalFormatPermission(formatId = "") {
+  if (FRAY_FORMAT_IDS.has(formatId)) return FORMAT_PERMISSION_FRAY;
+  if (NAVARRO_FORMAT_IDS.has(formatId)) return FORMAT_PERMISSION_NAVARRO;
+  return "";
+}
+
+function metadataIsActive(metadata = {}) {
+  if (metadata && typeof metadata === "object") {
+    if (metadata.status === "revoked" || metadata.revoked === true) return false;
+    const expiresAt = metadata.expiresAt?.toDate ? metadata.expiresAt.toDate() : metadata.expiresAt;
+    if (expiresAt) {
+      const date = expiresAt instanceof Date ? expiresAt : new Date(expiresAt);
+      if (!Number.isNaN(date.getTime()) && date.getTime() < Date.now()) return false;
+    }
+  }
+  return true;
+}
+
+function profileHasInstitutionalFormat(profile = {}, permission = "") {
+  const role = normalizeString(profile.rol || profile.role).toLowerCase();
+  if (role === "admin" || profile.admin === true) return true;
+  const permissions = profile.permisosFormatos || profile.formatPermissions || {};
+  const metadata = profile.formatPermissionMetadata || profile.permisosFormatosMetadata || {};
+  if (permissions[permission] !== true) return false;
+  return metadataIsActive(metadata[permission]);
+}
+
+async function validateFormatEntitlement({ payload, auth, adminDb, HttpsErrorClass, requestId, logger }) {
+  const formatId = normalizeString(payload.noteConfiguration?.formatId || payload.noteConfiguration?.noteType);
+  const requiredPermission = requiredInstitutionalFormatPermission(formatId);
+  if (!requiredPermission) return { allowed: true, formatId, requiredPermission: "" };
+  const stage = "format_entitlement";
+  if (!adminDb || typeof adminDb.collection !== "function") {
+    throw makeCallableError(HttpsErrorClass, "failed-precondition", "No fue posible validar permisos institucionales.", {
+      requestId,
+      stage,
+      retryable: false
+    });
+  }
+  const snap = await adminDb.collection("usuarios").doc(auth.uid).get();
+  const profile = snap.exists ? (snap.data() || {}) : {};
+  const allowed = profileHasInstitutionalFormat(profile, requiredPermission);
+  safeLog(logger, allowed ? "info" : "warn", {
+    requestId,
+    stage,
+    formatId,
+    requiredPermission,
+    allowed,
+    userHash: hashText(auth.uid).slice(0, 16)
+  });
+  if (!allowed) {
+    throw makeCallableError(HttpsErrorClass, "permission-denied", "Este formato requiere autorizacion institucional.", {
+      requestId,
+      stage,
+      retryable: false
+    });
+  }
+  return { allowed: true, formatId, requiredPermission };
 }
 
 function buildProviderInput(payload) {
@@ -1149,6 +1215,7 @@ async function runGenerateStructuredNoteFromDictation({
   HttpsErrorClass,
   logger = console,
   openaiClient = null,
+  adminDb = null,
   timeoutMs = PROVIDER_TIMEOUT_MS
 }) {
   const requestId = createRequestId(data?.clientRequestId);
@@ -1161,6 +1228,7 @@ async function runGenerateStructuredNoteFromDictation({
     payload = validateInput({ data, auth, HttpsErrorClass, requestId });
 
     stage = "configuration";
+    await validateFormatEntitlement({ payload, auth, adminDb, HttpsErrorClass, requestId, logger });
     if (!apiKey || typeof apiKey !== "string") {
       throw makeCallableError(HttpsErrorClass, "failed-precondition", "No esta configurado el proveedor externo de notas.", {
         requestId,
@@ -1278,6 +1346,8 @@ module.exports = {
   EVOLUTION_VALIDATOR_VERSION,
   DEFAULT_NOTE_MODEL,
   PROVIDER_TIMEOUT_MS,
+  FORMAT_PERMISSION_FRAY,
+  FORMAT_PERMISSION_NAVARRO,
   extractJsonFromText,
   extractResponseText,
   buildEvolutionCoverage,
@@ -1285,6 +1355,7 @@ module.exports = {
   validateSemanticFidelity,
   validateCoverageInclusion,
   validateProviderResult,
+  requiredInstitutionalFormatPermission,
   validateEvolutionText,
   runGenerateStructuredNoteFromDictation
 };

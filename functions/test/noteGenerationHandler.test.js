@@ -2,7 +2,10 @@ const assert = require("node:assert/strict");
 const {
   NOTE_PROMPT_VERSION,
   NOTE_SCHEMA_VERSION,
+  FORMAT_PERMISSION_FRAY,
+  FORMAT_PERMISSION_NAVARRO,
   validateEvolutionText,
+  requiredInstitutionalFormatPermission,
   runGenerateStructuredNoteFromDictation
 } = require("../noteGenerationHandler");
 
@@ -15,6 +18,23 @@ class TestHttpsError extends Error {
 }
 
 const auth = { uid: "clinico-1" };
+function fakeAdminDb(profile = {}) {
+  return {
+    collection: () => ({
+      doc: () => ({
+        get: async () => ({
+          exists: true,
+          data: () => profile
+        })
+      })
+    })
+  };
+}
+
+const frayAllowedDb = fakeAdminDb({
+  permisosFormatos: { [FORMAT_PERMISSION_FRAY]: true },
+  formatPermissionMetadata: { [FORMAT_PERMISSION_FRAY]: { status: "active" } }
+});
 const baseUtterances = [
   { id: "utt-1", sequence: 1, text: "Durante la valoracion fue abordado en cama, acepta entrevista y se muestra cooperador.", probableRole: "clinician", speechAct: "observation" },
   { id: "utt-2", sequence: 2, text: "Refiere sentirse mas tranquilo y ya no estar tan seguro de que lo persigan.", probableRole: "patient", speechAct: "answer" },
@@ -124,6 +144,7 @@ async function runWithOutput(outputText, data = basePayload()) {
     HttpsErrorClass: TestHttpsError,
     openaiClient: fakeOpenAIWithOutput(outputText),
     logger: { info() {}, error() {} },
+    adminDb: frayAllowedDb,
     timeoutMs: 500
   });
 }
@@ -230,6 +251,7 @@ await assert.rejects(
       HttpsErrorClass: TestHttpsError,
       openaiClient: fakeOpenAIRejects({ status: 401, message: "401" }),
       logger: { info() {}, error() {} },
+      adminDb: frayAllowedDb,
       timeoutMs: 500
     }),
     (error) => error.code === "failed-precondition"
@@ -244,6 +266,7 @@ await assert.rejects(
       HttpsErrorClass: TestHttpsError,
       openaiClient: fakeOpenAIRejects({ status: 429, message: "429" }),
       logger: { info() {}, error() {} },
+      adminDb: frayAllowedDb,
       timeoutMs: 500
     }),
     (error) => error.code === "resource-exhausted"
@@ -258,6 +281,7 @@ await assert.rejects(
       HttpsErrorClass: TestHttpsError,
       openaiClient: fakeOpenAISlow(),
       logger: { info() {}, error() {} },
+      adminDb: frayAllowedDb,
       timeoutMs: 10
     }),
     (error) => error.code === "deadline-exceeded"
@@ -462,6 +486,43 @@ await assert.rejects(
     }
   })),
   (error) => error.code === "data-loss"
+);
+
+assert.equal(requiredInstitutionalFormatPermission("evolucion_observacion"), FORMAT_PERMISSION_FRAY);
+assert.equal(requiredInstitutionalFormatPermission("referencia_navarro"), FORMAT_PERMISSION_NAVARRO);
+assert.equal(requiredInstitutionalFormatPermission("nota_breve"), "");
+
+await assert.rejects(
+  () => runGenerateStructuredNoteFromDictation({
+    data: basePayload(),
+    auth,
+    apiKey: "test-key",
+    OpenAIClass: class {},
+    HttpsErrorClass: TestHttpsError,
+    openaiClient: fakeOpenAIWithOutput("{}"),
+    logger: { info() {}, warn() {}, error() {} },
+    adminDb: fakeAdminDb({ permisosFormatos: {} }),
+    timeoutMs: 500
+  }),
+  (error) => error.code === "permission-denied" && /autorizacion institucional/i.test(error.message)
+);
+
+await assert.rejects(
+  () => runGenerateStructuredNoteFromDictation({
+    data: basePayload(),
+    auth,
+    apiKey: "test-key",
+    OpenAIClass: class {},
+    HttpsErrorClass: TestHttpsError,
+    openaiClient: fakeOpenAIWithOutput("{}"),
+    logger: { info() {}, warn() {}, error() {} },
+    adminDb: fakeAdminDb({
+      permisosFormatos: { [FORMAT_PERMISSION_FRAY]: true },
+      formatPermissionMetadata: { [FORMAT_PERMISSION_FRAY]: { status: "active", expiresAt: "2020-01-01T00:00:00.000Z" } }
+    }),
+    timeoutMs: 500
+  }),
+  (error) => error.code === "permission-denied"
 );
 
 console.log("noteGenerationHandler.test.js OK");

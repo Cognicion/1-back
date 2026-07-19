@@ -1,10 +1,13 @@
 const { onCall, HttpsError } = require("firebase-functions/v2/https");
 const { defineSecret } = require("firebase-functions/params");
 const OpenAI = require("openai");
+const admin = require("firebase-admin");
 const { runSegmentClinicalConversation } = require("./segmentationHandler");
 const { runGenerateStructuredNoteFromDictation } = require("./noteGenerationHandler");
 
 const OPENAI_API_KEY = defineSecret("OPENAI_API_KEY");
+if (!admin.apps.length) admin.initializeApp();
+const adminDb = admin.firestore();
 
 exports.chatSofia = onCall(
   {
@@ -185,7 +188,8 @@ exports.generateStructuredNoteFromDictation = onCall(
       env: process.env,
       OpenAIClass: OpenAI,
       HttpsErrorClass: HttpsError,
-      logger: console
+      logger: console,
+      adminDb
     });
   }
 );

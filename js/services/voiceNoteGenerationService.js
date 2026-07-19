@@ -346,8 +346,10 @@ export function construirPayloadGeneracionVoz({ snapshot = {}, patientContext = 
     clientRequestId,
     patientContext: authorizedPatientContext,
     noteConfiguration: {
+      ...(options.noteConfiguration || {}),
       noteType: options.documentType || "evolucion_observacion",
       styleId: options.writingStyle || "evolucion_narrativa_institucional",
+      formatId: options.formatId || options.noteConfiguration?.formatId || options.documentType || "evolucion_observacion",
       templateId: options.templateId || "",
       promptVersion: VOICE_NOTE_PROMPT_VERSION
     },

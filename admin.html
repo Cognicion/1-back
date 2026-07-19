@@ -176,8 +176,8 @@
   <section id="seccionFormatosAdmin" class="card tabla-card admin-section">
     <div class="tabla-header">
       <div>
-        <h2>Formatos institucionales</h2>
-        <p>Autoriza por usuario el acceso a formatos institucionales como Fray Bernardino.</p>
+        <h2>Permisos institucionales de formatos</h2>
+        <p>Autoriza por usuario paquetes de formatos institucionales. No concede acceso a pacientes ajenos.</p>
       </div>
       <button id="btnActualizarFormatosAdmin" type="button">Actualizar formatos</button>
     </div>
@@ -190,8 +190,10 @@
     </div>
 
     <div class="acciones-admin-inline">
-      <button id="btnAutorizarFrayVisibles" type="button">Autorizar Fray a visibles</button>
-      <button id="btnRetirarFrayVisibles" type="button">Retirar Fray a visibles</button>
+      <button id="btnAutorizarFrayVisibles" type="button">Otorgar formatos Fray</button>
+      <button id="btnRetirarFrayVisibles" type="button">Revocar formatos Fray</button>
+      <button id="btnAutorizarNavarroVisibles" type="button">Otorgar referencia Navarro</button>
+      <button id="btnRetirarNavarroVisibles" type="button">Revocar referencia Navarro</button>
     </div>
 
     <div id="listaFormatosAdmin" class="lista-pacientes-admin">
