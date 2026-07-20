@@ -552,7 +552,7 @@ function formatearEstancia(estancia) {
 
   const partes = [];
   if (estancia.dias > 0) {
-    partes.push(`${estancia.dias} d�a${estancia.dias === 1 ? "" : "s"}`);
+    partes.push(`${estancia.dias} día${estancia.dias === 1 ? "" : "s"}`);
   }
   partes.push(`${estancia.horas} h`);
 
@@ -3941,7 +3941,7 @@ async function abrirSelectorFechaPaciente(campo = "fechaIngreso") {
   if (ayuda) {
     ayuda.textContent = esNacimiento
       ? "Selecciona la fecha en formato DD-MM-AAAA."
-      : "Si no seleccionas hora, se tomar� el inicio del d�a.";
+      : "Si no seleccionas hora, se tomará el inicio del día.";
   }
   modal.classList.add("abierto");
   modal.setAttribute("aria-hidden", "false");
@@ -3972,7 +3972,7 @@ async function guardarIngresoPacienteDesdeModal() {
   const hora = document.getElementById("ingresoPacienteHora")?.value || "00:00";
 
   if (!fecha) {
-    alert(campoFechaIngresoModal === "fechaNacimiento" ? "Selecciona la fecha de nacimiento." : "Selecciona el d�a de ingreso.");
+    alert(campoFechaIngresoModal === "fechaNacimiento" ? "Selecciona la fecha de nacimiento." : "Selecciona el día de ingreso.");
     return;
   }
 
@@ -5815,7 +5815,7 @@ function limpiarFormularioTratamiento() {
   ponerValor("tratamientoEstado", "activo");
   ponerValor("tratamientoModoFrecuencia", "horas_especificas");
   ponerValor("tratamientoVecesDia", "3");
-  ponerValor("tratamientoFrecuencia", "3 veces al d�a");
+  ponerValor("tratamientoFrecuencia", "3 veces al día");
   renderizarTomasTratamiento();
 }
 
@@ -5928,8 +5928,8 @@ function renderizarTratamiento(t) {
         <span class="estado-badge ${tratamiento.estado === "suspendido" ? "suspendido" : "activo"}">${escaparHTML(tratamiento.estado || "activo")}</span>
       </div>
       <p><b>Inicio:</b> ${escaparHTML(formatearFecha(tratamiento.fechaInicio) || "Sin fecha")}</p>
-      ${dosisTotalDia ? `<p><b>Dosis total al d�a:</b> ${escaparHTML(dosisTotalDia)}</p>` : ""}
-      ${tratamiento.estado === "suspendido" ? `<p><b>Suspensi�n:</b> ${escaparHTML(formatearFecha(fechaSuspension))} � ${escaparHTML(motivoSuspension || "Sin motivo registrado")}</p>` : ""}
+      ${dosisTotalDia ? `<p><b>Dosis total al día:</b> ${escaparHTML(dosisTotalDia)}</p>` : ""}
+      ${tratamiento.estado === "suspendido" ? `<p><b>Suspensión:</b> ${escaparHTML(formatearFecha(fechaSuspension))} � ${escaparHTML(motivoSuspension || "Sin motivo registrado")}</p>` : ""}
       ${tratamiento.observaciones ? `<p>${escaparHTML(tratamiento.observaciones)}</p>` : ""}
       ${tratamiento.modificadoPorRol || tratamiento.creadoPorRol ? `<p class="texto-suave"><b>�ltima modificaci�n:</b> ${escaparHTML(tratamiento.modificadoPorNombre || tratamiento.creadoPorNombre || "Usuario")} � ${escaparHTML(tratamiento.modificadoPorRol || tratamiento.creadoPorRol || "")} � ${escaparHTML(formatearFecha(tratamiento.fechaActualizacion) || "")}</p>` : ""}
       <div class="registro-actions">
@@ -6145,8 +6145,8 @@ function horariosPorModoTratamiento(modo, total) {
 function etiquetaFrecuenciaTratamiento(modo, total) {
   if (modo === "cada_8_horas") return "cada 8 horas";
   if (modo === "cada_12_horas") return "cada 12 horas";
-  if (modo === "manana_tarde_noche") return "ma�ana, tarde y noche";
-  return `${total} vez${total === 1 ? "" : "es"} al d�a`;
+  if (modo === "manana_tarde_noche") return "mañana, tarde y noche";
+  return `${total} vez${total === 1 ? "" : "es"} al día`;
 }
 
 function leerTomasTratamiento() {
@@ -6727,7 +6727,7 @@ function htmlSolicitudEstudiosPreview(datos = datosSolicitudEstudiosActual()) {
     <div class="receta-firma">
       <span></span>
       <strong>${escaparHTML(datos.solicita)}</strong>
-      <small>${datos.cedula ? `Ced. Prof. ${escaparHTML(datos.cedula)}` : "Qui�n solicita"}</small>
+      <small>${datos.cedula ? `Ced. Prof. ${escaparHTML(datos.cedula)}` : "Quién solicita"}</small>
     </div>
   `;
 }
@@ -6875,8 +6875,8 @@ async function guardarEstudioPaciente() {
   await registrarAccionExpediente({
     accion: estudioId ? "editar_estudio" : "crear_estudio",
     descripcion: estudioId
-      ? "El m�dico edit� un estudio del expediente."
-      : "El medico registro un estudio en el expediente.",
+      ? "El médico editó un estudio del expediente."
+      : "El médico registró un estudio en el expediente.",
     detalles: {
       estudioId,
       nombre: datos.nombre,
