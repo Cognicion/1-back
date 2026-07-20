@@ -772,14 +772,14 @@ function renderizarEquipoClinicoLab(equipo = []) {
   const lista = equipo.length
     ? equipo.map((item, index) => `
         <div class="lab-equipo-item" data-equipo-index="${index}">
-          <p><b>${escaparHTML(item.cargo || "Personal cl�nico")}:</b> ${escaparHTML(item.nombre || "Sin nombre")}</p>
+          <p><b>${escaparHTML(item.cargo || "Personal clínico")}:</b> ${escaparHTML(item.nombre || "Sin nombre")}</p>
           <div>
             <button class="boton-editar-dato" onclick="editarEquipoClinicoPaciente(${index})">Editar</button>
             <button class="boton-editar-dato" onclick="eliminarEquipoClinicoPaciente(${index})">Quitar</button>
           </div>
         </div>
       `).join("")
-    : `<p class="lab-muted">Sin integrantes registrados. Agrega personal cl�nico con el bot�n +.</p>`;
+    : `<p class="lab-muted">Sin integrantes registrados. Agrega personal clínico con el botón +.</p>`;
 
   return `
     <div class="lab-equipo-lista">
@@ -814,8 +814,8 @@ function renderizarBloqueInstitucionLab(datos = {}, mostrarInstitucional = false
   if (!mostrarInstitucional) return "";
   return `
     <article class="lab-card">
-      <span>Instituci�n</span>
-      <p><b>Instituci�n:</b> ${escaparHTML(valorPaciente(datos, ["institucionPaciente", "institucion"]))} <button class="boton-editar-dato" onclick="editarCampoPaciente('institucionPaciente', 'Instituci�n', 'text')">Editar</button></p>
+      <span>Institución</span>
+      <p><b>Institución:</b> ${escaparHTML(valorPaciente(datos, ["institucionPaciente", "institucion"]))} <button class="boton-editar-dato" onclick="editarCampoPaciente('institucionPaciente', 'Institución', 'text')">Editar</button></p>
       <p><b>Expediente institucional:</b> ${escaparHTML(valorPaciente(datos, ["expediente", "numeroExpediente"], "Sin expediente"))} <button class="boton-editar-dato" onclick="editarCampoPaciente('expediente', 'Expediente institucional', 'text')">Editar</button></p>
       <p><b>Cama:</b> ${escaparHTML(valorPaciente(datos, ["cama"]))} <button class="boton-editar-dato" onclick="editarCampoPaciente('cama', 'Cama', 'text')">Editar</button></p>
     </article>
@@ -832,11 +832,11 @@ function renderizarBloqueIngresoLab(datos = {}, mostrarInstitucional = false) {
         <p><b>Fecha de ingreso:</b> ${escaparHTML(formatearFecha(fechaIngreso))} <button class="boton-editar-dato" onclick="abrirSelectorIngresoPaciente()">Editar</button></p>
         <p><b>Servicio:</b> ${escaparHTML(valorPaciente(datos, ["servicioInstitucional", "servicio"]))} <button class="boton-editar-dato" onclick="editarCampoPaciente('servicioInstitucional', 'Servicio institucional', 'text')">Editar</button></p>
         <p><b>Estancia:</b> <span id="labEstanciaPaciente">${escaparHTML(formatearEstancia(calcularDiasEstancia(fechaIngreso)))}</span></p>
-        <p><b>�ltimo ingreso:</b> ${escaparHTML(formatearFecha(obtenerUltimoIngreso(datos)))} <button class="boton-editar-dato" onclick="abrirSelectorUltimoIngresoPaciente()">Editar</button></p>
+        <p><b>Último ingreso:</b> ${escaparHTML(formatearFecha(obtenerUltimoIngreso(datos)))} <button class="boton-editar-dato" onclick="abrirSelectorUltimoIngresoPaciente()">Editar</button></p>
       ` : ""}
-      <p><b>�ltima consulta:</b> ${escaparHTML(formatearFecha(datos.ultimaConsulta) || "Sin fecha")} <button class="boton-editar-dato" onclick="editarCampoPaciente('ultimaConsulta', '�ltima consulta', 'date')">Editar</button></p>
-      <p><b>N�mero de consultas:</b> ${escaparHTML(consultas)} <button class="boton-editar-dato" onclick="editarCampoPaciente('numeroConsultas', 'N�mero de consultas', 'number')">Editar</button></p>
-      <p><b>Pr�xima consulta:</b> ${escaparHTML(datos.proximaConsulta ? formatearFecha(datos.proximaConsulta) : "Sin programar")} <button class="boton-editar-dato" onclick="editarCampoPaciente('proximaConsulta', 'Pr�xima consulta', 'date')">Editar</button></p>
+      <p><b>Última consulta:</b> ${escaparHTML(formatearFecha(datos.ultimaConsulta) || "Sin fecha")} <button class="boton-editar-dato" onclick="editarCampoPaciente('ultimaConsulta', 'Última consulta', 'date')">Editar</button></p>
+      <p><b>Número de consultas:</b> ${escaparHTML(consultas)} <button class="boton-editar-dato" onclick="editarCampoPaciente('numeroConsultas', 'Número de consultas', 'number')">Editar</button></p>
+      <p><b>Próxima consulta:</b> ${escaparHTML(datos.proximaConsulta ? formatearFecha(datos.proximaConsulta) : "Sin programar")} <button class="boton-editar-dato" onclick="editarCampoPaciente('proximaConsulta', 'Próxima consulta', 'date')">Editar</button></p>
     </article>
   `;
 }
@@ -870,7 +870,7 @@ function renderizarVistaLaboratorioPaciente(datos = datosPacienteActual || {}) {
           <p>Datos generales integrados del expediente. Los campos vac�os se muestran como sin registro.</p>
         </div>
         <div class="lab-paciente-id">
-          <span>Expediente Cognici�n</span>
+          <span>Expediente Cognición</span>
           <strong>${escaparHTML(valorPaciente(datos, ["expedienteCognicion", "datosInstitucionales.expedienteCognicion"], "Sin expediente"))}</strong>
         </div>
       </div>
