@@ -878,7 +878,7 @@ function renderizarVistaLaboratorioPaciente(datos = datosPacienteActual || {}) {
       <div class="lab-metricas-panel lab-metricas-sin-modelo">
         <div class="lab-gauge principal">
           <span>Edad</span>
-          <strong>${edad !== "" ? `${escaparHTML(edad)} a�os` : "Sin registro"}</strong>
+          <strong>${edad !== "" ? `${escaparHTML(edad)} años` : "Sin registro"}</strong>
         </div>
         ${renderizarGaugeVital("presionArterial", datos)}
         ${renderizarGaugeVital("frecuenciaCardiaca", datos)}
@@ -2107,7 +2107,7 @@ async function cargarDatosPaciente() {
   ponerTexto(
     "edadPaciente",
     edadVisible !== "" && edadVisible !== null && edadVisible !== undefined
-      ? `${edadVisible} a�os`
+      ? `${edadVisible} años`
       : "No registrada"
   );
 
@@ -4778,7 +4778,7 @@ function bloqueIdentificacionFrayPaciente(datos = {}) {
     <p class="identificacion">
       <b>Nombre del paciente:</b> ${textoWordPaciente(datos.nombrePaciente)}
          <b>Fecha de nacimiento:</b> ${textoWordPaciente(formatoFechaInterconsulta(datos.fechaNacimiento))}
-          <b>Edad:</b> ${textoWordPaciente(datos.edad)} A�OS
+          <b>Edad:</b> ${textoWordPaciente(datos.edad)} AÑOS
          <b>Cama:</b> ${textoWordPaciente(datos.cama)}
          <b>Expediente:</b> ${textoWordPaciente(datos.expediente)}
          <b>Sexo:</b> ${textoWordPaciente(datos.sexo)}
@@ -6503,7 +6503,7 @@ function htmlRecetaPreview(datos = datosRecetaActual()) {
 
     <div class="receta-datos">
       <p><b>Paciente:</b> ${escaparHTML(datos.pacienteNombre)}</p>
-      <p><b>Edad:</b> ${datos.edad !== "" ? escaparHTML(`${datos.edad} a�os`) : "No registrada"}</p>
+      <p><b>Edad:</b> ${datos.edad !== "" ? escaparHTML(`${datos.edad} años`) : "No registrada"}</p>
       <p><b>Sexo:</b> ${escaparHTML(datos.sexo || "No registrado")}</p>
       <p><b>Expediente:</b> ${escaparHTML(datos.expediente || "No registrado")}</p>
     </div>
@@ -6712,7 +6712,7 @@ function htmlSolicitudEstudiosPreview(datos = datosSolicitudEstudiosActual()) {
 
     <div class="receta-datos">
       <p><b>Paciente:</b> ${escaparHTML(datos.pacienteNombre)}</p>
-      <p><b>Edad:</b> ${datos.edad !== "" ? escaparHTML(`${datos.edad} a�os`) : "No registrada"}</p>
+      <p><b>Edad:</b> ${datos.edad !== "" ? escaparHTML(`${datos.edad} años`) : "No registrada"}</p>
       <p><b>Sexo:</b> ${escaparHTML(datos.sexo || "No registrado")}</p>
       <p><b>Expediente:</b> ${escaparHTML(datos.expediente || "No registrado")}</p>
       <p><b>Cama:</b> ${escaparHTML(datos.cama || "No registrada")}</p>
@@ -6722,7 +6722,7 @@ function htmlSolicitudEstudiosPreview(datos = datosSolicitudEstudiosActual()) {
     <h3>Estudios solicitados</h3>
     <ol class="receta-medicamentos">${estudios}</ol>
 
-    ${datos.motivo ? `<h3>Indicaci�n cl�nica</h3><p>${escaparHTML(datos.motivo)}</p>` : ""}
+    ${datos.motivo ? `<h3>Indicacin clnica</h3><p>${escaparHTML(datos.motivo)}</p>` : ""}
 
     <div class="receta-firma">
       <span></span>
