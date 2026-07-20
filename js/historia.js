@@ -168,8 +168,36 @@ window.guardarHistoria = async () => {
 
   const datos = {};
   calcularIMCHistoria();
+
   document.querySelectorAll("input, textarea, select").forEach((campo) => {
-    datos[campo.id] = campo.value;
+    const id = campo.id?.trim();
+
+    if (!id) {
+      console.warn("Campo de historia ignorado porque no tiene id:", campo);
+      return;
+    }
+
+    if (
+      campo.type === "button" ||
+      campo.type === "submit" ||
+      campo.type === "reset"
+    ) {
+      return;
+    }
+
+    if (campo.type === "checkbox") {
+      datos[id] = campo.checked;
+      return;
+    }
+
+    if (campo.type === "radio") {
+      if (campo.checked) {
+        datos[id] = campo.value;
+      }
+      return;
+    }
+
+    datos[id] = campo.value;
   });
 
   await guardarHistoriaClinica(uidPaciente, datos);
@@ -251,7 +279,7 @@ window.guardarHistoria = async () => {
 
   await registrarEventoAuditoria({
     accion: "guardar_historia_clinica",
-    modulo: "Historia clinica",
+    modulo: "Historia clínica",
     descripcion: "El medico guardo historia clinica.",
     usuarioUid: usuario?.uid || "",
     usuarioNombre: medico?.nombre || usuario?.email || "",

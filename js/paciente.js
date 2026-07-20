@@ -5757,7 +5757,7 @@ window.solicitarEliminarPaciente = async function() {
 
 window.abrirHistoriaClinica = function() {
   if (!uidPaciente) {
-    alert("No se encontr� el ID del paciente.");
+    alert("No se encontró el ID del paciente.");
     return;
   }
 
