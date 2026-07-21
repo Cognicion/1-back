@@ -1743,6 +1743,7 @@ const formatoNota = document.getElementById("formatoNota");
 const bloqueObservacionFray = document.getElementById("bloqueObservacionFray");
 const btnSincronizarDxObs = document.getElementById("btnSincronizarDxObs");
 
+
 const camposObservacionFray = {
   tipoNota: "obsTipoNota",
   fechaNota: "obsFechaNota",
@@ -2513,10 +2514,16 @@ function llenarFormularioNota(datos) {
   asignarValor("ultimaConsulta", datos.ultimaConsulta || "");
   asignarValor("proximaConsulta", datos.proximaConsulta || "");
   if (diagnosticoCatalogoVisible) diagnosticoCatalogoVisible.value = datos.diagnosticoCatalogoVisible || "auto";
-  if (Array.isArray(datos.diagnosticos || datos.historialDiagnosticos)) {
-    diagnosticosSeleccionados = normalizarDiagnosticosNota(datos.diagnosticos || datos.historialDiagnosticos);
-    renderizarDiagnosticosSeleccionados();
-  }
+ const diagnosticosNota = Array.isArray(datos.diagnosticos)
+  ? datos.diagnosticos
+  : Array.isArray(datos.historialDiagnosticos)
+    ? datos.historialDiagnosticos
+    : [];
+
+diagnosticosSeleccionados =
+  normalizarDiagnosticosNota(diagnosticosNota);
+
+renderizarDiagnosticosSeleccionados();
   document.querySelectorAll("[data-note-field]").forEach((elemento) => {
     const valor = datos.camposDinamicos?.[elemento.dataset.noteField];
     if (valor === undefined) return;
