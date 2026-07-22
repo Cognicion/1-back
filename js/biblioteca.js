@@ -4,7 +4,6 @@ import { MEDICAMENTOS_MAESTROS, normalizarNombreMedicamento, textoMedicamentoPar
 import { CIE10 } from "./data/cie10.js";
 import { CIE11 } from "./data/cie11.js";
 import { CRITERIOS_DIAGNOSTICOS, PSICOEDUCACION } from "./data/bibliotecaClinica.js";
-import { CRITERIOS_DIAGNOSTICOS_EXTENDIDOS, GRUPOS_CIE10_BIBLIOTECA } from "./data/diagnosticosClinicosExtendidos.js";
 import { obtenerGrupoCie10 } from "./data/vinculosClinicos.js";
 import { iniciarMonitoreoSesion } from "./services/sesion.js";
 import { ROL_ENFERMERIA_SALUD_MENTAL } from "./utils/roles.js";
