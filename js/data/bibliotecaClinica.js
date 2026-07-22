@@ -159,9 +159,32 @@ export const CRITERIOS_DIAGNOSTICOS = [
       "7) Es extraordinariamente reacio a asumir riesgos personales o a implicarse en nuevas actividades debido a que pueden resultar embarazosas.", 
     ],
     psicoeducacion: "Brindar información sobre el trastorno evitativo de la personalidad, sus características clínicas y el papel de la evitación en el mantenimiento de los síntomas; promover el reconocimiento de pensamientos disfuncionales relacionados con el rechazo y la baja autoestima, reforzar estrategias de afrontamiento, habilidades sociales y la importancia de la adherencia al tratamiento psicoterapéutico y farmacológico cuando esté indicado."
+  },
+
+
+  {
+    codigo: "F84.0 / Pendiente CIE 111",
+    nombre: "Autismo infantil",
+    categoria: "Trastornos generalizados del desarrollo",
+    criterios: [
+      "A) Presencia de un desarrollo anormal o alterado desde antes de los 3 años de edad, que se presenta en una de las siguientes áreas:",
+      "1) Lenguaje receptivo o expresivo utilizado en la comunicación social.",
+      "2) Desarrollo de lazos sociales selectivos o interacción social recíproca.",
+      "3) Juego simbólico y funcional",
+      "b) Deben estar presentes al menos 6 síntomas de 1, 2 y 3, incluyendo al menos dos de 1, uno de 2 y uno de 3.",
+      "  1.Alteraciones cualitativas en la interacción social que se manifiestan al menos en dos de las siguientes áreas:",
+      "    a) Fracaso en la utilización adecuada del contacto visual, la expresión facial, la postura corporal y los gestos para regular la interacción social.",
+      "    b) Fracaso en el desarrollo (adecuado a la edad mental y a pesar de tener ocasiones para ello) de relaciones con personas de su edad que impliquen compartir intereses, actividades y emociones",
+      "    c) Ausencia de reciprocidad socioemocional, puesta de manifiesto por una respuesta alterada o anormal hacia las emociones de otras personas, o falta de modulación del comportamiento en respuesta al contexto social o débil integración de los comportamientos social, emocional y comunicativo",      
+    ],
+    psicoeducacion: "Brindar información sobre el trastorno evitativo de la personalidad, sus características clínicas y el papel de la evitación en el mantenimiento de los síntomas; promover el reconocimiento de pensamientos disfuncionales relacionados con el rechazo y la baja autoestima, reforzar estrategias de afrontamiento, habilidades sociales y la importancia de la adherencia al tratamiento psicoterapéutico y farmacológico cuando esté indicado."
   }
 
 ];
+
+
+
+
 
 export const PSICOEDUCACION = [
   {

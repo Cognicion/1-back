@@ -2513,17 +2513,29 @@ function llenarFormularioNota(datos) {
   asignarValor("ultimaConsulta", datos.ultimaConsulta || "");
   asignarValor("proximaConsulta", datos.proximaConsulta || "");
   if (diagnosticoCatalogoVisible) diagnosticoCatalogoVisible.value = datos.diagnosticoCatalogoVisible || "auto";
-  if (Array.isArray(datos.diagnosticos || datos.historialDiagnosticos)) {
-    diagnosticosSeleccionados = normalizarDiagnosticosNota(datos.diagnosticos || datos.historialDiagnosticos);
-    renderizarDiagnosticosSeleccionados();
-  }
+
+  const diagnosticosFuente =
+    Array.isArray(datos.diagnosticos) && datos.diagnosticos.length
+     ? datos.diagnosticos
+      : Array.isArray(datos.historialDiagnosticos)
+       ? datos.historialDiagnosticos
+       : [];
+
+diagnosticosSeleccionados =
+  normalizarDiagnosticosNota(diagnosticosFuente);
+
+renderizarDiagnosticosSeleccionados();
+
   document.querySelectorAll("[data-note-field]").forEach((elemento) => {
     const valor = datos.camposDinamicos?.[elemento.dataset.noteField];
+
     if (valor === undefined) return;
+
     if (elemento.matches("input[type='checkbox']")) elemento.checked = Boolean(valor);
     else if (elemento.isContentEditable) elemento.innerHTML = String(valor);
     else elemento.value = String(valor);
   });
+  
   llenarFormularioObservacionFray(datos.observacionFray || {});
   sincronizarParametrosPediatriaNota(datos.pediatriaNota || datos["ped?atriaNota"] || null);
   sincronizarTipoNota();
