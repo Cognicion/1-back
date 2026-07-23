@@ -14174,11 +14174,18 @@
           "via": "oral",
           "activo": true
         },
+
         {
           "texto": "tabletas de 400 mg",
           "via": "oral",
           "activo": true
         },
+        
+        { "texto" : "tabletas de 600 mg",
+          "via": "oral",
+          "activo": true
+        },
+
         {
           "texto": "solucion oral de 200 mg/5 ml",
           "via": "oral",
@@ -14203,7 +14210,14 @@
           "presentationDescription": "solucion oral de 200 mg/5 ml",
           "route": "oral",
           "active": true
+        },
+        {
+          "id": "valproato-de-magnesio-p4",
+          "presentationDescription": "tabletas de 600 mg",
+          "route": "oral",
+          "active" : true
         }
+
       ],
       "dosisHabitual": "500-2000 mg/dia",
       "adultDosing": [
