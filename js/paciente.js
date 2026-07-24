@@ -984,10 +984,10 @@ function renderizarResumenPediatricoPaciente(datos = datosPacienteActual || {}) 
     </label>
     <div class="pediatria-resumen-grid">
       <span><b>Edad exacta</b>${escaparHTML(edad.edadCronologicaTexto)}</span>
-      <span><b>D�a de vida</b>${escaparHTML(String(edad.diaDeVida))}</span>
+      <span><b>Día de vida</b>${escaparHTML(String(edad.diaDeVida))}</span>
       <span><b>IMC</b>${imc ? imc.toFixed(2) : "Sin calcular"}</span>
       <span><b>SC Mosteller</b>${sc ? `${sc.mosteller.toFixed(2)} m2` : "Sin calcular"}</span>
-      <span><b>Mantenimiento</b>${liquidos ? `${liquidos.mlDia.toFixed(0)} mL/d�a` : "Sin peso"}</span>
+      <span><b>Mantenimiento</b>${liquidos ? `${liquidos.mlDia.toFixed(0)} mL/día` : "Sin peso"}</span>
       <span><b>Regla 4-2-1</b>${liquidos ? `${liquidos.regla421.toFixed(1)} mL/h` : "Sin peso"}</span>
     </div>
     <small>Los percentiles se calculan solo con tablas LMS oficiales cargadas en Pediatr�a.</small>
@@ -3187,7 +3187,7 @@ async function guardarCampoPacienteInline(campo, nuevoValor, datos = {}) {
     "imc",
     "perimetroAbdominal",
     "diasEstancia",
-    "d�asEstancia"
+    "díasEstancia"
   ]);
 
   if (campo === "fechaNacimiento") {
@@ -5130,7 +5130,7 @@ function renderizarInteraccionesFarmacologicas(medicamentos = [], origen = "trat
       <li>
         <strong>${escaparHTML(med.medicamento)}</strong>
         ${med.indicacion ? `<span>${escaparHTML(med.indicacion)}</span>` : ""}
-        ${med.dosisDia ? `<small>Dosis/d�a: ${escaparHTML(med.dosisDia)}</small>` : ""}
+        ${med.dosisDia ? `<small>Dosis/día: ${escaparHTML(med.dosisDia)}</small>` : ""}
       </li>
     `).join("")
     : "<li>No hay medicamentos activos registrados.</li>";
@@ -6260,13 +6260,13 @@ function calcularDosisTotalDiaTratamiento(t = {}) {
     const totalRedondeado = Number.isInteger(total) ? total : Number(total.toFixed(2));
     return {
       cantidadTotal,
-      texto: `${totalRedondeado} ${presentacion.unidad}/d�a`
+      texto: `${totalRedondeado} ${presentacion.unidad}/día`
     };
   }
 
   return {
     cantidadTotal,
-    texto: `${cantidadTotal} unidad${cantidadTotal === 1 ? "" : "es"}/d�a`
+    texto: `${cantidadTotal} unidad${cantidadTotal === 1 ? "" : "es"}/día`
   };
 }
 
