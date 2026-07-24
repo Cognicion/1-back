@@ -189,7 +189,7 @@ export const CRITERIOS_DIAGNOSTICOS = [
       "    d) Preocupaciones por partes de objetos o por elementos carentes de funcionalidad de los objetos de juego (tales como el olor, la textura de su superficie, el ruido o la vibración que producen)",
       "C) El cuadro clínico no puede atribuirse a otras variedades del trastorno generalizado del desarrollo, a un trastorno específico del desarrollo de la comprensión del lenguaje (F80.2) con problemas socioemocionales secundarios, a trastorno reactivo de la vinculación de la infancia (F94.1), a trastorno de la vinculación de la infancia tipo desinhibido (F94.2), a retraso mental (F70-72) acompañado de trastornos de las emociones y del comportamiento, a esquizofrenia (F20) de comienzo excepcionalmente precoz, ni a síndrome de Rett"
     ],
-    psicoeducacion: "Brindar información sobre el trastorno evitativo de la personalidad, sus características clínicas y el papel de la evitación en el mantenimiento de los síntomas; promover el reconocimiento de pensamientos disfuncionales relacionados con el rechazo y la baja autoestima, reforzar estrategias de afrontamiento, habilidades sociales y la importancia de la adherencia al tratamiento psicoterapéutico y farmacológico cuando esté indicado."
+    psicoeducacion: "Pendiente."
   }
 
 ];

@@ -242,7 +242,7 @@ export const MEDICAMENTOS = [
     clase: "Estabilizador del animo",
     dosisHabitual: "500-2000 mg/dia",
     notas: "Vigilar PFH, plaquetas; teratogenicidad.",
-    presentaciones: ["tabletas de 200 mg", "tabletas de 400 mg", "solucion oral de 200 mg/5 ml"]
+    presentaciones: ["tabletas de 200 mg", "tabletas de 400 mg", "solucion oral de 200 mg/5 ml", "tabletas de 600 mg"]
   },
   {
     nombre: "Acido valproico",
