@@ -14181,16 +14181,18 @@
           "activo": true
         },
         
-        { "texto" : "tabletas de 600 mg",
-          "via": "oral",
-          "activo": true
-        },
 
         {
           "texto": "solucion oral de 200 mg/5 ml",
           "via": "oral",
           "activo": true
+        },
+
+        { "texto" : "tabletas de 600 mg",
+          "via": "oral",
+          "activo": true
         }
+
       ],
       "formulations": [
         {
