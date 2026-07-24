@@ -3018,7 +3018,7 @@ window.editarDatosPaciente = async function() {
   const nuevoMedico = prompt("M�dico tratante:", datos.medicoTratante || "");
   if (nuevoMedico === null) return;
 
-  const nuevaConsulta = prompt("�ltima consulta:", datos.ultimaConsulta || "");
+  const nuevaConsulta = prompt("última consulta:", datos.ultimaConsulta || "");
   if (nuevaConsulta === null) return;
 
   await actualizarUsuario(uidPaciente, {
@@ -5931,7 +5931,7 @@ function renderizarTratamiento(t) {
       ${dosisTotalDia ? `<p><b>Dosis total al día:</b> ${escaparHTML(dosisTotalDia)}</p>` : ""}
       ${tratamiento.estado === "suspendido" ? `<p><b>Suspensión:</b> ${escaparHTML(formatearFecha(fechaSuspension))} � ${escaparHTML(motivoSuspension || "Sin motivo registrado")}</p>` : ""}
       ${tratamiento.observaciones ? `<p>${escaparHTML(tratamiento.observaciones)}</p>` : ""}
-      ${tratamiento.modificadoPorRol || tratamiento.creadoPorRol ? `<p class="texto-suave"><b>�ltima modificaci�n:</b> ${escaparHTML(tratamiento.modificadoPorNombre || tratamiento.creadoPorNombre || "Usuario")} � ${escaparHTML(tratamiento.modificadoPorRol || tratamiento.creadoPorRol || "")} � ${escaparHTML(formatearFecha(tratamiento.fechaActualizacion) || "")}</p>` : ""}
+      ${tratamiento.modificadoPorRol || tratamiento.creadoPorRol ? `<p class="texto-suave"><b>última modificaci�n:</b> ${escaparHTML(tratamiento.modificadoPorNombre || tratamiento.creadoPorNombre || "Usuario")} � ${escaparHTML(tratamiento.modificadoPorRol || tratamiento.creadoPorRol || "")} � ${escaparHTML(formatearFecha(tratamiento.fechaActualizacion) || "")}</p>` : ""}
       <div class="registro-actions">
         <button type="button" data-editar-tratamiento="${t.id}">Editar</button>
         <button type="button" class="boton-peligro" data-eliminar-tratamiento="${t.id}">Eliminar</button>
