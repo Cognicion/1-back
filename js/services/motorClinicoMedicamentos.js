@@ -215,13 +215,13 @@ export function extraerDiagnosticosPaciente(paciente = {}) {
   return extraerDiagnosticosEstructuradosPaciente(paciente).map((diagnostico) => diagnostico.texto);
 }
 
-const ESTADOS_DIAGNOSTICO_INACTIVOS = new Set(["descartado", "se_descarta", "resuelto", "remision", "remisión"]);
+const ESTADOS_DIAGNOSTICO_INACTIVOS = new Set(["descartado", "se_descarta", "resuelto", "remisión", "remisión"]);
 const ESTADOS_DIAGNOSTICO_PROBABLES = new Set(["probable", "a_descartar", "en_estudio", "diferencial"]);
 
 function normalizarEstadoDiagnostico(estado = "") {
   const texto = normalizarTextoClinico(estado).replace(/\s+/g, "_");
   if (!texto) return "confirmado";
-  if (/(descart|se_descarta|no_activo|resuelt|remision)/.test(texto)) return texto.includes("descart") ? "descartado" : "resuelto";
+  if (/(descart|se_descarta|no_activo|resuelt|remisión)/.test(texto)) return texto.includes("descart") ? "descartado" : "resuelto";
   if (/(probable|a_descartar|estudio|diferencial)/.test(texto)) return texto.includes("diferencial") ? "diferencial" : "probable";
   if (/(antecedente|historico|histórico)/.test(texto)) return "antecedente";
   if (/(seguimiento|activo|confirmado|se_agrega)/.test(texto)) return "confirmado";

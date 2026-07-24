@@ -385,9 +385,9 @@ function detectarInformante(texto = "") {
 
 function detectarTemporalidad(texto = "") {
   const t = normalizarComparacion(texto);
-  const expression = t.match(/\b(actualmente|previamente|ayer|hace [^,.;]+|desde hace [^,.;]+|en remision|suspendid[oa]|pendiente)\b/)?.[0] || "";
+  const expression = t.match(/\b(actualmente|previamente|ayer|hace [^,.;]+|desde hace [^,.;]+|en remisión|suspendid[oa]|pendiente)\b/)?.[0] || "";
   if (/\bpreviamente|antecedente|hace \d+ (?:dias|meses|años)\b/.test(t)) return { state: "historico", expression };
-  if (/\ben remision|resuelto\b/.test(t)) return { state: "resuelto", expression };
+  if (/\ben remisión|resuelto\b/.test(t)) return { state: "resuelto", expression };
   if (/\bsuspendid/.test(t)) return { state: "suspendido", expression };
   return { state: "actual", expression };
 }
@@ -401,7 +401,7 @@ function detectarEstado(texto = "", informante = "") {
   if (/\bsuspendio|fue suspendid|se suspendio\b/.test(t)) return ESTADOS_AFIRMACION.SUSPENDIDO;
   if (/\bactualmente (?:lo |la )?niega|\bniega|sin datos de|sin evidencia de|no presenta\b/.test(t)) return ESTADOS_AFIRMACION.NEGADO;
   if (/\bpreviamente|antecedente|hace \d+ (?:dias|meses|años)\b/.test(t)) return ESTADOS_AFIRMACION.HISTORICO;
-  if (/\ben remision|resuelto\b/.test(t)) return ESTADOS_AFIRMACION.RESUELTO;
+  if (/\ben remisión|resuelto\b/.test(t)) return ESTADOS_AFIRMACION.RESUELTO;
   if (/\bse observa|durante la entrevista|a la exploracion\b/.test(t)) return ESTADOS_AFIRMACION.OBSERVADO;
   if (!["paciente", "informante_no_identificado"].includes(informante)) return ESTADOS_AFIRMACION.REFERIDO_TERCERO;
   return ESTADOS_AFIRMACION.AFIRMADO;

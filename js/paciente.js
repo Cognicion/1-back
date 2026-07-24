@@ -1594,7 +1594,7 @@ const ESTADOS_DIAGNOSTICO = [
   "Confirmado",
   "En seguimiento",
   "Antecedente",
-  "Remisin",
+  "Remisión",
   "Diferencial"
 ];
 
