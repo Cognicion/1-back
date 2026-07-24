@@ -961,7 +961,7 @@ function renderizarResumenPediatricoPaciente(datos = datosPacienteActual || {}) 
   if (!bloque) return;
 
   const edad = calcularEdadPediatrica(obtenerFechaNacimiento(datos));
-  const esPediatrico = Boolean(edad && edad.anos < 18);
+  const esPediatrico = Boolean(edad && edad.años < 18);
 
   bloque.style.display = esPediatrico ? "" : "none";
   if (boton) boton.style.display = esPediatrico ? "" : "none";

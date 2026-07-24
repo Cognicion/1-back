@@ -37,15 +37,15 @@ const basePayload = {
 };
 
 const casos = [
-  ["ingreso_observacion", "Paciente masculino de 34 anos acude referido por urgencias por insomnio de cinco dias, irritabilidad y verborrea. Madre refiere consumo de alcohol previo. Niega ideacion suicida actual. En examen mental se observa alerta, cooperador, lenguaje aumentado y afecto irritable. Plan: vigilancia estrecha y solicitar biometria hematica."],
-  ["evolucion_observacion", "Paciente masculino de 34 anos cursa segundo dia en observacion. Durante la noche durmio cuatro horas, sin incidencias. Niega ideas suicidas actuales. Se observa orientado, con lenguaje normoproductivo. Plan: continuar vigilancia y valorar egreso si mantiene estabilidad."],
+  ["ingreso_observacion", "Paciente masculino de 34 años acude referido por urgencias por insomnio de cinco dias, irritabilidad y verborrea. Madre refiere consumo de alcohol previo. Niega ideacion suicida actual. En examen mental se observa alerta, cooperador, lenguaje aumentado y afecto irritable. Plan: vigilancia estrecha y solicitar biometria hematica."],
+  ["evolucion_observacion", "Paciente masculino de 34 años cursa segundo dia en observacion. Durante la noche durmio cuatro horas, sin incidencias. Niega ideas suicidas actuales. Se observa orientado, con lenguaje normoproductivo. Plan: continuar vigilancia y valorar egreso si mantiene estabilidad."],
   ["egreso_traslado_observacion", "Tras 48 horas en observacion presenta mejoria conductual, sin agitacion, niega ideacion suicida actual. Se indica egreso con seguimiento por consulta externa y red de apoyo familiar."],
   ["ingreso_ucep", "Ingresa a UCEP procedente de Hospital General el 12 de marzo posterior a intento autolitico por ingesta de tabletas, con lavado gastrico previo. Actualmente somnoliento, sin datos de agitacion. Plan: vigilancia de riesgo y seguimiento por psiquiatria."],
   ["urgencias", "Acude a urgencias por agitacion psicomotriz y alucinaciones auditivas referidas por familiar. Niega consumo reciente. Se observa inquieto, suspicaz. Plan: valorar criterio de hospitalizacion."],
   ["referencia_navarro", "Unidad de origen centro de salud. Se refiere a hospital Navarro por riesgo suicida, con antecedente de intento hace dos meses y tristeza persistente. Actualmente niega plan, cuenta con madre como apoyo."],
   ["contrarreferencia", "Contrarreferencia a unidad de origen tras estabilizacion. Se recomienda continuar seguimiento, psicoterapia y vigilancia de adherencia."],
-  ["pediatria", "Paciente escolar de 10 anos, madre refiere irritabilidad, bajo rendimiento y sueno disminuido. Niega autolesiones. Plan: valoracion por paidopsiquiatria y orientacion familiar."],
-  ["paidopsiquiatria", "Adolescente femenina de 15 anos, padre refiere autolesiones previas. Actualmente niega intencion suicida. Se observa alerta, cooperadora, afecto ansioso. Plan: plan de seguridad y seguimiento familiar."],
+  ["pediatria", "Paciente escolar de 10 años, madre refiere irritabilidad, bajo rendimiento y sueno disminuido. Niega autolesiones. Plan: valoracion por paidopsiquiatria y orientacion familiar."],
+  ["paidopsiquiatria", "Adolescente femenina de 15 años, padre refiere autolesiones previas. Actualmente niega intencion suicida. Se observa alerta, cooperadora, afecto ansioso. Plan: plan de seguridad y seguimiento familiar."],
   ["dictado_libre_apartados", "Padecimiento actual: inicia hace tres semanas con ansiedad. Examen mental: alerta y orientado. Comentario: sintomas ansiosos con deterioro escolar. Plan: seguimiento por consulta externa."]
 ];
 

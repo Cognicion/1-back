@@ -84,7 +84,7 @@ const PATRONES_PREGUNTA_CON_RESPUESTA = [
 const PATRONES_INICIO_PREGUNTA = [
   "buenas tardes", "me puede decir", "puede decir", "cual es", "cuales son",
   "quien es", "quienes son", "como se", "cuando fue", "cuanto tiempo",
-  "cuantos anos", "cuantos años", "donde se encuentra", "sabe donde",
+  "cuantos años", "cuantos años", "donde se encuentra", "sabe donde",
   "por que", "para que", "recuerda si", "considera que", "ha presentado",
   "ha pensado", "tiene ideas", "tiene intencion", "consume alcohol",
   "consume cannabis", "consume alguna", "escucha voces", "ve cosas",
@@ -386,7 +386,7 @@ function detectarInformante(texto = "") {
 function detectarTemporalidad(texto = "") {
   const t = normalizarComparacion(texto);
   const expression = t.match(/\b(actualmente|previamente|ayer|hace [^,.;]+|desde hace [^,.;]+|en remision|suspendid[oa]|pendiente)\b/)?.[0] || "";
-  if (/\bpreviamente|antecedente|hace \d+ (?:dias|meses|anos)\b/.test(t)) return { state: "historico", expression };
+  if (/\bpreviamente|antecedente|hace \d+ (?:dias|meses|años)\b/.test(t)) return { state: "historico", expression };
   if (/\ben remision|resuelto\b/.test(t)) return { state: "resuelto", expression };
   if (/\bsuspendid/.test(t)) return { state: "suspendido", expression };
   return { state: "actual", expression };
@@ -400,7 +400,7 @@ function detectarEstado(texto = "", informante = "") {
   if (/\bno suspendio\b/.test(t)) return ESTADOS_AFIRMACION.NEGADO;
   if (/\bsuspendio|fue suspendid|se suspendio\b/.test(t)) return ESTADOS_AFIRMACION.SUSPENDIDO;
   if (/\bactualmente (?:lo |la )?niega|\bniega|sin datos de|sin evidencia de|no presenta\b/.test(t)) return ESTADOS_AFIRMACION.NEGADO;
-  if (/\bpreviamente|antecedente|hace \d+ (?:dias|meses|anos)\b/.test(t)) return ESTADOS_AFIRMACION.HISTORICO;
+  if (/\bpreviamente|antecedente|hace \d+ (?:dias|meses|años)\b/.test(t)) return ESTADOS_AFIRMACION.HISTORICO;
   if (/\ben remision|resuelto\b/.test(t)) return ESTADOS_AFIRMACION.RESUELTO;
   if (/\bse observa|durante la entrevista|a la exploracion\b/.test(t)) return ESTADOS_AFIRMACION.OBSERVADO;
   if (!["paciente", "informante_no_identificado"].includes(informante)) return ESTADOS_AFIRMACION.REFERIDO_TERCERO;

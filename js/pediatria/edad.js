@@ -33,7 +33,7 @@ export function calcularEdadPediatrica(fechaNacimiento, fechaReferencia = new Da
   const referencia = parseFechaLocal(fechaReferencia);
   if (!nacimiento || !referencia || referencia < nacimiento) return null;
 
-  let anos = referencia.getFullYear() - nacimiento.getFullYear();
+  let años = referencia.getFullYear() - nacimiento.getFullYear();
   let meses = referencia.getMonth() - nacimiento.getMonth();
   let dias = referencia.getDate() - nacimiento.getDate();
 
@@ -44,13 +44,13 @@ export function calcularEdadPediatrica(fechaNacimiento, fechaReferencia = new Da
   }
 
   if (meses < 0) {
-    anos -= 1;
+    años -= 1;
     meses += 12;
   }
 
   const diasTotales = Math.floor((referencia.getTime() - nacimiento.getTime()) / MS_DIA);
   const semanasTotales = diasTotales / 7;
-  const anosDecimales = diasTotales / 365.2425;
+  const añosDecimales = diasTotales / 365.2425;
   const edadGestacional = Number(edadGestacionalSemanas);
   const prematuridadDias = Number.isFinite(edadGestacional) && edadGestacional > 0 && edadGestacional < 40
     ? Math.round((40 - edadGestacional) * 7)
@@ -58,13 +58,13 @@ export function calcularEdadPediatrica(fechaNacimiento, fechaReferencia = new Da
   const diasCorregidos = Math.max(0, diasTotales - prematuridadDias);
 
   return {
-    anos,
+    años,
     meses,
     dias,
     diasTotales,
     semanasTotales,
-    anosDecimales,
-    edadCronologicaTexto: `${anos} a ${meses} m ${dias} d`,
+    añosDecimales,
+    edadCronologicaTexto: `${años} a ${meses} m ${dias} d`,
     edadCorregidaDias: prematuridadDias ? diasCorregidos : null,
     edadCorregidaSemanas: prematuridadDias ? diasCorregidos / 7 : null,
     edadPostmenstrualSemanas: Number.isFinite(edadGestacional) && edadGestacional > 0

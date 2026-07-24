@@ -122,7 +122,7 @@ function sincronizarEdadConFecha(origen = "fecha") {
   if (origen === "fecha" || !tieneEdadEscrita) {
     edadInput.value = edadCalculada;
   }
-  ponerAyudaEdad(`Edad calculada automaticamente: ${edadCalculada} anos.`);
+  ponerAyudaEdad(`Edad calculada automaticamente: ${edadCalculada} años.`);
 }
 
 function numeroClinico(valor = "") {

@@ -4,7 +4,7 @@ import { segmentarConversacionClinica } from "../services/clinicalPipeline.js";
 import { RuleBasedConversationSegmentationProvider } from "../services/conversationSegmentationProviders.js";
 
 const carlos = `
-buenas tardes Carlos me escucha si doctor me puede decir su nombre completo Carlos Eduardo Ramirez Soto cuantos anos tiene veintinueve sabe donde se encuentra En el Fray
+buenas tardes Carlos me escucha si doctor me puede decir su nombre completo Carlos Eduardo Ramirez Soto cuantos años tiene veintinueve sabe donde se encuentra En el Fray
 escucha voces que otras personas no escuchan Antes escuchaba una voz por la noche que le decia Ten cuidado no salgas te van a encontrar
 ha pensado en quitarse la vida no tiene intencion de morir actualmente aqui no
 durante la entrevista se observa despierto y orientado mantiene actitud vigilante presenta contacto visual intermitente su discurso es claro

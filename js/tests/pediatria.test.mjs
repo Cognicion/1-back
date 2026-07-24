@@ -12,7 +12,7 @@ import {
 import { calcularDosisMedicamento } from "../pediatria/medicamentos.js";
 
 const edad = calcularEdadPediatrica("2020-01-15", "2026-07-13");
-assert.equal(edad.anos, 6);
+assert.equal(edad.años, 6);
 assert.equal(edad.meses, 5);
 assert.equal(edad.dias, 28);
 assert.equal(calcularEdadPediatrica("2030-01-01", "2026-07-13"), null);

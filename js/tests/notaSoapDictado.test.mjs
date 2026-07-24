@@ -18,7 +18,7 @@ assert.ok(conversacionRiesgo.some((item) => /Niega intención de morir/i.test(it
 
 const provider = new RuleBasedNoteGenerationProvider();
 const transcript = `
-Paciente Daniela Martinez Lopez, 24 anos. Refiere perdida de empleo hace dos meses y ruptura de pareja.
+Paciente Daniela Martinez Lopez, 24 años. Refiere perdida de empleo hace dos meses y ruptura de pareja.
 Desde entonces presenta tristeza, anhedonia, insomnio, hiporexia y deterioro funcional.
 Desde hace tres semanas refiere ideas de muerte y desde hace cinco dias ideas suicidas.
 Ayer penso en ingerir tabletas con intencion de morir, pero no ingirio medicamentos.

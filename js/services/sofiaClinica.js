@@ -152,7 +152,7 @@ export function generarNarrativaClinica(expediente) {
   const protectores = digital.protectores.slice(0, 4).join(", ");
   const riesgos = digital.riesgos.filter((r) => r.nivel !== "bajo").map((r) => r.titulo).join(", ");
   const partes = [];
-  partes.push(`Paciente ${paciente.sexo || "sin sexo registrado"}${paciente.edad !== null ? ` de ${paciente.edad} anos` : ""}, con atencion registrada en ${paciente.institucion || "la plataforma"}.`);
+  partes.push(`Paciente ${paciente.sexo || "sin sexo registrado"}${paciente.edad !== null ? ` de ${paciente.edad} años` : ""}, con atencion registrada en ${paciente.institucion || "la plataforma"}.`);
   if (principal) partes.push(`El diagnostico principal registrado es ${formatearDiagnostico(principal)}.`);
   if (primerEvento) partes.push(`La linea temporal inicia con ${primerEvento.titulo.toLowerCase()} (${formatearFecha(primerEvento.fechaOrden)}).`);
   if (sintomas) partes.push(`En la informacion disponible se identifican elementos clinicos relacionados con ${sintomas}.`);

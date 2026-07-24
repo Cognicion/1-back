@@ -3062,7 +3062,7 @@ async function cargarPaciente(patientId) {
   cargarCatalogosVoz(servicio?.value || servicioPaciente);
   setText("voicePatientSummary", [
     ctx.nombreCompleto || "Paciente sin nombre",
-    Number.isInteger(ctx.edad) ? `${ctx.edad} anos (${decada}a decada)` : "edad pendiente",
+    Number.isInteger(ctx.edad) ? `${ctx.edad} años (${decada}a decada)` : "edad pendiente",
     ctx.sexo ? `sexo expediente: ${ctx.sexo}` : "sexo pendiente en expediente",
     `expediente: ${obtenerExpedientePaciente(datos)}`,
     servicio?.value ? `servicio: ${servicio.value}` : "servicio pendiente",

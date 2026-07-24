@@ -286,7 +286,7 @@ function normalizarIdentificacionPaciente(datosPaciente = {}, identificacionDict
     texto: unirUnico([
       nombreCompleto,
       sexo,
-      edad !== null && edad !== "" ? `${edad} anos` : "",
+      edad !== null && edad !== "" ? `${edad} años` : "",
       escolaridad,
       estadoCivil,
       ocupacion,
@@ -385,7 +385,7 @@ function clasificarFrases(texto, datos) {
 
 function extraerIdentificacion(texto, datos) {
   const t = limpiarTexto(texto);
-  const edad = t.match(/\b(\d{1,3})\s*(anos|anios|años)\b/i)?.[1] || "";
+  const edad = t.match(/\b(\d{1,3})\s*(años|anios|años)\b/i)?.[1] || "";
   const sexo = t.match(/\b(femenino|masculino|mujer|hombre|varon)\b/i)?.[1] || "";
   const escolaridad = extraerPorRegex(t, /\bescolaridad\s*(?:de)?\s*([^.;,]+)/i);
   const estadoCivil = extraerPorRegex(t, /\bestado civil\s*(?:de)?\s*([^.;,]+)/i);
@@ -401,7 +401,7 @@ function extraerIdentificacion(texto, datos) {
     ocupacion,
     religion,
     medicoTratante: "",
-    texto: unirUnico([edad ? `${edad} anos` : "", sexo, escolaridad, estadoCivil, ocupacion, religion])
+    texto: unirUnico([edad ? `${edad} años` : "", sexo, escolaridad, estadoCivil, ocupacion, religion])
   };
 }
 

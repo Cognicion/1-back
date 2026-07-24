@@ -19,7 +19,7 @@ function describirPaciente(datos = {}) {
   const id = datos.identificacion || {};
   const elementos = [];
   if (id.sexo) elementos.push(id.sexo);
-  if (id.edad) elementos.push(`${id.edad} anos`);
+  if (id.edad) elementos.push(`${id.edad} años`);
   if (!elementos.length && id.texto) return frase(id.texto);
   if (!elementos.length) return "Paciente en valoracion psiquiatrica.";
   return `Paciente ${elementos.join(" de ")}.`;

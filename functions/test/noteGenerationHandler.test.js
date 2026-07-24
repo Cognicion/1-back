@@ -172,13 +172,13 @@ async function runWithOutput(outputText, data = basePayload()) {
 }
 
 const validEvolution = [
-  "Paciente Prueba, hombre de 34 anos, quien cursa su 21.er dia de estancia intrahospitalaria en el servicio especial de OBSERVACION, bajo seguimiento por sintomatologia psicotica y riesgo de conducta heteroagresiva. Durante la valoracion fue abordado en cama correspondiente, aceptando la entrevista y mostrando adecuada cooperacion.",
+  "Paciente Prueba, hombre de 34 años, quien cursa su 21.er dia de estancia intrahospitalaria en el servicio especial de OBSERVACION, bajo seguimiento por sintomatologia psicotica y riesgo de conducta heteroagresiva. Durante la valoracion fue abordado en cama correspondiente, aceptando la entrevista y mostrando adecuada cooperacion.",
   "Al interrogatorio dirigido refiere encontrarse mas tranquilo, con disminucion de las ideas de persecucion que motivaron su ingreso, mencionando que actualmente ya no se encuentra completamente convencido de dichas experiencias. Niega ideas suicidas y niega intencion heteroagresiva actual hacia su hermano.",
   "Identifica a su madre como principal red de apoyo. Desde el punto de vista medico, refiere sueno de aproximadamente siete horas, apetito conservado, diuresis y evacuaciones sin alteraciones."
 ].join("\n\n");
 
 const correctedCarlosEvolution = [
-  "Carlos Kaju Quintero, hombre de 34 anos, quien permanece en estancia intrahospitalaria en el servicio especial de OBSERVACION. Durante la valoracion refiere sentirse mas tranquilo en comparacion con el dia previo, aunque persiste con deseos de egreso.",
+  "Carlos Kaju Quintero, hombre de 34 años, quien permanece en estancia intrahospitalaria en el servicio especial de OBSERVACION. Durante la valoracion refiere sentirse mas tranquilo en comparacion con el dia previo, aunque persiste con deseos de egreso.",
   "Refiere ausencia de alucinaciones auditivas durante los ultimos dos dias y disminucion de la conviccion respecto a las ideas de persecucion previamente referidas, mencionando que ya no se encuentra tan seguro de que lo persiguieran o quisieran hacerle dano. Atribuye de manera posible la aparicion de dichas experiencias a la falta de sueno y al consumo de metanfetamina.",
   "Niega ideas de muerte, ideacion suicida e intencion de causar dano a su hermano o a otras personas. Considera que podria recibir apoyo de su madre para los medicamentos y manifiesta disposicion para continuar tratamiento y evitar el consumo de metanfetamina y cannabis.",
   "Desde el punto de vista medico, refiere sueno aproximado de seis horas, con un despertar nocturno y recuperacion posterior del sueno. Refiere aceptacion de medicamentos e identifica risperidona dentro del esquema; como efectos adversos menciona somnolencia matutina y xerostomia. Niega rigidez, temblor, mareo y caidas."
@@ -331,7 +331,7 @@ await assert.rejects(
   () => runWithOutput(JSON.stringify({
     sections: {
       evolution: {
-        text: "Carlos Kaju Quintero, hombre de 34 anos, se encuentra en el dia 0 de estancia en el servicio de OBSERVACION. Durante la valoracion realizo la entrevista sentado y mostro buena cooperacion, con conducta tranquila y orientada. Refiere sentirse mas tranquilo.",
+        text: "Carlos Kaju Quintero, hombre de 34 años, se encuentra en el dia 0 de estancia en el servicio de OBSERVACION. Durante la valoracion realizo la entrevista sentado y mostro buena cooperacion, con conducta tranquila y orientada. Refiere sentirse mas tranquilo.",
         sourceUtteranceIds: ["car-1"],
         requiresReview: true
       }
@@ -345,7 +345,7 @@ await assert.rejects(
   () => runWithOutput(JSON.stringify({
     sections: {
       evolution: {
-        text: "Carlos Kaju Quintero, hombre de 34 anos, quien permanece en estancia intrahospitalaria en el servicio especial de OBSERVACION. Refiere sentirse mas tranquilo, niega ideacion suicida actual y niega intencion de danar a terceros.",
+        text: "Carlos Kaju Quintero, hombre de 34 años, quien permanece en estancia intrahospitalaria en el servicio especial de OBSERVACION. Refiere sentirse mas tranquilo, niega ideacion suicida actual y niega intencion de danar a terceros.",
         sourceUtteranceIds: ["car-1", "car-6"],
         requiresReview: true
       }

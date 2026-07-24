@@ -10,7 +10,7 @@ import {
 const provider = new RuleBasedNoteGenerationProvider();
 
 const carlosConversacion = `
-buenas tardes Carlos me escucha si doctor me puede decir su nombre completo Carlos Kaju Quintero cuantos anos tiene treinta y cuatro sabe donde se encuentra En el Fray
+buenas tardes Carlos me escucha si doctor me puede decir su nombre completo Carlos Kaju Quintero cuantos años tiene treinta y cuatro sabe donde se encuentra En el Fray
 durante la valoracion fue abordado en cama correspondiente en posicion sedente acepta la entrevista y se muestra cooperador
 ha sentido que la television le envia mensajes no desde hace varios dias ya no
 escucha voces que otras personas no escuchan no actualmente

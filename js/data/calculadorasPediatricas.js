@@ -144,8 +144,8 @@ function aguaLibre({ peso, sodioActual, sodioMeta = 145 }) {
   return 0.6 * p * ((na / meta) - 1);
 }
 
-function tuboEndotraqueal({ edadAnos }) {
-  const edad = numero(edadAnos);
+function tuboEndotraqueal({ edadaños }) {
+  const edad = numero(edadaños);
   if (edad === null) return null;
   const cuffed = edad < 1 ? 3.5 : 3.5 + edad / 4;
   const uncuffed = edad < 1 ? 4 : 4 + edad / 4;
@@ -426,7 +426,7 @@ export const CALCULADORAS_PEDIATRICAS = [
     categoria: "urgencias",
     nombre: "Tubo endotraqueal y profundidad",
     descripcion: "Estimacion por edad. No sustituye confirmacion clinica, capnografia e imagen cuando aplique.",
-    inputs: [{ id: "edadAnos", label: "Edad", unidad: "anos" }],
+    inputs: [{ id: "edadaños", label: "Edad", unidad: "años" }],
     calcular: tuboEndotraqueal,
     interpretar: (r) => r ? `Con cuff: ${redondear(r.cuffed, 1)} mm. Sin cuff: ${redondear(r.uncuffed, 1)} mm. Profundidad aprox.: ${redondear(r.profundidadCm, 1)} cm.` : "Completa edad."
   },

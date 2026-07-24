@@ -206,7 +206,7 @@ export const ESCALAS_MEDICINA_GENERAL = [
       { texto: "Urea >7 mmol/L o BUN elevado", opciones: SI_NO },
       { texto: "FR >=30/min", opciones: SI_NO },
       { texto: "PAS <90 o PAD <=60 mmHg", opciones: SI_NO },
-      { texto: "Edad >=65 anos", opciones: SI_NO }
+      { texto: "Edad >=65 años", opciones: SI_NO }
     ]
   },
   {
@@ -266,7 +266,7 @@ export const ESCALAS_MEDICINA_GENERAL = [
       { max: 8, texto: "PERC positivo; no descarta TEP" }
     ],
     items: [
-      { texto: "Edad >=50 anos", opciones: SI_NO },
+      { texto: "Edad >=50 años", opciones: SI_NO },
       { texto: "FC >=100 lpm", opciones: SI_NO },
       { texto: "SatO2 <95%", opciones: SI_NO },
       { texto: "Hemoptisis", opciones: SI_NO },
@@ -291,11 +291,11 @@ export const ESCALAS_MEDICINA_GENERAL = [
     items: [
       { texto: "Insuficiencia cardiaca", opciones: SI_NO },
       { texto: "Hipertension", opciones: SI_NO },
-      { texto: "Edad >=75 anos", opciones: [{ texto: "No", valor: 0 }, { texto: "Si", valor: 2 }] },
+      { texto: "Edad >=75 años", opciones: [{ texto: "No", valor: 0 }, { texto: "Si", valor: 2 }] },
       { texto: "Diabetes mellitus", opciones: SI_NO },
       { texto: "EVC/AIT/tromboembolismo previo", opciones: [{ texto: "No", valor: 0 }, { texto: "Si", valor: 2 }] },
       { texto: "Enfermedad vascular", opciones: SI_NO },
-      { texto: "Edad 65-74 anos", opciones: SI_NO },
+      { texto: "Edad 65-74 años", opciones: SI_NO },
       { texto: "Sexo femenino", opciones: SI_NO }
     ]
   },
@@ -317,7 +317,7 @@ export const ESCALAS_MEDICINA_GENERAL = [
       { texto: "EVC previo", opciones: SI_NO },
       { texto: "Sangrado previo o predisposicion", opciones: SI_NO },
       { texto: "INR labil", opciones: SI_NO },
-      { texto: "Edad >65 anos", opciones: SI_NO },
+      { texto: "Edad >65 años", opciones: SI_NO },
       { texto: "Farmacos que predisponen a sangrado", opciones: SI_NO },
       { texto: "Alcohol", opciones: SI_NO }
     ]
@@ -340,7 +340,7 @@ export const ESCALAS_MEDICINA_GENERAL = [
       { texto: "Apneas observadas", opciones: SI_NO },
       { texto: "Hipertension", opciones: SI_NO },
       { texto: "IMC >35", opciones: SI_NO },
-      { texto: "Edad >50 anos", opciones: SI_NO },
+      { texto: "Edad >50 años", opciones: SI_NO },
       { texto: "Circunferencia cuello elevada", opciones: SI_NO },
       { texto: "Sexo masculino", opciones: SI_NO }
     ]
@@ -484,7 +484,7 @@ export const ESCALAS_PEDIATRICAS_NOTA = [
       { max: 10, texto: "Adaptacion adecuada o leve compromiso segun contexto" }
     ],
     items: [
-      { texto: "Apariencia/color", opciones: [{ texto: "Azul/palido", valor: 0 }, { texto: "Acrocianosis", valor: 1 }, { texto: "Rosado", valor: 2 }] },
+      { texto: "Apariencia/color", opciones: [{ texto: "Azul/palido", valor: 0 }, { texto: "Acrociañosis", valor: 1 }, { texto: "Rosado", valor: 2 }] },
       { texto: "Pulso", opciones: [{ texto: "Ausente", valor: 0 }, { texto: "<100", valor: 1 }, { texto: ">=100", valor: 2 }] },
       { texto: "Gesticulacion/reflejos", opciones: [{ texto: "Sin respuesta", valor: 0 }, { texto: "Mueca", valor: 1 }, { texto: "Llanto/tos/estornudo", valor: 2 }] },
       { texto: "Actividad/tono", opciones: [{ texto: "Flacido", valor: 0 }, { texto: "Flexion leve", valor: 1 }, { texto: "Activo", valor: 2 }] },
@@ -525,7 +525,7 @@ export const ESCALAS_PEDIATRICAS_NOTA = [
     ],
     items: [
       { texto: "Frecuencia respiratoria", opciones: [{ texto: "<60", valor: 0 }, { texto: "60-80", valor: 1 }, { texto: ">80 o apnea", valor: 2 }] },
-      { texto: "Cianosis", opciones: [{ texto: "Ausente", valor: 0 }, { texto: "Con aire ambiente", valor: 1 }, { texto: "Con oxigeno", valor: 2 }] },
+      { texto: "Ciañosis", opciones: [{ texto: "Ausente", valor: 0 }, { texto: "Con aire ambiente", valor: 1 }, { texto: "Con oxigeno", valor: 2 }] },
       { texto: "Entrada de aire", opciones: [{ texto: "Buena", valor: 0 }, { texto: "Disminuida", valor: 1 }, { texto: "Muy disminuida", valor: 2 }] },
       { texto: "Quejido", opciones: [{ texto: "Ausente", valor: 0 }, { texto: "Audible con estetoscopio", valor: 1 }, { texto: "Audible sin estetoscopio", valor: 2 }] },
       { texto: "Retracciones", opciones: [{ texto: "Ausentes", valor: 0 }, { texto: "Moderadas", valor: 1 }, { texto: "Severas", valor: 2 }] }

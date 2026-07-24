@@ -58,7 +58,7 @@ const providerCache = new ExternalConversationSegmentationProvider({
   }
 });
 
-const textoCorto = "me puede decir su nombre completo Carlos Eduardo cuantos anos tiene veintinueve";
+const textoCorto = "me puede decir su nombre completo Carlos Eduardo cuantos años tiene veintinueve";
 const primera = await providerCache.segment({ text: textoCorto, transcriptId: "cache-1", clientRequestId: "cache-a" });
 const segunda = await providerCache.segment({ text: textoCorto, transcriptId: "cache-1", clientRequestId: "cache-b" });
 assert.equal(llamadasCache, 1, "la segunda llamada identica debe usar cache en memoria");

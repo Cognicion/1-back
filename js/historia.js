@@ -127,7 +127,7 @@ async function cargarPaciente() {
     obtenerNombrePacienteParaMostrar(paciente) || "Paciente";
 
   document.getElementById("datosPaciente").textContent =
-    `${calcularEdad(obtenerFechaNacimiento(paciente)) || ""} anos`;
+    `${calcularEdad(obtenerFechaNacimiento(paciente)) || ""} años`;
 }
 
 async function cargarHistoria() {

@@ -735,7 +735,7 @@ function configurarPanelEscalaNota() {
 
 function pacienteNotaEsPediatrico() {
   const edad = calcularEdadPediatrica(fechaNacimientoPacienteNota());
-  return Boolean(edad && edad.anos < 18);
+  return Boolean(edad && edad.años < 18);
 }
 
 function htmlGrupoEscalasNota(etiqueta, escalas) {
@@ -1974,7 +1974,7 @@ function tallaCmParaPediatria(valor) {
 function calcularParametrosPediatriaNota() {
   const fechaNacimiento = fechaNacimientoPacienteNota();
   const edad = calcularEdadPediatrica(fechaNacimiento);
-  if (!edad || edad.anos >= 18) return null;
+  if (!edad || edad.años >= 18) return null;
 
   const peso = numeroPediatrico(valorCampo("obsPeso") || valorClinicoDesdePaciente(pacienteActualDatos, "peso"));
   const tallaCm = tallaCmParaPediatria(valorCampo("obsTalla") || valorClinicoDesdePaciente(pacienteActualDatos, "talla"));
@@ -1987,7 +1987,7 @@ function calcularParametrosPediatriaNota() {
     omitido: Boolean(document.getElementById("omitirPediatriaNota")?.checked),
     fechaNacimiento: formatearFechaDDMMAAAA(fechaNacimiento),
     edadTexto: edad.edadCronologicaTexto,
-    anos: edad.anos,
+    años: edad.años,
     meses: edad.meses,
     dias: edad.dias,
     diasVida: edad.diaDeVida,

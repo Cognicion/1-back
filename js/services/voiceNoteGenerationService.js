@@ -261,7 +261,7 @@ export function validarCalidadNotaVoz(generada = {}, transcripcion = "", context
     issues.push({ category: "Dato incierto", section: "analysis", severity: "medium", message: "El analisis no inicia con el estilo institucional esperado." });
   }
   if (decada && secciones.analysis && new RegExp(`\\b(?:1a|primera) decada\\b`, "i").test(secciones.analysis) && edad >= 10) {
-    issues.push({ category: "Contradiccion", section: "analysis", severity: "high", message: `La decada de vida no corresponde a la edad (${edad} anos).` });
+    issues.push({ category: "Contradiccion", section: "analysis", severity: "high", message: `La decada de vida no corresponde a la edad (${edad} años).` });
   }
   if (/\bsertralina\b/i.test(secciones.plan) && /\bvalorar inicio de antidepresivo\b/i.test(transcripcion) && !/\biniciar sertralina\b/i.test(transcripcion)) {
     issues.push({ category: "Medicamento o dosis por confirmar", section: "plan", severity: "high", message: "El plan convirtio una valoracion de antidepresivo en una indicacion especifica." });

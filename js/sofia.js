@@ -169,7 +169,7 @@ function renderPacienteDigital(digital) {
   cont.classList.remove("empty-state");
   cont.innerHTML = `
     ${metric("Paciente", digital.identificacion.nombre)}
-    ${metric("Edad / sexo", `${digital.identificacion.edad ?? "--"} anos · ${digital.identificacion.sexo}`)}
+    ${metric("Edad / sexo", `${digital.identificacion.edad ?? "--"} años · ${digital.identificacion.sexo}`)}
     ${metric("Institucion", digital.identificacion.institucion)}
     ${metric("Diagnostico principal", dx)}
     ${metric("Tratamientos activos", String(digital.tratamientosActivos.length))}
