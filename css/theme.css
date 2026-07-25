@@ -55,7 +55,7 @@ body::before{
 .contenido,
 .sidebar,
 .contenedor{
-    animation:cognicionFadeUp .55s ease both;
+    animation:none;
 }
 
 .card:hover,

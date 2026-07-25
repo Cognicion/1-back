@@ -469,16 +469,28 @@ function crearSeparadorVertical(clave, objetivo, minimo = 80) {
     evento.preventDefault();
     const inicioY = evento.clientY;
     const altoInicial = objetivo.getBoundingClientRect().height;
+    let movimientoPendiente = null;
+    let framePendiente = 0;
     separador.setPointerCapture(evento.pointerId);
     document.body.classList.add("ajustando-seccion-nota");
 
-    const mover = (movimiento) => {
-      const nuevoAlto = Math.max(minimo, altoInicial + movimiento.clientY - inicioY);
-      objetivo.style.height = `${nuevoAlto}px`;
+    const aplicarMovimiento = () => {
+      framePendiente = 0;
+      if (movimientoPendiente === null) return;
+      objetivo.style.height = `${movimientoPendiente}px`;
+      movimientoPendiente = null;
       objetivo.closest(".seccion-nota-redimensionable, .panel-nota-redimensionable")?.classList.remove("seccion-contraida");
     };
 
+    const mover = (movimiento) => {
+      const nuevoAlto = Math.max(minimo, altoInicial + movimiento.clientY - inicioY);
+      movimientoPendiente = nuevoAlto;
+      if (!framePendiente) framePendiente = window.requestAnimationFrame(aplicarMovimiento);
+    };
+
     const terminar = (final) => {
+      if (framePendiente) window.cancelAnimationFrame(framePendiente);
+      aplicarMovimiento();
       guardarEstadoSeccionNota(clave, {
         altura: objetivo.getBoundingClientRect().height,
         contraida: false
