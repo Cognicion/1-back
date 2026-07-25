@@ -129,21 +129,20 @@
         <button type="button" class="boton-cerrar-panel" onclick="cerrarCalculadorasNota()">Cerrar</button>
     </div>
 
-    <div class="calculadora-convencional" aria-label="Calculadora convencional">
+    <div class="calculadora-convencional calculators-dialog__body calculators-workspace" aria-label="Calculadora convencional">
         <label class="buscador-calculadoras-nota">
-            Buscar calculadora
             <span>Buscar calculadora</span><input id="buscarCalculadoraNota" type="search" placeholder="Nombre, especialidad o función…" autocomplete="off">
         </label>
         <section class="calculadoras-recientes-nota"><h2>Usadas recientemente</h2><div id="recientesCalculadorasNota"></div></section>
         <div id="resultadosCalculadorasNota" class="calculator-mobile-results" aria-live="polite"></div>
-        <nav id="listaCalculadorasNota" class="lista-calculadoras-nota" aria-label="Calculadoras disponibles">
+        <nav id="listaCalculadorasNota" class="lista-calculadoras-nota calculators-list-panel calculators-list" aria-label="Calculadoras disponibles">
             <button type="button" data-calculadora-nota="convencional" data-calculadora-nombre="Calculadora convencional">Calculadora convencional</button>
             <button type="button" data-calculadora-nota="externa" data-calculadora-tipo="medicas" data-calculadora-nombre="Calculadoras medicas">Calculadoras medicas</button>
             <button type="button" data-calculadora-nota="externa" data-calculadora-tipo="pediatricas" data-calculadora-nombre="Calculadoras pediatricas">Calculadoras pediatricas</button>
             <button type="button" data-calculadora-nota="externa" data-calculadora-tipo="benzodiacepinas" data-calculadora-nombre="Equivalencias de benzodiacepinas">Equivalencias de benzodiacepinas</button>
         </nav>
         <button type="button" class="calculator-back" onclick="document.getElementById('panelCalculadorasNota').classList.remove('calculator-show-content'); document.getElementById('buscarCalculadoraNota')?.focus();">Buscar otra calculadora</button>
-        <div id="visorCalculadoraNota" class="visor-calculadora-nota" aria-live="polite"></div>
+        <div id="visorCalculadoraNota" class="visor-calculadora-nota calculator-view-panel calculator-view" aria-live="polite"></div>
         <output id="pantallaCalculadoraNota" class="calculadora-pantalla" aria-live="polite" hidden>0</output>
         <div class="calculadora-teclado" hidden>
             <button type="button" data-calculadora-accion="limpiar">C</button>

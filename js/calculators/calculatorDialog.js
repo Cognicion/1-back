@@ -68,11 +68,11 @@ window.abrirCalculadorasNota = function () {
   init();
   window.__calculatorDialogRefreshRecents?.();
   const backdrop = document.getElementById("fondoCalculadorasNota"); const panel = document.getElementById("panelCalculadorasNota");
-  backdrop?.classList.remove("oculto"); panel?.classList.add("abierto"); panel?.setAttribute("aria-hidden", "false"); panel?.querySelector("input")?.focus();
+  backdrop?.classList.remove("oculto"); panel?.classList.add("abierto"); panel?.setAttribute("aria-hidden", "false"); document.body.classList.add("calculator-modal-open"); panel?.querySelector("input")?.focus();
 };
 window.cerrarCalculadorasNota = function () {
   const backdrop = document.getElementById("fondoCalculadorasNota"); const panel = document.getElementById("panelCalculadorasNota");
   window.__calculatorDialogUnmount?.();
-  panel?.classList.remove("abierto"); panel?.setAttribute("aria-hidden", "true"); panel?.classList.remove("calculator-show-content");
+  panel?.classList.remove("abierto"); panel?.setAttribute("aria-hidden", "true"); panel?.classList.remove("calculator-show-content"); document.body.classList.remove("calculator-modal-open");
   window.setTimeout(() => { if (!panel?.classList.contains("abierto")) backdrop?.classList.add("oculto"); }, 220); lastTrigger?.focus?.();
 };
