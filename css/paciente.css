@@ -6,11 +6,8 @@
 body
     {
     margin:0;
-    background:
-        radial-gradient(circle at top, rgba(82,152,102,0.22), transparent 32%),
-        radial-gradient(circle at bottom right, rgba(82,152,102,0.13), transparent 28%),
-        linear-gradient(135deg, var(--black-900), var(--black-900) 50%, var(--black-900));
-    color:var(--white-950);
+    background:var(--page-bg);
+    color:var(--text-primary);
     font-family:Arial, Helvetica, sans-serif;
     min-height:100vh;
 }
@@ -36,9 +33,9 @@ body
 }
 
 .btn-secundario{
-    background:rgba(15, 18, 25, 0.88);
-    border:1px solid rgba(82,152,102,0.28);
-    color:#e5e7eb;
+    background:var(--action-secondary-bg);
+    border:1px solid var(--input-border);
+    color:var(--action-secondary-text);
     border-radius:999px;
     padding:10px 14px;
 }
@@ -52,12 +49,11 @@ body
 }
 
 .sidebar{
-    background:rgba(15, 18, 25, 0.88);
-    border:1px solid rgba(255,255,255,0.10);
+    background:var(--surface-primary);
+    border:1px solid var(--border-subtle);
     border-radius:24px;
     padding:24px 20px;
-    box-shadow:0 0 35px rgba(82,152,102,0.10), 0 18px 50px rgba(0,0,0,0.38);
-    backdrop-filter:blur(18px);
+    box-shadow:var(--shadow-subtle);
 }
 
 .sidebar h2{
@@ -72,18 +68,18 @@ body
     margin-bottom:14px;
     padding:12px 14px;
     border-radius:16px;
-    border:1px solid rgba(255,255,255,0.10);
-    background:rgba(255,255,255,0.05);
-    color:#e5e7eb;
+    border:1px solid var(--border-subtle);
+    background:var(--surface-secondary);
+    color:var(--text-primary);
     text-align:left;
     cursor:pointer;
     transition:0.25s;
 }
 
 .menu button:hover{
-    background:rgba(82,152,102,0.12);
-    border-color:rgba(82,152,102,0.35);
-    color:var(--ivory-50);
+    background:var(--surface-hover);
+    border-color:var(--accent-hover);
+    color:var(--text-primary);
 }
 
 .texto-suave {
@@ -185,11 +181,11 @@ body
     gap:12px;
     margin:0 0 14px;
     padding:12px 14px;
-    border:1px solid rgba(126,182,138,0.28);
+    border:1px solid var(--border-normal);
     border-radius:16px;
-    background:rgba(14,20,17,0.84);
-    color:var(--ivory-100);
-    box-shadow:0 12px 30px rgba(0,0,0,0.22);
+    background:var(--surface-secondary);
+    color:var(--text-primary);
+    box-shadow:var(--shadow-subtle);
 }
 
 .aviso-nombre-paciente button {
@@ -347,24 +343,23 @@ button:hover{
 }
 
 .boton-secundario{
-    background:transparent;
-    color:white;
-    border:1px solid rgba(255,255,255,0.35);
+    background:var(--action-secondary-bg);
+    color:var(--action-secondary-text);
+    border:1px solid var(--input-border);
 }
 
 .boton-secundario:hover{
-    background:white;
-    color:black;
+    background:var(--action-secondary-hover);
+    color:var(--text-primary);
 }
 
 .tarjeta{
-    background:rgba(15, 18, 25, 0.88);
-    border:1px solid rgba(255,255,255,0.10);
+    background:var(--surface-primary);
+    border:1px solid var(--border-subtle);
     border-radius:24px;
     padding:28px;
     margin-bottom:24px;
-    box-shadow:0 0 35px rgba(82,152,102,0.10), 0 18px 50px rgba(0,0,0,0.38);
-    backdrop-filter:blur(18px);
+    box-shadow:var(--shadow-subtle);
 }
 
 .tarjeta h2{
@@ -387,7 +382,7 @@ button:hover{
 .dato,
 .dato-card{
     padding:14px 0;
-    border-bottom:1px solid rgba(190,196,188,0.14);
+    border-bottom:1px solid var(--border-subtle);
     background:transparent;
     border-radius:0;
 }
@@ -395,9 +390,9 @@ button:hover{
 .datos-generales-grid .dato{
     min-width:0;
     padding:12px 14px;
-    border:1px solid rgba(190,196,188,0.12);
+    border:1px solid var(--border-subtle);
     border-radius:16px;
-    background:rgba(8,12,20,0.34);
+    background:var(--surface-secondary);
 }
 
 .dato:last-child,
@@ -407,7 +402,7 @@ button:hover{
 
 .dato label,
 .dato-card span{
-    color:var(--gray-400);
+    color:var(--text-secondary);
     display:block;
     margin-bottom:8px;
     font-size:14px;
@@ -563,9 +558,9 @@ textarea{
   min-height: 28px;
   padding: 6px 10px;
   border-radius: 999px;
-  border: 1px solid rgba(82, 152, 102, 0.45);
-  background: rgba(82, 152, 102, 0.12);
-  color: var(--celtic-300);
+  border: 1px solid var(--border-normal);
+  background: var(--accent-soft);
+  color: var(--accent-active);
   font-size: 12px;
   font-weight: 700;
 }
@@ -573,15 +568,15 @@ textarea{
 .boton-diagnostico-principal {
   padding: 7px 11px;
   border-radius: 999px;
-  border: 1px solid rgba(255,255,255,0.22);
-  background: rgba(255,255,255,0.08);
-  color: white;
+  border: 1px solid var(--input-border);
+  background: var(--surface-secondary);
+  color: var(--text-primary);
   font-size: 12px;
 }
 
 .boton-diagnostico-principal:hover {
-  background: white;
-  color: black;
+  background: var(--surface-hover);
+  color: var(--text-primary);
 }
 
 .diagnostico-resultados {
@@ -596,10 +591,10 @@ textarea{
   gap: 4px;
   width: 100%;
   padding: 13px 14px;
-  border: 1px solid rgba(82, 152, 102, 0.20);
+  border: 1px solid var(--border-subtle);
   border-radius: 16px;
-  background: rgba(8, 12, 20, 0.72);
-  color: #e5f3ff;
+  background: var(--surface-secondary);
+  color: var(--text-primary);
   text-align: left;
   cursor: pointer;
   transition: 0.18s ease;
@@ -633,7 +628,7 @@ textarea{
 
 .diagnostico-opcion:hover {
   border-color: rgba(126, 182, 138, 0.58);
-  background: rgba(14, 20, 17, 0.94);
+  background: var(--surface-hover);
   box-shadow: 0 0 24px rgba(82, 152, 102, 0.12);
 }
 
@@ -809,13 +804,13 @@ textarea{
 .registro-card {
   padding:16px;
   border-radius:18px;
-  border:1px solid rgba(190,196,188,0.18);
-  background:rgba(8,12,20,0.62);
-  box-shadow:inset 0 1px 0 rgba(255,255,255,0.04);
+  border:1px solid var(--border-subtle);
+  background:var(--surface-secondary);
+  box-shadow:var(--shadow-subtle);
 }
 
 .registro-card p {
-  color:var(--gray-200);
+  color:var(--text-secondary);
   line-height:1.55;
   margin:10px 0 0;
 }
@@ -833,7 +828,7 @@ textarea{
 
 .registro-top strong {
   display:block;
-  color:var(--white-950);
+  color:var(--text-primary);
   font-size:18px;
 }
 
@@ -847,9 +842,9 @@ textarea{
   align-items:center;
   border-radius:999px;
   padding:6px 10px;
-  border:1px solid rgba(82,152,102,0.4);
-  background:rgba(82,152,102,0.12);
-  color:var(--celtic-300);
+  border:1px solid var(--border-normal);
+  background:var(--accent-soft);
+  color:var(--accent-active);
   font-size:12px;
   font-weight:900;
   text-transform:uppercase;

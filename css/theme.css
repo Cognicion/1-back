@@ -1,11 +1,10 @@
 :root {
-    --fondo: var(--black-900);
-    --panel: rgba(12, 16, 24, 0.88);
-    --panel-oscuro: rgba(8, 12, 20, 0.92);
-    --texto: var(--white-950);
-    --texto-suave: var(--gray-400);
-    --accent-primary: var(--celtic-400);
-    --borde: rgba(190, 196, 188, 0.2);
+    --fondo: var(--page-bg);
+    --panel: var(--surface-primary);
+    --panel-oscuro: var(--surface-secondary);
+    --texto: var(--text-primary);
+    --texto-suave: var(--text-secondary);
+    --borde: var(--border-normal);
 }
 
 * {
@@ -96,11 +95,11 @@ body::before{
 
     border-radius:999px;
 
-    border:1px solid var(--borde);
+    border:1px solid var(--input-border);
 
-    background:rgba(14,20,17,.90);
+    background:var(--action-secondary-bg);
 
-    color:white;
+    color:var(--action-secondary-text);
 
     cursor:pointer;
 
@@ -112,9 +111,9 @@ body::before{
 
 .btn-secundario:hover{
 
-    background:rgba(82,152,102,.15);
+    background:var(--action-secondary-hover);
 
-    border-color:var(--green-400);
+    border-color:var(--accent-hover);
 
 }
 
