@@ -421,6 +421,13 @@ button:hover{
     left: 20px;
     display: flex;
     gap: 10px;
+    padding: 8px 10px;
+    border: 1px solid var(--border-subtle);
+    border-radius: 16px;
+    background: var(--surface-primary);
+    background-image: none;
+    box-shadow: var(--shadow-subtle);
+    color: var(--text-primary);
     z-index: 100;
 }
 
@@ -466,11 +473,10 @@ button:hover{
     gap: 14px;
     padding: 18px;
     border-radius: 22px;
-    border: 1px solid rgba(126, 182, 138, 0.28);
-    background:
-        radial-gradient(circle at top left, rgba(82, 152, 102, 0.14), transparent 34%),
-        rgba(8, 12, 20, 0.96);
-    box-shadow: 0 24px 70px rgba(0, 0, 0, 0.48), 0 0 30px rgba(82, 152, 102, 0.12);
+    border: 1px solid var(--border-normal);
+    background: var(--surface-primary);
+    background-image: none;
+    box-shadow: var(--shadow-subtle);
     transform: translateX(-28px) scale(0.98);
     opacity: 0;
     pointer-events: none;
@@ -996,8 +1002,8 @@ button:hover{
 .item-escala-nota {
     padding: 11px;
     border-radius: 16px;
-    border: 1px solid rgba(190,196,188,0.16);
-    background: rgba(14,20,17,0.48);
+    border: 1px solid var(--border-subtle);
+    background: var(--surface-secondary);
 }
 
 .item-escala-nota label {
@@ -1023,8 +1029,8 @@ button:hover{
     margin-top: 12px;
     padding: 12px;
     border-radius: 14px;
-    border: 1px solid rgba(82,152,102,0.18);
-    background: rgba(52, 122, 77, 0.08);
+    border: 1px solid var(--border-subtle);
+    background: var(--accent-soft);
 }
 
 .consideraciones-escala-nota ul {
@@ -1053,10 +1059,9 @@ button:hover{
     height: 100%;
     padding: 22px;
     overflow-y: auto;
-    border-left: 1px solid rgba(82,152,102,0.28);
-    background: rgba(3, 7, 18, 0.94);
-    box-shadow: -24px 0 80px rgba(16, 51, 32, 0.45);
-    backdrop-filter: blur(18px);
+    border-left: 1px solid var(--border-normal);
+    background: var(--surface-primary);
+    box-shadow: var(--shadow-subtle);
 }
 
 .panel-escalas-previas-header,
@@ -1076,7 +1081,7 @@ button:hover{
 
 .panel-escalas-previas-header h3 {
     margin: 4px 0 0;
-    color: var(--ivory-50);
+    color: var(--text-primary);
 }
 
 .panel-escalas-previas-header button {
@@ -1101,9 +1106,9 @@ button:hover{
 }
 
 .escala-previa-card {
-    border: 1px solid rgba(190,196,188,0.16);
+    border: 1px solid var(--border-subtle);
     border-radius: 16px;
-    background: rgba(14,20,17,0.72);
+    background: var(--surface-secondary);
     overflow: hidden;
 }
 
@@ -1269,8 +1274,9 @@ button:hover{
     margin-bottom: 18px;
     padding: 16px;
     border-radius: 18px;
-    border: 1px solid rgba(126,182,138,0.18);
-    background: rgba(5,7,6,0.44);
+    border: 1px solid var(--border-normal);
+    background: var(--surface-primary);
+    background-image: none;
 }
 
 .tabla-diagnosticos-header {
@@ -1283,7 +1289,7 @@ button:hover{
 
 .tabla-diagnosticos h3 {
     margin: 0;
-    color: var(--ivory-50);
+    color: var(--text-primary);
 }
 
 .diagnosticos-word-lista table {
@@ -1294,15 +1300,34 @@ button:hover{
 .diagnosticos-word-lista th,
 .diagnosticos-word-lista td {
     padding: 10px;
-    border-bottom: 1px solid rgba(190,196,188,0.16);
+    border-bottom: 1px solid var(--border-subtle);
     text-align: left;
 }
 
 .diagnosticos-word-lista th {
-    color: var(--celtic-300);
+    color: var(--accent-active);
     font-size: 12px;
     text-transform: uppercase;
     letter-spacing: 0.08em;
+}
+
+.diagnosticos-word-lista thead,
+.diagnosticos-word-lista th {
+    background: var(--accent-soft);
+    background-image: none;
+}
+
+.diagnosticos-word-lista tbody tr {
+    background: var(--surface-primary);
+    color: var(--text-primary);
+}
+
+.diagnosticos-word-lista tbody tr:nth-child(even) {
+    background: var(--surface-secondary);
+}
+
+.diagnosticos-word-lista tbody tr:hover {
+    background: var(--surface-hover);
 }
 
 .seccion-firmas input {
@@ -1556,8 +1581,8 @@ button:hover{
   margin-top: 8px;
   border-radius: 14px;
   overflow: hidden;
-  background: rgba(14,20,17,0.95);
-  border: 1px solid rgba(190,196,188,0.25);
+  background: var(--surface-secondary);
+  border: 1px solid var(--border-normal);
 }
 
 .resultado-cie10 {
@@ -1565,7 +1590,7 @@ button:hover{
   cursor: pointer;
   border-bottom: 1px solid rgba(190, 196, 188, 0.16);
   font-size: 14px;
-  color:#e5e7eb;
+  color: var(--text-primary);
 }
 
 .resultado-cie10:hover {
@@ -1608,19 +1633,20 @@ button:hover{
   margin: 14px 0;
   padding: 14px;
   border-radius: 16px;
-  border: 1px solid rgba(82,152,102,0.22);
-  background: rgba(8,12,20,0.68);
+  border: 1px solid var(--border-normal);
+  background: var(--surface-secondary);
+  background-image: none;
 }
 
 .diagnostico-manual-nota strong {
   display: block;
-  color: var(--ivory-50);
+  color: var(--text-primary);
 }
 
 .diagnostico-manual-nota small {
   display: block;
   margin-top: 4px;
-  color: var(--gray-400);
+  color: var(--text-secondary);
 }
 
 .diagnostico-editable-nota {
@@ -1628,8 +1654,9 @@ button:hover{
   gap: 12px;
   padding: 14px;
   border-radius: 16px;
-  border: 1px solid rgba(82,152,102,0.18);
-  background: rgba(14,20,17,0.58);
+  border: 1px solid var(--border-subtle);
+  background: var(--surface-primary);
+  background-image: none;
 }
 
 .diagnostico-editable-header,
@@ -1665,9 +1692,10 @@ button:hover{
   display: grid;
   gap: 0;
   margin: 14px 0 20px;
-  border: 1px solid rgba(82,152,102,0.24);
+  border: 1px solid var(--border-normal);
   border-radius: 18px;
-  background: rgba(8,12,20,0.62);
+  background: var(--surface-primary);
+  background-image: none;
   overflow: hidden;
 }
 
@@ -1681,17 +1709,18 @@ button:hover{
 }
 
 .diagnosticos-editables-head {
-  color: var(--celtic-300);
+  color: var(--accent-active);
   font-size: 12px;
   font-weight: 900;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  background: rgba(14,20,17,0.7);
-  border-bottom: 1px solid rgba(190,196,188,0.16);
+  background: var(--accent-soft);
+  border-bottom: 1px solid var(--border-normal);
 }
 
 .diagnosticos-editables-row {
-  border-bottom: 1px solid rgba(190,196,188,0.12);
+  background: var(--surface-primary);
+  border-bottom: 1px solid var(--border-subtle);
 }
 
 .diagnosticos-editables-row:last-child {
@@ -1705,7 +1734,7 @@ button:hover{
 
 .diagnostico-codigo-fijo {
   min-width: 0;
-  color: var(--gray-200);
+  color: var(--text-secondary);
   font-weight: 800;
   overflow-wrap: anywhere;
 }
@@ -1720,13 +1749,14 @@ button:hover{
   gap: 4px;
   margin: -6px 0 18px;
   padding: 12px 14px;
-  border: 1px solid rgba(82, 152, 102, 0.22);
+  border: 1px solid var(--border-normal);
   border-radius: 14px;
-  background: rgba(14, 20, 17, 0.62);
+  background: var(--surface-secondary);
+  background-image: none;
 }
 
 .encabezado-paciente-nota span {
-  color: var(--celtic-300);
+  color: var(--accent-primary);
   font-size: 11px;
   font-weight: 900;
   letter-spacing: 0.12em;
@@ -1847,8 +1877,8 @@ button:hover{
   padding: 10px 12px;
   border: 1px solid rgba(126, 182, 138, 0.22);
   border-radius: 12px;
-  color: #e5eefb;
-  background: rgba(14, 20, 17, 0.74);
+  color: var(--input-text);
+  background: var(--input-bg);
   outline: none;
 }
 
@@ -1882,21 +1912,22 @@ button:hover{
   padding: 6px;
   border: 1px solid rgba(126, 182, 138, 0.16);
   border-radius: 16px;
-  background: rgba(14, 20, 17, 0.55);
+  background: var(--surface-secondary);
 }
 
 .modo-escala-nota button {
   width: auto;
   flex: 1 1 180px;
   margin: 0;
-  background: rgba(14, 20, 17, 0.78);
-  border: 1px solid rgba(126, 182, 138, 0.18);
+  background: var(--surface-primary);
+  border: 1px solid var(--border-normal);
 }
 
 .modo-escala-nota button.activo {
-  color: var(--black-900);
-  background: linear-gradient(135deg, var(--celtic-300), var(--celtic-400));
-  box-shadow: 0 12px 26px rgba(82, 152, 102, 0.14);
+  color: var(--action-primary-text);
+  background: var(--action-primary-bg);
+  background-image: none;
+  box-shadow: var(--shadow-subtle);
 }
 
 .modo-escala-nota button:disabled {
@@ -2353,12 +2384,19 @@ html[data-theme="light"] body {
 html[data-theme="light"] .contenedor,
 html[data-theme="light"] .bloque-observacion,
 html[data-theme="light"] .observacion-seccion,
-html[data-theme="light"] .tabla-diagnosticos {
+html[data-theme="light"] .tabla-diagnosticos,
+html[data-theme="light"] .panel-borradores-medico {
   background: var(--surface-primary);
   background-image: none;
   border-color: var(--border-subtle);
   box-shadow: var(--shadow-subtle);
   color: var(--text-primary);
+}
+
+html[data-theme="light"] .fondo-borradores-medico {
+  background: rgb(255 255 255 / 72%);
+  background-image: none;
+  filter: none;
 }
 
 html[data-theme="light"] input,
@@ -2418,5 +2456,179 @@ html[data-theme="light"] .boton-mini:hover {
   background: var(--action-secondary-hover);
   border-color: var(--accent-hover);
   color: var(--text-primary);
+}
+
+/* Los paneles de escalas conservaban superficies oscuras de la primera
+   versión del tema. Se neutralizan aquí con tokens para mantener el tema
+   oscuro intacto y evitar gradientes decorativos en claro. */
+html[data-theme="light"] .panel-escala-nota,
+html[data-theme="light"] .panel-escala-contenido,
+html[data-theme="light"] .guia-escala-nota,
+html[data-theme="light"] .temporizador-escala-nota,
+html[data-theme="light"] .estimulo-escala-nota {
+  background: var(--surface-primary);
+  background-image: none;
+  border-color: var(--border-subtle);
+  box-shadow: var(--shadow-subtle);
+  color: var(--text-primary);
+}
+
+html[data-theme="light"] .panel-escala-summary {
+  background: var(--surface-secondary);
+  color: var(--text-primary);
+}
+
+html[data-theme="light"] .indicador-panel-escala {
+  color: var(--accent-primary);
+  background: var(--accent-soft);
+  border-color: var(--border-normal);
+}
+
+html[data-theme="light"] .panel-escala-nota[open] .indicador-panel-escala {
+  color: var(--text-inverse);
+  background: var(--accent-primary);
+}
+
+html[data-theme="light"] .panel-escala-header h3,
+html[data-theme="light"] .panel-escala-header p,
+html[data-theme="light"] .descripcion-escala-nota,
+html[data-theme="light"] .guia-escala-nota,
+html[data-theme="light"] .temporizador-escala-nota,
+html[data-theme="light"] .estimulo-escala-nota {
+  color: var(--text-secondary);
+}
+
+html[data-theme="light"] .descripcion-escala-nota strong,
+html[data-theme="light"] .guia-escala-nota strong,
+html[data-theme="light"] .temporizador-escala-nota span,
+html[data-theme="light"] .item-escala-nota small,
+html[data-theme="light"] .diagnostico-catalogo-titulo {
+  color: var(--accent-primary);
+}
+
+html[data-theme="light"] .encabezado-paciente-nota strong {
+  color: var(--text-primary);
+}
+
+html[data-theme="light"] .diagnostico-manual-badge {
+  color: var(--accent-active);
+  background: var(--accent-soft);
+  border-color: var(--border-normal);
+}
+
+html[data-theme="light"] .boton-catalogo-manual,
+html[data-theme="light"] .diagnostico-orden-nota button {
+  color: var(--button-secondary-text);
+  background: var(--button-secondary-bg);
+  background-image: none;
+  border-color: var(--button-secondary-border);
+  box-shadow: none;
+  filter: none;
+}
+
+html[data-theme="light"] .boton-catalogo-manual:hover,
+html[data-theme="light"] .diagnostico-orden-nota button:hover:not(:disabled) {
+  color: var(--accent-active);
+  background: var(--accent-soft);
+  border-color: var(--accent-primary);
+}
+
+html[data-theme="light"] .advertencia-escala-nota {
+  color: #795b16;
+  background: #fff8df;
+  border-color: #e8cf82;
+}
+
+html[data-theme="light"] .modo-escala-nota button:disabled,
+html[data-theme="light"] .diagnostico-orden-nota button:disabled {
+  background: var(--surface-secondary);
+  color: var(--text-disabled);
+  border-color: var(--border-subtle);
+  box-shadow: none;
+  filter: none;
+  opacity: 1;
+}
+
+/* Componentes auxiliares de nota: también deben adoptar la superficie clara
+   cuando se abren sobre la página, no solo los diagnósticos visibles. */
+html[data-theme="light"] .modal-catalogo-pronosticos {
+  background: rgb(255 255 255 / 72%);
+  background-image: none;
+  filter: none;
+}
+
+html[data-theme="light"] .panel-catalogo-pronosticos,
+html[data-theme="light"] .nota-flotante-nota,
+html[data-theme="light"] .nota-flotante-costado,
+html[data-theme="light"] .panel-calculadoras-nota,
+html[data-theme="light"] .selector-formato-nota {
+  background: var(--surface-primary);
+  background-image: none;
+  border-color: var(--border-subtle);
+  box-shadow: var(--shadow-subtle);
+  color: var(--text-primary);
+}
+
+html[data-theme="light"] .lista-catalogo-pronosticos button,
+html[data-theme="light"] .lista-calculadoras-nota a,
+html[data-theme="light"] .calculadora-teclado button,
+html[data-theme="light"] .nota-flotante-costado-header {
+  background: var(--surface-secondary);
+  background-image: none;
+  border-color: var(--border-normal);
+  color: var(--text-primary);
+  box-shadow: none;
+  filter: none;
+}
+
+html[data-theme="light"] .lista-catalogo-pronosticos button:hover,
+html[data-theme="light"] .lista-calculadoras-nota a:hover,
+html[data-theme="light"] .calculadora-teclado button:hover,
+html[data-theme="light"] .nota-flotante-costado-header:hover {
+  background: var(--surface-hover);
+  border-color: var(--accent-primary);
+  color: var(--text-primary);
+}
+
+html[data-theme="light"] .calculadora-pantalla {
+  background: var(--surface-primary);
+  background-image: none;
+  border-color: var(--border-normal);
+  color: var(--text-primary);
+  box-shadow: none;
+}
+
+html[data-theme="light"] .calculadora-teclado .calculadora-resultado,
+html[data-theme="light"] .calculadora-teclado .calculadora-cero {
+  background: var(--accent-soft);
+  color: var(--accent-active);
+  border-color: var(--border-normal);
+}
+
+html[data-theme="light"] .nota-flotante-nota summary,
+html[data-theme="light"] .nota-flotante-costado-header span,
+html[data-theme="light"] .nota-flotante-costado-cuerpo p {
+  color: var(--text-primary);
+}
+
+html[data-theme="light"] .nota-flotante-costado-header small,
+html[data-theme="light"] .nota-flotante-nota p {
+  color: var(--text-secondary);
+}
+
+html[data-theme="light"] .boton-pdf,
+html[data-theme="light"] .boton-word-fray {
+  background: var(--button-primary-bg);
+  background-image: none;
+  border-color: var(--button-primary-border);
+  color: var(--button-primary-text);
+  box-shadow: var(--shadow-subtle);
+  filter: none;
+}
+
+html[data-theme="light"] .boton-pdf:hover,
+html[data-theme="light"] .boton-word-fray:hover {
+  background: var(--button-primary-hover);
+  background-image: none;
 }
 body.calculator-modal-open { overflow: hidden; }
