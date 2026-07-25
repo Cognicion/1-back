@@ -57,6 +57,7 @@ export const SCAS_CHILD_SCALE = Object.freeze({
   requiereInstrumentoOficial: true,
   requiereFuenteAutorizada: true,
   fuenteItems: "https://www.scaswebsite.com/spanish/",
+  itemsSource: "js/data/scasChildItems.js",
   fuenteNormativa: "https://www.scaswebsite.com/portfolio/scas-child-normative-data/",
   scoringVersion: "1.0.0",
   reactivos: []

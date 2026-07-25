@@ -92,7 +92,8 @@ function abrirEscala(id, modo = "interactiva") {
   escalaActual = escalas.find((escala) => escala.id === id) || null;
   if (!escalaActual) return;
   modoActual = modo === "manual" ? "manual" : "interactiva";
-  if (modoActual === "interactiva" && !obtenerBaseInteractiva(escalaActual)) modoActual = "manual";
+  const esScasSinReactivos = escalaActual.id === "scas-child" && !escalaActual.reactivos?.length && !escalaActual.items?.length;
+  if (modoActual === "interactiva" && !obtenerBaseInteractiva(escalaActual) && !esScasSinReactivos) modoActual = "manual";
   resultadoActual = null;
   document.getElementById("subtituloEscala").textContent = escalaActual.subtitulo || escalaActual.area || "Escala";
   document.getElementById("tituloEscala").textContent = escalaActual.nombre || "Escala";
@@ -111,7 +112,8 @@ function obtenerBaseInteractiva(escala) {
 }
 
 function cambiarModo(modo) {
-  if (modo === "interactiva" && !obtenerBaseInteractiva(escalaActual)) {
+  const esScasSinReactivos = escalaActual?.id === "scas-child" && !escalaActual?.reactivos?.length && !escalaActual?.items?.length;
+  if (modo === "interactiva" && !obtenerBaseInteractiva(escalaActual) && !esScasSinReactivos) {
     mostrarToast("Esta escala solo permite captura estructurada por ahora.");
     return;
   }
@@ -124,16 +126,20 @@ function cambiarModo(modo) {
 
 function actualizarModoVisual() {
   document.querySelectorAll("[data-modo-escala]").forEach((boton) => boton.classList.toggle("activo", boton.dataset.modoEscala === modoActual));
-  document.getElementById("modoAplicarEscala")?.toggleAttribute("disabled", !obtenerBaseInteractiva(escalaActual));
+  const esScasSinReactivos = escalaActual?.id === "scas-child" && !escalaActual?.reactivos?.length && !escalaActual?.items?.length;
+  document.getElementById("modoAplicarEscala")?.toggleAttribute("disabled", !obtenerBaseInteractiva(escalaActual) && !esScasSinReactivos);
 }
 
 function renderizarFormulario() {
   const form = document.getElementById("formEscala");
   if (!form || !escalaActual) return;
   const base = modoActual === "interactiva" ? obtenerBaseInteractiva(escalaActual) : escalaActual;
-  if (base?.requiereFuenteAutorizada && !base?.reactivos?.length && !base?.items?.length) {
-    document.getElementById("avisoEscala").innerHTML = `<p><strong>Aplicación pendiente de autorización.</strong> Los reactivos oficiales no están almacenados en Cognición. Carga una fuente autorizada para habilitar la aplicación y la puntuación.</p>`;
-    form.innerHTML = `<p class="aviso-escala-pendiente">No se puede aplicar ni puntuar esta escala hasta disponer del instrumento oficial autorizado.</p>`;
+  if (base?.id === "scas-child" && !base?.reactivos?.length && !base?.items?.length) {
+    const missingSource = base.itemsSource || "js/data/scasChildItems.js";
+    const error = new Error(`SCAS_ITEMS_NOT_FOUND: ${missingSource}`);
+    console.error("No se pudo iniciar SCAS:", error);
+    document.getElementById("avisoEscala").innerHTML = `<p><strong>No fue posible cargar el contenido completo de la SCAS.</strong> Se requiere revisión técnica.</p><p>Archivo requerido: ${escaparHTML(missingSource)}</p><p>La referencia del instrumento oficial se conserva en la configuración.</p>`;
+    form.innerHTML = `<p class="aviso-escala-pendiente">La aplicación interactiva se habilitará cuando exista el archivo de reactivos SCAS con los 44 ítems oficiales.</p>`;
     return;
   }
   const items = modoActual === "interactiva" ? base?.reactivos || base?.items || [] : base?.items || base?.reactivos || [];
@@ -183,8 +189,10 @@ function leerRespuestas(base) {
 function calcularEscalaActual() {
   if (!escalaActual) return;
   const base = modoActual === "interactiva" ? obtenerBaseInteractiva(escalaActual) : escalaActual;
-  if (base?.requiereFuenteAutorizada && !base?.reactivos?.length && !base?.items?.length) {
-    mostrarToast("La SCAS requiere una fuente autorizada de reactivos antes de calcularse.");
+  if (base?.id === "scas-child" && !base?.reactivos?.length && !base?.items?.length) {
+    const missingSource = base.itemsSource || "js/data/scasChildItems.js";
+    console.error("No se pudo iniciar SCAS:", new Error(`SCAS_ITEMS_NOT_FOUND: ${missingSource}`));
+    mostrarToast("No fue posible cargar el contenido completo de la SCAS. Se requiere revisión técnica.");
     return;
   }
   const { respuestas, valido } = leerRespuestas(base);
