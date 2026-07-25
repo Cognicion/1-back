@@ -1541,7 +1541,7 @@ button:hover{
 .diagnosticos-editables-head,
 .diagnosticos-editables-row {
   display: grid;
-  grid-template-columns: minmax(90px, 0.45fr) minmax(220px, 1.25fr) minmax(130px, 0.65fr) minmax(110px, 0.55fr) minmax(74px, auto) minmax(92px, auto) auto;
+  grid-template-columns: minmax(90px, 0.45fr) minmax(220px, 1.25fr) minmax(74px, auto) minmax(92px, auto) auto;
   gap: 10px;
   align-items: center;
   padding: 12px 14px;
@@ -1568,6 +1568,13 @@ button:hover{
 .diagnosticos-editables-row input,
 .diagnosticos-editables-row select {
   margin: 0;
+}
+
+.diagnostico-codigo-fijo {
+  min-width: 0;
+  color: #cbd5e1;
+  font-weight: 800;
+  overflow-wrap: anywhere;
 }
 
 .diagnosticos-editables-row button {

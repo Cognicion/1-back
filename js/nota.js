@@ -1456,40 +1456,24 @@ function renderizarDiagnosticosSeleccionadosEditable() {
     <div class="diagnosticos-editables-tabla">
       <div class="diagnosticos-editables-head">
         <span>Codigo</span>
-        <span>Diagnostico</span>
-        <span>Estado</span>
-        <span>Catalogo</span>
+        <span>Texto visible</span>
         <span>Orden</span>
         <span>Catalogo local</span>
         <span></span>
       </div>
       ${diagnosticosSeleccionados.map((dx, index) => `
         <div class="diagnosticos-editables-row">
-          <input
-            value="${escaparHTML(dx.codigo || "")}"
-            data-dx-index="${index}"
-            data-dx-campo="codigo"
-            oninput="actualizarDiagnosticoSeleccionado(this)"
-            placeholder="Codigo"
-          >
+          <span class="diagnostico-codigo-fijo">${escaparHTML(dx.codigo || "Sin codigo")}</span>
           <input
             value="${escaparHTML(dx.nombre || dx.texto || "")}"
             data-dx-index="${index}"
             data-dx-campo="nombre"
             oninput="actualizarDiagnosticoSeleccionado(this)"
-            placeholder="Nombre del diagnostico"
+            placeholder="Texto visible"
           >
-          <select data-dx-index="${index}" data-dx-campo="estado" onchange="actualizarDiagnosticoSeleccionado(this)">
-            ${opcionesEstadoDiagnosticoNota(dx.estado)}
-          </select>
-          <select data-dx-index="${index}" data-dx-campo="catalogo" onchange="actualizarDiagnosticoSeleccionado(this)">
-            <option value="CIE-10" ${(dx.catalogo || "CIE-10") === "CIE-10" ? "selected" : ""}>CIE-10</option>
-            <option value="CIE-11" ${(dx.catalogo || "CIE-10") === "CIE-11" ? "selected" : ""}>CIE-11</option>
-            <option value="Manual" ${(dx.catalogo || "CIE-10") === "Manual" ? "selected" : ""}>Manual</option>
-          </select>
           <div class="diagnostico-orden-nota">
-            <button type="button" onclick="moverDiagnosticoSeleccionado(${index}, -1)" ${index === 0 ? "disabled" : ""}>↑</button>
-            <button type="button" onclick="moverDiagnosticoSeleccionado(${index}, 1)" ${index === diagnosticosSeleccionados.length - 1 ? "disabled" : ""}>↓</button>
+            <button type="button" aria-label="Subir diagnostico" onclick="moverDiagnosticoSeleccionado(${index}, -1)" ${index === 0 ? "disabled" : ""}>&#8593;</button>
+            <button type="button" aria-label="Bajar diagnostico" onclick="moverDiagnosticoSeleccionado(${index}, 1)" ${index === diagnosticosSeleccionados.length - 1 ? "disabled" : ""}>&#8595;</button>
           </div>
           <button type="button" class="boton-catalogo-manual" onclick="incluirDiagnosticoManualEnCatalogo(${index})">
             Incluir
@@ -1521,7 +1505,11 @@ window.actualizarDiagnosticoSeleccionado = function(campo) {
   const index = Number(campo.dataset.dxIndex);
   const nombreCampo = campo.dataset.dxCampo;
 
-  if (!Number.isInteger(index) || !nombreCampo || !diagnosticosSeleccionados[index]) return;
+  if (
+    !Number.isInteger(index) ||
+    nombreCampo !== "nombre" ||
+    !diagnosticosSeleccionados[index]
+  ) return;
 
   diagnosticosSeleccionados[index] = {
     ...diagnosticosSeleccionados[index],
@@ -1530,10 +1518,8 @@ window.actualizarDiagnosticoSeleccionado = function(campo) {
     fechaEdicionManual: new Date().toISOString()
   };
 
-  if (nombreCampo === "codigo" || nombreCampo === "nombre") {
-    const dx = diagnosticosSeleccionados[index];
-    diagnosticosSeleccionados[index].texto = `${dx.codigo || ""}${dx.codigo && dx.nombre ? " - " : ""}${dx.nombre || ""}`.trim();
-  }
+  const dx = diagnosticosSeleccionados[index];
+  diagnosticosSeleccionados[index].texto = `${dx.codigo || ""}${dx.codigo && dx.nombre ? " - " : ""}${dx.nombre || ""}`.trim();
 
   diagnosticosSeleccionados = normalizarDiagnosticosNota(diagnosticosSeleccionados);
   sincronizarDiagnosticosObservacion();
@@ -1572,22 +1558,23 @@ window.incluirDiagnosticoManualEnCatalogo = function(index) {
   const codigo = (dx.codigo || "").trim();
   const nombre = (dx.nombre || dx.texto || "").trim();
 
-  if (!codigo || !nombre) {
-    alert("Escribe codigo y nombre antes de incluir el diagnostico en un catalogo.");
+  if (!nombre) {
+    alert("Escribe el texto visible antes de incluir el diagnostico en la biblioteca.");
     return;
   }
 
-  if (!["CIE-10", "CIE-11"].includes(catalogo)) {
-    alert("Elige CIE-10 o CIE-11 en la columna Catalogo antes de incluirlo.");
-    return;
-  }
-
-  const existeEnBase = catalogoDiagnosticosCombinado().some((item) =>
+  const existeEnBase = codigo && catalogo !== "Manual" && catalogoDiagnosticosCombinado().some((item) =>
     item.codigo.toLowerCase() === codigo.toLowerCase() &&
     (item.catalogo || "CIE-10") === catalogo
   );
+  const existeManual = catalogoManualDiagnosticos.some((item) =>
+    (item.catalogo || "Manual") === catalogo &&
+    (codigo
+      ? String(item.codigo || "").toLowerCase() === codigo.toLowerCase()
+      : normalizarTextoBusqueda(item.nombre) === normalizarTextoBusqueda(nombre))
+  );
 
-  if (existeEnBase) {
+  if (existeEnBase || existeManual) {
     alert("Ese codigo ya existe en el catalogo seleccionado.");
     return;
   }
@@ -1596,7 +1583,7 @@ window.incluirDiagnosticoManualEnCatalogo = function(index) {
     codigo,
     nombre,
     catalogo,
-    texto: `${codigo} - ${nombre}`,
+    texto: `${codigo ? `${codigo} - ` : ""}${nombre}`,
     agregadoManual: true,
     fechaAgregado: new Date().toISOString()
   });

@@ -34,6 +34,20 @@ const ROLES_BIBLIOTECA_VALIDOS = new Set([
   "psicólogo",
   ...ROLES_ADMIN_VALIDOS
 ]);
+const CLAVE_CATALOGO_MANUAL = "cognicion_catalogo_diagnosticos_manual";
+
+function cargarCatalogoManualDiagnosticos() {
+  try {
+    const guardado = localStorage.getItem(CLAVE_CATALOGO_MANUAL);
+    const datos = guardado ? JSON.parse(guardado) : [];
+    return Array.isArray(datos)
+      ? datos.filter((dx) => dx && typeof dx === "object" && String(dx.nombre || "").trim())
+      : [];
+  } catch (error) {
+    console.warn("No se pudo cargar el catalogo manual de diagnosticos:", error);
+    return [];
+  }
+}
 
 function normalizarRolBiblioteca(valor = "") {
   return String(valor || "")
@@ -181,7 +195,8 @@ function render() {
 
   const catalogo = [
     ...CIE10.map((dx) => ({ ...dx, catalogo: "CIE-10" })),
-    ...CIE11.map((dx) => ({ ...dx, catalogo: "CIE-11" }))
+    ...CIE11.map((dx) => ({ ...dx, catalogo: "CIE-11" })),
+    ...cargarCatalogoManualDiagnosticos()
   ];
 
   const tarjetasCriterios = CRITERIOS_BIBLIOTECA
@@ -206,11 +221,12 @@ function render() {
     .map((dx) => `
       <article class="card">
         <h3>${dx.nombre}</h3>
-        <span class="tag">${dx.catalogo} · ${dx.codigo}</span>
-        <p>Criterios especificos no cargados aun. Usar como referencia de catalogo y complementar con entrevista clinica.</p>
+        <span class="tag">${dx.catalogo}${dx.codigo ? ` · ${dx.codigo}` : ""}</span>
+        <p>${dx.agregadoManual
+          ? "Diagnostico agregado manualmente a la biblioteca local."
+          : "Criterios especificos no cargados aun. Usar como referencia de catalogo y complementar con entrevista clinica."}</p>
       </article>
     `);
 
   panel.innerHTML = [...tarjetasCriterios, ...tarjetasCatalogo].join("") || "<p>No hay resultados.</p>";
 }
-
