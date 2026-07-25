@@ -3052,19 +3052,19 @@ window.editarTipoPaciente = async function() {
     <section style="width:min(380px,100%);border:1px solid rgba(56,189,248,.28);border-radius:18px;background:rgba(8,12,20,.98);box-shadow:0 22px 70px rgba(0,0,0,.44);padding:18px;">
       <div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-bottom:14px;">
         <div>
-          <p style="margin:0 0 4px;color:#38bdf8;font-size:10px;font-weight:900;letter-spacing:.16em;text-transform:uppercase;">Datos generales</p>
+          <p style="margin:0 0 4px;color:#529866;font-size:10px;font-weight:900;letter-spacing:.16em;text-transform:uppercase;">Datos generales</p>
           <h3 style="margin:0;">Tipo de paciente</h3>
         </div>
         <button type="button" data-cerrar-tipo-paciente style="margin:0;width:32px;height:32px;padding:0;border-radius:999px;">x</button>
       </div>
       <label style="display:block;margin-bottom:8px;color:#94a3b8;font-weight:700;">Seleccionar tipo</label>
-      <select id="modalTipoPacienteSelect" style="width:100%;padding:11px;border-radius:14px;background:#0f172a;color:#fff;border:1px solid rgba(148,163,184,.28);">
+      <select id="modalTipoPacienteSelect" style="width:100%;padding:11px;border-radius:14px;background:#0e1411;color:#fff;border:1px solid rgba(148,163,184,.28);">
         <option value="privada">Privado</option>
         <option value="institucion">Institucional</option>
         <option value="clinica">Clinica</option>
         <option value="otro">Otro...</option>
       </select>
-      <input id="modalTipoPacienteManual" placeholder="Especificar tipo de paciente" style="width:100%;margin-top:10px;padding:11px;border-radius:14px;background:#0f172a;color:#fff;border:1px solid rgba(148,163,184,.28);">
+      <input id="modalTipoPacienteManual" placeholder="Especificar tipo de paciente" style="width:100%;margin-top:10px;padding:11px;border-radius:14px;background:#0e1411;color:#fff;border:1px solid rgba(148,163,184,.28);">
       <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:16px;">
         <button type="button" data-cerrar-tipo-paciente>Cancelar</button>
         <button type="button" id="guardarTipoPacienteModal">Guardar</button>
@@ -3537,7 +3537,7 @@ function construirGraficaSeriesSignos(series = [], opciones = {}) {
     return margen + (punto.index / divisor) * (ancho - margen * 2);
   };
   const yPunto = (punto) => alto - margen - ((punto.valor - min) / rangoValor) * (alto - margen * 2);
-  const paleta = ["#22d3ee", "#f97316", "#a78bfa", "#10b981", "#f43f5e", "#eab308", "#38bdf8"];
+  const paleta = ["#347a4d", "#f97316", "#a78bfa", "#10b981", "#f43f5e", "#eab308", "#529866"];
 
   return `
     <svg viewBox="0 0 ${ancho} ${alto}" class="historial-signo-svg" role="img" aria-label="Curva histrica de signos vitales">
@@ -3567,14 +3567,14 @@ function construirGraficaSeriesSignos(series = [], opciones = {}) {
 function construirGraficaSignoVital(clave, registros = []) {
   if (clave === "presionArterial") {
     return construirGraficaSeriesSignos([
-      { id: "ta_sistolica", nombre: "TA sistlica", puntos: puntosSerieSigno(clave, registros, { componente: "sistolica" }), color: "#22d3ee" },
+      { id: "ta_sistolica", nombre: "TA sistlica", puntos: puntosSerieSigno(clave, registros, { componente: "sistolica" }), color: "#347a4d" },
       { id: "ta_diastolica", nombre: "TA diastlica", puntos: puntosSerieSigno(clave, registros, { componente: "diastolica" }), color: "#f97316" }
     ]);
   }
 
   const signo = SIGNOS_VITALES_LAB[clave] || {};
   return construirGraficaSeriesSignos([
-    { id: clave, nombre: signo.titulo || clave, puntos: puntosSerieSigno(clave, registros), color: "#22d3ee" }
+    { id: clave, nombre: signo.titulo || clave, puntos: puntosSerieSigno(clave, registros), color: "#347a4d" }
   ]);
 }
 
@@ -3821,7 +3821,7 @@ function seriesGlobalesSignosVitales(datos = {}, opciones = {}) {
     const registros = obtenerHistorialSignoVital(datos, clave);
     if (clave === "presionArterial") {
       [
-        ["ta_sistolica", "TA sistlica", "sistolica", "#22d3ee"],
+        ["ta_sistolica", "TA sistlica", "sistolica", "#347a4d"],
         ["ta_diastolica", "TA diastlica", "diastolica", "#f97316"]
       ].forEach(([id, nombre, componente, color]) => {
         if (tieneFiltroSeries && !incluir.has(id)) return;
@@ -6597,14 +6597,14 @@ function descargarRecetaPaciente() {
 <meta charset="UTF-8">
 <title>Receta ${escaparHTML(datos.pacienteNombre)}</title>
 <style>
-  body{margin:0;background:#eef6ff;font-family:Arial,Helvetica,sans-serif;color:#0f172a;}
-  .hoja{width:760px;min-height:980px;margin:32px auto;padding:48px;background:white;border-radius:22px;box-shadow:0 22px 70px rgba(15,23,42,.18),0 0 0 1px rgba(14,165,233,.14);}
+  body{margin:0;background:#f2f3ee;font-family:Arial,Helvetica,sans-serif;color:#0e1411;}
+  .hoja{width:760px;min-height:980px;margin:32px auto;padding:48px;background:white;border-radius:22px;box-shadow:0 22px 70px rgba(14,20,17,.18),0 0 0 1px rgba(52,122,77,.14);}
   .receta-marca{color:#0284c7;font-weight:900;letter-spacing:.22em;font-size:12px;margin-bottom:18px;}
   .receta-encabezado{display:flex;justify-content:space-between;gap:22px;border-bottom:2px solid #dbeafe;padding-bottom:18px;margin-bottom:22px;}
   h2{margin:0;color:#082f49;font-size:30px;} h3{margin:24px 0 10px;color:#0369a1;font-size:14px;text-transform:uppercase;letter-spacing:.12em;}
   p{line-height:1.45;} .receta-datos{display:grid;grid-template-columns:1fr 1fr;gap:8px 20px;background:#f8fbff;border:1px solid #dbeafe;border-radius:16px;padding:14px 16px;}
-  .receta-datos p{margin:0;} .receta-medicamentos{padding-left:22px;} .receta-medicamentos li{margin:0 0 14px;} .receta-medicamentos strong{display:block;color:#0f172a;} .receta-medicamentos span{display:block;margin-top:4px;}
-  .receta-vigencia{margin-top:20px;color:#475569;} .receta-firma{margin-top:80px;text-align:center;margin-left:auto;width:280px;} .receta-firma span{display:block;border-top:1px solid #0f172a;margin-bottom:8px;} .receta-firma strong,.receta-firma small{display:block;}
+  .receta-datos p{margin:0;} .receta-medicamentos{padding-left:22px;} .receta-medicamentos li{margin:0 0 14px;} .receta-medicamentos strong{display:block;color:#0e1411;} .receta-medicamentos span{display:block;margin-top:4px;}
+  .receta-vigencia{margin-top:20px;color:#4c554f;} .receta-firma{margin-top:80px;text-align:center;margin-left:auto;width:280px;} .receta-firma span{display:block;border-top:1px solid #0e1411;margin-bottom:8px;} .receta-firma strong,.receta-firma small{display:block;}
   @media print{body{background:white}.hoja{width:auto;min-height:auto;margin:0;box-shadow:none;border-radius:0}}
 </style>
 </head>
@@ -6808,15 +6808,15 @@ function descargarSolicitudEstudios() {
 <meta charset="UTF-8">
 <title>Solicitud de estudios ${escaparHTML(datos.pacienteNombre)}</title>
 <style>
-  body{margin:0;background:#eef6ff;font-family:Arial,Helvetica,sans-serif;color:#0f172a;}
-  .hoja{position:relative;width:760px;min-height:980px;margin:32px auto;padding:48px;background:white;border-radius:22px;box-shadow:0 22px 70px rgba(15,23,42,.18),0 0 0 1px rgba(14,165,233,.14);}
+  body{margin:0;background:#f2f3ee;font-family:Arial,Helvetica,sans-serif;color:#0e1411;}
+  .hoja{position:relative;width:760px;min-height:980px;margin:32px auto;padding:48px;background:white;border-radius:22px;box-shadow:0 22px 70px rgba(14,20,17,.18),0 0 0 1px rgba(52,122,77,.14);}
   .solicitud-logo{position:absolute;top:34px;right:38px;width:54px;height:54px;object-fit:contain;}
   .receta-marca{color:#0284c7;font-weight:900;letter-spacing:.22em;font-size:12px;margin-bottom:18px;}
   .receta-encabezado{display:flex;justify-content:space-between;gap:80px;border-bottom:2px solid #dbeafe;padding-bottom:18px;margin-bottom:22px;}
   h2{margin:0;color:#082f49;font-size:30px;} h3{margin:24px 0 10px;color:#0369a1;font-size:14px;text-transform:uppercase;letter-spacing:.12em;}
   p{line-height:1.45;} .receta-datos{display:grid;grid-template-columns:1fr 1fr;gap:8px 20px;background:#f8fbff;border:1px solid #dbeafe;border-radius:16px;padding:14px 16px;}
-  .receta-datos p{margin:0;} .receta-medicamentos{padding-left:22px;} .receta-medicamentos li{margin:0 0 14px;} .receta-medicamentos strong{display:block;color:#0f172a;} .receta-medicamentos span{display:block;margin-top:4px;color:#475569;}
-  .receta-firma{margin-top:90px;text-align:center;margin-left:auto;width:280px;} .receta-firma span{display:block;border-top:1px solid #0f172a;margin-bottom:8px;} .receta-firma strong,.receta-firma small{display:block;}
+  .receta-datos p{margin:0;} .receta-medicamentos{padding-left:22px;} .receta-medicamentos li{margin:0 0 14px;} .receta-medicamentos strong{display:block;color:#0e1411;} .receta-medicamentos span{display:block;margin-top:4px;color:#4c554f;}
+  .receta-firma{margin-top:90px;text-align:center;margin-left:auto;width:280px;} .receta-firma span{display:block;border-top:1px solid #0e1411;margin-bottom:8px;} .receta-firma strong,.receta-firma small{display:block;}
   @media print{body{background:white}.hoja{width:auto;min-height:auto;margin:0;box-shadow:none;border-radius:0}}
 </style>
 </head>

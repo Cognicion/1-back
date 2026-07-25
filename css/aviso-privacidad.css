@@ -10,8 +10,8 @@ body {
   max-width: 900px;
   margin: 40px auto;
   padding: 40px;
-  background: #111827;
-  border: 1px solid #1f2937;
+  background: var(--black-850);
+  border: 1px solid var(--black-800);
   border-radius: 18px;
 }
 
@@ -27,23 +27,23 @@ h1 {
 }
 
 h2 {
-  color: #94a3b8;
+  color: var(--gray-400);
   font-weight: normal;
 }
 
 h3 {
   margin-top: 35px;
   color: var(--ivory-50);
-  border-bottom: 1px solid #334155;
+  border-bottom: 1px solid var(--gray-700);
   padding-bottom: 8px;
 }
 
 .fecha {
-  color: #94a3b8;
+  color: var(--gray-400);
 }
 
 .alerta {
-  background: #1e293b;
+  background: var(--black-800);
   border-left: 5px solid var(--celtic-400);
   padding: 18px;
   border-radius: 10px;
@@ -57,6 +57,6 @@ ul {
 footer {
   margin-top: 50px;
   padding-top: 25px;
-  border-top: 1px solid #334155;
-  color: #94a3b8;
+  border-top: 1px solid var(--gray-700);
+  color: var(--gray-400);
 }

@@ -6,7 +6,7 @@
   --azul-profundo: rgba(13, 72, 116, 0.24);
   --azul-suave: rgba(78, 181, 232, 0.62);
   --texto: #c8d8e8;
-  --texto-tenue: #698096;
+  --texto-tenue: var(--mineral-green);
 }
 
 html,

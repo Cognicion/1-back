@@ -1,19 +1,19 @@
 :where(input, select, textarea, .input, .select) {
   min-height: 40px;
-  border: 1px solid var(--border-subtle);
+  border: 1px solid var(--input-border);
   border-radius: var(--radius-1);
-  color: var(--text-primary);
-  background: var(--surface-primary);
+  color: var(--input-text);
+  background: var(--input-bg);
 }
 
 :where(input, select, textarea, .input, .select):focus {
-  border-color: var(--border-active);
-  box-shadow: none;
+  border-color: var(--input-border-focus);
+  box-shadow: 0 0 0 2px rgb(87 155 104 / 22%);
   outline: 0;
 }
 
 :where(input, select, textarea)::placeholder {
-  color: var(--text-muted);
+  color: var(--input-placeholder);
   opacity: 1;
 }
 

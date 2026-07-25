@@ -24,14 +24,25 @@
   --action-primary-hover: var(--celtic-400);
   --action-secondary-bg: transparent;
   --action-secondary-text: var(--white-950);
+  --surface-hover: var(--black-700);
+  --surface-selected: var(--green-900);
+  --text-disabled: rgb(233 236 232 / 38%);
+  --input-bg: var(--black-900);
+  --input-text: var(--white-950);
+  --input-placeholder: rgb(233 236 232 / 52%);
+  --input-border: var(--border-normal);
+  --input-border-focus: var(--green-400);
+  --focus-ring: var(--green-300);
+  --scrollbar-track: var(--black-900);
+  --scrollbar-thumb: var(--green-700);
+  --scrollbar-thumb-hover: var(--green-500);
   color-scheme: dark;
 }
 
 [data-theme="light"],
 [data-theme="light-gray"],
 [data-theme="light-mint"],
-[data-theme="light-lavender"],
-[data-theme="light-blue"] {
+[data-theme="light-lavender"] {
   --page-bg: var(--white-950);
   --page-bg-alt: var(--white-900);
   --surface-primary: var(--white-1000);
@@ -54,5 +65,17 @@
   --action-primary-text: var(--white-1000);
   --action-secondary-bg: transparent;
   --action-secondary-text: var(--black-1000);
+  --surface-hover: var(--gray-100);
+  --surface-selected: var(--celtic-100);
+  --text-disabled: rgb(16 21 17 / 38%);
+  --input-bg: var(--white-900);
+  --input-text: var(--black-1000);
+  --input-placeholder: rgb(16 21 17 / 52%);
+  --input-border: var(--border-normal);
+  --input-border-focus: var(--green-600);
+  --focus-ring: var(--green-500);
+  --scrollbar-track: var(--white-900);
+  --scrollbar-thumb: var(--green-700);
+  --scrollbar-thumb-hover: var(--green-600);
   color-scheme: light;
 }

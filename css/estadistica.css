@@ -5,10 +5,10 @@ body {
   min-height: 100vh;
   font-family: Arial, Helvetica, sans-serif;
   background:
-    radial-gradient(circle at top, rgba(78,163,255,0.22), transparent 32%),
+    radial-gradient(circle at top, rgba(82,152,102,0.22), transparent 32%),
     radial-gradient(circle at bottom right, rgba(82,152,102,0.13), transparent 28%),
-    linear-gradient(135deg, #050608, #080b10 50%, var(--black-900));
-  color: #f8fafc;
+    linear-gradient(135deg, var(--black-900), var(--black-900) 50%, var(--black-900));
+  color: var(--white-950);
 }
 
 body.bloqueado main {
@@ -63,7 +63,7 @@ body.bloqueado main {
   border: 1px solid rgba(255,255,255,0.10);
   border-radius: 24px;
   padding: 26px;
-  box-shadow: 0 0 35px rgba(78,163,255,0.10), 0 18px 50px rgba(0,0,0,0.38);
+  box-shadow: 0 0 35px rgba(82,152,102,0.10), 0 18px 50px rgba(0,0,0,0.38);
   backdrop-filter: blur(18px);
 }
 
@@ -82,8 +82,8 @@ input,
 select {
   width: 100%;
   border-radius: 14px;
-  border: 1px solid rgba(148,163,184,0.25);
-  background: rgba(15,23,42,0.95);
+  border: 1px solid rgba(190,196,188,0.25);
+  background: rgba(14,20,17,0.95);
   color: white;
   padding: 11px 12px;
 }
@@ -97,7 +97,7 @@ textarea {
 label {
   display: grid;
   gap: 8px;
-  color: #94a3b8;
+  color: var(--gray-400);
   font-size: 13px;
   font-weight: 700;
 }
@@ -164,7 +164,7 @@ button:hover {
   border-radius: 999px;
   border: 1px solid rgba(82,152,102,0.38);
   background: rgba(52,122,77,0.12);
-  color: #bae6fd;
+  color: var(--green-200);
   padding: 7px 10px;
   font-size: 12px;
   font-weight: 800;
@@ -188,7 +188,7 @@ button:hover {
 .recomendacion {
   border-radius: 18px;
   border: 1px solid rgba(82,152,102,0.24);
-  background: rgba(2,6,23,0.68);
+  background: rgba(5,7,6,0.68);
   color: var(--ivory-50);
   padding: 14px 16px;
   line-height: 1.5;
@@ -225,12 +225,12 @@ table {
 th,
 td {
   padding: 10px 12px;
-  border-bottom: 1px solid rgba(148,163,184,0.16);
+  border-bottom: 1px solid rgba(190,196,188,0.16);
   text-align: left;
 }
 
 th {
-  color: #bfdbfe;
+  color: var(--green-200);
   background: rgba(8,12,20,0.92);
 }
 
@@ -264,7 +264,7 @@ th {
 
 .grid-graficas h3 {
   margin: 0 0 12px;
-  color: #bfdbfe;
+  color: var(--green-200);
   font-size: 14px;
 }
 
@@ -338,8 +338,8 @@ th {
 }
 
 .btn-secundario {
-  background: rgba(15,23,42,0.95);
-  border: 1px solid rgba(148,163,184,0.28);
+  background: rgba(14,20,17,0.95);
+  border: 1px solid rgba(190,196,188,0.28);
 }
 
 .lista-proyectos {
@@ -353,8 +353,8 @@ th {
   display: inline-grid;
   gap: 3px;
   text-align: left;
-  background: rgba(15,23,42,0.82);
-  border: 1px solid rgba(148,163,184,0.22);
+  background: rgba(14,20,17,0.82);
+  border: 1px solid rgba(190,196,188,0.22);
   border-radius: 16px;
   padding: 10px 12px;
   color: var(--ivory-100);
@@ -366,7 +366,7 @@ th {
 }
 
 .proyecto-chip span {
-  color: #94a3b8;
+  color: var(--gray-400);
   font-size: 11px;
 }
 
@@ -380,13 +380,13 @@ th {
   padding: 10px;
   border-radius: 20px;
   border: 1px solid rgba(255,255,255,0.08);
-  background: rgba(2,6,23,0.72);
+  background: rgba(5,7,6,0.72);
   backdrop-filter: blur(16px);
 }
 
 .tabs-estadistica button {
-  background: rgba(15,23,42,0.92);
-  border: 1px solid rgba(148,163,184,0.24);
+  background: rgba(14,20,17,0.92);
+  border: 1px solid rgba(190,196,188,0.24);
   color: var(--ivory-100);
 }
 
@@ -402,9 +402,9 @@ th {
 .tabla-editable {
   margin-top: 16px;
   overflow: auto;
-  border: 1px solid rgba(148,163,184,0.16);
+  border: 1px solid rgba(190,196,188,0.16);
   border-radius: 18px;
-  background: rgba(2,6,23,0.45);
+  background: rgba(5,7,6,0.45);
 }
 
 .tabla-excel {
@@ -431,7 +431,7 @@ th {
   min-width: 140px;
   height: 40px;
   outline: none;
-  background: rgba(15,23,42,0.36);
+  background: rgba(14,20,17,0.36);
 }
 
 .tabla-excel td:focus {
@@ -456,7 +456,7 @@ th {
   padding: 16px;
   border-radius: 18px;
   border: 1px solid rgba(82,152,102,0.18);
-  background: rgba(15,23,42,0.72);
+  background: rgba(14,20,17,0.72);
   box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
 }
 
@@ -471,7 +471,7 @@ th {
 
 .grafica-sugerida p {
   margin: 0 0 12px;
-  color: #94a3b8;
+  color: var(--gray-400);
   font-size: 12px;
 }
 
@@ -486,7 +486,7 @@ th {
   align-items: center;
   gap: 7px;
   float: right;
-  color: #bae6fd;
+  color: var(--green-200);
   font-size: 12px;
 }
 
@@ -499,9 +499,9 @@ th {
   place-items: center;
   min-height: 180px;
   border-radius: 14px;
-  border: 1px dashed rgba(148,163,184,0.24);
-  color: #94a3b8;
-  background: rgba(2,6,23,0.38);
+  border: 1px dashed rgba(190,196,188,0.24);
+  color: var(--gray-400);
+  background: rgba(5,7,6,0.38);
 }
 
 .redaccion-card textarea {

@@ -59,3 +59,25 @@ summary {
   cursor: not-allowed;
   opacity: 0.55;
 }
+
+html[data-theme="dark"] {
+  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+}
+
+html[data-theme="dark"] ::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+html[data-theme="dark"] ::-webkit-scrollbar-track {
+  background: var(--scrollbar-track);
+}
+
+html[data-theme="dark"] ::-webkit-scrollbar-thumb {
+  border: 2px solid var(--scrollbar-track);
+  background: var(--scrollbar-thumb);
+}
+
+html[data-theme="dark"] ::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover);
+}

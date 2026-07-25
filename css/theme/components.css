@@ -164,3 +164,39 @@ html[data-theme] :is(.active, .activo, .selected, .seleccionado, .tab.activo, bu
 html[data-theme] :is(.loading, .cargando, [aria-busy="true"]) {
   color: var(--accent-primary);
 }
+
+html[data-theme="dark"] :is(input, select, textarea, .input, .select) {
+  color: var(--input-text) !important;
+  background: var(--input-bg) !important;
+  border-color: var(--input-border) !important;
+}
+
+html[data-theme="dark"] :is(input, select, textarea, .input, .select):focus {
+  border-color: var(--input-border-focus) !important;
+  outline: 2px solid transparent !important;
+  box-shadow: 0 0 0 2px rgb(87 155 104 / 22%) !important;
+}
+
+html[data-theme="dark"] :is(input, textarea)::placeholder {
+  color: var(--input-placeholder) !important;
+  opacity: 1;
+}
+
+html[data-theme="dark"] :is(.contenedor, .panel-nota-redimensionable, .panel-borradores-medico, .panel-escala-nota, .panel-escalas-previas-contenido, .nota-flotante-costado, .calculadora-nota-detalle, .visor-calculadora-nota) {
+  color: var(--text-primary);
+  background: var(--surface-primary) !important;
+  background-image: none !important;
+  border-color: var(--border-normal) !important;
+  box-shadow: var(--shadow-md) !important;
+}
+
+html[data-theme="dark"] :is(.lista-catalogo-pronosticos button, .lista-calculadoras-nota button, .calculadora-teclado button, .apunte-lista-item, .item-escala-nota, .escala-previa-card) {
+  color: var(--text-primary) !important;
+  background: var(--surface-secondary) !important;
+  border-color: var(--border-subtle) !important;
+}
+
+html[data-theme="dark"] :is(.lista-catalogo-pronosticos button:hover, .lista-calculadoras-nota button:hover, .calculadora-teclado button:hover, .apunte-lista-item:hover, .item-escala-nota:hover, .escala-previa-card:hover) {
+  background: var(--surface-hover) !important;
+  border-color: var(--accent-primary) !important;
+}

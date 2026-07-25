@@ -18,14 +18,14 @@ body {
   width: 236px;
   padding: 22px 14px;
   border-right: 1px solid rgba(126, 182, 138, 0.14);
-  background: rgba(2, 6, 23, 0.92);
+  background: rgba(5, 7, 6, 0.92);
   display: grid;
   align-content: start;
   gap: 8px;
 }
 
 .voice-sidebar a {
-  color: #cbd5e1;
+  color: var(--gray-200);
   text-decoration: none;
   border: 1px solid transparent;
   border-radius: 8px;
@@ -50,7 +50,7 @@ body {
 .voice-step-panel {
   border: 1px solid rgba(126, 182, 138, 0.16);
   border-radius: 14px;
-  background: rgba(15, 23, 42, 0.82);
+  background: rgba(14, 20, 17, 0.82);
   box-shadow: 0 24px 70px rgba(0, 0, 0, 0.24);
 }
 
@@ -74,7 +74,7 @@ body {
 .voice-header h1,
 .voice-panel-heading h2 {
   margin: 8px 0;
-  color: #f8fafc;
+  color: var(--white-950);
   line-height: 1.08;
 }
 
@@ -97,7 +97,7 @@ body {
   padding: 10px;
   border: 1px solid rgba(126, 182, 138, 0.14);
   border-radius: 8px;
-  background: rgba(2, 6, 23, 0.24);
+  background: rgba(5, 7, 6, 0.24);
 }
 
 .voice-chip-row {
@@ -114,7 +114,7 @@ body {
   padding: 3px 8px;
   border: 1px solid rgba(82, 152, 102, 0.24);
   border-radius: 999px;
-  color: #cffafe;
+  color: var(--green-200);
   background: rgba(8, 145, 178, 0.15);
   font-size: 0.78rem;
   font-weight: 800;
@@ -143,7 +143,7 @@ body {
   padding: 10px;
   border: 1px solid rgba(126, 182, 138, 0.14);
   border-radius: 8px;
-  background: rgba(2, 6, 23, 0.2);
+  background: rgba(5, 7, 6, 0.2);
 }
 
 .voice-block-list[hidden] {
@@ -166,17 +166,17 @@ body {
 .voice-block-row {
   min-height: 34px;
   padding: 6px 8px;
-  border: 1px solid rgba(148, 163, 184, 0.14);
+  border: 1px solid rgba(190, 196, 188, 0.14);
   border-radius: 8px;
-  color: #cbd5e1;
+  color: var(--gray-200);
   font-size: 0.78rem;
-  background: rgba(15, 23, 42, 0.52);
+  background: rgba(14, 20, 17, 0.52);
 }
 
 .voice-block-child {
   margin-left: 22px;
   border-left: 3px solid rgba(82, 152, 102, 0.48);
-  background: rgba(8, 47, 73, 0.18);
+  background: rgba(16, 51, 32, 0.18);
 }
 
 .voice-block-completed {
@@ -231,7 +231,7 @@ body {
 .voice-summary,
 .voice-card,
 .voice-warnings {
-  color: #a9b8cc;
+  color: var(--green-200);
   line-height: 1.55;
 }
 
@@ -246,7 +246,7 @@ body {
   padding: 10px;
   border: 1px solid rgba(126, 182, 138, 0.12);
   border-radius: 12px;
-  background: rgba(2, 6, 23, 0.86);
+  background: rgba(5, 7, 6, 0.86);
 }
 
 .voice-steps button,
@@ -256,7 +256,7 @@ body {
 .boton-secundario {
   border: 1px solid rgba(126, 182, 138, 0.2);
   border-radius: 8px;
-  background: rgba(8, 47, 73, 0.78);
+  background: rgba(16, 51, 32, 0.78);
   color: var(--ivory-50);
   padding: 10px 14px;
   font-weight: 900;
@@ -265,12 +265,12 @@ body {
 
 .voice-steps button {
   flex: 0 0 auto;
-  color: #b8c7dc;
-  background: rgba(15, 23, 42, 0.72);
+  color: var(--gray-300);
+  background: rgba(14, 20, 17, 0.72);
 }
 
 .voice-steps button.activo {
-  color: #04111f;
+  color: var(--black-900);
   background: var(--celtic-200);
 }
 
@@ -286,7 +286,7 @@ body {
   padding: 10px 12px;
   border: 1px solid rgba(126, 182, 138, 0.18);
   border-radius: 10px;
-  background: rgba(2, 6, 23, 0.9);
+  background: rgba(5, 7, 6, 0.9);
   box-shadow: 0 12px 32px rgba(0, 0, 0, 0.18);
 }
 
@@ -305,7 +305,7 @@ body {
 }
 
 .voice-save-detail summary {
-  color: #bae6fd;
+  color: var(--green-200);
   cursor: pointer;
   font-weight: 800;
 }
@@ -315,7 +315,7 @@ body {
   grid-template-columns: max-content minmax(90px, 1fr);
   gap: 4px 10px;
   margin: 8px 0 0;
-  color: #cbd5e1;
+  color: var(--gray-200);
   font-size: 0.78rem;
 }
 
@@ -348,7 +348,7 @@ body {
 .voice-review-card label {
   display: grid;
   gap: 7px;
-  color: #cbd5e1;
+  color: var(--gray-200);
   font-weight: 800;
 }
 
@@ -362,8 +362,8 @@ body {
   min-width: 0;
   border: 1px solid rgba(126, 182, 138, 0.18);
   border-radius: 8px;
-  background: rgba(2, 6, 23, 0.72);
-  color: #f8fafc;
+  background: rgba(5, 7, 6, 0.72);
+  color: var(--white-950);
   padding: 10px 12px;
   font: inherit;
 }
@@ -382,12 +382,12 @@ body {
   padding: 14px;
   border: 1px solid rgba(126, 182, 138, 0.13);
   border-radius: 10px;
-  background: rgba(2, 6, 23, 0.42);
+  background: rgba(5, 7, 6, 0.42);
 }
 
 .voice-summary-inline {
   margin: 6px 0 0;
-  color: #a9b8cc;
+  color: var(--green-200);
   line-height: 1.45;
 }
 
@@ -416,7 +416,7 @@ body {
   display: flex;
   gap: 9px;
   align-items: center;
-  color: #cbd5e1;
+  color: var(--gray-200);
   font-weight: 800;
   cursor: pointer;
 }
@@ -437,7 +437,7 @@ body {
 .voice-observation-groups details {
   border: 1px solid rgba(126, 182, 138, 0.14);
   border-radius: 10px;
-  background: rgba(15, 23, 42, 0.48);
+  background: rgba(14, 20, 17, 0.48);
 }
 
 .voice-observation-groups summary {
@@ -468,14 +468,14 @@ body {
   padding: 10px;
   border: 1px solid rgba(126, 182, 138, 0.12);
   border-radius: 8px;
-  background: rgba(2, 6, 23, 0.34);
+  background: rgba(5, 7, 6, 0.34);
 }
 
 .voice-select-row label {
   display: grid;
   gap: 6px;
   min-width: 0;
-  color: #cbd5e1;
+  color: var(--gray-200);
   font-weight: 800;
 }
 
@@ -486,8 +486,8 @@ body {
   min-width: 0;
   border: 1px solid rgba(126, 182, 138, 0.18);
   border-radius: 8px;
-  background: rgba(2, 6, 23, 0.72);
-  color: #f8fafc;
+  background: rgba(5, 7, 6, 0.72);
+  color: var(--white-950);
   padding: 9px 10px;
   font: inherit;
 }
@@ -498,7 +498,7 @@ body {
   padding: 10px;
   border: 1px solid rgba(126, 182, 138, 0.12);
   border-radius: 8px;
-  background: rgba(15, 23, 42, 0.48);
+  background: rgba(14, 20, 17, 0.48);
 }
 
 .voice-quote-item p {
@@ -513,7 +513,7 @@ body {
   padding: 9px;
   border: 1px solid rgba(126, 182, 138, 0.1);
   border-radius: 8px;
-  background: rgba(2, 6, 23, 0.38);
+  background: rgba(5, 7, 6, 0.38);
 }
 
 .voice-checkbox-item label {
@@ -529,8 +529,8 @@ body {
   min-width: 0;
   border: 1px solid rgba(126, 182, 138, 0.18);
   border-radius: 8px;
-  background: rgba(2, 6, 23, 0.72);
-  color: #f8fafc;
+  background: rgba(5, 7, 6, 0.72);
+  color: var(--white-950);
   padding: 8px 10px;
 }
 
@@ -553,7 +553,7 @@ body {
 
 .voice-session-recovery {
   border-color: rgba(82, 152, 102, 0.42);
-  background: rgba(8, 47, 73, 0.36);
+  background: rgba(16, 51, 32, 0.36);
 }
 
 .voice-session-option {
@@ -564,9 +564,9 @@ body {
   gap: 10px;
   align-items: start;
   text-align: left;
-  border: 1px solid rgba(148, 163, 184, 0.3);
+  border: 1px solid rgba(190, 196, 188, 0.3);
   border-radius: 10px;
-  background: rgba(15, 23, 42, 0.72);
+  background: rgba(14, 20, 17, 0.72);
   color: var(--text);
   padding: 12px 14px 12px 42px;
   margin: 8px 0;
@@ -582,7 +582,7 @@ body {
   height: 16px;
   border-radius: 50%;
   border: 2px solid rgba(126, 182, 138, 0.75);
-  background: rgba(2, 6, 23, 0.9);
+  background: rgba(5, 7, 6, 0.9);
 }
 
 .voice-session-option::after {
@@ -615,7 +615,7 @@ body {
 .voice-session-selected-label {
   display: none;
   grid-column: 1 / -1;
-  color: #a5f3fc;
+  color: var(--green-200);
   font-weight: 800;
 }
 
@@ -642,7 +642,7 @@ body {
 
 .voice-session-duplicate {
   background: rgba(126, 182, 138, 0.14);
-  color: #a5f3fc;
+  color: var(--green-200);
 }
 
 .voice-session-option {
@@ -668,13 +668,13 @@ body {
   margin-top: 2px;
   border-radius: 50%;
   border: 2px solid rgba(126, 182, 138, 0.75);
-  background: rgba(2, 6, 23, 0.9);
+  background: rgba(5, 7, 6, 0.9);
 }
 
 .voice-session-option.activo .voice-session-radio,
 .voice-session-option[aria-selected="true"] .voice-session-radio {
   border-color: var(--celtic-400);
-  box-shadow: inset 0 0 0 4px rgba(2, 6, 23, 0.95);
+  box-shadow: inset 0 0 0 4px rgba(5, 7, 6, 0.95);
   background: var(--celtic-400);
 }
 
@@ -721,15 +721,15 @@ body {
   padding: 4px 8px;
   font-size: 0.82rem;
   font-weight: 800;
-  background: rgba(15, 23, 42, 0.48);
+  background: rgba(14, 20, 17, 0.48);
   color: rgba(226, 232, 240, 0.86);
 }
 
 .voice-session-duplicate-note {
   border: 1px solid rgba(126, 182, 138, 0.28);
   border-radius: 8px;
-  background: rgba(8, 47, 73, 0.24);
-  color: #bae6fd;
+  background: rgba(16, 51, 32, 0.24);
+  color: var(--green-200);
   padding: 8px 10px;
   margin: 6px 0 10px;
   font-weight: 700;
@@ -775,7 +775,7 @@ body {
 .voice-provider-status span {
   border-radius: 8px;
   padding: 8px 10px;
-  background: rgba(15, 23, 42, 0.8);
+  background: rgba(14, 20, 17, 0.8);
 }
 
 .voice-technical-detail {
@@ -783,7 +783,7 @@ body {
   padding: 10px 12px;
   border: 1px solid rgba(251, 191, 36, 0.22);
   border-radius: 8px;
-  background: rgba(15, 23, 42, 0.72);
+  background: rgba(14, 20, 17, 0.72);
   color: var(--muted);
 }
 
@@ -820,7 +820,7 @@ body {
 #btnTransferirNotaVoz {
   border-color: rgba(82, 152, 102, 0.55);
   background: linear-gradient(135deg, var(--celtic-400), var(--celtic-400));
-  color: #02111f;
+  color: var(--black-900);
 }
 
 .voice-segments,
@@ -852,14 +852,14 @@ body {
   padding: 8px;
   border: 1px solid rgba(126, 182, 138, 0.14);
   border-radius: 10px;
-  background: rgba(2, 6, 23, 0.94);
+  background: rgba(5, 7, 6, 0.94);
 }
 
 .voice-segmentation-summary span {
   padding: 5px 8px;
   border-radius: 8px;
-  background: rgba(15, 23, 42, 0.86);
-  color: #cbd5e1;
+  background: rgba(14, 20, 17, 0.86);
+  color: var(--gray-200);
   font-size: 0.78rem;
 }
 
@@ -878,7 +878,7 @@ body {
 .voice-review-card {
   border: 1px solid rgba(126, 182, 138, 0.14);
   border-radius: 10px;
-  background: rgba(15, 23, 42, 0.62);
+  background: rgba(14, 20, 17, 0.62);
   padding: 12px;
 }
 
@@ -915,7 +915,7 @@ body {
   display: grid;
   gap: 4px;
   min-width: 136px;
-  color: #93c5fd;
+  color: var(--green-200);
   font-size: 0.78rem;
 }
 
@@ -937,7 +937,7 @@ body {
 }
 
 .voice-segment-unknown {
-  border-left: 3px solid #94a3b8;
+  border-left: 3px solid var(--gray-400);
 }
 
 .voice-segment small,

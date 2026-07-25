@@ -206,8 +206,8 @@ function renderGraficaPercentil(resultado) {
     <div class="calc-ped-panel percentil-card">
       <h3>Grafica de percentil</h3>
       <svg class="percentil-svg" viewBox="0 0 420 140" role="img" aria-label="Curva visual de percentil">
-        <path d="M20 116 C92 116 95 22 210 22 C325 22 328 116 400 116" fill="none" stroke="rgba(125,211,252,.25)" stroke-width="7" stroke-linecap="round"/>
-        <path d="M20 116 C92 116 95 22 210 22 C325 22 328 116 400 116" fill="none" stroke="#22d3ee" stroke-width="3" stroke-linecap="round"/>
+        <path d="M20 116 C92 116 95 22 210 22 C325 22 328 116 400 116" fill="none" stroke="rgba(126,182,138,.25)" stroke-width="7" stroke-linecap="round"/>
+        <path d="M20 116 C92 116 95 22 210 22 C325 22 328 116 400 116" fill="none" stroke="#347a4d" stroke-width="3" stroke-linecap="round"/>
         <line x1="${20 + percentil * 3.8}" y1="20" x2="${20 + percentil * 3.8}" y2="122" stroke="#facc15" stroke-width="2" stroke-dasharray="5 5"/>
         <circle cx="${20 + percentil * 3.8}" cy="70" r="7" fill="#facc15"/>
         <text x="20" y="132" fill="#9fb1ca" font-size="10">p0</text>

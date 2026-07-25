@@ -577,7 +577,7 @@ function abrirVentanaImpresion({ empty = false } = {}) {
     <!doctype html><html><head><meta charset="UTF-8"><title>COGNICIÓN_${escaparHTML(calc.id)}</title>
     <style>
       body{font-family:Arial,sans-serif;color:#111827;margin:32px;line-height:1.45}
-      header{display:flex;align-items:center;gap:12px;border-bottom:2px solid #0ea5e9;padding-bottom:12px;margin-bottom:18px}
+      header{display:flex;align-items:center;gap:12px;border-bottom:2px solid #529866;padding-bottom:12px;margin-bottom:18px}
       img{width:46px;height:46px} h1{margin:0;font-size:24px} h2{color:#075985}
       table{width:100%;border-collapse:collapse;margin:14px 0} td,th{border:1px solid #d1d5db;padding:8px;text-align:left} th{background:#e0f2fe}
       .muted{color:#4b5563}.footer{margin-top:28px;border-top:1px solid #d1d5db;padding-top:12px;font-size:12px;color:#4b5563}

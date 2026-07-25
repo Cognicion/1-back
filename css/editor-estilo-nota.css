@@ -1,7 +1,7 @@
 body {
   margin: 0;
   background: var(--color-fondo, #f6f8fb);
-  color: var(--color-texto, #18202a);
+  color: var(--color-texto, var(--black-900));
 }
 
 .style-editor-shell {
@@ -15,7 +15,7 @@ body {
   background: var(--color-superficie, #fff);
   border: 1px solid rgba(30, 41, 59, 0.12);
   border-radius: 8px;
-  box-shadow: 0 10px 26px rgba(15, 23, 42, 0.06);
+  box-shadow: 0 10px 26px rgba(14, 20, 17, 0.06);
 }
 
 .style-editor-header {
@@ -31,7 +31,7 @@ body {
   display: block;
   font-size: 0.76rem;
   font-weight: 700;
-  color: #32606d;
+  color: var(--mineral-green);
   letter-spacing: 0;
 }
 
@@ -43,7 +43,7 @@ body {
 .style-editor-header p,
 .style-status {
   margin: 0;
-  color: #536173;
+  color: var(--mineral-green);
 }
 
 .style-editor-actions,
@@ -117,7 +117,7 @@ body {
   border: 1px solid rgba(30, 41, 59, 0.14);
   border-radius: 8px;
   padding: 14px;
-  background: #f8fafc;
+  background: var(--white-950);
 }
 
 @media (max-width: 720px) {

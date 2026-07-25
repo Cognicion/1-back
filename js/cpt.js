@@ -451,7 +451,7 @@ function renderGraficaLinea(id, valores) {
   const nodo = $(id);
   const max = Math.max(...valores, 1);
   const puntos = valores.map((v, i) => `${(i / Math.max(1, valores.length - 1)) * 100},${96 - (v / max) * 86}`).join(" ");
-  nodo.innerHTML = `<svg viewBox="0 0 100 100" preserveAspectRatio="none"><polyline points="${puntos}" fill="none" stroke="#38bdf8" stroke-width="2" vector-effect="non-scaling-stroke"/><line x1="0" y1="96" x2="100" y2="96" stroke="rgba(148,163,184,.25)" vector-effect="non-scaling-stroke"/></svg><small>Max: ${Math.round(max)} ms</small>`;
+  nodo.innerHTML = `<svg viewBox="0 0 100 100" preserveAspectRatio="none"><polyline points="${puntos}" fill="none" stroke="#529866" stroke-width="2" vector-effect="non-scaling-stroke"/><line x1="0" y1="96" x2="100" y2="96" stroke="rgba(148,163,184,.25)" vector-effect="non-scaling-stroke"/></svg><small>Max: ${Math.round(max)} ms</small>`;
 }
 
 function renderBarras(id, datos) {

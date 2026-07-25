@@ -1096,7 +1096,7 @@ function graficaBarras() {
     const w = (width - 150) * valor / max;
     ctx.fillStyle = "rgba(56, 189, 248, 0.22)";
     ctx.fillRect(130, y, w, barH);
-    ctx.fillStyle = "#38bdf8";
+    ctx.fillStyle = "#529866";
     ctx.fillRect(130, y, 3, barH);
     ctx.fillStyle = "#dbeafe";
     ctx.fillText(String(label).slice(0, 18), 8, y + barH - 4);
@@ -1128,7 +1128,7 @@ function graficaDispersion() {
   ctx.lineTo(32, height - 24);
   ctx.lineTo(width - 12, height - 24);
   ctx.stroke();
-  ctx.fillStyle = "#38bdf8";
+  ctx.fillStyle = "#529866";
   puntos.forEach((p) => {
     ctx.beginPath();
     ctx.arc(sx(p.x), sy(p.y), 4, 0, Math.PI * 2);
@@ -1263,7 +1263,7 @@ function dibujarHistogramaCanvas(canvas, col) {
     const h = (height - 42) * valor / maxConteo;
     const x = 24 + i * ancho;
     const y = height - 24 - h;
-    ctx.fillStyle = "rgba(14, 165, 233, 0.36)";
+    ctx.fillStyle = "rgba(52, 122, 77, 0.36)";
     ctx.fillRect(x, y, ancho - 7, h);
     ctx.fillStyle = "#e0f2fe";
     ctx.fillText(String(valor), x + 4, y - 4);
@@ -1287,7 +1287,7 @@ function dibujarLineaCanvas(canvas, graficaConfig) {
   ctx.lineTo(28, height - 24);
   ctx.lineTo(width - 14, height - 24);
   ctx.stroke();
-  ctx.strokeStyle = "#38bdf8";
+  ctx.strokeStyle = "#529866";
   ctx.lineWidth = 2;
   ctx.beginPath();
   puntos.forEach((p, i) => {
@@ -1305,7 +1305,7 @@ function dibujarPastelCanvas(canvas, col) {
   const total = entradas.reduce((s, [, n]) => s + n, 0) || 1;
   const radio = Math.min(width, height) / 3.2;
   let angulo = -Math.PI / 2;
-  const colores = ["#38bdf8", "#22d3ee", "#60a5fa", "#818cf8", "#14b8a6", "#93c5fd"];
+  const colores = ["#529866", "#347a4d", "#7eb68a", "#45665a", "#14b8a6", "#afd3b5"];
   entradas.forEach(([label, valor], i) => {
     const siguiente = angulo + (valor / total) * Math.PI * 2;
     ctx.beginPath();
@@ -1350,7 +1350,7 @@ function dibujarDispersionCanvas(canvas, xCol, yCol) {
   ctx.lineTo(32, height - 24);
   ctx.lineTo(width - 12, height - 24);
   ctx.stroke();
-  ctx.fillStyle = "#38bdf8";
+  ctx.fillStyle = "#529866";
   puntos.forEach((p) => {
     ctx.beginPath();
     ctx.arc(sx(p.x), sy(p.y), 4, 0, Math.PI * 2);

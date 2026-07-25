@@ -2082,7 +2082,7 @@ function dibujarBarras(canvasId, conteo) {
     const barW = Math.max(2, anchoDisponibleBarra * valor / max);
     ctx.fillStyle = "rgba(56, 189, 248, 0.22)";
     ctx.fillRect(xBarra, y, barW, barH);
-    ctx.fillStyle = "#38bdf8";
+    ctx.fillStyle = "#529866";
     ctx.fillRect(xBarra, y, 3, barH);
     ctx.fillStyle = "#dbeafe";
     dibujarEtiquetaGrafica(ctx, label, 8, y + 11, areaEtiqueta - 12, 2);

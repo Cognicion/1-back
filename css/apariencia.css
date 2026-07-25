@@ -89,7 +89,7 @@ body.tema-laboratorio .btn-secundario:hover {
 .config-card {
   border: 1px solid rgba(126,182,138,.18);
   border-radius: 28px;
-  background: linear-gradient(145deg, rgba(15,23,42,.82), rgba(2,6,23,.64));
+  background: linear-gradient(145deg, rgba(14,20,17,.82), rgba(5,7,6,.64));
   box-shadow: 0 28px 90px rgba(0,0,0,.34);
   padding: clamp(20px, 4vw, 34px);
 }
@@ -127,8 +127,8 @@ body.tema-laboratorio .btn-secundario:hover {
   border: 1px solid rgba(126,182,138,.18);
   border-radius: 24px;
   padding: 18px;
-  background: rgba(15,23,42,.54);
-  color: #eef6ff;
+  background: rgba(14,20,17,.54);
+  color: var(--ivory-50);
   cursor: pointer;
 }
 
@@ -143,17 +143,17 @@ body.tema-laboratorio .btn-secundario:hover {
   border: 1px solid rgba(126,182,138,.16);
   margin-bottom: 14px;
   overflow: hidden;
-  background: #090d16;
+  background: var(--black-900);
 }
 
 .tema-preview.clasica {
-  background: linear-gradient(135deg, #05070b, #111827);
+  background: linear-gradient(135deg, var(--black-900), var(--black-850));
 }
 
 .tema-preview.laboratorio {
   background:
     radial-gradient(circle at 30% 25%, rgba(82,152,102,.35), transparent 34%),
-    linear-gradient(135deg, var(--black-1000), #082038 62%, var(--black-1000));
+    linear-gradient(135deg, var(--black-1000), var(--black-800) 62%, var(--black-1000));
 }
 
 .tema-opcion strong {
@@ -163,7 +163,7 @@ body.tema-laboratorio .btn-secundario:hover {
 }
 
 .tema-opcion small {
-  color: #9fb1c8;
+  color: var(--gray-400);
   line-height: 1.5;
 }
 
@@ -181,22 +181,22 @@ body.tema-laboratorio .btn-secundario:hover {
 /* Pantalla de configuracion: los temas deben diferenciarse visualmente al instante. */
 body:has(.config-shell) {
   min-height: 100vh;
-  color: #e5eefc;
+  color: var(--ivory-50);
   background:
     radial-gradient(circle at 18% 8%, rgba(69, 102, 90, .16), transparent 28%),
-    linear-gradient(180deg, #060a12 0%, #0b1220 48%, #05070b 100%) !important;
+    linear-gradient(180deg, var(--black-900) 0%, var(--black-950) 48%, var(--black-900) 100%) !important;
 }
 
 body:has(.config-shell):not(.tema-laboratorio) .config-card {
-  background: linear-gradient(145deg, rgba(15,23,42,.86), rgba(7,12,22,.78));
-  border-color: rgba(148,163,184,.18);
+  background: linear-gradient(145deg, rgba(14,20,17,.86), rgba(7,12,22,.78));
+  border-color: rgba(190,196,188,.18);
   box-shadow: 0 26px 80px rgba(0,0,0,.36);
 }
 
 body.tema-laboratorio:has(.config-shell) .config-card {
   background:
     radial-gradient(circle at 18% 22%, rgba(82,152,102,.18), transparent 28%),
-    linear-gradient(145deg, rgba(2,8,23,.9), rgba(8,47,73,.68));
+    linear-gradient(145deg, rgba(2,8,23,.9), rgba(16,51,32,.68));
   border-color: rgba(82,152,102,.34);
   box-shadow: 0 30px 100px rgba(0,0,0,.46), 0 0 58px rgba(82,152,102,.16);
 }
@@ -224,7 +224,7 @@ body:has(.config-shell) .tema-opcion.activo::after {
   border-radius: 999px;
   padding: 4px 9px;
   background: rgba(14,116,144,.28);
-  color: #bae6fd;
+  color: var(--green-200);
   font-size: .68rem;
   font-weight: 950;
   letter-spacing: .08em;
@@ -256,7 +256,7 @@ body:has(.config-shell) .tema-opcion.activo::after {
   width: 78%;
   height: 14px;
   background: linear-gradient(90deg, rgba(30,41,59,.95), rgba(51,65,85,.9));
-  box-shadow: 0 -24px 0 rgba(15,23,42,.95);
+  box-shadow: 0 -24px 0 rgba(14,20,17,.95);
 }
 
 .tema-preview.laboratorio::before {
@@ -273,7 +273,7 @@ body:has(.config-shell) .tema-opcion.activo::after {
   bottom: 15px;
   height: 1px;
   background: linear-gradient(90deg, transparent, rgba(126,182,138,.9), transparent);
-  box-shadow: 0 -18px 0 rgba(82,152,102,.18), 0 -36px 0 rgba(59,130,246,.12);
+  box-shadow: 0 -18px 0 rgba(82,152,102,.18), 0 -36px 0 rgba(52,122,77,.12);
 }
 .config-actions {
   display: flex;
@@ -294,11 +294,11 @@ body:has(.config-shell) .tema-opcion.activo::after {
   position: absolute;
   right: 16px;
   top: 16px;
-  border: 1px solid rgba(148,163,184,.32);
+  border: 1px solid rgba(190,196,188,.32);
   border-radius: 999px;
   padding: 4px 9px;
-  background: rgba(15,23,42,.68);
-  color: #cbd5e1;
+  background: rgba(14,20,17,.68);
+  color: var(--gray-200);
   font-size: .68rem;
   font-weight: 900;
   letter-spacing: .08em;
@@ -312,9 +312,9 @@ body:has(.config-shell) .tema-opcion.activo::after {
   --cog-surface-strong: rgba(8, 13, 24, .92);
   --cog-border: rgba(126, 182, 138, .18);
   --cog-text: #f5f8ff;
-  --cog-muted: #aebcd0;
+  --cog-muted: var(--green-200);
   --cog-accent: var(--celtic-400);
-  --cog-accent-2: #2f80ed;
+  --accent-primary: var(--green-200);
   --cog-shadow: rgba(0, 0, 0, .34);
   --bg: var(--cog-bg);
   --panel: var(--cog-surface);
@@ -330,10 +330,10 @@ body:has(.config-shell) .tema-opcion.activo::after {
   --cog-surface: rgba(255, 255, 255, .78);
   --cog-surface-strong: rgba(255, 255, 255, .94);
   --cog-border: rgba(69, 102, 90, .2);
-  --cog-text: #102033;
-  --cog-muted: #4d6178;
+  --cog-text: var(--black-800);
+  --cog-muted: var(--mineral-green);
   --cog-accent: var(--celtic-600);
-  --cog-accent-2: var(--celtic-500);
+  --accent-primary: var(--celtic-500);
   --cog-shadow: rgba(15, 50, 80, .13);
   --bg: var(--cog-bg);
   --panel: var(--cog-surface);
@@ -446,7 +446,7 @@ body.tema-claro .badge,
 body.tema-claro .pill,
 body.tema-claro .chip {
   color: var(--celtic-700) !important;
-  border-color: rgba(2, 132, 199, .28) !important;
+  border-color: rgba(52, 122, 77, .28) !important;
   background: rgba(224, 247, 255, .74) !important;
 }
 
@@ -463,7 +463,7 @@ body.tema-claro .select {
 
 body.tema-claro input::placeholder,
 body.tema-claro textarea::placeholder {
-  color: #7890a8 !important;
+  color: var(--mineral-green) !important;
 }
 
 body.tema-claro button,
@@ -518,7 +518,7 @@ body.tema-claro ::selection {
   padding: 18px;
   border-radius: 24px;
   border: 1px solid rgba(126,182,138,.18);
-  background: linear-gradient(145deg, rgba(15,23,42,.78), rgba(2,6,23,.72));
+  background: linear-gradient(145deg, rgba(14,20,17,.78), rgba(5,7,6,.72));
   color: var(--white-1000);
   text-align: left;
   cursor: pointer;
@@ -546,7 +546,7 @@ body.tema-claro ::selection {
   font-size: .68rem;
   letter-spacing: .12em;
   text-transform: uppercase;
-  color: #03131d;
+  color: var(--black-900);
   background: linear-gradient(135deg, var(--celtic-200), var(--celtic-400));
 }
 
@@ -586,7 +586,7 @@ body.tema-claro ::selection {
 }
 
 .modo-interfaz-preview.dark i {
-  background: rgba(148, 163, 184, .72);
+  background: rgba(190, 196, 188, .72);
 }
 
 .modo-interfaz-preview.light {
@@ -596,7 +596,7 @@ body.tema-claro ::selection {
 }
 
 .modo-interfaz-preview.light i {
-  background: rgba(2, 132, 199, .55);
+  background: rgba(52, 122, 77, .55);
 }
 
 .modo-interfaz-opcion strong {
@@ -607,7 +607,7 @@ body.tema-claro ::selection {
 
 .modo-interfaz-opcion small {
   display: block;
-  color: #a9b8cc;
+  color: var(--green-200);
   line-height: 1.45;
 }
 
@@ -643,22 +643,20 @@ body.tema-claro:has(.config-shell) .modo-interfaz-opcion small {
   --fondo: #f7fbff;
   --panel: rgba(255, 255, 255, .88);
   --panel-oscuro: rgba(241, 248, 255, .96);
-  --texto: #0f1f33;
-  --texto-suave: #52657d;
-  --azul: var(--celtic-600);
-  --azul-claro: var(--celtic-600);
-  --cyan: var(--mineral-green);
+  --texto: var(--black-800);
+  --texto-suave: var(--mineral-green);
+  --accent-primary: var(--mineral-green);
   --borde: rgba(69, 102, 90, .22);
   --bg: #f7fbff;
   --panel-strong: rgba(255, 255, 255, .94);
   --line: rgba(69, 102, 90, .18);
-  --line-blue: rgba(2, 132, 199, .25);
-  --text: #0f1f33;
-  --muted: #52657d;
-  --soft: #334155;
-  --blue: var(--celtic-600);
-  --blue-deep: var(--celtic-700);
-  --green: #0f766e;
+  --border-normal: rgba(52, 122, 77, .25);
+  --text: var(--black-800);
+  --muted: var(--mineral-green);
+  --soft: var(--gray-700);
+  --accent-primary: var(--celtic-600);
+  --green-700: var(--celtic-700);
+  --green: var(--mineral-green);
   --shadow: 0 24px 70px rgba(14, 47, 77, .14);
 }
 
@@ -667,7 +665,7 @@ body.tema-claro {
     radial-gradient(circle at 18% 6%, rgba(52, 122, 77, .16), transparent 28%),
     radial-gradient(circle at 86% 16%, rgba(69, 102, 90, .10), transparent 34%),
     linear-gradient(135deg, #fbfdff 0%, #eef7ff 48%, var(--white-1000) 100%) !important;
-  color: #0f1f33 !important;
+  color: var(--black-800) !important;
 }
 
 body.tema-claro,
@@ -677,7 +675,7 @@ body.tema-claro .layout,
 body.tema-claro .app,
 body.tema-claro .page,
 body.tema-claro .contenedor-principal {
-  color: #0f1f33 !important;
+  color: var(--black-800) !important;
 }
 
 body.tema-claro .config-card,
@@ -704,7 +702,7 @@ body.tema-claro .floating-panel,
 body.tema-claro .config-shell .tema-opcion,
 body.tema-claro .config-shell .modo-interfaz-opcion {
   background: linear-gradient(145deg, rgba(255,255,255,.94), rgba(235,246,255,.76)) !important;
-  color: #0f1f33 !important;
+  color: var(--black-800) !important;
   border-color: rgba(69, 102, 90, .22) !important;
   box-shadow: 0 22px 70px rgba(14, 47, 77, .14), inset 0 1px 0 rgba(255,255,255,.85) !important;
 }
@@ -720,7 +718,7 @@ body.tema-claro th,
 body.tema-claro .titulo,
 body.tema-claro .card-title,
 body.tema-claro .config-header h1 {
-  color: #0f1f33 !important;
+  color: var(--black-800) !important;
 }
 
 body.tema-claro p,
@@ -733,7 +731,7 @@ body.tema-claro .texto-suave,
 body.tema-claro .descripcion,
 body.tema-claro .subtitulo,
 body.tema-claro .config-header p {
-  color: #52657d !important;
+  color: var(--mineral-green) !important;
 }
 
 body.tema-claro input,
@@ -742,7 +740,7 @@ body.tema-claro textarea,
 body.tema-claro .input,
 body.tema-claro .select {
   background: rgba(255,255,255,.92) !important;
-  color: #0f1f33 !important;
+  color: var(--black-800) !important;
   border-color: rgba(69, 102, 90, .26) !important;
 }
 
@@ -754,7 +752,7 @@ body.tema-claro input[type="time"]::-webkit-calendar-picker-indicator {
 body.tema-claro .btn-secundario,
 body.tema-claro .ghost-button,
 body.tema-claro button:not(.btn-primario):not(.primary-button) {
-  color: #0f1f33;
+  color: var(--black-800);
 }
 
 body.tema-claro .config-kicker,
@@ -763,7 +761,7 @@ body.tema-claro .badge,
 body.tema-claro .pill,
 body.tema-claro .chip {
   color: var(--celtic-700) !important;
-  border-color: rgba(2, 132, 199, .28) !important;
+  border-color: rgba(52, 122, 77, .28) !important;
   background: rgba(224, 247, 255, .74) !important;
 }
 /* Tema claro: contraste robusto para botones y acciones */
@@ -777,7 +775,7 @@ body.tema-claro a.btn,
 body.tema-claro a.btn-secundario,
 body.tema-claro a.ghost-button {
   background: linear-gradient(145deg, rgba(255,255,255,.96), rgba(229,244,255,.86)) !important;
-  color: #102033 !important;
+  color: var(--black-800) !important;
   border: 1px solid rgba(69, 102, 90, .26) !important;
   box-shadow: 0 12px 30px rgba(14, 47, 77, .10), inset 0 1px 0 rgba(255,255,255,.92) !important;
   text-shadow: none !important;
@@ -794,8 +792,8 @@ body.tema-claro .pill.activo,
 body.tema-claro .chip.activo {
   background: linear-gradient(135deg, var(--celtic-600), var(--celtic-400)) !important;
   color: #ffffff !important;
-  border-color: rgba(2, 132, 199, .42) !important;
-  box-shadow: 0 14px 34px rgba(2, 132, 199, .20) !important;
+  border-color: rgba(52, 122, 77, .42) !important;
+  box-shadow: 0 14px 34px rgba(52, 122, 77, .20) !important;
 }
 
 body.tema-claro button:hover:not(:disabled),
@@ -805,11 +803,11 @@ body.tema-claro .ghost-button:hover:not(:disabled),
 body.tema-claro a.btn:hover,
 body.tema-claro a.btn-secundario:hover,
 body.tema-claro a.ghost-button:hover {
-  border-color: rgba(2, 132, 199, .48) !important;
+  border-color: rgba(52, 122, 77, .48) !important;
   background: linear-gradient(145deg, #ffffff, #dff4ff) !important;
   color: var(--black-900) !important;
   transform: translateY(-1px);
-  box-shadow: 0 16px 38px rgba(2, 132, 199, .16) !important;
+  box-shadow: 0 16px 38px rgba(52, 122, 77, .16) !important;
 }
 
 body.tema-claro .btn-primario:hover:not(:disabled),
@@ -825,7 +823,7 @@ body.tema-claro .btn:disabled,
 body.tema-claro .btn-secundario:disabled,
 body.tema-claro .config-actions button:disabled {
   background: linear-gradient(145deg, rgba(226,232,240,.95), rgba(203,213,225,.86)) !important;
-  color: #64748b !important;
+  color: var(--mineral-green) !important;
   border-color: rgba(100, 116, 139, .22) !important;
   box-shadow: none !important;
   opacity: .78 !important;
@@ -833,14 +831,14 @@ body.tema-claro .config-actions button:disabled {
 
 body.tema-claro .tema-opcion,
 body.tema-claro .modo-interfaz-opcion {
-  color: #102033 !important;
+  color: var(--black-800) !important;
 }
 
 body.tema-claro .tema-opcion.activo,
 body.tema-claro .modo-interfaz-opcion.activo {
   background: linear-gradient(145deg, rgba(255,255,255,.98), rgba(218,242,255,.86)) !important;
-  color: #0f1f33 !important;
-  border-color: rgba(2, 132, 199, .58) !important;
+  color: var(--black-800) !important;
+  border-color: rgba(52, 122, 77, .58) !important;
 }
 
 body.tema-claro .tema-opcion.activo::after,
@@ -850,14 +848,14 @@ body.tema-claro .modo-interfaz-opcion.activo::after {
 }
 /* Variantes claras de color: azul pastel, gris clinico, menta y lavanda */
 :root[data-theme="light"],
-:root[data-theme="light-blue"] {
+:root[data-theme="light-alternate"] {
   --cog-light-bg-1: #fbfdff;
   --cog-light-bg-2: #eef7ff;
-  --cog-card-blue: rgba(225, 243, 255, .92);
+  --cog-card-surface: rgba(233, 236, 232, .92);
   --cog-card-gray: rgba(244, 248, 252, .94);
   --cog-card-alt: rgba(236, 252, 255, .88);
-  --cog-card-text: #0f1f33;
-  --cog-card-muted: #52657d;
+  --cog-card-text: var(--black-800);
+  --cog-card-muted: var(--mineral-green);
   --cog-card-border: rgba(69, 102, 90, .22);
   --cog-card-accent: var(--celtic-600);
 }
@@ -868,28 +866,28 @@ body.tema-claro .modo-interfaz-opcion.activo::after {
   --cog-surface: rgba(255,255,255,.9);
   --cog-surface-strong: rgba(255,255,255,.96);
   --cog-border: rgba(71, 85, 105, .20);
-  --cog-text: #111827;
-  --cog-muted: #4b5563;
+  --cog-text: var(--black-850);
+  --cog-muted: var(--mineral-green);
   --cog-accent: var(--celtic-600);
-  --cog-accent-2: #64748b;
+  --accent-primary: var(--mineral-green);
   --cog-light-bg-1: #fbfbfc;
   --cog-light-bg-2: #eceff4;
-  --cog-card-blue: rgba(232, 241, 255, .90);
+  --cog-card-surface: rgba(233, 236, 232, .90);
   --cog-card-gray: rgba(236, 240, 245, .96);
   --cog-card-alt: rgba(248, 250, 252, .96);
-  --cog-card-text: #111827;
-  --cog-card-muted: #4b5563;
+  --cog-card-text: var(--black-850);
+  --cog-card-muted: var(--mineral-green);
   --cog-card-border: rgba(71, 85, 105, .22);
   --cog-card-accent: var(--celtic-600);
   --fondo: #f6f7f9;
   --panel: rgba(255,255,255,.9);
   --panel-oscuro: rgba(241,245,249,.96);
-  --texto: #111827;
-  --texto-suave: #4b5563;
+  --texto: var(--black-850);
+  --texto-suave: var(--mineral-green);
   --borde: rgba(71, 85, 105, .20);
   --bg: #f6f7f9;
-  --text: #111827;
-  --muted: #4b5563;
+  --text: var(--black-850);
+  --muted: var(--mineral-green);
   --line: rgba(71, 85, 105, .20);
 }
 
@@ -899,28 +897,28 @@ body.tema-claro .modo-interfaz-opcion.activo::after {
   --cog-surface: rgba(255,255,255,.88);
   --cog-surface-strong: rgba(255,255,255,.95);
   --cog-border: rgba(13, 148, 136, .22);
-  --cog-text: #0f2f2a;
-  --cog-muted: #45645f;
-  --cog-accent: #0f766e;
-  --cog-accent-2: var(--mineral-green);
+  --cog-text: var(--black-800);
+  --cog-muted: var(--mineral-green);
+  --cog-accent: var(--mineral-green);
+  --accent-primary: var(--mineral-green);
   --cog-light-bg-1: #fbfffd;
   --cog-light-bg-2: #e8fbf5;
-  --cog-card-blue: rgba(226, 251, 250, .90);
+  --cog-card-surface: rgba(233, 236, 232, .90);
   --cog-card-gray: rgba(243, 248, 247, .95);
   --cog-card-alt: rgba(236, 253, 245, .90);
-  --cog-card-text: #0f2f2a;
-  --cog-card-muted: #45645f;
+  --cog-card-text: var(--black-800);
+  --cog-card-muted: var(--mineral-green);
   --cog-card-border: rgba(13, 148, 136, .22);
-  --cog-card-accent: #0f766e;
+  --cog-card-accent: var(--mineral-green);
   --fondo: #f4fffb;
   --panel: rgba(255,255,255,.88);
   --panel-oscuro: rgba(232,251,245,.96);
-  --texto: #0f2f2a;
-  --texto-suave: #45645f;
+  --texto: var(--black-800);
+  --texto-suave: var(--mineral-green);
   --borde: rgba(13, 148, 136, .22);
   --bg: #f4fffb;
-  --text: #0f2f2a;
-  --muted: #45645f;
+  --text: var(--black-800);
+  --muted: var(--mineral-green);
   --line: rgba(13, 148, 136, .22);
 }
 
@@ -930,28 +928,28 @@ body.tema-claro .modo-interfaz-opcion.activo::after {
   --cog-surface: rgba(255,255,255,.88);
   --cog-surface-strong: rgba(255,255,255,.95);
   --cog-border: rgba(124, 58, 237, .18);
-  --cog-text: #21172f;
-  --cog-muted: #5c526b;
-  --cog-accent: #6d5bd0;
-  --cog-accent-2: var(--celtic-600);
+  --cog-text: var(--black-800);
+  --cog-muted: var(--mineral-green);
+  --cog-accent: var(--green-200);
+  --accent-primary: var(--celtic-600);
   --cog-light-bg-1: #fdfbff;
   --cog-light-bg-2: #f0eaff;
-  --cog-card-blue: rgba(234, 244, 255, .90);
+  --cog-card-surface: rgba(233, 236, 232, .90);
   --cog-card-gray: rgba(244, 241, 249, .95);
   --cog-card-alt: rgba(243, 232, 255, .76);
-  --cog-card-text: #21172f;
-  --cog-card-muted: #5c526b;
+  --cog-card-text: var(--black-800);
+  --cog-card-muted: var(--mineral-green);
   --cog-card-border: rgba(124, 58, 237, .18);
-  --cog-card-accent: #6d5bd0;
+  --cog-card-accent: var(--green-200);
   --fondo: #fbf8ff;
   --panel: rgba(255,255,255,.88);
   --panel-oscuro: rgba(244,241,249,.96);
-  --texto: #21172f;
-  --texto-suave: #5c526b;
+  --texto: var(--black-800);
+  --texto-suave: var(--mineral-green);
   --borde: rgba(124, 58, 237, .18);
   --bg: #fbf8ff;
-  --text: #21172f;
-  --muted: #5c526b;
+  --text: var(--black-800);
+  --muted: var(--mineral-green);
   --line: rgba(124, 58, 237, .18);
 }
 
@@ -964,9 +962,9 @@ body.tema-claro-azul {
 
 body.tema-claro-gris {
   background:
-    radial-gradient(circle at 18% 8%, rgba(148, 163, 184, .18), transparent 30%),
+    radial-gradient(circle at 18% 8%, rgba(190, 196, 188, .18), transparent 30%),
     radial-gradient(circle at 86% 16%, rgba(36, 95, 59, .08), transparent 34%),
-    linear-gradient(135deg, #fbfbfc 0%, #edf1f5 52%, #f8fafc 100%) !important;
+    linear-gradient(135deg, #fbfbfc 0%, #edf1f5 52%, var(--white-950) 100%) !important;
 }
 
 body.tema-claro-menta {
@@ -1028,7 +1026,7 @@ body.tema-claro .timeline span,
 body.tema-claro .scope-strip span,
 body.tema-claro .stats-mini,
 body.tema-claro .science-visual {
-  background: linear-gradient(145deg, var(--cog-card-blue), rgba(255,255,255,.82)) !important;
+  background: linear-gradient(145deg, var(--cog-card-surface), rgba(255,255,255,.82)) !important;
   color: var(--cog-card-text) !important;
   border-color: var(--cog-card-border) !important;
   box-shadow: 0 22px 70px rgba(15, 50, 80, .12), inset 0 1px 0 rgba(255,255,255,.82) !important;
@@ -1049,7 +1047,7 @@ body.tema-claro .cap-strip span:nth-child(3n) {
 body.tema-claro .feature-card:hover,
 body.tema-claro .timeline span:hover,
 body.tema-claro .cap-strip span:hover {
-  background: linear-gradient(145deg, rgba(255,255,255,.96), var(--cog-card-blue)) !important;
+  background: linear-gradient(145deg, rgba(255,255,255,.96), var(--cog-card-surface)) !important;
   border-color: color-mix(in srgb, var(--cog-card-accent) 45%, transparent) !important;
 }
 
@@ -1090,7 +1088,7 @@ body.tema-claro .config-kicker {
 .modo-interfaz-preview.light-gray i,
 .modo-interfaz-preview.light-mint i,
 .modo-interfaz-preview.light-lavender i {
-  background: rgba(15, 23, 42, .36);
+  background: rgba(14, 20, 17, .36);
 }
 /* Acciones disponibles: mismo color azul/cian en tema claro */
 body.tema-claro .available-action,
@@ -1098,8 +1096,8 @@ body.tema-claro a.available-action,
 body.tema-claro .module-card .card-actions .available-action {
   background: linear-gradient(135deg, var(--celtic-600), var(--mineral-green)) !important;
   color: #ffffff !important;
-  border-color: rgba(2, 132, 199, .45) !important;
-  box-shadow: 0 14px 34px rgba(2, 132, 199, .22) !important;
+  border-color: rgba(52, 122, 77, .45) !important;
+  box-shadow: 0 14px 34px rgba(52, 122, 77, .22) !important;
   text-decoration: none !important;
 }
 
@@ -1108,9 +1106,9 @@ body.tema-claro a.available-action:hover,
 body.tema-claro .module-card .card-actions .available-action:hover {
   background: linear-gradient(135deg, var(--celtic-700), var(--mineral-green)) !important;
   color: #ffffff !important;
-  border-color: rgba(2, 132, 199, .64) !important;
+  border-color: rgba(52, 122, 77, .64) !important;
   transform: translateY(-2px);
-  box-shadow: 0 18px 42px rgba(2, 132, 199, .26) !important;
+  box-shadow: 0 18px 42px rgba(52, 122, 77, .26) !important;
 }
 /* Tema claro: compatibilidad completa del panel medico */
 body.tema-claro .header-medico,
@@ -1118,13 +1116,13 @@ body.tema-claro .contenedor,
 body.tema-claro .grid-principal,
 body.tema-claro .panel-secundario,
 body.tema-claro .graficas-medico {
-  color: #102033 !important;
+  color: var(--black-800) !important;
 }
 
 body.tema-claro .header-medico {
   background: linear-gradient(180deg, rgba(255,255,255,.94), rgba(235,246,255,.82)) !important;
   border-bottom-color: rgba(14,116,144,.16) !important;
-  box-shadow: 0 14px 34px rgba(15,23,42,.05) !important;
+  box-shadow: 0 14px 34px rgba(14,20,17,.05) !important;
 }
 
 body.tema-claro .perfil-medico.card,
@@ -1133,15 +1131,15 @@ body.tema-claro .graficas-medico.card,
 body.tema-claro .grid-graficas > div,
 body.tema-claro .card {
   background: linear-gradient(145deg, rgba(255,255,255,.94), rgba(232,246,255,.78)) !important;
-  color: #102033 !important;
+  color: var(--black-800) !important;
   border-color: rgba(14,116,144,.18) !important;
-  box-shadow: 0 18px 52px rgba(37,99,235,.09), 0 8px 22px rgba(15,23,42,.05) !important;
+  box-shadow: 0 18px 52px rgba(37,99,235,.09), 0 8px 22px rgba(14,20,17,.05) !important;
 }
 
 body.tema-claro .estadisticas .stat,
 body.tema-claro .stat {
   background: linear-gradient(145deg, rgba(238,247,255,.96), rgba(220,238,252,.9)) !important;
-  color: #102033 !important;
+  color: var(--black-800) !important;
   border-color: rgba(14,116,144,.18) !important;
   box-shadow: 0 14px 34px rgba(37,99,235,.08) !important;
 }
@@ -1159,14 +1157,14 @@ body.tema-claro .cita-panel span,
 body.tema-claro .cita-panel small,
 body.tema-claro .grid-graficas p,
 body.tema-claro .grid-graficas small {
-  color: #52657d !important;
+  color: var(--mineral-green) !important;
 }
 
 body.tema-claro .perfil-medico h2,
 body.tema-claro .seccion h2,
 body.tema-claro .grid-graficas h3,
 body.tema-claro .cita-panel strong {
-  color: #102033 !important;
+  color: var(--black-800) !important;
 }
 
 body.tema-claro .barra-acciones input,
@@ -1176,14 +1174,14 @@ body.tema-claro .selector-carpeta,
 body.tema-claro .input-carpeta-medico input,
 body.tema-claro .campo-carpeta-medico select {
   background: rgba(255,255,255,.94) !important;
-  color: #102033 !important;
+  color: var(--black-800) !important;
   border-color: rgba(14,116,144,.22) !important;
   box-shadow: inset 0 1px 0 rgba(255,255,255,.75) !important;
 }
 
 body.tema-claro .barra-acciones input::placeholder,
 body.tema-claro .input-carpeta-medico input::placeholder {
-  color: #7890a8 !important;
+  color: var(--mineral-green) !important;
 }
 
 body.tema-claro .barra-acciones button,
@@ -1193,7 +1191,7 @@ body.tema-claro .boton-archivo-paciente,
 body.tema-claro .boton-contraer-panel,
 body.tema-claro .boton-contraer-carpetas {
   background: linear-gradient(145deg, rgba(255,255,255,.96), rgba(224,244,255,.88)) !important;
-  color: #102033 !important;
+  color: var(--black-800) !important;
   border: 1px solid rgba(14,116,144,.22) !important;
   box-shadow: 0 10px 24px rgba(37,99,235,.08) !important;
 }
@@ -1206,20 +1204,20 @@ body.tema-claro .boton-contraer-panel:hover,
 body.tema-claro .boton-contraer-carpetas:hover {
   background: linear-gradient(145deg, #ffffff, #dff4ff) !important;
   color: var(--celtic-700) !important;
-  border-color: rgba(2,132,199,.46) !important;
+  border-color: rgba(52,122,77,.46) !important;
   transform: translateY(-1px);
 }
 
 body.tema-claro .carpetas-lista-pacientes {
   background: linear-gradient(145deg, rgba(232,241,249,.92), rgba(205,221,235,.78)) !important;
-  color: #102033 !important;
+  color: var(--black-800) !important;
   border-color: rgba(14,116,144,.18) !important;
   box-shadow: inset 0 1px 0 rgba(255,255,255,.65) !important;
 }
 
 body.tema-claro .carpetas-lista-header small,
 body.tema-claro .carpetas-lista-pacientes .carpetas-lista-header small {
-  color: #4a6b88 !important;
+  color: var(--mineral-green) !important;
 }
 
 body.tema-claro .carpeta-inline-medico,
@@ -1228,7 +1226,7 @@ body.tema-claro .carpeta-chip-medico,
 body.tema-claro .opcion-carpeta-visible,
 body.tema-claro .opcion-carpeta-columna {
   background: rgba(255,255,255,.9) !important;
-  color: #102033 !important;
+  color: var(--black-800) !important;
   border-color: rgba(14,116,144,.18) !important;
 }
 
@@ -1238,12 +1236,12 @@ body.tema-claro .carpeta-inline-editar:hover,
 body.tema-claro .carpeta-chip-medico:hover {
   background: linear-gradient(135deg, rgba(37,99,235,.16), rgba(6,182,212,.14)) !important;
   color: var(--celtic-700) !important;
-  border-color: rgba(2,132,199,.42) !important;
+  border-color: rgba(52,122,77,.42) !important;
 }
 
 body.tema-claro .carpeta-inline-medico small,
 body.tema-claro .carpeta-chip-medico small {
-  background: rgba(15,23,42,.08) !important;
+  background: rgba(14,20,17,.08) !important;
   color: var(--celtic-700) !important;
 }
 
@@ -1253,34 +1251,34 @@ body.tema-claro .tabla-pacientes {
 
 body.tema-claro .encabezado-pacientes {
   background: linear-gradient(145deg, var(--ivory-100), #eaf6ff) !important;
-  color: #102033 !important;
+  color: var(--black-800) !important;
   border-color: rgba(14,116,144,.22) !important;
   box-shadow: inset 0 -1px 0 rgba(14,116,144,.12) !important;
 }
 
 body.tema-claro .encabezado-pacientes span,
 body.tema-claro .encabezado-pacientes .celda-tabla {
-  color: #233b55 !important;
+  color: var(--black-800) !important;
   border-right-color: rgba(14,116,144,.16) !important;
 }
 
 body.tema-claro .fila-paciente,
 body.tema-claro .paciente-card {
   background: linear-gradient(145deg, rgba(255,255,255,.86), rgba(237,246,255,.72)) !important;
-  color: #102033 !important;
+  color: var(--black-800) !important;
   border-color: rgba(14,116,144,.16) !important;
 }
 
 body.tema-claro .fila-paciente:hover,
 body.tema-claro .fila-paciente.seleccionada {
   background: linear-gradient(145deg, rgba(219,234,254,.88), rgba(224,242,254,.78)) !important;
-  border-color: rgba(2,132,199,.32) !important;
+  border-color: rgba(52,122,77,.32) !important;
 }
 
 body.tema-claro .celda-tabla,
 body.tema-claro .fila-paciente > span,
 body.tema-claro .paciente-card p {
-  color: #334155 !important;
+  color: var(--gray-700) !important;
   border-right-color: rgba(14,116,144,.12) !important;
 }
 
@@ -1288,13 +1286,13 @@ body.tema-claro .fila-paciente strong,
 body.tema-claro .paciente-card h3,
 body.tema-claro .nombre-paciente,
 body.tema-claro .celda-nombre {
-  color: #0f1f33 !important;
+  color: var(--black-800) !important;
 }
 
 body.tema-claro .diagnostico-columna,
 body.tema-claro .diagnostico-principal,
 body.tema-claro .diagnosticos-secundarios {
-  color: #334155 !important;
+  color: var(--gray-700) !important;
 }
 
 body.tema-claro .selector-atencion,
@@ -1313,7 +1311,7 @@ body.tema-claro .grid-graficas canvas {
 
 body.tema-claro .resizer::after {
   background: var(--celtic-600) !important;
-  box-shadow: 0 0 10px rgba(2,132,199,.35) !important;
+  box-shadow: 0 0 10px rgba(52,122,77,.35) !important;
 }
 
 body.tema-claro .modal-filtro-atencion,
@@ -1321,7 +1319,7 @@ body.tema-claro .panel-filtro-atencion,
 body.tema-claro .panel-carpetas-pacientes,
 body.tema-claro .modal-columnas-pacientes,
 body.tema-claro .panel-columnas-pacientes {
-  color: #102033 !important;
+  color: var(--black-800) !important;
 }
 
 body.tema-claro .panel-filtro-atencion,
@@ -1329,7 +1327,7 @@ body.tema-claro .panel-carpetas-pacientes,
 body.tema-claro .panel-columnas-pacientes {
   background: linear-gradient(145deg, rgba(255,255,255,.96), rgba(231,244,255,.9)) !important;
   border-color: rgba(14,116,144,.22) !important;
-  box-shadow: 0 28px 90px rgba(15,23,42,.18) !important;
+  box-shadow: 0 28px 90px rgba(14,20,17,.18) !important;
 }
 
 /* Tema claro: cierre de compatibilidad del panel medico */
@@ -1358,9 +1356,9 @@ body.tema-claro .carpeta-chip-editar,
 body.tema-claro .diagnostico-toggle,
 body.tema-claro .boton-accion-tabla {
   background: rgba(255, 255, 255, .88) !important;
-  color: #123047 !important;
+  color: var(--black-800) !important;
   border-color: rgba(69, 102, 90, .24) !important;
-  box-shadow: 0 10px 22px rgba(15, 23, 42, .06) !important;
+  box-shadow: 0 10px 22px rgba(14, 20, 17, .06) !important;
 }
 
 body.tema-claro .pestana-panel-medico:hover,
@@ -1372,7 +1370,7 @@ body.tema-claro .diagnostico-toggle:hover,
 body.tema-claro .boton-accion-tabla:hover {
   background: linear-gradient(135deg, #eef8ff, #dff4ff) !important;
   color: var(--celtic-700) !important;
-  border-color: rgba(2, 132, 199, .44) !important;
+  border-color: rgba(52, 122, 77, .44) !important;
 }
 
 body.tema-claro .boton.activo,
@@ -1381,7 +1379,7 @@ body.tema-claro #btnPacientesArchivados.activo,
 body.tema-claro #btnAdmin {
   background: linear-gradient(135deg, var(--celtic-600), var(--mineral-green)) !important;
   color: #ffffff !important;
-  border-color: rgba(2, 132, 199, .45) !important;
+  border-color: rgba(52, 122, 77, .45) !important;
 }
 
 body.tema-claro .modal-filtro-atencion {
@@ -1393,7 +1391,7 @@ body.tema-claro .encabezado-filtro-atencion,
 body.tema-claro .acciones-filtro-atencion,
 body.tema-claro .carpetas-panel-cuerpo,
 body.tema-claro .bloque-carpetas-visibles {
-  color: #102033 !important;
+  color: var(--black-800) !important;
 }
 
 body.tema-claro .opciones-filtro-atencion label,
@@ -1403,7 +1401,7 @@ body.tema-claro .opcion-carpeta-visible,
 body.tema-claro .bloque-carpetas-visibles,
 body.tema-claro .carpeta-chip-medico {
   background: rgba(255, 255, 255, .82) !important;
-  color: #123047 !important;
+  color: var(--black-800) !important;
   border-color: rgba(69, 102, 90, .18) !important;
 }
 
@@ -1414,7 +1412,7 @@ body.tema-claro #aplicarColumnasPacientes,
 body.tema-claro #aplicarFiltroCarpetaMedico {
   background: linear-gradient(135deg, var(--celtic-600), var(--mineral-green)) !important;
   color: #ffffff !important;
-  border-color: rgba(2, 132, 199, .42) !important;
+  border-color: rgba(52, 122, 77, .42) !important;
 }
 
 body.tema-claro .boton-secundario-filtro,
@@ -1424,7 +1422,7 @@ body.tema-claro #restaurarColumnasPacientes,
 body.tema-claro #todasColumnasPacientes,
 body.tema-claro #limpiarFiltroCarpetaMedico {
   background: rgba(255, 255, 255, .9) !important;
-  color: #123047 !important;
+  color: var(--black-800) !important;
 }
 
 body.tema-claro .carpetas-lista-pacientes.carpetas-contraidas {
@@ -1435,7 +1433,7 @@ body.tema-claro .carpetas-inline-medico p,
 body.tema-claro .lista-carpetas-medico p,
 body.tema-claro .opciones-carpetas-visibles p,
 body.tema-claro #listaPacientes {
-  color: #52657d !important;
+  color: var(--mineral-green) !important;
 }
 
 body.tema-claro .tabla-pacientes::-webkit-scrollbar,
@@ -1467,7 +1465,7 @@ body.tema-claro .encabezado-pacientes {
 }
 
 body.tema-claro .encabezado-pacientes .celda-tabla {
-  color: #1e3a56 !important;
+  color: var(--black-800) !important;
   letter-spacing: .18em;
 }
 
@@ -1481,7 +1479,7 @@ body.tema-claro .selector-carpeta option,
 body.tema-claro .barra-acciones select option,
 body.tema-claro .campo-carpeta-medico select option {
   background: #ffffff !important;
-  color: #102033 !important;
+  color: var(--black-800) !important;
 }
 
 body.tema-claro .estado-activo {
@@ -1494,14 +1492,14 @@ body.tema-claro .estado-pendiente {
 
 body.tema-claro .lista-simple,
 body.tema-claro .lista-simple li {
-  color: #334155 !important;
+  color: var(--gray-700) !important;
 }
 /* Tema claro: compatibilidad de rehabilitacion cognitiva */
 body.tema-claro .topbar-rehabilitacion {
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.94), rgba(231, 244, 255, 0.88)) !important;
   border-bottom: 1px solid rgba(69, 102, 90, 0.16) !important;
   box-shadow: 0 18px 46px rgba(36, 95, 59, 0.10) !important;
-  color: var(--cog-text, #102033) !important;
+  color: var(--cog-text, var(--black-800)) !important;
 }
 
 body.tema-claro .marca-rehabilitacion strong,
@@ -1511,7 +1509,7 @@ body.tema-claro .rehabilitacion-shell h3,
 body.tema-claro .tarjeta-actividad h3,
 body.tema-claro .tarjeta-tamizaje h3,
 body.tema-claro .panel-tamizaje-header h2 {
-  color: var(--cog-text, #102033) !important;
+  color: var(--cog-text, var(--black-800)) !important;
   text-shadow: none !important;
 }
 
@@ -1527,7 +1525,7 @@ body.tema-claro .panel-tamizaje-card p,
 body.tema-claro .panel-tamizaje-card small,
 body.tema-claro .guia-prueba-tamizaje li,
 body.tema-claro .resultado-tamizaje-cognitivo p {
-  color: var(--cog-muted, #52657d) !important;
+  color: var(--cog-muted, var(--mineral-green)) !important;
   text-shadow: none !important;
 }
 
@@ -1542,7 +1540,7 @@ body.tema-claro .intro-saltar,
 body.tema-claro .modo-tamizaje-switch button {
   background: linear-gradient(145deg, rgba(255, 255, 255, 0.98), rgba(225, 242, 253, 0.92)) !important;
   border: 1px solid rgba(69, 102, 90, 0.20) !important;
-  color: var(--cog-text, #102033) !important;
+  color: var(--cog-text, var(--black-800)) !important;
   box-shadow: 0 12px 28px rgba(15, 76, 129, 0.10) !important;
 }
 
@@ -1557,7 +1555,7 @@ body.tema-claro .tarjeta-tamizaje button:hover {
 }
 
 body.tema-claro .rehabilitacion-shell {
-  color: var(--cog-text, #102033) !important;
+  color: var(--cog-text, var(--black-800)) !important;
 }
 
 body.tema-claro .hero-rehabilitacion {
@@ -1566,7 +1564,7 @@ body.tema-claro .hero-rehabilitacion {
     linear-gradient(145deg, rgba(255, 255, 255, 0.96), rgba(226, 240, 252, 0.84)) !important;
   border: 1px solid rgba(69, 102, 90, 0.20) !important;
   box-shadow: 0 30px 80px rgba(36, 95, 59, 0.14) !important;
-  color: var(--cog-text, #102033) !important;
+  color: var(--cog-text, var(--black-800)) !important;
 }
 
 body.tema-claro .hero-rehabilitacion::before,
@@ -1598,8 +1596,8 @@ body.tema-claro .orbita {
 }
 
 body.tema-claro .nucleo-cognitivo {
-  background: radial-gradient(circle, var(--ivory-50), #93c5fd) !important;
-  color: #0f2a45 !important;
+  background: radial-gradient(circle, var(--ivory-50), var(--green-200)) !important;
+  color: var(--black-800) !important;
   box-shadow: 0 0 34px rgba(52, 122, 77, 0.28) !important;
 }
 
@@ -1625,7 +1623,7 @@ body.tema-claro .visibilidad-tamizaje-paciente {
   background: linear-gradient(145deg, rgba(255, 255, 255, 0.95), rgba(232, 246, 255, 0.82)) !important;
   border: 1px solid rgba(69, 102, 90, 0.18) !important;
   box-shadow: 0 18px 46px rgba(36, 95, 59, 0.10) !important;
-  color: var(--cog-text, #102033) !important;
+  color: var(--cog-text, var(--black-800)) !important;
 }
 
 body.tema-claro .tarjeta-actividad.disponible,
@@ -1638,7 +1636,7 @@ body.tema-claro .tarjeta-actividad:hover {
 body.tema-claro .aviso-clinico {
   background: linear-gradient(145deg, rgba(235, 248, 255, 0.94), rgba(243, 244, 246, 0.84)) !important;
   border: 1px solid rgba(69, 102, 90, 0.18) !important;
-  color: var(--cog-muted, #52657d) !important;
+  color: var(--cog-muted, var(--mineral-green)) !important;
 }
 
 body.tema-claro .buscador-actividad input,
@@ -1651,7 +1649,7 @@ body.tema-claro .contenedor-prueba-interactiva select,
 body.tema-claro .contenedor-prueba-interactiva textarea {
   background: rgba(255, 255, 255, 0.96) !important;
   border: 1px solid rgba(69, 102, 90, 0.20) !important;
-  color: var(--cog-text, #102033) !important;
+  color: var(--cog-text, var(--black-800)) !important;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.70) !important;
 }
 
@@ -1667,7 +1665,7 @@ body.tema-claro .opcion-prueba-interactiva,
 body.tema-claro .opcion-prueba-interactiva label {
   background: rgba(255, 255, 255, 0.84) !important;
   border: 1px solid rgba(69, 102, 90, 0.16) !important;
-  color: var(--cog-text, #102033) !important;
+  color: var(--cog-text, var(--black-800)) !important;
 }
 
 body.tema-claro .filtro-dominio.activo,
@@ -1704,7 +1702,7 @@ body.tema-claro .toast-rehabilitacion,
 body.tema-claro .sin-resultados {
   background: linear-gradient(145deg, rgba(255, 255, 255, 0.96), rgba(224, 242, 254, 0.88)) !important;
   border: 1px solid rgba(69, 102, 90, 0.18) !important;
-  color: var(--cog-text, #102033) !important;
+  color: var(--cog-text, var(--black-800)) !important;
   box-shadow: 0 18px 42px rgba(36, 95, 59, 0.14) !important;
 }
 
@@ -1721,7 +1719,7 @@ body.tema-claro .resumen-cognitivo,
 body.tema-claro .historial-cognitivo {
   background: linear-gradient(145deg, rgba(255, 255, 255, 0.94), rgba(235, 244, 252, 0.82)) !important;
   border: 1px solid rgba(69, 102, 90, 0.18) !important;
-  color: var(--cog-text, #102033) !important;
+  color: var(--cog-text, var(--black-800)) !important;
   box-shadow: 0 18px 44px rgba(36, 95, 59, 0.10) !important;
 }
 
@@ -1762,6 +1760,6 @@ body.tema-claro .rehabilitacion-shell::-webkit-scrollbar-track {
 }
 
 body.tema-claro .intro-rehabilitacion:not(.oculta) {
-  background: radial-gradient(circle at 50% 60%, rgba(52, 122, 77, 0.20), transparent 38%), #020817 !important;
+  background: radial-gradient(circle at 50% 60%, rgba(52, 122, 77, 0.20), transparent 38%), var(--black-900) !important;
   color: var(--white-1000) !important;
 }

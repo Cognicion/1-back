@@ -2,10 +2,10 @@ body {
   margin: 0;
   font-family: Arial, Helvetica, sans-serif;
   background:
-    radial-gradient(circle at top, rgba(78,163,255,0.22), transparent 32%),
+    radial-gradient(circle at top, rgba(82,152,102,0.22), transparent 32%),
     radial-gradient(circle at bottom right, rgba(82,152,102,0.13), transparent 28%),
-    linear-gradient(135deg, #050608, #080b10 50%, var(--black-900));
-  color: #f8fafc;
+    linear-gradient(135deg, var(--black-900), var(--black-900) 50%, var(--black-900));
+  color: var(--white-950);
   font-size: 14px;
   overflow-x: hidden;
 }
@@ -40,7 +40,7 @@ body {
 
 .header-medico p {
   margin: 5px 0 0;
-  color: #94a3b8;
+  color: var(--gray-400);
   font-size: 14px;
 }
 
@@ -82,12 +82,12 @@ body {
   place-items: center;
   border-radius: 999px;
   border: 1px solid rgba(126, 182, 138, 0.22);
-  background: rgba(2, 6, 23, 0.68);
-  color: #bfdbfe;
+  background: rgba(5, 7, 6, 0.68);
+  color: var(--green-200);
   font-size: 1.25rem;
   line-height: 1;
   cursor: pointer;
-  box-shadow: 0 10px 26px rgba(2, 132, 199, 0.10);
+  box-shadow: 0 10px 26px rgba(52, 122, 77, 0.10);
   transition: transform 0.2s ease, background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
   z-index: 2;
 }
@@ -96,7 +96,7 @@ body {
   transform: translateX(-2px);
   border-color: rgba(82, 152, 102, 0.58);
   background: rgba(52, 122, 77, 0.14);
-  color: #f8fafc;
+  color: var(--white-950);
 }
 
 .pestana-panel-medico {
@@ -115,7 +115,7 @@ body {
   border-radius: 0 16px 16px 0;
   background:
     linear-gradient(180deg, rgba(52, 122, 77, 0.22), rgba(36, 95, 59, 0.14)),
-    rgba(2, 6, 23, 0.86);
+    rgba(5, 7, 6, 0.86);
   color: var(--ivory-50);
   box-shadow: 0 20px 46px rgba(52, 122, 77, 0.18);
   backdrop-filter: blur(14px);
@@ -169,7 +169,7 @@ body.panel-medico-contraido .pestana-panel-medico {
   border: 1px solid rgba(255,255,255,0.10);
   border-radius: 22px;
   padding: 16px;
-  box-shadow: 0 0 35px rgba(78,163,255,0.10), 0 18px 50px rgba(0,0,0,0.38);
+  box-shadow: 0 0 35px rgba(82,152,102,0.10), 0 18px 50px rgba(0,0,0,0.38);
   backdrop-filter: blur(18px);
 }
 
@@ -203,12 +203,12 @@ body.panel-medico-contraido .pestana-panel-medico {
 
 .dato {
   margin: 9px 0;
-  color: #cbd5e1;
+  color: var(--gray-200);
   font-size: 14px;
 }
 
 .dato span {
-  color: #94a3b8;
+  color: var(--gray-400);
   display: block;
   font-size: 12px;
 }
@@ -235,7 +235,7 @@ body.panel-medico-contraido .pestana-panel-medico {
 
 .stat p {
   margin: 6px 0 0;
-  color: #94a3b8;
+  color: var(--gray-400);
   font-size: 14px;
 }
 
@@ -257,7 +257,7 @@ body.panel-medico-contraido .pestana-panel-medico {
   gap: 5px;
   padding: 12px 14px;
   border-radius: 14px;
-  border: 1px solid rgba(148,163,184,0.16);
+  border: 1px solid rgba(190,196,188,0.16);
   background: rgba(8,12,20,0.68);
 }
 
@@ -268,7 +268,7 @@ body.panel-medico-contraido .pestana-panel-medico {
 .cita-panel span,
 .cita-panel small,
 .texto-suave {
-  color: #94a3b8;
+  color: var(--gray-400);
 }
 
 .barra-acciones {
@@ -284,8 +284,8 @@ body.panel-medico-contraido .pestana-panel-medico {
   flex: 1;
   padding: 10px 12px;
   border-radius: 14px;
-  border: 1px solid rgba(148,163,184,0.25);
-  background: rgba(15,23,42,0.95);
+  border: 1px solid rgba(190,196,188,0.25);
+  background: rgba(14,20,17,0.95);
   color: white;
   font-size: 12px;
 }
@@ -331,7 +331,7 @@ body.panel-medico-contraido .pestana-panel-medico {
   display: grid;
   place-items: center;
   padding: 18px;
-  background: rgba(2, 6, 23, 0.68);
+  background: rgba(5, 7, 6, 0.68);
   backdrop-filter: blur(10px);
   opacity: 0;
   pointer-events: none;
@@ -369,7 +369,7 @@ body.panel-medico-contraido .pestana-panel-medico {
 }
 
 .carpetas-lista-header small {
-  color: #64748b;
+  color: var(--mineral-green);
   font-size: 10px;
   font-weight: 800;
   letter-spacing: 0.04em;
@@ -388,7 +388,7 @@ body.panel-medico-contraido .pestana-panel-medico {
   place-items: center;
   border-radius: 999px;
   border: 1px solid rgba(126, 182, 138, 0.22);
-  background: rgba(2, 6, 23, 0.72);
+  background: rgba(5, 7, 6, 0.72);
   color: var(--ivory-50);
   font-size: 0.95rem;
   line-height: 1;
@@ -413,7 +413,7 @@ body.panel-medico-contraido .pestana-panel-medico {
   gap: 9px;
   align-items: center;
   min-height: 38px;
-  color: #94a3b8;
+  color: var(--gray-400);
   font-size: 12px;
   max-height: 180px;
   opacity: 1;
@@ -461,8 +461,8 @@ body.panel-medico-contraido .pestana-panel-medico {
   padding: 8px 12px;
   border-radius: 999px;
   border: 1px solid rgba(126, 182, 138, 0.20);
-  background: rgba(15, 23, 42, 0.72);
-  color: #cbd5e1;
+  background: rgba(14, 20, 17, 0.72);
+  color: var(--gray-200);
   cursor: pointer;
   font-size: 12px;
   font-weight: 800;
@@ -474,7 +474,7 @@ body.panel-medico-contraido .pestana-panel-medico {
   padding: 8px 10px;
   border-radius: 999px;
   border: 1px solid rgba(126, 182, 138, 0.16);
-  background: rgba(15, 23, 42, 0.58);
+  background: rgba(14, 20, 17, 0.58);
   color: var(--celtic-300);
   cursor: pointer;
   font-size: 11px;
@@ -500,7 +500,7 @@ body.panel-medico-contraido .pestana-panel-medico {
 .carpeta-inline-medico.activa {
   border-color: rgba(82, 152, 102, 0.78);
   background: linear-gradient(135deg, rgba(36, 95, 59, 0.55), rgba(6, 182, 212, 0.30));
-  color: #f8fafc;
+  color: var(--white-950);
   box-shadow: 0 0 24px rgba(82, 152, 102, 0.16);
 }
 
@@ -512,7 +512,7 @@ body.panel-medico-contraido .pestana-panel-medico {
   height: 20px;
   padding: 0 6px;
   border-radius: 999px;
-  background: rgba(2, 6, 23, 0.72);
+  background: rgba(5, 7, 6, 0.72);
   color: var(--celtic-300);
   font-size: 10px;
   font-weight: 900;
@@ -530,7 +530,7 @@ body.panel-medico-contraido .pestana-panel-medico {
   max-height: calc(100vh - 36px);
   border: 1px solid rgba(82, 152, 102, 0.28);
   border-radius: 18px;
-  background: linear-gradient(180deg, rgba(15, 23, 42, 0.98), rgba(8, 12, 20, 0.98));
+  background: linear-gradient(180deg, rgba(14, 20, 17, 0.98), rgba(8, 12, 20, 0.98));
   box-shadow: 0 24px 80px rgba(0, 0, 0, 0.42), 0 0 34px rgba(82, 152, 102, 0.10);
   transform: translateY(10px) scale(0.98);
   transition: transform 0.18s ease;
@@ -554,7 +554,7 @@ body.panel-medico-contraido .pestana-panel-medico {
 .campo-carpeta-medico {
   display: grid;
   gap: 8px;
-  color: #94a3b8;
+  color: var(--gray-400);
   font-size: 13px;
   font-weight: 800;
 }
@@ -570,9 +570,9 @@ body.panel-medico-contraido .pestana-panel-medico {
   min-width: 0;
   padding: 10px 12px;
   border-radius: 13px;
-  border: 1px solid rgba(148, 163, 184, 0.22);
-  background: rgba(15, 23, 42, 0.92);
-  color: #f8fafc;
+  border: 1px solid rgba(190, 196, 188, 0.22);
+  background: rgba(14, 20, 17, 0.92);
+  color: var(--white-950);
 }
 
 .input-carpeta-medico button {
@@ -592,7 +592,7 @@ body.panel-medico-contraido .pestana-panel-medico {
   padding: 10px 12px;
   border: 1px solid rgba(126, 182, 138, 0.16);
   border-radius: 13px;
-  background: rgba(15, 23, 42, 0.58);
+  background: rgba(14, 20, 17, 0.58);
   color: var(--ivory-100);
   font-size: 13px;
   font-weight: 800;
@@ -633,8 +633,8 @@ body.panel-medico-contraido .pestana-panel-medico {
 .boton-mini-carpeta {
   border: 1px solid rgba(126, 182, 138, 0.20);
   border-radius: 999px;
-  background: rgba(15, 23, 42, 0.78);
-  color: #bfdbfe;
+  background: rgba(14, 20, 17, 0.78);
+  color: var(--green-200);
   cursor: pointer;
   font-size: 11px;
   font-weight: 800;
@@ -643,7 +643,7 @@ body.panel-medico-contraido .pestana-panel-medico {
 
 .boton-mini-carpeta:hover {
   border-color: rgba(82, 152, 102, 0.62);
-  color: #f8fafc;
+  color: var(--white-950);
 }
 
 .opciones-carpetas-visibles {
@@ -654,7 +654,7 @@ body.panel-medico-contraido .pestana-panel-medico {
 
 .opciones-carpetas-visibles p {
   margin: 0;
-  color: #94a3b8;
+  color: var(--gray-400);
 }
 
 .opcion-carpeta-visible {
@@ -664,8 +664,8 @@ body.panel-medico-contraido .pestana-panel-medico {
   min-height: 32px;
   padding: 7px 10px;
   border-radius: 999px;
-  border: 1px solid rgba(148, 163, 184, 0.16);
-  background: rgba(15, 23, 42, 0.55);
+  border: 1px solid rgba(190, 196, 188, 0.16);
+  background: rgba(14, 20, 17, 0.55);
   color: var(--ivory-100);
   font-size: 12px;
   font-weight: 800;
@@ -689,7 +689,7 @@ body.panel-medico-contraido .pestana-panel-medico {
 
 .lista-carpetas-medico p {
   margin: 0;
-  color: #94a3b8;
+  color: var(--gray-400);
 }
 
 .carpeta-chip-medico {
@@ -702,7 +702,7 @@ body.panel-medico-contraido .pestana-panel-medico {
   padding: 4px;
   border-radius: 999px;
   border: 1px solid rgba(82, 152, 102, 0.18);
-  background: rgba(15, 23, 42, 0.72);
+  background: rgba(14, 20, 17, 0.72);
 }
 
 .carpeta-chip-abrir,
@@ -757,7 +757,7 @@ body.panel-medico-contraido .pestana-panel-medico {
   gap: 14px;
   align-items: flex-start;
   padding: 18px 18px 12px;
-  border-bottom: 1px solid rgba(148, 163, 184, 0.16);
+  border-bottom: 1px solid rgba(190, 196, 188, 0.16);
 }
 
 .etiqueta-filtro-atencion {
@@ -771,7 +771,7 @@ body.panel-medico-contraido .pestana-panel-medico {
 
 .encabezado-filtro-atencion h3 {
   margin: 0;
-  color: #f8fafc;
+  color: var(--white-950);
   font-size: 19px;
 }
 
@@ -780,9 +780,9 @@ body.panel-medico-contraido .pestana-panel-medico {
   place-items: center;
   width: 34px;
   height: 34px;
-  border: 1px solid rgba(148, 163, 184, 0.22);
+  border: 1px solid rgba(190, 196, 188, 0.22);
   border-radius: 999px;
-  background: rgba(15, 23, 42, 0.9);
+  background: rgba(14, 20, 17, 0.9);
   color: var(--ivory-100);
   cursor: pointer;
 }
@@ -798,9 +798,9 @@ body.panel-medico-contraido .pestana-panel-medico {
   align-items: center;
   gap: 10px;
   padding: 11px 12px;
-  border: 1px solid rgba(148, 163, 184, 0.14);
+  border: 1px solid rgba(190, 196, 188, 0.14);
   border-radius: 13px;
-  background: rgba(15, 23, 42, 0.62);
+  background: rgba(14, 20, 17, 0.62);
   color: var(--ivory-100);
   font-size: 13px;
   cursor: pointer;
@@ -830,9 +830,9 @@ body.panel-medico-contraido .pestana-panel-medico {
 }
 
 .acciones-filtro-atencion .boton-secundario-filtro {
-  border: 1px solid rgba(148, 163, 184, 0.22);
-  background: rgba(15, 23, 42, 0.92);
-  color: #cbd5e1;
+  border: 1px solid rgba(190, 196, 188, 0.22);
+  background: rgba(14, 20, 17, 0.92);
+  color: var(--gray-200);
 }
 
 .lista-pacientes {
@@ -843,7 +843,7 @@ body.panel-medico-contraido .pestana-panel-medico {
 
 .paciente-card {
   background: var(--black-1000);
-  border: 1px solid #1e293b;
+  border: 1px solid var(--black-800);
   border-radius: 14px;
   padding: 16px;
 }
@@ -855,7 +855,7 @@ body.panel-medico-contraido .pestana-panel-medico {
 
 .paciente-card p {
   margin: 5px 0;
-  color: #94a3b8;
+  color: var(--gray-400);
   font-size: 14px;
 }
 
@@ -880,7 +880,7 @@ body.panel-medico-contraido .pestana-panel-medico {
   font-size: 13px;
   padding: 8px 10px;
   border-radius: 8px;
-  background: #1e293b;
+  background: var(--black-800);
   color: #e5e7eb;
 }
 
@@ -916,7 +916,7 @@ body.panel-medico-contraido .pestana-panel-medico {
 
 .grid-graficas h3 {
   margin: 0 0 12px;
-  color: #bfdbfe;
+  color: var(--green-200);
   font-size: 14px;
 }
 
@@ -929,7 +929,7 @@ body.panel-medico-contraido .pestana-panel-medico {
 
 .lista-simple {
   padding-left: 18px;
-  color: #cbd5e1;
+  color: var(--gray-200);
   font-size: 13px;
   line-height: 1.35;
 }
@@ -1023,7 +1023,7 @@ body.panel-medico-contraido .pestana-panel-medico {
   border: 1px solid rgba(255,255,255,0.10);
   border-radius: 10px;
   background: rgba(8, 12, 20, 0.92);
-  color: #94a3b8;
+  color: var(--gray-400);
   font-size: 10px;
   font-weight: 800;
   letter-spacing: 0.08em;
@@ -1048,7 +1048,7 @@ body.panel-medico-contraido .pestana-panel-medico {
   border-radius: 10px;
   background: rgba(20, 24, 33, 0.78);
   border: 1px solid rgba(255,255,255,0.10);
-  color: #eaf4ff;
+  color: var(--ivory-50);
   text-decoration: none;
   transition: 0.2s ease;
 }
@@ -1057,7 +1057,7 @@ body.panel-medico-contraido .pestana-panel-medico {
 .fila-paciente > span {
   min-width: 0;
   padding: 12px 13px;
-  border-right: 1px solid rgba(148, 163, 184, 0.12);
+  border-right: 1px solid rgba(190, 196, 188, 0.12);
 }
 
 .celda-tabla:last-child,
@@ -1074,7 +1074,7 @@ body.panel-medico-contraido .pestana-panel-medico {
   display: grid;
   align-content: start;
   gap: 6px;
-  color: #cbd5e1;
+  color: var(--gray-200);
   font-size: 12px;
   line-height: 1.35;
 }
@@ -1109,8 +1109,8 @@ body.panel-medico-contraido .pestana-panel-medico {
 
 .fila-paciente:hover {
   background: rgba(30, 41, 59, 0.92);
-  border-color: rgba(78,163,255,0.35);
-  box-shadow: 0 0 26px rgba(78,163,255,0.12);
+  border-color: rgba(82,152,102,0.35);
+  box-shadow: 0 0 26px rgba(82,152,102,0.12);
 }
 
 .paciente-nombre {
@@ -1121,7 +1121,7 @@ body.panel-medico-contraido .pestana-panel-medico {
 }
 
 .paciente-dato {
-  color: #cbd5e1;
+  color: var(--gray-200);
   font-size: 12px;
   white-space: normal;
   overflow: hidden;
@@ -1182,7 +1182,7 @@ body.panel-medico-contraido .pestana-panel-medico {
   padding: 7px 9px;
   border-radius: 10px;
   border: 1px solid rgba(126, 182, 138, 0.24);
-  background: rgba(2, 6, 23, 0.72);
+  background: rgba(5, 7, 6, 0.72);
   color: var(--celtic-300);
   font-size: 0.72rem;
   font-weight: 800;
@@ -1214,7 +1214,7 @@ body.panel-medico-contraido .pestana-panel-medico {
 }
 
 .paciente-vacio {
-  color: #64748b;
+  color: var(--mineral-green);
   font-style: italic;
 }
 
@@ -1263,8 +1263,8 @@ body.bloqueado aside {
   display: none;
   margin-top: 8px;
   padding-top: 8px;
-  border-top: 1px solid rgba(148, 163, 184, 0.18);
-  color: #94a3b8;
+  border-top: 1px solid rgba(190, 196, 188, 0.18);
+  color: var(--gray-400);
 }
 
 .diagnostico-texto.expandido .diagnosticos-secundarios {

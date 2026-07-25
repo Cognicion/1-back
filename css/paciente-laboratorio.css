@@ -24,7 +24,7 @@
   border: 0;
   border-radius: 999px;
   padding: 8px 13px;
-  color: #9fb3c8;
+  color: var(--green-200);
   background: transparent;
   font: inherit;
   font-size: 12px;
@@ -42,7 +42,7 @@
 }
 
 .vista-datos-btn.activo {
-  color: #06111f;
+  color: var(--black-900);
   background: linear-gradient(135deg, var(--celtic-400), var(--celtic-400));
   box-shadow: 0 10px 26px rgba(82, 152, 102, 0.22);
 }
@@ -99,7 +99,7 @@
 .lab-gauge-meta {
   display: block;
   margin-top: 2px;
-  color: #9fb4c9;
+  color: var(--green-200);
   font-size: 10px;
   font-weight: 800;
   line-height: 1.2;
@@ -112,7 +112,7 @@
 }
 
 .lab-gauge-meta.es-ultimo {
-  color: #bae6fd;
+  color: var(--green-200);
 }
 
 .lab-info-grid {
@@ -148,7 +148,7 @@
 .lab-paciente-top p,
 .lab-card p,
 .lab-card li {
-  color: #cbd5e1;
+  color: var(--gray-200);
   line-height: 1.55;
 }
 
@@ -181,7 +181,7 @@
   overflow: hidden;
   border: 1px solid rgba(82, 152, 102, 0.18);
   border-radius: 24px;
-  background: radial-gradient(circle at 50% 35%, rgba(52, 122, 77, 0.16), rgba(2, 6, 23, 0.78) 64%);
+  background: radial-gradient(circle at 50% 35%, rgba(52, 122, 77, 0.16), rgba(5, 7, 6, 0.78) 64%);
 }
 
 .lab-humano-bg {
@@ -209,7 +209,7 @@
   position: absolute;
   left: 50%;
   transform: translateX(-50%);
-  background: linear-gradient(180deg, rgba(82, 152, 102, 0.34), rgba(15, 23, 42, 0.2));
+  background: linear-gradient(180deg, rgba(82, 152, 102, 0.34), rgba(14, 20, 17, 0.2));
   border: 1px solid rgba(126, 182, 138, 0.3);
 }
 
@@ -312,21 +312,21 @@
   right: 12px;
   width: 30px;
   height: 30px;
-  border: 1px solid rgba(148, 163, 184, 0.25);
+  border: 1px solid rgba(190, 196, 188, 0.25);
   border-radius: 999px;
   color: var(--ivory-50);
-  background: rgba(15, 23, 42, 0.78);
+  background: rgba(14, 20, 17, 0.78);
   cursor: pointer;
 }
 
 .lab-organo-panel h4 {
   margin: 7px 34px 8px 0;
-  color: #f8fafc;
+  color: var(--white-950);
 }
 
 .lab-organo-panel p {
   margin: 0;
-  color: #cbd5e1;
+  color: var(--gray-200);
   line-height: 1.55;
 }
 
@@ -349,7 +349,7 @@
 
 .lab-gauge span {
   display: block;
-  color: #8aa4bd;
+  color: var(--green-200);
   font-size: 11px;
   margin-bottom: 4px;
 }
@@ -454,24 +454,24 @@
 .popover-signo-vital header strong {
   display: block;
   margin-top: 3px;
-  color: #f8fafc;
+  color: var(--white-950);
   font-size: 15px;
 }
 
 .popover-signo-vital header button {
   width: 28px;
   height: 28px;
-  border: 1px solid rgba(148, 163, 184, 0.22);
+  border: 1px solid rgba(190, 196, 188, 0.22);
   border-radius: 999px;
-  background: rgba(15, 23, 42, 0.72);
-  color: #cbd5e1;
+  background: rgba(14, 20, 17, 0.72);
+  color: var(--gray-200);
   cursor: pointer;
 }
 
 .popover-signo-vital label {
   display: grid;
   gap: 5px;
-  color: #9fb4c9;
+  color: var(--green-200);
   font-size: 12px;
   font-weight: 800;
 }
@@ -496,7 +496,7 @@
   width: 100%;
   border: 1px solid rgba(103, 232, 249, 0.22);
   border-radius: 12px;
-  background: rgba(15, 23, 42, 0.82);
+  background: rgba(14, 20, 17, 0.82);
   color: #e5f7ff;
   padding: 9px 10px;
   outline: none;
@@ -532,7 +532,7 @@
 
 .popover-signo-actions button[type="submit"] {
   background: linear-gradient(135deg, rgba(82, 152, 102, 0.78), rgba(52, 122, 77, 0.58));
-  color: #02111f;
+  color: var(--black-900);
 }
 
 .lab-info-grid {
@@ -547,7 +547,7 @@
 }
 
 .lab-muted {
-  color: #9fb4c9;
+  color: var(--green-200);
   line-height: 1.5;
 }
 
@@ -565,7 +565,7 @@
   padding: 10px;
   border: 1px solid rgba(103, 232, 249, 0.14);
   border-radius: 14px;
-  background: rgba(15, 23, 42, 0.4);
+  background: rgba(14, 20, 17, 0.4);
 }
 
 .lab-equipo-item p {
@@ -615,7 +615,7 @@
   display: grid;
   place-items: center;
   padding: 24px;
-  background: rgba(2, 6, 23, 0.54);
+  background: rgba(5, 7, 6, 0.54);
   backdrop-filter: blur(10px);
   animation: labPacienteEntrada 0.18s ease both;
 }
@@ -657,7 +657,7 @@
 
 .historial-signo-card h3 {
   margin: 6px 0 0;
-  color: #f8fafc;
+  color: var(--white-950);
 }
 
 .historial-signo-actions {
@@ -669,7 +669,7 @@
   overflow: auto;
   border: 1px solid rgba(103, 232, 249, 0.14);
   border-radius: 18px;
-  background: rgba(15, 23, 42, 0.58);
+  background: rgba(14, 20, 17, 0.58);
   padding: 12px;
 }
 
@@ -680,7 +680,7 @@
 }
 
 .historial-signo-svg line {
-  stroke: rgba(148, 163, 184, 0.42);
+  stroke: rgba(190, 196, 188, 0.42);
   stroke-width: 1;
 }
 
@@ -694,18 +694,18 @@
 }
 
 .historial-signo-svg circle {
-  fill: #f8fafc;
+  fill: var(--white-950);
   stroke: var(--celtic-400);
   stroke-width: 2;
 }
 
 .historial-signo-svg text {
-  fill: #9fb4c9;
+  fill: var(--green-200);
   font-size: 12px;
 }
 
 .historial-signo-vacio {
-  color: #9fb4c9;
+  color: var(--green-200);
   padding: 32px;
   text-align: center;
 }
@@ -715,7 +715,7 @@
   flex-wrap: wrap;
   gap: 10px;
   margin-top: 10px;
-  color: #cbd5e1;
+  color: var(--gray-200);
   font-size: 12px;
 }
 
@@ -740,7 +740,7 @@
 }
 
 .signos-global-controles label {
-  color: #9fb4c9;
+  color: var(--green-200);
   font-size: 12px;
   font-weight: 800;
 }
@@ -757,7 +757,7 @@
   padding: 8px;
   border: 1px solid rgba(103, 232, 249, 0.14);
   border-radius: 14px;
-  background: rgba(15, 23, 42, 0.45);
+  background: rgba(14, 20, 17, 0.45);
 }
 
 .signos-global-series label {
@@ -776,7 +776,7 @@
   padding: 12px;
   border: 1px solid rgba(103, 232, 249, 0.12);
   border-radius: 16px;
-  background: rgba(15, 23, 42, 0.5);
+  background: rgba(14, 20, 17, 0.5);
 }
 
 .historial-signo-lista b,
@@ -790,7 +790,7 @@
 
 .historial-signo-lista span,
 .historial-signo-lista p {
-  color: #9fb4c9;
+  color: var(--green-200);
 }
 
 @keyframes labPacienteEntrada {

@@ -11,13 +11,13 @@
     --bg: #05070b;
     --panel: rgba(2, 5, 10, 0.72);
     --panel-strong: rgba(16, 23, 36, 0.86);
-    --line: rgba(148, 163, 184, 0.16);
-    --line-blue: rgba(56, 189, 248, 0.22);
+    --line: rgba(190,196,188, 0.16);
+    --border-normal: rgba(82, 152, 102, 0.22);
     --text: #eef4fb;
     --muted: #9aa8ba;
     --soft: #c7d2e2;
-    --blue: #38bdf8;
-    --blue-deep: #2563eb;
+    --accent-primary: var(--green-400);
+    --green-700: var(--green-600);
     --green: #5eead4;
     --shadow: 0 24px 80px rgba(0, 0, 0, 0.26);
     --radius: 24px;
@@ -36,7 +36,7 @@ body {
     font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
     color: var(--text);
     background:
-        radial-gradient(circle at 18% 0%, rgba(56, 189, 248, 0.16), transparent 34%),
+        radial-gradient(circle at 18% 0%, rgba(82, 152, 102, 0.16), transparent 34%),
         radial-gradient(circle at 90% 8%, rgba(37, 99, 235, 0.13), transparent 30%),
         linear-gradient(180deg, #030508 0%, #07101a 45%, #05070b 100%);
     min-height: 100vh;
@@ -49,8 +49,8 @@ body::before {
     inset: 0;
     pointer-events: none;
     background-image:
-        linear-gradient(rgba(148, 163, 184, 0.035) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(148, 163, 184, 0.035) 1px, transparent 1px);
+        linear-gradient(rgba(190,196,188, 0.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(190,196,188, 0.035) 1px, transparent 1px);
     background-size: 44px 44px;
     mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.9), transparent 78%);
 }
@@ -94,8 +94,8 @@ header {
     height: 64px;
     object-fit: contain;
     border-radius: 18px;
-    border: 1px solid var(--line-blue);
-    box-shadow: 0 0 34px rgba(56, 189, 248, 0.15);
+    border: 1px solid var(--border-normal);
+    box-shadow: 0 0 34px rgba(82, 152, 102, 0.15);
 }
 
 .brand-name {
@@ -156,7 +156,7 @@ header {
 .secondary-button:hover,
 .ghost-button:hover {
     transform: translateY(-2px);
-    border-color: rgba(125, 211, 252, 0.42);
+    border-color: rgba(126, 182, 138, 0.42);
     box-shadow: 0 18px 50px rgba(8, 145, 178, 0.14);
 }
 
@@ -241,7 +241,7 @@ header {
     width: 150px;
     min-height: 84px;
     padding: 18px 16px;
-    border: 1px solid rgba(125, 211, 252, 0.16);
+    border: 1px solid rgba(126, 182, 138, 0.16);
     border-radius: 18px;
     background: rgba(15, 23, 42, 0.58);
     box-shadow: 0 18px 45px rgba(0, 0, 0, 0.22);
@@ -250,7 +250,7 @@ header {
 
 .hero-stat:hover {
     transform: translateY(-3px);
-    border-color: rgba(125, 211, 252, 0.36);
+    border-color: rgba(126, 182, 138, 0.36);
     background: rgba(30, 41, 59, 0.72);
 }
 
@@ -281,7 +281,7 @@ header {
     align-items: center;
     min-height: 34px;
     padding: 0 13px;
-    border: 1px solid rgba(125, 211, 252, 0.16);
+    border: 1px solid rgba(126, 182, 138, 0.16);
     border-radius: 999px;
     background: rgba(9, 14, 24, 0.48);
     color: #cbd5e1;
@@ -292,7 +292,7 @@ header {
 .module-card:hover,
 .activity-card:hover {
     transform: translateY(-4px);
-    border-color: rgba(125, 211, 252, 0.34);
+    border-color: rgba(126, 182, 138, 0.34);
     background: rgba(15, 23, 42, 0.78);
 }
 
@@ -343,7 +343,7 @@ header {
     justify-content: space-between;
     gap: 12px;
     padding: 12px 14px;
-    border: 1px solid rgba(148, 163, 184, 0.12);
+    border: 1px solid rgba(190,196,188, 0.12);
     border-radius: 14px;
     color: #dbeafe;
     background: rgba(15, 23, 42, 0.42);
@@ -424,15 +424,15 @@ header {
     border-radius: 18px;
     color: #dff8ff;
     font-size: 1.55rem;
-    background: rgba(56, 189, 248, 0.1);
-    border: 1px solid rgba(56, 189, 248, 0.16);
+    background: rgba(82, 152, 102, 0.1);
+    border: 1px solid rgba(82, 152, 102, 0.16);
 }
 
 .badge {
     padding: 7px 10px;
     border-radius: 999px;
-    background: rgba(56, 189, 248, 0.1);
-    border: 1px solid rgba(56, 189, 248, 0.18);
+    background: rgba(82, 152, 102, 0.1);
+    border: 1px solid rgba(82, 152, 102, 0.18);
     letter-spacing: 0.08em;
 }
 
@@ -461,7 +461,7 @@ header {
 }
 
 .module-subareas span {
-    border: 1px solid rgba(125, 211, 252, 0.18);
+    border: 1px solid rgba(126, 182, 138, 0.18);
     border-radius: 999px;
     padding: 7px 10px;
     color: var(--muted);
@@ -524,7 +524,7 @@ header {
     place-items: center;
     padding: 22px;
     background:
-        radial-gradient(circle at 65% 22%, rgba(56, 189, 248, 0.16), transparent 34%),
+        radial-gradient(circle at 65% 22%, rgba(82, 152, 102, 0.16), transparent 34%),
         rgba(2, 6, 23, 0.74);
     backdrop-filter: blur(16px);
     opacity: 0;
@@ -540,12 +540,12 @@ header {
 .proximamente-modal {
     width: min(560px, calc(100vw - 32px));
     padding: 30px;
-    border: 1px solid rgba(125, 211, 252, 0.24);
+    border: 1px solid rgba(126, 182, 138, 0.24);
     border-radius: 28px;
     background:
         linear-gradient(145deg, rgba(15, 23, 42, 0.96), rgba(5, 10, 18, 0.98)),
         #0b1120;
-    box-shadow: 0 34px 90px rgba(0, 0, 0, 0.48), 0 0 50px rgba(56, 189, 248, 0.12);
+    box-shadow: 0 34px 90px rgba(0, 0, 0, 0.48), 0 0 50px rgba(82, 152, 102, 0.12);
     transform: translateY(16px) scale(0.98);
     transition: transform 0.24s ease;
 }
@@ -624,9 +624,9 @@ footer {
     position: absolute;
     inset: -18% -10%;
     background:
-        radial-gradient(circle at 18% 38%, rgba(34, 211, 238, 0.12), transparent 28%),
-        radial-gradient(circle at 76% 26%, rgba(59, 130, 246, 0.12), transparent 30%),
-        linear-gradient(115deg, transparent 0%, rgba(125, 211, 252, 0.035) 48%, transparent 70%);
+        radial-gradient(circle at 18% 38%, rgba(82, 152, 102, 0.12), transparent 28%),
+        radial-gradient(circle at 76% 26%, rgba(52, 122, 77, 0.12), transparent 30%),
+        linear-gradient(115deg, transparent 0%, rgba(126, 182, 138, 0.035) 48%, transparent 70%);
     filter: blur(20px);
     animation: neuralMistDashboard 18s ease-in-out infinite alternate;
 }
@@ -635,10 +635,10 @@ footer {
     position: absolute;
     width: clamp(72px, 10vw, 150px);
     aspect-ratio: 1;
-    border: 1px solid rgba(125, 211, 252, 0.14);
+    border: 1px solid rgba(126, 182, 138, 0.14);
     border-radius: 42% 58% 48% 52%;
     opacity: 0.18;
-    filter: drop-shadow(0 0 22px rgba(34, 211, 238, 0.22));
+    filter: drop-shadow(0 0 22px rgba(82, 152, 102, 0.22));
     animation: brainDriftDashboard 16s ease-in-out infinite alternate;
 }
 
@@ -647,17 +647,17 @@ footer {
     content: "";
     position: absolute;
     inset: 18%;
-    border: 1px solid rgba(125, 211, 252, 0.22);
+    border: 1px solid rgba(126, 182, 138, 0.22);
     border-radius: 50% 45% 52% 48%;
     box-shadow:
-        inset 18px 0 0 rgba(34, 211, 238, 0.035),
-        inset -18px 0 0 rgba(59, 130, 246, 0.04);
+        inset 18px 0 0 rgba(82, 152, 102, 0.035),
+        inset -18px 0 0 rgba(52, 122, 77, 0.04);
 }
 
 .brain-background span::after {
     inset: 34% 48% 18% 48%;
     border-radius: 999px;
-    background: rgba(125, 211, 252, 0.2);
+    background: rgba(126, 182, 138, 0.2);
     box-shadow: none;
 }
 
@@ -745,14 +745,14 @@ footer {
     border-radius: 999px;
     color: #dbeafe;
     background: rgba(15, 23, 42, 0.68);
-    border: 1px solid rgba(125, 211, 252, 0.2);
+    border: 1px solid rgba(126, 182, 138, 0.2);
     transition: transform 0.22s ease, border-color 0.22s ease, box-shadow 0.22s ease;
 }
 
 .notifications-button:hover {
     transform: translateY(-2px);
-    border-color: rgba(125, 211, 252, 0.48);
-    box-shadow: 0 18px 46px rgba(34, 211, 238, 0.12);
+    border-color: rgba(126, 182, 138, 0.48);
+    box-shadow: 0 18px 46px rgba(82, 152, 102, 0.12);
 }
 
 .notifications-button.mensajes-button {
@@ -783,7 +783,7 @@ footer {
     align-items: center;
     justify-content: center;
     border-radius: 999px;
-    background: #22d3ee;
+    background: var(--green-400);
     color: #02111f;
     font-size: 0.72rem;
     font-weight: 900;
@@ -810,10 +810,10 @@ footer {
     width: min(860px, 100%);
     margin: 30px auto 0;
     padding: 18px 20px;
-    border: 1px solid rgba(125, 211, 252, 0.34);
+    border: 1px solid rgba(126, 182, 138, 0.34);
     border-radius: 24px;
     background:
-        radial-gradient(circle at 10% 0%, rgba(56, 189, 248, 0.18), transparent 34%),
+        radial-gradient(circle at 10% 0%, rgba(82, 152, 102, 0.18), transparent 34%),
         linear-gradient(135deg, rgba(15, 23, 42, 0.88), rgba(8, 47, 73, 0.46));
     box-shadow: 0 24px 90px rgba(2, 8, 23, 0.36), inset 0 1px 0 rgba(255, 255, 255, 0.05);
     backdrop-filter: blur(20px);
@@ -822,7 +822,7 @@ footer {
 }
 
 .avisos-dashboard:hover {
-    border-color: rgba(125, 211, 252, 0.52);
+    border-color: rgba(126, 182, 138, 0.52);
     box-shadow: 0 28px 100px rgba(8, 145, 178, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
 
@@ -848,14 +848,14 @@ footer {
     border-radius: 999px;
     color: #dbeafe;
     background: rgba(15, 23, 42, 0.62);
-    border: 1px solid rgba(125, 211, 252, 0.22);
+    border: 1px solid rgba(126, 182, 138, 0.22);
     transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .avisos-toggle:hover {
     transform: translateY(-1px);
-    border-color: rgba(125, 211, 252, 0.5);
-    box-shadow: 0 14px 34px rgba(34, 211, 238, 0.12);
+    border-color: rgba(126, 182, 138, 0.5);
+    box-shadow: 0 14px 34px rgba(82, 152, 102, 0.12);
 }
 
 .avisos-contenido {
@@ -888,7 +888,7 @@ footer {
 
 .aviso-dashboard-item {
     padding: 14px 16px;
-    border: 1px solid rgba(125, 211, 252, 0.18);
+    border: 1px solid rgba(126, 182, 138, 0.18);
     border-radius: 18px;
     background: rgba(2, 6, 23, 0.48);
     box-shadow: 0 12px 36px rgba(2, 8, 23, 0.22);
@@ -964,7 +964,7 @@ footer {
 
 .lista-avisos-dashboard::-webkit-scrollbar-thumb {
     border-radius: 999px;
-    background: linear-gradient(180deg, rgba(56, 189, 248, 0.8), rgba(37, 99, 235, 0.62));
+    background: linear-gradient(180deg, rgba(82, 152, 102, 0.8), rgba(37, 99, 235, 0.62));
 }
 
 .lista-avisos-dashboard::-webkit-scrollbar-track {
@@ -1023,10 +1023,10 @@ footer {
     max-height: calc(100vh - 118px);
     display: grid;
     grid-template-rows: auto auto minmax(260px, 1fr) auto;
-    border: 1px solid rgba(125, 211, 252, 0.28);
+    border: 1px solid rgba(126, 182, 138, 0.28);
     border-radius: 24px;
     background:
-        radial-gradient(circle at 12% 0%, rgba(56, 189, 248, 0.22), transparent 34%),
+        radial-gradient(circle at 12% 0%, rgba(82, 152, 102, 0.22), transparent 34%),
         linear-gradient(145deg, rgba(5, 10, 22, 0.96), rgba(15, 23, 42, 0.94));
     box-shadow: 0 32px 90px rgba(0, 0, 0, 0.42), inset 0 1px 0 rgba(255, 255, 255, 0.05);
     backdrop-filter: blur(22px);
@@ -1049,7 +1049,7 @@ footer {
 .mensajes-toolbar,
 .mensajes-compose {
     padding: 14px 16px;
-    border-bottom: 1px solid rgba(125, 211, 252, 0.14);
+    border-bottom: 1px solid rgba(126, 182, 138, 0.14);
 }
 
 .mensajes-header {
@@ -1071,7 +1071,7 @@ footer {
     border-radius: 999px;
     color: #dbeafe;
     background: rgba(15, 23, 42, 0.74);
-    border: 1px solid rgba(125, 211, 252, 0.22);
+    border: 1px solid rgba(126, 182, 138, 0.22);
 }
 
 .mensajes-toolbar {
@@ -1087,7 +1087,7 @@ footer {
     border-radius: 999px;
     color: #e0f2fe;
     background: rgba(15, 23, 42, 0.7);
-    border: 1px solid rgba(125, 211, 252, 0.2);
+    border: 1px solid rgba(126, 182, 138, 0.2);
     font-size: .82rem;
     font-weight: 800;
 }
@@ -1096,7 +1096,7 @@ footer {
 .mensajes-contacto button:hover,
 .mensajes-compose button:hover,
 .mensajes-cerrar:hover {
-    border-color: rgba(125, 211, 252, 0.52);
+    border-color: rgba(126, 182, 138, 0.52);
     transform: translateY(-1px);
 }
 
@@ -1115,7 +1115,7 @@ footer {
 .mensajes-buscador input,
 .mensajes-compose textarea {
     width: 100%;
-    border: 1px solid rgba(125, 211, 252, 0.2);
+    border: 1px solid rgba(126, 182, 138, 0.2);
     border-radius: 14px;
     background: rgba(2, 6, 23, 0.66);
     color: #eef6ff;
@@ -1126,8 +1126,8 @@ footer {
 
 .mensajes-buscador input:focus,
 .mensajes-compose textarea:focus {
-    border-color: rgba(56, 189, 248, 0.62);
-    box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.12);
+    border-color: rgba(82, 152, 102, 0.62);
+    box-shadow: 0 0 0 3px rgba(82, 152, 102, 0.12);
 }
 
 .mensajes-contacto,
@@ -1135,7 +1135,7 @@ footer {
     display: grid;
     gap: 8px;
     padding: 12px;
-    border: 1px solid rgba(125, 211, 252, 0.14);
+    border: 1px solid rgba(126, 182, 138, 0.14);
     border-radius: 16px;
     background: rgba(2, 6, 23, 0.44);
     margin-bottom: 10px;
@@ -1161,8 +1161,8 @@ footer {
 
 .mensajes-conversacion-item.activa,
 .mensajes-conversacion-item:hover {
-    border-color: rgba(34, 211, 238, 0.48);
-    background: rgba(14, 165, 233, 0.12);
+    border-color: rgba(82, 152, 102, 0.48);
+    background: rgba(52, 122, 77, 0.12);
 }
 
 .mensaje-burbuja {
@@ -1170,7 +1170,7 @@ footer {
     max-width: 86%;
     margin: 8px 0;
     padding: 10px 12px;
-    border: 1px solid rgba(125, 211, 252, 0.15);
+    border: 1px solid rgba(126, 182, 138, 0.15);
     border-radius: 16px 16px 16px 4px;
     color: #dbeafe;
     background: rgba(15, 23, 42, 0.74);
@@ -1192,7 +1192,7 @@ footer {
 }
 
 .mensajes-compose {
-    border-top: 1px solid rgba(125, 211, 252, 0.14);
+    border-top: 1px solid rgba(126, 182, 138, 0.14);
     border-bottom: 0;
     display: none;
     gap: 10px;
@@ -1222,9 +1222,9 @@ footer {
 .sofia-card {
     position: relative;
     overflow: hidden;
-    border-color: rgba(125, 211, 252, 0.36);
+    border-color: rgba(126, 182, 138, 0.36);
     background:
-        radial-gradient(circle at 84% 0%, rgba(56, 189, 248, 0.20), transparent 34%),
+        radial-gradient(circle at 84% 0%, rgba(82, 152, 102, 0.20), transparent 34%),
         linear-gradient(145deg, rgba(6, 12, 24, 0.94), rgba(15, 23, 42, 0.82));
 }
 
@@ -1235,20 +1235,20 @@ footer {
     width: 180px;
     height: 180px;
     border-radius: 50%;
-    background: rgba(56, 189, 248, 0.12);
+    background: rgba(82, 152, 102, 0.12);
     filter: blur(24px);
     pointer-events: none;
 }
 
 .sofia-card .module-icon {
     background: rgba(37, 99, 235, 0.20);
-    border-color: rgba(125, 211, 252, 0.28);
+    border-color: rgba(126, 182, 138, 0.28);
 }
 
 .badge-alpha {
     color: #dff8ff;
     background: rgba(37, 99, 235, 0.26);
-    border-color: rgba(125, 211, 252, 0.34);
+    border-color: rgba(126, 182, 138, 0.34);
 }
 
 </style>

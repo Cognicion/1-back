@@ -1,11 +1,11 @@
 :root {
-  --bg: #02050b;
+  --bg: var(--black-900);
   --panel: rgba(9, 16, 30, .88);
   --line: rgba(126, 182, 138, .2);
   --text: var(--ivory-50);
-  --muted: #9fb0c8;
-  --cyan: var(--celtic-400);
-  --blue: var(--celtic-300);
+  --muted: var(--green-200);
+  --accent-primary: var(--celtic-400);
+  --accent-primary: var(--celtic-300);
   --good: #34d399;
   --bad: #fb7185;
   --warn: #fbbf24;
@@ -70,7 +70,7 @@ body {
   border-radius: 999px;
   color: var(--ivory-100);
   text-decoration: none;
-  background: rgba(15, 23, 42, .72);
+  background: rgba(14, 20, 17, .72);
 }
 
 .dicotica-shell {
@@ -104,7 +104,7 @@ body {
 .arena-dicotica {
   border: 1px solid var(--line);
   border-radius: 26px;
-  background: linear-gradient(145deg, rgba(15, 23, 42, .88), rgba(3, 7, 18, .82));
+  background: linear-gradient(145deg, rgba(14, 20, 17, .88), rgba(3, 7, 18, .82));
   box-shadow: 0 30px 90px rgba(0, 0, 0, .34), inset 0 1px 0 rgba(255, 255, 255, .03);
 }
 
@@ -130,8 +130,8 @@ body {
   padding: 14px;
   border: 1px solid rgba(126, 182, 138, .16);
   border-radius: 16px;
-  background: rgba(2, 132, 199, .12);
-  color: #cfeeff;
+  background: rgba(52, 122, 77, .12);
+  color: var(--green-100);
 }
 
 .alerta-dicotica.advertencia {
@@ -153,7 +153,7 @@ body {
   padding: 14px;
   border: 1px solid rgba(126, 182, 138, .16);
   border-radius: 16px;
-  background: rgba(15, 23, 42, .55);
+  background: rgba(14, 20, 17, .55);
 }
 
 .preparacion-grid span,
@@ -187,7 +187,7 @@ body {
   border-radius: 14px;
   color: var(--ivory-100);
   text-align: right;
-  background: rgba(15, 23, 42, .58);
+  background: rgba(14, 20, 17, .58);
 }
 
 .estado-paso {
@@ -196,17 +196,17 @@ body {
   gap: 8px;
   padding: 5px 9px;
   border-radius: 999px;
-  color: #cbd5e1;
+  color: var(--gray-200);
   font-size: .74rem;
   font-weight: 900;
   text-transform: uppercase;
   background: rgba(100, 116, 139, .16);
 }
 
-.paso-dicotica.pendiente { border-color: rgba(148, 163, 184, .22); }
+.paso-dicotica.pendiente { border-color: rgba(190, 196, 188, .22); }
 .paso-dicotica.en-proceso { border-color: rgba(96, 165, 250, .42); }
 .paso-dicotica.completado { border-color: rgba(52, 211, 153, .44); }
-.paso-dicotica.en-proceso .estado-paso { color: #bfdbfe; background: rgba(36, 95, 59, .24); }
+.paso-dicotica.en-proceso .estado-paso { color: var(--green-200); background: rgba(36, 95, 59, .24); }
 .paso-dicotica.completado .estado-paso { color: #bbf7d0; background: rgba(22, 101, 52, .24); }
 
 .canales-grid,
@@ -268,7 +268,7 @@ body {
   width: 100%;
   margin-top: 8px;
   color: var(--ivory-100);
-  background: rgba(15, 23, 42, .72);
+  background: rgba(14, 20, 17, .72);
   border: 1px solid rgba(126, 182, 138, .2);
 }
 
@@ -285,7 +285,7 @@ body {
   padding: 14px;
   border: 1px solid rgba(126, 182, 138, .16);
   border-radius: 16px;
-  background: rgba(2, 6, 23, .34);
+  background: rgba(5, 7, 6, .34);
 }
 
 .tarjeta-modos h3,
@@ -324,7 +324,7 @@ body {
   padding: 10px;
   border: 1px solid rgba(126, 182, 138, .12);
   border-radius: 14px;
-  background: rgba(2, 6, 23, .28);
+  background: rgba(5, 7, 6, .28);
 }
 
 .config-checks input {
@@ -337,7 +337,7 @@ body {
   padding: 16px;
   border: 1px solid rgba(126, 182, 138, .16);
   border-radius: 18px;
-  background: rgba(2, 6, 23, .36);
+  background: rgba(5, 7, 6, .36);
 }
 
 .canal-card > span {
@@ -365,7 +365,7 @@ body {
   height: 8px;
   margin-left: 8px;
   border-radius: 50%;
-  background: var(--blue);
+  background: var(--accent-primary);
   animation: pulso-dicotica 1s infinite;
 }
 
@@ -396,8 +396,8 @@ button {
   padding: 12px 17px;
   font-weight: 900;
   cursor: pointer;
-  color: #02111f;
-  background: linear-gradient(135deg, #2f8cff, #12d6f3);
+  color: var(--black-900);
+  background: linear-gradient(135deg, var(--green-400), var(--green-300));
 }
 
 button:disabled {
@@ -427,7 +427,7 @@ select {
   width: 100%;
   border: 1px solid rgba(126, 182, 138, .18);
   border-radius: 14px;
-  background: rgba(15, 23, 42, .88);
+  background: rgba(14, 20, 17, .88);
   color: var(--text);
   padding: 11px 13px;
   outline: none;
@@ -495,10 +495,10 @@ label {
   margin-left: 6px;
   border: 1px solid rgba(126, 182, 138, .35);
   border-radius: 999px;
-  color: #bae6fd;
+  color: var(--green-200);
   font-size: .8rem;
   cursor: help;
-  background: rgba(2, 132, 199, .18);
+  background: rgba(52, 122, 77, .18);
 }
 
 .ayuda-dicotica:hover::after,
@@ -517,7 +517,7 @@ label {
   font-size: .82rem;
   font-weight: 600;
   line-height: 1.35;
-  background: rgba(2, 6, 23, .96);
+  background: rgba(5, 7, 6, .96);
   box-shadow: 0 18px 40px rgba(0, 0, 0, .36);
 }
 
@@ -528,7 +528,7 @@ label {
   border: 1px solid rgba(126, 182, 138, .12);
   border-radius: 14px;
   color: var(--ivory-100);
-  background: rgba(2, 6, 23, .28);
+  background: rgba(5, 7, 6, .28);
 }
 
 .microfono-estado.escuchando {
@@ -547,7 +547,7 @@ label {
   padding: 12px;
   border: 1px solid rgba(126, 182, 138, .14);
   border-radius: 14px;
-  background: rgba(15, 23, 42, .45);
+  background: rgba(14, 20, 17, .45);
 }
 
 .corpus-resumen-item span {
@@ -567,7 +567,7 @@ table {
   width: 100%;
   min-width: 900px;
   border-collapse: collapse;
-  background: rgba(2, 6, 23, .36);
+  background: rgba(5, 7, 6, .36);
 }
 
 th,
@@ -614,7 +614,7 @@ td {
   padding: 12px;
   border: 1px solid rgba(126, 182, 138, .16);
   border-radius: 16px;
-  background: rgba(15, 23, 42, .55);
+  background: rgba(14, 20, 17, .55);
 }
 
 .hud-dicotica span {
@@ -638,7 +638,7 @@ td {
   padding: 18px;
   border: 1px solid rgba(126, 182, 138, .18);
   border-radius: 22px;
-  background: rgba(2, 6, 23, .78);
+  background: rgba(5, 7, 6, .78);
   text-align: left;
 }
 
@@ -672,7 +672,7 @@ td {
   border: 1px solid rgba(126, 182, 138, .18);
   border-radius: 22px;
   color: var(--ivory-100);
-  background: rgba(2, 6, 23, .42);
+  background: rgba(5, 7, 6, .42);
 }
 
 .estado-voz strong {
@@ -744,7 +744,7 @@ td {
 }
 
 .transcripcion-panel strong {
-  color: #f8fafc;
+  color: var(--white-950);
   font-size: 1.6rem;
   text-transform: uppercase;
 }
@@ -757,7 +757,7 @@ td {
   padding: 24px;
   border: 1px solid rgba(126, 182, 138, .2);
   border-radius: 20px;
-  background: rgba(2, 132, 199, .12);
+  background: rgba(52, 122, 77, .12);
 }
 
 .graficas-dicotica {
@@ -782,7 +782,7 @@ td {
   padding: 14px;
   border: 1px solid rgba(126, 182, 138, .16);
   border-radius: 16px;
-  background: rgba(15, 23, 42, .55);
+  background: rgba(14, 20, 17, .55);
 }
 
 .bloque-resumen-card h4 {
@@ -827,7 +827,7 @@ td {
   padding: 14px;
   border: 1px solid rgba(126, 182, 138, .16);
   border-radius: 18px;
-  background: rgba(15, 23, 42, .52);
+  background: rgba(14, 20, 17, .52);
 }
 
 .barra-metrica {
@@ -842,7 +842,7 @@ td {
   display: block;
   height: 12px;
   border-radius: 999px;
-  background: linear-gradient(90deg, var(--cyan), rgba(82, 152, 102, .45));
+  background: linear-gradient(90deg, var(--accent-primary), rgba(82, 152, 102, .45));
 }
 
 .modal-dicotica {
@@ -852,7 +852,7 @@ td {
   display: grid;
   place-items: center;
   padding: 20px;
-  background: rgba(2, 6, 23, .72);
+  background: rgba(5, 7, 6, .72);
   backdrop-filter: blur(10px);
 }
 
@@ -861,7 +861,7 @@ td {
   border: 1px solid rgba(251, 191, 36, .32);
   border-radius: 24px;
   padding: 24px;
-  background: linear-gradient(145deg, rgba(15, 23, 42, .96), rgba(3, 7, 18, .94));
+  background: linear-gradient(145deg, rgba(14, 20, 17, .96), rgba(3, 7, 18, .94));
   box-shadow: 0 30px 90px rgba(0, 0, 0, .45);
 }
 
@@ -880,7 +880,7 @@ td {
   transition: .2s ease;
   padding: 13px 16px;
   border-radius: 16px;
-  background: rgba(2, 132, 199, .92);
+  background: rgba(52, 122, 77, .92);
   color: #fff;
   font-weight: 900;
 }

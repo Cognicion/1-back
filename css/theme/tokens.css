@@ -30,11 +30,22 @@
   --celtic-700: #19482e;
   --celtic-800: #103320;
   --celtic-900: #091f14;
+  --green-100: var(--celtic-100);
+  --green-200: var(--celtic-200);
+  --green-300: var(--celtic-300);
+  --green-400: var(--celtic-400);
+  --green-500: var(--celtic-500);
+  --green-600: var(--celtic-600);
+  --green-700: var(--celtic-700);
+  --green-800: var(--celtic-800);
+  --green-900: var(--celtic-900);
   --moss-500: #687c52;
   --mineral-green: #45665a;
   --celtic-soft: rgb(52 122 77 / 14%);
   --celtic-border: rgb(82 152 102 / 38%);
   --celtic-glow: rgb(82 152 102 / 18%);
+  --shadow-sm: 0 1px 2px rgb(0 0 0 / 30%);
+  --shadow-md: 0 8px 24px rgb(0 0 0 / 28%);
 
   --space-1: 0.25rem;
   --space-2: 0.5rem;
@@ -55,14 +66,6 @@
   --transition-slow: 220ms;
   --ease-standard: cubic-bezier(0.2, 0, 0, 1);
 
-  /* Compatibility aliases keep legacy page CSS inside the monochrome system. */
-  --blue: var(--celtic-500);
-  --cyan: var(--celtic-400);
-  --azul: var(--celtic-600);
-  --azul-claro: var(--celtic-300);
-  --cognicion-blue: var(--celtic-500);
-  --cognicion-blue-deep: var(--celtic-800);
-  --cognicion-blue-soft: var(--celtic-soft);
   --line: var(--border-subtle, var(--gray-800));
   --borde: var(--border-subtle, var(--gray-800));
 }
