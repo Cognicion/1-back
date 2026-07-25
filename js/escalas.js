@@ -51,7 +51,17 @@ function renderizarEscalas() {
   const categoria = document.getElementById("filtroCategoriaEscala")?.value || "";
   const filtradas = escalas.filter((escala) => {
     const tipo = escala.tipoEscala || (escala.area === "Cognitiva" ? "cognitiva" : "psiquiatrica");
-    const texto = [escala.nombre, escala.subtitulo, escala.descripcion, escala.area, ...(escala.dominiosEvaluados || [])].join(" ");
+    const texto = [
+      escala.nombre,
+      escala.subtitulo,
+      escala.descripcion,
+      escala.area,
+      escala.categoria,
+      escala.subcategoria,
+      escala.poblacion,
+      escala.informante,
+      ...(escala.dominiosEvaluados || [])
+    ].join(" ");
     return (!categoria || tipo === categoria) && (!busqueda || normalizarTexto(texto).includes(busqueda));
   });
 
@@ -121,6 +131,11 @@ function renderizarFormulario() {
   const form = document.getElementById("formEscala");
   if (!form || !escalaActual) return;
   const base = modoActual === "interactiva" ? obtenerBaseInteractiva(escalaActual) : escalaActual;
+  if (base?.requiereFuenteAutorizada && !base?.reactivos?.length && !base?.items?.length) {
+    document.getElementById("avisoEscala").innerHTML = `<p><strong>Aplicación pendiente de autorización.</strong> Los reactivos oficiales no están almacenados en Cognición. Carga una fuente autorizada para habilitar la aplicación y la puntuación.</p>`;
+    form.innerHTML = `<p class="aviso-escala-pendiente">No se puede aplicar ni puntuar esta escala hasta disponer del instrumento oficial autorizado.</p>`;
+    return;
+  }
   const items = modoActual === "interactiva" ? base?.reactivos || base?.items || [] : base?.items || base?.reactivos || [];
   const esPsiquiatrica = base?.tipoEscala === "psiquiatrica" || (base?.area && base.area !== "Cognitiva" && base.tipoEscala !== "cognitiva");
   const oficial = base?.requiereInstrumentoOficial ? "<p><strong>Instrumento oficial:</strong> use material autorizado. Cognicion guia la aplicacion/captura sin reproducir contenido protegido.</p>" : "";
@@ -168,6 +183,10 @@ function leerRespuestas(base) {
 function calcularEscalaActual() {
   if (!escalaActual) return;
   const base = modoActual === "interactiva" ? obtenerBaseInteractiva(escalaActual) : escalaActual;
+  if (base?.requiereFuenteAutorizada && !base?.reactivos?.length && !base?.items?.length) {
+    mostrarToast("La SCAS requiere una fuente autorizada de reactivos antes de calcularse.");
+    return;
+  }
   const { respuestas, valido } = leerRespuestas(base);
   if (!valido) {
     mostrarToast("Responde todos los campos y revisa rangos marcados.");

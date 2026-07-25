@@ -3,6 +3,8 @@
 // Instrumentos con restricciones (p. ej. MoCA/MMSE) usan aplicacion guiada y captura por dominios,
 // sin reproducir material protegido ni sustituir manuales oficiales.
 
+import { SCAS_CHILD_SCALE } from "./scasChild.js";
+
 export const OPCIONES_FRECUENCIA_0_3 = [
   { texto: "Nunca", valor: 0 },
   { texto: "Varios dias", valor: 1 },
@@ -24,6 +26,7 @@ function itemNumero(texto, dominio, min, max, ayuda = "") {
 }
 
 export const PRUEBAS_INTERACTIVAS = [
+  SCAS_CHILD_SCALE,
   {
     id: "phq9",
     nombre: "PHQ-9",
