@@ -37,3 +37,93 @@ html[data-theme="light"] :where(.navbar-medico a, .navbar a, .nav a, .menu a, .m
 html[data-theme="light"] :where(.navbar-medico a:hover, .navbar a:hover, .nav a:hover, .menu a:hover, .menu button:hover) { color: var(--accent-primary); background: var(--surface-hover); }
 html[data-theme="light"] :where(.badge, .pill, .chip, .status, .tag) { color: var(--accent-active); background: var(--accent-soft); border-color: var(--border-normal); }
 html[data-theme="light"] body { overflow-x: clip; }
+
+/* Normalización global de controles: el tema claro no hereda superficies oscuras de páginas legacy. */
+html[data-theme="light"] :where(button, .btn, a.btn, .btn-secundario, .btn-secondary, .secondary-button, .ghost-button, .boton-secundario, .boton-filtro-atencion, .nav-login) {
+  color: var(--button-secondary-text);
+  background: var(--button-secondary-bg);
+  background-image: none;
+  border: 1px solid var(--button-secondary-border);
+  box-shadow: 0 2px 8px rgb(20 40 28 / 8%);
+  filter: none;
+  transition: background-color 160ms ease, border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+}
+
+html[data-theme="light"] :where(.boton, .btn-primario, .btn-primary, .primary-button, .boton-principal, .action-primary, .available-action, .btn--primary) {
+  color: var(--button-primary-text);
+  background: var(--button-primary-bg);
+  background-image: none;
+  border-color: var(--button-primary-border);
+}
+
+html[data-theme="light"] :where(button, .btn, a.btn, .btn-secundario, .btn-secondary, .secondary-button, .ghost-button, .boton-secundario, .boton-filtro-atencion, .nav-login):hover:not(:disabled) {
+  color: var(--button-secondary-text);
+  background: var(--button-secondary-hover);
+  background-image: none;
+  border-color: var(--accent-primary);
+  filter: none;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgb(20 40 28 / 12%);
+}
+
+html[data-theme="light"] :where(.boton, .btn-primario, .btn-primary, .primary-button, .boton-principal, .action-primary, .available-action, .btn--primary):hover:not(:disabled) {
+  color: var(--button-primary-text);
+  background: var(--button-primary-hover);
+  background-image: none;
+  border-color: var(--button-primary-hover);
+}
+
+html[data-theme="light"] :where(button, .btn, a.btn):active:not(:disabled) {
+  background: var(--button-secondary-active);
+  background-image: none;
+  filter: none;
+  transform: translateY(0);
+}
+
+html[data-theme="light"] :where(.boton, .btn-primario, .btn-primary, .primary-button, .boton-principal, .action-primary, .available-action, .btn--primary):active:not(:disabled) {
+  background: var(--button-primary-active);
+  background-image: none;
+}
+
+html[data-theme="light"] :where(.btn-peligro, .btn-danger, .danger-button, .boton-peligro, .btn--critical) {
+  background: #fff1f0;
+  background-image: none;
+  color: #8f2924;
+  border-color: #e6b8b4;
+}
+
+html[data-theme="light"] :where(.btn-peligro, .btn-danger, .danger-button, .boton-peligro, .btn--critical):hover:not(:disabled) {
+  background: #ffe4e1;
+  background-image: none;
+  color: #7d211d;
+  border-color: #d9958f;
+}
+
+html[data-theme="light"] :where(button, .btn, a.btn):focus-visible {
+  outline: 3px solid rgb(78 145 102 / 28%);
+  outline-offset: 2px;
+}
+
+html[data-theme="light"] :where(button, .btn, a.btn):disabled {
+  background: #dfe7e1;
+  background-image: none;
+  color: #7b887f;
+  border-color: #d1dad3;
+  box-shadow: none;
+  filter: none;
+  opacity: 1;
+  cursor: not-allowed;
+}
+
+html[data-theme="light"] :where(.interactive-row, .patient-row, .fila-paciente, .card, .tarjeta, .seccion):hover {
+  background: var(--surface-hover-light);
+  background-image: none;
+  color: inherit;
+  filter: none;
+}
+
+html[data-theme="light"] :where(.selected, .active, .seleccionada, .activa) {
+  background: var(--surface-selected-light);
+  background-image: none;
+  color: var(--button-secondary-text);
+}

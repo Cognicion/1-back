@@ -17,9 +17,9 @@
 }
 
 :where(button, .btn, a.btn, .btn-primario, .btn-primary, .primary-button, .boton-principal, .btn-secundario, .btn-secondary, .secondary-button, .ghost-button, .boton-secundario, .logout-button, .boton, .boton-filtro-atencion, .nav-login):hover:not(:disabled) {
-  color: var(--text-primary);
-  background: var(--action-secondary-hover);
-  border-color: var(--accent-primary);
+  color: var(--text-inverse);
+  background: var(--surface-inverse);
+  border-color: var(--surface-inverse);
   transform: translateY(-1px);
 }
 
