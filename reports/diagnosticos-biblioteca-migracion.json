@@ -1,0 +1,96 @@
+{
+  "fecha": "2026-07-25T22:59:25.430Z",
+  "fuentes": [
+    "js/data/cie10.js",
+    "js/data/cie11.js",
+    "js/data/bibliotecaClinica.js",
+    "js/data/diagnosticosClinicosExtendidos.js"
+  ],
+  "totalDiagnosticos": 592,
+  "duplicadosPorId": 0,
+  "duplicadosNombresEntrada": [
+    {
+      "clave": "otros trastornos del metabolismo de los carbohidratos",
+      "cantidad": 2
+    },
+    {
+      "clave": "demencia en la enfermedad de alzheimer con inicio temprano",
+      "cantidad": 2
+    },
+    {
+      "clave": "esquizofrenia",
+      "cantidad": 2
+    },
+    {
+      "clave": "trastorno esquizotipico",
+      "cantidad": 2
+    },
+    {
+      "clave": "trastorno depresivo recurrente",
+      "cantidad": 2
+    },
+    {
+      "clave": "agorafobia",
+      "cantidad": 2
+    },
+    {
+      "clave": "trastorno de panico",
+      "cantidad": 2
+    },
+    {
+      "clave": "trastorno de ansiedad generalizada",
+      "cantidad": 2
+    },
+    {
+      "clave": "trastorno obsesivo compulsivo",
+      "cantidad": 2
+    },
+    {
+      "clave": "trastorno de estres postraumatico",
+      "cantidad": 2
+    },
+    {
+      "clave": "trastornos mixtos y otros trastornos de la personalidad",
+      "cantidad": 2
+    },
+    {
+      "clave": "transformacion persistente de la personalidad no atribuible a lesion o enfermedad cerebral",
+      "cantidad": 2
+    },
+    {
+      "clave": "trastornos de los habitos y de los impulsos",
+      "cantidad": 2
+    },
+    {
+      "clave": "contusion del torax con dano de articulaciones y ligamentos",
+      "cantidad": 2
+    },
+    {
+      "clave": "herida del antebrazo con dano de articulaciones y ligamentos",
+      "cantidad": 2
+    }
+  ],
+  "duplicadosCodigos": {
+    "cie10": [
+      {
+        "clave": "f61",
+        "cantidad": 2
+      },
+      {
+        "clave": "f62",
+        "cantidad": 2
+      },
+      {
+        "clave": "f63",
+        "cantidad": 2
+      },
+      {
+        "clave": "s52",
+        "cantidad": 2
+      }
+    ],
+    "cie11": []
+  },
+  "conflictos": [],
+  "advertencia": "Revisar equivalencias aproximadas entre sistemas antes de publicar cambios clínicos."
+}

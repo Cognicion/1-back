@@ -1,0 +1,22979 @@
+/* Fuente única activa de Biblioteca clínica. Cada diagnóstico es una entidad y sus sistemas están anidados. */
+export const DIAGNOSTICOS_BIBLIOTECA = [
+  {
+    "id": "trastorno-enfermedad-por-virus-de-la-inmunodeficiencia-humana-vih-sin-otra-especificacion",
+    "nombre": "Enfermedad por virus de la inmunodeficiencia humana [VIH], sin otra especificación",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Enfermedad por virus de la inmunodeficiencia humana [VIH], sin otra especificación",
+      "B24"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "B24",
+        "nombre": "Enfermedad por virus de la inmunodeficiencia humana [VIH], sin otra especificación",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-sindrome-congenito-de-deficiencia-de-yodo",
+    "nombre": "Sindrome congenito de deficiencia de yodo",
+    "categoria": "Endocrinología / metabolismo",
+    "subcategoria": "Endocrinología / metabolismo",
+    "aliases": [
+      "Sindrome congenito de deficiencia de yodo",
+      "E00"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "E00",
+        "nombre": "Sindrome congenito de deficiencia de yodo",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-trastornos-tiroideos-relacionados-con-deficiencia-de-yodo",
+    "nombre": "Trastornos tiroideos relacionados con deficiencia de yodo",
+    "categoria": "Endocrinología / metabolismo",
+    "subcategoria": "Endocrinología / metabolismo",
+    "aliases": [
+      "Trastornos tiroideos relacionados con deficiencia de yodo",
+      "E01"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "E01",
+        "nombre": "Trastornos tiroideos relacionados con deficiencia de yodo",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-otros-hipotiroidismos",
+    "nombre": "Otros hipotiroidismos",
+    "categoria": "Endocrinología / metabolismo",
+    "subcategoria": "Endocrinología / metabolismo",
+    "aliases": [
+      "Otros hipotiroidismos",
+      "E03"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "E03",
+        "nombre": "Otros hipotiroidismos",
+        "criterios": [
+          {
+            "id": "trastorno-otros-hipotiroidismos-cie10-criterio-1",
+            "orden": 1,
+            "titulo": "Criterio 1",
+            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-otros-hipotiroidismos-cie10-criterio-2",
+            "orden": 2,
+            "titulo": "Criterio 2",
+            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-otros-hipotiroidismos-cie10-criterio-3",
+            "orden": 3,
+            "titulo": "Criterio 3",
+            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-otros-hipotiroidismos-cie10-criterio-4",
+            "orden": 4,
+            "titulo": "Criterio 4",
+            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": [
+      {
+        "sistema": "cie10",
+        "titulo": "CIE-10 / resumen clínico orientativo local",
+        "tipoContenido": "Resumen clínico"
+      }
+    ]
+  },
+  {
+    "id": "trastorno-tirotoxicosis",
+    "nombre": "Tirotoxicosis",
+    "categoria": "Endocrinología / metabolismo",
+    "subcategoria": "Endocrinología / metabolismo",
+    "aliases": [
+      "Tirotoxicosis",
+      "E05"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "E05",
+        "nombre": "Tirotoxicosis",
+        "criterios": [
+          {
+            "id": "trastorno-tirotoxicosis-cie10-criterio-1",
+            "orden": 1,
+            "titulo": "Criterio 1",
+            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-tirotoxicosis-cie10-criterio-2",
+            "orden": 2,
+            "titulo": "Criterio 2",
+            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-tirotoxicosis-cie10-criterio-3",
+            "orden": 3,
+            "titulo": "Criterio 3",
+            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-tirotoxicosis-cie10-criterio-4",
+            "orden": 4,
+            "titulo": "Criterio 4",
+            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": [
+      {
+        "sistema": "cie10",
+        "titulo": "CIE-10 / resumen clínico orientativo local",
+        "tipoContenido": "Resumen clínico"
+      }
+    ]
+  },
+  {
+    "id": "trastorno-diabetes-mellitus-insulinodependiente",
+    "nombre": "Diabetes mellitus insulinodependiente",
+    "categoria": "Endocrinología / metabolismo",
+    "subcategoria": "Endocrinología / metabolismo",
+    "aliases": [
+      "Diabetes mellitus insulinodependiente",
+      "E10"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "E10",
+        "nombre": "Diabetes mellitus insulinodependiente",
+        "criterios": [
+          {
+            "id": "trastorno-diabetes-mellitus-insulinodependiente-cie10-criterio-1",
+            "orden": 1,
+            "titulo": "Criterio 1",
+            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-diabetes-mellitus-insulinodependiente-cie10-criterio-2",
+            "orden": 2,
+            "titulo": "Criterio 2",
+            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-diabetes-mellitus-insulinodependiente-cie10-criterio-3",
+            "orden": 3,
+            "titulo": "Criterio 3",
+            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-diabetes-mellitus-insulinodependiente-cie10-criterio-4",
+            "orden": 4,
+            "titulo": "Criterio 4",
+            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": [
+      {
+        "sistema": "cie10",
+        "titulo": "CIE-10 / resumen clínico orientativo local",
+        "tipoContenido": "Resumen clínico"
+      }
+    ]
+  },
+  {
+    "id": "trastorno-diabetes-mellitus-no-insulinodependiente",
+    "nombre": "Diabetes mellitus no insulinodependiente",
+    "categoria": "Endocrinología / metabolismo",
+    "subcategoria": "Endocrinología / metabolismo",
+    "aliases": [
+      "Diabetes mellitus no insulinodependiente",
+      "E11"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "E11",
+        "nombre": "Diabetes mellitus no insulinodependiente",
+        "criterios": [
+          {
+            "id": "trastorno-diabetes-mellitus-no-insulinodependiente-cie10-criterio-1",
+            "orden": 1,
+            "titulo": "Criterio 1",
+            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-diabetes-mellitus-no-insulinodependiente-cie10-criterio-2",
+            "orden": 2,
+            "titulo": "Criterio 2",
+            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-diabetes-mellitus-no-insulinodependiente-cie10-criterio-3",
+            "orden": 3,
+            "titulo": "Criterio 3",
+            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-diabetes-mellitus-no-insulinodependiente-cie10-criterio-4",
+            "orden": 4,
+            "titulo": "Criterio 4",
+            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": [
+      {
+        "sistema": "cie10",
+        "titulo": "CIE-10 / resumen clínico orientativo local",
+        "tipoContenido": "Resumen clínico"
+      }
+    ]
+  },
+  {
+    "id": "trastorno-diabetes-mellitus-no-especificada",
+    "nombre": "Diabetes mellitus no especificada",
+    "categoria": "Endocrinología / metabolismo",
+    "subcategoria": "Endocrinología / metabolismo",
+    "aliases": [
+      "Diabetes mellitus no especificada",
+      "E14"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "E14",
+        "nombre": "Diabetes mellitus no especificada",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-otros-trastornos-de-la-secrecion-interna-del-pancreas",
+    "nombre": "Otros trastornos de la secrecion interna del pancreas",
+    "categoria": "Endocrinología / metabolismo",
+    "subcategoria": "Endocrinología / metabolismo",
+    "aliases": [
+      "Otros trastornos de la secrecion interna del pancreas",
+      "E16"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "E16",
+        "nombre": "Otros trastornos de la secrecion interna del pancreas",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-hiperfuncion-de-la-hipofisis",
+    "nombre": "Hiperfuncion de la hipofisis",
+    "categoria": "Endocrinología / metabolismo",
+    "subcategoria": "Endocrinología / metabolismo",
+    "aliases": [
+      "Hiperfuncion de la hipofisis",
+      "E22"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "E22",
+        "nombre": "Hiperfuncion de la hipofisis",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-hipofuncion-y-otros-trastornos-de-la-hipofisis",
+    "nombre": "Hipofuncion y otros trastornos de la hipofisis",
+    "categoria": "Endocrinología / metabolismo",
+    "subcategoria": "Endocrinología / metabolismo",
+    "aliases": [
+      "Hipofuncion y otros trastornos de la hipofisis",
+      "E23"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "E23",
+        "nombre": "Hipofuncion y otros trastornos de la hipofisis",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-sindrome-de-cushing",
+    "nombre": "Sindrome de Cushing",
+    "categoria": "Endocrinología / metabolismo",
+    "subcategoria": "Endocrinología / metabolismo",
+    "aliases": [
+      "Sindrome de Cushing",
+      "E24"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "E24",
+        "nombre": "Sindrome de Cushing",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-otros-trastornos-de-la-glandula-suprarrenal",
+    "nombre": "Otros trastornos de la glandula suprarrenal",
+    "categoria": "Endocrinología / metabolismo",
+    "subcategoria": "Endocrinología / metabolismo",
+    "aliases": [
+      "Otros trastornos de la glandula suprarrenal",
+      "E27"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "E27",
+        "nombre": "Otros trastornos de la glandula suprarrenal",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-disfuncion-ovarica",
+    "nombre": "Disfuncion ovarica",
+    "categoria": "Endocrinología / metabolismo",
+    "subcategoria": "Endocrinología / metabolismo",
+    "aliases": [
+      "Disfuncion ovarica",
+      "E28"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "E28",
+        "nombre": "Disfuncion ovarica",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-disfuncion-testicular",
+    "nombre": "Disfuncion testicular",
+    "categoria": "Endocrinología / metabolismo",
+    "subcategoria": "Endocrinología / metabolismo",
+    "aliases": [
+      "Disfuncion testicular",
+      "E29"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "E29",
+        "nombre": "Disfuncion testicular",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-desnutricion-proteicocalorica-de-grado-moderado-y-leve",
+    "nombre": "Desnutricion proteicocalorica de grado moderado y leve",
+    "categoria": "Endocrinología / metabolismo",
+    "subcategoria": "Endocrinología / metabolismo",
+    "aliases": [
+      "Desnutricion proteicocalorica de grado moderado y leve",
+      "E44"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "E44",
+        "nombre": "Desnutricion proteicocalorica de grado moderado y leve",
+        "criterios": [
+          {
+            "id": "trastorno-desnutricion-proteicocalorica-de-grado-moderado-y-leve-cie10-criterio-1",
+            "orden": 1,
+            "titulo": "Criterio 1",
+            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-desnutricion-proteicocalorica-de-grado-moderado-y-leve-cie10-criterio-2",
+            "orden": 2,
+            "titulo": "Criterio 2",
+            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-desnutricion-proteicocalorica-de-grado-moderado-y-leve-cie10-criterio-3",
+            "orden": 3,
+            "titulo": "Criterio 3",
+            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-desnutricion-proteicocalorica-de-grado-moderado-y-leve-cie10-criterio-4",
+            "orden": 4,
+            "titulo": "Criterio 4",
+            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": [
+      {
+        "sistema": "cie10",
+        "titulo": "CIE-10 / resumen clínico orientativo local",
+        "tipoContenido": "Resumen clínico"
+      }
+    ]
+  },
+  {
+    "id": "trastorno-desnutricion-proteicocalorica-no-especificada",
+    "nombre": "Desnutricion proteicocalorica no especificada",
+    "categoria": "Endocrinología / metabolismo",
+    "subcategoria": "Endocrinología / metabolismo",
+    "aliases": [
+      "Desnutricion proteicocalorica no especificada",
+      "E46"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "E46",
+        "nombre": "Desnutricion proteicocalorica no especificada",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-encefalopatia-de-wernicke",
+    "nombre": "Encefalopatía de wernicke",
+    "categoria": "Endocrinología / metabolismo",
+    "subcategoria": "Endocrinología / metabolismo",
+    "aliases": [
+      "Encefalopatía de wernicke",
+      "E51.2"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "E51.2",
+        "nombre": "Encefalopatía de wernicke",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-deficiencia-de-vitamina-d",
+    "nombre": "Deficiencia de vitamina D",
+    "categoria": "Endocrinología / metabolismo",
+    "subcategoria": "Endocrinología / metabolismo",
+    "aliases": [
+      "Deficiencia de vitamina D",
+      "E55"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "E55",
+        "nombre": "Deficiencia de vitamina D",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-obesidad",
+    "nombre": "Obesidad",
+    "categoria": "Endocrinología / metabolismo",
+    "subcategoria": "Endocrinología / metabolismo",
+    "aliases": [
+      "Obesidad",
+      "E66"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "E66",
+        "nombre": "Obesidad",
+        "criterios": [
+          {
+            "id": "trastorno-obesidad-cie10-criterio-1",
+            "orden": 1,
+            "titulo": "Criterio 1",
+            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-obesidad-cie10-criterio-2",
+            "orden": 2,
+            "titulo": "Criterio 2",
+            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-obesidad-cie10-criterio-3",
+            "orden": 3,
+            "titulo": "Criterio 3",
+            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-obesidad-cie10-criterio-4",
+            "orden": 4,
+            "titulo": "Criterio 4",
+            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": [
+      {
+        "sistema": "cie10",
+        "titulo": "CIE-10 / resumen clínico orientativo local",
+        "tipoContenido": "Resumen clínico"
+      }
+    ]
+  },
+  {
+    "id": "trastorno-obesidad-debida-a-exceso-de-calorias",
+    "nombre": "Obesidad debida a exceso de calorias",
+    "categoria": "Endocrinología / metabolismo",
+    "subcategoria": "Endocrinología / metabolismo",
+    "aliases": [
+      "Obesidad debida a exceso de calorias",
+      "E66.0"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "E66.0",
+        "nombre": "Obesidad debida a exceso de calorias",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-obesidad-endogena",
+    "nombre": "Obesidad endogena",
+    "categoria": "Endocrinología / metabolismo",
+    "subcategoria": "Endocrinología / metabolismo",
+    "aliases": [
+      "Obesidad endogena",
+      "E66.1"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "E66.1",
+        "nombre": "Obesidad endogena",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-obesidad-de-origen-exogeno",
+    "nombre": "Obesidad de origen exogeno",
+    "categoria": "Endocrinología / metabolismo",
+    "subcategoria": "Endocrinología / metabolismo",
+    "aliases": [
+      "Obesidad de origen exogeno",
+      "E66.2"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "E66.2",
+        "nombre": "Obesidad de origen exogeno",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-otras-formas-de-obesidad",
+    "nombre": "Otras formas de obesidad",
+    "categoria": "Endocrinología / metabolismo",
+    "subcategoria": "Endocrinología / metabolismo",
+    "aliases": [
+      "Otras formas de obesidad",
+      "E66.8"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "E66.8",
+        "nombre": "Otras formas de obesidad",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-obesidad-no-especificada",
+    "nombre": "Obesidad no especificada",
+    "categoria": "Endocrinología / metabolismo",
+    "subcategoria": "Endocrinología / metabolismo",
+    "aliases": [
+      "Obesidad no especificada",
+      "E66.9"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "E66.9",
+        "nombre": "Obesidad no especificada",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-trastornos-del-metabolismo-de-los-aminoacidos",
+    "nombre": "Trastornos del metabolismo de los aminoacidos",
+    "categoria": "Endocrinología / metabolismo",
+    "subcategoria": "Endocrinología / metabolismo",
+    "aliases": [
+      "Trastornos del metabolismo de los aminoacidos",
+      "E70"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "E70",
+        "nombre": "Trastornos del metabolismo de los aminoacidos",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-trastornos-del-metabolismo-de-los-acidos-grasos-y-de-la-oxidacion-de-los-acidos-grasos",
+    "nombre": "Trastornos del metabolismo de los acidos grasos y de la oxidacion de los acidos grasos",
+    "categoria": "Endocrinología / metabolismo",
+    "subcategoria": "Endocrinología / metabolismo",
+    "aliases": [
+      "Trastornos del metabolismo de los acidos grasos y de la oxidacion de los acidos grasos",
+      "E71"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "E71",
+        "nombre": "Trastornos del metabolismo de los acidos grasos y de la oxidacion de los acidos grasos",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-otros-trastornos-del-metabolismo-de-los-carbohidratos",
+    "nombre": "Otros trastornos del metabolismo de los carbohidratos",
+    "categoria": "Endocrinología / metabolismo",
+    "subcategoria": "Endocrinología / metabolismo",
+    "aliases": [
+      "Otros trastornos del metabolismo de los carbohidratos",
+      "E72",
+      "E74"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "E72",
+        "nombre": "Otros trastornos del metabolismo de los carbohidratos",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-intolerancia-a-la-lactosa",
+    "nombre": "Intolerancia a la lactosa",
+    "categoria": "Endocrinología / metabolismo",
+    "subcategoria": "Endocrinología / metabolismo",
+    "aliases": [
+      "Intolerancia a la lactosa",
+      "E73"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "E73",
+        "nombre": "Intolerancia a la lactosa",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-trastornos-del-metabolismo-de-las-lipoproteinas-y-otras-lipidemias",
+    "nombre": "Trastornos del metabolismo de las lipoproteinas y otras lipidemias",
+    "categoria": "Endocrinología / metabolismo",
+    "subcategoria": "Endocrinología / metabolismo",
+    "aliases": [
+      "Trastornos del metabolismo de las lipoproteinas y otras lipidemias",
+      "E78"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "E78",
+        "nombre": "Trastornos del metabolismo de las lipoproteinas y otras lipidemias",
+        "criterios": [
+          {
+            "id": "trastorno-trastornos-del-metabolismo-de-las-lipoproteinas-y-otras-lipidemias-cie10-criterio-1",
+            "orden": 1,
+            "titulo": "Criterio 1",
+            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastornos-del-metabolismo-de-las-lipoproteinas-y-otras-lipidemias-cie10-criterio-2",
+            "orden": 2,
+            "titulo": "Criterio 2",
+            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastornos-del-metabolismo-de-las-lipoproteinas-y-otras-lipidemias-cie10-criterio-3",
+            "orden": 3,
+            "titulo": "Criterio 3",
+            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastornos-del-metabolismo-de-las-lipoproteinas-y-otras-lipidemias-cie10-criterio-4",
+            "orden": 4,
+            "titulo": "Criterio 4",
+            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": [
+      {
+        "sistema": "cie10",
+        "titulo": "CIE-10 / resumen clínico orientativo local",
+        "tipoContenido": "Resumen clínico"
+      }
+    ]
+  },
+  {
+    "id": "trastorno-otros-trastornos-de-los-liquidos-electrolitos-y-equilibrio-acido-base",
+    "nombre": "Otros trastornos de los liquidos, electrolitos y equilibrio acido-base",
+    "categoria": "Endocrinología / metabolismo",
+    "subcategoria": "Endocrinología / metabolismo",
+    "aliases": [
+      "Otros trastornos de los liquidos, electrolitos y equilibrio acido-base",
+      "E87"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "E87",
+        "nombre": "Otros trastornos de los liquidos, electrolitos y equilibrio acido-base",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-demencia-en-la-enfermedad-de-alzheimer",
+    "nombre": "Demencia en la enfermedad de Alzheimer",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Demencia en la enfermedad de Alzheimer",
+      "F00"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F00",
+        "nombre": "Demencia en la enfermedad de Alzheimer",
+        "criterios": [
+          {
+            "id": "trastorno-demencia-en-la-enfermedad-de-alzheimer-cie10-criterio-1",
+            "orden": 1,
+            "titulo": "Criterio 1",
+            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-demencia-en-la-enfermedad-de-alzheimer-cie10-criterio-2",
+            "orden": 2,
+            "titulo": "Criterio 2",
+            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-demencia-en-la-enfermedad-de-alzheimer-cie10-criterio-3",
+            "orden": 3,
+            "titulo": "Criterio 3",
+            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-demencia-en-la-enfermedad-de-alzheimer-cie10-criterio-4",
+            "orden": 4,
+            "titulo": "Criterio 4",
+            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": [
+      {
+        "sistema": "cie10",
+        "titulo": "CIE-10 / resumen clínico orientativo local",
+        "tipoContenido": "Resumen clínico"
+      }
+    ]
+  },
+  {
+    "id": "trastorno-demencia-en-la-enfermedad-de-alzheimer-con-inicio-temprano",
+    "nombre": "Demencia en la enfermedad de Alzheimer con inicio temprano",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Demencia en la enfermedad de Alzheimer con inicio temprano",
+      "F00.0",
+      "F02.0"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F00.0",
+        "nombre": "Demencia en la enfermedad de Alzheimer con inicio temprano",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-demencia-en-la-enfermedad-de-alzheimer-con-inicio-tardio",
+    "nombre": "Demencia en la enfermedad de Alzheimer con inicio tardío",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Demencia en la enfermedad de Alzheimer con inicio tardío",
+      "F00.1"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F00.1",
+        "nombre": "Demencia en la enfermedad de Alzheimer con inicio tardío",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-demencia-en-la-enfermedad-de-alzheimer-tipo-mixto",
+    "nombre": "Demencia en la enfermedad de Alzheimer, tipo mixto",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Demencia en la enfermedad de Alzheimer, tipo mixto",
+      "F00.2"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F00.2",
+        "nombre": "Demencia en la enfermedad de Alzheimer, tipo mixto",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-demencia-vascular",
+    "nombre": "Demencia vascular",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Demencia vascular",
+      "F01"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F01",
+        "nombre": "Demencia vascular",
+        "criterios": [
+          {
+            "id": "trastorno-demencia-vascular-cie10-criterio-1",
+            "orden": 1,
+            "titulo": "Criterio 1",
+            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-demencia-vascular-cie10-criterio-2",
+            "orden": 2,
+            "titulo": "Criterio 2",
+            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-demencia-vascular-cie10-criterio-3",
+            "orden": 3,
+            "titulo": "Criterio 3",
+            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-demencia-vascular-cie10-criterio-4",
+            "orden": 4,
+            "titulo": "Criterio 4",
+            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": [
+      {
+        "sistema": "cie10",
+        "titulo": "CIE-10 / resumen clínico orientativo local",
+        "tipoContenido": "Resumen clínico"
+      }
+    ]
+  },
+  {
+    "id": "trastorno-demencia-vascular-de-inicio-agudo",
+    "nombre": "Demencia vascular de inicio agudo",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Demencia vascular de inicio agudo",
+      "F01.0"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F01.0",
+        "nombre": "Demencia vascular de inicio agudo",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-demencia-vascular-de-inicio-subagudo",
+    "nombre": "Demencia vascular de inicio subagudo",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Demencia vascular de inicio subagudo",
+      "F01.1"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F01.1",
+        "nombre": "Demencia vascular de inicio subagudo",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-demencia-vascular-de-inicio-cronico",
+    "nombre": "Demencia vascular de inicio crónico",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Demencia vascular de inicio crónico",
+      "F01.2"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F01.2",
+        "nombre": "Demencia vascular de inicio crónico",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-demencia-vascular-de-inicio-no-especificado",
+    "nombre": "Demencia vascular de inicio no especificado",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Demencia vascular de inicio no especificado",
+      "F01.3"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F01.3",
+        "nombre": "Demencia vascular de inicio no especificado",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-otros-tipos-de-demencia-vascular",
+    "nombre": "Otros tipos de demencia vascular",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Otros tipos de demencia vascular",
+      "F01.8"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F01.8",
+        "nombre": "Otros tipos de demencia vascular",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-demencia-vascular-no-especificada",
+    "nombre": "Demencia vascular no especificada",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Demencia vascular no especificada",
+      "F01.9"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F01.9",
+        "nombre": "Demencia vascular no especificada",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-demencia-en-otras-enfermedades-clasificadas-en-otra-parte",
+    "nombre": "Demencia en otras enfermedades clasificadas en otra parte",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Demencia en otras enfermedades clasificadas en otra parte",
+      "F02"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F02",
+        "nombre": "Demencia en otras enfermedades clasificadas en otra parte",
+        "criterios": [
+          {
+            "id": "trastorno-demencia-en-otras-enfermedades-clasificadas-en-otra-parte-cie10-criterio-1",
+            "orden": 1,
+            "titulo": "Criterio 1",
+            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-demencia-en-otras-enfermedades-clasificadas-en-otra-parte-cie10-criterio-2",
+            "orden": 2,
+            "titulo": "Criterio 2",
+            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-demencia-en-otras-enfermedades-clasificadas-en-otra-parte-cie10-criterio-3",
+            "orden": 3,
+            "titulo": "Criterio 3",
+            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-demencia-en-otras-enfermedades-clasificadas-en-otra-parte-cie10-criterio-4",
+            "orden": 4,
+            "titulo": "Criterio 4",
+            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": [
+      {
+        "sistema": "cie10",
+        "titulo": "CIE-10 / resumen clínico orientativo local",
+        "tipoContenido": "Resumen clínico"
+      }
+    ]
+  },
+  {
+    "id": "trastorno-demencia-no-especificada",
+    "nombre": "Demencia no especificada",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Demencia no especificada",
+      "F03"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F03",
+        "nombre": "Demencia no especificada",
+        "criterios": [
+          {
+            "id": "trastorno-demencia-no-especificada-cie10-criterio-1",
+            "orden": 1,
+            "titulo": "Criterio 1",
+            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-demencia-no-especificada-cie10-criterio-2",
+            "orden": 2,
+            "titulo": "Criterio 2",
+            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-demencia-no-especificada-cie10-criterio-3",
+            "orden": 3,
+            "titulo": "Criterio 3",
+            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-demencia-no-especificada-cie10-criterio-4",
+            "orden": 4,
+            "titulo": "Criterio 4",
+            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": [
+      {
+        "sistema": "cie10",
+        "titulo": "CIE-10 / resumen clínico orientativo local",
+        "tipoContenido": "Resumen clínico"
+      }
+    ]
+  },
+  {
+    "id": "trastorno-sindrome-amnesico-organico-no-inducido-por-alcohol-u-otras-sustancias-psicoactivas",
+    "nombre": "Síndrome amnésico orgánico no inducido por alcohol u otras sustancias psicoactivas",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Síndrome amnésico orgánico no inducido por alcohol u otras sustancias psicoactivas",
+      "F04"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F04",
+        "nombre": "Síndrome amnésico orgánico no inducido por alcohol u otras sustancias psicoactivas",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-delirium-no-inducido-por-alcohol-u-otras-sustancias-psicoactivas",
+    "nombre": "Delirium no inducido por alcohol u otras sustancias psicoactivas",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Delirium no inducido por alcohol u otras sustancias psicoactivas",
+      "F05"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F05",
+        "nombre": "Delirium no inducido por alcohol u otras sustancias psicoactivas",
+        "criterios": [
+          {
+            "id": "trastorno-delirium-no-inducido-por-alcohol-u-otras-sustancias-psicoactivas-cie10-criterio-1",
+            "orden": 1,
+            "titulo": "Criterio 1",
+            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-delirium-no-inducido-por-alcohol-u-otras-sustancias-psicoactivas-cie10-criterio-2",
+            "orden": 2,
+            "titulo": "Criterio 2",
+            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-delirium-no-inducido-por-alcohol-u-otras-sustancias-psicoactivas-cie10-criterio-3",
+            "orden": 3,
+            "titulo": "Criterio 3",
+            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-delirium-no-inducido-por-alcohol-u-otras-sustancias-psicoactivas-cie10-criterio-4",
+            "orden": 4,
+            "titulo": "Criterio 4",
+            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": [
+      {
+        "sistema": "cie10",
+        "titulo": "CIE-10 / resumen clínico orientativo local",
+        "tipoContenido": "Resumen clínico"
+      }
+    ]
+  },
+  {
+    "id": "trastorno-delirium-no-especificado",
+    "nombre": "Delirium no especificado",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Delirium no especificado",
+      "F05.9"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F05.9",
+        "nombre": "Delirium no especificado",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-otros-trastornos-mentales-debidos-a-lesion-y-disfuncion-cerebral-y-enfermedad-fisica",
+    "nombre": "Otros trastornos mentales debidos a lesión y disfunción cerebral y enfermedad física",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Otros trastornos mentales debidos a lesión y disfunción cerebral y enfermedad física",
+      "F06"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F06",
+        "nombre": "Otros trastornos mentales debidos a lesión y disfunción cerebral y enfermedad física",
+        "criterios": [
+          {
+            "id": "trastorno-otros-trastornos-mentales-debidos-a-lesion-y-disfuncion-cerebral-y-enfermedad-fisica-cie10-criterio-1",
+            "orden": 1,
+            "titulo": "Criterio 1",
+            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-otros-trastornos-mentales-debidos-a-lesion-y-disfuncion-cerebral-y-enfermedad-fisica-cie10-criterio-2",
+            "orden": 2,
+            "titulo": "Criterio 2",
+            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-otros-trastornos-mentales-debidos-a-lesion-y-disfuncion-cerebral-y-enfermedad-fisica-cie10-criterio-3",
+            "orden": 3,
+            "titulo": "Criterio 3",
+            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-otros-trastornos-mentales-debidos-a-lesion-y-disfuncion-cerebral-y-enfermedad-fisica-cie10-criterio-4",
+            "orden": 4,
+            "titulo": "Criterio 4",
+            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": [
+      {
+        "sistema": "cie10",
+        "titulo": "CIE-10 / resumen clínico orientativo local",
+        "tipoContenido": "Resumen clínico"
+      }
+    ]
+  },
+  {
+    "id": "trastorno-trastornos-de-personalidad-y-comportamiento-debidos-a-enfermedad-lesion-o-disfuncion-cerebral",
+    "nombre": "Trastornos de personalidad y comportamiento debidos a enfermedad, lesión o disfunción cerebral",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Trastornos de personalidad y comportamiento debidos a enfermedad, lesión o disfunción cerebral",
+      "F07"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F07",
+        "nombre": "Trastornos de personalidad y comportamiento debidos a enfermedad, lesión o disfunción cerebral",
+        "criterios": [
+          {
+            "id": "trastorno-trastornos-de-personalidad-y-comportamiento-debidos-a-enfermedad-lesion-o-disfuncion-cerebral-cie10-criterio-1",
+            "orden": 1,
+            "titulo": "Criterio 1",
+            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastornos-de-personalidad-y-comportamiento-debidos-a-enfermedad-lesion-o-disfuncion-cerebral-cie10-criterio-2",
+            "orden": 2,
+            "titulo": "Criterio 2",
+            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastornos-de-personalidad-y-comportamiento-debidos-a-enfermedad-lesion-o-disfuncion-cerebral-cie10-criterio-3",
+            "orden": 3,
+            "titulo": "Criterio 3",
+            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastornos-de-personalidad-y-comportamiento-debidos-a-enfermedad-lesion-o-disfuncion-cerebral-cie10-criterio-4",
+            "orden": 4,
+            "titulo": "Criterio 4",
+            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": [
+      {
+        "sistema": "cie10",
+        "titulo": "CIE-10 / resumen clínico orientativo local",
+        "tipoContenido": "Resumen clínico"
+      }
+    ]
+  },
+  {
+    "id": "trastorno-trastorno-mental-organico-o-sintomatico-no-especificado",
+    "nombre": "Trastorno mental orgánico o sintomático no especificado",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Trastorno mental orgánico o sintomático no especificado",
+      "F09"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F09",
+        "nombre": "Trastorno mental orgánico o sintomático no especificado",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-trastornos-mentales-y-del-comportamiento-debidos-al-uso-de-alcohol",
+    "nombre": "Trastornos mentales y del comportamiento debidos al uso de alcohol",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Trastornos mentales y del comportamiento debidos al uso de alcohol",
+      "F10"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F10",
+        "nombre": "Trastornos mentales y del comportamiento debidos al uso de alcohol",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-alcohol-uso-nocivo",
+    "nombre": "Alcohol: uso nocivo",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Alcohol: uso nocivo",
+      "F10.1"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F10.1",
+        "nombre": "Alcohol: uso nocivo",
+        "criterios": [
+          {
+            "id": "trastorno-alcohol-uso-nocivo-cie10-criterio-1",
+            "orden": 1,
+            "titulo": "Criterio 1",
+            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-alcohol-uso-nocivo-cie10-criterio-2",
+            "orden": 2,
+            "titulo": "Criterio 2",
+            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-alcohol-uso-nocivo-cie10-criterio-3",
+            "orden": 3,
+            "titulo": "Criterio 3",
+            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-alcohol-uso-nocivo-cie10-criterio-4",
+            "orden": 4,
+            "titulo": "Criterio 4",
+            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": [
+      {
+        "sistema": "cie10",
+        "titulo": "CIE-10 / resumen clínico orientativo local",
+        "tipoContenido": "Resumen clínico"
+      }
+    ]
+  },
+  {
+    "id": "trastorno-alcohol-sindrome-de-dependencia",
+    "nombre": "Alcohol: sindrome de dependencia",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Alcohol: sindrome de dependencia",
+      "F10.2"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F10.2",
+        "nombre": "Alcohol: sindrome de dependencia",
+        "criterios": [
+          {
+            "id": "trastorno-alcohol-sindrome-de-dependencia-cie10-criterio-1",
+            "orden": 1,
+            "titulo": "Criterio 1",
+            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-alcohol-sindrome-de-dependencia-cie10-criterio-2",
+            "orden": 2,
+            "titulo": "Criterio 2",
+            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-alcohol-sindrome-de-dependencia-cie10-criterio-3",
+            "orden": 3,
+            "titulo": "Criterio 3",
+            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-alcohol-sindrome-de-dependencia-cie10-criterio-4",
+            "orden": 4,
+            "titulo": "Criterio 4",
+            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": [
+      {
+        "sistema": "cie10",
+        "titulo": "CIE-10 / resumen clínico orientativo local",
+        "tipoContenido": "Resumen clínico"
+      }
+    ]
+  },
+  {
+    "id": "trastorno-alcohol-sindrome-de-abstinencia",
+    "nombre": "Alcohol: sindrome de abstinencia",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Alcohol: sindrome de abstinencia",
+      "F10.3"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F10.3",
+        "nombre": "Alcohol: sindrome de abstinencia",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-alcohol-sindrome-de-abstinencia-con-delirium",
+    "nombre": "Alcohol: sindrome de abstinencia con delirium",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Alcohol: sindrome de abstinencia con delirium",
+      "F10.4"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F10.4",
+        "nombre": "Alcohol: sindrome de abstinencia con delirium",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-alcohol-trastorno-psicotico",
+    "nombre": "Alcohol: trastorno psicotico",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Alcohol: trastorno psicotico",
+      "F10.5"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F10.5",
+        "nombre": "Alcohol: trastorno psicotico",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-alcohol-sindrome-amnesico",
+    "nombre": "Alcohol: sindrome amnesico",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Alcohol: sindrome amnesico",
+      "F10.6"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F10.6",
+        "nombre": "Alcohol: sindrome amnesico",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-alcohol-trastorno-psicotico-residual-y-de-comienzo-tardio",
+    "nombre": "Alcohol: trastorno psicotico residual y de comienzo tardio",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Alcohol: trastorno psicotico residual y de comienzo tardio",
+      "F10.7"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F10.7",
+        "nombre": "Alcohol: trastorno psicotico residual y de comienzo tardio",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-alcohol-otros-trastornos-mentales-y-del-comportamiento",
+    "nombre": "Alcohol: otros trastornos mentales y del comportamiento",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Alcohol: otros trastornos mentales y del comportamiento",
+      "F10.8"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F10.8",
+        "nombre": "Alcohol: otros trastornos mentales y del comportamiento",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-alcohol-trastorno-mental-y-del-comportamiento-no-especificado",
+    "nombre": "Alcohol: trastorno mental y del comportamiento no especificado",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Alcohol: trastorno mental y del comportamiento no especificado",
+      "F10.9"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F10.9",
+        "nombre": "Alcohol: trastorno mental y del comportamiento no especificado",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-trastornos-mentales-y-del-comportamiento-debidos-al-uso-de-opioides",
+    "nombre": "Trastornos mentales y del comportamiento debidos al uso de opioides",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Trastornos mentales y del comportamiento debidos al uso de opioides",
+      "F11"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F11",
+        "nombre": "Trastornos mentales y del comportamiento debidos al uso de opioides",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-opioides-intoxicacion-aguda",
+    "nombre": "Opioides: intoxicacion aguda",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Opioides: intoxicacion aguda",
+      "F11.0"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F11.0",
+        "nombre": "Opioides: intoxicacion aguda",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-opioides-uso-nocivo",
+    "nombre": "Opioides: uso nocivo",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Opioides: uso nocivo",
+      "F11.1"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F11.1",
+        "nombre": "Opioides: uso nocivo",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-opioides-sindrome-de-dependencia",
+    "nombre": "Opioides: sindrome de dependencia",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Opioides: sindrome de dependencia",
+      "F11.2"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F11.2",
+        "nombre": "Opioides: sindrome de dependencia",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-opioides-sindrome-de-abstinencia",
+    "nombre": "Opioides: sindrome de abstinencia",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Opioides: sindrome de abstinencia",
+      "F11.3"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F11.3",
+        "nombre": "Opioides: sindrome de abstinencia",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-opioides-sindrome-de-abstinencia-con-delirium",
+    "nombre": "Opioides: sindrome de abstinencia con delirium",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Opioides: sindrome de abstinencia con delirium",
+      "F11.4"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F11.4",
+        "nombre": "Opioides: sindrome de abstinencia con delirium",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-opioides-trastorno-psicotico",
+    "nombre": "Opioides: trastorno psicotico",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Opioides: trastorno psicotico",
+      "F11.5"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F11.5",
+        "nombre": "Opioides: trastorno psicotico",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-opioides-sindrome-amnesico",
+    "nombre": "Opioides: sindrome amnesico",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Opioides: sindrome amnesico",
+      "F11.6"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F11.6",
+        "nombre": "Opioides: sindrome amnesico",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-opioides-trastorno-psicotico-residual-y-de-comienzo-tardio",
+    "nombre": "Opioides: trastorno psicotico residual y de comienzo tardio",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Opioides: trastorno psicotico residual y de comienzo tardio",
+      "F11.7"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F11.7",
+        "nombre": "Opioides: trastorno psicotico residual y de comienzo tardio",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-opioides-otros-trastornos-mentales-y-del-comportamiento",
+    "nombre": "Opioides: otros trastornos mentales y del comportamiento",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Opioides: otros trastornos mentales y del comportamiento",
+      "F11.8"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F11.8",
+        "nombre": "Opioides: otros trastornos mentales y del comportamiento",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-opioides-trastorno-mental-y-del-comportamiento-no-especificado",
+    "nombre": "Opioides: trastorno mental y del comportamiento no especificado",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Opioides: trastorno mental y del comportamiento no especificado",
+      "F11.9"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F11.9",
+        "nombre": "Opioides: trastorno mental y del comportamiento no especificado",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-trastornos-mentales-y-del-comportamiento-debidos-al-uso-de-cannabinoides",
+    "nombre": "Trastornos mentales y del comportamiento debidos al uso de cannabinoides",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Trastornos mentales y del comportamiento debidos al uso de cannabinoides",
+      "F12"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F12",
+        "nombre": "Trastornos mentales y del comportamiento debidos al uso de cannabinoides",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-cannabinoides-intoxicacion-aguda",
+    "nombre": "Cannabinoides: intoxicacion aguda",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Cannabinoides: intoxicacion aguda",
+      "F12.0"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F12.0",
+        "nombre": "Cannabinoides: intoxicacion aguda",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-cannabinoides-uso-nocivo",
+    "nombre": "Cannabinoides: uso nocivo",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Cannabinoides: uso nocivo",
+      "F12.1"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F12.1",
+        "nombre": "Cannabinoides: uso nocivo",
+        "criterios": [
+          {
+            "id": "trastorno-cannabinoides-uso-nocivo-cie10-criterio-1",
+            "orden": 1,
+            "titulo": "Criterio 1",
+            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-cannabinoides-uso-nocivo-cie10-criterio-2",
+            "orden": 2,
+            "titulo": "Criterio 2",
+            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-cannabinoides-uso-nocivo-cie10-criterio-3",
+            "orden": 3,
+            "titulo": "Criterio 3",
+            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-cannabinoides-uso-nocivo-cie10-criterio-4",
+            "orden": 4,
+            "titulo": "Criterio 4",
+            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": [
+      {
+        "sistema": "cie10",
+        "titulo": "CIE-10 / resumen clínico orientativo local",
+        "tipoContenido": "Resumen clínico"
+      }
+    ]
+  },
+  {
+    "id": "trastorno-cannabinoides-sindrome-de-dependencia",
+    "nombre": "Cannabinoides: sindrome de dependencia",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Cannabinoides: sindrome de dependencia",
+      "F12.2"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F12.2",
+        "nombre": "Cannabinoides: sindrome de dependencia",
+        "criterios": [
+          {
+            "id": "trastorno-cannabinoides-sindrome-de-dependencia-cie10-criterio-1",
+            "orden": 1,
+            "titulo": "Criterio 1",
+            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-cannabinoides-sindrome-de-dependencia-cie10-criterio-2",
+            "orden": 2,
+            "titulo": "Criterio 2",
+            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-cannabinoides-sindrome-de-dependencia-cie10-criterio-3",
+            "orden": 3,
+            "titulo": "Criterio 3",
+            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-cannabinoides-sindrome-de-dependencia-cie10-criterio-4",
+            "orden": 4,
+            "titulo": "Criterio 4",
+            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": [
+      {
+        "sistema": "cie10",
+        "titulo": "CIE-10 / resumen clínico orientativo local",
+        "tipoContenido": "Resumen clínico"
+      }
+    ]
+  },
+  {
+    "id": "trastorno-cannabinoides-sindrome-de-abstinencia",
+    "nombre": "Cannabinoides: sindrome de abstinencia",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Cannabinoides: sindrome de abstinencia",
+      "F12.3"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F12.3",
+        "nombre": "Cannabinoides: sindrome de abstinencia",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-cannabinoides-trastorno-psicotico",
+    "nombre": "Cannabinoides: trastorno psicotico",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Cannabinoides: trastorno psicotico",
+      "F12.5"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F12.5",
+        "nombre": "Cannabinoides: trastorno psicotico",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-cannabinoides-trastorno-psicotico-residual-y-de-comienzo-tardio",
+    "nombre": "Cannabinoides: trastorno psicotico residual y de comienzo tardio",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Cannabinoides: trastorno psicotico residual y de comienzo tardio",
+      "F12.7"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F12.7",
+        "nombre": "Cannabinoides: trastorno psicotico residual y de comienzo tardio",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-trastornos-mentales-y-del-comportamiento-debidos-al-uso-de-sedantes-o-hipnoticos",
+    "nombre": "Trastornos mentales y del comportamiento debidos al uso de sedantes o hipnóticos",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Trastornos mentales y del comportamiento debidos al uso de sedantes o hipnóticos",
+      "F13"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F13",
+        "nombre": "Trastornos mentales y del comportamiento debidos al uso de sedantes o hipnóticos",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-sedantes-o-hipnoticos-intoxicacion-aguda",
+    "nombre": "Sedantes o hipnoticos: intoxicacion aguda",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Sedantes o hipnoticos: intoxicacion aguda",
+      "F13.0"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F13.0",
+        "nombre": "Sedantes o hipnoticos: intoxicacion aguda",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-sedantes-o-hipnoticos-uso-nocivo",
+    "nombre": "Sedantes o hipnoticos: uso nocivo",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Sedantes o hipnoticos: uso nocivo",
+      "F13.1"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F13.1",
+        "nombre": "Sedantes o hipnoticos: uso nocivo",
+        "criterios": [
+          {
+            "id": "trastorno-sedantes-o-hipnoticos-uso-nocivo-cie10-criterio-1",
+            "orden": 1,
+            "titulo": "Criterio 1",
+            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-sedantes-o-hipnoticos-uso-nocivo-cie10-criterio-2",
+            "orden": 2,
+            "titulo": "Criterio 2",
+            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-sedantes-o-hipnoticos-uso-nocivo-cie10-criterio-3",
+            "orden": 3,
+            "titulo": "Criterio 3",
+            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-sedantes-o-hipnoticos-uso-nocivo-cie10-criterio-4",
+            "orden": 4,
+            "titulo": "Criterio 4",
+            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": [
+      {
+        "sistema": "cie10",
+        "titulo": "CIE-10 / resumen clínico orientativo local",
+        "tipoContenido": "Resumen clínico"
+      }
+    ]
+  },
+  {
+    "id": "trastorno-sedantes-o-hipnoticos-sindrome-de-dependencia",
+    "nombre": "Sedantes o hipnoticos: sindrome de dependencia",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Sedantes o hipnoticos: sindrome de dependencia",
+      "F13.2"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F13.2",
+        "nombre": "Sedantes o hipnoticos: sindrome de dependencia",
+        "criterios": [
+          {
+            "id": "trastorno-sedantes-o-hipnoticos-sindrome-de-dependencia-cie10-criterio-1",
+            "orden": 1,
+            "titulo": "Criterio 1",
+            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-sedantes-o-hipnoticos-sindrome-de-dependencia-cie10-criterio-2",
+            "orden": 2,
+            "titulo": "Criterio 2",
+            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-sedantes-o-hipnoticos-sindrome-de-dependencia-cie10-criterio-3",
+            "orden": 3,
+            "titulo": "Criterio 3",
+            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-sedantes-o-hipnoticos-sindrome-de-dependencia-cie10-criterio-4",
+            "orden": 4,
+            "titulo": "Criterio 4",
+            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": [
+      {
+        "sistema": "cie10",
+        "titulo": "CIE-10 / resumen clínico orientativo local",
+        "tipoContenido": "Resumen clínico"
+      }
+    ]
+  },
+  {
+    "id": "trastorno-sedantes-o-hipnoticos-sindrome-de-abstinencia",
+    "nombre": "Sedantes o hipnoticos: sindrome de abstinencia",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Sedantes o hipnoticos: sindrome de abstinencia",
+      "F13.3"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F13.3",
+        "nombre": "Sedantes o hipnoticos: sindrome de abstinencia",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-sedantes-o-hipnoticos-sindrome-de-abstinencia-con-delirium",
+    "nombre": "Sedantes o hipnoticos: sindrome de abstinencia con delirium",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Sedantes o hipnoticos: sindrome de abstinencia con delirium",
+      "F13.4"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F13.4",
+        "nombre": "Sedantes o hipnoticos: sindrome de abstinencia con delirium",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-sedantes-o-hipnoticos-trastorno-psicotico",
+    "nombre": "Sedantes o hipnoticos: trastorno psicotico",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Sedantes o hipnoticos: trastorno psicotico",
+      "F13.5"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F13.5",
+        "nombre": "Sedantes o hipnoticos: trastorno psicotico",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-sedantes-o-hipnoticos-sindrome-amnesico",
+    "nombre": "Sedantes o hipnoticos: sindrome amnesico",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Sedantes o hipnoticos: sindrome amnesico",
+      "F13.6"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F13.6",
+        "nombre": "Sedantes o hipnoticos: sindrome amnesico",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-sedantes-o-hipnoticos-trastorno-psicotico-residual-y-de-comienzo-tardio",
+    "nombre": "Sedantes o hipnoticos: trastorno psicotico residual y de comienzo tardio",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Sedantes o hipnoticos: trastorno psicotico residual y de comienzo tardio",
+      "F13.7"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F13.7",
+        "nombre": "Sedantes o hipnoticos: trastorno psicotico residual y de comienzo tardio",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-trastornos-mentales-y-del-comportamiento-debidos-al-uso-de-cocaina",
+    "nombre": "Trastornos mentales y del comportamiento debidos al uso de cocaína",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Trastornos mentales y del comportamiento debidos al uso de cocaína",
+      "F14"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F14",
+        "nombre": "Trastornos mentales y del comportamiento debidos al uso de cocaína",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-cocaina-intoxicacion-aguda",
+    "nombre": "Cocaina: intoxicacion aguda",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Cocaina: intoxicacion aguda",
+      "F14.0"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F14.0",
+        "nombre": "Cocaina: intoxicacion aguda",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-cocaina-uso-nocivo",
+    "nombre": "Cocaina: uso nocivo",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Cocaina: uso nocivo",
+      "F14.1"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F14.1",
+        "nombre": "Cocaina: uso nocivo",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-cocaina-sindrome-de-dependencia",
+    "nombre": "Cocaina: sindrome de dependencia",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Cocaina: sindrome de dependencia",
+      "F14.2"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F14.2",
+        "nombre": "Cocaina: sindrome de dependencia",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-cocaina-sindrome-de-abstinencia",
+    "nombre": "Cocaina: sindrome de abstinencia",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Cocaina: sindrome de abstinencia",
+      "F14.3"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F14.3",
+        "nombre": "Cocaina: sindrome de abstinencia",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-cocaina-trastorno-psicotico",
+    "nombre": "Cocaina: trastorno psicotico",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Cocaina: trastorno psicotico",
+      "F14.5"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F14.5",
+        "nombre": "Cocaina: trastorno psicotico",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-cocaina-trastorno-psicotico-residual-y-de-comienzo-tardio",
+    "nombre": "Cocaina: trastorno psicotico residual y de comienzo tardio",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Cocaina: trastorno psicotico residual y de comienzo tardio",
+      "F14.7"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F14.7",
+        "nombre": "Cocaina: trastorno psicotico residual y de comienzo tardio",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-trastornos-mentales-y-del-comportamiento-debidos-al-uso-de-otros-estimulantes-incluida-la-cafeina",
+    "nombre": "Trastornos mentales y del comportamiento debidos al uso de otros estimulantes, incluida la cafeína",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Trastornos mentales y del comportamiento debidos al uso de otros estimulantes, incluida la cafeína",
+      "F15"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F15",
+        "nombre": "Trastornos mentales y del comportamiento debidos al uso de otros estimulantes, incluida la cafeína",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-otros-estimulantes-intoxicacion-aguda",
+    "nombre": "Otros estimulantes: intoxicacion aguda",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Otros estimulantes: intoxicacion aguda",
+      "F15.0"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F15.0",
+        "nombre": "Otros estimulantes: intoxicacion aguda",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-otros-estimulantes-uso-nocivo",
+    "nombre": "Otros estimulantes: uso nocivo",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Otros estimulantes: uso nocivo",
+      "F15.1"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F15.1",
+        "nombre": "Otros estimulantes: uso nocivo",
+        "criterios": [
+          {
+            "id": "trastorno-otros-estimulantes-uso-nocivo-cie10-criterio-1",
+            "orden": 1,
+            "titulo": "Criterio 1",
+            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-otros-estimulantes-uso-nocivo-cie10-criterio-2",
+            "orden": 2,
+            "titulo": "Criterio 2",
+            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-otros-estimulantes-uso-nocivo-cie10-criterio-3",
+            "orden": 3,
+            "titulo": "Criterio 3",
+            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-otros-estimulantes-uso-nocivo-cie10-criterio-4",
+            "orden": 4,
+            "titulo": "Criterio 4",
+            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": [
+      {
+        "sistema": "cie10",
+        "titulo": "CIE-10 / resumen clínico orientativo local",
+        "tipoContenido": "Resumen clínico"
+      }
+    ]
+  },
+  {
+    "id": "trastorno-otros-estimulantes-sindrome-de-dependencia",
+    "nombre": "Otros estimulantes: sindrome de dependencia",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Otros estimulantes: sindrome de dependencia",
+      "F15.2"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F15.2",
+        "nombre": "Otros estimulantes: sindrome de dependencia",
+        "criterios": [
+          {
+            "id": "trastorno-otros-estimulantes-sindrome-de-dependencia-cie10-criterio-1",
+            "orden": 1,
+            "titulo": "Criterio 1",
+            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-otros-estimulantes-sindrome-de-dependencia-cie10-criterio-2",
+            "orden": 2,
+            "titulo": "Criterio 2",
+            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-otros-estimulantes-sindrome-de-dependencia-cie10-criterio-3",
+            "orden": 3,
+            "titulo": "Criterio 3",
+            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-otros-estimulantes-sindrome-de-dependencia-cie10-criterio-4",
+            "orden": 4,
+            "titulo": "Criterio 4",
+            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": [
+      {
+        "sistema": "cie10",
+        "titulo": "CIE-10 / resumen clínico orientativo local",
+        "tipoContenido": "Resumen clínico"
+      }
+    ]
+  },
+  {
+    "id": "trastorno-otros-estimulantes-sindrome-de-abstinencia",
+    "nombre": "Otros estimulantes: sindrome de abstinencia",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Otros estimulantes: sindrome de abstinencia",
+      "F15.3"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F15.3",
+        "nombre": "Otros estimulantes: sindrome de abstinencia",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-otros-estimulantes-trastorno-psicotico",
+    "nombre": "Otros estimulantes: trastorno psicotico",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Otros estimulantes: trastorno psicotico",
+      "F15.5"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F15.5",
+        "nombre": "Otros estimulantes: trastorno psicotico",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-trastornos-mentales-y-del-comportamiento-debidos-al-uso-de-alucinogenos",
+    "nombre": "Trastornos mentales y del comportamiento debidos al uso de alucinógenos",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Trastornos mentales y del comportamiento debidos al uso de alucinógenos",
+      "F16"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F16",
+        "nombre": "Trastornos mentales y del comportamiento debidos al uso de alucinógenos",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-trastornos-mentales-y-del-comportamiento-debidos-al-uso-de-tabaco",
+    "nombre": "Trastornos mentales y del comportamiento debidos al uso de tabaco",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Trastornos mentales y del comportamiento debidos al uso de tabaco",
+      "F17"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F17",
+        "nombre": "Trastornos mentales y del comportamiento debidos al uso de tabaco",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-trastornos-mentales-y-del-comportamiento-debidos-al-uso-de-disolventes-volatiles",
+    "nombre": "Trastornos mentales y del comportamiento debidos al uso de disolventes volátiles",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Trastornos mentales y del comportamiento debidos al uso de disolventes volátiles",
+      "F18"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F18",
+        "nombre": "Trastornos mentales y del comportamiento debidos al uso de disolventes volátiles",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-trastornos-mentales-y-del-comportamiento-debidos-al-uso-de-multiples-drogas-y-otras-sustancias-psicoactivas",
+    "nombre": "Trastornos mentales y del comportamiento debidos al uso de múltiples drogas y otras sustancias psicoactivas",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Trastornos mentales y del comportamiento debidos al uso de múltiples drogas y otras sustancias psicoactivas",
+      "F19"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F19",
+        "nombre": "Trastornos mentales y del comportamiento debidos al uso de múltiples drogas y otras sustancias psicoactivas",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-multiples-drogas-y-otras-sustancias-psicoactivas-intoxicacion-aguda",
+    "nombre": "Multiples drogas y otras sustancias psicoactivas: intoxicacion aguda",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Multiples drogas y otras sustancias psicoactivas: intoxicacion aguda",
+      "F19.0"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F19.0",
+        "nombre": "Multiples drogas y otras sustancias psicoactivas: intoxicacion aguda",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-multiples-drogas-y-otras-sustancias-psicoactivas-uso-nocivo",
+    "nombre": "Multiples drogas y otras sustancias psicoactivas: uso nocivo",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Multiples drogas y otras sustancias psicoactivas: uso nocivo",
+      "F19.1"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F19.1",
+        "nombre": "Multiples drogas y otras sustancias psicoactivas: uso nocivo",
+        "criterios": [
+          {
+            "id": "trastorno-multiples-drogas-y-otras-sustancias-psicoactivas-uso-nocivo-cie10-criterio-1",
+            "orden": 1,
+            "titulo": "Criterio 1",
+            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-multiples-drogas-y-otras-sustancias-psicoactivas-uso-nocivo-cie10-criterio-2",
+            "orden": 2,
+            "titulo": "Criterio 2",
+            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-multiples-drogas-y-otras-sustancias-psicoactivas-uso-nocivo-cie10-criterio-3",
+            "orden": 3,
+            "titulo": "Criterio 3",
+            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-multiples-drogas-y-otras-sustancias-psicoactivas-uso-nocivo-cie10-criterio-4",
+            "orden": 4,
+            "titulo": "Criterio 4",
+            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": [
+      {
+        "sistema": "cie10",
+        "titulo": "CIE-10 / resumen clínico orientativo local",
+        "tipoContenido": "Resumen clínico"
+      }
+    ]
+  },
+  {
+    "id": "trastorno-multiples-drogas-y-otras-sustancias-psicoactivas-sindrome-de-dependencia",
+    "nombre": "Multiples drogas y otras sustancias psicoactivas: sindrome de dependencia",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Multiples drogas y otras sustancias psicoactivas: sindrome de dependencia",
+      "F19.2"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F19.2",
+        "nombre": "Multiples drogas y otras sustancias psicoactivas: sindrome de dependencia",
+        "criterios": [
+          {
+            "id": "trastorno-multiples-drogas-y-otras-sustancias-psicoactivas-sindrome-de-dependencia-cie10-criterio-1",
+            "orden": 1,
+            "titulo": "Criterio 1",
+            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-multiples-drogas-y-otras-sustancias-psicoactivas-sindrome-de-dependencia-cie10-criterio-2",
+            "orden": 2,
+            "titulo": "Criterio 2",
+            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-multiples-drogas-y-otras-sustancias-psicoactivas-sindrome-de-dependencia-cie10-criterio-3",
+            "orden": 3,
+            "titulo": "Criterio 3",
+            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-multiples-drogas-y-otras-sustancias-psicoactivas-sindrome-de-dependencia-cie10-criterio-4",
+            "orden": 4,
+            "titulo": "Criterio 4",
+            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": [
+      {
+        "sistema": "cie10",
+        "titulo": "CIE-10 / resumen clínico orientativo local",
+        "tipoContenido": "Resumen clínico"
+      }
+    ]
+  },
+  {
+    "id": "trastorno-multiples-drogas-y-otras-sustancias-psicoactivas-sindrome-de-abstinencia",
+    "nombre": "Multiples drogas y otras sustancias psicoactivas: sindrome de abstinencia",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Multiples drogas y otras sustancias psicoactivas: sindrome de abstinencia",
+      "F19.3"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F19.3",
+        "nombre": "Multiples drogas y otras sustancias psicoactivas: sindrome de abstinencia",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-multiples-drogas-y-otras-sustancias-psicoactivas-sindrome-de-abstinencia-con-delirium",
+    "nombre": "Multiples drogas y otras sustancias psicoactivas: sindrome de abstinencia con delirium",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Multiples drogas y otras sustancias psicoactivas: sindrome de abstinencia con delirium",
+      "F19.4"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F19.4",
+        "nombre": "Multiples drogas y otras sustancias psicoactivas: sindrome de abstinencia con delirium",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-multiples-drogas-y-otras-sustancias-psicoactivas-trastorno-psicotico",
+    "nombre": "Multiples drogas y otras sustancias psicoactivas: trastorno psicotico",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Multiples drogas y otras sustancias psicoactivas: trastorno psicotico",
+      "F19.5"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F19.5",
+        "nombre": "Multiples drogas y otras sustancias psicoactivas: trastorno psicotico",
+        "criterios": [
+          {
+            "id": "trastorno-multiples-drogas-y-otras-sustancias-psicoactivas-trastorno-psicotico-cie10-criterio-1",
+            "orden": 1,
+            "titulo": "Criterio 1",
+            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-multiples-drogas-y-otras-sustancias-psicoactivas-trastorno-psicotico-cie10-criterio-2",
+            "orden": 2,
+            "titulo": "Criterio 2",
+            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-multiples-drogas-y-otras-sustancias-psicoactivas-trastorno-psicotico-cie10-criterio-3",
+            "orden": 3,
+            "titulo": "Criterio 3",
+            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-multiples-drogas-y-otras-sustancias-psicoactivas-trastorno-psicotico-cie10-criterio-4",
+            "orden": 4,
+            "titulo": "Criterio 4",
+            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": [
+      {
+        "sistema": "cie10",
+        "titulo": "CIE-10 / resumen clínico orientativo local",
+        "tipoContenido": "Resumen clínico"
+      }
+    ]
+  },
+  {
+    "id": "trastorno-multiples-drogas-y-otras-sustancias-psicoactivas-sindrome-amnesico",
+    "nombre": "Multiples drogas y otras sustancias psicoactivas: sindrome amnesico",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Multiples drogas y otras sustancias psicoactivas: sindrome amnesico",
+      "F19.6"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F19.6",
+        "nombre": "Multiples drogas y otras sustancias psicoactivas: sindrome amnesico",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-multiples-drogas-y-otras-sustancias-psicoactivas-trastorno-psicotico-residual-y-de-comienzo-tardio",
+    "nombre": "Multiples drogas y otras sustancias psicoactivas: trastorno psicotico residual y de comienzo tardio",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Multiples drogas y otras sustancias psicoactivas: trastorno psicotico residual y de comienzo tardio",
+      "F19.7"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F19.7",
+        "nombre": "Multiples drogas y otras sustancias psicoactivas: trastorno psicotico residual y de comienzo tardio",
+        "criterios": [
+          {
+            "id": "trastorno-multiples-drogas-y-otras-sustancias-psicoactivas-trastorno-psicotico-residual-y-de-comienzo-tardio-cie10-criterio-1",
+            "orden": 1,
+            "titulo": "Criterio 1",
+            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-multiples-drogas-y-otras-sustancias-psicoactivas-trastorno-psicotico-residual-y-de-comienzo-tardio-cie10-criterio-2",
+            "orden": 2,
+            "titulo": "Criterio 2",
+            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-multiples-drogas-y-otras-sustancias-psicoactivas-trastorno-psicotico-residual-y-de-comienzo-tardio-cie10-criterio-3",
+            "orden": 3,
+            "titulo": "Criterio 3",
+            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-multiples-drogas-y-otras-sustancias-psicoactivas-trastorno-psicotico-residual-y-de-comienzo-tardio-cie10-criterio-4",
+            "orden": 4,
+            "titulo": "Criterio 4",
+            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": [
+      {
+        "sistema": "cie10",
+        "titulo": "CIE-10 / resumen clínico orientativo local",
+        "tipoContenido": "Resumen clínico"
+      }
+    ]
+  },
+  {
+    "id": "trastorno-multiples-drogas-y-otras-sustancias-psicoactivas-otros-trastornos-mentales-y-del-comportamiento",
+    "nombre": "Multiples drogas y otras sustancias psicoactivas: otros trastornos mentales y del comportamiento",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Multiples drogas y otras sustancias psicoactivas: otros trastornos mentales y del comportamiento",
+      "F19.8"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F19.8",
+        "nombre": "Multiples drogas y otras sustancias psicoactivas: otros trastornos mentales y del comportamiento",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-multiples-drogas-y-otras-sustancias-psicoactivas-trastorno-mental-y-del-comportamiento-no-especificado",
+    "nombre": "Multiples drogas y otras sustancias psicoactivas: trastorno mental y del comportamiento no especificado",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Multiples drogas y otras sustancias psicoactivas: trastorno mental y del comportamiento no especificado",
+      "F19.9"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F19.9",
+        "nombre": "Multiples drogas y otras sustancias psicoactivas: trastorno mental y del comportamiento no especificado",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-esquizofrenia",
+    "nombre": "Esquizofrenia",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Esquizofrenia",
+      "F20",
+      "6A20"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F20",
+        "nombre": "Esquizofrenia",
+        "criterios": [
+          {
+            "id": "trastorno-esquizofrenia-cie10-criterio-1",
+            "orden": 1,
+            "titulo": "Criterio 1",
+            "texto": "Sintomas psicoticos persistentes como delirios, alucinaciones, pensamiento desorganizado o experiencias de influencia/control.",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          },
+          {
+            "id": "trastorno-esquizofrenia-cie10-criterio-2",
+            "orden": 2,
+            "titulo": "Criterio 2",
+            "texto": "Deterioro funcional, sintomas negativos o alteraciones cognitivas pueden estar presentes.",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          },
+          {
+            "id": "trastorno-esquizofrenia-cie10-criterio-3",
+            "orden": 3,
+            "titulo": "Criterio 3",
+            "texto": "Descartar causas organicas, sustancias, trastorno afectivo primario y delirium.",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          },
+          {
+            "id": "trastorno-esquizofrenia-cie10-criterio-4",
+            "orden": 4,
+            "titulo": "Criterio 4",
+            "texto": "Valorar riesgo, red de apoyo, adherencia y rehabilitacion psicosocial.",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      },
+      "cie11": {
+        "visible": true,
+        "orden": 2,
+        "codigo": "6A20",
+        "nombre": "Esquizofrenia",
+        "criterios": [
+          {
+            "id": "trastorno-esquizofrenia-cie11-criterio-1",
+            "orden": 1,
+            "titulo": "Criterio 1",
+            "texto": "Sintomas psicoticos persistentes como delirios, alucinaciones, pensamiento desorganizado o experiencias de influencia/control.",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          },
+          {
+            "id": "trastorno-esquizofrenia-cie11-criterio-2",
+            "orden": 2,
+            "titulo": "Criterio 2",
+            "texto": "Deterioro funcional, sintomas negativos o alteraciones cognitivas pueden estar presentes.",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          },
+          {
+            "id": "trastorno-esquizofrenia-cie11-criterio-3",
+            "orden": 3,
+            "titulo": "Criterio 3",
+            "texto": "Descartar causas organicas, sustancias, trastorno afectivo primario y delirium.",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          },
+          {
+            "id": "trastorno-esquizofrenia-cie11-criterio-4",
+            "orden": 4,
+            "titulo": "Criterio 4",
+            "texto": "Valorar riesgo, red de apoyo, adherencia y rehabilitacion psicosocial.",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "La psicosis requiere atencion temprana, continuidad terapeutica, apoyo familiar y reduccion de recaidas.",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-esquizofrenia-paranoide",
+    "nombre": "Esquizofrenia paranoide",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Esquizofrenia paranoide",
+      "F20.0"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F20.0",
+        "nombre": "Esquizofrenia paranoide",
+        "criterios": [
+          {
+            "id": "trastorno-esquizofrenia-paranoide-cie10-criterio-1",
+            "orden": 1,
+            "titulo": "Criterio 1",
+            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-esquizofrenia-paranoide-cie10-criterio-2",
+            "orden": 2,
+            "titulo": "Criterio 2",
+            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-esquizofrenia-paranoide-cie10-criterio-3",
+            "orden": 3,
+            "titulo": "Criterio 3",
+            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-esquizofrenia-paranoide-cie10-criterio-4",
+            "orden": 4,
+            "titulo": "Criterio 4",
+            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": [
+      {
+        "sistema": "cie10",
+        "titulo": "CIE-10 / resumen clínico orientativo local",
+        "tipoContenido": "Resumen clínico"
+      }
+    ]
+  },
+  {
+    "id": "trastorno-esquizofrenia-hebefrenica",
+    "nombre": "Esquizofrenia hebefrénica",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Esquizofrenia hebefrénica",
+      "F20.1"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F20.1",
+        "nombre": "Esquizofrenia hebefrénica",
+        "criterios": [
+          {
+            "id": "trastorno-esquizofrenia-hebefrenica-cie10-criterio-1",
+            "orden": 1,
+            "titulo": "Criterio 1",
+            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-esquizofrenia-hebefrenica-cie10-criterio-2",
+            "orden": 2,
+            "titulo": "Criterio 2",
+            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-esquizofrenia-hebefrenica-cie10-criterio-3",
+            "orden": 3,
+            "titulo": "Criterio 3",
+            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-esquizofrenia-hebefrenica-cie10-criterio-4",
+            "orden": 4,
+            "titulo": "Criterio 4",
+            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": [
+      {
+        "sistema": "cie10",
+        "titulo": "CIE-10 / resumen clínico orientativo local",
+        "tipoContenido": "Resumen clínico"
+      }
+    ]
+  },
+  {
+    "id": "trastorno-esquizofrenia-catatonica",
+    "nombre": "Esquizofrenia catatónica",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Esquizofrenia catatónica",
+      "F20.2"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F20.2",
+        "nombre": "Esquizofrenia catatónica",
+        "criterios": [
+          {
+            "id": "trastorno-esquizofrenia-catatonica-cie10-criterio-1",
+            "orden": 1,
+            "titulo": "Criterio 1",
+            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-esquizofrenia-catatonica-cie10-criterio-2",
+            "orden": 2,
+            "titulo": "Criterio 2",
+            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-esquizofrenia-catatonica-cie10-criterio-3",
+            "orden": 3,
+            "titulo": "Criterio 3",
+            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-esquizofrenia-catatonica-cie10-criterio-4",
+            "orden": 4,
+            "titulo": "Criterio 4",
+            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": [
+      {
+        "sistema": "cie10",
+        "titulo": "CIE-10 / resumen clínico orientativo local",
+        "tipoContenido": "Resumen clínico"
+      }
+    ]
+  },
+  {
+    "id": "trastorno-esquizofrenia-indiferenciada",
+    "nombre": "Esquizofrenia indiferenciada",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Esquizofrenia indiferenciada",
+      "F20.3"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F20.3",
+        "nombre": "Esquizofrenia indiferenciada",
+        "criterios": [
+          {
+            "id": "trastorno-esquizofrenia-indiferenciada-cie10-criterio-1",
+            "orden": 1,
+            "titulo": "Criterio 1",
+            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-esquizofrenia-indiferenciada-cie10-criterio-2",
+            "orden": 2,
+            "titulo": "Criterio 2",
+            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-esquizofrenia-indiferenciada-cie10-criterio-3",
+            "orden": 3,
+            "titulo": "Criterio 3",
+            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-esquizofrenia-indiferenciada-cie10-criterio-4",
+            "orden": 4,
+            "titulo": "Criterio 4",
+            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": [
+      {
+        "sistema": "cie10",
+        "titulo": "CIE-10 / resumen clínico orientativo local",
+        "tipoContenido": "Resumen clínico"
+      }
+    ]
+  },
+  {
+    "id": "trastorno-depresion-post-esquizofrenica",
+    "nombre": "Depresión post-esquizofrénica",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Depresión post-esquizofrénica",
+      "F20.4"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F20.4",
+        "nombre": "Depresión post-esquizofrénica",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-esquizofrenia-residual",
+    "nombre": "Esquizofrenia residual",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Esquizofrenia residual",
+      "F20.5"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F20.5",
+        "nombre": "Esquizofrenia residual",
+        "criterios": [
+          {
+            "id": "trastorno-esquizofrenia-residual-cie10-criterio-1",
+            "orden": 1,
+            "titulo": "Criterio 1",
+            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-esquizofrenia-residual-cie10-criterio-2",
+            "orden": 2,
+            "titulo": "Criterio 2",
+            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-esquizofrenia-residual-cie10-criterio-3",
+            "orden": 3,
+            "titulo": "Criterio 3",
+            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-esquizofrenia-residual-cie10-criterio-4",
+            "orden": 4,
+            "titulo": "Criterio 4",
+            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": [
+      {
+        "sistema": "cie10",
+        "titulo": "CIE-10 / resumen clínico orientativo local",
+        "tipoContenido": "Resumen clínico"
+      }
+    ]
+  },
+  {
+    "id": "trastorno-esquizofrenia-simple",
+    "nombre": "Esquizofrenia simple",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Esquizofrenia simple",
+      "F20.6"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F20.6",
+        "nombre": "Esquizofrenia simple",
+        "criterios": [
+          {
+            "id": "trastorno-esquizofrenia-simple-cie10-criterio-1",
+            "orden": 1,
+            "titulo": "Criterio 1",
+            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-esquizofrenia-simple-cie10-criterio-2",
+            "orden": 2,
+            "titulo": "Criterio 2",
+            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-esquizofrenia-simple-cie10-criterio-3",
+            "orden": 3,
+            "titulo": "Criterio 3",
+            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-esquizofrenia-simple-cie10-criterio-4",
+            "orden": 4,
+            "titulo": "Criterio 4",
+            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": [
+      {
+        "sistema": "cie10",
+        "titulo": "CIE-10 / resumen clínico orientativo local",
+        "tipoContenido": "Resumen clínico"
+      }
+    ]
+  },
+  {
+    "id": "trastorno-otras-esquizofrenias",
+    "nombre": "Otras esquizofrenias",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Otras esquizofrenias",
+      "F20.8"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F20.8",
+        "nombre": "Otras esquizofrenias",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-esquizofrenia-no-especificada",
+    "nombre": "Esquizofrenia no especificada",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Esquizofrenia no especificada",
+      "F20.9"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F20.9",
+        "nombre": "Esquizofrenia no especificada",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-trastorno-esquizotipico",
+    "nombre": "Trastorno esquizotípico",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Trastorno esquizotípico",
+      "F21",
+      "Trastorno esquizotipico",
+      "6A22"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F21",
+        "nombre": "Trastorno esquizotípico",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      },
+      "cie11": {
+        "visible": true,
+        "orden": 2,
+        "codigo": "6A22",
+        "nombre": "Trastorno esquizotipico",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-trastornos-de-ideas-delirantes-persistentes",
+    "nombre": "Trastornos de ideas delirantes persistentes",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Trastornos de ideas delirantes persistentes",
+      "F22"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F22",
+        "nombre": "Trastornos de ideas delirantes persistentes",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-trastornos-psicoticos-agudos-y-transitorios",
+    "nombre": "Trastornos psicóticos agudos y transitorios",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Trastornos psicóticos agudos y transitorios",
+      "F23"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F23",
+        "nombre": "Trastornos psicóticos agudos y transitorios",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-trastorno-de-ideas-delirantes-inducidas",
+    "nombre": "Trastorno de ideas delirantes inducidas",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Trastorno de ideas delirantes inducidas",
+      "F24"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F24",
+        "nombre": "Trastorno de ideas delirantes inducidas",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-trastornos-esquizoafectivos",
+    "nombre": "Trastornos esquizoafectivos",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Trastornos esquizoafectivos",
+      "F25"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F25",
+        "nombre": "Trastornos esquizoafectivos",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-trastorno-esquizoafectivo-de-tipo-maniaco",
+    "nombre": "Trastorno esquizoafectivo de tipo maníaco",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Trastorno esquizoafectivo de tipo maníaco",
+      "F25.0"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F25.0",
+        "nombre": "Trastorno esquizoafectivo de tipo maníaco",
+        "criterios": [
+          {
+            "id": "trastorno-trastorno-esquizoafectivo-de-tipo-maniaco-cie10-criterio-1",
+            "orden": 1,
+            "titulo": "Criterio 1",
+            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-esquizoafectivo-de-tipo-maniaco-cie10-criterio-2",
+            "orden": 2,
+            "titulo": "Criterio 2",
+            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-esquizoafectivo-de-tipo-maniaco-cie10-criterio-3",
+            "orden": 3,
+            "titulo": "Criterio 3",
+            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-esquizoafectivo-de-tipo-maniaco-cie10-criterio-4",
+            "orden": 4,
+            "titulo": "Criterio 4",
+            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": [
+      {
+        "sistema": "cie10",
+        "titulo": "CIE-10 / resumen clínico orientativo local",
+        "tipoContenido": "Resumen clínico"
+      }
+    ]
+  },
+  {
+    "id": "trastorno-trastorno-esquizoafectivo-de-tipo-depresivo",
+    "nombre": "Trastorno esquizoafectivo de tipo depresivo",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Trastorno esquizoafectivo de tipo depresivo",
+      "F25.1"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F25.1",
+        "nombre": "Trastorno esquizoafectivo de tipo depresivo",
+        "criterios": [
+          {
+            "id": "trastorno-trastorno-esquizoafectivo-de-tipo-depresivo-cie10-criterio-1",
+            "orden": 1,
+            "titulo": "Criterio 1",
+            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-esquizoafectivo-de-tipo-depresivo-cie10-criterio-2",
+            "orden": 2,
+            "titulo": "Criterio 2",
+            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-esquizoafectivo-de-tipo-depresivo-cie10-criterio-3",
+            "orden": 3,
+            "titulo": "Criterio 3",
+            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-esquizoafectivo-de-tipo-depresivo-cie10-criterio-4",
+            "orden": 4,
+            "titulo": "Criterio 4",
+            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": [
+      {
+        "sistema": "cie10",
+        "titulo": "CIE-10 / resumen clínico orientativo local",
+        "tipoContenido": "Resumen clínico"
+      }
+    ]
+  },
+  {
+    "id": "trastorno-trastorno-esquizoafectivo-de-tipo-mixto",
+    "nombre": "Trastorno esquizoafectivo de tipo mixto",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Trastorno esquizoafectivo de tipo mixto",
+      "F25.2"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F25.2",
+        "nombre": "Trastorno esquizoafectivo de tipo mixto",
+        "criterios": [
+          {
+            "id": "trastorno-trastorno-esquizoafectivo-de-tipo-mixto-cie10-criterio-1",
+            "orden": 1,
+            "titulo": "Criterio 1",
+            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-esquizoafectivo-de-tipo-mixto-cie10-criterio-2",
+            "orden": 2,
+            "titulo": "Criterio 2",
+            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-esquizoafectivo-de-tipo-mixto-cie10-criterio-3",
+            "orden": 3,
+            "titulo": "Criterio 3",
+            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-esquizoafectivo-de-tipo-mixto-cie10-criterio-4",
+            "orden": 4,
+            "titulo": "Criterio 4",
+            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": [
+      {
+        "sistema": "cie10",
+        "titulo": "CIE-10 / resumen clínico orientativo local",
+        "tipoContenido": "Resumen clínico"
+      }
+    ]
+  },
+  {
+    "id": "trastorno-otros-trastornos-esquizoafectivos",
+    "nombre": "Otros trastornos esquizoafectivos",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Otros trastornos esquizoafectivos",
+      "F25.8"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F25.8",
+        "nombre": "Otros trastornos esquizoafectivos",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-trastorno-esquizoafectivo-no-especificado",
+    "nombre": "Trastorno esquizoafectivo no especificado",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Trastorno esquizoafectivo no especificado",
+      "F25.9"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F25.9",
+        "nombre": "Trastorno esquizoafectivo no especificado",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-otros-trastornos-psicoticos-no-organicos",
+    "nombre": "Otros trastornos psicóticos no orgánicos",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Otros trastornos psicóticos no orgánicos",
+      "F28"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F28",
+        "nombre": "Otros trastornos psicóticos no orgánicos",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-psicosis-no-organica-no-especificada",
+    "nombre": "Psicosis no orgánica no especificada",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Psicosis no orgánica no especificada",
+      "F29"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F29",
+        "nombre": "Psicosis no orgánica no especificada",
+        "criterios": [
+          {
+            "id": "trastorno-psicosis-no-organica-no-especificada-cie10-criterio-1",
+            "orden": 1,
+            "titulo": "Criterio 1",
+            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-psicosis-no-organica-no-especificada-cie10-criterio-2",
+            "orden": 2,
+            "titulo": "Criterio 2",
+            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-psicosis-no-organica-no-especificada-cie10-criterio-3",
+            "orden": 3,
+            "titulo": "Criterio 3",
+            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-psicosis-no-organica-no-especificada-cie10-criterio-4",
+            "orden": 4,
+            "titulo": "Criterio 4",
+            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": [
+      {
+        "sistema": "cie10",
+        "titulo": "CIE-10 / resumen clínico orientativo local",
+        "tipoContenido": "Resumen clínico"
+      }
+    ]
+  },
+  {
+    "id": "trastorno-episodio-maniaco",
+    "nombre": "Episodio maníaco",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Episodio maníaco",
+      "F30"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F30",
+        "nombre": "Episodio maníaco",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-hipomania",
+    "nombre": "Hipomanía",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Hipomanía",
+      "F30.0"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F30.0",
+        "nombre": "Hipomanía",
+        "criterios": [
+          {
+            "id": "trastorno-hipomania-cie10-criterio-1",
+            "orden": 1,
+            "titulo": "Criterio 1",
+            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-hipomania-cie10-criterio-2",
+            "orden": 2,
+            "titulo": "Criterio 2",
+            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-hipomania-cie10-criterio-3",
+            "orden": 3,
+            "titulo": "Criterio 3",
+            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-hipomania-cie10-criterio-4",
+            "orden": 4,
+            "titulo": "Criterio 4",
+            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": [
+      {
+        "sistema": "cie10",
+        "titulo": "CIE-10 / resumen clínico orientativo local",
+        "tipoContenido": "Resumen clínico"
+      }
+    ]
+  },
+  {
+    "id": "trastorno-mania-sin-sintomas-psicoticos",
+    "nombre": "Manía sin síntomas psicóticos",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Manía sin síntomas psicóticos",
+      "F30.1"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F30.1",
+        "nombre": "Manía sin síntomas psicóticos",
+        "criterios": [
+          {
+            "id": "trastorno-mania-sin-sintomas-psicoticos-cie10-criterio-1",
+            "orden": 1,
+            "titulo": "Criterio 1",
+            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-mania-sin-sintomas-psicoticos-cie10-criterio-2",
+            "orden": 2,
+            "titulo": "Criterio 2",
+            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-mania-sin-sintomas-psicoticos-cie10-criterio-3",
+            "orden": 3,
+            "titulo": "Criterio 3",
+            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-mania-sin-sintomas-psicoticos-cie10-criterio-4",
+            "orden": 4,
+            "titulo": "Criterio 4",
+            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": [
+      {
+        "sistema": "cie10",
+        "titulo": "CIE-10 / resumen clínico orientativo local",
+        "tipoContenido": "Resumen clínico"
+      }
+    ]
+  },
+  {
+    "id": "trastorno-mania-con-sintomas-psicoticos",
+    "nombre": "Manía con síntomas psicóticos",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Manía con síntomas psicóticos",
+      "F30.2"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F30.2",
+        "nombre": "Manía con síntomas psicóticos",
+        "criterios": [
+          {
+            "id": "trastorno-mania-con-sintomas-psicoticos-cie10-criterio-1",
+            "orden": 1,
+            "titulo": "Criterio 1",
+            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-mania-con-sintomas-psicoticos-cie10-criterio-2",
+            "orden": 2,
+            "titulo": "Criterio 2",
+            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-mania-con-sintomas-psicoticos-cie10-criterio-3",
+            "orden": 3,
+            "titulo": "Criterio 3",
+            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-mania-con-sintomas-psicoticos-cie10-criterio-4",
+            "orden": 4,
+            "titulo": "Criterio 4",
+            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": [
+      {
+        "sistema": "cie10",
+        "titulo": "CIE-10 / resumen clínico orientativo local",
+        "tipoContenido": "Resumen clínico"
+      }
+    ]
+  },
+  {
+    "id": "trastorno-trastorno-afectivo-bipolar",
+    "nombre": "Trastorno afectivo bipolar",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Trastorno afectivo bipolar",
+      "F31"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F31",
+        "nombre": "Trastorno afectivo bipolar",
+        "criterios": [
+          {
+            "id": "trastorno-trastorno-afectivo-bipolar-cie10-criterio-1",
+            "orden": 1,
+            "titulo": "Criterio 1",
+            "texto": "Presencia de episodios de mania, hipomania y/o depresion segun subtipo.",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-afectivo-bipolar-cie10-criterio-2",
+            "orden": 2,
+            "titulo": "Criterio 2",
+            "texto": "Mania: elevacion/irritabilidad del animo con aumento de energia, menor necesidad de sueno, grandiosidad, verborrea, fuga de ideas, distractibilidad o conductas de riesgo.",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-afectivo-bipolar-cie10-criterio-3",
+            "orden": 3,
+            "titulo": "Criterio 3",
+            "texto": "Valorar psicosis, riesgo, consumo de sustancias y antecedentes familiares.",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-afectivo-bipolar-cie10-criterio-4",
+            "orden": 4,
+            "titulo": "Criterio 4",
+            "texto": "Evitar interpretar depresion recurrente sin tamizar historia de hipomania/mania.",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "El ritmo de sueno, la adherencia y la identificacion temprana de cambios de energia son pilares del autocuidado.",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-trastorno-afectivo-bipolar-episodio-actual-hipomaniaco",
+    "nombre": "Trastorno afectivo bipolar, episodio actual hipomaníaco",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Trastorno afectivo bipolar, episodio actual hipomaníaco",
+      "F31.0"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F31.0",
+        "nombre": "Trastorno afectivo bipolar, episodio actual hipomaníaco",
+        "criterios": [
+          {
+            "id": "trastorno-trastorno-afectivo-bipolar-episodio-actual-hipomaniaco-cie10-criterio-1",
+            "orden": 1,
+            "titulo": "Criterio 1",
+            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-afectivo-bipolar-episodio-actual-hipomaniaco-cie10-criterio-2",
+            "orden": 2,
+            "titulo": "Criterio 2",
+            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-afectivo-bipolar-episodio-actual-hipomaniaco-cie10-criterio-3",
+            "orden": 3,
+            "titulo": "Criterio 3",
+            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-afectivo-bipolar-episodio-actual-hipomaniaco-cie10-criterio-4",
+            "orden": 4,
+            "titulo": "Criterio 4",
+            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": [
+      {
+        "sistema": "cie10",
+        "titulo": "CIE-10 / resumen clínico orientativo local",
+        "tipoContenido": "Resumen clínico"
+      }
+    ]
+  },
+  {
+    "id": "trastorno-trastorno-afectivo-bipolar-episodio-actual-maniaco-sin-sintomas-psicoticos",
+    "nombre": "Trastorno afectivo bipolar, episodio actual maníaco sin síntomas psicóticos",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Trastorno afectivo bipolar, episodio actual maníaco sin síntomas psicóticos",
+      "F31.1"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F31.1",
+        "nombre": "Trastorno afectivo bipolar, episodio actual maníaco sin síntomas psicóticos",
+        "criterios": [
+          {
+            "id": "trastorno-trastorno-afectivo-bipolar-episodio-actual-maniaco-sin-sintomas-psicoticos-cie10-criterio-1",
+            "orden": 1,
+            "titulo": "Criterio 1",
+            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-afectivo-bipolar-episodio-actual-maniaco-sin-sintomas-psicoticos-cie10-criterio-2",
+            "orden": 2,
+            "titulo": "Criterio 2",
+            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-afectivo-bipolar-episodio-actual-maniaco-sin-sintomas-psicoticos-cie10-criterio-3",
+            "orden": 3,
+            "titulo": "Criterio 3",
+            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-afectivo-bipolar-episodio-actual-maniaco-sin-sintomas-psicoticos-cie10-criterio-4",
+            "orden": 4,
+            "titulo": "Criterio 4",
+            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": [
+      {
+        "sistema": "cie10",
+        "titulo": "CIE-10 / resumen clínico orientativo local",
+        "tipoContenido": "Resumen clínico"
+      }
+    ]
+  },
+  {
+    "id": "trastorno-trastorno-afectivo-bipolar-episodio-actual-maniaco-con-sintomas-psicoticos",
+    "nombre": "Trastorno afectivo bipolar, episodio actual maníaco con síntomas psicóticos",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Trastorno afectivo bipolar, episodio actual maníaco con síntomas psicóticos",
+      "F31.2"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F31.2",
+        "nombre": "Trastorno afectivo bipolar, episodio actual maníaco con síntomas psicóticos",
+        "criterios": [
+          {
+            "id": "trastorno-trastorno-afectivo-bipolar-episodio-actual-maniaco-con-sintomas-psicoticos-cie10-criterio-1",
+            "orden": 1,
+            "titulo": "Criterio 1",
+            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-afectivo-bipolar-episodio-actual-maniaco-con-sintomas-psicoticos-cie10-criterio-2",
+            "orden": 2,
+            "titulo": "Criterio 2",
+            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-afectivo-bipolar-episodio-actual-maniaco-con-sintomas-psicoticos-cie10-criterio-3",
+            "orden": 3,
+            "titulo": "Criterio 3",
+            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-afectivo-bipolar-episodio-actual-maniaco-con-sintomas-psicoticos-cie10-criterio-4",
+            "orden": 4,
+            "titulo": "Criterio 4",
+            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": [
+      {
+        "sistema": "cie10",
+        "titulo": "CIE-10 / resumen clínico orientativo local",
+        "tipoContenido": "Resumen clínico"
+      }
+    ]
+  },
+  {
+    "id": "trastorno-trastorno-afectivo-bipolar-episodio-actual-depresivo-leve-o-moderado",
+    "nombre": "Trastorno afectivo bipolar, episodio actual depresivo leve o moderado",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Trastorno afectivo bipolar, episodio actual depresivo leve o moderado",
+      "F31.3"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F31.3",
+        "nombre": "Trastorno afectivo bipolar, episodio actual depresivo leve o moderado",
+        "criterios": [
+          {
+            "id": "trastorno-trastorno-afectivo-bipolar-episodio-actual-depresivo-leve-o-moderado-cie10-criterio-1",
+            "orden": 1,
+            "titulo": "Criterio 1",
+            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-afectivo-bipolar-episodio-actual-depresivo-leve-o-moderado-cie10-criterio-2",
+            "orden": 2,
+            "titulo": "Criterio 2",
+            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-afectivo-bipolar-episodio-actual-depresivo-leve-o-moderado-cie10-criterio-3",
+            "orden": 3,
+            "titulo": "Criterio 3",
+            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-afectivo-bipolar-episodio-actual-depresivo-leve-o-moderado-cie10-criterio-4",
+            "orden": 4,
+            "titulo": "Criterio 4",
+            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": [
+      {
+        "sistema": "cie10",
+        "titulo": "CIE-10 / resumen clínico orientativo local",
+        "tipoContenido": "Resumen clínico"
+      }
+    ]
+  },
+  {
+    "id": "trastorno-trastorno-afectivo-bipolar-episodio-actual-depresivo-grave-sin-sintomas-psicoticos",
+    "nombre": "Trastorno afectivo bipolar, episodio actual depresivo grave sin síntomas psicóticos",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Trastorno afectivo bipolar, episodio actual depresivo grave sin síntomas psicóticos",
+      "F31.4"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F31.4",
+        "nombre": "Trastorno afectivo bipolar, episodio actual depresivo grave sin síntomas psicóticos",
+        "criterios": [
+          {
+            "id": "trastorno-trastorno-afectivo-bipolar-episodio-actual-depresivo-grave-sin-sintomas-psicoticos-cie10-criterio-1",
+            "orden": 1,
+            "titulo": "Criterio 1",
+            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-afectivo-bipolar-episodio-actual-depresivo-grave-sin-sintomas-psicoticos-cie10-criterio-2",
+            "orden": 2,
+            "titulo": "Criterio 2",
+            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-afectivo-bipolar-episodio-actual-depresivo-grave-sin-sintomas-psicoticos-cie10-criterio-3",
+            "orden": 3,
+            "titulo": "Criterio 3",
+            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-afectivo-bipolar-episodio-actual-depresivo-grave-sin-sintomas-psicoticos-cie10-criterio-4",
+            "orden": 4,
+            "titulo": "Criterio 4",
+            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": [
+      {
+        "sistema": "cie10",
+        "titulo": "CIE-10 / resumen clínico orientativo local",
+        "tipoContenido": "Resumen clínico"
+      }
+    ]
+  },
+  {
+    "id": "trastorno-trastorno-afectivo-bipolar-episodio-actual-depresivo-grave-con-sintomas-psicoticos",
+    "nombre": "Trastorno afectivo bipolar, episodio actual depresivo grave con síntomas psicóticos",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Trastorno afectivo bipolar, episodio actual depresivo grave con síntomas psicóticos",
+      "F31.5"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F31.5",
+        "nombre": "Trastorno afectivo bipolar, episodio actual depresivo grave con síntomas psicóticos",
+        "criterios": [
+          {
+            "id": "trastorno-trastorno-afectivo-bipolar-episodio-actual-depresivo-grave-con-sintomas-psicoticos-cie10-criterio-1",
+            "orden": 1,
+            "titulo": "Criterio 1",
+            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-afectivo-bipolar-episodio-actual-depresivo-grave-con-sintomas-psicoticos-cie10-criterio-2",
+            "orden": 2,
+            "titulo": "Criterio 2",
+            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-afectivo-bipolar-episodio-actual-depresivo-grave-con-sintomas-psicoticos-cie10-criterio-3",
+            "orden": 3,
+            "titulo": "Criterio 3",
+            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-afectivo-bipolar-episodio-actual-depresivo-grave-con-sintomas-psicoticos-cie10-criterio-4",
+            "orden": 4,
+            "titulo": "Criterio 4",
+            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": [
+      {
+        "sistema": "cie10",
+        "titulo": "CIE-10 / resumen clínico orientativo local",
+        "tipoContenido": "Resumen clínico"
+      }
+    ]
+  },
+  {
+    "id": "trastorno-trastorno-afectivo-bipolar-episodio-actual-mixto",
+    "nombre": "Trastorno afectivo bipolar, episodio actual mixto",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Trastorno afectivo bipolar, episodio actual mixto",
+      "F31.6"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F31.6",
+        "nombre": "Trastorno afectivo bipolar, episodio actual mixto",
+        "criterios": [
+          {
+            "id": "trastorno-trastorno-afectivo-bipolar-episodio-actual-mixto-cie10-criterio-1",
+            "orden": 1,
+            "titulo": "Criterio 1",
+            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-afectivo-bipolar-episodio-actual-mixto-cie10-criterio-2",
+            "orden": 2,
+            "titulo": "Criterio 2",
+            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-afectivo-bipolar-episodio-actual-mixto-cie10-criterio-3",
+            "orden": 3,
+            "titulo": "Criterio 3",
+            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-afectivo-bipolar-episodio-actual-mixto-cie10-criterio-4",
+            "orden": 4,
+            "titulo": "Criterio 4",
+            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": [
+      {
+        "sistema": "cie10",
+        "titulo": "CIE-10 / resumen clínico orientativo local",
+        "tipoContenido": "Resumen clínico"
+      }
+    ]
+  },
+  {
+    "id": "trastorno-trastorno-afectivo-bipolar-actualmente-en-remision",
+    "nombre": "Trastorno afectivo bipolar actualmente en remisión",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Trastorno afectivo bipolar actualmente en remisión",
+      "F31.7"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F31.7",
+        "nombre": "Trastorno afectivo bipolar actualmente en remisión",
+        "criterios": [
+          {
+            "id": "trastorno-trastorno-afectivo-bipolar-actualmente-en-remision-cie10-criterio-1",
+            "orden": 1,
+            "titulo": "Criterio 1",
+            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-afectivo-bipolar-actualmente-en-remision-cie10-criterio-2",
+            "orden": 2,
+            "titulo": "Criterio 2",
+            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-afectivo-bipolar-actualmente-en-remision-cie10-criterio-3",
+            "orden": 3,
+            "titulo": "Criterio 3",
+            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-afectivo-bipolar-actualmente-en-remision-cie10-criterio-4",
+            "orden": 4,
+            "titulo": "Criterio 4",
+            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": [
+      {
+        "sistema": "cie10",
+        "titulo": "CIE-10 / resumen clínico orientativo local",
+        "tipoContenido": "Resumen clínico"
+      }
+    ]
+  },
+  {
+    "id": "trastorno-otros-trastornos-afectivos-bipolares",
+    "nombre": "Otros trastornos afectivos bipolares",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Otros trastornos afectivos bipolares",
+      "F31.8"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F31.8",
+        "nombre": "Otros trastornos afectivos bipolares",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-trastorno-afectivo-bipolar-no-especificado",
+    "nombre": "Trastorno afectivo bipolar no especificado",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Trastorno afectivo bipolar no especificado",
+      "F31.9"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F31.9",
+        "nombre": "Trastorno afectivo bipolar no especificado",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-episodio-depresivo",
+    "nombre": "Episodio depresivo",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Episodio depresivo",
+      "F32"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F32",
+        "nombre": "Episodio depresivo",
+        "criterios": [
+          {
+            "id": "trastorno-episodio-depresivo-cie10-criterio-1",
+            "orden": 1,
+            "titulo": "Criterio 1",
+            "texto": "Animo deprimido, perdida de interes o disminucion significativa de energia.",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          },
+          {
+            "id": "trastorno-episodio-depresivo-cie10-criterio-2",
+            "orden": 2,
+            "titulo": "Criterio 2",
+            "texto": "Sintomas asociados: alteraciones de sueno/apetito, culpa, baja autoestima, concentracion reducida, enlentecimiento/agitación o ideacion suicida.",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          },
+          {
+            "id": "trastorno-episodio-depresivo-cie10-criterio-3",
+            "orden": 3,
+            "titulo": "Criterio 3",
+            "texto": "Duracion clinicamente relevante y deterioro funcional.",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          },
+          {
+            "id": "trastorno-episodio-depresivo-cie10-criterio-4",
+            "orden": 4,
+            "titulo": "Criterio 4",
+            "texto": "Descartar sustancias, duelo no complicado, condiciones medicas u otros trastornos primarios.",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "La depresion no es falta de voluntad; es un cuadro clinico tratable. El seguimiento combina tratamiento, activacion conductual, sueno, red de apoyo y medicion objetiva.",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-episodio-depresivo-leve",
+    "nombre": "Episodio depresivo leve",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Episodio depresivo leve",
+      "F32.0"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F32.0",
+        "nombre": "Episodio depresivo leve",
+        "criterios": [
+          {
+            "id": "trastorno-episodio-depresivo-leve-cie10-criterio-1",
+            "orden": 1,
+            "titulo": "Criterio 1",
+            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-episodio-depresivo-leve-cie10-criterio-2",
+            "orden": 2,
+            "titulo": "Criterio 2",
+            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-episodio-depresivo-leve-cie10-criterio-3",
+            "orden": 3,
+            "titulo": "Criterio 3",
+            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-episodio-depresivo-leve-cie10-criterio-4",
+            "orden": 4,
+            "titulo": "Criterio 4",
+            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": [
+      {
+        "sistema": "cie10",
+        "titulo": "CIE-10 / resumen clínico orientativo local",
+        "tipoContenido": "Resumen clínico"
+      }
+    ]
+  },
+  {
+    "id": "trastorno-episodio-depresivo-moderado",
+    "nombre": "Episodio depresivo moderado",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Episodio depresivo moderado",
+      "F32.1"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F32.1",
+        "nombre": "Episodio depresivo moderado",
+        "criterios": [
+          {
+            "id": "trastorno-episodio-depresivo-moderado-cie10-criterio-1",
+            "orden": 1,
+            "titulo": "Criterio 1",
+            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-episodio-depresivo-moderado-cie10-criterio-2",
+            "orden": 2,
+            "titulo": "Criterio 2",
+            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-episodio-depresivo-moderado-cie10-criterio-3",
+            "orden": 3,
+            "titulo": "Criterio 3",
+            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-episodio-depresivo-moderado-cie10-criterio-4",
+            "orden": 4,
+            "titulo": "Criterio 4",
+            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": [
+      {
+        "sistema": "cie10",
+        "titulo": "CIE-10 / resumen clínico orientativo local",
+        "tipoContenido": "Resumen clínico"
+      }
+    ]
+  },
+  {
+    "id": "trastorno-episodio-depresivo-grave-sin-sintomas-psicoticos",
+    "nombre": "Episodio depresivo grave sin síntomas psicóticos",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Episodio depresivo grave sin síntomas psicóticos",
+      "F32.2"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F32.2",
+        "nombre": "Episodio depresivo grave sin síntomas psicóticos",
+        "criterios": [
+          {
+            "id": "trastorno-episodio-depresivo-grave-sin-sintomas-psicoticos-cie10-criterio-1",
+            "orden": 1,
+            "titulo": "Criterio 1",
+            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-episodio-depresivo-grave-sin-sintomas-psicoticos-cie10-criterio-2",
+            "orden": 2,
+            "titulo": "Criterio 2",
+            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-episodio-depresivo-grave-sin-sintomas-psicoticos-cie10-criterio-3",
+            "orden": 3,
+            "titulo": "Criterio 3",
+            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-episodio-depresivo-grave-sin-sintomas-psicoticos-cie10-criterio-4",
+            "orden": 4,
+            "titulo": "Criterio 4",
+            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": [
+      {
+        "sistema": "cie10",
+        "titulo": "CIE-10 / resumen clínico orientativo local",
+        "tipoContenido": "Resumen clínico"
+      }
+    ]
+  },
+  {
+    "id": "trastorno-episodio-depresivo-grave-con-sintomas-psicoticos",
+    "nombre": "Episodio depresivo grave con síntomas psicóticos",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Episodio depresivo grave con síntomas psicóticos",
+      "F32.3"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F32.3",
+        "nombre": "Episodio depresivo grave con síntomas psicóticos",
+        "criterios": [
+          {
+            "id": "trastorno-episodio-depresivo-grave-con-sintomas-psicoticos-cie10-criterio-1",
+            "orden": 1,
+            "titulo": "Criterio 1",
+            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-episodio-depresivo-grave-con-sintomas-psicoticos-cie10-criterio-2",
+            "orden": 2,
+            "titulo": "Criterio 2",
+            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-episodio-depresivo-grave-con-sintomas-psicoticos-cie10-criterio-3",
+            "orden": 3,
+            "titulo": "Criterio 3",
+            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-episodio-depresivo-grave-con-sintomas-psicoticos-cie10-criterio-4",
+            "orden": 4,
+            "titulo": "Criterio 4",
+            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": [
+      {
+        "sistema": "cie10",
+        "titulo": "CIE-10 / resumen clínico orientativo local",
+        "tipoContenido": "Resumen clínico"
+      }
+    ]
+  },
+  {
+    "id": "trastorno-otros-episodios-depresivos",
+    "nombre": "Otros episodios depresivos",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Otros episodios depresivos",
+      "F32.8"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F32.8",
+        "nombre": "Otros episodios depresivos",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-episodio-depresivo-no-especificado",
+    "nombre": "Episodio depresivo no especificado",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Episodio depresivo no especificado",
+      "F32.9"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F32.9",
+        "nombre": "Episodio depresivo no especificado",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-trastorno-depresivo-recurrente",
+    "nombre": "Trastorno depresivo recurrente",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Trastorno depresivo recurrente",
+      "F33",
+      "6A70"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F33",
+        "nombre": "Trastorno depresivo recurrente",
+        "criterios": [
+          {
+            "id": "trastorno-trastorno-depresivo-recurrente-cie10-criterio-1",
+            "orden": 1,
+            "titulo": "Criterio 1",
+            "texto": "Historia de dos o mas episodios depresivos separados por periodos de mejoria.",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-depresivo-recurrente-cie10-criterio-2",
+            "orden": 2,
+            "titulo": "Criterio 2",
+            "texto": "Evaluar gravedad actual, sintomas psicoticos, riesgo suicida y funcionamiento.",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-depresivo-recurrente-cie10-criterio-3",
+            "orden": 3,
+            "titulo": "Criterio 3",
+            "texto": "Explorar bipolaridad antes de iniciar o ajustar antidepresivos.",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-depresivo-recurrente-cie10-criterio-4",
+            "orden": 4,
+            "titulo": "Criterio 4",
+            "texto": "Planear prevencion de recaidas y continuidad terapeutica.",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      },
+      "cie11": {
+        "visible": true,
+        "orden": 2,
+        "codigo": "6A70",
+        "nombre": "Trastorno depresivo recurrente",
+        "criterios": [
+          {
+            "id": "trastorno-trastorno-depresivo-recurrente-cie11-criterio-1",
+            "orden": 1,
+            "titulo": "Criterio 1",
+            "texto": "Historia de dos o mas episodios depresivos separados por periodos de mejoria.",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-depresivo-recurrente-cie11-criterio-2",
+            "orden": 2,
+            "titulo": "Criterio 2",
+            "texto": "Evaluar gravedad actual, sintomas psicoticos, riesgo suicida y funcionamiento.",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-depresivo-recurrente-cie11-criterio-3",
+            "orden": 3,
+            "titulo": "Criterio 3",
+            "texto": "Explorar bipolaridad antes de iniciar o ajustar antidepresivos.",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-depresivo-recurrente-cie11-criterio-4",
+            "orden": 4,
+            "titulo": "Criterio 4",
+            "texto": "Planear prevencion de recaidas y continuidad terapeutica.",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "Las recaidas pueden prevenirse con seguimiento, adherencia, deteccion temprana de sintomas y un plan de crisis claro.",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-trastorno-depresivo-recurrente-episodio-actual-leve",
+    "nombre": "Trastorno depresivo recurrente, episodio actual leve",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Trastorno depresivo recurrente, episodio actual leve",
+      "F33.0"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F33.0",
+        "nombre": "Trastorno depresivo recurrente, episodio actual leve",
+        "criterios": [
+          {
+            "id": "trastorno-trastorno-depresivo-recurrente-episodio-actual-leve-cie10-criterio-1",
+            "orden": 1,
+            "titulo": "Criterio 1",
+            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-depresivo-recurrente-episodio-actual-leve-cie10-criterio-2",
+            "orden": 2,
+            "titulo": "Criterio 2",
+            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-depresivo-recurrente-episodio-actual-leve-cie10-criterio-3",
+            "orden": 3,
+            "titulo": "Criterio 3",
+            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-depresivo-recurrente-episodio-actual-leve-cie10-criterio-4",
+            "orden": 4,
+            "titulo": "Criterio 4",
+            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": [
+      {
+        "sistema": "cie10",
+        "titulo": "CIE-10 / resumen clínico orientativo local",
+        "tipoContenido": "Resumen clínico"
+      }
+    ]
+  },
+  {
+    "id": "trastorno-trastorno-depresivo-recurrente-episodio-actual-moderado",
+    "nombre": "Trastorno depresivo recurrente, episodio actual moderado",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Trastorno depresivo recurrente, episodio actual moderado",
+      "F33.1"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F33.1",
+        "nombre": "Trastorno depresivo recurrente, episodio actual moderado",
+        "criterios": [
+          {
+            "id": "trastorno-trastorno-depresivo-recurrente-episodio-actual-moderado-cie10-criterio-1",
+            "orden": 1,
+            "titulo": "Criterio 1",
+            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-depresivo-recurrente-episodio-actual-moderado-cie10-criterio-2",
+            "orden": 2,
+            "titulo": "Criterio 2",
+            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-depresivo-recurrente-episodio-actual-moderado-cie10-criterio-3",
+            "orden": 3,
+            "titulo": "Criterio 3",
+            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-depresivo-recurrente-episodio-actual-moderado-cie10-criterio-4",
+            "orden": 4,
+            "titulo": "Criterio 4",
+            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": [
+      {
+        "sistema": "cie10",
+        "titulo": "CIE-10 / resumen clínico orientativo local",
+        "tipoContenido": "Resumen clínico"
+      }
+    ]
+  },
+  {
+    "id": "trastorno-trastorno-depresivo-recurrente-episodio-actual-grave-sin-sintomas-psicoticos",
+    "nombre": "Trastorno depresivo recurrente, episodio actual grave sin síntomas psicóticos",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Trastorno depresivo recurrente, episodio actual grave sin síntomas psicóticos",
+      "F33.2"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F33.2",
+        "nombre": "Trastorno depresivo recurrente, episodio actual grave sin síntomas psicóticos",
+        "criterios": [
+          {
+            "id": "trastorno-trastorno-depresivo-recurrente-episodio-actual-grave-sin-sintomas-psicoticos-cie10-criterio-1",
+            "orden": 1,
+            "titulo": "Criterio 1",
+            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-depresivo-recurrente-episodio-actual-grave-sin-sintomas-psicoticos-cie10-criterio-2",
+            "orden": 2,
+            "titulo": "Criterio 2",
+            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-depresivo-recurrente-episodio-actual-grave-sin-sintomas-psicoticos-cie10-criterio-3",
+            "orden": 3,
+            "titulo": "Criterio 3",
+            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-depresivo-recurrente-episodio-actual-grave-sin-sintomas-psicoticos-cie10-criterio-4",
+            "orden": 4,
+            "titulo": "Criterio 4",
+            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": [
+      {
+        "sistema": "cie10",
+        "titulo": "CIE-10 / resumen clínico orientativo local",
+        "tipoContenido": "Resumen clínico"
+      }
+    ]
+  },
+  {
+    "id": "trastorno-trastorno-depresivo-recurrente-episodio-actual-grave-con-sintomas-psicoticos",
+    "nombre": "Trastorno depresivo recurrente, episodio actual grave con síntomas psicóticos",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Trastorno depresivo recurrente, episodio actual grave con síntomas psicóticos",
+      "F33.3"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F33.3",
+        "nombre": "Trastorno depresivo recurrente, episodio actual grave con síntomas psicóticos",
+        "criterios": [
+          {
+            "id": "trastorno-trastorno-depresivo-recurrente-episodio-actual-grave-con-sintomas-psicoticos-cie10-criterio-1",
+            "orden": 1,
+            "titulo": "Criterio 1",
+            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-depresivo-recurrente-episodio-actual-grave-con-sintomas-psicoticos-cie10-criterio-2",
+            "orden": 2,
+            "titulo": "Criterio 2",
+            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-depresivo-recurrente-episodio-actual-grave-con-sintomas-psicoticos-cie10-criterio-3",
+            "orden": 3,
+            "titulo": "Criterio 3",
+            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-depresivo-recurrente-episodio-actual-grave-con-sintomas-psicoticos-cie10-criterio-4",
+            "orden": 4,
+            "titulo": "Criterio 4",
+            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": [
+      {
+        "sistema": "cie10",
+        "titulo": "CIE-10 / resumen clínico orientativo local",
+        "tipoContenido": "Resumen clínico"
+      }
+    ]
+  },
+  {
+    "id": "trastorno-trastorno-depresivo-recurrente-actualmente-en-remision",
+    "nombre": "Trastorno depresivo recurrente actualmente en remisión",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Trastorno depresivo recurrente actualmente en remisión",
+      "F33.4"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F33.4",
+        "nombre": "Trastorno depresivo recurrente actualmente en remisión",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-otros-trastornos-depresivos-recurrentes",
+    "nombre": "Otros trastornos depresivos recurrentes",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Otros trastornos depresivos recurrentes",
+      "F33.8"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F33.8",
+        "nombre": "Otros trastornos depresivos recurrentes",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-trastorno-depresivo-recurrente-no-especificado",
+    "nombre": "Trastorno depresivo recurrente no especificado",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Trastorno depresivo recurrente no especificado",
+      "F33.9"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F33.9",
+        "nombre": "Trastorno depresivo recurrente no especificado",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-trastornos-persistentes-del-humor",
+    "nombre": "Trastornos persistentes del humor",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Trastornos persistentes del humor",
+      "F34"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F34",
+        "nombre": "Trastornos persistentes del humor",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-ciclotimia",
+    "nombre": "Ciclotimia",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Ciclotimia",
+      "F34.0"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F34.0",
+        "nombre": "Ciclotimia",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-distimia",
+    "nombre": "Distimia",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Distimia",
+      "F34.1"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F34.1",
+        "nombre": "Distimia",
+        "criterios": [
+          {
+            "id": "trastorno-distimia-cie10-criterio-1",
+            "orden": 1,
+            "titulo": "Criterio 1",
+            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-distimia-cie10-criterio-2",
+            "orden": 2,
+            "titulo": "Criterio 2",
+            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-distimia-cie10-criterio-3",
+            "orden": 3,
+            "titulo": "Criterio 3",
+            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-distimia-cie10-criterio-4",
+            "orden": 4,
+            "titulo": "Criterio 4",
+            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": [
+      {
+        "sistema": "cie10",
+        "titulo": "CIE-10 / resumen clínico orientativo local",
+        "tipoContenido": "Resumen clínico"
+      }
+    ]
+  },
+  {
+    "id": "trastorno-otros-trastornos-del-humor",
+    "nombre": "Otros trastornos del humor",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Otros trastornos del humor",
+      "F38"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F38",
+        "nombre": "Otros trastornos del humor",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-trastorno-del-humor-no-especificado",
+    "nombre": "Trastorno del humor no especificado",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Trastorno del humor no especificado",
+      "F39"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F39",
+        "nombre": "Trastorno del humor no especificado",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-trastornos-de-ansiedad-fobica",
+    "nombre": "Trastornos de ansiedad fóbica",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Trastornos de ansiedad fóbica",
+      "F40"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F40",
+        "nombre": "Trastornos de ansiedad fóbica",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-agorafobia",
+    "nombre": "Agorafobia",
+    "categoria": "Trastornos de ansiedad",
+    "subcategoria": "Ansiedad",
+    "aliases": [
+      "Agorafobia",
+      "F40.0",
+      "6B02",
+      "agorafobia"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F40.0",
+        "nombre": "Agorafobia",
+        "criterios": [
+          {
+            "id": "trastorno-agorafobia-cie10-criterio-1",
+            "orden": 1,
+            "titulo": "Criterio 1",
+            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-agorafobia-cie10-criterio-2",
+            "orden": 2,
+            "titulo": "Criterio 2",
+            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-agorafobia-cie10-criterio-3",
+            "orden": 3,
+            "titulo": "Criterio 3",
+            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-agorafobia-cie10-criterio-4",
+            "orden": 4,
+            "titulo": "Criterio 4",
+            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      },
+      "cie11": {
+        "visible": true,
+        "orden": 2,
+        "codigo": "6B02",
+        "nombre": "Agorafobia",
+        "criterios": [
+          {
+            "orden": 1,
+            "titulo": "Resumen clínico 1",
+            "texto": "Temor ante situaciones donde escapar o recibir ayuda podría resultar difícil.",
+            "tipo": "resumen_clinico",
+            "fuente": "Resumen estructurado del proyecto; revisar fuente oficial",
+            "literal": false,
+            "id": "trastorno-agorafobia-cie11-criterio-1"
+          },
+          {
+            "orden": 2,
+            "titulo": "Resumen clínico 2",
+            "texto": "Puede incluir transporte público, espacios abiertos o cerrados, filas, multitudes y estar fuera de casa sin compañía.",
+            "tipo": "resumen_clinico",
+            "fuente": "Resumen estructurado del proyecto; revisar fuente oficial",
+            "literal": false,
+            "id": "trastorno-agorafobia-cie11-criterio-2"
+          },
+          {
+            "orden": 3,
+            "titulo": "Resumen clínico 3",
+            "texto": "Evitación, necesidad de acompañante o exposición con ansiedad intensa.",
+            "tipo": "resumen_clinico",
+            "fuente": "Resumen estructurado del proyecto; revisar fuente oficial",
+            "literal": false,
+            "id": "trastorno-agorafobia-cie11-criterio-3"
+          },
+          {
+            "orden": 4,
+            "titulo": "Resumen clínico 4",
+            "texto": "Persistencia, desproporción y deterioro clínicamente significativo.",
+            "tipo": "resumen_clinico",
+            "fuente": "Resumen estructurado del proyecto; revisar fuente oficial",
+            "literal": false,
+            "id": "trastorno-agorafobia-cie11-criterio-4"
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      },
+      "dsm5": {
+        "visible": true,
+        "orden": 3,
+        "codigo": "300.22",
+        "codigoCie10Cm": "F40.0",
+        "nombre": "Agorafobia",
+        "criterios": [
+          {
+            "id": "trastorno-agorafobia-dsm5-criterio-1",
+            "orden": 1,
+            "titulo": "Resumen clínico 1",
+            "texto": "Temor ante situaciones donde escapar o recibir ayuda podría resultar difícil.",
+            "tipo": "resumen_clinico",
+            "fuente": "DSM-5-TR; resumen no literal",
+            "literal": false
+          },
+          {
+            "id": "trastorno-agorafobia-dsm5-criterio-2",
+            "orden": 2,
+            "titulo": "Resumen clínico 2",
+            "texto": "Puede incluir transporte público, espacios abiertos o cerrados, filas, multitudes y estar fuera de casa sin compañía.",
+            "tipo": "resumen_clinico",
+            "fuente": "DSM-5-TR; resumen no literal",
+            "literal": false
+          },
+          {
+            "id": "trastorno-agorafobia-dsm5-criterio-3",
+            "orden": 3,
+            "titulo": "Resumen clínico 3",
+            "texto": "Evitación, necesidad de acompañante o exposición con ansiedad intensa.",
+            "tipo": "resumen_clinico",
+            "fuente": "DSM-5-TR; resumen no literal",
+            "literal": false
+          },
+          {
+            "id": "trastorno-agorafobia-dsm5-criterio-4",
+            "orden": 4,
+            "titulo": "Resumen clínico 4",
+            "texto": "Persistencia, desproporción y deterioro clínicamente significativo.",
+            "tipo": "resumen_clinico",
+            "fuente": "DSM-5-TR; resumen no literal",
+            "literal": false
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false,
+        "equivalencia": "aproximada",
+        "notasEquivalencia": "La correspondencia entre sistemas puede no ser uno a uno."
+      }
+    },
+    "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": [
+      {
+        "sistema": "cie10",
+        "titulo": "CIE-10 / resumen clínico orientativo local",
+        "tipoContenido": "Resumen clínico"
+      },
+      {
+        "sistema": "DSM-5-TR",
+        "organismo": "American Psychiatric Association",
+        "tipoContenido": "Resumen clínico no literal"
+      }
+    ]
+  },
+  {
+    "id": "trastorno-fobias-sociales",
+    "nombre": "Fobias sociales",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Fobias sociales",
+      "F40.1"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F40.1",
+        "nombre": "Fobias sociales",
+        "criterios": [
+          {
+            "id": "trastorno-fobias-sociales-cie10-criterio-1",
+            "orden": 1,
+            "titulo": "Criterio 1",
+            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-fobias-sociales-cie10-criterio-2",
+            "orden": 2,
+            "titulo": "Criterio 2",
+            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-fobias-sociales-cie10-criterio-3",
+            "orden": 3,
+            "titulo": "Criterio 3",
+            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-fobias-sociales-cie10-criterio-4",
+            "orden": 4,
+            "titulo": "Criterio 4",
+            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": [
+      {
+        "sistema": "cie10",
+        "titulo": "CIE-10 / resumen clínico orientativo local",
+        "tipoContenido": "Resumen clínico"
+      }
+    ]
+  },
+  {
+    "id": "trastorno-fobias-especificas-aisladas",
+    "nombre": "Fobias específicas aisladas",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Fobias específicas aisladas",
+      "F40.2"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F40.2",
+        "nombre": "Fobias específicas aisladas",
+        "criterios": [
+          {
+            "id": "trastorno-fobias-especificas-aisladas-cie10-criterio-1",
+            "orden": 1,
+            "titulo": "Criterio 1",
+            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-fobias-especificas-aisladas-cie10-criterio-2",
+            "orden": 2,
+            "titulo": "Criterio 2",
+            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-fobias-especificas-aisladas-cie10-criterio-3",
+            "orden": 3,
+            "titulo": "Criterio 3",
+            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-fobias-especificas-aisladas-cie10-criterio-4",
+            "orden": 4,
+            "titulo": "Criterio 4",
+            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": [
+      {
+        "sistema": "cie10",
+        "titulo": "CIE-10 / resumen clínico orientativo local",
+        "tipoContenido": "Resumen clínico"
+      }
+    ]
+  },
+  {
+    "id": "trastorno-otros-trastornos-de-ansiedad",
+    "nombre": "Otros trastornos de ansiedad",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Otros trastornos de ansiedad",
+      "F41"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F41",
+        "nombre": "Otros trastornos de ansiedad",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-trastorno-de-panico",
+    "nombre": "Trastorno de pánico",
+    "categoria": "Trastornos de ansiedad",
+    "subcategoria": "Ansiedad",
+    "aliases": [
+      "Trastorno de pánico",
+      "F41.0",
+      "Trastorno de panico",
+      "6B01",
+      "pánico"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F41.0",
+        "nombre": "Trastorno de pánico",
+        "criterios": [
+          {
+            "id": "trastorno-trastorno-de-panico-cie10-criterio-1",
+            "orden": 1,
+            "titulo": "Criterio 1",
+            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-de-panico-cie10-criterio-2",
+            "orden": 2,
+            "titulo": "Criterio 2",
+            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-de-panico-cie10-criterio-3",
+            "orden": 3,
+            "titulo": "Criterio 3",
+            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-de-panico-cie10-criterio-4",
+            "orden": 4,
+            "titulo": "Criterio 4",
+            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      },
+      "cie11": {
+        "visible": true,
+        "orden": 2,
+        "codigo": "6B01",
+        "nombre": "Trastorno de panico",
+        "criterios": [
+          {
+            "orden": 1,
+            "titulo": "Resumen clínico 1",
+            "texto": "Ataques de pánico recurrentes, de inicio abrupto.",
+            "tipo": "resumen_clinico",
+            "fuente": "Resumen estructurado del proyecto; revisar fuente oficial",
+            "literal": false,
+            "id": "trastorno-trastorno-de-panico-cie11-criterio-1"
+          },
+          {
+            "orden": 2,
+            "titulo": "Resumen clínico 2",
+            "texto": "Síntomas autonómicos, respiratorios, neurológicos y cognitivos durante los ataques.",
+            "tipo": "resumen_clinico",
+            "fuente": "Resumen estructurado del proyecto; revisar fuente oficial",
+            "literal": false,
+            "id": "trastorno-trastorno-de-panico-cie11-criterio-2"
+          },
+          {
+            "orden": 3,
+            "titulo": "Resumen clínico 3",
+            "texto": "Preocupación persistente por nuevos ataques o sus consecuencias.",
+            "tipo": "resumen_clinico",
+            "fuente": "Resumen estructurado del proyecto; revisar fuente oficial",
+            "literal": false,
+            "id": "trastorno-trastorno-de-panico-cie11-criterio-3"
+          },
+          {
+            "orden": 4,
+            "titulo": "Resumen clínico 4",
+            "texto": "Cambios conductuales desadaptativos y deterioro.",
+            "tipo": "resumen_clinico",
+            "fuente": "Resumen estructurado del proyecto; revisar fuente oficial",
+            "literal": false,
+            "id": "trastorno-trastorno-de-panico-cie11-criterio-4"
+          },
+          {
+            "orden": 5,
+            "titulo": "Resumen clínico 5",
+            "texto": "Distinguir ataque de pánico de trastorno de pánico y descartar sustancias o afecciones médicas.",
+            "tipo": "resumen_clinico",
+            "fuente": "Resumen estructurado del proyecto; revisar fuente oficial",
+            "literal": false,
+            "id": "trastorno-trastorno-de-panico-cie11-criterio-5"
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      },
+      "dsm5": {
+        "visible": true,
+        "orden": 3,
+        "codigo": "300.01",
+        "codigoCie10Cm": "F41.0",
+        "nombre": "Trastorno de pánico",
+        "criterios": [
+          {
+            "id": "trastorno-trastorno-de-panico-dsm5-criterio-1",
+            "orden": 1,
+            "titulo": "Resumen clínico 1",
+            "texto": "Ataques de pánico recurrentes, de inicio abrupto.",
+            "tipo": "resumen_clinico",
+            "fuente": "DSM-5-TR; resumen no literal",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-de-panico-dsm5-criterio-2",
+            "orden": 2,
+            "titulo": "Resumen clínico 2",
+            "texto": "Síntomas autonómicos, respiratorios, neurológicos y cognitivos durante los ataques.",
+            "tipo": "resumen_clinico",
+            "fuente": "DSM-5-TR; resumen no literal",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-de-panico-dsm5-criterio-3",
+            "orden": 3,
+            "titulo": "Resumen clínico 3",
+            "texto": "Preocupación persistente por nuevos ataques o sus consecuencias.",
+            "tipo": "resumen_clinico",
+            "fuente": "DSM-5-TR; resumen no literal",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-de-panico-dsm5-criterio-4",
+            "orden": 4,
+            "titulo": "Resumen clínico 4",
+            "texto": "Cambios conductuales desadaptativos y deterioro.",
+            "tipo": "resumen_clinico",
+            "fuente": "DSM-5-TR; resumen no literal",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-de-panico-dsm5-criterio-5",
+            "orden": 5,
+            "titulo": "Resumen clínico 5",
+            "texto": "Distinguir ataque de pánico de trastorno de pánico y descartar sustancias o afecciones médicas.",
+            "tipo": "resumen_clinico",
+            "fuente": "DSM-5-TR; resumen no literal",
+            "literal": false
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false,
+        "equivalencia": "aproximada",
+        "notasEquivalencia": "La correspondencia entre sistemas puede no ser uno a uno."
+      }
+    },
+    "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": [
+      {
+        "sistema": "cie10",
+        "titulo": "CIE-10 / resumen clínico orientativo local",
+        "tipoContenido": "Resumen clínico"
+      },
+      {
+        "sistema": "DSM-5-TR",
+        "organismo": "American Psychiatric Association",
+        "tipoContenido": "Resumen clínico no literal"
+      }
+    ]
+  },
+  {
+    "id": "trastorno-trastorno-de-ansiedad-generalizada",
+    "nombre": "Trastorno de ansiedad generalizada",
+    "categoria": "Trastornos de ansiedad",
+    "subcategoria": "Ansiedad",
+    "aliases": [
+      "Trastorno de ansiedad generalizada",
+      "F41.1",
+      "6B00",
+      "TAG",
+      "ansiedad generalizada"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F41.1",
+        "nombre": "Trastorno de ansiedad generalizada",
+        "criterios": [
+          {
+            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie10-criterio-1",
+            "orden": 1,
+            "titulo": "Criterio 1",
+            "texto": "A) Presencia de un período de por lo menos 6 meses con tensión prominente, preocupación y aprensión sobre los acontecimientos y problemas de la vida diaria.",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie10-criterio-2",
+            "orden": 2,
+            "titulo": "Criterio 2",
+            "texto": "B) Presencia de al menos 4 de los síntomas lsitados a continuación, de los cuales por lo menos uno de ellos debe ser del grupo 1-4:",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie10-criterio-3",
+            "orden": 3,
+            "titulo": "Criterio 3",
+            "texto": "Síntomas autonómicos:",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie10-criterio-4",
+            "orden": 4,
+            "titulo": "Criterio 4",
+            "texto": " 1) Palpitaciones o golpeo del corazón o ritmo cardiaco acelerado.",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie10-criterio-5",
+            "orden": 5,
+            "titulo": "Criterio 5",
+            "texto": " 2) Sudoración.",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie10-criterio-6",
+            "orden": 6,
+            "titulo": "Criterio 6",
+            "texto": " 3) Temblores o sacudidas.",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie10-criterio-7",
+            "orden": 7,
+            "titulo": "Criterio 7",
+            "texto": " 4) Sequedad de boca (no debida a medicación o deshidratación).",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie10-criterio-8",
+            "orden": 8,
+            "titulo": "Criterio 8",
+            "texto": " Síntomas relacionados con el pecho y abdomen:",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie10-criterio-9",
+            "orden": 9,
+            "titulo": "Criterio 9",
+            "texto": " 5) Dificultad para respirar.",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie10-criterio-10",
+            "orden": 10,
+            "titulo": "Criterio 10",
+            "texto": " 6) Sensación de ahogo.",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie10-criterio-11",
+            "orden": 11,
+            "titulo": "Criterio 11",
+            "texto": " 7) Dolor o molestias en el pecho.",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie10-criterio-12",
+            "orden": 12,
+            "titulo": "Criterio 12",
+            "texto": " 8) Náuseas o malestar abdominal (p. ej., estómago revuelto).",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie10-criterio-13",
+            "orden": 13,
+            "titulo": "Criterio 13",
+            "texto": "Síntomas relacionados con el estado mental:",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie10-criterio-14",
+            "orden": 14,
+            "titulo": "Criterio 14",
+            "texto": " 9) Sensación de mareo, inestabilidad o desvanecimiento.",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie10-criterio-15",
+            "orden": 15,
+            "titulo": "Criterio 15",
+            "texto": " 10) Sensación de que los objetos son irreales (desrealización) o de que uno mismo está distante o no realmente aquí (despersonalización).",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie10-criterio-16",
+            "orden": 16,
+            "titulo": "Criterio 16",
+            "texto": " 11) Miedo a perder el control, a perder la conciencia o volverse loco.",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie10-criterio-17",
+            "orden": 17,
+            "titulo": "Criterio 17",
+            "texto": " 12) Miedo a morir.",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie10-criterio-18",
+            "orden": 18,
+            "titulo": "Criterio 18",
+            "texto": "Síntomas generales:",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie10-criterio-19",
+            "orden": 19,
+            "titulo": "Criterio 19",
+            "texto": " 13) Sofocos de calor o escalofríos.",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie10-criterio-20",
+            "orden": 20,
+            "titulo": "Criterio 20",
+            "texto": " 14) aturdimiento o sensación de hormigueo (parestesias).",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie10-criterio-21",
+            "orden": 21,
+            "titulo": "Criterio 21",
+            "texto": " 15) Tensión, dolores o molestias musculares.",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie10-criterio-22",
+            "orden": 22,
+            "titulo": "Criterio 22",
+            "texto": " 16) Inquietud e incapacidad para relajrse.",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie10-criterio-23",
+            "orden": 23,
+            "titulo": "Criterio 23",
+            "texto": " 17) sentimientos de estar al límite o bajo presión, o de tensión mental",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie10-criterio-24",
+            "orden": 24,
+            "titulo": "Criterio 24",
+            "texto": " 18) Sensación de nudo en la garganta o dificultad para tragar.",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie10-criterio-25",
+            "orden": 25,
+            "titulo": "Criterio 25",
+            "texto": "Otros síntomas no específicos:",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie10-criterio-26",
+            "orden": 26,
+            "titulo": "Criterio 26",
+            "texto": " 19) Respuesta exagerada a pequeñas sorpresas o sobresaltos.",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie10-criterio-27",
+            "orden": 27,
+            "titulo": "Criterio 27",
+            "texto": " 20) Dificultad para concentrarse o de mente en blanco, a causa de la preocupación o de la ansiedad.",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie10-criterio-28",
+            "orden": 28,
+            "titulo": "Criterio 28",
+            "texto": " 21) Irritabilidad persistente",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie10-criterio-29",
+            "orden": 29,
+            "titulo": "Criterio 29",
+            "texto": " 22) Dificultad para conciliar el sueño debido a las preocupaciones.",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie10-criterio-30",
+            "orden": 30,
+            "titulo": "Criterio 1",
+            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie10-criterio-31",
+            "orden": 31,
+            "titulo": "Criterio 2",
+            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie10-criterio-32",
+            "orden": 32,
+            "titulo": "Criterio 3",
+            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie10-criterio-33",
+            "orden": 33,
+            "titulo": "Criterio 4",
+            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      },
+      "cie11": {
+        "visible": true,
+        "orden": 2,
+        "codigo": "6B00",
+        "nombre": "Trastorno de ansiedad generalizada",
+        "criterios": [
+          {
+            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie11-criterio-1",
+            "orden": 1,
+            "titulo": "Criterio 1",
+            "texto": "A) Presencia de un período de por lo menos 6 meses con tensión prominente, preocupación y aprensión sobre los acontecimientos y problemas de la vida diaria.",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie11-criterio-2",
+            "orden": 2,
+            "titulo": "Criterio 2",
+            "texto": "B) Presencia de al menos 4 de los síntomas lsitados a continuación, de los cuales por lo menos uno de ellos debe ser del grupo 1-4:",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie11-criterio-3",
+            "orden": 3,
+            "titulo": "Criterio 3",
+            "texto": "Síntomas autonómicos:",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie11-criterio-4",
+            "orden": 4,
+            "titulo": "Criterio 4",
+            "texto": " 1) Palpitaciones o golpeo del corazón o ritmo cardiaco acelerado.",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie11-criterio-5",
+            "orden": 5,
+            "titulo": "Criterio 5",
+            "texto": " 2) Sudoración.",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie11-criterio-6",
+            "orden": 6,
+            "titulo": "Criterio 6",
+            "texto": " 3) Temblores o sacudidas.",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie11-criterio-7",
+            "orden": 7,
+            "titulo": "Criterio 7",
+            "texto": " 4) Sequedad de boca (no debida a medicación o deshidratación).",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie11-criterio-8",
+            "orden": 8,
+            "titulo": "Criterio 8",
+            "texto": " Síntomas relacionados con el pecho y abdomen:",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie11-criterio-9",
+            "orden": 9,
+            "titulo": "Criterio 9",
+            "texto": " 5) Dificultad para respirar.",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie11-criterio-10",
+            "orden": 10,
+            "titulo": "Criterio 10",
+            "texto": " 6) Sensación de ahogo.",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie11-criterio-11",
+            "orden": 11,
+            "titulo": "Criterio 11",
+            "texto": " 7) Dolor o molestias en el pecho.",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie11-criterio-12",
+            "orden": 12,
+            "titulo": "Criterio 12",
+            "texto": " 8) Náuseas o malestar abdominal (p. ej., estómago revuelto).",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie11-criterio-13",
+            "orden": 13,
+            "titulo": "Criterio 13",
+            "texto": "Síntomas relacionados con el estado mental:",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie11-criterio-14",
+            "orden": 14,
+            "titulo": "Criterio 14",
+            "texto": " 9) Sensación de mareo, inestabilidad o desvanecimiento.",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie11-criterio-15",
+            "orden": 15,
+            "titulo": "Criterio 15",
+            "texto": " 10) Sensación de que los objetos son irreales (desrealización) o de que uno mismo está distante o no realmente aquí (despersonalización).",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie11-criterio-16",
+            "orden": 16,
+            "titulo": "Criterio 16",
+            "texto": " 11) Miedo a perder el control, a perder la conciencia o volverse loco.",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie11-criterio-17",
+            "orden": 17,
+            "titulo": "Criterio 17",
+            "texto": " 12) Miedo a morir.",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie11-criterio-18",
+            "orden": 18,
+            "titulo": "Criterio 18",
+            "texto": "Síntomas generales:",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie11-criterio-19",
+            "orden": 19,
+            "titulo": "Criterio 19",
+            "texto": " 13) Sofocos de calor o escalofríos.",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie11-criterio-20",
+            "orden": 20,
+            "titulo": "Criterio 20",
+            "texto": " 14) aturdimiento o sensación de hormigueo (parestesias).",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie11-criterio-21",
+            "orden": 21,
+            "titulo": "Criterio 21",
+            "texto": " 15) Tensión, dolores o molestias musculares.",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie11-criterio-22",
+            "orden": 22,
+            "titulo": "Criterio 22",
+            "texto": " 16) Inquietud e incapacidad para relajrse.",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie11-criterio-23",
+            "orden": 23,
+            "titulo": "Criterio 23",
+            "texto": " 17) sentimientos de estar al límite o bajo presión, o de tensión mental",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie11-criterio-24",
+            "orden": 24,
+            "titulo": "Criterio 24",
+            "texto": " 18) Sensación de nudo en la garganta o dificultad para tragar.",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie11-criterio-25",
+            "orden": 25,
+            "titulo": "Criterio 25",
+            "texto": "Otros síntomas no específicos:",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie11-criterio-26",
+            "orden": 26,
+            "titulo": "Criterio 26",
+            "texto": " 19) Respuesta exagerada a pequeñas sorpresas o sobresaltos.",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie11-criterio-27",
+            "orden": 27,
+            "titulo": "Criterio 27",
+            "texto": " 20) Dificultad para concentrarse o de mente en blanco, a causa de la preocupación o de la ansiedad.",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie11-criterio-28",
+            "orden": 28,
+            "titulo": "Criterio 28",
+            "texto": " 21) Irritabilidad persistente",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie11-criterio-29",
+            "orden": 29,
+            "titulo": "Criterio 29",
+            "texto": " 22) Dificultad para conciliar el sueño debido a las preocupaciones.",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      },
+      "dsm5": {
+        "visible": true,
+        "orden": 3,
+        "codigo": "300.02",
+        "codigoCie10Cm": "F41.1",
+        "nombre": "Trastorno de ansiedad generalizada",
+        "criterios": [
+          {
+            "id": "trastorno-trastorno-de-ansiedad-generalizada-dsm5-criterio-1",
+            "orden": 1,
+            "titulo": "Resumen clínico 1",
+            "texto": "Ansiedad y preocupación excesivas relacionadas con diferentes acontecimientos o áreas de la vida.",
+            "tipo": "resumen_clinico",
+            "fuente": "DSM-5-TR; resumen no literal",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-de-ansiedad-generalizada-dsm5-criterio-2",
+            "orden": 2,
+            "titulo": "Resumen clínico 2",
+            "texto": "Dificultad para controlar la preocupación.",
+            "tipo": "resumen_clinico",
+            "fuente": "DSM-5-TR; resumen no literal",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-de-ansiedad-generalizada-dsm5-criterio-3",
+            "orden": 3,
+            "titulo": "Resumen clínico 3",
+            "texto": "Síntomas físicos y cognitivos asociados.",
+            "tipo": "resumen_clinico",
+            "fuente": "DSM-5-TR; resumen no literal",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-de-ansiedad-generalizada-dsm5-criterio-4",
+            "orden": 4,
+            "titulo": "Resumen clínico 4",
+            "texto": "Duración clínicamente relevante, malestar o deterioro.",
+            "tipo": "resumen_clinico",
+            "fuente": "DSM-5-TR; resumen no literal",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-de-ansiedad-generalizada-dsm5-criterio-5",
+            "orden": 5,
+            "titulo": "Resumen clínico 5",
+            "texto": "Descartar sustancias, afecciones médicas y otros trastornos mentales; considerar la presentación infantil.",
+            "tipo": "resumen_clinico",
+            "fuente": "DSM-5-TR; resumen no literal",
+            "literal": false
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false,
+        "equivalencia": "aproximada",
+        "notasEquivalencia": "La correspondencia entre sistemas puede no ser uno a uno."
+      }
+    },
+    "psicoeducacion": "La ansiedad se trabaja con psicoeducacion, regulacion fisiologica, exposicion gradual, sueño y estrategias cognitivas.",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": [
+      {
+        "sistema": "cie10",
+        "titulo": "CIE-10 / resumen clínico orientativo local",
+        "tipoContenido": "Resumen clínico"
+      },
+      {
+        "sistema": "DSM-5-TR",
+        "organismo": "American Psychiatric Association",
+        "tipoContenido": "Resumen clínico no literal"
+      }
+    ]
+  },
+  {
+    "id": "trastorno-trastorno-mixto-ansioso-depresivo",
+    "nombre": "Trastorno mixto ansioso-depresivo",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Trastorno mixto ansioso-depresivo",
+      "F41.2"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F41.2",
+        "nombre": "Trastorno mixto ansioso-depresivo",
+        "criterios": [
+          {
+            "id": "trastorno-trastorno-mixto-ansioso-depresivo-cie10-criterio-1",
+            "orden": 1,
+            "titulo": "Criterio 1",
+            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-mixto-ansioso-depresivo-cie10-criterio-2",
+            "orden": 2,
+            "titulo": "Criterio 2",
+            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-mixto-ansioso-depresivo-cie10-criterio-3",
+            "orden": 3,
+            "titulo": "Criterio 3",
+            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-mixto-ansioso-depresivo-cie10-criterio-4",
+            "orden": 4,
+            "titulo": "Criterio 4",
+            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": [
+      {
+        "sistema": "cie10",
+        "titulo": "CIE-10 / resumen clínico orientativo local",
+        "tipoContenido": "Resumen clínico"
+      }
+    ]
+  },
+  {
+    "id": "trastorno-trastorno-obsesivo-compulsivo",
+    "nombre": "Trastorno obsesivo-compulsivo",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Trastorno obsesivo-compulsivo",
+      "F42",
+      "Trastorno obsesivo compulsivo",
+      "6B20"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F42",
+        "nombre": "Trastorno obsesivo-compulsivo",
+        "criterios": [
+          {
+            "id": "trastorno-trastorno-obsesivo-compulsivo-cie10-criterio-1",
+            "orden": 1,
+            "titulo": "Criterio 1",
+            "texto": "Obsesiones intrusivas y/o compulsiones repetitivas.",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-obsesivo-compulsivo-cie10-criterio-2",
+            "orden": 2,
+            "titulo": "Criterio 2",
+            "texto": "La persona intenta resistir o neutralizar pensamientos, imagenes o impulsos.",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-obsesivo-compulsivo-cie10-criterio-3",
+            "orden": 3,
+            "titulo": "Criterio 3",
+            "texto": "Consumen tiempo o causan deterioro significativo.",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-obsesivo-compulsivo-cie10-criterio-4",
+            "orden": 4,
+            "titulo": "Criterio 4",
+            "texto": "Diferenciar de psicosis, tics, ansiedad generalizada o personalidad obsesiva.",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-obsesivo-compulsivo-cie10-criterio-5",
+            "orden": 5,
+            "titulo": "Criterio 1",
+            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-obsesivo-compulsivo-cie10-criterio-6",
+            "orden": 6,
+            "titulo": "Criterio 2",
+            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-obsesivo-compulsivo-cie10-criterio-7",
+            "orden": 7,
+            "titulo": "Criterio 3",
+            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-obsesivo-compulsivo-cie10-criterio-8",
+            "orden": 8,
+            "titulo": "Criterio 4",
+            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      },
+      "cie11": {
+        "visible": true,
+        "orden": 2,
+        "codigo": "6B20",
+        "nombre": "Trastorno obsesivo compulsivo",
+        "criterios": [
+          {
+            "id": "trastorno-trastorno-obsesivo-compulsivo-cie11-criterio-1",
+            "orden": 1,
+            "titulo": "Criterio 1",
+            "texto": "Obsesiones intrusivas y/o compulsiones repetitivas.",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-obsesivo-compulsivo-cie11-criterio-2",
+            "orden": 2,
+            "titulo": "Criterio 2",
+            "texto": "La persona intenta resistir o neutralizar pensamientos, imagenes o impulsos.",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-obsesivo-compulsivo-cie11-criterio-3",
+            "orden": 3,
+            "titulo": "Criterio 3",
+            "texto": "Consumen tiempo o causan deterioro significativo.",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-obsesivo-compulsivo-cie11-criterio-4",
+            "orden": 4,
+            "titulo": "Criterio 4",
+            "texto": "Diferenciar de psicosis, tics, ansiedad generalizada o personalidad obsesiva.",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "El TOC no se reduce a 'manias'; el tratamiento suele incluir exposicion con prevencion de respuesta y seguimiento.",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": [
+      {
+        "sistema": "cie10",
+        "titulo": "CIE-10 / resumen clínico orientativo local",
+        "tipoContenido": "Resumen clínico"
+      }
+    ]
+  },
+  {
+    "id": "trastorno-reaccion-a-estres-grave-y-trastornos-de-adaptacion",
+    "nombre": "Reacción a estrés grave y trastornos de adaptación",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Reacción a estrés grave y trastornos de adaptación",
+      "F43"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F43",
+        "nombre": "Reacción a estrés grave y trastornos de adaptación",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-reaccion-a-estres-agudo",
+    "nombre": "Reacción a estrés agudo",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Reacción a estrés agudo",
+      "F43.0"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F43.0",
+        "nombre": "Reacción a estrés agudo",
+        "criterios": [
+          {
+            "id": "trastorno-reaccion-a-estres-agudo-cie10-criterio-1",
+            "orden": 1,
+            "titulo": "Criterio 1",
+            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-reaccion-a-estres-agudo-cie10-criterio-2",
+            "orden": 2,
+            "titulo": "Criterio 2",
+            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-reaccion-a-estres-agudo-cie10-criterio-3",
+            "orden": 3,
+            "titulo": "Criterio 3",
+            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-reaccion-a-estres-agudo-cie10-criterio-4",
+            "orden": 4,
+            "titulo": "Criterio 4",
+            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": [
+      {
+        "sistema": "cie10",
+        "titulo": "CIE-10 / resumen clínico orientativo local",
+        "tipoContenido": "Resumen clínico"
+      }
+    ]
+  },
+  {
+    "id": "trastorno-trastorno-de-estres-postraumatico",
+    "nombre": "Trastorno de estrés postraumático",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Trastorno de estrés postraumático",
+      "F43.1",
+      "Trastorno de estres postraumatico",
+      "6B40"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F43.1",
+        "nombre": "Trastorno de estrés postraumático",
+        "criterios": [
+          {
+            "id": "trastorno-trastorno-de-estres-postraumatico-cie10-criterio-1",
+            "orden": 1,
+            "titulo": "Criterio 1",
+            "texto": "Exposicion a evento traumatico.",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-de-estres-postraumatico-cie10-criterio-2",
+            "orden": 2,
+            "titulo": "Criterio 2",
+            "texto": "Reexperimentacion, evitacion, amenaza persistente/hipervigilancia y alteraciones cognitivas o emocionales.",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-de-estres-postraumatico-cie10-criterio-3",
+            "orden": 3,
+            "titulo": "Criterio 3",
+            "texto": "Deterioro funcional y persistencia posterior al evento.",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-de-estres-postraumatico-cie10-criterio-4",
+            "orden": 4,
+            "titulo": "Criterio 4",
+            "texto": "Valorar disociacion, depresion, consumo de sustancias y riesgo suicida.",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-de-estres-postraumatico-cie10-criterio-5",
+            "orden": 5,
+            "titulo": "Criterio 1",
+            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-de-estres-postraumatico-cie10-criterio-6",
+            "orden": 6,
+            "titulo": "Criterio 2",
+            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-de-estres-postraumatico-cie10-criterio-7",
+            "orden": 7,
+            "titulo": "Criterio 3",
+            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-de-estres-postraumatico-cie10-criterio-8",
+            "orden": 8,
+            "titulo": "Criterio 4",
+            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      },
+      "cie11": {
+        "visible": true,
+        "orden": 2,
+        "codigo": "6B40",
+        "nombre": "Trastorno de estres postraumatico",
+        "criterios": [
+          {
+            "id": "trastorno-trastorno-de-estres-postraumatico-cie11-criterio-1",
+            "orden": 1,
+            "titulo": "Criterio 1",
+            "texto": "Exposicion a evento traumatico.",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-de-estres-postraumatico-cie11-criterio-2",
+            "orden": 2,
+            "titulo": "Criterio 2",
+            "texto": "Reexperimentacion, evitacion, amenaza persistente/hipervigilancia y alteraciones cognitivas o emocionales.",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-de-estres-postraumatico-cie11-criterio-3",
+            "orden": 3,
+            "titulo": "Criterio 3",
+            "texto": "Deterioro funcional y persistencia posterior al evento.",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-de-estres-postraumatico-cie11-criterio-4",
+            "orden": 4,
+            "titulo": "Criterio 4",
+            "texto": "Valorar disociacion, depresion, consumo de sustancias y riesgo suicida.",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "Las reacciones postraumaticas son respuestas del sistema de amenaza. El tratamiento busca seguridad, regulacion y procesamiento gradual.",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": [
+      {
+        "sistema": "cie10",
+        "titulo": "CIE-10 / resumen clínico orientativo local",
+        "tipoContenido": "Resumen clínico"
+      }
+    ]
+  },
+  {
+    "id": "trastorno-trastornos-de-adaptacion",
+    "nombre": "Trastornos de adaptación",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Trastornos de adaptación",
+      "F43.2"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F43.2",
+        "nombre": "Trastornos de adaptación",
+        "criterios": [
+          {
+            "id": "trastorno-trastornos-de-adaptacion-cie10-criterio-1",
+            "orden": 1,
+            "titulo": "Criterio 1",
+            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastornos-de-adaptacion-cie10-criterio-2",
+            "orden": 2,
+            "titulo": "Criterio 2",
+            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastornos-de-adaptacion-cie10-criterio-3",
+            "orden": 3,
+            "titulo": "Criterio 3",
+            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastornos-de-adaptacion-cie10-criterio-4",
+            "orden": 4,
+            "titulo": "Criterio 4",
+            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": [
+      {
+        "sistema": "cie10",
+        "titulo": "CIE-10 / resumen clínico orientativo local",
+        "tipoContenido": "Resumen clínico"
+      }
+    ]
+  },
+  {
+    "id": "trastorno-trastornos-disociativos",
+    "nombre": "Trastornos disociativos",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Trastornos disociativos",
+      "F44"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F44",
+        "nombre": "Trastornos disociativos",
+        "criterios": [
+          {
+            "id": "trastorno-trastornos-disociativos-cie10-criterio-1",
+            "orden": 1,
+            "titulo": "Criterio 1",
+            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastornos-disociativos-cie10-criterio-2",
+            "orden": 2,
+            "titulo": "Criterio 2",
+            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastornos-disociativos-cie10-criterio-3",
+            "orden": 3,
+            "titulo": "Criterio 3",
+            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastornos-disociativos-cie10-criterio-4",
+            "orden": 4,
+            "titulo": "Criterio 4",
+            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": [
+      {
+        "sistema": "cie10",
+        "titulo": "CIE-10 / resumen clínico orientativo local",
+        "tipoContenido": "Resumen clínico"
+      }
+    ]
+  },
+  {
+    "id": "trastorno-trastornos-somatomorfos",
+    "nombre": "Trastornos somatomorfos",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Trastornos somatomorfos",
+      "F45"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F45",
+        "nombre": "Trastornos somatomorfos",
+        "criterios": [
+          {
+            "id": "trastorno-trastornos-somatomorfos-cie10-criterio-1",
+            "orden": 1,
+            "titulo": "Criterio 1",
+            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastornos-somatomorfos-cie10-criterio-2",
+            "orden": 2,
+            "titulo": "Criterio 2",
+            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastornos-somatomorfos-cie10-criterio-3",
+            "orden": 3,
+            "titulo": "Criterio 3",
+            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastornos-somatomorfos-cie10-criterio-4",
+            "orden": 4,
+            "titulo": "Criterio 4",
+            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": [
+      {
+        "sistema": "cie10",
+        "titulo": "CIE-10 / resumen clínico orientativo local",
+        "tipoContenido": "Resumen clínico"
+      }
+    ]
+  },
+  {
+    "id": "trastorno-otros-trastornos-neuroticos",
+    "nombre": "Otros trastornos neuróticos",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Otros trastornos neuróticos",
+      "F48"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F48",
+        "nombre": "Otros trastornos neuróticos",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-trastornos-de-la-conducta-alimentaria",
+    "nombre": "Trastornos de la conducta alimentaria",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Trastornos de la conducta alimentaria",
+      "F50"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F50",
+        "nombre": "Trastornos de la conducta alimentaria",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-anorexia-nerviosa",
+    "nombre": "Anorexia nerviosa",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Anorexia nerviosa",
+      "F50.0"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F50.0",
+        "nombre": "Anorexia nerviosa",
+        "criterios": [
+          {
+            "id": "trastorno-anorexia-nerviosa-cie10-criterio-1",
+            "orden": 1,
+            "titulo": "Criterio 1",
+            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-anorexia-nerviosa-cie10-criterio-2",
+            "orden": 2,
+            "titulo": "Criterio 2",
+            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-anorexia-nerviosa-cie10-criterio-3",
+            "orden": 3,
+            "titulo": "Criterio 3",
+            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-anorexia-nerviosa-cie10-criterio-4",
+            "orden": 4,
+            "titulo": "Criterio 4",
+            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": [
+      {
+        "sistema": "cie10",
+        "titulo": "CIE-10 / resumen clínico orientativo local",
+        "tipoContenido": "Resumen clínico"
+      }
+    ]
+  },
+  {
+    "id": "trastorno-bulimia-nerviosa",
+    "nombre": "Bulimia nerviosa",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Bulimia nerviosa",
+      "F50.2"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F50.2",
+        "nombre": "Bulimia nerviosa",
+        "criterios": [
+          {
+            "id": "trastorno-bulimia-nerviosa-cie10-criterio-1",
+            "orden": 1,
+            "titulo": "Criterio 1",
+            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-bulimia-nerviosa-cie10-criterio-2",
+            "orden": 2,
+            "titulo": "Criterio 2",
+            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-bulimia-nerviosa-cie10-criterio-3",
+            "orden": 3,
+            "titulo": "Criterio 3",
+            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-bulimia-nerviosa-cie10-criterio-4",
+            "orden": 4,
+            "titulo": "Criterio 4",
+            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": [
+      {
+        "sistema": "cie10",
+        "titulo": "CIE-10 / resumen clínico orientativo local",
+        "tipoContenido": "Resumen clínico"
+      }
+    ]
+  },
+  {
+    "id": "trastorno-trastornos-no-organicos-del-sueno",
+    "nombre": "Trastornos no orgánicos del sueño",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Trastornos no orgánicos del sueño",
+      "F51"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F51",
+        "nombre": "Trastornos no orgánicos del sueño",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-disfuncion-sexual-no-ocasionada-por-trastorno-ni-enfermedad-organicos",
+    "nombre": "Disfunción sexual no ocasionada por trastorno ni enfermedad orgánicos",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Disfunción sexual no ocasionada por trastorno ni enfermedad orgánicos",
+      "F52"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F52",
+        "nombre": "Disfunción sexual no ocasionada por trastorno ni enfermedad orgánicos",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-trastornos-mentales-y-del-comportamiento-asociados-con-el-puerperio-no-clasificados-en-otra-parte",
+    "nombre": "Trastornos mentales y del comportamiento asociados con el puerperio, no clasificados en otra parte",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Trastornos mentales y del comportamiento asociados con el puerperio, no clasificados en otra parte",
+      "F53"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F53",
+        "nombre": "Trastornos mentales y del comportamiento asociados con el puerperio, no clasificados en otra parte",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-factores-psicologicos-y-del-comportamiento-asociados-con-trastornos-o-enfermedades-clasificados-en-otra-parte",
+    "nombre": "Factores psicológicos y del comportamiento asociados con trastornos o enfermedades clasificados en otra parte",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Factores psicológicos y del comportamiento asociados con trastornos o enfermedades clasificados en otra parte",
+      "F54"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F54",
+        "nombre": "Factores psicológicos y del comportamiento asociados con trastornos o enfermedades clasificados en otra parte",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-abuso-de-sustancias-que-no-producen-dependencia",
+    "nombre": "Abuso de sustancias que no producen dependencia",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Abuso de sustancias que no producen dependencia",
+      "F55"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F55",
+        "nombre": "Abuso de sustancias que no producen dependencia",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-sindromes-del-comportamiento-asociados-con-alteraciones-fisiologicas-y-factores-fisicos-no-especificados",
+    "nombre": "Síndromes del comportamiento asociados con alteraciones fisiológicas y factores físicos no especificados",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Síndromes del comportamiento asociados con alteraciones fisiológicas y factores físicos no especificados",
+      "F59"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F59",
+        "nombre": "Síndromes del comportamiento asociados con alteraciones fisiológicas y factores físicos no especificados",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-alcohol-intoxicacion-aguda",
+    "nombre": "Alcohol: intoxicacion aguda",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Alcohol: intoxicacion aguda",
+      "F10.0"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F10.0",
+        "nombre": "Alcohol: intoxicacion aguda",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-otros-estimulantes-trastorno-psicotico-residual-y-de-comienzo-tardio",
+    "nombre": "Otros estimulantes: trastorno psicotico residual y de comienzo tardio",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Otros estimulantes: trastorno psicotico residual y de comienzo tardio",
+      "F15.7"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F15.7",
+        "nombre": "Otros estimulantes: trastorno psicotico residual y de comienzo tardio",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-alucinogenos-intoxicacion-aguda",
+    "nombre": "Alucinogenos: intoxicacion aguda",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Alucinogenos: intoxicacion aguda",
+      "F16.0"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F16.0",
+        "nombre": "Alucinogenos: intoxicacion aguda",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-alucinogenos-uso-nocivo",
+    "nombre": "Alucinogenos: uso nocivo",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Alucinogenos: uso nocivo",
+      "F16.1"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F16.1",
+        "nombre": "Alucinogenos: uso nocivo",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-alucinogenos-sindrome-de-dependencia",
+    "nombre": "Alucinogenos: sindrome de dependencia",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Alucinogenos: sindrome de dependencia",
+      "F16.2"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F16.2",
+        "nombre": "Alucinogenos: sindrome de dependencia",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-alucinogenos-trastorno-psicotico",
+    "nombre": "Alucinogenos: trastorno psicotico",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Alucinogenos: trastorno psicotico",
+      "F16.5"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F16.5",
+        "nombre": "Alucinogenos: trastorno psicotico",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-alucinogenos-trastorno-psicotico-residual-y-de-comienzo-tardio",
+    "nombre": "Alucinogenos: trastorno psicotico residual y de comienzo tardio",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Alucinogenos: trastorno psicotico residual y de comienzo tardio",
+      "F16.7"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F16.7",
+        "nombre": "Alucinogenos: trastorno psicotico residual y de comienzo tardio",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-tabaco-intoxicacion-aguda",
+    "nombre": "Tabaco: intoxicacion aguda",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Tabaco: intoxicacion aguda",
+      "F17.0"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F17.0",
+        "nombre": "Tabaco: intoxicacion aguda",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-tabaco-uso-nocivo",
+    "nombre": "Tabaco: uso nocivo",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Tabaco: uso nocivo",
+      "F17.1"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F17.1",
+        "nombre": "Tabaco: uso nocivo",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-tabaco-sindrome-de-dependencia",
+    "nombre": "Tabaco: sindrome de dependencia",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Tabaco: sindrome de dependencia",
+      "F17.2"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F17.2",
+        "nombre": "Tabaco: sindrome de dependencia",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-tabaco-sindrome-de-abstinencia",
+    "nombre": "Tabaco: sindrome de abstinencia",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Tabaco: sindrome de abstinencia",
+      "F17.3"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F17.3",
+        "nombre": "Tabaco: sindrome de abstinencia",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-disolventes-volatiles-intoxicacion-aguda",
+    "nombre": "Disolventes volatiles: intoxicacion aguda",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Disolventes volatiles: intoxicacion aguda",
+      "F18.0"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F18.0",
+        "nombre": "Disolventes volatiles: intoxicacion aguda",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-disolventes-volatiles-uso-nocivo",
+    "nombre": "Disolventes volatiles: uso nocivo",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Disolventes volatiles: uso nocivo",
+      "F18.1"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F18.1",
+        "nombre": "Disolventes volatiles: uso nocivo",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-disolventes-volatiles-sindrome-de-dependencia",
+    "nombre": "Disolventes volatiles: sindrome de dependencia",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Disolventes volatiles: sindrome de dependencia",
+      "F18.2"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F18.2",
+        "nombre": "Disolventes volatiles: sindrome de dependencia",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-disolventes-volatiles-trastorno-psicotico",
+    "nombre": "Disolventes volatiles: trastorno psicotico",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Disolventes volatiles: trastorno psicotico",
+      "F18.5"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F18.5",
+        "nombre": "Disolventes volatiles: trastorno psicotico",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-disolventes-volatiles-trastorno-psicotico-residual-y-de-comienzo-tardio",
+    "nombre": "Disolventes volatiles: trastorno psicotico residual y de comienzo tardio",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Disolventes volatiles: trastorno psicotico residual y de comienzo tardio",
+      "F18.7"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F18.7",
+        "nombre": "Disolventes volatiles: trastorno psicotico residual y de comienzo tardio",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-trastornos-especificos-de-la-personalidad",
+    "nombre": "Trastornos específicos de la personalidad",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Trastornos específicos de la personalidad",
+      "F60"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F60",
+        "nombre": "Trastornos específicos de la personalidad",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-trastorno-paranoide-de-la-personalidad",
+    "nombre": "Trastorno paranoide de la personalidad",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Trastorno paranoide de la personalidad",
+      "F60.0"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F60.0",
+        "nombre": "Trastorno paranoide de la personalidad",
+        "criterios": [
+          {
+            "id": "trastorno-trastorno-paranoide-de-la-personalidad-cie10-criterio-1",
+            "orden": 1,
+            "titulo": "Criterio 1",
+            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-paranoide-de-la-personalidad-cie10-criterio-2",
+            "orden": 2,
+            "titulo": "Criterio 2",
+            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-paranoide-de-la-personalidad-cie10-criterio-3",
+            "orden": 3,
+            "titulo": "Criterio 3",
+            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-paranoide-de-la-personalidad-cie10-criterio-4",
+            "orden": 4,
+            "titulo": "Criterio 4",
+            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": [
+      {
+        "sistema": "cie10",
+        "titulo": "CIE-10 / resumen clínico orientativo local",
+        "tipoContenido": "Resumen clínico"
+      }
+    ]
+  },
+  {
+    "id": "trastorno-trastorno-esquizoide-de-la-personalidad",
+    "nombre": "Trastorno esquizoide de la personalidad",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Trastorno esquizoide de la personalidad",
+      "F60.1"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F60.1",
+        "nombre": "Trastorno esquizoide de la personalidad",
+        "criterios": [
+          {
+            "id": "trastorno-trastorno-esquizoide-de-la-personalidad-cie10-criterio-1",
+            "orden": 1,
+            "titulo": "Criterio 1",
+            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-esquizoide-de-la-personalidad-cie10-criterio-2",
+            "orden": 2,
+            "titulo": "Criterio 2",
+            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-esquizoide-de-la-personalidad-cie10-criterio-3",
+            "orden": 3,
+            "titulo": "Criterio 3",
+            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-esquizoide-de-la-personalidad-cie10-criterio-4",
+            "orden": 4,
+            "titulo": "Criterio 4",
+            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": [
+      {
+        "sistema": "cie10",
+        "titulo": "CIE-10 / resumen clínico orientativo local",
+        "tipoContenido": "Resumen clínico"
+      }
+    ]
+  },
+  {
+    "id": "trastorno-trastorno-disocial-de-la-personalidad",
+    "nombre": "Trastorno disocial de la personalidad",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Trastorno disocial de la personalidad",
+      "F60.2"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F60.2",
+        "nombre": "Trastorno disocial de la personalidad",
+        "criterios": [
+          {
+            "id": "trastorno-trastorno-disocial-de-la-personalidad-cie10-criterio-1",
+            "orden": 1,
+            "titulo": "Criterio 1",
+            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-disocial-de-la-personalidad-cie10-criterio-2",
+            "orden": 2,
+            "titulo": "Criterio 2",
+            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-disocial-de-la-personalidad-cie10-criterio-3",
+            "orden": 3,
+            "titulo": "Criterio 3",
+            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-disocial-de-la-personalidad-cie10-criterio-4",
+            "orden": 4,
+            "titulo": "Criterio 4",
+            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": [
+      {
+        "sistema": "cie10",
+        "titulo": "CIE-10 / resumen clínico orientativo local",
+        "tipoContenido": "Resumen clínico"
+      }
+    ]
+  },
+  {
+    "id": "trastorno-trastorno-de-inestabilidad-emocional-de-la-personalidad",
+    "nombre": "Trastorno de inestabilidad emocional de la personalidad",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Trastorno de inestabilidad emocional de la personalidad",
+      "F60.3"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F60.3",
+        "nombre": "Trastorno de inestabilidad emocional de la personalidad",
+        "criterios": [
+          {
+            "id": "trastorno-trastorno-de-inestabilidad-emocional-de-la-personalidad-cie10-criterio-1",
+            "orden": 1,
+            "titulo": "Criterio 1",
+            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-de-inestabilidad-emocional-de-la-personalidad-cie10-criterio-2",
+            "orden": 2,
+            "titulo": "Criterio 2",
+            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-de-inestabilidad-emocional-de-la-personalidad-cie10-criterio-3",
+            "orden": 3,
+            "titulo": "Criterio 3",
+            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-de-inestabilidad-emocional-de-la-personalidad-cie10-criterio-4",
+            "orden": 4,
+            "titulo": "Criterio 4",
+            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": [
+      {
+        "sistema": "cie10",
+        "titulo": "CIE-10 / resumen clínico orientativo local",
+        "tipoContenido": "Resumen clínico"
+      }
+    ]
+  },
+  {
+    "id": "trastorno-trastorno-histrionico-de-la-personalidad",
+    "nombre": "Trastorno histriónico de la personalidad",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Trastorno histriónico de la personalidad",
+      "F60.4"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F60.4",
+        "nombre": "Trastorno histriónico de la personalidad",
+        "criterios": [
+          {
+            "id": "trastorno-trastorno-histrionico-de-la-personalidad-cie10-criterio-1",
+            "orden": 1,
+            "titulo": "Criterio 1",
+            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-histrionico-de-la-personalidad-cie10-criterio-2",
+            "orden": 2,
+            "titulo": "Criterio 2",
+            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-histrionico-de-la-personalidad-cie10-criterio-3",
+            "orden": 3,
+            "titulo": "Criterio 3",
+            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-histrionico-de-la-personalidad-cie10-criterio-4",
+            "orden": 4,
+            "titulo": "Criterio 4",
+            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": [
+      {
+        "sistema": "cie10",
+        "titulo": "CIE-10 / resumen clínico orientativo local",
+        "tipoContenido": "Resumen clínico"
+      }
+    ]
+  },
+  {
+    "id": "trastorno-trastorno-anancastico-de-la-personalidad",
+    "nombre": "Trastorno anancástico de la personalidad",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Trastorno anancástico de la personalidad",
+      "F60.5"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F60.5",
+        "nombre": "Trastorno anancástico de la personalidad",
+        "criterios": [
+          {
+            "id": "trastorno-trastorno-anancastico-de-la-personalidad-cie10-criterio-1",
+            "orden": 1,
+            "titulo": "Criterio 1",
+            "texto": "CIE10",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-anancastico-de-la-personalidad-cie10-criterio-2",
+            "orden": 2,
+            "titulo": "Criterio 2",
+            "texto": "A) Deben cumplirse los criterios generales para el diagnostico de trastorno de la personalidad.",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-anancastico-de-la-personalidad-cie10-criterio-3",
+            "orden": 3,
+            "titulo": "Criterio 3",
+            "texto": "B) Deben cumplirse al menos cuatro de los siguientes síntomas:",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-anancastico-de-la-personalidad-cie10-criterio-4",
+            "orden": 4,
+            "titulo": "Criterio 4",
+            "texto": "1) Sentimientos de duda, y preocupaciones excesivas.",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-anancastico-de-la-personalidad-cie10-criterio-5",
+            "orden": 5,
+            "titulo": "Criterio 5",
+            "texto": "2) Preocupación por detalles, listas, reglas, organización u horarios",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-anancastico-de-la-personalidad-cie10-criterio-6",
+            "orden": 6,
+            "titulo": "Criterio 6",
+            "texto": "3) Perfeccionismo que interfiere con la finalización de tareas.",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-anancastico-de-la-personalidad-cie10-criterio-7",
+            "orden": 7,
+            "titulo": "Criterio 7",
+            "texto": "4) Rectitud y escrupolosidad excesivos",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-anancastico-de-la-personalidad-cie10-criterio-8",
+            "orden": 8,
+            "titulo": "Criterio 8",
+            "texto": "5) Preocupación injustificada por la productividad, hasta el extremo de renunciar a actividades placenteras y relaciones itnerpersonales",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-anancastico-de-la-personalidad-cie10-criterio-9",
+            "orden": 9,
+            "titulo": "Criterio 9",
+            "texto": "6) Excesiva pedantería y adhesión a las convenciones sociales",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-anancastico-de-la-personalidad-cie10-criterio-10",
+            "orden": 10,
+            "titulo": "Criterio 10",
+            "texto": "7) Rigidez y obstinación",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-anancastico-de-la-personalidad-cie10-criterio-11",
+            "orden": 11,
+            "titulo": "Criterio 11",
+            "texto": "8) Insistencia irracional se sometan a la propia rutina de ahcer las cosas o resistencia irracional a permitir que los demás realicen sus tareas",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-anancastico-de-la-personalidad-cie10-criterio-12",
+            "orden": 12,
+            "titulo": "Criterio 1",
+            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-anancastico-de-la-personalidad-cie10-criterio-13",
+            "orden": 13,
+            "titulo": "Criterio 2",
+            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-anancastico-de-la-personalidad-cie10-criterio-14",
+            "orden": 14,
+            "titulo": "Criterio 3",
+            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-anancastico-de-la-personalidad-cie10-criterio-15",
+            "orden": 15,
+            "titulo": "Criterio 4",
+            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "Brindar información sobre el trastorno anancástico de la personalidad, sus características clínicas y el impacto del perfeccionismo, la rigidez cognitiva y la necesidad de control en el funcionamiento cotidiano; promover el reconocimiento de pensamientos disfuncionales, favorecer el desarrollo de estrategias de flexibilización cognitiva, tolerancia a la incertidumbre y manejo de la ansiedad, reforzando la importancia de la adherencia al tratamiento psicoterapéutico y farmacológico cuando esté indicado.",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": [
+      {
+        "sistema": "cie10",
+        "titulo": "CIE-10 / resumen clínico orientativo local",
+        "tipoContenido": "Resumen clínico"
+      }
+    ]
+  },
+  {
+    "id": "trastorno-trastorno-ansioso-evasivo-de-la-personalidad",
+    "nombre": "Trastorno ansioso evasivo de la personalidad",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Trastorno ansioso evasivo de la personalidad",
+      "F60.6"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F60.6",
+        "nombre": "Trastorno ansioso evasivo de la personalidad",
+        "criterios": [
+          {
+            "id": "trastorno-trastorno-ansioso-evasivo-de-la-personalidad-cie10-criterio-1",
+            "orden": 1,
+            "titulo": "Criterio 1",
+            "texto": "A) Deben cumplirse los criterios generales para el diagnostico de trastorno de la personalidad.",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-ansioso-evasivo-de-la-personalidad-cie10-criterio-2",
+            "orden": 2,
+            "titulo": "Criterio 2",
+            "texto": "B) Deben cumplirse al menos cuatro de los siguientes síntomas:",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-ansioso-evasivo-de-la-personalidad-cie10-criterio-3",
+            "orden": 3,
+            "titulo": "Criterio 3",
+            "texto": "1) Evita actividades laborales o escolares que impliquen un contacto interpersonal significativo, por temor a la critica, desaprobacion o rechazo.",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-ansioso-evasivo-de-la-personalidad-cie10-criterio-4",
+            "orden": 4,
+            "titulo": "Criterio 4",
+            "texto": "2) Esta reacio a implicarse con personas, a menos que este seguro de ser aceptado.",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-ansioso-evasivo-de-la-personalidad-cie10-criterio-5",
+            "orden": 5,
+            "titulo": "Criterio 5",
+            "texto": "3) Muestra restriccion en las relaciones interpersonales debido al miedo a ser avergonzado o ridiculizado.",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-ansioso-evasivo-de-la-personalidad-cie10-criterio-6",
+            "orden": 6,
+            "titulo": "Criterio 6",
+            "texto": "4) Preocupacion por ser criticado o rechazado en situaciones sociales.",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-ansioso-evasivo-de-la-personalidad-cie10-criterio-7",
+            "orden": 7,
+            "titulo": "Criterio 7",
+            "texto": "5) Inhibicion en situaciones interpersonales nuevas debido a sentimientos de inferioridad.",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-ansioso-evasivo-de-la-personalidad-cie10-criterio-8",
+            "orden": 8,
+            "titulo": "Criterio 8",
+            "texto": "6) Se ve a si mismo como socialmente inepto, personalmente poco atractivo o inferior a los demas.",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-ansioso-evasivo-de-la-personalidad-cie10-criterio-9",
+            "orden": 9,
+            "titulo": "Criterio 9",
+            "texto": "7) Es extraordinariamente reacio a asumir riesgos personales o a implicarse en nuevas actividades debido a que pueden resultar embarazosas.",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-ansioso-evasivo-de-la-personalidad-cie10-criterio-10",
+            "orden": 10,
+            "titulo": "Criterio 1",
+            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-ansioso-evasivo-de-la-personalidad-cie10-criterio-11",
+            "orden": 11,
+            "titulo": "Criterio 2",
+            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-ansioso-evasivo-de-la-personalidad-cie10-criterio-12",
+            "orden": 12,
+            "titulo": "Criterio 3",
+            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-ansioso-evasivo-de-la-personalidad-cie10-criterio-13",
+            "orden": 13,
+            "titulo": "Criterio 4",
+            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "Brindar información sobre el trastorno evitativo de la personalidad, sus características clínicas y el papel de la evitación en el mantenimiento de los síntomas; promover el reconocimiento de pensamientos disfuncionales relacionados con el rechazo y la baja autoestima, reforzar estrategias de afrontamiento, habilidades sociales y la importancia de la adherencia al tratamiento psicoterapéutico y farmacológico cuando esté indicado.",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": [
+      {
+        "sistema": "cie10",
+        "titulo": "CIE-10 / resumen clínico orientativo local",
+        "tipoContenido": "Resumen clínico"
+      }
+    ]
+  },
+  {
+    "id": "trastorno-trastorno-dependiente-de-la-personalidad",
+    "nombre": "Trastorno dependiente de la personalidad",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Trastorno dependiente de la personalidad",
+      "F60.7"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F60.7",
+        "nombre": "Trastorno dependiente de la personalidad",
+        "criterios": [
+          {
+            "id": "trastorno-trastorno-dependiente-de-la-personalidad-cie10-criterio-1",
+            "orden": 1,
+            "titulo": "Criterio 1",
+            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-dependiente-de-la-personalidad-cie10-criterio-2",
+            "orden": 2,
+            "titulo": "Criterio 2",
+            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-dependiente-de-la-personalidad-cie10-criterio-3",
+            "orden": 3,
+            "titulo": "Criterio 3",
+            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-dependiente-de-la-personalidad-cie10-criterio-4",
+            "orden": 4,
+            "titulo": "Criterio 4",
+            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": [
+      {
+        "sistema": "cie10",
+        "titulo": "CIE-10 / resumen clínico orientativo local",
+        "tipoContenido": "Resumen clínico"
+      }
+    ]
+  },
+  {
+    "id": "trastorno-otros-trastornos-especificos-de-la-personalidad",
+    "nombre": "Otros trastornos específicos de la personalidad",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Otros trastornos específicos de la personalidad",
+      "F60.8"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F60.8",
+        "nombre": "Otros trastornos específicos de la personalidad",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-trastorno-especifico-de-la-personalidad-no-especificado",
+    "nombre": "Trastorno específico de la personalidad no especificado",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Trastorno específico de la personalidad no especificado",
+      "F60.9"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F60.9",
+        "nombre": "Trastorno específico de la personalidad no especificado",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-trastornos-mixtos-y-otros-trastornos-de-la-personalidad",
+    "nombre": "Trastornos mixtos y otros trastornos de la personalidad",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Trastornos mixtos y otros trastornos de la personalidad",
+      "F61"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F61",
+        "nombre": "Trastornos mixtos y otros trastornos de la personalidad",
+        "criterios": [
+          {
+            "id": "trastorno-trastornos-mixtos-y-otros-trastornos-de-la-personalidad-cie10-criterio-1",
+            "orden": 1,
+            "titulo": "Criterio 1",
+            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastornos-mixtos-y-otros-trastornos-de-la-personalidad-cie10-criterio-2",
+            "orden": 2,
+            "titulo": "Criterio 2",
+            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastornos-mixtos-y-otros-trastornos-de-la-personalidad-cie10-criterio-3",
+            "orden": 3,
+            "titulo": "Criterio 3",
+            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastornos-mixtos-y-otros-trastornos-de-la-personalidad-cie10-criterio-4",
+            "orden": 4,
+            "titulo": "Criterio 4",
+            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": [
+      {
+        "sistema": "cie10",
+        "titulo": "CIE-10 / resumen clínico orientativo local",
+        "tipoContenido": "Resumen clínico"
+      }
+    ]
+  },
+  {
+    "id": "trastorno-transformacion-persistente-de-la-personalidad-no-atribuible-a-lesion-o-enfermedad-cerebral",
+    "nombre": "Transformación persistente de la personalidad no atribuible a lesión o enfermedad cerebral",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Transformación persistente de la personalidad no atribuible a lesión o enfermedad cerebral",
+      "F62"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F62",
+        "nombre": "Transformación persistente de la personalidad no atribuible a lesión o enfermedad cerebral",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-trastornos-de-los-habitos-y-de-los-impulsos",
+    "nombre": "Trastornos de los hábitos y de los impulsos",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Trastornos de los hábitos y de los impulsos",
+      "F63"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F63",
+        "nombre": "Trastornos de los hábitos y de los impulsos",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-trastornos-de-la-identidad-de-genero",
+    "nombre": "Trastornos de la identidad de género",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Trastornos de la identidad de género",
+      "F64"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F64",
+        "nombre": "Trastornos de la identidad de género",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-trastornos-de-la-preferencia-sexual",
+    "nombre": "Trastornos de la preferencia sexual",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Trastornos de la preferencia sexual",
+      "F65"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F65",
+        "nombre": "Trastornos de la preferencia sexual",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-trastornos-psicologicos-y-del-comportamiento-asociados-con-el-desarrollo-y-orientacion-sexuales",
+    "nombre": "Trastornos psicológicos y del comportamiento asociados con el desarrollo y orientación sexuales",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Trastornos psicológicos y del comportamiento asociados con el desarrollo y orientación sexuales",
+      "F66"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F66",
+        "nombre": "Trastornos psicológicos y del comportamiento asociados con el desarrollo y orientación sexuales",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-otros-trastornos-de-la-personalidad-y-del-comportamiento-en-adultos",
+    "nombre": "Otros trastornos de la personalidad y del comportamiento en adultos",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Otros trastornos de la personalidad y del comportamiento en adultos",
+      "F68"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F68",
+        "nombre": "Otros trastornos de la personalidad y del comportamiento en adultos",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-trastorno-de-la-personalidad-y-del-comportamiento-en-adultos-no-especificado",
+    "nombre": "Trastorno de la personalidad y del comportamiento en adultos no especificado",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Trastorno de la personalidad y del comportamiento en adultos no especificado",
+      "F69"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F69",
+        "nombre": "Trastorno de la personalidad y del comportamiento en adultos no especificado",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-retraso-mental-leve",
+    "nombre": "Retraso mental leve",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Retraso mental leve",
+      "F70"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F70",
+        "nombre": "Retraso mental leve",
+        "criterios": [
+          {
+            "id": "trastorno-retraso-mental-leve-cie10-criterio-1",
+            "orden": 1,
+            "titulo": "Criterio 1",
+            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-retraso-mental-leve-cie10-criterio-2",
+            "orden": 2,
+            "titulo": "Criterio 2",
+            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-retraso-mental-leve-cie10-criterio-3",
+            "orden": 3,
+            "titulo": "Criterio 3",
+            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-retraso-mental-leve-cie10-criterio-4",
+            "orden": 4,
+            "titulo": "Criterio 4",
+            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": [
+      {
+        "sistema": "cie10",
+        "titulo": "CIE-10 / resumen clínico orientativo local",
+        "tipoContenido": "Resumen clínico"
+      }
+    ]
+  },
+  {
+    "id": "trastorno-retraso-mental-moderado",
+    "nombre": "Retraso mental moderado",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Retraso mental moderado",
+      "F71"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F71",
+        "nombre": "Retraso mental moderado",
+        "criterios": [
+          {
+            "id": "trastorno-retraso-mental-moderado-cie10-criterio-1",
+            "orden": 1,
+            "titulo": "Criterio 1",
+            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-retraso-mental-moderado-cie10-criterio-2",
+            "orden": 2,
+            "titulo": "Criterio 2",
+            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-retraso-mental-moderado-cie10-criterio-3",
+            "orden": 3,
+            "titulo": "Criterio 3",
+            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-retraso-mental-moderado-cie10-criterio-4",
+            "orden": 4,
+            "titulo": "Criterio 4",
+            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": [
+      {
+        "sistema": "cie10",
+        "titulo": "CIE-10 / resumen clínico orientativo local",
+        "tipoContenido": "Resumen clínico"
+      }
+    ]
+  },
+  {
+    "id": "trastorno-retraso-mental-grave",
+    "nombre": "Retraso mental grave",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Retraso mental grave",
+      "F72"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F72",
+        "nombre": "Retraso mental grave",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-retraso-mental-profundo",
+    "nombre": "Retraso mental profundo",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Retraso mental profundo",
+      "F73"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F73",
+        "nombre": "Retraso mental profundo",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-otros-tipos-de-retraso-mental",
+    "nombre": "Otros tipos de retraso mental",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Otros tipos de retraso mental",
+      "F78"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F78",
+        "nombre": "Otros tipos de retraso mental",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-retraso-mental-no-especificado",
+    "nombre": "Retraso mental no especificado",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Retraso mental no especificado",
+      "F79"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F79",
+        "nombre": "Retraso mental no especificado",
+        "criterios": [
+          {
+            "id": "trastorno-retraso-mental-no-especificado-cie10-criterio-1",
+            "orden": 1,
+            "titulo": "Criterio 1",
+            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-retraso-mental-no-especificado-cie10-criterio-2",
+            "orden": 2,
+            "titulo": "Criterio 2",
+            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-retraso-mental-no-especificado-cie10-criterio-3",
+            "orden": 3,
+            "titulo": "Criterio 3",
+            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-retraso-mental-no-especificado-cie10-criterio-4",
+            "orden": 4,
+            "titulo": "Criterio 4",
+            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": [
+      {
+        "sistema": "cie10",
+        "titulo": "CIE-10 / resumen clínico orientativo local",
+        "tipoContenido": "Resumen clínico"
+      }
+    ]
+  },
+  {
+    "id": "trastorno-trastornos-especificos-del-desarrollo-del-habla-y-del-lenguaje",
+    "nombre": "Trastornos específicos del desarrollo del habla y del lenguaje",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Trastornos específicos del desarrollo del habla y del lenguaje",
+      "F80"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F80",
+        "nombre": "Trastornos específicos del desarrollo del habla y del lenguaje",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-trastornos-especificos-del-desarrollo-del-aprendizaje-escolar",
+    "nombre": "Trastornos específicos del desarrollo del aprendizaje escolar",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Trastornos específicos del desarrollo del aprendizaje escolar",
+      "F81"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F81",
+        "nombre": "Trastornos específicos del desarrollo del aprendizaje escolar",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-trastorno-especifico-del-desarrollo-de-la-funcion-motriz",
+    "nombre": "Trastorno específico del desarrollo de la función motriz",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Trastorno específico del desarrollo de la función motriz",
+      "F82"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F82",
+        "nombre": "Trastorno específico del desarrollo de la función motriz",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-trastornos-especificos-mixtos-del-desarrollo",
+    "nombre": "Trastornos específicos mixtos del desarrollo",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Trastornos específicos mixtos del desarrollo",
+      "F83"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F83",
+        "nombre": "Trastornos específicos mixtos del desarrollo",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-trastornos-generalizados-del-desarrollo",
+    "nombre": "Trastornos generalizados del desarrollo",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Trastornos generalizados del desarrollo",
+      "F84"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F84",
+        "nombre": "Trastornos generalizados del desarrollo",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-autismo-infantil",
+    "nombre": "Autismo infantil",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Autismo infantil",
+      "F84.0"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F84.0",
+        "nombre": "Autismo infantil",
+        "criterios": [
+          {
+            "id": "trastorno-autismo-infantil-cie10-criterio-1",
+            "orden": 1,
+            "titulo": "Criterio 1",
+            "texto": "A) Presencia de un desarrollo anormal o alterado desde antes de los 3 años de edad, que se presenta en una de las siguientes áreas:",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          },
+          {
+            "id": "trastorno-autismo-infantil-cie10-criterio-2",
+            "orden": 2,
+            "titulo": "Criterio 2",
+            "texto": "  1) Lenguaje receptivo o expresivo utilizado en la comunicación social.",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          },
+          {
+            "id": "trastorno-autismo-infantil-cie10-criterio-3",
+            "orden": 3,
+            "titulo": "Criterio 3",
+            "texto": "  2) Desarrollo de lazos sociales selectivos o interacción social recíproca.",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          },
+          {
+            "id": "trastorno-autismo-infantil-cie10-criterio-4",
+            "orden": 4,
+            "titulo": "Criterio 4",
+            "texto": "  3) Juego simbólico y funcional",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          },
+          {
+            "id": "trastorno-autismo-infantil-cie10-criterio-5",
+            "orden": 5,
+            "titulo": "Criterio 5",
+            "texto": "B) Deben estar presentes al menos 6 síntomas de 1, 2 y 3, incluyendo al menos dos de 1, uno de 2 y uno de 3.",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          },
+          {
+            "id": "trastorno-autismo-infantil-cie10-criterio-6",
+            "orden": 6,
+            "titulo": "Criterio 6",
+            "texto": "  1.Alteraciones cualitativas en la interacción social que se manifiestan al menos en dos de las siguientes áreas:",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          },
+          {
+            "id": "trastorno-autismo-infantil-cie10-criterio-7",
+            "orden": 7,
+            "titulo": "Criterio 7",
+            "texto": "    a) Fracaso en la utilización adecuada del contacto visual, la expresión facial, la postura corporal y los gestos para regular la interacción social.",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          },
+          {
+            "id": "trastorno-autismo-infantil-cie10-criterio-8",
+            "orden": 8,
+            "titulo": "Criterio 8",
+            "texto": "    b) Fracaso en el desarrollo (adecuado a la edad mental y a pesar de tener ocasiones para ello) de relaciones con personas de su edad que impliquen compartir intereses, actividades y emociones",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          },
+          {
+            "id": "trastorno-autismo-infantil-cie10-criterio-9",
+            "orden": 9,
+            "titulo": "Criterio 9",
+            "texto": "    c) Ausencia de reciprocidad socioemocional, puesta de manifiesto por una respuesta alterada o anormal hacia las emociones de otras personas, o falta de modulación del comportamiento en respuesta al contexto social o débil integración de los comportamientos social, emocional y comunicativo",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          },
+          {
+            "id": "trastorno-autismo-infantil-cie10-criterio-10",
+            "orden": 10,
+            "titulo": "Criterio 10",
+            "texto": "    d) Falta de interés en compartir las alegrías, los intereses o los logros con otros individuos (p. ej., falta de interés en mostrar, traer hacia sí o señalar a otras personas objetos de interés para el niñoo).",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          },
+          {
+            "id": "trastorno-autismo-infantil-cie10-criterio-11",
+            "orden": 11,
+            "titulo": "Criterio 11",
+            "texto": "  2. Alteraciones cualitativas en la comunicación que se manifiestan en al menos una de las siguientes áreas:",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          },
+          {
+            "id": "trastorno-autismo-infantil-cie10-criterio-12",
+            "orden": 12,
+            "titulo": "Criterio 12",
+            "texto": "    a) Retraso o ausencia del desarrollo del lenguaje hablado, aunque no se acompaña de intentos de compensación mediante el recurso de la utilización de gestos alternativos para comunicarse (a menudo precedido por la falta de balbuceo comunicativo",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          },
+          {
+            "id": "trastorno-autismo-infantil-cie10-criterio-13",
+            "orden": 13,
+            "titulo": "Criterio 13",
+            "texto": "    b) Fracaso relativo para iniciar o mantener una conversación (cualquiera que sea el nivel de competencia en la utilización del lenguaje alcanzado), en la que es necesario el intercambio de respuestas con el interlocutor",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          },
+          {
+            "id": "trastorno-autismo-infantil-cie10-criterio-14",
+            "orden": 14,
+            "titulo": "Criterio 14",
+            "texto": "    c) Uso estereotipado y repetitivo del lenguaje o uso idiosincrásico de palabras o frases",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          },
+          {
+            "id": "trastorno-autismo-infantil-cie10-criterio-15",
+            "orden": 15,
+            "titulo": "Criterio 15",
+            "texto": "    d) Ausencia de juegos de simulación espontáneos (en edades tempranas) o de juego social imitativo",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          },
+          {
+            "id": "trastorno-autismo-infantil-cie10-criterio-16",
+            "orden": 16,
+            "titulo": "Criterio 16",
+            "texto": "  3. Patrones de comportamientos, intereses y actividades restringidas, repetitivas y estereotipadas, que se manifiestan en al menos una de las siguientes áreas:",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          },
+          {
+            "id": "trastorno-autismo-infantil-cie10-criterio-17",
+            "orden": 17,
+            "titulo": "Criterio 17",
+            "texto": "    a) Preocupación limitada a uno o más comportamientos estereotipados que son anormales en su contenido. En ocasiones el comportamiento no es anormal en sí, pero sí lo es la intensidad y el carácter restrictivo con que se produce.",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          },
+          {
+            "id": "trastorno-autismo-infantil-cie10-criterio-18",
+            "orden": 18,
+            "titulo": "Criterio 18",
+            "texto": "    b) Existe, en apariencia, una adherencia a rutinas o rituales específicos y carentes de sentido.",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          },
+          {
+            "id": "trastorno-autismo-infantil-cie10-criterio-19",
+            "orden": 19,
+            "titulo": "Criterio 19",
+            "texto": "    c) Manierismos motores estereotipados y repetitivos que pueden consisitir en palmadas o retorcimientos de las manos o dedos, o movimientos complejos de todo el cuerpo",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          },
+          {
+            "id": "trastorno-autismo-infantil-cie10-criterio-20",
+            "orden": 20,
+            "titulo": "Criterio 20",
+            "texto": "    d) Preocupaciones por partes de objetos o por elementos carentes de funcionalidad de los objetos de juego (tales como el olor, la textura de su superficie, el ruido o la vibración que producen)",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          },
+          {
+            "id": "trastorno-autismo-infantil-cie10-criterio-21",
+            "orden": 21,
+            "titulo": "Criterio 21",
+            "texto": "C) El cuadro clínico no puede atribuirse a otras variedades del trastorno generalizado del desarrollo, a un trastorno específico del desarrollo de la comprensión del lenguaje (F80.2) con problemas socioemocionales secundarios, a trastorno reactivo de la vinculación de la infancia (F94.1), a trastorno de la vinculación de la infancia tipo desinhibido (F94.2), a retraso mental (F70-72) acompañado de trastornos de las emociones y del comportamiento, a esquizofrenia (F20) de comienzo excepcionalmente precoz, ni a síndrome de Rett",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          },
+          {
+            "id": "trastorno-autismo-infantil-cie10-criterio-22",
+            "orden": 22,
+            "titulo": "Criterio 1",
+            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-autismo-infantil-cie10-criterio-23",
+            "orden": 23,
+            "titulo": "Criterio 2",
+            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-autismo-infantil-cie10-criterio-24",
+            "orden": 24,
+            "titulo": "Criterio 3",
+            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-autismo-infantil-cie10-criterio-25",
+            "orden": 25,
+            "titulo": "Criterio 4",
+            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "Pendiente.",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": [
+      {
+        "sistema": "cie10",
+        "titulo": "CIE-10 / resumen clínico orientativo local",
+        "tipoContenido": "Resumen clínico"
+      }
+    ]
+  },
+  {
+    "id": "trastorno-autismo-atipico",
+    "nombre": "Autismo atípico",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Autismo atípico",
+      "F84.1"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F84.1",
+        "nombre": "Autismo atípico",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-sindrome-de-asperger",
+    "nombre": "Síndrome de Asperger",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Síndrome de Asperger",
+      "F84.5"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F84.5",
+        "nombre": "Síndrome de Asperger",
+        "criterios": [
+          {
+            "id": "trastorno-sindrome-de-asperger-cie10-criterio-1",
+            "orden": 1,
+            "titulo": "Criterio 1",
+            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-sindrome-de-asperger-cie10-criterio-2",
+            "orden": 2,
+            "titulo": "Criterio 2",
+            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-sindrome-de-asperger-cie10-criterio-3",
+            "orden": 3,
+            "titulo": "Criterio 3",
+            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-sindrome-de-asperger-cie10-criterio-4",
+            "orden": 4,
+            "titulo": "Criterio 4",
+            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": [
+      {
+        "sistema": "cie10",
+        "titulo": "CIE-10 / resumen clínico orientativo local",
+        "tipoContenido": "Resumen clínico"
+      }
+    ]
+  },
+  {
+    "id": "trastorno-otros-trastornos-del-desarrollo-psicologico",
+    "nombre": "Otros trastornos del desarrollo psicológico",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Otros trastornos del desarrollo psicológico",
+      "F88"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F88",
+        "nombre": "Otros trastornos del desarrollo psicológico",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-trastorno-del-desarrollo-psicologico-no-especificado",
+    "nombre": "Trastorno del desarrollo psicológico no especificado",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Trastorno del desarrollo psicológico no especificado",
+      "F89"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F89",
+        "nombre": "Trastorno del desarrollo psicológico no especificado",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-trastornos-hipercineticos",
+    "nombre": "Trastornos hipercinéticos",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Trastornos hipercinéticos",
+      "F90"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F90",
+        "nombre": "Trastornos hipercinéticos",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-trastorno-de-la-actividad-y-de-la-atencion",
+    "nombre": "Trastorno de la actividad y de la atención",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Trastorno de la actividad y de la atención",
+      "F90.0"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F90.0",
+        "nombre": "Trastorno de la actividad y de la atención",
+        "criterios": [
+          {
+            "id": "trastorno-trastorno-de-la-actividad-y-de-la-atencion-cie10-criterio-1",
+            "orden": 1,
+            "titulo": "Criterio 1",
+            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-de-la-actividad-y-de-la-atencion-cie10-criterio-2",
+            "orden": 2,
+            "titulo": "Criterio 2",
+            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-de-la-actividad-y-de-la-atencion-cie10-criterio-3",
+            "orden": 3,
+            "titulo": "Criterio 3",
+            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-de-la-actividad-y-de-la-atencion-cie10-criterio-4",
+            "orden": 4,
+            "titulo": "Criterio 4",
+            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": [
+      {
+        "sistema": "cie10",
+        "titulo": "CIE-10 / resumen clínico orientativo local",
+        "tipoContenido": "Resumen clínico"
+      }
+    ]
+  },
+  {
+    "id": "trastorno-trastorno-hipercinetico-disocial",
+    "nombre": "Trastorno hipercinético disocial",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Trastorno hipercinético disocial",
+      "F90.1"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F90.1",
+        "nombre": "Trastorno hipercinético disocial",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-trastornos-disociales",
+    "nombre": "Trastornos disociales",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Trastornos disociales",
+      "F91"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F91",
+        "nombre": "Trastornos disociales",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-trastornos-mixtos-disociales-y-de-las-emociones",
+    "nombre": "Trastornos mixtos disociales y de las emociones",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Trastornos mixtos disociales y de las emociones",
+      "F92"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F92",
+        "nombre": "Trastornos mixtos disociales y de las emociones",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-trastornos-emocionales-de-comienzo-especifico-en-la-ninez",
+    "nombre": "Trastornos emocionales de comienzo específico en la niñez",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Trastornos emocionales de comienzo específico en la niñez",
+      "F93"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F93",
+        "nombre": "Trastornos emocionales de comienzo específico en la niñez",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-trastornos-del-comportamiento-social-de-comienzo-especifico-en-la-ninez-y-adolescencia",
+    "nombre": "Trastornos del comportamiento social de comienzo específico en la niñez y adolescencia",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Trastornos del comportamiento social de comienzo específico en la niñez y adolescencia",
+      "F94"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F94",
+        "nombre": "Trastornos del comportamiento social de comienzo específico en la niñez y adolescencia",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-trastornos-de-tics",
+    "nombre": "Trastornos de tics",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Trastornos de tics",
+      "F95"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F95",
+        "nombre": "Trastornos de tics",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-otros-trastornos-emocionales-y-del-comportamiento-de-comienzo-habitual-en-la-ninez-y-adolescencia",
+    "nombre": "Otros trastornos emocionales y del comportamiento de comienzo habitual en la niñez y adolescencia",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Otros trastornos emocionales y del comportamiento de comienzo habitual en la niñez y adolescencia",
+      "F98"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F98",
+        "nombre": "Otros trastornos emocionales y del comportamiento de comienzo habitual en la niñez y adolescencia",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-trastorno-mental-no-especificado",
+    "nombre": "Trastorno mental no especificado",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Trastorno mental no especificado",
+      "F99"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F99",
+        "nombre": "Trastorno mental no especificado",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-deterioro-cognitivo-de-etiologia-mixta",
+    "nombre": "Deterioro cognitivo de etiología mixta",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Deterioro cognitivo de etiología mixta",
+      "G31.84"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "G31.84",
+        "nombre": "Deterioro cognitivo de etiología mixta",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-epilepsia-y-sindromes-epilepticos-idiopaticos-focales-parciales-con-inicio-localizado",
+    "nombre": "Epilepsia y síndromes epilépticos idiopáticos (focales/parciales) con inicio localizado",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Epilepsia y síndromes epilépticos idiopáticos (focales/parciales) con inicio localizado",
+      "G40.0"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "G40.0",
+        "nombre": "Epilepsia y síndromes epilépticos idiopáticos (focales/parciales) con inicio localizado",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-epilepsia-sintomatica-focal-con-ataques-parciales-simples",
+    "nombre": "Epilepsia sintomática focal con ataques parciales simples",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Epilepsia sintomática focal con ataques parciales simples",
+      "G40.1"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "G40.1",
+        "nombre": "Epilepsia sintomática focal con ataques parciales simples",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-epilepsia-sintomatica-focal-con-ataques-parciales-complejos",
+    "nombre": "Epilepsia sintomática focal con ataques parciales complejos",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Epilepsia sintomática focal con ataques parciales complejos",
+      "G40.2"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "G40.2",
+        "nombre": "Epilepsia sintomática focal con ataques parciales complejos",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-epilepsia-generalizada-idiopatica",
+    "nombre": "Epilepsia generalizada idiopática",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Epilepsia generalizada idiopática",
+      "G40.3"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "G40.3",
+        "nombre": "Epilepsia generalizada idiopática",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-epilepsia-no-especificada",
+    "nombre": "Epilepsia no especificada",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Epilepsia no especificada",
+      "G40.9"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "G40.9",
+        "nombre": "Epilepsia no especificada",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-quistes-cerebrales",
+    "nombre": "Quistes cerebrales",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Quistes cerebrales",
+      "G93.0"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "G93.0",
+        "nombre": "Quistes cerebrales",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-lesion-cerebral-anoxica-dano-por-falta-de-oxigeno",
+    "nombre": "Lesión cerebral anóxica (daño por falta de oxígeno)",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Lesión cerebral anóxica (daño por falta de oxígeno)",
+      "G93.1"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "G93.1",
+        "nombre": "Lesión cerebral anóxica (daño por falta de oxígeno)",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-hipertension-intracraneal-benigna",
+    "nombre": "Hipertensión intracraneal benigna",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Hipertensión intracraneal benigna",
+      "G93.2"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "G93.2",
+        "nombre": "Hipertensión intracraneal benigna",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-sindrome-de-fatiga-posviral-o-encefalomielitis-mialgica",
+    "nombre": "Síndrome de fatiga posviral o encefalomielitis miálgica",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Síndrome de fatiga posviral o encefalomielitis miálgica",
+      "G93.3"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "G93.3",
+        "nombre": "Síndrome de fatiga posviral o encefalomielitis miálgica",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-encefalopatia-no-especificada",
+    "nombre": "Encefalopatía no especificada",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Encefalopatía no especificada",
+      "G93.4"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "G93.4",
+        "nombre": "Encefalopatía no especificada",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-compresion-del-cerebro",
+    "nombre": "Compresión del cerebro",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Compresión del cerebro",
+      "G93.5"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "G93.5",
+        "nombre": "Compresión del cerebro",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-edema-cerebral-hinchazon-del-cerebro",
+    "nombre": "Edema cerebral (hinchazón del cerebro)",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Edema cerebral (hinchazón del cerebro)",
+      "G93.6"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "G93.6",
+        "nombre": "Edema cerebral (hinchazón del cerebro)",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-sindrome-de-reye",
+    "nombre": "Síndrome de Reye",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Síndrome de Reye",
+      "G93.7"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "G93.7",
+        "nombre": "Síndrome de Reye",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-otros-trastornos-especificados-del-cerebro-como-esclerosis-temporal",
+    "nombre": "Otros trastornos especificados del cerebro (como esclerosis temporal)",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Otros trastornos especificados del cerebro (como esclerosis temporal)",
+      "G93.8"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "G93.8",
+        "nombre": "Otros trastornos especificados del cerebro (como esclerosis temporal)",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-trastorno-del-encefalo-no-especificado",
+    "nombre": "Trastorno del encéfalo, no especificado",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Trastorno del encéfalo, no especificado",
+      "G93.9"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "G93.9",
+        "nombre": "Trastorno del encéfalo, no especificado",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-hipertension-esencial-primaria",
+    "nombre": "Hipertensión esencial (primaria)",
+    "categoria": "Cardiovascular",
+    "subcategoria": "Cardiovascular",
+    "aliases": [
+      "Hipertensión esencial (primaria)",
+      "I10"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "I10",
+        "nombre": "Hipertensión esencial (primaria)",
+        "criterios": [
+          {
+            "id": "trastorno-hipertension-esencial-primaria-cie10-criterio-1",
+            "orden": 1,
+            "titulo": "Criterio 1",
+            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-hipertension-esencial-primaria-cie10-criterio-2",
+            "orden": 2,
+            "titulo": "Criterio 2",
+            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-hipertension-esencial-primaria-cie10-criterio-3",
+            "orden": 3,
+            "titulo": "Criterio 3",
+            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-hipertension-esencial-primaria-cie10-criterio-4",
+            "orden": 4,
+            "titulo": "Criterio 4",
+            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": [
+      {
+        "sistema": "cie10",
+        "titulo": "CIE-10 / resumen clínico orientativo local",
+        "tipoContenido": "Resumen clínico"
+      }
+    ]
+  },
+  {
+    "id": "trastorno-enfermedad-cardiaca-hipertensiva",
+    "nombre": "Enfermedad cardíaca hipertensiva",
+    "categoria": "Cardiovascular",
+    "subcategoria": "Cardiovascular",
+    "aliases": [
+      "Enfermedad cardíaca hipertensiva",
+      "I11"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "I11",
+        "nombre": "Enfermedad cardíaca hipertensiva",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-enfermedad-renal-hipertensiva",
+    "nombre": "Enfermedad renal hipertensiva",
+    "categoria": "Cardiovascular",
+    "subcategoria": "Cardiovascular",
+    "aliases": [
+      "Enfermedad renal hipertensiva",
+      "I12"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "I12",
+        "nombre": "Enfermedad renal hipertensiva",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-enfermedad-cardiaca-y-renal-hipertensiva",
+    "nombre": "Enfermedad cardíaca y renal hipertensiva",
+    "categoria": "Cardiovascular",
+    "subcategoria": "Cardiovascular",
+    "aliases": [
+      "Enfermedad cardíaca y renal hipertensiva",
+      "I13"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "I13",
+        "nombre": "Enfermedad cardíaca y renal hipertensiva",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-hipertension-secundaria",
+    "nombre": "Hipertensión secundaria",
+    "categoria": "Cardiovascular",
+    "subcategoria": "Cardiovascular",
+    "aliases": [
+      "Hipertensión secundaria",
+      "I15"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "I15",
+        "nombre": "Hipertensión secundaria",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-angina-de-pecho",
+    "nombre": "Angina de pecho",
+    "categoria": "Cardiovascular",
+    "subcategoria": "Cardiovascular",
+    "aliases": [
+      "Angina de pecho",
+      "I20"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "I20",
+        "nombre": "Angina de pecho",
+        "criterios": [
+          {
+            "id": "trastorno-angina-de-pecho-cie10-criterio-1",
+            "orden": 1,
+            "titulo": "Criterio 1",
+            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-angina-de-pecho-cie10-criterio-2",
+            "orden": 2,
+            "titulo": "Criterio 2",
+            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-angina-de-pecho-cie10-criterio-3",
+            "orden": 3,
+            "titulo": "Criterio 3",
+            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-angina-de-pecho-cie10-criterio-4",
+            "orden": 4,
+            "titulo": "Criterio 4",
+            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": [
+      {
+        "sistema": "cie10",
+        "titulo": "CIE-10 / resumen clínico orientativo local",
+        "tipoContenido": "Resumen clínico"
+      }
+    ]
+  },
+  {
+    "id": "trastorno-infarto-agudo-de-miocardio",
+    "nombre": "Infarto agudo de miocardio",
+    "categoria": "Cardiovascular",
+    "subcategoria": "Cardiovascular",
+    "aliases": [
+      "Infarto agudo de miocardio",
+      "I21"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "I21",
+        "nombre": "Infarto agudo de miocardio",
+        "criterios": [
+          {
+            "id": "trastorno-infarto-agudo-de-miocardio-cie10-criterio-1",
+            "orden": 1,
+            "titulo": "Criterio 1",
+            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-infarto-agudo-de-miocardio-cie10-criterio-2",
+            "orden": 2,
+            "titulo": "Criterio 2",
+            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-infarto-agudo-de-miocardio-cie10-criterio-3",
+            "orden": 3,
+            "titulo": "Criterio 3",
+            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-infarto-agudo-de-miocardio-cie10-criterio-4",
+            "orden": 4,
+            "titulo": "Criterio 4",
+            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": [
+      {
+        "sistema": "cie10",
+        "titulo": "CIE-10 / resumen clínico orientativo local",
+        "tipoContenido": "Resumen clínico"
+      }
+    ]
+  },
+  {
+    "id": "trastorno-infarto-agudo-de-miocardio-posterior",
+    "nombre": "Infarto agudo de miocardio posterior",
+    "categoria": "Cardiovascular",
+    "subcategoria": "Cardiovascular",
+    "aliases": [
+      "Infarto agudo de miocardio posterior",
+      "I22"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "I22",
+        "nombre": "Infarto agudo de miocardio posterior",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-complicaciones-posteriores-a-infarto-agudo-de-miocardio",
+    "nombre": "Complicaciones posteriores a infarto agudo de miocardio",
+    "categoria": "Cardiovascular",
+    "subcategoria": "Cardiovascular",
+    "aliases": [
+      "Complicaciones posteriores a infarto agudo de miocardio",
+      "I23"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "I23",
+        "nombre": "Complicaciones posteriores a infarto agudo de miocardio",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-otros-sindromes-coronarios-agudos",
+    "nombre": "Otros síndromes coronarios agudos",
+    "categoria": "Cardiovascular",
+    "subcategoria": "Cardiovascular",
+    "aliases": [
+      "Otros síndromes coronarios agudos",
+      "I24"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "I24",
+        "nombre": "Otros síndromes coronarios agudos",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-enfermedad-isquemica-cronica-del-corazon",
+    "nombre": "Enfermedad isquémica crónica del corazón",
+    "categoria": "Cardiovascular",
+    "subcategoria": "Cardiovascular",
+    "aliases": [
+      "Enfermedad isquémica crónica del corazón",
+      "I25"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "I25",
+        "nombre": "Enfermedad isquémica crónica del corazón",
+        "criterios": [
+          {
+            "id": "trastorno-enfermedad-isquemica-cronica-del-corazon-cie10-criterio-1",
+            "orden": 1,
+            "titulo": "Criterio 1",
+            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-enfermedad-isquemica-cronica-del-corazon-cie10-criterio-2",
+            "orden": 2,
+            "titulo": "Criterio 2",
+            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-enfermedad-isquemica-cronica-del-corazon-cie10-criterio-3",
+            "orden": 3,
+            "titulo": "Criterio 3",
+            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-enfermedad-isquemica-cronica-del-corazon-cie10-criterio-4",
+            "orden": 4,
+            "titulo": "Criterio 4",
+            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": [
+      {
+        "sistema": "cie10",
+        "titulo": "CIE-10 / resumen clínico orientativo local",
+        "tipoContenido": "Resumen clínico"
+      }
+    ]
+  },
+  {
+    "id": "trastorno-embolia-pulmonar",
+    "nombre": "Embolia pulmonar",
+    "categoria": "Cardiovascular",
+    "subcategoria": "Cardiovascular",
+    "aliases": [
+      "Embolia pulmonar",
+      "I26"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "I26",
+        "nombre": "Embolia pulmonar",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-otras-enfermedades-pulmonares-del-corazon",
+    "nombre": "Otras enfermedades pulmonares del corazón",
+    "categoria": "Cardiovascular",
+    "subcategoria": "Cardiovascular",
+    "aliases": [
+      "Otras enfermedades pulmonares del corazón",
+      "I27"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "I27",
+        "nombre": "Otras enfermedades pulmonares del corazón",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-secuelas-de-enfermedades-cerebrovasculares",
+    "nombre": "Secuelas de enfermedades cerebrovasculares",
+    "categoria": "Cardiovascular",
+    "subcategoria": "Cardiovascular",
+    "aliases": [
+      "Secuelas de enfermedades cerebrovasculares",
+      "I69"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "I69",
+        "nombre": "Secuelas de enfermedades cerebrovasculares",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-rinofaringitis-aguda-resfriado-comun",
+    "nombre": "Rinofaringitis aguda [resfriado común]",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Rinofaringitis aguda [resfriado común]",
+      "J00"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "J00",
+        "nombre": "Rinofaringitis aguda [resfriado común]",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-sinusitis-aguda",
+    "nombre": "Sinusitis aguda",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Sinusitis aguda",
+      "J01"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "J01",
+        "nombre": "Sinusitis aguda",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-sinusitis-maxilar-aguda",
+    "nombre": "Sinusitis maxilar aguda",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Sinusitis maxilar aguda",
+      "J01.0"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "J01.0",
+        "nombre": "Sinusitis maxilar aguda",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-sinusitis-frontal-aguda",
+    "nombre": "Sinusitis frontal aguda",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Sinusitis frontal aguda",
+      "J01.1"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "J01.1",
+        "nombre": "Sinusitis frontal aguda",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-sinusitis-etmoidal-aguda",
+    "nombre": "Sinusitis etmoidal aguda",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Sinusitis etmoidal aguda",
+      "J01.2"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "J01.2",
+        "nombre": "Sinusitis etmoidal aguda",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-sinusitis-esfenoidal-aguda",
+    "nombre": "Sinusitis esfenoidal aguda",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Sinusitis esfenoidal aguda",
+      "J01.3"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "J01.3",
+        "nombre": "Sinusitis esfenoidal aguda",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-pansinusitis-aguda",
+    "nombre": "Pansinusitis aguda",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Pansinusitis aguda",
+      "J01.4"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "J01.4",
+        "nombre": "Pansinusitis aguda",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-otras-sinusitis-agudas",
+    "nombre": "Otras sinusitis agudas",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Otras sinusitis agudas",
+      "J01.8"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "J01.8",
+        "nombre": "Otras sinusitis agudas",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-sindrome-estafilococico-de-la-piel-escaldada",
+    "nombre": "Sindrome estafilococico de la piel escaldada",
+    "categoria": "Dermatología",
+    "subcategoria": "Dermatología",
+    "aliases": [
+      "Sindrome estafilococico de la piel escaldada",
+      "L00"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "L00",
+        "nombre": "Sindrome estafilococico de la piel escaldada",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-impetigo",
+    "nombre": "Impetigo",
+    "categoria": "Dermatología",
+    "subcategoria": "Dermatología",
+    "aliases": [
+      "Impetigo",
+      "L01"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "L01",
+        "nombre": "Impetigo",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-absceso-cutaneo-furunculo-y-carbunco",
+    "nombre": "Absceso cutaneo, furunculo y carbunco",
+    "categoria": "Dermatología",
+    "subcategoria": "Dermatología",
+    "aliases": [
+      "Absceso cutaneo, furunculo y carbunco",
+      "L02"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "L02",
+        "nombre": "Absceso cutaneo, furunculo y carbunco",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-celulitis",
+    "nombre": "Celulitis",
+    "categoria": "Dermatología",
+    "subcategoria": "Dermatología",
+    "aliases": [
+      "Celulitis",
+      "L03"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "L03",
+        "nombre": "Celulitis",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-linfadenitis-aguda",
+    "nombre": "Linfadenitis aguda",
+    "categoria": "Dermatología",
+    "subcategoria": "Dermatología",
+    "aliases": [
+      "Linfadenitis aguda",
+      "L04"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "L04",
+        "nombre": "Linfadenitis aguda",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-quiste-pilonidal",
+    "nombre": "Quiste pilonidal",
+    "categoria": "Dermatología",
+    "subcategoria": "Dermatología",
+    "aliases": [
+      "Quiste pilonidal",
+      "L05"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "L05",
+        "nombre": "Quiste pilonidal",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-otras-infecciones-locales-de-la-piel-y-del-tejido-subcutaneo",
+    "nombre": "Otras infecciones locales de la piel y del tejido subcutaneo",
+    "categoria": "Dermatología",
+    "subcategoria": "Dermatología",
+    "aliases": [
+      "Otras infecciones locales de la piel y del tejido subcutaneo",
+      "L08"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "L08",
+        "nombre": "Otras infecciones locales de la piel y del tejido subcutaneo",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-penfigo",
+    "nombre": "Penfigo",
+    "categoria": "Dermatología",
+    "subcategoria": "Dermatología",
+    "aliases": [
+      "Penfigo",
+      "L10"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "L10",
+        "nombre": "Penfigo",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-otros-trastornos-acantoliticos",
+    "nombre": "Otros trastornos acantoliticos",
+    "categoria": "Dermatología",
+    "subcategoria": "Dermatología",
+    "aliases": [
+      "Otros trastornos acantoliticos",
+      "L11"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "L11",
+        "nombre": "Otros trastornos acantoliticos",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-penfigoide",
+    "nombre": "Penfigoide",
+    "categoria": "Dermatología",
+    "subcategoria": "Dermatología",
+    "aliases": [
+      "Penfigoide",
+      "L12"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "L12",
+        "nombre": "Penfigoide",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-otros-trastornos-ampollosos",
+    "nombre": "Otros trastornos ampollosos",
+    "categoria": "Dermatología",
+    "subcategoria": "Dermatología",
+    "aliases": [
+      "Otros trastornos ampollosos",
+      "L13"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "L13",
+        "nombre": "Otros trastornos ampollosos",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-trastornos-ampollosos-en-enfermedades-clasificadas-en-otra-parte",
+    "nombre": "Trastornos ampollosos en enfermedades clasificadas en otra parte",
+    "categoria": "Dermatología",
+    "subcategoria": "Dermatología",
+    "aliases": [
+      "Trastornos ampollosos en enfermedades clasificadas en otra parte",
+      "L14"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "L14",
+        "nombre": "Trastornos ampollosos en enfermedades clasificadas en otra parte",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-dermatitis-atopica",
+    "nombre": "Dermatitis atopica",
+    "categoria": "Dermatología",
+    "subcategoria": "Dermatología",
+    "aliases": [
+      "Dermatitis atopica",
+      "L20"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "L20",
+        "nombre": "Dermatitis atopica",
+        "criterios": [
+          {
+            "id": "trastorno-dermatitis-atopica-cie10-criterio-1",
+            "orden": 1,
+            "titulo": "Criterio 1",
+            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-dermatitis-atopica-cie10-criterio-2",
+            "orden": 2,
+            "titulo": "Criterio 2",
+            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-dermatitis-atopica-cie10-criterio-3",
+            "orden": 3,
+            "titulo": "Criterio 3",
+            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-dermatitis-atopica-cie10-criterio-4",
+            "orden": 4,
+            "titulo": "Criterio 4",
+            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": [
+      {
+        "sistema": "cie10",
+        "titulo": "CIE-10 / resumen clínico orientativo local",
+        "tipoContenido": "Resumen clínico"
+      }
+    ]
+  },
+  {
+    "id": "trastorno-dermatitis-seborreica",
+    "nombre": "Dermatitis seborreica",
+    "categoria": "Dermatología",
+    "subcategoria": "Dermatología",
+    "aliases": [
+      "Dermatitis seborreica",
+      "L21"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "L21",
+        "nombre": "Dermatitis seborreica",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-dermatitis-del-panal",
+    "nombre": "Dermatitis del panal",
+    "categoria": "Dermatología",
+    "subcategoria": "Dermatología",
+    "aliases": [
+      "Dermatitis del panal",
+      "L22"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "L22",
+        "nombre": "Dermatitis del panal",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-dermatitis-alergica-de-contacto",
+    "nombre": "Dermatitis alergica de contacto",
+    "categoria": "Dermatología",
+    "subcategoria": "Dermatología",
+    "aliases": [
+      "Dermatitis alergica de contacto",
+      "L23"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "L23",
+        "nombre": "Dermatitis alergica de contacto",
+        "criterios": [
+          {
+            "id": "trastorno-dermatitis-alergica-de-contacto-cie10-criterio-1",
+            "orden": 1,
+            "titulo": "Criterio 1",
+            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-dermatitis-alergica-de-contacto-cie10-criterio-2",
+            "orden": 2,
+            "titulo": "Criterio 2",
+            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-dermatitis-alergica-de-contacto-cie10-criterio-3",
+            "orden": 3,
+            "titulo": "Criterio 3",
+            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-dermatitis-alergica-de-contacto-cie10-criterio-4",
+            "orden": 4,
+            "titulo": "Criterio 4",
+            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": [
+      {
+        "sistema": "cie10",
+        "titulo": "CIE-10 / resumen clínico orientativo local",
+        "tipoContenido": "Resumen clínico"
+      }
+    ]
+  },
+  {
+    "id": "trastorno-dermatitis-irritante-de-contacto",
+    "nombre": "Dermatitis irritante de contacto",
+    "categoria": "Dermatología",
+    "subcategoria": "Dermatología",
+    "aliases": [
+      "Dermatitis irritante de contacto",
+      "L24"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "L24",
+        "nombre": "Dermatitis irritante de contacto",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-dermatitis-de-contacto-forma-no-especificada",
+    "nombre": "Dermatitis de contacto, forma no especificada",
+    "categoria": "Dermatología",
+    "subcategoria": "Dermatología",
+    "aliases": [
+      "Dermatitis de contacto, forma no especificada",
+      "L25"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "L25",
+        "nombre": "Dermatitis de contacto, forma no especificada",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-dermatitis-exfoliativa",
+    "nombre": "Dermatitis exfoliativa",
+    "categoria": "Dermatología",
+    "subcategoria": "Dermatología",
+    "aliases": [
+      "Dermatitis exfoliativa",
+      "L26"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "L26",
+        "nombre": "Dermatitis exfoliativa",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-dermatitis-debida-a-sustancias-ingeridas",
+    "nombre": "Dermatitis debida a sustancias ingeridas",
+    "categoria": "Dermatología",
+    "subcategoria": "Dermatología",
+    "aliases": [
+      "Dermatitis debida a sustancias ingeridas",
+      "L27"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "L27",
+        "nombre": "Dermatitis debida a sustancias ingeridas",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-liquen-simple-cronico-y-prurigo",
+    "nombre": "Liquen simple cronico y prurigo",
+    "categoria": "Dermatología",
+    "subcategoria": "Dermatología",
+    "aliases": [
+      "Liquen simple cronico y prurigo",
+      "L28"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "L28",
+        "nombre": "Liquen simple cronico y prurigo",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-prurito",
+    "nombre": "Prurito",
+    "categoria": "Dermatología",
+    "subcategoria": "Dermatología",
+    "aliases": [
+      "Prurito",
+      "L29"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "L29",
+        "nombre": "Prurito",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-otras-dermatitis",
+    "nombre": "Otras dermatitis",
+    "categoria": "Dermatología",
+    "subcategoria": "Dermatología",
+    "aliases": [
+      "Otras dermatitis",
+      "L30"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "L30",
+        "nombre": "Otras dermatitis",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-psoriasis",
+    "nombre": "Psoriasis",
+    "categoria": "Dermatología",
+    "subcategoria": "Dermatología",
+    "aliases": [
+      "Psoriasis",
+      "L40"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "L40",
+        "nombre": "Psoriasis",
+        "criterios": [
+          {
+            "id": "trastorno-psoriasis-cie10-criterio-1",
+            "orden": 1,
+            "titulo": "Criterio 1",
+            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-psoriasis-cie10-criterio-2",
+            "orden": 2,
+            "titulo": "Criterio 2",
+            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-psoriasis-cie10-criterio-3",
+            "orden": 3,
+            "titulo": "Criterio 3",
+            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-psoriasis-cie10-criterio-4",
+            "orden": 4,
+            "titulo": "Criterio 4",
+            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": [
+      {
+        "sistema": "cie10",
+        "titulo": "CIE-10 / resumen clínico orientativo local",
+        "tipoContenido": "Resumen clínico"
+      }
+    ]
+  },
+  {
+    "id": "trastorno-parapsoriasis",
+    "nombre": "Parapsoriasis",
+    "categoria": "Dermatología",
+    "subcategoria": "Dermatología",
+    "aliases": [
+      "Parapsoriasis",
+      "L41"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "L41",
+        "nombre": "Parapsoriasis",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-pitiriasis-rosada",
+    "nombre": "Pitiriasis rosada",
+    "categoria": "Dermatología",
+    "subcategoria": "Dermatología",
+    "aliases": [
+      "Pitiriasis rosada",
+      "L42"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "L42",
+        "nombre": "Pitiriasis rosada",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-liquen-plano",
+    "nombre": "Liquen plano",
+    "categoria": "Dermatología",
+    "subcategoria": "Dermatología",
+    "aliases": [
+      "Liquen plano",
+      "L43"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "L43",
+        "nombre": "Liquen plano",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-otros-trastornos-papuloescamosos",
+    "nombre": "Otros trastornos papuloescamosos",
+    "categoria": "Dermatología",
+    "subcategoria": "Dermatología",
+    "aliases": [
+      "Otros trastornos papuloescamosos",
+      "L44"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "L44",
+        "nombre": "Otros trastornos papuloescamosos",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-trastornos-papuloescamosos-en-enfermedades-clasificadas-en-otra-parte",
+    "nombre": "Trastornos papuloescamosos en enfermedades clasificadas en otra parte",
+    "categoria": "Dermatología",
+    "subcategoria": "Dermatología",
+    "aliases": [
+      "Trastornos papuloescamosos en enfermedades clasificadas en otra parte",
+      "L45"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "L45",
+        "nombre": "Trastornos papuloescamosos en enfermedades clasificadas en otra parte",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-urticaria",
+    "nombre": "Urticaria",
+    "categoria": "Dermatología",
+    "subcategoria": "Dermatología",
+    "aliases": [
+      "Urticaria",
+      "L50"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "L50",
+        "nombre": "Urticaria",
+        "criterios": [
+          {
+            "id": "trastorno-urticaria-cie10-criterio-1",
+            "orden": 1,
+            "titulo": "Criterio 1",
+            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-urticaria-cie10-criterio-2",
+            "orden": 2,
+            "titulo": "Criterio 2",
+            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-urticaria-cie10-criterio-3",
+            "orden": 3,
+            "titulo": "Criterio 3",
+            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-urticaria-cie10-criterio-4",
+            "orden": 4,
+            "titulo": "Criterio 4",
+            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": [
+      {
+        "sistema": "cie10",
+        "titulo": "CIE-10 / resumen clínico orientativo local",
+        "tipoContenido": "Resumen clínico"
+      }
+    ]
+  },
+  {
+    "id": "trastorno-eritema-multiforme",
+    "nombre": "Eritema multiforme",
+    "categoria": "Dermatología",
+    "subcategoria": "Dermatología",
+    "aliases": [
+      "Eritema multiforme",
+      "L51"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "L51",
+        "nombre": "Eritema multiforme",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-eritema-nudoso",
+    "nombre": "Eritema nudoso",
+    "categoria": "Dermatología",
+    "subcategoria": "Dermatología",
+    "aliases": [
+      "Eritema nudoso",
+      "L52"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "L52",
+        "nombre": "Eritema nudoso",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-otras-afecciones-eritematosas",
+    "nombre": "Otras afecciones eritematosas",
+    "categoria": "Dermatología",
+    "subcategoria": "Dermatología",
+    "aliases": [
+      "Otras afecciones eritematosas",
+      "L53"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "L53",
+        "nombre": "Otras afecciones eritematosas",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-eritema-en-enfermedades-clasificadas-en-otra-parte",
+    "nombre": "Eritema en enfermedades clasificadas en otra parte",
+    "categoria": "Dermatología",
+    "subcategoria": "Dermatología",
+    "aliases": [
+      "Eritema en enfermedades clasificadas en otra parte",
+      "L54"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "L54",
+        "nombre": "Eritema en enfermedades clasificadas en otra parte",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-quemadura-solar",
+    "nombre": "Quemadura solar",
+    "categoria": "Dermatología",
+    "subcategoria": "Dermatología",
+    "aliases": [
+      "Quemadura solar",
+      "L55"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "L55",
+        "nombre": "Quemadura solar",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-otros-cambios-agudos-de-la-piel-debidos-a-radiacion-ultravioleta",
+    "nombre": "Otros cambios agudos de la piel debidos a radiacion ultravioleta",
+    "categoria": "Dermatología",
+    "subcategoria": "Dermatología",
+    "aliases": [
+      "Otros cambios agudos de la piel debidos a radiacion ultravioleta",
+      "L56"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "L56",
+        "nombre": "Otros cambios agudos de la piel debidos a radiacion ultravioleta",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-cambios-de-la-piel-debidos-a-exposicion-cronica-a-radiacion-no-ionizante",
+    "nombre": "Cambios de la piel debidos a exposicion cronica a radiacion no ionizante",
+    "categoria": "Dermatología",
+    "subcategoria": "Dermatología",
+    "aliases": [
+      "Cambios de la piel debidos a exposicion cronica a radiacion no ionizante",
+      "L57"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "L57",
+        "nombre": "Cambios de la piel debidos a exposicion cronica a radiacion no ionizante",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-radiodermatitis",
+    "nombre": "Radiodermatitis",
+    "categoria": "Dermatología",
+    "subcategoria": "Dermatología",
+    "aliases": [
+      "Radiodermatitis",
+      "L58"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "L58",
+        "nombre": "Radiodermatitis",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-otros-trastornos-de-la-piel-y-del-tejido-subcutaneo-relacionados-con-radiacion",
+    "nombre": "Otros trastornos de la piel y del tejido subcutaneo relacionados con radiacion",
+    "categoria": "Dermatología",
+    "subcategoria": "Dermatología",
+    "aliases": [
+      "Otros trastornos de la piel y del tejido subcutaneo relacionados con radiacion",
+      "L59"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "L59",
+        "nombre": "Otros trastornos de la piel y del tejido subcutaneo relacionados con radiacion",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-trastornos-de-las-unas",
+    "nombre": "Trastornos de las unas",
+    "categoria": "Dermatología",
+    "subcategoria": "Dermatología",
+    "aliases": [
+      "Trastornos de las unas",
+      "L60"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "L60",
+        "nombre": "Trastornos de las unas",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-alopecia-areata",
+    "nombre": "Alopecia areata",
+    "categoria": "Dermatología",
+    "subcategoria": "Dermatología",
+    "aliases": [
+      "Alopecia areata",
+      "L63"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "L63",
+        "nombre": "Alopecia areata",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-alopecia-androgenica",
+    "nombre": "Alopecia androgenica",
+    "categoria": "Dermatología",
+    "subcategoria": "Dermatología",
+    "aliases": [
+      "Alopecia androgenica",
+      "L64"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "L64",
+        "nombre": "Alopecia androgenica",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-otra-perdida-no-cicatricial-del-pelo",
+    "nombre": "Otra perdida no cicatricial del pelo",
+    "categoria": "Dermatología",
+    "subcategoria": "Dermatología",
+    "aliases": [
+      "Otra perdida no cicatricial del pelo",
+      "L65"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "L65",
+        "nombre": "Otra perdida no cicatricial del pelo",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-alopecia-cicatricial",
+    "nombre": "Alopecia cicatricial",
+    "categoria": "Dermatología",
+    "subcategoria": "Dermatología",
+    "aliases": [
+      "Alopecia cicatricial",
+      "L66"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "L66",
+        "nombre": "Alopecia cicatricial",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-anomalias-del-color-y-del-tallo-del-pelo",
+    "nombre": "Anomalias del color y del tallo del pelo",
+    "categoria": "Dermatología",
+    "subcategoria": "Dermatología",
+    "aliases": [
+      "Anomalias del color y del tallo del pelo",
+      "L67"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "L67",
+        "nombre": "Anomalias del color y del tallo del pelo",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-hipertricosis",
+    "nombre": "Hipertricosis",
+    "categoria": "Dermatología",
+    "subcategoria": "Dermatología",
+    "aliases": [
+      "Hipertricosis",
+      "L68"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "L68",
+        "nombre": "Hipertricosis",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-acne",
+    "nombre": "Acne",
+    "categoria": "Dermatología",
+    "subcategoria": "Dermatología",
+    "aliases": [
+      "Acne",
+      "L70"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "L70",
+        "nombre": "Acne",
+        "criterios": [
+          {
+            "id": "trastorno-acne-cie10-criterio-1",
+            "orden": 1,
+            "titulo": "Criterio 1",
+            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-acne-cie10-criterio-2",
+            "orden": 2,
+            "titulo": "Criterio 2",
+            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-acne-cie10-criterio-3",
+            "orden": 3,
+            "titulo": "Criterio 3",
+            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-acne-cie10-criterio-4",
+            "orden": 4,
+            "titulo": "Criterio 4",
+            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": [
+      {
+        "sistema": "cie10",
+        "titulo": "CIE-10 / resumen clínico orientativo local",
+        "tipoContenido": "Resumen clínico"
+      }
+    ]
+  },
+  {
+    "id": "trastorno-rosacea",
+    "nombre": "Rosacea",
+    "categoria": "Dermatología",
+    "subcategoria": "Dermatología",
+    "aliases": [
+      "Rosacea",
+      "L71"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "L71",
+        "nombre": "Rosacea",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-quistes-foliculares-de-la-piel-y-del-tejido-subcutaneo",
+    "nombre": "Quistes foliculares de la piel y del tejido subcutaneo",
+    "categoria": "Dermatología",
+    "subcategoria": "Dermatología",
+    "aliases": [
+      "Quistes foliculares de la piel y del tejido subcutaneo",
+      "L72"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "L72",
+        "nombre": "Quistes foliculares de la piel y del tejido subcutaneo",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-otros-trastornos-foliculares",
+    "nombre": "Otros trastornos foliculares",
+    "categoria": "Dermatología",
+    "subcategoria": "Dermatología",
+    "aliases": [
+      "Otros trastornos foliculares",
+      "L73"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "L73",
+        "nombre": "Otros trastornos foliculares",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-trastornos-de-las-glandulas-sudoriparas-ecrinas",
+    "nombre": "Trastornos de las glandulas sudoriparas ecrinas",
+    "categoria": "Dermatología",
+    "subcategoria": "Dermatología",
+    "aliases": [
+      "Trastornos de las glandulas sudoriparas ecrinas",
+      "L74"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "L74",
+        "nombre": "Trastornos de las glandulas sudoriparas ecrinas",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-trastornos-de-las-glandulas-sudoriparas-apocrinas",
+    "nombre": "Trastornos de las glandulas sudoriparas apocrinas",
+    "categoria": "Dermatología",
+    "subcategoria": "Dermatología",
+    "aliases": [
+      "Trastornos de las glandulas sudoriparas apocrinas",
+      "L75"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "L75",
+        "nombre": "Trastornos de las glandulas sudoriparas apocrinas",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-vitiligo",
+    "nombre": "Vitiligo",
+    "categoria": "Dermatología",
+    "subcategoria": "Dermatología",
+    "aliases": [
+      "Vitiligo",
+      "L80"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "L80",
+        "nombre": "Vitiligo",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-otros-trastornos-de-la-pigmentacion",
+    "nombre": "Otros trastornos de la pigmentacion",
+    "categoria": "Dermatología",
+    "subcategoria": "Dermatología",
+    "aliases": [
+      "Otros trastornos de la pigmentacion",
+      "L81"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "L81",
+        "nombre": "Otros trastornos de la pigmentacion",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-queratosis-seborreica",
+    "nombre": "Queratosis seborreica",
+    "categoria": "Dermatología",
+    "subcategoria": "Dermatología",
+    "aliases": [
+      "Queratosis seborreica",
+      "L82"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "L82",
+        "nombre": "Queratosis seborreica",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-acantosis-nigricans",
+    "nombre": "Acantosis nigricans",
+    "categoria": "Dermatología",
+    "subcategoria": "Dermatología",
+    "aliases": [
+      "Acantosis nigricans",
+      "L83"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "L83",
+        "nombre": "Acantosis nigricans",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-callos-y-callosidades",
+    "nombre": "Callos y callosidades",
+    "categoria": "Dermatología",
+    "subcategoria": "Dermatología",
+    "aliases": [
+      "Callos y callosidades",
+      "L84"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "L84",
+        "nombre": "Callos y callosidades",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-otros-engrosamientos-epidermicos",
+    "nombre": "Otros engrosamientos epidermicos",
+    "categoria": "Dermatología",
+    "subcategoria": "Dermatología",
+    "aliases": [
+      "Otros engrosamientos epidermicos",
+      "L85"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "L85",
+        "nombre": "Otros engrosamientos epidermicos",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-trastornos-de-la-eliminacion-transepidermica",
+    "nombre": "Trastornos de la eliminacion transepidermica",
+    "categoria": "Dermatología",
+    "subcategoria": "Dermatología",
+    "aliases": [
+      "Trastornos de la eliminacion transepidermica",
+      "L87"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "L87",
+        "nombre": "Trastornos de la eliminacion transepidermica",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-pioderma-gangrenoso",
+    "nombre": "Pioderma gangrenoso",
+    "categoria": "Dermatología",
+    "subcategoria": "Dermatología",
+    "aliases": [
+      "Pioderma gangrenoso",
+      "L88"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "L88",
+        "nombre": "Pioderma gangrenoso",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-ulcera-de-decubito",
+    "nombre": "Ulcera de decubito",
+    "categoria": "Dermatología",
+    "subcategoria": "Dermatología",
+    "aliases": [
+      "Ulcera de decubito",
+      "L89"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "L89",
+        "nombre": "Ulcera de decubito",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-trastornos-atroficos-de-la-piel",
+    "nombre": "Trastornos atroficos de la piel",
+    "categoria": "Dermatología",
+    "subcategoria": "Dermatología",
+    "aliases": [
+      "Trastornos atroficos de la piel",
+      "L90"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "L90",
+        "nombre": "Trastornos atroficos de la piel",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-trastornos-hipertroficos-de-la-piel",
+    "nombre": "Trastornos hipertroficos de la piel",
+    "categoria": "Dermatología",
+    "subcategoria": "Dermatología",
+    "aliases": [
+      "Trastornos hipertroficos de la piel",
+      "L91"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "L91",
+        "nombre": "Trastornos hipertroficos de la piel",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-trastornos-granulomatosos-de-la-piel-y-del-tejido-subcutaneo",
+    "nombre": "Trastornos granulomatosos de la piel y del tejido subcutaneo",
+    "categoria": "Dermatología",
+    "subcategoria": "Dermatología",
+    "aliases": [
+      "Trastornos granulomatosos de la piel y del tejido subcutaneo",
+      "L92"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "L92",
+        "nombre": "Trastornos granulomatosos de la piel y del tejido subcutaneo",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-lupus-eritematoso",
+    "nombre": "Lupus eritematoso",
+    "categoria": "Dermatología",
+    "subcategoria": "Dermatología",
+    "aliases": [
+      "Lupus eritematoso",
+      "L93"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "L93",
+        "nombre": "Lupus eritematoso",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-otros-trastornos-localizados-del-tejido-conjuntivo",
+    "nombre": "Otros trastornos localizados del tejido conjuntivo",
+    "categoria": "Dermatología",
+    "subcategoria": "Dermatología",
+    "aliases": [
+      "Otros trastornos localizados del tejido conjuntivo",
+      "L94"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "L94",
+        "nombre": "Otros trastornos localizados del tejido conjuntivo",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-vasculitis-limitada-a-la-piel-no-clasificada-en-otra-parte",
+    "nombre": "Vasculitis limitada a la piel, no clasificada en otra parte",
+    "categoria": "Dermatología",
+    "subcategoria": "Dermatología",
+    "aliases": [
+      "Vasculitis limitada a la piel, no clasificada en otra parte",
+      "L95"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "L95",
+        "nombre": "Vasculitis limitada a la piel, no clasificada en otra parte",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-ulcera-de-miembro-inferior-no-clasificada-en-otra-parte",
+    "nombre": "Ulcera de miembro inferior, no clasificada en otra parte",
+    "categoria": "Dermatología",
+    "subcategoria": "Dermatología",
+    "aliases": [
+      "Ulcera de miembro inferior, no clasificada en otra parte",
+      "L97"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "L97",
+        "nombre": "Ulcera de miembro inferior, no clasificada en otra parte",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-otros-trastornos-de-la-piel-y-del-tejido-subcutaneo-no-clasificados-en-otra-parte",
+    "nombre": "Otros trastornos de la piel y del tejido subcutaneo, no clasificados en otra parte",
+    "categoria": "Dermatología",
+    "subcategoria": "Dermatología",
+    "aliases": [
+      "Otros trastornos de la piel y del tejido subcutaneo, no clasificados en otra parte",
+      "L98"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "L98",
+        "nombre": "Otros trastornos de la piel y del tejido subcutaneo, no clasificados en otra parte",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-otros-trastornos-de-la-piel-y-del-tejido-subcutaneo-en-enfermedades-clasificadas-en-otra-parte",
+    "nombre": "Otros trastornos de la piel y del tejido subcutaneo en enfermedades clasificadas en otra parte",
+    "categoria": "Dermatología",
+    "subcategoria": "Dermatología",
+    "aliases": [
+      "Otros trastornos de la piel y del tejido subcutaneo en enfermedades clasificadas en otra parte",
+      "L99"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "L99",
+        "nombre": "Otros trastornos de la piel y del tejido subcutaneo en enfermedades clasificadas en otra parte",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-contusion-de-cabeza",
+    "nombre": "Contusion de cabeza",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Contusion de cabeza",
+      "S00"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "S00",
+        "nombre": "Contusion de cabeza",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-herida-de-cabeza",
+    "nombre": "Herida de cabeza",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Herida de cabeza",
+      "S01"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "S01",
+        "nombre": "Herida de cabeza",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-fractura-de-huesos-del-craneo-y-de-la-cara",
+    "nombre": "Fractura de huesos del craneo y de la cara",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Fractura de huesos del craneo y de la cara",
+      "S02"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "S02",
+        "nombre": "Fractura de huesos del craneo y de la cara",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-lesion-de-articulaciones-y-ligamentos-de-la-cabeza",
+    "nombre": "Lesion de articulaciones y ligamentos de la cabeza",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Lesion de articulaciones y ligamentos de la cabeza",
+      "S03"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "S03",
+        "nombre": "Lesion de articulaciones y ligamentos de la cabeza",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-lesion-de-nervios-craneales",
+    "nombre": "Lesion de nervios craneales",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Lesion de nervios craneales",
+      "S04"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "S04",
+        "nombre": "Lesion de nervios craneales",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-lesion-del-ojo-y-de-sus-anexos",
+    "nombre": "Lesion del ojo y de sus anexos",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Lesion del ojo y de sus anexos",
+      "S05"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "S05",
+        "nombre": "Lesion del ojo y de sus anexos",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-lesion-intracraneal",
+    "nombre": "Lesion intracraneal",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Lesion intracraneal",
+      "S06"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "S06",
+        "nombre": "Lesion intracraneal",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-ablacion-de-cabeza",
+    "nombre": "Ablacion de cabeza",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Ablacion de cabeza",
+      "S07"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "S07",
+        "nombre": "Ablacion de cabeza",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-lesion-multiple-de-cabeza",
+    "nombre": "Lesion multiple de cabeza",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Lesion multiple de cabeza",
+      "S08"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "S08",
+        "nombre": "Lesion multiple de cabeza",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-otras-lesiones-especificadas-de-cabeza",
+    "nombre": "Otras lesiones especificadas de cabeza",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Otras lesiones especificadas de cabeza",
+      "S09"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "S09",
+        "nombre": "Otras lesiones especificadas de cabeza",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-lesion-de-cabeza-no-especificada",
+    "nombre": "Lesion de cabeza, no especificada",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Lesion de cabeza, no especificada",
+      "S09.9"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "S09.9",
+        "nombre": "Lesion de cabeza, no especificada",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-contusion-de-cuello",
+    "nombre": "Contusion de cuello",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Contusion de cuello",
+      "S10"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "S10",
+        "nombre": "Contusion de cuello",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-herida-de-cuello",
+    "nombre": "Herida de cuello",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Herida de cuello",
+      "S11"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "S11",
+        "nombre": "Herida de cuello",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-fractura-de-vertebras-cervicales",
+    "nombre": "Fractura de vertebras cervicales",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Fractura de vertebras cervicales",
+      "S12"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "S12",
+        "nombre": "Fractura de vertebras cervicales",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-lesion-de-articulaciones-y-ligamentos-del-cuello",
+    "nombre": "Lesion de articulaciones y ligamentos del cuello",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Lesion de articulaciones y ligamentos del cuello",
+      "S13"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "S13",
+        "nombre": "Lesion de articulaciones y ligamentos del cuello",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-lesion-de-nervios-del-cuello",
+    "nombre": "Lesion de nervios del cuello",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Lesion de nervios del cuello",
+      "S14"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "S14",
+        "nombre": "Lesion de nervios del cuello",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-lesion-de-vasos-sanguineos-del-cuello",
+    "nombre": "Lesion de vasos sanguineos del cuello",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Lesion de vasos sanguineos del cuello",
+      "S15"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "S15",
+        "nombre": "Lesion de vasos sanguineos del cuello",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-lesion-de-musculos-y-tendones-del-cuello",
+    "nombre": "Lesion de musculos y tendones del cuello",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Lesion de musculos y tendones del cuello",
+      "S16"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "S16",
+        "nombre": "Lesion de musculos y tendones del cuello",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-ablacion-de-cuello",
+    "nombre": "Ablacion de cuello",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Ablacion de cuello",
+      "S17"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "S17",
+        "nombre": "Ablacion de cuello",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-lesion-multiple-del-cuello",
+    "nombre": "Lesion multiple del cuello",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Lesion multiple del cuello",
+      "S18"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "S18",
+        "nombre": "Lesion multiple del cuello",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-otras-lesiones-especificadas-del-cuello",
+    "nombre": "Otras lesiones especificadas del cuello",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Otras lesiones especificadas del cuello",
+      "S19"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "S19",
+        "nombre": "Otras lesiones especificadas del cuello",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-lesion-del-cuello-no-especificada",
+    "nombre": "Lesion del cuello, no especificada",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Lesion del cuello, no especificada",
+      "S19.9"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "S19.9",
+        "nombre": "Lesion del cuello, no especificada",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-contusion-del-torax",
+    "nombre": "Contusion del torax",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Contusion del torax",
+      "S20"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "S20",
+        "nombre": "Contusion del torax",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-contusion-del-torax-no-especificada",
+    "nombre": "Contusion del torax, no especificada",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Contusion del torax, no especificada",
+      "S20.0"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "S20.0",
+        "nombre": "Contusion del torax, no especificada",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-contusion-del-torax-con-dano-de-nervios",
+    "nombre": "Contusion del torax, con daño de nervios",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Contusion del torax, con daño de nervios",
+      "S20.1"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "S20.1",
+        "nombre": "Contusion del torax, con daño de nervios",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-contusion-del-torax-con-dano-de-vasos-sanguineos",
+    "nombre": "Contusion del torax, con daño de vasos sanguineos",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Contusion del torax, con daño de vasos sanguineos",
+      "S20.2"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "S20.2",
+        "nombre": "Contusion del torax, con daño de vasos sanguineos",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-contusion-del-torax-con-dano-de-musculos-y-tendones",
+    "nombre": "Contusion del torax, con daño de musculos y tendones",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Contusion del torax, con daño de musculos y tendones",
+      "S20.3"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "S20.3",
+        "nombre": "Contusion del torax, con daño de musculos y tendones",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-contusion-del-torax-con-dano-de-articulaciones-y-ligamentos",
+    "nombre": "Contusion del torax, con daño de articulaciones y ligamentos",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Contusion del torax, con daño de articulaciones y ligamentos",
+      "S20.4",
+      "S20.7"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "S20.4",
+        "nombre": "Contusion del torax, con daño de articulaciones y ligamentos",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-contusion-del-torax-con-dano-de-piel-y-tejido-subcutaneo",
+    "nombre": "Contusion del torax, con daño de piel y tejido subcutaneo",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Contusion del torax, con daño de piel y tejido subcutaneo",
+      "S20.5"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "S20.5",
+        "nombre": "Contusion del torax, con daño de piel y tejido subcutaneo",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-contusion-del-torax-con-dano-de-huesos",
+    "nombre": "Contusion del torax, con daño de huesos",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Contusion del torax, con daño de huesos",
+      "S20.6"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "S20.6",
+        "nombre": "Contusion del torax, con daño de huesos",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-contusion-del-torax-con-dano-de-otros-tejidos",
+    "nombre": "Contusion del torax, con daño de otros tejidos",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Contusion del torax, con daño de otros tejidos",
+      "S20.8"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "S20.8",
+        "nombre": "Contusion del torax, con daño de otros tejidos",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-herida-del-torax",
+    "nombre": "Herida del torax",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Herida del torax",
+      "S21"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "S21",
+        "nombre": "Herida del torax",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-fractura-de-costillas-esternon-y-torax",
+    "nombre": "Fractura de costillas, esternon y torax",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Fractura de costillas, esternon y torax",
+      "S22"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "S22",
+        "nombre": "Fractura de costillas, esternon y torax",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-lesion-de-articulaciones-y-ligamentos-del-torax",
+    "nombre": "Lesion de articulaciones y ligamentos del torax",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Lesion de articulaciones y ligamentos del torax",
+      "S23"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "S23",
+        "nombre": "Lesion de articulaciones y ligamentos del torax",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-lesion-de-nervios-del-torax",
+    "nombre": "Lesion de nervios del torax",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Lesion de nervios del torax",
+      "S24"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "S24",
+        "nombre": "Lesion de nervios del torax",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-lesion-de-vasos-sanguineos-del-torax",
+    "nombre": "Lesion de vasos sanguineos del torax",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Lesion de vasos sanguineos del torax",
+      "S25"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "S25",
+        "nombre": "Lesion de vasos sanguineos del torax",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-lesion-de-musculos-y-tendones-del-torax",
+    "nombre": "Lesion de musculos y tendones del torax",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Lesion de musculos y tendones del torax",
+      "S26"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "S26",
+        "nombre": "Lesion de musculos y tendones del torax",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-ablacion-del-torax",
+    "nombre": "Ablacion del torax",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Ablacion del torax",
+      "S27"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "S27",
+        "nombre": "Ablacion del torax",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-lesion-multiple-del-torax",
+    "nombre": "Lesion multiple del torax",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Lesion multiple del torax",
+      "S28"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "S28",
+        "nombre": "Lesion multiple del torax",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-otras-lesiones-especificadas-del-torax",
+    "nombre": "Otras lesiones especificadas del torax",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Otras lesiones especificadas del torax",
+      "S29"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "S29",
+        "nombre": "Otras lesiones especificadas del torax",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-lesion-del-torax-no-especificada",
+    "nombre": "Lesion del torax, no especificada",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Lesion del torax, no especificada",
+      "S29.9"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "S29.9",
+        "nombre": "Lesion del torax, no especificada",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-contusion-del-abdomen-la-region-pelvica-y-la-ingle",
+    "nombre": "Contusion del abdomen, la region pelvica y la ingle",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Contusion del abdomen, la region pelvica y la ingle",
+      "S30"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "S30",
+        "nombre": "Contusion del abdomen, la region pelvica y la ingle",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-herida-del-abdomen-la-region-pelvica-y-la-ingle",
+    "nombre": "Herida del abdomen, la region pelvica y la ingle",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Herida del abdomen, la region pelvica y la ingle",
+      "S31"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "S31",
+        "nombre": "Herida del abdomen, la region pelvica y la ingle",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-fractura-de-vertebras-lumbares-y-sacras-pelvis-y-cadera",
+    "nombre": "Fractura de vertebras lumbares y sacras, pelvis y cadera",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Fractura de vertebras lumbares y sacras, pelvis y cadera",
+      "S32"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "S32",
+        "nombre": "Fractura de vertebras lumbares y sacras, pelvis y cadera",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-lesion-de-articulaciones-y-ligamentos-del-abdomen-la-region-pelvica-y-la-ingle",
+    "nombre": "Lesion de articulaciones y ligamentos del abdomen, la region pelvica y la ingle",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Lesion de articulaciones y ligamentos del abdomen, la region pelvica y la ingle",
+      "S33"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "S33",
+        "nombre": "Lesion de articulaciones y ligamentos del abdomen, la region pelvica y la ingle",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-lesion-de-nervios-del-abdomen-la-region-pelvica-y-la-ingle",
+    "nombre": "Lesion de nervios del abdomen, la region pelvica y la ingle",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Lesion de nervios del abdomen, la region pelvica y la ingle",
+      "S34"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "S34",
+        "nombre": "Lesion de nervios del abdomen, la region pelvica y la ingle",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-lesion-de-vasos-sanguineos-del-abdomen-la-region-pelvica-y-la-ingle",
+    "nombre": "Lesion de vasos sanguineos del abdomen, la region pelvica y la ingle",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Lesion de vasos sanguineos del abdomen, la region pelvica y la ingle",
+      "S35"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "S35",
+        "nombre": "Lesion de vasos sanguineos del abdomen, la region pelvica y la ingle",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-lesion-de-musculos-y-tendones-del-abdomen-la-region-pelvica-y-la-ingle",
+    "nombre": "Lesion de musculos y tendones del abdomen, la region pelvica y la ingle",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Lesion de musculos y tendones del abdomen, la region pelvica y la ingle",
+      "S36"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "S36",
+        "nombre": "Lesion de musculos y tendones del abdomen, la region pelvica y la ingle",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-ablacion-del-abdomen-la-region-pelvica-y-la-ingle",
+    "nombre": "Ablacion del abdomen, la region pelvica y la ingle",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Ablacion del abdomen, la region pelvica y la ingle",
+      "S37"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "S37",
+        "nombre": "Ablacion del abdomen, la region pelvica y la ingle",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-lesion-multiple-del-abdomen-la-region-pelvica-y-la-ingle",
+    "nombre": "Lesion multiple del abdomen, la region pelvica y la ingle",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Lesion multiple del abdomen, la region pelvica y la ingle",
+      "S38"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "S38",
+        "nombre": "Lesion multiple del abdomen, la region pelvica y la ingle",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-otras-lesiones-especificadas-del-abdomen-la-region-pelvica-y-la-ingle",
+    "nombre": "Otras lesiones especificadas del abdomen, la region pelvica y la ingle",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Otras lesiones especificadas del abdomen, la region pelvica y la ingle",
+      "S39"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "S39",
+        "nombre": "Otras lesiones especificadas del abdomen, la region pelvica y la ingle",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-lesion-del-abdomen-la-region-pelvica-y-la-ingle-no-especificada",
+    "nombre": "Lesion del abdomen, la region pelvica y la ingle, no especificada",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Lesion del abdomen, la region pelvica y la ingle, no especificada",
+      "S39.9"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "S39.9",
+        "nombre": "Lesion del abdomen, la region pelvica y la ingle, no especificada",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-contusion-del-hombro-y-del-brazo",
+    "nombre": "Contusion del hombro y del brazo",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Contusion del hombro y del brazo",
+      "S40"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "S40",
+        "nombre": "Contusion del hombro y del brazo",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-herida-del-hombro-y-del-brazo",
+    "nombre": "Herida del hombro y del brazo",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Herida del hombro y del brazo",
+      "S41"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "S41",
+        "nombre": "Herida del hombro y del brazo",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-fractura-de-la-clavicula-escapula-y-humero",
+    "nombre": "Fractura de la clavicula, escapula y humero",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Fractura de la clavicula, escapula y humero",
+      "S42"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "S42",
+        "nombre": "Fractura de la clavicula, escapula y humero",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-lesion-de-articulaciones-y-ligamentos-del-hombro-y-del-brazo",
+    "nombre": "Lesion de articulaciones y ligamentos del hombro y del brazo",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Lesion de articulaciones y ligamentos del hombro y del brazo",
+      "S43"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "S43",
+        "nombre": "Lesion de articulaciones y ligamentos del hombro y del brazo",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-lesion-de-nervios-del-hombro-y-del-brazo",
+    "nombre": "Lesion de nervios del hombro y del brazo",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Lesion de nervios del hombro y del brazo",
+      "S44"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "S44",
+        "nombre": "Lesion de nervios del hombro y del brazo",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-lesion-de-vasos-sanguineos-del-hombro-y-del-brazo",
+    "nombre": "Lesion de vasos sanguineos del hombro y del brazo",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Lesion de vasos sanguineos del hombro y del brazo",
+      "S45"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "S45",
+        "nombre": "Lesion de vasos sanguineos del hombro y del brazo",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-lesion-de-musculos-y-tendones-del-hombro-y-del-brazo",
+    "nombre": "Lesion de musculos y tendones del hombro y del brazo",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Lesion de musculos y tendones del hombro y del brazo",
+      "S46"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "S46",
+        "nombre": "Lesion de musculos y tendones del hombro y del brazo",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-ablacion-del-hombro-y-del-brazo",
+    "nombre": "Ablacion del hombro y del brazo",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Ablacion del hombro y del brazo",
+      "S47"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "S47",
+        "nombre": "Ablacion del hombro y del brazo",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-lesion-multiple-del-hombro-y-del-brazo",
+    "nombre": "Lesion multiple del hombro y del brazo",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Lesion multiple del hombro y del brazo",
+      "S48"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "S48",
+        "nombre": "Lesion multiple del hombro y del brazo",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-otras-lesiones-especificadas-del-hombro-y-del-brazo",
+    "nombre": "Otras lesiones especificadas del hombro y del brazo",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Otras lesiones especificadas del hombro y del brazo",
+      "S49"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "S49",
+        "nombre": "Otras lesiones especificadas del hombro y del brazo",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-lesion-del-hombro-y-del-brazo-no-especificada",
+    "nombre": "Lesion del hombro y del brazo, no especificada",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Lesion del hombro y del brazo, no especificada",
+      "S49.9"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "S49.9",
+        "nombre": "Lesion del hombro y del brazo, no especificada",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-contusion-del-antebrazo",
+    "nombre": "Contusion del antebrazo",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Contusion del antebrazo",
+      "S50"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "S50",
+        "nombre": "Contusion del antebrazo",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-herida-del-antebrazo",
+    "nombre": "Herida del antebrazo",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Herida del antebrazo",
+      "S51"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "S51",
+        "nombre": "Herida del antebrazo",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-herida-del-antebrazo-no-especificada",
+    "nombre": "Herida del antebrazo, no especificada",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Herida del antebrazo, no especificada",
+      "S51.0"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "S51.0",
+        "nombre": "Herida del antebrazo, no especificada",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-herida-del-antebrazo-con-dano-de-nervios",
+    "nombre": "Herida del antebrazo, con daño de nervios",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Herida del antebrazo, con daño de nervios",
+      "S51.1"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "S51.1",
+        "nombre": "Herida del antebrazo, con daño de nervios",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-herida-del-antebrazo-con-dano-de-vasos-sanguineos",
+    "nombre": "Herida del antebrazo, con daño de vasos sanguineos",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Herida del antebrazo, con daño de vasos sanguineos",
+      "S51.2"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "S51.2",
+        "nombre": "Herida del antebrazo, con daño de vasos sanguineos",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-herida-del-antebrazo-con-dano-de-musculos-y-tendones",
+    "nombre": "Herida del antebrazo, con daño de musculos y tendones",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Herida del antebrazo, con daño de musculos y tendones",
+      "S51.3"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "S51.3",
+        "nombre": "Herida del antebrazo, con daño de musculos y tendones",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-herida-del-antebrazo-con-dano-de-articulaciones-y-ligamentos",
+    "nombre": "Herida del antebrazo, con daño de articulaciones y ligamentos",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Herida del antebrazo, con daño de articulaciones y ligamentos",
+      "S51.4",
+      "S51.7"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "S51.4",
+        "nombre": "Herida del antebrazo, con daño de articulaciones y ligamentos",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-herida-del-antebrazo-con-dano-de-piel-y-tejido-subcutaneo",
+    "nombre": "Herida del antebrazo, con daño de piel y tejido subcutaneo",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Herida del antebrazo, con daño de piel y tejido subcutaneo",
+      "S51.5"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "S51.5",
+        "nombre": "Herida del antebrazo, con daño de piel y tejido subcutaneo",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-herida-del-antebrazo-con-dano-de-huesos",
+    "nombre": "Herida del antebrazo, con daño de huesos",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Herida del antebrazo, con daño de huesos",
+      "S51.6"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "S51.6",
+        "nombre": "Herida del antebrazo, con daño de huesos",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-herida-del-antebrazo-con-dano-de-otros-tejidos",
+    "nombre": "Herida del antebrazo, con daño de otros tejidos",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Herida del antebrazo, con daño de otros tejidos",
+      "S51.8"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "S51.8",
+        "nombre": "Herida del antebrazo, con daño de otros tejidos",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-herida-del-antebrazo-con-dano-de-tejido-no-especificado",
+    "nombre": "Herida del antebrazo, con daño de tejido no especificado",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Herida del antebrazo, con daño de tejido no especificado",
+      "S51.9"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "S51.9",
+        "nombre": "Herida del antebrazo, con daño de tejido no especificado",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-fractura-del-antebrazo",
+    "nombre": "Fractura del antebrazo",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Fractura del antebrazo",
+      "S52"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "S52",
+        "nombre": "Fractura del antebrazo",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-fractura-de-la-epifisis-distal-del-radio",
+    "nombre": "Fractura de la epifisis distal del radio",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Fractura de la epifisis distal del radio",
+      "S52.0"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "S52.0",
+        "nombre": "Fractura de la epifisis distal del radio",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-fractura-de-la-epifisis-distal-del-cubito",
+    "nombre": "Fractura de la epifisis distal del cubito",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Fractura de la epifisis distal del cubito",
+      "S52.1"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "S52.1",
+        "nombre": "Fractura de la epifisis distal del cubito",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-fractura-de-la-diafisis-del-radio",
+    "nombre": "Fractura de la diafisis del radio",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Fractura de la diafisis del radio",
+      "S52.2"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "S52.2",
+        "nombre": "Fractura de la diafisis del radio",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-fractura-de-la-diafisis-del-cubito",
+    "nombre": "Fractura de la diafisis del cubito",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Fractura de la diafisis del cubito",
+      "S52.3"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "S52.3",
+        "nombre": "Fractura de la diafisis del cubito",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-fractura-de-la-epifisis-proximal-del-radio",
+    "nombre": "Fractura de la epifisis proximal del radio",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Fractura de la epifisis proximal del radio",
+      "S52.4"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "S52.4",
+        "nombre": "Fractura de la epifisis proximal del radio",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-fractura-de-la-epifisis-proximal-del-cubito",
+    "nombre": "Fractura de la epifisis proximal del cubito",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Fractura de la epifisis proximal del cubito",
+      "S52.5"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "S52.5",
+        "nombre": "Fractura de la epifisis proximal del cubito",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-fractura-del-radio-y-del-cubito",
+    "nombre": "Fractura del radio y del cubito",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Fractura del radio y del cubito",
+      "S52"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "S52",
+        "nombre": "Fractura del radio y del cubito",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-lesion-de-articulaciones-y-ligamentos-del-antebrazo",
+    "nombre": "Lesion de articulaciones y ligamentos del antebrazo",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Lesion de articulaciones y ligamentos del antebrazo",
+      "S53"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "S53",
+        "nombre": "Lesion de articulaciones y ligamentos del antebrazo",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-lesion-de-nervios-del-antebrazo",
+    "nombre": "Lesion de nervios del antebrazo",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Lesion de nervios del antebrazo",
+      "S54"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "S54",
+        "nombre": "Lesion de nervios del antebrazo",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-lesion-de-vasos-sanguineos-del-antebrazo",
+    "nombre": "Lesion de vasos sanguineos del antebrazo",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Lesion de vasos sanguineos del antebrazo",
+      "S55"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "S55",
+        "nombre": "Lesion de vasos sanguineos del antebrazo",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-lesion-de-musculos-y-tendones-del-antebrazo",
+    "nombre": "Lesion de musculos y tendones del antebrazo",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Lesion de musculos y tendones del antebrazo",
+      "S56"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "S56",
+        "nombre": "Lesion de musculos y tendones del antebrazo",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-ablacion-del-antebrazo",
+    "nombre": "Ablacion del antebrazo",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Ablacion del antebrazo",
+      "S57"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "S57",
+        "nombre": "Ablacion del antebrazo",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-lesion-multiple-del-antebrazo",
+    "nombre": "Lesion multiple del antebrazo",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Lesion multiple del antebrazo",
+      "S58"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "S58",
+        "nombre": "Lesion multiple del antebrazo",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-otras-lesiones-especificadas-del-antebrazo",
+    "nombre": "Otras lesiones especificadas del antebrazo",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Otras lesiones especificadas del antebrazo",
+      "S59"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "S59",
+        "nombre": "Otras lesiones especificadas del antebrazo",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-lesion-del-antebrazo-no-especificada",
+    "nombre": "Lesion del antebrazo, no especificada",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Lesion del antebrazo, no especificada",
+      "S59.9"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "S59.9",
+        "nombre": "Lesion del antebrazo, no especificada",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-contusion-de-la-mano",
+    "nombre": "Contusion de la mano",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Contusion de la mano",
+      "S60"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "S60",
+        "nombre": "Contusion de la mano",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-herida-de-la-mano",
+    "nombre": "Herida de la mano",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Herida de la mano",
+      "S61"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "S61",
+        "nombre": "Herida de la mano",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-fractura-de-los-huesos-del-carpo-metacarpo-y-falanges",
+    "nombre": "Fractura de los huesos del carpo, metacarpo y falanges",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Fractura de los huesos del carpo, metacarpo y falanges",
+      "S62"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "S62",
+        "nombre": "Fractura de los huesos del carpo, metacarpo y falanges",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-lesion-de-articulaciones-y-ligamentos-de-la-mano",
+    "nombre": "Lesion de articulaciones y ligamentos de la mano",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Lesion de articulaciones y ligamentos de la mano",
+      "S63"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "S63",
+        "nombre": "Lesion de articulaciones y ligamentos de la mano",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-lesion-de-nervios-de-la-mano",
+    "nombre": "Lesion de nervios de la mano",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Lesion de nervios de la mano",
+      "S64"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "S64",
+        "nombre": "Lesion de nervios de la mano",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-lesion-de-vasos-sanguineos-de-la-mano",
+    "nombre": "Lesion de vasos sanguineos de la mano",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Lesion de vasos sanguineos de la mano",
+      "S65"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "S65",
+        "nombre": "Lesion de vasos sanguineos de la mano",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-lesion-de-musculos-y-tendones-de-la-mano",
+    "nombre": "Lesion de musculos y tendones de la mano",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Lesion de musculos y tendones de la mano",
+      "S66"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "S66",
+        "nombre": "Lesion de musculos y tendones de la mano",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-ablacion-de-la-mano",
+    "nombre": "Ablacion de la mano",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Ablacion de la mano",
+      "S67"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "S67",
+        "nombre": "Ablacion de la mano",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-lesion-multiple-de-la-mano",
+    "nombre": "Lesion multiple de la mano",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Lesion multiple de la mano",
+      "S68"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "S68",
+        "nombre": "Lesion multiple de la mano",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-otras-lesiones-especificadas-de-la-mano",
+    "nombre": "Otras lesiones especificadas de la mano",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Otras lesiones especificadas de la mano",
+      "S69"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "S69",
+        "nombre": "Otras lesiones especificadas de la mano",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-lesion-de-la-mano-no-especificada",
+    "nombre": "Lesion de la mano, no especificada",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Lesion de la mano, no especificada",
+      "S69.9"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "S69.9",
+        "nombre": "Lesion de la mano, no especificada",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-examen-general-e-investigacion-de-personas-sin-quejas-o-diagnostico-informado",
+    "nombre": "Examen general e investigacion de personas sin quejas o diagnostico informado",
+    "categoria": "Otros",
+    "subcategoria": "Otros",
+    "aliases": [
+      "Examen general e investigacion de personas sin quejas o diagnostico informado",
+      "Z00"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "Z00",
+        "nombre": "Examen general e investigacion de personas sin quejas o diagnostico informado",
+        "criterios": [
+          {
+            "id": "trastorno-examen-general-e-investigacion-de-personas-sin-quejas-o-diagnostico-informado-cie10-criterio-1",
+            "orden": 1,
+            "titulo": "Criterio 1",
+            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-examen-general-e-investigacion-de-personas-sin-quejas-o-diagnostico-informado-cie10-criterio-2",
+            "orden": 2,
+            "titulo": "Criterio 2",
+            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-examen-general-e-investigacion-de-personas-sin-quejas-o-diagnostico-informado-cie10-criterio-3",
+            "orden": 3,
+            "titulo": "Criterio 3",
+            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-examen-general-e-investigacion-de-personas-sin-quejas-o-diagnostico-informado-cie10-criterio-4",
+            "orden": 4,
+            "titulo": "Criterio 4",
+            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": [
+      {
+        "sistema": "cie10",
+        "titulo": "CIE-10 / resumen clínico orientativo local",
+        "tipoContenido": "Resumen clínico"
+      }
+    ]
+  },
+  {
+    "id": "trastorno-otros-examenes-especiales-e-investigaciones-de-personas-sin-quejas-o-diagnostico-informado",
+    "nombre": "Otros examenes especiales e investigaciones de personas sin quejas o diagnostico informado",
+    "categoria": "Otros",
+    "subcategoria": "Otros",
+    "aliases": [
+      "Otros examenes especiales e investigaciones de personas sin quejas o diagnostico informado",
+      "Z01"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "Z01",
+        "nombre": "Otros examenes especiales e investigaciones de personas sin quejas o diagnostico informado",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-examen-medico-y-consulta-con-fines-administrativos",
+    "nombre": "Examen medico y consulta con fines administrativos",
+    "categoria": "Otros",
+    "subcategoria": "Otros",
+    "aliases": [
+      "Examen medico y consulta con fines administrativos",
+      "Z02"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "Z02",
+        "nombre": "Examen medico y consulta con fines administrativos",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-observacion-y-evaluacion-medicas-por-sospecha-de-enfermedades-y-afecciones",
+    "nombre": "Observacion y evaluacion medicas por sospecha de enfermedades y afecciones",
+    "categoria": "Otros",
+    "subcategoria": "Otros",
+    "aliases": [
+      "Observacion y evaluacion medicas por sospecha de enfermedades y afecciones",
+      "Z03"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "Z03",
+        "nombre": "Observacion y evaluacion medicas por sospecha de enfermedades y afecciones",
+        "criterios": [
+          {
+            "id": "trastorno-observacion-y-evaluacion-medicas-por-sospecha-de-enfermedades-y-afecciones-cie10-criterio-1",
+            "orden": 1,
+            "titulo": "Criterio 1",
+            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-observacion-y-evaluacion-medicas-por-sospecha-de-enfermedades-y-afecciones-cie10-criterio-2",
+            "orden": 2,
+            "titulo": "Criterio 2",
+            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-observacion-y-evaluacion-medicas-por-sospecha-de-enfermedades-y-afecciones-cie10-criterio-3",
+            "orden": 3,
+            "titulo": "Criterio 3",
+            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-observacion-y-evaluacion-medicas-por-sospecha-de-enfermedades-y-afecciones-cie10-criterio-4",
+            "orden": 4,
+            "titulo": "Criterio 4",
+            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": [
+      {
+        "sistema": "cie10",
+        "titulo": "CIE-10 / resumen clínico orientativo local",
+        "tipoContenido": "Resumen clínico"
+      }
+    ]
+  },
+  {
+    "id": "trastorno-examen-y-observacion-por-otras-razones",
+    "nombre": "Examen y observacion por otras razones",
+    "categoria": "Otros",
+    "subcategoria": "Otros",
+    "aliases": [
+      "Examen y observacion por otras razones",
+      "Z04"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "Z04",
+        "nombre": "Examen y observacion por otras razones",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-examen-de-seguimiento-despues-de-tratamiento-por-tumor-maligno",
+    "nombre": "Examen de seguimiento despues de tratamiento por tumor maligno",
+    "categoria": "Otros",
+    "subcategoria": "Otros",
+    "aliases": [
+      "Examen de seguimiento despues de tratamiento por tumor maligno",
+      "Z08"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "Z08",
+        "nombre": "Examen de seguimiento despues de tratamiento por tumor maligno",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-examen-de-seguimiento-despues-de-tratamiento-por-otras-afecciones",
+    "nombre": "Examen de seguimiento despues de tratamiento por otras afecciones",
+    "categoria": "Otros",
+    "subcategoria": "Otros",
+    "aliases": [
+      "Examen de seguimiento despues de tratamiento por otras afecciones",
+      "Z09"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "Z09",
+        "nombre": "Examen de seguimiento despues de tratamiento por otras afecciones",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-control-general-de-salud-de-subpoblaciones-definidas",
+    "nombre": "Control general de salud de subpoblaciones definidas",
+    "categoria": "Otros",
+    "subcategoria": "Otros",
+    "aliases": [
+      "Control general de salud de subpoblaciones definidas",
+      "Z10"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "Z10",
+        "nombre": "Control general de salud de subpoblaciones definidas",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-examen-de-pesquisa-especial-para-enfermedades-infecciosas-y-parasitarias",
+    "nombre": "Examen de pesquisa especial para enfermedades infecciosas y parasitarias",
+    "categoria": "Otros",
+    "subcategoria": "Otros",
+    "aliases": [
+      "Examen de pesquisa especial para enfermedades infecciosas y parasitarias",
+      "Z11"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "Z11",
+        "nombre": "Examen de pesquisa especial para enfermedades infecciosas y parasitarias",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-examen-de-pesquisa-especial-para-tumores",
+    "nombre": "Examen de pesquisa especial para tumores",
+    "categoria": "Otros",
+    "subcategoria": "Otros",
+    "aliases": [
+      "Examen de pesquisa especial para tumores",
+      "Z12"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "Z12",
+        "nombre": "Examen de pesquisa especial para tumores",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-examen-de-pesquisa-especial-para-otras-enfermedades-y-trastornos",
+    "nombre": "Examen de pesquisa especial para otras enfermedades y trastornos",
+    "categoria": "Otros",
+    "subcategoria": "Otros",
+    "aliases": [
+      "Examen de pesquisa especial para otras enfermedades y trastornos",
+      "Z13"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "Z13",
+        "nombre": "Examen de pesquisa especial para otras enfermedades y trastornos",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-contacto-con-y-exposicion-a-enfermedades-transmisibles",
+    "nombre": "Contacto con y exposicion a enfermedades transmisibles",
+    "categoria": "Otros",
+    "subcategoria": "Otros",
+    "aliases": [
+      "Contacto con y exposicion a enfermedades transmisibles",
+      "Z20"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "Z20",
+        "nombre": "Contacto con y exposicion a enfermedades transmisibles",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-estado-de-infeccion-asintomatica-por-vih",
+    "nombre": "Estado de infeccion asintomatica por VIH",
+    "categoria": "Otros",
+    "subcategoria": "Otros",
+    "aliases": [
+      "Estado de infeccion asintomatica por VIH",
+      "Z21"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "Z21",
+        "nombre": "Estado de infeccion asintomatica por VIH",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-portador-de-enfermedad-infecciosa",
+    "nombre": "Portador de enfermedad infecciosa",
+    "categoria": "Otros",
+    "subcategoria": "Otros",
+    "aliases": [
+      "Portador de enfermedad infecciosa",
+      "Z22"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "Z22",
+        "nombre": "Portador de enfermedad infecciosa",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-necesidad-de-inmunizacion-contra-enfermedad-bacteriana-unica",
+    "nombre": "Necesidad de inmunizacion contra enfermedad bacteriana unica",
+    "categoria": "Otros",
+    "subcategoria": "Otros",
+    "aliases": [
+      "Necesidad de inmunizacion contra enfermedad bacteriana unica",
+      "Z23"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "Z23",
+        "nombre": "Necesidad de inmunizacion contra enfermedad bacteriana unica",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-necesidad-de-inmunizacion-contra-ciertas-enfermedades-virales",
+    "nombre": "Necesidad de inmunizacion contra ciertas enfermedades virales",
+    "categoria": "Otros",
+    "subcategoria": "Otros",
+    "aliases": [
+      "Necesidad de inmunizacion contra ciertas enfermedades virales",
+      "Z24"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "Z24",
+        "nombre": "Necesidad de inmunizacion contra ciertas enfermedades virales",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-necesidad-de-inmunizacion-contra-otras-enfermedades-virales-unicas",
+    "nombre": "Necesidad de inmunizacion contra otras enfermedades virales unicas",
+    "categoria": "Otros",
+    "subcategoria": "Otros",
+    "aliases": [
+      "Necesidad de inmunizacion contra otras enfermedades virales unicas",
+      "Z25"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "Z25",
+        "nombre": "Necesidad de inmunizacion contra otras enfermedades virales unicas",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-necesidad-de-inmunizacion-contra-otras-enfermedades-infecciosas-unicas",
+    "nombre": "Necesidad de inmunizacion contra otras enfermedades infecciosas unicas",
+    "categoria": "Otros",
+    "subcategoria": "Otros",
+    "aliases": [
+      "Necesidad de inmunizacion contra otras enfermedades infecciosas unicas",
+      "Z26"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "Z26",
+        "nombre": "Necesidad de inmunizacion contra otras enfermedades infecciosas unicas",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-necesidad-de-inmunizacion-contra-combinaciones-de-enfermedades-infecciosas",
+    "nombre": "Necesidad de inmunizacion contra combinaciones de enfermedades infecciosas",
+    "categoria": "Otros",
+    "subcategoria": "Otros",
+    "aliases": [
+      "Necesidad de inmunizacion contra combinaciones de enfermedades infecciosas",
+      "Z27"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "Z27",
+        "nombre": "Necesidad de inmunizacion contra combinaciones de enfermedades infecciosas",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-inmunizacion-no-realizada",
+    "nombre": "Inmunizacion no realizada",
+    "categoria": "Otros",
+    "subcategoria": "Otros",
+    "aliases": [
+      "Inmunizacion no realizada",
+      "Z28"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "Z28",
+        "nombre": "Inmunizacion no realizada",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-necesidad-de-otras-medidas-profilacticas",
+    "nombre": "Necesidad de otras medidas profilacticas",
+    "categoria": "Otros",
+    "subcategoria": "Otros",
+    "aliases": [
+      "Necesidad de otras medidas profilacticas",
+      "Z29"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "Z29",
+        "nombre": "Necesidad de otras medidas profilacticas",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-atencion-para-la-anticoncepcion",
+    "nombre": "Atencion para la anticoncepcion",
+    "categoria": "Otros",
+    "subcategoria": "Otros",
+    "aliases": [
+      "Atencion para la anticoncepcion",
+      "Z30"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "Z30",
+        "nombre": "Atencion para la anticoncepcion",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-atencion-para-la-procreacion",
+    "nombre": "Atencion para la procreacion",
+    "categoria": "Otros",
+    "subcategoria": "Otros",
+    "aliases": [
+      "Atencion para la procreacion",
+      "Z31"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "Z31",
+        "nombre": "Atencion para la procreacion",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-examen-y-prueba-de-embarazo",
+    "nombre": "Examen y prueba de embarazo",
+    "categoria": "Otros",
+    "subcategoria": "Otros",
+    "aliases": [
+      "Examen y prueba de embarazo",
+      "Z32"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "Z32",
+        "nombre": "Examen y prueba de embarazo",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-estado-de-embarazo-incidental",
+    "nombre": "Estado de embarazo, incidental",
+    "categoria": "Otros",
+    "subcategoria": "Otros",
+    "aliases": [
+      "Estado de embarazo, incidental",
+      "Z33"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "Z33",
+        "nombre": "Estado de embarazo, incidental",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-supervision-de-embarazo-normal",
+    "nombre": "Supervision de embarazo normal",
+    "categoria": "Otros",
+    "subcategoria": "Otros",
+    "aliases": [
+      "Supervision de embarazo normal",
+      "Z34"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "Z34",
+        "nombre": "Supervision de embarazo normal",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-supervision-de-embarazo-de-alto-riesgo",
+    "nombre": "Supervision de embarazo de alto riesgo",
+    "categoria": "Otros",
+    "subcategoria": "Otros",
+    "aliases": [
+      "Supervision de embarazo de alto riesgo",
+      "Z35"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "Z35",
+        "nombre": "Supervision de embarazo de alto riesgo",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-pesquisa-prenatal",
+    "nombre": "Pesquisa prenatal",
+    "categoria": "Otros",
+    "subcategoria": "Otros",
+    "aliases": [
+      "Pesquisa prenatal",
+      "Z36"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "Z36",
+        "nombre": "Pesquisa prenatal",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-producto-del-parto",
+    "nombre": "Producto del parto",
+    "categoria": "Otros",
+    "subcategoria": "Otros",
+    "aliases": [
+      "Producto del parto",
+      "Z37"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "Z37",
+        "nombre": "Producto del parto",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-nacidos-vivos-segun-lugar-de-nacimiento",
+    "nombre": "Nacidos vivos segun lugar de nacimiento",
+    "categoria": "Otros",
+    "subcategoria": "Otros",
+    "aliases": [
+      "Nacidos vivos segun lugar de nacimiento",
+      "Z38"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "Z38",
+        "nombre": "Nacidos vivos segun lugar de nacimiento",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-atencion-y-examen-posparto",
+    "nombre": "Atencion y examen posparto",
+    "categoria": "Otros",
+    "subcategoria": "Otros",
+    "aliases": [
+      "Atencion y examen posparto",
+      "Z39"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "Z39",
+        "nombre": "Atencion y examen posparto",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-cirugia-profilactica",
+    "nombre": "Cirugia profilactica",
+    "categoria": "Otros",
+    "subcategoria": "Otros",
+    "aliases": [
+      "Cirugia profilactica",
+      "Z40"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "Z40",
+        "nombre": "Cirugia profilactica",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-procedimientos-para-otros-propositos-que-no-sean-remediar-el-estado-de-salud",
+    "nombre": "Procedimientos para otros propositos que no sean remediar el estado de salud",
+    "categoria": "Otros",
+    "subcategoria": "Otros",
+    "aliases": [
+      "Procedimientos para otros propositos que no sean remediar el estado de salud",
+      "Z41"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "Z41",
+        "nombre": "Procedimientos para otros propositos que no sean remediar el estado de salud",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-cuidados-posteriores-a-cirugia-plastica",
+    "nombre": "Cuidados posteriores a cirugia plastica",
+    "categoria": "Otros",
+    "subcategoria": "Otros",
+    "aliases": [
+      "Cuidados posteriores a cirugia plastica",
+      "Z42"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "Z42",
+        "nombre": "Cuidados posteriores a cirugia plastica",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-atencion-a-orificios-artificiales",
+    "nombre": "Atencion a orificios artificiales",
+    "categoria": "Otros",
+    "subcategoria": "Otros",
+    "aliases": [
+      "Atencion a orificios artificiales",
+      "Z43"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "Z43",
+        "nombre": "Atencion a orificios artificiales",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-prueba-y-ajuste-de-dispositivos-protesicos-externos",
+    "nombre": "Prueba y ajuste de dispositivos protesicos externos",
+    "categoria": "Otros",
+    "subcategoria": "Otros",
+    "aliases": [
+      "Prueba y ajuste de dispositivos protesicos externos",
+      "Z44"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "Z44",
+        "nombre": "Prueba y ajuste de dispositivos protesicos externos",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-ajuste-y-manejo-de-dispositivo-implantado",
+    "nombre": "Ajuste y manejo de dispositivo implantado",
+    "categoria": "Otros",
+    "subcategoria": "Otros",
+    "aliases": [
+      "Ajuste y manejo de dispositivo implantado",
+      "Z45"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "Z45",
+        "nombre": "Ajuste y manejo de dispositivo implantado",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-prueba-y-ajuste-de-otros-dispositivos",
+    "nombre": "Prueba y ajuste de otros dispositivos",
+    "categoria": "Otros",
+    "subcategoria": "Otros",
+    "aliases": [
+      "Prueba y ajuste de otros dispositivos",
+      "Z46"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "Z46",
+        "nombre": "Prueba y ajuste de otros dispositivos",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-otros-cuidados-posteriores-ortopedicos",
+    "nombre": "Otros cuidados posteriores ortopedicos",
+    "categoria": "Otros",
+    "subcategoria": "Otros",
+    "aliases": [
+      "Otros cuidados posteriores ortopedicos",
+      "Z47"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "Z47",
+        "nombre": "Otros cuidados posteriores ortopedicos",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-otros-cuidados-posteriores-quirurgicos",
+    "nombre": "Otros cuidados posteriores quirurgicos",
+    "categoria": "Otros",
+    "subcategoria": "Otros",
+    "aliases": [
+      "Otros cuidados posteriores quirurgicos",
+      "Z48"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "Z48",
+        "nombre": "Otros cuidados posteriores quirurgicos",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-cuidados-relacionados-con-dialisis",
+    "nombre": "Cuidados relacionados con dialisis",
+    "categoria": "Otros",
+    "subcategoria": "Otros",
+    "aliases": [
+      "Cuidados relacionados con dialisis",
+      "Z49"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "Z49",
+        "nombre": "Cuidados relacionados con dialisis",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-atencion-que-incluye-procedimientos-de-rehabilitacion",
+    "nombre": "Atencion que incluye procedimientos de rehabilitacion",
+    "categoria": "Otros",
+    "subcategoria": "Otros",
+    "aliases": [
+      "Atencion que incluye procedimientos de rehabilitacion",
+      "Z50"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "Z50",
+        "nombre": "Atencion que incluye procedimientos de rehabilitacion",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-otra-atencion-medica",
+    "nombre": "Otra atencion medica",
+    "categoria": "Otros",
+    "subcategoria": "Otros",
+    "aliases": [
+      "Otra atencion medica",
+      "Z51"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "Z51",
+        "nombre": "Otra atencion medica",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-donantes-de-organos-y-tejidos",
+    "nombre": "Donantes de organos y tejidos",
+    "categoria": "Otros",
+    "subcategoria": "Otros",
+    "aliases": [
+      "Donantes de organos y tejidos",
+      "Z52"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "Z52",
+        "nombre": "Donantes de organos y tejidos",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-personas-en-contacto-con-servicios-de-salud-para-procedimientos-no-realizados",
+    "nombre": "Personas en contacto con servicios de salud para procedimientos no realizados",
+    "categoria": "Otros",
+    "subcategoria": "Otros",
+    "aliases": [
+      "Personas en contacto con servicios de salud para procedimientos no realizados",
+      "Z53"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "Z53",
+        "nombre": "Personas en contacto con servicios de salud para procedimientos no realizados",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-convalecencia",
+    "nombre": "Convalecencia",
+    "categoria": "Otros",
+    "subcategoria": "Otros",
+    "aliases": [
+      "Convalecencia",
+      "Z54"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "Z54",
+        "nombre": "Convalecencia",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-problemas-relacionados-con-la-educacion-y-la-alfabetizacion",
+    "nombre": "Problemas relacionados con la educacion y la alfabetizacion",
+    "categoria": "Otros",
+    "subcategoria": "Otros",
+    "aliases": [
+      "Problemas relacionados con la educacion y la alfabetizacion",
+      "Z55"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "Z55",
+        "nombre": "Problemas relacionados con la educacion y la alfabetizacion",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-problemas-relacionados-con-el-empleo-y-el-desempleo",
+    "nombre": "Problemas relacionados con el empleo y el desempleo",
+    "categoria": "Otros",
+    "subcategoria": "Otros",
+    "aliases": [
+      "Problemas relacionados con el empleo y el desempleo",
+      "Z56"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "Z56",
+        "nombre": "Problemas relacionados con el empleo y el desempleo",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-exposicion-ocupacional-a-factores-de-riesgo",
+    "nombre": "Exposicion ocupacional a factores de riesgo",
+    "categoria": "Otros",
+    "subcategoria": "Otros",
+    "aliases": [
+      "Exposicion ocupacional a factores de riesgo",
+      "Z57"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "Z57",
+        "nombre": "Exposicion ocupacional a factores de riesgo",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-problemas-relacionados-con-el-ambiente-fisico",
+    "nombre": "Problemas relacionados con el ambiente fisico",
+    "categoria": "Otros",
+    "subcategoria": "Otros",
+    "aliases": [
+      "Problemas relacionados con el ambiente fisico",
+      "Z58"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "Z58",
+        "nombre": "Problemas relacionados con el ambiente fisico",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-problemas-relacionados-con-la-vivienda-y-las-circunstancias-economicas",
+    "nombre": "Problemas relacionados con la vivienda y las circunstancias economicas",
+    "categoria": "Otros",
+    "subcategoria": "Otros",
+    "aliases": [
+      "Problemas relacionados con la vivienda y las circunstancias economicas",
+      "Z59"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "Z59",
+        "nombre": "Problemas relacionados con la vivienda y las circunstancias economicas",
+        "criterios": [
+          {
+            "id": "trastorno-problemas-relacionados-con-la-vivienda-y-las-circunstancias-economicas-cie10-criterio-1",
+            "orden": 1,
+            "titulo": "Criterio 1",
+            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-problemas-relacionados-con-la-vivienda-y-las-circunstancias-economicas-cie10-criterio-2",
+            "orden": 2,
+            "titulo": "Criterio 2",
+            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-problemas-relacionados-con-la-vivienda-y-las-circunstancias-economicas-cie10-criterio-3",
+            "orden": 3,
+            "titulo": "Criterio 3",
+            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-problemas-relacionados-con-la-vivienda-y-las-circunstancias-economicas-cie10-criterio-4",
+            "orden": 4,
+            "titulo": "Criterio 4",
+            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": [
+      {
+        "sistema": "cie10",
+        "titulo": "CIE-10 / resumen clínico orientativo local",
+        "tipoContenido": "Resumen clínico"
+      }
+    ]
+  },
+  {
+    "id": "trastorno-problemas-relacionados-con-el-ambiente-social",
+    "nombre": "Problemas relacionados con el ambiente social",
+    "categoria": "Otros",
+    "subcategoria": "Otros",
+    "aliases": [
+      "Problemas relacionados con el ambiente social",
+      "Z60"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "Z60",
+        "nombre": "Problemas relacionados con el ambiente social",
+        "criterios": [
+          {
+            "id": "trastorno-problemas-relacionados-con-el-ambiente-social-cie10-criterio-1",
+            "orden": 1,
+            "titulo": "Criterio 1",
+            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-problemas-relacionados-con-el-ambiente-social-cie10-criterio-2",
+            "orden": 2,
+            "titulo": "Criterio 2",
+            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-problemas-relacionados-con-el-ambiente-social-cie10-criterio-3",
+            "orden": 3,
+            "titulo": "Criterio 3",
+            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-problemas-relacionados-con-el-ambiente-social-cie10-criterio-4",
+            "orden": 4,
+            "titulo": "Criterio 4",
+            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": [
+      {
+        "sistema": "cie10",
+        "titulo": "CIE-10 / resumen clínico orientativo local",
+        "tipoContenido": "Resumen clínico"
+      }
+    ]
+  },
+  {
+    "id": "trastorno-problemas-relacionados-con-hechos-negativos-en-la-ninez",
+    "nombre": "Problemas relacionados con hechos negativos en la ninez",
+    "categoria": "Otros",
+    "subcategoria": "Otros",
+    "aliases": [
+      "Problemas relacionados con hechos negativos en la ninez",
+      "Z61"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "Z61",
+        "nombre": "Problemas relacionados con hechos negativos en la ninez",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-otros-problemas-relacionados-con-la-crianza-del-nino",
+    "nombre": "Otros problemas relacionados con la crianza del nino",
+    "categoria": "Otros",
+    "subcategoria": "Otros",
+    "aliases": [
+      "Otros problemas relacionados con la crianza del nino",
+      "Z62"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "Z62",
+        "nombre": "Otros problemas relacionados con la crianza del nino",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-otros-problemas-relacionados-con-el-grupo-primario-de-apoyo-incluidas-circunstancias-familiares",
+    "nombre": "Otros problemas relacionados con el grupo primario de apoyo, incluidas circunstancias familiares",
+    "categoria": "Otros",
+    "subcategoria": "Otros",
+    "aliases": [
+      "Otros problemas relacionados con el grupo primario de apoyo, incluidas circunstancias familiares",
+      "Z63"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "Z63",
+        "nombre": "Otros problemas relacionados con el grupo primario de apoyo, incluidas circunstancias familiares",
+        "criterios": [
+          {
+            "id": "trastorno-otros-problemas-relacionados-con-el-grupo-primario-de-apoyo-incluidas-circunstancias-familiares-cie10-criterio-1",
+            "orden": 1,
+            "titulo": "Criterio 1",
+            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-otros-problemas-relacionados-con-el-grupo-primario-de-apoyo-incluidas-circunstancias-familiares-cie10-criterio-2",
+            "orden": 2,
+            "titulo": "Criterio 2",
+            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-otros-problemas-relacionados-con-el-grupo-primario-de-apoyo-incluidas-circunstancias-familiares-cie10-criterio-3",
+            "orden": 3,
+            "titulo": "Criterio 3",
+            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-otros-problemas-relacionados-con-el-grupo-primario-de-apoyo-incluidas-circunstancias-familiares-cie10-criterio-4",
+            "orden": 4,
+            "titulo": "Criterio 4",
+            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": [
+      {
+        "sistema": "cie10",
+        "titulo": "CIE-10 / resumen clínico orientativo local",
+        "tipoContenido": "Resumen clínico"
+      }
+    ]
+  },
+  {
+    "id": "trastorno-problemas-relacionados-con-la-separacion-de-los-padres",
+    "nombre": "Problemas relacionados con la separacion de los padres",
+    "categoria": "Otros",
+    "subcategoria": "Otros",
+    "aliases": [
+      "Problemas relacionados con la separacion de los padres",
+      "Z63.0"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "Z63.0",
+        "nombre": "Problemas relacionados con la separacion de los padres",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-problemas-relacionados-con-la-muerte-de-un-miembro-de-la-familia",
+    "nombre": "Problemas relacionados con la muerte de un miembro de la familia",
+    "categoria": "Otros",
+    "subcategoria": "Otros",
+    "aliases": [
+      "Problemas relacionados con la muerte de un miembro de la familia",
+      "Z63.1"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "Z63.1",
+        "nombre": "Problemas relacionados con la muerte de un miembro de la familia",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-problemas-relacionados-con-el-alejamiento-de-los-miembros-de-la-familia",
+    "nombre": "Problemas relacionados con el alejamiento de los miembros de la familia",
+    "categoria": "Otros",
+    "subcategoria": "Otros",
+    "aliases": [
+      "Problemas relacionados con el alejamiento de los miembros de la familia",
+      "Z63.2"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "Z63.2",
+        "nombre": "Problemas relacionados con el alejamiento de los miembros de la familia",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-problemas-relacionados-con-la-ausencia-de-un-miembro-de-la-familia",
+    "nombre": "Problemas relacionados con la ausencia de un miembro de la familia",
+    "categoria": "Otros",
+    "subcategoria": "Otros",
+    "aliases": [
+      "Problemas relacionados con la ausencia de un miembro de la familia",
+      "Z63.3"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "Z63.3",
+        "nombre": "Problemas relacionados con la ausencia de un miembro de la familia",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-problemas-relacionados-con-la-violencia-domestica",
+    "nombre": "Problemas relacionados con la violencia domestica",
+    "categoria": "Otros",
+    "subcategoria": "Otros",
+    "aliases": [
+      "Problemas relacionados con la violencia domestica",
+      "Z63.4"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "Z63.4",
+        "nombre": "Problemas relacionados con la violencia domestica",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-problemas-relacionados-con-la-adopcion-y-el-cuidado-de-crianza",
+    "nombre": "Problemas relacionados con la adopcion y el cuidado de crianza",
+    "categoria": "Otros",
+    "subcategoria": "Otros",
+    "aliases": [
+      "Problemas relacionados con la adopcion y el cuidado de crianza",
+      "Z63.5"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "Z63.5",
+        "nombre": "Problemas relacionados con la adopcion y el cuidado de crianza",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-problemas-relacionados-con-la-dependencia-de-los-miembros-de-la-familia",
+    "nombre": "Problemas relacionados con la dependencia de los miembros de la familia",
+    "categoria": "Otros",
+    "subcategoria": "Otros",
+    "aliases": [
+      "Problemas relacionados con la dependencia de los miembros de la familia",
+      "Z63.6"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "Z63.6",
+        "nombre": "Problemas relacionados con la dependencia de los miembros de la familia",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-problemas-relacionados-con-la-interaccion-con-los-servicios-sociales",
+    "nombre": "Problemas relacionados con la interaccion con los servicios sociales",
+    "categoria": "Otros",
+    "subcategoria": "Otros",
+    "aliases": [
+      "Problemas relacionados con la interaccion con los servicios sociales",
+      "Z63.7"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "Z63.7",
+        "nombre": "Problemas relacionados con la interaccion con los servicios sociales",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-otros-problemas-relacionados-con-el-grupo-primario-de-apoyo",
+    "nombre": "Otros problemas relacionados con el grupo primario de apoyo",
+    "categoria": "Otros",
+    "subcategoria": "Otros",
+    "aliases": [
+      "Otros problemas relacionados con el grupo primario de apoyo",
+      "Z63.8"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "Z63.8",
+        "nombre": "Otros problemas relacionados con el grupo primario de apoyo",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-problemas-relacionados-con-el-grupo-primario-de-apoyo-no-especificados",
+    "nombre": "Problemas relacionados con el grupo primario de apoyo, no especificados",
+    "categoria": "Otros",
+    "subcategoria": "Otros",
+    "aliases": [
+      "Problemas relacionados con el grupo primario de apoyo, no especificados",
+      "Z63.9"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "Z63.9",
+        "nombre": "Problemas relacionados con el grupo primario de apoyo, no especificados",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-problemas-relacionados-con-ciertas-circunstancias-psicosociales",
+    "nombre": "Problemas relacionados con ciertas circunstancias psicosociales",
+    "categoria": "Otros",
+    "subcategoria": "Otros",
+    "aliases": [
+      "Problemas relacionados con ciertas circunstancias psicosociales",
+      "Z64"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "Z64",
+        "nombre": "Problemas relacionados con ciertas circunstancias psicosociales",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-problemas-relacionados-con-otras-circunstancias-psicosociales",
+    "nombre": "Problemas relacionados con otras circunstancias psicosociales",
+    "categoria": "Otros",
+    "subcategoria": "Otros",
+    "aliases": [
+      "Problemas relacionados con otras circunstancias psicosociales",
+      "Z65"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "Z65",
+        "nombre": "Problemas relacionados con otras circunstancias psicosociales",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-consulta-relacionada-con-actitud-conducta-u-orientacion-sexual",
+    "nombre": "Consulta relacionada con actitud, conducta u orientacion sexual",
+    "categoria": "Otros",
+    "subcategoria": "Otros",
+    "aliases": [
+      "Consulta relacionada con actitud, conducta u orientacion sexual",
+      "Z70"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "Z70",
+        "nombre": "Consulta relacionada con actitud, conducta u orientacion sexual",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-personas-en-contacto-con-servicios-de-salud-para-otras-consultas-y-consejos-medicos",
+    "nombre": "Personas en contacto con servicios de salud para otras consultas y consejos medicos",
+    "categoria": "Otros",
+    "subcategoria": "Otros",
+    "aliases": [
+      "Personas en contacto con servicios de salud para otras consultas y consejos medicos",
+      "Z71"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "Z71",
+        "nombre": "Personas en contacto con servicios de salud para otras consultas y consejos medicos",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-problemas-relacionados-con-el-estilo-de-vida",
+    "nombre": "Problemas relacionados con el estilo de vida",
+    "categoria": "Otros",
+    "subcategoria": "Otros",
+    "aliases": [
+      "Problemas relacionados con el estilo de vida",
+      "Z72"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "Z72",
+        "nombre": "Problemas relacionados con el estilo de vida",
+        "criterios": [
+          {
+            "id": "trastorno-problemas-relacionados-con-el-estilo-de-vida-cie10-criterio-1",
+            "orden": 1,
+            "titulo": "Criterio 1",
+            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-problemas-relacionados-con-el-estilo-de-vida-cie10-criterio-2",
+            "orden": 2,
+            "titulo": "Criterio 2",
+            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-problemas-relacionados-con-el-estilo-de-vida-cie10-criterio-3",
+            "orden": 3,
+            "titulo": "Criterio 3",
+            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-problemas-relacionados-con-el-estilo-de-vida-cie10-criterio-4",
+            "orden": 4,
+            "titulo": "Criterio 4",
+            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": [
+      {
+        "sistema": "cie10",
+        "titulo": "CIE-10 / resumen clínico orientativo local",
+        "tipoContenido": "Resumen clínico"
+      }
+    ]
+  },
+  {
+    "id": "trastorno-problemas-relacionados-con-dificultades-para-afrontar-la-vida",
+    "nombre": "Problemas relacionados con dificultades para afrontar la vida",
+    "categoria": "Otros",
+    "subcategoria": "Otros",
+    "aliases": [
+      "Problemas relacionados con dificultades para afrontar la vida",
+      "Z73"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "Z73",
+        "nombre": "Problemas relacionados con dificultades para afrontar la vida",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-problemas-relacionados-con-dependencia-del-prestador-de-servicios",
+    "nombre": "Problemas relacionados con dependencia del prestador de servicios",
+    "categoria": "Otros",
+    "subcategoria": "Otros",
+    "aliases": [
+      "Problemas relacionados con dependencia del prestador de servicios",
+      "Z74"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "Z74",
+        "nombre": "Problemas relacionados con dependencia del prestador de servicios",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-problemas-relacionados-con-facilidades-de-atencion-medica-y-otros-servicios-de-salud",
+    "nombre": "Problemas relacionados con facilidades de atencion medica y otros servicios de salud",
+    "categoria": "Otros",
+    "subcategoria": "Otros",
+    "aliases": [
+      "Problemas relacionados con facilidades de atencion medica y otros servicios de salud",
+      "Z75"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "Z75",
+        "nombre": "Problemas relacionados con facilidades de atencion medica y otros servicios de salud",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-personas-en-contacto-con-servicios-de-salud-en-otras-circunstancias",
+    "nombre": "Personas en contacto con servicios de salud en otras circunstancias",
+    "categoria": "Otros",
+    "subcategoria": "Otros",
+    "aliases": [
+      "Personas en contacto con servicios de salud en otras circunstancias",
+      "Z76"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "Z76",
+        "nombre": "Personas en contacto con servicios de salud en otras circunstancias",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-historia-familiar-de-tumor-maligno",
+    "nombre": "Historia familiar de tumor maligno",
+    "categoria": "Otros",
+    "subcategoria": "Otros",
+    "aliases": [
+      "Historia familiar de tumor maligno",
+      "Z80"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "Z80",
+        "nombre": "Historia familiar de tumor maligno",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-historia-familiar-de-trastornos-mentales-y-del-comportamiento",
+    "nombre": "Historia familiar de trastornos mentales y del comportamiento",
+    "categoria": "Otros",
+    "subcategoria": "Otros",
+    "aliases": [
+      "Historia familiar de trastornos mentales y del comportamiento",
+      "Z81"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "Z81",
+        "nombre": "Historia familiar de trastornos mentales y del comportamiento",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-historia-familiar-de-ciertas-discapacidades-y-enfermedades-cronicas",
+    "nombre": "Historia familiar de ciertas discapacidades y enfermedades cronicas",
+    "categoria": "Otros",
+    "subcategoria": "Otros",
+    "aliases": [
+      "Historia familiar de ciertas discapacidades y enfermedades cronicas",
+      "Z82"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "Z82",
+        "nombre": "Historia familiar de ciertas discapacidades y enfermedades cronicas",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-historia-familiar-de-otros-trastornos-especificos",
+    "nombre": "Historia familiar de otros trastornos especificos",
+    "categoria": "Otros",
+    "subcategoria": "Otros",
+    "aliases": [
+      "Historia familiar de otros trastornos especificos",
+      "Z83"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "Z83",
+        "nombre": "Historia familiar de otros trastornos especificos",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-historia-familiar-de-otras-afecciones",
+    "nombre": "Historia familiar de otras afecciones",
+    "categoria": "Otros",
+    "subcategoria": "Otros",
+    "aliases": [
+      "Historia familiar de otras afecciones",
+      "Z84"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "Z84",
+        "nombre": "Historia familiar de otras afecciones",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-historia-personal-de-tumor-maligno",
+    "nombre": "Historia personal de tumor maligno",
+    "categoria": "Otros",
+    "subcategoria": "Otros",
+    "aliases": [
+      "Historia personal de tumor maligno",
+      "Z85"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "Z85",
+        "nombre": "Historia personal de tumor maligno",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-historia-personal-de-algunas-otras-enfermedades",
+    "nombre": "Historia personal de algunas otras enfermedades",
+    "categoria": "Otros",
+    "subcategoria": "Otros",
+    "aliases": [
+      "Historia personal de algunas otras enfermedades",
+      "Z86"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "Z86",
+        "nombre": "Historia personal de algunas otras enfermedades",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-antecedentes-personales-de-abuso-de-sustancias-psicoactivas",
+    "nombre": "antecedentes personales de abuso de sustancias psicoactivas",
+    "categoria": "Otros",
+    "subcategoria": "Otros",
+    "aliases": [
+      "antecedentes personales de abuso de sustancias psicoactivas",
+      "Z86.4"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "Z86.4",
+        "nombre": "antecedentes personales de abuso de sustancias psicoactivas",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-historia-personal-de-otras-enfermedades-y-afecciones",
+    "nombre": "Historia personal de otras enfermedades y afecciones",
+    "categoria": "Otros",
+    "subcategoria": "Otros",
+    "aliases": [
+      "Historia personal de otras enfermedades y afecciones",
+      "Z87"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "Z87",
+        "nombre": "Historia personal de otras enfermedades y afecciones",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-historia-personal-de-alergia-a-drogas-medicamentos-y-sustancias-biologicas",
+    "nombre": "Historia personal de alergia a drogas, medicamentos y sustancias biologicas",
+    "categoria": "Otros",
+    "subcategoria": "Otros",
+    "aliases": [
+      "Historia personal de alergia a drogas, medicamentos y sustancias biologicas",
+      "Z88"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "Z88",
+        "nombre": "Historia personal de alergia a drogas, medicamentos y sustancias biologicas",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-ausencia-adquirida-de-miembros",
+    "nombre": "Ausencia adquirida de miembros",
+    "categoria": "Otros",
+    "subcategoria": "Otros",
+    "aliases": [
+      "Ausencia adquirida de miembros",
+      "Z89"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "Z89",
+        "nombre": "Ausencia adquirida de miembros",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-ausencia-adquirida-de-organos-no-clasificada-en-otra-parte",
+    "nombre": "Ausencia adquirida de organos, no clasificada en otra parte",
+    "categoria": "Otros",
+    "subcategoria": "Otros",
+    "aliases": [
+      "Ausencia adquirida de organos, no clasificada en otra parte",
+      "Z90"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "Z90",
+        "nombre": "Ausencia adquirida de organos, no clasificada en otra parte",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-historia-personal-de-factores-de-riesgo-no-clasificados-en-otra-parte",
+    "nombre": "Historia personal de factores de riesgo, no clasificados en otra parte",
+    "categoria": "Otros",
+    "subcategoria": "Otros",
+    "aliases": [
+      "Historia personal de factores de riesgo, no clasificados en otra parte",
+      "Z91"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "Z91",
+        "nombre": "Historia personal de factores de riesgo, no clasificados en otra parte",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-historia-personal-de-lesion-autoinfligida-intencionalmente",
+    "nombre": "Historia personal de lesión autoinfligida intencionalmente",
+    "categoria": "Otros",
+    "subcategoria": "Otros",
+    "aliases": [
+      "Historia personal de lesión autoinfligida intencionalmente",
+      "Z91.5"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "Z91.5",
+        "nombre": "Historia personal de lesión autoinfligida intencionalmente",
+        "criterios": [
+          {
+            "id": "trastorno-historia-personal-de-lesion-autoinfligida-intencionalmente-cie10-criterio-1",
+            "orden": 1,
+            "titulo": "Criterio 1",
+            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-historia-personal-de-lesion-autoinfligida-intencionalmente-cie10-criterio-2",
+            "orden": 2,
+            "titulo": "Criterio 2",
+            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-historia-personal-de-lesion-autoinfligida-intencionalmente-cie10-criterio-3",
+            "orden": 3,
+            "titulo": "Criterio 3",
+            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-historia-personal-de-lesion-autoinfligida-intencionalmente-cie10-criterio-4",
+            "orden": 4,
+            "titulo": "Criterio 4",
+            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": [
+      {
+        "sistema": "cie10",
+        "titulo": "CIE-10 / resumen clínico orientativo local",
+        "tipoContenido": "Resumen clínico"
+      }
+    ]
+  },
+  {
+    "id": "trastorno-historia-personal-de-tratamiento-medico",
+    "nombre": "Historia personal de tratamiento medico",
+    "categoria": "Otros",
+    "subcategoria": "Otros",
+    "aliases": [
+      "Historia personal de tratamiento medico",
+      "Z92"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "Z92",
+        "nombre": "Historia personal de tratamiento medico",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-estado-de-orificios-artificiales",
+    "nombre": "Estado de orificios artificiales",
+    "categoria": "Otros",
+    "subcategoria": "Otros",
+    "aliases": [
+      "Estado de orificios artificiales",
+      "Z93"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "Z93",
+        "nombre": "Estado de orificios artificiales",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-organos-y-tejidos-trasplantados",
+    "nombre": "Organos y tejidos trasplantados",
+    "categoria": "Otros",
+    "subcategoria": "Otros",
+    "aliases": [
+      "Organos y tejidos trasplantados",
+      "Z94"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "Z94",
+        "nombre": "Organos y tejidos trasplantados",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-presencia-de-implantes-e-injertos-cardiovasculares",
+    "nombre": "Presencia de implantes e injertos cardiovasculares",
+    "categoria": "Otros",
+    "subcategoria": "Otros",
+    "aliases": [
+      "Presencia de implantes e injertos cardiovasculares",
+      "Z95"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "Z95",
+        "nombre": "Presencia de implantes e injertos cardiovasculares",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-presencia-de-otros-implantes-funcionales",
+    "nombre": "Presencia de otros implantes funcionales",
+    "categoria": "Otros",
+    "subcategoria": "Otros",
+    "aliases": [
+      "Presencia de otros implantes funcionales",
+      "Z96"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "Z96",
+        "nombre": "Presencia de otros implantes funcionales",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-presencia-de-otros-dispositivos",
+    "nombre": "Presencia de otros dispositivos",
+    "categoria": "Otros",
+    "subcategoria": "Otros",
+    "aliases": [
+      "Presencia de otros dispositivos",
+      "Z97"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "Z97",
+        "nombre": "Presencia de otros dispositivos",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-otros-estados-posquirurgicos",
+    "nombre": "Otros estados posquirurgicos",
+    "categoria": "Otros",
+    "subcategoria": "Otros",
+    "aliases": [
+      "Otros estados posquirurgicos",
+      "Z98"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "Z98",
+        "nombre": "Otros estados posquirurgicos",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-dependencia-de-maquinas-y-dispositivos-capacitantes-no-clasificada-en-otra-parte",
+    "nombre": "Dependencia de maquinas y dispositivos capacitantes, no clasificada en otra parte",
+    "categoria": "Otros",
+    "subcategoria": "Otros",
+    "aliases": [
+      "Dependencia de maquinas y dispositivos capacitantes, no clasificada en otra parte",
+      "Z99"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "Z99",
+        "nombre": "Dependencia de maquinas y dispositivos capacitantes, no clasificada en otra parte",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-trastorno-de-ideas-delirantes",
+    "nombre": "Trastorno de ideas delirantes",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Trastorno de ideas delirantes",
+      "F22.0"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F22.0",
+        "nombre": "Trastorno de ideas delirantes",
+        "criterios": [
+          {
+            "id": "trastorno-trastorno-de-ideas-delirantes-cie10-criterio-1",
+            "orden": 1,
+            "titulo": "Criterio 1",
+            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-de-ideas-delirantes-cie10-criterio-2",
+            "orden": 2,
+            "titulo": "Criterio 2",
+            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-de-ideas-delirantes-cie10-criterio-3",
+            "orden": 3,
+            "titulo": "Criterio 3",
+            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-de-ideas-delirantes-cie10-criterio-4",
+            "orden": 4,
+            "titulo": "Criterio 4",
+            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": [
+      {
+        "sistema": "cie10",
+        "titulo": "CIE-10 / resumen clínico orientativo local",
+        "tipoContenido": "Resumen clínico"
+      }
+    ]
+  },
+  {
+    "id": "trastorno-trastorno-psicotico-agudo-polimorfo-sin-sintomas-de-esquizofrenia",
+    "nombre": "Trastorno psicotico agudo polimorfo sin sintomas de esquizofrenia",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Trastorno psicotico agudo polimorfo sin sintomas de esquizofrenia",
+      "F23.0"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F23.0",
+        "nombre": "Trastorno psicotico agudo polimorfo sin sintomas de esquizofrenia",
+        "criterios": [
+          {
+            "id": "trastorno-trastorno-psicotico-agudo-polimorfo-sin-sintomas-de-esquizofrenia-cie10-criterio-1",
+            "orden": 1,
+            "titulo": "Criterio 1",
+            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-psicotico-agudo-polimorfo-sin-sintomas-de-esquizofrenia-cie10-criterio-2",
+            "orden": 2,
+            "titulo": "Criterio 2",
+            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-psicotico-agudo-polimorfo-sin-sintomas-de-esquizofrenia-cie10-criterio-3",
+            "orden": 3,
+            "titulo": "Criterio 3",
+            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-psicotico-agudo-polimorfo-sin-sintomas-de-esquizofrenia-cie10-criterio-4",
+            "orden": 4,
+            "titulo": "Criterio 4",
+            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": [
+      {
+        "sistema": "cie10",
+        "titulo": "CIE-10 / resumen clínico orientativo local",
+        "tipoContenido": "Resumen clínico"
+      }
+    ]
+  },
+  {
+    "id": "trastorno-trastorno-psicotico-agudo-polimorfo-con-sintomas-de-esquizofrenia",
+    "nombre": "Trastorno psicotico agudo polimorfo con sintomas de esquizofrenia",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Trastorno psicotico agudo polimorfo con sintomas de esquizofrenia",
+      "F23.1"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F23.1",
+        "nombre": "Trastorno psicotico agudo polimorfo con sintomas de esquizofrenia",
+        "criterios": [
+          {
+            "id": "trastorno-trastorno-psicotico-agudo-polimorfo-con-sintomas-de-esquizofrenia-cie10-criterio-1",
+            "orden": 1,
+            "titulo": "Criterio 1",
+            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-psicotico-agudo-polimorfo-con-sintomas-de-esquizofrenia-cie10-criterio-2",
+            "orden": 2,
+            "titulo": "Criterio 2",
+            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-psicotico-agudo-polimorfo-con-sintomas-de-esquizofrenia-cie10-criterio-3",
+            "orden": 3,
+            "titulo": "Criterio 3",
+            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-psicotico-agudo-polimorfo-con-sintomas-de-esquizofrenia-cie10-criterio-4",
+            "orden": 4,
+            "titulo": "Criterio 4",
+            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": [
+      {
+        "sistema": "cie10",
+        "titulo": "CIE-10 / resumen clínico orientativo local",
+        "tipoContenido": "Resumen clínico"
+      }
+    ]
+  },
+  {
+    "id": "trastorno-trastorno-psicotico-agudo-de-tipo-esquizofrenico",
+    "nombre": "Trastorno psicotico agudo de tipo esquizofrenico",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Trastorno psicotico agudo de tipo esquizofrenico",
+      "F23.2"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F23.2",
+        "nombre": "Trastorno psicotico agudo de tipo esquizofrenico",
+        "criterios": [
+          {
+            "id": "trastorno-trastorno-psicotico-agudo-de-tipo-esquizofrenico-cie10-criterio-1",
+            "orden": 1,
+            "titulo": "Criterio 1",
+            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-psicotico-agudo-de-tipo-esquizofrenico-cie10-criterio-2",
+            "orden": 2,
+            "titulo": "Criterio 2",
+            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-psicotico-agudo-de-tipo-esquizofrenico-cie10-criterio-3",
+            "orden": 3,
+            "titulo": "Criterio 3",
+            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-psicotico-agudo-de-tipo-esquizofrenico-cie10-criterio-4",
+            "orden": 4,
+            "titulo": "Criterio 4",
+            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": [
+      {
+        "sistema": "cie10",
+        "titulo": "CIE-10 / resumen clínico orientativo local",
+        "tipoContenido": "Resumen clínico"
+      }
+    ]
+  },
+  {
+    "id": "trastorno-insomnio-no-organico",
+    "nombre": "Insomnio no organico",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Insomnio no organico",
+      "F51.0"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F51.0",
+        "nombre": "Insomnio no organico",
+        "criterios": [
+          {
+            "id": "trastorno-insomnio-no-organico-cie10-criterio-1",
+            "orden": 1,
+            "titulo": "Criterio 1",
+            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-insomnio-no-organico-cie10-criterio-2",
+            "orden": 2,
+            "titulo": "Criterio 2",
+            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-insomnio-no-organico-cie10-criterio-3",
+            "orden": 3,
+            "titulo": "Criterio 3",
+            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-insomnio-no-organico-cie10-criterio-4",
+            "orden": 4,
+            "titulo": "Criterio 4",
+            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": [
+      {
+        "sistema": "cie10",
+        "titulo": "CIE-10 / resumen clínico orientativo local",
+        "tipoContenido": "Resumen clínico"
+      }
+    ]
+  },
+  {
+    "id": "trastorno-pesadillas",
+    "nombre": "Pesadillas",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Pesadillas",
+      "F51.5"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F51.5",
+        "nombre": "Pesadillas",
+        "criterios": [
+          {
+            "id": "trastorno-pesadillas-cie10-criterio-1",
+            "orden": 1,
+            "titulo": "Criterio 1",
+            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-pesadillas-cie10-criterio-2",
+            "orden": 2,
+            "titulo": "Criterio 2",
+            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-pesadillas-cie10-criterio-3",
+            "orden": 3,
+            "titulo": "Criterio 3",
+            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-pesadillas-cie10-criterio-4",
+            "orden": 4,
+            "titulo": "Criterio 4",
+            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": [
+      {
+        "sistema": "cie10",
+        "titulo": "CIE-10 / resumen clínico orientativo local",
+        "tipoContenido": "Resumen clínico"
+      }
+    ]
+  },
+  {
+    "id": "trastorno-trastorno-disocial-limitado-al-contexto-familiar",
+    "nombre": "Trastorno disocial limitado al contexto familiar",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Trastorno disocial limitado al contexto familiar",
+      "F91.0"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F91.0",
+        "nombre": "Trastorno disocial limitado al contexto familiar",
+        "criterios": [
+          {
+            "id": "trastorno-trastorno-disocial-limitado-al-contexto-familiar-cie10-criterio-1",
+            "orden": 1,
+            "titulo": "Criterio 1",
+            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-disocial-limitado-al-contexto-familiar-cie10-criterio-2",
+            "orden": 2,
+            "titulo": "Criterio 2",
+            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-disocial-limitado-al-contexto-familiar-cie10-criterio-3",
+            "orden": 3,
+            "titulo": "Criterio 3",
+            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-disocial-limitado-al-contexto-familiar-cie10-criterio-4",
+            "orden": 4,
+            "titulo": "Criterio 4",
+            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": [
+      {
+        "sistema": "cie10",
+        "titulo": "CIE-10 / resumen clínico orientativo local",
+        "tipoContenido": "Resumen clínico"
+      }
+    ]
+  },
+  {
+    "id": "trastorno-trastorno-disocial-en-ninos-no-socializados",
+    "nombre": "Trastorno disocial en ninos no socializados",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Trastorno disocial en ninos no socializados",
+      "F91.1"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F91.1",
+        "nombre": "Trastorno disocial en ninos no socializados",
+        "criterios": [
+          {
+            "id": "trastorno-trastorno-disocial-en-ninos-no-socializados-cie10-criterio-1",
+            "orden": 1,
+            "titulo": "Criterio 1",
+            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-disocial-en-ninos-no-socializados-cie10-criterio-2",
+            "orden": 2,
+            "titulo": "Criterio 2",
+            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-disocial-en-ninos-no-socializados-cie10-criterio-3",
+            "orden": 3,
+            "titulo": "Criterio 3",
+            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-disocial-en-ninos-no-socializados-cie10-criterio-4",
+            "orden": 4,
+            "titulo": "Criterio 4",
+            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": [
+      {
+        "sistema": "cie10",
+        "titulo": "CIE-10 / resumen clínico orientativo local",
+        "tipoContenido": "Resumen clínico"
+      }
+    ]
+  },
+  {
+    "id": "trastorno-trastorno-disocial-en-ninos-socializados",
+    "nombre": "Trastorno disocial en ninos socializados",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Trastorno disocial en ninos socializados",
+      "F91.2"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F91.2",
+        "nombre": "Trastorno disocial en ninos socializados",
+        "criterios": [
+          {
+            "id": "trastorno-trastorno-disocial-en-ninos-socializados-cie10-criterio-1",
+            "orden": 1,
+            "titulo": "Criterio 1",
+            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-disocial-en-ninos-socializados-cie10-criterio-2",
+            "orden": 2,
+            "titulo": "Criterio 2",
+            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-disocial-en-ninos-socializados-cie10-criterio-3",
+            "orden": 3,
+            "titulo": "Criterio 3",
+            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-disocial-en-ninos-socializados-cie10-criterio-4",
+            "orden": 4,
+            "titulo": "Criterio 4",
+            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": [
+      {
+        "sistema": "cie10",
+        "titulo": "CIE-10 / resumen clínico orientativo local",
+        "tipoContenido": "Resumen clínico"
+      }
+    ]
+  },
+  {
+    "id": "trastorno-trastorno-disocial-depresivo",
+    "nombre": "Trastorno disocial depresivo",
+    "categoria": "Psiquiatría y salud mental",
+    "subcategoria": "Psiquiatría y salud mental",
+    "aliases": [
+      "Trastorno disocial depresivo",
+      "F92.0"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F92.0",
+        "nombre": "Trastorno disocial depresivo",
+        "criterios": [
+          {
+            "id": "trastorno-trastorno-disocial-depresivo-cie10-criterio-1",
+            "orden": 1,
+            "titulo": "Criterio 1",
+            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-disocial-depresivo-cie10-criterio-2",
+            "orden": 2,
+            "titulo": "Criterio 2",
+            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-disocial-depresivo-cie10-criterio-3",
+            "orden": 3,
+            "titulo": "Criterio 3",
+            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-disocial-depresivo-cie10-criterio-4",
+            "orden": 4,
+            "titulo": "Criterio 4",
+            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+            "tipo": "resumen_clinico",
+            "fuente": "CIE-10 / resumen clínico orientativo local",
+            "literal": false
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": [
+      {
+        "sistema": "cie10",
+        "titulo": "CIE-10 / resumen clínico orientativo local",
+        "tipoContenido": "Resumen clínico"
+      }
+    ]
+  },
+  {
+    "id": "trastorno-trastorno-esquizoafectivo",
+    "nombre": "Trastorno esquizoafectivo",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Trastorno esquizoafectivo",
+      "6A21"
+    ],
+    "sistemas": {
+      "cie11": {
+        "visible": true,
+        "orden": 2,
+        "codigo": "6A21",
+        "nombre": "Trastorno esquizoafectivo",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-trastorno-psicotico-agudo-y-transitorio",
+    "nombre": "Trastorno psicotico agudo y transitorio",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Trastorno psicotico agudo y transitorio",
+      "6A23"
+    ],
+    "sistemas": {
+      "cie11": {
+        "visible": true,
+        "orden": 2,
+        "codigo": "6A23",
+        "nombre": "Trastorno psicotico agudo y transitorio",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-trastorno-bipolar-tipo-i",
+    "nombre": "Trastorno bipolar tipo I",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Trastorno bipolar tipo I",
+      "6A40"
+    ],
+    "sistemas": {
+      "cie11": {
+        "visible": true,
+        "orden": 2,
+        "codigo": "6A40",
+        "nombre": "Trastorno bipolar tipo I",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-trastorno-bipolar-tipo-ii",
+    "nombre": "Trastorno bipolar tipo II",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Trastorno bipolar tipo II",
+      "6A41"
+    ],
+    "sistemas": {
+      "cie11": {
+        "visible": true,
+        "orden": 2,
+        "codigo": "6A41",
+        "nombre": "Trastorno bipolar tipo II",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-episodio-depresivo-unico",
+    "nombre": "Episodio depresivo unico",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Episodio depresivo unico",
+      "6A60"
+    ],
+    "sistemas": {
+      "cie11": {
+        "visible": true,
+        "orden": 2,
+        "codigo": "6A60",
+        "nombre": "Episodio depresivo unico",
+        "criterios": [
+          {
+            "id": "trastorno-episodio-depresivo-unico-cie11-criterio-1",
+            "orden": 1,
+            "titulo": "Criterio 1",
+            "texto": "Animo deprimido, perdida de interes o disminucion significativa de energia.",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          },
+          {
+            "id": "trastorno-episodio-depresivo-unico-cie11-criterio-2",
+            "orden": 2,
+            "titulo": "Criterio 2",
+            "texto": "Sintomas asociados: alteraciones de sueno/apetito, culpa, baja autoestima, concentracion reducida, enlentecimiento/agitación o ideacion suicida.",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          },
+          {
+            "id": "trastorno-episodio-depresivo-unico-cie11-criterio-3",
+            "orden": 3,
+            "titulo": "Criterio 3",
+            "texto": "Duracion clinicamente relevante y deterioro funcional.",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          },
+          {
+            "id": "trastorno-episodio-depresivo-unico-cie11-criterio-4",
+            "orden": 4,
+            "titulo": "Criterio 4",
+            "texto": "Descartar sustancias, duelo no complicado, condiciones medicas u otros trastornos primarios.",
+            "tipo": "resumen_clinico",
+            "fuente": "Fuente clínica local; revisar contra fuente oficial",
+            "literal": false
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "La depresion no es falta de voluntad; es un cuadro clinico tratable. El seguimiento combina tratamiento, activacion conductual, sueno, red de apoyo y medicion objetiva.",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-fobia-especifica",
+    "nombre": "Fobia especifica",
+    "categoria": "Trastornos de ansiedad",
+    "subcategoria": "Ansiedad",
+    "aliases": [
+      "Fobia especifica",
+      "6B03",
+      "fobia especifica",
+      "fobia simple"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F40.2",
+        "nombre": "Fobia específica",
+        "criterios": [
+          {
+            "orden": 1,
+            "titulo": "Resumen clínico 1",
+            "texto": "Miedo o ansiedad intensa ante un objeto o situación específica.",
+            "tipo": "resumen_clinico",
+            "fuente": "Resumen estructurado del proyecto; revisar fuente oficial",
+            "literal": false,
+            "id": "trastorno-fobia-especifica-cie10-criterio-1"
+          },
+          {
+            "orden": 2,
+            "titulo": "Resumen clínico 2",
+            "texto": "Respuesta inmediata, evitación o resistencia con ansiedad.",
+            "tipo": "resumen_clinico",
+            "fuente": "Resumen estructurado del proyecto; revisar fuente oficial",
+            "literal": false,
+            "id": "trastorno-fobia-especifica-cie10-criterio-2"
+          },
+          {
+            "orden": 3,
+            "titulo": "Resumen clínico 3",
+            "texto": "Temor desproporcionado y persistente con deterioro clínicamente significativo.",
+            "tipo": "resumen_clinico",
+            "fuente": "Resumen estructurado del proyecto; revisar fuente oficial",
+            "literal": false,
+            "id": "trastorno-fobia-especifica-cie10-criterio-3"
+          },
+          {
+            "orden": 4,
+            "titulo": "Resumen clínico 4",
+            "texto": "Especificar tipo: animal, entorno natural, sangre-inyección-lesión, situacional u otro.",
+            "tipo": "resumen_clinico",
+            "fuente": "Resumen estructurado del proyecto; revisar fuente oficial",
+            "literal": false,
+            "id": "trastorno-fobia-especifica-cie10-criterio-4"
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      },
+      "cie11": {
+        "visible": true,
+        "orden": 2,
+        "codigo": "6B03",
+        "nombre": "Fobia especifica",
+        "criterios": [
+          {
+            "orden": 1,
+            "titulo": "Resumen clínico 1",
+            "texto": "Miedo o ansiedad intensa ante un objeto o situación específica.",
+            "tipo": "resumen_clinico",
+            "fuente": "Resumen estructurado del proyecto; revisar fuente oficial",
+            "literal": false,
+            "id": "trastorno-fobia-especifica-cie11-criterio-1"
+          },
+          {
+            "orden": 2,
+            "titulo": "Resumen clínico 2",
+            "texto": "Respuesta inmediata, evitación o resistencia con ansiedad.",
+            "tipo": "resumen_clinico",
+            "fuente": "Resumen estructurado del proyecto; revisar fuente oficial",
+            "literal": false,
+            "id": "trastorno-fobia-especifica-cie11-criterio-2"
+          },
+          {
+            "orden": 3,
+            "titulo": "Resumen clínico 3",
+            "texto": "Temor desproporcionado y persistente con deterioro clínicamente significativo.",
+            "tipo": "resumen_clinico",
+            "fuente": "Resumen estructurado del proyecto; revisar fuente oficial",
+            "literal": false,
+            "id": "trastorno-fobia-especifica-cie11-criterio-3"
+          },
+          {
+            "orden": 4,
+            "titulo": "Resumen clínico 4",
+            "texto": "Especificar tipo: animal, entorno natural, sangre-inyección-lesión, situacional u otro.",
+            "tipo": "resumen_clinico",
+            "fuente": "Resumen estructurado del proyecto; revisar fuente oficial",
+            "literal": false,
+            "id": "trastorno-fobia-especifica-cie11-criterio-4"
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      },
+      "dsm5": {
+        "visible": true,
+        "orden": 3,
+        "codigo": "300.29",
+        "codigoCie10Cm": "F40.2",
+        "nombre": "Fobia específica",
+        "criterios": [
+          {
+            "id": "trastorno-fobia-especifica-dsm5-criterio-1",
+            "orden": 1,
+            "titulo": "Resumen clínico 1",
+            "texto": "Miedo o ansiedad intensa ante un objeto o situación específica.",
+            "tipo": "resumen_clinico",
+            "fuente": "DSM-5-TR; resumen no literal",
+            "literal": false
+          },
+          {
+            "id": "trastorno-fobia-especifica-dsm5-criterio-2",
+            "orden": 2,
+            "titulo": "Resumen clínico 2",
+            "texto": "Respuesta inmediata, evitación o resistencia con ansiedad.",
+            "tipo": "resumen_clinico",
+            "fuente": "DSM-5-TR; resumen no literal",
+            "literal": false
+          },
+          {
+            "id": "trastorno-fobia-especifica-dsm5-criterio-3",
+            "orden": 3,
+            "titulo": "Resumen clínico 3",
+            "texto": "Temor desproporcionado y persistente con deterioro clínicamente significativo.",
+            "tipo": "resumen_clinico",
+            "fuente": "DSM-5-TR; resumen no literal",
+            "literal": false
+          },
+          {
+            "id": "trastorno-fobia-especifica-dsm5-criterio-4",
+            "orden": 4,
+            "titulo": "Resumen clínico 4",
+            "texto": "Especificar tipo: animal, entorno natural, sangre-inyección-lesión, situacional u otro.",
+            "tipo": "resumen_clinico",
+            "fuente": "DSM-5-TR; resumen no literal",
+            "literal": false
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false,
+        "equivalencia": "aproximada",
+        "notasEquivalencia": "La correspondencia entre sistemas puede no ser uno a uno."
+      }
+    },
+    "psicoeducacion": "Los criterios son una herramienta de apoyo y deben integrarse con la entrevista clínica, antecedentes, exploración mental, evolución y juicio profesional.",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": [
+      {
+        "sistema": "DSM-5-TR",
+        "organismo": "American Psychiatric Association",
+        "tipoContenido": "Resumen clínico no literal"
+      }
+    ]
+  },
+  {
+    "id": "trastorno-trastorno-de-ansiedad-social",
+    "nombre": "Trastorno de ansiedad social",
+    "categoria": "Trastornos de ansiedad",
+    "subcategoria": "Ansiedad",
+    "aliases": [
+      "Trastorno de ansiedad social",
+      "6B04",
+      "fobia social",
+      "ansiedad social"
+    ],
+    "sistemas": {
+      "cie10": {
+        "visible": true,
+        "orden": 1,
+        "codigo": "F40.1",
+        "nombre": "Trastorno de ansiedad social",
+        "criterios": [
+          {
+            "orden": 1,
+            "titulo": "Resumen clínico 1",
+            "texto": "Miedo ante situaciones sociales por posible evaluación negativa.",
+            "tipo": "resumen_clinico",
+            "fuente": "Resumen estructurado del proyecto; revisar fuente oficial",
+            "literal": false,
+            "id": "trastorno-trastorno-de-ansiedad-social-cie10-criterio-1"
+          },
+          {
+            "orden": 2,
+            "titulo": "Resumen clínico 2",
+            "texto": "Temor a actuar de forma humillante o mostrar síntomas de ansiedad.",
+            "tipo": "resumen_clinico",
+            "fuente": "Resumen estructurado del proyecto; revisar fuente oficial",
+            "literal": false,
+            "id": "trastorno-trastorno-de-ansiedad-social-cie10-criterio-2"
+          },
+          {
+            "orden": 3,
+            "titulo": "Resumen clínico 3",
+            "texto": "Las situaciones provocan ansiedad y se evitan o soportan con malestar.",
+            "tipo": "resumen_clinico",
+            "fuente": "Resumen estructurado del proyecto; revisar fuente oficial",
+            "literal": false,
+            "id": "trastorno-trastorno-de-ansiedad-social-cie10-criterio-3"
+          },
+          {
+            "orden": 4,
+            "titulo": "Resumen clínico 4",
+            "texto": "Desproporción, persistencia y deterioro clínicamente significativo.",
+            "tipo": "resumen_clinico",
+            "fuente": "Resumen estructurado del proyecto; revisar fuente oficial",
+            "literal": false,
+            "id": "trastorno-trastorno-de-ansiedad-social-cie10-criterio-4"
+          },
+          {
+            "orden": 5,
+            "titulo": "Resumen clínico 5",
+            "texto": "Considerar manifestaciones infantiles y especificador relacionado con desempeño.",
+            "tipo": "resumen_clinico",
+            "fuente": "Resumen estructurado del proyecto; revisar fuente oficial",
+            "literal": false,
+            "id": "trastorno-trastorno-de-ansiedad-social-cie10-criterio-5"
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      },
+      "cie11": {
+        "visible": true,
+        "orden": 2,
+        "codigo": "6B04",
+        "nombre": "Trastorno de ansiedad social",
+        "criterios": [
+          {
+            "orden": 1,
+            "titulo": "Resumen clínico 1",
+            "texto": "Miedo ante situaciones sociales por posible evaluación negativa.",
+            "tipo": "resumen_clinico",
+            "fuente": "Resumen estructurado del proyecto; revisar fuente oficial",
+            "literal": false,
+            "id": "trastorno-trastorno-de-ansiedad-social-cie11-criterio-1"
+          },
+          {
+            "orden": 2,
+            "titulo": "Resumen clínico 2",
+            "texto": "Temor a actuar de forma humillante o mostrar síntomas de ansiedad.",
+            "tipo": "resumen_clinico",
+            "fuente": "Resumen estructurado del proyecto; revisar fuente oficial",
+            "literal": false,
+            "id": "trastorno-trastorno-de-ansiedad-social-cie11-criterio-2"
+          },
+          {
+            "orden": 3,
+            "titulo": "Resumen clínico 3",
+            "texto": "Las situaciones provocan ansiedad y se evitan o soportan con malestar.",
+            "tipo": "resumen_clinico",
+            "fuente": "Resumen estructurado del proyecto; revisar fuente oficial",
+            "literal": false,
+            "id": "trastorno-trastorno-de-ansiedad-social-cie11-criterio-3"
+          },
+          {
+            "orden": 4,
+            "titulo": "Resumen clínico 4",
+            "texto": "Desproporción, persistencia y deterioro clínicamente significativo.",
+            "tipo": "resumen_clinico",
+            "fuente": "Resumen estructurado del proyecto; revisar fuente oficial",
+            "literal": false,
+            "id": "trastorno-trastorno-de-ansiedad-social-cie11-criterio-4"
+          },
+          {
+            "orden": 5,
+            "titulo": "Resumen clínico 5",
+            "texto": "Considerar manifestaciones infantiles y especificador relacionado con desempeño.",
+            "tipo": "resumen_clinico",
+            "fuente": "Resumen estructurado del proyecto; revisar fuente oficial",
+            "literal": false,
+            "id": "trastorno-trastorno-de-ansiedad-social-cie11-criterio-5"
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      },
+      "dsm5": {
+        "visible": true,
+        "orden": 3,
+        "codigo": "300.23",
+        "codigoCie10Cm": "F40.1",
+        "nombre": "Trastorno de ansiedad social",
+        "criterios": [
+          {
+            "id": "trastorno-trastorno-de-ansiedad-social-dsm5-criterio-1",
+            "orden": 1,
+            "titulo": "Resumen clínico 1",
+            "texto": "Miedo ante situaciones sociales por posible evaluación negativa.",
+            "tipo": "resumen_clinico",
+            "fuente": "DSM-5-TR; resumen no literal",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-de-ansiedad-social-dsm5-criterio-2",
+            "orden": 2,
+            "titulo": "Resumen clínico 2",
+            "texto": "Temor a actuar de forma humillante o mostrar síntomas de ansiedad.",
+            "tipo": "resumen_clinico",
+            "fuente": "DSM-5-TR; resumen no literal",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-de-ansiedad-social-dsm5-criterio-3",
+            "orden": 3,
+            "titulo": "Resumen clínico 3",
+            "texto": "Las situaciones provocan ansiedad y se evitan o soportan con malestar.",
+            "tipo": "resumen_clinico",
+            "fuente": "DSM-5-TR; resumen no literal",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-de-ansiedad-social-dsm5-criterio-4",
+            "orden": 4,
+            "titulo": "Resumen clínico 4",
+            "texto": "Desproporción, persistencia y deterioro clínicamente significativo.",
+            "tipo": "resumen_clinico",
+            "fuente": "DSM-5-TR; resumen no literal",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-de-ansiedad-social-dsm5-criterio-5",
+            "orden": 5,
+            "titulo": "Resumen clínico 5",
+            "texto": "Considerar manifestaciones infantiles y especificador relacionado con desempeño.",
+            "tipo": "resumen_clinico",
+            "fuente": "DSM-5-TR; resumen no literal",
+            "literal": false
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false,
+        "equivalencia": "aproximada",
+        "notasEquivalencia": "La correspondencia entre sistemas puede no ser uno a uno."
+      }
+    },
+    "psicoeducacion": "Los criterios son una herramienta de apoyo y deben integrarse con la entrevista clínica, antecedentes, exploración mental, evolución y juicio profesional.",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": [
+      {
+        "sistema": "DSM-5-TR",
+        "organismo": "American Psychiatric Association",
+        "tipoContenido": "Resumen clínico no literal"
+      }
+    ]
+  },
+  {
+    "id": "trastorno-trastorno-de-estres-postraumatico-complejo",
+    "nombre": "Trastorno de estres postraumatico complejo",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Trastorno de estres postraumatico complejo",
+      "6B41"
+    ],
+    "sistemas": {
+      "cie11": {
+        "visible": true,
+        "orden": 2,
+        "codigo": "6B41",
+        "nombre": "Trastorno de estres postraumatico complejo",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-trastorno-por-uso-de-alcohol",
+    "nombre": "Trastorno por uso de alcohol",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Trastorno por uso de alcohol",
+      "6C40"
+    ],
+    "sistemas": {
+      "cie11": {
+        "visible": true,
+        "orden": 2,
+        "codigo": "6C40",
+        "nombre": "Trastorno por uso de alcohol",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-trastorno-por-uso-de-cannabis",
+    "nombre": "Trastorno por uso de cannabis",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Trastorno por uso de cannabis",
+      "6C41"
+    ],
+    "sistemas": {
+      "cie11": {
+        "visible": true,
+        "orden": 2,
+        "codigo": "6C41",
+        "nombre": "Trastorno por uso de cannabis",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-trastorno-por-uso-de-opioides",
+    "nombre": "Trastorno por uso de opioides",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Trastorno por uso de opioides",
+      "6C43"
+    ],
+    "sistemas": {
+      "cie11": {
+        "visible": true,
+        "orden": 2,
+        "codigo": "6C43",
+        "nombre": "Trastorno por uso de opioides",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-trastorno-por-uso-de-estimulantes",
+    "nombre": "Trastorno por uso de estimulantes",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Trastorno por uso de estimulantes",
+      "6C45"
+    ],
+    "sistemas": {
+      "cie11": {
+        "visible": true,
+        "orden": 2,
+        "codigo": "6C45",
+        "nombre": "Trastorno por uso de estimulantes",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-trastorno-del-espectro-autista",
+    "nombre": "Trastorno del espectro autista",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Trastorno del espectro autista",
+      "6D70"
+    ],
+    "sistemas": {
+      "cie11": {
+        "visible": true,
+        "orden": 2,
+        "codigo": "6D70",
+        "nombre": "Trastorno del espectro autista",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-trastorno-por-deficit-de-atencion-con-hiperactividad",
+    "nombre": "Trastorno por deficit de atencion con hiperactividad",
+    "categoria": "Clínica general",
+    "subcategoria": "Clínica general",
+    "aliases": [
+      "Trastorno por deficit de atencion con hiperactividad",
+      "6A05"
+    ],
+    "sistemas": {
+      "cie11": {
+        "visible": true,
+        "orden": 2,
+        "codigo": "6A05",
+        "nombre": "Trastorno por deficit de atencion con hiperactividad",
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false
+      }
+    },
+    "psicoeducacion": "",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": []
+  },
+  {
+    "id": "trastorno-trastorno-de-ansiedad-por-separacion",
+    "nombre": "Trastorno de ansiedad por separación",
+    "categoria": "Trastornos de ansiedad",
+    "subcategoria": "Ansiedad",
+    "aliases": [
+      "ansiedad por separación"
+    ],
+    "sistemas": {
+      "dsm5": {
+        "visible": true,
+        "orden": 3,
+        "codigo": "309.21",
+        "codigoCie10Cm": "F93.0",
+        "nombre": "Trastorno de ansiedad por separación",
+        "criterios": [
+          {
+            "id": "trastorno-trastorno-de-ansiedad-por-separacion-dsm5-criterio-1",
+            "orden": 1,
+            "titulo": "Resumen clínico 1",
+            "texto": "Malestar excesivo ante la separación de figuras de apego.",
+            "tipo": "resumen_clinico",
+            "fuente": "DSM-5-TR; resumen no literal",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-de-ansiedad-por-separacion-dsm5-criterio-2",
+            "orden": 2,
+            "titulo": "Resumen clínico 2",
+            "texto": "Preocupación por pérdida o acontecimientos que provoquen separación.",
+            "tipo": "resumen_clinico",
+            "fuente": "DSM-5-TR; resumen no literal",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-de-ansiedad-por-separacion-dsm5-criterio-3",
+            "orden": 3,
+            "titulo": "Resumen clínico 3",
+            "texto": "Resistencia a salir, permanecer solo o dormir separado.",
+            "tipo": "resumen_clinico",
+            "fuente": "DSM-5-TR; resumen no literal",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-de-ansiedad-por-separacion-dsm5-criterio-4",
+            "orden": 4,
+            "titulo": "Resumen clínico 4",
+            "texto": "Síntomas físicos, persistencia y deterioro clínicamente significativo.",
+            "tipo": "resumen_clinico",
+            "fuente": "DSM-5-TR; resumen no literal",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-de-ansiedad-por-separacion-dsm5-criterio-5",
+            "orden": 5,
+            "titulo": "Resumen clínico 5",
+            "texto": "Considerar la etapa del desarrollo y descartar otras explicaciones.",
+            "tipo": "resumen_clinico",
+            "fuente": "DSM-5-TR; resumen no literal",
+            "literal": false
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false,
+        "equivalencia": "aproximada",
+        "notasEquivalencia": "La correspondencia entre sistemas puede no ser uno a uno."
+      }
+    },
+    "psicoeducacion": "Los criterios son una herramienta de apoyo y deben integrarse con la entrevista clínica, antecedentes, exploración mental, evolución y juicio profesional.",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": [
+      {
+        "sistema": "DSM-5-TR",
+        "organismo": "American Psychiatric Association",
+        "tipoContenido": "Resumen clínico no literal"
+      }
+    ]
+  },
+  {
+    "id": "trastorno-mutismo-selectivo",
+    "nombre": "Mutismo selectivo",
+    "categoria": "Trastornos de ansiedad",
+    "subcategoria": "Ansiedad",
+    "aliases": [
+      "mutismo"
+    ],
+    "sistemas": {
+      "dsm5": {
+        "visible": true,
+        "orden": 3,
+        "codigo": "313.23",
+        "codigoCie10Cm": "F94.0",
+        "nombre": "Mutismo selectivo",
+        "criterios": [
+          {
+            "id": "trastorno-mutismo-selectivo-dsm5-criterio-1",
+            "orden": 1,
+            "titulo": "Resumen clínico 1",
+            "texto": "Incapacidad persistente para hablar en determinadas situaciones sociales pese a poder hacerlo en otras.",
+            "tipo": "resumen_clinico",
+            "fuente": "DSM-5-TR; resumen no literal",
+            "literal": false
+          },
+          {
+            "id": "trastorno-mutismo-selectivo-dsm5-criterio-2",
+            "orden": 2,
+            "titulo": "Resumen clínico 2",
+            "texto": "Interferencia académica, laboral o social.",
+            "tipo": "resumen_clinico",
+            "fuente": "DSM-5-TR; resumen no literal",
+            "literal": false
+          },
+          {
+            "id": "trastorno-mutismo-selectivo-dsm5-criterio-3",
+            "orden": 3,
+            "titulo": "Resumen clínico 3",
+            "texto": "Persistencia clínicamente relevante.",
+            "tipo": "resumen_clinico",
+            "fuente": "DSM-5-TR; resumen no literal",
+            "literal": false
+          },
+          {
+            "id": "trastorno-mutismo-selectivo-dsm5-criterio-4",
+            "orden": 4,
+            "titulo": "Resumen clínico 4",
+            "texto": "No atribuible únicamente a desconocimiento del idioma ni a otro trastorno de la comunicación.",
+            "tipo": "resumen_clinico",
+            "fuente": "DSM-5-TR; resumen no literal",
+            "literal": false
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false,
+        "equivalencia": "aproximada",
+        "notasEquivalencia": "La correspondencia entre sistemas puede no ser uno a uno."
+      }
+    },
+    "psicoeducacion": "Los criterios son una herramienta de apoyo y deben integrarse con la entrevista clínica, antecedentes, exploración mental, evolución y juicio profesional.",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": [
+      {
+        "sistema": "DSM-5-TR",
+        "organismo": "American Psychiatric Association",
+        "tipoContenido": "Resumen clínico no literal"
+      }
+    ]
+  },
+  {
+    "id": "trastorno-trastorno-de-ansiedad-inducido-por-sustancias-o-medicamentos",
+    "nombre": "Trastorno de ansiedad inducido por sustancias o medicamentos",
+    "categoria": "Trastornos de ansiedad",
+    "subcategoria": "Ansiedad",
+    "aliases": [
+      "ansiedad inducida por sustancias"
+    ],
+    "sistemas": {
+      "dsm5": {
+        "visible": true,
+        "orden": 3,
+        "codigo": "292.89",
+        "codigoCie10Cm": "F19.98",
+        "nombre": "Trastorno de ansiedad inducido por sustancias o medicamentos",
+        "criterios": [
+          {
+            "id": "trastorno-trastorno-de-ansiedad-inducido-por-sustancias-o-medicamentos-dsm5-criterio-1",
+            "orden": 1,
+            "titulo": "Resumen clínico 1",
+            "texto": "Síntomas de ansiedad predominantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "DSM-5-TR; resumen no literal",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-de-ansiedad-inducido-por-sustancias-o-medicamentos-dsm5-criterio-2",
+            "orden": 2,
+            "titulo": "Resumen clínico 2",
+            "texto": "Relación temporal con intoxicación, abstinencia o exposición a un medicamento.",
+            "tipo": "resumen_clinico",
+            "fuente": "DSM-5-TR; resumen no literal",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-de-ansiedad-inducido-por-sustancias-o-medicamentos-dsm5-criterio-3",
+            "orden": 3,
+            "titulo": "Resumen clínico 3",
+            "texto": "La sustancia o medicamento es capaz de producir los síntomas.",
+            "tipo": "resumen_clinico",
+            "fuente": "DSM-5-TR; resumen no literal",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-de-ansiedad-inducido-por-sustancias-o-medicamentos-dsm5-criterio-4",
+            "orden": 4,
+            "titulo": "Resumen clínico 4",
+            "texto": "Ausencia de mejor explicación por un trastorno independiente y no aparición exclusiva durante delirium.",
+            "tipo": "resumen_clinico",
+            "fuente": "DSM-5-TR; resumen no literal",
+            "literal": false
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false,
+        "equivalencia": "aproximada",
+        "notasEquivalencia": "La correspondencia entre sistemas puede no ser uno a uno."
+      }
+    },
+    "psicoeducacion": "Los criterios son una herramienta de apoyo y deben integrarse con la entrevista clínica, antecedentes, exploración mental, evolución y juicio profesional.",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": [
+      {
+        "sistema": "DSM-5-TR",
+        "organismo": "American Psychiatric Association",
+        "tipoContenido": "Resumen clínico no literal"
+      }
+    ]
+  },
+  {
+    "id": "trastorno-trastorno-de-ansiedad-debido-a-otra-afeccion-medica",
+    "nombre": "Trastorno de ansiedad debido a otra afección médica",
+    "categoria": "Trastornos de ansiedad",
+    "subcategoria": "Ansiedad",
+    "aliases": [
+      "ansiedad por afección médica"
+    ],
+    "sistemas": {
+      "dsm5": {
+        "visible": true,
+        "orden": 3,
+        "codigo": "293.84",
+        "codigoCie10Cm": "F06.4",
+        "nombre": "Trastorno de ansiedad debido a otra afección médica",
+        "criterios": [
+          {
+            "id": "trastorno-trastorno-de-ansiedad-debido-a-otra-afeccion-medica-dsm5-criterio-1",
+            "orden": 1,
+            "titulo": "Resumen clínico 1",
+            "texto": "Ansiedad o ataques de pánico predominantes.",
+            "tipo": "resumen_clinico",
+            "fuente": "DSM-5-TR; resumen no literal",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-de-ansiedad-debido-a-otra-afeccion-medica-dsm5-criterio-2",
+            "orden": 2,
+            "titulo": "Resumen clínico 2",
+            "texto": "Evidencia de relación fisiopatológica directa con una afección médica.",
+            "tipo": "resumen_clinico",
+            "fuente": "DSM-5-TR; resumen no literal",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-de-ansiedad-debido-a-otra-afeccion-medica-dsm5-criterio-3",
+            "orden": 3,
+            "titulo": "Resumen clínico 3",
+            "texto": "Excluir otra explicación mental y la aparición exclusiva durante delirium.",
+            "tipo": "resumen_clinico",
+            "fuente": "DSM-5-TR; resumen no literal",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-de-ansiedad-debido-a-otra-afeccion-medica-dsm5-criterio-4",
+            "orden": 4,
+            "titulo": "Resumen clínico 4",
+            "texto": "Malestar o deterioro clínicamente significativo.",
+            "tipo": "resumen_clinico",
+            "fuente": "DSM-5-TR; resumen no literal",
+            "literal": false
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false,
+        "equivalencia": "aproximada",
+        "notasEquivalencia": "La correspondencia entre sistemas puede no ser uno a uno."
+      }
+    },
+    "psicoeducacion": "Los criterios son una herramienta de apoyo y deben integrarse con la entrevista clínica, antecedentes, exploración mental, evolución y juicio profesional.",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": [
+      {
+        "sistema": "DSM-5-TR",
+        "organismo": "American Psychiatric Association",
+        "tipoContenido": "Resumen clínico no literal"
+      }
+    ]
+  },
+  {
+    "id": "trastorno-otro-trastorno-de-ansiedad-especificado",
+    "nombre": "Otro trastorno de ansiedad especificado",
+    "categoria": "Trastornos de ansiedad",
+    "subcategoria": "Ansiedad",
+    "aliases": [
+      "ansiedad especificada"
+    ],
+    "sistemas": {
+      "dsm5": {
+        "visible": true,
+        "orden": 3,
+        "codigo": "300.09",
+        "codigoCie10Cm": "F41.8",
+        "nombre": "Otro trastorno de ansiedad especificado",
+        "criterios": [
+          {
+            "id": "trastorno-otro-trastorno-de-ansiedad-especificado-dsm5-criterio-1",
+            "orden": 1,
+            "titulo": "Resumen clínico 1",
+            "texto": "Se presentan síntomas de ansiedad clínicamente significativos.",
+            "tipo": "resumen_clinico",
+            "fuente": "DSM-5-TR; resumen no literal",
+            "literal": false
+          },
+          {
+            "id": "trastorno-otro-trastorno-de-ansiedad-especificado-dsm5-criterio-2",
+            "orden": 2,
+            "titulo": "Resumen clínico 2",
+            "texto": "El profesional especifica la razón por la que no se cumplen todos los criterios de una categoría concreta.",
+            "tipo": "resumen_clinico",
+            "fuente": "DSM-5-TR; resumen no literal",
+            "literal": false
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false,
+        "equivalencia": "aproximada",
+        "notasEquivalencia": "La correspondencia entre sistemas puede no ser uno a uno."
+      }
+    },
+    "psicoeducacion": "Los criterios son una herramienta de apoyo y deben integrarse con la entrevista clínica, antecedentes, exploración mental, evolución y juicio profesional.",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": [
+      {
+        "sistema": "DSM-5-TR",
+        "organismo": "American Psychiatric Association",
+        "tipoContenido": "Resumen clínico no literal"
+      }
+    ]
+  },
+  {
+    "id": "trastorno-trastorno-de-ansiedad-no-especificado",
+    "nombre": "Trastorno de ansiedad no especificado",
+    "categoria": "Trastornos de ansiedad",
+    "subcategoria": "Ansiedad",
+    "aliases": [
+      "ansiedad no especificada"
+    ],
+    "sistemas": {
+      "dsm5": {
+        "visible": true,
+        "orden": 3,
+        "codigo": "300.00",
+        "codigoCie10Cm": "F41.9",
+        "nombre": "Trastorno de ansiedad no especificado",
+        "criterios": [
+          {
+            "id": "trastorno-trastorno-de-ansiedad-no-especificado-dsm5-criterio-1",
+            "orden": 1,
+            "titulo": "Resumen clínico 1",
+            "texto": "Predominan síntomas de ansiedad que causan malestar o deterioro.",
+            "tipo": "resumen_clinico",
+            "fuente": "DSM-5-TR; resumen no literal",
+            "literal": false
+          },
+          {
+            "id": "trastorno-trastorno-de-ansiedad-no-especificado-dsm5-criterio-2",
+            "orden": 2,
+            "titulo": "Resumen clínico 2",
+            "texto": "No se especifica el motivo de incumplimiento de criterios o la información disponible es insuficiente.",
+            "tipo": "resumen_clinico",
+            "fuente": "DSM-5-TR; resumen no literal",
+            "literal": false
+          }
+        ],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false,
+        "equivalencia": "aproximada",
+        "notasEquivalencia": "La correspondencia entre sistemas puede no ser uno a uno."
+      }
+    },
+    "psicoeducacion": "Los criterios son una herramienta de apoyo y deben integrarse con la entrevista clínica, antecedentes, exploración mental, evolución y juicio profesional.",
+    "diagnosticoDiferencial": [],
+    "comorbilidades": [],
+    "evaluacionClinica": [],
+    "referencias": [
+      {
+        "sistema": "DSM-5-TR",
+        "organismo": "American Psychiatric Association",
+        "tipoContenido": "Resumen clínico no literal"
+      }
+    ]
+  }
+];
+
+export const SISTEMAS_DIAGNOSTICOS = ["cie10", "cie11", "dsm5"];
