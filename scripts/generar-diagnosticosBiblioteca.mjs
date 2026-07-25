@@ -60,6 +60,81 @@ function nuevoSistema(codigo, nombre, orden) {
   };
 }
 
+function criterioComoTexto(criterio) {
+  if (typeof criterio === "string") return criterio.trim();
+  return String(criterio?.texto || "").trim();
+}
+
+function normalizarCriteriosAgrupados(criterios = [], entidadId = "diagnostico", sistema = "sistema") {
+  if (!Array.isArray(criterios) || !criterios.length) return [];
+  if (criterios.some((criterio) => criterio && typeof criterio === "object" && Array.isArray(criterio.items))) {
+    return criterios.map((grupo, grupoIndex) => ({
+      id: grupo.id || `${entidadId}-${sistema}-grupo-${grupoIndex + 1}`,
+      clave: grupo.clave || "",
+      titulo: grupo.titulo || "Pendiente de clasificación",
+      tipo: grupo.tipo || "grupo_clinico",
+      introduccion: grupo.introduccion || "",
+      literal: false,
+      items: (grupo.items || []).map((item, itemIndex) => ({
+        numero: item.numero ?? null,
+        texto: criterioComoTexto(item),
+        orden: item.orden || itemIndex + 1,
+        literal: false
+      })).filter((item) => item.texto)
+    })).filter((grupo) => grupo.items.length || grupo.introduccion);
+  }
+
+  const grupos = [];
+  let grupoActual = null;
+  const crearGrupo = (titulo, clave = "", tipo = "grupo_clinico") => {
+    grupoActual = {
+      id: `${entidadId}-${sistema}-grupo-${grupos.length + 1}`,
+      clave,
+      titulo,
+      tipo,
+      introduccion: "",
+      literal: false,
+      items: []
+    };
+    grupos.push(grupoActual);
+    return grupoActual;
+  };
+  const asegurarGrupo = () => grupoActual || crearGrupo("Pendiente de clasificación", "", "revision_requerida");
+
+  criterios.forEach((criterio) => {
+    const texto = criterioComoTexto(criterio);
+    if (!texto) return;
+    const limpio = texto.replace(/^\s+/, "");
+    const criterioLetra = limpio.match(/^([A-Z])\)\s*(.*)$/i);
+    const numero = limpio.match(/^(\d+)[.)]\s*(.*)$/);
+    const encabezado = limpio.match(/^(.+):$/);
+
+    if (criterioLetra) {
+      const grupo = crearGrupo(`Criterio ${criterioLetra[1].toUpperCase()}`, criterioLetra[1].toUpperCase(), "criterio");
+      if (criterioLetra[2]) grupo.introduccion = criterioLetra[2];
+      return;
+    }
+    if (numero) {
+      const grupo = asegurarGrupo();
+      grupo.items.push({ numero: Number(numero[1]), texto: numero[2], orden: grupo.items.length + 1, literal: false });
+      return;
+    }
+    if (encabezado && !/^CIE\d+/i.test(encabezado[1])) {
+      crearGrupo(encabezado[1].trim(), "", "grupo_clinico");
+      return;
+    }
+
+    const grupo = asegurarGrupo();
+    if (!grupo.items.length && !grupo.introduccion) grupo.introduccion = texto;
+    else grupo.items.push({ numero: null, texto, orden: grupo.items.length + 1, literal: false });
+  });
+
+  return grupos.map((grupo) => ({
+    ...grupo,
+    items: grupo.items.map((item, index) => ({ ...item, orden: index + 1, literal: false }))
+  })).filter((grupo) => grupo.items.length || grupo.introduccion);
+}
+
 const diagnosticos = [];
 const porNombre = new Map();
 
@@ -70,6 +145,7 @@ function obtenerEntidad(nombre, categoria = "Clínica general") {
     entidad = {
       id: idClinico(nombre),
       nombre,
+      descripcionBreve: "",
       categoria,
       subcategoria: categoria,
       aliases: [],
@@ -108,18 +184,10 @@ function anexarCriterios(registro) {
     for (const [sistema, datos] of Object.entries(entidad.sistemas)) {
       if (!tokens.includes(datos.codigo)) continue;
       const criterios = Array.isArray(registro.criterios) ? registro.criterios : [];
-      for (const [index, texto] of criterios.entries()) {
+      for (const texto of criterios) {
         const criterio = typeof texto === "string" ? { texto } : texto;
         if (!criterio?.texto || datos.criterios.some((actual) => actual.texto === criterio.texto)) continue;
-        datos.criterios.push({
-          id: `${entidad.id}-${sistema}-criterio-${datos.criterios.length + 1}`,
-          orden: datos.criterios.length + 1,
-          titulo: criterio.titulo || `Criterio ${index + 1}`,
-          texto: criterio.texto,
-          tipo: criterio.tipo || "resumen_clinico",
-          fuente: registro.fuente || "Fuente clínica local; revisar contra fuente oficial",
-          literal: false
-        });
+        datos.criterios.push({ texto: criterio.texto });
       }
       if (registro.psicoeducacion && !entidad.psicoeducacion) entidad.psicoeducacion = registro.psicoeducacion;
       if (registro.fuente) entidad.referencias.push({ sistema, titulo: registro.fuente, tipoContenido: "Resumen clínico" });
@@ -208,15 +276,7 @@ function anexarAnsiedad(definicion) {
     codigo: definicion.dsm5,
     codigoCie10Cm: definicion.dsm5Cie10,
     nombre: definicion.nombre,
-    criterios: definicion.criterios.map((texto, index) => ({
-      id: `${entidad.id}-dsm5-criterio-${index + 1}`,
-      orden: index + 1,
-      titulo: `Resumen clínico ${index + 1}`,
-      texto,
-      tipo: "resumen_clinico",
-      fuente: "DSM-5-TR; resumen no literal",
-      literal: false
-    })),
+    criterios: definicion.criterios.map((texto) => ({ texto })),
     especificadores: [],
     notas: [],
     contenidoLiteralAutorizado: false,
@@ -230,6 +290,13 @@ function anexarAnsiedad(definicion) {
 ansiedad.forEach(anexarAnsiedad);
 
 for (const entidad of diagnosticos) {
+  for (const [sistema, datos] of Object.entries(entidad.sistemas)) {
+    datos.criterios = normalizarCriteriosAgrupados(datos.criterios, entidad.id, sistema);
+  }
+  if (!entidad.descripcionBreve) {
+    const textoBase = entidad.psicoeducacion || entidad.nombre;
+    entidad.descripcionBreve = `${textoBase.split(/[.!?]/)[0].trim().replace(/\s+/g, " ")}.`;
+  }
   entidad.referencias = entidad.referencias.filter((ref, index, refs) => JSON.stringify(refs.indexOf(ref)) === JSON.stringify(index));
   entidad.sistemas = Object.fromEntries(SISTEMAS.filter((sistema) => entidad.sistemas[sistema]).map((sistema) => [sistema, entidad.sistemas[sistema]]));
 }

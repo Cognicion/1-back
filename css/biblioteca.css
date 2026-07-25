@@ -534,21 +534,6 @@ html[data-theme="light"] .sistema-toggle input {
   accent-color: var(--library-primary);
 }
 
-html[data-theme="light"] .sistema-orden {
-  display: inline-flex;
-  gap: 4px;
-}
-
-html[data-theme="light"] .sistema-orden button {
-  min-width: 28px;
-  padding: 4px 7px;
-  border-radius: 8px;
-  background: var(--library-surface);
-  color: var(--library-text-secondary);
-  border-color: var(--library-border-strong);
-  box-shadow: none;
-}
-
 html[data-theme="light"] .diagnostico-unificado {
   min-height: 0;
 }
@@ -620,5 +605,226 @@ html[data-theme="light"] .aviso-clinico-biblioteca {
 @media (max-width: 760px) {
   html[data-theme="light"] .sistemas-diagnosticos-controles {
     grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* Biblioteca compacta: una fila por diagnóstico y acordeones bajo demanda. */
+.diagnosticos-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+}
+
+.diagnostico-row {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid rgba(126, 182, 138, .22);
+  border-radius: 16px;
+  background: rgba(15, 18, 25, .9);
+  color: var(--white-950);
+  animation: diagnosticoEntrada .24s ease both;
+}
+
+.diagnostico-row__summary {
+  display: grid;
+  grid-template-columns: minmax(260px, 1.4fr) minmax(240px, 2fr) auto;
+  align-items: center;
+  gap: 16px;
+  min-width: 0;
+  padding: 14px 16px;
+}
+
+.diagnostico-row__main,
+.diagnostico-row__codes {
+  min-width: 0;
+}
+
+.diagnostico-row__main h3 {
+  margin: 0;
+  line-height: 1.2;
+}
+
+.diagnostico-row__main p {
+  margin: 6px 0 0;
+  color: #aab4c3;
+  line-height: 1.4;
+}
+
+.diagnostico-row__category {
+  margin: 8px 0 0;
+}
+
+.diagnostico-row__codes {
+  color: #cbd5cf;
+  line-height: 1.5;
+}
+
+.diagnostico-row__toggle {
+  white-space: nowrap;
+}
+
+.diagnostico-row__details {
+  display: grid;
+  gap: 10px;
+  padding: 0 16px 16px;
+  border-top: 1px solid rgba(126, 182, 138, .18);
+}
+
+.sistema-diagnostico {
+  min-width: 0;
+  border: 1px solid rgba(126, 182, 138, .2);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.sistema-toggle-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  border: 0;
+  border-radius: 0;
+  text-align: left;
+}
+
+.sistema-diagnostico__panel {
+  padding: 12px;
+  background: rgba(8, 13, 23, .42);
+}
+
+.grupo-criterios {
+  margin: 0;
+  padding: 14px;
+  border: 1px solid rgba(126, 182, 138, .2);
+  border-radius: 12px;
+  background: rgba(14, 20, 17, .72);
+  color: var(--white-950);
+}
+
+.grupo-criterios + .grupo-criterios {
+  margin-top: 10px;
+}
+
+.grupo-criterios h5 {
+  margin: 0 0 8px;
+  color: var(--celtic-300);
+}
+
+.grupo-criterios__intro {
+  margin: 0 0 8px;
+  line-height: 1.5;
+}
+
+.grupo-criterios ol,
+.grupo-criterios ul {
+  margin: 8px 0 0;
+  padding-left: 24px;
+}
+
+.grupo-criterios li {
+  margin: 0 0 7px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  line-height: 1.5;
+}
+
+.item-criterio__numero {
+  display: inline-block;
+  min-width: 24px;
+  margin-right: 4px;
+  font-weight: 800;
+}
+
+html[data-theme="light"] .diagnosticos-lista .diagnostico-row {
+  background: var(--library-surface);
+  border-color: var(--library-border);
+  color: var(--library-text);
+  box-shadow: 0 4px 14px rgba(31, 44, 35, .06);
+}
+
+html[data-theme="light"] .diagnostico-row__summary {
+  background: var(--library-surface);
+}
+
+html[data-theme="light"] .diagnostico-row__main h3,
+html[data-theme="light"] .diagnostico-row__main p,
+html[data-theme="light"] .diagnostico-row__codes {
+  color: var(--library-text);
+}
+
+html[data-theme="light"] .diagnostico-row__main p,
+html[data-theme="light"] .diagnostico-row__codes {
+  color: var(--library-text-secondary);
+}
+
+html[data-theme="light"] .diagnostico-row__details {
+  border-top-color: var(--library-border);
+  background: var(--library-surface-soft);
+}
+
+html[data-theme="light"] .sistema-diagnostico {
+  border-color: var(--library-border);
+  background: var(--library-surface);
+}
+
+html[data-theme="light"] .sistema-toggle-button {
+  justify-content: flex-start;
+  background: var(--library-surface);
+  color: var(--library-text);
+  box-shadow: none;
+}
+
+html[data-theme="light"] .sistema-toggle-button:hover {
+  background: var(--library-surface-hover);
+  color: var(--library-text);
+}
+
+html[data-theme="light"] .sistema-diagnostico__panel {
+  background: var(--library-surface-soft);
+}
+
+html[data-theme="light"] .grupo-criterios {
+  background: #f3f8f4;
+  border-color: #d4e2d7;
+  color: var(--library-text);
+}
+
+html[data-theme="light"] .grupo-criterios h5 {
+  color: #285c3b;
+}
+
+html[data-theme="light"] .grupo-criterios__intro,
+html[data-theme="light"] .grupo-criterios li {
+  color: var(--library-text-secondary);
+}
+
+html[data-theme="light"] .sistemas-diagnosticos-controles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 18px;
+  align-items: center;
+}
+
+@media (max-width: 760px) {
+  .diagnostico-row__summary {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .diagnostico-row__codes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .diagnostico-row__toggle {
+    width: 100%;
+  }
+
+  html[data-theme="light"] .sistemas-diagnosticos-controles {
+    display: grid;
+    grid-template-columns: 1fr;
   }
 }

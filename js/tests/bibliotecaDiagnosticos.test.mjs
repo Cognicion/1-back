@@ -2,6 +2,13 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { DIAGNOSTICOS_BIBLIOTECA, SISTEMAS_DIAGNOSTICOS } from "../data/diagnosticosBiblioteca.js";
 
+test("Los criterios se almacenan como grupos con listas internas y descripción editable", () => {
+  const tag = DIAGNOSTICOS_BIBLIOTECA.find((diagnostico) => diagnostico.id === "trastorno-trastorno-de-ansiedad-generalizada");
+  assert.ok(tag.descripcionBreve);
+  assert.ok(tag.sistemas.cie10.criterios.every((grupo) => Array.isArray(grupo.items)));
+  assert.ok(tag.sistemas.cie10.criterios.some((grupo) => grupo.items.length > 1));
+});
+
 test("Biblioteca usa ids únicos y una sola entidad por nombre", () => {
   const ids = DIAGNOSTICOS_BIBLIOTECA.map((diagnostico) => diagnostico.id);
   const nombres = DIAGNOSTICOS_BIBLIOTECA.map((diagnostico) => diagnostico.nombre.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase());

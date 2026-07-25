@@ -3,6 +3,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-enfermedad-por-virus-de-la-inmunodeficiencia-humana-vih-sin-otra-especificacion",
     "nombre": "Enfermedad por virus de la inmunodeficiencia humana [VIH], sin otra especificación",
+    "descripcionBreve": "Enfermedad por virus de la inmunodeficiencia humana [VIH], sin otra especificación.",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -30,6 +31,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-sindrome-congenito-de-deficiencia-de-yodo",
     "nombre": "Sindrome congenito de deficiencia de yodo",
+    "descripcionBreve": "Sindrome congenito de deficiencia de yodo.",
     "categoria": "Endocrinología / metabolismo",
     "subcategoria": "Endocrinología / metabolismo",
     "aliases": [
@@ -57,6 +59,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-trastornos-tiroideos-relacionados-con-deficiencia-de-yodo",
     "nombre": "Trastornos tiroideos relacionados con deficiencia de yodo",
+    "descripcionBreve": "Trastornos tiroideos relacionados con deficiencia de yodo.",
     "categoria": "Endocrinología / metabolismo",
     "subcategoria": "Endocrinología / metabolismo",
     "aliases": [
@@ -84,6 +87,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-otros-hipotiroidismos",
     "nombre": "Otros hipotiroidismos",
+    "descripcionBreve": "Información orientativa para consulta rápida.",
     "categoria": "Endocrinología / metabolismo",
     "subcategoria": "Endocrinología / metabolismo",
     "aliases": [
@@ -98,40 +102,32 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Otros hipotiroidismos",
         "criterios": [
           {
-            "id": "trastorno-otros-hipotiroidismos-cie10-criterio-1",
-            "orden": 1,
-            "titulo": "Criterio 1",
-            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-otros-hipotiroidismos-cie10-criterio-2",
-            "orden": 2,
-            "titulo": "Criterio 2",
-            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-otros-hipotiroidismos-cie10-criterio-3",
-            "orden": 3,
-            "titulo": "Criterio 3",
-            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-otros-hipotiroidismos-cie10-criterio-4",
-            "orden": 4,
-            "titulo": "Criterio 4",
-            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
+            "id": "trastorno-otros-hipotiroidismos-cie10-grupo-1",
+            "clave": "",
+            "titulo": "Pendiente de clasificación",
+            "tipo": "revision_requerida",
+            "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "literal": false,
+            "items": [
+              {
+                "numero": null,
+                "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+                "orden": 3,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
@@ -154,6 +150,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-tirotoxicosis",
     "nombre": "Tirotoxicosis",
+    "descripcionBreve": "Información orientativa para consulta rápida.",
     "categoria": "Endocrinología / metabolismo",
     "subcategoria": "Endocrinología / metabolismo",
     "aliases": [
@@ -168,40 +165,32 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Tirotoxicosis",
         "criterios": [
           {
-            "id": "trastorno-tirotoxicosis-cie10-criterio-1",
-            "orden": 1,
-            "titulo": "Criterio 1",
-            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-tirotoxicosis-cie10-criterio-2",
-            "orden": 2,
-            "titulo": "Criterio 2",
-            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-tirotoxicosis-cie10-criterio-3",
-            "orden": 3,
-            "titulo": "Criterio 3",
-            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-tirotoxicosis-cie10-criterio-4",
-            "orden": 4,
-            "titulo": "Criterio 4",
-            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
+            "id": "trastorno-tirotoxicosis-cie10-grupo-1",
+            "clave": "",
+            "titulo": "Pendiente de clasificación",
+            "tipo": "revision_requerida",
+            "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "literal": false,
+            "items": [
+              {
+                "numero": null,
+                "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+                "orden": 3,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
@@ -224,6 +213,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-diabetes-mellitus-insulinodependiente",
     "nombre": "Diabetes mellitus insulinodependiente",
+    "descripcionBreve": "Información orientativa para consulta rápida.",
     "categoria": "Endocrinología / metabolismo",
     "subcategoria": "Endocrinología / metabolismo",
     "aliases": [
@@ -238,40 +228,32 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Diabetes mellitus insulinodependiente",
         "criterios": [
           {
-            "id": "trastorno-diabetes-mellitus-insulinodependiente-cie10-criterio-1",
-            "orden": 1,
-            "titulo": "Criterio 1",
-            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-diabetes-mellitus-insulinodependiente-cie10-criterio-2",
-            "orden": 2,
-            "titulo": "Criterio 2",
-            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-diabetes-mellitus-insulinodependiente-cie10-criterio-3",
-            "orden": 3,
-            "titulo": "Criterio 3",
-            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-diabetes-mellitus-insulinodependiente-cie10-criterio-4",
-            "orden": 4,
-            "titulo": "Criterio 4",
-            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
+            "id": "trastorno-diabetes-mellitus-insulinodependiente-cie10-grupo-1",
+            "clave": "",
+            "titulo": "Pendiente de clasificación",
+            "tipo": "revision_requerida",
+            "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "literal": false,
+            "items": [
+              {
+                "numero": null,
+                "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+                "orden": 3,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
@@ -294,6 +276,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-diabetes-mellitus-no-insulinodependiente",
     "nombre": "Diabetes mellitus no insulinodependiente",
+    "descripcionBreve": "Información orientativa para consulta rápida.",
     "categoria": "Endocrinología / metabolismo",
     "subcategoria": "Endocrinología / metabolismo",
     "aliases": [
@@ -308,40 +291,32 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Diabetes mellitus no insulinodependiente",
         "criterios": [
           {
-            "id": "trastorno-diabetes-mellitus-no-insulinodependiente-cie10-criterio-1",
-            "orden": 1,
-            "titulo": "Criterio 1",
-            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-diabetes-mellitus-no-insulinodependiente-cie10-criterio-2",
-            "orden": 2,
-            "titulo": "Criterio 2",
-            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-diabetes-mellitus-no-insulinodependiente-cie10-criterio-3",
-            "orden": 3,
-            "titulo": "Criterio 3",
-            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-diabetes-mellitus-no-insulinodependiente-cie10-criterio-4",
-            "orden": 4,
-            "titulo": "Criterio 4",
-            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
+            "id": "trastorno-diabetes-mellitus-no-insulinodependiente-cie10-grupo-1",
+            "clave": "",
+            "titulo": "Pendiente de clasificación",
+            "tipo": "revision_requerida",
+            "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "literal": false,
+            "items": [
+              {
+                "numero": null,
+                "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+                "orden": 3,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
@@ -364,6 +339,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-diabetes-mellitus-no-especificada",
     "nombre": "Diabetes mellitus no especificada",
+    "descripcionBreve": "Diabetes mellitus no especificada.",
     "categoria": "Endocrinología / metabolismo",
     "subcategoria": "Endocrinología / metabolismo",
     "aliases": [
@@ -391,6 +367,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-otros-trastornos-de-la-secrecion-interna-del-pancreas",
     "nombre": "Otros trastornos de la secrecion interna del pancreas",
+    "descripcionBreve": "Otros trastornos de la secrecion interna del pancreas.",
     "categoria": "Endocrinología / metabolismo",
     "subcategoria": "Endocrinología / metabolismo",
     "aliases": [
@@ -418,6 +395,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-hiperfuncion-de-la-hipofisis",
     "nombre": "Hiperfuncion de la hipofisis",
+    "descripcionBreve": "Hiperfuncion de la hipofisis.",
     "categoria": "Endocrinología / metabolismo",
     "subcategoria": "Endocrinología / metabolismo",
     "aliases": [
@@ -445,6 +423,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-hipofuncion-y-otros-trastornos-de-la-hipofisis",
     "nombre": "Hipofuncion y otros trastornos de la hipofisis",
+    "descripcionBreve": "Hipofuncion y otros trastornos de la hipofisis.",
     "categoria": "Endocrinología / metabolismo",
     "subcategoria": "Endocrinología / metabolismo",
     "aliases": [
@@ -472,6 +451,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-sindrome-de-cushing",
     "nombre": "Sindrome de Cushing",
+    "descripcionBreve": "Sindrome de Cushing.",
     "categoria": "Endocrinología / metabolismo",
     "subcategoria": "Endocrinología / metabolismo",
     "aliases": [
@@ -499,6 +479,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-otros-trastornos-de-la-glandula-suprarrenal",
     "nombre": "Otros trastornos de la glandula suprarrenal",
+    "descripcionBreve": "Otros trastornos de la glandula suprarrenal.",
     "categoria": "Endocrinología / metabolismo",
     "subcategoria": "Endocrinología / metabolismo",
     "aliases": [
@@ -526,6 +507,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-disfuncion-ovarica",
     "nombre": "Disfuncion ovarica",
+    "descripcionBreve": "Disfuncion ovarica.",
     "categoria": "Endocrinología / metabolismo",
     "subcategoria": "Endocrinología / metabolismo",
     "aliases": [
@@ -553,6 +535,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-disfuncion-testicular",
     "nombre": "Disfuncion testicular",
+    "descripcionBreve": "Disfuncion testicular.",
     "categoria": "Endocrinología / metabolismo",
     "subcategoria": "Endocrinología / metabolismo",
     "aliases": [
@@ -580,6 +563,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-desnutricion-proteicocalorica-de-grado-moderado-y-leve",
     "nombre": "Desnutricion proteicocalorica de grado moderado y leve",
+    "descripcionBreve": "Información orientativa para consulta rápida.",
     "categoria": "Endocrinología / metabolismo",
     "subcategoria": "Endocrinología / metabolismo",
     "aliases": [
@@ -594,40 +578,32 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Desnutricion proteicocalorica de grado moderado y leve",
         "criterios": [
           {
-            "id": "trastorno-desnutricion-proteicocalorica-de-grado-moderado-y-leve-cie10-criterio-1",
-            "orden": 1,
-            "titulo": "Criterio 1",
-            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-desnutricion-proteicocalorica-de-grado-moderado-y-leve-cie10-criterio-2",
-            "orden": 2,
-            "titulo": "Criterio 2",
-            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-desnutricion-proteicocalorica-de-grado-moderado-y-leve-cie10-criterio-3",
-            "orden": 3,
-            "titulo": "Criterio 3",
-            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-desnutricion-proteicocalorica-de-grado-moderado-y-leve-cie10-criterio-4",
-            "orden": 4,
-            "titulo": "Criterio 4",
-            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
+            "id": "trastorno-desnutricion-proteicocalorica-de-grado-moderado-y-leve-cie10-grupo-1",
+            "clave": "",
+            "titulo": "Pendiente de clasificación",
+            "tipo": "revision_requerida",
+            "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "literal": false,
+            "items": [
+              {
+                "numero": null,
+                "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+                "orden": 3,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
@@ -650,6 +626,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-desnutricion-proteicocalorica-no-especificada",
     "nombre": "Desnutricion proteicocalorica no especificada",
+    "descripcionBreve": "Desnutricion proteicocalorica no especificada.",
     "categoria": "Endocrinología / metabolismo",
     "subcategoria": "Endocrinología / metabolismo",
     "aliases": [
@@ -677,6 +654,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-encefalopatia-de-wernicke",
     "nombre": "Encefalopatía de wernicke",
+    "descripcionBreve": "Encefalopatía de wernicke.",
     "categoria": "Endocrinología / metabolismo",
     "subcategoria": "Endocrinología / metabolismo",
     "aliases": [
@@ -704,6 +682,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-deficiencia-de-vitamina-d",
     "nombre": "Deficiencia de vitamina D",
+    "descripcionBreve": "Deficiencia de vitamina D.",
     "categoria": "Endocrinología / metabolismo",
     "subcategoria": "Endocrinología / metabolismo",
     "aliases": [
@@ -731,6 +710,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-obesidad",
     "nombre": "Obesidad",
+    "descripcionBreve": "Información orientativa para consulta rápida.",
     "categoria": "Endocrinología / metabolismo",
     "subcategoria": "Endocrinología / metabolismo",
     "aliases": [
@@ -745,40 +725,32 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Obesidad",
         "criterios": [
           {
-            "id": "trastorno-obesidad-cie10-criterio-1",
-            "orden": 1,
-            "titulo": "Criterio 1",
-            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-obesidad-cie10-criterio-2",
-            "orden": 2,
-            "titulo": "Criterio 2",
-            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-obesidad-cie10-criterio-3",
-            "orden": 3,
-            "titulo": "Criterio 3",
-            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-obesidad-cie10-criterio-4",
-            "orden": 4,
-            "titulo": "Criterio 4",
-            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
+            "id": "trastorno-obesidad-cie10-grupo-1",
+            "clave": "",
+            "titulo": "Pendiente de clasificación",
+            "tipo": "revision_requerida",
+            "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "literal": false,
+            "items": [
+              {
+                "numero": null,
+                "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+                "orden": 3,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
@@ -801,6 +773,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-obesidad-debida-a-exceso-de-calorias",
     "nombre": "Obesidad debida a exceso de calorias",
+    "descripcionBreve": "Obesidad debida a exceso de calorias.",
     "categoria": "Endocrinología / metabolismo",
     "subcategoria": "Endocrinología / metabolismo",
     "aliases": [
@@ -828,6 +801,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-obesidad-endogena",
     "nombre": "Obesidad endogena",
+    "descripcionBreve": "Obesidad endogena.",
     "categoria": "Endocrinología / metabolismo",
     "subcategoria": "Endocrinología / metabolismo",
     "aliases": [
@@ -855,6 +829,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-obesidad-de-origen-exogeno",
     "nombre": "Obesidad de origen exogeno",
+    "descripcionBreve": "Obesidad de origen exogeno.",
     "categoria": "Endocrinología / metabolismo",
     "subcategoria": "Endocrinología / metabolismo",
     "aliases": [
@@ -882,6 +857,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-otras-formas-de-obesidad",
     "nombre": "Otras formas de obesidad",
+    "descripcionBreve": "Otras formas de obesidad.",
     "categoria": "Endocrinología / metabolismo",
     "subcategoria": "Endocrinología / metabolismo",
     "aliases": [
@@ -909,6 +885,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-obesidad-no-especificada",
     "nombre": "Obesidad no especificada",
+    "descripcionBreve": "Obesidad no especificada.",
     "categoria": "Endocrinología / metabolismo",
     "subcategoria": "Endocrinología / metabolismo",
     "aliases": [
@@ -936,6 +913,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-trastornos-del-metabolismo-de-los-aminoacidos",
     "nombre": "Trastornos del metabolismo de los aminoacidos",
+    "descripcionBreve": "Trastornos del metabolismo de los aminoacidos.",
     "categoria": "Endocrinología / metabolismo",
     "subcategoria": "Endocrinología / metabolismo",
     "aliases": [
@@ -963,6 +941,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-trastornos-del-metabolismo-de-los-acidos-grasos-y-de-la-oxidacion-de-los-acidos-grasos",
     "nombre": "Trastornos del metabolismo de los acidos grasos y de la oxidacion de los acidos grasos",
+    "descripcionBreve": "Trastornos del metabolismo de los acidos grasos y de la oxidacion de los acidos grasos.",
     "categoria": "Endocrinología / metabolismo",
     "subcategoria": "Endocrinología / metabolismo",
     "aliases": [
@@ -990,6 +969,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-otros-trastornos-del-metabolismo-de-los-carbohidratos",
     "nombre": "Otros trastornos del metabolismo de los carbohidratos",
+    "descripcionBreve": "Otros trastornos del metabolismo de los carbohidratos.",
     "categoria": "Endocrinología / metabolismo",
     "subcategoria": "Endocrinología / metabolismo",
     "aliases": [
@@ -1018,6 +998,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-intolerancia-a-la-lactosa",
     "nombre": "Intolerancia a la lactosa",
+    "descripcionBreve": "Intolerancia a la lactosa.",
     "categoria": "Endocrinología / metabolismo",
     "subcategoria": "Endocrinología / metabolismo",
     "aliases": [
@@ -1045,6 +1026,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-trastornos-del-metabolismo-de-las-lipoproteinas-y-otras-lipidemias",
     "nombre": "Trastornos del metabolismo de las lipoproteinas y otras lipidemias",
+    "descripcionBreve": "Información orientativa para consulta rápida.",
     "categoria": "Endocrinología / metabolismo",
     "subcategoria": "Endocrinología / metabolismo",
     "aliases": [
@@ -1059,40 +1041,32 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Trastornos del metabolismo de las lipoproteinas y otras lipidemias",
         "criterios": [
           {
-            "id": "trastorno-trastornos-del-metabolismo-de-las-lipoproteinas-y-otras-lipidemias-cie10-criterio-1",
-            "orden": 1,
-            "titulo": "Criterio 1",
-            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastornos-del-metabolismo-de-las-lipoproteinas-y-otras-lipidemias-cie10-criterio-2",
-            "orden": 2,
-            "titulo": "Criterio 2",
-            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastornos-del-metabolismo-de-las-lipoproteinas-y-otras-lipidemias-cie10-criterio-3",
-            "orden": 3,
-            "titulo": "Criterio 3",
-            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastornos-del-metabolismo-de-las-lipoproteinas-y-otras-lipidemias-cie10-criterio-4",
-            "orden": 4,
-            "titulo": "Criterio 4",
-            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
+            "id": "trastorno-trastornos-del-metabolismo-de-las-lipoproteinas-y-otras-lipidemias-cie10-grupo-1",
+            "clave": "",
+            "titulo": "Pendiente de clasificación",
+            "tipo": "revision_requerida",
+            "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "literal": false,
+            "items": [
+              {
+                "numero": null,
+                "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+                "orden": 3,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
@@ -1115,6 +1089,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-otros-trastornos-de-los-liquidos-electrolitos-y-equilibrio-acido-base",
     "nombre": "Otros trastornos de los liquidos, electrolitos y equilibrio acido-base",
+    "descripcionBreve": "Otros trastornos de los liquidos, electrolitos y equilibrio acido-base.",
     "categoria": "Endocrinología / metabolismo",
     "subcategoria": "Endocrinología / metabolismo",
     "aliases": [
@@ -1142,6 +1117,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-demencia-en-la-enfermedad-de-alzheimer",
     "nombre": "Demencia en la enfermedad de Alzheimer",
+    "descripcionBreve": "Información orientativa para consulta rápida.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -1156,40 +1132,32 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Demencia en la enfermedad de Alzheimer",
         "criterios": [
           {
-            "id": "trastorno-demencia-en-la-enfermedad-de-alzheimer-cie10-criterio-1",
-            "orden": 1,
-            "titulo": "Criterio 1",
-            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-demencia-en-la-enfermedad-de-alzheimer-cie10-criterio-2",
-            "orden": 2,
-            "titulo": "Criterio 2",
-            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-demencia-en-la-enfermedad-de-alzheimer-cie10-criterio-3",
-            "orden": 3,
-            "titulo": "Criterio 3",
-            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-demencia-en-la-enfermedad-de-alzheimer-cie10-criterio-4",
-            "orden": 4,
-            "titulo": "Criterio 4",
-            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
+            "id": "trastorno-demencia-en-la-enfermedad-de-alzheimer-cie10-grupo-1",
+            "clave": "",
+            "titulo": "Pendiente de clasificación",
+            "tipo": "revision_requerida",
+            "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "literal": false,
+            "items": [
+              {
+                "numero": null,
+                "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+                "orden": 3,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
@@ -1212,6 +1180,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-demencia-en-la-enfermedad-de-alzheimer-con-inicio-temprano",
     "nombre": "Demencia en la enfermedad de Alzheimer con inicio temprano",
+    "descripcionBreve": "Demencia en la enfermedad de Alzheimer con inicio temprano.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -1240,6 +1209,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-demencia-en-la-enfermedad-de-alzheimer-con-inicio-tardio",
     "nombre": "Demencia en la enfermedad de Alzheimer con inicio tardío",
+    "descripcionBreve": "Demencia en la enfermedad de Alzheimer con inicio tardío.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -1267,6 +1237,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-demencia-en-la-enfermedad-de-alzheimer-tipo-mixto",
     "nombre": "Demencia en la enfermedad de Alzheimer, tipo mixto",
+    "descripcionBreve": "Demencia en la enfermedad de Alzheimer, tipo mixto.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -1294,6 +1265,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-demencia-vascular",
     "nombre": "Demencia vascular",
+    "descripcionBreve": "Información orientativa para consulta rápida.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -1308,40 +1280,32 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Demencia vascular",
         "criterios": [
           {
-            "id": "trastorno-demencia-vascular-cie10-criterio-1",
-            "orden": 1,
-            "titulo": "Criterio 1",
-            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-demencia-vascular-cie10-criterio-2",
-            "orden": 2,
-            "titulo": "Criterio 2",
-            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-demencia-vascular-cie10-criterio-3",
-            "orden": 3,
-            "titulo": "Criterio 3",
-            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-demencia-vascular-cie10-criterio-4",
-            "orden": 4,
-            "titulo": "Criterio 4",
-            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
+            "id": "trastorno-demencia-vascular-cie10-grupo-1",
+            "clave": "",
+            "titulo": "Pendiente de clasificación",
+            "tipo": "revision_requerida",
+            "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "literal": false,
+            "items": [
+              {
+                "numero": null,
+                "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+                "orden": 3,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
@@ -1364,6 +1328,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-demencia-vascular-de-inicio-agudo",
     "nombre": "Demencia vascular de inicio agudo",
+    "descripcionBreve": "Demencia vascular de inicio agudo.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -1391,6 +1356,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-demencia-vascular-de-inicio-subagudo",
     "nombre": "Demencia vascular de inicio subagudo",
+    "descripcionBreve": "Demencia vascular de inicio subagudo.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -1418,6 +1384,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-demencia-vascular-de-inicio-cronico",
     "nombre": "Demencia vascular de inicio crónico",
+    "descripcionBreve": "Demencia vascular de inicio crónico.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -1445,6 +1412,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-demencia-vascular-de-inicio-no-especificado",
     "nombre": "Demencia vascular de inicio no especificado",
+    "descripcionBreve": "Demencia vascular de inicio no especificado.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -1472,6 +1440,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-otros-tipos-de-demencia-vascular",
     "nombre": "Otros tipos de demencia vascular",
+    "descripcionBreve": "Otros tipos de demencia vascular.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -1499,6 +1468,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-demencia-vascular-no-especificada",
     "nombre": "Demencia vascular no especificada",
+    "descripcionBreve": "Demencia vascular no especificada.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -1526,6 +1496,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-demencia-en-otras-enfermedades-clasificadas-en-otra-parte",
     "nombre": "Demencia en otras enfermedades clasificadas en otra parte",
+    "descripcionBreve": "Información orientativa para consulta rápida.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -1540,40 +1511,32 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Demencia en otras enfermedades clasificadas en otra parte",
         "criterios": [
           {
-            "id": "trastorno-demencia-en-otras-enfermedades-clasificadas-en-otra-parte-cie10-criterio-1",
-            "orden": 1,
-            "titulo": "Criterio 1",
-            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-demencia-en-otras-enfermedades-clasificadas-en-otra-parte-cie10-criterio-2",
-            "orden": 2,
-            "titulo": "Criterio 2",
-            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-demencia-en-otras-enfermedades-clasificadas-en-otra-parte-cie10-criterio-3",
-            "orden": 3,
-            "titulo": "Criterio 3",
-            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-demencia-en-otras-enfermedades-clasificadas-en-otra-parte-cie10-criterio-4",
-            "orden": 4,
-            "titulo": "Criterio 4",
-            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
+            "id": "trastorno-demencia-en-otras-enfermedades-clasificadas-en-otra-parte-cie10-grupo-1",
+            "clave": "",
+            "titulo": "Pendiente de clasificación",
+            "tipo": "revision_requerida",
+            "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "literal": false,
+            "items": [
+              {
+                "numero": null,
+                "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+                "orden": 3,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
@@ -1596,6 +1559,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-demencia-no-especificada",
     "nombre": "Demencia no especificada",
+    "descripcionBreve": "Información orientativa para consulta rápida.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -1610,40 +1574,32 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Demencia no especificada",
         "criterios": [
           {
-            "id": "trastorno-demencia-no-especificada-cie10-criterio-1",
-            "orden": 1,
-            "titulo": "Criterio 1",
-            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-demencia-no-especificada-cie10-criterio-2",
-            "orden": 2,
-            "titulo": "Criterio 2",
-            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-demencia-no-especificada-cie10-criterio-3",
-            "orden": 3,
-            "titulo": "Criterio 3",
-            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-demencia-no-especificada-cie10-criterio-4",
-            "orden": 4,
-            "titulo": "Criterio 4",
-            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
+            "id": "trastorno-demencia-no-especificada-cie10-grupo-1",
+            "clave": "",
+            "titulo": "Pendiente de clasificación",
+            "tipo": "revision_requerida",
+            "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "literal": false,
+            "items": [
+              {
+                "numero": null,
+                "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+                "orden": 3,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
@@ -1666,6 +1622,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-sindrome-amnesico-organico-no-inducido-por-alcohol-u-otras-sustancias-psicoactivas",
     "nombre": "Síndrome amnésico orgánico no inducido por alcohol u otras sustancias psicoactivas",
+    "descripcionBreve": "Síndrome amnésico orgánico no inducido por alcohol u otras sustancias psicoactivas.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -1693,6 +1650,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-delirium-no-inducido-por-alcohol-u-otras-sustancias-psicoactivas",
     "nombre": "Delirium no inducido por alcohol u otras sustancias psicoactivas",
+    "descripcionBreve": "Información orientativa para consulta rápida.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -1707,40 +1665,32 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Delirium no inducido por alcohol u otras sustancias psicoactivas",
         "criterios": [
           {
-            "id": "trastorno-delirium-no-inducido-por-alcohol-u-otras-sustancias-psicoactivas-cie10-criterio-1",
-            "orden": 1,
-            "titulo": "Criterio 1",
-            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-delirium-no-inducido-por-alcohol-u-otras-sustancias-psicoactivas-cie10-criterio-2",
-            "orden": 2,
-            "titulo": "Criterio 2",
-            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-delirium-no-inducido-por-alcohol-u-otras-sustancias-psicoactivas-cie10-criterio-3",
-            "orden": 3,
-            "titulo": "Criterio 3",
-            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-delirium-no-inducido-por-alcohol-u-otras-sustancias-psicoactivas-cie10-criterio-4",
-            "orden": 4,
-            "titulo": "Criterio 4",
-            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
+            "id": "trastorno-delirium-no-inducido-por-alcohol-u-otras-sustancias-psicoactivas-cie10-grupo-1",
+            "clave": "",
+            "titulo": "Pendiente de clasificación",
+            "tipo": "revision_requerida",
+            "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "literal": false,
+            "items": [
+              {
+                "numero": null,
+                "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+                "orden": 3,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
@@ -1763,6 +1713,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-delirium-no-especificado",
     "nombre": "Delirium no especificado",
+    "descripcionBreve": "Delirium no especificado.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -1790,6 +1741,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-otros-trastornos-mentales-debidos-a-lesion-y-disfuncion-cerebral-y-enfermedad-fisica",
     "nombre": "Otros trastornos mentales debidos a lesión y disfunción cerebral y enfermedad física",
+    "descripcionBreve": "Información orientativa para consulta rápida.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -1804,40 +1756,32 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Otros trastornos mentales debidos a lesión y disfunción cerebral y enfermedad física",
         "criterios": [
           {
-            "id": "trastorno-otros-trastornos-mentales-debidos-a-lesion-y-disfuncion-cerebral-y-enfermedad-fisica-cie10-criterio-1",
-            "orden": 1,
-            "titulo": "Criterio 1",
-            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-otros-trastornos-mentales-debidos-a-lesion-y-disfuncion-cerebral-y-enfermedad-fisica-cie10-criterio-2",
-            "orden": 2,
-            "titulo": "Criterio 2",
-            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-otros-trastornos-mentales-debidos-a-lesion-y-disfuncion-cerebral-y-enfermedad-fisica-cie10-criterio-3",
-            "orden": 3,
-            "titulo": "Criterio 3",
-            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-otros-trastornos-mentales-debidos-a-lesion-y-disfuncion-cerebral-y-enfermedad-fisica-cie10-criterio-4",
-            "orden": 4,
-            "titulo": "Criterio 4",
-            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
+            "id": "trastorno-otros-trastornos-mentales-debidos-a-lesion-y-disfuncion-cerebral-y-enfermedad-fisica-cie10-grupo-1",
+            "clave": "",
+            "titulo": "Pendiente de clasificación",
+            "tipo": "revision_requerida",
+            "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "literal": false,
+            "items": [
+              {
+                "numero": null,
+                "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+                "orden": 3,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
@@ -1860,6 +1804,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-trastornos-de-personalidad-y-comportamiento-debidos-a-enfermedad-lesion-o-disfuncion-cerebral",
     "nombre": "Trastornos de personalidad y comportamiento debidos a enfermedad, lesión o disfunción cerebral",
+    "descripcionBreve": "Información orientativa para consulta rápida.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -1874,40 +1819,32 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Trastornos de personalidad y comportamiento debidos a enfermedad, lesión o disfunción cerebral",
         "criterios": [
           {
-            "id": "trastorno-trastornos-de-personalidad-y-comportamiento-debidos-a-enfermedad-lesion-o-disfuncion-cerebral-cie10-criterio-1",
-            "orden": 1,
-            "titulo": "Criterio 1",
-            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastornos-de-personalidad-y-comportamiento-debidos-a-enfermedad-lesion-o-disfuncion-cerebral-cie10-criterio-2",
-            "orden": 2,
-            "titulo": "Criterio 2",
-            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastornos-de-personalidad-y-comportamiento-debidos-a-enfermedad-lesion-o-disfuncion-cerebral-cie10-criterio-3",
-            "orden": 3,
-            "titulo": "Criterio 3",
-            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastornos-de-personalidad-y-comportamiento-debidos-a-enfermedad-lesion-o-disfuncion-cerebral-cie10-criterio-4",
-            "orden": 4,
-            "titulo": "Criterio 4",
-            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
+            "id": "trastorno-trastornos-de-personalidad-y-comportamiento-debidos-a-enfermedad-lesion-o-disfuncion-cerebral-cie10-grupo-1",
+            "clave": "",
+            "titulo": "Pendiente de clasificación",
+            "tipo": "revision_requerida",
+            "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "literal": false,
+            "items": [
+              {
+                "numero": null,
+                "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+                "orden": 3,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
@@ -1930,6 +1867,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-trastorno-mental-organico-o-sintomatico-no-especificado",
     "nombre": "Trastorno mental orgánico o sintomático no especificado",
+    "descripcionBreve": "Trastorno mental orgánico o sintomático no especificado.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -1957,6 +1895,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-trastornos-mentales-y-del-comportamiento-debidos-al-uso-de-alcohol",
     "nombre": "Trastornos mentales y del comportamiento debidos al uso de alcohol",
+    "descripcionBreve": "Trastornos mentales y del comportamiento debidos al uso de alcohol.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -1984,6 +1923,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-alcohol-uso-nocivo",
     "nombre": "Alcohol: uso nocivo",
+    "descripcionBreve": "Información orientativa para consulta rápida.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -1998,40 +1938,32 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Alcohol: uso nocivo",
         "criterios": [
           {
-            "id": "trastorno-alcohol-uso-nocivo-cie10-criterio-1",
-            "orden": 1,
-            "titulo": "Criterio 1",
-            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-alcohol-uso-nocivo-cie10-criterio-2",
-            "orden": 2,
-            "titulo": "Criterio 2",
-            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-alcohol-uso-nocivo-cie10-criterio-3",
-            "orden": 3,
-            "titulo": "Criterio 3",
-            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-alcohol-uso-nocivo-cie10-criterio-4",
-            "orden": 4,
-            "titulo": "Criterio 4",
-            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
+            "id": "trastorno-alcohol-uso-nocivo-cie10-grupo-1",
+            "clave": "",
+            "titulo": "Pendiente de clasificación",
+            "tipo": "revision_requerida",
+            "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "literal": false,
+            "items": [
+              {
+                "numero": null,
+                "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+                "orden": 3,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
@@ -2054,6 +1986,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-alcohol-sindrome-de-dependencia",
     "nombre": "Alcohol: sindrome de dependencia",
+    "descripcionBreve": "Información orientativa para consulta rápida.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -2068,40 +2001,32 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Alcohol: sindrome de dependencia",
         "criterios": [
           {
-            "id": "trastorno-alcohol-sindrome-de-dependencia-cie10-criterio-1",
-            "orden": 1,
-            "titulo": "Criterio 1",
-            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-alcohol-sindrome-de-dependencia-cie10-criterio-2",
-            "orden": 2,
-            "titulo": "Criterio 2",
-            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-alcohol-sindrome-de-dependencia-cie10-criterio-3",
-            "orden": 3,
-            "titulo": "Criterio 3",
-            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-alcohol-sindrome-de-dependencia-cie10-criterio-4",
-            "orden": 4,
-            "titulo": "Criterio 4",
-            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
+            "id": "trastorno-alcohol-sindrome-de-dependencia-cie10-grupo-1",
+            "clave": "",
+            "titulo": "Pendiente de clasificación",
+            "tipo": "revision_requerida",
+            "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "literal": false,
+            "items": [
+              {
+                "numero": null,
+                "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+                "orden": 3,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
@@ -2124,6 +2049,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-alcohol-sindrome-de-abstinencia",
     "nombre": "Alcohol: sindrome de abstinencia",
+    "descripcionBreve": "Alcohol: sindrome de abstinencia.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -2151,6 +2077,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-alcohol-sindrome-de-abstinencia-con-delirium",
     "nombre": "Alcohol: sindrome de abstinencia con delirium",
+    "descripcionBreve": "Alcohol: sindrome de abstinencia con delirium.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -2178,6 +2105,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-alcohol-trastorno-psicotico",
     "nombre": "Alcohol: trastorno psicotico",
+    "descripcionBreve": "Alcohol: trastorno psicotico.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -2205,6 +2133,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-alcohol-sindrome-amnesico",
     "nombre": "Alcohol: sindrome amnesico",
+    "descripcionBreve": "Alcohol: sindrome amnesico.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -2232,6 +2161,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-alcohol-trastorno-psicotico-residual-y-de-comienzo-tardio",
     "nombre": "Alcohol: trastorno psicotico residual y de comienzo tardio",
+    "descripcionBreve": "Alcohol: trastorno psicotico residual y de comienzo tardio.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -2259,6 +2189,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-alcohol-otros-trastornos-mentales-y-del-comportamiento",
     "nombre": "Alcohol: otros trastornos mentales y del comportamiento",
+    "descripcionBreve": "Alcohol: otros trastornos mentales y del comportamiento.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -2286,6 +2217,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-alcohol-trastorno-mental-y-del-comportamiento-no-especificado",
     "nombre": "Alcohol: trastorno mental y del comportamiento no especificado",
+    "descripcionBreve": "Alcohol: trastorno mental y del comportamiento no especificado.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -2313,6 +2245,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-trastornos-mentales-y-del-comportamiento-debidos-al-uso-de-opioides",
     "nombre": "Trastornos mentales y del comportamiento debidos al uso de opioides",
+    "descripcionBreve": "Trastornos mentales y del comportamiento debidos al uso de opioides.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -2340,6 +2273,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-opioides-intoxicacion-aguda",
     "nombre": "Opioides: intoxicacion aguda",
+    "descripcionBreve": "Opioides: intoxicacion aguda.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -2367,6 +2301,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-opioides-uso-nocivo",
     "nombre": "Opioides: uso nocivo",
+    "descripcionBreve": "Opioides: uso nocivo.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -2394,6 +2329,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-opioides-sindrome-de-dependencia",
     "nombre": "Opioides: sindrome de dependencia",
+    "descripcionBreve": "Opioides: sindrome de dependencia.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -2421,6 +2357,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-opioides-sindrome-de-abstinencia",
     "nombre": "Opioides: sindrome de abstinencia",
+    "descripcionBreve": "Opioides: sindrome de abstinencia.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -2448,6 +2385,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-opioides-sindrome-de-abstinencia-con-delirium",
     "nombre": "Opioides: sindrome de abstinencia con delirium",
+    "descripcionBreve": "Opioides: sindrome de abstinencia con delirium.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -2475,6 +2413,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-opioides-trastorno-psicotico",
     "nombre": "Opioides: trastorno psicotico",
+    "descripcionBreve": "Opioides: trastorno psicotico.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -2502,6 +2441,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-opioides-sindrome-amnesico",
     "nombre": "Opioides: sindrome amnesico",
+    "descripcionBreve": "Opioides: sindrome amnesico.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -2529,6 +2469,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-opioides-trastorno-psicotico-residual-y-de-comienzo-tardio",
     "nombre": "Opioides: trastorno psicotico residual y de comienzo tardio",
+    "descripcionBreve": "Opioides: trastorno psicotico residual y de comienzo tardio.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -2556,6 +2497,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-opioides-otros-trastornos-mentales-y-del-comportamiento",
     "nombre": "Opioides: otros trastornos mentales y del comportamiento",
+    "descripcionBreve": "Opioides: otros trastornos mentales y del comportamiento.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -2583,6 +2525,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-opioides-trastorno-mental-y-del-comportamiento-no-especificado",
     "nombre": "Opioides: trastorno mental y del comportamiento no especificado",
+    "descripcionBreve": "Opioides: trastorno mental y del comportamiento no especificado.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -2610,6 +2553,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-trastornos-mentales-y-del-comportamiento-debidos-al-uso-de-cannabinoides",
     "nombre": "Trastornos mentales y del comportamiento debidos al uso de cannabinoides",
+    "descripcionBreve": "Trastornos mentales y del comportamiento debidos al uso de cannabinoides.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -2637,6 +2581,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-cannabinoides-intoxicacion-aguda",
     "nombre": "Cannabinoides: intoxicacion aguda",
+    "descripcionBreve": "Cannabinoides: intoxicacion aguda.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -2664,6 +2609,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-cannabinoides-uso-nocivo",
     "nombre": "Cannabinoides: uso nocivo",
+    "descripcionBreve": "Información orientativa para consulta rápida.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -2678,40 +2624,32 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Cannabinoides: uso nocivo",
         "criterios": [
           {
-            "id": "trastorno-cannabinoides-uso-nocivo-cie10-criterio-1",
-            "orden": 1,
-            "titulo": "Criterio 1",
-            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-cannabinoides-uso-nocivo-cie10-criterio-2",
-            "orden": 2,
-            "titulo": "Criterio 2",
-            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-cannabinoides-uso-nocivo-cie10-criterio-3",
-            "orden": 3,
-            "titulo": "Criterio 3",
-            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-cannabinoides-uso-nocivo-cie10-criterio-4",
-            "orden": 4,
-            "titulo": "Criterio 4",
-            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
+            "id": "trastorno-cannabinoides-uso-nocivo-cie10-grupo-1",
+            "clave": "",
+            "titulo": "Pendiente de clasificación",
+            "tipo": "revision_requerida",
+            "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "literal": false,
+            "items": [
+              {
+                "numero": null,
+                "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+                "orden": 3,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
@@ -2734,6 +2672,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-cannabinoides-sindrome-de-dependencia",
     "nombre": "Cannabinoides: sindrome de dependencia",
+    "descripcionBreve": "Información orientativa para consulta rápida.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -2748,40 +2687,32 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Cannabinoides: sindrome de dependencia",
         "criterios": [
           {
-            "id": "trastorno-cannabinoides-sindrome-de-dependencia-cie10-criterio-1",
-            "orden": 1,
-            "titulo": "Criterio 1",
-            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-cannabinoides-sindrome-de-dependencia-cie10-criterio-2",
-            "orden": 2,
-            "titulo": "Criterio 2",
-            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-cannabinoides-sindrome-de-dependencia-cie10-criterio-3",
-            "orden": 3,
-            "titulo": "Criterio 3",
-            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-cannabinoides-sindrome-de-dependencia-cie10-criterio-4",
-            "orden": 4,
-            "titulo": "Criterio 4",
-            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
+            "id": "trastorno-cannabinoides-sindrome-de-dependencia-cie10-grupo-1",
+            "clave": "",
+            "titulo": "Pendiente de clasificación",
+            "tipo": "revision_requerida",
+            "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "literal": false,
+            "items": [
+              {
+                "numero": null,
+                "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+                "orden": 3,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
@@ -2804,6 +2735,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-cannabinoides-sindrome-de-abstinencia",
     "nombre": "Cannabinoides: sindrome de abstinencia",
+    "descripcionBreve": "Cannabinoides: sindrome de abstinencia.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -2831,6 +2763,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-cannabinoides-trastorno-psicotico",
     "nombre": "Cannabinoides: trastorno psicotico",
+    "descripcionBreve": "Cannabinoides: trastorno psicotico.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -2858,6 +2791,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-cannabinoides-trastorno-psicotico-residual-y-de-comienzo-tardio",
     "nombre": "Cannabinoides: trastorno psicotico residual y de comienzo tardio",
+    "descripcionBreve": "Cannabinoides: trastorno psicotico residual y de comienzo tardio.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -2885,6 +2819,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-trastornos-mentales-y-del-comportamiento-debidos-al-uso-de-sedantes-o-hipnoticos",
     "nombre": "Trastornos mentales y del comportamiento debidos al uso de sedantes o hipnóticos",
+    "descripcionBreve": "Trastornos mentales y del comportamiento debidos al uso de sedantes o hipnóticos.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -2912,6 +2847,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-sedantes-o-hipnoticos-intoxicacion-aguda",
     "nombre": "Sedantes o hipnoticos: intoxicacion aguda",
+    "descripcionBreve": "Sedantes o hipnoticos: intoxicacion aguda.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -2939,6 +2875,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-sedantes-o-hipnoticos-uso-nocivo",
     "nombre": "Sedantes o hipnoticos: uso nocivo",
+    "descripcionBreve": "Información orientativa para consulta rápida.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -2953,40 +2890,32 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Sedantes o hipnoticos: uso nocivo",
         "criterios": [
           {
-            "id": "trastorno-sedantes-o-hipnoticos-uso-nocivo-cie10-criterio-1",
-            "orden": 1,
-            "titulo": "Criterio 1",
-            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-sedantes-o-hipnoticos-uso-nocivo-cie10-criterio-2",
-            "orden": 2,
-            "titulo": "Criterio 2",
-            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-sedantes-o-hipnoticos-uso-nocivo-cie10-criterio-3",
-            "orden": 3,
-            "titulo": "Criterio 3",
-            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-sedantes-o-hipnoticos-uso-nocivo-cie10-criterio-4",
-            "orden": 4,
-            "titulo": "Criterio 4",
-            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
+            "id": "trastorno-sedantes-o-hipnoticos-uso-nocivo-cie10-grupo-1",
+            "clave": "",
+            "titulo": "Pendiente de clasificación",
+            "tipo": "revision_requerida",
+            "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "literal": false,
+            "items": [
+              {
+                "numero": null,
+                "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+                "orden": 3,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
@@ -3009,6 +2938,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-sedantes-o-hipnoticos-sindrome-de-dependencia",
     "nombre": "Sedantes o hipnoticos: sindrome de dependencia",
+    "descripcionBreve": "Información orientativa para consulta rápida.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -3023,40 +2953,32 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Sedantes o hipnoticos: sindrome de dependencia",
         "criterios": [
           {
-            "id": "trastorno-sedantes-o-hipnoticos-sindrome-de-dependencia-cie10-criterio-1",
-            "orden": 1,
-            "titulo": "Criterio 1",
-            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-sedantes-o-hipnoticos-sindrome-de-dependencia-cie10-criterio-2",
-            "orden": 2,
-            "titulo": "Criterio 2",
-            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-sedantes-o-hipnoticos-sindrome-de-dependencia-cie10-criterio-3",
-            "orden": 3,
-            "titulo": "Criterio 3",
-            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-sedantes-o-hipnoticos-sindrome-de-dependencia-cie10-criterio-4",
-            "orden": 4,
-            "titulo": "Criterio 4",
-            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
+            "id": "trastorno-sedantes-o-hipnoticos-sindrome-de-dependencia-cie10-grupo-1",
+            "clave": "",
+            "titulo": "Pendiente de clasificación",
+            "tipo": "revision_requerida",
+            "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "literal": false,
+            "items": [
+              {
+                "numero": null,
+                "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+                "orden": 3,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
@@ -3079,6 +3001,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-sedantes-o-hipnoticos-sindrome-de-abstinencia",
     "nombre": "Sedantes o hipnoticos: sindrome de abstinencia",
+    "descripcionBreve": "Sedantes o hipnoticos: sindrome de abstinencia.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -3106,6 +3029,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-sedantes-o-hipnoticos-sindrome-de-abstinencia-con-delirium",
     "nombre": "Sedantes o hipnoticos: sindrome de abstinencia con delirium",
+    "descripcionBreve": "Sedantes o hipnoticos: sindrome de abstinencia con delirium.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -3133,6 +3057,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-sedantes-o-hipnoticos-trastorno-psicotico",
     "nombre": "Sedantes o hipnoticos: trastorno psicotico",
+    "descripcionBreve": "Sedantes o hipnoticos: trastorno psicotico.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -3160,6 +3085,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-sedantes-o-hipnoticos-sindrome-amnesico",
     "nombre": "Sedantes o hipnoticos: sindrome amnesico",
+    "descripcionBreve": "Sedantes o hipnoticos: sindrome amnesico.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -3187,6 +3113,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-sedantes-o-hipnoticos-trastorno-psicotico-residual-y-de-comienzo-tardio",
     "nombre": "Sedantes o hipnoticos: trastorno psicotico residual y de comienzo tardio",
+    "descripcionBreve": "Sedantes o hipnoticos: trastorno psicotico residual y de comienzo tardio.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -3214,6 +3141,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-trastornos-mentales-y-del-comportamiento-debidos-al-uso-de-cocaina",
     "nombre": "Trastornos mentales y del comportamiento debidos al uso de cocaína",
+    "descripcionBreve": "Trastornos mentales y del comportamiento debidos al uso de cocaína.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -3241,6 +3169,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-cocaina-intoxicacion-aguda",
     "nombre": "Cocaina: intoxicacion aguda",
+    "descripcionBreve": "Cocaina: intoxicacion aguda.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -3268,6 +3197,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-cocaina-uso-nocivo",
     "nombre": "Cocaina: uso nocivo",
+    "descripcionBreve": "Cocaina: uso nocivo.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -3295,6 +3225,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-cocaina-sindrome-de-dependencia",
     "nombre": "Cocaina: sindrome de dependencia",
+    "descripcionBreve": "Cocaina: sindrome de dependencia.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -3322,6 +3253,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-cocaina-sindrome-de-abstinencia",
     "nombre": "Cocaina: sindrome de abstinencia",
+    "descripcionBreve": "Cocaina: sindrome de abstinencia.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -3349,6 +3281,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-cocaina-trastorno-psicotico",
     "nombre": "Cocaina: trastorno psicotico",
+    "descripcionBreve": "Cocaina: trastorno psicotico.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -3376,6 +3309,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-cocaina-trastorno-psicotico-residual-y-de-comienzo-tardio",
     "nombre": "Cocaina: trastorno psicotico residual y de comienzo tardio",
+    "descripcionBreve": "Cocaina: trastorno psicotico residual y de comienzo tardio.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -3403,6 +3337,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-trastornos-mentales-y-del-comportamiento-debidos-al-uso-de-otros-estimulantes-incluida-la-cafeina",
     "nombre": "Trastornos mentales y del comportamiento debidos al uso de otros estimulantes, incluida la cafeína",
+    "descripcionBreve": "Trastornos mentales y del comportamiento debidos al uso de otros estimulantes, incluida la cafeína.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -3430,6 +3365,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-otros-estimulantes-intoxicacion-aguda",
     "nombre": "Otros estimulantes: intoxicacion aguda",
+    "descripcionBreve": "Otros estimulantes: intoxicacion aguda.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -3457,6 +3393,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-otros-estimulantes-uso-nocivo",
     "nombre": "Otros estimulantes: uso nocivo",
+    "descripcionBreve": "Información orientativa para consulta rápida.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -3471,40 +3408,32 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Otros estimulantes: uso nocivo",
         "criterios": [
           {
-            "id": "trastorno-otros-estimulantes-uso-nocivo-cie10-criterio-1",
-            "orden": 1,
-            "titulo": "Criterio 1",
-            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-otros-estimulantes-uso-nocivo-cie10-criterio-2",
-            "orden": 2,
-            "titulo": "Criterio 2",
-            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-otros-estimulantes-uso-nocivo-cie10-criterio-3",
-            "orden": 3,
-            "titulo": "Criterio 3",
-            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-otros-estimulantes-uso-nocivo-cie10-criterio-4",
-            "orden": 4,
-            "titulo": "Criterio 4",
-            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
+            "id": "trastorno-otros-estimulantes-uso-nocivo-cie10-grupo-1",
+            "clave": "",
+            "titulo": "Pendiente de clasificación",
+            "tipo": "revision_requerida",
+            "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "literal": false,
+            "items": [
+              {
+                "numero": null,
+                "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+                "orden": 3,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
@@ -3527,6 +3456,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-otros-estimulantes-sindrome-de-dependencia",
     "nombre": "Otros estimulantes: sindrome de dependencia",
+    "descripcionBreve": "Información orientativa para consulta rápida.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -3541,40 +3471,32 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Otros estimulantes: sindrome de dependencia",
         "criterios": [
           {
-            "id": "trastorno-otros-estimulantes-sindrome-de-dependencia-cie10-criterio-1",
-            "orden": 1,
-            "titulo": "Criterio 1",
-            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-otros-estimulantes-sindrome-de-dependencia-cie10-criterio-2",
-            "orden": 2,
-            "titulo": "Criterio 2",
-            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-otros-estimulantes-sindrome-de-dependencia-cie10-criterio-3",
-            "orden": 3,
-            "titulo": "Criterio 3",
-            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-otros-estimulantes-sindrome-de-dependencia-cie10-criterio-4",
-            "orden": 4,
-            "titulo": "Criterio 4",
-            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
+            "id": "trastorno-otros-estimulantes-sindrome-de-dependencia-cie10-grupo-1",
+            "clave": "",
+            "titulo": "Pendiente de clasificación",
+            "tipo": "revision_requerida",
+            "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "literal": false,
+            "items": [
+              {
+                "numero": null,
+                "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+                "orden": 3,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
@@ -3597,6 +3519,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-otros-estimulantes-sindrome-de-abstinencia",
     "nombre": "Otros estimulantes: sindrome de abstinencia",
+    "descripcionBreve": "Otros estimulantes: sindrome de abstinencia.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -3624,6 +3547,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-otros-estimulantes-trastorno-psicotico",
     "nombre": "Otros estimulantes: trastorno psicotico",
+    "descripcionBreve": "Otros estimulantes: trastorno psicotico.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -3651,6 +3575,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-trastornos-mentales-y-del-comportamiento-debidos-al-uso-de-alucinogenos",
     "nombre": "Trastornos mentales y del comportamiento debidos al uso de alucinógenos",
+    "descripcionBreve": "Trastornos mentales y del comportamiento debidos al uso de alucinógenos.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -3678,6 +3603,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-trastornos-mentales-y-del-comportamiento-debidos-al-uso-de-tabaco",
     "nombre": "Trastornos mentales y del comportamiento debidos al uso de tabaco",
+    "descripcionBreve": "Trastornos mentales y del comportamiento debidos al uso de tabaco.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -3705,6 +3631,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-trastornos-mentales-y-del-comportamiento-debidos-al-uso-de-disolventes-volatiles",
     "nombre": "Trastornos mentales y del comportamiento debidos al uso de disolventes volátiles",
+    "descripcionBreve": "Trastornos mentales y del comportamiento debidos al uso de disolventes volátiles.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -3732,6 +3659,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-trastornos-mentales-y-del-comportamiento-debidos-al-uso-de-multiples-drogas-y-otras-sustancias-psicoactivas",
     "nombre": "Trastornos mentales y del comportamiento debidos al uso de múltiples drogas y otras sustancias psicoactivas",
+    "descripcionBreve": "Trastornos mentales y del comportamiento debidos al uso de múltiples drogas y otras sustancias psicoactivas.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -3759,6 +3687,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-multiples-drogas-y-otras-sustancias-psicoactivas-intoxicacion-aguda",
     "nombre": "Multiples drogas y otras sustancias psicoactivas: intoxicacion aguda",
+    "descripcionBreve": "Multiples drogas y otras sustancias psicoactivas: intoxicacion aguda.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -3786,6 +3715,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-multiples-drogas-y-otras-sustancias-psicoactivas-uso-nocivo",
     "nombre": "Multiples drogas y otras sustancias psicoactivas: uso nocivo",
+    "descripcionBreve": "Información orientativa para consulta rápida.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -3800,40 +3730,32 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Multiples drogas y otras sustancias psicoactivas: uso nocivo",
         "criterios": [
           {
-            "id": "trastorno-multiples-drogas-y-otras-sustancias-psicoactivas-uso-nocivo-cie10-criterio-1",
-            "orden": 1,
-            "titulo": "Criterio 1",
-            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-multiples-drogas-y-otras-sustancias-psicoactivas-uso-nocivo-cie10-criterio-2",
-            "orden": 2,
-            "titulo": "Criterio 2",
-            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-multiples-drogas-y-otras-sustancias-psicoactivas-uso-nocivo-cie10-criterio-3",
-            "orden": 3,
-            "titulo": "Criterio 3",
-            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-multiples-drogas-y-otras-sustancias-psicoactivas-uso-nocivo-cie10-criterio-4",
-            "orden": 4,
-            "titulo": "Criterio 4",
-            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
+            "id": "trastorno-multiples-drogas-y-otras-sustancias-psicoactivas-uso-nocivo-cie10-grupo-1",
+            "clave": "",
+            "titulo": "Pendiente de clasificación",
+            "tipo": "revision_requerida",
+            "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "literal": false,
+            "items": [
+              {
+                "numero": null,
+                "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+                "orden": 3,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
@@ -3856,6 +3778,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-multiples-drogas-y-otras-sustancias-psicoactivas-sindrome-de-dependencia",
     "nombre": "Multiples drogas y otras sustancias psicoactivas: sindrome de dependencia",
+    "descripcionBreve": "Información orientativa para consulta rápida.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -3870,40 +3793,32 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Multiples drogas y otras sustancias psicoactivas: sindrome de dependencia",
         "criterios": [
           {
-            "id": "trastorno-multiples-drogas-y-otras-sustancias-psicoactivas-sindrome-de-dependencia-cie10-criterio-1",
-            "orden": 1,
-            "titulo": "Criterio 1",
-            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-multiples-drogas-y-otras-sustancias-psicoactivas-sindrome-de-dependencia-cie10-criterio-2",
-            "orden": 2,
-            "titulo": "Criterio 2",
-            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-multiples-drogas-y-otras-sustancias-psicoactivas-sindrome-de-dependencia-cie10-criterio-3",
-            "orden": 3,
-            "titulo": "Criterio 3",
-            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-multiples-drogas-y-otras-sustancias-psicoactivas-sindrome-de-dependencia-cie10-criterio-4",
-            "orden": 4,
-            "titulo": "Criterio 4",
-            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
+            "id": "trastorno-multiples-drogas-y-otras-sustancias-psicoactivas-sindrome-de-dependencia-cie10-grupo-1",
+            "clave": "",
+            "titulo": "Pendiente de clasificación",
+            "tipo": "revision_requerida",
+            "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "literal": false,
+            "items": [
+              {
+                "numero": null,
+                "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+                "orden": 3,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
@@ -3926,6 +3841,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-multiples-drogas-y-otras-sustancias-psicoactivas-sindrome-de-abstinencia",
     "nombre": "Multiples drogas y otras sustancias psicoactivas: sindrome de abstinencia",
+    "descripcionBreve": "Multiples drogas y otras sustancias psicoactivas: sindrome de abstinencia.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -3953,6 +3869,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-multiples-drogas-y-otras-sustancias-psicoactivas-sindrome-de-abstinencia-con-delirium",
     "nombre": "Multiples drogas y otras sustancias psicoactivas: sindrome de abstinencia con delirium",
+    "descripcionBreve": "Multiples drogas y otras sustancias psicoactivas: sindrome de abstinencia con delirium.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -3980,6 +3897,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-multiples-drogas-y-otras-sustancias-psicoactivas-trastorno-psicotico",
     "nombre": "Multiples drogas y otras sustancias psicoactivas: trastorno psicotico",
+    "descripcionBreve": "Información orientativa para consulta rápida.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -3994,40 +3912,32 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Multiples drogas y otras sustancias psicoactivas: trastorno psicotico",
         "criterios": [
           {
-            "id": "trastorno-multiples-drogas-y-otras-sustancias-psicoactivas-trastorno-psicotico-cie10-criterio-1",
-            "orden": 1,
-            "titulo": "Criterio 1",
-            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-multiples-drogas-y-otras-sustancias-psicoactivas-trastorno-psicotico-cie10-criterio-2",
-            "orden": 2,
-            "titulo": "Criterio 2",
-            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-multiples-drogas-y-otras-sustancias-psicoactivas-trastorno-psicotico-cie10-criterio-3",
-            "orden": 3,
-            "titulo": "Criterio 3",
-            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-multiples-drogas-y-otras-sustancias-psicoactivas-trastorno-psicotico-cie10-criterio-4",
-            "orden": 4,
-            "titulo": "Criterio 4",
-            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
+            "id": "trastorno-multiples-drogas-y-otras-sustancias-psicoactivas-trastorno-psicotico-cie10-grupo-1",
+            "clave": "",
+            "titulo": "Pendiente de clasificación",
+            "tipo": "revision_requerida",
+            "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "literal": false,
+            "items": [
+              {
+                "numero": null,
+                "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+                "orden": 3,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
@@ -4050,6 +3960,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-multiples-drogas-y-otras-sustancias-psicoactivas-sindrome-amnesico",
     "nombre": "Multiples drogas y otras sustancias psicoactivas: sindrome amnesico",
+    "descripcionBreve": "Multiples drogas y otras sustancias psicoactivas: sindrome amnesico.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -4077,6 +3988,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-multiples-drogas-y-otras-sustancias-psicoactivas-trastorno-psicotico-residual-y-de-comienzo-tardio",
     "nombre": "Multiples drogas y otras sustancias psicoactivas: trastorno psicotico residual y de comienzo tardio",
+    "descripcionBreve": "Información orientativa para consulta rápida.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -4091,40 +4003,32 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Multiples drogas y otras sustancias psicoactivas: trastorno psicotico residual y de comienzo tardio",
         "criterios": [
           {
-            "id": "trastorno-multiples-drogas-y-otras-sustancias-psicoactivas-trastorno-psicotico-residual-y-de-comienzo-tardio-cie10-criterio-1",
-            "orden": 1,
-            "titulo": "Criterio 1",
-            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-multiples-drogas-y-otras-sustancias-psicoactivas-trastorno-psicotico-residual-y-de-comienzo-tardio-cie10-criterio-2",
-            "orden": 2,
-            "titulo": "Criterio 2",
-            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-multiples-drogas-y-otras-sustancias-psicoactivas-trastorno-psicotico-residual-y-de-comienzo-tardio-cie10-criterio-3",
-            "orden": 3,
-            "titulo": "Criterio 3",
-            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-multiples-drogas-y-otras-sustancias-psicoactivas-trastorno-psicotico-residual-y-de-comienzo-tardio-cie10-criterio-4",
-            "orden": 4,
-            "titulo": "Criterio 4",
-            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
+            "id": "trastorno-multiples-drogas-y-otras-sustancias-psicoactivas-trastorno-psicotico-residual-y-de-comienzo-tardio-cie10-grupo-1",
+            "clave": "",
+            "titulo": "Pendiente de clasificación",
+            "tipo": "revision_requerida",
+            "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "literal": false,
+            "items": [
+              {
+                "numero": null,
+                "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+                "orden": 3,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
@@ -4147,6 +4051,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-multiples-drogas-y-otras-sustancias-psicoactivas-otros-trastornos-mentales-y-del-comportamiento",
     "nombre": "Multiples drogas y otras sustancias psicoactivas: otros trastornos mentales y del comportamiento",
+    "descripcionBreve": "Multiples drogas y otras sustancias psicoactivas: otros trastornos mentales y del comportamiento.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -4174,6 +4079,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-multiples-drogas-y-otras-sustancias-psicoactivas-trastorno-mental-y-del-comportamiento-no-especificado",
     "nombre": "Multiples drogas y otras sustancias psicoactivas: trastorno mental y del comportamiento no especificado",
+    "descripcionBreve": "Multiples drogas y otras sustancias psicoactivas: trastorno mental y del comportamiento no especificado.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -4201,6 +4107,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-esquizofrenia",
     "nombre": "Esquizofrenia",
+    "descripcionBreve": "La psicosis requiere atencion temprana, continuidad terapeutica, apoyo familiar y reduccion de recaidas.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -4216,40 +4123,32 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Esquizofrenia",
         "criterios": [
           {
-            "id": "trastorno-esquizofrenia-cie10-criterio-1",
-            "orden": 1,
-            "titulo": "Criterio 1",
-            "texto": "Sintomas psicoticos persistentes como delirios, alucinaciones, pensamiento desorganizado o experiencias de influencia/control.",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
-          },
-          {
-            "id": "trastorno-esquizofrenia-cie10-criterio-2",
-            "orden": 2,
-            "titulo": "Criterio 2",
-            "texto": "Deterioro funcional, sintomas negativos o alteraciones cognitivas pueden estar presentes.",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
-          },
-          {
-            "id": "trastorno-esquizofrenia-cie10-criterio-3",
-            "orden": 3,
-            "titulo": "Criterio 3",
-            "texto": "Descartar causas organicas, sustancias, trastorno afectivo primario y delirium.",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
-          },
-          {
-            "id": "trastorno-esquizofrenia-cie10-criterio-4",
-            "orden": 4,
-            "titulo": "Criterio 4",
-            "texto": "Valorar riesgo, red de apoyo, adherencia y rehabilitacion psicosocial.",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
+            "id": "trastorno-esquizofrenia-cie10-grupo-1",
+            "clave": "",
+            "titulo": "Pendiente de clasificación",
+            "tipo": "revision_requerida",
+            "introduccion": "Sintomas psicoticos persistentes como delirios, alucinaciones, pensamiento desorganizado o experiencias de influencia/control.",
+            "literal": false,
+            "items": [
+              {
+                "numero": null,
+                "texto": "Deterioro funcional, sintomas negativos o alteraciones cognitivas pueden estar presentes.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Descartar causas organicas, sustancias, trastorno afectivo primario y delirium.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Valorar riesgo, red de apoyo, adherencia y rehabilitacion psicosocial.",
+                "orden": 3,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
@@ -4263,40 +4162,32 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Esquizofrenia",
         "criterios": [
           {
-            "id": "trastorno-esquizofrenia-cie11-criterio-1",
-            "orden": 1,
-            "titulo": "Criterio 1",
-            "texto": "Sintomas psicoticos persistentes como delirios, alucinaciones, pensamiento desorganizado o experiencias de influencia/control.",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
-          },
-          {
-            "id": "trastorno-esquizofrenia-cie11-criterio-2",
-            "orden": 2,
-            "titulo": "Criterio 2",
-            "texto": "Deterioro funcional, sintomas negativos o alteraciones cognitivas pueden estar presentes.",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
-          },
-          {
-            "id": "trastorno-esquizofrenia-cie11-criterio-3",
-            "orden": 3,
-            "titulo": "Criterio 3",
-            "texto": "Descartar causas organicas, sustancias, trastorno afectivo primario y delirium.",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
-          },
-          {
-            "id": "trastorno-esquizofrenia-cie11-criterio-4",
-            "orden": 4,
-            "titulo": "Criterio 4",
-            "texto": "Valorar riesgo, red de apoyo, adherencia y rehabilitacion psicosocial.",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
+            "id": "trastorno-esquizofrenia-cie11-grupo-1",
+            "clave": "",
+            "titulo": "Pendiente de clasificación",
+            "tipo": "revision_requerida",
+            "introduccion": "Sintomas psicoticos persistentes como delirios, alucinaciones, pensamiento desorganizado o experiencias de influencia/control.",
+            "literal": false,
+            "items": [
+              {
+                "numero": null,
+                "texto": "Deterioro funcional, sintomas negativos o alteraciones cognitivas pueden estar presentes.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Descartar causas organicas, sustancias, trastorno afectivo primario y delirium.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Valorar riesgo, red de apoyo, adherencia y rehabilitacion psicosocial.",
+                "orden": 3,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
@@ -4313,6 +4204,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-esquizofrenia-paranoide",
     "nombre": "Esquizofrenia paranoide",
+    "descripcionBreve": "Información orientativa para consulta rápida.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -4327,40 +4219,32 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Esquizofrenia paranoide",
         "criterios": [
           {
-            "id": "trastorno-esquizofrenia-paranoide-cie10-criterio-1",
-            "orden": 1,
-            "titulo": "Criterio 1",
-            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-esquizofrenia-paranoide-cie10-criterio-2",
-            "orden": 2,
-            "titulo": "Criterio 2",
-            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-esquizofrenia-paranoide-cie10-criterio-3",
-            "orden": 3,
-            "titulo": "Criterio 3",
-            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-esquizofrenia-paranoide-cie10-criterio-4",
-            "orden": 4,
-            "titulo": "Criterio 4",
-            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
+            "id": "trastorno-esquizofrenia-paranoide-cie10-grupo-1",
+            "clave": "",
+            "titulo": "Pendiente de clasificación",
+            "tipo": "revision_requerida",
+            "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "literal": false,
+            "items": [
+              {
+                "numero": null,
+                "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+                "orden": 3,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
@@ -4383,6 +4267,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-esquizofrenia-hebefrenica",
     "nombre": "Esquizofrenia hebefrénica",
+    "descripcionBreve": "Información orientativa para consulta rápida.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -4397,40 +4282,32 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Esquizofrenia hebefrénica",
         "criterios": [
           {
-            "id": "trastorno-esquizofrenia-hebefrenica-cie10-criterio-1",
-            "orden": 1,
-            "titulo": "Criterio 1",
-            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-esquizofrenia-hebefrenica-cie10-criterio-2",
-            "orden": 2,
-            "titulo": "Criterio 2",
-            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-esquizofrenia-hebefrenica-cie10-criterio-3",
-            "orden": 3,
-            "titulo": "Criterio 3",
-            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-esquizofrenia-hebefrenica-cie10-criterio-4",
-            "orden": 4,
-            "titulo": "Criterio 4",
-            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
+            "id": "trastorno-esquizofrenia-hebefrenica-cie10-grupo-1",
+            "clave": "",
+            "titulo": "Pendiente de clasificación",
+            "tipo": "revision_requerida",
+            "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "literal": false,
+            "items": [
+              {
+                "numero": null,
+                "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+                "orden": 3,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
@@ -4453,6 +4330,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-esquizofrenia-catatonica",
     "nombre": "Esquizofrenia catatónica",
+    "descripcionBreve": "Información orientativa para consulta rápida.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -4467,40 +4345,32 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Esquizofrenia catatónica",
         "criterios": [
           {
-            "id": "trastorno-esquizofrenia-catatonica-cie10-criterio-1",
-            "orden": 1,
-            "titulo": "Criterio 1",
-            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-esquizofrenia-catatonica-cie10-criterio-2",
-            "orden": 2,
-            "titulo": "Criterio 2",
-            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-esquizofrenia-catatonica-cie10-criterio-3",
-            "orden": 3,
-            "titulo": "Criterio 3",
-            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-esquizofrenia-catatonica-cie10-criterio-4",
-            "orden": 4,
-            "titulo": "Criterio 4",
-            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
+            "id": "trastorno-esquizofrenia-catatonica-cie10-grupo-1",
+            "clave": "",
+            "titulo": "Pendiente de clasificación",
+            "tipo": "revision_requerida",
+            "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "literal": false,
+            "items": [
+              {
+                "numero": null,
+                "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+                "orden": 3,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
@@ -4523,6 +4393,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-esquizofrenia-indiferenciada",
     "nombre": "Esquizofrenia indiferenciada",
+    "descripcionBreve": "Información orientativa para consulta rápida.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -4537,40 +4408,32 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Esquizofrenia indiferenciada",
         "criterios": [
           {
-            "id": "trastorno-esquizofrenia-indiferenciada-cie10-criterio-1",
-            "orden": 1,
-            "titulo": "Criterio 1",
-            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-esquizofrenia-indiferenciada-cie10-criterio-2",
-            "orden": 2,
-            "titulo": "Criterio 2",
-            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-esquizofrenia-indiferenciada-cie10-criterio-3",
-            "orden": 3,
-            "titulo": "Criterio 3",
-            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-esquizofrenia-indiferenciada-cie10-criterio-4",
-            "orden": 4,
-            "titulo": "Criterio 4",
-            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
+            "id": "trastorno-esquizofrenia-indiferenciada-cie10-grupo-1",
+            "clave": "",
+            "titulo": "Pendiente de clasificación",
+            "tipo": "revision_requerida",
+            "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "literal": false,
+            "items": [
+              {
+                "numero": null,
+                "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+                "orden": 3,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
@@ -4593,6 +4456,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-depresion-post-esquizofrenica",
     "nombre": "Depresión post-esquizofrénica",
+    "descripcionBreve": "Depresión post-esquizofrénica.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -4620,6 +4484,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-esquizofrenia-residual",
     "nombre": "Esquizofrenia residual",
+    "descripcionBreve": "Información orientativa para consulta rápida.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -4634,40 +4499,32 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Esquizofrenia residual",
         "criterios": [
           {
-            "id": "trastorno-esquizofrenia-residual-cie10-criterio-1",
-            "orden": 1,
-            "titulo": "Criterio 1",
-            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-esquizofrenia-residual-cie10-criterio-2",
-            "orden": 2,
-            "titulo": "Criterio 2",
-            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-esquizofrenia-residual-cie10-criterio-3",
-            "orden": 3,
-            "titulo": "Criterio 3",
-            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-esquizofrenia-residual-cie10-criterio-4",
-            "orden": 4,
-            "titulo": "Criterio 4",
-            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
+            "id": "trastorno-esquizofrenia-residual-cie10-grupo-1",
+            "clave": "",
+            "titulo": "Pendiente de clasificación",
+            "tipo": "revision_requerida",
+            "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "literal": false,
+            "items": [
+              {
+                "numero": null,
+                "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+                "orden": 3,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
@@ -4690,6 +4547,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-esquizofrenia-simple",
     "nombre": "Esquizofrenia simple",
+    "descripcionBreve": "Información orientativa para consulta rápida.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -4704,40 +4562,32 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Esquizofrenia simple",
         "criterios": [
           {
-            "id": "trastorno-esquizofrenia-simple-cie10-criterio-1",
-            "orden": 1,
-            "titulo": "Criterio 1",
-            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-esquizofrenia-simple-cie10-criterio-2",
-            "orden": 2,
-            "titulo": "Criterio 2",
-            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-esquizofrenia-simple-cie10-criterio-3",
-            "orden": 3,
-            "titulo": "Criterio 3",
-            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-esquizofrenia-simple-cie10-criterio-4",
-            "orden": 4,
-            "titulo": "Criterio 4",
-            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
+            "id": "trastorno-esquizofrenia-simple-cie10-grupo-1",
+            "clave": "",
+            "titulo": "Pendiente de clasificación",
+            "tipo": "revision_requerida",
+            "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "literal": false,
+            "items": [
+              {
+                "numero": null,
+                "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+                "orden": 3,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
@@ -4760,6 +4610,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-otras-esquizofrenias",
     "nombre": "Otras esquizofrenias",
+    "descripcionBreve": "Otras esquizofrenias.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -4787,6 +4638,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-esquizofrenia-no-especificada",
     "nombre": "Esquizofrenia no especificada",
+    "descripcionBreve": "Esquizofrenia no especificada.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -4814,6 +4666,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-trastorno-esquizotipico",
     "nombre": "Trastorno esquizotípico",
+    "descripcionBreve": "Trastorno esquizotípico.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -4853,6 +4706,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-trastornos-de-ideas-delirantes-persistentes",
     "nombre": "Trastornos de ideas delirantes persistentes",
+    "descripcionBreve": "Trastornos de ideas delirantes persistentes.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -4880,6 +4734,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-trastornos-psicoticos-agudos-y-transitorios",
     "nombre": "Trastornos psicóticos agudos y transitorios",
+    "descripcionBreve": "Trastornos psicóticos agudos y transitorios.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -4907,6 +4762,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-trastorno-de-ideas-delirantes-inducidas",
     "nombre": "Trastorno de ideas delirantes inducidas",
+    "descripcionBreve": "Trastorno de ideas delirantes inducidas.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -4934,6 +4790,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-trastornos-esquizoafectivos",
     "nombre": "Trastornos esquizoafectivos",
+    "descripcionBreve": "Trastornos esquizoafectivos.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -4961,6 +4818,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-trastorno-esquizoafectivo-de-tipo-maniaco",
     "nombre": "Trastorno esquizoafectivo de tipo maníaco",
+    "descripcionBreve": "Información orientativa para consulta rápida.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -4975,40 +4833,32 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Trastorno esquizoafectivo de tipo maníaco",
         "criterios": [
           {
-            "id": "trastorno-trastorno-esquizoafectivo-de-tipo-maniaco-cie10-criterio-1",
-            "orden": 1,
-            "titulo": "Criterio 1",
-            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-esquizoafectivo-de-tipo-maniaco-cie10-criterio-2",
-            "orden": 2,
-            "titulo": "Criterio 2",
-            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-esquizoafectivo-de-tipo-maniaco-cie10-criterio-3",
-            "orden": 3,
-            "titulo": "Criterio 3",
-            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-esquizoafectivo-de-tipo-maniaco-cie10-criterio-4",
-            "orden": 4,
-            "titulo": "Criterio 4",
-            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
+            "id": "trastorno-trastorno-esquizoafectivo-de-tipo-maniaco-cie10-grupo-1",
+            "clave": "",
+            "titulo": "Pendiente de clasificación",
+            "tipo": "revision_requerida",
+            "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "literal": false,
+            "items": [
+              {
+                "numero": null,
+                "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+                "orden": 3,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
@@ -5031,6 +4881,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-trastorno-esquizoafectivo-de-tipo-depresivo",
     "nombre": "Trastorno esquizoafectivo de tipo depresivo",
+    "descripcionBreve": "Información orientativa para consulta rápida.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -5045,40 +4896,32 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Trastorno esquizoafectivo de tipo depresivo",
         "criterios": [
           {
-            "id": "trastorno-trastorno-esquizoafectivo-de-tipo-depresivo-cie10-criterio-1",
-            "orden": 1,
-            "titulo": "Criterio 1",
-            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-esquizoafectivo-de-tipo-depresivo-cie10-criterio-2",
-            "orden": 2,
-            "titulo": "Criterio 2",
-            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-esquizoafectivo-de-tipo-depresivo-cie10-criterio-3",
-            "orden": 3,
-            "titulo": "Criterio 3",
-            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-esquizoafectivo-de-tipo-depresivo-cie10-criterio-4",
-            "orden": 4,
-            "titulo": "Criterio 4",
-            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
+            "id": "trastorno-trastorno-esquizoafectivo-de-tipo-depresivo-cie10-grupo-1",
+            "clave": "",
+            "titulo": "Pendiente de clasificación",
+            "tipo": "revision_requerida",
+            "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "literal": false,
+            "items": [
+              {
+                "numero": null,
+                "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+                "orden": 3,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
@@ -5101,6 +4944,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-trastorno-esquizoafectivo-de-tipo-mixto",
     "nombre": "Trastorno esquizoafectivo de tipo mixto",
+    "descripcionBreve": "Información orientativa para consulta rápida.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -5115,40 +4959,32 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Trastorno esquizoafectivo de tipo mixto",
         "criterios": [
           {
-            "id": "trastorno-trastorno-esquizoafectivo-de-tipo-mixto-cie10-criterio-1",
-            "orden": 1,
-            "titulo": "Criterio 1",
-            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-esquizoafectivo-de-tipo-mixto-cie10-criterio-2",
-            "orden": 2,
-            "titulo": "Criterio 2",
-            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-esquizoafectivo-de-tipo-mixto-cie10-criterio-3",
-            "orden": 3,
-            "titulo": "Criterio 3",
-            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-esquizoafectivo-de-tipo-mixto-cie10-criterio-4",
-            "orden": 4,
-            "titulo": "Criterio 4",
-            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
+            "id": "trastorno-trastorno-esquizoafectivo-de-tipo-mixto-cie10-grupo-1",
+            "clave": "",
+            "titulo": "Pendiente de clasificación",
+            "tipo": "revision_requerida",
+            "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "literal": false,
+            "items": [
+              {
+                "numero": null,
+                "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+                "orden": 3,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
@@ -5171,6 +5007,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-otros-trastornos-esquizoafectivos",
     "nombre": "Otros trastornos esquizoafectivos",
+    "descripcionBreve": "Otros trastornos esquizoafectivos.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -5198,6 +5035,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-trastorno-esquizoafectivo-no-especificado",
     "nombre": "Trastorno esquizoafectivo no especificado",
+    "descripcionBreve": "Trastorno esquizoafectivo no especificado.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -5225,6 +5063,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-otros-trastornos-psicoticos-no-organicos",
     "nombre": "Otros trastornos psicóticos no orgánicos",
+    "descripcionBreve": "Otros trastornos psicóticos no orgánicos.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -5252,6 +5091,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-psicosis-no-organica-no-especificada",
     "nombre": "Psicosis no orgánica no especificada",
+    "descripcionBreve": "Información orientativa para consulta rápida.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -5266,40 +5106,32 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Psicosis no orgánica no especificada",
         "criterios": [
           {
-            "id": "trastorno-psicosis-no-organica-no-especificada-cie10-criterio-1",
-            "orden": 1,
-            "titulo": "Criterio 1",
-            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-psicosis-no-organica-no-especificada-cie10-criterio-2",
-            "orden": 2,
-            "titulo": "Criterio 2",
-            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-psicosis-no-organica-no-especificada-cie10-criterio-3",
-            "orden": 3,
-            "titulo": "Criterio 3",
-            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-psicosis-no-organica-no-especificada-cie10-criterio-4",
-            "orden": 4,
-            "titulo": "Criterio 4",
-            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
+            "id": "trastorno-psicosis-no-organica-no-especificada-cie10-grupo-1",
+            "clave": "",
+            "titulo": "Pendiente de clasificación",
+            "tipo": "revision_requerida",
+            "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "literal": false,
+            "items": [
+              {
+                "numero": null,
+                "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+                "orden": 3,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
@@ -5322,6 +5154,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-episodio-maniaco",
     "nombre": "Episodio maníaco",
+    "descripcionBreve": "Episodio maníaco.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -5349,6 +5182,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-hipomania",
     "nombre": "Hipomanía",
+    "descripcionBreve": "Información orientativa para consulta rápida.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -5363,40 +5197,32 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Hipomanía",
         "criterios": [
           {
-            "id": "trastorno-hipomania-cie10-criterio-1",
-            "orden": 1,
-            "titulo": "Criterio 1",
-            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-hipomania-cie10-criterio-2",
-            "orden": 2,
-            "titulo": "Criterio 2",
-            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-hipomania-cie10-criterio-3",
-            "orden": 3,
-            "titulo": "Criterio 3",
-            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-hipomania-cie10-criterio-4",
-            "orden": 4,
-            "titulo": "Criterio 4",
-            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
+            "id": "trastorno-hipomania-cie10-grupo-1",
+            "clave": "",
+            "titulo": "Pendiente de clasificación",
+            "tipo": "revision_requerida",
+            "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "literal": false,
+            "items": [
+              {
+                "numero": null,
+                "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+                "orden": 3,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
@@ -5419,6 +5245,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-mania-sin-sintomas-psicoticos",
     "nombre": "Manía sin síntomas psicóticos",
+    "descripcionBreve": "Información orientativa para consulta rápida.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -5433,40 +5260,32 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Manía sin síntomas psicóticos",
         "criterios": [
           {
-            "id": "trastorno-mania-sin-sintomas-psicoticos-cie10-criterio-1",
-            "orden": 1,
-            "titulo": "Criterio 1",
-            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-mania-sin-sintomas-psicoticos-cie10-criterio-2",
-            "orden": 2,
-            "titulo": "Criterio 2",
-            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-mania-sin-sintomas-psicoticos-cie10-criterio-3",
-            "orden": 3,
-            "titulo": "Criterio 3",
-            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-mania-sin-sintomas-psicoticos-cie10-criterio-4",
-            "orden": 4,
-            "titulo": "Criterio 4",
-            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
+            "id": "trastorno-mania-sin-sintomas-psicoticos-cie10-grupo-1",
+            "clave": "",
+            "titulo": "Pendiente de clasificación",
+            "tipo": "revision_requerida",
+            "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "literal": false,
+            "items": [
+              {
+                "numero": null,
+                "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+                "orden": 3,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
@@ -5489,6 +5308,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-mania-con-sintomas-psicoticos",
     "nombre": "Manía con síntomas psicóticos",
+    "descripcionBreve": "Información orientativa para consulta rápida.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -5503,40 +5323,32 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Manía con síntomas psicóticos",
         "criterios": [
           {
-            "id": "trastorno-mania-con-sintomas-psicoticos-cie10-criterio-1",
-            "orden": 1,
-            "titulo": "Criterio 1",
-            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-mania-con-sintomas-psicoticos-cie10-criterio-2",
-            "orden": 2,
-            "titulo": "Criterio 2",
-            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-mania-con-sintomas-psicoticos-cie10-criterio-3",
-            "orden": 3,
-            "titulo": "Criterio 3",
-            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-mania-con-sintomas-psicoticos-cie10-criterio-4",
-            "orden": 4,
-            "titulo": "Criterio 4",
-            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
+            "id": "trastorno-mania-con-sintomas-psicoticos-cie10-grupo-1",
+            "clave": "",
+            "titulo": "Pendiente de clasificación",
+            "tipo": "revision_requerida",
+            "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "literal": false,
+            "items": [
+              {
+                "numero": null,
+                "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+                "orden": 3,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
@@ -5559,6 +5371,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-trastorno-afectivo-bipolar",
     "nombre": "Trastorno afectivo bipolar",
+    "descripcionBreve": "El ritmo de sueno, la adherencia y la identificacion temprana de cambios de energia son pilares del autocuidado.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -5573,40 +5386,32 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Trastorno afectivo bipolar",
         "criterios": [
           {
-            "id": "trastorno-trastorno-afectivo-bipolar-cie10-criterio-1",
-            "orden": 1,
-            "titulo": "Criterio 1",
-            "texto": "Presencia de episodios de mania, hipomania y/o depresion segun subtipo.",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-afectivo-bipolar-cie10-criterio-2",
-            "orden": 2,
-            "titulo": "Criterio 2",
-            "texto": "Mania: elevacion/irritabilidad del animo con aumento de energia, menor necesidad de sueno, grandiosidad, verborrea, fuga de ideas, distractibilidad o conductas de riesgo.",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-afectivo-bipolar-cie10-criterio-3",
-            "orden": 3,
-            "titulo": "Criterio 3",
-            "texto": "Valorar psicosis, riesgo, consumo de sustancias y antecedentes familiares.",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-afectivo-bipolar-cie10-criterio-4",
-            "orden": 4,
-            "titulo": "Criterio 4",
-            "texto": "Evitar interpretar depresion recurrente sin tamizar historia de hipomania/mania.",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
+            "id": "trastorno-trastorno-afectivo-bipolar-cie10-grupo-1",
+            "clave": "",
+            "titulo": "Pendiente de clasificación",
+            "tipo": "revision_requerida",
+            "introduccion": "Presencia de episodios de mania, hipomania y/o depresion segun subtipo.",
+            "literal": false,
+            "items": [
+              {
+                "numero": null,
+                "texto": "Mania: elevacion/irritabilidad del animo con aumento de energia, menor necesidad de sueno, grandiosidad, verborrea, fuga de ideas, distractibilidad o conductas de riesgo.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Valorar psicosis, riesgo, consumo de sustancias y antecedentes familiares.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Evitar interpretar depresion recurrente sin tamizar historia de hipomania/mania.",
+                "orden": 3,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
@@ -5623,6 +5428,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-trastorno-afectivo-bipolar-episodio-actual-hipomaniaco",
     "nombre": "Trastorno afectivo bipolar, episodio actual hipomaníaco",
+    "descripcionBreve": "Información orientativa para consulta rápida.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -5637,40 +5443,32 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Trastorno afectivo bipolar, episodio actual hipomaníaco",
         "criterios": [
           {
-            "id": "trastorno-trastorno-afectivo-bipolar-episodio-actual-hipomaniaco-cie10-criterio-1",
-            "orden": 1,
-            "titulo": "Criterio 1",
-            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-afectivo-bipolar-episodio-actual-hipomaniaco-cie10-criterio-2",
-            "orden": 2,
-            "titulo": "Criterio 2",
-            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-afectivo-bipolar-episodio-actual-hipomaniaco-cie10-criterio-3",
-            "orden": 3,
-            "titulo": "Criterio 3",
-            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-afectivo-bipolar-episodio-actual-hipomaniaco-cie10-criterio-4",
-            "orden": 4,
-            "titulo": "Criterio 4",
-            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
+            "id": "trastorno-trastorno-afectivo-bipolar-episodio-actual-hipomaniaco-cie10-grupo-1",
+            "clave": "",
+            "titulo": "Pendiente de clasificación",
+            "tipo": "revision_requerida",
+            "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "literal": false,
+            "items": [
+              {
+                "numero": null,
+                "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+                "orden": 3,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
@@ -5693,6 +5491,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-trastorno-afectivo-bipolar-episodio-actual-maniaco-sin-sintomas-psicoticos",
     "nombre": "Trastorno afectivo bipolar, episodio actual maníaco sin síntomas psicóticos",
+    "descripcionBreve": "Información orientativa para consulta rápida.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -5707,40 +5506,32 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Trastorno afectivo bipolar, episodio actual maníaco sin síntomas psicóticos",
         "criterios": [
           {
-            "id": "trastorno-trastorno-afectivo-bipolar-episodio-actual-maniaco-sin-sintomas-psicoticos-cie10-criterio-1",
-            "orden": 1,
-            "titulo": "Criterio 1",
-            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-afectivo-bipolar-episodio-actual-maniaco-sin-sintomas-psicoticos-cie10-criterio-2",
-            "orden": 2,
-            "titulo": "Criterio 2",
-            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-afectivo-bipolar-episodio-actual-maniaco-sin-sintomas-psicoticos-cie10-criterio-3",
-            "orden": 3,
-            "titulo": "Criterio 3",
-            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-afectivo-bipolar-episodio-actual-maniaco-sin-sintomas-psicoticos-cie10-criterio-4",
-            "orden": 4,
-            "titulo": "Criterio 4",
-            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
+            "id": "trastorno-trastorno-afectivo-bipolar-episodio-actual-maniaco-sin-sintomas-psicoticos-cie10-grupo-1",
+            "clave": "",
+            "titulo": "Pendiente de clasificación",
+            "tipo": "revision_requerida",
+            "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "literal": false,
+            "items": [
+              {
+                "numero": null,
+                "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+                "orden": 3,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
@@ -5763,6 +5554,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-trastorno-afectivo-bipolar-episodio-actual-maniaco-con-sintomas-psicoticos",
     "nombre": "Trastorno afectivo bipolar, episodio actual maníaco con síntomas psicóticos",
+    "descripcionBreve": "Información orientativa para consulta rápida.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -5777,40 +5569,32 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Trastorno afectivo bipolar, episodio actual maníaco con síntomas psicóticos",
         "criterios": [
           {
-            "id": "trastorno-trastorno-afectivo-bipolar-episodio-actual-maniaco-con-sintomas-psicoticos-cie10-criterio-1",
-            "orden": 1,
-            "titulo": "Criterio 1",
-            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-afectivo-bipolar-episodio-actual-maniaco-con-sintomas-psicoticos-cie10-criterio-2",
-            "orden": 2,
-            "titulo": "Criterio 2",
-            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-afectivo-bipolar-episodio-actual-maniaco-con-sintomas-psicoticos-cie10-criterio-3",
-            "orden": 3,
-            "titulo": "Criterio 3",
-            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-afectivo-bipolar-episodio-actual-maniaco-con-sintomas-psicoticos-cie10-criterio-4",
-            "orden": 4,
-            "titulo": "Criterio 4",
-            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
+            "id": "trastorno-trastorno-afectivo-bipolar-episodio-actual-maniaco-con-sintomas-psicoticos-cie10-grupo-1",
+            "clave": "",
+            "titulo": "Pendiente de clasificación",
+            "tipo": "revision_requerida",
+            "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "literal": false,
+            "items": [
+              {
+                "numero": null,
+                "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+                "orden": 3,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
@@ -5833,6 +5617,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-trastorno-afectivo-bipolar-episodio-actual-depresivo-leve-o-moderado",
     "nombre": "Trastorno afectivo bipolar, episodio actual depresivo leve o moderado",
+    "descripcionBreve": "Información orientativa para consulta rápida.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -5847,40 +5632,32 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Trastorno afectivo bipolar, episodio actual depresivo leve o moderado",
         "criterios": [
           {
-            "id": "trastorno-trastorno-afectivo-bipolar-episodio-actual-depresivo-leve-o-moderado-cie10-criterio-1",
-            "orden": 1,
-            "titulo": "Criterio 1",
-            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-afectivo-bipolar-episodio-actual-depresivo-leve-o-moderado-cie10-criterio-2",
-            "orden": 2,
-            "titulo": "Criterio 2",
-            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-afectivo-bipolar-episodio-actual-depresivo-leve-o-moderado-cie10-criterio-3",
-            "orden": 3,
-            "titulo": "Criterio 3",
-            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-afectivo-bipolar-episodio-actual-depresivo-leve-o-moderado-cie10-criterio-4",
-            "orden": 4,
-            "titulo": "Criterio 4",
-            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
+            "id": "trastorno-trastorno-afectivo-bipolar-episodio-actual-depresivo-leve-o-moderado-cie10-grupo-1",
+            "clave": "",
+            "titulo": "Pendiente de clasificación",
+            "tipo": "revision_requerida",
+            "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "literal": false,
+            "items": [
+              {
+                "numero": null,
+                "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+                "orden": 3,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
@@ -5903,6 +5680,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-trastorno-afectivo-bipolar-episodio-actual-depresivo-grave-sin-sintomas-psicoticos",
     "nombre": "Trastorno afectivo bipolar, episodio actual depresivo grave sin síntomas psicóticos",
+    "descripcionBreve": "Información orientativa para consulta rápida.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -5917,40 +5695,32 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Trastorno afectivo bipolar, episodio actual depresivo grave sin síntomas psicóticos",
         "criterios": [
           {
-            "id": "trastorno-trastorno-afectivo-bipolar-episodio-actual-depresivo-grave-sin-sintomas-psicoticos-cie10-criterio-1",
-            "orden": 1,
-            "titulo": "Criterio 1",
-            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-afectivo-bipolar-episodio-actual-depresivo-grave-sin-sintomas-psicoticos-cie10-criterio-2",
-            "orden": 2,
-            "titulo": "Criterio 2",
-            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-afectivo-bipolar-episodio-actual-depresivo-grave-sin-sintomas-psicoticos-cie10-criterio-3",
-            "orden": 3,
-            "titulo": "Criterio 3",
-            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-afectivo-bipolar-episodio-actual-depresivo-grave-sin-sintomas-psicoticos-cie10-criterio-4",
-            "orden": 4,
-            "titulo": "Criterio 4",
-            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
+            "id": "trastorno-trastorno-afectivo-bipolar-episodio-actual-depresivo-grave-sin-sintomas-psicoticos-cie10-grupo-1",
+            "clave": "",
+            "titulo": "Pendiente de clasificación",
+            "tipo": "revision_requerida",
+            "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "literal": false,
+            "items": [
+              {
+                "numero": null,
+                "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+                "orden": 3,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
@@ -5973,6 +5743,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-trastorno-afectivo-bipolar-episodio-actual-depresivo-grave-con-sintomas-psicoticos",
     "nombre": "Trastorno afectivo bipolar, episodio actual depresivo grave con síntomas psicóticos",
+    "descripcionBreve": "Información orientativa para consulta rápida.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -5987,40 +5758,32 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Trastorno afectivo bipolar, episodio actual depresivo grave con síntomas psicóticos",
         "criterios": [
           {
-            "id": "trastorno-trastorno-afectivo-bipolar-episodio-actual-depresivo-grave-con-sintomas-psicoticos-cie10-criterio-1",
-            "orden": 1,
-            "titulo": "Criterio 1",
-            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-afectivo-bipolar-episodio-actual-depresivo-grave-con-sintomas-psicoticos-cie10-criterio-2",
-            "orden": 2,
-            "titulo": "Criterio 2",
-            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-afectivo-bipolar-episodio-actual-depresivo-grave-con-sintomas-psicoticos-cie10-criterio-3",
-            "orden": 3,
-            "titulo": "Criterio 3",
-            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-afectivo-bipolar-episodio-actual-depresivo-grave-con-sintomas-psicoticos-cie10-criterio-4",
-            "orden": 4,
-            "titulo": "Criterio 4",
-            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
+            "id": "trastorno-trastorno-afectivo-bipolar-episodio-actual-depresivo-grave-con-sintomas-psicoticos-cie10-grupo-1",
+            "clave": "",
+            "titulo": "Pendiente de clasificación",
+            "tipo": "revision_requerida",
+            "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "literal": false,
+            "items": [
+              {
+                "numero": null,
+                "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+                "orden": 3,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
@@ -6043,6 +5806,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-trastorno-afectivo-bipolar-episodio-actual-mixto",
     "nombre": "Trastorno afectivo bipolar, episodio actual mixto",
+    "descripcionBreve": "Información orientativa para consulta rápida.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -6057,40 +5821,32 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Trastorno afectivo bipolar, episodio actual mixto",
         "criterios": [
           {
-            "id": "trastorno-trastorno-afectivo-bipolar-episodio-actual-mixto-cie10-criterio-1",
-            "orden": 1,
-            "titulo": "Criterio 1",
-            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-afectivo-bipolar-episodio-actual-mixto-cie10-criterio-2",
-            "orden": 2,
-            "titulo": "Criterio 2",
-            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-afectivo-bipolar-episodio-actual-mixto-cie10-criterio-3",
-            "orden": 3,
-            "titulo": "Criterio 3",
-            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-afectivo-bipolar-episodio-actual-mixto-cie10-criterio-4",
-            "orden": 4,
-            "titulo": "Criterio 4",
-            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
+            "id": "trastorno-trastorno-afectivo-bipolar-episodio-actual-mixto-cie10-grupo-1",
+            "clave": "",
+            "titulo": "Pendiente de clasificación",
+            "tipo": "revision_requerida",
+            "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "literal": false,
+            "items": [
+              {
+                "numero": null,
+                "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+                "orden": 3,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
@@ -6113,6 +5869,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-trastorno-afectivo-bipolar-actualmente-en-remision",
     "nombre": "Trastorno afectivo bipolar actualmente en remisión",
+    "descripcionBreve": "Información orientativa para consulta rápida.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -6127,40 +5884,32 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Trastorno afectivo bipolar actualmente en remisión",
         "criterios": [
           {
-            "id": "trastorno-trastorno-afectivo-bipolar-actualmente-en-remision-cie10-criterio-1",
-            "orden": 1,
-            "titulo": "Criterio 1",
-            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-afectivo-bipolar-actualmente-en-remision-cie10-criterio-2",
-            "orden": 2,
-            "titulo": "Criterio 2",
-            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-afectivo-bipolar-actualmente-en-remision-cie10-criterio-3",
-            "orden": 3,
-            "titulo": "Criterio 3",
-            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-afectivo-bipolar-actualmente-en-remision-cie10-criterio-4",
-            "orden": 4,
-            "titulo": "Criterio 4",
-            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
+            "id": "trastorno-trastorno-afectivo-bipolar-actualmente-en-remision-cie10-grupo-1",
+            "clave": "",
+            "titulo": "Pendiente de clasificación",
+            "tipo": "revision_requerida",
+            "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "literal": false,
+            "items": [
+              {
+                "numero": null,
+                "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+                "orden": 3,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
@@ -6183,6 +5932,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-otros-trastornos-afectivos-bipolares",
     "nombre": "Otros trastornos afectivos bipolares",
+    "descripcionBreve": "Otros trastornos afectivos bipolares.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -6210,6 +5960,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-trastorno-afectivo-bipolar-no-especificado",
     "nombre": "Trastorno afectivo bipolar no especificado",
+    "descripcionBreve": "Trastorno afectivo bipolar no especificado.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -6237,6 +5988,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-episodio-depresivo",
     "nombre": "Episodio depresivo",
+    "descripcionBreve": "La depresion no es falta de voluntad; es un cuadro clinico tratable.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -6251,40 +6003,32 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Episodio depresivo",
         "criterios": [
           {
-            "id": "trastorno-episodio-depresivo-cie10-criterio-1",
-            "orden": 1,
-            "titulo": "Criterio 1",
-            "texto": "Animo deprimido, perdida de interes o disminucion significativa de energia.",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
-          },
-          {
-            "id": "trastorno-episodio-depresivo-cie10-criterio-2",
-            "orden": 2,
-            "titulo": "Criterio 2",
-            "texto": "Sintomas asociados: alteraciones de sueno/apetito, culpa, baja autoestima, concentracion reducida, enlentecimiento/agitación o ideacion suicida.",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
-          },
-          {
-            "id": "trastorno-episodio-depresivo-cie10-criterio-3",
-            "orden": 3,
-            "titulo": "Criterio 3",
-            "texto": "Duracion clinicamente relevante y deterioro funcional.",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
-          },
-          {
-            "id": "trastorno-episodio-depresivo-cie10-criterio-4",
-            "orden": 4,
-            "titulo": "Criterio 4",
-            "texto": "Descartar sustancias, duelo no complicado, condiciones medicas u otros trastornos primarios.",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
+            "id": "trastorno-episodio-depresivo-cie10-grupo-1",
+            "clave": "",
+            "titulo": "Pendiente de clasificación",
+            "tipo": "revision_requerida",
+            "introduccion": "Animo deprimido, perdida de interes o disminucion significativa de energia.",
+            "literal": false,
+            "items": [
+              {
+                "numero": null,
+                "texto": "Sintomas asociados: alteraciones de sueno/apetito, culpa, baja autoestima, concentracion reducida, enlentecimiento/agitación o ideacion suicida.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Duracion clinicamente relevante y deterioro funcional.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Descartar sustancias, duelo no complicado, condiciones medicas u otros trastornos primarios.",
+                "orden": 3,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
@@ -6301,6 +6045,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-episodio-depresivo-leve",
     "nombre": "Episodio depresivo leve",
+    "descripcionBreve": "Información orientativa para consulta rápida.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -6315,40 +6060,32 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Episodio depresivo leve",
         "criterios": [
           {
-            "id": "trastorno-episodio-depresivo-leve-cie10-criterio-1",
-            "orden": 1,
-            "titulo": "Criterio 1",
-            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-episodio-depresivo-leve-cie10-criterio-2",
-            "orden": 2,
-            "titulo": "Criterio 2",
-            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-episodio-depresivo-leve-cie10-criterio-3",
-            "orden": 3,
-            "titulo": "Criterio 3",
-            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-episodio-depresivo-leve-cie10-criterio-4",
-            "orden": 4,
-            "titulo": "Criterio 4",
-            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
+            "id": "trastorno-episodio-depresivo-leve-cie10-grupo-1",
+            "clave": "",
+            "titulo": "Pendiente de clasificación",
+            "tipo": "revision_requerida",
+            "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "literal": false,
+            "items": [
+              {
+                "numero": null,
+                "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+                "orden": 3,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
@@ -6371,6 +6108,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-episodio-depresivo-moderado",
     "nombre": "Episodio depresivo moderado",
+    "descripcionBreve": "Información orientativa para consulta rápida.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -6385,40 +6123,32 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Episodio depresivo moderado",
         "criterios": [
           {
-            "id": "trastorno-episodio-depresivo-moderado-cie10-criterio-1",
-            "orden": 1,
-            "titulo": "Criterio 1",
-            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-episodio-depresivo-moderado-cie10-criterio-2",
-            "orden": 2,
-            "titulo": "Criterio 2",
-            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-episodio-depresivo-moderado-cie10-criterio-3",
-            "orden": 3,
-            "titulo": "Criterio 3",
-            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-episodio-depresivo-moderado-cie10-criterio-4",
-            "orden": 4,
-            "titulo": "Criterio 4",
-            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
+            "id": "trastorno-episodio-depresivo-moderado-cie10-grupo-1",
+            "clave": "",
+            "titulo": "Pendiente de clasificación",
+            "tipo": "revision_requerida",
+            "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "literal": false,
+            "items": [
+              {
+                "numero": null,
+                "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+                "orden": 3,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
@@ -6441,6 +6171,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-episodio-depresivo-grave-sin-sintomas-psicoticos",
     "nombre": "Episodio depresivo grave sin síntomas psicóticos",
+    "descripcionBreve": "Información orientativa para consulta rápida.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -6455,40 +6186,32 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Episodio depresivo grave sin síntomas psicóticos",
         "criterios": [
           {
-            "id": "trastorno-episodio-depresivo-grave-sin-sintomas-psicoticos-cie10-criterio-1",
-            "orden": 1,
-            "titulo": "Criterio 1",
-            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-episodio-depresivo-grave-sin-sintomas-psicoticos-cie10-criterio-2",
-            "orden": 2,
-            "titulo": "Criterio 2",
-            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-episodio-depresivo-grave-sin-sintomas-psicoticos-cie10-criterio-3",
-            "orden": 3,
-            "titulo": "Criterio 3",
-            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-episodio-depresivo-grave-sin-sintomas-psicoticos-cie10-criterio-4",
-            "orden": 4,
-            "titulo": "Criterio 4",
-            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
+            "id": "trastorno-episodio-depresivo-grave-sin-sintomas-psicoticos-cie10-grupo-1",
+            "clave": "",
+            "titulo": "Pendiente de clasificación",
+            "tipo": "revision_requerida",
+            "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "literal": false,
+            "items": [
+              {
+                "numero": null,
+                "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+                "orden": 3,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
@@ -6511,6 +6234,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-episodio-depresivo-grave-con-sintomas-psicoticos",
     "nombre": "Episodio depresivo grave con síntomas psicóticos",
+    "descripcionBreve": "Información orientativa para consulta rápida.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -6525,40 +6249,32 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Episodio depresivo grave con síntomas psicóticos",
         "criterios": [
           {
-            "id": "trastorno-episodio-depresivo-grave-con-sintomas-psicoticos-cie10-criterio-1",
-            "orden": 1,
-            "titulo": "Criterio 1",
-            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-episodio-depresivo-grave-con-sintomas-psicoticos-cie10-criterio-2",
-            "orden": 2,
-            "titulo": "Criterio 2",
-            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-episodio-depresivo-grave-con-sintomas-psicoticos-cie10-criterio-3",
-            "orden": 3,
-            "titulo": "Criterio 3",
-            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-episodio-depresivo-grave-con-sintomas-psicoticos-cie10-criterio-4",
-            "orden": 4,
-            "titulo": "Criterio 4",
-            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
+            "id": "trastorno-episodio-depresivo-grave-con-sintomas-psicoticos-cie10-grupo-1",
+            "clave": "",
+            "titulo": "Pendiente de clasificación",
+            "tipo": "revision_requerida",
+            "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "literal": false,
+            "items": [
+              {
+                "numero": null,
+                "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+                "orden": 3,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
@@ -6581,6 +6297,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-otros-episodios-depresivos",
     "nombre": "Otros episodios depresivos",
+    "descripcionBreve": "Otros episodios depresivos.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -6608,6 +6325,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-episodio-depresivo-no-especificado",
     "nombre": "Episodio depresivo no especificado",
+    "descripcionBreve": "Episodio depresivo no especificado.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -6635,6 +6353,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-trastorno-depresivo-recurrente",
     "nombre": "Trastorno depresivo recurrente",
+    "descripcionBreve": "Las recaidas pueden prevenirse con seguimiento, adherencia, deteccion temprana de sintomas y un plan de crisis claro.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -6650,40 +6369,32 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Trastorno depresivo recurrente",
         "criterios": [
           {
-            "id": "trastorno-trastorno-depresivo-recurrente-cie10-criterio-1",
-            "orden": 1,
-            "titulo": "Criterio 1",
-            "texto": "Historia de dos o mas episodios depresivos separados por periodos de mejoria.",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-depresivo-recurrente-cie10-criterio-2",
-            "orden": 2,
-            "titulo": "Criterio 2",
-            "texto": "Evaluar gravedad actual, sintomas psicoticos, riesgo suicida y funcionamiento.",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-depresivo-recurrente-cie10-criterio-3",
-            "orden": 3,
-            "titulo": "Criterio 3",
-            "texto": "Explorar bipolaridad antes de iniciar o ajustar antidepresivos.",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-depresivo-recurrente-cie10-criterio-4",
-            "orden": 4,
-            "titulo": "Criterio 4",
-            "texto": "Planear prevencion de recaidas y continuidad terapeutica.",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
+            "id": "trastorno-trastorno-depresivo-recurrente-cie10-grupo-1",
+            "clave": "",
+            "titulo": "Pendiente de clasificación",
+            "tipo": "revision_requerida",
+            "introduccion": "Historia de dos o mas episodios depresivos separados por periodos de mejoria.",
+            "literal": false,
+            "items": [
+              {
+                "numero": null,
+                "texto": "Evaluar gravedad actual, sintomas psicoticos, riesgo suicida y funcionamiento.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Explorar bipolaridad antes de iniciar o ajustar antidepresivos.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Planear prevencion de recaidas y continuidad terapeutica.",
+                "orden": 3,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
@@ -6697,40 +6408,32 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Trastorno depresivo recurrente",
         "criterios": [
           {
-            "id": "trastorno-trastorno-depresivo-recurrente-cie11-criterio-1",
-            "orden": 1,
-            "titulo": "Criterio 1",
-            "texto": "Historia de dos o mas episodios depresivos separados por periodos de mejoria.",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-depresivo-recurrente-cie11-criterio-2",
-            "orden": 2,
-            "titulo": "Criterio 2",
-            "texto": "Evaluar gravedad actual, sintomas psicoticos, riesgo suicida y funcionamiento.",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-depresivo-recurrente-cie11-criterio-3",
-            "orden": 3,
-            "titulo": "Criterio 3",
-            "texto": "Explorar bipolaridad antes de iniciar o ajustar antidepresivos.",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-depresivo-recurrente-cie11-criterio-4",
-            "orden": 4,
-            "titulo": "Criterio 4",
-            "texto": "Planear prevencion de recaidas y continuidad terapeutica.",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
+            "id": "trastorno-trastorno-depresivo-recurrente-cie11-grupo-1",
+            "clave": "",
+            "titulo": "Pendiente de clasificación",
+            "tipo": "revision_requerida",
+            "introduccion": "Historia de dos o mas episodios depresivos separados por periodos de mejoria.",
+            "literal": false,
+            "items": [
+              {
+                "numero": null,
+                "texto": "Evaluar gravedad actual, sintomas psicoticos, riesgo suicida y funcionamiento.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Explorar bipolaridad antes de iniciar o ajustar antidepresivos.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Planear prevencion de recaidas y continuidad terapeutica.",
+                "orden": 3,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
@@ -6747,6 +6450,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-trastorno-depresivo-recurrente-episodio-actual-leve",
     "nombre": "Trastorno depresivo recurrente, episodio actual leve",
+    "descripcionBreve": "Información orientativa para consulta rápida.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -6761,40 +6465,32 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Trastorno depresivo recurrente, episodio actual leve",
         "criterios": [
           {
-            "id": "trastorno-trastorno-depresivo-recurrente-episodio-actual-leve-cie10-criterio-1",
-            "orden": 1,
-            "titulo": "Criterio 1",
-            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-depresivo-recurrente-episodio-actual-leve-cie10-criterio-2",
-            "orden": 2,
-            "titulo": "Criterio 2",
-            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-depresivo-recurrente-episodio-actual-leve-cie10-criterio-3",
-            "orden": 3,
-            "titulo": "Criterio 3",
-            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-depresivo-recurrente-episodio-actual-leve-cie10-criterio-4",
-            "orden": 4,
-            "titulo": "Criterio 4",
-            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
+            "id": "trastorno-trastorno-depresivo-recurrente-episodio-actual-leve-cie10-grupo-1",
+            "clave": "",
+            "titulo": "Pendiente de clasificación",
+            "tipo": "revision_requerida",
+            "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "literal": false,
+            "items": [
+              {
+                "numero": null,
+                "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+                "orden": 3,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
@@ -6817,6 +6513,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-trastorno-depresivo-recurrente-episodio-actual-moderado",
     "nombre": "Trastorno depresivo recurrente, episodio actual moderado",
+    "descripcionBreve": "Información orientativa para consulta rápida.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -6831,40 +6528,32 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Trastorno depresivo recurrente, episodio actual moderado",
         "criterios": [
           {
-            "id": "trastorno-trastorno-depresivo-recurrente-episodio-actual-moderado-cie10-criterio-1",
-            "orden": 1,
-            "titulo": "Criterio 1",
-            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-depresivo-recurrente-episodio-actual-moderado-cie10-criterio-2",
-            "orden": 2,
-            "titulo": "Criterio 2",
-            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-depresivo-recurrente-episodio-actual-moderado-cie10-criterio-3",
-            "orden": 3,
-            "titulo": "Criterio 3",
-            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-depresivo-recurrente-episodio-actual-moderado-cie10-criterio-4",
-            "orden": 4,
-            "titulo": "Criterio 4",
-            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
+            "id": "trastorno-trastorno-depresivo-recurrente-episodio-actual-moderado-cie10-grupo-1",
+            "clave": "",
+            "titulo": "Pendiente de clasificación",
+            "tipo": "revision_requerida",
+            "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "literal": false,
+            "items": [
+              {
+                "numero": null,
+                "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+                "orden": 3,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
@@ -6887,6 +6576,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-trastorno-depresivo-recurrente-episodio-actual-grave-sin-sintomas-psicoticos",
     "nombre": "Trastorno depresivo recurrente, episodio actual grave sin síntomas psicóticos",
+    "descripcionBreve": "Información orientativa para consulta rápida.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -6901,40 +6591,32 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Trastorno depresivo recurrente, episodio actual grave sin síntomas psicóticos",
         "criterios": [
           {
-            "id": "trastorno-trastorno-depresivo-recurrente-episodio-actual-grave-sin-sintomas-psicoticos-cie10-criterio-1",
-            "orden": 1,
-            "titulo": "Criterio 1",
-            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-depresivo-recurrente-episodio-actual-grave-sin-sintomas-psicoticos-cie10-criterio-2",
-            "orden": 2,
-            "titulo": "Criterio 2",
-            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-depresivo-recurrente-episodio-actual-grave-sin-sintomas-psicoticos-cie10-criterio-3",
-            "orden": 3,
-            "titulo": "Criterio 3",
-            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-depresivo-recurrente-episodio-actual-grave-sin-sintomas-psicoticos-cie10-criterio-4",
-            "orden": 4,
-            "titulo": "Criterio 4",
-            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
+            "id": "trastorno-trastorno-depresivo-recurrente-episodio-actual-grave-sin-sintomas-psicoticos-cie10-grupo-1",
+            "clave": "",
+            "titulo": "Pendiente de clasificación",
+            "tipo": "revision_requerida",
+            "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "literal": false,
+            "items": [
+              {
+                "numero": null,
+                "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+                "orden": 3,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
@@ -6957,6 +6639,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-trastorno-depresivo-recurrente-episodio-actual-grave-con-sintomas-psicoticos",
     "nombre": "Trastorno depresivo recurrente, episodio actual grave con síntomas psicóticos",
+    "descripcionBreve": "Información orientativa para consulta rápida.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -6971,40 +6654,32 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Trastorno depresivo recurrente, episodio actual grave con síntomas psicóticos",
         "criterios": [
           {
-            "id": "trastorno-trastorno-depresivo-recurrente-episodio-actual-grave-con-sintomas-psicoticos-cie10-criterio-1",
-            "orden": 1,
-            "titulo": "Criterio 1",
-            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-depresivo-recurrente-episodio-actual-grave-con-sintomas-psicoticos-cie10-criterio-2",
-            "orden": 2,
-            "titulo": "Criterio 2",
-            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-depresivo-recurrente-episodio-actual-grave-con-sintomas-psicoticos-cie10-criterio-3",
-            "orden": 3,
-            "titulo": "Criterio 3",
-            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-depresivo-recurrente-episodio-actual-grave-con-sintomas-psicoticos-cie10-criterio-4",
-            "orden": 4,
-            "titulo": "Criterio 4",
-            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
+            "id": "trastorno-trastorno-depresivo-recurrente-episodio-actual-grave-con-sintomas-psicoticos-cie10-grupo-1",
+            "clave": "",
+            "titulo": "Pendiente de clasificación",
+            "tipo": "revision_requerida",
+            "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "literal": false,
+            "items": [
+              {
+                "numero": null,
+                "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+                "orden": 3,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
@@ -7027,6 +6702,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-trastorno-depresivo-recurrente-actualmente-en-remision",
     "nombre": "Trastorno depresivo recurrente actualmente en remisión",
+    "descripcionBreve": "Trastorno depresivo recurrente actualmente en remisión.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -7054,6 +6730,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-otros-trastornos-depresivos-recurrentes",
     "nombre": "Otros trastornos depresivos recurrentes",
+    "descripcionBreve": "Otros trastornos depresivos recurrentes.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -7081,6 +6758,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-trastorno-depresivo-recurrente-no-especificado",
     "nombre": "Trastorno depresivo recurrente no especificado",
+    "descripcionBreve": "Trastorno depresivo recurrente no especificado.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -7108,6 +6786,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-trastornos-persistentes-del-humor",
     "nombre": "Trastornos persistentes del humor",
+    "descripcionBreve": "Trastornos persistentes del humor.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -7135,6 +6814,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-ciclotimia",
     "nombre": "Ciclotimia",
+    "descripcionBreve": "Ciclotimia.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -7162,6 +6842,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-distimia",
     "nombre": "Distimia",
+    "descripcionBreve": "Información orientativa para consulta rápida.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -7176,40 +6857,32 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Distimia",
         "criterios": [
           {
-            "id": "trastorno-distimia-cie10-criterio-1",
-            "orden": 1,
-            "titulo": "Criterio 1",
-            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-distimia-cie10-criterio-2",
-            "orden": 2,
-            "titulo": "Criterio 2",
-            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-distimia-cie10-criterio-3",
-            "orden": 3,
-            "titulo": "Criterio 3",
-            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-distimia-cie10-criterio-4",
-            "orden": 4,
-            "titulo": "Criterio 4",
-            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
+            "id": "trastorno-distimia-cie10-grupo-1",
+            "clave": "",
+            "titulo": "Pendiente de clasificación",
+            "tipo": "revision_requerida",
+            "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "literal": false,
+            "items": [
+              {
+                "numero": null,
+                "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+                "orden": 3,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
@@ -7232,6 +6905,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-otros-trastornos-del-humor",
     "nombre": "Otros trastornos del humor",
+    "descripcionBreve": "Otros trastornos del humor.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -7259,6 +6933,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-trastorno-del-humor-no-especificado",
     "nombre": "Trastorno del humor no especificado",
+    "descripcionBreve": "Trastorno del humor no especificado.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -7286,6 +6961,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-trastornos-de-ansiedad-fobica",
     "nombre": "Trastornos de ansiedad fóbica",
+    "descripcionBreve": "Trastornos de ansiedad fóbica.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -7313,6 +6989,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-agorafobia",
     "nombre": "Agorafobia",
+    "descripcionBreve": "Información orientativa para consulta rápida.",
     "categoria": "Trastornos de ansiedad",
     "subcategoria": "Ansiedad",
     "aliases": [
@@ -7329,40 +7006,32 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Agorafobia",
         "criterios": [
           {
-            "id": "trastorno-agorafobia-cie10-criterio-1",
-            "orden": 1,
-            "titulo": "Criterio 1",
-            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-agorafobia-cie10-criterio-2",
-            "orden": 2,
-            "titulo": "Criterio 2",
-            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-agorafobia-cie10-criterio-3",
-            "orden": 3,
-            "titulo": "Criterio 3",
-            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-agorafobia-cie10-criterio-4",
-            "orden": 4,
-            "titulo": "Criterio 4",
-            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
+            "id": "trastorno-agorafobia-cie10-grupo-1",
+            "clave": "",
+            "titulo": "Pendiente de clasificación",
+            "tipo": "revision_requerida",
+            "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "literal": false,
+            "items": [
+              {
+                "numero": null,
+                "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+                "orden": 3,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
@@ -7376,40 +7045,32 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Agorafobia",
         "criterios": [
           {
-            "orden": 1,
-            "titulo": "Resumen clínico 1",
-            "texto": "Temor ante situaciones donde escapar o recibir ayuda podría resultar difícil.",
-            "tipo": "resumen_clinico",
-            "fuente": "Resumen estructurado del proyecto; revisar fuente oficial",
+            "id": "trastorno-agorafobia-cie11-grupo-1",
+            "clave": "",
+            "titulo": "Pendiente de clasificación",
+            "tipo": "revision_requerida",
+            "introduccion": "Temor ante situaciones donde escapar o recibir ayuda podría resultar difícil.",
             "literal": false,
-            "id": "trastorno-agorafobia-cie11-criterio-1"
-          },
-          {
-            "orden": 2,
-            "titulo": "Resumen clínico 2",
-            "texto": "Puede incluir transporte público, espacios abiertos o cerrados, filas, multitudes y estar fuera de casa sin compañía.",
-            "tipo": "resumen_clinico",
-            "fuente": "Resumen estructurado del proyecto; revisar fuente oficial",
-            "literal": false,
-            "id": "trastorno-agorafobia-cie11-criterio-2"
-          },
-          {
-            "orden": 3,
-            "titulo": "Resumen clínico 3",
-            "texto": "Evitación, necesidad de acompañante o exposición con ansiedad intensa.",
-            "tipo": "resumen_clinico",
-            "fuente": "Resumen estructurado del proyecto; revisar fuente oficial",
-            "literal": false,
-            "id": "trastorno-agorafobia-cie11-criterio-3"
-          },
-          {
-            "orden": 4,
-            "titulo": "Resumen clínico 4",
-            "texto": "Persistencia, desproporción y deterioro clínicamente significativo.",
-            "tipo": "resumen_clinico",
-            "fuente": "Resumen estructurado del proyecto; revisar fuente oficial",
-            "literal": false,
-            "id": "trastorno-agorafobia-cie11-criterio-4"
+            "items": [
+              {
+                "numero": null,
+                "texto": "Puede incluir transporte público, espacios abiertos o cerrados, filas, multitudes y estar fuera de casa sin compañía.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Evitación, necesidad de acompañante o exposición con ansiedad intensa.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Persistencia, desproporción y deterioro clínicamente significativo.",
+                "orden": 3,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
@@ -7424,40 +7085,32 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Agorafobia",
         "criterios": [
           {
-            "id": "trastorno-agorafobia-dsm5-criterio-1",
-            "orden": 1,
-            "titulo": "Resumen clínico 1",
-            "texto": "Temor ante situaciones donde escapar o recibir ayuda podría resultar difícil.",
-            "tipo": "resumen_clinico",
-            "fuente": "DSM-5-TR; resumen no literal",
-            "literal": false
-          },
-          {
-            "id": "trastorno-agorafobia-dsm5-criterio-2",
-            "orden": 2,
-            "titulo": "Resumen clínico 2",
-            "texto": "Puede incluir transporte público, espacios abiertos o cerrados, filas, multitudes y estar fuera de casa sin compañía.",
-            "tipo": "resumen_clinico",
-            "fuente": "DSM-5-TR; resumen no literal",
-            "literal": false
-          },
-          {
-            "id": "trastorno-agorafobia-dsm5-criterio-3",
-            "orden": 3,
-            "titulo": "Resumen clínico 3",
-            "texto": "Evitación, necesidad de acompañante o exposición con ansiedad intensa.",
-            "tipo": "resumen_clinico",
-            "fuente": "DSM-5-TR; resumen no literal",
-            "literal": false
-          },
-          {
-            "id": "trastorno-agorafobia-dsm5-criterio-4",
-            "orden": 4,
-            "titulo": "Resumen clínico 4",
-            "texto": "Persistencia, desproporción y deterioro clínicamente significativo.",
-            "tipo": "resumen_clinico",
-            "fuente": "DSM-5-TR; resumen no literal",
-            "literal": false
+            "id": "trastorno-agorafobia-dsm5-grupo-1",
+            "clave": "",
+            "titulo": "Pendiente de clasificación",
+            "tipo": "revision_requerida",
+            "introduccion": "Temor ante situaciones donde escapar o recibir ayuda podría resultar difícil.",
+            "literal": false,
+            "items": [
+              {
+                "numero": null,
+                "texto": "Puede incluir transporte público, espacios abiertos o cerrados, filas, multitudes y estar fuera de casa sin compañía.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Evitación, necesidad de acompañante o exposición con ansiedad intensa.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Persistencia, desproporción y deterioro clínicamente significativo.",
+                "orden": 3,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
@@ -7487,6 +7140,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-fobias-sociales",
     "nombre": "Fobias sociales",
+    "descripcionBreve": "Información orientativa para consulta rápida.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -7501,40 +7155,32 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Fobias sociales",
         "criterios": [
           {
-            "id": "trastorno-fobias-sociales-cie10-criterio-1",
-            "orden": 1,
-            "titulo": "Criterio 1",
-            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-fobias-sociales-cie10-criterio-2",
-            "orden": 2,
-            "titulo": "Criterio 2",
-            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-fobias-sociales-cie10-criterio-3",
-            "orden": 3,
-            "titulo": "Criterio 3",
-            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-fobias-sociales-cie10-criterio-4",
-            "orden": 4,
-            "titulo": "Criterio 4",
-            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
+            "id": "trastorno-fobias-sociales-cie10-grupo-1",
+            "clave": "",
+            "titulo": "Pendiente de clasificación",
+            "tipo": "revision_requerida",
+            "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "literal": false,
+            "items": [
+              {
+                "numero": null,
+                "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+                "orden": 3,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
@@ -7557,6 +7203,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-fobias-especificas-aisladas",
     "nombre": "Fobias específicas aisladas",
+    "descripcionBreve": "Información orientativa para consulta rápida.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -7571,40 +7218,32 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Fobias específicas aisladas",
         "criterios": [
           {
-            "id": "trastorno-fobias-especificas-aisladas-cie10-criterio-1",
-            "orden": 1,
-            "titulo": "Criterio 1",
-            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-fobias-especificas-aisladas-cie10-criterio-2",
-            "orden": 2,
-            "titulo": "Criterio 2",
-            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-fobias-especificas-aisladas-cie10-criterio-3",
-            "orden": 3,
-            "titulo": "Criterio 3",
-            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-fobias-especificas-aisladas-cie10-criterio-4",
-            "orden": 4,
-            "titulo": "Criterio 4",
-            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
+            "id": "trastorno-fobias-especificas-aisladas-cie10-grupo-1",
+            "clave": "",
+            "titulo": "Pendiente de clasificación",
+            "tipo": "revision_requerida",
+            "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "literal": false,
+            "items": [
+              {
+                "numero": null,
+                "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+                "orden": 3,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
@@ -7627,6 +7266,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-otros-trastornos-de-ansiedad",
     "nombre": "Otros trastornos de ansiedad",
+    "descripcionBreve": "Otros trastornos de ansiedad.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -7654,6 +7294,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-trastorno-de-panico",
     "nombre": "Trastorno de pánico",
+    "descripcionBreve": "Información orientativa para consulta rápida.",
     "categoria": "Trastornos de ansiedad",
     "subcategoria": "Ansiedad",
     "aliases": [
@@ -7671,40 +7312,32 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Trastorno de pánico",
         "criterios": [
           {
-            "id": "trastorno-trastorno-de-panico-cie10-criterio-1",
-            "orden": 1,
-            "titulo": "Criterio 1",
-            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-de-panico-cie10-criterio-2",
-            "orden": 2,
-            "titulo": "Criterio 2",
-            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-de-panico-cie10-criterio-3",
-            "orden": 3,
-            "titulo": "Criterio 3",
-            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-de-panico-cie10-criterio-4",
-            "orden": 4,
-            "titulo": "Criterio 4",
-            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
+            "id": "trastorno-trastorno-de-panico-cie10-grupo-1",
+            "clave": "",
+            "titulo": "Pendiente de clasificación",
+            "tipo": "revision_requerida",
+            "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "literal": false,
+            "items": [
+              {
+                "numero": null,
+                "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+                "orden": 3,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
@@ -7718,49 +7351,38 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Trastorno de panico",
         "criterios": [
           {
-            "orden": 1,
-            "titulo": "Resumen clínico 1",
-            "texto": "Ataques de pánico recurrentes, de inicio abrupto.",
-            "tipo": "resumen_clinico",
-            "fuente": "Resumen estructurado del proyecto; revisar fuente oficial",
+            "id": "trastorno-trastorno-de-panico-cie11-grupo-1",
+            "clave": "",
+            "titulo": "Pendiente de clasificación",
+            "tipo": "revision_requerida",
+            "introduccion": "Ataques de pánico recurrentes, de inicio abrupto.",
             "literal": false,
-            "id": "trastorno-trastorno-de-panico-cie11-criterio-1"
-          },
-          {
-            "orden": 2,
-            "titulo": "Resumen clínico 2",
-            "texto": "Síntomas autonómicos, respiratorios, neurológicos y cognitivos durante los ataques.",
-            "tipo": "resumen_clinico",
-            "fuente": "Resumen estructurado del proyecto; revisar fuente oficial",
-            "literal": false,
-            "id": "trastorno-trastorno-de-panico-cie11-criterio-2"
-          },
-          {
-            "orden": 3,
-            "titulo": "Resumen clínico 3",
-            "texto": "Preocupación persistente por nuevos ataques o sus consecuencias.",
-            "tipo": "resumen_clinico",
-            "fuente": "Resumen estructurado del proyecto; revisar fuente oficial",
-            "literal": false,
-            "id": "trastorno-trastorno-de-panico-cie11-criterio-3"
-          },
-          {
-            "orden": 4,
-            "titulo": "Resumen clínico 4",
-            "texto": "Cambios conductuales desadaptativos y deterioro.",
-            "tipo": "resumen_clinico",
-            "fuente": "Resumen estructurado del proyecto; revisar fuente oficial",
-            "literal": false,
-            "id": "trastorno-trastorno-de-panico-cie11-criterio-4"
-          },
-          {
-            "orden": 5,
-            "titulo": "Resumen clínico 5",
-            "texto": "Distinguir ataque de pánico de trastorno de pánico y descartar sustancias o afecciones médicas.",
-            "tipo": "resumen_clinico",
-            "fuente": "Resumen estructurado del proyecto; revisar fuente oficial",
-            "literal": false,
-            "id": "trastorno-trastorno-de-panico-cie11-criterio-5"
+            "items": [
+              {
+                "numero": null,
+                "texto": "Síntomas autonómicos, respiratorios, neurológicos y cognitivos durante los ataques.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Preocupación persistente por nuevos ataques o sus consecuencias.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Cambios conductuales desadaptativos y deterioro.",
+                "orden": 3,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Distinguir ataque de pánico de trastorno de pánico y descartar sustancias o afecciones médicas.",
+                "orden": 4,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
@@ -7775,49 +7397,38 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Trastorno de pánico",
         "criterios": [
           {
-            "id": "trastorno-trastorno-de-panico-dsm5-criterio-1",
-            "orden": 1,
-            "titulo": "Resumen clínico 1",
-            "texto": "Ataques de pánico recurrentes, de inicio abrupto.",
-            "tipo": "resumen_clinico",
-            "fuente": "DSM-5-TR; resumen no literal",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-de-panico-dsm5-criterio-2",
-            "orden": 2,
-            "titulo": "Resumen clínico 2",
-            "texto": "Síntomas autonómicos, respiratorios, neurológicos y cognitivos durante los ataques.",
-            "tipo": "resumen_clinico",
-            "fuente": "DSM-5-TR; resumen no literal",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-de-panico-dsm5-criterio-3",
-            "orden": 3,
-            "titulo": "Resumen clínico 3",
-            "texto": "Preocupación persistente por nuevos ataques o sus consecuencias.",
-            "tipo": "resumen_clinico",
-            "fuente": "DSM-5-TR; resumen no literal",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-de-panico-dsm5-criterio-4",
-            "orden": 4,
-            "titulo": "Resumen clínico 4",
-            "texto": "Cambios conductuales desadaptativos y deterioro.",
-            "tipo": "resumen_clinico",
-            "fuente": "DSM-5-TR; resumen no literal",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-de-panico-dsm5-criterio-5",
-            "orden": 5,
-            "titulo": "Resumen clínico 5",
-            "texto": "Distinguir ataque de pánico de trastorno de pánico y descartar sustancias o afecciones médicas.",
-            "tipo": "resumen_clinico",
-            "fuente": "DSM-5-TR; resumen no literal",
-            "literal": false
+            "id": "trastorno-trastorno-de-panico-dsm5-grupo-1",
+            "clave": "",
+            "titulo": "Pendiente de clasificación",
+            "tipo": "revision_requerida",
+            "introduccion": "Ataques de pánico recurrentes, de inicio abrupto.",
+            "literal": false,
+            "items": [
+              {
+                "numero": null,
+                "texto": "Síntomas autonómicos, respiratorios, neurológicos y cognitivos durante los ataques.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Preocupación persistente por nuevos ataques o sus consecuencias.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Cambios conductuales desadaptativos y deterioro.",
+                "orden": 3,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Distinguir ataque de pánico de trastorno de pánico y descartar sustancias o afecciones médicas.",
+                "orden": 4,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
@@ -7847,6 +7458,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-trastorno-de-ansiedad-generalizada",
     "nombre": "Trastorno de ansiedad generalizada",
+    "descripcionBreve": "La ansiedad se trabaja con psicoeducacion, regulacion fisiologica, exposicion gradual, sueño y estrategias cognitivas.",
     "categoria": "Trastornos de ansiedad",
     "subcategoria": "Ansiedad",
     "aliases": [
@@ -7864,301 +7476,228 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Trastorno de ansiedad generalizada",
         "criterios": [
           {
-            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie10-criterio-1",
-            "orden": 1,
-            "titulo": "Criterio 1",
-            "texto": "A) Presencia de un período de por lo menos 6 meses con tensión prominente, preocupación y aprensión sobre los acontecimientos y problemas de la vida diaria.",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
+            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie10-grupo-1",
+            "clave": "A",
+            "titulo": "Criterio A",
+            "tipo": "criterio",
+            "introduccion": "Presencia de un período de por lo menos 6 meses con tensión prominente, preocupación y aprensión sobre los acontecimientos y problemas de la vida diaria.",
+            "literal": false,
+            "items": []
           },
           {
-            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie10-criterio-2",
-            "orden": 2,
-            "titulo": "Criterio 2",
-            "texto": "B) Presencia de al menos 4 de los síntomas lsitados a continuación, de los cuales por lo menos uno de ellos debe ser del grupo 1-4:",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
+            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie10-grupo-2",
+            "clave": "B",
+            "titulo": "Criterio B",
+            "tipo": "criterio",
+            "introduccion": "Presencia de al menos 4 de los síntomas lsitados a continuación, de los cuales por lo menos uno de ellos debe ser del grupo 1-4:",
+            "literal": false,
+            "items": []
           },
           {
-            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie10-criterio-3",
-            "orden": 3,
-            "titulo": "Criterio 3",
-            "texto": "Síntomas autonómicos:",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
+            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie10-grupo-3",
+            "clave": "",
+            "titulo": "Síntomas autonómicos",
+            "tipo": "grupo_clinico",
+            "introduccion": "",
+            "literal": false,
+            "items": [
+              {
+                "numero": 1,
+                "texto": "Palpitaciones o golpeo del corazón o ritmo cardiaco acelerado.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": 2,
+                "texto": "Sudoración.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": 3,
+                "texto": "Temblores o sacudidas.",
+                "orden": 3,
+                "literal": false
+              },
+              {
+                "numero": 4,
+                "texto": "Sequedad de boca (no debida a medicación o deshidratación).",
+                "orden": 4,
+                "literal": false
+              }
+            ]
           },
           {
-            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie10-criterio-4",
-            "orden": 4,
-            "titulo": "Criterio 4",
-            "texto": " 1) Palpitaciones o golpeo del corazón o ritmo cardiaco acelerado.",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
+            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie10-grupo-4",
+            "clave": "",
+            "titulo": "Síntomas relacionados con el pecho y abdomen",
+            "tipo": "grupo_clinico",
+            "introduccion": "",
+            "literal": false,
+            "items": [
+              {
+                "numero": 5,
+                "texto": "Dificultad para respirar.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": 6,
+                "texto": "Sensación de ahogo.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": 7,
+                "texto": "Dolor o molestias en el pecho.",
+                "orden": 3,
+                "literal": false
+              },
+              {
+                "numero": 8,
+                "texto": "Náuseas o malestar abdominal (p. ej., estómago revuelto).",
+                "orden": 4,
+                "literal": false
+              }
+            ]
           },
           {
-            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie10-criterio-5",
-            "orden": 5,
-            "titulo": "Criterio 5",
-            "texto": " 2) Sudoración.",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
+            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie10-grupo-5",
+            "clave": "",
+            "titulo": "Síntomas relacionados con el estado mental",
+            "tipo": "grupo_clinico",
+            "introduccion": "",
+            "literal": false,
+            "items": [
+              {
+                "numero": 9,
+                "texto": "Sensación de mareo, inestabilidad o desvanecimiento.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": 10,
+                "texto": "Sensación de que los objetos son irreales (desrealización) o de que uno mismo está distante o no realmente aquí (despersonalización).",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": 11,
+                "texto": "Miedo a perder el control, a perder la conciencia o volverse loco.",
+                "orden": 3,
+                "literal": false
+              },
+              {
+                "numero": 12,
+                "texto": "Miedo a morir.",
+                "orden": 4,
+                "literal": false
+              }
+            ]
           },
           {
-            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie10-criterio-6",
-            "orden": 6,
-            "titulo": "Criterio 6",
-            "texto": " 3) Temblores o sacudidas.",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
+            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie10-grupo-6",
+            "clave": "",
+            "titulo": "Síntomas generales",
+            "tipo": "grupo_clinico",
+            "introduccion": "",
+            "literal": false,
+            "items": [
+              {
+                "numero": 13,
+                "texto": "Sofocos de calor o escalofríos.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": 14,
+                "texto": "aturdimiento o sensación de hormigueo (parestesias).",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": 15,
+                "texto": "Tensión, dolores o molestias musculares.",
+                "orden": 3,
+                "literal": false
+              },
+              {
+                "numero": 16,
+                "texto": "Inquietud e incapacidad para relajrse.",
+                "orden": 4,
+                "literal": false
+              },
+              {
+                "numero": 17,
+                "texto": "sentimientos de estar al límite o bajo presión, o de tensión mental",
+                "orden": 5,
+                "literal": false
+              },
+              {
+                "numero": 18,
+                "texto": "Sensación de nudo en la garganta o dificultad para tragar.",
+                "orden": 6,
+                "literal": false
+              }
+            ]
           },
           {
-            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie10-criterio-7",
-            "orden": 7,
-            "titulo": "Criterio 7",
-            "texto": " 4) Sequedad de boca (no debida a medicación o deshidratación).",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie10-criterio-8",
-            "orden": 8,
-            "titulo": "Criterio 8",
-            "texto": " Síntomas relacionados con el pecho y abdomen:",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie10-criterio-9",
-            "orden": 9,
-            "titulo": "Criterio 9",
-            "texto": " 5) Dificultad para respirar.",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie10-criterio-10",
-            "orden": 10,
-            "titulo": "Criterio 10",
-            "texto": " 6) Sensación de ahogo.",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie10-criterio-11",
-            "orden": 11,
-            "titulo": "Criterio 11",
-            "texto": " 7) Dolor o molestias en el pecho.",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie10-criterio-12",
-            "orden": 12,
-            "titulo": "Criterio 12",
-            "texto": " 8) Náuseas o malestar abdominal (p. ej., estómago revuelto).",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie10-criterio-13",
-            "orden": 13,
-            "titulo": "Criterio 13",
-            "texto": "Síntomas relacionados con el estado mental:",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie10-criterio-14",
-            "orden": 14,
-            "titulo": "Criterio 14",
-            "texto": " 9) Sensación de mareo, inestabilidad o desvanecimiento.",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie10-criterio-15",
-            "orden": 15,
-            "titulo": "Criterio 15",
-            "texto": " 10) Sensación de que los objetos son irreales (desrealización) o de que uno mismo está distante o no realmente aquí (despersonalización).",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie10-criterio-16",
-            "orden": 16,
-            "titulo": "Criterio 16",
-            "texto": " 11) Miedo a perder el control, a perder la conciencia o volverse loco.",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie10-criterio-17",
-            "orden": 17,
-            "titulo": "Criterio 17",
-            "texto": " 12) Miedo a morir.",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie10-criterio-18",
-            "orden": 18,
-            "titulo": "Criterio 18",
-            "texto": "Síntomas generales:",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie10-criterio-19",
-            "orden": 19,
-            "titulo": "Criterio 19",
-            "texto": " 13) Sofocos de calor o escalofríos.",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie10-criterio-20",
-            "orden": 20,
-            "titulo": "Criterio 20",
-            "texto": " 14) aturdimiento o sensación de hormigueo (parestesias).",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie10-criterio-21",
-            "orden": 21,
-            "titulo": "Criterio 21",
-            "texto": " 15) Tensión, dolores o molestias musculares.",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie10-criterio-22",
-            "orden": 22,
-            "titulo": "Criterio 22",
-            "texto": " 16) Inquietud e incapacidad para relajrse.",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie10-criterio-23",
-            "orden": 23,
-            "titulo": "Criterio 23",
-            "texto": " 17) sentimientos de estar al límite o bajo presión, o de tensión mental",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie10-criterio-24",
-            "orden": 24,
-            "titulo": "Criterio 24",
-            "texto": " 18) Sensación de nudo en la garganta o dificultad para tragar.",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie10-criterio-25",
-            "orden": 25,
-            "titulo": "Criterio 25",
-            "texto": "Otros síntomas no específicos:",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie10-criterio-26",
-            "orden": 26,
-            "titulo": "Criterio 26",
-            "texto": " 19) Respuesta exagerada a pequeñas sorpresas o sobresaltos.",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie10-criterio-27",
-            "orden": 27,
-            "titulo": "Criterio 27",
-            "texto": " 20) Dificultad para concentrarse o de mente en blanco, a causa de la preocupación o de la ansiedad.",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie10-criterio-28",
-            "orden": 28,
-            "titulo": "Criterio 28",
-            "texto": " 21) Irritabilidad persistente",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie10-criterio-29",
-            "orden": 29,
-            "titulo": "Criterio 29",
-            "texto": " 22) Dificultad para conciliar el sueño debido a las preocupaciones.",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie10-criterio-30",
-            "orden": 30,
-            "titulo": "Criterio 1",
-            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie10-criterio-31",
-            "orden": 31,
-            "titulo": "Criterio 2",
-            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie10-criterio-32",
-            "orden": 32,
-            "titulo": "Criterio 3",
-            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie10-criterio-33",
-            "orden": 33,
-            "titulo": "Criterio 4",
-            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
+            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie10-grupo-7",
+            "clave": "",
+            "titulo": "Otros síntomas no específicos",
+            "tipo": "grupo_clinico",
+            "introduccion": "",
+            "literal": false,
+            "items": [
+              {
+                "numero": 19,
+                "texto": "Respuesta exagerada a pequeñas sorpresas o sobresaltos.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": 20,
+                "texto": "Dificultad para concentrarse o de mente en blanco, a causa de la preocupación o de la ansiedad.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": 21,
+                "texto": "Irritabilidad persistente",
+                "orden": 3,
+                "literal": false
+              },
+              {
+                "numero": 22,
+                "texto": "Dificultad para conciliar el sueño debido a las preocupaciones.",
+                "orden": 4,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+                "orden": 5,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+                "orden": 6,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+                "orden": 7,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+                "orden": 8,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
@@ -8172,265 +7711,204 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Trastorno de ansiedad generalizada",
         "criterios": [
           {
-            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie11-criterio-1",
-            "orden": 1,
-            "titulo": "Criterio 1",
-            "texto": "A) Presencia de un período de por lo menos 6 meses con tensión prominente, preocupación y aprensión sobre los acontecimientos y problemas de la vida diaria.",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
+            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie11-grupo-1",
+            "clave": "A",
+            "titulo": "Criterio A",
+            "tipo": "criterio",
+            "introduccion": "Presencia de un período de por lo menos 6 meses con tensión prominente, preocupación y aprensión sobre los acontecimientos y problemas de la vida diaria.",
+            "literal": false,
+            "items": []
           },
           {
-            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie11-criterio-2",
-            "orden": 2,
-            "titulo": "Criterio 2",
-            "texto": "B) Presencia de al menos 4 de los síntomas lsitados a continuación, de los cuales por lo menos uno de ellos debe ser del grupo 1-4:",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
+            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie11-grupo-2",
+            "clave": "B",
+            "titulo": "Criterio B",
+            "tipo": "criterio",
+            "introduccion": "Presencia de al menos 4 de los síntomas lsitados a continuación, de los cuales por lo menos uno de ellos debe ser del grupo 1-4:",
+            "literal": false,
+            "items": []
           },
           {
-            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie11-criterio-3",
-            "orden": 3,
-            "titulo": "Criterio 3",
-            "texto": "Síntomas autonómicos:",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
+            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie11-grupo-3",
+            "clave": "",
+            "titulo": "Síntomas autonómicos",
+            "tipo": "grupo_clinico",
+            "introduccion": "",
+            "literal": false,
+            "items": [
+              {
+                "numero": 1,
+                "texto": "Palpitaciones o golpeo del corazón o ritmo cardiaco acelerado.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": 2,
+                "texto": "Sudoración.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": 3,
+                "texto": "Temblores o sacudidas.",
+                "orden": 3,
+                "literal": false
+              },
+              {
+                "numero": 4,
+                "texto": "Sequedad de boca (no debida a medicación o deshidratación).",
+                "orden": 4,
+                "literal": false
+              }
+            ]
           },
           {
-            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie11-criterio-4",
-            "orden": 4,
-            "titulo": "Criterio 4",
-            "texto": " 1) Palpitaciones o golpeo del corazón o ritmo cardiaco acelerado.",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
+            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie11-grupo-4",
+            "clave": "",
+            "titulo": "Síntomas relacionados con el pecho y abdomen",
+            "tipo": "grupo_clinico",
+            "introduccion": "",
+            "literal": false,
+            "items": [
+              {
+                "numero": 5,
+                "texto": "Dificultad para respirar.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": 6,
+                "texto": "Sensación de ahogo.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": 7,
+                "texto": "Dolor o molestias en el pecho.",
+                "orden": 3,
+                "literal": false
+              },
+              {
+                "numero": 8,
+                "texto": "Náuseas o malestar abdominal (p. ej., estómago revuelto).",
+                "orden": 4,
+                "literal": false
+              }
+            ]
           },
           {
-            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie11-criterio-5",
-            "orden": 5,
-            "titulo": "Criterio 5",
-            "texto": " 2) Sudoración.",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
+            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie11-grupo-5",
+            "clave": "",
+            "titulo": "Síntomas relacionados con el estado mental",
+            "tipo": "grupo_clinico",
+            "introduccion": "",
+            "literal": false,
+            "items": [
+              {
+                "numero": 9,
+                "texto": "Sensación de mareo, inestabilidad o desvanecimiento.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": 10,
+                "texto": "Sensación de que los objetos son irreales (desrealización) o de que uno mismo está distante o no realmente aquí (despersonalización).",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": 11,
+                "texto": "Miedo a perder el control, a perder la conciencia o volverse loco.",
+                "orden": 3,
+                "literal": false
+              },
+              {
+                "numero": 12,
+                "texto": "Miedo a morir.",
+                "orden": 4,
+                "literal": false
+              }
+            ]
           },
           {
-            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie11-criterio-6",
-            "orden": 6,
-            "titulo": "Criterio 6",
-            "texto": " 3) Temblores o sacudidas.",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
+            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie11-grupo-6",
+            "clave": "",
+            "titulo": "Síntomas generales",
+            "tipo": "grupo_clinico",
+            "introduccion": "",
+            "literal": false,
+            "items": [
+              {
+                "numero": 13,
+                "texto": "Sofocos de calor o escalofríos.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": 14,
+                "texto": "aturdimiento o sensación de hormigueo (parestesias).",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": 15,
+                "texto": "Tensión, dolores o molestias musculares.",
+                "orden": 3,
+                "literal": false
+              },
+              {
+                "numero": 16,
+                "texto": "Inquietud e incapacidad para relajrse.",
+                "orden": 4,
+                "literal": false
+              },
+              {
+                "numero": 17,
+                "texto": "sentimientos de estar al límite o bajo presión, o de tensión mental",
+                "orden": 5,
+                "literal": false
+              },
+              {
+                "numero": 18,
+                "texto": "Sensación de nudo en la garganta o dificultad para tragar.",
+                "orden": 6,
+                "literal": false
+              }
+            ]
           },
           {
-            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie11-criterio-7",
-            "orden": 7,
-            "titulo": "Criterio 7",
-            "texto": " 4) Sequedad de boca (no debida a medicación o deshidratación).",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie11-criterio-8",
-            "orden": 8,
-            "titulo": "Criterio 8",
-            "texto": " Síntomas relacionados con el pecho y abdomen:",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie11-criterio-9",
-            "orden": 9,
-            "titulo": "Criterio 9",
-            "texto": " 5) Dificultad para respirar.",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie11-criterio-10",
-            "orden": 10,
-            "titulo": "Criterio 10",
-            "texto": " 6) Sensación de ahogo.",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie11-criterio-11",
-            "orden": 11,
-            "titulo": "Criterio 11",
-            "texto": " 7) Dolor o molestias en el pecho.",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie11-criterio-12",
-            "orden": 12,
-            "titulo": "Criterio 12",
-            "texto": " 8) Náuseas o malestar abdominal (p. ej., estómago revuelto).",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie11-criterio-13",
-            "orden": 13,
-            "titulo": "Criterio 13",
-            "texto": "Síntomas relacionados con el estado mental:",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie11-criterio-14",
-            "orden": 14,
-            "titulo": "Criterio 14",
-            "texto": " 9) Sensación de mareo, inestabilidad o desvanecimiento.",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie11-criterio-15",
-            "orden": 15,
-            "titulo": "Criterio 15",
-            "texto": " 10) Sensación de que los objetos son irreales (desrealización) o de que uno mismo está distante o no realmente aquí (despersonalización).",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie11-criterio-16",
-            "orden": 16,
-            "titulo": "Criterio 16",
-            "texto": " 11) Miedo a perder el control, a perder la conciencia o volverse loco.",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie11-criterio-17",
-            "orden": 17,
-            "titulo": "Criterio 17",
-            "texto": " 12) Miedo a morir.",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie11-criterio-18",
-            "orden": 18,
-            "titulo": "Criterio 18",
-            "texto": "Síntomas generales:",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie11-criterio-19",
-            "orden": 19,
-            "titulo": "Criterio 19",
-            "texto": " 13) Sofocos de calor o escalofríos.",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie11-criterio-20",
-            "orden": 20,
-            "titulo": "Criterio 20",
-            "texto": " 14) aturdimiento o sensación de hormigueo (parestesias).",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie11-criterio-21",
-            "orden": 21,
-            "titulo": "Criterio 21",
-            "texto": " 15) Tensión, dolores o molestias musculares.",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie11-criterio-22",
-            "orden": 22,
-            "titulo": "Criterio 22",
-            "texto": " 16) Inquietud e incapacidad para relajrse.",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie11-criterio-23",
-            "orden": 23,
-            "titulo": "Criterio 23",
-            "texto": " 17) sentimientos de estar al límite o bajo presión, o de tensión mental",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie11-criterio-24",
-            "orden": 24,
-            "titulo": "Criterio 24",
-            "texto": " 18) Sensación de nudo en la garganta o dificultad para tragar.",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie11-criterio-25",
-            "orden": 25,
-            "titulo": "Criterio 25",
-            "texto": "Otros síntomas no específicos:",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie11-criterio-26",
-            "orden": 26,
-            "titulo": "Criterio 26",
-            "texto": " 19) Respuesta exagerada a pequeñas sorpresas o sobresaltos.",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie11-criterio-27",
-            "orden": 27,
-            "titulo": "Criterio 27",
-            "texto": " 20) Dificultad para concentrarse o de mente en blanco, a causa de la preocupación o de la ansiedad.",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie11-criterio-28",
-            "orden": 28,
-            "titulo": "Criterio 28",
-            "texto": " 21) Irritabilidad persistente",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie11-criterio-29",
-            "orden": 29,
-            "titulo": "Criterio 29",
-            "texto": " 22) Dificultad para conciliar el sueño debido a las preocupaciones.",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
+            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie11-grupo-7",
+            "clave": "",
+            "titulo": "Otros síntomas no específicos",
+            "tipo": "grupo_clinico",
+            "introduccion": "",
+            "literal": false,
+            "items": [
+              {
+                "numero": 19,
+                "texto": "Respuesta exagerada a pequeñas sorpresas o sobresaltos.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": 20,
+                "texto": "Dificultad para concentrarse o de mente en blanco, a causa de la preocupación o de la ansiedad.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": 21,
+                "texto": "Irritabilidad persistente",
+                "orden": 3,
+                "literal": false
+              },
+              {
+                "numero": 22,
+                "texto": "Dificultad para conciliar el sueño debido a las preocupaciones.",
+                "orden": 4,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
@@ -8445,49 +7923,38 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Trastorno de ansiedad generalizada",
         "criterios": [
           {
-            "id": "trastorno-trastorno-de-ansiedad-generalizada-dsm5-criterio-1",
-            "orden": 1,
-            "titulo": "Resumen clínico 1",
-            "texto": "Ansiedad y preocupación excesivas relacionadas con diferentes acontecimientos o áreas de la vida.",
-            "tipo": "resumen_clinico",
-            "fuente": "DSM-5-TR; resumen no literal",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-de-ansiedad-generalizada-dsm5-criterio-2",
-            "orden": 2,
-            "titulo": "Resumen clínico 2",
-            "texto": "Dificultad para controlar la preocupación.",
-            "tipo": "resumen_clinico",
-            "fuente": "DSM-5-TR; resumen no literal",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-de-ansiedad-generalizada-dsm5-criterio-3",
-            "orden": 3,
-            "titulo": "Resumen clínico 3",
-            "texto": "Síntomas físicos y cognitivos asociados.",
-            "tipo": "resumen_clinico",
-            "fuente": "DSM-5-TR; resumen no literal",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-de-ansiedad-generalizada-dsm5-criterio-4",
-            "orden": 4,
-            "titulo": "Resumen clínico 4",
-            "texto": "Duración clínicamente relevante, malestar o deterioro.",
-            "tipo": "resumen_clinico",
-            "fuente": "DSM-5-TR; resumen no literal",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-de-ansiedad-generalizada-dsm5-criterio-5",
-            "orden": 5,
-            "titulo": "Resumen clínico 5",
-            "texto": "Descartar sustancias, afecciones médicas y otros trastornos mentales; considerar la presentación infantil.",
-            "tipo": "resumen_clinico",
-            "fuente": "DSM-5-TR; resumen no literal",
-            "literal": false
+            "id": "trastorno-trastorno-de-ansiedad-generalizada-dsm5-grupo-1",
+            "clave": "",
+            "titulo": "Pendiente de clasificación",
+            "tipo": "revision_requerida",
+            "introduccion": "Ansiedad y preocupación excesivas relacionadas con diferentes acontecimientos o áreas de la vida.",
+            "literal": false,
+            "items": [
+              {
+                "numero": null,
+                "texto": "Dificultad para controlar la preocupación.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Síntomas físicos y cognitivos asociados.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Duración clínicamente relevante, malestar o deterioro.",
+                "orden": 3,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Descartar sustancias, afecciones médicas y otros trastornos mentales; considerar la presentación infantil.",
+                "orden": 4,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
@@ -8517,6 +7984,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-trastorno-mixto-ansioso-depresivo",
     "nombre": "Trastorno mixto ansioso-depresivo",
+    "descripcionBreve": "Información orientativa para consulta rápida.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -8531,40 +7999,32 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Trastorno mixto ansioso-depresivo",
         "criterios": [
           {
-            "id": "trastorno-trastorno-mixto-ansioso-depresivo-cie10-criterio-1",
-            "orden": 1,
-            "titulo": "Criterio 1",
-            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-mixto-ansioso-depresivo-cie10-criterio-2",
-            "orden": 2,
-            "titulo": "Criterio 2",
-            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-mixto-ansioso-depresivo-cie10-criterio-3",
-            "orden": 3,
-            "titulo": "Criterio 3",
-            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-mixto-ansioso-depresivo-cie10-criterio-4",
-            "orden": 4,
-            "titulo": "Criterio 4",
-            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
+            "id": "trastorno-trastorno-mixto-ansioso-depresivo-cie10-grupo-1",
+            "clave": "",
+            "titulo": "Pendiente de clasificación",
+            "tipo": "revision_requerida",
+            "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "literal": false,
+            "items": [
+              {
+                "numero": null,
+                "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+                "orden": 3,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
@@ -8587,6 +8047,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-trastorno-obsesivo-compulsivo",
     "nombre": "Trastorno obsesivo-compulsivo",
+    "descripcionBreve": "El TOC no se reduce a 'manias'; el tratamiento suele incluir exposicion con prevencion de respuesta y seguimiento.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -8603,76 +8064,56 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Trastorno obsesivo-compulsivo",
         "criterios": [
           {
-            "id": "trastorno-trastorno-obsesivo-compulsivo-cie10-criterio-1",
-            "orden": 1,
-            "titulo": "Criterio 1",
-            "texto": "Obsesiones intrusivas y/o compulsiones repetitivas.",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-obsesivo-compulsivo-cie10-criterio-2",
-            "orden": 2,
-            "titulo": "Criterio 2",
-            "texto": "La persona intenta resistir o neutralizar pensamientos, imagenes o impulsos.",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-obsesivo-compulsivo-cie10-criterio-3",
-            "orden": 3,
-            "titulo": "Criterio 3",
-            "texto": "Consumen tiempo o causan deterioro significativo.",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-obsesivo-compulsivo-cie10-criterio-4",
-            "orden": 4,
-            "titulo": "Criterio 4",
-            "texto": "Diferenciar de psicosis, tics, ansiedad generalizada o personalidad obsesiva.",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-obsesivo-compulsivo-cie10-criterio-5",
-            "orden": 5,
-            "titulo": "Criterio 1",
-            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-obsesivo-compulsivo-cie10-criterio-6",
-            "orden": 6,
-            "titulo": "Criterio 2",
-            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-obsesivo-compulsivo-cie10-criterio-7",
-            "orden": 7,
-            "titulo": "Criterio 3",
-            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-obsesivo-compulsivo-cie10-criterio-8",
-            "orden": 8,
-            "titulo": "Criterio 4",
-            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
+            "id": "trastorno-trastorno-obsesivo-compulsivo-cie10-grupo-1",
+            "clave": "",
+            "titulo": "Pendiente de clasificación",
+            "tipo": "revision_requerida",
+            "introduccion": "Obsesiones intrusivas y/o compulsiones repetitivas.",
+            "literal": false,
+            "items": [
+              {
+                "numero": null,
+                "texto": "La persona intenta resistir o neutralizar pensamientos, imagenes o impulsos.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Consumen tiempo o causan deterioro significativo.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Diferenciar de psicosis, tics, ansiedad generalizada o personalidad obsesiva.",
+                "orden": 3,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+                "orden": 4,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+                "orden": 5,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+                "orden": 6,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+                "orden": 7,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
@@ -8686,40 +8127,32 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Trastorno obsesivo compulsivo",
         "criterios": [
           {
-            "id": "trastorno-trastorno-obsesivo-compulsivo-cie11-criterio-1",
-            "orden": 1,
-            "titulo": "Criterio 1",
-            "texto": "Obsesiones intrusivas y/o compulsiones repetitivas.",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-obsesivo-compulsivo-cie11-criterio-2",
-            "orden": 2,
-            "titulo": "Criterio 2",
-            "texto": "La persona intenta resistir o neutralizar pensamientos, imagenes o impulsos.",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-obsesivo-compulsivo-cie11-criterio-3",
-            "orden": 3,
-            "titulo": "Criterio 3",
-            "texto": "Consumen tiempo o causan deterioro significativo.",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-obsesivo-compulsivo-cie11-criterio-4",
-            "orden": 4,
-            "titulo": "Criterio 4",
-            "texto": "Diferenciar de psicosis, tics, ansiedad generalizada o personalidad obsesiva.",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
+            "id": "trastorno-trastorno-obsesivo-compulsivo-cie11-grupo-1",
+            "clave": "",
+            "titulo": "Pendiente de clasificación",
+            "tipo": "revision_requerida",
+            "introduccion": "Obsesiones intrusivas y/o compulsiones repetitivas.",
+            "literal": false,
+            "items": [
+              {
+                "numero": null,
+                "texto": "La persona intenta resistir o neutralizar pensamientos, imagenes o impulsos.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Consumen tiempo o causan deterioro significativo.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Diferenciar de psicosis, tics, ansiedad generalizada o personalidad obsesiva.",
+                "orden": 3,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
@@ -8742,6 +8175,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-reaccion-a-estres-grave-y-trastornos-de-adaptacion",
     "nombre": "Reacción a estrés grave y trastornos de adaptación",
+    "descripcionBreve": "Reacción a estrés grave y trastornos de adaptación.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -8769,6 +8203,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-reaccion-a-estres-agudo",
     "nombre": "Reacción a estrés agudo",
+    "descripcionBreve": "Información orientativa para consulta rápida.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -8783,40 +8218,32 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Reacción a estrés agudo",
         "criterios": [
           {
-            "id": "trastorno-reaccion-a-estres-agudo-cie10-criterio-1",
-            "orden": 1,
-            "titulo": "Criterio 1",
-            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-reaccion-a-estres-agudo-cie10-criterio-2",
-            "orden": 2,
-            "titulo": "Criterio 2",
-            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-reaccion-a-estres-agudo-cie10-criterio-3",
-            "orden": 3,
-            "titulo": "Criterio 3",
-            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-reaccion-a-estres-agudo-cie10-criterio-4",
-            "orden": 4,
-            "titulo": "Criterio 4",
-            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
+            "id": "trastorno-reaccion-a-estres-agudo-cie10-grupo-1",
+            "clave": "",
+            "titulo": "Pendiente de clasificación",
+            "tipo": "revision_requerida",
+            "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "literal": false,
+            "items": [
+              {
+                "numero": null,
+                "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+                "orden": 3,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
@@ -8839,6 +8266,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-trastorno-de-estres-postraumatico",
     "nombre": "Trastorno de estrés postraumático",
+    "descripcionBreve": "Las reacciones postraumaticas son respuestas del sistema de amenaza.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -8855,76 +8283,56 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Trastorno de estrés postraumático",
         "criterios": [
           {
-            "id": "trastorno-trastorno-de-estres-postraumatico-cie10-criterio-1",
-            "orden": 1,
-            "titulo": "Criterio 1",
-            "texto": "Exposicion a evento traumatico.",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-de-estres-postraumatico-cie10-criterio-2",
-            "orden": 2,
-            "titulo": "Criterio 2",
-            "texto": "Reexperimentacion, evitacion, amenaza persistente/hipervigilancia y alteraciones cognitivas o emocionales.",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-de-estres-postraumatico-cie10-criterio-3",
-            "orden": 3,
-            "titulo": "Criterio 3",
-            "texto": "Deterioro funcional y persistencia posterior al evento.",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-de-estres-postraumatico-cie10-criterio-4",
-            "orden": 4,
-            "titulo": "Criterio 4",
-            "texto": "Valorar disociacion, depresion, consumo de sustancias y riesgo suicida.",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-de-estres-postraumatico-cie10-criterio-5",
-            "orden": 5,
-            "titulo": "Criterio 1",
-            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-de-estres-postraumatico-cie10-criterio-6",
-            "orden": 6,
-            "titulo": "Criterio 2",
-            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-de-estres-postraumatico-cie10-criterio-7",
-            "orden": 7,
-            "titulo": "Criterio 3",
-            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-de-estres-postraumatico-cie10-criterio-8",
-            "orden": 8,
-            "titulo": "Criterio 4",
-            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
+            "id": "trastorno-trastorno-de-estres-postraumatico-cie10-grupo-1",
+            "clave": "",
+            "titulo": "Pendiente de clasificación",
+            "tipo": "revision_requerida",
+            "introduccion": "Exposicion a evento traumatico.",
+            "literal": false,
+            "items": [
+              {
+                "numero": null,
+                "texto": "Reexperimentacion, evitacion, amenaza persistente/hipervigilancia y alteraciones cognitivas o emocionales.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Deterioro funcional y persistencia posterior al evento.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Valorar disociacion, depresion, consumo de sustancias y riesgo suicida.",
+                "orden": 3,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+                "orden": 4,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+                "orden": 5,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+                "orden": 6,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+                "orden": 7,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
@@ -8938,40 +8346,32 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Trastorno de estres postraumatico",
         "criterios": [
           {
-            "id": "trastorno-trastorno-de-estres-postraumatico-cie11-criterio-1",
-            "orden": 1,
-            "titulo": "Criterio 1",
-            "texto": "Exposicion a evento traumatico.",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-de-estres-postraumatico-cie11-criterio-2",
-            "orden": 2,
-            "titulo": "Criterio 2",
-            "texto": "Reexperimentacion, evitacion, amenaza persistente/hipervigilancia y alteraciones cognitivas o emocionales.",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-de-estres-postraumatico-cie11-criterio-3",
-            "orden": 3,
-            "titulo": "Criterio 3",
-            "texto": "Deterioro funcional y persistencia posterior al evento.",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-de-estres-postraumatico-cie11-criterio-4",
-            "orden": 4,
-            "titulo": "Criterio 4",
-            "texto": "Valorar disociacion, depresion, consumo de sustancias y riesgo suicida.",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
+            "id": "trastorno-trastorno-de-estres-postraumatico-cie11-grupo-1",
+            "clave": "",
+            "titulo": "Pendiente de clasificación",
+            "tipo": "revision_requerida",
+            "introduccion": "Exposicion a evento traumatico.",
+            "literal": false,
+            "items": [
+              {
+                "numero": null,
+                "texto": "Reexperimentacion, evitacion, amenaza persistente/hipervigilancia y alteraciones cognitivas o emocionales.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Deterioro funcional y persistencia posterior al evento.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Valorar disociacion, depresion, consumo de sustancias y riesgo suicida.",
+                "orden": 3,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
@@ -8994,6 +8394,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-trastornos-de-adaptacion",
     "nombre": "Trastornos de adaptación",
+    "descripcionBreve": "Información orientativa para consulta rápida.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -9008,40 +8409,32 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Trastornos de adaptación",
         "criterios": [
           {
-            "id": "trastorno-trastornos-de-adaptacion-cie10-criterio-1",
-            "orden": 1,
-            "titulo": "Criterio 1",
-            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastornos-de-adaptacion-cie10-criterio-2",
-            "orden": 2,
-            "titulo": "Criterio 2",
-            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastornos-de-adaptacion-cie10-criterio-3",
-            "orden": 3,
-            "titulo": "Criterio 3",
-            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastornos-de-adaptacion-cie10-criterio-4",
-            "orden": 4,
-            "titulo": "Criterio 4",
-            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
+            "id": "trastorno-trastornos-de-adaptacion-cie10-grupo-1",
+            "clave": "",
+            "titulo": "Pendiente de clasificación",
+            "tipo": "revision_requerida",
+            "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "literal": false,
+            "items": [
+              {
+                "numero": null,
+                "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+                "orden": 3,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
@@ -9064,6 +8457,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-trastornos-disociativos",
     "nombre": "Trastornos disociativos",
+    "descripcionBreve": "Información orientativa para consulta rápida.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -9078,40 +8472,32 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Trastornos disociativos",
         "criterios": [
           {
-            "id": "trastorno-trastornos-disociativos-cie10-criterio-1",
-            "orden": 1,
-            "titulo": "Criterio 1",
-            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastornos-disociativos-cie10-criterio-2",
-            "orden": 2,
-            "titulo": "Criterio 2",
-            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastornos-disociativos-cie10-criterio-3",
-            "orden": 3,
-            "titulo": "Criterio 3",
-            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastornos-disociativos-cie10-criterio-4",
-            "orden": 4,
-            "titulo": "Criterio 4",
-            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
+            "id": "trastorno-trastornos-disociativos-cie10-grupo-1",
+            "clave": "",
+            "titulo": "Pendiente de clasificación",
+            "tipo": "revision_requerida",
+            "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "literal": false,
+            "items": [
+              {
+                "numero": null,
+                "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+                "orden": 3,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
@@ -9134,6 +8520,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-trastornos-somatomorfos",
     "nombre": "Trastornos somatomorfos",
+    "descripcionBreve": "Información orientativa para consulta rápida.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -9148,40 +8535,32 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Trastornos somatomorfos",
         "criterios": [
           {
-            "id": "trastorno-trastornos-somatomorfos-cie10-criterio-1",
-            "orden": 1,
-            "titulo": "Criterio 1",
-            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastornos-somatomorfos-cie10-criterio-2",
-            "orden": 2,
-            "titulo": "Criterio 2",
-            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastornos-somatomorfos-cie10-criterio-3",
-            "orden": 3,
-            "titulo": "Criterio 3",
-            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastornos-somatomorfos-cie10-criterio-4",
-            "orden": 4,
-            "titulo": "Criterio 4",
-            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
+            "id": "trastorno-trastornos-somatomorfos-cie10-grupo-1",
+            "clave": "",
+            "titulo": "Pendiente de clasificación",
+            "tipo": "revision_requerida",
+            "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "literal": false,
+            "items": [
+              {
+                "numero": null,
+                "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+                "orden": 3,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
@@ -9204,6 +8583,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-otros-trastornos-neuroticos",
     "nombre": "Otros trastornos neuróticos",
+    "descripcionBreve": "Otros trastornos neuróticos.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -9231,6 +8611,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-trastornos-de-la-conducta-alimentaria",
     "nombre": "Trastornos de la conducta alimentaria",
+    "descripcionBreve": "Trastornos de la conducta alimentaria.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -9258,6 +8639,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-anorexia-nerviosa",
     "nombre": "Anorexia nerviosa",
+    "descripcionBreve": "Información orientativa para consulta rápida.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -9272,40 +8654,32 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Anorexia nerviosa",
         "criterios": [
           {
-            "id": "trastorno-anorexia-nerviosa-cie10-criterio-1",
-            "orden": 1,
-            "titulo": "Criterio 1",
-            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-anorexia-nerviosa-cie10-criterio-2",
-            "orden": 2,
-            "titulo": "Criterio 2",
-            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-anorexia-nerviosa-cie10-criterio-3",
-            "orden": 3,
-            "titulo": "Criterio 3",
-            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-anorexia-nerviosa-cie10-criterio-4",
-            "orden": 4,
-            "titulo": "Criterio 4",
-            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
+            "id": "trastorno-anorexia-nerviosa-cie10-grupo-1",
+            "clave": "",
+            "titulo": "Pendiente de clasificación",
+            "tipo": "revision_requerida",
+            "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "literal": false,
+            "items": [
+              {
+                "numero": null,
+                "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+                "orden": 3,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
@@ -9328,6 +8702,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-bulimia-nerviosa",
     "nombre": "Bulimia nerviosa",
+    "descripcionBreve": "Información orientativa para consulta rápida.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -9342,40 +8717,32 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Bulimia nerviosa",
         "criterios": [
           {
-            "id": "trastorno-bulimia-nerviosa-cie10-criterio-1",
-            "orden": 1,
-            "titulo": "Criterio 1",
-            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-bulimia-nerviosa-cie10-criterio-2",
-            "orden": 2,
-            "titulo": "Criterio 2",
-            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-bulimia-nerviosa-cie10-criterio-3",
-            "orden": 3,
-            "titulo": "Criterio 3",
-            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-bulimia-nerviosa-cie10-criterio-4",
-            "orden": 4,
-            "titulo": "Criterio 4",
-            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
+            "id": "trastorno-bulimia-nerviosa-cie10-grupo-1",
+            "clave": "",
+            "titulo": "Pendiente de clasificación",
+            "tipo": "revision_requerida",
+            "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "literal": false,
+            "items": [
+              {
+                "numero": null,
+                "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+                "orden": 3,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
@@ -9398,6 +8765,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-trastornos-no-organicos-del-sueno",
     "nombre": "Trastornos no orgánicos del sueño",
+    "descripcionBreve": "Trastornos no orgánicos del sueño.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -9425,6 +8793,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-disfuncion-sexual-no-ocasionada-por-trastorno-ni-enfermedad-organicos",
     "nombre": "Disfunción sexual no ocasionada por trastorno ni enfermedad orgánicos",
+    "descripcionBreve": "Disfunción sexual no ocasionada por trastorno ni enfermedad orgánicos.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -9452,6 +8821,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-trastornos-mentales-y-del-comportamiento-asociados-con-el-puerperio-no-clasificados-en-otra-parte",
     "nombre": "Trastornos mentales y del comportamiento asociados con el puerperio, no clasificados en otra parte",
+    "descripcionBreve": "Trastornos mentales y del comportamiento asociados con el puerperio, no clasificados en otra parte.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -9479,6 +8849,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-factores-psicologicos-y-del-comportamiento-asociados-con-trastornos-o-enfermedades-clasificados-en-otra-parte",
     "nombre": "Factores psicológicos y del comportamiento asociados con trastornos o enfermedades clasificados en otra parte",
+    "descripcionBreve": "Factores psicológicos y del comportamiento asociados con trastornos o enfermedades clasificados en otra parte.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -9506,6 +8877,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-abuso-de-sustancias-que-no-producen-dependencia",
     "nombre": "Abuso de sustancias que no producen dependencia",
+    "descripcionBreve": "Abuso de sustancias que no producen dependencia.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -9533,6 +8905,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-sindromes-del-comportamiento-asociados-con-alteraciones-fisiologicas-y-factores-fisicos-no-especificados",
     "nombre": "Síndromes del comportamiento asociados con alteraciones fisiológicas y factores físicos no especificados",
+    "descripcionBreve": "Síndromes del comportamiento asociados con alteraciones fisiológicas y factores físicos no especificados.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -9560,6 +8933,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-alcohol-intoxicacion-aguda",
     "nombre": "Alcohol: intoxicacion aguda",
+    "descripcionBreve": "Alcohol: intoxicacion aguda.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -9587,6 +8961,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-otros-estimulantes-trastorno-psicotico-residual-y-de-comienzo-tardio",
     "nombre": "Otros estimulantes: trastorno psicotico residual y de comienzo tardio",
+    "descripcionBreve": "Otros estimulantes: trastorno psicotico residual y de comienzo tardio.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -9614,6 +8989,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-alucinogenos-intoxicacion-aguda",
     "nombre": "Alucinogenos: intoxicacion aguda",
+    "descripcionBreve": "Alucinogenos: intoxicacion aguda.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -9641,6 +9017,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-alucinogenos-uso-nocivo",
     "nombre": "Alucinogenos: uso nocivo",
+    "descripcionBreve": "Alucinogenos: uso nocivo.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -9668,6 +9045,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-alucinogenos-sindrome-de-dependencia",
     "nombre": "Alucinogenos: sindrome de dependencia",
+    "descripcionBreve": "Alucinogenos: sindrome de dependencia.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -9695,6 +9073,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-alucinogenos-trastorno-psicotico",
     "nombre": "Alucinogenos: trastorno psicotico",
+    "descripcionBreve": "Alucinogenos: trastorno psicotico.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -9722,6 +9101,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-alucinogenos-trastorno-psicotico-residual-y-de-comienzo-tardio",
     "nombre": "Alucinogenos: trastorno psicotico residual y de comienzo tardio",
+    "descripcionBreve": "Alucinogenos: trastorno psicotico residual y de comienzo tardio.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -9749,6 +9129,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-tabaco-intoxicacion-aguda",
     "nombre": "Tabaco: intoxicacion aguda",
+    "descripcionBreve": "Tabaco: intoxicacion aguda.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -9776,6 +9157,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-tabaco-uso-nocivo",
     "nombre": "Tabaco: uso nocivo",
+    "descripcionBreve": "Tabaco: uso nocivo.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -9803,6 +9185,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-tabaco-sindrome-de-dependencia",
     "nombre": "Tabaco: sindrome de dependencia",
+    "descripcionBreve": "Tabaco: sindrome de dependencia.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -9830,6 +9213,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-tabaco-sindrome-de-abstinencia",
     "nombre": "Tabaco: sindrome de abstinencia",
+    "descripcionBreve": "Tabaco: sindrome de abstinencia.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -9857,6 +9241,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-disolventes-volatiles-intoxicacion-aguda",
     "nombre": "Disolventes volatiles: intoxicacion aguda",
+    "descripcionBreve": "Disolventes volatiles: intoxicacion aguda.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -9884,6 +9269,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-disolventes-volatiles-uso-nocivo",
     "nombre": "Disolventes volatiles: uso nocivo",
+    "descripcionBreve": "Disolventes volatiles: uso nocivo.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -9911,6 +9297,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-disolventes-volatiles-sindrome-de-dependencia",
     "nombre": "Disolventes volatiles: sindrome de dependencia",
+    "descripcionBreve": "Disolventes volatiles: sindrome de dependencia.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -9938,6 +9325,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-disolventes-volatiles-trastorno-psicotico",
     "nombre": "Disolventes volatiles: trastorno psicotico",
+    "descripcionBreve": "Disolventes volatiles: trastorno psicotico.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -9965,6 +9353,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-disolventes-volatiles-trastorno-psicotico-residual-y-de-comienzo-tardio",
     "nombre": "Disolventes volatiles: trastorno psicotico residual y de comienzo tardio",
+    "descripcionBreve": "Disolventes volatiles: trastorno psicotico residual y de comienzo tardio.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -9992,6 +9381,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-trastornos-especificos-de-la-personalidad",
     "nombre": "Trastornos específicos de la personalidad",
+    "descripcionBreve": "Trastornos específicos de la personalidad.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -10019,6 +9409,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-trastorno-paranoide-de-la-personalidad",
     "nombre": "Trastorno paranoide de la personalidad",
+    "descripcionBreve": "Información orientativa para consulta rápida.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -10033,40 +9424,32 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Trastorno paranoide de la personalidad",
         "criterios": [
           {
-            "id": "trastorno-trastorno-paranoide-de-la-personalidad-cie10-criterio-1",
-            "orden": 1,
-            "titulo": "Criterio 1",
-            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-paranoide-de-la-personalidad-cie10-criterio-2",
-            "orden": 2,
-            "titulo": "Criterio 2",
-            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-paranoide-de-la-personalidad-cie10-criterio-3",
-            "orden": 3,
-            "titulo": "Criterio 3",
-            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-paranoide-de-la-personalidad-cie10-criterio-4",
-            "orden": 4,
-            "titulo": "Criterio 4",
-            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
+            "id": "trastorno-trastorno-paranoide-de-la-personalidad-cie10-grupo-1",
+            "clave": "",
+            "titulo": "Pendiente de clasificación",
+            "tipo": "revision_requerida",
+            "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "literal": false,
+            "items": [
+              {
+                "numero": null,
+                "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+                "orden": 3,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
@@ -10089,6 +9472,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-trastorno-esquizoide-de-la-personalidad",
     "nombre": "Trastorno esquizoide de la personalidad",
+    "descripcionBreve": "Información orientativa para consulta rápida.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -10103,40 +9487,32 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Trastorno esquizoide de la personalidad",
         "criterios": [
           {
-            "id": "trastorno-trastorno-esquizoide-de-la-personalidad-cie10-criterio-1",
-            "orden": 1,
-            "titulo": "Criterio 1",
-            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-esquizoide-de-la-personalidad-cie10-criterio-2",
-            "orden": 2,
-            "titulo": "Criterio 2",
-            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-esquizoide-de-la-personalidad-cie10-criterio-3",
-            "orden": 3,
-            "titulo": "Criterio 3",
-            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-esquizoide-de-la-personalidad-cie10-criterio-4",
-            "orden": 4,
-            "titulo": "Criterio 4",
-            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
+            "id": "trastorno-trastorno-esquizoide-de-la-personalidad-cie10-grupo-1",
+            "clave": "",
+            "titulo": "Pendiente de clasificación",
+            "tipo": "revision_requerida",
+            "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "literal": false,
+            "items": [
+              {
+                "numero": null,
+                "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+                "orden": 3,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
@@ -10159,6 +9535,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-trastorno-disocial-de-la-personalidad",
     "nombre": "Trastorno disocial de la personalidad",
+    "descripcionBreve": "Información orientativa para consulta rápida.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -10173,40 +9550,32 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Trastorno disocial de la personalidad",
         "criterios": [
           {
-            "id": "trastorno-trastorno-disocial-de-la-personalidad-cie10-criterio-1",
-            "orden": 1,
-            "titulo": "Criterio 1",
-            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-disocial-de-la-personalidad-cie10-criterio-2",
-            "orden": 2,
-            "titulo": "Criterio 2",
-            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-disocial-de-la-personalidad-cie10-criterio-3",
-            "orden": 3,
-            "titulo": "Criterio 3",
-            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-disocial-de-la-personalidad-cie10-criterio-4",
-            "orden": 4,
-            "titulo": "Criterio 4",
-            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
+            "id": "trastorno-trastorno-disocial-de-la-personalidad-cie10-grupo-1",
+            "clave": "",
+            "titulo": "Pendiente de clasificación",
+            "tipo": "revision_requerida",
+            "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "literal": false,
+            "items": [
+              {
+                "numero": null,
+                "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+                "orden": 3,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
@@ -10229,6 +9598,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-trastorno-de-inestabilidad-emocional-de-la-personalidad",
     "nombre": "Trastorno de inestabilidad emocional de la personalidad",
+    "descripcionBreve": "Información orientativa para consulta rápida.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -10243,40 +9613,32 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Trastorno de inestabilidad emocional de la personalidad",
         "criterios": [
           {
-            "id": "trastorno-trastorno-de-inestabilidad-emocional-de-la-personalidad-cie10-criterio-1",
-            "orden": 1,
-            "titulo": "Criterio 1",
-            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-de-inestabilidad-emocional-de-la-personalidad-cie10-criterio-2",
-            "orden": 2,
-            "titulo": "Criterio 2",
-            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-de-inestabilidad-emocional-de-la-personalidad-cie10-criterio-3",
-            "orden": 3,
-            "titulo": "Criterio 3",
-            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-de-inestabilidad-emocional-de-la-personalidad-cie10-criterio-4",
-            "orden": 4,
-            "titulo": "Criterio 4",
-            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
+            "id": "trastorno-trastorno-de-inestabilidad-emocional-de-la-personalidad-cie10-grupo-1",
+            "clave": "",
+            "titulo": "Pendiente de clasificación",
+            "tipo": "revision_requerida",
+            "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "literal": false,
+            "items": [
+              {
+                "numero": null,
+                "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+                "orden": 3,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
@@ -10299,6 +9661,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-trastorno-histrionico-de-la-personalidad",
     "nombre": "Trastorno histriónico de la personalidad",
+    "descripcionBreve": "Información orientativa para consulta rápida.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -10313,40 +9676,32 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Trastorno histriónico de la personalidad",
         "criterios": [
           {
-            "id": "trastorno-trastorno-histrionico-de-la-personalidad-cie10-criterio-1",
-            "orden": 1,
-            "titulo": "Criterio 1",
-            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-histrionico-de-la-personalidad-cie10-criterio-2",
-            "orden": 2,
-            "titulo": "Criterio 2",
-            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-histrionico-de-la-personalidad-cie10-criterio-3",
-            "orden": 3,
-            "titulo": "Criterio 3",
-            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-histrionico-de-la-personalidad-cie10-criterio-4",
-            "orden": 4,
-            "titulo": "Criterio 4",
-            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
+            "id": "trastorno-trastorno-histrionico-de-la-personalidad-cie10-grupo-1",
+            "clave": "",
+            "titulo": "Pendiente de clasificación",
+            "tipo": "revision_requerida",
+            "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "literal": false,
+            "items": [
+              {
+                "numero": null,
+                "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+                "orden": 3,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
@@ -10369,6 +9724,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-trastorno-anancastico-de-la-personalidad",
     "nombre": "Trastorno anancástico de la personalidad",
+    "descripcionBreve": "Brindar información sobre el trastorno anancástico de la personalidad, sus características clínicas y el impacto del perfeccionismo, la rigidez cognitiva y la necesidad de control en el funcionamiento cotidiano; promover el reconocimiento de pensamientos disfuncionales, favorecer el desarrollo de estrategias de flexibilización cognitiva, tolerancia a la incertidumbre y manejo de la ansiedad, reforzando la importancia de la adherencia al tratamiento psicoterapéutico y farmacológico cuando esté indicado.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -10383,139 +9739,104 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Trastorno anancástico de la personalidad",
         "criterios": [
           {
-            "id": "trastorno-trastorno-anancastico-de-la-personalidad-cie10-criterio-1",
-            "orden": 1,
-            "titulo": "Criterio 1",
-            "texto": "CIE10",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
+            "id": "trastorno-trastorno-anancastico-de-la-personalidad-cie10-grupo-1",
+            "clave": "",
+            "titulo": "Pendiente de clasificación",
+            "tipo": "revision_requerida",
+            "introduccion": "CIE10",
+            "literal": false,
+            "items": []
           },
           {
-            "id": "trastorno-trastorno-anancastico-de-la-personalidad-cie10-criterio-2",
-            "orden": 2,
-            "titulo": "Criterio 2",
-            "texto": "A) Deben cumplirse los criterios generales para el diagnostico de trastorno de la personalidad.",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
+            "id": "trastorno-trastorno-anancastico-de-la-personalidad-cie10-grupo-2",
+            "clave": "A",
+            "titulo": "Criterio A",
+            "tipo": "criterio",
+            "introduccion": "Deben cumplirse los criterios generales para el diagnostico de trastorno de la personalidad.",
+            "literal": false,
+            "items": []
           },
           {
-            "id": "trastorno-trastorno-anancastico-de-la-personalidad-cie10-criterio-3",
-            "orden": 3,
-            "titulo": "Criterio 3",
-            "texto": "B) Deben cumplirse al menos cuatro de los siguientes síntomas:",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-anancastico-de-la-personalidad-cie10-criterio-4",
-            "orden": 4,
-            "titulo": "Criterio 4",
-            "texto": "1) Sentimientos de duda, y preocupaciones excesivas.",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-anancastico-de-la-personalidad-cie10-criterio-5",
-            "orden": 5,
-            "titulo": "Criterio 5",
-            "texto": "2) Preocupación por detalles, listas, reglas, organización u horarios",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-anancastico-de-la-personalidad-cie10-criterio-6",
-            "orden": 6,
-            "titulo": "Criterio 6",
-            "texto": "3) Perfeccionismo que interfiere con la finalización de tareas.",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-anancastico-de-la-personalidad-cie10-criterio-7",
-            "orden": 7,
-            "titulo": "Criterio 7",
-            "texto": "4) Rectitud y escrupolosidad excesivos",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-anancastico-de-la-personalidad-cie10-criterio-8",
-            "orden": 8,
-            "titulo": "Criterio 8",
-            "texto": "5) Preocupación injustificada por la productividad, hasta el extremo de renunciar a actividades placenteras y relaciones itnerpersonales",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-anancastico-de-la-personalidad-cie10-criterio-9",
-            "orden": 9,
-            "titulo": "Criterio 9",
-            "texto": "6) Excesiva pedantería y adhesión a las convenciones sociales",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-anancastico-de-la-personalidad-cie10-criterio-10",
-            "orden": 10,
-            "titulo": "Criterio 10",
-            "texto": "7) Rigidez y obstinación",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-anancastico-de-la-personalidad-cie10-criterio-11",
-            "orden": 11,
-            "titulo": "Criterio 11",
-            "texto": "8) Insistencia irracional se sometan a la propia rutina de ahcer las cosas o resistencia irracional a permitir que los demás realicen sus tareas",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-anancastico-de-la-personalidad-cie10-criterio-12",
-            "orden": 12,
-            "titulo": "Criterio 1",
-            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-anancastico-de-la-personalidad-cie10-criterio-13",
-            "orden": 13,
-            "titulo": "Criterio 2",
-            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-anancastico-de-la-personalidad-cie10-criterio-14",
-            "orden": 14,
-            "titulo": "Criterio 3",
-            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-anancastico-de-la-personalidad-cie10-criterio-15",
-            "orden": 15,
-            "titulo": "Criterio 4",
-            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
+            "id": "trastorno-trastorno-anancastico-de-la-personalidad-cie10-grupo-3",
+            "clave": "B",
+            "titulo": "Criterio B",
+            "tipo": "criterio",
+            "introduccion": "Deben cumplirse al menos cuatro de los siguientes síntomas:",
+            "literal": false,
+            "items": [
+              {
+                "numero": 1,
+                "texto": "Sentimientos de duda, y preocupaciones excesivas.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": 2,
+                "texto": "Preocupación por detalles, listas, reglas, organización u horarios",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": 3,
+                "texto": "Perfeccionismo que interfiere con la finalización de tareas.",
+                "orden": 3,
+                "literal": false
+              },
+              {
+                "numero": 4,
+                "texto": "Rectitud y escrupolosidad excesivos",
+                "orden": 4,
+                "literal": false
+              },
+              {
+                "numero": 5,
+                "texto": "Preocupación injustificada por la productividad, hasta el extremo de renunciar a actividades placenteras y relaciones itnerpersonales",
+                "orden": 5,
+                "literal": false
+              },
+              {
+                "numero": 6,
+                "texto": "Excesiva pedantería y adhesión a las convenciones sociales",
+                "orden": 6,
+                "literal": false
+              },
+              {
+                "numero": 7,
+                "texto": "Rigidez y obstinación",
+                "orden": 7,
+                "literal": false
+              },
+              {
+                "numero": 8,
+                "texto": "Insistencia irracional se sometan a la propia rutina de ahcer las cosas o resistencia irracional a permitir que los demás realicen sus tareas",
+                "orden": 8,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+                "orden": 9,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+                "orden": 10,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+                "orden": 11,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+                "orden": 12,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
@@ -10538,6 +9859,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-trastorno-ansioso-evasivo-de-la-personalidad",
     "nombre": "Trastorno ansioso evasivo de la personalidad",
+    "descripcionBreve": "Brindar información sobre el trastorno evitativo de la personalidad, sus características clínicas y el papel de la evitación en el mantenimiento de los síntomas; promover el reconocimiento de pensamientos disfuncionales relacionados con el rechazo y la baja autoestima, reforzar estrategias de afrontamiento, habilidades sociales y la importancia de la adherencia al tratamiento psicoterapéutico y farmacológico cuando esté indicado.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -10552,121 +9874,89 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Trastorno ansioso evasivo de la personalidad",
         "criterios": [
           {
-            "id": "trastorno-trastorno-ansioso-evasivo-de-la-personalidad-cie10-criterio-1",
-            "orden": 1,
-            "titulo": "Criterio 1",
-            "texto": "A) Deben cumplirse los criterios generales para el diagnostico de trastorno de la personalidad.",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
+            "id": "trastorno-trastorno-ansioso-evasivo-de-la-personalidad-cie10-grupo-1",
+            "clave": "A",
+            "titulo": "Criterio A",
+            "tipo": "criterio",
+            "introduccion": "Deben cumplirse los criterios generales para el diagnostico de trastorno de la personalidad.",
+            "literal": false,
+            "items": []
           },
           {
-            "id": "trastorno-trastorno-ansioso-evasivo-de-la-personalidad-cie10-criterio-2",
-            "orden": 2,
-            "titulo": "Criterio 2",
-            "texto": "B) Deben cumplirse al menos cuatro de los siguientes síntomas:",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-ansioso-evasivo-de-la-personalidad-cie10-criterio-3",
-            "orden": 3,
-            "titulo": "Criterio 3",
-            "texto": "1) Evita actividades laborales o escolares que impliquen un contacto interpersonal significativo, por temor a la critica, desaprobacion o rechazo.",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-ansioso-evasivo-de-la-personalidad-cie10-criterio-4",
-            "orden": 4,
-            "titulo": "Criterio 4",
-            "texto": "2) Esta reacio a implicarse con personas, a menos que este seguro de ser aceptado.",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-ansioso-evasivo-de-la-personalidad-cie10-criterio-5",
-            "orden": 5,
-            "titulo": "Criterio 5",
-            "texto": "3) Muestra restriccion en las relaciones interpersonales debido al miedo a ser avergonzado o ridiculizado.",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-ansioso-evasivo-de-la-personalidad-cie10-criterio-6",
-            "orden": 6,
-            "titulo": "Criterio 6",
-            "texto": "4) Preocupacion por ser criticado o rechazado en situaciones sociales.",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-ansioso-evasivo-de-la-personalidad-cie10-criterio-7",
-            "orden": 7,
-            "titulo": "Criterio 7",
-            "texto": "5) Inhibicion en situaciones interpersonales nuevas debido a sentimientos de inferioridad.",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-ansioso-evasivo-de-la-personalidad-cie10-criterio-8",
-            "orden": 8,
-            "titulo": "Criterio 8",
-            "texto": "6) Se ve a si mismo como socialmente inepto, personalmente poco atractivo o inferior a los demas.",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-ansioso-evasivo-de-la-personalidad-cie10-criterio-9",
-            "orden": 9,
-            "titulo": "Criterio 9",
-            "texto": "7) Es extraordinariamente reacio a asumir riesgos personales o a implicarse en nuevas actividades debido a que pueden resultar embarazosas.",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-ansioso-evasivo-de-la-personalidad-cie10-criterio-10",
-            "orden": 10,
-            "titulo": "Criterio 1",
-            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-ansioso-evasivo-de-la-personalidad-cie10-criterio-11",
-            "orden": 11,
-            "titulo": "Criterio 2",
-            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-ansioso-evasivo-de-la-personalidad-cie10-criterio-12",
-            "orden": 12,
-            "titulo": "Criterio 3",
-            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-ansioso-evasivo-de-la-personalidad-cie10-criterio-13",
-            "orden": 13,
-            "titulo": "Criterio 4",
-            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
+            "id": "trastorno-trastorno-ansioso-evasivo-de-la-personalidad-cie10-grupo-2",
+            "clave": "B",
+            "titulo": "Criterio B",
+            "tipo": "criterio",
+            "introduccion": "Deben cumplirse al menos cuatro de los siguientes síntomas:",
+            "literal": false,
+            "items": [
+              {
+                "numero": 1,
+                "texto": "Evita actividades laborales o escolares que impliquen un contacto interpersonal significativo, por temor a la critica, desaprobacion o rechazo.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": 2,
+                "texto": "Esta reacio a implicarse con personas, a menos que este seguro de ser aceptado.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": 3,
+                "texto": "Muestra restriccion en las relaciones interpersonales debido al miedo a ser avergonzado o ridiculizado.",
+                "orden": 3,
+                "literal": false
+              },
+              {
+                "numero": 4,
+                "texto": "Preocupacion por ser criticado o rechazado en situaciones sociales.",
+                "orden": 4,
+                "literal": false
+              },
+              {
+                "numero": 5,
+                "texto": "Inhibicion en situaciones interpersonales nuevas debido a sentimientos de inferioridad.",
+                "orden": 5,
+                "literal": false
+              },
+              {
+                "numero": 6,
+                "texto": "Se ve a si mismo como socialmente inepto, personalmente poco atractivo o inferior a los demas.",
+                "orden": 6,
+                "literal": false
+              },
+              {
+                "numero": 7,
+                "texto": "Es extraordinariamente reacio a asumir riesgos personales o a implicarse en nuevas actividades debido a que pueden resultar embarazosas.",
+                "orden": 7,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+                "orden": 8,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+                "orden": 9,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+                "orden": 10,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+                "orden": 11,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
@@ -10689,6 +9979,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-trastorno-dependiente-de-la-personalidad",
     "nombre": "Trastorno dependiente de la personalidad",
+    "descripcionBreve": "Información orientativa para consulta rápida.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -10703,40 +9994,32 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Trastorno dependiente de la personalidad",
         "criterios": [
           {
-            "id": "trastorno-trastorno-dependiente-de-la-personalidad-cie10-criterio-1",
-            "orden": 1,
-            "titulo": "Criterio 1",
-            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-dependiente-de-la-personalidad-cie10-criterio-2",
-            "orden": 2,
-            "titulo": "Criterio 2",
-            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-dependiente-de-la-personalidad-cie10-criterio-3",
-            "orden": 3,
-            "titulo": "Criterio 3",
-            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-dependiente-de-la-personalidad-cie10-criterio-4",
-            "orden": 4,
-            "titulo": "Criterio 4",
-            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
+            "id": "trastorno-trastorno-dependiente-de-la-personalidad-cie10-grupo-1",
+            "clave": "",
+            "titulo": "Pendiente de clasificación",
+            "tipo": "revision_requerida",
+            "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "literal": false,
+            "items": [
+              {
+                "numero": null,
+                "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+                "orden": 3,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
@@ -10759,6 +10042,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-otros-trastornos-especificos-de-la-personalidad",
     "nombre": "Otros trastornos específicos de la personalidad",
+    "descripcionBreve": "Otros trastornos específicos de la personalidad.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -10786,6 +10070,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-trastorno-especifico-de-la-personalidad-no-especificado",
     "nombre": "Trastorno específico de la personalidad no especificado",
+    "descripcionBreve": "Trastorno específico de la personalidad no especificado.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -10813,6 +10098,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-trastornos-mixtos-y-otros-trastornos-de-la-personalidad",
     "nombre": "Trastornos mixtos y otros trastornos de la personalidad",
+    "descripcionBreve": "Información orientativa para consulta rápida.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -10827,40 +10113,32 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Trastornos mixtos y otros trastornos de la personalidad",
         "criterios": [
           {
-            "id": "trastorno-trastornos-mixtos-y-otros-trastornos-de-la-personalidad-cie10-criterio-1",
-            "orden": 1,
-            "titulo": "Criterio 1",
-            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastornos-mixtos-y-otros-trastornos-de-la-personalidad-cie10-criterio-2",
-            "orden": 2,
-            "titulo": "Criterio 2",
-            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastornos-mixtos-y-otros-trastornos-de-la-personalidad-cie10-criterio-3",
-            "orden": 3,
-            "titulo": "Criterio 3",
-            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastornos-mixtos-y-otros-trastornos-de-la-personalidad-cie10-criterio-4",
-            "orden": 4,
-            "titulo": "Criterio 4",
-            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
+            "id": "trastorno-trastornos-mixtos-y-otros-trastornos-de-la-personalidad-cie10-grupo-1",
+            "clave": "",
+            "titulo": "Pendiente de clasificación",
+            "tipo": "revision_requerida",
+            "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "literal": false,
+            "items": [
+              {
+                "numero": null,
+                "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+                "orden": 3,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
@@ -10883,6 +10161,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-transformacion-persistente-de-la-personalidad-no-atribuible-a-lesion-o-enfermedad-cerebral",
     "nombre": "Transformación persistente de la personalidad no atribuible a lesión o enfermedad cerebral",
+    "descripcionBreve": "Transformación persistente de la personalidad no atribuible a lesión o enfermedad cerebral.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -10910,6 +10189,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-trastornos-de-los-habitos-y-de-los-impulsos",
     "nombre": "Trastornos de los hábitos y de los impulsos",
+    "descripcionBreve": "Trastornos de los hábitos y de los impulsos.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -10937,6 +10217,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-trastornos-de-la-identidad-de-genero",
     "nombre": "Trastornos de la identidad de género",
+    "descripcionBreve": "Trastornos de la identidad de género.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -10964,6 +10245,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-trastornos-de-la-preferencia-sexual",
     "nombre": "Trastornos de la preferencia sexual",
+    "descripcionBreve": "Trastornos de la preferencia sexual.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -10991,6 +10273,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-trastornos-psicologicos-y-del-comportamiento-asociados-con-el-desarrollo-y-orientacion-sexuales",
     "nombre": "Trastornos psicológicos y del comportamiento asociados con el desarrollo y orientación sexuales",
+    "descripcionBreve": "Trastornos psicológicos y del comportamiento asociados con el desarrollo y orientación sexuales.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -11018,6 +10301,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-otros-trastornos-de-la-personalidad-y-del-comportamiento-en-adultos",
     "nombre": "Otros trastornos de la personalidad y del comportamiento en adultos",
+    "descripcionBreve": "Otros trastornos de la personalidad y del comportamiento en adultos.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -11045,6 +10329,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-trastorno-de-la-personalidad-y-del-comportamiento-en-adultos-no-especificado",
     "nombre": "Trastorno de la personalidad y del comportamiento en adultos no especificado",
+    "descripcionBreve": "Trastorno de la personalidad y del comportamiento en adultos no especificado.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -11072,6 +10357,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-retraso-mental-leve",
     "nombre": "Retraso mental leve",
+    "descripcionBreve": "Información orientativa para consulta rápida.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -11086,40 +10372,32 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Retraso mental leve",
         "criterios": [
           {
-            "id": "trastorno-retraso-mental-leve-cie10-criterio-1",
-            "orden": 1,
-            "titulo": "Criterio 1",
-            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-retraso-mental-leve-cie10-criterio-2",
-            "orden": 2,
-            "titulo": "Criterio 2",
-            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-retraso-mental-leve-cie10-criterio-3",
-            "orden": 3,
-            "titulo": "Criterio 3",
-            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-retraso-mental-leve-cie10-criterio-4",
-            "orden": 4,
-            "titulo": "Criterio 4",
-            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
+            "id": "trastorno-retraso-mental-leve-cie10-grupo-1",
+            "clave": "",
+            "titulo": "Pendiente de clasificación",
+            "tipo": "revision_requerida",
+            "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "literal": false,
+            "items": [
+              {
+                "numero": null,
+                "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+                "orden": 3,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
@@ -11142,6 +10420,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-retraso-mental-moderado",
     "nombre": "Retraso mental moderado",
+    "descripcionBreve": "Información orientativa para consulta rápida.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -11156,40 +10435,32 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Retraso mental moderado",
         "criterios": [
           {
-            "id": "trastorno-retraso-mental-moderado-cie10-criterio-1",
-            "orden": 1,
-            "titulo": "Criterio 1",
-            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-retraso-mental-moderado-cie10-criterio-2",
-            "orden": 2,
-            "titulo": "Criterio 2",
-            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-retraso-mental-moderado-cie10-criterio-3",
-            "orden": 3,
-            "titulo": "Criterio 3",
-            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-retraso-mental-moderado-cie10-criterio-4",
-            "orden": 4,
-            "titulo": "Criterio 4",
-            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
+            "id": "trastorno-retraso-mental-moderado-cie10-grupo-1",
+            "clave": "",
+            "titulo": "Pendiente de clasificación",
+            "tipo": "revision_requerida",
+            "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "literal": false,
+            "items": [
+              {
+                "numero": null,
+                "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+                "orden": 3,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
@@ -11212,6 +10483,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-retraso-mental-grave",
     "nombre": "Retraso mental grave",
+    "descripcionBreve": "Retraso mental grave.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -11239,6 +10511,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-retraso-mental-profundo",
     "nombre": "Retraso mental profundo",
+    "descripcionBreve": "Retraso mental profundo.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -11266,6 +10539,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-otros-tipos-de-retraso-mental",
     "nombre": "Otros tipos de retraso mental",
+    "descripcionBreve": "Otros tipos de retraso mental.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -11293,6 +10567,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-retraso-mental-no-especificado",
     "nombre": "Retraso mental no especificado",
+    "descripcionBreve": "Información orientativa para consulta rápida.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -11307,40 +10582,32 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Retraso mental no especificado",
         "criterios": [
           {
-            "id": "trastorno-retraso-mental-no-especificado-cie10-criterio-1",
-            "orden": 1,
-            "titulo": "Criterio 1",
-            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-retraso-mental-no-especificado-cie10-criterio-2",
-            "orden": 2,
-            "titulo": "Criterio 2",
-            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-retraso-mental-no-especificado-cie10-criterio-3",
-            "orden": 3,
-            "titulo": "Criterio 3",
-            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-retraso-mental-no-especificado-cie10-criterio-4",
-            "orden": 4,
-            "titulo": "Criterio 4",
-            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
+            "id": "trastorno-retraso-mental-no-especificado-cie10-grupo-1",
+            "clave": "",
+            "titulo": "Pendiente de clasificación",
+            "tipo": "revision_requerida",
+            "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "literal": false,
+            "items": [
+              {
+                "numero": null,
+                "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+                "orden": 3,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
@@ -11363,6 +10630,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-trastornos-especificos-del-desarrollo-del-habla-y-del-lenguaje",
     "nombre": "Trastornos específicos del desarrollo del habla y del lenguaje",
+    "descripcionBreve": "Trastornos específicos del desarrollo del habla y del lenguaje.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -11390,6 +10658,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-trastornos-especificos-del-desarrollo-del-aprendizaje-escolar",
     "nombre": "Trastornos específicos del desarrollo del aprendizaje escolar",
+    "descripcionBreve": "Trastornos específicos del desarrollo del aprendizaje escolar.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -11417,6 +10686,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-trastorno-especifico-del-desarrollo-de-la-funcion-motriz",
     "nombre": "Trastorno específico del desarrollo de la función motriz",
+    "descripcionBreve": "Trastorno específico del desarrollo de la función motriz.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -11444,6 +10714,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-trastornos-especificos-mixtos-del-desarrollo",
     "nombre": "Trastornos específicos mixtos del desarrollo",
+    "descripcionBreve": "Trastornos específicos mixtos del desarrollo.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -11471,6 +10742,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-trastornos-generalizados-del-desarrollo",
     "nombre": "Trastornos generalizados del desarrollo",
+    "descripcionBreve": "Trastornos generalizados del desarrollo.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -11498,6 +10770,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-autismo-infantil",
     "nombre": "Autismo infantil",
+    "descripcionBreve": "Pendiente.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -11512,229 +10785,204 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Autismo infantil",
         "criterios": [
           {
-            "id": "trastorno-autismo-infantil-cie10-criterio-1",
-            "orden": 1,
-            "titulo": "Criterio 1",
-            "texto": "A) Presencia de un desarrollo anormal o alterado desde antes de los 3 años de edad, que se presenta en una de las siguientes áreas:",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
+            "id": "trastorno-autismo-infantil-cie10-grupo-1",
+            "clave": "A",
+            "titulo": "Criterio A",
+            "tipo": "criterio",
+            "introduccion": "Presencia de un desarrollo anormal o alterado desde antes de los 3 años de edad, que se presenta en una de las siguientes áreas:",
+            "literal": false,
+            "items": [
+              {
+                "numero": 1,
+                "texto": "Lenguaje receptivo o expresivo utilizado en la comunicación social.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": 2,
+                "texto": "Desarrollo de lazos sociales selectivos o interacción social recíproca.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": 3,
+                "texto": "Juego simbólico y funcional",
+                "orden": 3,
+                "literal": false
+              }
+            ]
           },
           {
-            "id": "trastorno-autismo-infantil-cie10-criterio-2",
-            "orden": 2,
-            "titulo": "Criterio 2",
-            "texto": "  1) Lenguaje receptivo o expresivo utilizado en la comunicación social.",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
+            "id": "trastorno-autismo-infantil-cie10-grupo-2",
+            "clave": "B",
+            "titulo": "Criterio B",
+            "tipo": "criterio",
+            "introduccion": "Deben estar presentes al menos 6 síntomas de 1, 2 y 3, incluyendo al menos dos de 1, uno de 2 y uno de 3.",
+            "literal": false,
+            "items": [
+              {
+                "numero": 1,
+                "texto": "Alteraciones cualitativas en la interacción social que se manifiestan al menos en dos de las siguientes áreas:",
+                "orden": 1,
+                "literal": false
+              }
+            ]
           },
           {
-            "id": "trastorno-autismo-infantil-cie10-criterio-3",
-            "orden": 3,
-            "titulo": "Criterio 3",
-            "texto": "  2) Desarrollo de lazos sociales selectivos o interacción social recíproca.",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
+            "id": "trastorno-autismo-infantil-cie10-grupo-3",
+            "clave": "A",
+            "titulo": "Criterio A",
+            "tipo": "criterio",
+            "introduccion": "Fracaso en la utilización adecuada del contacto visual, la expresión facial, la postura corporal y los gestos para regular la interacción social.",
+            "literal": false,
+            "items": []
           },
           {
-            "id": "trastorno-autismo-infantil-cie10-criterio-4",
-            "orden": 4,
-            "titulo": "Criterio 4",
-            "texto": "  3) Juego simbólico y funcional",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
+            "id": "trastorno-autismo-infantil-cie10-grupo-4",
+            "clave": "B",
+            "titulo": "Criterio B",
+            "tipo": "criterio",
+            "introduccion": "Fracaso en el desarrollo (adecuado a la edad mental y a pesar de tener ocasiones para ello) de relaciones con personas de su edad que impliquen compartir intereses, actividades y emociones",
+            "literal": false,
+            "items": []
           },
           {
-            "id": "trastorno-autismo-infantil-cie10-criterio-5",
-            "orden": 5,
-            "titulo": "Criterio 5",
-            "texto": "B) Deben estar presentes al menos 6 síntomas de 1, 2 y 3, incluyendo al menos dos de 1, uno de 2 y uno de 3.",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
+            "id": "trastorno-autismo-infantil-cie10-grupo-5",
+            "clave": "C",
+            "titulo": "Criterio C",
+            "tipo": "criterio",
+            "introduccion": "Ausencia de reciprocidad socioemocional, puesta de manifiesto por una respuesta alterada o anormal hacia las emociones de otras personas, o falta de modulación del comportamiento en respuesta al contexto social o débil integración de los comportamientos social, emocional y comunicativo",
+            "literal": false,
+            "items": []
           },
           {
-            "id": "trastorno-autismo-infantil-cie10-criterio-6",
-            "orden": 6,
-            "titulo": "Criterio 6",
-            "texto": "  1.Alteraciones cualitativas en la interacción social que se manifiestan al menos en dos de las siguientes áreas:",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
+            "id": "trastorno-autismo-infantil-cie10-grupo-6",
+            "clave": "D",
+            "titulo": "Criterio D",
+            "tipo": "criterio",
+            "introduccion": "Falta de interés en compartir las alegrías, los intereses o los logros con otros individuos (p. ej., falta de interés en mostrar, traer hacia sí o señalar a otras personas objetos de interés para el niñoo).",
+            "literal": false,
+            "items": [
+              {
+                "numero": 2,
+                "texto": "Alteraciones cualitativas en la comunicación que se manifiestan en al menos una de las siguientes áreas:",
+                "orden": 1,
+                "literal": false
+              }
+            ]
           },
           {
-            "id": "trastorno-autismo-infantil-cie10-criterio-7",
-            "orden": 7,
-            "titulo": "Criterio 7",
-            "texto": "    a) Fracaso en la utilización adecuada del contacto visual, la expresión facial, la postura corporal y los gestos para regular la interacción social.",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
+            "id": "trastorno-autismo-infantil-cie10-grupo-7",
+            "clave": "A",
+            "titulo": "Criterio A",
+            "tipo": "criterio",
+            "introduccion": "Retraso o ausencia del desarrollo del lenguaje hablado, aunque no se acompaña de intentos de compensación mediante el recurso de la utilización de gestos alternativos para comunicarse (a menudo precedido por la falta de balbuceo comunicativo",
+            "literal": false,
+            "items": []
           },
           {
-            "id": "trastorno-autismo-infantil-cie10-criterio-8",
-            "orden": 8,
-            "titulo": "Criterio 8",
-            "texto": "    b) Fracaso en el desarrollo (adecuado a la edad mental y a pesar de tener ocasiones para ello) de relaciones con personas de su edad que impliquen compartir intereses, actividades y emociones",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
+            "id": "trastorno-autismo-infantil-cie10-grupo-8",
+            "clave": "B",
+            "titulo": "Criterio B",
+            "tipo": "criterio",
+            "introduccion": "Fracaso relativo para iniciar o mantener una conversación (cualquiera que sea el nivel de competencia en la utilización del lenguaje alcanzado), en la que es necesario el intercambio de respuestas con el interlocutor",
+            "literal": false,
+            "items": []
           },
           {
-            "id": "trastorno-autismo-infantil-cie10-criterio-9",
-            "orden": 9,
-            "titulo": "Criterio 9",
-            "texto": "    c) Ausencia de reciprocidad socioemocional, puesta de manifiesto por una respuesta alterada o anormal hacia las emociones de otras personas, o falta de modulación del comportamiento en respuesta al contexto social o débil integración de los comportamientos social, emocional y comunicativo",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
+            "id": "trastorno-autismo-infantil-cie10-grupo-9",
+            "clave": "C",
+            "titulo": "Criterio C",
+            "tipo": "criterio",
+            "introduccion": "Uso estereotipado y repetitivo del lenguaje o uso idiosincrásico de palabras o frases",
+            "literal": false,
+            "items": []
           },
           {
-            "id": "trastorno-autismo-infantil-cie10-criterio-10",
-            "orden": 10,
-            "titulo": "Criterio 10",
-            "texto": "    d) Falta de interés en compartir las alegrías, los intereses o los logros con otros individuos (p. ej., falta de interés en mostrar, traer hacia sí o señalar a otras personas objetos de interés para el niñoo).",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
+            "id": "trastorno-autismo-infantil-cie10-grupo-10",
+            "clave": "D",
+            "titulo": "Criterio D",
+            "tipo": "criterio",
+            "introduccion": "Ausencia de juegos de simulación espontáneos (en edades tempranas) o de juego social imitativo",
+            "literal": false,
+            "items": [
+              {
+                "numero": 3,
+                "texto": "Patrones de comportamientos, intereses y actividades restringidas, repetitivas y estereotipadas, que se manifiestan en al menos una de las siguientes áreas:",
+                "orden": 1,
+                "literal": false
+              }
+            ]
           },
           {
-            "id": "trastorno-autismo-infantil-cie10-criterio-11",
-            "orden": 11,
-            "titulo": "Criterio 11",
-            "texto": "  2. Alteraciones cualitativas en la comunicación que se manifiestan en al menos una de las siguientes áreas:",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
+            "id": "trastorno-autismo-infantil-cie10-grupo-11",
+            "clave": "A",
+            "titulo": "Criterio A",
+            "tipo": "criterio",
+            "introduccion": "Preocupación limitada a uno o más comportamientos estereotipados que son anormales en su contenido. En ocasiones el comportamiento no es anormal en sí, pero sí lo es la intensidad y el carácter restrictivo con que se produce.",
+            "literal": false,
+            "items": []
           },
           {
-            "id": "trastorno-autismo-infantil-cie10-criterio-12",
-            "orden": 12,
-            "titulo": "Criterio 12",
-            "texto": "    a) Retraso o ausencia del desarrollo del lenguaje hablado, aunque no se acompaña de intentos de compensación mediante el recurso de la utilización de gestos alternativos para comunicarse (a menudo precedido por la falta de balbuceo comunicativo",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
+            "id": "trastorno-autismo-infantil-cie10-grupo-12",
+            "clave": "B",
+            "titulo": "Criterio B",
+            "tipo": "criterio",
+            "introduccion": "Existe, en apariencia, una adherencia a rutinas o rituales específicos y carentes de sentido.",
+            "literal": false,
+            "items": []
           },
           {
-            "id": "trastorno-autismo-infantil-cie10-criterio-13",
-            "orden": 13,
-            "titulo": "Criterio 13",
-            "texto": "    b) Fracaso relativo para iniciar o mantener una conversación (cualquiera que sea el nivel de competencia en la utilización del lenguaje alcanzado), en la que es necesario el intercambio de respuestas con el interlocutor",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
+            "id": "trastorno-autismo-infantil-cie10-grupo-13",
+            "clave": "C",
+            "titulo": "Criterio C",
+            "tipo": "criterio",
+            "introduccion": "Manierismos motores estereotipados y repetitivos que pueden consisitir en palmadas o retorcimientos de las manos o dedos, o movimientos complejos de todo el cuerpo",
+            "literal": false,
+            "items": []
           },
           {
-            "id": "trastorno-autismo-infantil-cie10-criterio-14",
-            "orden": 14,
-            "titulo": "Criterio 14",
-            "texto": "    c) Uso estereotipado y repetitivo del lenguaje o uso idiosincrásico de palabras o frases",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
+            "id": "trastorno-autismo-infantil-cie10-grupo-14",
+            "clave": "D",
+            "titulo": "Criterio D",
+            "tipo": "criterio",
+            "introduccion": "Preocupaciones por partes de objetos o por elementos carentes de funcionalidad de los objetos de juego (tales como el olor, la textura de su superficie, el ruido o la vibración que producen)",
+            "literal": false,
+            "items": []
           },
           {
-            "id": "trastorno-autismo-infantil-cie10-criterio-15",
-            "orden": 15,
-            "titulo": "Criterio 15",
-            "texto": "    d) Ausencia de juegos de simulación espontáneos (en edades tempranas) o de juego social imitativo",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
-          },
-          {
-            "id": "trastorno-autismo-infantil-cie10-criterio-16",
-            "orden": 16,
-            "titulo": "Criterio 16",
-            "texto": "  3. Patrones de comportamientos, intereses y actividades restringidas, repetitivas y estereotipadas, que se manifiestan en al menos una de las siguientes áreas:",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
-          },
-          {
-            "id": "trastorno-autismo-infantil-cie10-criterio-17",
-            "orden": 17,
-            "titulo": "Criterio 17",
-            "texto": "    a) Preocupación limitada a uno o más comportamientos estereotipados que son anormales en su contenido. En ocasiones el comportamiento no es anormal en sí, pero sí lo es la intensidad y el carácter restrictivo con que se produce.",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
-          },
-          {
-            "id": "trastorno-autismo-infantil-cie10-criterio-18",
-            "orden": 18,
-            "titulo": "Criterio 18",
-            "texto": "    b) Existe, en apariencia, una adherencia a rutinas o rituales específicos y carentes de sentido.",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
-          },
-          {
-            "id": "trastorno-autismo-infantil-cie10-criterio-19",
-            "orden": 19,
-            "titulo": "Criterio 19",
-            "texto": "    c) Manierismos motores estereotipados y repetitivos que pueden consisitir en palmadas o retorcimientos de las manos o dedos, o movimientos complejos de todo el cuerpo",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
-          },
-          {
-            "id": "trastorno-autismo-infantil-cie10-criterio-20",
-            "orden": 20,
-            "titulo": "Criterio 20",
-            "texto": "    d) Preocupaciones por partes de objetos o por elementos carentes de funcionalidad de los objetos de juego (tales como el olor, la textura de su superficie, el ruido o la vibración que producen)",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
-          },
-          {
-            "id": "trastorno-autismo-infantil-cie10-criterio-21",
-            "orden": 21,
-            "titulo": "Criterio 21",
-            "texto": "C) El cuadro clínico no puede atribuirse a otras variedades del trastorno generalizado del desarrollo, a un trastorno específico del desarrollo de la comprensión del lenguaje (F80.2) con problemas socioemocionales secundarios, a trastorno reactivo de la vinculación de la infancia (F94.1), a trastorno de la vinculación de la infancia tipo desinhibido (F94.2), a retraso mental (F70-72) acompañado de trastornos de las emociones y del comportamiento, a esquizofrenia (F20) de comienzo excepcionalmente precoz, ni a síndrome de Rett",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
-          },
-          {
-            "id": "trastorno-autismo-infantil-cie10-criterio-22",
-            "orden": 22,
-            "titulo": "Criterio 1",
-            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-autismo-infantil-cie10-criterio-23",
-            "orden": 23,
-            "titulo": "Criterio 2",
-            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-autismo-infantil-cie10-criterio-24",
-            "orden": 24,
-            "titulo": "Criterio 3",
-            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-autismo-infantil-cie10-criterio-25",
-            "orden": 25,
-            "titulo": "Criterio 4",
-            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
+            "id": "trastorno-autismo-infantil-cie10-grupo-15",
+            "clave": "C",
+            "titulo": "Criterio C",
+            "tipo": "criterio",
+            "introduccion": "El cuadro clínico no puede atribuirse a otras variedades del trastorno generalizado del desarrollo, a un trastorno específico del desarrollo de la comprensión del lenguaje (F80.2) con problemas socioemocionales secundarios, a trastorno reactivo de la vinculación de la infancia (F94.1), a trastorno de la vinculación de la infancia tipo desinhibido (F94.2), a retraso mental (F70-72) acompañado de trastornos de las emociones y del comportamiento, a esquizofrenia (F20) de comienzo excepcionalmente precoz, ni a síndrome de Rett",
+            "literal": false,
+            "items": [
+              {
+                "numero": null,
+                "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+                "orden": 3,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+                "orden": 4,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
@@ -11757,6 +11005,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-autismo-atipico",
     "nombre": "Autismo atípico",
+    "descripcionBreve": "Autismo atípico.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -11784,6 +11033,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-sindrome-de-asperger",
     "nombre": "Síndrome de Asperger",
+    "descripcionBreve": "Información orientativa para consulta rápida.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -11798,40 +11048,32 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Síndrome de Asperger",
         "criterios": [
           {
-            "id": "trastorno-sindrome-de-asperger-cie10-criterio-1",
-            "orden": 1,
-            "titulo": "Criterio 1",
-            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-sindrome-de-asperger-cie10-criterio-2",
-            "orden": 2,
-            "titulo": "Criterio 2",
-            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-sindrome-de-asperger-cie10-criterio-3",
-            "orden": 3,
-            "titulo": "Criterio 3",
-            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-sindrome-de-asperger-cie10-criterio-4",
-            "orden": 4,
-            "titulo": "Criterio 4",
-            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
+            "id": "trastorno-sindrome-de-asperger-cie10-grupo-1",
+            "clave": "",
+            "titulo": "Pendiente de clasificación",
+            "tipo": "revision_requerida",
+            "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "literal": false,
+            "items": [
+              {
+                "numero": null,
+                "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+                "orden": 3,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
@@ -11854,6 +11096,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-otros-trastornos-del-desarrollo-psicologico",
     "nombre": "Otros trastornos del desarrollo psicológico",
+    "descripcionBreve": "Otros trastornos del desarrollo psicológico.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -11881,6 +11124,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-trastorno-del-desarrollo-psicologico-no-especificado",
     "nombre": "Trastorno del desarrollo psicológico no especificado",
+    "descripcionBreve": "Trastorno del desarrollo psicológico no especificado.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -11908,6 +11152,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-trastornos-hipercineticos",
     "nombre": "Trastornos hipercinéticos",
+    "descripcionBreve": "Trastornos hipercinéticos.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -11935,6 +11180,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-trastorno-de-la-actividad-y-de-la-atencion",
     "nombre": "Trastorno de la actividad y de la atención",
+    "descripcionBreve": "Información orientativa para consulta rápida.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -11949,40 +11195,32 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Trastorno de la actividad y de la atención",
         "criterios": [
           {
-            "id": "trastorno-trastorno-de-la-actividad-y-de-la-atencion-cie10-criterio-1",
-            "orden": 1,
-            "titulo": "Criterio 1",
-            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-de-la-actividad-y-de-la-atencion-cie10-criterio-2",
-            "orden": 2,
-            "titulo": "Criterio 2",
-            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-de-la-actividad-y-de-la-atencion-cie10-criterio-3",
-            "orden": 3,
-            "titulo": "Criterio 3",
-            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-de-la-actividad-y-de-la-atencion-cie10-criterio-4",
-            "orden": 4,
-            "titulo": "Criterio 4",
-            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
+            "id": "trastorno-trastorno-de-la-actividad-y-de-la-atencion-cie10-grupo-1",
+            "clave": "",
+            "titulo": "Pendiente de clasificación",
+            "tipo": "revision_requerida",
+            "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "literal": false,
+            "items": [
+              {
+                "numero": null,
+                "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+                "orden": 3,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
@@ -12005,6 +11243,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-trastorno-hipercinetico-disocial",
     "nombre": "Trastorno hipercinético disocial",
+    "descripcionBreve": "Trastorno hipercinético disocial.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -12032,6 +11271,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-trastornos-disociales",
     "nombre": "Trastornos disociales",
+    "descripcionBreve": "Trastornos disociales.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -12059,6 +11299,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-trastornos-mixtos-disociales-y-de-las-emociones",
     "nombre": "Trastornos mixtos disociales y de las emociones",
+    "descripcionBreve": "Trastornos mixtos disociales y de las emociones.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -12086,6 +11327,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-trastornos-emocionales-de-comienzo-especifico-en-la-ninez",
     "nombre": "Trastornos emocionales de comienzo específico en la niñez",
+    "descripcionBreve": "Trastornos emocionales de comienzo específico en la niñez.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -12113,6 +11355,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-trastornos-del-comportamiento-social-de-comienzo-especifico-en-la-ninez-y-adolescencia",
     "nombre": "Trastornos del comportamiento social de comienzo específico en la niñez y adolescencia",
+    "descripcionBreve": "Trastornos del comportamiento social de comienzo específico en la niñez y adolescencia.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -12140,6 +11383,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-trastornos-de-tics",
     "nombre": "Trastornos de tics",
+    "descripcionBreve": "Trastornos de tics.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -12167,6 +11411,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-otros-trastornos-emocionales-y-del-comportamiento-de-comienzo-habitual-en-la-ninez-y-adolescencia",
     "nombre": "Otros trastornos emocionales y del comportamiento de comienzo habitual en la niñez y adolescencia",
+    "descripcionBreve": "Otros trastornos emocionales y del comportamiento de comienzo habitual en la niñez y adolescencia.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -12194,6 +11439,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-trastorno-mental-no-especificado",
     "nombre": "Trastorno mental no especificado",
+    "descripcionBreve": "Trastorno mental no especificado.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -12221,6 +11467,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-deterioro-cognitivo-de-etiologia-mixta",
     "nombre": "Deterioro cognitivo de etiología mixta",
+    "descripcionBreve": "Deterioro cognitivo de etiología mixta.",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -12248,6 +11495,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-epilepsia-y-sindromes-epilepticos-idiopaticos-focales-parciales-con-inicio-localizado",
     "nombre": "Epilepsia y síndromes epilépticos idiopáticos (focales/parciales) con inicio localizado",
+    "descripcionBreve": "Epilepsia y síndromes epilépticos idiopáticos (focales/parciales) con inicio localizado.",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -12275,6 +11523,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-epilepsia-sintomatica-focal-con-ataques-parciales-simples",
     "nombre": "Epilepsia sintomática focal con ataques parciales simples",
+    "descripcionBreve": "Epilepsia sintomática focal con ataques parciales simples.",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -12302,6 +11551,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-epilepsia-sintomatica-focal-con-ataques-parciales-complejos",
     "nombre": "Epilepsia sintomática focal con ataques parciales complejos",
+    "descripcionBreve": "Epilepsia sintomática focal con ataques parciales complejos.",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -12329,6 +11579,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-epilepsia-generalizada-idiopatica",
     "nombre": "Epilepsia generalizada idiopática",
+    "descripcionBreve": "Epilepsia generalizada idiopática.",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -12356,6 +11607,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-epilepsia-no-especificada",
     "nombre": "Epilepsia no especificada",
+    "descripcionBreve": "Epilepsia no especificada.",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -12383,6 +11635,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-quistes-cerebrales",
     "nombre": "Quistes cerebrales",
+    "descripcionBreve": "Quistes cerebrales.",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -12410,6 +11663,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-lesion-cerebral-anoxica-dano-por-falta-de-oxigeno",
     "nombre": "Lesión cerebral anóxica (daño por falta de oxígeno)",
+    "descripcionBreve": "Lesión cerebral anóxica (daño por falta de oxígeno).",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -12437,6 +11691,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-hipertension-intracraneal-benigna",
     "nombre": "Hipertensión intracraneal benigna",
+    "descripcionBreve": "Hipertensión intracraneal benigna.",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -12464,6 +11719,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-sindrome-de-fatiga-posviral-o-encefalomielitis-mialgica",
     "nombre": "Síndrome de fatiga posviral o encefalomielitis miálgica",
+    "descripcionBreve": "Síndrome de fatiga posviral o encefalomielitis miálgica.",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -12491,6 +11747,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-encefalopatia-no-especificada",
     "nombre": "Encefalopatía no especificada",
+    "descripcionBreve": "Encefalopatía no especificada.",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -12518,6 +11775,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-compresion-del-cerebro",
     "nombre": "Compresión del cerebro",
+    "descripcionBreve": "Compresión del cerebro.",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -12545,6 +11803,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-edema-cerebral-hinchazon-del-cerebro",
     "nombre": "Edema cerebral (hinchazón del cerebro)",
+    "descripcionBreve": "Edema cerebral (hinchazón del cerebro).",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -12572,6 +11831,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-sindrome-de-reye",
     "nombre": "Síndrome de Reye",
+    "descripcionBreve": "Síndrome de Reye.",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -12599,6 +11859,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-otros-trastornos-especificados-del-cerebro-como-esclerosis-temporal",
     "nombre": "Otros trastornos especificados del cerebro (como esclerosis temporal)",
+    "descripcionBreve": "Otros trastornos especificados del cerebro (como esclerosis temporal).",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -12626,6 +11887,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-trastorno-del-encefalo-no-especificado",
     "nombre": "Trastorno del encéfalo, no especificado",
+    "descripcionBreve": "Trastorno del encéfalo, no especificado.",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -12653,6 +11915,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-hipertension-esencial-primaria",
     "nombre": "Hipertensión esencial (primaria)",
+    "descripcionBreve": "Información orientativa para consulta rápida.",
     "categoria": "Cardiovascular",
     "subcategoria": "Cardiovascular",
     "aliases": [
@@ -12667,40 +11930,32 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Hipertensión esencial (primaria)",
         "criterios": [
           {
-            "id": "trastorno-hipertension-esencial-primaria-cie10-criterio-1",
-            "orden": 1,
-            "titulo": "Criterio 1",
-            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-hipertension-esencial-primaria-cie10-criterio-2",
-            "orden": 2,
-            "titulo": "Criterio 2",
-            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-hipertension-esencial-primaria-cie10-criterio-3",
-            "orden": 3,
-            "titulo": "Criterio 3",
-            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-hipertension-esencial-primaria-cie10-criterio-4",
-            "orden": 4,
-            "titulo": "Criterio 4",
-            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
+            "id": "trastorno-hipertension-esencial-primaria-cie10-grupo-1",
+            "clave": "",
+            "titulo": "Pendiente de clasificación",
+            "tipo": "revision_requerida",
+            "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "literal": false,
+            "items": [
+              {
+                "numero": null,
+                "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+                "orden": 3,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
@@ -12723,6 +11978,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-enfermedad-cardiaca-hipertensiva",
     "nombre": "Enfermedad cardíaca hipertensiva",
+    "descripcionBreve": "Enfermedad cardíaca hipertensiva.",
     "categoria": "Cardiovascular",
     "subcategoria": "Cardiovascular",
     "aliases": [
@@ -12750,6 +12006,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-enfermedad-renal-hipertensiva",
     "nombre": "Enfermedad renal hipertensiva",
+    "descripcionBreve": "Enfermedad renal hipertensiva.",
     "categoria": "Cardiovascular",
     "subcategoria": "Cardiovascular",
     "aliases": [
@@ -12777,6 +12034,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-enfermedad-cardiaca-y-renal-hipertensiva",
     "nombre": "Enfermedad cardíaca y renal hipertensiva",
+    "descripcionBreve": "Enfermedad cardíaca y renal hipertensiva.",
     "categoria": "Cardiovascular",
     "subcategoria": "Cardiovascular",
     "aliases": [
@@ -12804,6 +12062,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-hipertension-secundaria",
     "nombre": "Hipertensión secundaria",
+    "descripcionBreve": "Hipertensión secundaria.",
     "categoria": "Cardiovascular",
     "subcategoria": "Cardiovascular",
     "aliases": [
@@ -12831,6 +12090,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-angina-de-pecho",
     "nombre": "Angina de pecho",
+    "descripcionBreve": "Información orientativa para consulta rápida.",
     "categoria": "Cardiovascular",
     "subcategoria": "Cardiovascular",
     "aliases": [
@@ -12845,40 +12105,32 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Angina de pecho",
         "criterios": [
           {
-            "id": "trastorno-angina-de-pecho-cie10-criterio-1",
-            "orden": 1,
-            "titulo": "Criterio 1",
-            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-angina-de-pecho-cie10-criterio-2",
-            "orden": 2,
-            "titulo": "Criterio 2",
-            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-angina-de-pecho-cie10-criterio-3",
-            "orden": 3,
-            "titulo": "Criterio 3",
-            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-angina-de-pecho-cie10-criterio-4",
-            "orden": 4,
-            "titulo": "Criterio 4",
-            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
+            "id": "trastorno-angina-de-pecho-cie10-grupo-1",
+            "clave": "",
+            "titulo": "Pendiente de clasificación",
+            "tipo": "revision_requerida",
+            "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "literal": false,
+            "items": [
+              {
+                "numero": null,
+                "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+                "orden": 3,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
@@ -12901,6 +12153,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-infarto-agudo-de-miocardio",
     "nombre": "Infarto agudo de miocardio",
+    "descripcionBreve": "Información orientativa para consulta rápida.",
     "categoria": "Cardiovascular",
     "subcategoria": "Cardiovascular",
     "aliases": [
@@ -12915,40 +12168,32 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Infarto agudo de miocardio",
         "criterios": [
           {
-            "id": "trastorno-infarto-agudo-de-miocardio-cie10-criterio-1",
-            "orden": 1,
-            "titulo": "Criterio 1",
-            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-infarto-agudo-de-miocardio-cie10-criterio-2",
-            "orden": 2,
-            "titulo": "Criterio 2",
-            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-infarto-agudo-de-miocardio-cie10-criterio-3",
-            "orden": 3,
-            "titulo": "Criterio 3",
-            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-infarto-agudo-de-miocardio-cie10-criterio-4",
-            "orden": 4,
-            "titulo": "Criterio 4",
-            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
+            "id": "trastorno-infarto-agudo-de-miocardio-cie10-grupo-1",
+            "clave": "",
+            "titulo": "Pendiente de clasificación",
+            "tipo": "revision_requerida",
+            "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "literal": false,
+            "items": [
+              {
+                "numero": null,
+                "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+                "orden": 3,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
@@ -12971,6 +12216,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-infarto-agudo-de-miocardio-posterior",
     "nombre": "Infarto agudo de miocardio posterior",
+    "descripcionBreve": "Infarto agudo de miocardio posterior.",
     "categoria": "Cardiovascular",
     "subcategoria": "Cardiovascular",
     "aliases": [
@@ -12998,6 +12244,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-complicaciones-posteriores-a-infarto-agudo-de-miocardio",
     "nombre": "Complicaciones posteriores a infarto agudo de miocardio",
+    "descripcionBreve": "Complicaciones posteriores a infarto agudo de miocardio.",
     "categoria": "Cardiovascular",
     "subcategoria": "Cardiovascular",
     "aliases": [
@@ -13025,6 +12272,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-otros-sindromes-coronarios-agudos",
     "nombre": "Otros síndromes coronarios agudos",
+    "descripcionBreve": "Otros síndromes coronarios agudos.",
     "categoria": "Cardiovascular",
     "subcategoria": "Cardiovascular",
     "aliases": [
@@ -13052,6 +12300,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-enfermedad-isquemica-cronica-del-corazon",
     "nombre": "Enfermedad isquémica crónica del corazón",
+    "descripcionBreve": "Información orientativa para consulta rápida.",
     "categoria": "Cardiovascular",
     "subcategoria": "Cardiovascular",
     "aliases": [
@@ -13066,40 +12315,32 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Enfermedad isquémica crónica del corazón",
         "criterios": [
           {
-            "id": "trastorno-enfermedad-isquemica-cronica-del-corazon-cie10-criterio-1",
-            "orden": 1,
-            "titulo": "Criterio 1",
-            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-enfermedad-isquemica-cronica-del-corazon-cie10-criterio-2",
-            "orden": 2,
-            "titulo": "Criterio 2",
-            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-enfermedad-isquemica-cronica-del-corazon-cie10-criterio-3",
-            "orden": 3,
-            "titulo": "Criterio 3",
-            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-enfermedad-isquemica-cronica-del-corazon-cie10-criterio-4",
-            "orden": 4,
-            "titulo": "Criterio 4",
-            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
+            "id": "trastorno-enfermedad-isquemica-cronica-del-corazon-cie10-grupo-1",
+            "clave": "",
+            "titulo": "Pendiente de clasificación",
+            "tipo": "revision_requerida",
+            "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "literal": false,
+            "items": [
+              {
+                "numero": null,
+                "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+                "orden": 3,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
@@ -13122,6 +12363,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-embolia-pulmonar",
     "nombre": "Embolia pulmonar",
+    "descripcionBreve": "Embolia pulmonar.",
     "categoria": "Cardiovascular",
     "subcategoria": "Cardiovascular",
     "aliases": [
@@ -13149,6 +12391,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-otras-enfermedades-pulmonares-del-corazon",
     "nombre": "Otras enfermedades pulmonares del corazón",
+    "descripcionBreve": "Otras enfermedades pulmonares del corazón.",
     "categoria": "Cardiovascular",
     "subcategoria": "Cardiovascular",
     "aliases": [
@@ -13176,6 +12419,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-secuelas-de-enfermedades-cerebrovasculares",
     "nombre": "Secuelas de enfermedades cerebrovasculares",
+    "descripcionBreve": "Secuelas de enfermedades cerebrovasculares.",
     "categoria": "Cardiovascular",
     "subcategoria": "Cardiovascular",
     "aliases": [
@@ -13203,6 +12447,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-rinofaringitis-aguda-resfriado-comun",
     "nombre": "Rinofaringitis aguda [resfriado común]",
+    "descripcionBreve": "Rinofaringitis aguda [resfriado común].",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -13230,6 +12475,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-sinusitis-aguda",
     "nombre": "Sinusitis aguda",
+    "descripcionBreve": "Sinusitis aguda.",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -13257,6 +12503,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-sinusitis-maxilar-aguda",
     "nombre": "Sinusitis maxilar aguda",
+    "descripcionBreve": "Sinusitis maxilar aguda.",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -13284,6 +12531,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-sinusitis-frontal-aguda",
     "nombre": "Sinusitis frontal aguda",
+    "descripcionBreve": "Sinusitis frontal aguda.",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -13311,6 +12559,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-sinusitis-etmoidal-aguda",
     "nombre": "Sinusitis etmoidal aguda",
+    "descripcionBreve": "Sinusitis etmoidal aguda.",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -13338,6 +12587,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-sinusitis-esfenoidal-aguda",
     "nombre": "Sinusitis esfenoidal aguda",
+    "descripcionBreve": "Sinusitis esfenoidal aguda.",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -13365,6 +12615,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-pansinusitis-aguda",
     "nombre": "Pansinusitis aguda",
+    "descripcionBreve": "Pansinusitis aguda.",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -13392,6 +12643,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-otras-sinusitis-agudas",
     "nombre": "Otras sinusitis agudas",
+    "descripcionBreve": "Otras sinusitis agudas.",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -13419,6 +12671,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-sindrome-estafilococico-de-la-piel-escaldada",
     "nombre": "Sindrome estafilococico de la piel escaldada",
+    "descripcionBreve": "Sindrome estafilococico de la piel escaldada.",
     "categoria": "Dermatología",
     "subcategoria": "Dermatología",
     "aliases": [
@@ -13446,6 +12699,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-impetigo",
     "nombre": "Impetigo",
+    "descripcionBreve": "Impetigo.",
     "categoria": "Dermatología",
     "subcategoria": "Dermatología",
     "aliases": [
@@ -13473,6 +12727,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-absceso-cutaneo-furunculo-y-carbunco",
     "nombre": "Absceso cutaneo, furunculo y carbunco",
+    "descripcionBreve": "Absceso cutaneo, furunculo y carbunco.",
     "categoria": "Dermatología",
     "subcategoria": "Dermatología",
     "aliases": [
@@ -13500,6 +12755,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-celulitis",
     "nombre": "Celulitis",
+    "descripcionBreve": "Celulitis.",
     "categoria": "Dermatología",
     "subcategoria": "Dermatología",
     "aliases": [
@@ -13527,6 +12783,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-linfadenitis-aguda",
     "nombre": "Linfadenitis aguda",
+    "descripcionBreve": "Linfadenitis aguda.",
     "categoria": "Dermatología",
     "subcategoria": "Dermatología",
     "aliases": [
@@ -13554,6 +12811,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-quiste-pilonidal",
     "nombre": "Quiste pilonidal",
+    "descripcionBreve": "Quiste pilonidal.",
     "categoria": "Dermatología",
     "subcategoria": "Dermatología",
     "aliases": [
@@ -13581,6 +12839,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-otras-infecciones-locales-de-la-piel-y-del-tejido-subcutaneo",
     "nombre": "Otras infecciones locales de la piel y del tejido subcutaneo",
+    "descripcionBreve": "Otras infecciones locales de la piel y del tejido subcutaneo.",
     "categoria": "Dermatología",
     "subcategoria": "Dermatología",
     "aliases": [
@@ -13608,6 +12867,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-penfigo",
     "nombre": "Penfigo",
+    "descripcionBreve": "Penfigo.",
     "categoria": "Dermatología",
     "subcategoria": "Dermatología",
     "aliases": [
@@ -13635,6 +12895,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-otros-trastornos-acantoliticos",
     "nombre": "Otros trastornos acantoliticos",
+    "descripcionBreve": "Otros trastornos acantoliticos.",
     "categoria": "Dermatología",
     "subcategoria": "Dermatología",
     "aliases": [
@@ -13662,6 +12923,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-penfigoide",
     "nombre": "Penfigoide",
+    "descripcionBreve": "Penfigoide.",
     "categoria": "Dermatología",
     "subcategoria": "Dermatología",
     "aliases": [
@@ -13689,6 +12951,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-otros-trastornos-ampollosos",
     "nombre": "Otros trastornos ampollosos",
+    "descripcionBreve": "Otros trastornos ampollosos.",
     "categoria": "Dermatología",
     "subcategoria": "Dermatología",
     "aliases": [
@@ -13716,6 +12979,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-trastornos-ampollosos-en-enfermedades-clasificadas-en-otra-parte",
     "nombre": "Trastornos ampollosos en enfermedades clasificadas en otra parte",
+    "descripcionBreve": "Trastornos ampollosos en enfermedades clasificadas en otra parte.",
     "categoria": "Dermatología",
     "subcategoria": "Dermatología",
     "aliases": [
@@ -13743,6 +13007,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-dermatitis-atopica",
     "nombre": "Dermatitis atopica",
+    "descripcionBreve": "Información orientativa para consulta rápida.",
     "categoria": "Dermatología",
     "subcategoria": "Dermatología",
     "aliases": [
@@ -13757,40 +13022,32 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Dermatitis atopica",
         "criterios": [
           {
-            "id": "trastorno-dermatitis-atopica-cie10-criterio-1",
-            "orden": 1,
-            "titulo": "Criterio 1",
-            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-dermatitis-atopica-cie10-criterio-2",
-            "orden": 2,
-            "titulo": "Criterio 2",
-            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-dermatitis-atopica-cie10-criterio-3",
-            "orden": 3,
-            "titulo": "Criterio 3",
-            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-dermatitis-atopica-cie10-criterio-4",
-            "orden": 4,
-            "titulo": "Criterio 4",
-            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
+            "id": "trastorno-dermatitis-atopica-cie10-grupo-1",
+            "clave": "",
+            "titulo": "Pendiente de clasificación",
+            "tipo": "revision_requerida",
+            "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "literal": false,
+            "items": [
+              {
+                "numero": null,
+                "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+                "orden": 3,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
@@ -13813,6 +13070,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-dermatitis-seborreica",
     "nombre": "Dermatitis seborreica",
+    "descripcionBreve": "Dermatitis seborreica.",
     "categoria": "Dermatología",
     "subcategoria": "Dermatología",
     "aliases": [
@@ -13840,6 +13098,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-dermatitis-del-panal",
     "nombre": "Dermatitis del panal",
+    "descripcionBreve": "Dermatitis del panal.",
     "categoria": "Dermatología",
     "subcategoria": "Dermatología",
     "aliases": [
@@ -13867,6 +13126,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-dermatitis-alergica-de-contacto",
     "nombre": "Dermatitis alergica de contacto",
+    "descripcionBreve": "Información orientativa para consulta rápida.",
     "categoria": "Dermatología",
     "subcategoria": "Dermatología",
     "aliases": [
@@ -13881,40 +13141,32 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Dermatitis alergica de contacto",
         "criterios": [
           {
-            "id": "trastorno-dermatitis-alergica-de-contacto-cie10-criterio-1",
-            "orden": 1,
-            "titulo": "Criterio 1",
-            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-dermatitis-alergica-de-contacto-cie10-criterio-2",
-            "orden": 2,
-            "titulo": "Criterio 2",
-            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-dermatitis-alergica-de-contacto-cie10-criterio-3",
-            "orden": 3,
-            "titulo": "Criterio 3",
-            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-dermatitis-alergica-de-contacto-cie10-criterio-4",
-            "orden": 4,
-            "titulo": "Criterio 4",
-            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
+            "id": "trastorno-dermatitis-alergica-de-contacto-cie10-grupo-1",
+            "clave": "",
+            "titulo": "Pendiente de clasificación",
+            "tipo": "revision_requerida",
+            "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "literal": false,
+            "items": [
+              {
+                "numero": null,
+                "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+                "orden": 3,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
@@ -13937,6 +13189,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-dermatitis-irritante-de-contacto",
     "nombre": "Dermatitis irritante de contacto",
+    "descripcionBreve": "Dermatitis irritante de contacto.",
     "categoria": "Dermatología",
     "subcategoria": "Dermatología",
     "aliases": [
@@ -13964,6 +13217,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-dermatitis-de-contacto-forma-no-especificada",
     "nombre": "Dermatitis de contacto, forma no especificada",
+    "descripcionBreve": "Dermatitis de contacto, forma no especificada.",
     "categoria": "Dermatología",
     "subcategoria": "Dermatología",
     "aliases": [
@@ -13991,6 +13245,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-dermatitis-exfoliativa",
     "nombre": "Dermatitis exfoliativa",
+    "descripcionBreve": "Dermatitis exfoliativa.",
     "categoria": "Dermatología",
     "subcategoria": "Dermatología",
     "aliases": [
@@ -14018,6 +13273,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-dermatitis-debida-a-sustancias-ingeridas",
     "nombre": "Dermatitis debida a sustancias ingeridas",
+    "descripcionBreve": "Dermatitis debida a sustancias ingeridas.",
     "categoria": "Dermatología",
     "subcategoria": "Dermatología",
     "aliases": [
@@ -14045,6 +13301,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-liquen-simple-cronico-y-prurigo",
     "nombre": "Liquen simple cronico y prurigo",
+    "descripcionBreve": "Liquen simple cronico y prurigo.",
     "categoria": "Dermatología",
     "subcategoria": "Dermatología",
     "aliases": [
@@ -14072,6 +13329,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-prurito",
     "nombre": "Prurito",
+    "descripcionBreve": "Prurito.",
     "categoria": "Dermatología",
     "subcategoria": "Dermatología",
     "aliases": [
@@ -14099,6 +13357,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-otras-dermatitis",
     "nombre": "Otras dermatitis",
+    "descripcionBreve": "Otras dermatitis.",
     "categoria": "Dermatología",
     "subcategoria": "Dermatología",
     "aliases": [
@@ -14126,6 +13385,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-psoriasis",
     "nombre": "Psoriasis",
+    "descripcionBreve": "Información orientativa para consulta rápida.",
     "categoria": "Dermatología",
     "subcategoria": "Dermatología",
     "aliases": [
@@ -14140,40 +13400,32 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Psoriasis",
         "criterios": [
           {
-            "id": "trastorno-psoriasis-cie10-criterio-1",
-            "orden": 1,
-            "titulo": "Criterio 1",
-            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-psoriasis-cie10-criterio-2",
-            "orden": 2,
-            "titulo": "Criterio 2",
-            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-psoriasis-cie10-criterio-3",
-            "orden": 3,
-            "titulo": "Criterio 3",
-            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-psoriasis-cie10-criterio-4",
-            "orden": 4,
-            "titulo": "Criterio 4",
-            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
+            "id": "trastorno-psoriasis-cie10-grupo-1",
+            "clave": "",
+            "titulo": "Pendiente de clasificación",
+            "tipo": "revision_requerida",
+            "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "literal": false,
+            "items": [
+              {
+                "numero": null,
+                "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+                "orden": 3,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
@@ -14196,6 +13448,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-parapsoriasis",
     "nombre": "Parapsoriasis",
+    "descripcionBreve": "Parapsoriasis.",
     "categoria": "Dermatología",
     "subcategoria": "Dermatología",
     "aliases": [
@@ -14223,6 +13476,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-pitiriasis-rosada",
     "nombre": "Pitiriasis rosada",
+    "descripcionBreve": "Pitiriasis rosada.",
     "categoria": "Dermatología",
     "subcategoria": "Dermatología",
     "aliases": [
@@ -14250,6 +13504,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-liquen-plano",
     "nombre": "Liquen plano",
+    "descripcionBreve": "Liquen plano.",
     "categoria": "Dermatología",
     "subcategoria": "Dermatología",
     "aliases": [
@@ -14277,6 +13532,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-otros-trastornos-papuloescamosos",
     "nombre": "Otros trastornos papuloescamosos",
+    "descripcionBreve": "Otros trastornos papuloescamosos.",
     "categoria": "Dermatología",
     "subcategoria": "Dermatología",
     "aliases": [
@@ -14304,6 +13560,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-trastornos-papuloescamosos-en-enfermedades-clasificadas-en-otra-parte",
     "nombre": "Trastornos papuloescamosos en enfermedades clasificadas en otra parte",
+    "descripcionBreve": "Trastornos papuloescamosos en enfermedades clasificadas en otra parte.",
     "categoria": "Dermatología",
     "subcategoria": "Dermatología",
     "aliases": [
@@ -14331,6 +13588,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-urticaria",
     "nombre": "Urticaria",
+    "descripcionBreve": "Información orientativa para consulta rápida.",
     "categoria": "Dermatología",
     "subcategoria": "Dermatología",
     "aliases": [
@@ -14345,40 +13603,32 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Urticaria",
         "criterios": [
           {
-            "id": "trastorno-urticaria-cie10-criterio-1",
-            "orden": 1,
-            "titulo": "Criterio 1",
-            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-urticaria-cie10-criterio-2",
-            "orden": 2,
-            "titulo": "Criterio 2",
-            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-urticaria-cie10-criterio-3",
-            "orden": 3,
-            "titulo": "Criterio 3",
-            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-urticaria-cie10-criterio-4",
-            "orden": 4,
-            "titulo": "Criterio 4",
-            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
+            "id": "trastorno-urticaria-cie10-grupo-1",
+            "clave": "",
+            "titulo": "Pendiente de clasificación",
+            "tipo": "revision_requerida",
+            "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "literal": false,
+            "items": [
+              {
+                "numero": null,
+                "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+                "orden": 3,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
@@ -14401,6 +13651,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-eritema-multiforme",
     "nombre": "Eritema multiforme",
+    "descripcionBreve": "Eritema multiforme.",
     "categoria": "Dermatología",
     "subcategoria": "Dermatología",
     "aliases": [
@@ -14428,6 +13679,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-eritema-nudoso",
     "nombre": "Eritema nudoso",
+    "descripcionBreve": "Eritema nudoso.",
     "categoria": "Dermatología",
     "subcategoria": "Dermatología",
     "aliases": [
@@ -14455,6 +13707,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-otras-afecciones-eritematosas",
     "nombre": "Otras afecciones eritematosas",
+    "descripcionBreve": "Otras afecciones eritematosas.",
     "categoria": "Dermatología",
     "subcategoria": "Dermatología",
     "aliases": [
@@ -14482,6 +13735,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-eritema-en-enfermedades-clasificadas-en-otra-parte",
     "nombre": "Eritema en enfermedades clasificadas en otra parte",
+    "descripcionBreve": "Eritema en enfermedades clasificadas en otra parte.",
     "categoria": "Dermatología",
     "subcategoria": "Dermatología",
     "aliases": [
@@ -14509,6 +13763,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-quemadura-solar",
     "nombre": "Quemadura solar",
+    "descripcionBreve": "Quemadura solar.",
     "categoria": "Dermatología",
     "subcategoria": "Dermatología",
     "aliases": [
@@ -14536,6 +13791,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-otros-cambios-agudos-de-la-piel-debidos-a-radiacion-ultravioleta",
     "nombre": "Otros cambios agudos de la piel debidos a radiacion ultravioleta",
+    "descripcionBreve": "Otros cambios agudos de la piel debidos a radiacion ultravioleta.",
     "categoria": "Dermatología",
     "subcategoria": "Dermatología",
     "aliases": [
@@ -14563,6 +13819,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-cambios-de-la-piel-debidos-a-exposicion-cronica-a-radiacion-no-ionizante",
     "nombre": "Cambios de la piel debidos a exposicion cronica a radiacion no ionizante",
+    "descripcionBreve": "Cambios de la piel debidos a exposicion cronica a radiacion no ionizante.",
     "categoria": "Dermatología",
     "subcategoria": "Dermatología",
     "aliases": [
@@ -14590,6 +13847,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-radiodermatitis",
     "nombre": "Radiodermatitis",
+    "descripcionBreve": "Radiodermatitis.",
     "categoria": "Dermatología",
     "subcategoria": "Dermatología",
     "aliases": [
@@ -14617,6 +13875,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-otros-trastornos-de-la-piel-y-del-tejido-subcutaneo-relacionados-con-radiacion",
     "nombre": "Otros trastornos de la piel y del tejido subcutaneo relacionados con radiacion",
+    "descripcionBreve": "Otros trastornos de la piel y del tejido subcutaneo relacionados con radiacion.",
     "categoria": "Dermatología",
     "subcategoria": "Dermatología",
     "aliases": [
@@ -14644,6 +13903,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-trastornos-de-las-unas",
     "nombre": "Trastornos de las unas",
+    "descripcionBreve": "Trastornos de las unas.",
     "categoria": "Dermatología",
     "subcategoria": "Dermatología",
     "aliases": [
@@ -14671,6 +13931,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-alopecia-areata",
     "nombre": "Alopecia areata",
+    "descripcionBreve": "Alopecia areata.",
     "categoria": "Dermatología",
     "subcategoria": "Dermatología",
     "aliases": [
@@ -14698,6 +13959,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-alopecia-androgenica",
     "nombre": "Alopecia androgenica",
+    "descripcionBreve": "Alopecia androgenica.",
     "categoria": "Dermatología",
     "subcategoria": "Dermatología",
     "aliases": [
@@ -14725,6 +13987,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-otra-perdida-no-cicatricial-del-pelo",
     "nombre": "Otra perdida no cicatricial del pelo",
+    "descripcionBreve": "Otra perdida no cicatricial del pelo.",
     "categoria": "Dermatología",
     "subcategoria": "Dermatología",
     "aliases": [
@@ -14752,6 +14015,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-alopecia-cicatricial",
     "nombre": "Alopecia cicatricial",
+    "descripcionBreve": "Alopecia cicatricial.",
     "categoria": "Dermatología",
     "subcategoria": "Dermatología",
     "aliases": [
@@ -14779,6 +14043,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-anomalias-del-color-y-del-tallo-del-pelo",
     "nombre": "Anomalias del color y del tallo del pelo",
+    "descripcionBreve": "Anomalias del color y del tallo del pelo.",
     "categoria": "Dermatología",
     "subcategoria": "Dermatología",
     "aliases": [
@@ -14806,6 +14071,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-hipertricosis",
     "nombre": "Hipertricosis",
+    "descripcionBreve": "Hipertricosis.",
     "categoria": "Dermatología",
     "subcategoria": "Dermatología",
     "aliases": [
@@ -14833,6 +14099,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-acne",
     "nombre": "Acne",
+    "descripcionBreve": "Información orientativa para consulta rápida.",
     "categoria": "Dermatología",
     "subcategoria": "Dermatología",
     "aliases": [
@@ -14847,40 +14114,32 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Acne",
         "criterios": [
           {
-            "id": "trastorno-acne-cie10-criterio-1",
-            "orden": 1,
-            "titulo": "Criterio 1",
-            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-acne-cie10-criterio-2",
-            "orden": 2,
-            "titulo": "Criterio 2",
-            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-acne-cie10-criterio-3",
-            "orden": 3,
-            "titulo": "Criterio 3",
-            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-acne-cie10-criterio-4",
-            "orden": 4,
-            "titulo": "Criterio 4",
-            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
+            "id": "trastorno-acne-cie10-grupo-1",
+            "clave": "",
+            "titulo": "Pendiente de clasificación",
+            "tipo": "revision_requerida",
+            "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "literal": false,
+            "items": [
+              {
+                "numero": null,
+                "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+                "orden": 3,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
@@ -14903,6 +14162,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-rosacea",
     "nombre": "Rosacea",
+    "descripcionBreve": "Rosacea.",
     "categoria": "Dermatología",
     "subcategoria": "Dermatología",
     "aliases": [
@@ -14930,6 +14190,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-quistes-foliculares-de-la-piel-y-del-tejido-subcutaneo",
     "nombre": "Quistes foliculares de la piel y del tejido subcutaneo",
+    "descripcionBreve": "Quistes foliculares de la piel y del tejido subcutaneo.",
     "categoria": "Dermatología",
     "subcategoria": "Dermatología",
     "aliases": [
@@ -14957,6 +14218,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-otros-trastornos-foliculares",
     "nombre": "Otros trastornos foliculares",
+    "descripcionBreve": "Otros trastornos foliculares.",
     "categoria": "Dermatología",
     "subcategoria": "Dermatología",
     "aliases": [
@@ -14984,6 +14246,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-trastornos-de-las-glandulas-sudoriparas-ecrinas",
     "nombre": "Trastornos de las glandulas sudoriparas ecrinas",
+    "descripcionBreve": "Trastornos de las glandulas sudoriparas ecrinas.",
     "categoria": "Dermatología",
     "subcategoria": "Dermatología",
     "aliases": [
@@ -15011,6 +14274,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-trastornos-de-las-glandulas-sudoriparas-apocrinas",
     "nombre": "Trastornos de las glandulas sudoriparas apocrinas",
+    "descripcionBreve": "Trastornos de las glandulas sudoriparas apocrinas.",
     "categoria": "Dermatología",
     "subcategoria": "Dermatología",
     "aliases": [
@@ -15038,6 +14302,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-vitiligo",
     "nombre": "Vitiligo",
+    "descripcionBreve": "Vitiligo.",
     "categoria": "Dermatología",
     "subcategoria": "Dermatología",
     "aliases": [
@@ -15065,6 +14330,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-otros-trastornos-de-la-pigmentacion",
     "nombre": "Otros trastornos de la pigmentacion",
+    "descripcionBreve": "Otros trastornos de la pigmentacion.",
     "categoria": "Dermatología",
     "subcategoria": "Dermatología",
     "aliases": [
@@ -15092,6 +14358,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-queratosis-seborreica",
     "nombre": "Queratosis seborreica",
+    "descripcionBreve": "Queratosis seborreica.",
     "categoria": "Dermatología",
     "subcategoria": "Dermatología",
     "aliases": [
@@ -15119,6 +14386,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-acantosis-nigricans",
     "nombre": "Acantosis nigricans",
+    "descripcionBreve": "Acantosis nigricans.",
     "categoria": "Dermatología",
     "subcategoria": "Dermatología",
     "aliases": [
@@ -15146,6 +14414,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-callos-y-callosidades",
     "nombre": "Callos y callosidades",
+    "descripcionBreve": "Callos y callosidades.",
     "categoria": "Dermatología",
     "subcategoria": "Dermatología",
     "aliases": [
@@ -15173,6 +14442,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-otros-engrosamientos-epidermicos",
     "nombre": "Otros engrosamientos epidermicos",
+    "descripcionBreve": "Otros engrosamientos epidermicos.",
     "categoria": "Dermatología",
     "subcategoria": "Dermatología",
     "aliases": [
@@ -15200,6 +14470,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-trastornos-de-la-eliminacion-transepidermica",
     "nombre": "Trastornos de la eliminacion transepidermica",
+    "descripcionBreve": "Trastornos de la eliminacion transepidermica.",
     "categoria": "Dermatología",
     "subcategoria": "Dermatología",
     "aliases": [
@@ -15227,6 +14498,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-pioderma-gangrenoso",
     "nombre": "Pioderma gangrenoso",
+    "descripcionBreve": "Pioderma gangrenoso.",
     "categoria": "Dermatología",
     "subcategoria": "Dermatología",
     "aliases": [
@@ -15254,6 +14526,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-ulcera-de-decubito",
     "nombre": "Ulcera de decubito",
+    "descripcionBreve": "Ulcera de decubito.",
     "categoria": "Dermatología",
     "subcategoria": "Dermatología",
     "aliases": [
@@ -15281,6 +14554,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-trastornos-atroficos-de-la-piel",
     "nombre": "Trastornos atroficos de la piel",
+    "descripcionBreve": "Trastornos atroficos de la piel.",
     "categoria": "Dermatología",
     "subcategoria": "Dermatología",
     "aliases": [
@@ -15308,6 +14582,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-trastornos-hipertroficos-de-la-piel",
     "nombre": "Trastornos hipertroficos de la piel",
+    "descripcionBreve": "Trastornos hipertroficos de la piel.",
     "categoria": "Dermatología",
     "subcategoria": "Dermatología",
     "aliases": [
@@ -15335,6 +14610,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-trastornos-granulomatosos-de-la-piel-y-del-tejido-subcutaneo",
     "nombre": "Trastornos granulomatosos de la piel y del tejido subcutaneo",
+    "descripcionBreve": "Trastornos granulomatosos de la piel y del tejido subcutaneo.",
     "categoria": "Dermatología",
     "subcategoria": "Dermatología",
     "aliases": [
@@ -15362,6 +14638,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-lupus-eritematoso",
     "nombre": "Lupus eritematoso",
+    "descripcionBreve": "Lupus eritematoso.",
     "categoria": "Dermatología",
     "subcategoria": "Dermatología",
     "aliases": [
@@ -15389,6 +14666,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-otros-trastornos-localizados-del-tejido-conjuntivo",
     "nombre": "Otros trastornos localizados del tejido conjuntivo",
+    "descripcionBreve": "Otros trastornos localizados del tejido conjuntivo.",
     "categoria": "Dermatología",
     "subcategoria": "Dermatología",
     "aliases": [
@@ -15416,6 +14694,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-vasculitis-limitada-a-la-piel-no-clasificada-en-otra-parte",
     "nombre": "Vasculitis limitada a la piel, no clasificada en otra parte",
+    "descripcionBreve": "Vasculitis limitada a la piel, no clasificada en otra parte.",
     "categoria": "Dermatología",
     "subcategoria": "Dermatología",
     "aliases": [
@@ -15443,6 +14722,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-ulcera-de-miembro-inferior-no-clasificada-en-otra-parte",
     "nombre": "Ulcera de miembro inferior, no clasificada en otra parte",
+    "descripcionBreve": "Ulcera de miembro inferior, no clasificada en otra parte.",
     "categoria": "Dermatología",
     "subcategoria": "Dermatología",
     "aliases": [
@@ -15470,6 +14750,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-otros-trastornos-de-la-piel-y-del-tejido-subcutaneo-no-clasificados-en-otra-parte",
     "nombre": "Otros trastornos de la piel y del tejido subcutaneo, no clasificados en otra parte",
+    "descripcionBreve": "Otros trastornos de la piel y del tejido subcutaneo, no clasificados en otra parte.",
     "categoria": "Dermatología",
     "subcategoria": "Dermatología",
     "aliases": [
@@ -15497,6 +14778,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-otros-trastornos-de-la-piel-y-del-tejido-subcutaneo-en-enfermedades-clasificadas-en-otra-parte",
     "nombre": "Otros trastornos de la piel y del tejido subcutaneo en enfermedades clasificadas en otra parte",
+    "descripcionBreve": "Otros trastornos de la piel y del tejido subcutaneo en enfermedades clasificadas en otra parte.",
     "categoria": "Dermatología",
     "subcategoria": "Dermatología",
     "aliases": [
@@ -15524,6 +14806,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-contusion-de-cabeza",
     "nombre": "Contusion de cabeza",
+    "descripcionBreve": "Contusion de cabeza.",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -15551,6 +14834,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-herida-de-cabeza",
     "nombre": "Herida de cabeza",
+    "descripcionBreve": "Herida de cabeza.",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -15578,6 +14862,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-fractura-de-huesos-del-craneo-y-de-la-cara",
     "nombre": "Fractura de huesos del craneo y de la cara",
+    "descripcionBreve": "Fractura de huesos del craneo y de la cara.",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -15605,6 +14890,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-lesion-de-articulaciones-y-ligamentos-de-la-cabeza",
     "nombre": "Lesion de articulaciones y ligamentos de la cabeza",
+    "descripcionBreve": "Lesion de articulaciones y ligamentos de la cabeza.",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -15632,6 +14918,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-lesion-de-nervios-craneales",
     "nombre": "Lesion de nervios craneales",
+    "descripcionBreve": "Lesion de nervios craneales.",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -15659,6 +14946,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-lesion-del-ojo-y-de-sus-anexos",
     "nombre": "Lesion del ojo y de sus anexos",
+    "descripcionBreve": "Lesion del ojo y de sus anexos.",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -15686,6 +14974,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-lesion-intracraneal",
     "nombre": "Lesion intracraneal",
+    "descripcionBreve": "Lesion intracraneal.",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -15713,6 +15002,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-ablacion-de-cabeza",
     "nombre": "Ablacion de cabeza",
+    "descripcionBreve": "Ablacion de cabeza.",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -15740,6 +15030,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-lesion-multiple-de-cabeza",
     "nombre": "Lesion multiple de cabeza",
+    "descripcionBreve": "Lesion multiple de cabeza.",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -15767,6 +15058,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-otras-lesiones-especificadas-de-cabeza",
     "nombre": "Otras lesiones especificadas de cabeza",
+    "descripcionBreve": "Otras lesiones especificadas de cabeza.",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -15794,6 +15086,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-lesion-de-cabeza-no-especificada",
     "nombre": "Lesion de cabeza, no especificada",
+    "descripcionBreve": "Lesion de cabeza, no especificada.",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -15821,6 +15114,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-contusion-de-cuello",
     "nombre": "Contusion de cuello",
+    "descripcionBreve": "Contusion de cuello.",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -15848,6 +15142,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-herida-de-cuello",
     "nombre": "Herida de cuello",
+    "descripcionBreve": "Herida de cuello.",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -15875,6 +15170,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-fractura-de-vertebras-cervicales",
     "nombre": "Fractura de vertebras cervicales",
+    "descripcionBreve": "Fractura de vertebras cervicales.",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -15902,6 +15198,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-lesion-de-articulaciones-y-ligamentos-del-cuello",
     "nombre": "Lesion de articulaciones y ligamentos del cuello",
+    "descripcionBreve": "Lesion de articulaciones y ligamentos del cuello.",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -15929,6 +15226,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-lesion-de-nervios-del-cuello",
     "nombre": "Lesion de nervios del cuello",
+    "descripcionBreve": "Lesion de nervios del cuello.",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -15956,6 +15254,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-lesion-de-vasos-sanguineos-del-cuello",
     "nombre": "Lesion de vasos sanguineos del cuello",
+    "descripcionBreve": "Lesion de vasos sanguineos del cuello.",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -15983,6 +15282,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-lesion-de-musculos-y-tendones-del-cuello",
     "nombre": "Lesion de musculos y tendones del cuello",
+    "descripcionBreve": "Lesion de musculos y tendones del cuello.",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -16010,6 +15310,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-ablacion-de-cuello",
     "nombre": "Ablacion de cuello",
+    "descripcionBreve": "Ablacion de cuello.",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -16037,6 +15338,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-lesion-multiple-del-cuello",
     "nombre": "Lesion multiple del cuello",
+    "descripcionBreve": "Lesion multiple del cuello.",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -16064,6 +15366,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-otras-lesiones-especificadas-del-cuello",
     "nombre": "Otras lesiones especificadas del cuello",
+    "descripcionBreve": "Otras lesiones especificadas del cuello.",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -16091,6 +15394,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-lesion-del-cuello-no-especificada",
     "nombre": "Lesion del cuello, no especificada",
+    "descripcionBreve": "Lesion del cuello, no especificada.",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -16118,6 +15422,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-contusion-del-torax",
     "nombre": "Contusion del torax",
+    "descripcionBreve": "Contusion del torax.",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -16145,6 +15450,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-contusion-del-torax-no-especificada",
     "nombre": "Contusion del torax, no especificada",
+    "descripcionBreve": "Contusion del torax, no especificada.",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -16172,6 +15478,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-contusion-del-torax-con-dano-de-nervios",
     "nombre": "Contusion del torax, con daño de nervios",
+    "descripcionBreve": "Contusion del torax, con daño de nervios.",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -16199,6 +15506,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-contusion-del-torax-con-dano-de-vasos-sanguineos",
     "nombre": "Contusion del torax, con daño de vasos sanguineos",
+    "descripcionBreve": "Contusion del torax, con daño de vasos sanguineos.",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -16226,6 +15534,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-contusion-del-torax-con-dano-de-musculos-y-tendones",
     "nombre": "Contusion del torax, con daño de musculos y tendones",
+    "descripcionBreve": "Contusion del torax, con daño de musculos y tendones.",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -16253,6 +15562,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-contusion-del-torax-con-dano-de-articulaciones-y-ligamentos",
     "nombre": "Contusion del torax, con daño de articulaciones y ligamentos",
+    "descripcionBreve": "Contusion del torax, con daño de articulaciones y ligamentos.",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -16281,6 +15591,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-contusion-del-torax-con-dano-de-piel-y-tejido-subcutaneo",
     "nombre": "Contusion del torax, con daño de piel y tejido subcutaneo",
+    "descripcionBreve": "Contusion del torax, con daño de piel y tejido subcutaneo.",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -16308,6 +15619,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-contusion-del-torax-con-dano-de-huesos",
     "nombre": "Contusion del torax, con daño de huesos",
+    "descripcionBreve": "Contusion del torax, con daño de huesos.",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -16335,6 +15647,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-contusion-del-torax-con-dano-de-otros-tejidos",
     "nombre": "Contusion del torax, con daño de otros tejidos",
+    "descripcionBreve": "Contusion del torax, con daño de otros tejidos.",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -16362,6 +15675,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-herida-del-torax",
     "nombre": "Herida del torax",
+    "descripcionBreve": "Herida del torax.",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -16389,6 +15703,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-fractura-de-costillas-esternon-y-torax",
     "nombre": "Fractura de costillas, esternon y torax",
+    "descripcionBreve": "Fractura de costillas, esternon y torax.",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -16416,6 +15731,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-lesion-de-articulaciones-y-ligamentos-del-torax",
     "nombre": "Lesion de articulaciones y ligamentos del torax",
+    "descripcionBreve": "Lesion de articulaciones y ligamentos del torax.",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -16443,6 +15759,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-lesion-de-nervios-del-torax",
     "nombre": "Lesion de nervios del torax",
+    "descripcionBreve": "Lesion de nervios del torax.",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -16470,6 +15787,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-lesion-de-vasos-sanguineos-del-torax",
     "nombre": "Lesion de vasos sanguineos del torax",
+    "descripcionBreve": "Lesion de vasos sanguineos del torax.",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -16497,6 +15815,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-lesion-de-musculos-y-tendones-del-torax",
     "nombre": "Lesion de musculos y tendones del torax",
+    "descripcionBreve": "Lesion de musculos y tendones del torax.",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -16524,6 +15843,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-ablacion-del-torax",
     "nombre": "Ablacion del torax",
+    "descripcionBreve": "Ablacion del torax.",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -16551,6 +15871,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-lesion-multiple-del-torax",
     "nombre": "Lesion multiple del torax",
+    "descripcionBreve": "Lesion multiple del torax.",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -16578,6 +15899,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-otras-lesiones-especificadas-del-torax",
     "nombre": "Otras lesiones especificadas del torax",
+    "descripcionBreve": "Otras lesiones especificadas del torax.",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -16605,6 +15927,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-lesion-del-torax-no-especificada",
     "nombre": "Lesion del torax, no especificada",
+    "descripcionBreve": "Lesion del torax, no especificada.",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -16632,6 +15955,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-contusion-del-abdomen-la-region-pelvica-y-la-ingle",
     "nombre": "Contusion del abdomen, la region pelvica y la ingle",
+    "descripcionBreve": "Contusion del abdomen, la region pelvica y la ingle.",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -16659,6 +15983,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-herida-del-abdomen-la-region-pelvica-y-la-ingle",
     "nombre": "Herida del abdomen, la region pelvica y la ingle",
+    "descripcionBreve": "Herida del abdomen, la region pelvica y la ingle.",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -16686,6 +16011,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-fractura-de-vertebras-lumbares-y-sacras-pelvis-y-cadera",
     "nombre": "Fractura de vertebras lumbares y sacras, pelvis y cadera",
+    "descripcionBreve": "Fractura de vertebras lumbares y sacras, pelvis y cadera.",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -16713,6 +16039,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-lesion-de-articulaciones-y-ligamentos-del-abdomen-la-region-pelvica-y-la-ingle",
     "nombre": "Lesion de articulaciones y ligamentos del abdomen, la region pelvica y la ingle",
+    "descripcionBreve": "Lesion de articulaciones y ligamentos del abdomen, la region pelvica y la ingle.",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -16740,6 +16067,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-lesion-de-nervios-del-abdomen-la-region-pelvica-y-la-ingle",
     "nombre": "Lesion de nervios del abdomen, la region pelvica y la ingle",
+    "descripcionBreve": "Lesion de nervios del abdomen, la region pelvica y la ingle.",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -16767,6 +16095,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-lesion-de-vasos-sanguineos-del-abdomen-la-region-pelvica-y-la-ingle",
     "nombre": "Lesion de vasos sanguineos del abdomen, la region pelvica y la ingle",
+    "descripcionBreve": "Lesion de vasos sanguineos del abdomen, la region pelvica y la ingle.",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -16794,6 +16123,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-lesion-de-musculos-y-tendones-del-abdomen-la-region-pelvica-y-la-ingle",
     "nombre": "Lesion de musculos y tendones del abdomen, la region pelvica y la ingle",
+    "descripcionBreve": "Lesion de musculos y tendones del abdomen, la region pelvica y la ingle.",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -16821,6 +16151,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-ablacion-del-abdomen-la-region-pelvica-y-la-ingle",
     "nombre": "Ablacion del abdomen, la region pelvica y la ingle",
+    "descripcionBreve": "Ablacion del abdomen, la region pelvica y la ingle.",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -16848,6 +16179,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-lesion-multiple-del-abdomen-la-region-pelvica-y-la-ingle",
     "nombre": "Lesion multiple del abdomen, la region pelvica y la ingle",
+    "descripcionBreve": "Lesion multiple del abdomen, la region pelvica y la ingle.",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -16875,6 +16207,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-otras-lesiones-especificadas-del-abdomen-la-region-pelvica-y-la-ingle",
     "nombre": "Otras lesiones especificadas del abdomen, la region pelvica y la ingle",
+    "descripcionBreve": "Otras lesiones especificadas del abdomen, la region pelvica y la ingle.",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -16902,6 +16235,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-lesion-del-abdomen-la-region-pelvica-y-la-ingle-no-especificada",
     "nombre": "Lesion del abdomen, la region pelvica y la ingle, no especificada",
+    "descripcionBreve": "Lesion del abdomen, la region pelvica y la ingle, no especificada.",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -16929,6 +16263,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-contusion-del-hombro-y-del-brazo",
     "nombre": "Contusion del hombro y del brazo",
+    "descripcionBreve": "Contusion del hombro y del brazo.",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -16956,6 +16291,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-herida-del-hombro-y-del-brazo",
     "nombre": "Herida del hombro y del brazo",
+    "descripcionBreve": "Herida del hombro y del brazo.",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -16983,6 +16319,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-fractura-de-la-clavicula-escapula-y-humero",
     "nombre": "Fractura de la clavicula, escapula y humero",
+    "descripcionBreve": "Fractura de la clavicula, escapula y humero.",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -17010,6 +16347,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-lesion-de-articulaciones-y-ligamentos-del-hombro-y-del-brazo",
     "nombre": "Lesion de articulaciones y ligamentos del hombro y del brazo",
+    "descripcionBreve": "Lesion de articulaciones y ligamentos del hombro y del brazo.",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -17037,6 +16375,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-lesion-de-nervios-del-hombro-y-del-brazo",
     "nombre": "Lesion de nervios del hombro y del brazo",
+    "descripcionBreve": "Lesion de nervios del hombro y del brazo.",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -17064,6 +16403,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-lesion-de-vasos-sanguineos-del-hombro-y-del-brazo",
     "nombre": "Lesion de vasos sanguineos del hombro y del brazo",
+    "descripcionBreve": "Lesion de vasos sanguineos del hombro y del brazo.",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -17091,6 +16431,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-lesion-de-musculos-y-tendones-del-hombro-y-del-brazo",
     "nombre": "Lesion de musculos y tendones del hombro y del brazo",
+    "descripcionBreve": "Lesion de musculos y tendones del hombro y del brazo.",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -17118,6 +16459,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-ablacion-del-hombro-y-del-brazo",
     "nombre": "Ablacion del hombro y del brazo",
+    "descripcionBreve": "Ablacion del hombro y del brazo.",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -17145,6 +16487,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-lesion-multiple-del-hombro-y-del-brazo",
     "nombre": "Lesion multiple del hombro y del brazo",
+    "descripcionBreve": "Lesion multiple del hombro y del brazo.",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -17172,6 +16515,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-otras-lesiones-especificadas-del-hombro-y-del-brazo",
     "nombre": "Otras lesiones especificadas del hombro y del brazo",
+    "descripcionBreve": "Otras lesiones especificadas del hombro y del brazo.",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -17199,6 +16543,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-lesion-del-hombro-y-del-brazo-no-especificada",
     "nombre": "Lesion del hombro y del brazo, no especificada",
+    "descripcionBreve": "Lesion del hombro y del brazo, no especificada.",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -17226,6 +16571,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-contusion-del-antebrazo",
     "nombre": "Contusion del antebrazo",
+    "descripcionBreve": "Contusion del antebrazo.",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -17253,6 +16599,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-herida-del-antebrazo",
     "nombre": "Herida del antebrazo",
+    "descripcionBreve": "Herida del antebrazo.",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -17280,6 +16627,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-herida-del-antebrazo-no-especificada",
     "nombre": "Herida del antebrazo, no especificada",
+    "descripcionBreve": "Herida del antebrazo, no especificada.",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -17307,6 +16655,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-herida-del-antebrazo-con-dano-de-nervios",
     "nombre": "Herida del antebrazo, con daño de nervios",
+    "descripcionBreve": "Herida del antebrazo, con daño de nervios.",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -17334,6 +16683,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-herida-del-antebrazo-con-dano-de-vasos-sanguineos",
     "nombre": "Herida del antebrazo, con daño de vasos sanguineos",
+    "descripcionBreve": "Herida del antebrazo, con daño de vasos sanguineos.",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -17361,6 +16711,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-herida-del-antebrazo-con-dano-de-musculos-y-tendones",
     "nombre": "Herida del antebrazo, con daño de musculos y tendones",
+    "descripcionBreve": "Herida del antebrazo, con daño de musculos y tendones.",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -17388,6 +16739,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-herida-del-antebrazo-con-dano-de-articulaciones-y-ligamentos",
     "nombre": "Herida del antebrazo, con daño de articulaciones y ligamentos",
+    "descripcionBreve": "Herida del antebrazo, con daño de articulaciones y ligamentos.",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -17416,6 +16768,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-herida-del-antebrazo-con-dano-de-piel-y-tejido-subcutaneo",
     "nombre": "Herida del antebrazo, con daño de piel y tejido subcutaneo",
+    "descripcionBreve": "Herida del antebrazo, con daño de piel y tejido subcutaneo.",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -17443,6 +16796,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-herida-del-antebrazo-con-dano-de-huesos",
     "nombre": "Herida del antebrazo, con daño de huesos",
+    "descripcionBreve": "Herida del antebrazo, con daño de huesos.",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -17470,6 +16824,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-herida-del-antebrazo-con-dano-de-otros-tejidos",
     "nombre": "Herida del antebrazo, con daño de otros tejidos",
+    "descripcionBreve": "Herida del antebrazo, con daño de otros tejidos.",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -17497,6 +16852,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-herida-del-antebrazo-con-dano-de-tejido-no-especificado",
     "nombre": "Herida del antebrazo, con daño de tejido no especificado",
+    "descripcionBreve": "Herida del antebrazo, con daño de tejido no especificado.",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -17524,6 +16880,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-fractura-del-antebrazo",
     "nombre": "Fractura del antebrazo",
+    "descripcionBreve": "Fractura del antebrazo.",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -17551,6 +16908,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-fractura-de-la-epifisis-distal-del-radio",
     "nombre": "Fractura de la epifisis distal del radio",
+    "descripcionBreve": "Fractura de la epifisis distal del radio.",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -17578,6 +16936,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-fractura-de-la-epifisis-distal-del-cubito",
     "nombre": "Fractura de la epifisis distal del cubito",
+    "descripcionBreve": "Fractura de la epifisis distal del cubito.",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -17605,6 +16964,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-fractura-de-la-diafisis-del-radio",
     "nombre": "Fractura de la diafisis del radio",
+    "descripcionBreve": "Fractura de la diafisis del radio.",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -17632,6 +16992,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-fractura-de-la-diafisis-del-cubito",
     "nombre": "Fractura de la diafisis del cubito",
+    "descripcionBreve": "Fractura de la diafisis del cubito.",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -17659,6 +17020,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-fractura-de-la-epifisis-proximal-del-radio",
     "nombre": "Fractura de la epifisis proximal del radio",
+    "descripcionBreve": "Fractura de la epifisis proximal del radio.",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -17686,6 +17048,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-fractura-de-la-epifisis-proximal-del-cubito",
     "nombre": "Fractura de la epifisis proximal del cubito",
+    "descripcionBreve": "Fractura de la epifisis proximal del cubito.",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -17713,6 +17076,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-fractura-del-radio-y-del-cubito",
     "nombre": "Fractura del radio y del cubito",
+    "descripcionBreve": "Fractura del radio y del cubito.",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -17740,6 +17104,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-lesion-de-articulaciones-y-ligamentos-del-antebrazo",
     "nombre": "Lesion de articulaciones y ligamentos del antebrazo",
+    "descripcionBreve": "Lesion de articulaciones y ligamentos del antebrazo.",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -17767,6 +17132,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-lesion-de-nervios-del-antebrazo",
     "nombre": "Lesion de nervios del antebrazo",
+    "descripcionBreve": "Lesion de nervios del antebrazo.",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -17794,6 +17160,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-lesion-de-vasos-sanguineos-del-antebrazo",
     "nombre": "Lesion de vasos sanguineos del antebrazo",
+    "descripcionBreve": "Lesion de vasos sanguineos del antebrazo.",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -17821,6 +17188,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-lesion-de-musculos-y-tendones-del-antebrazo",
     "nombre": "Lesion de musculos y tendones del antebrazo",
+    "descripcionBreve": "Lesion de musculos y tendones del antebrazo.",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -17848,6 +17216,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-ablacion-del-antebrazo",
     "nombre": "Ablacion del antebrazo",
+    "descripcionBreve": "Ablacion del antebrazo.",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -17875,6 +17244,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-lesion-multiple-del-antebrazo",
     "nombre": "Lesion multiple del antebrazo",
+    "descripcionBreve": "Lesion multiple del antebrazo.",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -17902,6 +17272,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-otras-lesiones-especificadas-del-antebrazo",
     "nombre": "Otras lesiones especificadas del antebrazo",
+    "descripcionBreve": "Otras lesiones especificadas del antebrazo.",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -17929,6 +17300,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-lesion-del-antebrazo-no-especificada",
     "nombre": "Lesion del antebrazo, no especificada",
+    "descripcionBreve": "Lesion del antebrazo, no especificada.",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -17956,6 +17328,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-contusion-de-la-mano",
     "nombre": "Contusion de la mano",
+    "descripcionBreve": "Contusion de la mano.",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -17983,6 +17356,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-herida-de-la-mano",
     "nombre": "Herida de la mano",
+    "descripcionBreve": "Herida de la mano.",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -18010,6 +17384,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-fractura-de-los-huesos-del-carpo-metacarpo-y-falanges",
     "nombre": "Fractura de los huesos del carpo, metacarpo y falanges",
+    "descripcionBreve": "Fractura de los huesos del carpo, metacarpo y falanges.",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -18037,6 +17412,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-lesion-de-articulaciones-y-ligamentos-de-la-mano",
     "nombre": "Lesion de articulaciones y ligamentos de la mano",
+    "descripcionBreve": "Lesion de articulaciones y ligamentos de la mano.",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -18064,6 +17440,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-lesion-de-nervios-de-la-mano",
     "nombre": "Lesion de nervios de la mano",
+    "descripcionBreve": "Lesion de nervios de la mano.",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -18091,6 +17468,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-lesion-de-vasos-sanguineos-de-la-mano",
     "nombre": "Lesion de vasos sanguineos de la mano",
+    "descripcionBreve": "Lesion de vasos sanguineos de la mano.",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -18118,6 +17496,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-lesion-de-musculos-y-tendones-de-la-mano",
     "nombre": "Lesion de musculos y tendones de la mano",
+    "descripcionBreve": "Lesion de musculos y tendones de la mano.",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -18145,6 +17524,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-ablacion-de-la-mano",
     "nombre": "Ablacion de la mano",
+    "descripcionBreve": "Ablacion de la mano.",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -18172,6 +17552,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-lesion-multiple-de-la-mano",
     "nombre": "Lesion multiple de la mano",
+    "descripcionBreve": "Lesion multiple de la mano.",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -18199,6 +17580,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-otras-lesiones-especificadas-de-la-mano",
     "nombre": "Otras lesiones especificadas de la mano",
+    "descripcionBreve": "Otras lesiones especificadas de la mano.",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -18226,6 +17608,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-lesion-de-la-mano-no-especificada",
     "nombre": "Lesion de la mano, no especificada",
+    "descripcionBreve": "Lesion de la mano, no especificada.",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -18253,6 +17636,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-examen-general-e-investigacion-de-personas-sin-quejas-o-diagnostico-informado",
     "nombre": "Examen general e investigacion de personas sin quejas o diagnostico informado",
+    "descripcionBreve": "Información orientativa para consulta rápida.",
     "categoria": "Otros",
     "subcategoria": "Otros",
     "aliases": [
@@ -18267,40 +17651,32 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Examen general e investigacion de personas sin quejas o diagnostico informado",
         "criterios": [
           {
-            "id": "trastorno-examen-general-e-investigacion-de-personas-sin-quejas-o-diagnostico-informado-cie10-criterio-1",
-            "orden": 1,
-            "titulo": "Criterio 1",
-            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-examen-general-e-investigacion-de-personas-sin-quejas-o-diagnostico-informado-cie10-criterio-2",
-            "orden": 2,
-            "titulo": "Criterio 2",
-            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-examen-general-e-investigacion-de-personas-sin-quejas-o-diagnostico-informado-cie10-criterio-3",
-            "orden": 3,
-            "titulo": "Criterio 3",
-            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-examen-general-e-investigacion-de-personas-sin-quejas-o-diagnostico-informado-cie10-criterio-4",
-            "orden": 4,
-            "titulo": "Criterio 4",
-            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
+            "id": "trastorno-examen-general-e-investigacion-de-personas-sin-quejas-o-diagnostico-informado-cie10-grupo-1",
+            "clave": "",
+            "titulo": "Pendiente de clasificación",
+            "tipo": "revision_requerida",
+            "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "literal": false,
+            "items": [
+              {
+                "numero": null,
+                "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+                "orden": 3,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
@@ -18323,6 +17699,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-otros-examenes-especiales-e-investigaciones-de-personas-sin-quejas-o-diagnostico-informado",
     "nombre": "Otros examenes especiales e investigaciones de personas sin quejas o diagnostico informado",
+    "descripcionBreve": "Otros examenes especiales e investigaciones de personas sin quejas o diagnostico informado.",
     "categoria": "Otros",
     "subcategoria": "Otros",
     "aliases": [
@@ -18350,6 +17727,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-examen-medico-y-consulta-con-fines-administrativos",
     "nombre": "Examen medico y consulta con fines administrativos",
+    "descripcionBreve": "Examen medico y consulta con fines administrativos.",
     "categoria": "Otros",
     "subcategoria": "Otros",
     "aliases": [
@@ -18377,6 +17755,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-observacion-y-evaluacion-medicas-por-sospecha-de-enfermedades-y-afecciones",
     "nombre": "Observacion y evaluacion medicas por sospecha de enfermedades y afecciones",
+    "descripcionBreve": "Información orientativa para consulta rápida.",
     "categoria": "Otros",
     "subcategoria": "Otros",
     "aliases": [
@@ -18391,40 +17770,32 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Observacion y evaluacion medicas por sospecha de enfermedades y afecciones",
         "criterios": [
           {
-            "id": "trastorno-observacion-y-evaluacion-medicas-por-sospecha-de-enfermedades-y-afecciones-cie10-criterio-1",
-            "orden": 1,
-            "titulo": "Criterio 1",
-            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-observacion-y-evaluacion-medicas-por-sospecha-de-enfermedades-y-afecciones-cie10-criterio-2",
-            "orden": 2,
-            "titulo": "Criterio 2",
-            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-observacion-y-evaluacion-medicas-por-sospecha-de-enfermedades-y-afecciones-cie10-criterio-3",
-            "orden": 3,
-            "titulo": "Criterio 3",
-            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-observacion-y-evaluacion-medicas-por-sospecha-de-enfermedades-y-afecciones-cie10-criterio-4",
-            "orden": 4,
-            "titulo": "Criterio 4",
-            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
+            "id": "trastorno-observacion-y-evaluacion-medicas-por-sospecha-de-enfermedades-y-afecciones-cie10-grupo-1",
+            "clave": "",
+            "titulo": "Pendiente de clasificación",
+            "tipo": "revision_requerida",
+            "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "literal": false,
+            "items": [
+              {
+                "numero": null,
+                "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+                "orden": 3,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
@@ -18447,6 +17818,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-examen-y-observacion-por-otras-razones",
     "nombre": "Examen y observacion por otras razones",
+    "descripcionBreve": "Examen y observacion por otras razones.",
     "categoria": "Otros",
     "subcategoria": "Otros",
     "aliases": [
@@ -18474,6 +17846,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-examen-de-seguimiento-despues-de-tratamiento-por-tumor-maligno",
     "nombre": "Examen de seguimiento despues de tratamiento por tumor maligno",
+    "descripcionBreve": "Examen de seguimiento despues de tratamiento por tumor maligno.",
     "categoria": "Otros",
     "subcategoria": "Otros",
     "aliases": [
@@ -18501,6 +17874,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-examen-de-seguimiento-despues-de-tratamiento-por-otras-afecciones",
     "nombre": "Examen de seguimiento despues de tratamiento por otras afecciones",
+    "descripcionBreve": "Examen de seguimiento despues de tratamiento por otras afecciones.",
     "categoria": "Otros",
     "subcategoria": "Otros",
     "aliases": [
@@ -18528,6 +17902,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-control-general-de-salud-de-subpoblaciones-definidas",
     "nombre": "Control general de salud de subpoblaciones definidas",
+    "descripcionBreve": "Control general de salud de subpoblaciones definidas.",
     "categoria": "Otros",
     "subcategoria": "Otros",
     "aliases": [
@@ -18555,6 +17930,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-examen-de-pesquisa-especial-para-enfermedades-infecciosas-y-parasitarias",
     "nombre": "Examen de pesquisa especial para enfermedades infecciosas y parasitarias",
+    "descripcionBreve": "Examen de pesquisa especial para enfermedades infecciosas y parasitarias.",
     "categoria": "Otros",
     "subcategoria": "Otros",
     "aliases": [
@@ -18582,6 +17958,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-examen-de-pesquisa-especial-para-tumores",
     "nombre": "Examen de pesquisa especial para tumores",
+    "descripcionBreve": "Examen de pesquisa especial para tumores.",
     "categoria": "Otros",
     "subcategoria": "Otros",
     "aliases": [
@@ -18609,6 +17986,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-examen-de-pesquisa-especial-para-otras-enfermedades-y-trastornos",
     "nombre": "Examen de pesquisa especial para otras enfermedades y trastornos",
+    "descripcionBreve": "Examen de pesquisa especial para otras enfermedades y trastornos.",
     "categoria": "Otros",
     "subcategoria": "Otros",
     "aliases": [
@@ -18636,6 +18014,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-contacto-con-y-exposicion-a-enfermedades-transmisibles",
     "nombre": "Contacto con y exposicion a enfermedades transmisibles",
+    "descripcionBreve": "Contacto con y exposicion a enfermedades transmisibles.",
     "categoria": "Otros",
     "subcategoria": "Otros",
     "aliases": [
@@ -18663,6 +18042,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-estado-de-infeccion-asintomatica-por-vih",
     "nombre": "Estado de infeccion asintomatica por VIH",
+    "descripcionBreve": "Estado de infeccion asintomatica por VIH.",
     "categoria": "Otros",
     "subcategoria": "Otros",
     "aliases": [
@@ -18690,6 +18070,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-portador-de-enfermedad-infecciosa",
     "nombre": "Portador de enfermedad infecciosa",
+    "descripcionBreve": "Portador de enfermedad infecciosa.",
     "categoria": "Otros",
     "subcategoria": "Otros",
     "aliases": [
@@ -18717,6 +18098,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-necesidad-de-inmunizacion-contra-enfermedad-bacteriana-unica",
     "nombre": "Necesidad de inmunizacion contra enfermedad bacteriana unica",
+    "descripcionBreve": "Necesidad de inmunizacion contra enfermedad bacteriana unica.",
     "categoria": "Otros",
     "subcategoria": "Otros",
     "aliases": [
@@ -18744,6 +18126,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-necesidad-de-inmunizacion-contra-ciertas-enfermedades-virales",
     "nombre": "Necesidad de inmunizacion contra ciertas enfermedades virales",
+    "descripcionBreve": "Necesidad de inmunizacion contra ciertas enfermedades virales.",
     "categoria": "Otros",
     "subcategoria": "Otros",
     "aliases": [
@@ -18771,6 +18154,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-necesidad-de-inmunizacion-contra-otras-enfermedades-virales-unicas",
     "nombre": "Necesidad de inmunizacion contra otras enfermedades virales unicas",
+    "descripcionBreve": "Necesidad de inmunizacion contra otras enfermedades virales unicas.",
     "categoria": "Otros",
     "subcategoria": "Otros",
     "aliases": [
@@ -18798,6 +18182,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-necesidad-de-inmunizacion-contra-otras-enfermedades-infecciosas-unicas",
     "nombre": "Necesidad de inmunizacion contra otras enfermedades infecciosas unicas",
+    "descripcionBreve": "Necesidad de inmunizacion contra otras enfermedades infecciosas unicas.",
     "categoria": "Otros",
     "subcategoria": "Otros",
     "aliases": [
@@ -18825,6 +18210,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-necesidad-de-inmunizacion-contra-combinaciones-de-enfermedades-infecciosas",
     "nombre": "Necesidad de inmunizacion contra combinaciones de enfermedades infecciosas",
+    "descripcionBreve": "Necesidad de inmunizacion contra combinaciones de enfermedades infecciosas.",
     "categoria": "Otros",
     "subcategoria": "Otros",
     "aliases": [
@@ -18852,6 +18238,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-inmunizacion-no-realizada",
     "nombre": "Inmunizacion no realizada",
+    "descripcionBreve": "Inmunizacion no realizada.",
     "categoria": "Otros",
     "subcategoria": "Otros",
     "aliases": [
@@ -18879,6 +18266,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-necesidad-de-otras-medidas-profilacticas",
     "nombre": "Necesidad de otras medidas profilacticas",
+    "descripcionBreve": "Necesidad de otras medidas profilacticas.",
     "categoria": "Otros",
     "subcategoria": "Otros",
     "aliases": [
@@ -18906,6 +18294,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-atencion-para-la-anticoncepcion",
     "nombre": "Atencion para la anticoncepcion",
+    "descripcionBreve": "Atencion para la anticoncepcion.",
     "categoria": "Otros",
     "subcategoria": "Otros",
     "aliases": [
@@ -18933,6 +18322,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-atencion-para-la-procreacion",
     "nombre": "Atencion para la procreacion",
+    "descripcionBreve": "Atencion para la procreacion.",
     "categoria": "Otros",
     "subcategoria": "Otros",
     "aliases": [
@@ -18960,6 +18350,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-examen-y-prueba-de-embarazo",
     "nombre": "Examen y prueba de embarazo",
+    "descripcionBreve": "Examen y prueba de embarazo.",
     "categoria": "Otros",
     "subcategoria": "Otros",
     "aliases": [
@@ -18987,6 +18378,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-estado-de-embarazo-incidental",
     "nombre": "Estado de embarazo, incidental",
+    "descripcionBreve": "Estado de embarazo, incidental.",
     "categoria": "Otros",
     "subcategoria": "Otros",
     "aliases": [
@@ -19014,6 +18406,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-supervision-de-embarazo-normal",
     "nombre": "Supervision de embarazo normal",
+    "descripcionBreve": "Supervision de embarazo normal.",
     "categoria": "Otros",
     "subcategoria": "Otros",
     "aliases": [
@@ -19041,6 +18434,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-supervision-de-embarazo-de-alto-riesgo",
     "nombre": "Supervision de embarazo de alto riesgo",
+    "descripcionBreve": "Supervision de embarazo de alto riesgo.",
     "categoria": "Otros",
     "subcategoria": "Otros",
     "aliases": [
@@ -19068,6 +18462,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-pesquisa-prenatal",
     "nombre": "Pesquisa prenatal",
+    "descripcionBreve": "Pesquisa prenatal.",
     "categoria": "Otros",
     "subcategoria": "Otros",
     "aliases": [
@@ -19095,6 +18490,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-producto-del-parto",
     "nombre": "Producto del parto",
+    "descripcionBreve": "Producto del parto.",
     "categoria": "Otros",
     "subcategoria": "Otros",
     "aliases": [
@@ -19122,6 +18518,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-nacidos-vivos-segun-lugar-de-nacimiento",
     "nombre": "Nacidos vivos segun lugar de nacimiento",
+    "descripcionBreve": "Nacidos vivos segun lugar de nacimiento.",
     "categoria": "Otros",
     "subcategoria": "Otros",
     "aliases": [
@@ -19149,6 +18546,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-atencion-y-examen-posparto",
     "nombre": "Atencion y examen posparto",
+    "descripcionBreve": "Atencion y examen posparto.",
     "categoria": "Otros",
     "subcategoria": "Otros",
     "aliases": [
@@ -19176,6 +18574,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-cirugia-profilactica",
     "nombre": "Cirugia profilactica",
+    "descripcionBreve": "Cirugia profilactica.",
     "categoria": "Otros",
     "subcategoria": "Otros",
     "aliases": [
@@ -19203,6 +18602,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-procedimientos-para-otros-propositos-que-no-sean-remediar-el-estado-de-salud",
     "nombre": "Procedimientos para otros propositos que no sean remediar el estado de salud",
+    "descripcionBreve": "Procedimientos para otros propositos que no sean remediar el estado de salud.",
     "categoria": "Otros",
     "subcategoria": "Otros",
     "aliases": [
@@ -19230,6 +18630,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-cuidados-posteriores-a-cirugia-plastica",
     "nombre": "Cuidados posteriores a cirugia plastica",
+    "descripcionBreve": "Cuidados posteriores a cirugia plastica.",
     "categoria": "Otros",
     "subcategoria": "Otros",
     "aliases": [
@@ -19257,6 +18658,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-atencion-a-orificios-artificiales",
     "nombre": "Atencion a orificios artificiales",
+    "descripcionBreve": "Atencion a orificios artificiales.",
     "categoria": "Otros",
     "subcategoria": "Otros",
     "aliases": [
@@ -19284,6 +18686,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-prueba-y-ajuste-de-dispositivos-protesicos-externos",
     "nombre": "Prueba y ajuste de dispositivos protesicos externos",
+    "descripcionBreve": "Prueba y ajuste de dispositivos protesicos externos.",
     "categoria": "Otros",
     "subcategoria": "Otros",
     "aliases": [
@@ -19311,6 +18714,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-ajuste-y-manejo-de-dispositivo-implantado",
     "nombre": "Ajuste y manejo de dispositivo implantado",
+    "descripcionBreve": "Ajuste y manejo de dispositivo implantado.",
     "categoria": "Otros",
     "subcategoria": "Otros",
     "aliases": [
@@ -19338,6 +18742,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-prueba-y-ajuste-de-otros-dispositivos",
     "nombre": "Prueba y ajuste de otros dispositivos",
+    "descripcionBreve": "Prueba y ajuste de otros dispositivos.",
     "categoria": "Otros",
     "subcategoria": "Otros",
     "aliases": [
@@ -19365,6 +18770,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-otros-cuidados-posteriores-ortopedicos",
     "nombre": "Otros cuidados posteriores ortopedicos",
+    "descripcionBreve": "Otros cuidados posteriores ortopedicos.",
     "categoria": "Otros",
     "subcategoria": "Otros",
     "aliases": [
@@ -19392,6 +18798,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-otros-cuidados-posteriores-quirurgicos",
     "nombre": "Otros cuidados posteriores quirurgicos",
+    "descripcionBreve": "Otros cuidados posteriores quirurgicos.",
     "categoria": "Otros",
     "subcategoria": "Otros",
     "aliases": [
@@ -19419,6 +18826,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-cuidados-relacionados-con-dialisis",
     "nombre": "Cuidados relacionados con dialisis",
+    "descripcionBreve": "Cuidados relacionados con dialisis.",
     "categoria": "Otros",
     "subcategoria": "Otros",
     "aliases": [
@@ -19446,6 +18854,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-atencion-que-incluye-procedimientos-de-rehabilitacion",
     "nombre": "Atencion que incluye procedimientos de rehabilitacion",
+    "descripcionBreve": "Atencion que incluye procedimientos de rehabilitacion.",
     "categoria": "Otros",
     "subcategoria": "Otros",
     "aliases": [
@@ -19473,6 +18882,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-otra-atencion-medica",
     "nombre": "Otra atencion medica",
+    "descripcionBreve": "Otra atencion medica.",
     "categoria": "Otros",
     "subcategoria": "Otros",
     "aliases": [
@@ -19500,6 +18910,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-donantes-de-organos-y-tejidos",
     "nombre": "Donantes de organos y tejidos",
+    "descripcionBreve": "Donantes de organos y tejidos.",
     "categoria": "Otros",
     "subcategoria": "Otros",
     "aliases": [
@@ -19527,6 +18938,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-personas-en-contacto-con-servicios-de-salud-para-procedimientos-no-realizados",
     "nombre": "Personas en contacto con servicios de salud para procedimientos no realizados",
+    "descripcionBreve": "Personas en contacto con servicios de salud para procedimientos no realizados.",
     "categoria": "Otros",
     "subcategoria": "Otros",
     "aliases": [
@@ -19554,6 +18966,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-convalecencia",
     "nombre": "Convalecencia",
+    "descripcionBreve": "Convalecencia.",
     "categoria": "Otros",
     "subcategoria": "Otros",
     "aliases": [
@@ -19581,6 +18994,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-problemas-relacionados-con-la-educacion-y-la-alfabetizacion",
     "nombre": "Problemas relacionados con la educacion y la alfabetizacion",
+    "descripcionBreve": "Problemas relacionados con la educacion y la alfabetizacion.",
     "categoria": "Otros",
     "subcategoria": "Otros",
     "aliases": [
@@ -19608,6 +19022,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-problemas-relacionados-con-el-empleo-y-el-desempleo",
     "nombre": "Problemas relacionados con el empleo y el desempleo",
+    "descripcionBreve": "Problemas relacionados con el empleo y el desempleo.",
     "categoria": "Otros",
     "subcategoria": "Otros",
     "aliases": [
@@ -19635,6 +19050,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-exposicion-ocupacional-a-factores-de-riesgo",
     "nombre": "Exposicion ocupacional a factores de riesgo",
+    "descripcionBreve": "Exposicion ocupacional a factores de riesgo.",
     "categoria": "Otros",
     "subcategoria": "Otros",
     "aliases": [
@@ -19662,6 +19078,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-problemas-relacionados-con-el-ambiente-fisico",
     "nombre": "Problemas relacionados con el ambiente fisico",
+    "descripcionBreve": "Problemas relacionados con el ambiente fisico.",
     "categoria": "Otros",
     "subcategoria": "Otros",
     "aliases": [
@@ -19689,6 +19106,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-problemas-relacionados-con-la-vivienda-y-las-circunstancias-economicas",
     "nombre": "Problemas relacionados con la vivienda y las circunstancias economicas",
+    "descripcionBreve": "Información orientativa para consulta rápida.",
     "categoria": "Otros",
     "subcategoria": "Otros",
     "aliases": [
@@ -19703,40 +19121,32 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Problemas relacionados con la vivienda y las circunstancias economicas",
         "criterios": [
           {
-            "id": "trastorno-problemas-relacionados-con-la-vivienda-y-las-circunstancias-economicas-cie10-criterio-1",
-            "orden": 1,
-            "titulo": "Criterio 1",
-            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-problemas-relacionados-con-la-vivienda-y-las-circunstancias-economicas-cie10-criterio-2",
-            "orden": 2,
-            "titulo": "Criterio 2",
-            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-problemas-relacionados-con-la-vivienda-y-las-circunstancias-economicas-cie10-criterio-3",
-            "orden": 3,
-            "titulo": "Criterio 3",
-            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-problemas-relacionados-con-la-vivienda-y-las-circunstancias-economicas-cie10-criterio-4",
-            "orden": 4,
-            "titulo": "Criterio 4",
-            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
+            "id": "trastorno-problemas-relacionados-con-la-vivienda-y-las-circunstancias-economicas-cie10-grupo-1",
+            "clave": "",
+            "titulo": "Pendiente de clasificación",
+            "tipo": "revision_requerida",
+            "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "literal": false,
+            "items": [
+              {
+                "numero": null,
+                "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+                "orden": 3,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
@@ -19759,6 +19169,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-problemas-relacionados-con-el-ambiente-social",
     "nombre": "Problemas relacionados con el ambiente social",
+    "descripcionBreve": "Información orientativa para consulta rápida.",
     "categoria": "Otros",
     "subcategoria": "Otros",
     "aliases": [
@@ -19773,40 +19184,32 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Problemas relacionados con el ambiente social",
         "criterios": [
           {
-            "id": "trastorno-problemas-relacionados-con-el-ambiente-social-cie10-criterio-1",
-            "orden": 1,
-            "titulo": "Criterio 1",
-            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-problemas-relacionados-con-el-ambiente-social-cie10-criterio-2",
-            "orden": 2,
-            "titulo": "Criterio 2",
-            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-problemas-relacionados-con-el-ambiente-social-cie10-criterio-3",
-            "orden": 3,
-            "titulo": "Criterio 3",
-            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-problemas-relacionados-con-el-ambiente-social-cie10-criterio-4",
-            "orden": 4,
-            "titulo": "Criterio 4",
-            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
+            "id": "trastorno-problemas-relacionados-con-el-ambiente-social-cie10-grupo-1",
+            "clave": "",
+            "titulo": "Pendiente de clasificación",
+            "tipo": "revision_requerida",
+            "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "literal": false,
+            "items": [
+              {
+                "numero": null,
+                "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+                "orden": 3,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
@@ -19829,6 +19232,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-problemas-relacionados-con-hechos-negativos-en-la-ninez",
     "nombre": "Problemas relacionados con hechos negativos en la ninez",
+    "descripcionBreve": "Problemas relacionados con hechos negativos en la ninez.",
     "categoria": "Otros",
     "subcategoria": "Otros",
     "aliases": [
@@ -19856,6 +19260,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-otros-problemas-relacionados-con-la-crianza-del-nino",
     "nombre": "Otros problemas relacionados con la crianza del nino",
+    "descripcionBreve": "Otros problemas relacionados con la crianza del nino.",
     "categoria": "Otros",
     "subcategoria": "Otros",
     "aliases": [
@@ -19883,6 +19288,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-otros-problemas-relacionados-con-el-grupo-primario-de-apoyo-incluidas-circunstancias-familiares",
     "nombre": "Otros problemas relacionados con el grupo primario de apoyo, incluidas circunstancias familiares",
+    "descripcionBreve": "Información orientativa para consulta rápida.",
     "categoria": "Otros",
     "subcategoria": "Otros",
     "aliases": [
@@ -19897,40 +19303,32 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Otros problemas relacionados con el grupo primario de apoyo, incluidas circunstancias familiares",
         "criterios": [
           {
-            "id": "trastorno-otros-problemas-relacionados-con-el-grupo-primario-de-apoyo-incluidas-circunstancias-familiares-cie10-criterio-1",
-            "orden": 1,
-            "titulo": "Criterio 1",
-            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-otros-problemas-relacionados-con-el-grupo-primario-de-apoyo-incluidas-circunstancias-familiares-cie10-criterio-2",
-            "orden": 2,
-            "titulo": "Criterio 2",
-            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-otros-problemas-relacionados-con-el-grupo-primario-de-apoyo-incluidas-circunstancias-familiares-cie10-criterio-3",
-            "orden": 3,
-            "titulo": "Criterio 3",
-            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-otros-problemas-relacionados-con-el-grupo-primario-de-apoyo-incluidas-circunstancias-familiares-cie10-criterio-4",
-            "orden": 4,
-            "titulo": "Criterio 4",
-            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
+            "id": "trastorno-otros-problemas-relacionados-con-el-grupo-primario-de-apoyo-incluidas-circunstancias-familiares-cie10-grupo-1",
+            "clave": "",
+            "titulo": "Pendiente de clasificación",
+            "tipo": "revision_requerida",
+            "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "literal": false,
+            "items": [
+              {
+                "numero": null,
+                "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+                "orden": 3,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
@@ -19953,6 +19351,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-problemas-relacionados-con-la-separacion-de-los-padres",
     "nombre": "Problemas relacionados con la separacion de los padres",
+    "descripcionBreve": "Problemas relacionados con la separacion de los padres.",
     "categoria": "Otros",
     "subcategoria": "Otros",
     "aliases": [
@@ -19980,6 +19379,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-problemas-relacionados-con-la-muerte-de-un-miembro-de-la-familia",
     "nombre": "Problemas relacionados con la muerte de un miembro de la familia",
+    "descripcionBreve": "Problemas relacionados con la muerte de un miembro de la familia.",
     "categoria": "Otros",
     "subcategoria": "Otros",
     "aliases": [
@@ -20007,6 +19407,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-problemas-relacionados-con-el-alejamiento-de-los-miembros-de-la-familia",
     "nombre": "Problemas relacionados con el alejamiento de los miembros de la familia",
+    "descripcionBreve": "Problemas relacionados con el alejamiento de los miembros de la familia.",
     "categoria": "Otros",
     "subcategoria": "Otros",
     "aliases": [
@@ -20034,6 +19435,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-problemas-relacionados-con-la-ausencia-de-un-miembro-de-la-familia",
     "nombre": "Problemas relacionados con la ausencia de un miembro de la familia",
+    "descripcionBreve": "Problemas relacionados con la ausencia de un miembro de la familia.",
     "categoria": "Otros",
     "subcategoria": "Otros",
     "aliases": [
@@ -20061,6 +19463,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-problemas-relacionados-con-la-violencia-domestica",
     "nombre": "Problemas relacionados con la violencia domestica",
+    "descripcionBreve": "Problemas relacionados con la violencia domestica.",
     "categoria": "Otros",
     "subcategoria": "Otros",
     "aliases": [
@@ -20088,6 +19491,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-problemas-relacionados-con-la-adopcion-y-el-cuidado-de-crianza",
     "nombre": "Problemas relacionados con la adopcion y el cuidado de crianza",
+    "descripcionBreve": "Problemas relacionados con la adopcion y el cuidado de crianza.",
     "categoria": "Otros",
     "subcategoria": "Otros",
     "aliases": [
@@ -20115,6 +19519,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-problemas-relacionados-con-la-dependencia-de-los-miembros-de-la-familia",
     "nombre": "Problemas relacionados con la dependencia de los miembros de la familia",
+    "descripcionBreve": "Problemas relacionados con la dependencia de los miembros de la familia.",
     "categoria": "Otros",
     "subcategoria": "Otros",
     "aliases": [
@@ -20142,6 +19547,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-problemas-relacionados-con-la-interaccion-con-los-servicios-sociales",
     "nombre": "Problemas relacionados con la interaccion con los servicios sociales",
+    "descripcionBreve": "Problemas relacionados con la interaccion con los servicios sociales.",
     "categoria": "Otros",
     "subcategoria": "Otros",
     "aliases": [
@@ -20169,6 +19575,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-otros-problemas-relacionados-con-el-grupo-primario-de-apoyo",
     "nombre": "Otros problemas relacionados con el grupo primario de apoyo",
+    "descripcionBreve": "Otros problemas relacionados con el grupo primario de apoyo.",
     "categoria": "Otros",
     "subcategoria": "Otros",
     "aliases": [
@@ -20196,6 +19603,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-problemas-relacionados-con-el-grupo-primario-de-apoyo-no-especificados",
     "nombre": "Problemas relacionados con el grupo primario de apoyo, no especificados",
+    "descripcionBreve": "Problemas relacionados con el grupo primario de apoyo, no especificados.",
     "categoria": "Otros",
     "subcategoria": "Otros",
     "aliases": [
@@ -20223,6 +19631,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-problemas-relacionados-con-ciertas-circunstancias-psicosociales",
     "nombre": "Problemas relacionados con ciertas circunstancias psicosociales",
+    "descripcionBreve": "Problemas relacionados con ciertas circunstancias psicosociales.",
     "categoria": "Otros",
     "subcategoria": "Otros",
     "aliases": [
@@ -20250,6 +19659,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-problemas-relacionados-con-otras-circunstancias-psicosociales",
     "nombre": "Problemas relacionados con otras circunstancias psicosociales",
+    "descripcionBreve": "Problemas relacionados con otras circunstancias psicosociales.",
     "categoria": "Otros",
     "subcategoria": "Otros",
     "aliases": [
@@ -20277,6 +19687,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-consulta-relacionada-con-actitud-conducta-u-orientacion-sexual",
     "nombre": "Consulta relacionada con actitud, conducta u orientacion sexual",
+    "descripcionBreve": "Consulta relacionada con actitud, conducta u orientacion sexual.",
     "categoria": "Otros",
     "subcategoria": "Otros",
     "aliases": [
@@ -20304,6 +19715,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-personas-en-contacto-con-servicios-de-salud-para-otras-consultas-y-consejos-medicos",
     "nombre": "Personas en contacto con servicios de salud para otras consultas y consejos medicos",
+    "descripcionBreve": "Personas en contacto con servicios de salud para otras consultas y consejos medicos.",
     "categoria": "Otros",
     "subcategoria": "Otros",
     "aliases": [
@@ -20331,6 +19743,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-problemas-relacionados-con-el-estilo-de-vida",
     "nombre": "Problemas relacionados con el estilo de vida",
+    "descripcionBreve": "Información orientativa para consulta rápida.",
     "categoria": "Otros",
     "subcategoria": "Otros",
     "aliases": [
@@ -20345,40 +19758,32 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Problemas relacionados con el estilo de vida",
         "criterios": [
           {
-            "id": "trastorno-problemas-relacionados-con-el-estilo-de-vida-cie10-criterio-1",
-            "orden": 1,
-            "titulo": "Criterio 1",
-            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-problemas-relacionados-con-el-estilo-de-vida-cie10-criterio-2",
-            "orden": 2,
-            "titulo": "Criterio 2",
-            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-problemas-relacionados-con-el-estilo-de-vida-cie10-criterio-3",
-            "orden": 3,
-            "titulo": "Criterio 3",
-            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-problemas-relacionados-con-el-estilo-de-vida-cie10-criterio-4",
-            "orden": 4,
-            "titulo": "Criterio 4",
-            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
+            "id": "trastorno-problemas-relacionados-con-el-estilo-de-vida-cie10-grupo-1",
+            "clave": "",
+            "titulo": "Pendiente de clasificación",
+            "tipo": "revision_requerida",
+            "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "literal": false,
+            "items": [
+              {
+                "numero": null,
+                "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+                "orden": 3,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
@@ -20401,6 +19806,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-problemas-relacionados-con-dificultades-para-afrontar-la-vida",
     "nombre": "Problemas relacionados con dificultades para afrontar la vida",
+    "descripcionBreve": "Problemas relacionados con dificultades para afrontar la vida.",
     "categoria": "Otros",
     "subcategoria": "Otros",
     "aliases": [
@@ -20428,6 +19834,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-problemas-relacionados-con-dependencia-del-prestador-de-servicios",
     "nombre": "Problemas relacionados con dependencia del prestador de servicios",
+    "descripcionBreve": "Problemas relacionados con dependencia del prestador de servicios.",
     "categoria": "Otros",
     "subcategoria": "Otros",
     "aliases": [
@@ -20455,6 +19862,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-problemas-relacionados-con-facilidades-de-atencion-medica-y-otros-servicios-de-salud",
     "nombre": "Problemas relacionados con facilidades de atencion medica y otros servicios de salud",
+    "descripcionBreve": "Problemas relacionados con facilidades de atencion medica y otros servicios de salud.",
     "categoria": "Otros",
     "subcategoria": "Otros",
     "aliases": [
@@ -20482,6 +19890,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-personas-en-contacto-con-servicios-de-salud-en-otras-circunstancias",
     "nombre": "Personas en contacto con servicios de salud en otras circunstancias",
+    "descripcionBreve": "Personas en contacto con servicios de salud en otras circunstancias.",
     "categoria": "Otros",
     "subcategoria": "Otros",
     "aliases": [
@@ -20509,6 +19918,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-historia-familiar-de-tumor-maligno",
     "nombre": "Historia familiar de tumor maligno",
+    "descripcionBreve": "Historia familiar de tumor maligno.",
     "categoria": "Otros",
     "subcategoria": "Otros",
     "aliases": [
@@ -20536,6 +19946,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-historia-familiar-de-trastornos-mentales-y-del-comportamiento",
     "nombre": "Historia familiar de trastornos mentales y del comportamiento",
+    "descripcionBreve": "Historia familiar de trastornos mentales y del comportamiento.",
     "categoria": "Otros",
     "subcategoria": "Otros",
     "aliases": [
@@ -20563,6 +19974,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-historia-familiar-de-ciertas-discapacidades-y-enfermedades-cronicas",
     "nombre": "Historia familiar de ciertas discapacidades y enfermedades cronicas",
+    "descripcionBreve": "Historia familiar de ciertas discapacidades y enfermedades cronicas.",
     "categoria": "Otros",
     "subcategoria": "Otros",
     "aliases": [
@@ -20590,6 +20002,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-historia-familiar-de-otros-trastornos-especificos",
     "nombre": "Historia familiar de otros trastornos especificos",
+    "descripcionBreve": "Historia familiar de otros trastornos especificos.",
     "categoria": "Otros",
     "subcategoria": "Otros",
     "aliases": [
@@ -20617,6 +20030,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-historia-familiar-de-otras-afecciones",
     "nombre": "Historia familiar de otras afecciones",
+    "descripcionBreve": "Historia familiar de otras afecciones.",
     "categoria": "Otros",
     "subcategoria": "Otros",
     "aliases": [
@@ -20644,6 +20058,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-historia-personal-de-tumor-maligno",
     "nombre": "Historia personal de tumor maligno",
+    "descripcionBreve": "Historia personal de tumor maligno.",
     "categoria": "Otros",
     "subcategoria": "Otros",
     "aliases": [
@@ -20671,6 +20086,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-historia-personal-de-algunas-otras-enfermedades",
     "nombre": "Historia personal de algunas otras enfermedades",
+    "descripcionBreve": "Historia personal de algunas otras enfermedades.",
     "categoria": "Otros",
     "subcategoria": "Otros",
     "aliases": [
@@ -20698,6 +20114,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-antecedentes-personales-de-abuso-de-sustancias-psicoactivas",
     "nombre": "antecedentes personales de abuso de sustancias psicoactivas",
+    "descripcionBreve": "antecedentes personales de abuso de sustancias psicoactivas.",
     "categoria": "Otros",
     "subcategoria": "Otros",
     "aliases": [
@@ -20725,6 +20142,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-historia-personal-de-otras-enfermedades-y-afecciones",
     "nombre": "Historia personal de otras enfermedades y afecciones",
+    "descripcionBreve": "Historia personal de otras enfermedades y afecciones.",
     "categoria": "Otros",
     "subcategoria": "Otros",
     "aliases": [
@@ -20752,6 +20170,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-historia-personal-de-alergia-a-drogas-medicamentos-y-sustancias-biologicas",
     "nombre": "Historia personal de alergia a drogas, medicamentos y sustancias biologicas",
+    "descripcionBreve": "Historia personal de alergia a drogas, medicamentos y sustancias biologicas.",
     "categoria": "Otros",
     "subcategoria": "Otros",
     "aliases": [
@@ -20779,6 +20198,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-ausencia-adquirida-de-miembros",
     "nombre": "Ausencia adquirida de miembros",
+    "descripcionBreve": "Ausencia adquirida de miembros.",
     "categoria": "Otros",
     "subcategoria": "Otros",
     "aliases": [
@@ -20806,6 +20226,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-ausencia-adquirida-de-organos-no-clasificada-en-otra-parte",
     "nombre": "Ausencia adquirida de organos, no clasificada en otra parte",
+    "descripcionBreve": "Ausencia adquirida de organos, no clasificada en otra parte.",
     "categoria": "Otros",
     "subcategoria": "Otros",
     "aliases": [
@@ -20833,6 +20254,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-historia-personal-de-factores-de-riesgo-no-clasificados-en-otra-parte",
     "nombre": "Historia personal de factores de riesgo, no clasificados en otra parte",
+    "descripcionBreve": "Historia personal de factores de riesgo, no clasificados en otra parte.",
     "categoria": "Otros",
     "subcategoria": "Otros",
     "aliases": [
@@ -20860,6 +20282,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-historia-personal-de-lesion-autoinfligida-intencionalmente",
     "nombre": "Historia personal de lesión autoinfligida intencionalmente",
+    "descripcionBreve": "Información orientativa para consulta rápida.",
     "categoria": "Otros",
     "subcategoria": "Otros",
     "aliases": [
@@ -20874,40 +20297,32 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Historia personal de lesión autoinfligida intencionalmente",
         "criterios": [
           {
-            "id": "trastorno-historia-personal-de-lesion-autoinfligida-intencionalmente-cie10-criterio-1",
-            "orden": 1,
-            "titulo": "Criterio 1",
-            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-historia-personal-de-lesion-autoinfligida-intencionalmente-cie10-criterio-2",
-            "orden": 2,
-            "titulo": "Criterio 2",
-            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-historia-personal-de-lesion-autoinfligida-intencionalmente-cie10-criterio-3",
-            "orden": 3,
-            "titulo": "Criterio 3",
-            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-historia-personal-de-lesion-autoinfligida-intencionalmente-cie10-criterio-4",
-            "orden": 4,
-            "titulo": "Criterio 4",
-            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
+            "id": "trastorno-historia-personal-de-lesion-autoinfligida-intencionalmente-cie10-grupo-1",
+            "clave": "",
+            "titulo": "Pendiente de clasificación",
+            "tipo": "revision_requerida",
+            "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "literal": false,
+            "items": [
+              {
+                "numero": null,
+                "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+                "orden": 3,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
@@ -20930,6 +20345,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-historia-personal-de-tratamiento-medico",
     "nombre": "Historia personal de tratamiento medico",
+    "descripcionBreve": "Historia personal de tratamiento medico.",
     "categoria": "Otros",
     "subcategoria": "Otros",
     "aliases": [
@@ -20957,6 +20373,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-estado-de-orificios-artificiales",
     "nombre": "Estado de orificios artificiales",
+    "descripcionBreve": "Estado de orificios artificiales.",
     "categoria": "Otros",
     "subcategoria": "Otros",
     "aliases": [
@@ -20984,6 +20401,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-organos-y-tejidos-trasplantados",
     "nombre": "Organos y tejidos trasplantados",
+    "descripcionBreve": "Organos y tejidos trasplantados.",
     "categoria": "Otros",
     "subcategoria": "Otros",
     "aliases": [
@@ -21011,6 +20429,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-presencia-de-implantes-e-injertos-cardiovasculares",
     "nombre": "Presencia de implantes e injertos cardiovasculares",
+    "descripcionBreve": "Presencia de implantes e injertos cardiovasculares.",
     "categoria": "Otros",
     "subcategoria": "Otros",
     "aliases": [
@@ -21038,6 +20457,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-presencia-de-otros-implantes-funcionales",
     "nombre": "Presencia de otros implantes funcionales",
+    "descripcionBreve": "Presencia de otros implantes funcionales.",
     "categoria": "Otros",
     "subcategoria": "Otros",
     "aliases": [
@@ -21065,6 +20485,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-presencia-de-otros-dispositivos",
     "nombre": "Presencia de otros dispositivos",
+    "descripcionBreve": "Presencia de otros dispositivos.",
     "categoria": "Otros",
     "subcategoria": "Otros",
     "aliases": [
@@ -21092,6 +20513,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-otros-estados-posquirurgicos",
     "nombre": "Otros estados posquirurgicos",
+    "descripcionBreve": "Otros estados posquirurgicos.",
     "categoria": "Otros",
     "subcategoria": "Otros",
     "aliases": [
@@ -21119,6 +20541,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-dependencia-de-maquinas-y-dispositivos-capacitantes-no-clasificada-en-otra-parte",
     "nombre": "Dependencia de maquinas y dispositivos capacitantes, no clasificada en otra parte",
+    "descripcionBreve": "Dependencia de maquinas y dispositivos capacitantes, no clasificada en otra parte.",
     "categoria": "Otros",
     "subcategoria": "Otros",
     "aliases": [
@@ -21146,6 +20569,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-trastorno-de-ideas-delirantes",
     "nombre": "Trastorno de ideas delirantes",
+    "descripcionBreve": "Información orientativa para consulta rápida.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -21160,40 +20584,32 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Trastorno de ideas delirantes",
         "criterios": [
           {
-            "id": "trastorno-trastorno-de-ideas-delirantes-cie10-criterio-1",
-            "orden": 1,
-            "titulo": "Criterio 1",
-            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-de-ideas-delirantes-cie10-criterio-2",
-            "orden": 2,
-            "titulo": "Criterio 2",
-            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-de-ideas-delirantes-cie10-criterio-3",
-            "orden": 3,
-            "titulo": "Criterio 3",
-            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-de-ideas-delirantes-cie10-criterio-4",
-            "orden": 4,
-            "titulo": "Criterio 4",
-            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
+            "id": "trastorno-trastorno-de-ideas-delirantes-cie10-grupo-1",
+            "clave": "",
+            "titulo": "Pendiente de clasificación",
+            "tipo": "revision_requerida",
+            "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "literal": false,
+            "items": [
+              {
+                "numero": null,
+                "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+                "orden": 3,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
@@ -21216,6 +20632,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-trastorno-psicotico-agudo-polimorfo-sin-sintomas-de-esquizofrenia",
     "nombre": "Trastorno psicotico agudo polimorfo sin sintomas de esquizofrenia",
+    "descripcionBreve": "Información orientativa para consulta rápida.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -21230,40 +20647,32 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Trastorno psicotico agudo polimorfo sin sintomas de esquizofrenia",
         "criterios": [
           {
-            "id": "trastorno-trastorno-psicotico-agudo-polimorfo-sin-sintomas-de-esquizofrenia-cie10-criterio-1",
-            "orden": 1,
-            "titulo": "Criterio 1",
-            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-psicotico-agudo-polimorfo-sin-sintomas-de-esquizofrenia-cie10-criterio-2",
-            "orden": 2,
-            "titulo": "Criterio 2",
-            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-psicotico-agudo-polimorfo-sin-sintomas-de-esquizofrenia-cie10-criterio-3",
-            "orden": 3,
-            "titulo": "Criterio 3",
-            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-psicotico-agudo-polimorfo-sin-sintomas-de-esquizofrenia-cie10-criterio-4",
-            "orden": 4,
-            "titulo": "Criterio 4",
-            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
+            "id": "trastorno-trastorno-psicotico-agudo-polimorfo-sin-sintomas-de-esquizofrenia-cie10-grupo-1",
+            "clave": "",
+            "titulo": "Pendiente de clasificación",
+            "tipo": "revision_requerida",
+            "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "literal": false,
+            "items": [
+              {
+                "numero": null,
+                "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+                "orden": 3,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
@@ -21286,6 +20695,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-trastorno-psicotico-agudo-polimorfo-con-sintomas-de-esquizofrenia",
     "nombre": "Trastorno psicotico agudo polimorfo con sintomas de esquizofrenia",
+    "descripcionBreve": "Información orientativa para consulta rápida.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -21300,40 +20710,32 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Trastorno psicotico agudo polimorfo con sintomas de esquizofrenia",
         "criterios": [
           {
-            "id": "trastorno-trastorno-psicotico-agudo-polimorfo-con-sintomas-de-esquizofrenia-cie10-criterio-1",
-            "orden": 1,
-            "titulo": "Criterio 1",
-            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-psicotico-agudo-polimorfo-con-sintomas-de-esquizofrenia-cie10-criterio-2",
-            "orden": 2,
-            "titulo": "Criterio 2",
-            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-psicotico-agudo-polimorfo-con-sintomas-de-esquizofrenia-cie10-criterio-3",
-            "orden": 3,
-            "titulo": "Criterio 3",
-            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-psicotico-agudo-polimorfo-con-sintomas-de-esquizofrenia-cie10-criterio-4",
-            "orden": 4,
-            "titulo": "Criterio 4",
-            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
+            "id": "trastorno-trastorno-psicotico-agudo-polimorfo-con-sintomas-de-esquizofrenia-cie10-grupo-1",
+            "clave": "",
+            "titulo": "Pendiente de clasificación",
+            "tipo": "revision_requerida",
+            "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "literal": false,
+            "items": [
+              {
+                "numero": null,
+                "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+                "orden": 3,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
@@ -21356,6 +20758,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-trastorno-psicotico-agudo-de-tipo-esquizofrenico",
     "nombre": "Trastorno psicotico agudo de tipo esquizofrenico",
+    "descripcionBreve": "Información orientativa para consulta rápida.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -21370,40 +20773,32 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Trastorno psicotico agudo de tipo esquizofrenico",
         "criterios": [
           {
-            "id": "trastorno-trastorno-psicotico-agudo-de-tipo-esquizofrenico-cie10-criterio-1",
-            "orden": 1,
-            "titulo": "Criterio 1",
-            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-psicotico-agudo-de-tipo-esquizofrenico-cie10-criterio-2",
-            "orden": 2,
-            "titulo": "Criterio 2",
-            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-psicotico-agudo-de-tipo-esquizofrenico-cie10-criterio-3",
-            "orden": 3,
-            "titulo": "Criterio 3",
-            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-psicotico-agudo-de-tipo-esquizofrenico-cie10-criterio-4",
-            "orden": 4,
-            "titulo": "Criterio 4",
-            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
+            "id": "trastorno-trastorno-psicotico-agudo-de-tipo-esquizofrenico-cie10-grupo-1",
+            "clave": "",
+            "titulo": "Pendiente de clasificación",
+            "tipo": "revision_requerida",
+            "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "literal": false,
+            "items": [
+              {
+                "numero": null,
+                "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+                "orden": 3,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
@@ -21426,6 +20821,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-insomnio-no-organico",
     "nombre": "Insomnio no organico",
+    "descripcionBreve": "Información orientativa para consulta rápida.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -21440,40 +20836,32 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Insomnio no organico",
         "criterios": [
           {
-            "id": "trastorno-insomnio-no-organico-cie10-criterio-1",
-            "orden": 1,
-            "titulo": "Criterio 1",
-            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-insomnio-no-organico-cie10-criterio-2",
-            "orden": 2,
-            "titulo": "Criterio 2",
-            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-insomnio-no-organico-cie10-criterio-3",
-            "orden": 3,
-            "titulo": "Criterio 3",
-            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-insomnio-no-organico-cie10-criterio-4",
-            "orden": 4,
-            "titulo": "Criterio 4",
-            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
+            "id": "trastorno-insomnio-no-organico-cie10-grupo-1",
+            "clave": "",
+            "titulo": "Pendiente de clasificación",
+            "tipo": "revision_requerida",
+            "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "literal": false,
+            "items": [
+              {
+                "numero": null,
+                "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+                "orden": 3,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
@@ -21496,6 +20884,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-pesadillas",
     "nombre": "Pesadillas",
+    "descripcionBreve": "Información orientativa para consulta rápida.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -21510,40 +20899,32 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Pesadillas",
         "criterios": [
           {
-            "id": "trastorno-pesadillas-cie10-criterio-1",
-            "orden": 1,
-            "titulo": "Criterio 1",
-            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-pesadillas-cie10-criterio-2",
-            "orden": 2,
-            "titulo": "Criterio 2",
-            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-pesadillas-cie10-criterio-3",
-            "orden": 3,
-            "titulo": "Criterio 3",
-            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-pesadillas-cie10-criterio-4",
-            "orden": 4,
-            "titulo": "Criterio 4",
-            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
+            "id": "trastorno-pesadillas-cie10-grupo-1",
+            "clave": "",
+            "titulo": "Pendiente de clasificación",
+            "tipo": "revision_requerida",
+            "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "literal": false,
+            "items": [
+              {
+                "numero": null,
+                "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+                "orden": 3,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
@@ -21566,6 +20947,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-trastorno-disocial-limitado-al-contexto-familiar",
     "nombre": "Trastorno disocial limitado al contexto familiar",
+    "descripcionBreve": "Información orientativa para consulta rápida.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -21580,40 +20962,32 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Trastorno disocial limitado al contexto familiar",
         "criterios": [
           {
-            "id": "trastorno-trastorno-disocial-limitado-al-contexto-familiar-cie10-criterio-1",
-            "orden": 1,
-            "titulo": "Criterio 1",
-            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-disocial-limitado-al-contexto-familiar-cie10-criterio-2",
-            "orden": 2,
-            "titulo": "Criterio 2",
-            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-disocial-limitado-al-contexto-familiar-cie10-criterio-3",
-            "orden": 3,
-            "titulo": "Criterio 3",
-            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-disocial-limitado-al-contexto-familiar-cie10-criterio-4",
-            "orden": 4,
-            "titulo": "Criterio 4",
-            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
+            "id": "trastorno-trastorno-disocial-limitado-al-contexto-familiar-cie10-grupo-1",
+            "clave": "",
+            "titulo": "Pendiente de clasificación",
+            "tipo": "revision_requerida",
+            "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "literal": false,
+            "items": [
+              {
+                "numero": null,
+                "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+                "orden": 3,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
@@ -21636,6 +21010,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-trastorno-disocial-en-ninos-no-socializados",
     "nombre": "Trastorno disocial en ninos no socializados",
+    "descripcionBreve": "Información orientativa para consulta rápida.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -21650,40 +21025,32 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Trastorno disocial en ninos no socializados",
         "criterios": [
           {
-            "id": "trastorno-trastorno-disocial-en-ninos-no-socializados-cie10-criterio-1",
-            "orden": 1,
-            "titulo": "Criterio 1",
-            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-disocial-en-ninos-no-socializados-cie10-criterio-2",
-            "orden": 2,
-            "titulo": "Criterio 2",
-            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-disocial-en-ninos-no-socializados-cie10-criterio-3",
-            "orden": 3,
-            "titulo": "Criterio 3",
-            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-disocial-en-ninos-no-socializados-cie10-criterio-4",
-            "orden": 4,
-            "titulo": "Criterio 4",
-            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
+            "id": "trastorno-trastorno-disocial-en-ninos-no-socializados-cie10-grupo-1",
+            "clave": "",
+            "titulo": "Pendiente de clasificación",
+            "tipo": "revision_requerida",
+            "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "literal": false,
+            "items": [
+              {
+                "numero": null,
+                "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+                "orden": 3,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
@@ -21706,6 +21073,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-trastorno-disocial-en-ninos-socializados",
     "nombre": "Trastorno disocial en ninos socializados",
+    "descripcionBreve": "Información orientativa para consulta rápida.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -21720,40 +21088,32 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Trastorno disocial en ninos socializados",
         "criterios": [
           {
-            "id": "trastorno-trastorno-disocial-en-ninos-socializados-cie10-criterio-1",
-            "orden": 1,
-            "titulo": "Criterio 1",
-            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-disocial-en-ninos-socializados-cie10-criterio-2",
-            "orden": 2,
-            "titulo": "Criterio 2",
-            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-disocial-en-ninos-socializados-cie10-criterio-3",
-            "orden": 3,
-            "titulo": "Criterio 3",
-            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-disocial-en-ninos-socializados-cie10-criterio-4",
-            "orden": 4,
-            "titulo": "Criterio 4",
-            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
+            "id": "trastorno-trastorno-disocial-en-ninos-socializados-cie10-grupo-1",
+            "clave": "",
+            "titulo": "Pendiente de clasificación",
+            "tipo": "revision_requerida",
+            "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "literal": false,
+            "items": [
+              {
+                "numero": null,
+                "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+                "orden": 3,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
@@ -21776,6 +21136,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-trastorno-disocial-depresivo",
     "nombre": "Trastorno disocial depresivo",
+    "descripcionBreve": "Información orientativa para consulta rápida.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
@@ -21790,40 +21151,32 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Trastorno disocial depresivo",
         "criterios": [
           {
-            "id": "trastorno-trastorno-disocial-depresivo-cie10-criterio-1",
-            "orden": 1,
-            "titulo": "Criterio 1",
-            "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-disocial-depresivo-cie10-criterio-2",
-            "orden": 2,
-            "titulo": "Criterio 2",
-            "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-disocial-depresivo-cie10-criterio-3",
-            "orden": 3,
-            "titulo": "Criterio 3",
-            "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-disocial-depresivo-cie10-criterio-4",
-            "orden": 4,
-            "titulo": "Criterio 4",
-            "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
-            "tipo": "resumen_clinico",
-            "fuente": "CIE-10 / resumen clínico orientativo local",
-            "literal": false
+            "id": "trastorno-trastorno-disocial-depresivo-cie10-grupo-1",
+            "clave": "",
+            "titulo": "Pendiente de clasificación",
+            "tipo": "revision_requerida",
+            "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+            "literal": false,
+            "items": [
+              {
+                "numero": null,
+                "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+                "orden": 3,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
@@ -21846,6 +21199,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-trastorno-esquizoafectivo",
     "nombre": "Trastorno esquizoafectivo",
+    "descripcionBreve": "Trastorno esquizoafectivo.",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -21873,6 +21227,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-trastorno-psicotico-agudo-y-transitorio",
     "nombre": "Trastorno psicotico agudo y transitorio",
+    "descripcionBreve": "Trastorno psicotico agudo y transitorio.",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -21900,6 +21255,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-trastorno-bipolar-tipo-i",
     "nombre": "Trastorno bipolar tipo I",
+    "descripcionBreve": "Trastorno bipolar tipo I.",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -21927,6 +21283,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-trastorno-bipolar-tipo-ii",
     "nombre": "Trastorno bipolar tipo II",
+    "descripcionBreve": "Trastorno bipolar tipo II.",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -21954,6 +21311,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-episodio-depresivo-unico",
     "nombre": "Episodio depresivo unico",
+    "descripcionBreve": "La depresion no es falta de voluntad; es un cuadro clinico tratable.",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -21968,40 +21326,32 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Episodio depresivo unico",
         "criterios": [
           {
-            "id": "trastorno-episodio-depresivo-unico-cie11-criterio-1",
-            "orden": 1,
-            "titulo": "Criterio 1",
-            "texto": "Animo deprimido, perdida de interes o disminucion significativa de energia.",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
-          },
-          {
-            "id": "trastorno-episodio-depresivo-unico-cie11-criterio-2",
-            "orden": 2,
-            "titulo": "Criterio 2",
-            "texto": "Sintomas asociados: alteraciones de sueno/apetito, culpa, baja autoestima, concentracion reducida, enlentecimiento/agitación o ideacion suicida.",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
-          },
-          {
-            "id": "trastorno-episodio-depresivo-unico-cie11-criterio-3",
-            "orden": 3,
-            "titulo": "Criterio 3",
-            "texto": "Duracion clinicamente relevante y deterioro funcional.",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
-          },
-          {
-            "id": "trastorno-episodio-depresivo-unico-cie11-criterio-4",
-            "orden": 4,
-            "titulo": "Criterio 4",
-            "texto": "Descartar sustancias, duelo no complicado, condiciones medicas u otros trastornos primarios.",
-            "tipo": "resumen_clinico",
-            "fuente": "Fuente clínica local; revisar contra fuente oficial",
-            "literal": false
+            "id": "trastorno-episodio-depresivo-unico-cie11-grupo-1",
+            "clave": "",
+            "titulo": "Pendiente de clasificación",
+            "tipo": "revision_requerida",
+            "introduccion": "Animo deprimido, perdida de interes o disminucion significativa de energia.",
+            "literal": false,
+            "items": [
+              {
+                "numero": null,
+                "texto": "Sintomas asociados: alteraciones de sueno/apetito, culpa, baja autoestima, concentracion reducida, enlentecimiento/agitación o ideacion suicida.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Duracion clinicamente relevante y deterioro funcional.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Descartar sustancias, duelo no complicado, condiciones medicas u otros trastornos primarios.",
+                "orden": 3,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
@@ -22018,6 +21368,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-fobia-especifica",
     "nombre": "Fobia especifica",
+    "descripcionBreve": "Los criterios son una herramienta de apoyo y deben integrarse con la entrevista clínica, antecedentes, exploración mental, evolución y juicio profesional.",
     "categoria": "Trastornos de ansiedad",
     "subcategoria": "Ansiedad",
     "aliases": [
@@ -22034,40 +21385,32 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Fobia específica",
         "criterios": [
           {
-            "orden": 1,
-            "titulo": "Resumen clínico 1",
-            "texto": "Miedo o ansiedad intensa ante un objeto o situación específica.",
-            "tipo": "resumen_clinico",
-            "fuente": "Resumen estructurado del proyecto; revisar fuente oficial",
+            "id": "trastorno-fobia-especifica-cie10-grupo-1",
+            "clave": "",
+            "titulo": "Pendiente de clasificación",
+            "tipo": "revision_requerida",
+            "introduccion": "Miedo o ansiedad intensa ante un objeto o situación específica.",
             "literal": false,
-            "id": "trastorno-fobia-especifica-cie10-criterio-1"
-          },
-          {
-            "orden": 2,
-            "titulo": "Resumen clínico 2",
-            "texto": "Respuesta inmediata, evitación o resistencia con ansiedad.",
-            "tipo": "resumen_clinico",
-            "fuente": "Resumen estructurado del proyecto; revisar fuente oficial",
-            "literal": false,
-            "id": "trastorno-fobia-especifica-cie10-criterio-2"
-          },
-          {
-            "orden": 3,
-            "titulo": "Resumen clínico 3",
-            "texto": "Temor desproporcionado y persistente con deterioro clínicamente significativo.",
-            "tipo": "resumen_clinico",
-            "fuente": "Resumen estructurado del proyecto; revisar fuente oficial",
-            "literal": false,
-            "id": "trastorno-fobia-especifica-cie10-criterio-3"
-          },
-          {
-            "orden": 4,
-            "titulo": "Resumen clínico 4",
-            "texto": "Especificar tipo: animal, entorno natural, sangre-inyección-lesión, situacional u otro.",
-            "tipo": "resumen_clinico",
-            "fuente": "Resumen estructurado del proyecto; revisar fuente oficial",
-            "literal": false,
-            "id": "trastorno-fobia-especifica-cie10-criterio-4"
+            "items": [
+              {
+                "numero": null,
+                "texto": "Respuesta inmediata, evitación o resistencia con ansiedad.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Temor desproporcionado y persistente con deterioro clínicamente significativo.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Especificar tipo: animal, entorno natural, sangre-inyección-lesión, situacional u otro.",
+                "orden": 3,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
@@ -22081,40 +21424,32 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Fobia especifica",
         "criterios": [
           {
-            "orden": 1,
-            "titulo": "Resumen clínico 1",
-            "texto": "Miedo o ansiedad intensa ante un objeto o situación específica.",
-            "tipo": "resumen_clinico",
-            "fuente": "Resumen estructurado del proyecto; revisar fuente oficial",
+            "id": "trastorno-fobia-especifica-cie11-grupo-1",
+            "clave": "",
+            "titulo": "Pendiente de clasificación",
+            "tipo": "revision_requerida",
+            "introduccion": "Miedo o ansiedad intensa ante un objeto o situación específica.",
             "literal": false,
-            "id": "trastorno-fobia-especifica-cie11-criterio-1"
-          },
-          {
-            "orden": 2,
-            "titulo": "Resumen clínico 2",
-            "texto": "Respuesta inmediata, evitación o resistencia con ansiedad.",
-            "tipo": "resumen_clinico",
-            "fuente": "Resumen estructurado del proyecto; revisar fuente oficial",
-            "literal": false,
-            "id": "trastorno-fobia-especifica-cie11-criterio-2"
-          },
-          {
-            "orden": 3,
-            "titulo": "Resumen clínico 3",
-            "texto": "Temor desproporcionado y persistente con deterioro clínicamente significativo.",
-            "tipo": "resumen_clinico",
-            "fuente": "Resumen estructurado del proyecto; revisar fuente oficial",
-            "literal": false,
-            "id": "trastorno-fobia-especifica-cie11-criterio-3"
-          },
-          {
-            "orden": 4,
-            "titulo": "Resumen clínico 4",
-            "texto": "Especificar tipo: animal, entorno natural, sangre-inyección-lesión, situacional u otro.",
-            "tipo": "resumen_clinico",
-            "fuente": "Resumen estructurado del proyecto; revisar fuente oficial",
-            "literal": false,
-            "id": "trastorno-fobia-especifica-cie11-criterio-4"
+            "items": [
+              {
+                "numero": null,
+                "texto": "Respuesta inmediata, evitación o resistencia con ansiedad.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Temor desproporcionado y persistente con deterioro clínicamente significativo.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Especificar tipo: animal, entorno natural, sangre-inyección-lesión, situacional u otro.",
+                "orden": 3,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
@@ -22129,40 +21464,32 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Fobia específica",
         "criterios": [
           {
-            "id": "trastorno-fobia-especifica-dsm5-criterio-1",
-            "orden": 1,
-            "titulo": "Resumen clínico 1",
-            "texto": "Miedo o ansiedad intensa ante un objeto o situación específica.",
-            "tipo": "resumen_clinico",
-            "fuente": "DSM-5-TR; resumen no literal",
-            "literal": false
-          },
-          {
-            "id": "trastorno-fobia-especifica-dsm5-criterio-2",
-            "orden": 2,
-            "titulo": "Resumen clínico 2",
-            "texto": "Respuesta inmediata, evitación o resistencia con ansiedad.",
-            "tipo": "resumen_clinico",
-            "fuente": "DSM-5-TR; resumen no literal",
-            "literal": false
-          },
-          {
-            "id": "trastorno-fobia-especifica-dsm5-criterio-3",
-            "orden": 3,
-            "titulo": "Resumen clínico 3",
-            "texto": "Temor desproporcionado y persistente con deterioro clínicamente significativo.",
-            "tipo": "resumen_clinico",
-            "fuente": "DSM-5-TR; resumen no literal",
-            "literal": false
-          },
-          {
-            "id": "trastorno-fobia-especifica-dsm5-criterio-4",
-            "orden": 4,
-            "titulo": "Resumen clínico 4",
-            "texto": "Especificar tipo: animal, entorno natural, sangre-inyección-lesión, situacional u otro.",
-            "tipo": "resumen_clinico",
-            "fuente": "DSM-5-TR; resumen no literal",
-            "literal": false
+            "id": "trastorno-fobia-especifica-dsm5-grupo-1",
+            "clave": "",
+            "titulo": "Pendiente de clasificación",
+            "tipo": "revision_requerida",
+            "introduccion": "Miedo o ansiedad intensa ante un objeto o situación específica.",
+            "literal": false,
+            "items": [
+              {
+                "numero": null,
+                "texto": "Respuesta inmediata, evitación o resistencia con ansiedad.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Temor desproporcionado y persistente con deterioro clínicamente significativo.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Especificar tipo: animal, entorno natural, sangre-inyección-lesión, situacional u otro.",
+                "orden": 3,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
@@ -22187,6 +21514,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-trastorno-de-ansiedad-social",
     "nombre": "Trastorno de ansiedad social",
+    "descripcionBreve": "Los criterios son una herramienta de apoyo y deben integrarse con la entrevista clínica, antecedentes, exploración mental, evolución y juicio profesional.",
     "categoria": "Trastornos de ansiedad",
     "subcategoria": "Ansiedad",
     "aliases": [
@@ -22203,49 +21531,38 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Trastorno de ansiedad social",
         "criterios": [
           {
-            "orden": 1,
-            "titulo": "Resumen clínico 1",
-            "texto": "Miedo ante situaciones sociales por posible evaluación negativa.",
-            "tipo": "resumen_clinico",
-            "fuente": "Resumen estructurado del proyecto; revisar fuente oficial",
+            "id": "trastorno-trastorno-de-ansiedad-social-cie10-grupo-1",
+            "clave": "",
+            "titulo": "Pendiente de clasificación",
+            "tipo": "revision_requerida",
+            "introduccion": "Miedo ante situaciones sociales por posible evaluación negativa.",
             "literal": false,
-            "id": "trastorno-trastorno-de-ansiedad-social-cie10-criterio-1"
-          },
-          {
-            "orden": 2,
-            "titulo": "Resumen clínico 2",
-            "texto": "Temor a actuar de forma humillante o mostrar síntomas de ansiedad.",
-            "tipo": "resumen_clinico",
-            "fuente": "Resumen estructurado del proyecto; revisar fuente oficial",
-            "literal": false,
-            "id": "trastorno-trastorno-de-ansiedad-social-cie10-criterio-2"
-          },
-          {
-            "orden": 3,
-            "titulo": "Resumen clínico 3",
-            "texto": "Las situaciones provocan ansiedad y se evitan o soportan con malestar.",
-            "tipo": "resumen_clinico",
-            "fuente": "Resumen estructurado del proyecto; revisar fuente oficial",
-            "literal": false,
-            "id": "trastorno-trastorno-de-ansiedad-social-cie10-criterio-3"
-          },
-          {
-            "orden": 4,
-            "titulo": "Resumen clínico 4",
-            "texto": "Desproporción, persistencia y deterioro clínicamente significativo.",
-            "tipo": "resumen_clinico",
-            "fuente": "Resumen estructurado del proyecto; revisar fuente oficial",
-            "literal": false,
-            "id": "trastorno-trastorno-de-ansiedad-social-cie10-criterio-4"
-          },
-          {
-            "orden": 5,
-            "titulo": "Resumen clínico 5",
-            "texto": "Considerar manifestaciones infantiles y especificador relacionado con desempeño.",
-            "tipo": "resumen_clinico",
-            "fuente": "Resumen estructurado del proyecto; revisar fuente oficial",
-            "literal": false,
-            "id": "trastorno-trastorno-de-ansiedad-social-cie10-criterio-5"
+            "items": [
+              {
+                "numero": null,
+                "texto": "Temor a actuar de forma humillante o mostrar síntomas de ansiedad.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Las situaciones provocan ansiedad y se evitan o soportan con malestar.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Desproporción, persistencia y deterioro clínicamente significativo.",
+                "orden": 3,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Considerar manifestaciones infantiles y especificador relacionado con desempeño.",
+                "orden": 4,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
@@ -22259,49 +21576,38 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Trastorno de ansiedad social",
         "criterios": [
           {
-            "orden": 1,
-            "titulo": "Resumen clínico 1",
-            "texto": "Miedo ante situaciones sociales por posible evaluación negativa.",
-            "tipo": "resumen_clinico",
-            "fuente": "Resumen estructurado del proyecto; revisar fuente oficial",
+            "id": "trastorno-trastorno-de-ansiedad-social-cie11-grupo-1",
+            "clave": "",
+            "titulo": "Pendiente de clasificación",
+            "tipo": "revision_requerida",
+            "introduccion": "Miedo ante situaciones sociales por posible evaluación negativa.",
             "literal": false,
-            "id": "trastorno-trastorno-de-ansiedad-social-cie11-criterio-1"
-          },
-          {
-            "orden": 2,
-            "titulo": "Resumen clínico 2",
-            "texto": "Temor a actuar de forma humillante o mostrar síntomas de ansiedad.",
-            "tipo": "resumen_clinico",
-            "fuente": "Resumen estructurado del proyecto; revisar fuente oficial",
-            "literal": false,
-            "id": "trastorno-trastorno-de-ansiedad-social-cie11-criterio-2"
-          },
-          {
-            "orden": 3,
-            "titulo": "Resumen clínico 3",
-            "texto": "Las situaciones provocan ansiedad y se evitan o soportan con malestar.",
-            "tipo": "resumen_clinico",
-            "fuente": "Resumen estructurado del proyecto; revisar fuente oficial",
-            "literal": false,
-            "id": "trastorno-trastorno-de-ansiedad-social-cie11-criterio-3"
-          },
-          {
-            "orden": 4,
-            "titulo": "Resumen clínico 4",
-            "texto": "Desproporción, persistencia y deterioro clínicamente significativo.",
-            "tipo": "resumen_clinico",
-            "fuente": "Resumen estructurado del proyecto; revisar fuente oficial",
-            "literal": false,
-            "id": "trastorno-trastorno-de-ansiedad-social-cie11-criterio-4"
-          },
-          {
-            "orden": 5,
-            "titulo": "Resumen clínico 5",
-            "texto": "Considerar manifestaciones infantiles y especificador relacionado con desempeño.",
-            "tipo": "resumen_clinico",
-            "fuente": "Resumen estructurado del proyecto; revisar fuente oficial",
-            "literal": false,
-            "id": "trastorno-trastorno-de-ansiedad-social-cie11-criterio-5"
+            "items": [
+              {
+                "numero": null,
+                "texto": "Temor a actuar de forma humillante o mostrar síntomas de ansiedad.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Las situaciones provocan ansiedad y se evitan o soportan con malestar.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Desproporción, persistencia y deterioro clínicamente significativo.",
+                "orden": 3,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Considerar manifestaciones infantiles y especificador relacionado con desempeño.",
+                "orden": 4,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
@@ -22316,49 +21622,38 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Trastorno de ansiedad social",
         "criterios": [
           {
-            "id": "trastorno-trastorno-de-ansiedad-social-dsm5-criterio-1",
-            "orden": 1,
-            "titulo": "Resumen clínico 1",
-            "texto": "Miedo ante situaciones sociales por posible evaluación negativa.",
-            "tipo": "resumen_clinico",
-            "fuente": "DSM-5-TR; resumen no literal",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-de-ansiedad-social-dsm5-criterio-2",
-            "orden": 2,
-            "titulo": "Resumen clínico 2",
-            "texto": "Temor a actuar de forma humillante o mostrar síntomas de ansiedad.",
-            "tipo": "resumen_clinico",
-            "fuente": "DSM-5-TR; resumen no literal",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-de-ansiedad-social-dsm5-criterio-3",
-            "orden": 3,
-            "titulo": "Resumen clínico 3",
-            "texto": "Las situaciones provocan ansiedad y se evitan o soportan con malestar.",
-            "tipo": "resumen_clinico",
-            "fuente": "DSM-5-TR; resumen no literal",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-de-ansiedad-social-dsm5-criterio-4",
-            "orden": 4,
-            "titulo": "Resumen clínico 4",
-            "texto": "Desproporción, persistencia y deterioro clínicamente significativo.",
-            "tipo": "resumen_clinico",
-            "fuente": "DSM-5-TR; resumen no literal",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-de-ansiedad-social-dsm5-criterio-5",
-            "orden": 5,
-            "titulo": "Resumen clínico 5",
-            "texto": "Considerar manifestaciones infantiles y especificador relacionado con desempeño.",
-            "tipo": "resumen_clinico",
-            "fuente": "DSM-5-TR; resumen no literal",
-            "literal": false
+            "id": "trastorno-trastorno-de-ansiedad-social-dsm5-grupo-1",
+            "clave": "",
+            "titulo": "Pendiente de clasificación",
+            "tipo": "revision_requerida",
+            "introduccion": "Miedo ante situaciones sociales por posible evaluación negativa.",
+            "literal": false,
+            "items": [
+              {
+                "numero": null,
+                "texto": "Temor a actuar de forma humillante o mostrar síntomas de ansiedad.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Las situaciones provocan ansiedad y se evitan o soportan con malestar.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Desproporción, persistencia y deterioro clínicamente significativo.",
+                "orden": 3,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Considerar manifestaciones infantiles y especificador relacionado con desempeño.",
+                "orden": 4,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
@@ -22383,6 +21678,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-trastorno-de-estres-postraumatico-complejo",
     "nombre": "Trastorno de estres postraumatico complejo",
+    "descripcionBreve": "Trastorno de estres postraumatico complejo.",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -22410,6 +21706,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-trastorno-por-uso-de-alcohol",
     "nombre": "Trastorno por uso de alcohol",
+    "descripcionBreve": "Trastorno por uso de alcohol.",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -22437,6 +21734,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-trastorno-por-uso-de-cannabis",
     "nombre": "Trastorno por uso de cannabis",
+    "descripcionBreve": "Trastorno por uso de cannabis.",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -22464,6 +21762,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-trastorno-por-uso-de-opioides",
     "nombre": "Trastorno por uso de opioides",
+    "descripcionBreve": "Trastorno por uso de opioides.",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -22491,6 +21790,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-trastorno-por-uso-de-estimulantes",
     "nombre": "Trastorno por uso de estimulantes",
+    "descripcionBreve": "Trastorno por uso de estimulantes.",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -22518,6 +21818,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-trastorno-del-espectro-autista",
     "nombre": "Trastorno del espectro autista",
+    "descripcionBreve": "Trastorno del espectro autista.",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -22545,6 +21846,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-trastorno-por-deficit-de-atencion-con-hiperactividad",
     "nombre": "Trastorno por deficit de atencion con hiperactividad",
+    "descripcionBreve": "Trastorno por deficit de atencion con hiperactividad.",
     "categoria": "Clínica general",
     "subcategoria": "Clínica general",
     "aliases": [
@@ -22572,6 +21874,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-trastorno-de-ansiedad-por-separacion",
     "nombre": "Trastorno de ansiedad por separación",
+    "descripcionBreve": "Los criterios son una herramienta de apoyo y deben integrarse con la entrevista clínica, antecedentes, exploración mental, evolución y juicio profesional.",
     "categoria": "Trastornos de ansiedad",
     "subcategoria": "Ansiedad",
     "aliases": [
@@ -22586,49 +21889,38 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Trastorno de ansiedad por separación",
         "criterios": [
           {
-            "id": "trastorno-trastorno-de-ansiedad-por-separacion-dsm5-criterio-1",
-            "orden": 1,
-            "titulo": "Resumen clínico 1",
-            "texto": "Malestar excesivo ante la separación de figuras de apego.",
-            "tipo": "resumen_clinico",
-            "fuente": "DSM-5-TR; resumen no literal",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-de-ansiedad-por-separacion-dsm5-criterio-2",
-            "orden": 2,
-            "titulo": "Resumen clínico 2",
-            "texto": "Preocupación por pérdida o acontecimientos que provoquen separación.",
-            "tipo": "resumen_clinico",
-            "fuente": "DSM-5-TR; resumen no literal",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-de-ansiedad-por-separacion-dsm5-criterio-3",
-            "orden": 3,
-            "titulo": "Resumen clínico 3",
-            "texto": "Resistencia a salir, permanecer solo o dormir separado.",
-            "tipo": "resumen_clinico",
-            "fuente": "DSM-5-TR; resumen no literal",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-de-ansiedad-por-separacion-dsm5-criterio-4",
-            "orden": 4,
-            "titulo": "Resumen clínico 4",
-            "texto": "Síntomas físicos, persistencia y deterioro clínicamente significativo.",
-            "tipo": "resumen_clinico",
-            "fuente": "DSM-5-TR; resumen no literal",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-de-ansiedad-por-separacion-dsm5-criterio-5",
-            "orden": 5,
-            "titulo": "Resumen clínico 5",
-            "texto": "Considerar la etapa del desarrollo y descartar otras explicaciones.",
-            "tipo": "resumen_clinico",
-            "fuente": "DSM-5-TR; resumen no literal",
-            "literal": false
+            "id": "trastorno-trastorno-de-ansiedad-por-separacion-dsm5-grupo-1",
+            "clave": "",
+            "titulo": "Pendiente de clasificación",
+            "tipo": "revision_requerida",
+            "introduccion": "Malestar excesivo ante la separación de figuras de apego.",
+            "literal": false,
+            "items": [
+              {
+                "numero": null,
+                "texto": "Preocupación por pérdida o acontecimientos que provoquen separación.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Resistencia a salir, permanecer solo o dormir separado.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Síntomas físicos, persistencia y deterioro clínicamente significativo.",
+                "orden": 3,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Considerar la etapa del desarrollo y descartar otras explicaciones.",
+                "orden": 4,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
@@ -22653,6 +21945,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-mutismo-selectivo",
     "nombre": "Mutismo selectivo",
+    "descripcionBreve": "Los criterios son una herramienta de apoyo y deben integrarse con la entrevista clínica, antecedentes, exploración mental, evolución y juicio profesional.",
     "categoria": "Trastornos de ansiedad",
     "subcategoria": "Ansiedad",
     "aliases": [
@@ -22667,40 +21960,32 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Mutismo selectivo",
         "criterios": [
           {
-            "id": "trastorno-mutismo-selectivo-dsm5-criterio-1",
-            "orden": 1,
-            "titulo": "Resumen clínico 1",
-            "texto": "Incapacidad persistente para hablar en determinadas situaciones sociales pese a poder hacerlo en otras.",
-            "tipo": "resumen_clinico",
-            "fuente": "DSM-5-TR; resumen no literal",
-            "literal": false
-          },
-          {
-            "id": "trastorno-mutismo-selectivo-dsm5-criterio-2",
-            "orden": 2,
-            "titulo": "Resumen clínico 2",
-            "texto": "Interferencia académica, laboral o social.",
-            "tipo": "resumen_clinico",
-            "fuente": "DSM-5-TR; resumen no literal",
-            "literal": false
-          },
-          {
-            "id": "trastorno-mutismo-selectivo-dsm5-criterio-3",
-            "orden": 3,
-            "titulo": "Resumen clínico 3",
-            "texto": "Persistencia clínicamente relevante.",
-            "tipo": "resumen_clinico",
-            "fuente": "DSM-5-TR; resumen no literal",
-            "literal": false
-          },
-          {
-            "id": "trastorno-mutismo-selectivo-dsm5-criterio-4",
-            "orden": 4,
-            "titulo": "Resumen clínico 4",
-            "texto": "No atribuible únicamente a desconocimiento del idioma ni a otro trastorno de la comunicación.",
-            "tipo": "resumen_clinico",
-            "fuente": "DSM-5-TR; resumen no literal",
-            "literal": false
+            "id": "trastorno-mutismo-selectivo-dsm5-grupo-1",
+            "clave": "",
+            "titulo": "Pendiente de clasificación",
+            "tipo": "revision_requerida",
+            "introduccion": "Incapacidad persistente para hablar en determinadas situaciones sociales pese a poder hacerlo en otras.",
+            "literal": false,
+            "items": [
+              {
+                "numero": null,
+                "texto": "Interferencia académica, laboral o social.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Persistencia clínicamente relevante.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "No atribuible únicamente a desconocimiento del idioma ni a otro trastorno de la comunicación.",
+                "orden": 3,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
@@ -22725,6 +22010,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-trastorno-de-ansiedad-inducido-por-sustancias-o-medicamentos",
     "nombre": "Trastorno de ansiedad inducido por sustancias o medicamentos",
+    "descripcionBreve": "Los criterios son una herramienta de apoyo y deben integrarse con la entrevista clínica, antecedentes, exploración mental, evolución y juicio profesional.",
     "categoria": "Trastornos de ansiedad",
     "subcategoria": "Ansiedad",
     "aliases": [
@@ -22739,40 +22025,32 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Trastorno de ansiedad inducido por sustancias o medicamentos",
         "criterios": [
           {
-            "id": "trastorno-trastorno-de-ansiedad-inducido-por-sustancias-o-medicamentos-dsm5-criterio-1",
-            "orden": 1,
-            "titulo": "Resumen clínico 1",
-            "texto": "Síntomas de ansiedad predominantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "DSM-5-TR; resumen no literal",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-de-ansiedad-inducido-por-sustancias-o-medicamentos-dsm5-criterio-2",
-            "orden": 2,
-            "titulo": "Resumen clínico 2",
-            "texto": "Relación temporal con intoxicación, abstinencia o exposición a un medicamento.",
-            "tipo": "resumen_clinico",
-            "fuente": "DSM-5-TR; resumen no literal",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-de-ansiedad-inducido-por-sustancias-o-medicamentos-dsm5-criterio-3",
-            "orden": 3,
-            "titulo": "Resumen clínico 3",
-            "texto": "La sustancia o medicamento es capaz de producir los síntomas.",
-            "tipo": "resumen_clinico",
-            "fuente": "DSM-5-TR; resumen no literal",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-de-ansiedad-inducido-por-sustancias-o-medicamentos-dsm5-criterio-4",
-            "orden": 4,
-            "titulo": "Resumen clínico 4",
-            "texto": "Ausencia de mejor explicación por un trastorno independiente y no aparición exclusiva durante delirium.",
-            "tipo": "resumen_clinico",
-            "fuente": "DSM-5-TR; resumen no literal",
-            "literal": false
+            "id": "trastorno-trastorno-de-ansiedad-inducido-por-sustancias-o-medicamentos-dsm5-grupo-1",
+            "clave": "",
+            "titulo": "Pendiente de clasificación",
+            "tipo": "revision_requerida",
+            "introduccion": "Síntomas de ansiedad predominantes.",
+            "literal": false,
+            "items": [
+              {
+                "numero": null,
+                "texto": "Relación temporal con intoxicación, abstinencia o exposición a un medicamento.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "La sustancia o medicamento es capaz de producir los síntomas.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Ausencia de mejor explicación por un trastorno independiente y no aparición exclusiva durante delirium.",
+                "orden": 3,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
@@ -22797,6 +22075,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-trastorno-de-ansiedad-debido-a-otra-afeccion-medica",
     "nombre": "Trastorno de ansiedad debido a otra afección médica",
+    "descripcionBreve": "Los criterios son una herramienta de apoyo y deben integrarse con la entrevista clínica, antecedentes, exploración mental, evolución y juicio profesional.",
     "categoria": "Trastornos de ansiedad",
     "subcategoria": "Ansiedad",
     "aliases": [
@@ -22811,40 +22090,32 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Trastorno de ansiedad debido a otra afección médica",
         "criterios": [
           {
-            "id": "trastorno-trastorno-de-ansiedad-debido-a-otra-afeccion-medica-dsm5-criterio-1",
-            "orden": 1,
-            "titulo": "Resumen clínico 1",
-            "texto": "Ansiedad o ataques de pánico predominantes.",
-            "tipo": "resumen_clinico",
-            "fuente": "DSM-5-TR; resumen no literal",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-de-ansiedad-debido-a-otra-afeccion-medica-dsm5-criterio-2",
-            "orden": 2,
-            "titulo": "Resumen clínico 2",
-            "texto": "Evidencia de relación fisiopatológica directa con una afección médica.",
-            "tipo": "resumen_clinico",
-            "fuente": "DSM-5-TR; resumen no literal",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-de-ansiedad-debido-a-otra-afeccion-medica-dsm5-criterio-3",
-            "orden": 3,
-            "titulo": "Resumen clínico 3",
-            "texto": "Excluir otra explicación mental y la aparición exclusiva durante delirium.",
-            "tipo": "resumen_clinico",
-            "fuente": "DSM-5-TR; resumen no literal",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-de-ansiedad-debido-a-otra-afeccion-medica-dsm5-criterio-4",
-            "orden": 4,
-            "titulo": "Resumen clínico 4",
-            "texto": "Malestar o deterioro clínicamente significativo.",
-            "tipo": "resumen_clinico",
-            "fuente": "DSM-5-TR; resumen no literal",
-            "literal": false
+            "id": "trastorno-trastorno-de-ansiedad-debido-a-otra-afeccion-medica-dsm5-grupo-1",
+            "clave": "",
+            "titulo": "Pendiente de clasificación",
+            "tipo": "revision_requerida",
+            "introduccion": "Ansiedad o ataques de pánico predominantes.",
+            "literal": false,
+            "items": [
+              {
+                "numero": null,
+                "texto": "Evidencia de relación fisiopatológica directa con una afección médica.",
+                "orden": 1,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Excluir otra explicación mental y la aparición exclusiva durante delirium.",
+                "orden": 2,
+                "literal": false
+              },
+              {
+                "numero": null,
+                "texto": "Malestar o deterioro clínicamente significativo.",
+                "orden": 3,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
@@ -22869,6 +22140,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-otro-trastorno-de-ansiedad-especificado",
     "nombre": "Otro trastorno de ansiedad especificado",
+    "descripcionBreve": "Los criterios son una herramienta de apoyo y deben integrarse con la entrevista clínica, antecedentes, exploración mental, evolución y juicio profesional.",
     "categoria": "Trastornos de ansiedad",
     "subcategoria": "Ansiedad",
     "aliases": [
@@ -22883,22 +22155,20 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Otro trastorno de ansiedad especificado",
         "criterios": [
           {
-            "id": "trastorno-otro-trastorno-de-ansiedad-especificado-dsm5-criterio-1",
-            "orden": 1,
-            "titulo": "Resumen clínico 1",
-            "texto": "Se presentan síntomas de ansiedad clínicamente significativos.",
-            "tipo": "resumen_clinico",
-            "fuente": "DSM-5-TR; resumen no literal",
-            "literal": false
-          },
-          {
-            "id": "trastorno-otro-trastorno-de-ansiedad-especificado-dsm5-criterio-2",
-            "orden": 2,
-            "titulo": "Resumen clínico 2",
-            "texto": "El profesional especifica la razón por la que no se cumplen todos los criterios de una categoría concreta.",
-            "tipo": "resumen_clinico",
-            "fuente": "DSM-5-TR; resumen no literal",
-            "literal": false
+            "id": "trastorno-otro-trastorno-de-ansiedad-especificado-dsm5-grupo-1",
+            "clave": "",
+            "titulo": "Pendiente de clasificación",
+            "tipo": "revision_requerida",
+            "introduccion": "Se presentan síntomas de ansiedad clínicamente significativos.",
+            "literal": false,
+            "items": [
+              {
+                "numero": null,
+                "texto": "El profesional especifica la razón por la que no se cumplen todos los criterios de una categoría concreta.",
+                "orden": 1,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
@@ -22923,6 +22193,7 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   {
     "id": "trastorno-trastorno-de-ansiedad-no-especificado",
     "nombre": "Trastorno de ansiedad no especificado",
+    "descripcionBreve": "Los criterios son una herramienta de apoyo y deben integrarse con la entrevista clínica, antecedentes, exploración mental, evolución y juicio profesional.",
     "categoria": "Trastornos de ansiedad",
     "subcategoria": "Ansiedad",
     "aliases": [
@@ -22937,22 +22208,20 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "nombre": "Trastorno de ansiedad no especificado",
         "criterios": [
           {
-            "id": "trastorno-trastorno-de-ansiedad-no-especificado-dsm5-criterio-1",
-            "orden": 1,
-            "titulo": "Resumen clínico 1",
-            "texto": "Predominan síntomas de ansiedad que causan malestar o deterioro.",
-            "tipo": "resumen_clinico",
-            "fuente": "DSM-5-TR; resumen no literal",
-            "literal": false
-          },
-          {
-            "id": "trastorno-trastorno-de-ansiedad-no-especificado-dsm5-criterio-2",
-            "orden": 2,
-            "titulo": "Resumen clínico 2",
-            "texto": "No se especifica el motivo de incumplimiento de criterios o la información disponible es insuficiente.",
-            "tipo": "resumen_clinico",
-            "fuente": "DSM-5-TR; resumen no literal",
-            "literal": false
+            "id": "trastorno-trastorno-de-ansiedad-no-especificado-dsm5-grupo-1",
+            "clave": "",
+            "titulo": "Pendiente de clasificación",
+            "tipo": "revision_requerida",
+            "introduccion": "Predominan síntomas de ansiedad que causan malestar o deterioro.",
+            "literal": false,
+            "items": [
+              {
+                "numero": null,
+                "texto": "No se especifica el motivo de incumplimiento de criterios o la información disponible es insuficiente.",
+                "orden": 1,
+                "literal": false
+              }
+            ]
           }
         ],
         "especificadores": [],
