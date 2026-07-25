@@ -130,13 +130,19 @@
     </div>
 
     <div class="calculadora-convencional" aria-label="Calculadora convencional">
+        <label class="buscador-calculadoras-nota">
+            Buscar calculadora
+            <input id="buscarCalculadoraNota" type="search" placeholder="Nombre o especialidad">
+        </label>
         <nav class="lista-calculadoras-nota" aria-label="Calculadoras disponibles">
-            <a href="calculadoras-medicas.html" target="_blank" rel="noopener">Calculadoras medicas</a>
-            <a href="calculadoras-pediatricas.html" target="_blank" rel="noopener">Calculadoras pediatricas</a>
-            <a href="calculadora-benzodiacepinas.html" target="_blank" rel="noopener">Equivalencias de benzodiacepinas</a>
+            <button type="button" data-calculadora-nota="convencional" data-calculadora-nombre="Calculadora convencional">Calculadora convencional</button>
+            <button type="button" data-calculadora-nota="externa" data-calculadora-url="calculadoras-medicas.html" data-calculadora-nombre="Calculadoras medicas">Calculadoras medicas</button>
+            <button type="button" data-calculadora-nota="externa" data-calculadora-url="calculadoras-pediatricas.html" data-calculadora-nombre="Calculadoras pediatricas">Calculadoras pediatricas</button>
+            <button type="button" data-calculadora-nota="externa" data-calculadora-url="calculadora-benzodiacepinas.html" data-calculadora-nombre="Equivalencias de benzodiacepinas">Equivalencias de benzodiacepinas</button>
         </nav>
-        <output id="pantallaCalculadoraNota" class="calculadora-pantalla" aria-live="polite">0</output>
-        <div class="calculadora-teclado">
+        <div id="visorCalculadoraNota" class="visor-calculadora-nota" aria-live="polite"></div>
+        <output id="pantallaCalculadoraNota" class="calculadora-pantalla" aria-live="polite" hidden>0</output>
+        <div class="calculadora-teclado" hidden>
             <button type="button" data-calculadora-accion="limpiar">C</button>
             <button type="button" data-calculadora-accion="retroceso">⌫</button>
             <button type="button" data-calculadora-valor="(">(</button>

@@ -3085,7 +3085,10 @@ function configurarCalculadoraNota() {
   const panel = document.getElementById("panelCalculadorasNota");
   const pantalla = document.getElementById("pantallaCalculadoraNota");
   const teclado = panel?.querySelector(".calculadora-teclado");
-  if (!panel || !pantalla || !teclado) return;
+  const buscador = document.getElementById("buscarCalculadoraNota");
+  const lista = panel?.querySelector(".lista-calculadoras-nota");
+  const visor = document.getElementById("visorCalculadoraNota");
+  if (!panel || !pantalla || !teclado || !lista || !visor) return;
 
   let expresion = "";
   const actualizarPantalla = (valor = expresion || "0") => {
@@ -3102,6 +3105,51 @@ function configurarCalculadoraNota() {
     }
     actualizarPantalla();
   };
+
+  const mostrarConvencional = () => {
+    visor.replaceChildren();
+    pantalla.hidden = false;
+    teclado.hidden = false;
+    pantalla.focus?.();
+  };
+
+  const cargarCalculadoraExterna = (boton) => {
+    const url = boton.dataset.calculadoraUrl;
+    if (!url) return;
+    pantalla.hidden = true;
+    teclado.hidden = true;
+    visor.replaceChildren();
+    const iframe = document.createElement("iframe");
+    iframe.className = "visor-calculadora-iframe";
+    iframe.title = boton.dataset.calculadoraNombre || "Calculadora";
+    iframe.loading = "lazy";
+    iframe.src = url;
+    visor.appendChild(iframe);
+  };
+
+  const filtrarCalculadoras = () => {
+    const termino = String(buscador?.value || "").trim().toLocaleLowerCase();
+    lista.querySelectorAll("[data-calculadora-nota]").forEach((boton) => {
+      const nombre = String(boton.dataset.calculadoraNombre || boton.textContent).toLocaleLowerCase();
+      boton.hidden = Boolean(termino) && !nombre.includes(termino);
+    });
+  };
+
+  lista.addEventListener("click", (evento) => {
+    const boton = evento.target.closest("[data-calculadora-nota]");
+    if (!boton) return;
+    lista.querySelectorAll("[data-calculadora-nota]").forEach((item) => {
+      item.classList.toggle("activa", item === boton);
+    });
+    if (boton.dataset.calculadoraNota === "convencional") {
+      mostrarConvencional();
+    } else {
+      cargarCalculadoraExterna(boton);
+    }
+  });
+
+  buscador?.addEventListener("input", filtrarCalculadoras);
+  filtrarCalculadoras();
 
   teclado.addEventListener("click", (evento) => {
     const boton = evento.target.closest("button");

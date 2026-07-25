@@ -1919,3 +1919,122 @@ button:hover{
     grid-template-columns: 1fr;
   }
 }
+
+/* Calculadoras: panel amplio, estable y separado del widget de reportes. */
+.panel-calculadoras-nota {
+  top: 84px;
+  right: clamp(16px, 4vw, 72px);
+  bottom: 92px;
+  left: clamp(16px, 4vw, 72px);
+  width: auto;
+  max-height: none;
+  overflow: auto;
+  grid-template-rows: auto minmax(0, 1fr);
+}
+
+.panel-calculadoras-nota .calculadora-convencional {
+  grid-template-columns: minmax(220px, 0.34fr) minmax(0, 1fr);
+  grid-template-rows: auto minmax(0, 1fr) auto auto;
+  align-items: start;
+  gap: 14px 22px;
+}
+
+.buscador-calculadoras-nota,
+.lista-calculadoras-nota {
+  grid-column: 1;
+}
+
+.buscador-calculadoras-nota {
+  display: grid;
+  gap: 7px;
+  color: var(--text-secondary, #b5b5b5);
+  font-size: 0.78rem;
+  font-weight: 750;
+}
+
+.buscador-calculadoras-nota input {
+  width: 100%;
+  min-height: 40px;
+  padding: 9px 11px;
+}
+
+.lista-calculadoras-nota {
+  display: grid;
+  align-content: start;
+  gap: 7px;
+}
+
+.lista-calculadoras-nota button {
+  width: 100%;
+  min-height: 42px;
+  padding: 10px 12px;
+  border: 1px solid var(--border-subtle, #303030);
+  border-radius: 2px;
+  color: var(--text-primary, #fff);
+  background: var(--surface-secondary, #1b1b1b);
+  cursor: pointer;
+  font: inherit;
+  font-weight: 700;
+  text-align: left;
+}
+
+.lista-calculadoras-nota button:hover,
+.lista-calculadoras-nota button.activa {
+  border-color: var(--border-active, #fff);
+  color: var(--text-inverse, #000);
+  background: var(--surface-inverse, #fff);
+}
+
+.visor-calculadora-nota {
+  grid-column: 2;
+  grid-row: 1 / span 4;
+  min-width: 0;
+  min-height: 300px;
+  border: 1px solid var(--border-subtle, #303030);
+  background: var(--surface-secondary, #1b1b1b);
+}
+
+.visor-calculadora-iframe {
+  display: block;
+  width: 100%;
+  height: min(66vh, 720px);
+  min-height: 420px;
+  border: 0;
+  background: var(--surface-primary, #fff);
+}
+
+.panel-calculadoras-nota .calculadora-pantalla,
+.panel-calculadoras-nota .calculadora-teclado {
+  grid-column: 2;
+}
+
+.panel-calculadoras-nota .calculadora-pantalla[hidden],
+.panel-calculadoras-nota .calculadora-teclado[hidden] {
+  display: none;
+}
+
+@media (max-width: 760px) {
+  .panel-calculadoras-nota {
+    top: 70px;
+    right: 12px;
+    bottom: 84px;
+    left: 12px;
+  }
+
+  .panel-calculadoras-nota .calculadora-convencional {
+    grid-template-columns: 1fr;
+  }
+
+  .buscador-calculadoras-nota,
+  .lista-calculadoras-nota,
+  .visor-calculadora-nota,
+  .panel-calculadoras-nota .calculadora-pantalla,
+  .panel-calculadoras-nota .calculadora-teclado {
+    grid-column: 1;
+    grid-row: auto;
+  }
+
+  .visor-calculadora-iframe {
+    min-height: 56vh;
+  }
+}
