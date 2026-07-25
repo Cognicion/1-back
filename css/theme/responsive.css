@@ -1,0 +1,34 @@
+@media (max-width: 760px) {
+  :where(.app-shell, .main-container, .contenedor-principal, main) {
+    width: min(100% - 24px, 1440px);
+  }
+
+  :where(.topbar, .nav, .navbar, .navbar-medico) {
+    min-height: 52px;
+  }
+
+  :where(.topbar-actions, .nav-links, .menu, .navbar-medico .menu) {
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  :where(.card, .tarjeta, .module-card, .panel, .seccion, .contenido) {
+    padding: 16px;
+  }
+
+  :where(table) {
+    display: block;
+    overflow-x: auto;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

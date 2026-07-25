@@ -1,0 +1,115 @@
+:where(table) {
+  width: 100%;
+  border-collapse: collapse;
+  color: var(--text-primary);
+  background: var(--surface-primary);
+}
+
+:where(th, td) {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border-subtle);
+  text-align: left;
+  vertical-align: top;
+}
+
+:where(th) {
+  color: var(--text-primary);
+  background: var(--surface-secondary);
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+:where(tr:hover td) {
+  background: var(--surface-secondary);
+}
+
+:where(.badge, .pill, .chip, .status, .tag) {
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-1);
+  color: var(--text-secondary);
+  background: var(--surface-secondary);
+}
+
+:where(.modal-backdrop, .modal-overlay, .proximamente-overlay) {
+  background: rgb(0 0 0 / 72%);
+}
+
+:where(details, .seccion-expandible, .apartado-nota) {
+  border-top: 1px solid var(--border-subtle);
+  border-bottom: 1px solid var(--border-subtle);
+  border-radius: 0;
+  background: transparent;
+}
+
+:where(summary) {
+  padding: 14px 0;
+  color: var(--text-primary);
+  cursor: pointer;
+  font-weight: 750;
+}
+
+:where(details > :not(summary), .seccion-expandible > .contenido, .apartado-nota > .contenido) {
+  border-top: 1px solid var(--border-subtle);
+}
+
+:where(.notifications-button, .notification-bell) {
+  color: var(--text-primary);
+}
+
+.cognicion-theme-selector {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 34px;
+  padding: 3px 4px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-1);
+  color: var(--text-secondary);
+  background: var(--surface-secondary);
+  font-size: 0.75rem;
+  white-space: nowrap;
+}
+
+.cognicion-theme-label {
+  padding-inline: 6px;
+  font-weight: 750;
+}
+
+.cognicion-theme-selector button {
+  min-height: 26px;
+  padding: 4px 8px;
+  border: 1px solid transparent;
+  border-radius: 0;
+  color: var(--text-secondary);
+  background: transparent;
+  cursor: pointer;
+  font-size: 0.75rem;
+  font-weight: 750;
+}
+
+.cognicion-theme-selector button[aria-pressed="true"] {
+  border-color: var(--surface-inverse);
+  color: var(--text-inverse);
+  background: var(--surface-inverse);
+}
+
+html[data-theme] :is(.card, .tarjeta, .module-card, .panel-lab, .seccion, .contenido, .hero, .workspace-section, .panel, .bloque, .nota-card, .paciente-card, .escala-card, .config-card, .feature-card, .philosophy, .science-visual) {
+  border-color: var(--border-subtle);
+  border-radius: var(--radius-1);
+  background: var(--surface-primary);
+  background-image: none;
+  box-shadow: none;
+}
+
+html[data-theme] :is(.btn-primary, .btn-secondary, .nav-login, .primary-button, .ghost-button, .btn-primario, .btn-secundario) {
+  border-radius: var(--radius-1);
+  box-shadow: none;
+  text-shadow: none;
+}
+
+html[data-theme] :is(.nav, header, .topbar, .navbar, .navbar-medico) {
+  background: var(--page-bg);
+  background-image: none;
+  box-shadow: none;
+}

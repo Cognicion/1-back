@@ -1,0 +1,41 @@
+:where(.app-shell, .main-container, .contenedor-principal, main) {
+  width: min(1440px, calc(100% - 40px));
+  margin-inline: auto;
+}
+
+:where(.card, .tarjeta, .module-card, .panel-lab, .seccion, .contenido, .hero, .workspace-section, .panel, .bloque, .nota-card, .paciente-card, .escala-card, .config-card) {
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-1);
+  background: var(--surface-primary);
+  box-shadow: none;
+}
+
+:where(.card, .tarjeta, .module-card, .panel-lab, .seccion, .contenido, .hero, .workspace-section, .panel, .bloque, .nota-card, .paciente-card, .escala-card, .config-card) {
+  position: relative;
+}
+
+:where(.card, .tarjeta, .module-card, .panel-lab, .seccion, .contenido, .hero, .workspace-section, .panel, .bloque, .nota-card, .paciente-card, .escala-card, .config-card)::before {
+  position: absolute;
+  top: -1px;
+  left: -1px;
+  width: 28px;
+  height: 1px;
+  content: "";
+  background: var(--border-active);
+}
+
+:where(.module-card, .card, .tarjeta, .seccion, .contenido, .panel, .bloque, .nota-card, .paciente-card, .escala-card) {
+  padding: clamp(14px, 2vw, 24px);
+}
+
+:where(.grid, .cards-grid, .modules-grid, .features) {
+  gap: clamp(18px, 2.5vw, 32px);
+}
+
+.cognicion-surface,
+.cognicion-panel {
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-1);
+  background: var(--surface-primary);
+  box-shadow: none;
+}

@@ -323,3 +323,58 @@ body.tema-claro .accesos-rapidos-guardados li {
     width: auto;
   }
 }
+
+/* Monochrome Cognicion layer: this file is loaded after the global theme. */
+html[data-theme] .accesos-rapidos-toggle {
+  border-radius: 2px;
+  color: var(--text-inverse);
+  background: var(--surface-inverse);
+  box-shadow: none;
+}
+
+html[data-theme] .accesos-rapidos-toggle:hover,
+html[data-theme] .accesos-rapidos.abierto .accesos-rapidos-toggle {
+  color: var(--text-inverse);
+  background: var(--surface-inverse);
+  border-color: var(--border-active);
+  box-shadow: 4px 4px 0 var(--surface-tertiary);
+}
+
+html[data-theme] .accesos-rapidos-panel {
+  border-radius: 2px;
+  color: var(--text-primary);
+  background: var(--surface-primary);
+  background-image: none;
+  box-shadow: 12px 12px 0 var(--surface-tertiary);
+}
+
+html[data-theme] .accesos-rapidos-panel .titulo-secundario {
+  color: var(--text-primary);
+}
+
+html[data-theme] .accesos-rapidos-panel input[type="search"],
+html[data-theme] .accesos-rapidos-actual,
+html[data-theme] .accesos-rapidos-resultado-item,
+html[data-theme] .accesos-rapidos-resultado-acciones button,
+html[data-theme] .accesos-rapidos-guardados li {
+  border-radius: 2px;
+  color: var(--text-primary);
+  border-color: var(--border-subtle);
+  background: var(--surface-secondary);
+}
+
+html[data-theme] .accesos-rapidos-resultado-acciones button:hover,
+html[data-theme] .accesos-rapidos-actual:hover {
+  color: var(--text-inverse);
+  border-color: var(--border-active);
+  background: var(--surface-inverse);
+}
+
+html[data-theme] .accesos-rapidos-separador {
+  background: var(--border-subtle);
+}
+
+html[data-theme] .sin-resultados {
+  border-radius: 2px;
+  border-color: var(--border-subtle);
+}

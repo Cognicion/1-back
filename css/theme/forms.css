@@ -1,0 +1,32 @@
+:where(input, select, textarea, .input, .select) {
+  min-height: 40px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-1);
+  color: var(--text-primary);
+  background: var(--surface-primary);
+}
+
+:where(input, select, textarea, .input, .select):focus {
+  border-color: var(--border-active);
+  box-shadow: none;
+  outline: 0;
+}
+
+:where(input, select, textarea)::placeholder {
+  color: var(--text-muted);
+  opacity: 1;
+}
+
+:where(label) {
+  color: var(--text-secondary);
+  font-weight: 650;
+}
+
+:where(fieldset) {
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-1);
+}
+
+:where(input[type="checkbox"], input[type="radio"]) {
+  accent-color: var(--surface-inverse);
+}

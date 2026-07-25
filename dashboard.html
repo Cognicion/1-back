@@ -1254,7 +1254,19 @@ footer {
 
 </style>
   <!-- dashboard-deploy: 2026-07-02 18:22:52 -06:00 -->
+<script src="js/theme-preload.js"></script>
 <link rel="stylesheet" href="css/theme/cognicion-theme.css">
+<script>
+  (function () {
+    try {
+      var modo = localStorage.getItem("cognicion.apariencia.modoInterfaz");
+      document.documentElement.dataset.theme = modo === "light" ? "light" : "dark";
+      document.documentElement.style.colorScheme = modo === "light" ? "light" : "dark";
+    } catch (error) {
+      document.documentElement.dataset.theme = "dark";
+    }
+  }());
+</script>
 </head>
 
 <body>
@@ -1276,6 +1288,7 @@ footer {
         </div>
 
         <div class="topbar-actions">
+            <div data-cognicion-theme-selector></div>
 
             <div class="notifications-wrapper">
 
@@ -1641,6 +1654,7 @@ document.addEventListener("DOMContentLoaded", function () {
 </script>
 <script type="module" src="js/dashboard.js?v=20260718-session-persistence"></script>
 <script type="module" src="js/components/accesosRapidos.js"></script>
+<script type="module" src="js/components/themeSelector.js"></script>
 <script>
 (function () {
   function cargarReportesGlobales() {

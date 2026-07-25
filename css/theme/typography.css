@@ -1,0 +1,42 @@
+:where(h1, h2, h3, h4, h5, h6) {
+  margin-top: 0;
+  color: var(--text-primary);
+  font-weight: 760;
+  letter-spacing: 0;
+  line-height: 1.12;
+}
+
+h1 {
+  font-size: clamp(1.8rem, 3vw, 3rem);
+}
+
+h2 {
+  font-size: clamp(1.35rem, 2.3vw, 2rem);
+}
+
+h3 {
+  font-size: 1.05rem;
+}
+
+:where(p, li, td, dd) {
+  color: var(--text-secondary);
+  line-height: 1.55;
+}
+
+:where(small, .muted, .texto-suave, .descripcion, .subtitulo) {
+  color: var(--text-muted);
+}
+
+:where(.section-kicker, .section-label, .kicker, .config-kicker, .eyebrow, .section-number) {
+  color: var(--text-muted);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.section-number::after {
+  content: " /";
+  color: var(--text-primary);
+}

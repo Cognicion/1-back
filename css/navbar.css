@@ -210,3 +210,47 @@ background:#2563eb;
     max-height: 360px;
     overflow-y: auto;
 }
+
+html[data-theme] .navbar-medico {
+    background: var(--page-bg);
+    border-bottom-color: var(--border-subtle);
+}
+
+html[data-theme] .menu a,
+html[data-theme] .menu button,
+html[data-theme] .notifications-button {
+    border: 1px solid var(--border-subtle);
+    border-radius: 2px;
+    color: var(--text-primary);
+    background: var(--surface-secondary);
+    box-shadow: none;
+}
+
+html[data-theme] .menu a:hover,
+html[data-theme] .menu button:hover,
+html[data-theme] .notifications-button:hover {
+    color: var(--text-inverse);
+    border-color: var(--border-active);
+    background: var(--surface-inverse);
+    box-shadow: none;
+}
+
+html[data-theme] .notifications-dropdown {
+    border-radius: 2px;
+    border-color: var(--border-strong);
+    color: var(--text-primary);
+    background: var(--surface-primary);
+    background-image: none;
+    box-shadow: 12px 12px 0 var(--surface-tertiary);
+    backdrop-filter: none;
+}
+
+html[data-theme] .notifications-header strong {
+    color: var(--text-primary);
+}
+
+html[data-theme] .notification-badge {
+    border-color: var(--surface-primary);
+    color: var(--text-inverse);
+    background: var(--surface-inverse);
+}

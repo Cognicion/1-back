@@ -1,0 +1,50 @@
+:where(header, .topbar, .nav, .navbar, .navbar-medico) {
+  border-bottom: 1px solid var(--border-subtle);
+  background: var(--page-bg);
+  box-shadow: none;
+  backdrop-filter: none;
+}
+
+:where(.topbar, .nav, .navbar, .navbar-medico) {
+  min-height: 58px;
+}
+
+:where(.nav a, .nav-links a, .navbar-medico a, .menu a, .topbar a) {
+  position: relative;
+  color: var(--text-secondary);
+  text-decoration: none;
+}
+
+:where(.nav a, .nav-links a, .navbar-medico a, .menu a, .topbar a):hover,
+:where(.nav a, .nav-links a, .navbar-medico a, .menu a, .topbar a).active,
+:where(.nav a, .nav-links a, .navbar-medico a, .menu a, .topbar a)[aria-current="page"] {
+  color: var(--text-primary);
+}
+
+:where(.nav a, .nav-links a, .navbar-medico a, .menu a, .topbar a)::after {
+  position: absolute;
+  right: 0;
+  bottom: -8px;
+  left: 0;
+  height: 1px;
+  content: "";
+  background: var(--surface-inverse);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform var(--transition-fast) var(--ease-standard);
+}
+
+:where(.nav a, .nav-links a, .navbar-medico a, .menu a, .topbar a):hover::after,
+:where(.nav a, .nav-links a, .navbar-medico a, .menu a, .topbar a).active::after,
+:where(.nav a, .nav-links a, .navbar-medico a, .menu a, .topbar a)[aria-current="page"]::after {
+  transform: scaleX(1);
+}
+
+:where(.notifications-dropdown, .dropdown-menu, .menu-desplegable, .accesos-rapidos-panel, .modal, .reporte-modal, .proximamente-modal) {
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-1);
+  color: var(--text-primary);
+  background: var(--surface-primary);
+  box-shadow: 12px 12px 0 var(--surface-tertiary);
+  backdrop-filter: none;
+}
