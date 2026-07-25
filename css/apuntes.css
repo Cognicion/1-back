@@ -7,8 +7,8 @@ body {
   color: #f8fafc;
   background:
     radial-gradient(circle at top left, rgba(78,163,255,0.20), transparent 32%),
-    radial-gradient(circle at bottom right, rgba(0,212,255,0.10), transparent 26%),
-    linear-gradient(135deg, #050608, #080b10 50%, #0e1520);
+    radial-gradient(circle at bottom right, rgba(82,152,102,0.10), transparent 26%),
+    linear-gradient(135deg, #050608, #080b10 50%, var(--black-900));
 }
 
 body.bloqueado main { display: none; }
@@ -93,7 +93,7 @@ textarea {
 button {
   cursor: pointer;
   font-weight: 800;
-  background: linear-gradient(135deg, #2563eb, #00d4ff);
+  background: linear-gradient(135deg, var(--celtic-600), var(--celtic-300));
   border: none;
 }
 
@@ -113,12 +113,12 @@ button {
 }
 
 .apunte-item.activo {
-  border-color: rgba(56,189,248,0.52);
-  background: rgba(56,189,248,0.14);
+  border-color: rgba(82,152,102,0.52);
+  background: rgba(82,152,102,0.14);
 }
 
 .apunte-item strong {
-  color: #e0f2fe;
+  color: var(--ivory-50);
 }
 
 .apunte-item span,

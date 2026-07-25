@@ -1,7 +1,7 @@
 body {
   margin: 0;
   font-family: Arial, Helvetica, sans-serif;
-  background: #0f172a;
+  background: var(--black-900);
   color: #e5e7eb;
   line-height: 1.7;
 }
@@ -16,7 +16,7 @@ body {
 }
 
 .volver {
-  color: #38bdf8;
+  color: var(--celtic-400);
   text-decoration: none;
   font-weight: bold;
 }
@@ -33,7 +33,7 @@ h2 {
 
 h3 {
   margin-top: 35px;
-  color: #e0f2fe;
+  color: var(--ivory-50);
   border-bottom: 1px solid #334155;
   padding-bottom: 8px;
 }
@@ -44,7 +44,7 @@ h3 {
 
 .alerta {
   background: #1e293b;
-  border-left: 5px solid #38bdf8;
+  border-left: 5px solid var(--celtic-400);
   padding: 18px;
   border-radius: 10px;
   margin: 25px 0;

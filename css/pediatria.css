@@ -1,19 +1,19 @@
 :root {
   --ped-bg: var(--color-bg, #020817);
   --ped-panel: var(--color-surface, rgba(15, 23, 42, 0.78));
-  --ped-panel-soft: var(--color-surface-soft, rgba(14, 165, 233, 0.08));
-  --ped-line: var(--color-border, rgba(125, 211, 252, 0.22));
+  --ped-panel-soft: var(--color-surface-soft, rgba(52, 122, 77, 0.08));
+  --ped-line: var(--color-border, rgba(126, 182, 138, 0.22));
   --ped-text: var(--color-text, #eaf6ff);
   --ped-muted: var(--color-muted, #9fb2c8);
-  --ped-accent: var(--color-accent, #22d3ee);
+  --ped-accent: var(--color-accent, var(--celtic-400));
 }
 
 body {
   margin: 0;
   min-height: 100vh;
   background:
-    radial-gradient(circle at 12% 12%, rgba(34, 211, 238, 0.14), transparent 32%),
-    linear-gradient(135deg, var(--ped-bg), #07111f 60%, #081827);
+    radial-gradient(circle at 12% 12%, rgba(82, 152, 102, 0.14), transparent 32%),
+    linear-gradient(135deg, var(--ped-bg), var(--black-950) 60%, #081827);
   color: var(--ped-text);
   font-family: "Inter", "Segoe UI", sans-serif;
 }
@@ -107,7 +107,7 @@ body {
 }
 
 .ped-primary {
-  background: linear-gradient(135deg, #2563eb, #22d3ee);
+  background: linear-gradient(135deg, var(--celtic-600), var(--celtic-400));
   color: #fff;
 }
 
@@ -121,7 +121,7 @@ body {
 .ped-secondary:hover,
 .ped-nav-btn:hover {
   transform: translateY(-2px);
-  border-color: rgba(34, 211, 238, 0.62);
+  border-color: rgba(82, 152, 102, 0.62);
 }
 
 .ped-layout {
@@ -210,7 +210,7 @@ body {
 .ped-active-patient,
 .ped-ok,
 .ped-alerta-box {
-  border: 1px solid rgba(125, 211, 252, 0.18);
+  border: 1px solid rgba(126, 182, 138, 0.18);
   border-radius: 16px;
   padding: 12px;
   background: var(--ped-panel-soft);
@@ -225,8 +225,8 @@ body {
 
 .ped-patient-result:hover {
   transform: translateY(-1px);
-  border-color: rgba(34, 211, 238, 0.58);
-  background: rgba(34, 211, 238, 0.13);
+  border-color: rgba(82, 152, 102, 0.58);
+  background: rgba(82, 152, 102, 0.13);
 }
 
 .ped-patient-result span,
@@ -261,7 +261,7 @@ body {
 }
 
 .ped-nav-btn.activo {
-  background: rgba(34, 211, 238, 0.18);
+  background: rgba(82, 152, 102, 0.18);
   color: var(--ped-accent);
 }
 
@@ -352,7 +352,7 @@ body {
 .ped-summary article,
 .ped-result,
 .ped-source {
-  border: 1px solid rgba(125, 211, 252, 0.16);
+  border: 1px solid rgba(126, 182, 138, 0.16);
   border-radius: 16px;
   padding: 12px;
   background: var(--ped-panel-soft);
@@ -413,7 +413,7 @@ body {
 .ped-growth-card,
 .ped-history-list > div,
 .ped-medication-box {
-  border: 1px solid rgba(125, 211, 252, 0.16);
+  border: 1px solid rgba(126, 182, 138, 0.16);
   border-radius: 16px;
   padding: 12px;
   background: var(--ped-panel-soft);
@@ -453,7 +453,7 @@ body {
 }
 
 .ped-growth-metrics div {
-  border: 1px solid rgba(125, 211, 252, 0.16);
+  border: 1px solid rgba(126, 182, 138, 0.16);
   border-radius: 12px;
   padding: 8px;
   background: rgba(8, 13, 24, 0.34);
@@ -468,7 +468,7 @@ body {
 .ped-link-button {
   width: fit-content;
   margin-top: 10px;
-  border: 1px solid rgba(125, 211, 252, 0.28);
+  border: 1px solid rgba(126, 182, 138, 0.28);
   border-radius: 999px;
   padding: 7px 10px;
   color: var(--ped-text);
@@ -487,11 +487,11 @@ body {
   width: 100%;
   min-height: 128px;
   margin-top: 12px;
-  border: 1px solid rgba(125, 211, 252, 0.16);
+  border: 1px solid rgba(126, 182, 138, 0.16);
   border-radius: 14px;
   background:
-    linear-gradient(rgba(125, 211, 252, 0.08) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(125, 211, 252, 0.08) 1px, transparent 1px),
+    linear-gradient(rgba(126, 182, 138, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(126, 182, 138, 0.08) 1px, transparent 1px),
     rgba(2, 8, 23, 0.28);
   background-size: 28px 28px;
 }
@@ -509,12 +509,12 @@ body {
 
 .ped-growth-curve {
   fill: none;
-  stroke: rgba(125, 211, 252, 0.78);
+  stroke: rgba(126, 182, 138, 0.78);
   stroke-width: 2;
 }
 
 .ped-growth-curve-1 {
-  stroke: rgba(34, 211, 238, 0.92);
+  stroke: rgba(82, 152, 102, 0.92);
 }
 
 .ped-growth-curve-2 {
@@ -522,16 +522,16 @@ body {
 }
 
 .ped-growth-point {
-  fill: #22d3ee;
+  fill: var(--celtic-400);
   stroke: #f8fafc;
   stroke-width: 2;
-  filter: drop-shadow(0 0 8px rgba(34, 211, 238, 0.72));
+  filter: drop-shadow(0 0 8px rgba(82, 152, 102, 0.72));
 }
 
 .ped-growth-chart-empty,
 .ped-growth-source {
   margin-top: 10px;
-  border: 1px dashed rgba(125, 211, 252, 0.22);
+  border: 1px dashed rgba(126, 182, 138, 0.22);
   border-radius: 12px;
   padding: 10px;
   color: var(--ped-muted);
@@ -548,8 +548,8 @@ body {
 
 [data-theme="light"] .ped-growth-chart {
   background:
-    linear-gradient(rgba(14, 116, 144, 0.08) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(14, 116, 144, 0.08) 1px, transparent 1px),
+    linear-gradient(rgba(69, 102, 90, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(69, 102, 90, 0.08) 1px, transparent 1px),
     rgba(255, 255, 255, 0.7);
 }
 
@@ -595,7 +595,7 @@ body {
   gap: 5px;
   margin: 8px 0;
   padding: 8px 10px;
-  border: 1px solid rgba(125, 211, 252, 0.14);
+  border: 1px solid rgba(126, 182, 138, 0.14);
   border-radius: 12px;
   background: rgba(2, 6, 23, 0.16);
 }
@@ -617,7 +617,7 @@ body {
 }
 
 .ped-med-info {
-  border: 1px solid rgba(125, 211, 252, 0.14);
+  border: 1px solid rgba(126, 182, 138, 0.14);
   border-radius: 14px;
   padding: 10px;
   background: rgba(2, 6, 23, 0.18);
@@ -663,7 +663,7 @@ body {
 
 .ped-section-block {
   scroll-margin-top: 18px;
-  border: 1px solid rgba(125, 211, 252, 0.18);
+  border: 1px solid rgba(126, 182, 138, 0.18);
   border-radius: 20px;
   padding: 0;
   background: rgba(15, 23, 42, 0.18);
@@ -685,7 +685,7 @@ body {
   font-weight: 900;
   letter-spacing: 0.02em;
   color: var(--ped-text);
-  background: linear-gradient(90deg, rgba(34, 211, 238, 0.08), transparent);
+  background: linear-gradient(90deg, rgba(82, 152, 102, 0.08), transparent);
 }
 
 .ped-section-block summary::-webkit-details-marker {
@@ -766,7 +766,7 @@ body {
 }
 
 .ped-chart-card {
-  border: 1px solid rgba(125, 211, 252, 0.18);
+  border: 1px solid rgba(126, 182, 138, 0.18);
   border-radius: 16px;
   padding: 14px;
   background: rgba(2, 6, 23, 0.24);
@@ -788,7 +788,7 @@ body {
   gap: 10px;
   align-items: center;
   padding: 9px 0;
-  border-bottom: 1px solid rgba(125, 211, 252, 0.12);
+  border-bottom: 1px solid rgba(126, 182, 138, 0.12);
   color: var(--ped-muted);
   font-size: 0.9rem;
 }
@@ -813,7 +813,7 @@ body {
 }
 
 .ped-advanced {
-  border: 1px solid rgba(125, 211, 252, 0.16);
+  border: 1px solid rgba(126, 182, 138, 0.16);
   border-radius: 14px;
   padding: 10px;
   background: rgba(2, 6, 23, 0.14);
@@ -840,7 +840,7 @@ body {
 .ped-rx-preview,
 .ped-rx-alerts,
 .ped-med-info {
-  border: 1px solid rgba(125, 211, 252, 0.18);
+  border: 1px solid rgba(126, 182, 138, 0.18);
   border-radius: 18px;
   background: rgba(2, 6, 23, 0.26);
 }
@@ -907,7 +907,7 @@ body {
   place-items: center;
   border-radius: 999px;
   color: #061827;
-  background: linear-gradient(135deg, #7dd3fc, #22d3ee);
+  background: linear-gradient(135deg, var(--celtic-300), var(--celtic-400));
   font-weight: 900;
 }
 
@@ -922,7 +922,7 @@ body {
 .ped-dose-option {
   width: 100%;
   text-align: left;
-  border: 1px solid rgba(125, 211, 252, 0.2);
+  border: 1px solid rgba(126, 182, 138, 0.2);
   border-radius: 14px;
   padding: 10px 12px;
   color: var(--ped-text);
@@ -938,8 +938,8 @@ body {
 .ped-search-pill:hover,
 .ped-dose-option:hover,
 .ped-dose-option.activo {
-  border-color: rgba(34, 211, 238, 0.72);
-  box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.12);
+  border-color: rgba(82, 152, 102, 0.72);
+  box-shadow: 0 0 0 3px rgba(82, 152, 102, 0.12);
 }
 
 .ped-search-pill b,
@@ -989,10 +989,10 @@ body {
 }
 
 .ped-rx-summary div {
-  border: 1px solid rgba(125, 211, 252, 0.16);
+  border: 1px solid rgba(126, 182, 138, 0.16);
   border-radius: 14px;
   padding: 12px;
-  background: rgba(14, 165, 233, 0.08);
+  background: rgba(52, 122, 77, 0.08);
 }
 
 .ped-rx-summary span,
@@ -1040,7 +1040,7 @@ body {
 .ped-prescription-compact textarea {
   width: 100%;
   box-sizing: border-box;
-  border: 1px solid rgba(125, 211, 252, 0.38);
+  border: 1px solid rgba(126, 182, 138, 0.38);
   border-radius: 14px;
   padding: 11px 12px;
   color: #f4fbff;
@@ -1057,8 +1057,8 @@ body {
 .ped-prescription-compact input:focus,
 .ped-prescription-compact select:focus,
 .ped-prescription-compact textarea:focus {
-  border-color: rgba(34, 211, 238, 0.85);
-  box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.16);
+  border-color: rgba(82, 152, 102, 0.85);
+  box-shadow: 0 0 0 3px rgba(82, 152, 102, 0.16);
   background: rgba(7, 18, 38, 0.96);
 }
 
@@ -1075,7 +1075,7 @@ body {
 [data-theme="light"] .ped-prescription-compact textarea {
   color: #10233e;
   background: rgba(255, 255, 255, 0.92);
-  border-color: rgba(14, 116, 144, 0.34);
+  border-color: rgba(69, 102, 90, 0.34);
 }
 
 [data-theme="light"] .ped-prescription-compact input::placeholder,
@@ -1120,20 +1120,20 @@ body {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
   gap: 10px;
-  border: 1px dashed rgba(125, 211, 252, 0.26);
+  border: 1px dashed rgba(126, 182, 138, 0.26);
   border-radius: 16px;
   padding: 12px;
-  background: rgba(14, 165, 233, 0.07);
+  background: rgba(52, 122, 77, 0.07);
 }
 
 .ped-presentation-card {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   gap: 10px;
-  border: 1px solid rgba(125, 211, 252, 0.22);
+  border: 1px solid rgba(126, 182, 138, 0.22);
   border-radius: 16px;
   padding: 12px;
-  background: rgba(14, 165, 233, 0.08);
+  background: rgba(52, 122, 77, 0.08);
 }
 
 .ped-presentation-card div {
@@ -1171,10 +1171,10 @@ body {
 }
 
 .ped-rx-mini-panel {
-  border: 1px solid rgba(125, 211, 252, 0.2);
+  border: 1px solid rgba(126, 182, 138, 0.2);
   border-radius: 16px;
   padding: 14px;
-  background: rgba(14, 165, 233, 0.08);
+  background: rgba(52, 122, 77, 0.08);
 }
 
 [data-theme="light"] .ped-rx-mini-panel {
@@ -1220,7 +1220,7 @@ body {
   justify-content: space-between;
   align-items: center;
   gap: 12px;
-  border: 1px solid rgba(125, 211, 252, 0.18);
+  border: 1px solid rgba(126, 182, 138, 0.18);
   border-radius: 16px;
   padding: 12px;
   background: rgba(2, 6, 23, 0.22);
@@ -1238,12 +1238,12 @@ body {
 .ped-med-status {
   flex: 0 0 auto;
   border-radius: 999px;
-  border: 1px solid rgba(125, 211, 252, 0.24);
+  border: 1px solid rgba(126, 182, 138, 0.24);
   padding: 7px 10px;
   font-size: 0.74rem;
   font-weight: 900;
   color: var(--ped-accent);
-  background: rgba(14, 165, 233, 0.1);
+  background: rgba(52, 122, 77, 0.1);
 }
 
 .ped-med-status.missing {
@@ -1338,7 +1338,7 @@ body {
   display: grid;
   place-items: center;
   transform: translateY(-50%);
-  border: 1px solid rgba(125, 211, 252, 0.32);
+  border: 1px solid rgba(126, 182, 138, 0.32);
   border-radius: 999px;
   color: var(--ped-text);
   background: rgba(15, 23, 42, 0.9);
@@ -1349,8 +1349,8 @@ body {
 
 .ped-medication-clear:hover {
   color: #fff;
-  border-color: rgba(34, 211, 238, 0.8);
-  background: rgba(14, 165, 233, 0.28);
+  border-color: rgba(82, 152, 102, 0.8);
+  background: rgba(52, 122, 77, 0.28);
 }
 
 /* Lista desplegable real */
@@ -1371,12 +1371,12 @@ body {
   overflow-y: auto;
   overflow-x: hidden;
 
-  border: 1px solid rgba(34, 211, 238, 0.42);
+  border: 1px solid rgba(82, 152, 102, 0.42);
   border-radius: 14px;
   background: rgba(5, 13, 28, 0.98);
   box-shadow:
     0 18px 45px rgba(0, 0, 0, 0.55),
-    0 0 0 1px rgba(34, 211, 238, 0.08);
+    0 0 0 1px rgba(82, 152, 102, 0.08);
   backdrop-filter: blur(18px);
 }
 
@@ -1390,7 +1390,7 @@ body {
   gap: 3px;
   margin: 0;
   padding: 10px 12px;
-  border: 1px solid rgba(125, 211, 252, 0.16);
+  border: 1px solid rgba(126, 182, 138, 0.16);
   border-radius: 11px;
   color: var(--ped-text);
   background: rgba(15, 23, 42, 0.74);
@@ -1401,9 +1401,9 @@ body {
 .ped-rx-medication-combobox .ped-search-pill:hover,
 .ped-rx-medication-combobox .ped-search-pill.activa,
 .ped-rx-medication-combobox .ped-search-pill:focus-visible {
-  border-color: rgba(34, 211, 238, 0.72);
-  background: rgba(14, 165, 233, 0.16);
-  box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.1);
+  border-color: rgba(82, 152, 102, 0.72);
+  background: rgba(52, 122, 77, 0.16);
+  box-shadow: 0 0 0 3px rgba(82, 152, 102, 0.1);
   outline: none;
 }
 

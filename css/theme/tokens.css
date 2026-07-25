@@ -1,21 +1,40 @@
 :root {
   --black-1000: #050505;
-  --black-950: #0b0b0b;
-  --black-900: #121212;
-  --black-800: #1b1b1b;
-  --black-700: #252525;
+  --black-950: #090d0b;
+  --black-900: #0e1411;
+  --black-850: #151c18;
+  --black-800: #1c2420;
+  --black-700: #252d28;
   --white-1000: #ffffff;
-  --white-950: #fafafa;
-  --white-900: #f2f2f2;
-  --gray-100: #e8e8e8;
-  --gray-200: #d2d2d2;
-  --gray-300: #b5b5b5;
-  --gray-400: #969696;
-  --gray-500: #747474;
-  --gray-600: #5c5c5c;
-  --gray-700: #424242;
-  --gray-800: #303030;
-  --gray-900: #1e1e1e;
+  --ivory-50: #f2f3ee;
+  --ivory-100: #e7e9e2;
+  --ivory-150: #daddd4;
+  --white-950: var(--ivory-50);
+  --white-900: var(--ivory-100);
+  --gray-100: #d4d8d1;
+  --gray-200: #bec4bc;
+  --gray-300: #9da59e;
+  --gray-400: #7e8780;
+  --gray-500: #626b65;
+  --gray-600: #4c554f;
+  --gray-700: #343c37;
+  --gray-800: #222a25;
+  --gray-900: #151b17;
+
+  --celtic-100: #d8eadb;
+  --celtic-200: #afd3b5;
+  --celtic-300: #7eb68a;
+  --celtic-400: #529866;
+  --celtic-500: #347a4d;
+  --celtic-600: #245f3b;
+  --celtic-700: #19482e;
+  --celtic-800: #103320;
+  --celtic-900: #091f14;
+  --moss-500: #687c52;
+  --mineral-green: #45665a;
+  --celtic-soft: rgb(52 122 77 / 14%);
+  --celtic-border: rgb(82 152 102 / 38%);
+  --celtic-glow: rgb(82 152 102 / 18%);
 
   --space-1: 0.25rem;
   --space-2: 0.5rem;
@@ -37,13 +56,13 @@
   --ease-standard: cubic-bezier(0.2, 0, 0, 1);
 
   /* Compatibility aliases keep legacy page CSS inside the monochrome system. */
-  --blue: var(--gray-700);
-  --cyan: var(--gray-500);
-  --azul: var(--gray-700);
-  --azul-claro: var(--gray-400);
-  --cognicion-blue: var(--gray-700);
-  --cognicion-blue-deep: var(--black-900);
-  --cognicion-blue-soft: rgb(0 0 0 / 8%);
+  --blue: var(--celtic-500);
+  --cyan: var(--celtic-400);
+  --azul: var(--celtic-600);
+  --azul-claro: var(--celtic-300);
+  --cognicion-blue: var(--celtic-500);
+  --cognicion-blue-deep: var(--celtic-800);
+  --cognicion-blue-soft: var(--celtic-soft);
   --line: var(--border-subtle, var(--gray-800));
   --borde: var(--border-subtle, var(--gray-800));
 }

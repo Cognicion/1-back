@@ -3,9 +3,8 @@ const MODOS_VALIDOS = new Set(["dark", "light"]);
 
 function leerModo() {
   try {
-    return MODOS_VALIDOS.has(localStorage.getItem(CLAVE_MODO_INTERFAZ))
-      ? localStorage.getItem(CLAVE_MODO_INTERFAZ)
-      : "dark";
+    const guardado = localStorage.getItem(CLAVE_MODO_INTERFAZ) || "";
+    return guardado.startsWith("light") ? "light" : "dark";
   } catch (error) {
     return "dark";
   }

@@ -1,11 +1,11 @@
 :root {
   --bg: #02050b;
   --panel: rgba(9, 16, 30, .88);
-  --line: rgba(125, 211, 252, .2);
-  --text: #edf6ff;
+  --line: rgba(126, 182, 138, .2);
+  --text: var(--ivory-50);
   --muted: #9fb0c8;
-  --cyan: #38bdf8;
-  --blue: #60a5fa;
+  --cyan: var(--celtic-400);
+  --blue: var(--celtic-300);
   --good: #34d399;
   --bad: #fb7185;
   --warn: #fbbf24;
@@ -18,7 +18,7 @@ body {
   min-height: 100vh;
   color: var(--text);
   font-family: Inter, "Segoe UI", system-ui, sans-serif;
-  background: radial-gradient(circle at 50% 10%, rgba(14, 165, 233, .15), transparent 34%), linear-gradient(135deg, #02040a, #071320 54%, #02040a);
+  background: radial-gradient(circle at 50% 10%, rgba(52, 122, 77, .15), transparent 34%), linear-gradient(135deg, var(--black-1000), var(--black-950) 54%, var(--black-1000));
 }
 
 .topbar-dicotica {
@@ -30,7 +30,7 @@ body {
   align-items: center;
   gap: 16px;
   padding: 18px clamp(18px, 5vw, 72px);
-  border-bottom: 1px solid rgba(125, 211, 252, .12);
+  border-bottom: 1px solid rgba(126, 182, 138, .12);
   background: rgba(2, 6, 13, .82);
   backdrop-filter: blur(18px);
 }
@@ -68,7 +68,7 @@ body {
   padding: 10px 14px;
   border: 1px solid var(--line);
   border-radius: 999px;
-  color: #dbeafe;
+  color: var(--ivory-100);
   text-decoration: none;
   background: rgba(15, 23, 42, .72);
 }
@@ -112,7 +112,7 @@ body {
 
 .kicker {
   display: block;
-  color: #7dd3fc;
+  color: var(--celtic-300);
   font-size: .74rem;
   font-weight: 900;
   letter-spacing: .24em;
@@ -128,7 +128,7 @@ body {
 .alerta-dicotica,
 .interpretacion-dicotica {
   padding: 14px;
-  border: 1px solid rgba(125, 211, 252, .16);
+  border: 1px solid rgba(126, 182, 138, .16);
   border-radius: 16px;
   background: rgba(2, 132, 199, .12);
   color: #cfeeff;
@@ -151,7 +151,7 @@ body {
 .preparacion-grid article,
 .resultado-card {
   padding: 14px;
-  border: 1px solid rgba(125, 211, 252, .16);
+  border: 1px solid rgba(126, 182, 138, .16);
   border-radius: 16px;
   background: rgba(15, 23, 42, .55);
 }
@@ -183,9 +183,9 @@ body {
 .panel-header > strong {
   min-width: 190px;
   padding: 9px 12px;
-  border: 1px solid rgba(125, 211, 252, .16);
+  border: 1px solid rgba(126, 182, 138, .16);
   border-radius: 14px;
-  color: #dbeafe;
+  color: var(--ivory-100);
   text-align: right;
   background: rgba(15, 23, 42, .58);
 }
@@ -206,7 +206,7 @@ body {
 .paso-dicotica.pendiente { border-color: rgba(148, 163, 184, .22); }
 .paso-dicotica.en-proceso { border-color: rgba(96, 165, 250, .42); }
 .paso-dicotica.completado { border-color: rgba(52, 211, 153, .44); }
-.paso-dicotica.en-proceso .estado-paso { color: #bfdbfe; background: rgba(37, 99, 235, .24); }
+.paso-dicotica.en-proceso .estado-paso { color: #bfdbfe; background: rgba(36, 95, 59, .24); }
 .paso-dicotica.completado .estado-paso { color: #bbf7d0; background: rgba(22, 101, 52, .24); }
 
 .canales-grid,
@@ -267,9 +267,9 @@ body {
 .restaurar-parametro {
   width: 100%;
   margin-top: 8px;
-  color: #dbeafe;
+  color: var(--ivory-100);
   background: rgba(15, 23, 42, .72);
-  border: 1px solid rgba(125, 211, 252, .2);
+  border: 1px solid rgba(126, 182, 138, .2);
 }
 
 .tarjeta-modos {
@@ -283,7 +283,7 @@ body {
 .atajos-dicotica,
 .resumen-configuracion {
   padding: 14px;
-  border: 1px solid rgba(125, 211, 252, .16);
+  border: 1px solid rgba(126, 182, 138, .16);
   border-radius: 16px;
   background: rgba(2, 6, 23, .34);
 }
@@ -322,7 +322,7 @@ body {
   align-items: center;
   gap: 8px;
   padding: 10px;
-  border: 1px solid rgba(125, 211, 252, .12);
+  border: 1px solid rgba(126, 182, 138, .12);
   border-radius: 14px;
   background: rgba(2, 6, 23, .28);
 }
@@ -335,7 +335,7 @@ body {
 .condiciones-secciones fieldset {
   min-width: 0;
   padding: 16px;
-  border: 1px solid rgba(125, 211, 252, .16);
+  border: 1px solid rgba(126, 182, 138, .16);
   border-radius: 18px;
   background: rgba(2, 6, 23, .36);
 }
@@ -411,7 +411,7 @@ input:focus-visible,
 select:focus-visible,
 textarea:focus-visible,
 summary:focus-visible {
-  outline: 3px solid rgba(56, 189, 248, .75);
+  outline: 3px solid rgba(82, 152, 102, .75);
   outline-offset: 3px;
 }
 
@@ -425,7 +425,7 @@ input,
 textarea,
 select {
   width: 100%;
-  border: 1px solid rgba(125, 211, 252, .18);
+  border: 1px solid rgba(126, 182, 138, .18);
   border-radius: 14px;
   background: rgba(15, 23, 42, .88);
   color: var(--text);
@@ -454,7 +454,7 @@ label {
 
 .opciones-profesional {
   margin-top: 16px;
-  border-top: 1px solid rgba(125, 211, 252, .12);
+  border-top: 1px solid rgba(126, 182, 138, .12);
   padding-top: 14px;
 }
 
@@ -476,7 +476,7 @@ label {
 
 .condiciones-secciones legend {
   padding: 0 8px;
-  color: #7dd3fc;
+  color: var(--celtic-300);
   font-weight: 900;
   text-transform: uppercase;
   letter-spacing: .12em;
@@ -493,7 +493,7 @@ label {
   width: 22px;
   height: 22px;
   margin-left: 6px;
-  border: 1px solid rgba(125, 211, 252, .35);
+  border: 1px solid rgba(126, 182, 138, .35);
   border-radius: 999px;
   color: #bae6fd;
   font-size: .8rem;
@@ -511,9 +511,9 @@ label {
   width: min(280px, 70vw);
   transform: translateX(-50%);
   padding: 10px 12px;
-  border: 1px solid rgba(125, 211, 252, .25);
+  border: 1px solid rgba(126, 182, 138, .25);
   border-radius: 12px;
-  color: #e0f2fe;
+  color: var(--ivory-50);
   font-size: .82rem;
   font-weight: 600;
   line-height: 1.35;
@@ -525,9 +525,9 @@ label {
   min-height: 44px;
   margin-top: 14px;
   padding: 12px;
-  border: 1px solid rgba(125, 211, 252, .12);
+  border: 1px solid rgba(126, 182, 138, .12);
   border-radius: 14px;
-  color: #dbeafe;
+  color: var(--ivory-100);
   background: rgba(2, 6, 23, .28);
 }
 
@@ -545,7 +545,7 @@ label {
 
 .corpus-resumen-item {
   padding: 12px;
-  border: 1px solid rgba(125, 211, 252, .14);
+  border: 1px solid rgba(126, 182, 138, .14);
   border-radius: 14px;
   background: rgba(15, 23, 42, .45);
 }
@@ -558,7 +558,7 @@ label {
 
 .tabla-wrap {
   overflow: auto;
-  border: 1px solid rgba(125, 211, 252, .16);
+  border: 1px solid rgba(126, 182, 138, .16);
   border-radius: 18px;
   margin-top: 12px;
 }
@@ -573,19 +573,19 @@ table {
 th,
 td {
   padding: 10px 12px;
-  border-bottom: 1px solid rgba(125, 211, 252, .12);
+  border-bottom: 1px solid rgba(126, 182, 138, .12);
   text-align: left;
 }
 
 th {
-  color: #7dd3fc;
+  color: var(--celtic-300);
   font-size: .75rem;
   letter-spacing: .12em;
   text-transform: uppercase;
 }
 
 td {
-  color: #dbeafe;
+  color: var(--ivory-100);
   font-size: .9rem;
 }
 
@@ -612,7 +612,7 @@ td {
 
 .hud-dicotica div {
   padding: 12px;
-  border: 1px solid rgba(125, 211, 252, .16);
+  border: 1px solid rgba(126, 182, 138, .16);
   border-radius: 16px;
   background: rgba(15, 23, 42, .55);
 }
@@ -629,14 +629,14 @@ td {
   place-items: center;
   font-size: 8rem;
   font-weight: 900;
-  color: #f8fbff;
+  color: var(--white-1000);
 }
 
 .retroalimentacion-ensayo {
   width: min(720px, 100%);
   margin: -40px auto 18px;
   padding: 18px;
-  border: 1px solid rgba(125, 211, 252, .18);
+  border: 1px solid rgba(126, 182, 138, .18);
   border-radius: 22px;
   background: rgba(2, 6, 23, .78);
   text-align: left;
@@ -669,9 +669,9 @@ td {
   min-height: 94px;
   margin-bottom: 16px;
   padding: 18px;
-  border: 1px solid rgba(125, 211, 252, .18);
+  border: 1px solid rgba(126, 182, 138, .18);
   border-radius: 22px;
-  color: #dbeafe;
+  color: var(--ivory-100);
   background: rgba(2, 6, 23, .42);
 }
 
@@ -755,7 +755,7 @@ td {
 
 .descanso-bloque {
   padding: 24px;
-  border: 1px solid rgba(125, 211, 252, .2);
+  border: 1px solid rgba(126, 182, 138, .2);
   border-radius: 20px;
   background: rgba(2, 132, 199, .12);
 }
@@ -780,14 +780,14 @@ td {
 
 .bloque-resumen-card {
   padding: 14px;
-  border: 1px solid rgba(125, 211, 252, .16);
+  border: 1px solid rgba(126, 182, 138, .16);
   border-radius: 16px;
   background: rgba(15, 23, 42, .55);
 }
 
 .bloque-resumen-card h4 {
   margin: 0 0 10px;
-  color: #7dd3fc;
+  color: var(--celtic-300);
 }
 
 .bloque-resumen-card dl {
@@ -825,7 +825,7 @@ td {
 
 .graficas-dicotica article {
   padding: 14px;
-  border: 1px solid rgba(125, 211, 252, .16);
+  border: 1px solid rgba(126, 182, 138, .16);
   border-radius: 18px;
   background: rgba(15, 23, 42, .52);
 }
@@ -842,7 +842,7 @@ td {
   display: block;
   height: 12px;
   border-radius: 999px;
-  background: linear-gradient(90deg, var(--cyan), rgba(34, 211, 238, .45));
+  background: linear-gradient(90deg, var(--cyan), rgba(82, 152, 102, .45));
 }
 
 .modal-dicotica {

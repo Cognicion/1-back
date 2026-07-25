@@ -6,7 +6,7 @@ body {
   min-height: 100vh;
   margin: 0;
   overflow-x: hidden;
-  background: #07111f;
+  background: var(--black-950);
   color: #e8eef8;
   font-family: Inter, "Segoe UI", Arial, sans-serif;
 }
@@ -17,7 +17,7 @@ body {
   z-index: 10;
   width: 236px;
   padding: 22px 14px;
-  border-right: 1px solid rgba(125, 211, 252, 0.14);
+  border-right: 1px solid rgba(126, 182, 138, 0.14);
   background: rgba(2, 6, 23, 0.92);
   display: grid;
   align-content: start;
@@ -35,9 +35,9 @@ body {
 
 .voice-sidebar a:hover,
 .voice-sidebar a.activo {
-  color: #e0f2fe;
-  border-color: rgba(56, 189, 248, 0.28);
-  background: rgba(14, 165, 233, 0.12);
+  color: var(--ivory-50);
+  border-color: rgba(82, 152, 102, 0.28);
+  background: rgba(52, 122, 77, 0.12);
 }
 
 .voice-shell {
@@ -48,7 +48,7 @@ body {
 
 .voice-header,
 .voice-step-panel {
-  border: 1px solid rgba(125, 211, 252, 0.16);
+  border: 1px solid rgba(126, 182, 138, 0.16);
   border-radius: 14px;
   background: rgba(15, 23, 42, 0.82);
   box-shadow: 0 24px 70px rgba(0, 0, 0, 0.24);
@@ -64,7 +64,7 @@ body {
 
 .voice-kicker,
 .voice-panel-heading span {
-  color: #7dd3fc;
+  color: var(--celtic-300);
   font-size: 0.72rem;
   font-weight: 900;
   letter-spacing: 0.14em;
@@ -95,7 +95,7 @@ body {
   align-items: center;
   gap: 10px;
   padding: 10px;
-  border: 1px solid rgba(125, 211, 252, 0.14);
+  border: 1px solid rgba(126, 182, 138, 0.14);
   border-radius: 8px;
   background: rgba(2, 6, 23, 0.24);
 }
@@ -112,7 +112,7 @@ body {
   align-items: center;
   min-height: 24px;
   padding: 3px 8px;
-  border: 1px solid rgba(34, 211, 238, 0.24);
+  border: 1px solid rgba(82, 152, 102, 0.24);
   border-radius: 999px;
   color: #cffafe;
   background: rgba(8, 145, 178, 0.15);
@@ -141,7 +141,7 @@ body {
   gap: 8px;
   margin: 10px 0 14px;
   padding: 10px;
-  border: 1px solid rgba(125, 211, 252, 0.14);
+  border: 1px solid rgba(126, 182, 138, 0.14);
   border-radius: 8px;
   background: rgba(2, 6, 23, 0.2);
 }
@@ -159,7 +159,7 @@ body {
 }
 
 .voice-block-list-header {
-  color: #dbeafe;
+  color: var(--ivory-100);
   font-size: 0.82rem;
 }
 
@@ -175,7 +175,7 @@ body {
 
 .voice-block-child {
   margin-left: 22px;
-  border-left: 3px solid rgba(34, 211, 238, 0.48);
+  border-left: 3px solid rgba(82, 152, 102, 0.48);
   background: rgba(8, 47, 73, 0.18);
 }
 
@@ -244,7 +244,7 @@ body {
   overflow-x: auto;
   margin: 14px 0;
   padding: 10px;
-  border: 1px solid rgba(125, 211, 252, 0.12);
+  border: 1px solid rgba(126, 182, 138, 0.12);
   border-radius: 12px;
   background: rgba(2, 6, 23, 0.86);
 }
@@ -254,10 +254,10 @@ body {
 .voice-card button,
 .voice-review-card button,
 .boton-secundario {
-  border: 1px solid rgba(125, 211, 252, 0.2);
+  border: 1px solid rgba(126, 182, 138, 0.2);
   border-radius: 8px;
   background: rgba(8, 47, 73, 0.78);
-  color: #e0f2fe;
+  color: var(--ivory-50);
   padding: 10px 14px;
   font-weight: 900;
   cursor: pointer;
@@ -271,7 +271,7 @@ body {
 
 .voice-steps button.activo {
   color: #04111f;
-  background: #67e8f9;
+  background: var(--celtic-200);
 }
 
 .voice-save-bar {
@@ -284,7 +284,7 @@ body {
   gap: 12px;
   margin: 0 0 14px;
   padding: 10px 12px;
-  border: 1px solid rgba(125, 211, 252, 0.18);
+  border: 1px solid rgba(126, 182, 138, 0.18);
   border-radius: 10px;
   background: rgba(2, 6, 23, 0.9);
   box-shadow: 0 12px 32px rgba(0, 0, 0, 0.18);
@@ -292,7 +292,7 @@ body {
 
 .voice-save-bar span {
   display: block;
-  color: #7dd3fc;
+  color: var(--celtic-300);
   font-size: 0.72rem;
   font-weight: 900;
   letter-spacing: 0.08em;
@@ -360,7 +360,7 @@ body {
 .voice-review-card select {
   width: 100%;
   min-width: 0;
-  border: 1px solid rgba(125, 211, 252, 0.18);
+  border: 1px solid rgba(126, 182, 138, 0.18);
   border-radius: 8px;
   background: rgba(2, 6, 23, 0.72);
   color: #f8fafc;
@@ -380,7 +380,7 @@ body {
 .voice-transfer-options {
   margin-top: 14px;
   padding: 14px;
-  border: 1px solid rgba(125, 211, 252, 0.13);
+  border: 1px solid rgba(126, 182, 138, 0.13);
   border-radius: 10px;
   background: rgba(2, 6, 23, 0.42);
 }
@@ -402,13 +402,13 @@ body {
   min-width: 0;
   margin: 0;
   padding: 12px;
-  border: 1px solid rgba(125, 211, 252, 0.14);
+  border: 1px solid rgba(126, 182, 138, 0.14);
   border-radius: 10px;
 }
 
 .voice-fieldset legend {
   padding: 0 6px;
-  color: #e0f2fe;
+  color: var(--ivory-50);
   font-weight: 900;
 }
 
@@ -435,7 +435,7 @@ body {
 }
 
 .voice-observation-groups details {
-  border: 1px solid rgba(125, 211, 252, 0.14);
+  border: 1px solid rgba(126, 182, 138, 0.14);
   border-radius: 10px;
   background: rgba(15, 23, 42, 0.48);
 }
@@ -443,7 +443,7 @@ body {
 .voice-observation-groups summary {
   cursor: pointer;
   padding: 12px;
-  color: #e0f2fe;
+  color: var(--ivory-50);
   font-weight: 900;
 }
 
@@ -466,7 +466,7 @@ body {
   gap: 10px;
   align-items: end;
   padding: 10px;
-  border: 1px solid rgba(125, 211, 252, 0.12);
+  border: 1px solid rgba(126, 182, 138, 0.12);
   border-radius: 8px;
   background: rgba(2, 6, 23, 0.34);
 }
@@ -484,7 +484,7 @@ body {
 .voice-quote-item textarea {
   width: 100%;
   min-width: 0;
-  border: 1px solid rgba(125, 211, 252, 0.18);
+  border: 1px solid rgba(126, 182, 138, 0.18);
   border-radius: 8px;
   background: rgba(2, 6, 23, 0.72);
   color: #f8fafc;
@@ -496,14 +496,14 @@ body {
   display: grid;
   gap: 8px;
   padding: 10px;
-  border: 1px solid rgba(125, 211, 252, 0.12);
+  border: 1px solid rgba(126, 182, 138, 0.12);
   border-radius: 8px;
   background: rgba(15, 23, 42, 0.48);
 }
 
 .voice-quote-item p {
   margin: 0;
-  color: #e0f2fe;
+  color: var(--ivory-50);
 }
 
 .voice-checkbox-item {
@@ -511,7 +511,7 @@ body {
   gap: 6px;
   min-width: 0;
   padding: 9px;
-  border: 1px solid rgba(125, 211, 252, 0.1);
+  border: 1px solid rgba(126, 182, 138, 0.1);
   border-radius: 8px;
   background: rgba(2, 6, 23, 0.38);
 }
@@ -520,14 +520,14 @@ body {
   display: flex;
   gap: 8px;
   align-items: center;
-  color: #dbeafe;
+  color: var(--ivory-100);
   font-weight: 800;
 }
 
 .voice-checkbox-item select {
   width: 100%;
   min-width: 0;
-  border: 1px solid rgba(125, 211, 252, 0.18);
+  border: 1px solid rgba(126, 182, 138, 0.18);
   border-radius: 8px;
   background: rgba(2, 6, 23, 0.72);
   color: #f8fafc;
@@ -552,7 +552,7 @@ body {
 }
 
 .voice-session-recovery {
-  border-color: rgba(56, 189, 248, 0.42);
+  border-color: rgba(82, 152, 102, 0.42);
   background: rgba(8, 47, 73, 0.36);
 }
 
@@ -581,7 +581,7 @@ body {
   width: 16px;
   height: 16px;
   border-radius: 50%;
-  border: 2px solid rgba(125, 211, 252, 0.75);
+  border: 2px solid rgba(126, 182, 138, 0.75);
   background: rgba(2, 6, 23, 0.9);
 }
 
@@ -590,16 +590,16 @@ body {
   position: absolute;
   left: 18px;
   top: 11px;
-  color: #22d3ee;
+  color: var(--celtic-400);
   font-weight: 900;
   opacity: 0;
 }
 
 .voice-session-option.activo,
 .voice-session-option[aria-selected="true"] {
-  border-color: #22d3ee;
+  border-color: var(--celtic-400);
   background: rgba(8, 145, 178, 0.2);
-  box-shadow: 0 0 0 1px rgba(34, 211, 238, 0.28);
+  box-shadow: 0 0 0 1px rgba(82, 152, 102, 0.28);
 }
 
 .voice-session-option.activo::after,
@@ -608,7 +608,7 @@ body {
 }
 
 .voice-session-option:focus-visible {
-  outline: 3px solid rgba(34, 211, 238, 0.7);
+  outline: 3px solid rgba(82, 152, 102, 0.7);
   outline-offset: 3px;
 }
 
@@ -641,7 +641,7 @@ body {
 }
 
 .voice-session-duplicate {
-  background: rgba(125, 211, 252, 0.14);
+  background: rgba(126, 182, 138, 0.14);
   color: #a5f3fc;
 }
 
@@ -667,15 +667,15 @@ body {
   height: 16px;
   margin-top: 2px;
   border-radius: 50%;
-  border: 2px solid rgba(125, 211, 252, 0.75);
+  border: 2px solid rgba(126, 182, 138, 0.75);
   background: rgba(2, 6, 23, 0.9);
 }
 
 .voice-session-option.activo .voice-session-radio,
 .voice-session-option[aria-selected="true"] .voice-session-radio {
-  border-color: #22d3ee;
+  border-color: var(--celtic-400);
   box-shadow: inset 0 0 0 4px rgba(2, 6, 23, 0.95);
-  background: #22d3ee;
+  background: var(--celtic-400);
 }
 
 .voice-session-content {
@@ -726,7 +726,7 @@ body {
 }
 
 .voice-session-duplicate-note {
-  border: 1px solid rgba(125, 211, 252, 0.28);
+  border: 1px solid rgba(126, 182, 138, 0.28);
   border-radius: 8px;
   background: rgba(8, 47, 73, 0.24);
   color: #bae6fd;
@@ -749,7 +749,7 @@ body {
 
 .voice-session-selection-summary {
   margin-top: 10px;
-  border: 1px dashed rgba(125, 211, 252, 0.36);
+  border: 1px dashed rgba(126, 182, 138, 0.36);
   border-radius: 10px;
   padding: 10px 12px;
   color: var(--muted);
@@ -818,8 +818,8 @@ body {
 .voice-actions button:first-child,
 #btnGenerarNotaVoz,
 #btnTransferirNotaVoz {
-  border-color: rgba(34, 211, 238, 0.55);
-  background: linear-gradient(135deg, #38bdf8, #22d3ee);
+  border-color: rgba(82, 152, 102, 0.55);
+  background: linear-gradient(135deg, var(--celtic-400), var(--celtic-400));
   color: #02111f;
 }
 
@@ -850,7 +850,7 @@ body {
   gap: 8px;
   align-items: center;
   padding: 8px;
-  border: 1px solid rgba(125, 211, 252, 0.14);
+  border: 1px solid rgba(126, 182, 138, 0.14);
   border-radius: 10px;
   background: rgba(2, 6, 23, 0.94);
 }
@@ -876,7 +876,7 @@ body {
 .voice-segment,
 .voice-warning-item,
 .voice-review-card {
-  border: 1px solid rgba(125, 211, 252, 0.14);
+  border: 1px solid rgba(126, 182, 138, 0.14);
   border-radius: 10px;
   background: rgba(15, 23, 42, 0.62);
   padding: 12px;
@@ -895,12 +895,12 @@ body {
 }
 
 .voice-segment strong {
-  color: #e0f2fe;
+  color: var(--ivory-50);
 }
 
 .voice-segment p {
   margin: 0;
-  color: #dbeafe;
+  color: var(--ivory-100);
   line-height: 1.55;
 }
 
@@ -925,7 +925,7 @@ body {
 }
 
 .voice-segment-clinician {
-  border-left: 3px solid #38bdf8;
+  border-left: 3px solid var(--celtic-400);
 }
 
 .voice-segment-patient {
@@ -942,7 +942,7 @@ body {
 
 .voice-segment small,
 .voice-review-card small {
-  color: #7dd3fc;
+  color: var(--celtic-300);
   font-weight: 800;
 }
 
@@ -961,7 +961,7 @@ body {
 .voice-review-card h3,
 .voice-warnings h3 {
   margin: 0;
-  color: #e0f2fe;
+  color: var(--ivory-50);
 }
 
 .voice-review-card textarea {
@@ -996,7 +996,7 @@ body {
     position: static;
     width: 100%;
     border-right: 0;
-    border-bottom: 1px solid rgba(125, 211, 252, 0.14);
+    border-bottom: 1px solid rgba(126, 182, 138, 0.14);
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 

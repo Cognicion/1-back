@@ -29,6 +29,52 @@
   border-color: var(--action-primary-bg);
 }
 
+.btn,
+.btn--primary,
+.btn--secondary,
+.btn--ghost,
+.btn--critical,
+.btn--icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.btn--primary {
+  color: var(--action-primary-text);
+  background: var(--action-primary-bg);
+  border-color: var(--action-primary-bg);
+}
+
+.btn--secondary {
+  color: var(--text-primary);
+  background: transparent;
+  border-color: var(--border-normal);
+}
+
+.btn--ghost {
+  color: var(--text-secondary);
+  background: transparent;
+  border-color: transparent;
+  border-inline-start-color: var(--accent-primary);
+}
+
+.btn--critical {
+  color: var(--text-primary);
+  background: transparent;
+  border-color: #7f2929;
+}
+
+.btn--icon {
+  width: 38px;
+  padding-inline: 0;
+}
+
+.btn--sm { min-height: 32px; padding: 7px 10px; font-size: 0.82rem; }
+.btn--md { min-height: 38px; }
+.btn--lg { min-height: 46px; padding-inline: 18px; }
+
 :where(.btn-secundario, .btn-secondary, .secondary-button, .ghost-button, .boton-secundario, .action-secondary) {
   color: var(--action-secondary-text);
   background: transparent;

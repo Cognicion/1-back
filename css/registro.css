@@ -5,8 +5,8 @@ body {
   color: #f8fafc;
   background:
     radial-gradient(circle at 18% 12%, rgba(78,163,255,0.22), transparent 30%),
-    radial-gradient(circle at 80% 80%, rgba(0,212,255,0.12), transparent 26%),
-    linear-gradient(135deg, #030711, #07111f);
+    radial-gradient(circle at 80% 80%, rgba(82,152,102,0.12), transparent 26%),
+    linear-gradient(135deg, var(--black-1000), var(--black-950));
 }
 
 .auth-shell {
@@ -33,7 +33,7 @@ body {
 }
 
 .auth-copy span {
-  color: #7dd3fc;
+  color: var(--celtic-300);
   letter-spacing: .22em;
   font-size: 12px;
   font-weight: 800;
@@ -63,10 +63,10 @@ body {
 
 .beneficios div {
   padding: 10px 13px;
-  border: 1px solid rgba(125,211,252,.22);
+  border: 1px solid rgba(126,182,138,.22);
   border-radius: 999px;
   background: rgba(15,23,42,.58);
-  color: #dbeafe;
+  color: var(--ivory-100);
   font-size: 13px;
   font-weight: 800;
 }
@@ -96,7 +96,7 @@ body {
   gap: 8px;
   margin: 18px 0 4px;
   padding: 5px;
-  border: 1px solid rgba(125,211,252,.18);
+  border: 1px solid rgba(126,182,138,.18);
   border-radius: 16px;
   background: rgba(2,6,23,.56);
 }
@@ -113,9 +113,9 @@ body {
 
 .tipo-cuenta-registro button.activo {
   color: #f8fafc;
-  border-color: rgba(56,189,248,.34);
-  background: linear-gradient(135deg, rgba(37,99,235,.7), rgba(0,212,255,.42));
-  box-shadow: 0 0 22px rgba(14,165,233,.16);
+  border-color: rgba(82,152,102,.34);
+  background: linear-gradient(135deg, rgba(37,99,235,.7), rgba(82,152,102,.42));
+  box-shadow: 0 0 22px rgba(52,122,77,.16);
 }
 
 .tipo-cuenta-registro button:hover {
@@ -152,14 +152,14 @@ button {
   padding: 14px;
   border: none;
   border-radius: 14px;
-  background: linear-gradient(135deg, #2563eb, #00d4ff);
+  background: linear-gradient(135deg, var(--celtic-600), var(--celtic-300));
   color: white;
   font-weight: bold;
   cursor: pointer;
 }
 
 button:hover {
-  box-shadow: 0 0 28px rgba(0,212,255,0.28);
+  box-shadow: 0 0 28px rgba(82,152,102,0.28);
 }
 
 .btn-secundario {
@@ -190,7 +190,7 @@ button:hover {
 }
 
 .checkbox-legal a {
-  color: #38bdf8;
+  color: var(--celtic-400);
   text-decoration: none;
 }
 

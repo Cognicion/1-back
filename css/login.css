@@ -8,7 +8,7 @@ body {
     min-height: 100vh;
     background:
         radial-gradient(circle at top left, rgba(43,125,233,0.22), transparent 32%),
-        radial-gradient(circle at bottom right, rgba(0,212,255,0.12), transparent 30%),
+        radial-gradient(circle at bottom right, rgba(82,152,102,0.12), transparent 30%),
         linear-gradient(135deg, #05070a, #0b0f17 45%, #0d2230);
     color: #f8fafc;
     display: flex;
@@ -41,7 +41,7 @@ body {
     grid-template-columns: 1.1fr 0.9fr;
     border: 1px solid rgba(148, 163, 184, 0.20);
     box-shadow:
-        0 0 40px rgba(37, 99, 235, 0.20),
+        0 0 40px rgba(36, 95, 59, 0.20),
         0 30px 80px rgba(0,0,0,0.65);
     backdrop-filter: blur(18px);
 }
@@ -77,7 +77,7 @@ body {
 }
 
 .frase p {
-    color: #dbeafe;
+    color: var(--ivory-100);
     line-height: 1.6;
     font-size: 15px;
 }
@@ -129,7 +129,7 @@ body {
     display: block;
     margin-bottom: 8px;
     font-weight: 700;
-    color: #dbeafe;
+    color: var(--ivory-100);
     font-size: 14px;
 }
 
@@ -149,14 +149,14 @@ body {
 }
 
 .campo input:focus {
-    border-color: #38bdf8;
-    box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.12);
+    border-color: var(--celtic-400);
+    box-shadow: 0 0 0 4px rgba(82, 152, 102, 0.12);
 }
 
 .boton-login {
     width: 100%;
     border: none;
-    background: linear-gradient(135deg, #2563eb, #00b4d8);
+    background: linear-gradient(135deg, var(--celtic-600), var(--celtic-400));
     color: white;
     padding: 16px;
     border-radius: 15px;
@@ -164,13 +164,13 @@ body {
     font-weight: 800;
     cursor: pointer;
     margin-top: 8px;
-    box-shadow: 0 0 22px rgba(37, 99, 235, 0.45);
+    box-shadow: 0 0 22px rgba(36, 95, 59, 0.45);
     transition: 0.2s;
 }
 
 .boton-login:hover {
     transform: translateY(-2px);
-    box-shadow: 0 0 28px rgba(56, 189, 248, 0.55);
+    box-shadow: 0 0 28px rgba(82, 152, 102, 0.55);
 }
 
 .enlaces {
@@ -182,7 +182,7 @@ body {
 }
 
 .enlaces a {
-    color: #38bdf8;
+    color: var(--celtic-400);
     text-decoration: none;
     font-weight: 700;
 }
@@ -195,7 +195,7 @@ body {
     margin-top: 30px;
     padding: 18px;
     background: rgba(15, 23, 42, 0.95);
-    border: 1px solid rgba(56, 189, 248, 0.15);
+    border: 1px solid rgba(82, 152, 102, 0.15);
     border-radius: 16px;
     color: #cbd5e1;
     font-size: 13px;
@@ -246,14 +246,14 @@ body {
 }
 
 .link-secundario {
-    color: #38bdf8;
+    color: var(--celtic-400);
     font-size: 14px;
 }
 
 .link-principal {
     color: white;
-    background: rgba(56, 189, 248, 0.12);
-    border: 1px solid rgba(56, 189, 248, 0.28);
+    background: rgba(82, 152, 102, 0.12);
+    border: 1px solid rgba(82, 152, 102, 0.28);
     padding: 10px 18px;
     border-radius: 999px;
     font-size: 14px;
@@ -261,7 +261,7 @@ body {
 }
 
 .link-principal:hover {
-    background: rgba(56, 189, 248, 0.22);
+    background: rgba(82, 152, 102, 0.22);
 }
 
 .link-secundario:hover {

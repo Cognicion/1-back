@@ -1,13 +1,13 @@
 :root {
-  --calc-bg: #030815;
+  --calc-bg: var(--black-1000);
   --calc-surface: rgba(9, 17, 34, .82);
   --calc-surface-strong: rgba(14, 26, 49, .92);
-  --calc-border: rgba(125, 211, 252, .22);
-  --calc-border-strong: rgba(34, 211, 238, .58);
+  --calc-border: rgba(126, 182, 138, .22);
+  --calc-border-strong: rgba(82, 152, 102, .58);
   --calc-text: #eef6ff;
   --calc-muted: #9fb1ca;
-  --calc-cyan: #22d3ee;
-  --calc-blue: #2563eb;
+  --calc-cyan: var(--celtic-400);
+  --calc-blue: var(--celtic-600);
   --calc-warn: #facc15;
   --calc-shadow: 0 30px 90px rgba(0, 0, 0, .38);
   color-scheme: dark;
@@ -19,10 +19,10 @@ body {
   margin: 0;
   min-height: 100vh;
   background:
-    linear-gradient(rgba(125, 211, 252, .035) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(125, 211, 252, .035) 1px, transparent 1px),
-    radial-gradient(circle at 12% 0%, rgba(34, 211, 238, .18), transparent 34%),
-    radial-gradient(circle at 86% 12%, rgba(37, 99, 235, .16), transparent 38%),
+    linear-gradient(rgba(126, 182, 138, .035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(126, 182, 138, .035) 1px, transparent 1px),
+    radial-gradient(circle at 12% 0%, rgba(82, 152, 102, .18), transparent 34%),
+    radial-gradient(circle at 86% 12%, rgba(36, 95, 59, .16), transparent 38%),
     var(--calc-bg);
   background-size: 44px 44px, 44px 44px, auto, auto, auto;
   color: var(--calc-text);
@@ -42,7 +42,7 @@ body {
   width: 34vw;
   aspect-ratio: 1;
   border-radius: 999px;
-  background: radial-gradient(circle, rgba(34, 211, 238, .13), transparent 65%);
+  background: radial-gradient(circle, rgba(82, 152, 102, .13), transparent 65%);
   filter: blur(16px);
   animation: calcPulse 12s ease-in-out infinite alternate;
 }
@@ -65,7 +65,7 @@ body {
   justify-content: space-between;
   gap: 18px;
   padding: 18px clamp(18px, 4vw, 54px);
-  border-bottom: 1px solid rgba(125, 211, 252, .14);
+  border-bottom: 1px solid rgba(126, 182, 138, .14);
   background: rgba(2, 6, 23, .78);
   backdrop-filter: blur(18px);
 }
@@ -85,7 +85,7 @@ body {
   border-radius: 16px;
   padding: 8px;
   background: rgba(8, 16, 31, .7);
-  box-shadow: 0 0 30px rgba(34, 211, 238, .12);
+  box-shadow: 0 0 30px rgba(82, 152, 102, .12);
 }
 
 .calc-ped-brand strong {
@@ -142,7 +142,7 @@ body {
 
 .calc-ped-kicker,
 .calc-ped-eyebrow {
-  color: #7dd3fc;
+  color: var(--celtic-300);
   font-size: .76rem;
   font-weight: 900;
   letter-spacing: .22em;
@@ -213,7 +213,7 @@ body {
 .calc-ped-form textarea {
   width: 100%;
   min-height: 46px;
-  border: 1px solid rgba(125, 211, 252, .22);
+  border: 1px solid rgba(126, 182, 138, .22);
   border-radius: 14px;
   padding: 0 14px;
   color: var(--calc-text);
@@ -232,7 +232,7 @@ body {
 .calc-ped-form select:focus,
 .calc-ped-form textarea:focus {
   border-color: var(--calc-border-strong);
-  box-shadow: 0 0 0 3px rgba(34, 211, 238, .13);
+  box-shadow: 0 0 0 3px rgba(82, 152, 102, .13);
 }
 
 .calc-ped-categorias {
@@ -247,7 +247,7 @@ body {
 .calc-ped-card button {
   border: 1px solid var(--calc-border);
   border-radius: 999px;
-  color: #dbeafe;
+  color: var(--ivory-100);
   background: rgba(15, 23, 42, .68);
   cursor: pointer;
   font-weight: 850;
@@ -265,8 +265,8 @@ body {
 .calc-ped-chip:focus-visible,
 .calc-ped-card button:hover,
 .calc-ped-card button:focus-visible {
-  border-color: rgba(34, 211, 238, .62);
-  background: linear-gradient(135deg, rgba(37, 99, 235, .55), rgba(34, 211, 238, .28));
+  border-color: rgba(82, 152, 102, .62);
+  background: linear-gradient(135deg, rgba(36, 95, 59, .55), rgba(82, 152, 102, .28));
   transform: translateY(-1px);
   outline: none;
 }
@@ -279,7 +279,7 @@ body {
 .calc-ped-card {
   width: 100%;
   text-align: left;
-  border: 1px solid rgba(125, 211, 252, .16);
+  border: 1px solid rgba(126, 182, 138, .16);
   border-radius: 18px;
   padding: 14px;
   color: inherit;
@@ -291,8 +291,8 @@ body {
 .calc-ped-card:hover,
 .calc-ped-card:focus-visible,
 .calc-ped-card.activa {
-  border-color: rgba(34, 211, 238, .58);
-  background: rgba(14, 165, 233, .12);
+  border-color: rgba(82, 152, 102, .58);
+  background: rgba(52, 122, 77, .12);
   transform: translateY(-1px);
   outline: none;
 }
@@ -357,7 +357,7 @@ body {
 }
 
 .calc-ped-panel {
-  border: 1px solid rgba(125, 211, 252, .18);
+  border: 1px solid rgba(126, 182, 138, .18);
   border-radius: 22px;
   padding: 18px;
   background: rgba(15, 23, 42, .54);
@@ -365,7 +365,7 @@ body {
 
 .calc-ped-panel h3 {
   margin: 0 0 12px;
-  color: #e0f2fe;
+  color: var(--ivory-50);
 }
 
 .calc-ped-result-grid {
@@ -377,7 +377,7 @@ body {
   display: grid;
   grid-template-columns: 1fr auto;
   gap: 12px;
-  border-bottom: 1px solid rgba(125, 211, 252, .12);
+  border-bottom: 1px solid rgba(126, 182, 138, .12);
   padding: 9px 0;
 }
 
@@ -387,11 +387,11 @@ body {
 
 .calc-ped-result-row strong {
   text-align: right;
-  color: #f8fbff;
+  color: var(--white-1000);
 }
 
 .calc-ped-interpretacion {
-  color: #dbeafe;
+  color: var(--ivory-100);
   line-height: 1.7;
 }
 
@@ -417,7 +417,7 @@ body {
   position: relative;
   height: 18px;
   border-radius: 999px;
-  background: linear-gradient(90deg, #60a5fa, #22d3ee 40%, #bef264 50%, #22d3ee 60%, #60a5fa);
+  background: linear-gradient(90deg, var(--celtic-300), var(--celtic-400) 40%, #bef264 50%, var(--celtic-400) 60%, var(--celtic-300));
   box-shadow: inset 0 0 14px rgba(2, 6, 23, .38);
 }
 
@@ -426,10 +426,10 @@ body {
   top: 50%;
   width: 22px;
   height: 22px;
-  border: 3px solid #f8fbff;
+  border: 3px solid var(--white-1000);
   border-radius: 999px;
-  background: #0ea5e9;
-  box-shadow: 0 0 22px rgba(34, 211, 238, .75);
+  background: var(--celtic-500);
+  box-shadow: 0 0 22px rgba(82, 152, 102, .75);
   transform: translate(-50%, -50%);
 }
 
@@ -443,14 +443,14 @@ body {
 .percentil-svg {
   width: 100%;
   min-height: 130px;
-  border: 1px solid rgba(125, 211, 252, .12);
+  border: 1px solid rgba(126, 182, 138, .12);
   border-radius: 18px;
   background: rgba(2, 6, 23, .24);
 }
 
 .calc-ped-empty {
   color: var(--calc-muted);
-  border: 1px dashed rgba(125, 211, 252, .26);
+  border: 1px dashed rgba(126, 182, 138, .26);
   border-radius: 18px;
   padding: 18px;
 }

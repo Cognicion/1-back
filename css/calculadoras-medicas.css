@@ -22,8 +22,8 @@
   width: 320px;
   height: 320px;
   border-radius: 999px;
-  border: 1px solid rgba(125, 211, 252, .18);
-  box-shadow: inset 0 0 80px rgba(34, 211, 238, .08);
+  border: 1px solid rgba(126, 182, 138, .18);
+  box-shadow: inset 0 0 80px rgba(82, 152, 102, .08);
   pointer-events: none;
 }
 
@@ -38,7 +38,7 @@
 .calc-med-primary,
 .calc-med-secondary,
 .calc-med-link-button {
-  border: 1px solid rgba(125, 211, 252, .24);
+  border: 1px solid rgba(126, 182, 138, .24);
   border-radius: 999px;
   min-height: 42px;
   padding: 0 16px;
@@ -52,8 +52,8 @@
 .calc-med-primary,
 .calc-med-hero-actions button:first-child {
   color: #02111f;
-  border-color: rgba(34, 211, 238, .42);
-  background: linear-gradient(135deg, #38bdf8, #22d3ee);
+  border-color: rgba(82, 152, 102, .42);
+  background: linear-gradient(135deg, var(--celtic-400), var(--celtic-400));
 }
 
 .calc-med-hero-actions button:hover,
@@ -61,8 +61,8 @@
 .calc-med-secondary:hover,
 .calc-med-link-button:hover {
   transform: translateY(-1px);
-  border-color: rgba(34, 211, 238, .62);
-  box-shadow: 0 18px 44px rgba(34, 211, 238, .14);
+  border-color: rgba(82, 152, 102, .62);
+  box-shadow: 0 18px 44px rgba(82, 152, 102, .14);
 }
 
 .calc-med-toolbar {
@@ -70,7 +70,7 @@
   grid-template-columns: minmax(220px, 2fr) repeat(3, minmax(150px, 1fr));
   gap: 12px;
   padding: 16px;
-  border: 1px solid rgba(125, 211, 252, .18);
+  border: 1px solid rgba(126, 182, 138, .18);
   border-radius: 24px;
   background: linear-gradient(145deg, rgba(15, 23, 42, .74), rgba(2, 6, 23, .52));
   backdrop-filter: blur(18px);
@@ -94,10 +94,10 @@
 .calc-med-patient-link select,
 .calc-med-patient-link input {
   width: 100%;
-  border: 1px solid rgba(125, 211, 252, .22);
+  border: 1px solid rgba(126, 182, 138, .22);
   border-radius: 14px;
   background: rgba(15, 23, 42, .72);
-  color: #f8fbff;
+  color: var(--white-1000);
   padding: 11px 12px;
   outline: none;
 }
@@ -109,8 +109,8 @@
 .calc-med-field textarea:focus,
 .calc-med-patient-link select:focus,
 .calc-med-patient-link input:focus {
-  border-color: rgba(34, 211, 238, .75);
-  box-shadow: 0 0 0 4px rgba(34, 211, 238, .1);
+  border-color: rgba(82, 152, 102, .75);
+  box-shadow: 0 0 0 4px rgba(82, 152, 102, .1);
 }
 
 .calc-med-layout {
@@ -123,7 +123,7 @@
 .calc-med-sidebar,
 .calc-med-panel,
 .calc-med-modal-card {
-  border: 1px solid rgba(125, 211, 252, .2);
+  border: 1px solid rgba(126, 182, 138, .2);
   border-radius: 28px;
   background: linear-gradient(145deg, rgba(15, 23, 42, .86), rgba(2, 6, 23, .66));
   box-shadow: 0 28px 90px rgba(0, 0, 0, .32), inset 0 1px 0 rgba(255, 255, 255, .05);
@@ -153,7 +153,7 @@
 }
 
 .calc-med-list-head span {
-  color: #7dd3fc;
+  color: var(--celtic-300);
   font-size: .78rem;
   font-weight: 900;
 }
@@ -172,7 +172,7 @@
 .calc-med-chip,
 .calc-med-card {
   text-align: left;
-  border: 1px solid rgba(125, 211, 252, .17);
+  border: 1px solid rgba(126, 182, 138, .17);
   border-radius: 18px;
   background: rgba(15, 23, 42, .54);
   color: #eaf8ff;
@@ -194,7 +194,7 @@
 .calc-med-card.activa,
 .calc-med-chip:hover {
   transform: translateY(-1px);
-  border-color: rgba(34, 211, 238, .5);
+  border-color: rgba(82, 152, 102, .5);
   background: rgba(8, 47, 73, .34);
 }
 
@@ -219,10 +219,10 @@
 .calc-med-badge {
   display: inline-flex;
   align-items: center;
-  border: 1px solid rgba(34, 211, 238, .26);
+  border: 1px solid rgba(82, 152, 102, .26);
   border-radius: 999px;
   padding: 4px 8px;
-  color: #7dd3fc;
+  color: var(--celtic-300);
   font-size: .68rem;
   font-weight: 900;
   letter-spacing: .08em;
@@ -239,7 +239,7 @@
   justify-content: space-between;
   gap: 18px;
   align-items: flex-start;
-  border-bottom: 1px solid rgba(125, 211, 252, .14);
+  border-bottom: 1px solid rgba(126, 182, 138, .14);
   padding-bottom: 18px;
 }
 
@@ -261,7 +261,7 @@
   border-radius: 999px;
   display: grid;
   place-items: center;
-  border: 1px solid rgba(125, 211, 252, .2);
+  border: 1px solid rgba(126, 182, 138, .2);
   background: rgba(15, 23, 42, .72);
   color: #fbbf24;
   cursor: pointer;
@@ -273,7 +273,7 @@
 .calc-med-explain,
 .calc-med-history-inline {
   margin-top: 18px;
-  border: 1px solid rgba(125, 211, 252, .16);
+  border: 1px solid rgba(126, 182, 138, .16);
   border-radius: 22px;
   background: rgba(15, 23, 42, .42);
   padding: 16px;
@@ -298,7 +298,7 @@
 }
 
 .calc-med-field small {
-  color: #7dd3fc;
+  color: var(--celtic-300);
 }
 
 .calc-med-field-help {
@@ -311,9 +311,9 @@
   width: 22px;
   height: 22px;
   border-radius: 999px;
-  border: 1px solid rgba(125, 211, 252, .22);
+  border: 1px solid rgba(126, 182, 138, .22);
   background: rgba(8, 47, 73, .46);
-  color: #7dd3fc;
+  color: var(--celtic-300);
   cursor: help;
   font-size: .8rem;
 }
@@ -328,7 +328,7 @@
 .calc-med-result {
   display: grid;
   gap: 12px;
-  border-color: rgba(34, 211, 238, .26);
+  border-color: rgba(82, 152, 102, .26);
 }
 
 .calc-med-result-main {
@@ -340,7 +340,7 @@
 
 .calc-med-result-value {
   border-radius: 20px;
-  border: 1px solid rgba(34, 211, 238, .3);
+  border: 1px solid rgba(82, 152, 102, .3);
   background: rgba(8, 47, 73, .34);
   padding: 18px;
 }
@@ -398,14 +398,14 @@
 
 .calc-med-table th,
 .calc-med-table td {
-  border-bottom: 1px solid rgba(125, 211, 252, .12);
+  border-bottom: 1px solid rgba(126, 182, 138, .12);
   padding: 10px;
   text-align: left;
   vertical-align: top;
 }
 
 .calc-med-table th {
-  color: #7dd3fc;
+  color: var(--celtic-300);
   font-size: .74rem;
   letter-spacing: .1em;
   text-transform: uppercase;
@@ -437,14 +437,14 @@
   width: 38px;
   height: 38px;
   border-radius: 999px;
-  border: 1px solid rgba(125, 211, 252, .25);
+  border: 1px solid rgba(126, 182, 138, .25);
   color: #eaf8ff;
   background: rgba(15, 23, 42, .72);
   cursor: pointer;
 }
 
 .calc-med-empty {
-  border: 1px dashed rgba(125, 211, 252, .25);
+  border: 1px dashed rgba(126, 182, 138, .25);
   border-radius: 18px;
   padding: 18px;
   color: #a8b8ce;

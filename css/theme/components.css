@@ -89,9 +89,10 @@
 }
 
 .cognicion-theme-selector button[aria-pressed="true"] {
-  border-color: var(--surface-inverse);
-  color: var(--text-inverse);
-  background: var(--surface-inverse);
+  border-color: var(--accent-primary);
+  color: var(--text-primary);
+  background: var(--accent-soft);
+  box-shadow: inset 0 -2px 0 var(--accent-primary);
 }
 
 html[data-theme] :is(.card, .tarjeta, .module-card, .panel-lab, .seccion, .contenido, .hero, .workspace-section, .panel, .bloque, .nota-card, .paciente-card, .escala-card, .config-card, .feature-card, .philosophy, .science-visual) {
@@ -112,4 +113,54 @@ html[data-theme] :is(.nav, header, .topbar, .navbar, .navbar-medico) {
   background: var(--page-bg);
   background-image: none;
   box-shadow: none;
+}
+
+html[data-theme] :is(.btn-primario, .btn-primary, .primary-button, .boton-principal, .available-action, .action-primary) {
+  color: var(--action-primary-text) !important;
+  background: var(--action-primary-bg) !important;
+  border-color: var(--action-primary-bg) !important;
+  box-shadow: none !important;
+}
+
+html[data-theme] :is(.btn-primario, .btn-primary, .primary-button, .boton-principal, .available-action, .action-primary):hover:not(:disabled) {
+  color: var(--action-primary-text) !important;
+  background: var(--action-primary-hover) !important;
+  border-color: var(--accent-hover) !important;
+}
+
+html[data-theme] :is(.btn-secundario, .btn-secondary, .secondary-button, .ghost-button, .boton-secundario, .action-secondary) {
+  color: var(--text-primary) !important;
+  background: transparent !important;
+  border-color: var(--border-normal) !important;
+  box-shadow: none !important;
+}
+
+html[data-theme] :is(.btn-secundario, .btn-secondary, .secondary-button, .ghost-button, .boton-secundario, .action-secondary):hover:not(:disabled) {
+  color: var(--text-primary) !important;
+  background: var(--accent-soft) !important;
+  border-color: var(--accent-primary) !important;
+}
+
+html[data-theme] :is(input, select, textarea, .input, .select):focus {
+  border-color: var(--accent-primary) !important;
+  box-shadow: 0 0 0 3px var(--accent-soft) !important;
+}
+
+html[data-theme] :is(.section-kicker, .section-label, .kicker, .config-kicker, .eyebrow, .section-number, .panel-label, .module-label) {
+  color: var(--accent-primary) !important;
+}
+
+html[data-theme] :is(.badge, .pill, .chip, .status, .tag, .calc-med-badge) {
+  border-color: var(--border-normal);
+  color: var(--text-secondary);
+  background: var(--accent-soft);
+}
+
+html[data-theme] :is(.active, .activo, .selected, .seleccionado, .tab.activo, button[aria-pressed="true"]) {
+  border-color: var(--accent-primary) !important;
+  box-shadow: inset 0 -2px 0 var(--accent-primary);
+}
+
+html[data-theme] :is(.loading, .cargando, [aria-busy="true"]) {
+  color: var(--accent-primary);
 }

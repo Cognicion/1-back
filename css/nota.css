@@ -2,8 +2,8 @@ body{
     margin:0;
     background:
         radial-gradient(circle at top, rgba(78,163,255,0.22), transparent 32%),
-        radial-gradient(circle at bottom right, rgba(0,212,255,0.13), transparent 28%),
-        linear-gradient(135deg, #050608, #080b10 50%, #0e1520);
+        radial-gradient(circle at bottom right, rgba(82,152,102,0.13), transparent 28%),
+        linear-gradient(135deg, #050608, #080b10 50%, var(--black-900));
     color:#f8fafc;
     font-family:Arial, Helvetica, sans-serif;
     padding:88px 32px 32px;
@@ -25,8 +25,8 @@ body{
     height:84px;
     object-fit:contain;
     border-radius:16px;
-    border:1px solid rgba(125,211,252,0.28);
-    box-shadow:0 0 22px rgba(56,189,248,0.18);
+    border:1px solid rgba(126,182,138,0.28);
+    box-shadow:0 0 22px rgba(82,152,102,0.18);
     margin-bottom:14px;
 }
 
@@ -120,9 +120,9 @@ textarea{
     margin: 0;
     padding: 7px 10px;
     border-radius: 999px;
-    border: 1px solid rgba(125, 211, 252, 0.28);
+    border: 1px solid rgba(126, 182, 138, 0.28);
     background: rgba(15, 23, 42, 0.92);
-    color: #dbeafe;
+    color: var(--ivory-100);
     font-size: 12px;
     line-height: 1;
 }
@@ -149,9 +149,9 @@ textarea{
     overflow: auto;
     padding: 18px;
     border-radius: 18px;
-    border: 1px solid rgba(56,189,248,0.28);
+    border: 1px solid rgba(82,152,102,0.28);
     background: rgba(8,12,20,0.98);
-    box-shadow: 0 22px 70px rgba(0,0,0,0.44), 0 0 26px rgba(56,189,248,0.12);
+    box-shadow: 0 22px 70px rgba(0,0,0,0.44), 0 0 26px rgba(82,152,102,0.12);
 }
 
 .panel-catalogo-pronosticos-header {
@@ -204,7 +204,7 @@ textarea{
     touch-action: none;
     border-radius: 999px;
     background:
-        linear-gradient(90deg, transparent, rgba(56,189,248,0.62), transparent),
+        linear-gradient(90deg, transparent, rgba(82,152,102,0.62), transparent),
         rgba(15,23,42,0.82);
     opacity: 0.55;
     transition: opacity 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
@@ -219,15 +219,15 @@ textarea{
     height: 4px;
     border-radius: 999px;
     transform: translate(-50%, -50%);
-    background: rgba(125, 211, 252, 0.92);
-    box-shadow: 0 0 12px rgba(56,189,248,0.42);
+    background: rgba(126, 182, 138, 0.92);
+    box-shadow: 0 0 12px rgba(82,152,102,0.42);
 }
 
 .separador-vertical-nota:hover,
 .ajustando-seccion-nota .separador-vertical-nota {
     opacity: 1;
     transform: scaleY(1.12);
-    box-shadow: 0 0 20px rgba(56,189,248,0.18);
+    box-shadow: 0 0 20px rgba(82,152,102,0.18);
 }
 
 .ajustando-seccion-nota {
@@ -239,14 +239,14 @@ button{
     padding:10px 14px;
     border:none;
     border-radius:14px;
-    background:linear-gradient(135deg, #2563eb, #00d4ff);
+    background:linear-gradient(135deg, var(--celtic-600), var(--celtic-300));
     color:white;
     cursor:pointer;
     font-weight:700;
 }
 
 button:hover{
-    box-shadow:0 0 28px rgba(0,212,255,0.28);
+    box-shadow:0 0 28px rgba(82,152,102,0.28);
 }
 
 .oculto {
@@ -263,7 +263,7 @@ button:hover{
 
 .version-nota h4 {
     margin: 0 0 12px;
-    color: #7dd3fc;
+    color: var(--celtic-300);
 }
 
 .version-nota p {
@@ -276,12 +276,12 @@ button:hover{
 }
 
 .bloque-pediatria-nota {
-    border: 1px solid rgba(125, 211, 252, 0.24);
+    border: 1px solid rgba(126, 182, 138, 0.24);
     border-radius: 20px;
     padding: 18px;
     margin: 18px 0 24px;
     background:
-        radial-gradient(circle at top right, rgba(34, 211, 238, 0.12), transparent 38%),
+        radial-gradient(circle at top right, rgba(82, 152, 102, 0.12), transparent 38%),
         rgba(15, 23, 42, 0.56);
     box-shadow: 0 16px 38px rgba(0, 0, 0, 0.22);
 }
@@ -300,7 +300,7 @@ button:hover{
 
 .pediatria-nota-header span {
     display: block;
-    color: #7dd3fc;
+    color: var(--celtic-300);
     font-weight: 900;
     letter-spacing: 0.08em;
     text-transform: uppercase;
@@ -375,7 +375,7 @@ button:hover{
 
 .boton-secundario {
     background: rgba(15, 18, 25, 0.88);
-    border: 1px solid rgba(56, 189, 248, 0.28);
+    border: 1px solid rgba(82, 152, 102, 0.28);
     color: #eaf4ff;
     padding: 10px 16px;
     border-radius: 999px;
@@ -384,7 +384,7 @@ button:hover{
 }
 
 .boton-secundario:hover {
-    background: rgba(56, 189, 248, 0.15);
+    background: rgba(82, 152, 102, 0.15);
 }
 
 .acciones-historial-nota {
@@ -415,11 +415,11 @@ button:hover{
     gap: 14px;
     padding: 18px;
     border-radius: 22px;
-    border: 1px solid rgba(125, 211, 252, 0.28);
+    border: 1px solid rgba(126, 182, 138, 0.28);
     background:
-        radial-gradient(circle at top left, rgba(56, 189, 248, 0.14), transparent 34%),
+        radial-gradient(circle at top left, rgba(82, 152, 102, 0.14), transparent 34%),
         rgba(8, 12, 20, 0.96);
-    box-shadow: 0 24px 70px rgba(0, 0, 0, 0.48), 0 0 30px rgba(56, 189, 248, 0.12);
+    box-shadow: 0 24px 70px rgba(0, 0, 0, 0.48), 0 0 30px rgba(82, 152, 102, 0.12);
     transform: translateX(-28px) scale(0.98);
     opacity: 0;
     pointer-events: none;
@@ -454,16 +454,16 @@ button:hover{
 .lista-calculadoras-nota a {
     display: block;
     padding: 9px 11px;
-    border: 1px solid rgba(125, 211, 252, 0.2);
+    border: 1px solid rgba(126, 182, 138, 0.2);
     border-radius: 8px;
-    color: #dbeafe;
+    color: var(--ivory-100);
     background: rgba(15, 23, 42, 0.66);
     text-decoration: none;
     transition: border-color 0.14s ease, background-color 0.14s ease;
 }
 
 .lista-calculadoras-nota a:hover {
-    border-color: rgba(125, 211, 252, 0.62);
+    border-color: rgba(126, 182, 138, 0.62);
     background: rgba(7, 89, 232, 0.24);
 }
 
@@ -473,7 +473,7 @@ button:hover{
     min-height: 64px;
     padding: 14px;
     overflow: auto;
-    border: 1px solid rgba(125, 211, 252, 0.28);
+    border: 1px solid rgba(126, 182, 138, 0.28);
     border-radius: 12px;
     color: #f8fafc;
     background: rgba(2, 6, 23, 0.86);
@@ -492,7 +492,7 @@ button:hover{
 .calculadora-teclado button {
     min-height: 46px;
     margin: 0;
-    border: 1px solid rgba(125, 211, 252, 0.2);
+    border: 1px solid rgba(126, 182, 138, 0.2);
     border-radius: 8px;
     color: #eaf4ff;
     background: rgba(15, 23, 42, 0.82);
@@ -501,7 +501,7 @@ button:hover{
 }
 
 .calculadora-teclado button:hover {
-    border-color: rgba(125, 211, 252, 0.62);
+    border-color: rgba(126, 182, 138, 0.62);
     background: rgba(7, 89, 232, 0.28);
 }
 
@@ -589,13 +589,13 @@ button:hover{
     border-radius: 14px;
     border: 1px solid rgba(148,163,184,0.18);
     background: rgba(15,23,42,0.62);
-    color: #dbeafe;
+    color: var(--ivory-100);
     text-align: left;
 }
 
 .apunte-lista-item.activo {
-    border-color: rgba(56,189,248,0.48);
-    background: rgba(56,189,248,0.14);
+    border-color: rgba(82,152,102,0.48);
+    background: rgba(82,152,102,0.14);
 }
 
 .apunte-lista-item strong {
@@ -666,15 +666,15 @@ button:hover{
 }
 
 .nota-flotante-nota {
-    border: 1px solid rgba(56,189,248,0.24);
+    border: 1px solid rgba(82,152,102,0.24);
     border-radius: 16px;
     background: rgba(8,12,20,0.78);
     overflow: hidden;
 }
 
 .nota-flotante-nota.activa {
-    border-color: rgba(56,189,248,0.72);
-    box-shadow: 0 0 22px rgba(56,189,248,0.14);
+    border-color: rgba(82,152,102,0.72);
+    box-shadow: 0 0 22px rgba(82,152,102,0.14);
 }
 
 .nota-flotante-nota summary {
@@ -722,12 +722,12 @@ button:hover{
 }
 
 .nota-flotante-costado {
-    border: 1px solid rgba(56,189,248,0.3);
+    border: 1px solid rgba(82,152,102,0.3);
     border-radius: 18px;
     background:
-        radial-gradient(circle at top right, rgba(56,189,248,0.12), transparent 38%),
+        radial-gradient(circle at top right, rgba(82,152,102,0.12), transparent 38%),
         rgba(8,12,20,0.94);
-    box-shadow: 0 18px 46px rgba(0,0,0,0.32), 0 0 24px rgba(56,189,248,0.08);
+    box-shadow: 0 18px 46px rgba(0,0,0,0.32), 0 0 24px rgba(82,152,102,0.08);
     overflow: hidden;
     transform: translateX(12px);
     opacity: 0;
@@ -758,7 +758,7 @@ button:hover{
 }
 
 .nota-flotante-costado-header small {
-    color: #7dd3fc;
+    color: var(--celtic-300);
     font-size: 11px;
     font-weight: 900;
     text-transform: uppercase;
@@ -773,7 +773,7 @@ button:hover{
 
 .nota-flotante-costado-cuerpo p {
     margin: 0;
-    color: #dbeafe;
+    color: var(--ivory-100);
     line-height: 1.5;
     max-height: 220px;
     overflow: auto;
@@ -801,25 +801,25 @@ button:hover{
 
 .boton-pdf {
     margin-left: 10px;
-    background: linear-gradient(135deg, #2563eb, #00b4d8);
+    background: linear-gradient(135deg, var(--celtic-600), var(--celtic-400));
     color: white;
 }
 
 .boton-word-fray {
     margin-left: 10px;
-    background: linear-gradient(135deg, #0f766e, #22d3ee);
+    background: linear-gradient(135deg, #0f766e, var(--celtic-400));
     color: white;
-    border: 1px solid rgba(125,211,252,0.28);
-    box-shadow: 0 0 22px rgba(34,211,238,0.14);
+    border: 1px solid rgba(126,182,138,0.28);
+    box-shadow: 0 0 22px rgba(82,152,102,0.14);
 }
 
 .selector-formato-nota {
     margin: 24px 0;
     padding: 18px;
     border-radius: 20px;
-    border: 1px solid rgba(56,189,248,0.24);
+    border: 1px solid rgba(82,152,102,0.24);
     background:
-        radial-gradient(circle at top right, rgba(56,189,248,0.12), transparent 36%),
+        radial-gradient(circle at top right, rgba(82,152,102,0.12), transparent 36%),
         rgba(8,12,20,0.55);
 }
 
@@ -847,9 +847,9 @@ button:hover{
     margin: 0 0 22px;
     padding: 0;
     border-radius: 22px;
-    border: 1px solid rgba(56,189,248,0.24);
+    border: 1px solid rgba(82,152,102,0.24);
     background:
-        radial-gradient(circle at top right, rgba(56,189,248,0.13), transparent 38%),
+        radial-gradient(circle at top right, rgba(82,152,102,0.13), transparent 38%),
         rgba(8,12,20,0.72);
     box-shadow: inset 0 1px 0 rgba(255,255,255,0.04), 0 18px 50px rgba(0,0,0,0.22);
     overflow: hidden;
@@ -884,16 +884,16 @@ button:hover{
     flex-shrink: 0;
     padding: 7px 11px;
     border-radius: 999px;
-    border: 1px solid rgba(56,189,248,0.32);
-    color: #7dd3fc;
-    background: rgba(56,189,248,0.08);
+    border: 1px solid rgba(82,152,102,0.32);
+    color: var(--celtic-300);
+    background: rgba(82,152,102,0.08);
     font-size: 12px;
     font-weight: 900;
 }
 
 .panel-escala-nota[open] .indicador-panel-escala {
-    color: #020617;
-    background: #7dd3fc;
+    color: var(--black-1000);
+    background: var(--celtic-300);
 }
 
 .panel-escala-nota[open] .indicador-panel-escala::before {
@@ -915,7 +915,7 @@ button:hover{
 
 .panel-escala-header h3 {
     margin: 0 0 6px;
-    color: #e0f2fe;
+    color: var(--ivory-50);
 }
 
 .panel-escala-header p,
@@ -931,7 +931,7 @@ button:hover{
 }
 
 .descripcion-escala-nota strong {
-    color: #7dd3fc;
+    color: var(--celtic-300);
 }
 
 .items-escala-nota {
@@ -972,8 +972,8 @@ button:hover{
     margin-top: 12px;
     padding: 12px;
     border-radius: 14px;
-    border: 1px solid rgba(56,189,248,0.18);
-    background: rgba(14, 165, 233, 0.08);
+    border: 1px solid rgba(82,152,102,0.18);
+    background: rgba(52, 122, 77, 0.08);
 }
 
 .consideraciones-escala-nota ul {
@@ -1002,7 +1002,7 @@ button:hover{
     height: 100%;
     padding: 22px;
     overflow-y: auto;
-    border-left: 1px solid rgba(56,189,248,0.28);
+    border-left: 1px solid rgba(82,152,102,0.28);
     background: rgba(3, 7, 18, 0.94);
     box-shadow: -24px 0 80px rgba(8, 47, 73, 0.45);
     backdrop-filter: blur(18px);
@@ -1017,7 +1017,7 @@ button:hover{
 }
 
 .panel-escalas-previas-header span {
-    color: #38bdf8;
+    color: var(--celtic-400);
     font-size: 11px;
     letter-spacing: 0.16em;
     text-transform: uppercase;
@@ -1025,7 +1025,7 @@ button:hover{
 
 .panel-escalas-previas-header h3 {
     margin: 4px 0 0;
-    color: #e0f2fe;
+    color: var(--ivory-50);
 }
 
 .panel-escalas-previas-header button {
@@ -1068,7 +1068,7 @@ button:hover{
 }
 
 .escala-previa-card summary span {
-    color: #7dd3fc;
+    color: var(--celtic-300);
     font-size: 12px;
 }
 
@@ -1109,7 +1109,7 @@ button:hover{
     margin: 22px 0 30px;
     padding: 18px;
     border-radius: 24px;
-    border: 1px solid rgba(125,211,252,0.20);
+    border: 1px solid rgba(126,182,138,0.20);
     background:
         linear-gradient(145deg, rgba(15,23,42,0.78), rgba(8,12,20,0.72)),
         rgba(15,18,25,0.78);
@@ -1132,7 +1132,7 @@ button:hover{
     margin: 0;
     cursor: pointer;
     padding: 15px 16px;
-    color: #dbeafe;
+    color: var(--ivory-100);
     font-weight: 900;
     letter-spacing: 0.02em;
     background: rgba(15,23,42,0.62);
@@ -1141,7 +1141,7 @@ button:hover{
 .observacion-seccion h3,
 .firmas-extra[open] summary {
     border-bottom: 1px solid rgba(148,163,184,0.16);
-    color: #7dd3fc;
+    color: var(--celtic-300);
 }
 
 .observacion-clinica {
@@ -1200,7 +1200,7 @@ button:hover{
 .campo-vital {
     padding: 8px 9px;
     border-radius: 12px;
-    border: 1px solid rgba(56,189,248,0.16);
+    border: 1px solid rgba(82,152,102,0.16);
     background: rgba(15,23,42,0.42);
     font-size: 12px;
 }
@@ -1218,7 +1218,7 @@ button:hover{
     margin-bottom: 18px;
     padding: 16px;
     border-radius: 18px;
-    border: 1px solid rgba(125,211,252,0.18);
+    border: 1px solid rgba(126,182,138,0.18);
     background: rgba(2,6,23,0.44);
 }
 
@@ -1232,7 +1232,7 @@ button:hover{
 
 .tabla-diagnosticos h3 {
     margin: 0;
-    color: #e0f2fe;
+    color: var(--ivory-50);
 }
 
 .diagnosticos-word-lista table {
@@ -1248,7 +1248,7 @@ button:hover{
 }
 
 .diagnosticos-word-lista th {
-    color: #7dd3fc;
+    color: var(--celtic-300);
     font-size: 12px;
     text-transform: uppercase;
     letter-spacing: 0.08em;
@@ -1266,7 +1266,7 @@ button:hover{
     display: grid;
     gap: 10px;
     padding: 14px;
-    border: 1px solid rgba(56, 189, 248, 0.18);
+    border: 1px solid rgba(82, 152, 102, 0.18);
     border-radius: 14px;
     background: rgba(15, 23, 42, 0.58);
 }
@@ -1518,11 +1518,11 @@ button:hover{
 }
 
 .resultado-cie10:hover {
-  background: rgba(56, 189, 248, 0.12);
+  background: rgba(82, 152, 102, 0.12);
 }
 
 .resultado-cie10 strong {
-  color: #38bdf8;
+  color: var(--celtic-400);
 }
 
 .diagnostico-manual-badge {
@@ -1531,9 +1531,9 @@ button:hover{
   margin-left: 6px;
   padding: 2px 7px;
   border-radius: 999px;
-  border: 1px solid rgba(125, 211, 252, 0.32);
-  background: rgba(56, 189, 248, 0.10);
-  color: #7dd3fc;
+  border: 1px solid rgba(126, 182, 138, 0.32);
+  background: rgba(82, 152, 102, 0.10);
+  color: var(--celtic-300);
   font-size: 10px;
   font-style: normal;
   font-weight: 800;
@@ -1557,7 +1557,7 @@ button:hover{
   margin: 14px 0;
   padding: 14px;
   border-radius: 16px;
-  border: 1px solid rgba(56,189,248,0.22);
+  border: 1px solid rgba(82,152,102,0.22);
   background: rgba(8,12,20,0.68);
 }
 
@@ -1577,7 +1577,7 @@ button:hover{
   gap: 12px;
   padding: 14px;
   border-radius: 16px;
-  border: 1px solid rgba(56,189,248,0.18);
+  border: 1px solid rgba(82,152,102,0.18);
   background: rgba(15,23,42,0.58);
 }
 
@@ -1614,7 +1614,7 @@ button:hover{
   display: grid;
   gap: 0;
   margin: 14px 0 20px;
-  border: 1px solid rgba(56,189,248,0.24);
+  border: 1px solid rgba(82,152,102,0.24);
   border-radius: 18px;
   background: rgba(8,12,20,0.62);
   overflow: hidden;
@@ -1630,7 +1630,7 @@ button:hover{
 }
 
 .diagnosticos-editables-head {
-  color: #7dd3fc;
+  color: var(--celtic-300);
   font-size: 12px;
   font-weight: 900;
   letter-spacing: 0.12em;
@@ -1669,13 +1669,13 @@ button:hover{
   gap: 4px;
   margin: -6px 0 18px;
   padding: 12px 14px;
-  border: 1px solid rgba(56, 189, 248, 0.22);
+  border: 1px solid rgba(82, 152, 102, 0.22);
   border-radius: 14px;
   background: rgba(15, 23, 42, 0.62);
 }
 
 .encabezado-paciente-nota span {
-  color: #7dd3fc;
+  color: var(--celtic-300);
   font-size: 11px;
   font-weight: 900;
   letter-spacing: 0.12em;
@@ -1700,8 +1700,8 @@ button:hover{
   width: 14px;
   height: 14px;
   margin-top: -7px;
-  border: 2px solid rgba(125, 211, 252, 0.35);
-  border-top-color: #7dd3fc;
+  border: 2px solid rgba(126, 182, 138, 0.35);
+  border-top-color: var(--celtic-300);
   border-radius: 50%;
   animation: giro-sincronizar-dx 0.7s linear infinite;
 }
@@ -1712,8 +1712,8 @@ button:hover{
 
 .boton-catalogo-manual {
   background: rgba(15, 23, 42, 0.92);
-  border: 1px solid rgba(125, 211, 252, 0.34);
-  color: #7dd3fc;
+  border: 1px solid rgba(126, 182, 138, 0.34);
+  color: var(--celtic-300);
 }
 
 @media (max-width: 800px) {
@@ -1794,7 +1794,7 @@ button:hover{
   width: 100%;
   margin: 8px 0 0;
   padding: 10px 12px;
-  border: 1px solid rgba(125, 211, 252, 0.22);
+  border: 1px solid rgba(126, 182, 138, 0.22);
   border-radius: 12px;
   color: #e5eefb;
   background: rgba(15, 23, 42, 0.74);
@@ -1802,8 +1802,8 @@ button:hover{
 }
 
 .item-escala-nota input[type="number"]:focus {
-  border-color: rgba(56, 189, 248, 0.65);
-  box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.12);
+  border-color: rgba(82, 152, 102, 0.65);
+  box-shadow: 0 0 0 3px rgba(52, 122, 77, 0.12);
 }
 
 .item-escala-nota small {
@@ -1829,7 +1829,7 @@ button:hover{
   gap: 8px;
   margin: 10px 0 12px;
   padding: 6px;
-  border: 1px solid rgba(125, 211, 252, 0.16);
+  border: 1px solid rgba(126, 182, 138, 0.16);
   border-radius: 16px;
   background: rgba(15, 23, 42, 0.55);
 }
@@ -1839,13 +1839,13 @@ button:hover{
   flex: 1 1 180px;
   margin: 0;
   background: rgba(15, 23, 42, 0.78);
-  border: 1px solid rgba(125, 211, 252, 0.18);
+  border: 1px solid rgba(126, 182, 138, 0.18);
 }
 
 .modo-escala-nota button.activo {
   color: #02111f;
-  background: linear-gradient(135deg, #7dd3fc, #22d3ee);
-  box-shadow: 0 12px 26px rgba(34, 211, 238, 0.14);
+  background: linear-gradient(135deg, var(--celtic-300), var(--celtic-400));
+  box-shadow: 0 12px 26px rgba(82, 152, 102, 0.14);
 }
 
 .modo-escala-nota button:disabled {
@@ -1858,14 +1858,14 @@ button:hover{
 .estimulo-escala-nota {
   margin-top: 10px;
   padding: 12px;
-  border: 1px solid rgba(125, 211, 252, 0.16);
+  border: 1px solid rgba(126, 182, 138, 0.16);
   border-radius: 14px;
   background: rgba(8, 47, 73, 0.2);
 }
 
 .guia-escala-nota strong,
 .temporizador-escala-nota span {
-  color: #7dd3fc;
+  color: var(--celtic-300);
 }
 
 .guia-escala-nota ol {
@@ -1909,8 +1909,8 @@ button:hover{
 }
 
 .campo-actualizado-automatico {
-  outline: 2px solid rgba(34, 211, 238, 0.85);
-  box-shadow: 0 0 0 4px rgba(34, 211, 238, 0.18);
+  outline: 2px solid rgba(82, 152, 102, 0.85);
+  box-shadow: 0 0 0 4px rgba(82, 152, 102, 0.18);
   transition: box-shadow 180ms ease, outline-color 180ms ease;
 }
 

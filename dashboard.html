@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>COGNICIÓN | Dashboard médico</title>
 <link rel="icon" type="image/png" href="assets/favicon-cognicion-128.png">
-<link rel="stylesheet" href="css/apariencia.css">
 
 <style>
 :root {
@@ -1259,9 +1258,10 @@ footer {
 <script>
   (function () {
     try {
-      var modo = localStorage.getItem("cognicion.apariencia.modoInterfaz");
-      document.documentElement.dataset.theme = modo === "light" ? "light" : "dark";
-      document.documentElement.style.colorScheme = modo === "light" ? "light" : "dark";
+      var modo = localStorage.getItem("cognicion.apariencia.modoInterfaz") || "";
+      var claro = modo.indexOf("light") === 0;
+      document.documentElement.dataset.theme = claro ? "light" : "dark";
+      document.documentElement.style.colorScheme = claro ? "light" : "dark";
     } catch (error) {
       document.documentElement.dataset.theme = "dark";
     }

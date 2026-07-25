@@ -1,7 +1,8 @@
 (function () {
   var modo = "dark";
   try {
-    modo = localStorage.getItem("cognicion.apariencia.modoInterfaz") === "light" ? "light" : "dark";
+    var guardado = localStorage.getItem("cognicion.apariencia.modoInterfaz") || "";
+    modo = guardado.indexOf("light") === 0 ? "light" : "dark";
   } catch (error) {
     modo = "dark";
   }

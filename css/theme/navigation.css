@@ -28,7 +28,7 @@
   left: 0;
   height: 1px;
   content: "";
-  background: var(--surface-inverse);
+  background: var(--accent-primary);
   transform: scaleX(0);
   transform-origin: left;
   transition: transform var(--transition-fast) var(--ease-standard);

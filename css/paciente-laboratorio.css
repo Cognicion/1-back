@@ -14,10 +14,10 @@
   display: inline-flex;
   gap: 6px;
   padding: 5px;
-  border: 1px solid rgba(56, 189, 248, 0.22);
+  border: 1px solid rgba(82, 152, 102, 0.22);
   border-radius: 999px;
   background: rgba(2, 8, 23, 0.62);
-  box-shadow: inset 0 0 22px rgba(14, 165, 233, 0.08);
+  box-shadow: inset 0 0 22px rgba(52, 122, 77, 0.08);
 }
 
 .vista-datos-btn {
@@ -43,8 +43,8 @@
 
 .vista-datos-btn.activo {
   color: #06111f;
-  background: linear-gradient(135deg, #38bdf8, #22d3ee);
-  box-shadow: 0 10px 26px rgba(34, 211, 238, 0.22);
+  background: linear-gradient(135deg, var(--celtic-400), var(--celtic-400));
+  box-shadow: 0 10px 26px rgba(82, 152, 102, 0.22);
 }
 
 .paciente-lab-view.oculto,
@@ -59,12 +59,12 @@
 .lab-paciente-shell {
   position: relative;
   overflow: hidden;
-  border: 1px solid rgba(56, 189, 248, 0.22);
+  border: 1px solid rgba(82, 152, 102, 0.22);
   border-radius: 26px;
   padding: 22px;
   background:
-    radial-gradient(circle at 18% 14%, rgba(34, 211, 238, 0.16), transparent 28%),
-    radial-gradient(circle at 88% 26%, rgba(59, 130, 246, 0.14), transparent 30%),
+    radial-gradient(circle at 18% 14%, rgba(82, 152, 102, 0.16), transparent 28%),
+    radial-gradient(circle at 88% 26%, rgba(52, 122, 77, 0.14), transparent 30%),
     linear-gradient(135deg, rgba(4, 12, 26, 0.98), rgba(5, 21, 41, 0.92));
   box-shadow: inset 0 0 60px rgba(8, 145, 178, 0.08), 0 24px 80px rgba(0, 0, 0, 0.26);
 }
@@ -75,8 +75,8 @@
   inset: 0;
   pointer-events: none;
   background-image:
-    linear-gradient(rgba(125, 211, 252, 0.055) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(125, 211, 252, 0.055) 1px, transparent 1px);
+    linear-gradient(rgba(126, 182, 138, 0.055) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(126, 182, 138, 0.055) 1px, transparent 1px);
   background-size: 42px 42px;
   mask-image: radial-gradient(circle at 50% 38%, black, transparent 78%);
 }
@@ -131,7 +131,7 @@
 .lab-card span,
 .lab-paciente-id span {
   display: block;
-  color: #67e8f9;
+  color: var(--celtic-200);
   font-size: 11px;
   font-weight: 900;
   letter-spacing: 0.18em;
@@ -140,7 +140,7 @@
 
 .lab-paciente-top h3 {
   margin: 7px 0;
-  color: #f8fbff;
+  color: var(--white-1000);
   font-size: clamp(28px, 4vw, 52px);
   line-height: 1;
 }
@@ -156,7 +156,7 @@
   min-width: 180px;
   padding: 16px;
   border-radius: 18px;
-  border: 1px solid rgba(56, 189, 248, 0.18);
+  border: 1px solid rgba(82, 152, 102, 0.18);
   background: rgba(2, 8, 23, 0.58);
   align-self: start;
 }
@@ -164,7 +164,7 @@
 .lab-paciente-id strong {
   display: block;
   margin-top: 8px;
-  color: #e0f2fe;
+  color: var(--ivory-50);
   font-size: 18px;
 }
 
@@ -179,17 +179,17 @@
   position: relative;
   min-height: 520px;
   overflow: hidden;
-  border: 1px solid rgba(56, 189, 248, 0.18);
+  border: 1px solid rgba(82, 152, 102, 0.18);
   border-radius: 24px;
-  background: radial-gradient(circle at 50% 35%, rgba(14, 165, 233, 0.16), rgba(2, 6, 23, 0.78) 64%);
+  background: radial-gradient(circle at 50% 35%, rgba(52, 122, 77, 0.16), rgba(2, 6, 23, 0.78) 64%);
 }
 
 .lab-humano-bg {
   position: absolute;
   inset: 8%;
   border-radius: 50%;
-  border: 1px solid rgba(34, 211, 238, 0.15);
-  box-shadow: 0 0 80px rgba(34, 211, 238, 0.08), inset 0 0 60px rgba(34, 211, 238, 0.08);
+  border: 1px solid rgba(82, 152, 102, 0.15);
+  box-shadow: 0 0 80px rgba(82, 152, 102, 0.08), inset 0 0 60px rgba(82, 152, 102, 0.08);
 }
 
 .lab-humano-modelo {
@@ -197,7 +197,7 @@
   inset: 44px 0 34px;
   width: min(270px, 50%);
   margin: auto;
-  filter: drop-shadow(0 0 22px rgba(34, 211, 238, 0.34));
+  filter: drop-shadow(0 0 22px rgba(82, 152, 102, 0.34));
 }
 
 .lab-cabeza,
@@ -209,8 +209,8 @@
   position: absolute;
   left: 50%;
   transform: translateX(-50%);
-  background: linear-gradient(180deg, rgba(34, 211, 238, 0.34), rgba(15, 23, 42, 0.2));
-  border: 1px solid rgba(125, 211, 252, 0.3);
+  background: linear-gradient(180deg, rgba(82, 152, 102, 0.34), rgba(15, 23, 42, 0.2));
+  border: 1px solid rgba(126, 182, 138, 0.3);
 }
 
 .lab-cabeza {
@@ -260,8 +260,8 @@
   height: 34px;
   border-radius: 50%;
   background: transparent;
-  border-color: rgba(34, 211, 238, 0.48);
-  box-shadow: 0 0 24px rgba(34, 211, 238, 0.3);
+  border-color: rgba(82, 152, 102, 0.48);
+  box-shadow: 0 0 24px rgba(82, 152, 102, 0.3);
 }
 
 .lab-anillo.pulso {
@@ -271,7 +271,7 @@
 .lab-organos button {
   position: absolute;
   transform: translate(-50%, -50%);
-  border: 1px solid rgba(34, 211, 238, 0.38);
+  border: 1px solid rgba(82, 152, 102, 0.38);
   border-radius: 999px;
   padding: 7px 10px;
   color: #e0f7ff;
@@ -280,7 +280,7 @@
   cursor: pointer;
   font-size: 11px;
   font-weight: 800;
-  box-shadow: 0 0 20px rgba(34, 211, 238, 0.14);
+  box-shadow: 0 0 20px rgba(82, 152, 102, 0.14);
   transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
 }
 
@@ -288,7 +288,7 @@
 .lab-organos button:focus-visible {
   transform: translate(-50%, -50%) scale(1.06);
   border-color: rgba(103, 232, 249, 0.8);
-  box-shadow: 0 0 26px rgba(34, 211, 238, 0.35);
+  box-shadow: 0 0 26px rgba(82, 152, 102, 0.35);
   outline: none;
 }
 
@@ -314,7 +314,7 @@
   height: 30px;
   border: 1px solid rgba(148, 163, 184, 0.25);
   border-radius: 999px;
-  color: #e0f2fe;
+  color: var(--ivory-50);
   background: rgba(15, 23, 42, 0.78);
   cursor: pointer;
 }
@@ -337,10 +337,10 @@
 
 .lab-gauge,
 .lab-card {
-  border: 1px solid rgba(56, 189, 248, 0.17);
+  border: 1px solid rgba(82, 152, 102, 0.17);
   border-radius: 18px;
   background: rgba(2, 8, 23, 0.56);
-  box-shadow: inset 0 0 34px rgba(14, 165, 233, 0.05);
+  box-shadow: inset 0 0 34px rgba(52, 122, 77, 0.05);
 }
 
 .lab-gauge {
@@ -378,7 +378,7 @@
   border: 1px solid rgba(103, 232, 249, 0.34);
   border-radius: 999px;
   color: #dff8ff;
-  background: rgba(14, 165, 233, 0.13);
+  background: rgba(52, 122, 77, 0.13);
   cursor: pointer;
   font-size: 11px;
   font-weight: 800;
@@ -389,12 +389,12 @@
 .lab-equipo-add:hover,
 .historial-signo-actions button:hover {
   border-color: rgba(103, 232, 249, 0.75);
-  box-shadow: 0 0 18px rgba(34, 211, 238, 0.22);
+  box-shadow: 0 0 18px rgba(82, 152, 102, 0.22);
 }
 
 .lab-gauge.principal strong {
   font-size: 24px;
-  color: #67e8f9;
+  color: var(--celtic-200);
 }
 
 .lab-vitales-global-actions {
@@ -409,7 +409,7 @@
   border: 1px solid rgba(103, 232, 249, 0.34);
   border-radius: 999px;
   color: #dff8ff;
-  background: rgba(14, 165, 233, 0.13);
+  background: rgba(52, 122, 77, 0.13);
   cursor: pointer;
   font-size: 12px;
   font-weight: 800;
@@ -423,7 +423,7 @@
   border: 1px solid rgba(103, 232, 249, 0.32);
   border-radius: 18px;
   background:
-    radial-gradient(circle at top left, rgba(34, 211, 238, 0.16), transparent 38%),
+    radial-gradient(circle at top left, rgba(82, 152, 102, 0.16), transparent 38%),
     rgba(2, 8, 23, 0.97);
   box-shadow: 0 26px 70px rgba(0, 0, 0, 0.45), inset 0 0 0 1px rgba(255, 255, 255, 0.04);
   backdrop-filter: blur(18px);
@@ -444,7 +444,7 @@
 
 .popover-signo-vital header span {
   display: block;
-  color: #67e8f9;
+  color: var(--celtic-200);
   font-size: 10px;
   font-weight: 900;
   letter-spacing: 0.16em;
@@ -477,7 +477,7 @@
 }
 
 .popover-signo-vital label small {
-  color: #67e8f9;
+  color: var(--celtic-200);
   font-weight: 800;
 }
 
@@ -510,7 +510,7 @@
 .popover-signo-vital input:focus,
 .popover-signo-vital textarea:focus {
   border-color: rgba(103, 232, 249, 0.76);
-  box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.14);
+  box-shadow: 0 0 0 3px rgba(82, 152, 102, 0.14);
 }
 
 .popover-signo-actions {
@@ -522,7 +522,7 @@
 .popover-signo-actions button {
   border: 1px solid rgba(103, 232, 249, 0.28);
   border-radius: 999px;
-  background: rgba(14, 165, 233, 0.14);
+  background: rgba(52, 122, 77, 0.14);
   color: #e0f7ff;
   cursor: pointer;
   font-size: 12px;
@@ -531,7 +531,7 @@
 }
 
 .popover-signo-actions button[type="submit"] {
-  background: linear-gradient(135deg, rgba(34, 211, 238, 0.78), rgba(14, 165, 233, 0.58));
+  background: linear-gradient(135deg, rgba(82, 152, 102, 0.78), rgba(52, 122, 77, 0.58));
   color: #02111f;
 }
 
@@ -648,7 +648,7 @@
 }
 
 .historial-signo-card header span {
-  color: #67e8f9;
+  color: var(--celtic-200);
   font-size: 11px;
   font-weight: 900;
   letter-spacing: 0.2em;
@@ -686,16 +686,16 @@
 
 .historial-signo-svg polyline {
   fill: none;
-  stroke: #22d3ee;
+  stroke: var(--celtic-400);
   stroke-width: 4;
   stroke-linecap: round;
   stroke-linejoin: round;
-  filter: drop-shadow(0 0 8px rgba(34, 211, 238, 0.5));
+  filter: drop-shadow(0 0 8px rgba(82, 152, 102, 0.5));
 }
 
 .historial-signo-svg circle {
   fill: #f8fafc;
-  stroke: #22d3ee;
+  stroke: var(--celtic-400);
   stroke-width: 2;
 }
 

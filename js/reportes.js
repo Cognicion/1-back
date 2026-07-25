@@ -1,5 +1,4 @@
 asegurarCssReporte();
-asegurarCssApariencia();
 aplicarAparienciaLocalLigera();
 
 const TIPOS_REPORTE = [
@@ -45,14 +44,6 @@ function asegurarCssReporte() {
   link.href = "css/reportes.css";
   document.head.appendChild(link);
 }
-function asegurarCssApariencia() {
-  if (document.querySelector('link[href="css/apariencia.css"]')) return;
-  const link = document.createElement("link");
-  link.rel = "stylesheet";
-  link.href = "css/apariencia.css";
-  document.head.appendChild(link);
-}
-
 function obtenerLocalStorageSeguro(clave) {
   try {
     return localStorage.getItem(clave);

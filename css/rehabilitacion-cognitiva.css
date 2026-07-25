@@ -2,12 +2,12 @@
   --bg: #02050b;
   --panel: rgba(9, 15, 27, 0.72);
   --panel-strong: rgba(12, 20, 36, 0.86);
-  --line: rgba(125, 211, 252, 0.18);
-  --line-strong: rgba(125, 211, 252, 0.36);
+  --line: rgba(126, 182, 138, 0.18);
+  --line-strong: rgba(126, 182, 138, 0.36);
   --text: #eef6ff;
   --muted: #9fb0c6;
-  --cyan: #38bdf8;
-  --blue: #2563eb;
+  --cyan: var(--celtic-400);
+  --blue: var(--celtic-600);
   --violet: #7c3aed;
   --radius: 24px;
 }
@@ -26,7 +26,7 @@ body {
   font-family: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
   color: var(--text);
   background:
-    radial-gradient(circle at 18% 0%, rgba(56, 189, 248, 0.18), transparent 28%),
+    radial-gradient(circle at 18% 0%, rgba(82, 152, 102, 0.18), transparent 28%),
     radial-gradient(circle at 88% 12%, rgba(124, 58, 237, 0.12), transparent 30%),
     linear-gradient(145deg, #02050b 0%, #06101d 48%, #030508 100%);
 }
@@ -81,7 +81,7 @@ button {
   object-fit: contain;
   border: 1px solid var(--line);
   border-radius: 16px;
-  box-shadow: 0 0 24px rgba(56, 189, 248, 0.16);
+  box-shadow: 0 0 24px rgba(82, 152, 102, 0.16);
 }
 
 .marca-rehabilitacion strong {
@@ -141,7 +141,7 @@ button {
   border-radius: 34px;
   padding: clamp(28px, 5vw, 62px);
   background:
-    radial-gradient(circle at 72% 34%, rgba(56, 189, 248, 0.18), transparent 34%),
+    radial-gradient(circle at 72% 34%, rgba(82, 152, 102, 0.18), transparent 34%),
     radial-gradient(circle at 50% 100%, rgba(124, 58, 237, 0.12), transparent 34%),
     rgba(5, 10, 20, 0.78);
   box-shadow: 0 30px 90px rgba(0, 0, 0, 0.42), inset 0 1px 0 rgba(255, 255, 255, 0.04);
@@ -154,7 +154,7 @@ button {
   inset: auto 5% -28% 44%;
   height: 52%;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(56, 189, 248, 0.13), transparent 62%);
+  background: radial-gradient(circle, rgba(82, 152, 102, 0.13), transparent 62%);
   filter: blur(18px);
   pointer-events: none;
 }
@@ -168,7 +168,7 @@ button {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  color: #7dd3fc;
+  color: var(--celtic-300);
   font-size: 0.75rem;
   font-weight: 900;
   letter-spacing: 0.22em;
@@ -180,8 +180,8 @@ button {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #38bdf8;
-  box-shadow: 0 0 18px rgba(56, 189, 248, 0.72);
+  background: var(--celtic-400);
+  box-shadow: 0 0 18px rgba(82, 152, 102, 0.72);
 }
 
 .hero-rehabilitacion h1 {
@@ -233,7 +233,7 @@ button {
 
 .boton-principal,
 .tarjeta-actividad.disponible button {
-  background: linear-gradient(135deg, rgba(37, 99, 235, 0.95), rgba(6, 182, 212, 0.92));
+  background: linear-gradient(135deg, rgba(36, 95, 59, 0.95), rgba(6, 182, 212, 0.92));
   box-shadow: 0 18px 48px rgba(8, 145, 178, 0.2);
 }
 
@@ -248,7 +248,7 @@ button {
 .tarjeta-actividad button:hover,
 .tarjeta-tamizaje button:hover {
   transform: translateY(-2px);
-  border-color: rgba(125, 211, 252, 0.5);
+  border-color: rgba(126, 182, 138, 0.5);
   box-shadow: 0 20px 58px rgba(8, 145, 178, 0.16);
 }
 
@@ -269,8 +269,8 @@ button {
 }
 
 .orbita {
-  border: 1px solid rgba(125, 211, 252, 0.18);
-  box-shadow: inset 0 0 42px rgba(56, 189, 248, 0.08), 0 0 70px rgba(56, 189, 248, 0.09);
+  border: 1px solid rgba(126, 182, 138, 0.18);
+  box-shadow: inset 0 0 42px rgba(82, 152, 102, 0.08), 0 0 70px rgba(82, 152, 102, 0.09);
 }
 
 .orbita-uno {
@@ -291,19 +291,19 @@ button {
   place-items: center;
   width: 118px;
   height: 118px;
-  color: #e0f2fe;
+  color: var(--ivory-50);
   font-size: 2.1rem;
   font-weight: 950;
-  background: radial-gradient(circle, rgba(56, 189, 248, 0.24), rgba(15, 23, 42, 0.46));
-  border: 1px solid rgba(125, 211, 252, 0.34);
-  box-shadow: 0 0 70px rgba(56, 189, 248, 0.22);
+  background: radial-gradient(circle, rgba(82, 152, 102, 0.24), rgba(15, 23, 42, 0.46));
+  border: 1px solid rgba(126, 182, 138, 0.34);
+  box-shadow: 0 0 70px rgba(82, 152, 102, 0.22);
 }
 
 .punto {
   width: 12px;
   height: 12px;
-  background: #7dd3fc;
-  box-shadow: 0 0 24px rgba(125, 211, 252, 0.75);
+  background: var(--celtic-300);
+  box-shadow: 0 0 24px rgba(126, 182, 138, 0.75);
 }
 
 .punto-a { transform: translate(-50%, -50%) rotate(28deg) translateX(142px); }
@@ -363,7 +363,7 @@ button {
 .grid-progreso article {
   position: relative;
   overflow: hidden;
-  border: 1px solid rgba(125, 211, 252, 0.16);
+  border: 1px solid rgba(126, 182, 138, 0.16);
   border-radius: 22px;
   padding: 22px;
   background:
@@ -376,7 +376,7 @@ button {
   content: "";
   position: absolute;
   inset: 0;
-  background: radial-gradient(circle at top right, rgba(56, 189, 248, 0.14), transparent 38%);
+  background: radial-gradient(circle at top right, rgba(82, 152, 102, 0.14), transparent 38%);
   opacity: 0;
   transition: opacity 0.22s ease;
 }
@@ -385,7 +385,7 @@ button {
 .tarjeta-actividad:hover,
 .grid-progreso article:hover {
   transform: translateY(-4px);
-  border-color: rgba(125, 211, 252, 0.36);
+  border-color: rgba(126, 182, 138, 0.36);
   background: rgba(15, 23, 42, 0.86);
 }
 
@@ -406,10 +406,10 @@ button {
   width: 54px;
   height: 54px;
   border-radius: 18px;
-  color: #e0f2fe;
+  color: var(--ivory-50);
   font-weight: 950;
-  background: rgba(14, 165, 233, 0.15);
-  border: 1px solid rgba(125, 211, 252, 0.24);
+  background: rgba(52, 122, 77, 0.15);
+  border: 1px solid rgba(126, 182, 138, 0.24);
 }
 
 .tarjeta-tamizaje h3,
@@ -421,7 +421,7 @@ button {
 .tarjeta-tamizaje small,
 .tarjeta-actividad small,
 .estado {
-  color: #7dd3fc;
+  color: var(--celtic-300);
   font-weight: 850;
   letter-spacing: 0.04em;
 }
@@ -443,8 +443,8 @@ button {
   padding: 0 10px;
   border-radius: 999px;
   color: #cdeafe;
-  background: rgba(14, 165, 233, 0.1);
-  border: 1px solid rgba(125, 211, 252, 0.18);
+  background: rgba(52, 122, 77, 0.1);
+  border: 1px solid rgba(126, 182, 138, 0.18);
   font-size: 0.78rem;
   font-weight: 760;
 }
@@ -488,7 +488,7 @@ button {
 
 .buscador-actividad input:focus {
   border-color: var(--line-strong);
-  box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.08);
+  box-shadow: 0 0 0 4px rgba(82, 152, 102, 0.08);
 }
 
 .filtros-dominios {
@@ -512,7 +512,7 @@ button {
 .filtro-dominio.activo {
   transform: translateY(-1px);
   border-color: var(--line-strong);
-  background: rgba(14, 165, 233, 0.18);
+  background: rgba(52, 122, 77, 0.18);
   color: #eff6ff;
 }
 
@@ -537,7 +537,7 @@ button {
 }
 
 .tarjeta-actividad.disponible {
-  border-color: rgba(56, 189, 248, 0.36);
+  border-color: rgba(82, 152, 102, 0.36);
 }
 
 .estado {
@@ -546,8 +546,8 @@ button {
   margin-top: 18px;
   padding: 6px 10px;
   border-radius: 999px;
-  background: rgba(14, 165, 233, 0.11);
-  border: 1px solid rgba(125, 211, 252, 0.2);
+  background: rgba(52, 122, 77, 0.11);
+  border: 1px solid rgba(126, 182, 138, 0.2);
   font-size: 0.76rem;
 }
 
@@ -555,7 +555,7 @@ button {
   display: none;
   color: #cbd5e1;
   padding: 18px;
-  border: 1px dashed rgba(125, 211, 252, 0.2);
+  border: 1px dashed rgba(126, 182, 138, 0.2);
   border-radius: 18px;
   text-align: center;
 }
@@ -577,7 +577,7 @@ button {
 
 .grid-progreso span {
   margin-top: 12px;
-  color: #7dd3fc;
+  color: var(--celtic-300);
   font-size: 0.86rem;
   font-weight: 850;
 }
@@ -591,7 +591,7 @@ button {
   padding: 14px 16px;
   border: 1px solid var(--line);
   border-radius: 16px;
-  color: #e0f2fe;
+  color: var(--ivory-50);
   background: rgba(2, 6, 23, 0.92);
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.38);
   opacity: 0;
@@ -612,7 +612,7 @@ button {
   display: grid;
   place-items: center;
   overflow: hidden;
-  background: #020204;
+  background: var(--black-1000);
   transition: opacity 0.55s ease, visibility 0.55s ease;
 }
 
@@ -632,15 +632,15 @@ button {
 
 .intro-neblina {
   background:
-    radial-gradient(ellipse at 46% 70%, rgba(56, 189, 248, 0.20), transparent 30%),
-    radial-gradient(ellipse at 50% 48%, rgba(37, 99, 235, 0.16), transparent 42%),
+    radial-gradient(ellipse at 46% 70%, rgba(82, 152, 102, 0.20), transparent 30%),
+    radial-gradient(ellipse at 50% 48%, rgba(36, 95, 59, 0.16), transparent 42%),
     radial-gradient(ellipse at 50% 100%, rgba(124, 58, 237, 0.10), transparent 36%);
   filter: blur(38px);
   animation: neblinaIntro 4.8s ease-in-out both;
 }
 
 .intro-luz {
-  background: linear-gradient(to top, rgba(56, 189, 248, 0.22), transparent 58%);
+  background: linear-gradient(to top, rgba(82, 152, 102, 0.22), transparent 58%);
   transform: translateY(34%);
   animation: ascensoLuz 4.4s ease both;
 }
@@ -650,8 +650,8 @@ button {
   width: 4px;
   height: 4px;
   border-radius: 50%;
-  background: rgba(125, 211, 252, 0.58);
-  box-shadow: 0 0 14px rgba(125, 211, 252, 0.45);
+  background: rgba(126, 182, 138, 0.58);
+  box-shadow: 0 0 14px rgba(126, 182, 138, 0.45);
   animation: particulaIntro 4.8s ease-in-out infinite;
 }
 
@@ -677,7 +677,7 @@ button {
 }
 
 .intro-kicker {
-  color: #7dd3fc;
+  color: var(--celtic-300);
   font-weight: 850;
   letter-spacing: 0.24em;
   text-transform: uppercase;
@@ -696,9 +696,9 @@ button {
   z-index: 3;
   min-height: 42px;
   padding: 0 16px;
-  border: 1px solid rgba(125, 211, 252, 0.24);
+  border: 1px solid rgba(126, 182, 138, 0.24);
   border-radius: 999px;
-  color: #dbeafe;
+  color: var(--ivory-100);
   background: rgba(15, 23, 42, 0.56);
 }
 
@@ -810,7 +810,7 @@ button {
   width: fit-content;
   margin: 0 0 4px;
   padding: 6px 10px;
-  border: 1px solid rgba(125, 211, 252, 0.24);
+  border: 1px solid rgba(126, 182, 138, 0.24);
   border-radius: 999px;
   color: #bae6fd;
   background: rgba(8, 47, 73, 0.42);
@@ -862,10 +862,10 @@ button {
   max-height: min(86vh, 920px);
   overflow: auto;
   padding: 24px;
-  border: 1px solid rgba(125, 211, 252, 0.26);
+  border: 1px solid rgba(126, 182, 138, 0.26);
   border-radius: 28px;
   background:
-    radial-gradient(circle at 90% 0%, rgba(14, 165, 233, 0.16), transparent 34%),
+    radial-gradient(circle at 90% 0%, rgba(52, 122, 77, 0.16), transparent 34%),
     rgba(6, 12, 24, 0.94);
   box-shadow: 0 34px 120px rgba(0, 0, 0, 0.52);
   transform: translateY(12px) scale(0.98);
@@ -885,7 +885,7 @@ button {
 }
 
 .panel-tamizaje-header span {
-  color: #7dd3fc;
+  color: var(--celtic-300);
   font-size: 0.76rem;
   font-weight: 800;
   letter-spacing: 0.14em;
@@ -939,7 +939,7 @@ button {
 
 .item-tamizaje-cognitivo span,
 .observaciones-tamizaje {
-  color: #dbeafe;
+  color: var(--ivory-100);
   font-weight: 700;
 }
 
@@ -947,7 +947,7 @@ button {
 .item-tamizaje-cognitivo select,
 .observaciones-tamizaje textarea {
   width: 100%;
-  border: 1px solid rgba(125, 211, 252, 0.18);
+  border: 1px solid rgba(126, 182, 138, 0.18);
   border-radius: 13px;
   padding: 11px 12px;
   color: #eef6ff;
@@ -958,12 +958,12 @@ button {
 .item-tamizaje-cognitivo input:focus,
 .item-tamizaje-cognitivo select:focus,
 .observaciones-tamizaje textarea:focus {
-  border-color: rgba(56, 189, 248, 0.64);
-  box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.12);
+  border-color: rgba(82, 152, 102, 0.64);
+  box-shadow: 0 0 0 3px rgba(52, 122, 77, 0.12);
 }
 
 .item-tamizaje-cognitivo small {
-  color: #7dd3fc;
+  color: var(--celtic-300);
 }
 
 .item-tamizaje-cognitivo .campo-error,
@@ -985,13 +985,13 @@ button {
 .resultado-tamizaje-cognitivo {
   margin-top: 14px;
   padding: 15px;
-  border: 1px solid rgba(56, 189, 248, 0.24);
+  border: 1px solid rgba(82, 152, 102, 0.24);
   border-radius: 18px;
   background: rgba(8, 47, 73, 0.25);
 }
 
 .resultado-tamizaje-cognitivo strong {
-  color: #e0f2fe;
+  color: var(--ivory-50);
 }
 
 .resultado-tamizaje-cognitivo p {
@@ -1050,7 +1050,7 @@ button {
   gap: 10px;
   margin: 12px 0 10px;
   padding: 6px;
-  border: 1px solid rgba(125, 211, 252, 0.16);
+  border: 1px solid rgba(126, 182, 138, 0.16);
   border-radius: 18px;
   background: rgba(15, 23, 42, 0.52);
 }
@@ -1059,13 +1059,13 @@ button {
   width: auto;
   flex: 1 1 210px;
   background: rgba(15, 23, 42, 0.72);
-  border: 1px solid rgba(125, 211, 252, 0.18);
+  border: 1px solid rgba(126, 182, 138, 0.18);
 }
 
 .modo-tamizaje-switch button.activo {
   color: #02111f;
-  background: linear-gradient(135deg, #7dd3fc, #22d3ee);
-  box-shadow: 0 12px 28px rgba(34, 211, 238, 0.16);
+  background: linear-gradient(135deg, var(--celtic-300), var(--celtic-400));
+  box-shadow: 0 12px 28px rgba(82, 152, 102, 0.16);
 }
 
 .modo-tamizaje-switch button:disabled {
@@ -1080,14 +1080,14 @@ button {
 
 .guia-prueba-tamizaje {
   padding: 14px;
-  border: 1px solid rgba(125, 211, 252, 0.18);
+  border: 1px solid rgba(126, 182, 138, 0.18);
   border-radius: 18px;
   background: rgba(8, 47, 73, 0.22);
 }
 
 .guia-prueba-tamizaje strong,
 .temporizador-tamizaje span {
-  color: #7dd3fc;
+  color: var(--celtic-300);
 }
 
 .guia-prueba-tamizaje ol {
@@ -1101,7 +1101,7 @@ button {
   padding: 12px;
   border-radius: 14px;
   background: rgba(2, 6, 23, 0.42);
-  color: #e0f2fe;
+  color: var(--ivory-50);
 }
 
 .temporizador-tamizaje {
@@ -1120,7 +1120,7 @@ button {
   align-items: center;
   gap: 10px;
   margin-top: 14px;
-  color: #dbeafe;
+  color: var(--ivory-100);
   font-weight: 700;
 }
 

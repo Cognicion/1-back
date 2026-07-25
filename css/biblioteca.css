@@ -8,8 +8,8 @@ body {
     linear-gradient(rgba(148,163,184,0.035) 1px, transparent 1px),
     linear-gradient(90deg, rgba(148,163,184,0.035) 1px, transparent 1px),
     radial-gradient(circle at top, rgba(78,163,255,0.22), transparent 32%),
-    radial-gradient(circle at bottom right, rgba(0,212,255,0.13), transparent 28%),
-    linear-gradient(135deg, #050608, #080b10 50%, #0e1520);
+    radial-gradient(circle at bottom right, rgba(82,152,102,0.13), transparent 28%),
+    linear-gradient(135deg, #050608, #080b10 50%, var(--black-900));
   background-size: 42px 42px, 42px 42px, auto, auto, auto;
   color: #f8fafc;
 }
@@ -38,8 +38,8 @@ body.bloqueado main { display: none; }
   height: 82px;
   object-fit: contain;
   border-radius: 16px;
-  border: 1px solid rgba(125,211,252,0.28);
-  box-shadow: 0 0 26px rgba(56,189,248,0.18);
+  border: 1px solid rgba(126,182,138,0.28);
+  box-shadow: 0 0 26px rgba(82,152,102,0.18);
 }
 
 .header h1,
@@ -78,8 +78,8 @@ body.bloqueado main { display: none; }
   inset: 0;
   pointer-events: none;
   background:
-    linear-gradient(135deg, rgba(125,211,252,0.12), transparent 34%),
-    radial-gradient(circle at top right, rgba(0,212,255,0.10), transparent 36%);
+    linear-gradient(135deg, rgba(126,182,138,0.12), transparent 34%),
+    radial-gradient(circle at top right, rgba(82,152,102,0.10), transparent 36%);
   opacity: 0;
   transition: opacity .28s ease;
 }
@@ -102,17 +102,17 @@ input {
 .filtro-cie10 {
   width: 100%;
   border-radius: 16px;
-  border: 1px solid rgba(125,211,252,0.28);
+  border: 1px solid rgba(126,182,138,0.28);
   background: rgba(2,6,23,.78);
-  color: #e0f2fe;
+  color: var(--ivory-50);
   padding: 13px 16px;
   font-weight: 700;
 }
 
 .filtro-cie10:focus {
   outline: none;
-  border-color: rgba(56,189,248,.65);
-  box-shadow: 0 0 0 4px rgba(56,189,248,.10);
+  border-color: rgba(82,152,102,.65);
+  box-shadow: 0 0 0 4px rgba(82,152,102,.10);
 }
 
 .dato-clinico {
@@ -122,13 +122,13 @@ input {
   gap: 8px;
   margin-top: 12px;
   padding: 12px;
-  border: 1px solid rgba(125,211,252,0.16);
+  border: 1px solid rgba(126,182,138,0.16);
   border-radius: 16px;
   background: rgba(8,13,23,0.54);
 }
 
 .dato-clinico strong {
-  color: #e0f2fe;
+  color: var(--ivory-50);
 }
 
 .dato-clinico ul {
@@ -137,15 +137,15 @@ input {
 
 input:focus {
   outline: none;
-  border-color: rgba(56,189,248,.65);
+  border-color: rgba(82,152,102,.65);
   background: rgba(2,6,23,.92);
-  box-shadow: 0 0 0 4px rgba(56,189,248,.10), 0 0 28px rgba(56,189,248,.16);
+  box-shadow: 0 0 0 4px rgba(82,152,102,.10), 0 0 28px rgba(82,152,102,.16);
 }
 
 button {
   border: none;
   border-radius: 14px;
-  background: linear-gradient(135deg, #2563eb, #00d4ff);
+  background: linear-gradient(135deg, var(--celtic-600), var(--celtic-300));
   color: white;
   padding: 10px 14px;
   cursor: pointer;
@@ -155,7 +155,7 @@ button {
 
 button:hover {
   transform: translateY(-1px);
-  box-shadow: 0 0 28px rgba(0,212,255,0.26);
+  box-shadow: 0 0 28px rgba(82,152,102,0.26);
 }
 
 .tabs {
@@ -171,9 +171,9 @@ button:hover {
 }
 
 .tabs button.activo {
-  background: linear-gradient(135deg, #2563eb, #00d4ff);
+  background: linear-gradient(135deg, var(--celtic-600), var(--celtic-300));
   color: white;
-  border-color: rgba(125,211,252,.50);
+  border-color: rgba(126,182,138,.50);
 }
 
 .grid {
@@ -194,8 +194,8 @@ button:hover {
   margin: 10px 0;
   padding: 6px 9px;
   border-radius: 999px;
-  border: 1px solid rgba(125,211,252,.24);
-  color: #7dd3fc;
+  border: 1px solid rgba(126,182,138,.24);
+  color: var(--celtic-300);
   font-size: 12px;
   font-weight: 800;
 }
@@ -207,7 +207,7 @@ button:hover {
 .diagnosticos-grid .card {
   animation: diagnosticoEntrada .42s ease both;
   min-height: 220px;
-  border-color: rgba(56,189,248,0.18);
+  border-color: rgba(82,152,102,0.18);
   background:
     linear-gradient(145deg, rgba(15,23,42,0.94), rgba(8,12,20,0.88)),
     rgba(15, 18, 25, 0.88);
@@ -219,9 +219,9 @@ button:hover {
 
 .diagnosticos-grid .card:hover {
   transform: translateY(-5px);
-  border-color: rgba(56,189,248,0.42);
+  border-color: rgba(82,152,102,0.42);
   box-shadow:
-    0 0 42px rgba(56,189,248,0.16),
+    0 0 42px rgba(82,152,102,0.16),
     0 22px 60px rgba(0,0,0,0.44);
 }
 
@@ -244,15 +244,15 @@ button:hover {
   height: 3px;
   margin-top: 12px;
   border-radius: 999px;
-  background: linear-gradient(90deg, #38bdf8, #22d3ee, transparent);
+  background: linear-gradient(90deg, var(--celtic-400), var(--celtic-400), transparent);
 }
 
 .diagnosticos-grid .tag {
   position: relative;
   z-index: 1;
   margin: 8px 0 12px;
-  background: rgba(14,165,233,0.10);
-  border-color: rgba(56,189,248,0.34);
+  background: rgba(52,122,77,0.10);
+  border-color: rgba(82,152,102,0.34);
   box-shadow: inset 0 1px 0 rgba(255,255,255,0.06);
 }
 
@@ -262,8 +262,8 @@ button:hover {
   height: 8px;
   margin-right: 7px;
   border-radius: 50%;
-  background: #22d3ee;
-  box-shadow: 0 0 14px rgba(34,211,238,0.75);
+  background: var(--celtic-400);
+  box-shadow: 0 0 14px rgba(82,152,102,0.75);
 }
 
 .diagnosticos-grid p,
@@ -295,12 +295,12 @@ button:hover {
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background: #38bdf8;
-  box-shadow: 0 0 12px rgba(56,189,248,0.75);
+  background: var(--celtic-400);
+  box-shadow: 0 0 12px rgba(82,152,102,0.75);
 }
 
 .diagnosticos-grid p strong {
-  color: #e0f2fe;
+  color: var(--ivory-50);
 }
 
 @keyframes diagnosticoEntrada {

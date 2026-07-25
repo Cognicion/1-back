@@ -8,7 +8,7 @@ align-items:center;
 
 padding:18px 30px;
 
-background:#020617;
+background:var(--black-1000);
 
 border-bottom:1px solid #1e293b;
 
@@ -58,7 +58,7 @@ transition:.2s;
 
 .menu a:hover{
 
-background:#2563eb;
+    background:var(--action-primary-bg);
 
 }
 
@@ -80,7 +80,7 @@ cursor:pointer;
 
 .menu button:hover{
 
-background:#2563eb;
+    background:var(--action-primary-bg);
 
 }
 
@@ -116,9 +116,9 @@ background:#2563eb;
 
 .notifications-button:hover {
     transform: translateY(-2px);
-    border-color: rgba(125, 211, 252, 0.42);
-    background: rgba(30, 41, 59, 0.86);
-    box-shadow: 0 14px 36px rgba(56, 189, 248, 0.12);
+    border-color: var(--accent-primary);
+    background: var(--accent-soft);
+    box-shadow: none;
 }
 
 .notification-bell {
@@ -155,22 +155,13 @@ background:#2563eb;
     z-index: 5000;
 
     padding: 18px;
-    border: 1px solid rgba(125, 211, 252, 0.28);
+    border: 1px solid rgba(126, 182, 138, 0.28);
     border-radius: 22px;
 
-    background:
-        radial-gradient(
-            circle at 15% 0%,
-            rgba(56, 189, 248, 0.16),
-            transparent 34%
-        ),
-        rgba(6, 12, 22, 0.98);
+    background: var(--surface-primary);
+    box-shadow: none;
 
-    box-shadow:
-        0 30px 90px rgba(0, 0, 0, 0.52),
-        0 0 44px rgba(56, 189, 248, 0.10);
-
-    backdrop-filter: blur(22px);
+    backdrop-filter: none;
 
     opacity: 0;
     visibility: hidden;
@@ -229,9 +220,9 @@ html[data-theme] .notifications-button {
 html[data-theme] .menu a:hover,
 html[data-theme] .menu button:hover,
 html[data-theme] .notifications-button:hover {
-    color: var(--text-inverse);
-    border-color: var(--border-active);
-    background: var(--surface-inverse);
+    color: var(--text-primary);
+    border-color: var(--accent-primary);
+    background: var(--accent-soft);
     box-shadow: none;
 }
 
@@ -252,5 +243,5 @@ html[data-theme] .notifications-header strong {
 html[data-theme] .notification-badge {
     border-color: var(--surface-primary);
     color: var(--text-inverse);
-    background: var(--surface-inverse);
+    background: var(--accent-primary);
 }
