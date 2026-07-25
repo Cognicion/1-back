@@ -3130,9 +3130,9 @@ function configurarCalculadoraNota() {
   };
 
   const filtrarCalculadoras = () => {
-    const termino = String(buscador?.value || "").trim().toLocaleLowerCase();
+    const termino = normalizarTextoBusqueda(buscador?.value || "");
     lista.querySelectorAll("[data-calculadora-nota]").forEach((boton) => {
-      const nombre = String(boton.dataset.calculadoraNombre || boton.textContent).toLocaleLowerCase();
+      const nombre = normalizarTextoBusqueda(boton.dataset.calculadoraNombre || boton.textContent);
       boton.hidden = Boolean(termino) && !nombre.includes(termino);
     });
   };

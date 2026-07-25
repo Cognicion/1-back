@@ -63,10 +63,21 @@ function montarCatalogo(contenedor, calculadoras, configurarDetalle) {
   const lista = contenedor.querySelector("[data-calculadora-nota-lista]");
   const detalle = contenedor.querySelector("[data-calculadora-nota-detalle]");
   const renderLista = () => {
-    const texto = normalizar(filtro.value);
-    const visibles = calculadoras.filter((calc) => normalizar([calc.name || calc.nombre, calc.abbreviation, calc.description || calc.descripcion, ...(calc.aliases || [])].join(" ")).includes(texto)).slice(0, 30);
+    const texto = normalizar(filtro.value.trim());
+    const visibles = calculadoras.filter((calc) => {
+      const campos = [
+        calc.name,
+        calc.nombre,
+        calc.title,
+        calc.abbreviation,
+        calc.description,
+        calc.descripcion,
+        ...(Array.isArray(calc.aliases) ? calc.aliases : [])
+      ];
+      return normalizar(campos.filter(Boolean).join(" ")).includes(texto);
+    }).slice(0, 50);
     lista.innerHTML = visibles.length
-      ? visibles.map((calc) => `<button type="button" data-calculadora-id="` + escapar(calc.id) + `"><strong>` + escapar(calc.name || calc.nombre) + `</strong><small>` + escapar(calc.description || calc.descripcion || "") + `</small></button>`).join("")
+      ? visibles.map((calc) => `<button type="button" data-calculadora-id="` + escapar(calc.id) + `"><strong>` + escapar(calc.name || calc.nombre || calc.title) + `</strong></button>`).join("")
       : `<p class="calculadora-nota-ayuda">No se encontraron calculadoras.</p>`;
   };
   filtro.addEventListener("input", renderLista);
@@ -74,7 +85,10 @@ function montarCatalogo(contenedor, calculadoras, configurarDetalle) {
     const boton = event.target.closest("[data-calculadora-id]");
     if (!boton) return;
     const calc = calculadoras.find((item) => item.id === boton.dataset.calculadoraId);
-    if (calc) configurarDetalle(detalle, calc);
+    if (calc) {
+      detalle.classList.toggle("con-muchos-valores", (calc.inputs || []).length > 8);
+      configurarDetalle(detalle, calc);
+    }
   });
   renderLista();
 }
