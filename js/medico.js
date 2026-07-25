@@ -1874,19 +1874,38 @@ function contarPor(pacientes, obtenerClave) {
   }, {});
 }
 
+function partesDiagnosticoGrafica(dx) {
+  if (!dx) return { codigo: "", nombre: "" };
+  if (typeof dx === "string") return { codigo: "", nombre: dx.trim() };
+  if (typeof dx !== "object") return { codigo: "", nombre: String(dx || "").trim() };
+
+  return {
+    codigo: String(dx.codigo || "").trim(),
+    nombre: String(dx.nombre || dx.texto || dx.descripcion || dx.diagnostico || "").trim()
+  };
+}
+
 function etiquetaDiagnosticoGrafica(dx) {
-  if (!dx) return "";
-  if (typeof dx === "string") return dx.trim().slice(0, 36);
-
-  if (typeof dx !== "object") return String(dx || "").trim().slice(0, 36);
-
-  const codigo = dx.codigo || "";
-  const nombre = dx.nombre || dx.texto || dx.descripcion || dx.diagnostico || "";
+  const { codigo, nombre } = partesDiagnosticoGrafica(dx);
   const etiqueta = codigo && nombre
     ? `${codigo} ${nombre}`
     : (codigo || nombre || "");
 
-  return etiqueta.trim().slice(0, 36);
+  return etiqueta.trim();
+}
+
+function normalizarTextoGrafica(valor = "") {
+  return String(valor || "")
+    .trim()
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/\s+/g, " ");
+}
+
+function claveDiagnosticoGrafica(dx) {
+  const { codigo, nombre } = partesDiagnosticoGrafica(dx);
+  return codigo.toLowerCase() || normalizarTextoGrafica(nombre);
 }
 
 function diagnosticosParaGrafica(paciente = {}) {
@@ -1914,7 +1933,7 @@ function diagnosticosParaGrafica(paciente = {}) {
 
   const vistos = new Set();
   return acumulados.filter((dx) => {
-    const clave = claveDiagnostico(dx);
+    const clave = claveDiagnosticoGrafica(dx);
     if (!clave || vistos.has(clave)) return false;
     vistos.add(clave);
     return true;
@@ -1922,7 +1941,10 @@ function diagnosticosParaGrafica(paciente = {}) {
 }
 
 function contarDiagnosticosTodos(pacientes = []) {
-  return pacientes.reduce((conteo, paciente) => {
+  const grupos = new Map();
+  const conteo = {};
+
+  pacientes.forEach((paciente) => {
     const diagnosticos = diagnosticosParaGrafica(paciente);
 
     if (!diagnosticos.length) {
@@ -1933,10 +1955,24 @@ function contarDiagnosticosTodos(pacientes = []) {
     diagnosticos.forEach((dx) => {
       const etiqueta = etiquetaDiagnosticoGrafica(dx) || "Sin diagnóstico";
       conteo[etiqueta] = (conteo[etiqueta] || 0) + 1;
+      const clave = claveDiagnosticoGrafica(dx) || normalizarTextoGrafica(etiqueta);
+      const actual = grupos.get(clave) || { etiqueta, total: 0 };
+      if (etiqueta.length > actual.etiqueta.length) actual.etiqueta = etiqueta;
+      actual.total += 1;
+      grupos.set(clave, actual);
     });
 
     return conteo;
-  }, {});
+  });
+
+  Object.entries(conteo).forEach(([etiqueta, total]) => {
+    const claveTexto = normalizarTextoGrafica(etiqueta);
+    if (!claveTexto.startsWith("sin diagnostico")) return;
+    if ([...grupos.values()].some((grupo) => grupo.etiqueta === etiqueta)) return;
+    grupos.set(claveTexto || etiqueta, { etiqueta, total });
+  });
+
+  return Object.fromEntries([...grupos.values()].map((grupo) => [grupo.etiqueta, grupo.total]));
 }
 
 function etiquetaMedicamentoGrafica(valor = "") {
@@ -2012,11 +2048,11 @@ function dibujarBarras(canvasId, conteo) {
   const rect = canvas.getBoundingClientRect();
   const dpr = window.devicePixelRatio || 1;
   const entradas = Object.entries(conteo).sort((a, b) => b[1] - a[1]);
-  const barH = 28;
-  const separacion = 10;
+  const barH = 30;
+  const separacion = 14;
   const cssHeight = Math.max(
     Number(canvas.getAttribute("height")) || 180,
-    28 + entradas.length * (barH + separacion)
+    36 + entradas.length * (barH + separacion)
   );
 
   canvas.style.height = `${cssHeight}px`;
@@ -2039,16 +2075,48 @@ function dibujarBarras(canvasId, conteo) {
   }
 
   entradas.forEach(([label, valor], i) => {
-    const y = 18 + i * (barH + separacion);
-    const barW = Math.max(2, (width - 150) * valor / max);
+    const y = 22 + i * (barH + separacion);
+    const areaEtiqueta = Math.min(Math.max(width * 0.46, 210), 420);
+    const xBarra = areaEtiqueta + 16;
+    const anchoDisponibleBarra = Math.max(80, width - xBarra - 42);
+    const barW = Math.max(2, anchoDisponibleBarra * valor / max);
     ctx.fillStyle = "rgba(56, 189, 248, 0.22)";
-    ctx.fillRect(130, y, barW, barH);
+    ctx.fillRect(xBarra, y, barW, barH);
     ctx.fillStyle = "#38bdf8";
-    ctx.fillRect(130, y, 3, barH);
+    ctx.fillRect(xBarra, y, 3, barH);
     ctx.fillStyle = "#dbeafe";
-    ctx.fillText(label, 8, y + barH - 4);
+    dibujarEtiquetaGrafica(ctx, label, 8, y + 11, areaEtiqueta - 12, 2);
     ctx.fillStyle = "#f8fafc";
-    ctx.fillText(String(valor), 138 + barW, y + barH - 4);
+    ctx.fillText(String(valor), Math.min(xBarra + barW + 8, width - 22), y + barH - 8);
+  });
+}
+
+function dibujarEtiquetaGrafica(ctx, texto, x, y, anchoMaximo, lineasMaximas = 2) {
+  const palabras = String(texto || "").split(/\s+/).filter(Boolean);
+  const lineas = [];
+  let linea = "";
+
+  palabras.forEach((palabra) => {
+    const candidata = linea ? `${linea} ${palabra}` : palabra;
+    if (ctx.measureText(candidata).width <= anchoMaximo || !linea) {
+      linea = candidata;
+      return;
+    }
+    lineas.push(linea);
+    linea = palabra;
+  });
+  if (linea) lineas.push(linea);
+
+  lineas.slice(0, lineasMaximas).forEach((parte, index) => {
+    const ultimaVisible = index === lineasMaximas - 1 && lineas.length > lineasMaximas;
+    let visible = parte;
+    if (ultimaVisible) {
+      while (ctx.measureText(`${visible}...`).width > anchoMaximo && visible.length > 4) {
+        visible = visible.slice(0, -1);
+      }
+      visible = `${visible}...`;
+    }
+    ctx.fillText(visible, x, y + index * 14);
   });
 }
 

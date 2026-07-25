@@ -1575,6 +1575,52 @@ button:hover{
   white-space: nowrap;
 }
 
+.encabezado-paciente-nota {
+  display: grid;
+  gap: 4px;
+  margin: -6px 0 18px;
+  padding: 12px 14px;
+  border: 1px solid rgba(56, 189, 248, 0.22);
+  border-radius: 14px;
+  background: rgba(15, 23, 42, 0.62);
+}
+
+.encabezado-paciente-nota span {
+  color: #7dd3fc;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.encabezado-paciente-nota strong {
+  color: #f8fafc;
+  font-size: 1.15rem;
+}
+
+#btnSincronizarDxObs.cargando {
+  position: relative;
+  padding-left: 38px;
+}
+
+#btnSincronizarDxObs.cargando::before {
+  content: "";
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  width: 14px;
+  height: 14px;
+  margin-top: -7px;
+  border: 2px solid rgba(125, 211, 252, 0.35);
+  border-top-color: #7dd3fc;
+  border-radius: 50%;
+  animation: giro-sincronizar-dx 0.7s linear infinite;
+}
+
+@keyframes giro-sincronizar-dx {
+  to { transform: rotate(360deg); }
+}
+
 .boton-catalogo-manual {
   background: rgba(15, 23, 42, 0.92);
   border: 1px solid rgba(125, 211, 252, 0.34);

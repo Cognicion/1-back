@@ -1293,10 +1293,26 @@ function normalizarDiagnosticoNota(dx = {}, index = 0) {
 }
 
 function normalizarDiagnosticosNota(lista = []) {
+  const vistos = new Set();
   return lista
     .map((dx, index) => normalizarDiagnosticoNota(dx, index))
     .sort((a, b) => (Number(a.orden) || 0) - (Number(b.orden) || 0))
+    .filter((dx) => {
+      const clave = claveDiagnosticoNota(dx);
+      if (!clave) return true;
+      if (vistos.has(clave)) return false;
+      vistos.add(clave);
+      return true;
+    })
     .map((dx, index) => ({ ...dx, orden: index }));
+}
+
+function claveDiagnosticoNota(dx = {}) {
+  if (!dx) return "";
+  if (typeof dx === "string") return normalizarTextoBusqueda(dx);
+  const codigo = String(dx.codigo || "").trim().toLowerCase();
+  const nombre = normalizarTextoBusqueda(dx.nombre || dx.texto || dx.descripcion || dx.diagnostico || "");
+  return codigo || nombre;
 }
 
 function textoDiagnosticoConEstado(dx) {
@@ -2178,7 +2194,63 @@ async function refrescarDatosVivosParaNota(uidPaciente, opciones = {}) {
 }
 
 formatoNota?.addEventListener("change", sincronizarFormatoNota);
-btnSincronizarDxObs?.addEventListener("click", sincronizarDiagnosticosObservacion);
+btnSincronizarDxObs?.addEventListener("click", sincronizarDiagnosticosPreviosObservacion);
+
+function diagnosticosPreviosPacienteNota(paciente = pacienteActualDatos || {}) {
+  const acumulados = [
+    ...(Array.isArray(paciente.historialDiagnosticos) ? paciente.historialDiagnosticos : []),
+    ...(Array.isArray(paciente.datosClinicosResumen?.historialDiagnosticos) ? paciente.datosClinicosResumen.historialDiagnosticos : []),
+    ...(Array.isArray(paciente.diagnosticos) ? paciente.diagnosticos : [])
+  ];
+
+  if (paciente.diagnostico) acumulados.push(paciente.diagnostico);
+  if (paciente.datosClinicosResumen?.diagnostico) acumulados.push(paciente.datosClinicosResumen.diagnostico);
+
+  return normalizarDiagnosticosNota(acumulados);
+}
+
+async function sincronizarDiagnosticosPreviosObservacion() {
+  const boton = btnSincronizarDxObs;
+  const textoOriginal = boton?.textContent || "Sincronizar diagnosticos";
+
+  if (boton) {
+    boton.disabled = true;
+    boton.classList.add("cargando");
+    boton.setAttribute("aria-busy", "true");
+    boton.textContent = "Sincronizando...";
+  }
+
+  try {
+    const uidPaciente = uidPacienteActual || document.getElementById("uidPaciente")?.value || "";
+    if (uidPaciente) {
+      try {
+        const actualizados = await obtenerUsuario(uidPaciente);
+        if (actualizados) pacienteActualDatos = actualizados;
+      } catch (error) {
+        console.warn("No se pudieron refrescar diagnosticos previos del paciente:", error);
+      }
+    }
+
+    const previos = diagnosticosPreviosPacienteNota();
+    const existentes = normalizarDiagnosticosNota(diagnosticosSeleccionados);
+    const clavesExistentes = new Set(existentes.map(claveDiagnosticoNota).filter(Boolean));
+    const nuevos = previos.filter((dx) => {
+      const clave = claveDiagnosticoNota(dx);
+      return clave && !clavesExistentes.has(clave);
+    });
+
+    diagnosticosSeleccionados = normalizarDiagnosticosNota([...existentes, ...nuevos]);
+    renderizarDiagnosticosSeleccionados();
+    sincronizarDiagnosticosObservacion();
+  } finally {
+    if (boton) {
+      boton.disabled = false;
+      boton.classList.remove("cargando");
+      boton.removeAttribute("aria-busy");
+      boton.textContent = textoOriginal;
+    }
+  }
+}
 
 function diagnosticosCIE10Observacion() {
   diagnosticosSeleccionados = normalizarDiagnosticosNota(diagnosticosSeleccionados);
@@ -3425,6 +3497,8 @@ async function cargarPaciente(uidPaciente) {
 
   if (!datos) return;
   pacienteActualDatos = datos;
+  const nombrePacienteNota = document.getElementById("nombrePacienteNota");
+  if (nombrePacienteNota) nombrePacienteNota.textContent = obtenerNombrePacienteParaMostrar(datos) || "Paciente sin nombre";
 
   try {
     const historiaSnap = await obtenerHistoriaClinica(uidPaciente);
@@ -3439,24 +3513,7 @@ async function cargarPaciente(uidPaciente) {
   const ultimaConsulta = document.getElementById("ultimaConsulta");
   const proximaConsulta = document.getElementById("proximaConsulta");
 
-  diagnosticosSeleccionados = [];
-
-  if (Array.isArray(datos.historialDiagnosticos)) {
-    diagnosticosSeleccionados = normalizarDiagnosticosNota(datos.historialDiagnosticos);
-  } else if (Array.isArray(datos.datosClinicosResumen?.historialDiagnosticos)) {
-    diagnosticosSeleccionados = normalizarDiagnosticosNota(datos.datosClinicosResumen.historialDiagnosticos);
-  } else if (typeof datos.diagnostico === "object" && datos.diagnostico !== null) {
-    diagnosticosSeleccionados = normalizarDiagnosticosNota([datos.diagnostico]);
-  } else if (typeof datos.diagnostico === "string" && datos.diagnostico.trim() !== "") {
-    diagnosticosSeleccionados = normalizarDiagnosticosNota([
-      {
-        codigo: "",
-        nombre: datos.diagnostico,
-        texto: datos.diagnostico,
-        fechaSeleccion: new Date().toISOString()
-      }
-    ]);
-  }
+  diagnosticosSeleccionados = diagnosticosPreviosPacienteNota(datos);
 
   renderizarDiagnosticosSeleccionados();
 
