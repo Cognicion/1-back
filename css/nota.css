@@ -1994,13 +1994,141 @@ button:hover{
   background: var(--surface-secondary, #1b1b1b);
 }
 
-.visor-calculadora-iframe {
-  display: block;
+.calculadora-nota-embebida {
+  display: grid;
+  grid-template-columns: minmax(190px, 0.34fr) minmax(0, 1fr);
+  gap: 12px;
+  min-width: 0;
+  min-height: 300px;
+}
+
+.calculadora-nota-busqueda,
+.calculadora-nota-campo {
+  display: grid;
+  gap: 6px;
+  color: var(--text-secondary, #b5b5b5);
+  font-size: 0.75rem;
+  font-weight: 750;
+}
+
+.calculadora-nota-busqueda {
+  grid-column: 1;
+}
+
+.calculadora-nota-busqueda input,
+.calculadora-nota-campo input,
+.calculadora-nota-campo select {
   width: 100%;
-  height: min(66vh, 720px);
-  min-height: 420px;
-  border: 0;
-  background: var(--surface-primary, #fff);
+  min-height: 38px;
+  padding: 8px 10px;
+}
+
+.calculadora-nota-lista {
+  display: grid;
+  grid-column: 1;
+  align-content: start;
+  gap: 6px;
+  max-height: 46vh;
+  overflow: auto;
+}
+
+.calculadora-nota-lista button {
+  display: grid;
+  gap: 4px;
+  padding: 9px 10px;
+  border: 1px solid var(--border-subtle, #303030);
+  border-radius: 2px;
+  color: var(--text-primary, #fff);
+  background: var(--surface-secondary, #1b1b1b);
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+}
+
+.calculadora-nota-lista button:hover {
+  border-color: var(--border-active, #fff);
+  color: var(--text-inverse, #000);
+  background: var(--surface-inverse, #fff);
+}
+
+.calculadora-nota-lista small {
+  color: var(--text-muted, #747474);
+  font-size: 0.7rem;
+}
+
+.calculadora-nota-detalle {
+  grid-column: 2;
+  grid-row: 1 / span 3;
+  min-width: 0;
+  padding: 14px;
+  border: 1px solid var(--border-subtle, #303030);
+  background: var(--surface-secondary, #1b1b1b);
+}
+
+.calculadora-nota-detalle header {
+  margin-bottom: 14px;
+}
+
+.calculadora-nota-detalle header span {
+  color: var(--text-muted, #747474);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.calculadora-nota-detalle h3 {
+  margin: 5px 0;
+}
+
+.calculadora-nota-campos {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px;
+}
+
+.calculadora-nota-resultado {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border-subtle, #303030);
+}
+
+.calculadora-nota-resultado dl {
+  display: grid;
+  gap: 7px;
+  margin: 12px 0 0;
+}
+
+.calculadora-nota-resultado dl div {
+  display: grid;
+  grid-template-columns: minmax(120px, 0.7fr) 1fr;
+  gap: 10px;
+}
+
+.calculadora-nota-resultado dt {
+  color: var(--text-muted, #747474);
+}
+
+.calculadora-nota-resultado dd {
+  margin: 0;
+  color: var(--text-primary, #fff);
+}
+
+.calculadora-nota-valor {
+  display: block;
+  font-size: 1.5rem;
+}
+
+.calculadora-nota-categoria {
+  display: inline-block;
+  margin-top: 5px;
+  color: var(--text-secondary, #b5b5b5);
+  font-weight: 750;
+}
+
+.calculadora-nota-ayuda,
+.calculadora-nota-aviso {
+  color: var(--text-muted, #747474);
 }
 
 .panel-calculadoras-nota .calculadora-pantalla,
@@ -2034,7 +2162,14 @@ button:hover{
     grid-row: auto;
   }
 
-  .visor-calculadora-iframe {
-    min-height: 56vh;
+  .calculadora-nota-embebida {
+    grid-template-columns: 1fr;
+  }
+
+  .calculadora-nota-busqueda,
+  .calculadora-nota-lista,
+  .calculadora-nota-detalle {
+    grid-column: 1;
+    grid-row: auto;
   }
 }

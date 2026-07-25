@@ -3113,18 +3113,20 @@ function configurarCalculadoraNota() {
     pantalla.focus?.();
   };
 
-  const cargarCalculadoraExterna = (boton) => {
-    const url = boton.dataset.calculadoraUrl;
-    if (!url) return;
+  const cargarCalculadoraExterna = async (boton) => {
+    const tipo = boton.dataset.calculadoraTipo;
+    if (!tipo) return;
     pantalla.hidden = true;
     teclado.hidden = true;
     visor.replaceChildren();
-    const iframe = document.createElement("iframe");
-    iframe.className = "visor-calculadora-iframe";
-    iframe.title = boton.dataset.calculadoraNombre || "Calculadora";
-    iframe.loading = "lazy";
-    iframe.src = url;
-    visor.appendChild(iframe);
+    visor.textContent = "Cargando calculadora...";
+    try {
+      const modulo = await import("./components/calculadorasNota.js");
+      await modulo.montarCalculadoraNota(visor, tipo);
+    } catch (error) {
+      visor.textContent = "No fue posible cargar esta calculadora.";
+      console.error("Error al cargar calculadora embebida:", error);
+    }
   };
 
   const filtrarCalculadoras = () => {
@@ -3144,7 +3146,7 @@ function configurarCalculadoraNota() {
     if (boton.dataset.calculadoraNota === "convencional") {
       mostrarConvencional();
     } else {
-      cargarCalculadoraExterna(boton);
+      void cargarCalculadoraExterna(boton);
     }
   });
 
