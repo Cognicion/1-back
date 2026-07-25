@@ -120,10 +120,10 @@
 
 <div id="fondoCalculadorasNota" class="fondo-borradores-medico oculto" onclick="cerrarCalculadorasNota()"></div>
 
-<section id="panelCalculadorasNota" class="panel-borradores-medico panel-calculadoras-nota" aria-hidden="true">
+<section id="panelCalculadorasNota" class="panel-borradores-medico panel-calculadoras-nota" role="dialog" aria-modal="true" aria-labelledby="tituloCalculadorasNota" aria-hidden="true">
     <div class="panel-borradores-header">
         <div>
-            <span>Calculadoras</span>
+            <span id="tituloCalculadorasNota">Calculadoras</span>
             <small>Herramientas rápidas para operaciones convencionales.</small>
         </div>
         <button type="button" class="boton-cerrar-panel" onclick="cerrarCalculadorasNota()">Cerrar</button>
@@ -132,14 +132,17 @@
     <div class="calculadora-convencional" aria-label="Calculadora convencional">
         <label class="buscador-calculadoras-nota">
             Buscar calculadora
-            <input id="buscarCalculadoraNota" type="search" placeholder="Nombre o especialidad">
+            <span>Buscar calculadora</span><input id="buscarCalculadoraNota" type="search" placeholder="Nombre, especialidad o función…" autocomplete="off">
         </label>
-        <nav class="lista-calculadoras-nota" aria-label="Calculadoras disponibles">
+        <section class="calculadoras-recientes-nota"><h2>Usadas recientemente</h2><div id="recientesCalculadorasNota"></div></section>
+        <div id="resultadosCalculadorasNota" class="calculator-mobile-results" aria-live="polite"></div>
+        <nav id="listaCalculadorasNota" class="lista-calculadoras-nota" aria-label="Calculadoras disponibles">
             <button type="button" data-calculadora-nota="convencional" data-calculadora-nombre="Calculadora convencional">Calculadora convencional</button>
             <button type="button" data-calculadora-nota="externa" data-calculadora-tipo="medicas" data-calculadora-nombre="Calculadoras medicas">Calculadoras medicas</button>
             <button type="button" data-calculadora-nota="externa" data-calculadora-tipo="pediatricas" data-calculadora-nombre="Calculadoras pediatricas">Calculadoras pediatricas</button>
             <button type="button" data-calculadora-nota="externa" data-calculadora-tipo="benzodiacepinas" data-calculadora-nombre="Equivalencias de benzodiacepinas">Equivalencias de benzodiacepinas</button>
         </nav>
+        <button type="button" class="calculator-back" onclick="document.getElementById('panelCalculadorasNota').classList.remove('calculator-show-content'); document.getElementById('buscarCalculadoraNota')?.focus();">Buscar otra calculadora</button>
         <div id="visorCalculadoraNota" class="visor-calculadora-nota" aria-live="polite"></div>
         <output id="pantallaCalculadoraNota" class="calculadora-pantalla" aria-live="polite" hidden>0</output>
         <div class="calculadora-teclado" hidden>
@@ -519,6 +522,7 @@ Cancelar edicion
 </div>
 
 <script type="module" src="js/nota.js?v=20260719-actor-format-permissions"></script>
+<script type="module">import("./js/calculators/calculatorDialog.js");</script>
 
   <script type="module" src="js/components/accesosRapidos.js"></script>
   <script>

@@ -9,7 +9,7 @@ function valorResultado(valor) {
   return String(valor);
 }
 
-function renderResultado(contenedor, resultado) {
+export function renderResultado(contenedor, resultado) {
   if (!resultado) {
     contenedor.innerHTML = `<p class="calculadora-nota-ayuda">Completa los campos para calcular.</p>`;
     return;
@@ -26,7 +26,7 @@ function renderResultado(contenedor, resultado) {
   contenedor.innerHTML = filas.join("") || `<p class="calculadora-nota-ayuda">Sin resultado.</p>`;
 }
 
-function crearCampo(definicion, onChange) {
+export function crearCampo(definicion, onChange) {
   const envoltura = document.createElement("label");
   envoltura.className = "calculadora-nota-campo";
   envoltura.append(document.createTextNode(definicion.label + (definicion.unit ? " (" + definicion.unit + ")" : "")));
@@ -137,8 +137,10 @@ function montarBenzodiacepinas(contenedor, data) {
     const resultado = data.convertirBenzodiacepina(origen, dosis, destino);
     renderResultado(contenedor.querySelector("[data-benzo-resultado]"), resultado ? { value: data.formatearDosis(resultado.dosisDiariaDestino), unit: "mg/día", category: resultado.destino?.nombre || "", interpretation: "Equivalencia aproximada para revisión clínica." } : { value: null, missingData: ["Completa los medicamentos y la dosis"] });
   };
-  contenedor.querySelectorAll("[data-benzo]").forEach((control) => control.addEventListener("input", actualizar));
+  const controles = [...contenedor.querySelectorAll("[data-benzo]")];
+  controles.forEach((control) => { control.addEventListener("input", actualizar); control.addEventListener("change", actualizar); });
   actualizar();
+  return () => controles.forEach((control) => { control.removeEventListener("input", actualizar); control.removeEventListener("change", actualizar); });
 }
 
 export async function montarCalculadoraNota(contenedor, tipo) {
@@ -151,5 +153,39 @@ export async function montarCalculadoraNota(contenedor, tipo) {
     montarPediatricas(contenedor, await import("../data/calculadorasPediatricas.js"));
     return;
   }
-  montarBenzodiacepinas(contenedor, await import("../data/benzodiacepinas.js"));
+    return montarBenzodiacepinas(contenedor, await import("../data/benzodiacepinas.js"));
+}
+
+// Adaptadores de transición: reutilizan exactamente las fórmulas legacy,
+// pero montan una sola calculadora elegida por el usuario.
+export function montarCalculadoraMedicaLegacy(contenedor, calc, data) {
+  contenedor.className = "calculadora-nota-embebida";
+  contenedor.innerHTML = `<section class="calculadora-nota-detalle"><header><span>${escapar(calc.type || "Calculadora médica")}</span><h3>${escapar(calc.name)}</h3><p>${escapar(calc.description || "")}</p></header><div class="calculadora-nota-campos"></div><div class="calculadora-nota-resultado"></div></section>`;
+  const campos = contenedor.querySelector(".calculadora-nota-campos");
+  const resultado = contenedor.querySelector(".calculadora-nota-resultado");
+  const actualizar = () => {
+    const inputs = {};
+    campos.querySelectorAll("[data-calculadora-campo]").forEach((control) => { inputs[control.dataset.calculadoraCampo] = control.type === "checkbox" ? control.checked : control.value; });
+    try { renderResultado(resultado, data.ejecutarCalculadoraMedica(calc.id, inputs)); }
+    catch (error) { resultado.textContent = "No fue posible calcular con estos datos."; console.error("Error en calculadora médica embebida:", error); }
+  };
+  (calc.inputs || []).forEach((input) => campos.appendChild(crearCampo(input, actualizar)));
+  actualizar();
+  return () => contenedor.replaceChildren();
+}
+
+export function montarCalculadoraPediatricaLegacy(contenedor, calc, data) {
+  contenedor.className = "calculadora-nota-embebida";
+  contenedor.innerHTML = `<section class="calculadora-nota-detalle"><header><span>Pediatría</span><h3>${escapar(calc.nombre)}</h3><p>${escapar(calc.descripcion || "")}</p></header><div class="calculadora-nota-campos"></div><div class="calculadora-nota-resultado"></div></section>`;
+  const campos = contenedor.querySelector(".calculadora-nota-campos");
+  const resultado = contenedor.querySelector(".calculadora-nota-resultado");
+  const actualizar = () => {
+    const inputs = {};
+    campos.querySelectorAll("[data-calculadora-campo]").forEach((control) => { inputs[control.dataset.calculadoraCampo] = control.type === "checkbox" ? control.checked : control.value; });
+    try { renderResultado(resultado, calc.calcular(inputs)); }
+    catch (error) { resultado.textContent = "No fue posible calcular con estos datos."; console.error("Error en calculadora pediátrica embebida:", error); }
+  };
+  (calc.inputs || []).forEach((input) => campos.appendChild(crearCampo({ id: input.id, label: input.label, unit: input.unidad, type: input.tipo === "select" ? "select" : input.tipo === "checkbox" ? "checkbox" : input.tipo, options: input.opciones, help: input.ayuda }, actualizar)));
+  actualizar();
+  return () => contenedor.replaceChildren();
 }
