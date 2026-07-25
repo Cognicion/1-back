@@ -1210,6 +1210,42 @@ body.panel-medico-contraido .pestana-panel-medico {
   font-style: italic;
 }
 
+/* Estados de filas en tema claro: ningún estado interactivo oscurece la tabla. */
+html[data-theme="light"] .tabla-pacientes .fila-paciente {
+  background: var(--surface-primary);
+  border-color: var(--border-subtle);
+  color: var(--text-primary);
+}
+
+html[data-theme="light"] .tabla-pacientes .fila-paciente:hover,
+html[data-theme="light"] .tabla-pacientes .fila-paciente:focus-within {
+  background: var(--surface-hover);
+  border-color: var(--border-normal);
+  color: var(--text-primary);
+  box-shadow: var(--shadow-subtle);
+}
+
+html[data-theme="light"] .tabla-pacientes .fila-paciente.seleccionada,
+html[data-theme="light"] .tabla-pacientes .fila-paciente.selected,
+html[data-theme="light"] .tabla-pacientes .fila-paciente.activa,
+html[data-theme="light"] .tabla-pacientes .fila-paciente.active {
+  background: var(--surface-selected);
+  border-color: var(--accent-primary);
+  color: var(--text-primary);
+}
+
+html[data-theme="light"] .tabla-pacientes .fila-paciente:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+html[data-theme="light"] .tabla-pacientes .fila-paciente .selector-atencion,
+html[data-theme="light"] .tabla-pacientes .fila-paciente .selector-carpeta {
+  background: var(--input-bg);
+  border-color: var(--input-border);
+  color: var(--input-text);
+}
+
 body.bloqueado .layout,
 body.bloqueado main,
 body.bloqueado aside {

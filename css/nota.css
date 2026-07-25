@@ -2325,4 +2325,80 @@ button:hover{
   .calculators-dialog.calculator-show-content .visor-calculadora-nota { grid-row: 3; }
   .calculators-dialog .calculadora-nota-embebida { display: block; min-height: 0; }
 }
+
+/* Tema claro de la nota clínica: superficies de trabajo y controles legibles. */
+html[data-theme="light"] body {
+  background: var(--page-bg);
+  color: var(--text-primary);
+}
+
+html[data-theme="light"] .contenedor,
+html[data-theme="light"] .bloque-observacion,
+html[data-theme="light"] .observacion-seccion,
+html[data-theme="light"] .tabla-diagnosticos {
+  background: var(--surface-primary);
+  background-image: none;
+  border-color: var(--border-subtle);
+  box-shadow: var(--shadow-subtle);
+  color: var(--text-primary);
+}
+
+html[data-theme="light"] input,
+html[data-theme="light"] textarea,
+html[data-theme="light"] select,
+html[data-theme="light"] .campo-vital input,
+html[data-theme="light"] .seccion-firmas input {
+  background: var(--input-bg);
+  border-color: var(--input-border);
+  color: var(--input-text);
+}
+
+html[data-theme="light"] input::placeholder,
+html[data-theme="light"] textarea::placeholder {
+  color: var(--input-placeholder);
+  opacity: 1;
+}
+
+html[data-theme="light"] .observacion-seccion h3,
+html[data-theme="light"] .firmas-extra summary {
+  background: var(--surface-secondary);
+  border-color: var(--border-subtle);
+  color: var(--text-primary);
+}
+
+html[data-theme="light"] .observacion-seccion h3,
+html[data-theme="light"] .firmas-extra[open] summary {
+  color: var(--accent-primary);
+}
+
+html[data-theme="light"] .grid-vitales {
+  background: var(--surface-primary);
+}
+
+html[data-theme="light"] .campo-vital,
+html[data-theme="light"] .firma-campo {
+  background: var(--surface-secondary);
+  border-color: var(--border-normal);
+  color: var(--text-primary);
+}
+
+html[data-theme="light"] .firma-campo-header,
+html[data-theme="light"] .tabla-diagnosticos h3 {
+  color: var(--text-primary);
+}
+
+html[data-theme="light"] .boton-secundario,
+html[data-theme="light"] .boton-mini {
+  background: var(--action-secondary-bg);
+  border-color: var(--action-secondary-border);
+  color: var(--action-secondary-text);
+  box-shadow: none;
+}
+
+html[data-theme="light"] .boton-secundario:hover,
+html[data-theme="light"] .boton-mini:hover {
+  background: var(--action-secondary-hover);
+  border-color: var(--accent-hover);
+  color: var(--text-primary);
+}
 body.calculator-modal-open { overflow: hidden; }
