@@ -3000,6 +3000,166 @@ window.cerrarNotasFlotantesPaciente = function() {
   }, 220);
 };
 
+function evaluarExpresionCalculadoraNota(expresion = "") {
+  const compacto = String(expresion).replace(/\s+/g, "");
+  if (!compacto) return 0;
+
+  const tokens = compacto.match(/\d+(?:\.\d+)?|[()+\-*/]/g);
+  if (!tokens || tokens.join("") !== compacto) return null;
+
+  const salida = [];
+  const operadores = [];
+  const precedencia = { "+": 1, "-": 1, "*": 2, "/": 2, "u-": 3 };
+  let esperaValor = true;
+
+  tokens.forEach((token) => {
+    if (/^\d/.test(token)) {
+      salida.push(Number(token));
+      esperaValor = false;
+      return;
+    }
+
+    if (token === "(") {
+      operadores.push(token);
+      esperaValor = true;
+      return;
+    }
+
+    if (token === ")") {
+      while (operadores.length && operadores.at(-1) !== "(") salida.push(operadores.pop());
+      if (operadores.pop() !== "(") throw new Error("Parentesis no balanceados");
+      esperaValor = false;
+      return;
+    }
+
+    const operador = token === "-" && esperaValor ? "u-" : token;
+    if (esperaValor && operador !== "u-") throw new Error("Operacion incompleta");
+    while (
+      operadores.length &&
+      operadores.at(-1) !== "(" &&
+      precedencia[operadores.at(-1)] > precedencia[operador]
+    ) {
+      salida.push(operadores.pop());
+    }
+    operadores.push(operador);
+    esperaValor = true;
+  });
+
+  if (esperaValor && operadores.at(-1) !== ")") throw new Error("Operacion incompleta");
+  while (operadores.length) {
+    const operador = operadores.pop();
+    if (operador === "(") throw new Error("Parentesis no balanceados");
+    salida.push(operador);
+  }
+
+  const valores = [];
+  salida.forEach((token) => {
+    if (typeof token === "number") {
+      valores.push(token);
+      return;
+    }
+
+    if (token === "u-") {
+      const valor = valores.pop();
+      if (valor === undefined) throw new Error("Operacion incompleta");
+      valores.push(-valor);
+      return;
+    }
+
+    const derecho = valores.pop();
+    const izquierdo = valores.pop();
+    if (izquierdo === undefined || derecho === undefined) throw new Error("Operacion incompleta");
+    if (token === "/" && derecho === 0) throw new Error("No se puede dividir entre cero");
+    const resultado = token === "+" ? izquierdo + derecho
+      : token === "-" ? izquierdo - derecho
+        : token === "*" ? izquierdo * derecho
+          : izquierdo / derecho;
+    valores.push(resultado);
+  });
+
+  if (valores.length !== 1 || !Number.isFinite(valores[0])) throw new Error("Operacion invalida");
+  return valores[0];
+}
+
+function configurarCalculadoraNota() {
+  const panel = document.getElementById("panelCalculadorasNota");
+  const pantalla = document.getElementById("pantallaCalculadoraNota");
+  const teclado = panel?.querySelector(".calculadora-teclado");
+  if (!panel || !pantalla || !teclado) return;
+
+  let expresion = "";
+  const actualizarPantalla = (valor = expresion || "0") => {
+    pantalla.textContent = valor;
+  };
+
+  const calcular = () => {
+    try {
+      expresion = String(evaluarExpresionCalculadoraNota(expresion));
+    } catch {
+      expresion = "";
+      actualizarPantalla("Error");
+      return;
+    }
+    actualizarPantalla();
+  };
+
+  teclado.addEventListener("click", (evento) => {
+    const boton = evento.target.closest("button");
+    if (!boton) return;
+
+    const accion = boton.dataset.calculadoraAccion;
+    if (accion === "limpiar") {
+      expresion = "";
+      actualizarPantalla();
+      return;
+    }
+    if (accion === "retroceso") {
+      expresion = expresion.slice(0, -1);
+      actualizarPantalla();
+      return;
+    }
+    if (accion === "resultado") {
+      calcular();
+      return;
+    }
+
+    expresion += boton.dataset.calculadoraValor || "";
+    actualizarPantalla();
+  });
+
+  panel.addEventListener("keydown", (evento) => {
+    if (evento.key === "Enter" || evento.key === "=") {
+      evento.preventDefault();
+      calcular();
+    }
+    if (evento.key === "Escape") cerrarCalculadorasNota();
+  });
+}
+
+window.abrirCalculadorasNota = function() {
+  const fondo = document.getElementById("fondoCalculadorasNota");
+  const panel = document.getElementById("panelCalculadorasNota");
+
+  fondo?.classList.remove("oculto");
+  panel?.classList.add("abierto");
+  panel?.setAttribute("aria-hidden", "false");
+  panel?.querySelector("button")?.focus();
+};
+
+window.cerrarCalculadorasNota = function() {
+  const fondo = document.getElementById("fondoCalculadorasNota");
+  const panel = document.getElementById("panelCalculadorasNota");
+
+  panel?.classList.remove("abierto");
+  panel?.setAttribute("aria-hidden", "true");
+
+  window.setTimeout(() => {
+    if (!panel?.classList.contains("abierto")) fondo?.classList.add("oculto");
+  }, 220);
+};
+
+configurarCalculadoraNota();
+
 window.guardarBorradoresMedico = async function() {
   const texto = document.getElementById("borradoresMedicoTexto");
   const titulo = document.getElementById("apunteMedicoTitulo");

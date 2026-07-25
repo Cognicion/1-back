@@ -214,9 +214,13 @@ function renderizarResultados(contenedor, texto = "") {
   resultados.innerHTML = encontrados.length
     ? encontrados.map((opcion) => {
       return `
-        <button type="button" data-acceso-agregar="${escaparHTML(opcion.value)}">
+        <div class="accesos-rapidos-resultado-item">
           <span>${escaparHTML(opcion.label)}</span>
-        </button>
+          <span class="accesos-rapidos-resultado-acciones">
+            <button type="button" data-acceso-abrir="${escaparHTML(opcion.value)}" aria-label="Ir a ${escaparHTML(opcion.label)}">Ir</button>
+            <button type="button" data-acceso-agregar="${escaparHTML(opcion.value)}" aria-label="Agregar ${escaparHTML(opcion.label)} a accesos rápidos">+</button>
+          </span>
+        </div>
       `;
     }).join("")
     : `<p class="sin-resultados">No se encontraron páginas.</p>`;

@@ -29,8 +29,8 @@
         Notas flotantes
     </button>
 
-    <button class="boton-secundario" onclick="window.location.href='apuntes.html'">
-        Página de apuntes
+    <button class="boton-secundario" onclick="abrirCalculadorasNota()">
+        Calculadoras
     </button>
 </div>
 
@@ -114,6 +114,49 @@
 
     <div id="listaNotasFlotantesNota" class="lista-notas-flotantes-nota">
         Selecciona un paciente para cargar sus notas flotantes.
+    </div>
+</section>
+
+<div id="fondoCalculadorasNota" class="fondo-borradores-medico oculto" onclick="cerrarCalculadorasNota()"></div>
+
+<section id="panelCalculadorasNota" class="panel-borradores-medico panel-calculadoras-nota" aria-hidden="true">
+    <div class="panel-borradores-header">
+        <div>
+            <span>Calculadoras</span>
+            <small>Herramientas rápidas para operaciones convencionales.</small>
+        </div>
+        <button type="button" class="boton-cerrar-panel" onclick="cerrarCalculadorasNota()">Cerrar</button>
+    </div>
+
+    <div class="calculadora-convencional" aria-label="Calculadora convencional">
+        <nav class="lista-calculadoras-nota" aria-label="Calculadoras disponibles">
+            <a href="calculadoras-medicas.html" target="_blank" rel="noopener">Calculadoras medicas</a>
+            <a href="calculadoras-pediatricas.html" target="_blank" rel="noopener">Calculadoras pediatricas</a>
+            <a href="calculadora-benzodiacepinas.html" target="_blank" rel="noopener">Equivalencias de benzodiacepinas</a>
+        </nav>
+        <output id="pantallaCalculadoraNota" class="calculadora-pantalla" aria-live="polite">0</output>
+        <div class="calculadora-teclado">
+            <button type="button" data-calculadora-accion="limpiar">C</button>
+            <button type="button" data-calculadora-accion="retroceso">⌫</button>
+            <button type="button" data-calculadora-valor="(">(</button>
+            <button type="button" data-calculadora-valor=")">)</button>
+            <button type="button" data-calculadora-valor="/">÷</button>
+            <button type="button" data-calculadora-valor="7">7</button>
+            <button type="button" data-calculadora-valor="8">8</button>
+            <button type="button" data-calculadora-valor="9">9</button>
+            <button type="button" data-calculadora-valor="*">×</button>
+            <button type="button" data-calculadora-valor="4">4</button>
+            <button type="button" data-calculadora-valor="5">5</button>
+            <button type="button" data-calculadora-valor="6">6</button>
+            <button type="button" data-calculadora-valor="-">−</button>
+            <button type="button" data-calculadora-valor="1">1</button>
+            <button type="button" data-calculadora-valor="2">2</button>
+            <button type="button" data-calculadora-valor="3">3</button>
+            <button type="button" data-calculadora-valor="+">+</button>
+            <button type="button" class="calculadora-cero" data-calculadora-valor="0">0</button>
+            <button type="button" data-calculadora-valor=".">.</button>
+            <button type="button" class="calculadora-resultado" data-calculadora-accion="resultado">=</button>
+        </div>
     </div>
 </section>
 

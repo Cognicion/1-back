@@ -432,6 +432,88 @@ button:hover{
     pointer-events: auto;
 }
 
+.panel-calculadoras-nota {
+    left: auto;
+    right: 20px;
+    width: min(420px, calc(100vw - 40px));
+    grid-template-rows: auto minmax(0, 1fr);
+}
+
+.calculadora-convencional {
+    display: grid;
+    gap: 14px;
+    align-content: start;
+    min-height: 0;
+}
+
+.lista-calculadoras-nota {
+    display: grid;
+    gap: 7px;
+}
+
+.lista-calculadoras-nota a {
+    display: block;
+    padding: 9px 11px;
+    border: 1px solid rgba(125, 211, 252, 0.2);
+    border-radius: 8px;
+    color: #dbeafe;
+    background: rgba(15, 23, 42, 0.66);
+    text-decoration: none;
+    transition: border-color 0.14s ease, background-color 0.14s ease;
+}
+
+.lista-calculadoras-nota a:hover {
+    border-color: rgba(125, 211, 252, 0.62);
+    background: rgba(7, 89, 232, 0.24);
+}
+
+.calculadora-pantalla {
+    display: block;
+    width: 100%;
+    min-height: 64px;
+    padding: 14px;
+    overflow: auto;
+    border: 1px solid rgba(125, 211, 252, 0.28);
+    border-radius: 12px;
+    color: #f8fafc;
+    background: rgba(2, 6, 23, 0.86);
+    font-size: 1.8rem;
+    line-height: 1.2;
+    text-align: right;
+    white-space: nowrap;
+}
+
+.calculadora-teclado {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 8px;
+}
+
+.calculadora-teclado button {
+    min-height: 46px;
+    margin: 0;
+    border: 1px solid rgba(125, 211, 252, 0.2);
+    border-radius: 8px;
+    color: #eaf4ff;
+    background: rgba(15, 23, 42, 0.82);
+    font-size: 1rem;
+    font-weight: 800;
+}
+
+.calculadora-teclado button:hover {
+    border-color: rgba(125, 211, 252, 0.62);
+    background: rgba(7, 89, 232, 0.28);
+}
+
+.calculadora-teclado .calculadora-resultado,
+.calculadora-teclado .calculadora-cero {
+    background: rgba(7, 89, 232, 0.58);
+}
+
+.calculadora-teclado .calculadora-cero {
+    grid-column: span 2;
+}
+
 .panel-borradores-header {
     display: flex;
     align-items: flex-start;
@@ -1662,6 +1744,12 @@ button:hover{
   }
 
   .panel-borradores-medico {
+    left: 12px;
+    right: 12px;
+    width: auto;
+  }
+
+  .panel-calculadoras-nota {
     left: 12px;
     right: 12px;
     width: auto;
