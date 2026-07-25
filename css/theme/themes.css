@@ -24,6 +24,7 @@
   --action-primary-hover: var(--celtic-400);
   --action-secondary-bg: transparent;
   --action-secondary-text: var(--white-950);
+  --action-secondary-hover: var(--black-800);
   --surface-hover: var(--black-700);
   --surface-selected: var(--green-900);
   --text-disabled: rgb(233 236 232 / 38%);
@@ -36,6 +37,14 @@
   --scrollbar-track: var(--black-900);
   --scrollbar-thumb: var(--green-700);
   --scrollbar-thumb-hover: var(--green-500);
+  --toolbar-bg: linear-gradient(180deg, var(--black-900) 0%, var(--black-950) 100%);
+  --toolbar-border: var(--border-normal);
+  --control-bg: linear-gradient(180deg, var(--black-850) 0%, var(--black-900) 100%);
+  --control-bg-hover: linear-gradient(180deg, var(--black-800) 0%, var(--green-900) 100%);
+  --control-text: var(--text-primary);
+  --control-border: var(--border-normal);
+  --resize-track-bg: linear-gradient(90deg, var(--black-850) 0%, var(--green-800) 50%, var(--black-850) 100%);
+  --resize-handle-bg: var(--green-400);
   color-scheme: dark;
 }
 
@@ -65,6 +74,7 @@
   --action-primary-text: var(--white-1000);
   --action-secondary-bg: transparent;
   --action-secondary-text: var(--black-1000);
+  --action-secondary-hover: var(--gray-100);
   --surface-hover: var(--gray-100);
   --surface-selected: var(--celtic-100);
   --text-disabled: rgb(16 21 17 / 38%);
@@ -77,6 +87,14 @@
   --scrollbar-track: var(--white-900);
   --scrollbar-thumb: var(--green-700);
   --scrollbar-thumb-hover: var(--green-600);
+  --toolbar-bg: linear-gradient(180deg, #ffffff 0%, #ececea 100%);
+  --toolbar-border: #c9cbc7;
+  --control-bg: linear-gradient(180deg, #ffffff 0%, #eeeeec 100%);
+  --control-bg-hover: linear-gradient(180deg, #ffffff 0%, #dfe9e2 100%);
+  --control-text: #1b1d1b;
+  --control-border: #bfc3bf;
+  --resize-track-bg: linear-gradient(90deg, #e5e5e2 0%, #dce8df 50%, #e5e5e2 100%);
+  --resize-handle-bg: #315f40;
   color-scheme: light;
 }
 

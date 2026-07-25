@@ -17,9 +17,9 @@
 }
 
 :where(button, .btn, a.btn, .btn-primario, .btn-primary, .primary-button, .boton-principal, .btn-secundario, .btn-secondary, .secondary-button, .ghost-button, .boton-secundario, .logout-button, .boton, .boton-filtro-atencion, .nav-login):hover:not(:disabled) {
-  color: var(--text-inverse);
-  background: var(--surface-inverse);
-  border-color: var(--surface-inverse);
+  color: var(--text-primary);
+  background: var(--action-secondary-hover);
+  border-color: var(--accent-primary);
   transform: translateY(-1px);
 }
 
@@ -102,4 +102,24 @@
 
 :where(button, .btn, a.btn):active:not(:disabled) {
   transform: translateY(0);
+}
+
+/* En tema claro los estados normales no deben usar la superficie inversa oscura. */
+[data-theme="light"] :where(button, .btn, a.btn, .btn-primario, .btn-primary, .primary-button, .boton-principal, .btn-secundario, .btn-secondary, .secondary-button, .ghost-button, .boton-secundario, .logout-button, .boton, .boton-filtro-atencion, .nav-login):hover:not(:disabled) {
+  color: var(--text-primary);
+  background: var(--action-secondary-hover);
+  border-color: var(--accent-primary);
+}
+
+[data-theme="light"] :where(.btn-primario, .btn-primary, .primary-button, .boton-principal, .action-primary, .available-action):hover:not(:disabled) {
+  color: var(--action-primary-text);
+  background: var(--action-primary-hover);
+  border-color: var(--action-primary-hover);
+}
+
+[data-theme="light"] :where(button, .btn, a.btn):disabled {
+  background: var(--surface-secondary);
+  color: var(--text-disabled);
+  border-color: var(--border-subtle);
+  opacity: 1;
 }
