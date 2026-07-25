@@ -1,6 +1,12 @@
 const PREFIJO_CLAVE_ACCESOS = "cognicion.accesosRapidos.lista";
 const CLAVE_DESTINO_LEGADO = "cognicion.accesosRapidos.destino";
 const LIMITE_RESULTADOS = 8;
+const ACCESOS_PREDETERMINADOS_ELIMINADOS = new Set([
+  "medico.html",
+  "laboratorio-farmacologia.html",
+  "calculadoras-medicas.html",
+  "dashboard.html"
+]);
 const PAGINAS_SIN_ACCESOS_RAPIDOS = new Set([
   "index.html",
   "login.html",
@@ -109,17 +115,19 @@ function claveAccesosUsuario() {
   return `${PREFIJO_CLAVE_ACCESOS}.${uid || "anonimo"}`;
 }
 
-function accesosPorDefecto() {
-  return ["medico.html", "laboratorio-farmacologia.html", "calculadoras-medicas.html", "dashboard.html"];
-}
-
 function normalizarLista(lista = []) {
   const permitidos = new Set(OPCIONES_ACCESOS_RAPIDOS.map((opcion) => opcion.value));
   const unicos = [];
   lista.forEach((value) => {
-    if (permitidos.has(value) && !unicos.includes(value)) unicos.push(value);
+    if (
+      permitidos.has(value) &&
+      !ACCESOS_PREDETERMINADOS_ELIMINADOS.has(value) &&
+      !unicos.includes(value)
+    ) {
+      unicos.push(value);
+    }
   });
-  return unicos.length ? unicos : accesosPorDefecto();
+  return unicos;
 }
 
 function leerAccesos() {
@@ -128,11 +136,11 @@ function leerAccesos() {
     if (Array.isArray(guardado)) return normalizarLista(guardado);
 
     const legado = obtenerUidFirebaseLocal() ? "" : localStorage.getItem(CLAVE_DESTINO_LEGADO);
-    if (legado) return normalizarLista([legado, ...accesosPorDefecto()]);
+    if (legado) return normalizarLista([legado]);
   } catch {
-    // Si el almacenamiento falla, se usan accesos por defecto.
+    // Si el almacenamiento falla, se muestra la lista vacia.
   }
-  return accesosPorDefecto();
+  return [];
 }
 
 function guardarAccesos(lista) {
@@ -194,6 +202,11 @@ function renderizarResultados(contenedor, texto = "") {
   const resultados = contenedor.querySelector("[data-acceso-resultados]");
   if (!resultados) return;
 
+  if (!String(texto || "").trim()) {
+    resultados.innerHTML = "";
+    return;
+  }
+
   const encontrados = OPCIONES_ACCESOS_RAPIDOS
     .filter((opcion) => coincideBusqueda(opcion, texto))
     .slice(0, LIMITE_RESULTADOS);
@@ -238,19 +251,17 @@ function renderizar(contenedor) {
       <span aria-hidden="true">⚡</span> Accesos rápidos
     </button>
     <div class="accesos-rapidos-panel" data-acceso-panel aria-hidden="true">
-      <strong>Accesos rápidos</strong>
-      <p>Busca una página y agrégala para abrirla desde cualquier pestaña.</p>
-      <button class="accesos-rapidos-actual" type="button" data-acceso-agregar-actual>
-        <span aria-hidden="true">+</span> Agregar página actual
-      </button>
+      <strong class="titulo-secundario">Mis accesos</strong>
+      <ul class="accesos-rapidos-guardados" data-acceso-guardados></ul>
       <label>
         Buscar página
         <input type="search" data-acceso-busqueda placeholder="Ej. notas, farmacia, panel, escalas">
       </label>
       <div class="accesos-rapidos-resultados" data-acceso-resultados></div>
       <div class="accesos-rapidos-separador"></div>
-      <strong class="titulo-secundario">Mis accesos</strong>
-      <ul class="accesos-rapidos-guardados" data-acceso-guardados></ul>
+      <button class="accesos-rapidos-actual" type="button" data-acceso-agregar-actual>
+        <span aria-hidden="true">+</span> Agregar página actual
+      </button>
     </div>`;
 
   contenedor.dataset.accesosInicializados = "true";
