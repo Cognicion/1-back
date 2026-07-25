@@ -1,12 +1,6 @@
 const PREFIJO_CLAVE_ACCESOS = "cognicion.accesosRapidos.lista";
 const CLAVE_DESTINO_LEGADO = "cognicion.accesosRapidos.destino";
 const LIMITE_RESULTADOS = 8;
-const ACCESOS_PREDETERMINADOS_ELIMINADOS = new Set([
-  "medico.html",
-  "laboratorio-farmacologia.html",
-  "calculadoras-medicas.html",
-  "dashboard.html"
-]);
 const PAGINAS_SIN_ACCESOS_RAPIDOS = new Set([
   "index.html",
   "login.html",
@@ -121,7 +115,6 @@ function normalizarLista(lista = []) {
   lista.forEach((value) => {
     if (
       permitidos.has(value) &&
-      !ACCESOS_PREDETERMINADOS_ELIMINADOS.has(value) &&
       !unicos.includes(value)
     ) {
       unicos.push(value);
