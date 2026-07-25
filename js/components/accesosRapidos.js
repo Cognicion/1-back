@@ -44,6 +44,26 @@ export const OPCIONES_ACCESOS_RAPIDOS = Object.freeze([
 ]);
 
 function asegurarEstilos() {
+  if (!document.querySelector('style[data-estilos-criticos-accesos-rapidos]')) {
+    const style = document.createElement("style");
+    style.dataset.estilosCriticosAccesosRapidos = "true";
+    style.textContent = `
+      [data-accesos-rapidos] .accesos-rapidos-panel {
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+        transform: translateY(-8px);
+      }
+      [data-accesos-rapidos].abierto .accesos-rapidos-panel {
+        opacity: 1;
+        visibility: visible;
+        pointer-events: auto;
+        transform: translateY(0);
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
   if (document.querySelector('link[data-estilos-accesos-rapidos]')) return;
   const link = document.createElement("link");
   link.rel = "stylesheet";

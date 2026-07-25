@@ -1450,12 +1450,13 @@ function mostrarPacientes(pacientes) {
     const textoArchivo = archivado ? "Restaurar" : "Archivar";
     const tituloArchivo = archivado ? "Restaurar paciente a lista activa" : "Archivar paciente";
     const resumenMedicamentos = obtenerResumenMedicamentosDosisDia(paciente);
-    const medicamentosHtml = resumenMedicamentos.medicamentos.length
-      ? resumenMedicamentos.medicamentos.map((med) => `<span>${escaparHTML(med)}</span>`).join("")
+    const medicamentosDosisHtml = resumenMedicamentos.medicamentos.length
+      ? resumenMedicamentos.medicamentos.map((med, index) => {
+        const nombre = etiquetaMedicamentoGrafica(med) || med;
+        const dosis = resumenMedicamentos.dosis[index] || "";
+        return `<span>${escaparHTML(nombre)}${dosis ? ` <strong>${escaparHTML(dosis)}</strong>` : ""}</span>`;
+      }).join("")
       : "<span>Sin medicamento</span>";
-    const dosisDiaHtml = resumenMedicamentos.dosis.length
-      ? resumenMedicamentos.dosis.map((dosis) => `<span>${escaparHTML(dosis)}</span>`).join("")
-      : "<span>Sin registro</span>";
 
     return `
       <a class="fila-paciente" href="paciente.html?id=${paciente.id}">
@@ -1475,8 +1476,7 @@ function mostrarPacientes(pacientes) {
           ${secundariosHtml}
         </span>
         </span>
-        <span class="paciente-dato medicamento-columna" data-col-key="medicamento">${medicamentosHtml}</span>
-        <span class="paciente-dato dosis-dia-columna" data-col-key="dosisDia">${dosisDiaHtml}</span>
+        <span class="paciente-dato medicamento-columna medicamento-dosis-columna" data-col-key="medicamento">${medicamentosDosisHtml}</span>
         <span class="paciente-dato" data-col-key="ultima">${ultimaConsulta}</span>
         <span class="paciente-dato" data-col-key="proxima">${proximaConsulta}</span>
         <span class="paciente-dato" data-col-key="adscrito">${medicoAdscrito}</span>

@@ -1079,12 +1079,27 @@ body.panel-medico-contraido .pestana-panel-medico {
   line-height: 1.35;
 }
 
+.medicamento-dosis-columna,
+.encabezado-pacientes .celda-tabla:nth-child(8) {
+  grid-column: span 2;
+}
+
+.encabezado-pacientes .celda-tabla:nth-child(9) {
+  display: none;
+}
+
 .medicamento-columna span,
 .dosis-dia-columna span {
   display: block;
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.medicamento-dosis-columna strong {
+  color: #7dd3fc;
+  font-weight: 800;
+  white-space: nowrap;
 }
 
 .dosis-dia-columna {
