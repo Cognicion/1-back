@@ -9,3 +9,31 @@
 @import url("./components.css");
 @import url("./utilities.css");
 @import url("./responsive.css");
+
+/* Semántica común para páginas con CSS legacy cargado antes o después del tema. */
+html[data-theme="light"] {
+  color-scheme: light;
+}
+html[data-theme="light"] :where(body, main, .app-shell, .contenedor, .contenedor-principal) {
+  color: var(--text-primary);
+  background-color: var(--page-bg);
+  background-image: none;
+}
+html[data-theme="light"] :where(.card, .tarjeta, .module-card, .panel, .panel-lab, .seccion, .contenido, .hero, .workspace-section, .bloque, .nota-card, .paciente-card, .escala-card, .config-card, .feature-card) {
+  color: var(--text-primary);
+  background: var(--surface-primary);
+  background-image: none;
+  border: 1px solid var(--border-subtle);
+  box-shadow: var(--shadow-subtle);
+}
+html[data-theme="light"] :where(h1, h2, h3, h4, strong, .title, .card-title, .module-card__title) { color: var(--text-primary); }
+html[data-theme="light"] :where(p, small, .description, .subtitle, .card-description, .module-card__description, .muted) { color: var(--text-secondary); opacity: 1; }
+html[data-theme="light"] :where(input, select, textarea) { color: var(--input-text); background: var(--input-bg); border-color: var(--input-border); }
+html[data-theme="light"] :where(input, select, textarea)::placeholder { color: var(--input-placeholder); opacity: 1; }
+html[data-theme="light"] :where(.btn-secondary, .secondary-button, .ghost-button, .btn-secundario, .boton-secundario) { color: var(--action-secondary-text); background: var(--action-secondary-bg); border-color: var(--action-secondary-border); box-shadow: none; }
+html[data-theme="light"] :where(.btn-primary, .primary-button, .btn-primario, .boton-principal) { color: var(--action-primary-text); background: var(--action-primary-bg); border-color: var(--action-primary-bg); box-shadow: none; }
+html[data-theme="light"] :where(.navbar-medico, .navbar, .nav, .topbar, header) { color: var(--text-primary); background: var(--surface-primary); border-bottom: 1px solid var(--border-subtle); background-image: none; box-shadow: none; }
+html[data-theme="light"] :where(.navbar-medico a, .navbar a, .nav a, .menu a, .menu button, .topbar a) { color: var(--text-secondary); }
+html[data-theme="light"] :where(.navbar-medico a:hover, .navbar a:hover, .nav a:hover, .menu a:hover, .menu button:hover) { color: var(--accent-primary); background: var(--surface-hover); }
+html[data-theme="light"] :where(.badge, .pill, .chip, .status, .tag) { color: var(--accent-active); background: var(--accent-soft); border-color: var(--border-normal); }
+html[data-theme="light"] body { overflow-x: clip; }

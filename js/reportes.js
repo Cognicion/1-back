@@ -1,5 +1,4 @@
 asegurarCssReporte();
-aplicarAparienciaLocalLigera();
 
 const TIPOS_REPORTE = [
   {
@@ -50,19 +49,6 @@ function obtenerLocalStorageSeguro(clave) {
   } catch {
     return null;
   }
-}
-
-function aplicarAparienciaLocalLigera() {
-  const tema = obtenerLocalStorageSeguro("cognicion.apariencia.tema") || "laboratorio";
-  const modo = obtenerLocalStorageSeguro("cognicion.apariencia.modoInterfaz") || "dark";
-  const esClaro = modo !== "dark";
-  document.documentElement.dataset.cognicionTheme = tema;
-  document.documentElement.dataset.theme = modo;
-  document.documentElement.dataset.cognicionInterface = modo;
-  document.documentElement.style.colorScheme = esClaro ? "light" : "dark";
-  document.body?.classList.toggle("tema-laboratorio", tema === "laboratorio");
-  document.body?.classList.toggle("tema-claro", esClaro);
-  document.body?.classList.toggle("tema-oscuro", !esClaro);
 }
 
 function ejecutarCuandoEsteLibre(callback) {

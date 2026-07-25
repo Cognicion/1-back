@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" data-theme="light">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -1255,18 +1255,89 @@ footer {
   <!-- dashboard-deploy: 2026-07-02 18:22:52 -06:00 -->
 <script src="js/theme-preload.js"></script>
 <link rel="stylesheet" href="css/theme/cognicion-theme.css">
-<script>
-  (function () {
-    try {
-      var modo = localStorage.getItem("cognicion.apariencia.modoInterfaz") || "";
-      var claro = modo.indexOf("light") === 0;
-      document.documentElement.dataset.theme = claro ? "light" : "dark";
-      document.documentElement.style.colorScheme = claro ? "light" : "dark";
-    } catch (error) {
-      document.documentElement.dataset.theme = "dark";
-    }
-  }());
-</script>
+<style id="dashboard-light-theme-structure">
+html[data-theme="light"] body {
+  --bg: var(--page-bg);
+  --panel: var(--surface-primary);
+  --panel-strong: var(--surface-primary);
+  --line: var(--border-subtle);
+  --text: var(--text-primary);
+  --muted: var(--text-muted);
+  --soft: var(--text-secondary);
+  --green: var(--accent-primary);
+  color: var(--text-primary);
+  background: var(--page-bg);
+  background-image: none;
+  overflow-x: hidden;
+}
+html[data-theme="light"] body::before,
+html[data-theme="light"] .brain-background,
+html[data-theme="light"] .hero::before,
+html[data-theme="light"] .hero::after { display: none; content: none; }
+html[data-theme="light"] header {
+  background: var(--surface-primary);
+  border-bottom: 1px solid var(--border-subtle);
+  backdrop-filter: none;
+}
+html[data-theme="light"] .brand-slogan,
+html[data-theme="light"] .hero-subtitle,
+html[data-theme="light"] .hero-welcome,
+html[data-theme="light"] .hero h1,
+html[data-theme="light"] .eyebrow,
+html[data-theme="light"] .section-kicker,
+html[data-theme="light"] #bienvenida,
+html[data-theme="light"] .hero-stat strong,
+html[data-theme="light"] .activity-list span,
+html[data-theme="light"] .quick-action,
+html[data-theme="light"] .module-card,
+html[data-theme="light"] .module-card h3,
+html[data-theme="light"] .activity-card h3 { color: var(--text-primary); }
+html[data-theme="light"] .hero {
+  padding: 24px 0 18px;
+  background: var(--surface-primary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-subtle);
+  border-left: 3px solid var(--accent-primary);
+  box-shadow: none;
+}
+html[data-theme="light"] .hero h1 { white-space: normal; overflow-wrap: anywhere; }
+html[data-theme="light"] .hero-copy { padding: 18px 22px; background: transparent; box-shadow: none; }
+html[data-theme="light"] .badge,
+html[data-theme="light"] .hero .badge { color: var(--accent-primary); background: transparent; border-color: var(--border-normal); }
+html[data-theme="light"] .hero-subtitle,
+html[data-theme="light"] .activity-card p,
+html[data-theme="light"] .module-card p,
+html[data-theme="light"] .section-description,
+html[data-theme="light"] .brand-subtitle { color: var(--text-secondary); opacity: 1; }
+html[data-theme="light"] .module-card,
+html[data-theme="light"] .activity-card,
+html[data-theme="light"] .quick-action {
+  background: var(--surface-primary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-subtle);
+  box-shadow: var(--shadow-subtle);
+}
+html[data-theme="light"] .module-card:hover,
+html[data-theme="light"] .activity-card:hover,
+html[data-theme="light"] .quick-action:hover { background: var(--surface-hover); border-color: var(--accent-primary); box-shadow: var(--shadow-subtle); transform: none; }
+html[data-theme="light"] .module-icon,
+html[data-theme="light"] .module-card__icon { color: var(--accent-primary); background: var(--surface-secondary); border: 1px solid var(--border-normal); }
+html[data-theme="light"] .module-card .badge,
+html[data-theme="light"] .module-card__badge { color: var(--accent-active); background: var(--accent-soft); border: 1px solid var(--border-normal); }
+html[data-theme="light"] .module-subareas span,
+html[data-theme="light"] .medical-scope span { color: var(--text-secondary); background: var(--surface-secondary); border-color: var(--border-normal); }
+html[data-theme="light"] .activity-list span { background: var(--surface-secondary); border-color: var(--border-subtle); }
+html[data-theme="light"] .primary-button { color: var(--action-primary-text); background: var(--action-primary-bg); border-color: var(--action-primary-bg); box-shadow: none; }
+html[data-theme="light"] .secondary-button,
+html[data-theme="light"] .ghost-button,
+html[data-theme="light"] .logout-button { color: var(--action-secondary-text); background: var(--action-secondary-bg); border-color: var(--action-secondary-border); box-shadow: none; }
+html[data-theme="light"] .primary-button:hover,
+html[data-theme="light"] .secondary-button:hover,
+html[data-theme="light"] .ghost-button:hover,
+html[data-theme="light"] .logout-button:hover { color: var(--text-primary); background: var(--action-secondary-hover); border-color: var(--accent-primary); box-shadow: none; transform: none; }
+html[data-theme="light"] .app-shell { max-width: 1440px; width: min(100% - 40px, 1440px); }
+</style>
+<script type="module" src="js/services/themeBootstrap.js"></script>
 </head>
 
 <body>

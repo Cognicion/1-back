@@ -1,11 +1,6 @@
+// Antes de resolver Firebase Auth no conocemos el UID: el primer render siempre es claro.
+// El servicio central aplica después la caché por UID y la preferencia remota válida.
 (function () {
-  var modo = "dark";
-  try {
-    var guardado = localStorage.getItem("cognicion.apariencia.modoInterfaz") || "";
-    modo = guardado.indexOf("light") === 0 ? "light" : "dark";
-  } catch (error) {
-    modo = "dark";
-  }
-  document.documentElement.dataset.theme = modo;
-  document.documentElement.style.colorScheme = modo;
+  document.documentElement.dataset.theme = "light";
+  document.documentElement.style.colorScheme = "light";
 }());

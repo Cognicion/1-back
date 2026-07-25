@@ -173,7 +173,7 @@ function cancelarVistaPrevia() {
 
 function restaurarTemaPredeterminado() {
   temaPendiente = TEMAS_COGNICION.LABORATORIO;
-  modoInterfazPendiente = MODOS_INTERFAZ_COGNICION.OSCURO;
+  modoInterfazPendiente = MODOS_INTERFAZ_COGNICION.CLARO;
   actualizarVistaPrevia();
   renderizarTemas();
   renderizarModosInterfaz();

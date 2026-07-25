@@ -1,22 +1,10 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" data-theme="light">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>COGNICIÓN | Tecnologia clinica basada en evidencia</title>
 <link rel="icon" type="image/png" href="assets/favicon-cognicion.png">
-<script>
-  (function () {
-    try {
-      var modo = localStorage.getItem("cognicion.apariencia.modoInterfaz") || "";
-      var claro = modo.indexOf("light") === 0;
-      document.documentElement.dataset.theme = claro ? "light" : "dark";
-      document.documentElement.style.colorScheme = claro ? "light" : "dark";
-    } catch (error) {
-      document.documentElement.dataset.theme = "dark";
-    }
-  }());
-</script>
 <style>
 :root {
   --bg: #030711;
@@ -651,6 +639,7 @@ footer {
 </style>
 <script src="js/theme-preload.js"></script>
 <link rel="stylesheet" href="css/theme/cognicion-theme.css">
+<script type="module" src="js/services/themeBootstrap.js"></script>
 </head>
 
 <body>

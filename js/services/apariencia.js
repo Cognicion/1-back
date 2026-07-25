@@ -1,5 +1,11 @@
 import { doc, getDoc, serverTimestamp, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { db } from "../firebase.js";
+import {
+  applyTheme,
+  initializeThemeForUser,
+  normalizeTheme,
+  setThemeForUser
+} from "./themeService.js";
 
 export const TEMAS_COGNICION = Object.freeze({
   CLASICA: "clasica",
@@ -8,10 +14,7 @@ export const TEMAS_COGNICION = Object.freeze({
 
 export const MODOS_INTERFAZ_COGNICION = Object.freeze({
   OSCURO: "dark",
-  CLARO: "light",
-  CLARO_GRIS: "light-gray",
-  CLARO_MENTA: "light-mint",
-  CLARO_LAVANDA: "light-lavender"
+  CLARO: "light"
 });
 
 export const OPCIONES_TEMA_COGNICION = [
@@ -36,34 +39,15 @@ export const OPCIONES_MODO_INTERFAZ_COGNICION = [
   },
   {
     id: MODOS_INTERFAZ_COGNICION.CLARO,
-    nombre: "Claro Azul Pastel",
+    nombre: "Claro",
     icono: "\u2600\uFE0F",
-    descripcion: "Fondos blancos con tarjetas azul pastel, acentos cian y texto azul oscuro."
-  },
-  {
-    id: MODOS_INTERFAZ_COGNICION.CLARO_GRIS,
-    nombre: "Claro Gris Clinico",
-    icono: "\u25FB\uFE0F",
-    descripcion: "Base blanca y gris perla, sobria y muy legible para trabajo clinico prolongado."
-  },
-  {
-    id: MODOS_INTERFAZ_COGNICION.CLARO_MENTA,
-    nombre: "Claro Menta",
-    icono: "\u{1F9EA}",
-    descripcion: "Blanco, menta y cian suave para una apariencia limpia de laboratorio medico."
-  },
-  {
-    id: MODOS_INTERFAZ_COGNICION.CLARO_LAVANDA,
-    nombre: "Claro Lavanda",
-    icono: "\u2726",
-    descripcion: "Blanco con lavanda suave y azul, pensado para una lectura calmada y elegante."
+    descripcion: "Gris neutro, paneles blancos, texto oscuro y acento verde profundo."
   }
 ];
 
 const CLAVE_LOCAL = "cognicion.apariencia.tema";
-const CLAVE_LOCAL_MODO = "cognicion.apariencia.modoInterfaz";
 const TEMA_PREDETERMINADO_COGNICION = TEMAS_COGNICION.LABORATORIO;
-const MODO_PREDETERMINADO_COGNICION = MODOS_INTERFAZ_COGNICION.OSCURO;
+const MODO_PREDETERMINADO_COGNICION = MODOS_INTERFAZ_COGNICION.CLARO;
 const cacheAparienciaUsuario = new Map();
 
 export function normalizarTemaCognicion(tema) {
@@ -75,51 +59,21 @@ export function normalizarTemaCognicion(tema) {
 
 
 export function normalizarModoInterfazCognicion(modo) {
-  const valor = String(modo || "").toLowerCase().trim();
-  return OPCIONES_MODO_INTERFAZ_COGNICION.some((opcion) => opcion.id === valor)
-    ? valor
-    : MODO_PREDETERMINADO_COGNICION;
+  return normalizeTheme(modo);
 }
 
 export function obtenerModoInterfazLocalCognicion() {
-  try {
-    const guardado = localStorage.getItem(CLAVE_LOCAL_MODO);
-    return guardado ? normalizarModoInterfazCognicion(guardado) : MODO_PREDETERMINADO_COGNICION;
-  } catch (error) {
-    return MODO_PREDETERMINADO_COGNICION;
-  }
+  return normalizarModoInterfazCognicion(document.documentElement.dataset.theme);
 }
 
 export function guardarModoInterfazLocalCognicion(modo) {
   const modoSeguro = normalizarModoInterfazCognicion(modo);
-  try {
-    localStorage.setItem(CLAVE_LOCAL_MODO, modoSeguro);
-  } catch (error) {
-    console.warn("No se pudo guardar el modo de interfaz local.", error);
-  }
   return modoSeguro;
 }
 
 export function aplicarModoInterfazCognicion(modo) {
   const modoSeguro = normalizarModoInterfazCognicion(modo);
-  const root = document.documentElement;
-  const esClaro = modoSeguro !== MODOS_INTERFAZ_COGNICION.OSCURO;
-  root.dataset.theme = modoSeguro;
-  root.dataset.cognicionInterface = modoSeguro;
-  root.style.colorScheme = esClaro ? "light" : "dark";
-  document.body?.classList.toggle("tema-claro", esClaro);
-  document.body?.classList.toggle("tema-oscuro", !esClaro);
-  document.body?.classList.remove("tema-claro-azul", "tema-claro-gris", "tema-claro-menta", "tema-claro-lavanda");
-  if (esClaro) {
-    const claseModo = {
-      [MODOS_INTERFAZ_COGNICION.CLARO]: "tema-claro-azul",
-      [MODOS_INTERFAZ_COGNICION.CLARO_GRIS]: "tema-claro-gris",
-      [MODOS_INTERFAZ_COGNICION.CLARO_MENTA]: "tema-claro-menta",
-      [MODOS_INTERFAZ_COGNICION.CLARO_LAVANDA]: "tema-claro-lavanda"
-    }[modoSeguro] || "tema-claro-azul";
-    document.body?.classList.add(claseModo);
-  }
-  return modoSeguro;
+  return applyTheme(modoSeguro);
 }
 export function obtenerTemaLocalCognicion() {
   try {
@@ -149,7 +103,7 @@ export function aplicarTemaCognicion(tema) {
 }
 
 export function aplicarAparienciaGuardada() {
-  aplicarModoInterfazCognicion(obtenerModoInterfazLocalCognicion());
+  applyTheme("light");
   return aplicarTemaCognicion(obtenerTemaLocalCognicion());
 }
 
@@ -166,16 +120,7 @@ export async function obtenerPreferenciaAparienciaUsuario(uid) {
   }
 }
 export async function obtenerModoInterfazUsuario(uid) {
-  if (!uid) return obtenerModoInterfazLocalCognicion();
-  try {
-    const snap = await getDoc(doc(db, "usuarios", uid));
-    const datos = snap.exists() ? snap.data() : {};
-    const modoRemoto = datos?.preferencias?.apariencia?.modoInterfaz || datos?.apariencia?.modoInterfaz || datos?.modoInterfaz;
-    return modoRemoto ? normalizarModoInterfazCognicion(modoRemoto) : obtenerModoInterfazLocalCognicion();
-  } catch (error) {
-    console.warn("No se pudo leer el modo de interfaz del usuario.", error);
-    return obtenerModoInterfazLocalCognicion();
-  }
+  return initializeThemeForUser(uid ? { uid } : null);
 }
 
 export async function sincronizarAparienciaUsuario(uid, datosUsuario = null) {
@@ -199,12 +144,11 @@ export async function sincronizarAparienciaUsuario(uid, datosUsuario = null) {
     }
   }
   const temaRemoto = datos?.preferencias?.apariencia?.tema || datos?.apariencia?.tema || datos?.temaApariencia;
-  const modoRemoto = datos?.preferencias?.apariencia?.modoInterfaz || datos?.apariencia?.modoInterfaz || datos?.modoInterfaz;
+  const modoRemoto = datos?.preferencias?.apariencia?.modoInterfaz || datos?.preferencias?.tema || datos?.apariencia?.modoInterfaz || datos?.modoInterfaz;
   const tema = temaRemoto ? normalizarTemaCognicion(temaRemoto) : obtenerTemaLocalCognicion();
-  const modoInterfaz = modoRemoto ? normalizarModoInterfazCognicion(modoRemoto) : obtenerModoInterfazLocalCognicion();
+  const modoInterfaz = normalizarModoInterfazCognicion(modoRemoto);
   guardarTemaLocalCognicion(tema);
-  guardarModoInterfazLocalCognicion(modoInterfaz);
-  aplicarModoInterfazCognicion(modoInterfaz);
+  await initializeThemeForUser(uid ? { uid } : null, datos);
   aplicarTemaCognicion(tema);
   return tema;
 }
@@ -226,16 +170,5 @@ export async function guardarPreferenciaAparienciaUsuario(uid, tema) {
 }
 export async function guardarModoInterfazUsuario(uid, modo) {
   const modoSeguro = guardarModoInterfazLocalCognicion(modo);
-  aplicarModoInterfazCognicion(modoSeguro);
-  if (uid) {
-    await setDoc(doc(db, "usuarios", uid), {
-      preferencias: {
-        apariencia: {
-          modoInterfaz: modoSeguro,
-          modoInterfazActualizadoEn: serverTimestamp()
-        }
-      }
-    }, { merge: true });
-  }
-  return modoSeguro;
+  return setThemeForUser(uid ? { uid } : null, modoSeguro);
 }
