@@ -30,7 +30,8 @@ export function configurarInteracciones({ root, onSelect, onClearSelection, onZo
     pinchZoom: 1,
     dragStartX: 0,
     dragScrollLeft: 0,
-    movedDuringDrag: false
+    movedDuringDrag: false,
+    suppressNextClick: false
   };
 
   const timelineMetrics = () => {
@@ -134,18 +135,29 @@ export function configurarInteracciones({ root, onSelect, onClearSelection, onZo
     ));
   };
 
+  const seleccionarMarcador = (marker, clientX) => {
+    const group = marker?.closest("[data-group-id]");
+    if (!group) return false;
+    setFocus(clientX);
+    activateGroup(group, true);
+    onSelect?.({ eventId: marker.dataset.eventId || group.dataset.eventId, groupId: group.dataset.groupId });
+    return true;
+  };
+
   const onClick = (event) => {
     if (state.movedDuringDrag) {
       state.movedDuringDrag = false;
       return;
     }
     const marker = event.target.closest(".timeline-event__marker");
-    setFocus(event.clientX);
+    if (state.suppressNextClick) {
+      state.suppressNextClick = false;
+      return;
+    }
     if (marker) {
-      const group = marker.closest("[data-group-id]");
-      activateGroup(group, true);
-      onSelect?.({ eventId: group.dataset.eventId, groupId: group.dataset.groupId });
+      seleccionarMarcador(marker, event.clientX);
     } else {
+      setFocus(event.clientX);
       closeSelected();
     }
   };
@@ -244,12 +256,17 @@ export function configurarInteracciones({ root, onSelect, onClearSelection, onZo
   };
 
   const onPointerUp = (event) => {
+    const marker = event.target.closest?.(".timeline-event__marker");
+    const wasShortInteraction = marker && !state.movedDuringDrag && !state.isPinching;
     state.activePointers.delete(event.pointerId);
     if (state.activePointers.size < 2) {
       state.isPinching = false;
       viewport?.classList.remove("is-pinching");
     }
     state.isDragging = false;
+    if (wasShortInteraction && seleccionarMarcador(marker, event.clientX)) {
+      state.suppressNextClick = true;
+    }
   };
 
   const zoomOut = () => applyZoom(state.zoom / ZOOM_STEP);
