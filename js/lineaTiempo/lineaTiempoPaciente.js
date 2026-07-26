@@ -1,5 +1,5 @@
 import { auth } from "../firebase.js";
-import { obtenerUsuario, medicoPuedeVer } from "../services/usuarios.js";
+import { obtenerUsuario, listarPacientes, medicoPuedeVer } from "../services/usuarios.js";
 import { registrarEventoAuditoria } from "../services/auditoria.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import {
@@ -52,7 +52,20 @@ async function validarAccesoPaciente() {
   const user = auth.currentUser;
   if (!user || !pacienteId) return false;
   const perfil = await obtenerUsuario(user.uid);
-  const paciente = await obtenerUsuario(pacienteId);
+  let paciente = null;
+  try {
+    paciente = await obtenerUsuario(pacienteId);
+  } catch (error) {
+    console.warn("No se pudo leer directamente el paciente; se usará la lista autorizada.", error?.code || error?.message || error);
+  }
+  if (!paciente) {
+    const pacientesAutorizados = await listarPacientes(user.uid);
+    pacientesAutorizados.forEach((documento) => {
+      if (documento.id === pacienteId) {
+        paciente = { id: documento.id, ...documento.data() };
+      }
+    });
+  }
   if (!paciente) return false;
   const esPaciente = user.uid === pacienteId;
   const accesoProfesional = await medicoPuedeVer(user.uid, pacienteId);
