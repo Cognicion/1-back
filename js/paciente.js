@@ -145,6 +145,8 @@ let rolUsuarioActual = "";
 let permisosFormatosUsuarioActual = {};
 let tratamientosCache = [];
 let tratamientosCacheCargado = false;
+let tratamientosCachePatientId = "";
+let tratamientosCargaToken = 0;
 let estudiosCache = [];
 let escalasAsignadasCache = new Map();
 let diagnosticosCatalogoActual = [];
@@ -167,6 +169,14 @@ let catalogoManualDiagnosticos = cargarCatalogoManualDiagnosticos();
 const CLAVE_MEDICAMENTOS_MANUALES = "cognicion_catalogo_medicamentos_manual";
 let catalogoManualMedicamentos = cargarCatalogoManualMedicamentos();
 const CLAVE_CATALOGOS_INDICACIONES = "cognicion_catalogos_indicaciones";
+const ETIQUETAS_CAMBIO_TRATAMIENTO = {
+  aumenta: "Aumenta",
+  disminuye: "Disminuye",
+  pendiente_familiar: "Pendiente traer por el familiar",
+  se_suspende: "Se suspende",
+  otro: "Otro"
+};
+const CAMBIOS_TRATAMIENTO_PERMITIDOS = new Set(["", ...Object.keys(ETIQUETAS_CAMBIO_TRATAMIENTO)]);
 const CATALOGOS_INDICACIONES_DEFAULT = {
   dieta: ["NORMAL", "BLANDA", "LIQUIDA", "HIPOSODICA", "DIABETICA"],
   cuidados: [
@@ -654,7 +664,7 @@ function listaDiagnosticosLaboratorio(datos = datosPacienteActual || {}) {
 
 function listaTratamientosLaboratorio(datos = datosPacienteActual || {}) {
   const activos = tratamientosCache
-    .filter((tratamiento) => (tratamiento.estado || "activo").toLowerCase() === "activo")
+    .filter(esTratamientoVigente)
     .map((tratamiento) => tratamiento.medicamento || tratamiento.nombre || tratamiento.texto)
     .filter(Boolean);
   if (activos.length) return activos;
@@ -1843,6 +1853,7 @@ function iniciarCargaExpedientePaciente() {
     }
 
     const parametros = new URLSearchParams(window.location.search);
+    const patientIdAnterior = uidPaciente;
     uidPaciente =
       parametros.get("id") ||
       parametros.get("paciente") ||
@@ -1854,6 +1865,9 @@ function iniciarCargaExpedientePaciente() {
       parametros.get("usuario") ||
       parametros.get("user") ||
       "";
+    if (patientIdAnterior !== uidPaciente) {
+      invalidarContextoTratamientosPaciente();
+    }
     try {
       medicoActualDatos = await getUserProfileOnce(user.uid) || {};
     } catch (error) {
@@ -5051,15 +5065,81 @@ function datosIndicacionesFormulario() {
 }
 
 async function asegurarTratamientosCache() {
-  if (!uidPaciente) return;
-  if (tratamientosCacheCargado) return;
+  const patientIdActual = String(uidPaciente || "").trim();
+  if (!patientIdActual) {
+    throw new Error("No se pudo identificar al paciente activo.");
+  }
+  if (tratamientosCacheCargado && tratamientosCachePatientId === patientIdActual) return;
 
+  const token = ++tratamientosCargaToken;
   try {
-    tratamientosCache = await listarTratamientos(uidPaciente);
+    const tratamientos = await listarTratamientos(patientIdActual);
+    if (token !== tratamientosCargaToken || patientIdActual !== String(uidPaciente || "").trim()) {
+      return;
+    }
+    tratamientosCache = (Array.isArray(tratamientos) ? tratamientos : [])
+      .map(normalizarTratamientoFrecuenciaPaciente);
+    tratamientosCachePatientId = patientIdActual;
     tratamientosCacheCargado = true;
   } catch (error) {
     console.warn("No se pudieron cargar tratamientos para indicaciones:", error);
+    if (token === tratamientosCargaToken && patientIdActual === String(uidPaciente || "").trim()) {
+      tratamientosCache = [];
+      tratamientosCachePatientId = patientIdActual;
+      tratamientosCacheCargado = false;
+    }
+    throw error;
   }
+}
+
+function esTratamientoVigente(tratamiento = {}) {
+  if (!tratamiento || typeof tratamiento !== "object") return false;
+
+  const estado = String(tratamiento.estado || "activo").trim().toLowerCase();
+  if (tratamiento.activo === false) return false;
+  if (tratamiento.suspendido === true) return false;
+  if (tratamiento.eliminado === true || tratamiento.archivado === true) return false;
+  if (["suspendido", "eliminado", "archivado", "borrador", "cancelado", "inactivo"].includes(estado)) {
+    return false;
+  }
+
+  return Boolean(
+    tratamiento.medicamentoId ||
+    tratamiento.medicamento ||
+    tratamiento.genericName ||
+    tratamiento.nombre
+  );
+}
+
+function obtenerClaveMedicamentoTratamiento(tratamiento = {}) {
+  return normalizarTextoBusqueda(
+    tratamiento.medicamentoId ||
+    tratamiento.genericName ||
+    tratamiento.medicamento ||
+    tratamiento.nombre ||
+    ""
+  );
+}
+
+function obtenerTratamientosVigentesUnicos() {
+  const patientIdActual = String(uidPaciente || "").trim();
+  if (!patientIdActual || tratamientosCachePatientId !== patientIdActual) return [];
+
+  const unicos = new Map();
+  tratamientosCache.filter(esTratamientoVigente).forEach((tratamiento) => {
+    const clave = obtenerClaveMedicamentoTratamiento(tratamiento);
+    if (clave && !unicos.has(clave)) unicos.set(clave, tratamiento);
+  });
+  return [...unicos.values()];
+}
+
+function invalidarContextoTratamientosPaciente() {
+  tratamientosCargaToken += 1;
+  tratamientosCache = [];
+  tratamientosCacheCargado = false;
+  tratamientosCachePatientId = "";
+  indicacionesPacienteCache = [];
+  cerrarInteraccionesFarmacologicas();
 }
 
 function medicamentosActivosIndicaciones() {
@@ -5071,9 +5151,8 @@ function medicamentosActivosIndicaciones() {
 
   if (checksDisponibles.length) return checks;
 
-  return tratamientosCache
-    .filter((t) => (t.estado || "activo") === "activo")
-    .map((t) => formatearIndicacionTratamiento(t, true))
+  return obtenerTratamientosVigentesUnicos()
+    .map((t) => formatearIndicacionTratamientoConCambio(t, true))
     .filter(Boolean);
 }
 
@@ -5174,10 +5253,10 @@ function renderizarMedicamentosIndicaciones() {
   const contenedor = document.getElementById("listaMedicamentosIndicaciones");
   if (!contenedor) return;
 
-  const tratamientosActivos = tratamientosCache.filter((t) => (t.estado || "activo") === "activo");
+  const tratamientosActivos = obtenerTratamientosVigentesUnicos();
   contenedor.innerHTML = tratamientosActivos.length
     ? tratamientosActivos.map((tratamiento, index) => {
-      const indicacion = formatearIndicacionTratamiento(tratamiento, true);
+      const indicacion = formatearIndicacionTratamientoConCambio(tratamiento, true);
       return `
         <label class="medicamento-indicacion-item">
           <input type="checkbox" data-medicamento-indicacion value="${escaparHTML(indicacion)}" checked>
@@ -5195,15 +5274,14 @@ function renderizarMedicamentosIndicaciones() {
 }
 
 function tratamientosActivosParaInteracciones() {
-  return tratamientosCache
-    .filter((t) => (t.estado || "activo") === "activo")
+  return obtenerTratamientosVigentesUnicos()
     .map((t) => ({
       id: t.id || "",
-      medicamento: t.medicamento || "Medicamento sin nombre",
+      medicamento: t.medicamento || t.genericName || t.nombre || "",
       indicacion: formatearIndicacionTratamiento(t, false),
       dosisDia: t.dosisTotalDia || calcularDosisTotalDiaTratamiento(t).texto || ""
     }))
-    .filter((t) => t.medicamento && t.medicamento !== "Medicamento sin nombre");
+    .filter((t) => t.medicamento);
 }
 
 function tratamientosSeleccionadosIndicacionesParaInteracciones() {
@@ -5211,13 +5289,13 @@ function tratamientosSeleccionadosIndicacionesParaInteracciones() {
     .filter((check) => check.checked)
     .map((check) => check.value)
     .filter(Boolean);
-  const activos = tratamientosCache.filter((t) => (t.estado || "activo") === "activo");
+  const activos = obtenerTratamientosVigentesUnicos();
 
   if (!seleccionados.length) return tratamientosActivosParaInteracciones();
 
   return seleccionados
     .map((indicacionSeleccionada, index) => {
-      const tratamiento = activos.find((t) => formatearIndicacionTratamiento(t, true) === indicacionSeleccionada);
+      const tratamiento = activos.find((t) => formatearIndicacionTratamientoConCambio(t, true) === indicacionSeleccionada);
       if (tratamiento) {
         return {
           id: tratamiento.id || `indicacion-${index}`,
@@ -5227,14 +5305,9 @@ function tratamientosSeleccionadosIndicacionesParaInteracciones() {
         };
       }
 
-      return {
-        id: `indicacion-${index}`,
-        medicamento: indicacionSeleccionada,
-        indicacion: indicacionSeleccionada,
-        dosisDia: ""
-      };
+      return null;
     })
-    .filter((t) => t.medicamento && t.medicamento !== "Medicamento sin nombre");
+    .filter(Boolean);
 }
 
 function cerrarInteraccionesFarmacologicas() {
@@ -5303,7 +5376,7 @@ function renderizarInteraccionesFarmacologicas(medicamentos = [], origen = "trat
     : "Sin categorias clinicas detectadas por las reglas locales.";
 
   contenedor.innerHTML = `
-    <p class="texto-suave">Revisin orientativa basada en los ${escaparHTML(tituloOrigen)}. No sustituye el juicio clnico ni la revisin de fuentes farmacolgicas institucionales.</p>
+    <p class="texto-suave">Revisin orientativa basada en los ${escaparHTML(tituloOrigen)}. Analizado a partir de ${escaparHTML(String(medicamentos.length))} medicamentos activos. No sustituye el juicio clnico ni la revisin de fuentes farmacolgicas institucionales.</p>
     <article class="interaccion-card severidad-${escaparHTML(evaluacionClinica.indicador?.clase || "ok")}">
           <strong>Indicador contextual: ${escaparHTML(evaluacionClinica.indicador?.etiqueta || "Sin alerta encontrada con la base actual")}</strong>
       <p>${alertasClinicas.length ? "Se detectaron alertas por diagnsticos, comorbilidades, interacciones o carga acumulativa." : "No se detectaron alertas clnicas contextuales con las reglas locales actuales."}</p>
@@ -5364,16 +5437,45 @@ function renderizarInteraccionesFarmacologicas(medicamentos = [], origen = "trat
 async function abrirInteraccionesFarmacologicas(origen = "tratamiento") {
   const modal = document.getElementById("modalInteraccionesFarmacologicas");
   if (!modal) return;
+  const patientIdAlIniciar = String(uidPaciente || "").trim();
+  if (!patientIdAlIniciar) {
+    console.error("[Interacciones] No se pudo identificar al paciente activo.");
+    return;
+  }
 
   modal.classList.add("abierto");
   modal.setAttribute("aria-hidden", "false");
   const contenedor = document.getElementById("contenidoInteraccionesFarmacologicas");
   if (contenedor) contenedor.innerHTML = "<p>Cargando revision de interacciones...</p>";
 
-  await asegurarTratamientosCache();
+  try {
+    await asegurarTratamientosCache();
+  } catch (error) {
+    console.error("[Interacciones] No se pudo cargar el tratamiento vigente:", error);
+    cerrarInteraccionesFarmacologicas();
+    if (contenedor) contenedor.innerHTML = "<p>No se pudo cargar el tratamiento vigente del paciente.</p>";
+    return;
+  }
+  if (patientIdAlIniciar !== String(uidPaciente || "").trim() || tratamientosCachePatientId !== patientIdAlIniciar) {
+    cerrarInteraccionesFarmacologicas();
+    return;
+  }
   const medicamentos = origen === "indicaciones"
     ? tratamientosSeleccionadosIndicacionesParaInteracciones()
     : tratamientosActivosParaInteracciones();
+  console.debug("[Interacciones] Contexto de análisis", {
+    patientId: patientIdAlIniciar,
+    totalTratamientosCargados: tratamientosCache.length,
+    totalVigentes: obtenerTratamientosVigentesUnicos().length,
+    clavesMedicamentos: obtenerTratamientosVigentesUnicos().map(obtenerClaveMedicamentoTratamiento)
+  });
+  console.debug("[Interacciones] Medicamentos analizados", {
+    patientId: patientIdAlIniciar,
+    medicamentos: medicamentos.map((medicamento) => ({
+      id: medicamento.id || null,
+      nombreNormalizado: normalizarTextoBusqueda(medicamento.medicamento || "")
+    }))
+  });
   renderizarInteraccionesFarmacologicas(medicamentos, origen);
 }
 function autollenarIndicaciones() {
@@ -5930,7 +6032,8 @@ function datosFormularioTratamiento() {
   sincronizarCamposTratamientoDesdeTomas();
   actualizarDosisTotalDiaTratamiento();
   const tomas = leerTomasTratamiento();
-  return {
+  const cambio = obtenerCambioTratamientoDesdeFormulario();
+  const datos = {
     medicamento: valorCampo("tratamientoMedicamento"),
     dosis: valorCampo("tratamientoDosis"),
     frecuencia: normalizarTextoFrecuenciaTratamiento(valorCampo("tratamientoFrecuencia")),
@@ -5953,6 +6056,82 @@ function datosFormularioTratamiento() {
       usuarioRol: rolUsuarioActual || medicoActualDatos?.rol || ""
     }
   };
+
+  if (cambio.cambioIndicacion) {
+    datos.cambioIndicacion = cambio.cambioIndicacion;
+    datos.cambioIndicacionTexto = cambio.cambioIndicacionTexto || "";
+  } else {
+    datos.cambioIndicacion = "";
+    datos.cambioIndicacionTexto = "";
+  }
+
+  if (datos.cambioIndicacion === "se_suspende") {
+    datos.estado = "suspendido";
+    if (!datos.fechaSuspension) datos.fechaSuspension = fechaISOHoy();
+    if (!datos.motivoSuspension) datos.motivoSuspension = ETIQUETAS_CAMBIO_TRATAMIENTO.se_suspende;
+  }
+
+  return datos;
+}
+
+function normalizarTextoCambioTratamiento(valor = "") {
+  if (typeof valor !== "string") return "";
+  return valor.replace(/\s+/g, " ").trim().slice(0, 160);
+}
+
+function obtenerCambioTratamientoDesdeFormulario(contenedor = document) {
+  const selector = contenedor.querySelector("[data-cambio-tratamiento]");
+  const valor = selector?.value?.trim() || "";
+  if (!CAMBIOS_TRATAMIENTO_PERMITIDOS.has(valor) || !valor) return {};
+  if (valor !== "otro") return { cambioIndicacion: valor };
+
+  return {
+    cambioIndicacion: "otro",
+    cambioIndicacionTexto: normalizarTextoCambioTratamiento(
+      contenedor.querySelector("[data-cambio-tratamiento-texto]")?.value || ""
+    )
+  };
+}
+
+function ponerErrorCambioTratamiento(mensaje = "") {
+  const error = document.getElementById("tratamientoCambioIndicacionError");
+  if (error) error.textContent = mensaje;
+}
+
+function validarCambioTratamiento(datos = {}) {
+  ponerErrorCambioTratamiento("");
+  const cambio = typeof datos.cambioIndicacion === "string" ? datos.cambioIndicacion : "";
+  if (!CAMBIOS_TRATAMIENTO_PERMITIDOS.has(cambio)) {
+    ponerErrorCambioTratamiento("Selecciona un cambio o estado valido.");
+    return false;
+  }
+  if (cambio === "otro" && !normalizarTextoCambioTratamiento(datos.cambioIndicacionTexto || "")) {
+    ponerErrorCambioTratamiento("Especifica el cambio o estado del medicamento.");
+    return false;
+  }
+  return true;
+}
+
+function actualizarCampoCambioTratamiento() {
+  const selector = document.getElementById("tratamientoCambioIndicacion");
+  const wrap = document.getElementById("tratamientoCambioIndicacionOtroWrap");
+  const texto = document.getElementById("tratamientoCambioIndicacionTexto");
+  const mostrarOtro = selector?.value === "otro";
+  if (wrap) wrap.hidden = !mostrarOtro;
+  if (!mostrarOtro) ponerErrorCambioTratamiento("");
+  if (mostrarOtro) texto?.focus();
+}
+
+function obtenerEtiquetaCambioTratamiento(tratamiento = {}) {
+  const cambio = typeof tratamiento.cambioIndicacion === "string" ? tratamiento.cambioIndicacion : "";
+  if (!CAMBIOS_TRATAMIENTO_PERMITIDOS.has(cambio) || !cambio) return "";
+  if (cambio === "otro") return normalizarTextoCambioTratamiento(tratamiento.cambioIndicacionTexto || "");
+  return ETIQUETAS_CAMBIO_TRATAMIENTO[cambio] || "";
+}
+
+function claseCambioTratamiento(tratamiento = {}) {
+  const cambio = typeof tratamiento.cambioIndicacion === "string" ? tratamiento.cambioIndicacion : "";
+  return CAMBIOS_TRATAMIENTO_PERMITIDOS.has(cambio) && cambio ? cambio : "sin_cambio";
 }
 
 function limpiarFormularioTratamiento() {
@@ -5970,14 +6149,18 @@ function limpiarFormularioTratamiento() {
     "tratamientoFechaInicio",
     "tratamientoFechaSuspension",
     "tratamientoMotivoSuspension",
-    "tratamientoObservaciones"
+    "tratamientoObservaciones",
+    "tratamientoCambioIndicacion",
+    "tratamientoCambioIndicacionTexto"
   ].forEach((id) => ponerValor(id, ""));
+  ponerErrorCambioTratamiento("");
   const campoCantidad = document.getElementById("cantidadTotalDia");
   if (campoCantidad) campoCantidad.dataset.auto = "";
   ponerValor("tratamientoEstado", "activo");
   ponerValor("tratamientoModoFrecuencia", "horas_especificas");
   ponerValor("tratamientoVecesDia", "3");
   ponerValor("tratamientoFrecuencia", "3 veces al día");
+  actualizarCampoCambioTratamiento();
   renderizarTomasTratamiento();
 }
 
@@ -5988,18 +6171,32 @@ async function guardarTratamientoPaciente() {
     alert("Escribe el medicamento.");
     return;
   }
+  if (!validarCambioTratamiento(datos)) return;
+  if (datos.cambioIndicacion === "se_suspende") {
+    const continuarSuspension = confirm("Esta indicacion marcara el medicamento como suspendido. El registro permanecera en el historial. Deseas continuar?");
+    if (!continuarSuspension) return;
+  }
+  console.debug("[Tratamiento] Cambio de indicacion", {
+    tratamientoId: valorCampo("tratamientoId") || null,
+    medicamentoId: null,
+    cambioIndicacion: datos.cambioIndicacion || "",
+    tieneTextoPersonalizado: Boolean(datos.cambioIndicacionTexto)
+  });
 
   const tratamientoId = valorCampo("tratamientoId");
   const medicamentosPrevios = tratamientosCache
-    .filter((t) => (t.estado || "activo") === "activo" && t.id !== tratamientoId)
+    .filter((t) => esTratamientoVigente(t) && t.id !== tratamientoId)
     .map((t) => ({
       id: t.id || "",
       medicamento: t.medicamento || "",
       indicacion: formatearIndicacionTratamiento(t, false),
       dosisDia: t.dosisTotalDia || calcularDosisTotalDiaTratamiento(t).texto || ""
     }));
+  const medicamentosParaEvaluacion = datos.estado === "suspendido"
+    ? medicamentosPrevios
+    : [...medicamentosPrevios, { medicamento: datos.medicamento, indicacion: formatearIndicacionTratamiento(datos, false), dosisDia: datos.dosisTotalDia }];
   const evaluacionNuevo = detectarAlertasClinicasMedicamentos(
-    [...medicamentosPrevios, { medicamento: datos.medicamento, indicacion: formatearIndicacionTratamiento(datos, false), dosisDia: datos.dosisTotalDia }],
+    medicamentosParaEvaluacion,
     datosPacienteActual || {}
   );
   const alertasImportantes = (evaluacionNuevo.alertas || []).filter((alerta) => (alerta.prioridad || 0) >= 4);
@@ -6044,14 +6241,20 @@ async function cargarTratamientosPaciente() {
   const activos = document.getElementById("tratamientosActivos");
   const suspendidos = document.getElementById("tratamientosSuspendidos");
   if (!activos || !suspendidos) return;
+  const patientIdAlIniciar = String(uidPaciente || "").trim();
+  if (!patientIdAlIniciar) return;
+  const token = ++tratamientosCargaToken;
 
   activos.textContent = "Cargando tratamientos...";
   suspendidos.textContent = "Cargando tratamientos...";
 
   try {
-    tratamientosCache = (await listarTratamientos(uidPaciente)).map(normalizarTratamientoFrecuenciaPaciente);
+    const tratamientos = await listarTratamientos(patientIdAlIniciar);
+    if (token !== tratamientosCargaToken || patientIdAlIniciar !== String(uidPaciente || "").trim()) return;
+    tratamientosCache = (Array.isArray(tratamientos) ? tratamientos : []).map(normalizarTratamientoFrecuenciaPaciente);
+    tratamientosCachePatientId = patientIdAlIniciar;
     tratamientosCacheCargado = true;
-    const listaActivos = tratamientosCache.filter((t) => (t.estado || "activo") === "activo");
+    const listaActivos = tratamientosCache.filter(esTratamientoVigente);
     const listaSuspendidos = tratamientosCache.filter((t) => t.estado === "suspendido");
 
     activos.innerHTML = listaActivos.length
@@ -6064,6 +6267,11 @@ async function cargarTratamientosPaciente() {
 
     vincularAccionesTratamientos();
   } catch (error) {
+    if (token === tratamientosCargaToken && patientIdAlIniciar === String(uidPaciente || "").trim()) {
+      tratamientosCache = [];
+      tratamientosCachePatientId = patientIdAlIniciar;
+      tratamientosCacheCargado = false;
+    }
     console.error("Error al cargar tratamientos:", error);
     activos.textContent = "No se pudieron cargar los tratamientos.";
     suspendidos.textContent = "No se pudieron cargar los tratamientos.";
@@ -6080,6 +6288,10 @@ function renderizarTratamiento(t) {
     : "";
   const fechaSuspension = t.fechaSuspension || t["fechaSuspensi?n"] || "";
   const motivoSuspension = t.motivoSuspension || t["motivoSuspensi?n"] || "";
+  const cambioIndicacion = obtenerEtiquetaCambioTratamiento(tratamiento);
+  const cambioHTML = cambioIndicacion
+    ? `<p class="tratamiento-cambio-badge tratamiento-cambio-${escaparHTML(claseCambioTratamiento(tratamiento))}">${escaparHTML(cambioIndicacion)}</p>`
+    : "";
   return `
     <article class="registro-card">
       <div class="registro-top">
@@ -6093,6 +6305,7 @@ function renderizarTratamiento(t) {
       ${dosisTotalDia ? `<p><b>Dosis total al día:</b> ${escaparHTML(dosisTotalDia)}</p>` : ""}
       ${tratamiento.estado === "suspendido" ? `<p><b>Suspensión:</b> ${escaparHTML(formatearFecha(fechaSuspension))}  ${escaparHTML(motivoSuspension || "Sin motivo registrado")}</p>` : ""}
       ${tratamiento.observaciones ? `<p>${escaparHTML(tratamiento.observaciones)}</p>` : ""}
+      ${cambioHTML}
       ${tratamiento.modificadoPorRol || tratamiento.creadoPorRol ? `<p class="texto-suave"><b>última modificacin:</b> ${escaparHTML(tratamiento.modificadoPorNombre || tratamiento.creadoPorNombre || "Usuario")}  ${escaparHTML(tratamiento.modificadoPorRol || tratamiento.creadoPorRol || "")}  ${escaparHTML(formatearFecha(tratamiento.fechaActualizacion) || "")}</p>` : ""}
       <div class="registro-actions">
         <button type="button" data-editar-tratamiento="${t.id}">Editar</button>
@@ -6161,6 +6374,9 @@ function editarTratamientoPaciente(id) {
   ponerValor("tratamientoFechaSuspension", t.fechaSuspension || t["fechaSuspensi?n"] || "");
   ponerValor("tratamientoMotivoSuspension", t.motivoSuspension || t["motivoSuspensi?n"] || "");
   ponerValor("tratamientoObservaciones", t.observaciones);
+  ponerValor("tratamientoCambioIndicacion", CAMBIOS_TRATAMIENTO_PERMITIDOS.has(t.cambioIndicacion || "") ? (t.cambioIndicacion || "") : "");
+  ponerValor("tratamientoCambioIndicacionTexto", normalizarTextoCambioTratamiento(t.cambioIndicacionTexto || ""));
+  actualizarCampoCambioTratamiento();
   renderizarTomasTratamiento(tomasDesdeTratamientoGuardado(t));
 }
 
@@ -6185,9 +6401,9 @@ async function eliminarTratamientoPaciente(id) {
 }
 
 async function sincronizarResumenTratamiento() {
-  const activos = tratamientosCache.filter((t) => (t.estado || "activo") === "activo");
+  const activos = tratamientosCache.filter(esTratamientoVigente);
   const resumen = activos.map((t) =>
-    formatearIndicacionTratamiento(t, true)
+    formatearIndicacionTratamientoConCambio(t, true)
   ).filter(Boolean).join("\n");
 
   await actualizarUsuario(uidPaciente, {
@@ -6588,6 +6804,13 @@ function formatearIndicacionTratamiento(t = {}, incluirMedicamento = true) {
   return partes.join(" ");
 }
 
+function formatearIndicacionTratamientoConCambio(t = {}, incluirMedicamento = true) {
+  const base = formatearIndicacionTratamiento(t, incluirMedicamento);
+  const cambio = obtenerEtiquetaCambioTratamiento(t);
+  if (!cambio) return base;
+  return [base, asegurarPunto(cambio)].filter(Boolean).join(" ");
+}
+
 configurarCatalogoMedicamentosTratamiento();
 configurarCatalogoMedicamentosReceta();
 
@@ -6712,10 +6935,10 @@ function agregarMedicamentoReceta() {
 
 async function cargarTratamientoActivoEnReceta() {
   await asegurarTratamientosCache();
-  const activos = tratamientosCache.filter((t) => (t.estado || "activo") === "activo");
+  const activos = tratamientosCache.filter(esTratamientoVigente);
   medicamentosRecetaActual = activos.map((t) => ({
     medicamento: t.medicamento || "Medicamento",
-    indicacion: formatearIndicacionTratamiento(t, false)
+    indicacion: formatearIndicacionTratamientoConCambio(t, false)
   }));
   renderizarMedicamentosReceta();
   actualizarPreviewReceta();
@@ -7229,6 +7452,8 @@ document.addEventListener("click", (evento) => {
   });
 });
 document.getElementById("tratamientoFrecuencia")?.addEventListener("blur", corregirCampoFrecuenciaTratamiento);
+document.getElementById("tratamientoCambioIndicacion")?.addEventListener("change", actualizarCampoCambioTratamiento);
+document.getElementById("tratamientoCambioIndicacionTexto")?.addEventListener("input", () => ponerErrorCambioTratamiento(""));
 document.getElementById("tratamientoModoFrecuencia")?.addEventListener("change", () => {
   renderizarTomasTratamiento();
 });

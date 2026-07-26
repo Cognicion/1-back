@@ -2010,3 +2010,278 @@ html[data-theme="light"] .panel-interacciones-farmacologicas::-webkit-scrollbar-
     grid-template-columns: 1fr;
   }
 }
+
+.tratamiento-cambio-indicacion {
+  display: grid;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.tratamiento-cambio-indicacion label {
+  display: grid;
+  gap: 7px;
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.tratamiento-cambio-indicacion select,
+.tratamiento-cambio-indicacion input {
+  width: 100%;
+}
+
+.tratamiento-cambio-error {
+  min-height: 16px;
+  color: #fca5a5;
+  font-size: 12px;
+}
+
+.tratamiento-cambio-badge {
+  display: inline-flex;
+  width: fit-content;
+  max-width: 100%;
+  margin: 12px 0 0;
+  padding: 6px 10px;
+  border: 1px solid rgba(126, 182, 138, 0.28);
+  border-radius: 999px;
+  background: rgba(16, 51, 32, 0.26);
+  color: var(--green-200);
+  font-size: 12px;
+  font-weight: 900;
+  line-height: 1.25;
+}
+
+.tratamiento-cambio-se_suspende {
+  border-color: rgba(248, 113, 113, 0.48);
+  background: rgba(127, 29, 29, 0.32);
+  color: #fecaca;
+}
+
+.tratamiento-cambio-pendiente_familiar,
+.tratamiento-cambio-disminuye {
+  border-color: rgba(250, 204, 21, 0.42);
+  background: rgba(113, 63, 18, 0.26);
+  color: #fde68a;
+}
+
+.tratamiento-cambio-otro {
+  border-color: rgba(190, 196, 188, 0.28);
+  background: rgba(14, 20, 17, 0.32);
+  color: var(--ivory-100);
+}
+
+html[data-theme="light"] #seccionTratamiento .tarjeta,
+html[data-theme="light"] #seccionIndicaciones .tarjeta {
+  background: var(--surface-primary);
+  color: var(--text-primary);
+  border-color: var(--border-subtle);
+  box-shadow: var(--shadow-subtle);
+}
+
+html[data-theme="light"] #seccionTratamiento .texto-suave,
+html[data-theme="light"] #seccionIndicaciones .texto-suave,
+html[data-theme="light"] #seccionTratamiento .form-grid label,
+html[data-theme="light"] #seccionIndicaciones .form-grid label,
+html[data-theme="light"] #seccionTratamiento .tarjeta > label,
+html[data-theme="light"] #seccionIndicaciones .tarjeta > label {
+  color: var(--text-secondary);
+  opacity: 1;
+}
+
+html[data-theme="light"] #seccionTratamiento input,
+html[data-theme="light"] #seccionTratamiento select,
+html[data-theme="light"] #seccionTratamiento textarea,
+html[data-theme="light"] #seccionIndicaciones input,
+html[data-theme="light"] #seccionIndicaciones select,
+html[data-theme="light"] #seccionIndicaciones textarea,
+html[data-theme="light"] .panel-ingreso input,
+html[data-theme="light"] .panel-ingreso select,
+html[data-theme="light"] .panel-ingreso textarea {
+  background: var(--input-bg);
+  color: var(--input-text);
+  border-color: var(--input-border);
+  opacity: 1;
+  color-scheme: light;
+}
+
+html[data-theme="light"] #seccionTratamiento input::placeholder,
+html[data-theme="light"] #seccionTratamiento textarea::placeholder,
+html[data-theme="light"] #seccionIndicaciones input::placeholder,
+html[data-theme="light"] #seccionIndicaciones textarea::placeholder,
+html[data-theme="light"] .panel-ingreso input::placeholder,
+html[data-theme="light"] .panel-ingreso textarea::placeholder {
+  color: var(--input-placeholder);
+  opacity: 1;
+}
+
+html[data-theme="light"] #seccionTratamiento input:focus,
+html[data-theme="light"] #seccionTratamiento select:focus,
+html[data-theme="light"] #seccionTratamiento textarea:focus,
+html[data-theme="light"] #seccionIndicaciones input:focus,
+html[data-theme="light"] #seccionIndicaciones select:focus,
+html[data-theme="light"] #seccionIndicaciones textarea:focus,
+html[data-theme="light"] .panel-ingreso input:focus,
+html[data-theme="light"] .panel-ingreso select:focus,
+html[data-theme="light"] .panel-ingreso textarea:focus {
+  border-color: var(--input-border-focus);
+  outline: 2px solid rgb(49 95 64 / 22%);
+  outline-offset: 2px;
+}
+
+html[data-theme="light"] .combo-tratamiento-menu,
+html[data-theme="light"] .tratamiento-toma-row,
+html[data-theme="light"] .bloque-indicaciones-estructuradas,
+html[data-theme="light"] .indicaciones-medicamentos-activos,
+html[data-theme="light"] .catalogo-medicos-indicaciones,
+html[data-theme="light"] .medicamento-indicacion-item,
+html[data-theme="light"] .medicamento-receta-item,
+html[data-theme="light"] .receta-preview-wrap {
+  background: var(--surface-secondary);
+  color: var(--text-primary);
+  border-color: var(--border-subtle);
+  opacity: 1;
+  background-image: none;
+}
+
+html[data-theme="light"] .combo-tratamiento-menu button {
+  color: var(--text-primary);
+  background: transparent;
+}
+
+html[data-theme="light"] .combo-tratamiento-menu button:hover,
+html[data-theme="light"] .combo-tratamiento-menu button:focus {
+  background: var(--surface-selected);
+  color: var(--text-primary);
+}
+
+html[data-theme="light"] .tratamiento-toma-row span,
+html[data-theme="light"] .bloque-indicaciones-estructuradas h3,
+html[data-theme="light"] .indicaciones-medicamentos-activos strong,
+html[data-theme="light"] .medicamento-receta-item strong,
+html[data-theme="light"] .medicamento-indicacion-item span {
+  color: var(--text-primary);
+}
+
+html[data-theme="light"] .medicamento-receta-item span,
+html[data-theme="light"] .registro-card p,
+html[data-theme="light"] .registro-top span {
+  color: var(--text-secondary);
+  opacity: 1;
+}
+
+html[data-theme="light"] .estado-badge {
+  background: var(--accent-soft);
+  color: var(--accent-active);
+  border-color: var(--border-normal);
+}
+
+html[data-theme="light"] .estado-badge.suspendido {
+  background: #f1eee8;
+  color: #5d4e36;
+  border-color: #d7cbb7;
+}
+
+html[data-theme="light"] .modal-ingreso {
+  background: rgba(18, 24, 20, 0.62);
+}
+
+html[data-theme="light"] .panel-ingreso,
+html[data-theme="light"] .panel-medicamento-manual,
+html[data-theme="light"] .panel-aviso-farmacologia {
+  background: var(--surface-elevated);
+  color: var(--text-primary);
+  border-color: var(--border-subtle);
+  box-shadow: 0 24px 70px rgba(32, 70, 50, 0.18);
+  opacity: 1;
+  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+}
+
+html[data-theme="light"] .panel-ingreso-header p,
+html[data-theme="light"] .panel-ingreso small,
+html[data-theme="light"] .leyenda-farmacologia-enfermeria {
+  color: var(--accent-primary);
+  opacity: 1;
+}
+
+html[data-theme="light"] .panel-ingreso-header h3,
+html[data-theme="light"] .panel-ingreso label {
+  color: var(--text-primary);
+}
+
+html[data-theme="light"] .panel-ingreso-header button {
+  background: var(--button-secondary-bg);
+  color: var(--button-secondary-text);
+  border-color: var(--button-secondary-border);
+}
+
+html[data-theme="light"] .panel-ingreso-header button:hover,
+html[data-theme="light"] .panel-ingreso-header button:focus-visible {
+  background: var(--button-secondary-hover);
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+html[data-theme="light"] .panel-ingreso select option {
+  background: var(--surface-elevated);
+  color: var(--text-primary);
+}
+
+html[data-theme="light"] .tratamiento-cambio-indicacion label {
+  color: var(--text-secondary);
+}
+
+html[data-theme="light"] .tratamiento-cambio-error {
+  color: #8f2924;
+}
+
+html[data-theme="light"] .tratamiento-cambio-badge {
+  background: #e5f1e8;
+  color: #245d38;
+  border-color: #93b69d;
+}
+
+html[data-theme="light"] .tratamiento-cambio-disminuye {
+  background: #f6f1dd;
+  color: #574b1e;
+  border-color: #c7b66c;
+}
+
+html[data-theme="light"] .tratamiento-cambio-pendiente_familiar {
+  background: #fbf4d8;
+  color: #5c4a12;
+  border-color: #d5bd55;
+}
+
+html[data-theme="light"] .tratamiento-cambio-se_suspende {
+  background: #f8e9e8;
+  color: #7a2722;
+  border-color: #d8a09a;
+}
+
+html[data-theme="light"] .tratamiento-cambio-otro {
+  background: var(--surface-tertiary);
+  color: var(--text-primary);
+  border-color: var(--border-subtle);
+}
+
+html[data-theme="light"] .panel-ingreso::-webkit-scrollbar,
+html[data-theme="light"] .panel-interacciones-farmacologicas::-webkit-scrollbar {
+  width: 10px;
+}
+
+html[data-theme="light"] .panel-ingreso::-webkit-scrollbar-track,
+html[data-theme="light"] .panel-interacciones-farmacologicas::-webkit-scrollbar-track {
+  background: var(--scrollbar-track);
+}
+
+html[data-theme="light"] .panel-ingreso::-webkit-scrollbar-thumb,
+html[data-theme="light"] .panel-interacciones-farmacologicas::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border: 2px solid var(--scrollbar-track);
+  border-radius: 999px;
+}
+
+html[data-theme="light"] .panel-ingreso::-webkit-scrollbar-thumb:hover,
+html[data-theme="light"] .panel-interacciones-farmacologicas::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover);
+}

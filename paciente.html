@@ -5,7 +5,7 @@
   <title>Expediente medico</title>
   <link rel="stylesheet" href="css/theme.css">
   <link rel="icon" type="image/png" href="assets/favicon-cognicion.png">
-  <link rel="stylesheet" href="css/paciente.css?v=20260726-pharma-modal-v1">
+  <link rel="stylesheet" href="css/paciente.css?v=20260726-tratamiento-tema-cambio-v1">
   <link rel="stylesheet" href="css/paciente-laboratorio.css">
 <script src="js/theme-preload.js"></script>
 <link rel="stylesheet" href="css/theme/cognicion-theme.css">
@@ -652,6 +652,30 @@
         </label>
         <div class="form-actions">
           <button id="abrirMedicamentoManual" type="button" class="boton-secundario">Añadir medicamento al catálogo</button>
+        </div>
+        <div class="tratamiento-cambio-indicacion" data-cambio-tratamiento-wrap>
+          <label for="tratamientoCambioIndicacion">Cambio o estado de esta indicacion</label>
+          <select id="tratamientoCambioIndicacion" data-cambio-tratamiento>
+            <option value="">Sin cambio</option>
+            <option value="aumenta">Aumenta</option>
+            <option value="disminuye">Disminuye</option>
+            <option value="pendiente_familiar">Pendiente traer por el familiar</option>
+            <option value="se_suspende">Se suspende</option>
+            <option value="otro">Otro</option>
+          </select>
+          <label id="tratamientoCambioIndicacionOtroWrap" class="tratamiento-cambio-otro" hidden>
+            Especificar cambio o estado
+            <input
+              id="tratamientoCambioIndicacionTexto"
+              type="text"
+              maxlength="160"
+              data-cambio-tratamiento-texto
+              placeholder="Escribe el cambio o estado del medicamento"
+            >
+          </label>
+          <small id="tratamientoCambioIndicacionError" class="tratamiento-cambio-error" aria-live="polite"></small>
+        </div>
+        <div class="form-actions">
           <button id="guardarTratamiento" type="button">Guardar tratamiento</button>
         </div>
       </div>
@@ -1110,7 +1134,7 @@
       }
     }, 15000);
   </script>
-  <script type="module" src="js/paciente.js?v=20260726-pharma-modal-v1"></script>
+<script type="module" src="js/paciente.js?v=20260726-tratamiento-tema-cambio-v1"></script>
   <script type="module" src="js/components/accesosRapidos.js"></script>
 </body>
 </html>
