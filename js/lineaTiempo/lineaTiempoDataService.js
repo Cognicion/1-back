@@ -6,6 +6,8 @@ import {
   deleteDoc,
   doc,
   getDocs,
+  orderBy,
+  query,
   serverTimestamp,
   updateDoc
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
@@ -28,6 +30,28 @@ export async function cargarEventosPaciente(pacienteId) {
     .map((documento) => normalizarEvento(documento.id, documento.data()))
     .filter(Boolean)
     .sort((a, b) => a.fechaEvento - b.fechaEvento);
+}
+
+function referenciaCategorias(uid) {
+  if (!uid) throw new Error("USUARIO_ID_REQUERIDO");
+  return collection(db, "usuarios", uid, "categoriasLineaTiempo");
+}
+
+export async function cargarCategoriasLineaTiempo(uid) {
+  const snapshot = await getDocs(query(referenciaCategorias(uid), orderBy("nombre", "asc")));
+  return snapshot.docs
+    .map((documento) => ({ id: documento.id, nombre: String(documento.data().nombre || "").trim() }))
+    .filter((categoria) => categoria.nombre);
+}
+
+export async function crearCategoriaLineaTiempo(uid, nombre) {
+  const normalizada = String(nombre || "").trim().slice(0, 60);
+  if (!normalizada) throw new Error("CATEGORIA_REQUERIDA");
+  const existentes = await cargarCategoriasLineaTiempo(uid);
+  const repetida = existentes.find((categoria) => categoria.nombre.toLocaleLowerCase("es-MX") === normalizada.toLocaleLowerCase("es-MX"));
+  if (repetida) return repetida;
+  const creada = await addDoc(referenciaCategorias(uid), { nombre: normalizada, creadoPor: uid, creadoEn: serverTimestamp() });
+  return { id: creada.id, nombre: normalizada };
 }
 
 function datosGuardables(datos, usuarioUid) {

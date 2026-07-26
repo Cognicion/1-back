@@ -5,6 +5,7 @@ import { resolve } from "node:path";
 import {
   agruparEventosPorFecha,
   calcularPosiciones,
+  generarMarcasTemporales,
   normalizarEvento,
   ordenarEventosPorFecha
 } from "../lineaTiempo/lineaTiempoUtils.js";
@@ -34,6 +35,16 @@ test("Los eventos de la misma fecha se agrupan sin perder eventos", () => {
   assert.equal(grupos.length, 2);
   assert.equal(grupos[0].items.length, 2);
   assert.equal(grupos.flatMap((grupo) => grupo.items).length, 3);
+});
+
+test("Los extremos temporales coinciden con los eventos más antiguo y reciente", () => {
+  const eventos = ordenarEventosPorFecha([evento("nuevo", "2025-03-01"), evento("antiguo", "1996-11-25")]);
+  const rango = { minimo: eventos[0].fechaEvento, maximo: eventos[1].fechaEvento, duracion: eventos[1].fechaEvento - eventos[0].fechaEvento };
+  assert.deepEqual(calcularPosiciones(eventos, rango).map((item) => item.posicion), [0, 1]);
+  const marcas = generarMarcasTemporales(rango);
+  assert.equal(marcas[0].posicion, 0);
+  assert.equal(marcas.at(-1).posicion, 1);
+  assert.ok(marcas.every((marca) => marca.fecha >= rango.minimo && marca.fecha <= rango.maximo));
 });
 
 test("La página general del expediente solo navega a la función y no importa su módulo", () => {

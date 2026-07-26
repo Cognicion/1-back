@@ -4,6 +4,8 @@ import { registrarEventoAuditoria } from "../services/auditoria.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import {
   cargarEventosPaciente,
+  cargarCategoriasLineaTiempo,
+  crearCategoriaLineaTiempo,
   crearEventoPaciente,
   actualizarEventoPaciente,
   eliminarEventoPaciente,
@@ -23,6 +25,7 @@ import { renderizarDetalleEvento, renderizarEstados, renderizarLineaTiempo } fro
 let root = null;
 let pacienteId = "";
 let eventos = [];
+let categorias = [];
 let usuarioActual = null;
 let permisos = { puedeLeer: false, puedeEscribir: false };
 let interacciones = null;
@@ -110,11 +113,43 @@ function abrirFormulario(evento = null) {
   form.elements.horaEvento.value = evento ? datosFecha.hora : "";
   form.elements.fechaFin.value = evento?.fechaFin ? fechaFormulario(evento.fechaFin).fecha : "";
   form.elements.descripcion.value = evento?.descripcion || "";
-  form.elements.categoria.value = evento?.categoria || "Evento clínico";
+  form.elements.nuevaCategoria.value = "";
+  renderizarCategorias(evento?.categoria || "");
   form.elements.importancia.value = evento?.importancia || "media";
   root.querySelector("[data-form-error]").textContent = "";
   panel.hidden = false;
   form.elements.titulo.focus();
+}
+
+function renderizarCategorias(seleccion = "") {
+  const select = root?.querySelector("[name='categoria']");
+  if (!select) return;
+  const nombres = new Set(categorias.map((categoria) => categoria.nombre));
+  if (seleccion) nombres.add(seleccion);
+  select.replaceChildren(new Option("Ninguna categoría", ""));
+  [...nombres].sort((a, b) => a.localeCompare(b, "es")).forEach((nombre) => select.add(new Option(nombre, nombre)));
+  select.value = seleccion;
+}
+
+async function agregarCategoria() {
+  const input = root.querySelector("[name='nuevaCategoria']");
+  const boton = root.querySelector("[data-action='add-category']");
+  const nombre = input?.value.trim();
+  if (!nombre || !boton || !auth.currentUser) return;
+  boton.disabled = true;
+  boton.textContent = "Guardando…";
+  try {
+    const categoria = await crearCategoriaLineaTiempo(auth.currentUser.uid, nombre);
+    categorias = [...categorias.filter((item) => item.id !== categoria.id && item.nombre.toLocaleLowerCase("es-MX") !== categoria.nombre.toLocaleLowerCase("es-MX")), categoria];
+    renderizarCategorias(categoria.nombre);
+    input.value = "";
+  } catch (error) {
+    root.querySelector("[data-form-error]").textContent = "No fue posible guardar la categoría.";
+    mostrarErrorTecnico(error);
+  } finally {
+    boton.textContent = "Añadir";
+    boton.disabled = !input?.value.trim();
+  }
 }
 
 function cerrarFormulario() {
@@ -191,6 +226,7 @@ function configurarAcciones() {
     if (action === "add" || action === "add-first") abrirFormulario();
     if (action === "close-form" || action === "cancel-form") cerrarFormulario();
     if (action === "close-detail") cerrarDetalle();
+    if (action === "add-category") agregarCategoria();
     if (action === "retry") cargarLineaTiempo();
     if (event.target.closest("[data-edit-event]")) {
       const evento = eventos.find((item) => item.id === event.target.closest("[data-edit-event]").dataset.editEvent);
@@ -199,9 +235,13 @@ function configurarAcciones() {
     if (event.target.closest("[data-delete-event]")) eliminarEvento(event.target.closest("[data-delete-event]").dataset.deleteEvent);
   };
   root.addEventListener("click", actionHandler);
+  const categoryInput = root.querySelector("[name='nuevaCategoria']");
+  const onCategoryInput = () => { root.querySelector("[data-action='add-category']").disabled = !categoryInput.value.trim(); };
+  categoryInput?.addEventListener("input", onCategoryInput);
   root.querySelector("[data-event-form]").addEventListener("submit", guardarFormulario);
   return () => {
     root.removeEventListener("click", actionHandler);
+    categoryInput?.removeEventListener("input", onCategoryInput);
     root.querySelector("[data-event-form]")?.removeEventListener("submit", guardarFormulario);
   };
 }
@@ -210,6 +250,13 @@ async function cargarLineaTiempo() {
   renderizarEstados(root, "loading");
   root.querySelector("[data-timeline-shell]").hidden = true;
   try {
+    try {
+      categorias = await cargarCategoriasLineaTiempo(auth.currentUser.uid);
+    } catch (error) {
+      categorias = [];
+      console.warn("No se pudieron cargar las categorías de la línea de tiempo.", error?.code || error?.message || error);
+    }
+    renderizarCategorias();
     eventos = ordenarEventosPorFecha(await cargarEventosPaciente(pacienteId));
     renderizarVista();
   } catch (error) {

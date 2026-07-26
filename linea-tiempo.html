@@ -58,12 +58,21 @@
         <div class="timeline-form-grid">
           <label>Título <input name="titulo" maxlength="160" required></label>
           <label>Fecha del evento <input name="fechaEvento" type="date" required></label>
-          <label>Hora opcional <input name="horaEvento" type="time"></label>
-          <label>Fecha final opcional <input name="fechaFin" type="date"></label>
-          <label>Categoría opcional <input name="categoria" value="" maxlength="80"></label>
+          <label>Hora (opcional) <input name="horaEvento" type="time"></label>
+          <label>Fecha final (opcional) <input name="fechaFin" type="date"></label>
+          <div class="timeline-category-field">
+            <span class="timeline-form-label">Categoría (opcional)</span>
+            <div class="timeline-category-create">
+              <input name="nuevaCategoria" id="nuevaCategoriaLineaTiempo" maxlength="60" placeholder="Escribir nueva categoría" autocomplete="off">
+              <button type="button" class="timeline-button" id="btnAgregarCategoriaLineaTiempo" data-action="add-category" disabled>Añadir</button>
+            </div>
+            <select name="categoria" id="categoriaEventoLineaTiempo" aria-label="Categoría del evento">
+              <option value="">Ninguna categoría</option>
+            </select>
+          </div>
           <label>Importancia <select name="importancia"><option value="baja">Baja</option><option value="media" selected>Media</option><option value="alta">Alta</option></select></label>
         </div>
-        <label>Descripción <textarea name="descripcion" maxlength="1200" rows="4"></textarea></label>
+        <label>Descripción (opcional) <textarea name="descripcion" maxlength="1200" rows="4"></textarea></label>
         <p class="timeline-form-error" data-form-error role="alert"></p>
         <div class="timeline-form-actions"><button type="button" class="timeline-button" data-action="cancel-form">Cancelar</button><button type="submit" class="timeline-button timeline-button--primary">Guardar evento</button></div>
       </form>

@@ -43,11 +43,12 @@ export function renderizarLineaTiempo(root, eventos, rango, zoom = 1) {
     marcaNode.className = "timeline-tick";
     marcaNode.style.left = `${marca.posicion * 100}%`;
     marcaNode.textContent = formatearFechaCorta(marca.fecha);
+    if (marca.esExtremo) marcaNode.dataset.endpoint = "true";
     fragmento.appendChild(marcaNode);
   });
 
   grupos.forEach((grupo, grupoIndex) => {
-    const posicion = grupo.items.reduce((suma, item) => suma + (posicionPorId.get(item.id) || .5), 0) / grupo.items.length;
+    const posicion = grupo.items.reduce((suma, item) => suma + (posicionPorId.get(item.id) ?? .5), 0) / grupo.items.length;
     const bloque = document.createElement("div");
     bloque.className = `timeline-event-group timeline-event-group--${grupoIndex % 2 ? "below" : "above"}`;
     bloque.style.setProperty("--event-position", posicion);

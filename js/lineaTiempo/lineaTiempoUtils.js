@@ -28,6 +28,14 @@ export function normalizarFecha(valor) {
   if (!valor) return null;
   if (typeof valor.toDate === "function") return valor.toDate();
   if (valor instanceof Date) return Number.isNaN(valor.getTime()) ? null : valor;
+  if (typeof valor === "string") {
+    const match = valor.trim().match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+    if (match) {
+      const [, dia, mes, anio] = match.map(Number);
+      const fechaLocal = new Date(anio, mes - 1, dia, 12, 0, 0, 0);
+      return fechaLocal.getFullYear() === anio && fechaLocal.getMonth() === mes - 1 && fechaLocal.getDate() === dia ? fechaLocal : null;
+    }
+  }
   const fecha = new Date(valor);
   return Number.isNaN(fecha.getTime()) ? null : fecha;
 }
@@ -82,29 +90,22 @@ export function calcularRangoTemporal(eventos = []) {
 export function calcularPosiciones(eventos = [], rango = calcularRangoTemporal(eventos)) {
   if (!eventos.length) return [];
   if (eventos.length === 1 || rango.duracion === 0) return eventos.map((evento) => ({ evento, posicion: 0.5 }));
-  const separacionMinima = Math.min(0.08, 1 / Math.max(eventos.length * 2, 12));
-  let anterior = -Infinity;
-  const posiciones = eventos.map((evento) => {
-    const natural = (evento.fechaEvento - rango.minimo) / rango.duracion;
-    const posicion = Math.max(natural, anterior + separacionMinima);
-    anterior = posicion;
-    return { evento, posicion };
-  });
-  const exceso = posiciones.at(-1).posicion - 1;
-  if (exceso > 0) {
-    const factor = 1 / posiciones.at(-1).posicion;
-    return posiciones.map((item) => ({ ...item, posicion: item.posicion * factor }));
-  }
-  return posiciones;
+  // La fecha es la única fuente de verdad para la coordenada horizontal.
+  // Los eventos con la misma fecha se agrupan verticalmente al renderizar.
+  return eventos.map((evento) => ({
+    evento,
+    posicion: Math.min(1, Math.max(0, (evento.fechaEvento - rango.minimo) / rango.duracion))
+  }));
 }
 
 export function generarMarcasTemporales(rango, limite = 9) {
   if (!rango.minimo || !rango.maximo) return [];
+  if (rango.duracion === 0) return [{ fecha: new Date(rango.minimo), posicion: 0.5, esExtremo: true }];
   const duracionDias = rango.duracion / 86400000;
   let unidad = "year";
   if (duracionDias < 31) unidad = "day";
   else if (duracionDias < 550) unidad = "month";
-  const marcas = [];
+  const marcas = [{ fecha: new Date(rango.minimo), posicion: 0, esExtremo: true }];
   const cursor = new Date(rango.minimo);
   cursor.setHours(0, 0, 0, 0);
   if (unidad === "day") cursor.setDate(cursor.getDate() + 1);
@@ -112,11 +113,12 @@ export function generarMarcasTemporales(rango, limite = 9) {
   else cursor.setFullYear(cursor.getFullYear() + 1, 0, 1);
   while (cursor < rango.maximo && marcas.length < limite) {
     const posicion = (cursor - rango.minimo) / rango.duracion;
-    if (posicion > 0 && posicion < 1) marcas.push({ fecha: new Date(cursor), posicion });
+    if (posicion > 0 && posicion < 1 && marcas.length < limite - 1) marcas.push({ fecha: new Date(cursor), posicion });
     if (unidad === "day") cursor.setDate(cursor.getDate() + Math.max(1, Math.ceil(duracionDias / 8)));
     else if (unidad === "month") cursor.setMonth(cursor.getMonth() + Math.max(1, Math.ceil(duracionDias / 240)), 1);
     else cursor.setFullYear(cursor.getFullYear() + Math.max(1, Math.ceil(duracionDias / 3650)), 0, 1);
   }
+  marcas.push({ fecha: new Date(rango.maximo), posicion: 1, esExtremo: true });
   return marcas;
 }
 
