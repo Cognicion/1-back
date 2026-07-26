@@ -112,14 +112,125 @@ function renderizarVista() {
   if (shell) shell.hidden = !eventos.length;
 }
 
-function abrirDetalle(seleccion) {
-  const evento = eventos.find((item) => String(item.id) === String(seleccion.eventoId));
+function buscarEvento(eventId) {
+  debugTimelineRuntime("buscarEvento recibió", { eventId: eventId || null });
+  return eventos.find((item) => String(item.id) === String(eventId));
+}
+
+function crearLineaResumen(etiqueta, valor) {
+  const linea = document.createElement("p");
+  linea.className = "timeline-event-popover__meta";
+  const titulo = document.createElement("strong");
+  titulo.textContent = `${etiqueta}: `;
+  linea.append(titulo, document.createTextNode(valor));
+  return linea;
+}
+
+function cerrarVentanaFlotanteEvento() {
+  const ventana = root?.querySelector("#ventanaFlotanteEventoLineaTiempo");
+  if (!ventana) return;
+  ventana.hidden = true;
+  ventana.replaceChildren();
+  delete ventana.dataset.eventId;
+}
+
+function posicionarVentanaFlotanteEvento(ventana, marcador) {
+  const viewport = root.querySelector("[data-timeline-scroll]");
+  if (!viewport || !marcador) return;
+  const marcadorRect = marcador.getBoundingClientRect();
+  const viewportRect = viewport.getBoundingClientRect();
+  const scrollLeft = viewport.scrollLeft;
+  const margen = 12;
+  const ancho = ventana.offsetWidth;
+  const alto = ventana.offsetHeight;
+  const minimoX = Math.max(margen, viewportRect.left + margen);
+  const maximoX = Math.min(window.innerWidth - margen, viewportRect.right - margen);
+  const centroMarcador = marcadorRect.left + marcadorRect.width / 2;
+  const marcadorXEnContenido = centroMarcador - viewportRect.left + scrollLeft;
+  let izquierda = centroMarcador + margen;
+  if (izquierda + ancho > maximoX) izquierda = centroMarcador - ancho - margen;
+  izquierda = Math.min(Math.max(izquierda, minimoX), Math.max(minimoX, maximoX - ancho));
+  let arriba = marcadorRect.top - alto - margen;
+  if (arriba < margen) arriba = marcadorRect.bottom + margen;
+  ventana.style.left = `${Math.round(izquierda)}px`;
+  ventana.style.top = `${Math.round(arriba)}px`;
+  ventana.dataset.markerContentX = String(Math.round(marcadorXEnContenido));
+}
+
+function abrirVentanaFlotanteEvento(evento, marcador) {
+  const ventana = root?.querySelector("#ventanaFlotanteEventoLineaTiempo");
+  if (!ventana || !marcador) return;
+  ventana.replaceChildren();
+  ventana.dataset.eventId = evento.id;
+
+  const encabezado = document.createElement("div");
+  encabezado.className = "timeline-event-popover__header";
+  const titulo = document.createElement("h2");
+  titulo.textContent = evento.titulo || "Evento sin título";
+  const cerrar = document.createElement("button");
+  cerrar.type = "button";
+  cerrar.className = "timeline-button";
+  cerrar.dataset.action = "close-event-popover";
+  cerrar.setAttribute("aria-label", "Cerrar resumen del evento");
+  cerrar.textContent = "Cerrar";
+  encabezado.append(titulo, cerrar);
+
+  const contenido = document.createElement("div");
+  contenido.className = "timeline-event-popover__content";
+  contenido.append(
+    crearLineaResumen("Fecha", formatearFecha(evento.fechaEvento)),
+    crearLineaResumen("Categoría", evento.categoria || "Sin categoría"),
+    crearLineaResumen("Importancia", evento.importancia || "media")
+  );
+  const descripcion = document.createElement("p");
+  descripcion.className = "timeline-event-popover__description";
+  descripcion.textContent = evento.descripcion?.trim() || "Sin descripción disponible.";
+  contenido.appendChild(descripcion);
+
+  const acciones = document.createElement("div");
+  acciones.className = "timeline-event-popover__actions";
+  const detalles = document.createElement("button");
+  detalles.type = "button";
+  detalles.className = "timeline-button";
+  detalles.dataset.action = "event-popover-details";
+  detalles.textContent = "Ver detalles";
+  acciones.appendChild(detalles);
+  if (permisos.puedeEscribir) {
+    const editar = document.createElement("button");
+    editar.type = "button";
+    editar.className = "timeline-button";
+    editar.dataset.editEvent = evento.id;
+    editar.textContent = "Editar";
+    const eliminar = document.createElement("button");
+    eliminar.type = "button";
+    eliminar.className = "timeline-button timeline-button--danger";
+    eliminar.dataset.deleteEvent = evento.id;
+    eliminar.textContent = "Eliminar";
+    acciones.append(editar, eliminar);
+  }
+  ventana.append(encabezado, contenido, acciones);
+  ventana.hidden = false;
+  posicionarVentanaFlotanteEvento(ventana, marcador);
+}
+
+function seleccionarEventoLineaTiempo(eventId, marcador) {
+  debugTimelineRuntime("seleccionarEventoLineaTiempo recibió", { eventId: eventId || null });
+  const evento = buscarEvento(eventId);
   debugTimelineRuntime("D-event-search", {
-    requestedId: seleccion.eventoId || null,
+    requestedId: eventId || null,
     totalEvents: eventos.length,
     found: Boolean(evento)
   });
-  if (!evento && !seleccion.grupoId) {
+  if (!evento) {
+    console.warn("El marcador seleccionado no contiene un evento valido.");
+    return;
+  }
+  abrirVentanaFlotanteEvento(evento, marcador);
+}
+
+function abrirDetalle(seleccion) {
+  const evento = buscarEvento(seleccion.eventoId);
+  if (!evento) {
     console.warn("El marcador seleccionado no contiene un evento valido.");
     return;
   }
@@ -251,6 +362,7 @@ async function eliminarEvento(id) {
   try {
     await eliminarEventoPaciente(pacienteId, id, auth.currentUser.uid);
     eventos = ordenarEventosPorFecha(await cargarEventosPaciente(pacienteId));
+    cerrarVentanaFlotanteEvento();
     cerrarDetalle();
     renderizarVista();
   } catch (error) {
@@ -270,6 +382,15 @@ function configurarAcciones() {
     if (action === "add" || action === "add-first") abrirFormulario();
     if (action === "close-form" || action === "cancel-form") cerrarFormulario();
     if (action === "close-detail") cerrarDetalle();
+    if (action === "close-event-popover") cerrarVentanaFlotanteEvento();
+    if (action === "event-popover-details") {
+      const eventId = root.querySelector("#ventanaFlotanteEventoLineaTiempo")?.dataset.eventId || "";
+      const evento = buscarEvento(eventId);
+      if (evento) {
+        cerrarVentanaFlotanteEvento();
+        abrirDetalle({ eventoId: evento.id, grupoId: "" });
+      }
+    }
     if (action === "add-category") agregarCategoria();
     if (action === "retry") cargarLineaTiempo();
     if (event.target.closest("[data-edit-event]")) {
@@ -279,12 +400,25 @@ function configurarAcciones() {
     if (event.target.closest("[data-delete-event]")) eliminarEvento(event.target.closest("[data-delete-event]").dataset.deleteEvent);
   };
   root.addEventListener("click", actionHandler);
+  const cerrarAlHacerClickFuera = (event) => {
+    const ventana = root.querySelector("#ventanaFlotanteEventoLineaTiempo");
+    if (!ventana || ventana.hidden) return;
+    if (event.target.closest(".timeline-event__marker, #ventanaFlotanteEventoLineaTiempo")) return;
+    cerrarVentanaFlotanteEvento();
+  };
+  const cerrarConEscape = (event) => {
+    if (event.key === "Escape") cerrarVentanaFlotanteEvento();
+  };
+  document.addEventListener("pointerdown", cerrarAlHacerClickFuera, true);
+  document.addEventListener("keydown", cerrarConEscape);
   const categoryInput = root.querySelector("[name='nuevaCategoria']");
   const onCategoryInput = () => { root.querySelector("[data-action='add-category']").disabled = !categoryInput.value.trim(); };
   categoryInput?.addEventListener("input", onCategoryInput);
   root.querySelector("[data-event-form]").addEventListener("submit", guardarFormulario);
   return () => {
     root.removeEventListener("click", actionHandler);
+    document.removeEventListener("pointerdown", cerrarAlHacerClickFuera, true);
+    document.removeEventListener("keydown", cerrarConEscape);
     categoryInput?.removeEventListener("input", onCategoryInput);
     root.querySelector("[data-event-form]")?.removeEventListener("submit", guardarFormulario);
   };
@@ -356,7 +490,7 @@ async function inicializarLineaTiempoPaciente() {
   const limpiarAcciones = configurarAcciones();
   interacciones = configurarInteracciones({
     root,
-    onSelect: (seleccion) => { selectedGroupId = seleccion.grupoId; abrirDetalle(seleccion); },
+    onSelect: (eventId, marcador) => seleccionarEventoLineaTiempo(eventId, marcador),
     onClearSelection: () => { selectedGroupId = null; cerrarDetalle(); },
     onFocus: ({ focusRatio: ratio, focusCanvasX: canvasX, hasFocusMarker: markerVisible }) => {
       focusRatio = ratio;

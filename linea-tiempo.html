@@ -19,7 +19,7 @@
         <a class="timeline-back" href="#" data-action="back">← Volver al expediente</a>
         <p class="timeline-eyebrow">Expediente clínico</p>
         <h1 data-timeline-title>Línea de tiempo del paciente</h1>
-        <p class="timeline-version">versión: 1.16</p>
+        <p class="timeline-version">versión: 1.17</p>
         <p class="timeline-subtitle" data-patient-label>Eventos clínicos ordenados cronológicamente.</p>
       </div>
       <div class="timeline-header-actions">
@@ -52,6 +52,8 @@
         <div id="lineaTiempoCanvas" class="timeline-canvas" data-timeline-canvas></div>
       </div>
     </section>
+
+    <div id="ventanaFlotanteEventoLineaTiempo" class="timeline-event-popover" role="dialog" aria-modal="false" aria-label="Resumen del evento" hidden></div>
 
     <aside id="detalleEventoLineaTiempo" class="timeline-detail detalle-evento-linea-tiempo" data-event-detail hidden aria-live="polite" aria-label="Detalle del evento">
       <div class="timeline-panel-heading"><h2>Detalle del evento</h2><button type="button" class="timeline-button" data-action="close-detail">Cerrar</button></div>

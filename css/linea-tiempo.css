@@ -219,6 +219,15 @@ button { cursor: pointer; }
 .timeline-detail-event__actions { display: flex; gap: 8px; margin-top: 12px; }
 .detalle-evento-linea-tiempo[hidden] { display: none; }
 .detalle-evento-linea-tiempo:not([hidden]) { display: block; }
+.timeline-event-popover { position: fixed; z-index: 100; width: min(340px, calc(100vw - 24px)); padding: 14px; border: 1px solid var(--timeline-border-strong); border-radius: 14px; background: var(--timeline-surface); color: var(--timeline-text); box-shadow: var(--timeline-shadow); }
+.timeline-event-popover[hidden] { display: none; }
+.timeline-event-popover__header { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+.timeline-event-popover__header h2 { margin: 0; font-size: 1rem; line-height: 1.25; }
+.timeline-event-popover__content { margin-top: 10px; }
+.timeline-event-popover__meta { margin: 5px 0; color: var(--timeline-text-secondary); font-size: .86rem; }
+.timeline-event-popover__meta strong { color: var(--timeline-text); }
+.timeline-event-popover__description { margin: 10px 0 0; color: var(--timeline-text-secondary); line-height: 1.45; white-space: pre-wrap; }
+.timeline-event-popover__actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
 
 @media (max-width: 760px) {
   .timeline-page { padding: 10px; }
@@ -233,6 +242,7 @@ button { cursor: pointer; }
   .timeline-category-create .timeline-button { width: 100%; }
   .timeline-detail-event dl { grid-template-columns: 1fr 1fr; }
   .timeline-panel-heading { align-items: center; }
+  .timeline-event-popover { width: calc(100vw - 20px); }
 }
 
 @media (prefers-reduced-motion: reduce) {

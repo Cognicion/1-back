@@ -169,8 +169,11 @@ export function configurarInteracciones({ root, onSelect, onClearSelection, onZo
   const seleccionarMarcador = (marker) => {
     const group = marker?.closest("[data-group-id]");
     if (!group) return false;
+    const eventId = marker.getAttribute("data-event-id") || group.getAttribute("data-event-id");
+    debugTimelineRuntime("seleccionarEventoLineaTiempo recibió", { eventId: eventId || null });
+    if (!eventId) return false;
     activateGroup(group, true);
-    onSelect?.({ eventId: marker.dataset.eventId || group.dataset.eventId, groupId: group.dataset.groupId });
+    onSelect?.(eventId, marker);
     return true;
   };
 
@@ -190,6 +193,8 @@ export function configurarInteracciones({ root, onSelect, onClearSelection, onZo
       return;
     }
     if (marker) {
+      event.preventDefault();
+      event.stopPropagation();
       seleccionarMarcador(marker);
     } else {
       setFocus(event.clientX, true);
@@ -231,7 +236,10 @@ export function configurarInteracciones({ root, onSelect, onClearSelection, onZo
     if (event.key === "Enter" || event.key === " ") {
       event.preventDefault();
       activateGroup(group, true);
-      onSelect?.({ eventId: group.dataset.eventId, groupId: group.dataset.groupId });
+      const eventId = group.getAttribute("data-event-id");
+      debugTimelineRuntime("seleccionarEventoLineaTiempo recibió", { eventId: eventId || null });
+      const marker = group.querySelector(".timeline-event__marker");
+      if (eventId && marker) onSelect?.(eventId, marker);
     }
     if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
       const grupos = [...root.querySelectorAll("[data-group-id]")];
