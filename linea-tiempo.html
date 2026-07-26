@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Línea de tiempo del paciente | Cognición</title>
+  <link rel="icon" type="image/png" href="assets/favicon-cognicion.png">
+  <link rel="stylesheet" href="css/theme.css">
+  <link rel="stylesheet" href="css/theme/cognicion-theme.css">
+  <link rel="stylesheet" href="css/linea-tiempo.css">
+  <script src="js/theme-preload.js"></script>
+  <script type="module" src="js/services/themeBootstrap.js"></script>
+</head>
+<body>
+  <main class="timeline-page" data-timeline-root>
+    <div class="timeline-dna" data-timeline-dna></div>
+    <header class="timeline-header">
+      <div>
+        <a class="timeline-back" href="#" data-action="back">← Volver al expediente</a>
+        <p class="timeline-eyebrow">Expediente clínico</p>
+        <h1>Línea de tiempo del paciente</h1>
+        <p class="timeline-subtitle" data-patient-label>Eventos clínicos ordenados cronológicamente.</p>
+      </div>
+      <div class="timeline-header-actions">
+        <button type="button" class="timeline-button timeline-button--primary" data-action="add">Añadir evento</button>
+      </div>
+    </header>
+
+    <section class="timeline-toolbar" aria-label="Controles de línea de tiempo">
+      <div class="timeline-toolbar__zoom">
+        <button type="button" class="timeline-button" data-action="zoom-out" aria-label="Reducir zoom">−</button>
+        <button type="button" class="timeline-button" data-action="zoom-in" aria-label="Aumentar zoom">+</button>
+        <button type="button" class="timeline-button" data-action="fit">Ajustar</button>
+        <button type="button" class="timeline-button" data-action="reset">Restablecer</button>
+      </div>
+      <span class="timeline-zoom-label" data-zoom-label>100 %</span>
+    </section>
+
+    <section class="timeline-state" data-timeline-state hidden aria-live="polite">
+      <h2 data-state-title></h2>
+      <p data-state-message></p>
+      <button type="button" class="timeline-button" data-action="retry">Reintentar</button>
+      <button type="button" class="timeline-button timeline-button--primary" data-action="add-first">Añadir primer evento</button>
+    </section>
+
+    <section class="timeline-shell" data-timeline-shell aria-label="Línea de tiempo clínica">
+      <div class="timeline-scroll" data-timeline-scroll tabindex="0">
+        <div class="timeline-canvas" data-timeline-canvas></div>
+      </div>
+    </section>
+
+    <section class="timeline-form-panel" data-event-form-panel hidden>
+      <div class="timeline-panel-heading">
+        <div><p class="timeline-eyebrow">Registro clínico</p><h2 data-form-title>Añadir evento</h2></div>
+        <button type="button" class="timeline-button" data-action="close-form">Cerrar</button>
+      </div>
+      <form data-event-form novalidate>
+        <div class="timeline-form-grid">
+          <label>Título <input name="titulo" maxlength="160" required></label>
+          <label>Fecha del evento <input name="fechaEvento" type="date" required></label>
+          <label>Hora opcional <input name="horaEvento" type="time"></label>
+          <label>Fecha final opcional <input name="fechaFin" type="date"></label>
+          <label>Categoría <input name="categoria" value="Evento clínico" maxlength="80"></label>
+          <label>Tipo <select name="tipo" data-event-type></select></label>
+          <label>Importancia <select name="importancia"><option value="baja">Baja</option><option value="media" selected>Media</option><option value="alta">Alta</option></select></label>
+        </div>
+        <label>Descripción <textarea name="descripcion" maxlength="1200" rows="4"></textarea></label>
+        <p class="timeline-form-error" data-form-error role="alert"></p>
+        <div class="timeline-form-actions"><button type="button" class="timeline-button" data-action="cancel-form">Cancelar</button><button type="submit" class="timeline-button timeline-button--primary">Guardar evento</button></div>
+      </form>
+    </section>
+
+    <aside class="timeline-detail" data-event-detail hidden aria-label="Detalle del evento">
+      <div class="timeline-panel-heading"><h2>Detalle del evento</h2><button type="button" class="timeline-button" data-action="close-detail">Cerrar</button></div>
+      <div data-detail-content></div>
+    </aside>
+  </main>
+  <script type="module" src="js/lineaTiempo/lineaTiempoPaciente.js"></script>
+</body>
+</html>

@@ -1,0 +1,45 @@
+import assert from "node:assert/strict";
+import test from "node:test";
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
+import {
+  agruparEventosPorFecha,
+  calcularPosiciones,
+  normalizarEvento,
+  ordenarEventosPorFecha
+} from "../lineaTiempo/lineaTiempoUtils.js";
+
+function evento(id, fecha) {
+  return normalizarEvento(id, { titulo: id, fechaEvento: fecha, tipo: "consulta" });
+}
+
+test("La línea de tiempo ordena del evento más antiguo al más reciente", () => {
+  const eventos = ordenarEventosPorFecha([evento("b", "2025-07-01"), evento("a", "2020-01-01")]);
+  assert.deepEqual(eventos.map((item) => item.id), ["a", "b"]);
+});
+
+test("Las posiciones respetan la distancia temporal y un evento único queda centrado", () => {
+  const eventos = ordenarEventosPorFecha([evento("a", "2020-01-01"), evento("b", "2020-02-01"), evento("c", "2025-07-01")]);
+  const rango = { minimo: eventos[0].fechaEvento, maximo: eventos.at(-1).fechaEvento, duracion: eventos.at(-1).fechaEvento - eventos[0].fechaEvento };
+  const posiciones = calcularPosiciones(eventos, rango).map((item) => item.posicion);
+  assert.ok(posiciones[0] < posiciones[1]);
+  assert.ok(posiciones[1] < posiciones[2]);
+  assert.ok(posiciones[2] - posiciones[1] > posiciones[1] - posiciones[0]);
+  assert.equal(calcularPosiciones([eventos[0]], { minimo: eventos[0].fechaEvento, maximo: eventos[0].fechaEvento, duracion: 0 })[0].posicion, .5);
+});
+
+test("Los eventos de la misma fecha se agrupan sin perder eventos", () => {
+  const eventos = [evento("a", "2026-07-15T10:00:00"), evento("b", "2026-07-15T18:00:00"), evento("c", "2026-07-16T12:00:00")];
+  const grupos = agruparEventosPorFecha(eventos);
+  assert.equal(grupos.length, 2);
+  assert.equal(grupos[0].items.length, 2);
+  assert.equal(grupos.flatMap((grupo) => grupo.items).length, 3);
+});
+
+test("La página general del expediente solo navega a la función y no importa su módulo", () => {
+  const root = resolve(process.cwd());
+  const paciente = readFileSync(resolve(root, "js/paciente.js"), "utf8");
+  const medico = readFileSync(resolve(root, "js/medico.js"), "utf8");
+  assert.equal(paciente.includes("import(\"./lineaTiempo/lineaTiempoPaciente.js\")"), false);
+  assert.equal(medico.includes("lineaTiempoPaciente.js"), false);
+});

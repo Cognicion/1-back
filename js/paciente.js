@@ -5764,6 +5764,14 @@ window.abrirHistoriaClinica = function() {
   window.location.href = `historia.html?id=${uidPaciente}`;
 };
 
+window.abrirLineaTiempoPaciente = function() {
+  if (!auth.currentUser || !uidPaciente) {
+    alert("No se encontró el paciente o la sesión actual.");
+    return;
+  }
+  window.location.href = `linea-tiempo.html?pacienteId=${encodeURIComponent(uidPaciente)}`;
+};
+
 function datosFormularioTratamiento() {
   sincronizarCamposTratamientoDesdeTomas();
   actualizarDosisTotalDiaTratamiento();
