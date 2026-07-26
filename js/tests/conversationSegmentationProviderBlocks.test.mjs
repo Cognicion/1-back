@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import {
   ExternalConversationSegmentationProvider,
   crearClaveCacheSegmentacion,
+  prepararSubdivisionesAdaptativas,
   seleccionarBloquesProblematicos
 } from "../services/conversationSegmentationProviders.js";
 
@@ -450,6 +451,19 @@ const adaptiveCache = adaptiveBase.blockManifest.blocks.map((block, index) => {
     ]
   };
 });
+
+const splitParentsFixture = adaptiveCache.filter((block) => [4, 5].includes(Number(block.blockIndex)));
+const adaptivePreparation = prepararSubdivisionesAdaptativas({
+  text: "fixture adaptativo catorce bloques " + "contenido ".repeat(500),
+  sourceTranscriptHash: adaptiveBase.blockManifest.sourceTranscriptHash,
+  cachedBlocks: adaptiveCache,
+  parentBlockKeys: splitParentsFixture.map((block) => block.blockKey),
+  model: adaptiveModel
+});
+assert.deepEqual(splitParentsFixture.map((block) => block.blockNumber), [5, 6], "splittableParentIds === [5, 6]");
+assert.deepEqual(adaptivePreparation.createdChildIds, ["block-5A", "block-5B", "block-6A", "block-6B"], "createdChildIds === [5A, 5B, 6A, 6B]");
+assert.equal(adaptivePreparation.updates.filter((block) => !block.parentBlockId && block.status === "requires_split").length, 2, "los padres se conservan requires_split");
+assert.equal(adaptivePreparation.updates.filter((block) => block.parentBlockId && block.status === "pending").length, 4, "los hijos nuevos quedan pendientes");
 
 let completedCachedParentCalls = 0;
 let failedParentRetryCalls = 0;

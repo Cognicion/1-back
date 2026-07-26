@@ -318,6 +318,70 @@ function subdividirBloqueSeguro(parent = {}, localUtterances = []) {
   return children;
 }
 
+/** Prepara hijos estables para reintentos adaptativos sin llamar al proveedor. */
+export function prepararSubdivisionesAdaptativas({
+  text = "",
+  sourceTranscriptHash = "",
+  cachedBlocks = [],
+  parentBlockKeys = [],
+  model = "external_callable"
+} = {}) {
+  const localUtterances = new RuleBasedConversationSegmentationProvider().segment({ text }).utterances;
+  const requested = new Set(parentBlockKeys.filter(Boolean));
+  const parents = cachedBlocks.filter((block) => !block?.parentBlockId && !block?.parentBlockKey);
+  const childrenByKey = new Map(cachedBlocks.filter((block) => block?.parentBlockId || block?.parentBlockKey).map((block) => [block.blockKey, block]));
+  const updates = [];
+  const createdChildIds = [];
+
+  parents.forEach((storedParent) => {
+    if (!requested.has(storedParent.blockKey)) return;
+    const parentIndex = Number(storedParent.blockIndex);
+    if (!Number.isFinite(parentIndex) || !Number.isFinite(Number(storedParent.start)) || !Number.isFinite(Number(storedParent.end))) return;
+    const canonicalParentId = `block-${parentIndex + 1}`;
+    const parent = describirBloque({
+      localUtterances,
+      block: { ...storedParent, blockId: canonicalParentId, splitLevel: Number(storedParent.splitLevel || 0) },
+      index: parentIndex,
+      totalBlocks: Number(storedParent.totalBlocks || parents.length),
+      sourceTranscriptHash,
+      model
+    });
+    const ranges = subdividirBloqueSeguro(parent, localUtterances);
+    if (ranges.length < 2) return;
+    const childBlocks = ranges.map((range) => describirBloque({
+      localUtterances,
+      block: { ...range, parentBlockId: canonicalParentId, parentBlockKey: parent.blockKey, blockId: `${canonicalParentId}${String.fromCharCode(65 + Number(range.childIndex || 0))}` },
+      index: parentIndex,
+      totalBlocks: Number(storedParent.totalBlocks || parents.length),
+      sourceTranscriptHash,
+      model
+    }));
+    const childBlockIds = childBlocks.map((child) => child.blockId);
+    updates.push({
+      ...storedParent,
+      ...parent,
+      status: "requires_split",
+      childBlockIds,
+      splitLevel: Number(storedParent.splitLevel || 0),
+      source: storedParent.source || "basic"
+    });
+    childBlocks.forEach((child) => {
+      const previous = childrenByKey.get(child.blockKey);
+      updates.push({
+        ...child,
+        ...(previous || {}),
+        ...child,
+        status: previous?.status || "pending",
+        parentBlockId: canonicalParentId,
+        parentBlockKey: parent.blockKey,
+        childBlockIds: previous?.childBlockIds || []
+      });
+      createdChildIds.push(child.blockId);
+    });
+  });
+  return { updates, createdChildIds, localUtterances };
+}
+
 function cacheBloqueValido(block = {}, cached = null) {
   if (!cached || !["completed", "completed_from_children"].includes(cached.status) || !Array.isArray(cached.utterances) || !cached.utterances.length) return false;
   return cached.blockKey === block.blockKey

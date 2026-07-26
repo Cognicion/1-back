@@ -8,8 +8,9 @@ import {
   CONVERSATION_SEGMENTATION_CLIENT_VERSION,
   CONVERSATION_SEGMENTATION_PROMPT_VERSION,
   createConversationSegmentationProvider,
-  crearClientRequestId
-} from "./services/conversationSegmentationProviders.js?v=20260719-monotonic-block-retry";
+  crearClientRequestId,
+  prepararSubdivisionesAdaptativas
+} from "./services/conversationSegmentationProviders.js?v=20260725-adaptive-split-prepared";
 import { segmentarConversacionClinica } from "./services/clinicalPipeline.js";
 import {
   VOICE_NOTE_FIELD_REGISTRY,
@@ -95,6 +96,7 @@ const state = {
   conversationUndo: [],
   conversationRedo: [],
   activeSegmentationRequest: null,
+  segmentationOperation: null,
   activeSegmentationAbortController: null,
   activePreflightAbortController: null,
   activeGenerationRequest: null,
@@ -1615,6 +1617,71 @@ function obtenerBlockKeysPendientesManifest(manifest = {}) {
     .filter(Boolean);
 }
 
+function getSplittableParentBlocks(activeManifest = {}) {
+  const blocks = Array.isArray(activeManifest?.blocks) ? activeManifest.blocks : [];
+  return blocks.filter((block) => {
+    if (!esBloquePadreSegmentacion(block) || esBloqueSegmentacionCompletado(block)) return false;
+    const requiresSplit = block.status === "requires_split"
+      || (block.status === "failed" && Number(block.consecutiveTimeouts || 0) >= 2);
+    const childrenProcessing = blocks.some((child) => (child.parentBlockKey === block.blockKey || child.parentBlockId === block.blockId) && child.status === "processing");
+    return requiresSplit
+      && Number(block.splitLevel || 0) < 2
+      && !childrenProcessing
+      && Boolean(block.blockKey)
+      && Number.isFinite(Number(block.start))
+      && Number.isFinite(Number(block.end));
+  });
+}
+
+async function dividirYReintentarBloquesAdaptativos() {
+  const manifest = state.segmentationMetadata?.blockManifest;
+  const parents = getSplittableParentBlocks(manifest);
+  const button = $("btnSegmentarConversacionVoz");
+  if (!parents.length) {
+    const details = { manifestId: manifest?.manifestId || "local", manifestRevision: manifest?.revision || 0, states: (manifest?.blocks || []).filter(esBloquePadreSegmentacion).map((block) => ({ blockId: block.blockId, status: block.status, attemptCount: block.attemptCount, consecutiveTimeouts: block.consecutiveTimeouts, splitLevel: block.splitLevel, childBlockIds: block.childBlockIds || [] })) };
+    console.error("No se pudo iniciar la subdivisión:", details);
+    setText("voiceSegmentationStatus", "No se pudo iniciar la subdivisión porque los bloques pendientes no tienen un estado compatible.");
+    renderDetalleTecnicoSegmentacion({ code: "adaptive_split_not_eligible", stage: "adaptive_split", retryable: true, details });
+    return null;
+  }
+  if (state.segmentationOperation || state.activeSegmentationRequest) return state.activeSegmentationRequest;
+  state.segmentationOperation = { type: "adaptive_split", activeParentIds: parents.map((block) => block.blockId || block.blockKey) };
+  if (button) { button.disabled = true; button.textContent = "Preparando subdivisión…"; }
+  renderBlockManifestSegmentacion(manifest);
+  setText("voiceSegmentationStatus", "Preparando subdivisión de bloques pendientes…");
+  try {
+    const texto = $("voiceCorrectedTranscript")?.value || $("textoDictadoClinico")?.value || "";
+    const prepared = prepararSubdivisionesAdaptativas({
+      text: texto,
+      sourceTranscriptHash: state.segmentationMetadata?.transcriptHash || hashTextoVoz(texto),
+      cachedBlocks: manifest.blocks,
+      parentBlockKeys: parents.map((block) => block.blockKey),
+      model: state.segmentationMetadata?.model || "external_callable"
+    });
+    if (!prepared.createdChildIds.length) throw new Error("adaptive_split_children_not_created");
+    const byKey = new Map(manifest.blocks.map((block) => [block.blockKey || block.blockId, block]));
+    prepared.updates.forEach((block) => byKey.set(block.blockKey || block.blockId, block));
+    const candidate = { ...manifest, blocks: ordenarBloquesManifestSegmentacion(Array.from(byKey.values())) };
+    const merged = fusionarManifiestosSegmentacion(manifest, candidate, { requestedIds: parents.map((block) => block.blockKey) });
+    const counts = contarBloquesManifest(merged);
+    state.segmentationMetadata = { ...(state.segmentationMetadata || {}), blockManifest: merged, completedBlocks: counts.completed, totalBlocks: counts.total, pendingBlocks: counts.pending + counts.failed + counts.requiresSplit };
+    renderBlockManifestSegmentacion(merged);
+    const saved = await flushPersistenciaVoz("adaptive-split-prepared", { throwOnError: true });
+    const readback = await obtenerSegmentacionNotaVozLocal({ ...contextoPersistenciaVoz(), transcriptHash: state.segmentationMetadata.transcriptHash || hashTextoVoz(texto), promptVersion: CONVERSATION_SEGMENTATION_PROMPT_VERSION, model: "external_callable", segmenterVersion: CONVERSATION_SEGMENTATION_CLIENT_VERSION });
+    const savedIds = new Set(readback?.blockManifest?.blocks?.map((block) => block.blockId) || []);
+    if (!saved || prepared.createdChildIds.some((id) => !savedIds.has(id))) throw new Error("adaptive_split_persistence_verification_failed");
+    setText("voiceSegmentationStatus", `Subbloques preparados. Procesando ${prepared.createdChildIds.length} bloques…`);
+    return await segmentarConProveedor({ onlyBlockKeys: prepared.updates.filter((block) => block.parentBlockId && block.status !== "completed").map((block) => block.blockKey), operationType: "adaptive_split" });
+  } catch (error) {
+    console.error("No se pudo iniciar la subdivisión:", error?.code || error?.message || error);
+    setText("voiceSegmentationStatus", "No se pudo iniciar la subdivisión. Los resultados completados se conservaron.");
+    renderDetalleTecnicoSegmentacion({ code: error?.code || error?.message || "adaptive_split_failed", stage: "adaptive_split", retryable: true, details: { parentBlockIds: parents.map((block) => block.blockId || block.blockKey) } });
+    throw error;
+  } finally {
+    state.segmentationOperation = null;
+  }
+}
+
 function tieneManifiestoActivoPendiente() {
   const counts = contarBloquesManifest(state.segmentationMetadata?.blockManifest || {});
   return Boolean(counts.total && (counts.pending || counts.failed || counts.requiresSplit || counts.cancelled));
@@ -2458,7 +2525,7 @@ function renderBlockManifestSegmentacion(manifest = null) {
       const status = block.status || "pending";
       const isChild = Boolean(block.parentBlockId || block.parentBlockKey);
       const source = block.source === "cache" ? "cache" : (block.source === "provider" ? "proveedor" : "basica");
-      const canRetry = !state.activeSegmentationRequest && ["failed", "cancelled", "pending", "requires_split"].includes(status) && block.blockKey;
+      const canRetry = !state.activeSegmentationRequest && !state.segmentationOperation && ["failed", "cancelled", "pending", "requires_split"].includes(status) && block.blockKey;
       const retryLabel = status === "requires_split" ? "Dividir y reintentar" : "Reintentar este bloque";
       const blockLabel = isChild
         ? `${Number(block.blockNumber || index + 1)}${String.fromCharCode(65 + Number(block.childIndex ?? 0))}`
@@ -2480,7 +2547,11 @@ function renderBlockManifestSegmentacion(manifest = null) {
   `;
   container.querySelectorAll("[data-retry-seg-block]").forEach((button) => {
     button.addEventListener("click", () => {
-      segmentarConProveedor({ onlyBlockKeys: [button.dataset.retrySegBlock] }).catch((error) => {
+      const parent = (state.segmentationMetadata?.blockManifest?.blocks || []).find((block) => block.blockKey === button.dataset.retrySegBlock);
+      const retry = parent?.status === "requires_split"
+        ? dividirYReintentarBloquesAdaptativos()
+        : segmentarConProveedor({ onlyBlockKeys: [button.dataset.retrySegBlock] });
+      retry.catch((error) => {
         console.error("No se pudo reintentar el bloque:", error);
         setText("voiceSegmentationStatus", "No se pudo reintentar el bloque. Se conservaron los resultados guardados.");
       });
@@ -3690,10 +3761,12 @@ function conectarEventos() {
     else programarPersistenciaVoz("transcript-edit");
   });
   $("btnSegmentarConversacionVoz")?.addEventListener("click", () => {
-    const pendingBlockKeys = tieneManifiestoActivoPendiente()
-      ? obtenerBlockKeysPendientesManifest(state.segmentationMetadata?.blockManifest || {})
-      : [];
-    segmentarConProveedor({ onlyBlockKeys: pendingBlockKeys }).catch((error) => {
+    const manifest = state.segmentationMetadata?.blockManifest || {};
+    const splittable = getSplittableParentBlocks(manifest);
+    const action = splittable.length
+      ? dividirYReintentarBloquesAdaptativos()
+      : segmentarConProveedor({ onlyBlockKeys: tieneManifiestoActivoPendiente() ? obtenerBlockKeysPendientesManifest(manifest) : [] });
+    action.catch((error) => {
     console.error("No se pudo segmentar la conversacion:", error);
     setText("voiceSegmentationStatus", "No se pudo segmentar con proveedor. Revise la transcripcion.");
     });
