@@ -28,6 +28,7 @@ import {
   debugTimelineRuntime,
   normalizarNombreCategoria,
   obtenerNombreCategoriaEvento,
+  obtenerEtiquetaOrigenEvento,
   formatearImportanciaEvento,
   agruparEventosParaEscalaVisible
 } from "./lineaTiempoUtils.js";
@@ -273,6 +274,10 @@ function abrirVentanaFlotanteEvento(evento, marcador) {
   descripcion.className = "timeline-event-popover__description";
   descripcion.textContent = evento.descripcion?.trim() || "Sin descripción disponible.";
   contenido.appendChild(descripcion);
+  const origenDetectado = obtenerEtiquetaOrigenEvento(evento);
+  if (origenDetectado) {
+    contenido.appendChild(crearLineaResumen("Origen", origenDetectado));
+  }
 
   const acciones = document.createElement("div");
   acciones.className = "timeline-event-popover__actions";
@@ -480,7 +485,13 @@ async function guardarFormulario(event) {
       importancia: form.elements.importancia.value,
       origen: eventoEditando?.origen || "manual",
       referenciaId: eventoEditando?.referenciaId || null,
-      referenciaTipo: eventoEditando?.referenciaTipo || null
+      referenciaTipo: eventoEditando?.referenciaTipo || null,
+      detectedEventId: eventoEditando?.detectedEventId || null,
+      deteccionId: eventoEditando?.deteccionId || null,
+      sourceType: eventoEditando?.sourceType || null,
+      sourceId: eventoEditando?.sourceId || null,
+      sourceLabel: eventoEditando?.sourceLabel || null,
+      sourceDate: eventoEditando?.sourceDate || null
     };
     if (eventoEditando) await actualizarEventoPaciente(pacienteId, eventoEditando.id, datos, auth.currentUser.uid);
     else await crearEventoPaciente(pacienteId, datos, auth.currentUser.uid);
@@ -724,12 +735,13 @@ function asegurarSeccionDeteccion() {
 
 function renderizarSugerenciasDeteccion(sugerencias = [], mostrarDescartados = false, abierto = false) {
   const seccion = asegurarSeccionDeteccion();
-  const pendientes = sugerencias.filter((s) => s.estado === ESTADOS_DETECCION.pendiente);
+  const sugerenciasDisponibles = filtrarEventosDetectadosDisponibles(sugerencias, eventos, mostrarDescartados);
+  const pendientes = sugerenciasDisponibles.filter((s) => s.estado === ESTADOS_DETECCION.pendiente);
   seccion.querySelector("[data-detected-count]").textContent = `${pendientes.length} pendientes`;
   const body = seccion.querySelector("[data-detected-body]");
   body.hidden = !(abierto || pendientes.length);
   body.replaceChildren();
-  sugerencias.filter((s) => mostrarDescartados || s.estado !== ESTADOS_DETECCION.descartado).forEach((s) => {
+  sugerenciasDisponibles.forEach((s) => {
     const card = document.createElement("article");
     card.className = `timeline-detected-card timeline-detected-card--${s.estado}`;
     card.dataset.detectedId = s.id;
@@ -751,6 +763,42 @@ function renderizarSugerenciasDeteccion(sugerencias = [], mostrarDescartados = f
 async function cargarSugerenciasDetectadas() {
   const snap = await getDocs(refEventosDetectados());
   return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+}
+
+function obtenerDetectedEventIdSugerencia(sugerencia = {}) {
+  return String(sugerencia.detectedEventId || sugerencia.hashConceptual || sugerencia.deteccionId || sugerencia.id || "").trim();
+}
+
+function obtenerDetectedEventIdEvento(evento = {}) {
+  return String(evento.detectedEventId || evento.deteccionId || "").trim();
+}
+
+function obtenerClavesDeteccionSugerencia(sugerencia = {}) {
+  return [sugerencia.detectedEventId, sugerencia.hashConceptual, sugerencia.deteccionId, sugerencia.id]
+    .map((valor) => String(valor || "").trim())
+    .filter(Boolean);
+}
+
+function obtenerClavesDeteccionEvento(evento = {}) {
+  return [evento.detectedEventId, evento.deteccionId]
+    .map((valor) => String(valor || "").trim())
+    .filter(Boolean);
+}
+
+function filtrarEventosDetectadosDisponibles(eventosDetectados = [], eventosLineaTiempo = [], mostrarDescartados = false) {
+  const idsRegistrados = new Set(eventosLineaTiempo.flatMap(obtenerClavesDeteccionEvento));
+  const eventosDisponibles = eventosDetectados
+    .filter((sugerencia) => mostrarDescartados || sugerencia.estado !== ESTADOS_DETECCION.descartado)
+    .filter((sugerencia) => !obtenerClavesDeteccionSugerencia(sugerencia).some((id) => idsRegistrados.has(id)))
+    .map((sugerencia) => sugerencia.estado === ESTADOS_DETECCION.aceptado
+      ? { ...sugerencia, estado: ESTADOS_DETECCION.pendiente }
+      : sugerencia);
+  console.debug("[Eventos detectados] Filtrado", {
+    totalDetectados: eventosDetectados.length,
+    totalYaRegistrados: idsRegistrados.size,
+    totalDisponibles: eventosDisponibles.length
+  });
+  return eventosDisponibles;
 }
 
 async function obtenerFragmentosClinicosDeteccion() {
@@ -818,7 +866,7 @@ async function inicializarDetectorEventosClinicosLocal() {
   const cargar = async () => {
     sugerencias = await cargarSugerenciasDetectadas();
     renderizarSugerenciasDeteccion(sugerencias, mostrarDescartados);
-    const pendientes = sugerencias.filter((s) => s.estado === ESTADOS_DETECCION.pendiente).length;
+    const pendientes = filtrarEventosDetectadosDisponibles(sugerencias, eventos, mostrarDescartados).filter((s) => s.estado === ESTADOS_DETECCION.pendiente).length;
     if (status()) status().textContent = pendientes ? `${pendientes} eventos pendientes de revision.` : "No hay sugerencias pendientes.";
   };
   const buscar = async () => {
@@ -834,7 +882,7 @@ async function inicializarDetectorEventosClinicosLocal() {
         const hashConceptual = [pacienteId, s.fechaInicioISO || "sin-fecha", normalizarTextoDeteccion(s.tituloSugerido), s.sujeto].join("|");
         if (claves.has(hashConceptual)) continue;
         const posibleDuplicado = eventos.find((e) => fechaISO(e.fechaEvento) === s.fechaInicioISO && normalizarTextoDeteccion(e.titulo).slice(0, 18) === normalizarTextoDeteccion(s.tituloSugerido).slice(0, 18));
-        await addDoc(refEventosDetectados(), { ...s, hashConceptual, estado: ESTADOS_DETECCION.pendiente, posibleDuplicadoEventoId: posibleDuplicado?.id || null, detectadoPor: auth.currentUser.uid, detectadoEn: serverTimestamp(), revisadoPor: null, revisadoEn: null, eventoCreadoId: null });
+        await addDoc(refEventosDetectados(), { ...s, detectedEventId: hashConceptual, hashConceptual, estado: ESTADOS_DETECCION.pendiente, posibleDuplicadoEventoId: posibleDuplicado?.id || null, detectadoPor: auth.currentUser.uid, detectadoEn: serverTimestamp(), revisadoPor: null, revisadoEn: null, eventoCreadoId: null });
         claves.add(hashConceptual);
         nuevas.push(s);
       }
@@ -873,8 +921,20 @@ async function inicializarDetectorEventosClinicosLocal() {
         importancia: card.querySelector("[data-detected-field='importancia']").value || "media"
       };
       if (!datos.titulo || !datos.fechaInicioISO) { card.querySelector("[data-detected-error]").textContent = "Titulo y fecha son obligatorios."; return; }
-      const evento = await crearEventoPaciente(pacienteId, { titulo: datos.titulo, descripcion: datos.descripcion, fechaEvento: fechaLocalISO(datos.fechaInicioISO), fechaFin: fechaLocalISO(datos.fechaFinISO), importancia: datos.importancia, origen: "detectado", referenciaTipo: sugerencia.origenSubtipo || sugerencia.origenTipo, referenciaId: sugerencia.origenId, deteccionId: sugerencia.id, fechaEsAproximada: sugerencia.requiereRevisionFecha === true, precisionTemporal: sugerencia.precisionTemporal }, auth.currentUser.uid);
-      await updateDoc(doc(db, "pacientes", pacienteId, "eventosDetectados", sugerencia.id), { estado: ESTADOS_DETECCION.aceptado, revisadoPor: auth.currentUser.uid, revisadoEn: serverTimestamp(), eventoCreadoId: evento.id });
+      const detectedEventId = obtenerDetectedEventIdSugerencia(sugerencia);
+      const eventosActuales = ordenarEventosPorFecha(await cargarEventosPaciente(pacienteId));
+      const clavesSugerencia = new Set(obtenerClavesDeteccionSugerencia(sugerencia));
+      const existente = eventosActuales.find((evento) => obtenerClavesDeteccionEvento(evento).some((id) => clavesSugerencia.has(id)));
+      if (existente) {
+        eventos = eventosActuales;
+        card.querySelector("[data-detected-error]").textContent = "Este evento ya fue agregado a la Linea de tiempo.";
+        renderizarVista();
+        abrirDetalle({ eventoId: existente.id, grupoId: "" });
+        await cargar();
+        return;
+      }
+      const evento = await crearEventoPaciente(pacienteId, { titulo: datos.titulo, descripcion: datos.descripcion, fechaEvento: fechaLocalISO(datos.fechaInicioISO), fechaFin: fechaLocalISO(datos.fechaFinISO), importancia: datos.importancia, origen: "detectado", referenciaTipo: sugerencia.origenSubtipo || sugerencia.origenTipo, referenciaId: sugerencia.origenId, detectedEventId, deteccionId: sugerencia.id, sourceType: sugerencia.origenTipo || "", sourceId: sugerencia.origenId || "", sourceLabel: sugerencia.origenSubtipo || sugerencia.origenTipo || "", sourceDate: sugerencia.origenFechaISO || "", fechaEsAproximada: sugerencia.requiereRevisionFecha === true, precisionTemporal: sugerencia.precisionTemporal }, auth.currentUser.uid);
+      await updateDoc(doc(db, "pacientes", pacienteId, "eventosDetectados", sugerencia.id), { detectedEventId, estado: ESTADOS_DETECCION.aceptado, revisadoPor: auth.currentUser.uid, revisadoEn: serverTimestamp(), eventoCreadoId: evento.id });
       eventos = ordenarEventosPorFecha(await cargarEventosPaciente(pacienteId));
       renderizarVista();
       await cargar();

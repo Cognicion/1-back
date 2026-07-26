@@ -45,6 +45,16 @@ export function normalizarFecha(valor) {
   return Number.isNaN(fecha.getTime()) ? null : fecha;
 }
 
+function normalizarEtiquetaOrigen(valor) {
+  if (!valor) return "";
+  if (typeof valor === "string") return valor.trim().slice(0, 120);
+  if (typeof valor === "object") {
+    const texto = valor.label || valor.etiqueta || valor.titulo || valor.tipo || valor.nombre || "";
+    return typeof texto === "string" ? texto.trim().slice(0, 120) : "";
+  }
+  return String(valor).trim().slice(0, 120);
+}
+
 export function normalizarEvento(id, datos = {}) {
   const fechaEvento = normalizarFecha(datos.fechaEvento);
   if (!fechaEvento) return null;
@@ -60,7 +70,12 @@ export function normalizarEvento(id, datos = {}) {
     origen: ["automatico", "detectado"].includes(datos.origen) ? datos.origen : "manual",
     referenciaId: datos.referenciaId ? String(datos.referenciaId).slice(0, 160) : null,
     referenciaTipo: datos.referenciaTipo ? String(datos.referenciaTipo).slice(0, 80) : null,
+    detectedEventId: datos.detectedEventId ? String(datos.detectedEventId).slice(0, 160) : null,
     deteccionId: datos.deteccionId ? String(datos.deteccionId).slice(0, 160) : null,
+    sourceType: datos.sourceType ? String(datos.sourceType).slice(0, 80) : null,
+    sourceId: datos.sourceId ? String(datos.sourceId).slice(0, 160) : null,
+    sourceLabel: normalizarEtiquetaOrigen(datos.sourceLabel) || null,
+    sourceDate: normalizarFecha(datos.sourceDate),
     fechaEsAproximada: datos.fechaEsAproximada === true,
     precisionTemporal: datos.precisionTemporal || "",
     activo: datos.activo !== false
@@ -223,6 +238,26 @@ export function formatearOrigenEvento(origen) {
   if (valor === "automatico" || valor === "automático") return "Automático";
   if (valor === "detectado") return "Detectado";
   return String(origen || "").trim() || "No especificado";
+}
+
+export function obtenerEtiquetaOrigenEvento(evento = {}) {
+  const provieneDeDeteccion = evento.origen === "detectado" && Boolean(evento.detectedEventId || evento.deteccionId);
+  if (!provieneDeDeteccion) return "";
+  const tipo = normalizarEtiquetaOrigen(evento.sourceLabel) || normalizarEtiquetaOrigen(evento.referenciaTipo) || normalizarEtiquetaOrigen(evento.sourceType) || "fuente clinica";
+  const etiquetas = {
+    nota: "Nota clinica",
+    nota_evolucion: "Nota de evolucion",
+    nota_ingreso: "Nota inicial / nota de ingreso",
+    historia_inicial: "Historia clinica",
+    historia_clinica: "Historia clinica",
+    tratamiento: "Tratamiento e indicaciones",
+    tratamiento_suspendido: "Tratamiento e indicaciones",
+    datos_clinicos: "Datos clinicos del paciente",
+    estudio: "Estudios"
+  };
+  const etiqueta = etiquetas[tipo] || tipo;
+  const fecha = normalizarFecha(evento.sourceDate) || normalizarFecha(evento.origenFechaISO);
+  return fecha ? `Detectado en: ${etiqueta} del ${formatearFecha(fecha)}` : `Detectado en: ${etiqueta}`;
 }
 
 export function formatearImportanciaEvento(importancia) {

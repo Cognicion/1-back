@@ -11,12 +11,26 @@ import {
   debugTimelineRuntime,
   obtenerNombreCategoriaEvento,
   formatearOrigenEvento,
-  formatearImportanciaEvento
-  ,agruparEventosParaEscalaVisible
+  formatearImportanciaEvento,
+  obtenerEtiquetaOrigenEvento,
+  agruparEventosParaEscalaVisible
 } from "./lineaTiempoUtils.js";
 
 function textoImportancia(importancia) {
   return importancia === "alta" ? "Importancia alta" : importancia === "baja" ? "Importancia baja" : "Importancia media";
+}
+
+function normalizarImportanciaMarcador(valor = "") {
+  const normalizada = String(valor ?? "").trim().toLocaleLowerCase("es-MX");
+  if (["critica", "crítica", "critico", "crítico", "critical", "4"].includes(normalizada)) return "critica";
+  if (["alta", "high", "3"].includes(normalizada)) return "alta";
+  if (["media", "moderada", "medium", "2"].includes(normalizada)) return "media";
+  return "baja";
+}
+
+function tamanoMarcadorPorImportancia(valor = "") {
+  const importancia = normalizarImportanciaMarcador(valor);
+  return { baja: 10, media: 14, alta: 19, critica: 24 }[importancia] || 14;
 }
 
 function textoCategoria(evento) {
@@ -102,7 +116,17 @@ export function renderizarLineaTiempo(root, eventos, rango, zoom = 1, opciones =
     const eventoId = grupo.items[0].id;
     const atributoIdentificador = esGrupo ? `data-visual-group-id="${escaparHTML(elemento.idGrupo)}"` : `data-event-id="${escaparHTML(eventoId)}"`;
     const contenidoMarcador = esGrupo ? `<span class="timeline-event__group-count" aria-hidden="true">${grupo.items.length}</span>` : `<span class="timeline-event__marker-core" aria-hidden="true">${escaparHTML(configuracion.icono)}</span>`;
-    bloque.innerHTML = `<span class="timeline-event-stem" aria-hidden="true"></span><button type="button" class="timeline-event__marker timeline-event-dot${esGrupo ? " timeline-event__marker--group" : ""}${seleccionado ? " is-selected" : ""}" ${atributoIdentificador} data-group-id="${escaparHTML(grupo.clave)}" aria-expanded="false" aria-pressed="${String(seleccionado)}" aria-label="${escaparHTML(bloque.getAttribute("aria-label"))}" style="--event-color:${configuracion.color}">${contenidoMarcador}</button><article class="timeline-event-card timeline-event__preview" role="tooltip" aria-hidden="true" hidden><time>${escaparHTML(esGrupo ? elemento.etiquetaPeriodo : formatearFechaCorta(grupo.fecha))}</time><strong>${esGrupo ? `${grupo.items.length} eventos` : escaparHTML(evento.titulo)}</strong>${esGrupo ? `<small>${grupo.items.length} eventos en este periodo</small>` : `${textoCategoria(evento)}<small>${escaparHTML(textoImportancia(evento.importancia))}</small>`}</article>`;
+    const importanciaNormalizada = normalizarImportanciaMarcador(evento.importancia);
+    const markerSize = tamanoMarcadorPorImportancia(evento.importancia);
+    if (!esGrupo) {
+      console.debug("[Línea de tiempo] Marcador renderizado", {
+        eventId: evento.id,
+        importancia: importanciaNormalizada,
+        markerSize,
+        provieneDeDeteccion: Boolean(evento.detectedEventId || evento.deteccionId)
+      });
+    }
+    bloque.innerHTML = `<span class="timeline-event-stem" aria-hidden="true"></span><button type="button" class="timeline-event__marker timeline-event-dot${esGrupo ? " timeline-event__marker--group" : ""}${seleccionado ? " is-selected" : ""}" ${atributoIdentificador} data-group-id="${escaparHTML(grupo.clave)}" data-importance="${escaparHTML(importanciaNormalizada)}" aria-expanded="false" aria-pressed="${String(seleccionado)}" aria-label="${escaparHTML(bloque.getAttribute("aria-label"))}" style="--event-color:${configuracion.color};--marker-size:${markerSize}px">${contenidoMarcador}</button><article class="timeline-event-card timeline-event__preview" role="tooltip" aria-hidden="true" hidden><time>${escaparHTML(esGrupo ? elemento.etiquetaPeriodo : formatearFechaCorta(grupo.fecha))}</time><strong>${esGrupo ? `${grupo.items.length} eventos` : escaparHTML(evento.titulo)}</strong>${esGrupo ? `<small>${grupo.items.length} eventos en este periodo</small>` : `${textoCategoria(evento)}<small>${escaparHTML(textoImportancia(evento.importancia))}</small>`}</article>`;
     fragmento.appendChild(bloque);
   });
 
@@ -182,8 +206,10 @@ export function renderizarDetalleEvento(root, eventos, eventoId = "", grupoId = 
       crearCampoDetalle("importancia", "Importancia"),
       crearCampoDetalle("fechaFinal", "Fecha final"),
       crearCampoDetalle("hora", "Hora"),
-      crearCampoDetalle("referencia", "Referencia")
+      crearCampoDetalle("referencia", "Referencia"),
+      crearCampoDetalle("origenDetectado", "Origen detectado")
     );
+    const etiquetaOrigenDetectado = obtenerEtiquetaOrigenEvento(evento);
     const datosDetalle = {
       fecha: formatearFecha(evento.fechaEvento),
       categoria: obtenerNombreCategoriaEvento(evento, categorias),
@@ -191,8 +217,12 @@ export function renderizarDetalleEvento(root, eventos, eventoId = "", grupoId = 
       importancia: formatearImportanciaEvento(evento.importancia),
       fechaFinal: evento.fechaFin ? formatearFecha(evento.fechaFin) : "No aplica",
       hora: formatearHoraEvento(evento),
-      referencia: obtenerReferenciaEvento(evento)
+      referencia: obtenerReferenciaEvento(evento),
+      origenDetectado: etiquetaOrigenDetectado || "No aplica"
     };
+    if (!etiquetaOrigenDetectado) {
+      detallePorClave.querySelector('[data-detail-field="origenDetectado"]')?.closest("div")?.remove();
+    }
     const titulo = card.querySelector("h3");
     const fecha = card.querySelector(".timeline-detail-event__header p");
     const categoria = detallePorClave.querySelector('[data-detail-field="categoria"]');

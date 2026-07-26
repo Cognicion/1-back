@@ -9,6 +9,7 @@ import {
   normalizarEvento,
   ordenarEventosPorFecha,
   obtenerNombreCategoriaEvento,
+  obtenerEtiquetaOrigenEvento,
   formatearOrigenEvento,
   formatearImportanciaEvento,
   seleccionarIntervaloTemporal,
@@ -70,6 +71,33 @@ test("El detalle conserva cada dato clínico en su fuente semántica", () => {
   assert.equal(formatearOrigenEvento(actual.origen), "Manual");
   assert.equal(formatearOrigenEvento(legado.origen), "Automático");
   assert.equal(formatearImportanciaEvento(actual.importancia), "Alta");
+});
+
+test("El origen detectado se etiqueta solo para eventos vinculados a detecciones", () => {
+  const detectado = normalizarEvento("detectado", {
+    titulo: "Evento detectado",
+    fechaEvento: "2026-05-20",
+    origen: "detectado",
+    detectedEventId: "nota-123",
+    sourceLabel: "nota_evolucion",
+    sourceDate: "2026-05-20"
+  });
+  const manual = normalizarEvento("manual", {
+    titulo: "Evento manual",
+    fechaEvento: "2026-05-20",
+    origen: "manual"
+  });
+  const etiquetaObjeto = normalizarEvento("objeto", {
+    titulo: "Evento detectado",
+    fechaEvento: "2026-05-20",
+    origen: "detectado",
+    detectedEventId: "nota-456",
+    sourceLabel: { etiqueta: "Historia clinica" }
+  });
+
+  assert.equal(obtenerEtiquetaOrigenEvento(detectado), "Detectado en: Nota de evolucion del 20 may 2026");
+  assert.equal(obtenerEtiquetaOrigenEvento(manual), "");
+  assert.equal(obtenerEtiquetaOrigenEvento(etiquetaObjeto), "Detectado en: Historia clinica");
 });
 
 test("Las marcas temporales seleccionan intervalos regulares según el rango visible", () => {
