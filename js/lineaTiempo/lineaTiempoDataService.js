@@ -40,7 +40,7 @@ function referenciaCategorias(uid) {
 export async function cargarCategoriasLineaTiempo(uid) {
   const snapshot = await getDocs(query(referenciaCategorias(uid), orderBy("nombre", "asc")));
   return snapshot.docs
-    .map((documento) => ({ id: documento.id, nombre: String(documento.data().nombre || "").trim() }))
+    .map((documento) => ({ id: documento.id, nombre: String(documento.data().nombre || "").trim(), activa: documento.data().activa !== false }))
     .filter((categoria) => categoria.nombre);
 }
 

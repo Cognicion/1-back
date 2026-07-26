@@ -62,7 +62,12 @@ export function renderizarLineaTiempo(root, eventos, rango, zoom = 1, opciones =
     marcaNode.className = "timeline-tick";
     marcaNode.style.left = `${marca.posicion * 100}%`;
     marcaNode.textContent = formatearFechaCorta(marca.fecha);
-    if (marca.esExtremo) marcaNode.dataset.endpoint = "true";
+    if (marca.esExtremo) {
+      marcaNode.dataset.endpoint = "true";
+      marcaNode.classList.add(marca.tipo === "extremo-inicial" ? "timeline-tick--start" : "timeline-tick--end");
+    } else {
+      marcaNode.classList.add("timeline-tick--middle");
+    }
     fragmento.appendChild(marcaNode);
   });
 
@@ -70,20 +75,19 @@ export function renderizarLineaTiempo(root, eventos, rango, zoom = 1, opciones =
     const posicion = grupo.items.reduce((suma, item) => suma + (posicionPorId.get(item.id) ?? 0.5), 0) / grupo.items.length;
     const seleccionado = opciones.selectedGroupId === grupo.clave;
     const bloque = document.createElement("div");
-    bloque.className = `timeline-event-group timeline-event-group--${grupoIndex % 2 ? "below" : "above"}`;
+    bloque.className = `timeline-event timeline-event-group timeline-event-group--${grupoIndex % 2 ? "below" : "above"}`;
     bloque.style.setProperty("--event-position", posicion);
     bloque.style.setProperty("--card-offset-x", posicion < 0.12 ? "70px" : posicion > 0.88 ? "-70px" : "0px");
     bloque.dataset.groupId = grupo.clave;
     bloque.dataset.eventId = grupo.items.length === 1 ? grupo.items[0].id : "";
-    bloque.setAttribute("role", "button");
-    bloque.tabIndex = 0;
     bloque.setAttribute("aria-expanded", String(seleccionado));
     bloque.dataset.selected = String(seleccionado);
     bloque.dataset.cardVisible = String(seleccionado);
     bloque.setAttribute("aria-label", grupo.items.length > 1 ? `${grupo.items.length} eventos del ${formatearFecha(grupo.fecha)}` : `${formatearFechaCorta(grupo.fecha)}, ${grupo.items[0].titulo}, ${textoImportancia(grupo.items[0].importancia)}`);
     const configuracion = obtenerConfiguracionTipoEvento(grupo.items[0].tipo);
     const evento = grupo.items[0];
-    bloque.innerHTML = `<span class="timeline-event-stem" aria-hidden="true"></span><span class="timeline-event-dot" style="--event-color:${configuracion.color}" aria-hidden="true">${escaparHTML(configuracion.icono)}</span><article class="timeline-event-card" aria-hidden="${String(!seleccionado)}"><time>${escaparHTML(formatearFechaCorta(grupo.fecha))}</time><strong>${grupo.items.length > 1 ? `${grupo.items.length} eventos` : escaparHTML(evento.titulo)}</strong>${grupo.items.length > 1 ? `<small>${grupo.items.length} eventos en esta fecha</small>` : `${textoCategoria(evento)}<small>${escaparHTML(textoImportancia(evento.importancia))}</small>${textoDescripcion(evento)}`}</article>`;
+    const eventoId = grupo.items.length === 1 ? grupo.items[0].id : "";
+    bloque.innerHTML = `<span class="timeline-event-stem" aria-hidden="true"></span><button type="button" class="timeline-event__marker timeline-event-dot" data-event-id="${escaparHTML(eventoId)}" data-group-id="${escaparHTML(grupo.clave)}" aria-expanded="${String(seleccionado)}" aria-label="${escaparHTML(bloque.getAttribute("aria-label"))}" style="--event-color:${configuracion.color}">${escaparHTML(configuracion.icono)}</button><article class="timeline-event-card timeline-event__preview" role="tooltip" aria-hidden="${String(!seleccionado)}" hidden><time>${escaparHTML(formatearFechaCorta(grupo.fecha))}</time><strong>${grupo.items.length > 1 ? `${grupo.items.length} eventos` : escaparHTML(evento.titulo)}</strong>${grupo.items.length > 1 ? `<small>${grupo.items.length} eventos en esta fecha</small>` : `${textoCategoria(evento)}<small>${escaparHTML(textoImportancia(evento.importancia))}</small>`}</article>`;
     fragmento.appendChild(bloque);
   });
 
@@ -116,6 +120,16 @@ export function renderizarDetalleEvento(root, eventos, eventoId = "", grupoId = 
     origen.textContent = evento.origen === "automatico" ? "Automático" : "Manual";
     importancia.textContent = textoImportancia(evento.importancia);
     descripcion.textContent = evento.descripcion || "Sin descripción disponible.";
+    const detalles = card.querySelector("dl");
+    [
+      ["Fecha final", evento.fechaFin ? formatearFecha(evento.fechaFin) : "No aplica"],
+      ["Hora", evento.fechaEvento.getHours() || evento.fechaEvento.getMinutes() ? evento.fechaEvento.toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit" }) : "No especificada"],
+      ["Referencia", evento.referenciaId ? `${evento.referenciaTipo || "Relacionada"} · ${evento.referenciaId}` : "No aplica"]
+    ].forEach(([etiqueta, valor]) => {
+      const item = document.createElement("div");
+      item.innerHTML = `<dt>${escaparHTML(etiqueta)}</dt><dd>${escaparHTML(valor)}</dd>`;
+      detalles.appendChild(item);
+    });
     card.dataset.eventId = evento.id;
     fragmento.appendChild(card);
   });

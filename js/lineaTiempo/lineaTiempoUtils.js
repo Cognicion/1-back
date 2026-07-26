@@ -100,12 +100,12 @@ export function calcularPosiciones(eventos = [], rango = calcularRangoTemporal(e
 
 export function generarMarcasTemporales(rango, limite = 9) {
   if (!rango.minimo || !rango.maximo) return [];
-  if (rango.duracion === 0) return [{ fecha: new Date(rango.minimo), posicion: 0.5, esExtremo: true }];
+  if (rango.duracion === 0) return [{ fecha: new Date(rango.minimo), posicion: 0.5, esExtremo: true, tipo: "extremo-inicial" }];
   const duracionDias = rango.duracion / 86400000;
   let unidad = "year";
   if (duracionDias < 31) unidad = "day";
   else if (duracionDias < 550) unidad = "month";
-  const marcas = [{ fecha: new Date(rango.minimo), posicion: 0, esExtremo: true }];
+  const marcas = [{ fecha: new Date(rango.minimo), posicion: 0, esExtremo: true, tipo: "extremo-inicial" }];
   const cursor = new Date(rango.minimo);
   cursor.setHours(0, 0, 0, 0);
   if (unidad === "day") cursor.setDate(cursor.getDate() + 1);
@@ -118,8 +118,8 @@ export function generarMarcasTemporales(rango, limite = 9) {
     else if (unidad === "month") cursor.setMonth(cursor.getMonth() + Math.max(1, Math.ceil(duracionDias / 240)), 1);
     else cursor.setFullYear(cursor.getFullYear() + Math.max(1, Math.ceil(duracionDias / 3650)), 0, 1);
   }
-  marcas.push({ fecha: new Date(rango.maximo), posicion: 1, esExtremo: true });
-  return marcas;
+  marcas.push({ fecha: new Date(rango.maximo), posicion: 1, esExtremo: true, tipo: "extremo-final" });
+  return [...new Map(marcas.map((marca) => [marca.fecha.getTime(), marca])).values()];
 }
 
 export function formatearFecha(fecha, opciones = {}) {

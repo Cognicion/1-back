@@ -125,11 +125,13 @@ function abrirFormulario(evento = null) {
 function renderizarCategorias(seleccion = "") {
   const select = root?.querySelector("[name='categoria']");
   if (!select) return;
-  const nombres = new Set(categorias.map((categoria) => categoria.nombre));
-  if (seleccion) nombres.add(seleccion);
+  const categoriasActivas = categorias
+    .filter((categoria) => categoria.activa !== false)
+    .sort((a, b) => a.nombre.localeCompare(b.nombre, "es", { sensitivity: "base" }));
   select.replaceChildren(new Option("Ninguna categoría", ""));
-  [...nombres].sort((a, b) => a.localeCompare(b, "es")).forEach((nombre) => select.add(new Option(nombre, nombre)));
-  select.value = seleccion;
+  categoriasActivas.forEach((categoria) => select.add(new Option(categoria.nombre, categoria.id)));
+  const categoriaSeleccionada = categorias.find((categoria) => categoria.id === seleccion || categoria.nombre === seleccion);
+  select.value = categoriaSeleccionada?.id || "";
 }
 
 async function agregarCategoria() {
@@ -183,7 +185,7 @@ async function guardarFormulario(event) {
       descripcion: form.elements.descripcion.value,
       fechaEvento,
       fechaFin,
-      categoria: form.elements.categoria.value,
+      categoria: form.elements.categoria.selectedOptions[0]?.textContent || "",
       importancia: form.elements.importancia.value,
       origen: eventoEditando?.origen || "manual",
       referenciaId: eventoEditando?.referenciaId || null,

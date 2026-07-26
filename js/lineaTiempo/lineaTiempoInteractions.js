@@ -67,7 +67,11 @@ export function configurarInteracciones({ root, onSelect, onClearSelection, onZo
       item.dataset.selected = String(selected);
       item.dataset.cardVisible = String(item === group);
       item.setAttribute("aria-expanded", String(item === group));
-      item.querySelector(".timeline-event-card")?.setAttribute("aria-hidden", String(item !== group));
+      const marker = item.querySelector(".timeline-event__marker");
+      const preview = item.querySelector(".timeline-event__preview");
+      marker?.setAttribute("aria-expanded", String(selected));
+      preview?.toggleAttribute("hidden", !selected);
+      preview?.setAttribute("aria-hidden", String(!selected));
     });
   };
 
@@ -75,7 +79,16 @@ export function configurarInteracciones({ root, onSelect, onClearSelection, onZo
     if (!group || group.dataset.selected === "true") return;
     group.dataset.cardVisible = "false";
     group.setAttribute("aria-expanded", "false");
-    group.querySelector(".timeline-event-card")?.setAttribute("aria-hidden", "true");
+    group.querySelector(".timeline-event__marker")?.setAttribute("aria-expanded", "false");
+    group.querySelector(".timeline-event__preview")?.setAttribute("hidden", "");
+    group.querySelector(".timeline-event__preview")?.setAttribute("aria-hidden", "true");
+  };
+
+  const showHoverGroup = (group) => {
+    if (!group || group.dataset.selected === "true") return;
+    group.dataset.cardVisible = "true";
+    group.querySelector(".timeline-event__preview")?.removeAttribute("hidden");
+    group.querySelector(".timeline-event__preview")?.setAttribute("aria-hidden", "false");
   };
 
   const closeSelected = () => {
@@ -84,7 +97,9 @@ export function configurarInteracciones({ root, onSelect, onClearSelection, onZo
       item.dataset.selected = "false";
       item.dataset.cardVisible = "false";
       item.setAttribute("aria-expanded", "false");
-      item.querySelector(".timeline-event-card")?.setAttribute("aria-hidden", "true");
+      item.querySelector(".timeline-event__marker")?.setAttribute("aria-expanded", "false");
+      item.querySelector(".timeline-event__preview")?.setAttribute("hidden", "");
+      item.querySelector(".timeline-event__preview")?.setAttribute("aria-hidden", "true");
     });
     onClearSelection?.();
   };
@@ -118,9 +133,10 @@ export function configurarInteracciones({ root, onSelect, onClearSelection, onZo
       state.movedDuringDrag = false;
       return;
     }
-    const group = event.target.closest("[data-group-id]");
+    const marker = event.target.closest(".timeline-event__marker");
     setFocus(event.clientX);
-    if (group) {
+    if (marker) {
+      const group = marker.closest("[data-group-id]");
       activateGroup(group, true);
       onSelect?.({ eventId: group.dataset.eventId, groupId: group.dataset.groupId });
     } else {
@@ -129,12 +145,25 @@ export function configurarInteracciones({ root, onSelect, onClearSelection, onZo
   };
 
   const onPointerEnter = (event) => {
-    const group = event.target.closest("[data-group-id]");
-    if (group && group.dataset.selected !== "true") activateGroup(group, false);
+    if (event.relatedTarget?.closest?.(".timeline-event__marker")) return;
+    const marker = event.target.closest(".timeline-event__marker");
+    const group = marker?.closest("[data-group-id]");
+    if (group && group.dataset.selected !== "true") showHoverGroup(group);
   };
   const onPointerLeave = (event) => {
+    if (event.relatedTarget?.closest?.("[data-group-id]") === event.target.closest("[data-group-id]")) return;
     const group = event.target.closest("[data-group-id]");
     hideHoverGroup(group);
+  };
+
+  const onFocusIn = (event) => {
+    const marker = event.target.closest(".timeline-event__marker");
+    if (marker) showHoverGroup(marker.closest("[data-group-id]"));
+  };
+
+  const onFocusOut = (event) => {
+    const group = event.target.closest("[data-group-id]");
+    if (group && event.relatedTarget?.closest?.("[data-group-id]") !== group) hideHoverGroup(group);
   };
 
   const onKeydown = (event) => {
@@ -159,9 +188,17 @@ export function configurarInteracciones({ root, onSelect, onClearSelection, onZo
 
   const onWheel = (event) => {
     if (!event.target.closest("[data-timeline-scroll]")) return;
-    event.preventDefault();
     setFocus(event.clientX);
-    applyZoom(state.zoom * (event.deltaY < 0 ? ZOOM_STEP : 1 / ZOOM_STEP));
+    const horizontal = Math.abs(event.deltaX) > Math.abs(event.deltaY);
+    if (horizontal) {
+      event.preventDefault();
+      viewport.scrollLeft += event.deltaX;
+      return;
+    }
+    if (event.deltaY !== 0) {
+      event.preventDefault();
+      applyZoom(state.zoom * (event.deltaY < 0 ? ZOOM_STEP : 1 / ZOOM_STEP));
+    }
   };
 
   const onPointerDown = (event) => {
@@ -219,6 +256,8 @@ export function configurarInteracciones({ root, onSelect, onClearSelection, onZo
   root.addEventListener("keydown", onKeydown);
   root.addEventListener("pointerover", onPointerEnter);
   root.addEventListener("pointerout", onPointerLeave);
+  root.addEventListener("focusin", onFocusIn);
+  root.addEventListener("focusout", onFocusOut);
   viewport?.addEventListener("wheel", onWheel, { passive: false });
   viewport?.addEventListener("pointerdown", onPointerDown);
   viewport?.addEventListener("pointermove", onPointerMove);
@@ -235,6 +274,8 @@ export function configurarInteracciones({ root, onSelect, onClearSelection, onZo
   disposables.push(() => root.removeEventListener("keydown", onKeydown));
   disposables.push(() => root.removeEventListener("pointerover", onPointerEnter));
   disposables.push(() => root.removeEventListener("pointerout", onPointerLeave));
+  disposables.push(() => root.removeEventListener("focusin", onFocusIn));
+  disposables.push(() => root.removeEventListener("focusout", onFocusOut));
   disposables.push(() => viewport?.removeEventListener("wheel", onWheel));
   disposables.push(() => viewport?.removeEventListener("pointerdown", onPointerDown));
   disposables.push(() => viewport?.removeEventListener("pointermove", onPointerMove));
