@@ -149,6 +149,7 @@ let estudiosCache = [];
 let escalasAsignadasCache = new Map();
 let diagnosticosCatalogoActual = [];
 let diagnosticoReemplazoIndex = null;
+let diagnosticoGuardadoEnCurso = false;
 let intervaloEstanciaPaciente = null;
 let campoFechaIngresoModal = "fechaIngreso";
 let textoIndicacionesEditado = false;
@@ -1655,6 +1656,12 @@ function normalizarHistorialDiagnosticos(historial = []) {
     .map((dx, index) => ({ ...dx, orden: index }));
 }
 
+function limpiarDiagnosticoParaFirestore(diagnostico = {}) {
+  return Object.fromEntries(
+    Object.entries(diagnostico).filter(([, valor]) => valor !== undefined)
+  );
+}
+
 function deduplicarHistorialDiagnosticos(historial = []) {
   const vistos = new Set();
   return normalizarHistorialDiagnosticos(historial).filter((dx) => {
@@ -1758,7 +1765,7 @@ function renderizarResultadosBusquedaDiagnosticos() {
     : "<p>No se encontraron resultados en el catalogo seleccionado.</p>";
 
   contenedor.querySelectorAll("[data-agregar-diagnostico]").forEach((boton) => {
-    boton.addEventListener("click", () => agregarDiagnosticoPaciente(Number(boton.dataset.agregarDiagnostico)));
+    boton.addEventListener("click", () => agregarDiagnosticoPaciente(Number(boton.dataset.agregarDiagnostico), boton));
   });
 }
 
@@ -4098,7 +4105,8 @@ async function guardarHistorialDiagnosticos(historial, opciones = {}) {
   const baseActual = remoto || datosPacienteActual || {};
   const historialActual = obtenerHistorialDiagnosticos(baseActual);
 
-  let limpio = normalizarHistorialDiagnosticos(historial);
+  let limpio = normalizarHistorialDiagnosticos(historial)
+    .map(limpiarDiagnosticoParaFirestore);
 
   if (!permitirEliminar && historialActual.length > limpio.length) {
     const clavesNuevas = new Set(limpio.map(claveDiagnostico).filter(Boolean));
@@ -4106,7 +4114,8 @@ async function guardarHistorialDiagnosticos(historial, opciones = {}) {
       const clave = claveDiagnostico(dx);
       return clave && !clavesNuevas.has(clave);
     });
-    limpio = normalizarHistorialDiagnosticos([...limpio, ...preservados]);
+    limpio = normalizarHistorialDiagnosticos([...limpio, ...preservados])
+      .map(limpiarDiagnosticoParaFirestore);
   }
 
   const diagnosticoPrincipal = limpio[0] || "";
@@ -4135,62 +4144,95 @@ async function guardarHistorialDiagnosticos(historial, opciones = {}) {
   };
 }
 
-async function agregarDiagnosticoPaciente(index) {
+async function agregarDiagnosticoPaciente(index, botonOrigen = null) {
+  if (diagnosticoGuardadoEnCurso) return;
+
   const diagnostico = diagnosticosCatalogoActual[index];
   if (!diagnostico) return;
+  const patientId = String(uidPaciente || "").trim();
+  const userId = auth.currentUser?.uid || "";
 
-  const historial = obtenerHistorialDiagnosticos();
+  if (!patientId) {
+    alert("No se pudo identificar al paciente seleccionado.");
+    return;
+  }
+  if (!userId) {
+    alert("Tu sesión expiró. Inicia sesión nuevamente para guardar el diagnóstico.");
+    return;
+  }
 
-  if (diagnosticoReemplazoIndex !== null) {
-    const anterior = historial[diagnosticoReemplazoIndex];
-    if (!anterior) {
+  diagnosticoGuardadoEnCurso = true;
+  if (botonOrigen) {
+    botonOrigen.disabled = true;
+    botonOrigen.setAttribute("aria-busy", "true");
+  }
+  console.debug("[Diagnósticos] Flujo de guardado", {
+    patientId,
+    userId,
+    origen: diagnostico.manual ? "manual" : "catalogo",
+    catalogo: diagnostico.catalogo || null,
+    codigo: diagnostico.codigo || null,
+    nombrePresente: Boolean(diagnostico.nombre || diagnostico.texto)
+  });
+
+  try {
+    const historial = obtenerHistorialDiagnosticos();
+
+    if (diagnosticoReemplazoIndex !== null) {
+      const anterior = historial[diagnosticoReemplazoIndex];
+      if (!anterior) {
+        diagnosticoReemplazoIndex = null;
+        return;
+      }
+
+      historial[diagnosticoReemplazoIndex] = { ...normalizarDiagnostico(diagnostico, diagnostico.catalogo || "CIE-10", diagnosticoReemplazoIndex), estado: anterior.estado, orden: anterior.orden };
+
+      await guardarHistorialDiagnosticos(historial);
+
+      await registrarAccionDiagnosticoSegura({
+        accion: "cambiar_diagnostico",
+        descripcion: "El medico cambio un diagnostico usando el catalogo diagnostico.",
+        detalles: { catalogo: diagnostico.catalogo, codigo: diagnostico.codigo || null }
+      });
+
       diagnosticoReemplazoIndex = null;
+      ponerValor("diagnosticoBusqueda", "");
+      await cargarDatosPaciente();
+      renderizarResultadosBusquedaDiagnosticos();
+      alert("Diagnóstico actualizado correctamente.");
       return;
     }
 
-    historial[diagnosticoReemplazoIndex] = { ...normalizarDiagnostico(diagnostico, diagnostico.catalogo || "CIE-10", diagnosticoReemplazoIndex), estado: anterior.estado, orden: anterior.orden };
+    const existe = historial.some((dx) => claveDiagnostico(dx) === claveDiagnostico(diagnostico));
 
-    await guardarHistorialDiagnosticos(historial);
+    if (existe) {
+      alert("Ese diagnóstico ya está registrado.");
+      return;
+    }
 
-    await registrarAccionExpediente({
-      accion: "cambiar_diagnostico",
-      descripcion: "El medico cambio un diagnostico usando el catalogo diagnostico.",
-      detalles: {
-        anterior: formatearDiagnostico(anterior),
-        nuevo: formatearDiagnostico(diagnostico),
-        catalogo: diagnostico.catalogo
-      }
+    const nuevoHistorial = [...historial, normalizarDiagnostico(diagnostico, diagnostico.catalogo || "CIE-10", historial.length)];
+    await guardarHistorialDiagnosticos(nuevoHistorial);
+
+    await registrarAccionDiagnosticoSegura({
+      accion: "agregar_diagnostico",
+      descripcion: "El medico agrego un diagnostico al expediente.",
+      detalles: { catalogo: diagnostico.catalogo, codigo: diagnostico.codigo || null }
     });
 
-    diagnosticoReemplazoIndex = null;
     ponerValor("diagnosticoBusqueda", "");
     await cargarDatosPaciente();
     renderizarResultadosBusquedaDiagnosticos();
-    return;
-  }
-
-  const existe = historial.some((dx) => claveDiagnostico(dx) === claveDiagnostico(diagnostico));
-
-  if (existe) {
-    alert("Ese diagnostico ya esta registrado.");
-    return;
-  }
-
-  const nuevoHistorial = [...historial, normalizarDiagnostico(diagnostico, diagnostico.catalogo || "CIE-10", historial.length)];
-  await guardarHistorialDiagnosticos(nuevoHistorial);
-
-  await registrarAccionExpediente({
-    accion: "agregar_diagnostico",
-    descripcion: "El medico agrego un diagnostico al expediente.",
-    detalles: {
-      diagnostico: formatearDiagnostico(diagnostico),
-      catalogo: diagnostico.catalogo
+    alert("Diagnóstico agregado correctamente.");
+  } catch (error) {
+    console.error("[Diagnósticos] Error al guardar:", error);
+    alert("No fue posible guardar el diagnóstico. Intenta nuevamente.");
+  } finally {
+    diagnosticoGuardadoEnCurso = false;
+    if (botonOrigen) {
+      botonOrigen.disabled = false;
+      botonOrigen.removeAttribute("aria-busy");
     }
-  });
-
-  ponerValor("diagnosticoBusqueda", "");
-  await cargarDatosPaciente();
-  renderizarResultadosBusquedaDiagnosticos();
+  }
 }
 
 function prepararReemplazoDiagnostico(index) {
@@ -4243,6 +4285,20 @@ async function editarDiagnosticoPaciente(index) {
 }
 
 async function agregarDiagnosticoManualPaciente() {
+  if (diagnosticoGuardadoEnCurso) return;
+
+  const boton = document.getElementById("agregarDiagnosticoManual");
+  const patientId = String(uidPaciente || "").trim();
+  const userId = auth.currentUser?.uid || "";
+  if (!patientId) {
+    alert("No se pudo identificar al paciente seleccionado.");
+    return;
+  }
+  if (!userId) {
+    alert("Tu sesión expiró. Inicia sesión nuevamente para guardar el diagnóstico.");
+    return;
+  }
+
   const catalogo = valorCampo("diagnosticoManualCatalogo") || "Manual";
   const codigo = valorCampo("diagnosticoManualCodigo");
   const nombre = valorCampo("diagnosticoManualNombre");
@@ -4287,27 +4343,68 @@ async function agregarDiagnosticoManualPaciente() {
         agregadoManual: true,
         fechaAgregado: new Date().toISOString()
       });
-      guardarCatalogoManualDiagnosticos();
+       try {
+         guardarCatalogoManualDiagnosticos();
+       } catch (error) {
+         console.error("[Diagnósticos] No se pudo actualizar el catálogo local:", {
+           codigo: error?.name || null
+         });
+       }
     }
   }
 
-  const historial = obtenerHistorialDiagnosticos();
-  const nuevoHistorial = [...historial, normalizarDiagnostico(diagnostico, diagnostico.catalogo || "CIE-10", historial.length)];
-  await guardarHistorialDiagnosticos(nuevoHistorial);
-
-  await registrarAccionExpediente({
-    accion: "agregar_diagnostico_manual",
-    descripcion: "El medico agrego un diagnostico manual al expediente.",
-    detalles: {
-      diagnostico: formatearDiagnostico(diagnostico),
-      catalogo
-    }
+  diagnosticoGuardadoEnCurso = true;
+  if (boton) {
+    boton.disabled = true;
+    boton.setAttribute("aria-busy", "true");
+    boton.textContent = "Guardando…";
+  }
+  console.debug("[Diagnósticos] Flujo de guardado", {
+    patientId,
+    userId,
+    origen: "manual",
+    catalogo,
+    codigo: codigo || null,
+    nombrePresente: Boolean(nombre || texto)
   });
 
-  ["diagnosticoManualCodigo", "diagnosticoManualNombre", "diagnosticoManualTexto"].forEach((id) => ponerValor(id, ""));
-  const incluirCatalogo = document.getElementById("diagnosticoManualIncluirCatalogo");
-  if (incluirCatalogo) incluirCatalogo.checked = false;
-  await cargarDatosPaciente();
+  try {
+    const historial = obtenerHistorialDiagnosticos();
+    const nuevoHistorial = [...historial, normalizarDiagnostico(diagnostico, diagnostico.catalogo || "CIE-10", historial.length)];
+    await guardarHistorialDiagnosticos(nuevoHistorial);
+
+    await registrarAccionDiagnosticoSegura({
+      accion: "agregar_diagnostico_manual",
+      descripcion: "El medico agrego un diagnostico manual al expediente.",
+      detalles: { catalogo, codigo: codigo || null }
+    });
+
+    ["diagnosticoManualCodigo", "diagnosticoManualNombre", "diagnosticoManualTexto"].forEach((id) => ponerValor(id, ""));
+    const incluirCatalogo = document.getElementById("diagnosticoManualIncluirCatalogo");
+    if (incluirCatalogo) incluirCatalogo.checked = false;
+    await cargarDatosPaciente();
+    alert("Diagnóstico agregado correctamente.");
+  } catch (error) {
+    console.error("[Diagnósticos] Error al guardar:", error);
+    alert("No fue posible guardar el diagnóstico. Intenta nuevamente.");
+  } finally {
+    diagnosticoGuardadoEnCurso = false;
+    if (boton) {
+      boton.disabled = false;
+      boton.removeAttribute("aria-busy");
+      boton.textContent = "Agregar diagnostico manual";
+    }
+  }
+}
+
+async function registrarAccionDiagnosticoSegura(datos) {
+  try {
+    await registrarAccionExpediente(datos);
+  } catch (error) {
+    console.error("[Diagnósticos] Error de auditoría posterior al guardado:", {
+      codigo: error?.code || null
+    });
+  }
 }
 
 async function moverDiagnosticoPaciente(index, direccion) {
