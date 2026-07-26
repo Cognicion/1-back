@@ -190,7 +190,15 @@ function datosVigentesNota(datos = {}) {
 }
 
 function fechaNotaEnMs(datos = {}) {
-  return fechaPropiaNotaEnMs(datosVigentesNota(datos));
+  const vigente = datosVigentesNota(datos);
+  if (vigente.esNotaPrevia === true && vigente.fechaNota) {
+    const valor = vigente.fechaNota;
+    if (typeof valor.toDate === "function") return valor.toDate().getTime();
+    if (typeof valor.seconds === "number") return valor.seconds * 1000;
+    const fecha = new Date(valor);
+    if (!Number.isNaN(fecha.getTime())) return fecha.getTime();
+  }
+  return fechaPropiaNotaEnMs(vigente);
 }
 
 function crearSnapshotNotaCompatible(nota, raiz, nombreColeccion) {

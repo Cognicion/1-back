@@ -97,7 +97,23 @@ export function construirLineaTiempo(expediente) {
   const eventos = [];
   const paciente = expediente?.paciente || {};
   agregarEvento(eventos, paciente.fechaRegistro || paciente.createdAt, "Registro", "Ingreso a Cognicion", nombrePaciente(paciente), "registro");
-  (expediente.notas || []).forEach((nota) => agregarEvento(eventos, obtenerFechaDocumento(nota), "Nota", nota.tipoNota || nota.formato || "Nota clinica", nota.subjetivo || nota.padecimientoActual || nota.texto || nota.objetivo || "Sin resumen", "nota", nota.id));
+  (expediente.notas || []).forEach((nota) => {
+    const tituloNota = String(nota.titulo || "").trim();
+    const tipoNota = nota.observacionFray?.tipoNota || nota.tipoNota || nota.formato || "Nota clinica";
+    const etiquetaNota = `${tituloNota ? `${tituloNota} · ` : ""}${tipoNota}${nota.esNotaPrevia === true ? " · Nota previa" : ""}`;
+    const fechaNota = nota.esNotaPrevia === true && nota.fechaNota
+      ? nota.fechaNota
+      : obtenerFechaDocumento(nota);
+    agregarEvento(
+      eventos,
+      fechaNota,
+      "Nota",
+      etiquetaNota,
+      nota.subjetivo || nota.padecimientoActual || nota.texto || nota.objetivo || "Sin resumen",
+      "nota",
+      nota.id
+    );
+  });
   (expediente.tratamientos || []).forEach((t) => {
     agregarEvento(eventos, t.fechaInicio || t.createdAt, "Tratamiento", t.medicamento || "Medicamento", resumenTratamiento(t), "tratamiento", t.id);
     if (t.fechaSuspension) agregarEvento(eventos, t.fechaSuspension, "Suspension", t.medicamento || "Medicamento", t.motivoSuspension || "Suspension registrada", "tratamiento", t.id);

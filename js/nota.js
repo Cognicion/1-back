@@ -61,7 +61,9 @@ import {
   query,
   orderBy,
   serverTimestamp,
-  setDoc
+  setDoc,
+  Timestamp,
+  deleteField
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 import {
@@ -1758,6 +1760,11 @@ const btnCancelarEdicion = document.getElementById("btnCancelarEdicion");
 const formatoNota = document.getElementById("formatoNota");
 const bloqueObservacionFray = document.getElementById("bloqueObservacionFray");
 const btnSincronizarDxObs = document.getElementById("btnSincronizarDxObs");
+const tituloNota = document.getElementById("tituloNota");
+const esNotaPrevia = document.getElementById("esNotaPrevia");
+const camposNotaPrevia = document.getElementById("camposNotaPrevia");
+const fechaNotaPrevia = document.getElementById("fechaNotaPrevia");
+const errorNotaPrevia = document.getElementById("errorNotaPrevia");
 
 const camposObservacionFray = {
   tipoNota: "obsTipoNota",
@@ -1804,6 +1811,99 @@ function asignarValor(id, valor) {
   const campo = document.getElementById(id);
   if (campo) campo.value = valor || "";
 }
+
+function normalizarTituloNota(valor) {
+  if (typeof valor !== "string") return "";
+  return valor.replace(/\s+/g, " ").trim().slice(0, 120);
+}
+
+function crearFechaLocalDesdeInput(valor) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(String(valor || ""))) return null;
+  const [anio, mes, dia] = valor.split("-").map(Number);
+  const fecha = new Date(anio, mes - 1, dia, 12, 0, 0, 0);
+  return fecha.getFullYear() === anio
+    && fecha.getMonth() === mes - 1
+    && fecha.getDate() === dia
+    ? fecha
+    : null;
+}
+
+function fechaLocalInputNotaPrevia(fecha = new Date()) {
+  const fechaLocal = fecha instanceof Date ? fecha : new Date(fecha);
+  if (Number.isNaN(fechaLocal.getTime())) return "";
+  return [fechaLocal.getFullYear(), String(fechaLocal.getMonth() + 1).padStart(2, "0"), String(fechaLocal.getDate()).padStart(2, "0")].join("-");
+}
+
+function fechaNotaInputDesdeValor(valor) {
+  if (!valor) return "";
+  const fecha = typeof valor.toDate === "function"
+    ? valor.toDate()
+    : typeof valor.seconds === "number"
+      ? new Date(valor.seconds * 1000)
+      : new Date(valor);
+  return Number.isNaN(fecha.getTime()) ? "" : fechaLocalInputNotaPrevia(fecha);
+}
+
+function mostrarErrorNotaPrevia(mensaje = "") {
+  if (errorNotaPrevia) errorNotaPrevia.textContent = mensaje;
+  fechaNotaPrevia?.setAttribute("aria-invalid", mensaje ? "true" : "false");
+}
+
+function sincronizarCamposNotaPrevia({ enfocar = false } = {}) {
+  const activa = esNotaPrevia?.checked === true;
+  if (camposNotaPrevia) camposNotaPrevia.hidden = !activa;
+  if (fechaNotaPrevia) {
+    fechaNotaPrevia.required = activa;
+    fechaNotaPrevia.max = fechaLocalInputNotaPrevia();
+  }
+  if (!activa) mostrarErrorNotaPrevia("");
+  if (activa && enfocar) fechaNotaPrevia?.focus();
+}
+
+function leerMetadatosAdicionalesNota() {
+  return {
+    titulo: normalizarTituloNota(tituloNota?.value || ""),
+    esNotaPrevia: esNotaPrevia?.checked === true,
+    fechaNotaInput: fechaNotaPrevia?.value || ""
+  };
+}
+
+function validarMetadatosAdicionalesNota({ notaOriginal = null } = {}) {
+  const metadatos = leerMetadatosAdicionalesNota();
+  const originalVigente = notaOriginal ? datosVigentesNota(notaOriginal) : null;
+  const originalPrevia = originalVigente?.esNotaPrevia === true;
+  if (originalVigente && originalPrevia !== metadatos.esNotaPrevia) {
+    throw new Error("Esta nota no puede convertirse entre nota actual y nota previa durante la edición.");
+  }
+  if (!metadatos.esNotaPrevia) return metadatos;
+  const fecha = crearFechaLocalDesdeInput(metadatos.fechaNotaInput);
+  const hoy = fechaLocalInputNotaPrevia();
+  if (!fecha) {
+    mostrarErrorNotaPrevia("Selecciona la fecha original de la nota.");
+    throw new Error("FECHA_NOTA_PREVIA_REQUERIDA");
+  }
+  if (metadatos.fechaNotaInput > hoy) {
+    mostrarErrorNotaPrevia("La fecha de una nota previa no puede ser posterior a la fecha actual.");
+    throw new Error("FECHA_NOTA_PREVIA_FUTURA");
+  }
+  mostrarErrorNotaPrevia("");
+  return metadatos;
+}
+
+function metadatosAdicionalesParaGuardado(metadatos, { eliminarTitulo = false } = {}) {
+  const salida = {};
+  if (metadatos.titulo) salida.titulo = metadatos.titulo;
+  else if (eliminarTitulo) salida.titulo = deleteField();
+  if (metadatos.esNotaPrevia) {
+    salida.esNotaPrevia = true;
+    salida.fechaNota = Timestamp.fromDate(crearFechaLocalDesdeInput(metadatos.fechaNotaInput));
+  }
+  return salida;
+}
+
+esNotaPrevia?.addEventListener("change", () => sincronizarCamposNotaPrevia({ enfocar: esNotaPrevia.checked }));
+fechaNotaPrevia?.addEventListener("input", () => mostrarErrorNotaPrevia(""));
+sincronizarCamposNotaPrevia();
 
 function normalizarTextoBusqueda(valor = "") {
   return String(valor || "")
@@ -2534,6 +2634,7 @@ function collectNoteData() {
   const formato = formatoNota?.value || "cognicion";
   const observacionFray = leerFormularioObservacionFray();
   const contexto = obtenerContextoAtencion();
+  const metadatosAdicionales = leerMetadatosAdicionalesNota();
 
   return {
     formatoNota: formato,
@@ -2559,6 +2660,9 @@ function collectNoteData() {
     observacionFray,
     tipoNota: tipoNota?.value || "completa",
     tipoNotaClave: `${tipoNota?.value || "completa"}:${observacionFray.tipoNota || formato}`,
+    titulo: metadatosAdicionales.titulo,
+    esNotaPrevia: metadatosAdicionales.esNotaPrevia,
+    fechaNotaInput: metadatosAdicionales.fechaNotaInput,
     notaRapida: document.getElementById("notaRapida")?.value || "",
     subjetivo: document.getElementById("subjetivo").value,
     objetivo: document.getElementById("objetivo").value,
@@ -2575,6 +2679,12 @@ const leerFormularioNota = collectNoteData;
 function llenarFormularioNota(datos) {
   if (formatoNota) formatoNota.value = datos.formatoNota || "cognicion";
   if (tipoNota) tipoNota.value = datos.tipoNota || (datos.notaRapida ? "rapida" : "completa");
+  if (tituloNota) tituloNota.value = normalizarTituloNota(datos.titulo || "");
+  if (esNotaPrevia) esNotaPrevia.checked = datos.esNotaPrevia === true;
+  if (fechaNotaPrevia) fechaNotaPrevia.value = datos.esNotaPrevia === true
+    ? fechaNotaInputDesdeValor(datos.fechaNota)
+    : "";
+  sincronizarCamposNotaPrevia();
   document.getElementById("notaRapida").value = datos.notaRapida || "";
   document.getElementById("subjetivo").value = datos.subjetivo || "";
   document.getElementById("objetivo").value = datos.objetivo || "";
@@ -3104,9 +3214,11 @@ function renderizarListaApuntes() {
 
 function bloqueContenidoNota(datos, titulo) {
   const esRapida = datos.tipoNota === "rapida" || datos.notaRapida;
+  const tituloVisible = normalizarTituloNota(datos.titulo || "");
   return `
     <div class="version-nota">
       <h4>${titulo}</h4>
+      ${tituloVisible ? `<p class="nota-titulo-detalle"><b>Título:</b> ${escaparHTML(tituloVisible)}</p>` : ""}
       ${esRapida ? `<p><b>Nota rápida:</b><br>${escaparHTML(datos.notaRapida || "")}</p>` : `
         <p><b>Subjetivo:</b><br>${escaparHTML(datos.subjetivo || "")}</p>
         <p><b>Objetivo:</b><br>${escaparHTML(datos.objetivo || "")}</p>
@@ -3175,17 +3287,32 @@ function datosVigentesNota(datos = {}) {
     : datos;
 }
 
-function fechaNotaHistorial(datos = {}) {
+function fechaNotaClinicaComoDate(datos = {}) {
   const vigente = datosVigentesNota(datos);
-  const valor = vigente.fecha || vigente.fechaNotaDefinitiva || vigente.fechaGuardadoBorrador
-    || vigente.fechaEdicion || vigente.fechaUltimaModificacion
-    || datos.fecha || datos.fechaNotaDefinitiva || datos.fechaGuardadoBorrador
-    || datos.fechaUltimaEdicion || datos.fechaCreacion || datos.createdAt || datos.fechaRegistro;
+  const valor = vigente.esNotaPrevia === true && vigente.fechaNota
+    ? vigente.fechaNota
+    : vigente.fecha || vigente.fechaNotaDefinitiva || vigente.fechaGuardadoBorrador
+      || vigente.fechaEdicion || vigente.fechaUltimaModificacion
+      || datos.fecha || datos.fechaNotaDefinitiva || datos.fechaGuardadoBorrador
+      || datos.fechaUltimaEdicion || datos.fechaCreacion || datos.createdAt || datos.fechaRegistro;
   if (!valor) return new Date();
   if (typeof valor.toDate === "function") return valor.toDate();
   if (typeof valor.seconds === "number") return new Date(valor.seconds * 1000);
   const fecha = new Date(valor);
   return Number.isNaN(fecha.getTime()) ? new Date() : fecha;
+}
+
+function fechaNotaHistorial(datos = {}) {
+  return fechaNotaClinicaComoDate(datos);
+}
+
+function etiquetaTipoNotaHistorial(datos = {}) {
+  const tipo = datos.observacionFray?.tipoNota || datos.tipoNota || "";
+  if (tipo === "ingreso") return "Nota inicial / nota de ingreso";
+  if (tipo === "evolucion") return "Nota de evolución";
+  if (tipo === "envio_piso") return "Nota de envío a hospitalización";
+  if (tipo === "rapida") return "Nota rápida";
+  return "Nota clínica";
 }
 
 window.editarNotaDesdeHistorial = function(notaId) {
@@ -3596,6 +3723,20 @@ async function guardarNotaMedicaConEstadoLegacy(estadoNota = "definitiva") {
   const proximaConsulta = document.getElementById("proximaConsulta").value;
 
   const datosNotaClinica = leerFormularioNota();
+  const metadatosAdicionales = validarMetadatosAdicionalesNota({
+    notaOriginal: notaEditandoId ? notasHistorial[notaEditandoId] : null
+  });
+  console.debug("[Notas] Metadatos adicionales", {
+    tieneTitulo: Boolean(metadatosAdicionales.titulo),
+    esNotaPrevia: metadatosAdicionales.esNotaPrevia,
+    fechaNota: metadatosAdicionales.esNotaPrevia ? metadatosAdicionales.fechaNotaInput : null
+  });
+  const {
+    titulo: _tituloNota,
+    esNotaPrevia: _esNotaPrevia,
+    fechaNotaInput: _fechaNotaInput,
+    ...datosNotaPersistibles
+  } = datosNotaClinica;
   const catalogoVisible = diagnosticoCatalogoVisible?.value || "auto";
 
   try {
@@ -3621,7 +3762,8 @@ async function guardarNotaMedicaConEstadoLegacy(estadoNota = "definitiva") {
       esBorrador,
       fechaGuardadoBorrador: esBorrador ? new Date().toISOString() : "",
       fechaNotaDefinitiva: esBorrador ? "" : new Date().toISOString(),
-      ...datosNotaClinica,
+      ...datosNotaPersistibles,
+      ...metadatosAdicionalesParaGuardado(metadatosAdicionales),
       diagnostico,
       diagnosticoCatalogoVisible: catalogoVisible,
       diagnosticos: diagnosticosSeleccionados,
@@ -3735,6 +3877,25 @@ async function guardarNotaClinicaSeguro(estadoNota = "definitiva") {
     });
     const diagnostico = diagnosticoActual();
     const datosNotaClinica = collectNoteData();
+    let metadatosAdicionales;
+    try {
+      metadatosAdicionales = validarMetadatosAdicionalesNota({
+        notaOriginal: notaEditandoId ? notasHistorial[notaEditandoId] : null
+      });
+    } catch (errorMetadatos) {
+      throw errorMetadatos;
+    }
+    console.debug("[Notas] Metadatos adicionales", {
+      tieneTitulo: Boolean(metadatosAdicionales.titulo),
+      esNotaPrevia: metadatosAdicionales.esNotaPrevia,
+      fechaNota: metadatosAdicionales.esNotaPrevia ? metadatosAdicionales.fechaNotaInput : null
+    });
+    const {
+      titulo: _tituloNota,
+      esNotaPrevia: _esNotaPrevia,
+      fechaNotaInput: _fechaNotaInput,
+      ...datosNotaPersistibles
+    } = datosNotaClinica;
     const tratamiento = datosNotaClinica.tratamiento;
     const medico = datosNotaClinica.medicoResponsable || perfilMedicoActual.nombre || perfilMedicoActual.nombreCompleto || auth.currentUser.displayName || "";
     const ultimaConsulta = datosNotaClinica.ultimaConsulta;
@@ -3760,7 +3921,10 @@ async function guardarNotaClinicaSeguro(estadoNota = "definitiva") {
       expedienteId: datosNotaClinica.expedienteId || contexto.id,
       atencionId: contexto.id,
       tipoAtencion: contexto.tipo,
-      ...datosNotaClinica,
+      ...datosNotaPersistibles,
+      ...metadatosAdicionalesParaGuardado(metadatosAdicionales, {
+        eliminarTitulo: Boolean(notaEditandoId && !esEdicionVersionada)
+      }),
       diagnostico,
       diagnosticoCatalogoVisible: catalogoVisible,
       diagnosticos: diagnosticosSeleccionados,
@@ -3869,6 +4033,9 @@ async function guardarNotaClinicaSeguro(estadoNota = "definitiva") {
     if (error?.message === "PERMISO_PACIENTE" || codigo === "permission-denied") mensaje = "No tienes permiso para guardar notas de este paciente.";
     else if (error?.message === "FORMATO_NO_AUTORIZADO") mensaje = "No tienes autorizacion para usar este formato institucional.";
     else if (error?.message === "CONTENIDO_CLINICO_REQUERIDO") mensaje = "Falta contenido clinico: captura al menos un apartado de la nota antes de cerrarla.";
+    else if (error?.message === "FECHA_NOTA_PREVIA_REQUERIDA") mensaje = "Selecciona la fecha original de la nota.";
+    else if (error?.message === "FECHA_NOTA_PREVIA_FUTURA") mensaje = "La fecha de una nota previa no puede ser posterior a la fecha actual.";
+    else if (/convertirse entre nota actual y nota previa/i.test(error?.message || "")) mensaje = error.message;
     else if (codigo === "unauthenticated") mensaje = "La sesion expiro. Inicia sesion nuevamente; el contenido permanece en pantalla.";
     else if (["unavailable", "deadline-exceeded"].includes(codigo)) mensaje = "No hay conexion con Firebase. Se conservo un respaldo temporal y el contenido sigue en pantalla.";
     else if (/definitiva|bloqueada|cerrada/i.test(error?.message || "")) mensaje = error.message;
@@ -3933,13 +4100,16 @@ async function cargarHistorial(uidPaciente) {
     const fecha = fechaNotaHistorial(datos);
 
     const fechaTexto = fecha.toLocaleDateString("es-MX");
+    const notaVigente = datosVigentesNota(datos);
+    const esPrevia = notaVigente.esNotaPrevia === true;
+    const tituloVisible = normalizarTituloNota(notaVigente.titulo || "");
+    const tipoTexto = etiquetaTipoNotaHistorial(notaVigente);
 
     const horaTexto = fecha.toLocaleTimeString("es-MX", {
       hour: "2-digit",
       minute: "2-digit",
       hour12: false
     });
-    const notaVigente = datosVigentesNota(datos);
     const estadoNota = estadoPersistidoNota(datos);
     const estadoTexto = estadoNota === "borrador" ? "Borrador" : "Definitiva";
     const versionesEditadas = estadoNota === "borrador" ? [] : versionesEditadasNota(datos);
@@ -3992,7 +4162,12 @@ async function cargarHistorial(uidPaciente) {
           font-weight:bold;
           outline:none;
         ">
+          ${tituloVisible ? `<span class="nota-titulo-listado">${escaparHTML(tituloVisible)}</span>` : ""}
+          <span class="nota-linea-clinica">${escaparHTML(tipoTexto)} ${escaparHTML(fechaTexto)}${esPrevia ? " (nota previa)" : ""}</span>
+          <small class="nota-meta-listado">${esPrevia ? "" : `${escaparHTML(horaTexto)} · `}${escaparHTML(datos.autor || "Sin médico")} · ${estadoTexto}</small>
+          <!--
           ${fechaTexto} · ${horaTexto} · ${datos.autor || "Sin médico"} · ${estadoTexto}
+          -->
         </summary>
 
         <div style="margin-top:20px;">
@@ -4250,6 +4425,22 @@ function construirContenedorPdfCognicion() {
 
   agregarNodo(fuente.querySelector(":scope > .logo-nota"));
   agregarNodo(fuente.querySelector(":scope > h1"));
+  const metadatos = leerMetadatosAdicionalesNota();
+  if (metadatos.titulo || metadatos.esNotaPrevia) {
+    const bloqueMetadatos = document.createElement("div");
+    bloqueMetadatos.className = "nota-metadatos-pdf";
+    if (metadatos.titulo) {
+      const titulo = document.createElement("strong");
+      titulo.textContent = metadatos.titulo;
+      bloqueMetadatos.appendChild(titulo);
+    }
+    if (metadatos.esNotaPrevia) {
+      const fecha = document.createElement("div");
+      fecha.textContent = `Nota previa · Fecha: ${formatoFechaFray(metadatos.fechaNotaInput)}`;
+      bloqueMetadatos.appendChild(fecha);
+    }
+    documento.appendChild(bloqueMetadatos);
+  }
   ["tratamiento", "medico", "ultimaConsulta", "proximaConsulta"].forEach(agregarCampo);
 
   const bloqueObservacion = agregarNodo(document.getElementById("bloqueObservacionFray"));
@@ -4868,7 +5059,9 @@ window.descargarNotaSeleccionada = async function() {
     const datosNota = collectNoteData();
     const observacion = datosNota.observacionFray || {};
     const identificacion = datosInstitucionalesPaciente(pacienteActualDatos || {});
-    const fecha = observacion.fechaNota || fechaLocalInputNota();
+    const fecha = datosNota.esNotaPrevia && datosNota.fechaNotaInput
+      ? datosNota.fechaNotaInput
+      : (observacion.fechaNota || fechaLocalInputNota());
     const hora = observacion.horaNota || horaLocalInputNota();
     const tipoInstitucional = esFormatoFray()
       ? (observacion.tipoNota || "evolucion")
@@ -4886,6 +5079,10 @@ window.descargarNotaSeleccionada = async function() {
           { titulo: "PRONÓSTICO", contenido: observacion.pronostico },
           { titulo: "DESTINO", contenido: observacion.destino }
         ];
+    secciones.unshift(
+      ...(datosNota.esNotaPrevia ? [{ titulo: "FECHA CLÍNICA", contenido: `${formatoFechaFray(datosNota.fechaNotaInput)} · Nota previa` }] : []),
+      ...(datosNota.titulo ? [{ titulo: "TÍTULO DE LA NOTA", contenido: datosNota.titulo }] : [])
+    );
     Object.entries(datosNota.camposDinamicos || {}).forEach(([clave, contenido]) => {
       if (String(contenido || "").trim()) secciones.push({ titulo: clave.replace(/[_-]+/g, " ").toUpperCase(), contenido });
     });

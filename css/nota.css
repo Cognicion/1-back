@@ -899,6 +899,81 @@ button:hover{
     min-width: 190px;
 }
 
+.control-nota-previa {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.control-nota-previa input {
+    width: auto;
+    margin: 0;
+}
+
+.campos-nota-previa {
+    display: grid;
+    gap: 6px;
+    margin-top: 10px;
+    padding: 12px;
+    border: 1px solid var(--border-normal);
+    border-radius: 12px;
+    background: var(--surface-secondary);
+}
+
+.campos-nota-previa[hidden] {
+    display: none;
+}
+
+.ayuda-nota-previa,
+.error-nota-previa {
+    margin: 0;
+    font-size: 0.85rem;
+}
+
+.ayuda-nota-previa {
+    color: var(--text-secondary, var(--cog-muted));
+}
+
+.error-nota-previa {
+    color: var(--danger-text, #9a3434);
+    min-height: 1.2em;
+}
+
+.nota-titulo-listado,
+.nota-linea-clinica,
+.nota-meta-listado {
+    display: block;
+}
+
+.nota-titulo-listado {
+    color: var(--text-primary, var(--cog-text));
+    font-weight: 700;
+    margin-bottom: 4px;
+}
+
+.nota-linea-clinica {
+    color: var(--text-primary, var(--cog-text));
+}
+
+.nota-meta-listado {
+    color: var(--text-secondary, var(--cog-muted));
+    font-size: 0.8rem;
+    font-weight: 500;
+    margin-top: 4px;
+}
+
+.nota-titulo-detalle {
+    color: var(--text-primary, var(--cog-text));
+    font-weight: 600;
+}
+
+.nota-metadatos-pdf {
+    margin: 10px 0 16px;
+    color: var(--text-primary, var(--cog-text));
+    line-height: 1.5;
+}
+
 .panel-escala-nota {
     width: 100%;
     margin: 0 0 22px;
