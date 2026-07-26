@@ -78,8 +78,17 @@ function campoConRespaldo(datos = {}, paciente = {}, campo, alternos = []) {
 }
 
 function numeroClinico(valor = "") {
-  const numero = Number(String(valor).replace(",", "."));
+  const coincidencia = String(valor)
+    .trim()
+    .replace(",", ".")
+    .match(/\d+(?:\.\d+)?/);
+  const numero = coincidencia ? Number(coincidencia[0]) : NaN;
   return Number.isFinite(numero) && numero > 0 ? numero : null;
+}
+
+function normalizarMedidaClinica(valor = "") {
+  const numero = numeroClinico(valor);
+  return numero === null ? "" : String(numero);
 }
 
 function calcularIMCHistoria() {
@@ -161,10 +170,11 @@ async function cargarHistoria() {
 }
 
 window.guardarHistoria = async () => {
-  if (!uidPaciente) {
-    alert("No hay paciente seleccionado. Abre esta historia desde el expediente o desde la lista de pacientes.");
-    return;
-  }
+  try {
+    if (!uidPaciente) {
+      alert("No hay paciente seleccionado. Abre esta historia desde el expediente o desde la lista de pacientes.");
+      return;
+    }
 
   const datos = {};
   calcularIMCHistoria();
@@ -199,6 +209,17 @@ window.guardarHistoria = async () => {
 
     datos[id] = campo.value;
   });
+
+  const pesoNormalizado = normalizarMedidaClinica(datos.peso);
+  if (datos.peso?.trim() && !pesoNormalizado) {
+    alert("Registra un peso numérico válido.");
+    return;
+  }
+  datos.peso = pesoNormalizado;
+  datos.talla = normalizarMedidaClinica(datos.talla) || String(datos.talla || "").trim();
+  datos.perimetroAbdominal = normalizarMedidaClinica(datos.perimetroAbdominal) || String(datos.perimetroAbdominal || "").trim();
+  calcularIMCHistoria();
+  datos.imc = String(document.getElementById("imc")?.value || "").trim();
 
   await guardarHistoriaClinica(uidPaciente, datos);
 
@@ -273,6 +294,11 @@ window.guardarHistoria = async () => {
     }
   });
 
+  pacienteActual = await obtenerUsuario(uidPaciente) || pacienteActual;
+  if (String(valorInstitucional(pacienteActual, "peso")) !== String(peso)) {
+    throw new Error("No se confirmó la persistencia del peso del paciente.");
+  }
+
   const usuario = auth.currentUser;
   const medico = usuario ? await obtenerUsuario(usuario.uid) : null;
   const paciente = pacienteActual || await obtenerUsuario(uidPaciente);
@@ -292,7 +318,13 @@ window.guardarHistoria = async () => {
     }
   });
 
-  alert("Historia clinica guardada.");
+    alert("Historia clinica guardada.");
+  } catch (error) {
+    console.error("No se pudo guardar la historia clínica.", {
+      codigo: error?.code || null
+    });
+    alert("No fue posible guardar la historia clínica. Verifica tu conexión y permisos, e inténtalo de nuevo.");
+  }
 };
 
 window.descargarHistoriaPDF = () => {

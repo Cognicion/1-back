@@ -3161,6 +3161,21 @@ async function guardarCampoPacienteInline(campo, nuevoValor, datos = {}) {
   if (nuevoValor === null) return;
   if (campo === "fechaIngreso") nuevoValor = normalizarFechaIngreso(nuevoValor);
 
+  if (["peso", "talla", "imc", "perimetroAbdominal"].includes(campo)) {
+    const valorNumerico = numeroDesdeTexto(nuevoValor);
+    if (!valorNumerico) {
+      alert("Registra un valor numérico válido para este dato somatométrico.");
+      return;
+    }
+    nuevoValor = String(valorNumerico);
+  }
+
+  // La somatometría se registra en varias vistas. Siempre parte del documento
+  // más reciente para no sobrescribir cambios de otros campos anidados.
+  const datosActuales = ["peso", "talla", "imc", "perimetroAbdominal"].includes(campo)
+    ? (await obtenerUsuario(uidPaciente) || datos)
+    : datos;
+
   const actualizacion = {
     [campo]: nuevoValor
   };
@@ -3195,7 +3210,7 @@ async function guardarCampoPacienteInline(campo, nuevoValor, datos = {}) {
 
   if (camposInstitucionales.has(campo)) {
     const datosInstitucionales = {
-      ...(datos?.datosInstitucionales || {}),
+      ...(datosActuales?.datosInstitucionales || {}),
       [campo]: nuevoValor
     };
     delete datosInstitucionales.edad;
@@ -3205,8 +3220,8 @@ async function guardarCampoPacienteInline(campo, nuevoValor, datos = {}) {
     if (campo === "servicioInstitucional") actualizacion.servicio = nuevoValor;
     if (campo === "expediente") actualizacion.numeroExpediente = nuevoValor;
     if (["peso", "talla", "imc", "perimetroAbdominal"].includes(campo)) {
-      const pesoBase = campo === "peso" ? nuevoValor : (datos?.peso || datos?.signosVitales?.peso || datos?.somatometria?.peso || datos?.datosInstitucionales?.peso || "");
-      const tallaBase = campo === "talla" ? nuevoValor : (datos?.talla || datos?.signosVitales?.talla || datos?.somatometria?.talla || datos?.datosInstitucionales?.talla || "");
+      const pesoBase = campo === "peso" ? nuevoValor : (datosActuales?.peso || datosActuales?.signosVitales?.peso || datosActuales?.somatometria?.peso || datosActuales?.datosInstitucionales?.peso || "");
+      const tallaBase = campo === "talla" ? nuevoValor : (datosActuales?.talla || datosActuales?.signosVitales?.talla || datosActuales?.somatometria?.talla || datosActuales?.datosInstitucionales?.talla || "");
       const pesoNumero = numeroDesdeTexto(pesoBase);
       const tallaNumero = numeroDesdeTexto(tallaBase);
       const imcCalculado = pesoNumero && tallaNumero ? (pesoNumero / (tallaNumero * tallaNumero)).toFixed(2) : "";
@@ -3215,20 +3230,29 @@ async function guardarCampoPacienteInline(campo, nuevoValor, datos = {}) {
         datosInstitucionales.imc = imcCalculado;
       }
       actualizacion.signosVitales = {
-        ...(datos?.signosVitales || {}),
+        ...(datosActuales?.signosVitales || {}),
         [campo]: nuevoValor,
         ...(imcCalculado && campo !== "imc" ? { imc: imcCalculado } : {})
       };
       actualizacion.somatometria = {
-        ...(datos?.somatometria || {}),
+        ...(datosActuales?.somatometria || {}),
         [campo]: nuevoValor,
         ...(imcCalculado && campo !== "imc" ? { imc: imcCalculado } : {})
       };
     }
   }
 
-  await actualizarUsuario(uidPaciente, actualizacion);
-  await cargarDatosPaciente();
+  try {
+    await actualizarUsuario(uidPaciente, actualizacion);
+    await cargarDatosPaciente();
+  } catch (error) {
+    console.error("No se pudo guardar el dato del paciente.", {
+      campo,
+      codigo: error?.code || null
+    });
+    alert("No fue posible guardar el dato. Verifica tu conexión y permisos, e inténtalo de nuevo.");
+    throw error;
+  }
 }
 
 function crearControlEditorCampoPaciente(campo, tipo, valorActual, opciones = []) {
@@ -3300,7 +3324,14 @@ window.editarCampoPaciente = async function(campo, etiqueta, tipo = "text") {
     const manual = editor.querySelector("[data-editor-campo-manual]")?.value?.trim();
     const control = editor.querySelector("[data-editor-campo-valor]");
     const nuevoValor = manual || control?.value || "";
-    await guardarCampoPacienteInline(campo, nuevoValor, datos);
+    const botonGuardar = editor.querySelector("[data-guardar-editor-paciente]");
+    botonGuardar.disabled = true;
+    try {
+      await guardarCampoPacienteInline(campo, nuevoValor, datos);
+      editor.remove();
+    } catch {
+      botonGuardar.disabled = false;
+    }
   });
   editor.querySelector("[data-editor-campo-valor]")?.focus();
 };
