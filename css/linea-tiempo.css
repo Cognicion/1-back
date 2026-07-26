@@ -101,6 +101,7 @@ button { cursor: pointer; }
 .timeline-panel-heading h2,
 .timeline-state h2 { margin: 0; color: var(--timeline-text); }
 .timeline-subtitle { margin: 8px 0 0; color: var(--timeline-text-secondary); }
+.timeline-version { margin: 2px 0 0; color: var(--timeline-text-secondary); font-size: .78rem; }
 
 .timeline-toolbar {
   display: flex;

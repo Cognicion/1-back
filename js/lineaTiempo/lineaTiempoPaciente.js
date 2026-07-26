@@ -19,6 +19,7 @@ import {
   ordenarEventosPorFecha
 } from "./lineaTiempoUtils.js";
 import { renderizarDetalleEvento, renderizarEstados, renderizarLineaTiempo } from "./lineaTiempoRenderer.js";
+import { obtenerNombrePacienteParaMostrar } from "../utils/nombresPacientes.js";
 
 let root = null;
 let pacienteId = "";
@@ -63,6 +64,9 @@ async function validarAccesoPaciente() {
     puedeEscribir: Boolean(accesoProfesional && permisoDirecto.lectura !== false && rol !== "estudiante")
   };
   const etiqueta = root.querySelector("[data-patient-label]");
+  const titulo = root.querySelector("[data-timeline-title]");
+  const nombrePaciente = obtenerNombrePacienteParaMostrar(paciente);
+  if (titulo && nombrePaciente) titulo.textContent = `Línea de tiempo de ${nombrePaciente}`;
   if (etiqueta) etiqueta.textContent = esPaciente ? "Tu expediente clínico · eventos ordenados cronológicamente." : "Eventos clínicos ordenados cronológicamente.";
   return true;
 }
