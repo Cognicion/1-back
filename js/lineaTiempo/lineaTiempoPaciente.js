@@ -49,6 +49,7 @@ let eventoEditando = null;
 let inicializado = false;
 let destruir = () => {};
 let cancelarAuth = () => {};
+let detectorEventosClinicos = null;
 
 export function obtenerPacienteIdDesdeUrl() {
   const params = new URLSearchParams(window.location.search);
@@ -604,6 +605,26 @@ async function cargarLineaTiempo() {
   }
 }
 
+async function inicializarDetectorEventosClinicos() {
+  if (detectorEventosClinicos || !root || !pacienteId || !auth.currentUser) return;
+  try {
+    const detector = await import("./deteccionEventos/deteccionEventosClinicos.js");
+    detectorEventosClinicos = await detector.inicializarDeteccionEventosClinicos({
+      root,
+      pacienteId,
+      usuarioUid: auth.currentUser.uid,
+      permisos,
+      obtenerEventosExistentes: () => eventos,
+      onEventoCreado: async () => {
+        eventos = ordenarEventosPorFecha(await cargarEventosPaciente(pacienteId));
+        renderizarVista();
+      }
+    });
+  } catch (error) {
+    console.warn("[Timeline] No se pudo cargar el detector de eventos clinicos.", error?.code || error?.message || error);
+  }
+}
+
 async function inicializarLineaTiempoPaciente() {
   if (inicializado) return;
   root = document.querySelector("[data-timeline-root]");
@@ -649,11 +670,14 @@ async function inicializarLineaTiempoPaciente() {
   });
   animacion = iniciarAnimacionADN(root.querySelector("[data-timeline-dna]"));
   await cargarLineaTiempo();
+  await inicializarDetectorEventosClinicos();
   inicializado = true;
   destruir = () => {
     limpiarAcciones?.();
     interacciones?.destruir();
     animacion?.destruir();
+    detectorEventosClinicos?.destruir?.();
+    detectorEventosClinicos = null;
     destruirLineaTiempoDataService();
     cancelarAuth();
     cancelarAuth = () => {};

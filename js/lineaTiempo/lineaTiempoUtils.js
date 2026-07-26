@@ -57,9 +57,12 @@ export function normalizarEvento(id, datos = {}) {
     tipo: TIPOS_EVENTO[datos.tipo] ? datos.tipo : null,
     categoria: String(datos.categoria || "").trim().slice(0, 80),
     importancia: ["baja", "media", "alta"].includes(datos.importancia) ? datos.importancia : "media",
-    origen: datos.origen === "automatico" ? "automatico" : "manual",
+    origen: ["automatico", "detectado"].includes(datos.origen) ? datos.origen : "manual",
     referenciaId: datos.referenciaId ? String(datos.referenciaId).slice(0, 160) : null,
     referenciaTipo: datos.referenciaTipo ? String(datos.referenciaTipo).slice(0, 80) : null,
+    deteccionId: datos.deteccionId ? String(datos.deteccionId).slice(0, 160) : null,
+    fechaEsAproximada: datos.fechaEsAproximada === true,
+    precisionTemporal: datos.precisionTemporal || "",
     activo: datos.activo !== false
   };
 }
@@ -218,6 +221,7 @@ export function formatearOrigenEvento(origen) {
   const valor = String(origen || "").trim().toLocaleLowerCase("es-MX");
   if (valor === "manual") return "Manual";
   if (valor === "automatico" || valor === "automático") return "Automático";
+  if (valor === "detectado") return "Detectado";
   return String(origen || "").trim() || "No especificado";
 }
 
