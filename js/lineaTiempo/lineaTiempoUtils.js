@@ -149,6 +149,8 @@ function alinearIntervalo(fecha, intervalo) {
   return alineada;
 }
 
+export const DISTANCIA_MINIMA_ETIQUETA_EXTREMO_PX = 90;
+
 export function generarMarcasTemporales(rango, anchoDisponiblePx = 900) {
   if (!rango.minimo || !rango.maximo) return [];
   if (rango.duracion === 0) return [{ fecha: new Date(rango.minimo), posicion: 0.5, esExtremo: true, tipo: "extremo-inicial" }];
@@ -164,7 +166,16 @@ export function generarMarcasTemporales(rango, anchoDisponiblePx = 900) {
     cursor = avanzarIntervalo(cursor, intervalo);
   }
   marcas.push({ fecha: new Date(rango.maximo), posicion: 1, esExtremo: true, tipo: "extremo-final" });
-  return [...new Map(marcas.map((marca) => [marca.fecha.getTime(), marca])).values()];
+  const marcasUnicas = [...new Map(marcas.map((marca) => [marca.fecha.getTime(), marca])).values()];
+  const etiquetaFinal = formatearFechaCorta(rango.maximo);
+  const etiquetaInicial = formatearFechaCorta(rango.minimo);
+  const reservaFinal = Math.max(DISTANCIA_MINIMA_ETIQUETA_EXTREMO_PX, etiquetaFinal.length * 7 + 16);
+  const reservaInicial = Math.max(DISTANCIA_MINIMA_ETIQUETA_EXTREMO_PX, etiquetaInicial.length * 7 + 16);
+  return marcasUnicas.filter((marca) => {
+    if (marca.esExtremo) return true;
+    const posicionPx = marca.posicion * anchoDisponiblePx;
+    return posicionPx >= reservaInicial && anchoDisponiblePx - posicionPx >= reservaFinal;
+  });
 }
 
 export function formatearFecha(fecha, opciones = {}) {

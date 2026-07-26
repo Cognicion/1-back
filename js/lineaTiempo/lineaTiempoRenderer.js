@@ -74,7 +74,7 @@ export function renderizarLineaTiempo(root, eventos, rango, zoom = 1, opciones =
     marcaNode.textContent = formatearFechaCorta(marca.fecha);
     if (marca.esExtremo) {
       marcaNode.dataset.endpoint = "true";
-      marcaNode.classList.add(marca.tipo === "extremo-inicial" ? "timeline-tick--start" : "timeline-tick--end");
+      marcaNode.classList.add(marca.tipo === "extremo-inicial" ? "timeline-tick--inicio" : "timeline-tick--final");
     } else {
       marcaNode.classList.add("timeline-tick--middle");
     }

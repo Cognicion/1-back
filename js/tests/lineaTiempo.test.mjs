@@ -78,7 +78,20 @@ test("Las marcas temporales seleccionan intervalos regulares según el rango vis
   assert.equal(seleccionarIntervaloTemporal(inicio, fin, 1000), "5-anios");
   const marcas = generarMarcasTemporales({ minimo: new Date(inicio), maximo: new Date(fin), duracion: fin - inicio }, 1000);
   const internas = marcas.slice(1, -1).map((marca) => marca.fecha.getFullYear());
-  assert.deepEqual(internas, [2000, 2005, 2010, 2015, 2020, 2025]);
+  assert.deepEqual(internas, [2000, 2005, 2010, 2015, 2020]);
+});
+
+test("La etiqueta final exacta reserva su extremo y no se duplica", () => {
+  const inicio = new Date(1996, 10, 25).getTime();
+  const fin = new Date(2026, 2, 1).getTime();
+  const rango = { minimo: new Date(inicio), maximo: new Date(fin), duracion: fin - inicio };
+  const marcas = generarMarcasTemporales(rango, 900);
+  const finales = marcas.filter((marca) => marca.fecha.getTime() === fin);
+  const intermediaCercanaAlFinal = marcas.find((marca) => !marca.esExtremo && 900 - marca.posicion * 900 < 90);
+
+  assert.equal(finales.length, 1);
+  assert.equal(finales[0].tipo, "extremo-final");
+  assert.equal(intermediaCercanaAlFinal, undefined);
 });
 
 test("La vista lejana agrupa eventos del mismo año sin alterar sus documentos", () => {
