@@ -7,7 +7,8 @@ import {
   generarMarcasTemporales,
   obtenerConfiguracionTipoEvento,
   obtenerClaveFecha,
-  ordenarEventosPorFecha
+  ordenarEventosPorFecha,
+  debugTimelineRuntime
 } from "./lineaTiempoUtils.js";
 
 function textoImportancia(importancia) {
@@ -95,11 +96,28 @@ export function renderizarLineaTiempo(root, eventos, rango, zoom = 1, opciones =
 
   canvas.appendChild(fragmento);
   canvas.style.setProperty("--timeline-content-width", `${Math.max(100, 100 * zoom)}%`);
+  const primerMarcador = canvas.querySelector(".timeline-event__marker");
+  if (primerMarcador) {
+    const rect = primerMarcador.getBoundingClientRect();
+    const elementoReal = document.elementFromPoint(rect.left + rect.width / 2, rect.top + rect.height / 2);
+    debugTimelineRuntime("element-from-point", {
+      tag: elementoReal?.tagName || null,
+      className: typeof elementoReal?.className === "string" ? elementoReal.className : null,
+      isMarker: Boolean(elementoReal?.closest?.(".timeline-event__marker"))
+    });
+  }
 }
 
 export function renderizarDetalleEvento(root, eventos, eventoId = "", grupoId = "") {
+  const eventoParaTraza = eventos.find((evento) => evento.id === eventoId) || eventos.find((evento) => obtenerClaveFecha(evento.fechaEvento) === grupoId);
+  debugTimelineRuntime("E-render-detail", { eventId: eventoParaTraza?.id || null });
   const contenido = root.querySelector("[data-detail-content]");
   const panel = root.querySelector("[data-event-detail]");
+  debugTimelineRuntime("F-detail-container", {
+    exists: Boolean(panel),
+    connected: Boolean(panel?.isConnected),
+    hiddenBefore: panel?.hidden
+  });
   if (!contenido || !panel) return;
   const lista = grupoId ? eventos.filter((evento) => obtenerClaveFecha(evento.fechaEvento) === grupoId) : eventos.filter((evento) => evento.id === eventoId);
   contenido.replaceChildren();
@@ -137,4 +155,15 @@ export function renderizarDetalleEvento(root, eventos, eventoId = "", grupoId = 
   });
   contenido.appendChild(fragmento);
   panel.hidden = false;
+  const estilos = getComputedStyle(panel);
+  const rect = panel.getBoundingClientRect();
+  debugTimelineRuntime("G-detail-result", {
+    hiddenAfter: panel.hidden,
+    display: estilos.display,
+    visibility: estilos.visibility,
+    opacity: estilos.opacity,
+    width: rect.width,
+    height: rect.height,
+    top: rect.top
+  });
 }

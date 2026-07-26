@@ -16,7 +16,8 @@ import { iniciarAnimacionADN } from "./lineaTiempoAnimation.js";
 import {
   formatearFecha,
   normalizarFecha,
-  ordenarEventosPorFecha
+  ordenarEventosPorFecha,
+  debugTimelineRuntime
 } from "./lineaTiempoUtils.js";
 import { renderizarDetalleEvento, renderizarEstados, renderizarLineaTiempo } from "./lineaTiempoRenderer.js";
 import { obtenerNombrePacienteParaMostrar } from "../utils/nombresPacientes.js";
@@ -96,15 +97,28 @@ function fechaFormulario(fecha) {
 
 function renderizarVista() {
   const rango = eventos.length ? { minimo: eventos[0].fechaEvento, maximo: eventos.at(-1).fechaEvento, duracion: eventos.at(-1).fechaEvento - eventos[0].fechaEvento } : { minimo: null, maximo: null, duracion: 0 };
+  const shell = root.querySelector("[data-timeline-shell]");
+  if (shell) shell.hidden = !eventos.length;
   renderizarLineaTiempo(root, eventos, rango, zoomActual, { focusRatio, focusCanvasX, hasFocusMarker, selectedGroupId });
+  const viewport = root.querySelector("[data-timeline-scroll]");
+  const viewportActual = document.getElementById("lineaTiempoViewport") || viewport;
+  debugTimelineRuntime("viewport-after-render", {
+    sameNode: viewportActual === viewport,
+    connected: Boolean(viewportActual?.isConnected)
+  });
   const etiqueta = root.querySelector("[data-zoom-label]");
   if (etiqueta) etiqueta.textContent = `${Math.round(zoomActual * 100)} %`;
   renderizarEstados(root, eventos.length ? "" : "empty");
-  root.querySelector("[data-timeline-shell]").hidden = !eventos.length;
+  if (shell) shell.hidden = !eventos.length;
 }
 
 function abrirDetalle(seleccion) {
-  const evento = eventos.find((item) => item.id === seleccion.eventoId);
+  const evento = eventos.find((item) => String(item.id) === String(seleccion.eventoId));
+  debugTimelineRuntime("D-event-search", {
+    requestedId: seleccion.eventoId || null,
+    totalEvents: eventos.length,
+    found: Boolean(evento)
+  });
   if (!evento && !seleccion.grupoId) {
     console.warn("El marcador seleccionado no contiene un evento valido.");
     return;

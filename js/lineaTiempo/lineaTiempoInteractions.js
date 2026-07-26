@@ -1,4 +1,4 @@
-import { MAX_ZOOM, MIN_ZOOM } from "./lineaTiempoUtils.js";
+import { MAX_ZOOM, MIN_ZOOM, debugTimelineRuntime } from "./lineaTiempoUtils.js";
 
 const ZOOM_STEP = 1.15;
 
@@ -18,6 +18,10 @@ export function configurarInteracciones({ root, onSelect, onClearSelection, onZo
   const viewport = root.querySelector("[data-timeline-scroll]");
   const range = root.querySelector("[data-zoom-range]");
   const disposables = [];
+  debugTimelineRuntime("viewport-binding", {
+    connected: Boolean(viewport?.isConnected),
+    id: viewport?.id || null
+  });
   const state = {
     zoom: 1,
     focusRatio: 0.5,
@@ -171,11 +175,16 @@ export function configurarInteracciones({ root, onSelect, onClearSelection, onZo
   };
 
   const onClick = (event) => {
+    debugTimelineRuntime("B-viewport-listener", { targetTag: event.target?.tagName || null });
     if (state.movedDuringDrag) {
       state.movedDuringDrag = false;
       return;
     }
     const marker = event.target.closest(".timeline-event__marker");
+    debugTimelineRuntime("C-marker-search", {
+      markerFound: Boolean(marker),
+      eventId: marker?.dataset?.eventId || null
+    });
     if (state.suppressNextClick) {
       state.suppressNextClick = false;
       return;
@@ -311,6 +320,19 @@ export function configurarInteracciones({ root, onSelect, onClearSelection, onZo
   const onRangeInput = () => applyZoom(Number(range.value));
 
   viewport?.addEventListener("click", onClick, true);
+  if (viewport) {
+    const debugDocumentClick = (event) => {
+      const marker = event.target.closest?.(".timeline-event__marker");
+      debugTimelineRuntime("A-document-click", {
+        targetTag: event.target?.tagName || null,
+        targetClass: typeof event.target?.className === "string" ? event.target.className : null,
+        markerFound: Boolean(marker),
+        eventId: marker?.dataset?.eventId || null
+      });
+    };
+    document.addEventListener("click", debugDocumentClick, true);
+    disposables.push(() => document.removeEventListener("click", debugDocumentClick, true));
+  }
   viewport?.addEventListener("keydown", onKeydown);
   viewport?.addEventListener("pointerover", onPointerEnter);
   viewport?.addEventListener("pointerout", onPointerLeave);

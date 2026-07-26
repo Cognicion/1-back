@@ -136,3 +136,6 @@ export function formatearFechaCorta(fecha) {
 export function escaparHTML(valor = "") {
   return String(valor).replace(/[&<>"']/g, (caracter) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;" }[caracter]));
 }
+export function debugTimelineRuntime(paso, datos = {}) {
+  console.log(`[Timeline runtime] ${paso}`, datos);
+}
