@@ -304,7 +304,7 @@ function subdividirBloqueSeguro(parent = {}, localUtterances = []) {
       parentBlockIndex: parent.blockIndex,
       parentBlockContentHash: parent.blockContentHash,
       childIndex: children.length,
-      blockId: `${parent.blockId}${String.fromCharCode(65 + children.length)}`
+      blockId: `${parent.blockId}${Number(parent.splitLevel || 0) ? `.${children.length + 1}` : String.fromCharCode(65 + children.length)}`
     });
     start = end + 1;
   }
@@ -316,6 +316,63 @@ function subdividirBloqueSeguro(parent = {}, localUtterances = []) {
     ];
   }
   return children;
+}
+
+/** Repara IDs duplicados conservando hashes, rangos y resultados existentes. */
+export function repairDuplicateAdaptiveBlockIds(manifest = {}) {
+  const blocks = Array.isArray(manifest.blocks) ? manifest.blocks.map((block) => ({ ...block })) : [];
+  const roots = blocks.filter((block) => !block.parentBlockId && !block.parentBlockKey);
+  const repaired = [];
+  roots.forEach((root) => {
+    const rootId = `block-${Number(root.blockIndex || 0) + 1}`;
+    root.blockId = rootId;
+    root.rootParentBlockId = rootId;
+    root.splitPath = rootId;
+    root.splitLevel = 0;
+    const family = blocks.filter((block) => block !== root && Number(block.parentBlockIndex ?? block.blockIndex) === Number(root.blockIndex));
+    const levelOne = family.filter((block) => Number(block.splitLevel || 1) === 1).sort((a, b) => Number(a.start) - Number(b.start) || Number(a.end) - Number(b.end));
+    levelOne.forEach((child, index) => {
+      child.blockId = `${rootId}${String.fromCharCode(65 + index)}`;
+      child.parentBlockId = rootId;
+      child.parentBlockKey = root.blockKey || "";
+      child.rootParentBlockId = rootId;
+      child.splitLevel = 1;
+      child.splitPath = child.blockId;
+    });
+    for (let depth = 2; depth <= Math.max(2, ...family.map((node) => Number(node.splitLevel || 0))); depth += 1) {
+      const groups = new Map();
+      family.filter((node) => Number(node.splitLevel || 0) === depth).forEach((child) => {
+        const candidates = [root, ...family.filter((node) => Number(node.splitLevel || 0) < depth)]
+          .filter((node) => Number(node.start) <= Number(child.start) && Number(node.end) >= Number(child.end))
+          .sort((a, b) => (Number(a.end) - Number(a.start)) - (Number(b.end) - Number(b.start)));
+        const parent = candidates[0];
+        if (!parent) return;
+        if (!groups.has(parent)) groups.set(parent, []);
+        groups.get(parent).push(child);
+      });
+      groups.forEach((children, parent) => children.sort((a, b) => Number(a.start) - Number(b.start) || Number(a.end) - Number(b.end)).forEach((child, index) => {
+        child.blockId = `${parent.blockId}.${index + 1}`;
+        child.parentBlockId = parent.blockId;
+        child.parentBlockKey = parent.blockKey || "";
+        child.rootParentBlockId = rootId;
+        child.splitPath = child.blockId;
+      }));
+    }
+    root.childBlockIds = levelOne.map((child) => child.blockId);
+    levelOne.forEach((parent) => { parent.childBlockIds = family.filter((child) => child.parentBlockId === parent.blockId && Number(child.splitLevel) > 1).map((child) => child.blockId); });
+    repaired.push(rootId);
+  });
+  return { manifest: { ...manifest, blocks }, repairedBlockIds: repaired };
+}
+
+export function validateAdaptiveManifestTree(manifest = {}) {
+  const blocks = Array.isArray(manifest.blocks) ? manifest.blocks : [];
+  const ids = blocks.map((block) => block.blockId).filter(Boolean);
+  const duplicates = ids.filter((id, index) => ids.indexOf(id) !== index);
+  const byId = new Map(blocks.map((block) => [block.blockId, block]));
+  const invalidLinks = blocks.filter((block) => block.parentBlockId && !byId.has(block.parentBlockId)).map((block) => block.blockId);
+  const invalidChildLinks = blocks.filter((block) => (block.childBlockIds || []).some((id) => !byId.has(id))).map((block) => block.blockId);
+  return { valid: !duplicates.length && !invalidLinks.length && !invalidChildLinks.length, duplicateBlockIds: [...new Set(duplicates)], invalidLinks, invalidChildLinks };
 }
 
 /** Prepara hijos estables para reintentos adaptativos sin llamar al proveedor. */

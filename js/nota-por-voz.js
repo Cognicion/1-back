@@ -9,7 +9,9 @@ import {
   CONVERSATION_SEGMENTATION_PROMPT_VERSION,
   createConversationSegmentationProvider,
   crearClientRequestId,
-  prepararSubdivisionesAdaptativas
+  prepararSubdivisionesAdaptativas,
+  repairDuplicateAdaptiveBlockIds,
+  validateAdaptiveManifestTree
 } from "./services/conversationSegmentationProviders.js?v=20260725-adaptive-split-prepared";
 import { segmentarConversacionClinica } from "./services/clinicalPipeline.js";
 import { VOICE_NOTE_MODULE_VERSION } from "./services/voiceNoteModuleVersion.js";
@@ -1640,7 +1642,16 @@ function getSplittableParentBlocks(activeManifest = {}) {
 }
 
 async function dividirYReintentarBloquesAdaptativos() {
-  const manifest = state.segmentationMetadata?.blockManifest;
+  const initialManifest = state.segmentationMetadata?.blockManifest;
+  const repaired = repairDuplicateAdaptiveBlockIds(initialManifest || {});
+  const manifest = repaired.manifest;
+  const treeBefore = validateAdaptiveManifestTree(manifest);
+  if (!treeBefore.valid) {
+    setText("voiceSegmentationStatus", "No se pudo iniciar la subdivisión: la jerarquía de bloques requiere revisión.");
+    renderDetalleTecnicoSegmentacion({ code: "adaptive_manifest_tree_invalid", stage: "adaptive_split", retryable: true, details: treeBefore });
+    return null;
+  }
+  state.segmentationMetadata = { ...(state.segmentationMetadata || {}), blockManifest: manifest };
   const parents = getSplittableParentBlocks(manifest);
   const button = $("btnSegmentarConversacionVoz");
   if (!parents.length) {
@@ -1708,6 +1719,15 @@ async function dividirYReintentarBloquesAdaptativos() {
     throw error;
   } finally {
     state.segmentationOperation = null;
+    const button = $("btnSegmentarConversacionVoz");
+    const counts = contarBloquesManifest(state.segmentationMetadata?.blockManifest || {});
+    if (button && !state.activeSegmentationRequest) {
+      button.disabled = !canUseProvider();
+      button.textContent = counts.requiresSplit
+        ? `Dividir y reintentar ${counts.requiresSplit} bloques`
+        : (counts.pending + counts.failed ? `Reintentar ${counts.pending + counts.failed} bloques pendientes` : "Segmentar con proveedor");
+    }
+    renderBlockManifestSegmentacion(state.segmentationMetadata?.blockManifest || manifest);
   }
 }
 
