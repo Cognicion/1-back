@@ -632,47 +632,86 @@ textarea{
   box-shadow: 0 0 24px rgba(82, 152, 102, 0.12);
 }
 
+html[data-theme="light"] .diagnostico-resultados,
 body.tema-claro .diagnostico-resultados {
-  color: var(--cog-text, #1f2933);
-}
-
-body.tema-claro .diagnostico-opcion {
-  background: var(--surface-secondary, #f4f8f5);
-  border-color: var(--border-subtle, #bfd2c4);
-  color: var(--cog-text, #1f2933);
-}
-
-body.tema-claro .diagnostico-opcion strong {
-  color: var(--celtic-700, #245d3a);
-}
-
-body.tema-claro .diagnostico-opcion span,
-body.tema-claro .diagnostico-card .registro-top span:not(.diagnostico-principal-badge) {
-  color: var(--cog-text, #1f2933);
-}
-
-body.tema-claro .diagnostico-card .registro-top strong,
-body.tema-claro .diagnostico-estado-label,
-body.tema-claro #seccionDiagnosticos label {
-  color: var(--cog-text, #1f2933);
-}
-
-body.tema-claro #seccionDiagnosticos input,
-body.tema-claro #seccionDiagnosticos select,
-body.tema-claro #seccionDiagnosticos textarea {
-  background: var(--input-bg, #ffffff);
-  color: var(--cog-text, #1f2933);
-  border-color: var(--input-border, #b8cdbd);
-}
-
-body.tema-claro #seccionDiagnosticos input::placeholder,
-body.tema-claro #seccionDiagnosticos textarea::placeholder {
-  color: var(--cog-muted, #52665a);
+  color: #1f2933;
   opacity: 1;
 }
 
+html[data-theme="light"] .diagnostico-opcion,
+body.tema-claro .diagnostico-opcion {
+  background: var(--surface-secondary, #f4f8f5);
+  border-color: var(--border-subtle, #bfd2c4);
+  color: #1f2933;
+  opacity: 1;
+}
+
+html[data-theme="light"] .diagnostico-opcion strong,
+body.tema-claro .diagnostico-opcion strong {
+  color: #245d3a;
+  opacity: 1;
+}
+
+html[data-theme="light"] .diagnostico-opcion span,
+body.tema-claro .diagnostico-opcion span,
+html[data-theme="light"] .diagnostico-card .registro-top span:not(.diagnostico-principal-badge),
+body.tema-claro .diagnostico-card .registro-top span:not(.diagnostico-principal-badge) {
+  color: #34443a;
+  opacity: 1;
+}
+
+html[data-theme="light"] .diagnostico-card .registro-top strong,
+body.tema-claro .diagnostico-card .registro-top strong,
+html[data-theme="light"] .diagnostico-estado-label,
+body.tema-claro .diagnostico-estado-label,
+html[data-theme="light"] #seccionDiagnosticos label,
+body.tema-claro #seccionDiagnosticos label {
+  color: #1f2933;
+  opacity: 1;
+}
+
+html[data-theme="light"] #seccionDiagnosticos input,
+body.tema-claro #seccionDiagnosticos input,
+html[data-theme="light"] #seccionDiagnosticos select,
+body.tema-claro #seccionDiagnosticos select,
+html[data-theme="light"] #seccionDiagnosticos textarea,
+body.tema-claro #seccionDiagnosticos textarea {
+  background: var(--input-bg, #ffffff);
+  color: #1f2933;
+  border-color: var(--input-border, #b8cdbd);
+}
+
+html[data-theme="light"] #seccionDiagnosticos input::placeholder,
+body.tema-claro #seccionDiagnosticos input::placeholder,
+html[data-theme="light"] #seccionDiagnosticos textarea::placeholder,
+body.tema-claro #seccionDiagnosticos textarea::placeholder {
+  color: #52665a;
+  opacity: 1;
+}
+
+html[data-theme="light"] #seccionDiagnosticos .texto-suave,
 body.tema-claro #seccionDiagnosticos .texto-suave {
-  color: var(--cog-muted, #52665a) !important;
+  color: #52665a !important;
+  opacity: 1;
+}
+
+html[data-theme="light"] .diagnostico-opcion:hover,
+body.tema-claro .diagnostico-opcion:hover {
+  color: #1f2933;
+}
+
+html[data-theme="light"] .diagnostico-opcion:hover strong,
+body.tema-claro .diagnostico-opcion:hover strong,
+html[data-theme="light"] .diagnostico-opcion:hover span,
+body.tema-claro .diagnostico-opcion:hover span {
+  color: inherit;
+  opacity: 1;
+}
+
+html[data-theme="light"] .diagnostico-opcion:focus-visible,
+body.tema-claro .diagnostico-opcion:focus-visible {
+  outline: 2px solid #83a98f;
+  outline-offset: 2px;
 }
 
 .diagnostico-card .registro-top span:not(.diagnostico-principal-badge) {
