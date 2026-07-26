@@ -14,7 +14,7 @@ function puntoMedio(a, b) {
   return { clientX: (a.clientX + b.clientX) / 2, clientY: (a.clientY + b.clientY) / 2 };
 }
 
-export function configurarInteracciones({ root, onSelect, onClearSelection, onZoom, onReset, onFocus }) {
+export function configurarInteracciones({ root, onSelect, onClearSelection, onZoom, onReset, onFocus, onPan }) {
   const viewport = root.querySelector("[data-timeline-scroll]");
   const range = root.querySelector("[data-zoom-range]");
   const disposables = [];
@@ -162,7 +162,7 @@ export function configurarInteracciones({ root, onSelect, onClearSelection, onZo
     const focusViewportX = oldFocusX - viewport.scrollLeft;
     state.zoom = limitar(requestedZoom, MIN_ZOOM, MAX_ZOOM);
     updateRange();
-    onZoom?.(state.zoom, state.focusRatio, state.selectedGroupId, state.hasFocusMarker);
+    onZoom?.(state.zoom, state.focusRatio, state.selectedGroupId, state.hasFocusMarker, Number.isFinite(clientX) || state.hasFocusMarker);
     restoreFocusAfterZoom(focusViewportX);
   };
 
@@ -253,7 +253,7 @@ export function configurarInteracciones({ root, onSelect, onClearSelection, onZo
     const horizontal = Math.abs(event.deltaX) > Math.abs(event.deltaY);
     if (horizontal) {
       event.preventDefault();
-      viewport.scrollLeft += event.deltaX;
+      onPan?.(event.deltaX / Math.max(1, viewport.clientWidth));
       return;
     }
     if (event.deltaY !== 0) {
@@ -303,7 +303,8 @@ export function configurarInteracciones({ root, onSelect, onClearSelection, onZo
       viewport.setPointerCapture?.(event.pointerId);
     }
     if (Math.abs(delta) > 8) state.movedDuringDrag = true;
-    viewport.scrollLeft = state.dragScrollLeft - delta;
+    onPan?.(-delta / Math.max(1, viewport.clientWidth));
+    state.dragStartX = event.clientX;
   };
 
   const onPointerUp = (event) => {

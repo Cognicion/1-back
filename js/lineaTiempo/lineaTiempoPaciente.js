@@ -34,6 +34,11 @@ let permisos = { puedeLeer: false, puedeEscribir: false };
 let interacciones = null;
 let animacion = null;
 let zoomActual = 1;
+let rangoTotalInicioMs = null;
+let rangoTotalFinMs = null;
+let rangoVisibleInicioMs = null;
+let rangoVisibleFinMs = null;
+let centroTemporalMs = null;
 let focusRatio = 0.5;
 let focusCanvasX = null;
 let hasFocusMarker = false;
@@ -98,8 +103,68 @@ function fechaFormulario(fecha) {
   };
 }
 
+function limitar(valor, minimo, maximo) {
+  return Math.min(maximo, Math.max(minimo, valor));
+}
+
+function sincronizarRangoTotal() {
+  if (!eventos.length) return;
+  rangoTotalInicioMs = eventos[0].fechaEvento.getTime();
+  rangoTotalFinMs = eventos.at(-1).fechaEvento.getTime();
+  if (zoomActual === 1 || rangoVisibleInicioMs === null || rangoVisibleFinMs === null) {
+    rangoVisibleInicioMs = rangoTotalInicioMs;
+    rangoVisibleFinMs = rangoTotalFinMs;
+  }
+}
+
+function actualizarRangoVisible(zoom, focoRatio = null) {
+  if (rangoTotalInicioMs === null || rangoTotalFinMs === null) return;
+  const duracionTotal = Math.max(1, rangoTotalFinMs - rangoTotalInicioMs);
+  const duracionVisible = Math.max(86400000, duracionTotal / zoom);
+  if (zoom <= 1) {
+    rangoVisibleInicioMs = rangoTotalInicioMs;
+    rangoVisibleFinMs = rangoTotalFinMs;
+    centroTemporalMs = null;
+    return;
+  }
+  const duracionAnterior = Math.max(1, (rangoVisibleFinMs ?? rangoTotalFinMs) - (rangoVisibleInicioMs ?? rangoTotalInicioMs));
+  const centroDesdeFoco = Number.isFinite(focoRatio)
+    ? (rangoVisibleInicioMs ?? rangoTotalInicioMs) + limitar(focoRatio, 0, 1) * duracionAnterior
+    : null;
+  const centro = centroTemporalMs ?? centroDesdeFoco ?? rangoTotalFinMs;
+  let inicio = centro - duracionVisible / 2;
+  let fin = centro + duracionVisible / 2;
+  if (fin > rangoTotalFinMs) {
+    fin = rangoTotalFinMs;
+    inicio = fin - duracionVisible;
+  }
+  if (inicio < rangoTotalInicioMs) {
+    inicio = rangoTotalInicioMs;
+    fin = inicio + duracionVisible;
+  }
+  rangoVisibleInicioMs = inicio;
+  rangoVisibleFinMs = fin;
+  centroTemporalMs = (inicio + fin) / 2;
+}
+
+function desplazarVentanaTemporal(proporcion) {
+  if (zoomActual <= 1 || rangoVisibleInicioMs === null || rangoVisibleFinMs === null) return;
+  const duracion = rangoVisibleFinMs - rangoVisibleInicioMs;
+  const total = rangoTotalFinMs - rangoTotalInicioMs;
+  let inicio = rangoVisibleInicioMs + proporcion * duracion;
+  inicio = limitar(inicio, rangoTotalInicioMs, rangoTotalFinMs - duracion);
+  rangoVisibleInicioMs = inicio;
+  rangoVisibleFinMs = inicio + duracion;
+  centroTemporalMs = inicio + duracion / 2;
+}
+
 function renderizarVista() {
-  const rango = eventos.length ? { minimo: eventos[0].fechaEvento, maximo: eventos.at(-1).fechaEvento, duracion: eventos.at(-1).fechaEvento - eventos[0].fechaEvento } : { minimo: null, maximo: null, duracion: 0 };
+  sincronizarRangoTotal();
+  const rango = eventos.length ? {
+    minimo: new Date(rangoVisibleInicioMs),
+    maximo: new Date(rangoVisibleFinMs),
+    duracion: Math.max(0, rangoVisibleFinMs - rangoVisibleInicioMs)
+  } : { minimo: null, maximo: null, duracion: 0 };
   const shell = root.querySelector("[data-timeline-shell]");
   if (shell) shell.hidden = !eventos.length;
   renderizarLineaTiempo(root, eventos, rango, zoomActual, { focusRatio, focusCanvasX, hasFocusMarker, selectedGroupId });
@@ -228,6 +293,7 @@ function seleccionarEventoLineaTiempo(eventId, marcador) {
     console.warn("El marcador seleccionado no contiene un evento valido.");
     return;
   }
+  centroTemporalMs = evento.fechaEvento.getTime();
   abrirVentanaFlotanteEvento(evento, marcador);
 }
 
@@ -515,6 +581,9 @@ async function inicializarLineaTiempoPaciente() {
     onClearSelection: () => { selectedGroupId = null; cerrarDetalle(); },
     onFocus: ({ focusRatio: ratio, focusCanvasX: canvasX, hasFocusMarker: markerVisible }) => {
       focusRatio = ratio;
+      if (rangoVisibleInicioMs !== null && rangoVisibleFinMs !== null) {
+        centroTemporalMs = rangoVisibleInicioMs + ratio * (rangoVisibleFinMs - rangoVisibleInicioMs);
+      }
       focusCanvasX = canvasX;
       hasFocusMarker = markerVisible;
       const marcador = root.querySelector("[data-timeline-focus-marker]");
@@ -523,8 +592,9 @@ async function inicializarLineaTiempoPaciente() {
         if (markerVisible && Number.isFinite(canvasX)) marcador.style.left = `${canvasX}px`;
       }
     },
-    onZoom: (zoom) => { zoomActual = zoom; renderizarVista(); },
-    onReset: () => { zoomActual = 1; renderizarVista(); }
+    onZoom: (zoom, ratio, _grupoId, _hasMarker, tieneFocoTemporal) => { zoomActual = zoom; actualizarRangoVisible(zoom, tieneFocoTemporal ? ratio : null); renderizarVista(); },
+    onPan: (proporcion) => { desplazarVentanaTemporal(proporcion); renderizarVista(); },
+    onReset: () => { zoomActual = 1; actualizarRangoVisible(1); renderizarVista(); }
   });
   animacion = iniciarAnimacionADN(root.querySelector("[data-timeline-dna]"));
   await cargarLineaTiempo();

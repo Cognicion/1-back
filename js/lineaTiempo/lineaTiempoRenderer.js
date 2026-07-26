@@ -42,11 +42,15 @@ export function renderizarLineaTiempo(root, eventos, rango, zoom = 1, opciones =
   if (!canvas) return;
   canvas.replaceChildren();
   canvas.style.setProperty("--timeline-zoom", zoom);
-  const eventosOrdenados = ordenarEventosPorFecha(eventos);
+  const eventosOrdenados = ordenarEventosPorFecha(eventos).filter((evento) => {
+    const inicio = evento.fechaEvento.getTime();
+    const fin = evento.fechaFin?.getTime?.() || inicio;
+    return fin >= rango.minimo.getTime() && inicio <= rango.maximo.getTime();
+  });
   const grupos = agruparEventosPorFecha(eventosOrdenados);
   const posiciones = calcularPosiciones(eventosOrdenados, rango);
   const posicionPorId = new Map(posiciones.map((item) => [item.evento.id, item.posicion]));
-  const marcas = generarMarcasTemporales(rango);
+  const marcas = generarMarcasTemporales(rango, canvas.clientWidth || 900);
   const fragmento = document.createDocumentFragment();
 
   const eje = document.createElement("div");
@@ -98,7 +102,6 @@ export function renderizarLineaTiempo(root, eventos, rango, zoom = 1, opciones =
   });
 
   canvas.appendChild(fragmento);
-  canvas.style.setProperty("--timeline-content-width", `${Math.max(100, 100 * zoom)}%`);
   const primerMarcador = canvas.querySelector(".timeline-event__marker");
   if (primerMarcador) {
     const rect = primerMarcador.getBoundingClientRect();

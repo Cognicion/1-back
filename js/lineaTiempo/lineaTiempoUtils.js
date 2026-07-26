@@ -1,5 +1,5 @@
 export const MIN_ZOOM = 1;
-export const MAX_ZOOM = 12;
+export const MAX_ZOOM = 10;
 
 export const TIPOS_EVENTO = Object.freeze({
   ingreso: { etiqueta: "Ingreso", icono: "↳", color: "var(--timeline-type-ingreso)" },
@@ -98,25 +98,65 @@ export function calcularPosiciones(eventos = [], rango = calcularRangoTemporal(e
   }));
 }
 
-export function generarMarcasTemporales(rango, limite = 9) {
+export function seleccionarIntervaloTemporal(inicioMs, finMs, anchoDisponiblePx = 900) {
+  const duracionDias = Math.max(1, (finMs - inicioMs) / 86400000);
+  const maxEtiquetas = Math.max(5, Math.min(10, Math.floor(anchoDisponiblePx / 110)));
+  const opciones = [
+    [1, "dia"], [2, "dias"], [7, "semana"], [14, "semanas"], [30, "mes"], [91, "3-meses"],
+    [182, "6-meses"], [365, "anio"], [730, "2-anios"], [1826, "5-anios"], [3652, "10-anios"]
+  ];
+  return opciones.find(([dias]) => duracionDias / dias <= maxEtiquetas)?.[1] || "10-anios";
+}
+
+function avanzarIntervalo(fecha, intervalo) {
+  const siguiente = new Date(fecha);
+  if (intervalo === "dia") siguiente.setDate(siguiente.getDate() + 1);
+  else if (intervalo === "dias") siguiente.setDate(siguiente.getDate() + 2);
+  else if (intervalo === "semana") siguiente.setDate(siguiente.getDate() + 7);
+  else if (intervalo === "semanas") siguiente.setDate(siguiente.getDate() + 14);
+  else if (intervalo === "mes") siguiente.setMonth(siguiente.getMonth() + 1, 1);
+  else if (intervalo === "3-meses") siguiente.setMonth(siguiente.getMonth() + 3, 1);
+  else if (intervalo === "6-meses") siguiente.setMonth(siguiente.getMonth() + 6, 1);
+  else {
+    const anos = intervalo === "anio" ? 1 : intervalo === "2-anios" ? 2 : intervalo === "5-anios" ? 5 : 10;
+    siguiente.setFullYear(siguiente.getFullYear() + anos, 0, 1);
+  }
+  return siguiente;
+}
+
+function alinearIntervalo(fecha, intervalo) {
+  const alineada = new Date(fecha);
+  alineada.setHours(12, 0, 0, 0);
+  if (intervalo === "dia" || intervalo === "dias") return alineada;
+  if (intervalo === "semana" || intervalo === "semanas") {
+    alineada.setDate(alineada.getDate() - ((alineada.getDay() + 6) % 7));
+    return alineada;
+  }
+  if (intervalo.includes("mes")) {
+    alineada.setDate(1);
+    if (intervalo === "3-meses") alineada.setMonth(Math.floor(alineada.getMonth() / 3) * 3, 1);
+    if (intervalo === "6-meses") alineada.setMonth(Math.floor(alineada.getMonth() / 6) * 6, 1);
+    return alineada;
+  }
+  const anos = intervalo === "anio" ? 1 : intervalo === "2-anios" ? 2 : intervalo === "5-anios" ? 5 : 10;
+  alineada.setMonth(0, 1);
+  alineada.setFullYear(Math.ceil(alineada.getFullYear() / anos) * anos);
+  return alineada;
+}
+
+export function generarMarcasTemporales(rango, anchoDisponiblePx = 900) {
   if (!rango.minimo || !rango.maximo) return [];
   if (rango.duracion === 0) return [{ fecha: new Date(rango.minimo), posicion: 0.5, esExtremo: true, tipo: "extremo-inicial" }];
-  const duracionDias = rango.duracion / 86400000;
-  let unidad = "year";
-  if (duracionDias < 31) unidad = "day";
-  else if (duracionDias < 550) unidad = "month";
+  const inicioMs = rango.minimo.getTime();
+  const finMs = rango.maximo.getTime();
+  const intervalo = seleccionarIntervaloTemporal(inicioMs, finMs, anchoDisponiblePx);
   const marcas = [{ fecha: new Date(rango.minimo), posicion: 0, esExtremo: true, tipo: "extremo-inicial" }];
-  const cursor = new Date(rango.minimo);
-  cursor.setHours(0, 0, 0, 0);
-  if (unidad === "day") cursor.setDate(cursor.getDate() + 1);
-  else if (unidad === "month") cursor.setMonth(cursor.getMonth() + 1, 1);
-  else cursor.setFullYear(cursor.getFullYear() + 1, 0, 1);
-  while (cursor < rango.maximo && marcas.length < limite) {
+  let cursor = alinearIntervalo(rango.minimo, intervalo);
+  if (cursor <= rango.minimo) cursor = avanzarIntervalo(cursor, intervalo);
+  while (cursor < rango.maximo) {
     const posicion = (cursor - rango.minimo) / rango.duracion;
-    if (posicion > 0 && posicion < 1 && marcas.length < limite - 1) marcas.push({ fecha: new Date(cursor), posicion });
-    if (unidad === "day") cursor.setDate(cursor.getDate() + Math.max(1, Math.ceil(duracionDias / 8)));
-    else if (unidad === "month") cursor.setMonth(cursor.getMonth() + Math.max(1, Math.ceil(duracionDias / 240)), 1);
-    else cursor.setFullYear(cursor.getFullYear() + Math.max(1, Math.ceil(duracionDias / 3650)), 0, 1);
+    if (posicion > 0 && posicion < 1) marcas.push({ fecha: new Date(cursor), posicion });
+    cursor = avanzarIntervalo(cursor, intervalo);
   }
   marcas.push({ fecha: new Date(rango.maximo), posicion: 1, esExtremo: true, tipo: "extremo-final" });
   return [...new Map(marcas.map((marca) => [marca.fecha.getTime(), marca])).values()];

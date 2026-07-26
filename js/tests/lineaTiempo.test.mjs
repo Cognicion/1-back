@@ -10,7 +10,8 @@ import {
   ordenarEventosPorFecha,
   obtenerNombreCategoriaEvento,
   formatearOrigenEvento,
-  formatearImportanciaEvento
+  formatearImportanciaEvento,
+  seleccionarIntervaloTemporal
 } from "../lineaTiempo/lineaTiempoUtils.js";
 
 function evento(id, fecha) {
@@ -68,4 +69,13 @@ test("El detalle conserva cada dato clínico en su fuente semántica", () => {
   assert.equal(formatearOrigenEvento(actual.origen), "Manual");
   assert.equal(formatearOrigenEvento(legado.origen), "Automático");
   assert.equal(formatearImportanciaEvento(actual.importancia), "Alta");
+});
+
+test("Las marcas temporales seleccionan intervalos regulares según el rango visible", () => {
+  const inicio = new Date(1996, 10, 25).getTime();
+  const fin = new Date(2026, 5, 1).getTime();
+  assert.equal(seleccionarIntervaloTemporal(inicio, fin, 1000), "5-anios");
+  const marcas = generarMarcasTemporales({ minimo: new Date(inicio), maximo: new Date(fin), duracion: fin - inicio }, 1000);
+  const internas = marcas.slice(1, -1).map((marca) => marca.fecha.getFullYear());
+  assert.deepEqual(internas, [2000, 2005, 2010, 2015, 2020, 2025]);
 });
