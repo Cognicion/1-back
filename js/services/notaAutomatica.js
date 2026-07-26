@@ -1341,21 +1341,39 @@ function construirEvolucionNarrativaInstitucional(pipeline = {}, datosPaciente =
   return issues.some((issue) => issue.severity === "high") ? "" : salida;
 }
 
-function construirExamenMentalNarrativo(mentalStatusFindings = []) {
+export function validarExamenMentalNarrativo(texto = "") {
+  const value = String(texto || "").trim();
+  const issues = [];
+  if (!value) return issues;
+  if (/[¿?]/.test(value)) issues.push({ code: "mental_exam_question", severity: "high" });
+  if (/\b(?:doctor|me escucha|volumen|audio|antes de comenzar|consentimiento|plataforma)\b/i.test(value)) issues.push({ code: "mental_exam_technical_dialogue", severity: "high" });
+  if (/\b(?:cama_correspondiente|alino)\b|\[object Object\]|\b(?:evidence|clinicalFinding|sourceType)\s*:/i.test(value)) issues.push({ code: "mental_exam_placeholder_or_internal_data", severity: "high" });
+  if (value.length > 1800) issues.push({ code: "mental_exam_excessive_length", severity: "high" });
+  const sentences = value.split(/(?<=[.!])\s+/).map((item) => normalizar(item)).filter(Boolean);
+  if (new Set(sentences).size !== sentences.length) issues.push({ code: "mental_exam_repeated_fragment", severity: "high" });
+  if (/niega (?:ideas de muerte, )?ideaci[oó]n suicida/i.test(value) && /riesgo suicida:\s*(?:s[ií]|presente)/i.test(value)) issues.push({ code: "mental_exam_suicide_negation_conflict", severity: "high" });
+  if (/no refiere alteraciones sensoperceptivas/i.test(value) && /alucinaciones? (?:presentes|activas)/i.test(value)) issues.push({ code: "mental_exam_perception_negation_conflict", severity: "high" });
+  return issues;
+}
+
+function construirExamenMentalNarrativo(mentalStatusFindings = [], riskStatements = []) {
   const orden = [
     "apariencia", "conducta", "psicomotricidad", "actitud", "conciencia", "orientacion", "atencion",
     "lenguaje", "pensamiento", "sensopercepcion", "animo", "afecto", "juicio", "introspeccion", "control_impulsos"
   ];
   const porDominio = new Map();
   mentalStatusFindings.forEach((finding) => {
-    if (finding.evidenceType !== "observado" && finding.status !== "observado_durante_entrevista") return;
+    if (!finding.clinicalFinding) return;
     if (!porDominio.has(finding.domain)) porDominio.set(finding.domain, []);
-    porDominio.get(finding.domain).push(finding.text);
+    porDominio.get(finding.domain).push(finding.clinicalFinding);
   });
   const partes = orden
     .filter((domain) => porDominio.has(domain))
-    .map((domain) => `${domain.replaceAll("_", " ")}: ${Array.from(new Set(porDominio.get(domain))).join("; ")}`);
-  return partes.length ? partes.join(". ") + "." : "";
+    .map((domain) => Array.from(new Set(porDominio.get(domain))).join(" ").replace(/[.\s]+$/, ""));
+  const suicidal = riskStatements.filter((risk) => ["ideas_muerte", "ideacion_suicida", "intencion_suicida", "plan_suicida"].includes(risk.type));
+  const explicitNegations = suicidal.filter((risk) => risk.status === "negado");
+  if (explicitNegations.length) partes.push("Sin ideación suicida, intención ni planificación referidas durante la valoración; no se identifica riesgo suicida agudo con la información disponible");
+  return partes.length ? partes.filter(Boolean).join(". ") + "." : "";
 }
 
 function construirRiesgoEstructurado(riskStatements = []) {
@@ -1413,7 +1431,9 @@ function crearGeneratedClinicalText(pipeline = {}, datosPaciente = {}, options =
       && !["observado_durante_entrevista"].includes(s.assertionStatus)
   )));
   const physicalNeurologicalExam = textoSeguroNota(unirAfirmacionesClinicas(statements, enSecciones("exploracion_fisica", "signos_vitales")));
-  const mentalStatusExam = textoSeguroNota(construirExamenMentalNarrativo(pipeline.mentalStatusFindings || []));
+  const mentalCandidate = textoSeguroNota(construirExamenMentalNarrativo(pipeline.mentalStatusFindings || [], pipeline.riskStatements || []));
+  const mentalValidationIssues = validarExamenMentalNarrativo(mentalCandidate);
+  const mentalStatusExam = mentalValidationIssues.some((issue) => issue.severity === "high") ? "" : mentalCandidate;
   const results = textoSeguroNota(unirAfirmacionesClinicas(statements, enSecciones("resultados_auxiliares")));
   const analysisText = textoSeguroNota(construirAnalisisClinico(statements, pipeline.riskStatements || [], datosPaciente));
   const planText = textoSeguroNota(unirAfirmacionesClinicas(pipeline.planItems || [], () => true));
@@ -1434,7 +1454,7 @@ function crearGeneratedClinicalText(pipeline = {}, datosPaciente = {}, options =
       mentalStatusExam,
       results,
       sourceSegmentIds: statements.filter(enSecciones("signos_vitales", "exploracion_fisica", "examen_mental", "resultados_auxiliares")).map((s) => s.id),
-      provenance: [], unresolvedItems: [], validationIssues: []
+      provenance: [], unresolvedItems: mentalValidationIssues, validationIssues: mentalValidationIssues
     },
     analysis: {
       text: analysisText,

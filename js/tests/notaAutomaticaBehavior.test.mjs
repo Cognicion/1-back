@@ -4,12 +4,14 @@ import { TranscriptAssembler } from "../services/transcriptAssembler.js";
 import { DraftPersistenceService } from "../services/dictadoPersistence.js";
 import {
   detectarContradicciones,
+  detectarRiesgosEstructurados,
   ejecutarPipelineClinico,
+  extraerHallazgosMentales,
   extraerAfirmacionesClinicas,
   segmentarTranscripcion,
   validarAislamientoContexto
 } from "../services/clinicalPipeline.js";
-import { generarNotaAutomatica } from "../services/notaAutomatica.js";
+import { generarNotaAutomatica, validarExamenMentalNarrativo } from "../services/notaAutomatica.js";
 import { RuleBasedNoteGenerationProvider } from "../services/noteGenerationProviders.js";
 import { WebSpeechTranscriptionProvider } from "../services/transcriptionProviders.js";
 
@@ -45,6 +47,18 @@ assert.ok(contradiccion.contradictions[0].statementIds.length >= 2);
 const mental = ejecutarPipelineClinico("Durante la entrevista se observa lenguaje lento.");
 assert.ok(mental.mentalStatusFindings.some((finding) => finding.domain === "lenguaje"));
 assert.equal(mental.mentalStatusFindings.some((finding) => finding.domain === "orientacion"), false);
+
+// El examen mental usa síntesis clínica, no preguntas ni evidencia técnica de videollamada.
+const evidenciaTecnica = extraerHallazgosMentales([{
+  id: "tech", originalText: "Doctor, me escucha un poco bajito; ajustaré el volumen.", normalizedText: "Doctor, me escucha un poco bajito; ajustaré el volumen.", speaker: "clinician", speechAct: "question", assertionStatus: "afirmado"
+}]);
+assert.equal(evidenciaTecnica.length, 0);
+const riesgoPregunta = detectarRiesgosEstructurados([{
+  id: "risk-question", originalText: "¿Tiene ideación suicida?", speaker: "clinician", speechAct: "question", assertionStatus: "afirmado"
+}]);
+assert.equal(riesgoPregunta.length, 0);
+assert.equal(validarExamenMentalNarrativo("¿Doctor, me escucha? Riesgo suicida: sí.").some((issue) => issue.severity === "high"), true);
+assert.equal(validarExamenMentalNarrativo("Sin ideación suicida, intención ni planificación referidas durante la valoración; no se identifica riesgo suicida agudo con la información disponible.").length, 0);
 
 // Medicamentos, fracciones y propuestas no confirmadas.
 const medicamentos = ejecutarPipelineClinico("Indicar clonazepam ½ mg por la noche. Solicitar biometría hemática.");

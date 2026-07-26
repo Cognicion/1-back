@@ -1,1 +1,1 @@
-export const VOICE_NOTE_MODULE_VERSION = "v1.3";
+export const VOICE_NOTE_MODULE_VERSION = "v1.4";

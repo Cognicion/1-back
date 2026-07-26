@@ -539,12 +539,50 @@ export function extraerMedicamentos(statements = []) {
   });
 }
 
+function esEvidenciaTecnicaOInterrogatorio(texto = "", statement = {}) {
+  const value = textoPlano(texto);
+  return statement.speaker === "clinician"
+    || statement.speechAct === "question"
+    || /[¿?]|\b(?:doctor|me escucha|volumen|audio|videollamada|antes de comenzar|consentimiento|plataforma)\b/i.test(value);
+}
+
+function sintetizarHallazgoMental(domain = "", statement = {}) {
+  const source = textoPlano(statement.normalizedText || statement.originalText);
+  const normalized = normalizarComparacion(source);
+  if (!source || esEvidenciaTecnicaOInterrogatorio(source, statement)) return "";
+  const negado = statement.assertionStatus === ESTADOS_AFIRMACION.NEGADO;
+  if (domain === "sensopercepcion") {
+    if (/vehiculo|carro|ruido|entorno/.test(normalized) && /nervios|preocup|alert/.test(normalized)) {
+      return "Refiere nerviosismo transitorio ante estímulos ambientales, con juicio de realidad conservado.";
+    }
+    return negado ? "No refiere alteraciones sensoperceptivas." : "Alteraciones sensoperceptivas referidas; requiere integración clínica.";
+  }
+  if (domain === "actitud" && /cooperador|cooperadora/.test(normalized)) return "Se muestra cooperador durante el intercambio.";
+  if (domain === "conciencia" && /alerta/.test(normalized)) return "Alerta durante la valoración.";
+  if (domain === "orientacion" && /orientad/.test(normalized)) return negado ? "Orientación no confirmada." : "Orientación referida como conservada.";
+  if (domain === "atencion" && /concentr|atencion/.test(normalized)) return negado ? "Niega dificultades atencionales." : "Refiere dificultades de atención o concentración.";
+  if (domain === "lenguaje" && /lenguaje|verborrea|mutismo/.test(normalized)) return negado ? "Sin alteraciones del lenguaje referidas." : "Lenguaje valorable durante el intercambio; requiere integración clínica.";
+  if (domain === "animo" && /triste|eufor|animo/.test(normalized)) return negado ? "Niega alteraciones anímicas referidas." : "Estado de ánimo referido con sintomatología afectiva a integrar.";
+  if (domain === "pensamiento" && /pensamiento|fuga|disgreg|desorganiz/.test(normalized)) return negado ? "Sin alteraciones formales del pensamiento referidas." : "Contenido o curso del pensamiento requiere integración clínica.";
+  if (domain === "psicomotricidad" && /inquiet|acatis|agita/.test(normalized)) return "Refiere inquietud interna; no constituye observación psicomotriz directa.";
+  if (domain === "juicio" || domain === "introspeccion") return "Juicio o conciencia de enfermedad requieren integración con la entrevista clínica.";
+  return "";
+}
+
 export function extraerHallazgosMentales(statements = []) {
-  return statements.flatMap((s) => DOMINIOS_MENTALES.filter(([, regex]) => regex.test(s.originalText)).map(([domain]) => ({
-    id: id("mental"), domain, statementId: s.id, text: s.originalText, status: s.assertionStatus,
-    evidenceType: s.assertionStatus === ESTADOS_AFIRMACION.OBSERVADO ? "observado" : s.assertionStatus === ESTADOS_AFIRMACION.NEGADO ? "negado" : "referido",
-    provenance: s.provenance, reviewStatus: "pendiente"
-  })));
+  return statements.flatMap((s) => DOMINIOS_MENTALES
+    .filter(([, regex]) => regex.test(s.originalText || ""))
+    .map(([domain]) => {
+      const clinicalFinding = sintetizarHallazgoMental(domain, s);
+      if (!clinicalFinding) return null;
+      return {
+        id: id("mental"), domain, statementId: s.id,
+        evidence: String(s.originalText || "").slice(0, 240), clinicalFinding,
+        sourceType: s.assertionStatus === ESTADOS_AFIRMACION.OBSERVADO ? "observado" : "referido",
+        confidence: s.confidence ?? null, negationStatus: s.assertionStatus === ESTADOS_AFIRMACION.NEGADO ? "ausente" : "presente",
+        status: s.assertionStatus, provenance: s.provenance, reviewStatus: "pendiente"
+      };
+    }).filter(Boolean));
 }
 
 export function detectarContradicciones(statements = []) {
@@ -560,7 +598,7 @@ export function detectarContradicciones(statements = []) {
 }
 
 export function detectarRiesgosEstructurados(statements = []) {
-  return statements.flatMap((s) => RIESGOS.filter(([type, regex]) => regex.test(s.originalText) || coincideRiesgoNormalizado(type, s.originalText)).map(([type]) => ({
+  return statements.filter((s) => !esEvidenciaTecnicaOInterrogatorio(s.originalText, s)).flatMap((s) => RIESGOS.filter(([type, regex]) => regex.test(s.originalText) || coincideRiesgoNormalizado(type, s.originalText)).map(([type]) => ({
     id: id("riesgo"), type, statementId: s.id, text: s.originalText, status: s.assertionStatus,
     informant: s.informant, confidence: s.confidence, provenance: s.provenance,
     critical: ["ideacion_suicida", "plan_suicida", "intencion_suicida", "intento_suicida", "heteroagresividad", "intoxicacion", "delirium", "catatonia", "agresion_sexual"].includes(type),

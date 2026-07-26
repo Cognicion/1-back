@@ -12,8 +12,9 @@ import {
   prepararSubdivisionesAdaptativas,
   repairDuplicateAdaptiveBlockIds,
   validateAdaptiveManifestTree
-} from "./services/conversationSegmentationProviders.js?v=20260725-adaptive-split-v1-3";
+} from "./services/conversationSegmentationProviders.js?v=20260725-adaptive-split-v1-4";
 import { segmentarConversacionClinica } from "./services/clinicalPipeline.js";
+import { validarExamenMentalNarrativo } from "./services/notaAutomatica.js";
 import { VOICE_NOTE_MODULE_VERSION } from "./services/voiceNoteModuleVersion.js";
 import {
   VOICE_NOTE_FIELD_REGISTRY,
@@ -3362,6 +3363,17 @@ async function generarNota() {
   state.generated.encounterObservation = state.encounterObservation;
   registrarMentalExamGenerado(generated.sections?.mentalExam || generated.generatedClinicalText?.objective?.mentalExam || null);
   state.transferSections = crearTransferSections(generated, snapshot.correctedTranscript, crearPatientContext());
+  const mentalText = generated.sections?.mentalExam?.text
+    || generated.sections?.mentalExam?.narrative
+    || generated.generatedClinicalText?.objective?.mentalStatusExam
+    || generated.generatedClinicalText?.objective?.mentalExam?.text
+    || "";
+  const mentalIssues = validarExamenMentalNarrativo(mentalText);
+  if (mentalIssues.some((issue) => issue.severity === "high")) {
+    state.generated.mentalExamValidationIssues = mentalIssues;
+    state.transferSections = state.transferSections.filter((section) => section.fieldTarget !== "mentalStatusExam" && section.key !== "mentalStatusExam");
+    setText("voiceGenerationProgress", "La Evolución se conservó. El Examen mental requiere edición manual por contenido no clínico detectado y no se transferirá automáticamente.");
+  }
   const externalFailure = generated.metadata?.externalProviderFailure;
   setText("voiceProviderStatus", `Proveedor: ${generated.provider || "desconocido"} · estado: ${generated.providerStatus || generated.metadata?.generatedStatus || "en revision"}${externalFailure ? ` · causa fallback: ${externalFailure.code || externalFailure.name || "sin codigo"}` : ""}`);
   setText("voicePromptVersion", `Prompt: ${generated.promptVersion || generated.metadata?.promptVersion || "fallback local"}`);
