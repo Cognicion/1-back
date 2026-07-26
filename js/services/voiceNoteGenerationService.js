@@ -275,30 +275,48 @@ export function crearTransferSections(generada = {}, transcripcion = "", context
   const qualityIssues = [...validarCalidadNotaVoz(generada, transcripcion, contextoPaciente), ...extraIssues];
   const blocked = new Set(qualityIssues.filter((issue) => issue.severity === "high").map((issue) => issue.section));
   const secciones = obtenerSeccionesNormalizadas(generada);
+  const componentStatus = generada.componentStatus || {};
   const items = [
-    ["evolutionOrSubjective", "Evolucion/Subjetivo", secciones.evolutionOrSubjective],
+    ["evolutionOrSubjective", "Evolucion/Subjetivo", secciones.evolutionOrSubjective, true, componentStatus.evolution?.status],
     ["physicalNeurologicalExam", "Exploracion fisica", secciones.physicalNeurologicalExam],
-    ["mentalStatusExam", "Examen mental", secciones.mentalStatusExam],
+    ["mentalStatusExam", "Examen mental", secciones.mentalStatusExam, true, componentStatus.mentalStatusExam?.status],
     ["results", "Resultados", secciones.results],
-    ["analysis", "Comentario y analisis", secciones.analysis],
+    ["analysis", "Comentario y analisis", secciones.analysis, true, componentStatus.analysis?.status],
     ["plan", "Plan", secciones.plan]
   ];
 
   return items
-    .map(([key, title, content]) => ({
-      key,
-      title,
-      content,
-      field: VOICE_NOTE_FIELD_REGISTRY[key],
-      include: Boolean(content) && !blocked.has(key),
-      blocked: blocked.has(key),
-      warnings: qualityIssues.filter((issue) => issue.section === key),
-      mode: "insert_if_empty",
-      sourceSegmentIds: generada.generatedClinicalText?.[key]?.sourceSegmentIds
+    .map(([key, title, content, required = false, status = ""]) => {
+      const resolvedStatus = status || (content ? "valid" : required ? "missing" : "not_requested");
+      const sectionWarnings = qualityIssues.filter((issue) => issue.section === key);
+      const sectionBlocked = blocked.has(key) || (required && resolvedStatus !== "valid");
+      if (required && resolvedStatus !== "valid") {
+        sectionWarnings.push({
+          category: "Componente incompleto",
+          section: key,
+          severity: "high",
+          code: `component_${resolvedStatus}`,
+          message: resolvedStatus === "insufficient" ? "No hay evidencia suficiente para generar este componente." : "El componente obligatorio no fue generado o fue rechazado."
+        });
+      }
+      return {
+        key,
+        fieldTarget: key,
+        title,
+        content,
+        required,
+        status: resolvedStatus,
+        field: VOICE_NOTE_FIELD_REGISTRY[key],
+        include: Boolean(content) && !sectionBlocked,
+        blocked: sectionBlocked,
+        warnings: sectionWarnings,
+        mode: "insert_if_empty",
+        sourceSegmentIds: generada.generatedClinicalText?.[key]?.sourceSegmentIds
         || generada[key]?.sourceSegmentIds
         || []
-    }))
-    .filter((item) => item.content);
+      };
+    })
+    .filter((item) => item.content || item.required);
 }
 
 export function agruparAdvertenciasVoz(issues = []) {

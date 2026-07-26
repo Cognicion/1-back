@@ -19,12 +19,12 @@ Eres un asistente especializado en documentacion psiquiatrica institucional en e
 
 Recibiras una segmentacion conversacional revisada con roles y actos comunicativos. Usa esa segmentacion como fuente principal; no vuelvas a segmentar toda la entrevista.
 
-Genera la seccion evolution y, cuando existan datos sustentados, un Examen mental preliminar. No generes analisis ni plan.
+Genera las secciones evolution, mentalExam y analysis cuando existan datos sustentados. No generes plan.
 
 Reglas clinicas:
 - Redacta en tercera persona, con lenguaje medico formal e institucional.
 - Usa datos administrativos del patientContext como prioridad para nombre, edad, sexo, servicio, encuentro, dia de estancia y criterio.
-- Si patientContext.hospitalizationDay es null o no esta disponible, no escribas "dia 0" ni inventes dia de estancia. Usa una construccion como "quien permanece en estancia intrahospitalaria en el servicio especial de OBSERVACION" si el servicio esta disponible.
+- Si patientContext.hospitalizationDay es null o no esta disponible, no escribas "dia 0" ni inventes dia de estancia. No deduzcas atencion ambulatoria por videollamada ni combines "ambulatoria" con "estancia" o un servicio de observacion; si el contexto asistencial es ambiguo, omitelo y marcala en warnings.
 - Si falta el criterio de ingreso, omitelo; no escribas "no especificado", "actual", "pendiente" ni sustitutos administrativos dentro del cuerpo clinico.
 - No infieras sexo por nombre.
 - No inventes informacion ni completes hallazgos normales.
@@ -53,6 +53,7 @@ Estilo de evolution:
 - Si modality es videollamada, redacta "valorado mediante videollamada" y limita hallazgos a lo observable por camara. Si modality es llamada telefonica, no generes apariencia, contacto visual, marcha, higiene ni psicomotricidad.
 - Para mentalExam, incluye solo componentes sustentados por transcript_explicit, transcript_clinical_inference revisable, clinician_visual_observation o clinician_manual_entry. No inventes hallazgos normales. No asumas orientacion global, juicio conservado, ausencia de riesgo ni ausencia de alteraciones sensoperceptivas si no fueron explorados.
 - La transcripcion Web Speech API no prueba volumen, prosodia, tono real, velocidad acustica ni latencia temporal exacta. No los presentes como observados salvo dictado explicito del profesional.
+- Para analysis, redacta una sintesis clinica breve y distinta de evolution, limitada a sintomas, respuesta y adherencia referidas, efectos adversos, consumo, funcionamiento, riesgo actual y necesidades de seguimiento cuando existan. No inventes diagnosticos, causalidad, estabilidad absoluta, factores protectores ni indicaciones farmacologicas. Si no hay evidencia suficiente, devuelve status "insufficient" y texto vacio.
 
 Devuelve JSON estricto con este esquema:
 {
@@ -70,6 +71,14 @@ Devuelve JSON estricto con este esquema:
       "sourceUtteranceIds": [],
       "sourceObservationIds": [],
       "selectedQuoteIds": [],
+      "confidence": null,
+      "requiresReview": true,
+      "warnings": []
+    },
+    "analysis": {
+      "text": "",
+      "status": "valid|insufficient",
+      "sourceUtteranceIds": [],
       "confidence": null,
       "requiresReview": true,
       "warnings": []
@@ -1166,6 +1175,13 @@ function validateSemanticFidelity(text = "", coverage = {}) {
       });
     }
   }
+  if (/\b(?:estancia|atencion) ambulatoria\b.{0,100}\b(?:observacion|observaci[oó]n|estancia)\b/i.test(clean)) {
+    issues.push({
+      code: "contradictory_care_setting",
+      message: "La Evolucion combina modalidades asistenciales incompatibles.",
+      severity: "high"
+    });
+  }
   return issues;
 }
 
@@ -1493,17 +1509,73 @@ function buildMentalExamSection(payload = {}, providerMental = {}) {
   };
 }
 
+const PROVIDER_SECTION_ALIASES = {
+  evolution: "evolution",
+  evolucion: "evolution",
+  subjective: "evolution",
+  mentalexam: "mentalExam",
+  mentalstatus: "mentalExam",
+  mentalstatusexam: "mentalExam",
+  examenmental: "mentalExam",
+  analysis: "analysis",
+  analisis: "analysis",
+  clinicalanalysis: "analysis"
+};
+
+function normalizeProviderSections(parsed = {}) {
+  const source = parsed.sections && typeof parsed.sections === "object" ? parsed.sections : {};
+  const normalized = {};
+  const unknown = [];
+  Object.entries(source).forEach(([key, value]) => {
+    const canonical = PROVIDER_SECTION_ALIASES[normalizeForAccess(key).replace(/[^a-z]/g, "")];
+    if (!canonical) {
+      unknown.push(key);
+      return;
+    }
+    if (!normalized[canonical]) normalized[canonical] = value;
+  });
+  ["mentalStatus", "mentalStatusExam", "examenMental", "analysis", "analisis", "clinicalAnalysis"].forEach((key) => {
+    const canonical = PROVIDER_SECTION_ALIASES[normalizeForAccess(key).replace(/[^a-z]/g, "")];
+    if (canonical && !normalized[canonical] && parsed[key]) normalized[canonical] = parsed[key];
+  });
+  return {
+    sections: normalized,
+    unknown,
+    providerReturned: {
+      evolution: Boolean(normalized.evolution),
+      mentalStatusExam: Boolean(normalized.mentalExam),
+      analysis: Boolean(normalized.analysis)
+    }
+  };
+}
+
+function analizarEstadoSeccion(text = "", status = "") {
+  const clean = normalizeString(text);
+  if (!clean) return normalizeString(status).toLowerCase() === "insufficient" ? "insufficient" : "missing";
+  return "valid";
+}
+
+function analysisRepeatsEvolution(analysis = "", evolution = "") {
+  const analysisWords = normalizeForAccess(analysis).match(/[a-z]{4,}/g) || [];
+  const evolutionWords = new Set(normalizeForAccess(evolution).match(/[a-z]{4,}/g) || []);
+  if (analysisWords.length < 12) return false;
+  const shared = analysisWords.filter((word) => evolutionWords.has(word)).length;
+  return shared / analysisWords.length > 0.88;
+}
+
 function validateProviderResult({ parsed, payload, requestId, HttpsErrorClass, attempt = null }) {
   const stage = "schema_validation";
   if (!parsed || typeof parsed !== "object") {
     throw makeCallableError(HttpsErrorClass, "data-loss", "El proveedor no devolvio un objeto JSON interpretable.", { requestId, stage, retryable: true });
   }
-  const unknownSections = Object.keys(parsed.sections || {}).filter((key) => !["evolution", "mentalExam"].includes(key));
+  const normalizedProvider = normalizeProviderSections(parsed);
+  const unknownSections = normalizedProvider.unknown;
   if (unknownSections.length) {
     throw makeCallableError(HttpsErrorClass, "data-loss", "El proveedor devolvio secciones no solicitadas.", { requestId, stage, retryable: true });
   }
-  const rawEvolution = parsed.sections?.evolution || {};
-  const mentalExam = buildMentalExamSection(payload, parsed.sections?.mentalExam || {});
+  const rawEvolution = normalizedProvider.sections.evolution || {};
+  const rawAnalysis = normalizedProvider.sections.analysis || {};
+  const mentalExam = buildMentalExamSection(payload, normalizedProvider.sections.mentalExam || {});
   const text = applyDeterministicEvolutionCorrections(rawEvolution.text);
   const knownUtteranceIds = new Set(payload.transcript.utterances.map((utterance) => utterance.id));
   const manualObservationIds = new Set(buildManualObservationFacts(payload.encounterObservation || {}).map((item) => item.id));
@@ -1560,6 +1632,20 @@ function validateProviderResult({ parsed, payload, requestId, HttpsErrorClass, a
     });
   }
   warnings.push(...warningsForUnknownSpeakers(coverage));
+  const analysisText = applyDeterministicEvolutionCorrections(rawAnalysis.text || rawAnalysis.narrative || "");
+  const analysisStatus = analysisRepeatsEvolution(analysisText, text) ? "invalid" : analizarEstadoSeccion(analysisText, rawAnalysis.status);
+  const analysisWarnings = normalizeWarnings(rawAnalysis.warnings);
+  if (analysisStatus === "invalid") analysisWarnings.push({ code: "analysis_repeats_evolution", message: "El analisis repite excesivamente la evolucion.", severity: "high" });
+  const componentStatus = {
+    evolution: { status: "valid", validationCodes: [] },
+    mentalStatusExam: { status: analizarEstadoSeccion(mentalExam.text), validationCodes: [] },
+    analysis: { status: analysisStatus, validationCodes: analysisWarnings.filter((warning) => warning.severity === "high").map((warning) => warning.code) }
+  };
+  const componentTrace = {
+    evolution: { requested: true, providerReturned: normalizedProvider.providerReturned.evolution, parsed: Boolean(rawEvolution), normalized: Boolean(text), validated: true, status: componentStatus.evolution.status, length: text.length },
+    mentalStatusExam: { requested: true, providerReturned: normalizedProvider.providerReturned.mentalStatusExam, parsed: Boolean(normalizedProvider.sections.mentalExam), normalized: Boolean(mentalExam.text), validated: componentStatus.mentalStatusExam.status === "valid", status: componentStatus.mentalStatusExam.status, length: mentalExam.text.length },
+    analysis: { requested: true, providerReturned: normalizedProvider.providerReturned.analysis, parsed: Boolean(rawAnalysis), normalized: Boolean(analysisText), validated: componentStatus.analysis.status === "valid", status: componentStatus.analysis.status, length: analysisText.length }
+  };
 
   return {
     requestId,
@@ -1576,8 +1662,18 @@ function validateProviderResult({ parsed, payload, requestId, HttpsErrorClass, a
         requiresReview: rawEvolution.requiresReview !== false,
         warnings
       },
-      mentalExam
+      mentalExam: { ...mentalExam, status: componentStatus.mentalStatusExam.status },
+      analysis: {
+        text: analysisText,
+        status: analysisStatus,
+        sourceUtteranceIds: normalizeSourceUtteranceIds(rawAnalysis.sourceUtteranceIds),
+        confidence: Number.isFinite(Number(rawAnalysis.confidence)) ? Math.max(0, Math.min(1, Number(rawAnalysis.confidence))) : null,
+        requiresReview: rawAnalysis.requiresReview !== false,
+        warnings: analysisWarnings
+      }
     },
+    componentStatus,
+    componentTrace,
     globalWarnings: normalizeWarnings(parsed.globalWarnings)
   };
 }
@@ -1739,7 +1835,8 @@ async function runGenerateStructuredNoteFromDictation({
           promptVersion: NOTE_PROMPT_VERSION,
           schemaVersion: NOTE_SCHEMA_VERSION,
           validatorVersion: EVOLUTION_VALIDATOR_VERSION,
-          warningCount: result.globalWarnings.length + result.sections.evolution.warnings.length + (result.sections.mentalExam?.warnings?.length || 0)
+          warningCount: result.globalWarnings.length + result.sections.evolution.warnings.length + (result.sections.mentalExam?.warnings?.length || 0),
+          componentTrace: result.componentTrace
         });
         return result;
       } catch (error) {

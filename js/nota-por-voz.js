@@ -15,7 +15,7 @@ import {
 } from "./services/conversationSegmentationProviders.js?v=20260725-adaptive-split-v1-4";
 import { segmentarConversacionClinica } from "./services/clinicalPipeline.js";
 import { validarExamenMentalNarrativo } from "./services/notaAutomatica.js";
-import { VOICE_NOTE_MODULE_VERSION } from "./services/voiceNoteModuleVersion.js";
+import { VOICE_NOTE_MODULE_VERSION } from "./services/voiceNoteModuleVersion.js?v=20260726-complete-note-v1-42";
 import {
   VOICE_NOTE_FIELD_REGISTRY,
   VOICE_NOTE_PROMPT_VERSION,
@@ -29,7 +29,7 @@ import {
   guardarTranscripcionVozFirestore,
   leerNotaExistente,
   transferirNotaVozABorrador
-} from "./services/voiceNoteGenerationService.js?v=20260719-mental-auto";
+} from "./services/voiceNoteGenerationService.js?v=20260726-complete-note-v1-42";
 import { buscarBorradorNotaClinica } from "./services/notas.js?v=20260716-2";
 import {
   VOICE_NOTE_SESSION_SCHEMA_VERSION,
@@ -3362,7 +3362,7 @@ async function generarNota() {
   state.generated.generationPreferences = state.generationPreferences;
   state.generated.encounterObservation = state.encounterObservation;
   registrarMentalExamGenerado(generated.sections?.mentalExam || generated.generatedClinicalText?.objective?.mentalExam || null);
-  state.transferSections = crearTransferSections(generated, snapshot.correctedTranscript, crearPatientContext());
+  state.generated.componentStatus ||= {};
   const mentalText = generated.sections?.mentalExam?.text
     || generated.sections?.mentalExam?.narrative
     || generated.generatedClinicalText?.objective?.mentalStatusExam
@@ -3371,13 +3371,19 @@ async function generarNota() {
   const mentalIssues = validarExamenMentalNarrativo(mentalText);
   if (mentalIssues.some((issue) => issue.severity === "high")) {
     state.generated.mentalExamValidationIssues = mentalIssues;
-    state.transferSections = state.transferSections.filter((section) => section.fieldTarget !== "mentalStatusExam" && section.key !== "mentalStatusExam");
+    state.generated.componentStatus.mentalStatusExam = {
+      status: "invalid",
+      validationCodes: mentalIssues.filter((issue) => issue.severity === "high").map((issue) => issue.code)
+    };
     setText("voiceGenerationProgress", "La Evolución se conservó. El Examen mental requiere edición manual por contenido no clínico detectado y no se transferirá automáticamente.");
   }
+  state.transferSections = crearTransferSections(generated, snapshot.correctedTranscript, crearPatientContext());
+  const requiredSections = state.transferSections.filter((section) => section.required);
+  const missingSections = requiredSections.filter((section) => section.status !== "valid");
   const externalFailure = generated.metadata?.externalProviderFailure;
   setText("voiceProviderStatus", `Proveedor: ${generated.provider || "desconocido"} · estado: ${generated.providerStatus || generated.metadata?.generatedStatus || "en revision"}${externalFailure ? ` · causa fallback: ${externalFailure.code || externalFailure.name || "sin codigo"}` : ""}`);
   setText("voicePromptVersion", `Prompt: ${generated.promptVersion || generated.metadata?.promptVersion || "fallback local"}`);
-  setText("voiceSchemaStatus", `Esquema validado: ${state.transferSections.length ? generated.schemaVersion || VOICE_NOTE_SCHEMA_VERSION : "pendiente"} · ${generated.validatorVersion || VOICE_NOTE_VALIDATOR_VERSION}`);
+  setText("voiceSchemaStatus", `Esquema: ${missingSections.length ? "incompleto" : "validado"} · ${generated.schemaVersion || VOICE_NOTE_SCHEMA_VERSION} · ${generated.validatorVersion || VOICE_NOTE_VALIDATOR_VERSION}`);
   await guardarSesionVozFirestore({
     userId: state.user.uid,
     patientId: state.patientId,
@@ -3396,7 +3402,9 @@ async function generarNota() {
   });
   await guardarTranscripcionVozFirestore({ userId: state.user.uid, sessionId: snapshot.transcriptSessionId || "manual", transcript: snapshot });
   await guardarDraftGeneradoVozFirestore({ userId: state.user.uid, patientId: state.patientId, sessionId: snapshot.transcriptSessionId || "manual", generated });
-  setText("voiceGenerationProgress", generated.metadata?.processingDisclosure || `Evolucion generada en ${Math.round((Date.now() - startedAt) / 1000)} s. Revise el apartado antes de transferir.`);
+  setText("voiceGenerationProgress", missingSections.length
+    ? `Nota parcial: ${missingSections.map((section) => section.title).join(", ")} requiere revisión o edición manual. No se transferirá incompleta.`
+    : generated.metadata?.processingDisclosure || `Nota completa generada en ${Math.round((Date.now() - startedAt) / 1000)} s. Revise los tres apartados antes de transferir.`);
   await flushPersistenciaVoz("generation-complete");
   renderRevision();
   mostrarPaso("revisar");
@@ -3459,16 +3467,18 @@ function renderRevision() {
       </section>
     `;
   };
+  const etiquetaEstado = (estado) => ({ valid: "Generada", invalid: "Rechazada", missing: "Faltante", insufficient: "Información insuficiente", not_requested: "No solicitada" }[estado] || "Requiere revisión");
   contenedor.innerHTML = sections.length ? sections.map((section, index) => `
     <article class="voice-review-card">
       <header>
         <div>
           <small>Destino: ${escaparHTML(section.field?.label || "")}</small>
           <h3>${escaparHTML(section.title)}</h3>
+          <small>Estado: ${escaparHTML(etiquetaEstado(section.status))}</small>
         </div>
         <label><input type="checkbox" data-section-include="${index}" ${section.include ? "checked" : ""} ${section.blocked ? "disabled" : ""}> Incluir</label>
       </header>
-      ${section.blocked ? `<p class="voice-summary">No se puede transferir hasta corregir las advertencias criticas de este apartado.</p>` : ""}
+      ${section.blocked ? `<p class="voice-summary">No se puede transferir hasta corregir o completar este apartado obligatorio.</p>` : ""}
       <label>Modo de transferencia
         <select data-section-mode="${index}">
           <option value="insert_if_empty" ${section.mode === "insert_if_empty" ? "selected" : ""}>Insertar si esta vacio</option>
@@ -3507,6 +3517,12 @@ function renderRevision() {
     textarea.addEventListener("input", () => {
       const section = state.transferSections[Number(textarea.dataset.sectionContent)];
       section.content = textarea.value;
+      if (section.required && textarea.value.trim()) {
+        section.status = "valid";
+        section.blocked = false;
+        section.include = true;
+        section.manuallyReviewed = true;
+      }
       if (section.fieldTarget === "mentalStatusExam") {
         state.mentalExam.editedManually = true;
         state.mentalExam.generatedText = textarea.value;
@@ -3586,6 +3602,11 @@ async function transferir() {
   const selectedTarget = document.querySelector("input[name='voiceTransferTarget']:checked")?.value || "new";
   if (selectedTarget === "later") {
     setText("voiceTransferSummary", "Sesion conservada. Puedes volver despues desde este paciente.");
+    return;
+  }
+  const incompleteRequired = state.transferSections.filter((section) => section.required && (section.status !== "valid" || section.blocked || !section.include || !String(section.content || "").trim()));
+  if (incompleteRequired.length) {
+    alert(`No se puede transferir una nota incompleta. Revisa: ${incompleteRequired.map((section) => section.title).join(", ")}.`);
     return;
   }
   const sections = state.transferSections.filter((section) => section.include && !section.blocked && section.mode !== "exclude");

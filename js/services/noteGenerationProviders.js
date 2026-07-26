@@ -51,11 +51,16 @@ function normalizarPayloadEntrada(transcript, patient = {}, options = {}) {
   };
 }
 
+function obtenerSeccionExterna(sections = {}, aliases = []) {
+  return aliases.map((key) => sections?.[key]).find(Boolean) || {};
+}
+
 function seccionesExternasAGeneratedSections(data = {}) {
   if (Array.isArray(data.generatedSections)) return data.generatedSections;
-  if (data.sections?.evolution || data.sections?.mentalExam) {
-    const evolution = data.sections.evolution;
-    const mentalExam = data.sections.mentalExam;
+  if (data.sections?.evolution || data.sections?.mentalExam || data.sections?.mentalStatus || data.sections?.analysis || data.sections?.analisis) {
+    const evolution = obtenerSeccionExterna(data.sections, ["evolution", "evolucion", "subjective"]);
+    const mentalExam = obtenerSeccionExterna(data.sections, ["mentalExam", "mentalStatus", "mentalStatusExam", "examenMental"]);
+    const analysis = obtenerSeccionExterna(data.sections, ["analysis", "analisis", "clinicalAnalysis"]);
     const content = String(evolution?.text || "").trim();
     const mentalContent = String(mentalExam?.text || mentalExam?.narrative || "").trim();
     return [
@@ -87,6 +92,20 @@ function seccionesExternasAGeneratedSections(data = {}) {
         insertable: true,
         structuredComponents: mentalExam.components || [],
         warnings: mentalExam.warnings || []
+      } : null,
+      String(analysis?.text || analysis?.narrative || "").trim() ? {
+        id: "external-analysis",
+        section: "soap_analysis",
+        fieldTarget: "analysis",
+        title: "Análisis",
+        content: String(analysis.text || analysis.narrative || "").trim(),
+        sourceStatementIds: analysis.sourceUtteranceIds || [],
+        sourceUtteranceIds: analysis.sourceUtteranceIds || [],
+        accepted: false,
+        reviewStatus: "pendiente_revision",
+        version: 1,
+        insertable: true,
+        warnings: analysis.warnings || []
       } : null
     ].filter(Boolean);
   }
@@ -141,8 +160,9 @@ function seccionesExternasAGeneratedSections(data = {}) {
 function normalizarSalidaExterna(data = {}, payload = {}) {
   const generatedSections = seccionesExternasAGeneratedSections(data);
   if (!generatedSections.length) throw new Error("El proveedor no devolvio secciones validas.");
-  const evolution = data.sections?.evolution;
-  const mentalExam = data.sections?.mentalExam;
+  const evolution = obtenerSeccionExterna(data.sections, ["evolution", "evolucion", "subjective"]);
+  const mentalExam = obtenerSeccionExterna(data.sections, ["mentalExam", "mentalStatus", "mentalStatusExam", "examenMental"]);
+  const analysis = obtenerSeccionExterna(data.sections, ["analysis", "analisis", "clinicalAnalysis"]);
   return {
     ...data,
     provider: data.provider || "external",
@@ -177,7 +197,14 @@ function normalizarSalidaExterna(data = {}, payload = {}) {
         mentalStatusExam: mentalExam?.text || mentalExam?.narrative || "",
         mentalExam
       },
-      analysis: {},
+      analysis: {
+        text: analysis?.text || analysis?.narrative || "",
+        sourceSegmentIds: analysis?.sourceUtteranceIds || [],
+        sourceUtteranceIds: analysis?.sourceUtteranceIds || [],
+        warnings: analysis?.warnings || [],
+        requiresReview: analysis?.requiresReview !== false,
+        confidence: analysis?.confidence ?? null
+      },
       plan: {}
     } : (data.evolutionOrSubjective || data.subjective || data.objective || data.analysis || data.plan ? {
       evolutionOrSubjective: data.evolutionOrSubjective || data.subjective || {},
@@ -193,6 +220,11 @@ function normalizarSalidaExterna(data = {}, payload = {}) {
     diagnosisStatements: data.diagnosisProposals || data.diagnosisStatements || [],
     planItems: data.planItems || [],
     medicalOrderProposals: data.indicationProposals || data.medicalOrderProposals || [],
+    componentStatus: data.componentStatus || {
+      evolution: { status: evolution?.text ? "valid" : "missing" },
+      mentalStatusExam: { status: mentalExam?.text || mentalExam?.narrative ? "valid" : "missing" },
+      analysis: { status: analysis?.status || (analysis?.text || analysis?.narrative ? "valid" : "missing") }
+    },
     validationIssues: data.validationIssues || data.globalWarnings || evolution?.warnings || [],
     insertionAllowed: false,
     reviewStatus: "pendiente"

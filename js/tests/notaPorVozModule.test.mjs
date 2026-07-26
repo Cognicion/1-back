@@ -101,6 +101,12 @@ const external = new ExternalStructuredNoteGenerationProvider({
           confidence: 0.8,
           requiresReview: true,
           warnings: []
+        },
+        analysis: {
+          text: "Síntesis clínica independiente para revisión.",
+          sourceUtteranceIds: ["utt-1"],
+          requiresReview: true,
+          warnings: []
         }
       },
       globalWarnings: []
@@ -129,7 +135,8 @@ const generated = await external.generate({
 
 assert.ok(generated.generatedSections.some((section) => section.section === "soap_subjective"));
 assert.ok(generated.generatedSections.some((section) => section.section === "soap_mental_status"));
-assert.equal(generated.generatedSections.some((section) => section.fieldTarget === "analysis"), false);
+assert.ok(generated.generatedSections.some((section) => section.fieldTarget === "analysis"));
+assert.equal(generated.componentStatus.analysis.status, "valid");
 assert.equal(generated.generatedSections.some((section) => section.section === "evaluacion_riesgo"), false);
 
 const audio = new AudioCaptureService();

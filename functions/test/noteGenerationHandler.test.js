@@ -9,6 +9,7 @@ const {
   validateCoverageInclusion,
   buildEvolutionCoverage,
   buildRetryInstruction,
+  validateProviderResult,
   buildMentalExamSection,
   requiredInstitutionalFormatPermission,
   runGenerateStructuredNoteFromDictation
@@ -224,6 +225,35 @@ assert.deepEqual(result.sections.evolution.sourceUtteranceIds, ["utt-1", "utt-2"
 assert.ok(result.sections.mentalExam);
 assert.ok(Array.isArray(result.sections.mentalExam.components));
 assert.equal(result.sections.mentalExam.components.some((component) => component.domain === "orientation"), false, "no debe inventar orientacion global");
+assert.equal(result.componentStatus.analysis.status, "missing");
+
+// Respuesta completa: evolución, examen mental y análisis se conservan como componentes separados.
+const completeResult = await runWithOutput(JSON.stringify({
+  sections: {
+    evolution: { text: validEvolution, sourceUtteranceIds: ["utt-1", "utt-2", "utt-3", "utt-4", "utt-5"], requiresReview: true },
+    mentalExam: { narrative: "Hallazgos sustentados para revisión clínica.", components: [], requiresReview: true },
+    analysis: { text: "Se trata de paciente con mejoría sintomática referida y negación actual de ideación suicida; requiere seguimiento clínico.", sourceUtteranceIds: ["utt-2", "utt-3"], requiresReview: true }
+  },
+  globalWarnings: []
+}));
+assert.equal(completeResult.componentStatus.evolution.status, "valid");
+assert.equal(completeResult.componentStatus.mentalStatusExam.status, "valid");
+assert.equal(completeResult.componentStatus.analysis.status, "valid");
+assert.match(completeResult.sections.analysis.text, /seguimiento clínico/i);
+
+// Alias válidos del proveedor se normalizan sin perder Examen mental ni Análisis.
+const aliasResult = validateProviderResult({
+  parsed: {
+    sections: {
+      evolucion: { text: validEvolution, sourceUtteranceIds: ["utt-1", "utt-2", "utt-3", "utt-4", "utt-5"] },
+      examenMental: { narrative: "Hallazgos estructurados disponibles." },
+      analisis: { text: "Se trata de paciente en seguimiento, con integración clínica pendiente de revisión." }
+    }
+  },
+  payload: basePayload(), requestId: "note-alias", HttpsErrorClass: TestHttpsError, attempt: 1
+});
+assert.equal(aliasResult.componentStatus.mentalStatusExam.status, "valid");
+assert.equal(aliasResult.componentStatus.analysis.status, "valid");
 
 const mentalWithVisual = buildMentalExamSection(basePayload({
   encounterObservation: {
@@ -503,6 +533,8 @@ const singleParagraphAccepted = await runWithOutput(JSON.stringify({
   globalWarnings: []
 }), carlosPayload());
 assert.equal(singleParagraphAccepted.sections.evolution.text, carlosSingleParagraph);
+
+assert.ok(validateSemanticFidelity("Paciente en estancia ambulatoria en el servicio de Observación.", { explorationMatrix: [] }).some((issue) => issue.code === "contradictory_care_setting" && issue.severity === "high"));
 
 // La advertencia de un solo párrafo no oculta una contradicción clínica real.
 await assert.rejects(
