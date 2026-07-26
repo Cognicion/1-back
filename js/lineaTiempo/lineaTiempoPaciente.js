@@ -737,12 +737,15 @@ function asegurarSeccionDeteccion() {
   seccion = document.createElement("section");
   seccion.className = "timeline-detected";
   seccion.dataset.detectedEventsSection = "";
-  seccion.innerHTML = `<header class="timeline-detected__header"><button type="button" class="timeline-detected__toggle" data-action="toggle-detected-events" aria-expanded="false"><span>Eventos detectados</span><strong data-detected-count>0 pendientes</strong></button><div class="timeline-detected__actions"><select class="timeline-detected__filter" data-detected-filter aria-label="Filtrar eventos detectados"><option value="todos">Todos</option><option value="alta">Alta confianza</option><option value="revision">Revision adicional</option><option value="sin_fecha">Sin fecha definida</option></select><button type="button" class="timeline-button timeline-button--primary" data-action="search-detected-events">Buscar nuevos eventos</button><button type="button" class="timeline-button" data-action="reanalyze-detected-events">Volver a analizar fuentes</button><button type="button" class="timeline-button" data-action="toggle-discarded-events">Mostrar descartados</button></div></header><p class="timeline-detected__progress" data-detected-progress hidden></p><p class="timeline-detected__status" data-detected-status>No se han buscado eventos nuevos.</p><div class="timeline-detected__body" data-detected-body hidden></div>`;
+  seccion.innerHTML = `<header class="timeline-detected__header"><button type="button" class="timeline-detected__toggle" data-action="toggle-detected-events" aria-expanded="false"><span>Eventos detectados</span><strong data-detected-count>0 pendientes</strong></button><div class="timeline-detected__actions"><select class="timeline-detected__filter" data-detected-filter aria-label="Filtrar eventos detectados"><option value="todos">Todos</option><option value="notas">Notas</option><option value="historia">Historia clinica</option><option value="estudios">Estudios</option><option value="alta">Alta confianza</option><option value="revision">Revision adicional</option><option value="sin_fecha">Sin fecha definida</option></select><button type="button" class="timeline-button timeline-button--primary" data-action="search-detected-events">Buscar nuevos eventos</button><button type="button" class="timeline-button" data-action="reanalyze-detected-events">Volver a analizar fuentes</button><button type="button" class="timeline-button" data-action="toggle-discarded-events">Mostrar descartados</button></div></header><p class="timeline-detected__progress" data-detected-progress hidden></p><p class="timeline-detected__status" data-detected-status>No se han buscado eventos nuevos.</p><div class="timeline-detected__body" data-detected-body hidden></div>`;
   root.querySelector("[data-timeline-shell]")?.after(seccion);
   return seccion;
 }
 
 function aplicarFiltroSugerenciasDeteccion(sugerencias = [], filtro = "todos") {
+  if (filtro === "notas") return sugerencias.filter((s) => s.origenTipo === "nota");
+  if (filtro === "historia") return sugerencias.filter((s) => s.origenTipo === "historia_clinica" || s.origenTipo === "paciente");
+  if (filtro === "estudios") return sugerencias.filter((s) => s.origenTipo === "estudio");
   if (filtro === "alta") return sugerencias.filter((s) => s.nivelConfianza === "alta" || Number(s.confianza || 0) >= 0.85);
   if (filtro === "revision") return sugerencias.filter((s) => s.nivelConfianza === "baja" || Number(s.confianza || 0) < 0.6 || s.requiereRevisionFecha === true);
   if (filtro === "sin_fecha") return sugerencias.filter((s) => !s.fechaInicioISO);
@@ -775,6 +778,11 @@ function renderizarSugerenciasDeteccion(sugerencias = [], mostrarDescartados = f
     card.querySelector("[data-detected-field='fechaFinISO']").value = s.fechaFinISO || "";
     card.querySelector("[data-detected-field='importancia']").value = s.importanciaSugerida || "media";
     card.querySelector("[data-detected-field='descripcion']").value = s.descripcionSugerida || "";
+    const etiquetaFuente = [s.sourceLabel || s.origenSubtipo || s.origenTipo || "fuente clinica", s.origenSeccion].filter(Boolean).join(", ");
+    const fuenteNodo = card.querySelector(".timeline-detected-card__source");
+    if (fuenteNodo) fuenteNodo.textContent = `Detectado en: ${etiquetaFuente}${s.origenFechaISO ? ` del ${s.origenFechaISO}` : ""} · ${s.origenDeteccion || "narrativo"} · Sujeto: ${s.sujeto || "paciente"}`;
+    const resumenFragmento = card.querySelector(".timeline-detected-card__fragment summary");
+    if (resumenFragmento) resumenFragmento.textContent = "Fragmento clinico de soporte";
     card.querySelector(".timeline-detected-card__fragment p").textContent = s.fragmentoSoporte || "";
     const acciones = card.querySelector(".timeline-detected-card__actions");
     if (s.estado === ESTADOS_DETECCION.descartado) acciones.innerHTML = '<button type="button" class="timeline-button" data-action="restore-detected-event">Restaurar</button>';
@@ -1045,7 +1053,15 @@ function resumenDeteccionVacio() {
     eventosDescartados: 0,
     duplicadosDetectados: 0,
     sugerenciasGuardadas: 0,
-    sugerenciasPendientes: 0
+    sugerenciasPendientes: 0,
+    notasAnalizadas: 0,
+    historiasAnalizadas: 0,
+    estudiosNarrativosAnalizados: 0,
+    diagnosticosEstructuradosAnalizados: 0,
+    tratamientosEstructuradosAnalizados: 0,
+    candidatosNarrativos: 0,
+    candidatosEstructurados: 0,
+    administrativosDescartados: 0
   };
 }
 
@@ -1196,14 +1212,22 @@ async function inicializarDetectorEventosClinicosLocal() {
       const { fuentes, fechaNacimiento, contadoresPorTipo, errores } = await cargarFuentesClinicasDeteccion127();
       resumen.fuentesEncontradas = fuentes.length;
       resumen.fuentesConTexto = fuentes.filter((fuente) => String(fuente.textoAnalizable || "").trim()).length;
-      actualizarProgresoDeteccion(`Analizando ${resumen.fuentesConTexto} de ${resumen.fuentesEncontradas} documentos...`);
-      const resultadoDeteccion = detectarEventosEnFuentes({ fuentes, fechaNacimiento, pacienteId });
+      actualizarProgresoDeteccion("Analizando notas e historia clinica...");
+      const resultadoDeteccion = detectarEventosEnFuentes({ fuentes, fechaNacimiento, pacienteId, incluirEstructurados: false });
       resumen.fragmentosGenerados = resultadoDeteccion.fragmentosGenerados;
       resumen.fragmentosConExpresionesTemporales = resultadoDeteccion.fragmentosConExpresionesTemporales;
       resumen.eventosExtraidos = resultadoDeteccion.eventosExtraidos;
       resumen.eventosNormalizados = resultadoDeteccion.eventosNormalizados;
       resumen.eventosDescartados = resultadoDeteccion.eventosDescartados;
       resumen.duplicadosDetectados = resultadoDeteccion.duplicadosDetectados;
+      resumen.notasAnalizadas = contadoresPorTipo.notas || 0;
+      resumen.historiasAnalizadas = contadoresPorTipo.historiaClinica || 0;
+      resumen.estudiosNarrativosAnalizados = contadoresPorTipo.estudios || 0;
+      resumen.diagnosticosEstructuradosAnalizados = 0;
+      resumen.tratamientosEstructuradosAnalizados = 0;
+      resumen.candidatosNarrativos = resultadoDeteccion.candidatosNarrativos || 0;
+      resumen.candidatosEstructurados = resultadoDeteccion.candidatosEstructurados || 0;
+      resumen.administrativosDescartados = resultadoDeteccion.administrativosDescartados || 0;
       actualizarProgresoDeteccion("Comparando duplicados...");
       const existentes = await cargarSugerenciasDetectadas();
       const persistencia = await persistirSugerenciasDetectadas127(resultadoDeteccion.eventos, existentes, forzarReanalisis);
@@ -1233,7 +1257,7 @@ async function inicializarDetectorEventosClinicosLocal() {
         totalGuardadas: sugerencias.length,
         analizado: true
       });
-      actualizarProgresoDeteccion(resumen.sugerenciasGuardadas ? `${resumen.sugerenciasGuardadas} eventos detectados.` : "");
+      actualizarProgresoDeteccion(`${resumen.notasAnalizadas} notas analizadas · ${resumen.historiasAnalizadas} historia clinica analizada · ${resumen.estudiosNarrativosAnalizados} estudios narrativos analizados · ${resumen.candidatosNarrativos} eventos narrativos detectados.`);
     } catch (error) {
       if (status()) status().textContent = "No fue posible buscar eventos en este momento.";
       console.warn("[Eventos detectados] Fallo tecnico", error?.code || error?.message || error);

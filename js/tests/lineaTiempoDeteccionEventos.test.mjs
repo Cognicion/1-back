@@ -20,7 +20,8 @@ function detectar(fuentes, opts = {}) {
   return detectarEventosEnFuentes({
     fuentes: Array.isArray(fuentes) ? fuentes : [fuentes],
     fechaNacimiento: opts.fechaNacimiento || null,
-    pacienteId: "paciente-prueba"
+    pacienteId: "paciente-prueba",
+    incluirEstructurados: opts.incluirEstructurados === true
   });
 }
 
@@ -34,6 +35,7 @@ function detectar(fuentes, opts = {}) {
   const resultado = detectar(fuente("Hace una semana presentó una crisis de ansiedad.", "2026-07-20"));
   assert.equal(resultado.eventosNormalizados, 1);
   assert.equal(resultado.eventos[0].fechaInicioISO, "2026-07-13");
+  assert.equal(resultado.eventos[0].origenDeteccion, "narrativo");
 }
 
 {
@@ -79,6 +81,28 @@ function detectar(fuentes, opts = {}) {
 }
 
 {
+  const resultado = detectar(fuente("En el internamiento previo presentó agitación grave."));
+  assert.equal(resultado.eventosNormalizados, 1);
+  assert.equal(resultado.eventos[0].fechaInicioISO, null);
+  assert.equal(resultado.eventos[0].precisionTemporal, "contextual");
+  assert.equal(resultado.eventos[0].requiereRevisionFecha, true);
+}
+
+{
+  const resultado = detectar(fuente("Inició consumo a los 15 años, fue hospitalizado en 2020 y suspendió tratamiento hace tres meses.", "2026-07-20"), {
+    fechaNacimiento: new Date(2000, 0, 1, 12)
+  });
+  assert.equal(resultado.eventosNormalizados, 3);
+  assert.deepEqual(resultado.eventos.map((e) => e.fechaInicioISO).sort(), ["2015-01-01", "2020-01-01", "2026-04-20"]);
+}
+
+{
+  const resultado = detectar(fuente("Nota firmada el 20/07/2026."));
+  assert.equal(resultado.eventosNormalizados, 0);
+  assert.equal(resultado.administrativosDescartados, 1);
+}
+
+{
   const estudio = crearFuenteClinicaComun({
     origenId: "estudio-1",
     origenTipo: "estudio",
@@ -88,8 +112,31 @@ function detectar(fuentes, opts = {}) {
     datos: { nombre: "Resonancia magnetica", fecha: "2025-03-15", resultado: "Sin datos de lesion aguda." }
   });
   const resultado = detectar(estudio);
-  assert.equal(resultado.eventosNormalizados, 1);
-  assert.equal(resultado.eventos[0].tituloSugerido, "Estudio clinico");
+  assert.equal(resultado.eventosNormalizados, 0);
+}
+
+{
+  const diagnosticoSinFechaClinica = crearFuenteClinicaComun({
+    origenId: "dx-sin-fecha",
+    origenTipo: "diagnostico",
+    fechaDocumento: "2026-07-20",
+    tituloDocumento: "Diagnosticos",
+    datos: { diagnostico: "Depresión", createdAt: "2026-07-20" }
+  });
+  assert.equal(detectar(diagnosticoSinFechaClinica).eventosNormalizados, 0);
+  assert.equal(detectar(diagnosticoSinFechaClinica, { incluirEstructurados: true }).eventosNormalizados, 0);
+}
+
+{
+  const tratamientoSinFechaClinica = crearFuenteClinicaComun({
+    origenId: "tx-sin-fecha",
+    origenTipo: "tratamiento",
+    fechaDocumento: "2026-07-20",
+    tituloDocumento: "Tratamiento e indicaciones",
+    datos: { medicamento: "Sertralina", createdAt: "2026-07-20" }
+  });
+  assert.equal(detectar(tratamientoSinFechaClinica).eventosNormalizados, 0);
+  assert.equal(detectar(tratamientoSinFechaClinica, { incluirEstructurados: true }).eventosNormalizados, 0);
 }
 
 {
@@ -105,11 +152,12 @@ function detectar(fuentes, opts = {}) {
     origenTipo: "tratamiento",
     fechaDocumento: "2024-01-10",
     tituloDocumento: "Tratamiento e indicaciones",
-    datos: { medicamento: "Sertralina", fechaInicio: "2024-01-10", fechaSuspension: "2024-03-20" }
+    datos: { medicamento: "Sertralina", fechaInicioTratamiento: "2024-01-10", fechaSuspensionTratamiento: "2024-03-20" }
   });
-  const resultado = detectar([diagnostico, tratamiento]);
+  const resultado = detectar([diagnostico, tratamiento], { incluirEstructurados: true });
   assert.equal(resultado.eventosNormalizados, 3);
   assert.equal(resultado.eventos.filter((e) => e.relevanciaClinica === "estructurada").length, 3);
+  assert.equal(resultado.eventos.filter((e) => e.origenDeteccion === "estructurado-clinico").length, 3);
 }
 
 {

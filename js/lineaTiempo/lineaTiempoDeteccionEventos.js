@@ -1,5 +1,5 @@
 export const DEBUG_EVENT_DETECTION = false;
-export const DETECTED_EVENTS_DEBUG_LABEL = "[Eventos detectados 1.27]";
+export const DETECTED_EVENTS_DEBUG_LABEL = "[Eventos detectados 1.28]";
 
 export const ESTADOS_DETECCION_EVENTOS = Object.freeze({
   pendiente: "pendiente",
@@ -39,12 +39,12 @@ const NUMEROS = new Map([
   ["doce", 12]
 ]);
 
-const PATRON_TEMPORAL = /\b(\d{1,2}[/-]\d{1,2}[/-]\d{4}|\d{4}-\d{2}-\d{2}|\d{1,2}\s+de\s+[a-záéíóúñ]+\s+de\s+\d{4}|(?:principios|mediados|finales)\s+de\s+\d{4}|[a-záéíóúñ]+\s+de\s+\d{4}|(?:en|desde|alrededor de)\s+\d{4}|(?:ayer|anteayer|la semana pasada|el mes pasado|el año pasado|el ano pasado|la próxima semana|la proxima semana|próxima semana|proxima semana)|(?:desde\s+)?(?:aproximadamente\s+)?hace\s+(?:\d+|un|una|dos|tres|cuatro|cinco|seis|siete|ocho|nueve|diez|once|doce)\s+(?:día|dia|dias|días|semana|semanas|mes|meses|año|años|ano|anos)|(?:a los|desde los)\s+\d{1,2}\s+(?:años|anos)|en la infancia|durante la adolescencia|al inicio de la universidad|desde joven|desde pequeño|desde pequeno|años atrás|anos atras|hace tiempo|recientemente)\b/giu;
+const PATRON_TEMPORAL = /\b(\d{1,2}[/-]\d{1,2}[/-]\d{4}|\d{4}-\d{2}-\d{2}|\d{1,2}\s+de\s+[a-záéíóúñ]+\s+de\s+\d{4}|(?:principios|mediados|finales)\s+de\s+\d{4}|[a-záéíóúñ]+\s+de\s+\d{4}|(?:en|desde|alrededor de)\s+\d{4}|(?:ayer|anteayer|la semana pasada|el mes pasado|el año pasado|el ano pasado|la próxima semana|la proxima semana|próxima semana|proxima semana)|(?:desde\s+)?(?:aproximadamente\s+)?hace\s+(?:\d+|un|una|dos|tres|cuatro|cinco|seis|siete|ocho|nueve|diez|once|doce)\s+(?:día|dia|dias|días|semana|semanas|mes|meses|año|años|ano|anos)|durante\s+los\s+ultimos\s+(?:\d+|un|una|dos|tres|cuatro|cinco|seis|siete|ocho|nueve|diez|once|doce)\s+(?:dias|semanas|meses|anos|años)|(?:a los|desde los|a partir de los)\s+\d{1,2}\s+(?:años|anos)|en el internamiento previo|durante la hospitalización anterior|durante la hospitalizacion anterior|en la consulta pasada|en el embarazo|en la infancia|durante la adolescencia|al inicio de la universidad|desde joven|desde pequeño|desde pequeno|años atrás|anos atras|hace tiempo|recientemente)\b/giu;
 
-const PATRON_RELEVANCIA = /\b(ingres\w*|internad\w*|hospitaliz\w*|alta|urgencia|crisis|intento suicida|suicid\w*|autoles\w*|violencia|diagnostic\w*|tratamiento|medicamento|suspend\w*|inici\w*|resonancia|tomograf\w*|laboratorio|gabinete|estudio|cirug\w*|enfermedad|consumo|alcohol|cocaina|metanfetamina|cannabis|recaid\w*|trauma|fallec\w*|murio|muerte|embarazo|parto|legal|aislamiento|insomnio|ansiedad|depres\w*|crianza|abuso|agresion|convulsion\w*|catatoni\w*|psicosis|consulta)\b/i;
+const PATRON_RELEVANCIA = /\b(ingres\w*|internad\w*|hospitaliz\w*|alta|urgencia|crisis|intento suicida|suicid\w*|autoles\w*|violencia|diagnostic\w*|tratamiento|medicamento|suspend\w*|inici\w*|resonancia|tomograf\w*|laboratorio|gabinete|estudio|cirug\w*|enfermedad|consumo|alcohol|cocaina|metanfetamina|cannabis|recaid\w*|trauma|fallec\w*|murio|muerte|embarazo|parto|legal|aislamiento|insomnio|ansiedad|depres\w*|agitaci\w*|crianza|abuso|agresion|convulsion\w*|catatoni\w*|psicosis|consulta)\b/i;
 const PATRON_NEGACION_EVENTO = /\b(niega|niegan|sin antecedente(?:s)? de|no ha presentado|no presenta|no refiere|descarta|se descarto)\s+(?:[\wáéíóúñ]+\s+){0,5}(hospitaliz|intento|suicid|convulsion|crisis|consumo|violencia|alucin|ingreso)/i;
 const PATRON_FUTURO = /\b(se valorara|se valorará|se considerara|se considerará|si empeora|proxima consulta|próxima consulta|se hospitalizara|se hospitalizará|se programo|se programó|se indicara|se indicará|proxima semana|próxima semana)\b/i;
-const PATRON_ADMINISTRATIVO = /\b(documento creado|usuario modific|firma registrada|exportacion|exportación|actualizado en|creado en)\b/i;
+const PATRON_ADMINISTRATIVO = /\b(documento creado|usuario modific|firma registrada|nota firmada|exportacion|exportación|actualizado en|creado en|se agrego diagnostico|se agregó diagnostico|se actualizo tratamiento|se actualizó tratamiento)\b/i;
 
 export function normalizarTextoDeteccion(texto = "") {
   return String(texto ?? "")
@@ -247,15 +247,18 @@ export function resolverFechaTemporal(expresion = "", fechaReferencia = new Date
   if (texto.includes("semana pasada")) return { fechaInicioISO: fechaISO(restar(referencia, 1, "semana")), precisionTemporal: "semana", requiereRevisionFecha: true, fechaEsAproximada: true };
   if (texto.includes("mes pasado")) return { fechaInicioISO: fechaISO(restar(referencia, 1, "mes")), precisionTemporal: "mes", requiereRevisionFecha: true, fechaEsAproximada: true };
   if (texto.includes("ano pasado")) return { fechaInicioISO: `${referencia.getFullYear() - 1}-01-01`, precisionTemporal: "anio", requiereRevisionFecha: true, fechaEsAproximada: true };
-  m = texto.match(/\bhace\s+(\d+|un|una|dos|tres|cuatro|cinco|seis|siete|ocho|nueve|diez|once|doce)\s+(dia|dias|semana|semanas|mes|meses|ano|anos)\b/);
+  m = texto.match(/\b(?:hace|durante los ultimos|durante los últimos)\s+(\d+|un|una|dos|tres|cuatro|cinco|seis|siete|ocho|nueve|diez|once|doce)\s+(dia|dias|semana|semanas|mes|meses|ano|anos)\b/);
   if (m) {
     const cantidad = Number(m[1]) || NUMEROS.get(m[1]) || 1;
     const fecha = restar(referencia, cantidad, m[2]);
     return { fechaInicioISO: fechaISO(fecha), precisionTemporal: m[2].startsWith("dia") ? "dia" : m[2].startsWith("semana") ? "semana" : m[2].startsWith("mes") ? "mes" : "anio", requiereRevisionFecha: true, fechaEsAproximada: true };
   }
-  m = texto.match(/\b(?:a los|desde los)\s+(\d{1,2})\s+anos\b/);
+  m = texto.match(/\b(?:a los|desde los|a partir de los)\s+(\d{1,2})\s+anos\b/);
   const nacimiento = convertirFecha(fechaNacimiento);
   if (m && nacimiento) return { fechaInicioISO: `${nacimiento.getFullYear() + Number(m[1])}-01-01`, precisionTemporal: "anio", requiereRevisionFecha: true, fechaEsAproximada: true };
+  if (/internamiento previo|hospitalizacion anterior|consulta pasada|embarazo|infancia|adolescencia|inicio de la universidad|hace tiempo|recientemente/.test(texto)) {
+    return { fechaInicioISO: null, precisionTemporal: "contextual", requiereRevisionFecha: true, fechaEsAproximada: true };
+  }
   return { fechaInicioISO: null, precisionTemporal: "indeterminada", requiereRevisionFecha: true, fechaEsAproximada: true };
 }
 
@@ -273,11 +276,22 @@ export function clasificarTituloYCategoria(texto = "") {
 
 export function debeDescartarFragmento(fragmento = {}) {
   const texto = normalizarTextoDeteccion(fragmento.textoFragmento || "");
-  if (!PATRON_RELEVANCIA.test(texto)) return { descartar: true, motivo: "sin_relevancia_clinica" };
   if (PATRON_ADMINISTRATIVO.test(texto)) return { descartar: true, motivo: "administrativo" };
+  if (!PATRON_RELEVANCIA.test(texto)) return { descartar: true, motivo: "sin_relevancia_clinica" };
   if (PATRON_FUTURO.test(texto)) return { descartar: true, motivo: "futuro_hipotetico" };
   if (PATRON_NEGACION_EVENTO.test(texto)) return { descartar: true, motivo: "negado" };
   return { descartar: false, motivo: "" };
+}
+
+function obtenerContextoEvento(fragmento = {}) {
+  const texto = String(fragmento.textoFragmento || "").replace(/\s+/g, " ").trim();
+  const expresion = String(fragmento.expresionTemporal || "").trim();
+  if (!texto || !expresion) return texto;
+  const partes = texto
+    .split(/\s*(?:,|;|\sy\s(?=(?:fue|se|suspend|inicio|inició|present|consum|intent|hospitaliz|ingres|egres|tuvo|realiz)))/i)
+    .map((parte) => parte.trim())
+    .filter(Boolean);
+  return partes.find((parte) => parte.includes(expresion)) || texto;
 }
 
 export function extraerEventosDesdeFragmentos(fragmentos = [], fechaNacimiento = null) {
@@ -289,9 +303,10 @@ export function extraerEventosDesdeFragmentos(fragmentos = [], fechaNacimiento =
       descartados.push({ motivo: descarte.motivo, hashFragmento: fragmento.hashFragmento });
       continue;
     }
+    const contextoEvento = obtenerContextoEvento(fragmento);
     const fecha = resolverFechaTemporal(fragmento.expresionTemporal, fragmento.fechaReferencia, fechaNacimiento);
-    const clasificacion = clasificarTituloYCategoria(fragmento.textoFragmento);
-    const descripcion = String(fragmento.textoFragmento || "")
+    const clasificacion = clasificarTituloYCategoria(contextoEvento);
+    const descripcion = String(contextoEvento || "")
       .replace(fragmento.expresionTemporal || "", "")
       .replace(/\s+/g, " ")
       .trim()
@@ -302,13 +317,14 @@ export function extraerEventosDesdeFragmentos(fragmentos = [], fechaNacimiento =
       descripcionSugerida: descripcion || clasificacion.tituloSugerido,
       ...fecha,
       expresionTemporalOriginal: fragmento.expresionTemporal,
-      fragmentoSoporte: fragmento.textoFragmento.slice(0, 500),
-      importanciaSugerida: /suicid|hospitaliz|urgencia|violencia|autoles/.test(normalizarTextoDeteccion(fragmento.textoFragmento)) ? "alta" : "media",
+      fragmentoSoporte: contextoEvento.slice(0, 500),
+      importanciaSugerida: /suicid|hospitaliz|urgencia|violencia|autoles/.test(normalizarTextoDeteccion(contextoEvento)) ? "alta" : "media",
       confianza,
       nivelConfianza: confianza >= 0.85 ? "alta" : confianza >= 0.6 ? "media" : "baja",
-      sujeto: /\bmadre|padre|herman|familiar\b/.test(normalizarTextoDeteccion(fragmento.textoFragmento)) ? "familiar" : "paciente",
+      sujeto: /\bmadre|padre|herman|familiar\b/.test(normalizarTextoDeteccion(contextoEvento)) ? "familiar" : "paciente",
       estadoAfirmacion: "ocurrido",
-      relevanciaClinica: PATRON_RELEVANCIA.test(fragmento.textoFragmento) ? "probable" : "baja",
+      relevanciaClinica: PATRON_RELEVANCIA.test(contextoEvento) ? "probable" : "baja",
+      origenDeteccion: "narrativo",
       origenTipo: fragmento.origenTipo,
       origenSubtipo: fragmento.origenSubtipo,
       origenId: fragmento.origenId,
@@ -332,7 +348,7 @@ export function crearEventosEstructuradosDesdeFuente(fuente = {}) {
   const eventos = [];
   if (fuente.origenTipo === "diagnostico") {
     const texto = etiquetaDiagnostico(datos);
-    const fecha = fechaISO(datos.fechaDiagnostico || datos.fecha || datos.fechaRegistro || fuente.fechaDocumento);
+    const fecha = fechaISO(datos.fechaDiagnostico || datos.fechaClinicaDiagnostico || datos.fechaInicioDiagnostico);
     if (texto && fecha) eventos.push({
       tituloSugerido: "Diagnostico registrado",
       descripcionSugerida: texto.slice(0, 360),
@@ -349,6 +365,7 @@ export function crearEventosEstructuradosDesdeFuente(fuente = {}) {
       sujeto: "paciente",
       estadoAfirmacion: "ocurrido",
       relevanciaClinica: "estructurada",
+      origenDeteccion: "estructurado-clinico",
       origenTipo: fuente.origenTipo,
       origenSubtipo: fuente.origenSubtipo,
       origenId: fuente.origenId,
@@ -360,8 +377,8 @@ export function crearEventosEstructuradosDesdeFuente(fuente = {}) {
   }
   if (fuente.origenTipo === "tratamiento") {
     const medicamento = textoSeguro(datos.medicamento || datos.nombreMedicamento || datos.nombre || datos.principioActivo);
-    const inicio = fechaISO(datos.fechaInicio || datos.fechaCreacion || fuente.fechaDocumento);
-    const suspension = fechaISO(datos.fechaSuspension || datos.fechaSuspendido || datos.fechaFin);
+    const inicio = fechaISO(datos.fechaInicioTratamiento || datos.fechaInicioClinica || datos.fechaInicioMedicamento || datos.fechaInicio);
+    const suspension = fechaISO(datos.fechaSuspensionTratamiento || datos.fechaSuspensionClinica || datos.fechaSuspendido || datos.fechaFinTratamiento || datos.fechaFin);
     if (medicamento && inicio) eventos.push({
       tituloSugerido: "Inicio de tratamiento",
       descripcionSugerida: medicamento.slice(0, 360),
@@ -378,6 +395,7 @@ export function crearEventosEstructuradosDesdeFuente(fuente = {}) {
       sujeto: "paciente",
       estadoAfirmacion: "ocurrido",
       relevanciaClinica: "estructurada",
+      origenDeteccion: "estructurado-clinico",
       origenTipo: fuente.origenTipo,
       origenSubtipo: fuente.origenSubtipo,
       origenId: fuente.origenId,
@@ -402,6 +420,7 @@ export function crearEventosEstructuradosDesdeFuente(fuente = {}) {
       sujeto: "paciente",
       estadoAfirmacion: "ocurrido",
       relevanciaClinica: "estructurada",
+      origenDeteccion: "estructurado-clinico",
       origenTipo: fuente.origenTipo,
       origenSubtipo: "tratamiento_suspendido",
       origenId: fuente.origenId,
@@ -413,7 +432,7 @@ export function crearEventosEstructuradosDesdeFuente(fuente = {}) {
   }
   if (fuente.origenTipo === "estudio") {
     const nombre = textoSeguro(datos.nombre || datos.tipo || datos.estudio || datos.nombreEstudio);
-    const fecha = fechaISO(datos.fechaRealizacion || datos.fechaEstudio || datos.fecha || fuente.fechaDocumento);
+    const fecha = fechaISO(datos.fechaRealizacion || datos.fechaEstudio || datos.fechaToma || datos.fechaClinicaEstudio);
     if (nombre && fecha) eventos.push({
       tituloSugerido: "Estudio clinico",
       descripcionSugerida: nombre.slice(0, 360),
@@ -430,6 +449,7 @@ export function crearEventosEstructuradosDesdeFuente(fuente = {}) {
       sujeto: "paciente",
       estadoAfirmacion: "ocurrido",
       relevanciaClinica: "estructurada",
+      origenDeteccion: "estructurado-clinico",
       origenTipo: fuente.origenTipo,
       origenSubtipo: fuente.origenSubtipo,
       origenId: fuente.origenId,
@@ -466,11 +486,11 @@ export function normalizarCandidatoEvento(candidato = {}, pacienteId = "") {
   };
 }
 
-export function detectarEventosEnFuentes({ fuentes = [], fechaNacimiento = null, pacienteId = "" } = {}) {
+export function detectarEventosEnFuentes({ fuentes = [], fechaNacimiento = null, pacienteId = "", incluirEstructurados = false } = {}) {
   const fuentesConTexto = fuentes.filter((fuente) => String(fuente.textoAnalizable || "").trim());
   const fragmentos = fuentesConTexto.flatMap(generarFragmentosTemporales);
   const { eventos, descartados } = extraerEventosDesdeFragmentos(fragmentos, fechaNacimiento);
-  const estructurados = fuentes.flatMap(crearEventosEstructuradosDesdeFuente);
+  const estructurados = incluirEstructurados ? fuentes.flatMap(crearEventosEstructuradosDesdeFuente) : [];
   const normalizados = [...eventos, ...estructurados].map((evento) => normalizarCandidatoEvento(evento, pacienteId));
   const unicos = new Map();
   const duplicados = [];
@@ -500,6 +520,9 @@ export function detectarEventosEnFuentes({ fuentes = [], fechaNacimiento = null,
       acc[item.motivo] = (acc[item.motivo] || 0) + 1;
       return acc;
     }, {}),
+    candidatosNarrativos: eventos.length,
+    candidatosEstructurados: estructurados.length,
+    administrativosDescartados: descartados.filter((item) => item.motivo === "administrativo").length,
     duplicadosDetectados: duplicados.length,
     eventos: eventosNormalizados
   };
