@@ -35,7 +35,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -79,7 +80,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -123,7 +125,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -201,7 +204,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         ],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
@@ -285,7 +289,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         ],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
@@ -369,7 +374,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         ],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
@@ -453,7 +459,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         ],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
@@ -503,7 +510,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -547,7 +555,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -591,7 +600,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -635,7 +645,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -679,7 +690,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -723,7 +735,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -767,7 +780,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -811,7 +825,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -889,7 +904,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         ],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
@@ -939,7 +955,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -983,7 +1000,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -1027,7 +1045,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -1105,7 +1124,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         ],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
@@ -1155,7 +1175,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -1199,7 +1220,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -1243,7 +1265,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -1287,7 +1310,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -1331,7 +1355,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -1375,7 +1400,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -1419,7 +1445,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -1464,7 +1491,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -1508,7 +1536,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -1586,7 +1615,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         ],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
@@ -1636,7 +1666,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -1714,7 +1745,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         ],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
@@ -1765,7 +1797,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -1809,7 +1842,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -1853,7 +1887,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -1931,7 +1966,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         ],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
@@ -1981,7 +2017,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -2025,7 +2062,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -2069,7 +2107,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -2113,7 +2152,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -2157,7 +2197,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -2201,7 +2242,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -2279,7 +2321,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         ],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
@@ -2363,7 +2406,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         ],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
@@ -2413,7 +2457,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -2491,7 +2536,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         ],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
@@ -2541,7 +2587,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -2619,7 +2666,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         ],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
@@ -2703,7 +2751,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         ],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
@@ -2753,7 +2802,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -2797,7 +2847,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -2875,7 +2926,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         ],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
@@ -2959,7 +3011,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         ],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
@@ -3009,7 +3062,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -3053,7 +3107,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -3097,7 +3152,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -3141,7 +3197,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -3185,7 +3242,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -3229,7 +3287,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -3273,7 +3332,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -3317,7 +3377,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -3361,7 +3422,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -3405,7 +3467,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -3449,7 +3512,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -3493,7 +3557,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -3537,7 +3602,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -3581,7 +3647,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -3625,7 +3692,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -3669,7 +3737,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -3713,7 +3782,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -3757,7 +3827,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -3801,7 +3872,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -3845,7 +3917,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -3923,7 +3996,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         ],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
@@ -4007,7 +4081,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         ],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
@@ -4057,7 +4132,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -4101,7 +4177,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -4145,7 +4222,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -4189,7 +4267,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -4233,7 +4312,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -4311,7 +4391,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         ],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
@@ -4395,7 +4476,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         ],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
@@ -4445,7 +4527,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -4489,7 +4572,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -4533,7 +4617,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -4577,7 +4662,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -4621,7 +4707,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -4665,7 +4752,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -4709,7 +4797,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -4753,7 +4842,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -4797,7 +4887,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -4841,7 +4932,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -4885,7 +4977,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -4929,7 +5022,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -4973,7 +5067,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -5017,7 +5112,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -5095,7 +5191,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         ],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
@@ -5179,7 +5276,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         ],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
@@ -5229,7 +5327,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -5273,7 +5372,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -5317,7 +5417,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -5361,7 +5462,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -5405,7 +5507,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -5449,7 +5552,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -5493,7 +5597,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -5571,7 +5676,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         ],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
@@ -5655,7 +5761,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         ],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
@@ -5705,7 +5812,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -5749,7 +5857,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -5827,7 +5936,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         ],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
@@ -5877,7 +5987,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -5955,7 +6066,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         ],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
@@ -6005,7 +6117,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -6049,7 +6162,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -6128,7 +6242,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         ],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       },
       "cie11": {
         "visible": true,
@@ -6188,7 +6303,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         ],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "La psicosis requiere atencion temprana, continuidad terapeutica, apoyo familiar y reduccion de recaidas.",
@@ -6266,7 +6382,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         ],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
@@ -6350,7 +6467,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         ],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
@@ -6434,7 +6552,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         ],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
@@ -6518,7 +6637,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         ],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
@@ -6568,7 +6688,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -6646,7 +6767,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         ],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
@@ -6730,7 +6852,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         ],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
@@ -6780,7 +6903,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -6824,7 +6948,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -6870,7 +6995,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       },
       "cie11": {
         "visible": true,
@@ -6896,7 +7022,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -6940,7 +7067,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -6984,7 +7112,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -7028,7 +7157,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -7072,7 +7202,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -7150,7 +7281,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         ],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
@@ -7234,7 +7366,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         ],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
@@ -7318,7 +7451,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         ],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
@@ -7368,7 +7502,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -7412,7 +7547,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -7456,7 +7592,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -7534,7 +7671,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         ],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
@@ -7584,7 +7722,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -7662,7 +7801,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         ],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
@@ -7746,7 +7886,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         ],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
@@ -7830,7 +7971,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         ],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
@@ -7914,7 +8056,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         ],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "El ritmo de sueno, la adherencia y la identificacion temprana de cambios de energia son pilares del autocuidado.",
@@ -7992,7 +8135,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         ],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
@@ -8076,7 +8220,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         ],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
@@ -8160,7 +8305,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         ],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
@@ -8244,7 +8390,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         ],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
@@ -8328,7 +8475,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         ],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
@@ -8412,7 +8560,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         ],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
@@ -8496,7 +8645,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         ],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
@@ -8580,7 +8730,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         ],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
@@ -8630,7 +8781,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -8674,7 +8826,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -8752,7 +8905,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         ],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "La depresion no es falta de voluntad; es un cuadro clinico tratable. El seguimiento combina tratamiento, activacion conductual, sueno, red de apoyo y medicion objetiva.",
@@ -8830,7 +8984,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         ],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
@@ -8914,7 +9069,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         ],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
@@ -8998,7 +9154,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         ],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
@@ -9082,7 +9239,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         ],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
@@ -9132,7 +9290,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -9176,7 +9335,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -9255,7 +9415,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         ],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       },
       "cie11": {
         "visible": true,
@@ -9315,7 +9476,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         ],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "Las recaidas pueden prevenirse con seguimiento, adherencia, deteccion temprana de sintomas y un plan de crisis claro.",
@@ -9393,7 +9555,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         ],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
@@ -9477,7 +9640,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         ],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
@@ -9561,7 +9725,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         ],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
@@ -9645,7 +9810,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         ],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
@@ -9695,7 +9861,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -9739,7 +9906,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -9783,7 +9951,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -9827,7 +9996,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -9871,7 +10041,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -9949,7 +10120,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         ],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
@@ -9999,7 +10171,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -10043,7 +10216,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -10087,7 +10261,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -10167,7 +10342,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         ],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       },
       "cie11": {
         "visible": true,
@@ -10227,7 +10403,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         ],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       },
       "dsm5": {
         "visible": true,
@@ -10290,7 +10467,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "notas": [],
         "contenidoLiteralAutorizado": false,
         "equivalencia": "aproximada",
-        "notasEquivalencia": "La correspondencia entre sistemas puede no ser uno a uno."
+        "notasEquivalencia": "La correspondencia entre sistemas puede no ser uno a uno.",
+        "subtipos": []
       }
     },
     "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
@@ -10379,7 +10557,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         ],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
@@ -10463,7 +10642,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         ],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
@@ -10513,7 +10693,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -10594,7 +10775,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         ],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       },
       "cie11": {
         "visible": true,
@@ -10661,7 +10843,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         ],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       },
       "dsm5": {
         "visible": true,
@@ -10731,7 +10914,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "notas": [],
         "contenidoLiteralAutorizado": false,
         "equivalencia": "aproximada",
-        "notasEquivalencia": "La correspondencia entre sistemas puede no ser uno a uno."
+        "notasEquivalencia": "La correspondencia entre sistemas puede no ser uno a uno.",
+        "subtipos": []
       }
     },
     "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
@@ -11055,7 +11239,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         ],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       },
       "cie11": {
         "visible": true,
@@ -11319,7 +11504,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         ],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       },
       "dsm5": {
         "visible": true,
@@ -11389,7 +11575,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "notas": [],
         "contenidoLiteralAutorizado": false,
         "equivalencia": "aproximada",
-        "notasEquivalencia": "La correspondencia entre sistemas puede no ser uno a uno."
+        "notasEquivalencia": "La correspondencia entre sistemas puede no ser uno a uno.",
+        "subtipos": []
       }
     },
     "psicoeducacion": "La ansiedad se trabaja con psicoeducacion, regulacion fisiologica, exposicion gradual, sueño y estrategias cognitivas.",
@@ -11478,7 +11665,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         ],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
@@ -11592,7 +11780,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         ],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       },
       "cie11": {
         "visible": true,
@@ -11652,7 +11841,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         ],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "El TOC no se reduce a 'manias'; el tratamiento suele incluir exposicion con prevencion de respuesta y seguimiento.",
@@ -11702,7 +11892,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -11780,7 +11971,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         ],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
@@ -11894,7 +12086,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         ],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       },
       "cie11": {
         "visible": true,
@@ -11954,7 +12147,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         ],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "Las reacciones postraumaticas son respuestas del sistema de amenaza. El tratamiento busca seguridad, regulacion y procesamiento gradual.",
@@ -12038,7 +12232,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         ],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
@@ -12122,7 +12317,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         ],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
@@ -12206,7 +12402,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         ],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
@@ -12256,7 +12453,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -12300,7 +12498,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -12378,7 +12577,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         ],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
@@ -12462,7 +12662,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         ],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
@@ -12512,7 +12713,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -12556,7 +12758,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -12600,7 +12803,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -12644,7 +12848,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -12688,7 +12893,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -12732,7 +12938,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -12776,7 +12983,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -12820,7 +13028,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -12864,7 +13073,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -12908,7 +13118,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -12952,7 +13163,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -12996,7 +13208,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -13040,7 +13253,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -13084,7 +13298,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -13128,7 +13343,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -13172,7 +13388,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -13216,7 +13433,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -13260,7 +13478,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -13304,7 +13523,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -13348,7 +13568,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -13392,7 +13613,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -13436,7 +13658,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -13480,7 +13703,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -13558,7 +13782,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         ],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
@@ -13642,7 +13867,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         ],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
@@ -13726,7 +13952,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         ],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
@@ -13810,7 +14037,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         ],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
@@ -13894,7 +14122,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         ],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
@@ -14063,7 +14292,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         ],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "Brindar información sobre el trastorno anancástico de la personalidad, sus características clínicas y el impacto del perfeccionismo, la rigidez cognitiva y la necesidad de control en el funcionamiento cotidiano; promover el reconocimiento de pensamientos disfuncionales, favorecer el desarrollo de estrategias de flexibilización cognitiva, tolerancia a la incertidumbre y manejo de la ansiedad, reforzando la importancia de la adherencia al tratamiento psicoterapéutico y farmacológico cuando esté indicado.",
@@ -14214,7 +14444,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         ],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "Brindar información sobre el trastorno evitativo de la personalidad, sus características clínicas y el papel de la evitación en el mantenimiento de los síntomas; promover el reconocimiento de pensamientos disfuncionales relacionados con el rechazo y la baja autoestima, reforzar estrategias de afrontamiento, habilidades sociales y la importancia de la adherencia al tratamiento psicoterapéutico y farmacológico cuando esté indicado.",
@@ -14298,7 +14529,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         ],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
@@ -14348,7 +14580,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -14392,7 +14625,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -14470,7 +14704,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         ],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
@@ -14520,7 +14755,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -14564,7 +14800,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -14608,7 +14845,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -14652,7 +14890,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -14696,7 +14935,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -14740,7 +14980,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -14784,7 +15025,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -14862,7 +15104,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         ],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
@@ -14946,7 +15189,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         ],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
@@ -14996,7 +15240,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -15040,7 +15285,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -15084,7 +15330,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -15162,7 +15409,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         ],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
@@ -15212,7 +15460,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -15256,7 +15505,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -15300,7 +15550,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -15344,7 +15595,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -15388,7 +15640,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -15638,7 +15891,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         ],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "Pendiente.",
@@ -15688,7 +15942,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -15766,7 +16021,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         ],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
@@ -15816,7 +16072,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -15860,7 +16117,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -15871,13 +16129,21 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
   },
   {
     "id": "trastorno-trastornos-hipercineticos",
-    "nombre": "Trastornos hipercinéticos",
-    "descripcionBreve": "Trastornos hipercinéticos.",
+    "nombre": "Trastornos hipercinéticos / Trastorno por déficit de atención con hiperactividad (TDAH)",
+    "descripcionBreve": "Información orientativa para consulta rápida.",
     "categoria": "Psiquiatría y salud mental",
     "subcategoria": "Psiquiatría y salud mental",
     "aliases": [
       "Trastornos hipercinéticos",
-      "F90"
+      "F90",
+      "Trastorno de la actividad y de la atención",
+      "F90.0",
+      "Trastorno hipercinético disocial",
+      "F90.1",
+      "Trastorno por deficit de atencion con hiperactividad",
+      "6A05",
+      "TDAH",
+      "ADHD"
     ],
     "sistemas": {
       "cie10": {
@@ -15904,85 +16170,112 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
-      }
-    },
-    "psicoeducacion": "",
-    "diagnosticoDiferencial": [],
-    "comorbilidades": [],
-    "evaluacionClinica": [],
-    "referencias": []
-  },
-  {
-    "id": "trastorno-trastorno-de-la-actividad-y-de-la-atencion",
-    "nombre": "Trastorno de la actividad y de la atención",
-    "descripcionBreve": "Información orientativa para consulta rápida.",
-    "categoria": "Psiquiatría y salud mental",
-    "subcategoria": "Psiquiatría y salud mental",
-    "aliases": [
-      "Trastorno de la actividad y de la atención",
-      "F90.0"
-    ],
-    "sistemas": {
-      "cie10": {
+        "contenidoLiteralAutorizado": false,
+        "subtipos": [
+          {
+            "codigo": "F90.0",
+            "nombre": "Trastorno de la actividad y de la atención",
+            "criterios": [
+              {
+                "id": "trastorno-trastornos-hipercineticos-cie10-subtipo-1-cie10-grupo-1",
+                "clave": "",
+                "titulo": "Pendiente de clasificación",
+                "tipo": "revision_requerida",
+                "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+                "literal": false,
+                "listType": "none",
+                "grupos": [],
+                "items": [
+                  {
+                    "numero": null,
+                    "marcador": null,
+                    "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+                    "orden": 1,
+                    "literal": false
+                  },
+                  {
+                    "numero": null,
+                    "marcador": null,
+                    "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+                    "orden": 2,
+                    "literal": false
+                  },
+                  {
+                    "numero": null,
+                    "marcador": null,
+                    "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+                    "orden": 3,
+                    "literal": false
+                  }
+                ]
+              }
+            ],
+            "especificadores": [],
+            "notas": []
+          },
+          {
+            "codigo": "F90.1",
+            "nombre": "Trastorno hipercinético disocial",
+            "criterios": [],
+            "especificadores": [],
+            "notas": []
+          }
+        ]
+      },
+      "cie11": {
         "visible": true,
-        "orden": 1,
-        "codigo": "F90.0",
-        "nombre": "Trastorno de la actividad y de la atención",
+        "orden": 2,
+        "codigo": "6A05",
+        "nombre": "Trastorno por deficit de atencion con hiperactividad",
         "fuente": {
           "organismo": "World Health Organization",
-          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
-          "edicion": "1992",
-          "url": "https://www.who.int/publications/i/item/9241544228",
+          "documento": "Clinical descriptions and diagnostic requirements for ICD-11 mental, behavioural and neurodevelopmental disorders (CDDR)",
+          "edicion": "2024",
+          "url": "https://www.who.int/publications/i/item/9789240077263",
           "fechaConsulta": "2026-07-26",
           "sourceVerified": false
         },
         "tipoContenido": "resumen_local_pendiente_revision",
-        "completionStatus": "partial",
+        "completionStatus": "pending_review",
         "review": {
           "reviewed": false,
           "reviewedAt": null,
           "sourceVerified": false,
-          "notes": "Revisión requerida: clasificación de grupos, verificación de fuente oficial, duración."
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial."
         },
-        "criterios": [
-          {
-            "id": "trastorno-trastorno-de-la-actividad-y-de-la-atencion-cie10-grupo-1",
-            "clave": "",
-            "titulo": "Pendiente de clasificación",
-            "tipo": "revision_requerida",
-            "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
-            "literal": false,
-            "listType": "none",
-            "grupos": [],
-            "items": [
-              {
-                "numero": null,
-                "marcador": null,
-                "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
-                "orden": 1,
-                "literal": false
-              },
-              {
-                "numero": null,
-                "marcador": null,
-                "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
-                "orden": 2,
-                "literal": false
-              },
-              {
-                "numero": null,
-                "marcador": null,
-                "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
-                "orden": 3,
-                "literal": false
-              }
-            ]
-          }
-        ],
+        "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
+      },
+      "dsm5": {
+        "visible": true,
+        "orden": 3,
+        "codigo": "314.xx",
+        "nombre": "Attention-Deficit/Hyperactivity Disorder",
+        "fuente": {
+          "organismo": "American Psychiatric Association",
+          "documento": "DSM-5 / DSM-5-TR; contenido secundario resumido",
+          "edicion": "Resumen no literal",
+          "url": "",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_clinico",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial."
+        },
+        "criterios": [],
+        "especificadores": [],
+        "notas": [],
+        "contenidoLiteralAutorizado": false,
+        "codigoCie10Cm": "F90.0",
+        "subtipos": []
       }
     },
     "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
@@ -15996,50 +16289,6 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "tipoContenido": "Resumen clínico"
       }
     ]
-  },
-  {
-    "id": "trastorno-trastorno-hipercinetico-disocial",
-    "nombre": "Trastorno hipercinético disocial",
-    "descripcionBreve": "Trastorno hipercinético disocial.",
-    "categoria": "Psiquiatría y salud mental",
-    "subcategoria": "Psiquiatría y salud mental",
-    "aliases": [
-      "Trastorno hipercinético disocial",
-      "F90.1"
-    ],
-    "sistemas": {
-      "cie10": {
-        "visible": true,
-        "orden": 1,
-        "codigo": "F90.1",
-        "nombre": "Trastorno hipercinético disocial",
-        "fuente": {
-          "organismo": "World Health Organization",
-          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
-          "edicion": "1992",
-          "url": "https://www.who.int/publications/i/item/9241544228",
-          "fechaConsulta": "2026-07-26",
-          "sourceVerified": false
-        },
-        "tipoContenido": "resumen_local_pendiente_revision",
-        "completionStatus": "pending_review",
-        "review": {
-          "reviewed": false,
-          "reviewedAt": null,
-          "sourceVerified": false,
-          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
-        },
-        "criterios": [],
-        "especificadores": [],
-        "notas": [],
-        "contenidoLiteralAutorizado": false
-      }
-    },
-    "psicoeducacion": "",
-    "diagnosticoDiferencial": [],
-    "comorbilidades": [],
-    "evaluacionClinica": [],
-    "referencias": []
   },
   {
     "id": "trastorno-trastornos-disociales",
@@ -16076,7 +16325,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -16120,7 +16370,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -16164,7 +16415,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -16208,7 +16460,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -16252,7 +16505,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -16296,7 +16550,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -16340,7 +16595,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -16384,7 +16640,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -16428,7 +16685,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -16472,7 +16730,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -16516,7 +16775,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -16560,7 +16820,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -16604,7 +16865,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -16648,7 +16910,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -16692,7 +16955,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -16736,7 +17000,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -16780,7 +17045,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -16824,7 +17090,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -16868,7 +17135,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -16912,7 +17180,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -16956,7 +17225,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -17000,7 +17270,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -17044,7 +17315,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -17122,7 +17394,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         ],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
@@ -17172,7 +17445,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -17216,7 +17490,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -17260,7 +17535,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -17304,7 +17580,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -17382,7 +17659,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         ],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
@@ -17466,7 +17744,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         ],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
@@ -17516,7 +17795,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -17560,7 +17840,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -17604,7 +17885,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -17682,7 +17964,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         ],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
@@ -17732,7 +18015,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -17776,7 +18060,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -17820,7 +18105,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -17864,7 +18150,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -17908,7 +18195,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -17952,7 +18240,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -17996,7 +18285,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -18040,7 +18330,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -18084,7 +18375,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -18128,7 +18420,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -18172,7 +18465,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -18216,7 +18510,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -18260,7 +18555,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -18304,7 +18600,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -18348,7 +18645,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -18392,7 +18690,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -18436,7 +18735,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -18480,7 +18780,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -18524,7 +18825,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -18568,7 +18870,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -18612,7 +18915,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -18656,7 +18960,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -18700,7 +19005,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -18778,7 +19084,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         ],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
@@ -18828,7 +19135,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -18872,7 +19180,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -18950,7 +19259,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         ],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
@@ -19000,7 +19310,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -19044,7 +19355,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -19088,7 +19400,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -19132,7 +19445,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -19176,7 +19490,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -19220,7 +19535,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -19264,7 +19580,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -19342,7 +19659,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         ],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
@@ -19392,7 +19710,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -19436,7 +19755,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -19480,7 +19800,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -19524,7 +19845,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -19568,7 +19890,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -19646,7 +19969,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         ],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
@@ -19696,7 +20020,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -19740,7 +20065,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -19784,7 +20110,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -19828,7 +20155,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -19872,7 +20200,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -19916,7 +20245,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -19960,7 +20290,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -20004,7 +20335,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -20048,7 +20380,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -20092,7 +20425,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -20136,7 +20470,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -20180,7 +20515,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -20224,7 +20560,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -20268,7 +20605,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -20312,7 +20650,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -20356,7 +20695,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -20434,7 +20774,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         ],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
@@ -20484,7 +20825,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -20528,7 +20870,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -20572,7 +20915,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -20616,7 +20960,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -20660,7 +21005,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -20704,7 +21050,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -20748,7 +21095,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -20792,7 +21140,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -20836,7 +21185,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -20880,7 +21230,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -20924,7 +21275,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -20968,7 +21320,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -21012,7 +21365,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -21056,7 +21410,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -21100,7 +21455,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -21144,7 +21500,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -21188,7 +21545,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -21232,7 +21590,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -21276,7 +21635,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -21320,7 +21680,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -21364,7 +21725,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -21408,7 +21770,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -21452,7 +21815,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -21496,7 +21860,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -21540,7 +21905,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -21584,7 +21950,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -21628,7 +21995,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -21672,7 +22040,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -21716,7 +22085,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -21760,7 +22130,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -21804,7 +22175,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -21848,7 +22220,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -21892,7 +22265,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -21936,7 +22310,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -21980,7 +22355,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -22024,7 +22400,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -22068,7 +22445,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -22112,7 +22490,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -22156,7 +22535,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -22200,7 +22580,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -22244,7 +22625,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -22288,7 +22670,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -22332,7 +22715,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -22376,7 +22760,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -22420,7 +22805,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -22464,7 +22850,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -22508,7 +22895,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -22552,7 +22940,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -22596,7 +22985,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -22640,7 +23030,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -22685,7 +23076,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -22729,7 +23121,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -22773,7 +23166,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -22817,7 +23211,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -22861,7 +23256,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -22905,7 +23301,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -22949,7 +23346,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -22993,7 +23391,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -23037,7 +23436,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -23081,7 +23481,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -23125,7 +23526,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -23169,7 +23571,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -23213,7 +23616,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -23257,7 +23661,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -23301,7 +23706,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -23345,7 +23751,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -23389,7 +23796,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -23433,7 +23841,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -23477,7 +23886,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -23521,7 +23931,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -23565,7 +23976,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -23609,7 +24021,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -23653,7 +24066,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -23697,7 +24111,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -23741,7 +24156,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -23785,7 +24201,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -23829,7 +24246,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -23873,7 +24291,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -23917,7 +24336,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -23961,7 +24381,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -24005,7 +24426,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -24049,7 +24471,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -24093,7 +24516,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -24137,7 +24561,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -24181,7 +24606,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -24225,7 +24651,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -24269,7 +24696,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -24313,7 +24741,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -24357,7 +24786,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -24401,7 +24831,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -24445,7 +24876,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -24489,7 +24921,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -24534,7 +24967,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -24578,7 +25012,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -24622,7 +25057,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -24666,7 +25102,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -24710,7 +25147,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -24754,7 +25192,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -24798,7 +25237,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -24842,7 +25282,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -24886,7 +25327,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -24930,7 +25372,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -24974,7 +25417,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -25018,7 +25462,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -25062,7 +25507,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -25106,7 +25552,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -25150,7 +25597,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -25194,7 +25642,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -25238,7 +25687,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -25282,7 +25732,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -25326,7 +25777,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -25370,7 +25822,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -25414,7 +25867,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -25458,7 +25912,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -25502,7 +25957,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -25546,7 +26002,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -25590,7 +26047,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -25634,7 +26092,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -25678,7 +26137,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -25722,7 +26182,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -25766,7 +26227,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -25810,7 +26272,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -25854,7 +26317,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -25898,7 +26362,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -25976,7 +26441,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         ],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
@@ -26026,7 +26492,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -26070,7 +26537,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -26148,7 +26616,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         ],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
@@ -26198,7 +26667,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -26242,7 +26712,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -26286,7 +26757,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -26330,7 +26802,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -26374,7 +26847,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -26418,7 +26892,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -26462,7 +26937,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -26506,7 +26982,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -26550,7 +27027,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -26594,7 +27072,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -26638,7 +27117,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -26682,7 +27162,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -26726,7 +27207,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -26770,7 +27252,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -26814,7 +27297,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -26858,7 +27342,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -26902,7 +27387,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -26946,7 +27432,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -26990,7 +27477,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -27034,7 +27522,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -27078,7 +27567,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -27122,7 +27612,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -27166,7 +27657,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -27210,7 +27702,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -27254,7 +27747,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -27298,7 +27792,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -27342,7 +27837,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -27386,7 +27882,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -27430,7 +27927,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -27474,7 +27972,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -27518,7 +28017,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -27562,7 +28062,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -27606,7 +28107,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -27650,7 +28152,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -27694,7 +28197,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -27738,7 +28242,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -27782,7 +28287,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -27826,7 +28332,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -27870,7 +28377,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -27914,7 +28422,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -27958,7 +28467,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -28002,7 +28512,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -28046,7 +28557,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -28090,7 +28602,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -28134,7 +28647,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -28178,7 +28692,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -28256,7 +28771,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         ],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
@@ -28340,7 +28856,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         ],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
@@ -28390,7 +28907,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -28434,7 +28952,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -28512,7 +29031,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         ],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
@@ -28562,7 +29082,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -28606,7 +29127,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -28650,7 +29172,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -28694,7 +29217,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -28738,7 +29262,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -28782,7 +29307,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -28826,7 +29352,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -28870,7 +29397,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -28914,7 +29442,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -28958,7 +29487,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -29002,7 +29532,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -29046,7 +29577,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -29090,7 +29622,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -29134,7 +29667,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -29212,7 +29746,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         ],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
@@ -29262,7 +29797,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -29306,7 +29842,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -29350,7 +29887,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -29394,7 +29932,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -29438,7 +29977,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -29482,7 +30022,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -29526,7 +30067,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -29570,7 +30112,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -29614,7 +30157,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -29658,7 +30202,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -29702,7 +30247,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -29746,7 +30292,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -29790,7 +30337,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -29834,7 +30382,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -29878,7 +30427,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -29922,7 +30472,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -29966,7 +30517,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -30044,7 +30596,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         ],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
@@ -30094,7 +30647,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -30138,7 +30692,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -30182,7 +30737,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -30226,7 +30782,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -30270,7 +30827,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -30314,7 +30872,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -30358,7 +30917,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -30402,7 +30962,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -30480,7 +31041,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         ],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
@@ -30564,7 +31126,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         ],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
@@ -30648,7 +31211,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         ],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
@@ -30732,7 +31296,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         ],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
@@ -30816,7 +31381,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         ],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
@@ -30900,7 +31466,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         ],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
@@ -30984,7 +31551,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         ],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
@@ -31068,7 +31636,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         ],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
@@ -31152,7 +31721,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         ],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
@@ -31236,7 +31806,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         ],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",
@@ -31286,7 +31857,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -31330,7 +31902,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -31374,7 +31947,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -31418,7 +31992,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -31496,7 +32071,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         ],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "La depresion no es falta de voluntad; es un cuadro clinico tratable. El seguimiento combina tratamiento, activacion conductual, sueno, red de apoyo y medicion objetiva.",
@@ -31576,7 +32152,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         ],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       },
       "cie11": {
         "visible": true,
@@ -31636,7 +32213,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         ],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       },
       "dsm5": {
         "visible": true,
@@ -31699,7 +32277,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "notas": [],
         "contenidoLiteralAutorizado": false,
         "equivalencia": "aproximada",
-        "notasEquivalencia": "La correspondencia entre sistemas puede no ser uno a uno."
+        "notasEquivalencia": "La correspondencia entre sistemas puede no ser uno a uno.",
+        "subtipos": []
       }
     },
     "psicoeducacion": "Los criterios son una herramienta de apoyo y deben integrarse con la entrevista clínica, antecedentes, exploración mental, evolución y juicio profesional.",
@@ -31792,7 +32371,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         ],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       },
       "cie11": {
         "visible": true,
@@ -31859,7 +32439,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         ],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       },
       "dsm5": {
         "visible": true,
@@ -31929,7 +32510,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "notas": [],
         "contenidoLiteralAutorizado": false,
         "equivalencia": "aproximada",
-        "notasEquivalencia": "La correspondencia entre sistemas puede no ser uno a uno."
+        "notasEquivalencia": "La correspondencia entre sistemas puede no ser uno a uno.",
+        "subtipos": []
       }
     },
     "psicoeducacion": "Los criterios son una herramienta de apoyo y deben integrarse con la entrevista clínica, antecedentes, exploración mental, evolución y juicio profesional.",
@@ -31979,7 +32561,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -32023,7 +32606,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -32067,7 +32651,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -32111,7 +32696,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -32155,7 +32741,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -32199,51 +32786,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "criterios": [],
         "especificadores": [],
         "notas": [],
-        "contenidoLiteralAutorizado": false
-      }
-    },
-    "psicoeducacion": "",
-    "diagnosticoDiferencial": [],
-    "comorbilidades": [],
-    "evaluacionClinica": [],
-    "referencias": []
-  },
-  {
-    "id": "trastorno-trastorno-por-deficit-de-atencion-con-hiperactividad",
-    "nombre": "Trastorno por deficit de atencion con hiperactividad",
-    "descripcionBreve": "Trastorno por deficit de atencion con hiperactividad.",
-    "categoria": "Clínica general",
-    "subcategoria": "Clínica general",
-    "aliases": [
-      "Trastorno por deficit de atencion con hiperactividad",
-      "6A05"
-    ],
-    "sistemas": {
-      "cie11": {
-        "visible": true,
-        "orden": 2,
-        "codigo": "6A05",
-        "nombre": "Trastorno por deficit de atencion con hiperactividad",
-        "fuente": {
-          "organismo": "World Health Organization",
-          "documento": "Clinical descriptions and diagnostic requirements for ICD-11 mental, behavioural and neurodevelopmental disorders (CDDR)",
-          "edicion": "2024",
-          "url": "https://www.who.int/publications/i/item/9789240077263",
-          "fechaConsulta": "2026-07-26",
-          "sourceVerified": false
-        },
-        "tipoContenido": "resumen_local_pendiente_revision",
-        "completionStatus": "pending_review",
-        "review": {
-          "reviewed": false,
-          "reviewedAt": null,
-          "sourceVerified": false,
-          "notes": "Revisión requerida: criterios, verificación de fuente oficial."
-        },
-        "criterios": [],
-        "especificadores": [],
-        "notas": [],
-        "contenidoLiteralAutorizado": false
+        "contenidoLiteralAutorizado": false,
+        "subtipos": []
       }
     },
     "psicoeducacion": "",
@@ -32330,7 +32874,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "notas": [],
         "contenidoLiteralAutorizado": false,
         "equivalencia": "aproximada",
-        "notasEquivalencia": "La correspondencia entre sistemas puede no ser uno a uno."
+        "notasEquivalencia": "La correspondencia entre sistemas puede no ser uno a uno.",
+        "subtipos": []
       }
     },
     "psicoeducacion": "Los criterios son una herramienta de apoyo y deben integrarse con la entrevista clínica, antecedentes, exploración mental, evolución y juicio profesional.",
@@ -32416,7 +32961,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "notas": [],
         "contenidoLiteralAutorizado": false,
         "equivalencia": "aproximada",
-        "notasEquivalencia": "La correspondencia entre sistemas puede no ser uno a uno."
+        "notasEquivalencia": "La correspondencia entre sistemas puede no ser uno a uno.",
+        "subtipos": []
       }
     },
     "psicoeducacion": "Los criterios son una herramienta de apoyo y deben integrarse con la entrevista clínica, antecedentes, exploración mental, evolución y juicio profesional.",
@@ -32502,7 +33048,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "notas": [],
         "contenidoLiteralAutorizado": false,
         "equivalencia": "aproximada",
-        "notasEquivalencia": "La correspondencia entre sistemas puede no ser uno a uno."
+        "notasEquivalencia": "La correspondencia entre sistemas puede no ser uno a uno.",
+        "subtipos": []
       }
     },
     "psicoeducacion": "Los criterios son una herramienta de apoyo y deben integrarse con la entrevista clínica, antecedentes, exploración mental, evolución y juicio profesional.",
@@ -32588,7 +33135,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "notas": [],
         "contenidoLiteralAutorizado": false,
         "equivalencia": "aproximada",
-        "notasEquivalencia": "La correspondencia entre sistemas puede no ser uno a uno."
+        "notasEquivalencia": "La correspondencia entre sistemas puede no ser uno a uno.",
+        "subtipos": []
       }
     },
     "psicoeducacion": "Los criterios son una herramienta de apoyo y deben integrarse con la entrevista clínica, antecedentes, exploración mental, evolución y juicio profesional.",
@@ -32660,7 +33208,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "notas": [],
         "contenidoLiteralAutorizado": false,
         "equivalencia": "aproximada",
-        "notasEquivalencia": "La correspondencia entre sistemas puede no ser uno a uno."
+        "notasEquivalencia": "La correspondencia entre sistemas puede no ser uno a uno.",
+        "subtipos": []
       }
     },
     "psicoeducacion": "Los criterios son una herramienta de apoyo y deben integrarse con la entrevista clínica, antecedentes, exploración mental, evolución y juicio profesional.",
@@ -32732,7 +33281,8 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "notas": [],
         "contenidoLiteralAutorizado": false,
         "equivalencia": "aproximada",
-        "notasEquivalencia": "La correspondencia entre sistemas puede no ser uno a uno."
+        "notasEquivalencia": "La correspondencia entre sistemas puede no ser uno a uno.",
+        "subtipos": []
       }
     },
     "psicoeducacion": "Los criterios son una herramienta de apoyo y deben integrarse con la entrevista clínica, antecedentes, exploración mental, evolución y juicio profesional.",

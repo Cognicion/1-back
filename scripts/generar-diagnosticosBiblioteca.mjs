@@ -165,7 +165,7 @@ function normalizarCriteriosAgrupados(criterios = [], entidadId = "diagnostico",
   return grupos.filter((grupo) => grupo.items.length || grupo.introduccion || grupo.grupos.length);
 }
 
-const diagnosticos = [];
+let diagnosticos = [];
 const porNombre = new Map();
 
 function obtenerEntidad(nombre, categoria = "Clínica general") {
@@ -323,6 +323,67 @@ function anexarAnsiedad(definicion) {
 
 ansiedad.forEach(anexarAnsiedad);
 
+function fusionarCamposEntidad(principal, secundaria) {
+  principal.aliases = [...new Set([...(principal.aliases || []), ...(secundaria.aliases || []), secundaria.nombre])];
+  if (!principal.descripcionBreve && secundaria.descripcionBreve) principal.descripcionBreve = secundaria.descripcionBreve;
+  if (!principal.psicoeducacion && secundaria.psicoeducacion) principal.psicoeducacion = secundaria.psicoeducacion;
+  principal.referencias = [...(principal.referencias || []), ...(secundaria.referencias || [])];
+  for (const [sistema, datosSecundarios] of Object.entries(secundaria.sistemas || {})) {
+    const datosPrincipales = principal.sistemas[sistema];
+    if (!datosPrincipales) {
+      principal.sistemas[sistema] = datosSecundarios;
+      continue;
+    }
+    datosPrincipales.criterios = [...(datosPrincipales.criterios || []), ...(datosSecundarios.criterios || [])];
+    datosPrincipales.especificadores = [...new Set([...(datosPrincipales.especificadores || []), ...(datosSecundarios.especificadores || [])])];
+    datosPrincipales.notas = [...new Set([...(datosPrincipales.notas || []), ...(datosSecundarios.notas || [])])];
+  }
+}
+
+function agruparJerarquiaCie10() {
+  const jerarquiasVerificadas = new Set(["F90"]);
+  const porCodigo = new Map(diagnosticos
+    .map((diagnostico) => [diagnostico.sistemas?.cie10?.codigo, diagnostico])
+    .filter(([codigo]) => codigo));
+  const eliminados = new Set();
+
+  for (const diagnostico of diagnosticos) {
+    const codigo = diagnostico.sistemas?.cie10?.codigo || "";
+    if (!/^F\d{2}\.\d+/i.test(codigo)) continue;
+    const codigoPadre = codigo.split(".")[0];
+    if (!jerarquiasVerificadas.has(codigoPadre)) continue;
+    const padre = porCodigo.get(codigoPadre);
+    if (!padre || padre === diagnostico) continue;
+    const subtipo = diagnostico.sistemas.cie10;
+    padre.sistemas.cie10.subtipos = [
+      ...(padre.sistemas.cie10.subtipos || []),
+      { codigo: subtipo.codigo, nombre: subtipo.nombre, criterios: subtipo.criterios || [], especificadores: subtipo.especificadores || [], notas: subtipo.notas || [] }
+    ];
+    fusionarCamposEntidad(padre, { ...diagnostico, sistemas: Object.fromEntries(Object.entries(diagnostico.sistemas).filter(([sistema]) => sistema !== "cie10")) });
+    eliminados.add(diagnostico);
+  }
+
+  // La equivalencia clínica entre F90 y 6A05 no puede depender solo del nombre.
+  const grupoF90 = porCodigo.get("F90");
+  const tdahCie11 = diagnosticos.find((diagnostico) => diagnostico.sistemas?.cie11?.codigo === "6A05");
+  if (grupoF90 && tdahCie11 && grupoF90 !== tdahCie11) {
+    fusionarCamposEntidad(grupoF90, tdahCie11);
+    eliminados.add(tdahCie11);
+    grupoF90.nombre = "Trastornos hipercinéticos / Trastorno por déficit de atención con hiperactividad (TDAH)";
+    grupoF90.aliases = [...new Set([...(grupoF90.aliases || []), "TDAH", "ADHD", "6A05"] )];
+  }
+
+  if (grupoF90 && !grupoF90.sistemas.dsm5) {
+    grupoF90.sistemas.dsm5 = nuevoSistema("314.xx", "Attention-Deficit/Hyperactivity Disorder", 3, "dsm5");
+    grupoF90.sistemas.dsm5.codigoCie10Cm = "F90.0";
+    grupoF90.sistemas.dsm5.review.notes = "Correspondencia de código añadida como pendiente de verificación contra DSM-5-TR; no se incorporan criterios sin una fuente autorizada.";
+  }
+
+  return diagnosticos.filter((diagnostico) => !eliminados.has(diagnostico));
+}
+
+diagnosticos = agruparJerarquiaCie10();
+
 function todosLosGrupos(grupos = []) {
   return grupos.flatMap((grupo) => [grupo, ...todosLosGrupos(grupo.grupos || [])]);
 }
@@ -353,6 +414,10 @@ function evaluarSistema(sistema, datos) {
 for (const entidad of diagnosticos) {
   for (const [sistema, datos] of Object.entries(entidad.sistemas)) {
     datos.criterios = normalizarCriteriosAgrupados(datos.criterios, entidad.id, sistema);
+    datos.subtipos = (datos.subtipos || []).map((subtipo, indice) => ({
+      ...subtipo,
+      criterios: normalizarCriteriosAgrupados(subtipo.criterios, `${entidad.id}-${sistema}-subtipo-${indice + 1}`, sistema)
+    }));
     evaluarSistema(sistema, datos);
   }
   if (!entidad.descripcionBreve) {

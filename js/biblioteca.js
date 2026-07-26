@@ -16,7 +16,7 @@ let grupoCie10Actual = "todos";
 let categoriaActual = "todas";
 const CLAVE_SISTEMAS_VISIBLES = "biblioteca-sistemas-visibles";
 const SYSTEM_ORDER = ["cie10", "cie11", "dsm5"];
-const SISTEMA_LABEL = { cie10: "CIE-10", cie11: "CIE-11", dsm5: "DSM-5" };
+const SISTEMA_LABEL = { cie10: "CIE-10", cie11: "CIE-11", dsm5: "DSM-5-TR" };
 let sistemasVisibles = cargarPreferencia(CLAVE_SISTEMAS_VISIBLES, { cie10: true, cie11: true, dsm5: true });
 let DIAGNOSTICOS_VALIDOS = [];
 let PSICOEDUCACION = [];
@@ -325,7 +325,12 @@ function textoBusquedaDiagnostico(diagnostico) {
       sistema.codigo,
       sistema.codigoCie10Cm,
       sistema.nombre,
-      ...(sistema.criterios || []).flatMap(textosGrupo)
+      ...(sistema.criterios || []).flatMap(textosGrupo),
+      ...(sistema.subtipos || []).flatMap((subtipo) => [
+        subtipo.codigo,
+        subtipo.nombre,
+        ...(subtipo.criterios || []).flatMap(textosGrupo)
+      ])
     ])
   ].filter(Boolean).join(" ");
 }
@@ -365,6 +370,15 @@ function renderizarCriterios(sistema) {
   return sistema.criterios.map(renderizarGrupoCriterios).join("");
 }
 
+function renderizarSubtiposCie10(sistema) {
+  if (!sistema?.subtipos?.length) return "";
+  return `<section class="clasificacion-subtipos"><h5>Subtipos y categorías relacionadas</h5>${sistema.subtipos.map((subtipo) => `
+    <article class="clasificacion-subtipo">
+      <h6><span class="codigo-diagnostico">${escaparHTML(subtipo.codigo)}</span> ${escaparHTML(subtipo.nombre)}</h6>
+      ${subtipo.criterios?.length ? renderizarCriterios({ criterios: subtipo.criterios }) : `<p class="criterios-vacios">Criterios específicos no cargados aún. Consultar la fuente oficial correspondiente.</p>`}
+    </article>`).join("")}</section>`;
+}
+
 function renderizarSistemaAcordeon(diagnostico, sistema) {
   const datos = diagnostico.sistemas?.[sistema];
   if (!datos || !sistemasVisibles[sistema]) return "";
@@ -393,7 +407,8 @@ function renderizarDetallesDiagnostico(diagnostico, detalles) {
     boton.querySelector("span").textContent = abierto ? "▶" : "▼";
     panel.hidden = abierto;
     if (!abierto && !panel.dataset.rendered) {
-      panel.innerHTML = renderizarCriterios(diagnostico.sistemas[sistema]);
+          const datosSistema = diagnostico.sistemas[sistema];
+          panel.innerHTML = `${renderizarSubtiposCie10(datosSistema)}${datosSistema.criterios?.length ? renderizarCriterios(datosSistema) : ""}`;
       panel.dataset.rendered = "true";
     }
   }));

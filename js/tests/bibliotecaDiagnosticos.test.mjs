@@ -2,6 +2,16 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { DIAGNOSTICOS_BIBLIOTECA, SISTEMAS_DIAGNOSTICOS } from "../data/diagnosticosBiblioteca.js";
 
+test("F90 y 6A05 se muestran como una sola entidad con subtipos CIE-10", () => {
+  const tdah = DIAGNOSTICOS_BIBLIOTECA.find((diagnostico) => diagnostico.sistemas?.cie10?.codigo === "F90");
+  assert.ok(tdah);
+  assert.match(tdah.nombre, /TDAH/);
+  assert.deepEqual(tdah.sistemas.cie10.subtipos.map((subtipo) => subtipo.codigo), ["F90.0", "F90.1"]);
+  assert.equal(tdah.sistemas.cie11.codigo, "6A05");
+  assert.equal(tdah.sistemas.dsm5.codigo, "314.xx");
+  assert.equal(DIAGNOSTICOS_BIBLIOTECA.some((diagnostico) => diagnostico.sistemas?.cie10?.codigo === "F90.0"), false);
+});
+
 test("Los criterios se almacenan como grupos con listas internas y descripción editable", () => {
   const tag = DIAGNOSTICOS_BIBLIOTECA.find((diagnostico) => diagnostico.id === "trastorno-trastorno-de-ansiedad-generalizada");
   assert.ok(tag.descripcionBreve);

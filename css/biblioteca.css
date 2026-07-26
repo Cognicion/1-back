@@ -671,6 +671,34 @@ html[data-theme="light"] .aviso-clinico-biblioteca {
   border-top: 1px solid rgba(126, 182, 138, .18);
 }
 
+.clasificacion-subtipos {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.clasificacion-subtipos > h5 {
+  margin: 0;
+  color: var(--text-primary, #1b1d1b);
+}
+
+.clasificacion-subtipo {
+  padding: 12px 14px;
+  border: 1px solid var(--border-subtle, #ddddda);
+  border-radius: 10px;
+  background: var(--surface-secondary, #ececea);
+}
+
+.clasificacion-subtipo h6 {
+  margin: 0 0 8px;
+  color: var(--text-primary, #1b1d1b);
+  font-size: .95rem;
+}
+
+.clasificacion-subtipo .grupo-criterios {
+  margin-top: 10px;
+}
+
 .sistema-diagnostico {
   min-width: 0;
   border: 1px solid rgba(126, 182, 138, .2);
