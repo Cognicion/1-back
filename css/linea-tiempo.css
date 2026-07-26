@@ -69,12 +69,27 @@
   gap: 0.5rem;
 }
 
+.timeline-detected__filter {
+  min-height: 2.35rem;
+  border: 1px solid var(--timeline-border);
+  border-radius: 12px;
+  background: var(--timeline-surface);
+  color: var(--timeline-text);
+  padding: 0.45rem 0.65rem;
+}
+
 .timeline-detected__status,
+.timeline-detected__progress,
 .timeline-detected-card__date,
 .timeline-detected-card__source,
 .timeline-detected-card__fragment,
 .timeline-detected__empty {
   color: var(--timeline-text-secondary);
+}
+
+.timeline-detected__progress {
+  margin: 0.85rem 0 0;
+  font-weight: 700;
 }
 
 .timeline-detected__body {

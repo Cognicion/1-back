@@ -34,6 +34,15 @@ import {
 } from "./lineaTiempoUtils.js";
 import { renderizarDetalleEvento, renderizarEstados, renderizarLineaTiempo } from "./lineaTiempoRenderer.js";
 import { obtenerNombrePacienteParaMostrar } from "../utils/nombresPacientes.js";
+import {
+  DETECTED_EVENTS_DEBUG_LABEL,
+  ESTADOS_DETECCION_EVENTOS,
+  crearFuenteClinicaComun,
+  detectarEventosEnFuentes,
+  fechaISO as fechaISOEventoDetectado,
+  hashDeteccionEstable,
+  normalizarTextoDeteccion as normalizarTextoEventoDetectado
+} from "./lineaTiempoDeteccionEventos.js";
 
 let root = null;
 let pacienteId = "";
@@ -728,20 +737,35 @@ function asegurarSeccionDeteccion() {
   seccion = document.createElement("section");
   seccion.className = "timeline-detected";
   seccion.dataset.detectedEventsSection = "";
-  seccion.innerHTML = `<header class="timeline-detected__header"><button type="button" class="timeline-detected__toggle" data-action="toggle-detected-events" aria-expanded="false"><span>Eventos detectados</span><strong data-detected-count>0 pendientes</strong></button><div class="timeline-detected__actions"><button type="button" class="timeline-button timeline-button--primary" data-action="search-detected-events">Buscar nuevos eventos</button><button type="button" class="timeline-button" data-action="toggle-discarded-events">Mostrar descartados</button></div></header><p class="timeline-detected__status" data-detected-status>No se han buscado eventos nuevos.</p><div class="timeline-detected__body" data-detected-body hidden></div>`;
+  seccion.innerHTML = `<header class="timeline-detected__header"><button type="button" class="timeline-detected__toggle" data-action="toggle-detected-events" aria-expanded="false"><span>Eventos detectados</span><strong data-detected-count>0 pendientes</strong></button><div class="timeline-detected__actions"><select class="timeline-detected__filter" data-detected-filter aria-label="Filtrar eventos detectados"><option value="todos">Todos</option><option value="alta">Alta confianza</option><option value="revision">Revision adicional</option><option value="sin_fecha">Sin fecha definida</option></select><button type="button" class="timeline-button timeline-button--primary" data-action="search-detected-events">Buscar nuevos eventos</button><button type="button" class="timeline-button" data-action="reanalyze-detected-events">Volver a analizar fuentes</button><button type="button" class="timeline-button" data-action="toggle-discarded-events">Mostrar descartados</button></div></header><p class="timeline-detected__progress" data-detected-progress hidden></p><p class="timeline-detected__status" data-detected-status>No se han buscado eventos nuevos.</p><div class="timeline-detected__body" data-detected-body hidden></div>`;
   root.querySelector("[data-timeline-shell]")?.after(seccion);
   return seccion;
 }
 
-function renderizarSugerenciasDeteccion(sugerencias = [], mostrarDescartados = false, abierto = false) {
+function aplicarFiltroSugerenciasDeteccion(sugerencias = [], filtro = "todos") {
+  if (filtro === "alta") return sugerencias.filter((s) => s.nivelConfianza === "alta" || Number(s.confianza || 0) >= 0.85);
+  if (filtro === "revision") return sugerencias.filter((s) => s.nivelConfianza === "baja" || Number(s.confianza || 0) < 0.6 || s.requiereRevisionFecha === true);
+  if (filtro === "sin_fecha") return sugerencias.filter((s) => !s.fechaInicioISO);
+  return sugerencias;
+}
+
+function estadoCompatibleSugerencia(sugerencia = {}) {
+  const estado = String(sugerencia.estado || sugerencia.status || "").trim().toLowerCase();
+  if (estado === "aceptada" || estado === "agregado" || estado === "agregada") return ESTADOS_DETECCION.aceptado;
+  if (estado === "descartada" || estado === "rechazado" || estado === "rechazada") return ESTADOS_DETECCION.descartado;
+  return ESTADOS_DETECCION[estado] || ESTADOS_DETECCION.pendiente;
+}
+
+function renderizarSugerenciasDeteccion(sugerencias = [], mostrarDescartados = false, abierto = false, filtro = "todos") {
   const seccion = asegurarSeccionDeteccion();
   const sugerenciasDisponibles = filtrarEventosDetectadosDisponibles(sugerencias, eventos, mostrarDescartados);
+  const filtradas = aplicarFiltroSugerenciasDeteccion(sugerenciasDisponibles, filtro);
   const pendientes = sugerenciasDisponibles.filter((s) => s.estado === ESTADOS_DETECCION.pendiente);
   seccion.querySelector("[data-detected-count]").textContent = `${pendientes.length} pendientes`;
   const body = seccion.querySelector("[data-detected-body]");
   body.hidden = !(abierto || pendientes.length);
   body.replaceChildren();
-  sugerenciasDisponibles.forEach((s) => {
+  filtradas.forEach((s) => {
     const card = document.createElement("article");
     card.className = `timeline-detected-card timeline-detected-card--${s.estado}`;
     card.dataset.detectedId = s.id;
@@ -762,7 +786,10 @@ function renderizarSugerenciasDeteccion(sugerencias = [], mostrarDescartados = f
 
 async function cargarSugerenciasDetectadas() {
   const snap = await getDocs(refEventosDetectados());
-  return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+  return snap.docs.map((d) => {
+    const datos = d.data();
+    return { id: d.id, ...datos, estado: estadoCompatibleSugerencia(datos) };
+  });
 }
 
 function obtenerDetectedEventIdSugerencia(sugerencia = {}) {
@@ -788,11 +815,9 @@ function obtenerClavesDeteccionEvento(evento = {}) {
 function filtrarEventosDetectadosDisponibles(eventosDetectados = [], eventosLineaTiempo = [], mostrarDescartados = false) {
   const idsRegistrados = new Set(eventosLineaTiempo.flatMap(obtenerClavesDeteccionEvento));
   const eventosDisponibles = eventosDetectados
-    .filter((sugerencia) => mostrarDescartados || sugerencia.estado !== ESTADOS_DETECCION.descartado)
+    .filter((sugerencia) => mostrarDescartados || (sugerencia.estado !== ESTADOS_DETECCION.descartado && sugerencia.estado !== ESTADOS_DETECCION.aceptado))
     .filter((sugerencia) => !obtenerClavesDeteccionSugerencia(sugerencia).some((id) => idsRegistrados.has(id)))
-    .map((sugerencia) => sugerencia.estado === ESTADOS_DETECCION.aceptado
-      ? { ...sugerencia, estado: ESTADOS_DETECCION.pendiente }
-      : sugerencia);
+    .map((sugerencia) => sugerencia);
   console.debug("[Eventos detectados] Filtrado", {
     totalDetectados: eventosDetectados.length,
     totalYaRegistrados: idsRegistrados.size,
@@ -857,17 +882,275 @@ function extraerSugerenciasLocales(fragmentos = [], fechaNacimiento = null) {
   return salida;
 }
 
+function tipoFuenteContadoresIniciales() {
+  return {
+    notas: 0,
+    historiaClinica: 0,
+    estudios: 0,
+    tratamientos: 0,
+    diagnosticos: 0,
+    paciente: 0
+  };
+}
+
+function obtenerTextoDiagnosticoDeteccion(diagnostico = {}) {
+  if (typeof diagnostico === "string") return diagnostico.trim();
+  if (!diagnostico || typeof diagnostico !== "object") return "";
+  const codigo = diagnostico.codigo || diagnostico.code || diagnostico.id || "";
+  const nombre = diagnostico.nombre || diagnostico.name || diagnostico.descripcion || diagnostico.texto || diagnostico.textoVisible || diagnostico.diagnostico || "";
+  return [codigo, nombre].filter(Boolean).join(" - ").trim();
+}
+
+function obtenerDiagnosticosPacienteDeteccion(paciente = {}) {
+  const acumulados = [
+    ...(Array.isArray(paciente.historialDiagnosticos) ? paciente.historialDiagnosticos : []),
+    ...(Array.isArray(paciente.diagnosticos) ? paciente.diagnosticos : []),
+    ...(Array.isArray(paciente.datosClinicosResumen?.historialDiagnosticos) ? paciente.datosClinicosResumen.historialDiagnosticos : [])
+  ];
+  if (paciente.diagnostico) acumulados.push({ diagnostico: paciente.diagnostico, fecha: paciente.fechaDiagnostico || paciente.fechaCreacion });
+  const unicos = new Map();
+  acumulados.forEach((dx, index) => {
+    const texto = obtenerTextoDiagnosticoDeteccion(dx);
+    if (!texto) return;
+    const clave = hashDeteccionEstable(["diagnostico", normalizarTextoEventoDetectado(texto), dx.fechaDiagnostico || dx.fecha || index].join("|"));
+    if (!unicos.has(clave)) unicos.set(clave, { id: dx.id || clave, ...dx, texto });
+  });
+  return [...unicos.values()];
+}
+
+function crearFuenteComunDeteccion(datos) {
+  return crearFuenteClinicaComun(datos);
+}
+
+async function cargarFuentesClinicasDeteccion127() {
+  const [{ obtenerHistorialNotas }, { obtenerHistoriaClinica }, { listarTratamientos }, { listarEstudios }] = await Promise.all([
+    import("../services/notas.js"),
+    import("../services/historias.js"),
+    import("../services/tratamientos.js"),
+    import("../services/estudios.js")
+  ]);
+  const contadoresPorTipo = tipoFuenteContadoresIniciales();
+  const errores = [];
+  const fuentes = [];
+  const paciente = await obtenerUsuario(pacienteId);
+  const fechaNacimiento = normalizarFecha(paciente?.fechaNacimiento);
+  const agregarFuente = (fuente) => {
+    if (!fuente?.origenId || !fuente?.origenTipo) return;
+    fuentes.push(fuente);
+    const mapa = {
+      nota: "notas",
+      historia_clinica: "historiaClinica",
+      estudio: "estudios",
+      tratamiento: "tratamientos",
+      diagnostico: "diagnosticos",
+      paciente: "paciente"
+    };
+    const clave = mapa[fuente.origenTipo] || fuente.origenTipo;
+    contadoresPorTipo[clave] = (contadoresPorTipo[clave] || 0) + 1;
+  };
+  agregarFuente(crearFuenteComunDeteccion({
+    origenId: pacienteId,
+    origenTipo: "paciente",
+    origenSubtipo: "datos_clinicos",
+    fechaDocumento: fechaDocDeteccion(paciente),
+    tituloDocumento: "Datos clinicos del paciente",
+    datos: {
+      padecimientoActual: paciente?.padecimientoActual,
+      antecedentes: paciente?.antecedentes,
+      diagnostico: paciente?.diagnostico,
+      fecha: paciente?.fechaCreacion || paciente?.createdAt
+    }
+  }));
+  obtenerDiagnosticosPacienteDeteccion(paciente).forEach((dx, index) => {
+    agregarFuente(crearFuenteComunDeteccion({
+      origenId: dx.id || `diagnostico-${index}`,
+      origenTipo: "diagnostico",
+      origenSubtipo: dx.estado || "diagnostico",
+      fechaDocumento: dx.fechaDiagnostico || dx.fecha || paciente?.fechaCreacion,
+      tituloDocumento: "Diagnosticos",
+      datos: dx
+    }));
+  });
+  try {
+    const historia = await obtenerHistoriaClinica(pacienteId);
+    if (historia.exists()) agregarFuente(crearFuenteComunDeteccion({
+      origenId: historia.id,
+      origenTipo: "historia_clinica",
+      origenSubtipo: "historia_inicial",
+      fechaDocumento: fechaDocDeteccion(historia.data()),
+      tituloDocumento: "Historia clinica",
+      datos: historia.data()
+    }));
+  } catch (error) {
+    errores.push({ tipo: "historiaClinica", code: error?.code || error?.message || "error" });
+  }
+  try {
+    const notas = await obtenerHistorialNotas(pacienteId);
+    notas.forEach((n) => {
+      const d = n.data();
+      const vigente = d.notaEditada && typeof d.notaEditada === "object" ? d.notaEditada : d;
+      agregarFuente(crearFuenteComunDeteccion({
+        origenId: n.id,
+        origenTipo: "nota",
+        origenSubtipo: vigente.tipoNotaClave || vigente.tipoNota || "nota_clinica",
+        fechaDocumento: fechaDocDeteccion(vigente),
+        tituloDocumento: vigente.tipoNota || vigente.titulo || "Nota clinica",
+        datos: vigente
+      }));
+    });
+  } catch (error) {
+    errores.push({ tipo: "notas", code: error?.code || error?.message || "error" });
+  }
+  try {
+    const estudios = await listarEstudios(pacienteId);
+    estudios
+      .filter((estudio) => estudio && estudio.eliminado !== true && estudio.estado !== "eliminado")
+      .forEach((estudio) => agregarFuente(crearFuenteComunDeteccion({
+        origenId: estudio.id,
+        origenTipo: "estudio",
+        origenSubtipo: estudio.tipo || estudio.nombre || "estudio",
+        fechaDocumento: estudio.fechaRealizacion || estudio.fechaEstudio || estudio.fecha || estudio.fechaCreacion,
+        tituloDocumento: estudio.nombre || estudio.tipo || "Estudios",
+        datos: estudio
+      })));
+  } catch (error) {
+    errores.push({ tipo: "estudios", code: error?.code || error?.message || "error" });
+  }
+  try {
+    const tratamientos = await listarTratamientos(pacienteId);
+    tratamientos
+      .filter((tratamiento) => tratamiento && tratamiento.eliminado !== true && tratamiento.archivado !== true && tratamiento.estado !== "borrador")
+      .forEach((tratamiento) => agregarFuente(crearFuenteComunDeteccion({
+        origenId: tratamiento.id,
+        origenTipo: "tratamiento",
+        origenSubtipo: tratamiento.estado === "suspendido" || tratamiento.suspendido === true ? "tratamiento_suspendido" : "tratamiento",
+        fechaDocumento: tratamiento.fechaInicio || tratamiento.fechaSuspension || tratamiento.fechaCreacion,
+        tituloDocumento: "Tratamiento e indicaciones",
+        datos: tratamiento
+      })));
+  } catch (error) {
+    errores.push({ tipo: "tratamientos", code: error?.code || error?.message || "error" });
+  }
+  return { fuentes, fechaNacimiento, contadoresPorTipo, errores };
+}
+
+function resumenDeteccionVacio() {
+  return {
+    fuentesEncontradas: 0,
+    fuentesConTexto: 0,
+    fragmentosGenerados: 0,
+    fragmentosConExpresionesTemporales: 0,
+    eventosExtraidos: 0,
+    eventosNormalizados: 0,
+    eventosDescartados: 0,
+    duplicadosDetectados: 0,
+    sugerenciasGuardadas: 0,
+    sugerenciasPendientes: 0
+  };
+}
+
+function actualizarEstadoVisibleDeteccion({ totalFuentes = 0, errores = [], pendientes = 0, nuevas = 0, totalGuardadas = 0, analizado = false } = {}) {
+  const statusNode = root.querySelector("[data-detected-status]");
+  if (!statusNode) return;
+  if (errores.length && totalFuentes === 0) {
+    statusNode.textContent = "No fue posible buscar eventos en este momento.";
+    return;
+  }
+  if (!totalFuentes) {
+    statusNode.textContent = "No se encontraron documentos clinicos disponibles para analizar.";
+    return;
+  }
+  if (errores.length) {
+    statusNode.textContent = `Se analizaron ${Math.max(0, totalFuentes - errores.length)} de ${totalFuentes} documentos. Algunos no pudieron procesarse.`;
+    return;
+  }
+  if (pendientes) {
+    statusNode.textContent = `${pendientes} eventos pendientes de revision.`;
+    return;
+  }
+  if (totalGuardadas > 0 && !pendientes) {
+    statusNode.textContent = "Todos los eventos detectados ya fueron añadidos o descartados.";
+    return;
+  }
+  if (analizado || nuevas === 0) {
+    statusNode.textContent = "Se analizaron las fuentes disponibles, pero no se detectaron eventos nuevos.";
+  }
+}
+
+function actualizarProgresoDeteccion(texto = "") {
+  const nodo = root.querySelector("[data-detected-progress]");
+  if (!nodo) return;
+  nodo.hidden = !texto;
+  nodo.textContent = texto;
+}
+
+function obtenerClavesProcesadasSugerencias(sugerencias = []) {
+  return new Set(sugerencias.flatMap((s) => [s.detectedEventId, s.hashConceptual, s.hashFragmento]).filter(Boolean));
+}
+
+function detectarDuplicadoEventoExistente(sugerencia, eventosLineaTiempo = []) {
+  const titulo = normalizarTextoEventoDetectado(sugerencia.tituloSugerido).slice(0, 24);
+  return eventosLineaTiempo.find((evento) => {
+    const mismaFecha = fechaISOEventoDetectado(evento.fechaEvento) === sugerencia.fechaInicioISO;
+    const tituloEvento = normalizarTextoEventoDetectado(evento.titulo).slice(0, 24);
+    const mismaDeteccion = obtenerClavesDeteccionEvento(evento).includes(sugerencia.detectedEventId);
+    return mismaDeteccion || (mismaFecha && titulo && tituloEvento === titulo);
+  });
+}
+
+async function persistirSugerenciasDetectadas127(candidatos = [], existentes = [], forzarReanalisis = false) {
+  const claves = obtenerClavesProcesadasSugerencias(existentes);
+  const nuevas = [];
+  let duplicadosDetectados = 0;
+  for (const candidato of candidatos) {
+    const clavesCandidato = [candidato.detectedEventId, candidato.hashConceptual, candidato.hashFragmento].filter(Boolean);
+    if (!forzarReanalisis && clavesCandidato.some((clave) => claves.has(clave))) {
+      duplicadosDetectados += 1;
+      continue;
+    }
+    if (forzarReanalisis && clavesCandidato.some((clave) => claves.has(clave))) {
+      duplicadosDetectados += 1;
+      continue;
+    }
+    const posibleDuplicado = detectarDuplicadoEventoExistente(candidato, eventos);
+    await addDoc(refEventosDetectados(), {
+      ...candidato,
+      posibleDuplicadoEventoId: posibleDuplicado?.id || null,
+      detectadoPor: auth.currentUser.uid,
+      detectadoEn: serverTimestamp(),
+      revisadoPor: null,
+      revisadoEn: null,
+      eventoCreadoId: null,
+      detectorVersion: "1.27"
+    });
+    clavesCandidato.forEach((clave) => claves.add(clave));
+    nuevas.push(candidato);
+  }
+  return { nuevas, duplicadosDetectados };
+}
+
 async function inicializarDetectorEventosClinicosLocal() {
   let sugerencias = [];
   let mostrarDescartados = false;
+  let filtroActual = "todos";
   let buscando = false;
   const status = () => root.querySelector("[data-detected-status]");
   asegurarSeccionDeteccion();
   const cargar = async () => {
-    sugerencias = await cargarSugerenciasDetectadas();
-    renderizarSugerenciasDeteccion(sugerencias, mostrarDescartados);
-    const pendientes = filtrarEventosDetectadosDisponibles(sugerencias, eventos, mostrarDescartados).filter((s) => s.estado === ESTADOS_DETECCION.pendiente).length;
-    if (status()) status().textContent = pendientes ? `${pendientes} eventos pendientes de revision.` : "No hay sugerencias pendientes.";
+    try {
+      sugerencias = await cargarSugerenciasDetectadas();
+      renderizarSugerenciasDeteccion(sugerencias, mostrarDescartados, false, filtroActual);
+      const disponibles = filtrarEventosDetectadosDisponibles(sugerencias, eventos, mostrarDescartados);
+      const pendientes = disponibles.filter((s) => s.estado === ESTADOS_DETECCION.pendiente).length;
+      if (!sugerencias.length) {
+        if (status()) status().textContent = "No se han buscado eventos nuevos.";
+      } else {
+        actualizarEstadoVisibleDeteccion({ totalFuentes: 1, pendientes, totalGuardadas: sugerencias.length, analizado: true });
+      }
+    } catch (error) {
+      if (status()) status().textContent = "No fue posible leer las sugerencias detectadas.";
+      console.warn("[Eventos detectados] Error al cargar sugerencias", error?.code || error?.message || error);
+    }
   };
   const buscar = async () => {
     if (buscando || !permisos.puedeLeer) return;
@@ -896,6 +1179,73 @@ async function inicializarDetectorEventosClinicosLocal() {
       buscando = false;
     }
   };
+  const buscar127 = async ({ forzarReanalisis = false } = {}) => {
+    if (buscando || !permisos.puedeLeer) return;
+    buscando = true;
+    const botonBuscar = root.querySelector("[data-action='search-detected-events']");
+    const botonReanalizar = root.querySelector("[data-action='reanalyze-detected-events']");
+    [botonBuscar, botonReanalizar].forEach((boton) => {
+      if (!boton) return;
+      boton.disabled = true;
+      boton.setAttribute("aria-busy", "true");
+    });
+    const resumen = resumenDeteccionVacio();
+    if (status()) status().textContent = "Leyendo fuentes clinicas...";
+    actualizarProgresoDeteccion("Leyendo fuentes...");
+    try {
+      const { fuentes, fechaNacimiento, contadoresPorTipo, errores } = await cargarFuentesClinicasDeteccion127();
+      resumen.fuentesEncontradas = fuentes.length;
+      resumen.fuentesConTexto = fuentes.filter((fuente) => String(fuente.textoAnalizable || "").trim()).length;
+      actualizarProgresoDeteccion(`Analizando ${resumen.fuentesConTexto} de ${resumen.fuentesEncontradas} documentos...`);
+      const resultadoDeteccion = detectarEventosEnFuentes({ fuentes, fechaNacimiento, pacienteId });
+      resumen.fragmentosGenerados = resultadoDeteccion.fragmentosGenerados;
+      resumen.fragmentosConExpresionesTemporales = resultadoDeteccion.fragmentosConExpresionesTemporales;
+      resumen.eventosExtraidos = resultadoDeteccion.eventosExtraidos;
+      resumen.eventosNormalizados = resultadoDeteccion.eventosNormalizados;
+      resumen.eventosDescartados = resultadoDeteccion.eventosDescartados;
+      resumen.duplicadosDetectados = resultadoDeteccion.duplicadosDetectados;
+      actualizarProgresoDeteccion("Comparando duplicados...");
+      const existentes = await cargarSugerenciasDetectadas();
+      const persistencia = await persistirSugerenciasDetectadas127(resultadoDeteccion.eventos, existentes, forzarReanalisis);
+      resumen.duplicadosDetectados += persistencia.duplicadosDetectados;
+      resumen.sugerenciasGuardadas = persistencia.nuevas.length;
+      await registrarEventoAuditoria({
+        accion: "detectar_eventos_linea_tiempo",
+        modulo: "Linea de tiempo del paciente",
+        descripcion: "Deteccion asistida de eventos clinicos.",
+        usuarioUid: auth.currentUser.uid,
+        pacienteUid: pacienteId,
+        detalles: { fuentesAnalizadas: resumen.fuentesEncontradas, sugerenciasNuevas: resumen.sugerenciasGuardadas }
+      });
+      await cargar();
+      const disponibles = filtrarEventosDetectadosDisponibles(sugerencias, eventos, mostrarDescartados);
+      resumen.sugerenciasPendientes = disponibles.filter((s) => s.estado === ESTADOS_DETECCION.pendiente).length;
+      console.debug(DETECTED_EVENTS_DEBUG_LABEL, resumen);
+      console.debug(`${DETECTED_EVENTS_DEBUG_LABEL} fuentes`, contadoresPorTipo);
+      if (resultadoDeteccion.motivosDescarte && Object.keys(resultadoDeteccion.motivosDescarte).length) {
+        console.debug(`${DETECTED_EVENTS_DEBUG_LABEL} descartes`, resultadoDeteccion.motivosDescarte);
+      }
+      actualizarEstadoVisibleDeteccion({
+        totalFuentes: resumen.fuentesEncontradas,
+        errores,
+        pendientes: resumen.sugerenciasPendientes,
+        nuevas: resumen.sugerenciasGuardadas,
+        totalGuardadas: sugerencias.length,
+        analizado: true
+      });
+      actualizarProgresoDeteccion(resumen.sugerenciasGuardadas ? `${resumen.sugerenciasGuardadas} eventos detectados.` : "");
+    } catch (error) {
+      if (status()) status().textContent = "No fue posible buscar eventos en este momento.";
+      console.warn("[Eventos detectados] Fallo tecnico", error?.code || error?.message || error);
+    } finally {
+      buscando = false;
+      [botonBuscar, botonReanalizar].forEach((boton) => {
+        if (!boton) return;
+        boton.disabled = false;
+        boton.removeAttribute("aria-busy");
+      });
+    }
+  };
   const onClick = async (event) => {
     const action = event.target.closest("[data-action]")?.dataset.action;
     const card = event.target.closest("[data-detected-id]");
@@ -904,8 +1254,16 @@ async function inicializarDetectorEventosClinicosLocal() {
       body.hidden = !body.hidden;
       event.target.closest("button")?.setAttribute("aria-expanded", String(!body.hidden));
     }
-    if (action === "toggle-discarded-events") { mostrarDescartados = !mostrarDescartados; event.target.textContent = mostrarDescartados ? "Ocultar descartados" : "Mostrar descartados"; renderizarSugerenciasDeteccion(sugerencias, mostrarDescartados, true); }
-    if (action === "search-detected-events") buscar();
+    if (event.target.closest("[data-detected-filter]")) {
+      filtroActual = event.target.closest("[data-detected-filter]").value || "todos";
+      renderizarSugerenciasDeteccion(sugerencias, mostrarDescartados, true, filtroActual);
+    }
+    if (action === "toggle-discarded-events") { mostrarDescartados = !mostrarDescartados; event.target.textContent = mostrarDescartados ? "Ocultar descartados" : "Mostrar descartados"; renderizarSugerenciasDeteccion(sugerencias, mostrarDescartados, true, filtroActual); }
+    if (action === "search-detected-events") buscar127();
+    if (action === "reanalyze-detected-events") {
+      const confirmar = confirm("Se volveran a analizar las fuentes clinicas del paciente. Las sugerencias aceptadas o descartadas no se eliminaran.");
+      if (confirmar) buscar127({ forzarReanalisis: true });
+    }
     if (!card) return;
     const sugerencia = sugerencias.find((s) => s.id === card.dataset.detectedId);
     if (!sugerencia) return;
@@ -940,9 +1298,15 @@ async function inicializarDetectorEventosClinicosLocal() {
       await cargar();
     }
   };
+  const onChange = (event) => {
+    if (!event.target.closest("[data-detected-filter]")) return;
+    filtroActual = event.target.closest("[data-detected-filter]").value || "todos";
+    renderizarSugerenciasDeteccion(sugerencias, mostrarDescartados, true, filtroActual);
+  };
   root.addEventListener("click", onClick);
+  root.addEventListener("change", onChange);
   await cargar();
-  return { destruir() { root.removeEventListener("click", onClick); } };
+  return { destruir() { root.removeEventListener("click", onClick); root.removeEventListener("change", onChange); } };
 }
 
 async function inicializarDetectorEventosClinicos() {
