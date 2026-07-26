@@ -69,6 +69,8 @@ export function configurarInteracciones({ root, onSelect, onClearSelection, onZo
       item.setAttribute("aria-expanded", String(item === group));
       const marker = item.querySelector(".timeline-event__marker");
       const preview = item.querySelector(".timeline-event__preview");
+      marker?.classList.toggle("is-selected", selected);
+      marker?.setAttribute("aria-pressed", String(selected));
       marker?.setAttribute("aria-expanded", String(selected));
       preview?.toggleAttribute("hidden", !selected);
       preview?.setAttribute("aria-hidden", String(!selected));
@@ -79,7 +81,9 @@ export function configurarInteracciones({ root, onSelect, onClearSelection, onZo
     if (!group || group.dataset.selected === "true") return;
     group.dataset.cardVisible = "false";
     group.setAttribute("aria-expanded", "false");
-    group.querySelector(".timeline-event__marker")?.setAttribute("aria-expanded", "false");
+      group.querySelector(".timeline-event__marker")?.setAttribute("aria-expanded", "false");
+      group.querySelector(".timeline-event__marker")?.classList.remove("is-selected");
+      group.querySelector(".timeline-event__marker")?.setAttribute("aria-pressed", "false");
     group.querySelector(".timeline-event__preview")?.setAttribute("hidden", "");
     group.querySelector(".timeline-event__preview")?.setAttribute("aria-hidden", "true");
   };
@@ -98,6 +102,8 @@ export function configurarInteracciones({ root, onSelect, onClearSelection, onZo
       item.dataset.cardVisible = "false";
       item.setAttribute("aria-expanded", "false");
       item.querySelector(".timeline-event__marker")?.setAttribute("aria-expanded", "false");
+      item.querySelector(".timeline-event__marker")?.classList.remove("is-selected");
+      item.querySelector(".timeline-event__marker")?.setAttribute("aria-pressed", "false");
       item.querySelector(".timeline-event__preview")?.setAttribute("hidden", "");
       item.querySelector(".timeline-event__preview")?.setAttribute("aria-hidden", "true");
     });
@@ -182,7 +188,7 @@ export function configurarInteracciones({ root, onSelect, onClearSelection, onZo
     if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
       const grupos = [...root.querySelectorAll("[data-group-id]")];
       const indice = grupos.indexOf(group);
-      grupos[indice + (event.key === "ArrowRight" ? 1 : -1)]?.focus();
+      grupos[indice + (event.key === "ArrowRight" ? 1 : -1)]?.querySelector(".timeline-event__marker")?.focus();
     }
   };
 

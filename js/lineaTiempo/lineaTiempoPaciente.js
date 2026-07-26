@@ -86,12 +86,21 @@ function renderizarVista() {
 }
 
 function abrirDetalle(seleccion) {
+  const evento = eventos.find((item) => item.id === seleccion.eventoId);
+  if (!evento && !seleccion.grupoId) {
+    console.warn("El marcador seleccionado no contiene un evento valido.");
+    return;
+  }
+  selectedGroupId = seleccion.grupoId || null;
   renderizarDetalleEvento(root, eventos, seleccion.eventoId, seleccion.grupoId);
   root.querySelectorAll("[data-event-id]").forEach((card) => {
     const acciones = card.querySelector(".timeline-detail-event__actions");
     if (!acciones || !permisos.puedeEscribir) return;
     const id = card.dataset.eventId;
     acciones.innerHTML = `<button type="button" class="timeline-button" data-edit-event="${id}">Editar</button><button type="button" class="timeline-button timeline-button--danger" data-delete-event="${id}">Eliminar</button>`;
+  });
+  requestAnimationFrame(() => {
+    root.querySelector("[data-event-detail]")?.scrollIntoView({ behavior: "smooth", block: "nearest" });
   });
 }
 

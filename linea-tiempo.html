@@ -52,6 +52,11 @@
       </div>
     </section>
 
+    <aside class="timeline-detail detalle-evento-linea-tiempo" data-event-detail hidden aria-live="polite" aria-label="Detalle del evento">
+      <div class="timeline-panel-heading"><h2>Detalle del evento</h2><button type="button" class="timeline-button" data-action="close-detail">Cerrar</button></div>
+      <div data-detail-content></div>
+    </aside>
+
     <section class="timeline-form-panel" data-event-form-panel hidden>
       <div class="timeline-panel-heading">
         <div><p class="timeline-eyebrow">Registro clínico</p><h2 data-form-title>Añadir evento</h2></div>
@@ -81,10 +86,6 @@
       </form>
     </section>
 
-    <aside class="timeline-detail" data-event-detail hidden aria-label="Detalle del evento">
-      <div class="timeline-panel-heading"><h2>Detalle del evento</h2><button type="button" class="timeline-button" data-action="close-detail">Cerrar</button></div>
-      <div data-detail-content></div>
-    </aside>
   </main>
   <script type="module" src="js/lineaTiempo/lineaTiempoPaciente.js"></script>
 </body>

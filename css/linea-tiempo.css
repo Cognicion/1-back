@@ -154,6 +154,7 @@ button { cursor: pointer; }
 .timeline-scroll:active { cursor: grabbing; }
 .timeline-canvas { position: relative; min-width: max(900px, var(--timeline-content-width, 100%)); min-height: 380px; padding: 40px 5% 30px; --timeline-axis-start: 5%; --timeline-axis-end: 95%; transform-origin: center center; }
 .timeline-axis { position: absolute; top: 50%; right: calc(100% - var(--timeline-axis-end)); left: var(--timeline-axis-start); height: 3px; transform: translateY(-50%); border-radius: 3px; background: var(--timeline-primary); opacity: .7; }
+.timeline-axis, .timeline-tick, .timeline-focus-marker, .timeline-dna { pointer-events: none; }
 .timeline-focus-marker { position: absolute; top: 50%; left: calc(5% + var(--focus-ratio, .5) * 90%); z-index: 20; width: 10px; height: 10px; border: 2px solid var(--timeline-surface); border-radius: 50%; background: #d9363e; box-shadow: 0 0 0 1px rgb(217 54 62 / 35%); transform: translate(-50%, -50%); pointer-events: none; }
 .timeline-tick { position: absolute; top: calc(50% + 13px); transform: translateX(-50%); color: var(--timeline-text-secondary); font-size: .72rem; white-space: nowrap; }
 .timeline-tick--start { transform: translateX(0); text-align: left; }
@@ -180,6 +181,8 @@ button { cursor: pointer; }
 }
 .timeline-event__marker:hover, .timeline-event__marker:focus-visible { box-shadow: 0 0 0 4px color-mix(in srgb, var(--timeline-primary) 24%, transparent); transform: translateX(-50%) scale(1.06); }
 .timeline-event__marker { touch-action: manipulation; cursor: pointer; }
+.timeline-event__marker.is-selected { box-shadow: 0 0 0 4px color-mix(in srgb, var(--timeline-primary) 38%, transparent); }
+.timeline-event__marker:focus-visible { outline: 3px solid color-mix(in srgb, var(--timeline-primary) 42%, transparent); outline-offset: 3px; }
 
 .timeline-state { margin-top: 18px; padding: 28px; border-radius: 16px; text-align: center; }
 .timeline-state p { color: var(--timeline-text-secondary); }
@@ -208,6 +211,8 @@ button { cursor: pointer; }
 .timeline-detail-event dd { margin: 3px 0 0; color: var(--timeline-text); font-weight: 700; }
 .timeline-detail-event__description { color: var(--timeline-text-secondary); line-height: 1.5; white-space: pre-wrap; }
 .timeline-detail-event__actions { display: flex; gap: 8px; margin-top: 12px; }
+.detalle-evento-linea-tiempo[hidden] { display: none; }
+.detalle-evento-linea-tiempo:not([hidden]) { display: block; }
 
 @media (max-width: 760px) {
   .timeline-page { padding: 10px; }
