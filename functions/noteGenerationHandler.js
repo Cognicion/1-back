@@ -882,7 +882,7 @@ function buildEvolutionCoverage(payload = {}) {
         message: "Omitio posible relacion atribuida por el paciente con falta de sueno y sustancias."
       });
     }
-    if (hasAny(text, [/\b(no|niega).{0,60}(suicid|quitarse la vida|morir)\b/i])) {
+    if (hasAny(text, [/\b(no|niega).{0,60}(suicid\w*|quitarse la vida|morir)\b/i])) {
       addCoverageFact(facts, {
         ...source,
         domain: "riesgo_suicida",
@@ -1133,7 +1133,7 @@ function validateSemanticFidelity(text = "", coverage = {}) {
     issues.push({
       code: "single_paragraph_multi_domain_evolution",
       message: "La Evolucion contiene un unico parrafo pese a integrar tres o mas dominios clinicos.",
-      severity: "high"
+      severity: "medium"
     });
   }
   for (const { domain, pattern } of UNEXPLORED_NORMALITY_PATTERNS) {
@@ -1169,14 +1169,30 @@ function validateSemanticFidelity(text = "", coverage = {}) {
   return issues;
 }
 
+function isCurrentRiskCoverageFact(fact = {}) {
+  return ["current_suicidal_ideation_negated", "current_harm_intent_negated"].includes(fact.code);
+}
+
+function currentSuicidalNegationIncluded(text = "") {
+  const clean = normalizeString(text);
+  return [
+    /\b(?:niega|neg[oó]|sin|no refiere|ausencia de)\b.{0,90}\b(?:ideas? de muerte|ideas? suicidas?|ideaci[oó]n suicida|suicidio)\b/i,
+    /\bno se identifica\b.{0,60}\briesgo suicida agudo\b.{0,80}\b(?:valoraci[oó]n|informaci[oó]n disponible)\b/i
+  ].some((pattern) => pattern.test(clean));
+}
+
+function coverageFactIncluded(text = "", fact = {}) {
+  if (fact.code === "current_suicidal_ideation_negated") return currentSuicidalNegationIncluded(text);
+  const patterns = Array.isArray(fact.requiredPatterns) ? fact.requiredPatterns : [];
+  return patterns.length ? patterns.every((pattern) => pattern.test(text)) : true;
+}
+
 function validateCoverageInclusion(text = "", coverage = {}) {
   const issues = [];
   const clean = normalizeString(text);
   for (const fact of coverage.facts || []) {
     if (fact.required === false) continue;
-    const patterns = Array.isArray(fact.requiredPatterns) ? fact.requiredPatterns : [];
-    if (!patterns.length) continue;
-    const included = patterns.every((pattern) => pattern.test(clean));
+    const included = coverageFactIncluded(clean, fact);
     if (!included) {
       issues.push({
         code: `missing_coverage_${fact.code}`,
@@ -1516,7 +1532,15 @@ function validateProviderResult({ parsed, payload, requestId, HttpsErrorClass, a
 
   if (!text || blockingIssues.some((issue) => issue.severity === "high")) {
     const validationCodes = validationCodesFromIssues(blockingIssues);
-    throw makeCallableError(HttpsErrorClass, "data-loss", "No fue posible validar la Evolucion generada.", {
+    const retryFacts = (coverage.facts || []).filter((fact) =>
+      isCurrentRiskCoverageFact(fact) && blockingIssues.some((issue) => issue.code === `missing_coverage_${fact.code}`)
+    ).map((fact) => ({
+      code: fact.code,
+      status: fact.status,
+      temporality: fact.temporality,
+      proposition: fact.proposition
+    }));
+    const validationError = makeCallableError(HttpsErrorClass, "data-loss", "No fue posible validar la Evolucion generada.", {
       requestId,
       stage,
       retryable: true,
@@ -1524,6 +1548,9 @@ function validateProviderResult({ parsed, payload, requestId, HttpsErrorClass, a
       attempt,
       validatorVersion: EVOLUTION_VALIDATOR_VERSION
     });
+    // Metadatos solo para el reintento en memoria; no se serializan hacia el cliente ni logs.
+    validationError.retryFacts = retryFacts;
+    throw validationError;
   }
   if (!sourceUtteranceIds.length) {
     warnings.push({
@@ -1580,15 +1607,22 @@ function mapProviderError({ error, HttpsErrorClass, requestId, stage }) {
   return makeCallableError(HttpsErrorClass, "internal", "Error inesperado al generar la Evolucion.", { requestId, stage, retryable: false });
 }
 
-function buildRetryInstruction(validationDetails = {}) {
+function buildRetryInstruction(validationDetails = {}, retryFacts = []) {
   const codes = Array.isArray(validationDetails.validationCodes) ? validationDetails.validationCodes : [];
   const codesText = codes.length ? codes.join(", ") : "SCHEMA_VALIDATION_FAILED";
+  const riskRepairInstruction = retryFacts.length
+    ? [
+      "Para MISSING_CURRENT_RISK incorpora una sintesis breve, actual y fiel del hecho estructurado indicado; conserva su estado y temporalidad, sin inventar datos ni copiar dialogo:",
+      ...retryFacts.map((fact) => `- ${fact.code}: estado=${fact.status}; temporalidad=${fact.temporality}; hallazgo=${fact.proposition}.`)
+    ]
+    : [];
   return [
     "Regenera solo evolution corrigiendo exactamente estos codigos de validacion:",
     codesText,
     "Usa solo los hechos estructurados permitidos en evolutionCoverage y explorationMatrix.",
     "No escribas dia 0. No uses dobles negaciones. No inventes postura, cooperacion, orientacion ni ausencia de agitacion.",
     "No atribuyas compromiso a familiares si la fuente es el paciente. No escribas normalidad de dominios no explorados.",
+    ...riskRepairInstruction,
     "No generes examen mental, analisis ni plan. Devuelve solo JSON conforme al esquema."
   ].join("\n");
 }
@@ -1642,6 +1676,7 @@ async function runGenerateStructuredNoteFromDictation({
     const client = openaiClient || new OpenAIClass({ apiKey });
     const providerInput = buildProviderInput(payload);
     let lastValidationDetails = null;
+    let lastRetryFacts = [];
 
     for (let attempt = 1; attempt <= 2; attempt += 1) {
       stage = attempt === 1 ? "provider_request" : "provider_retry";
@@ -1667,7 +1702,7 @@ async function runGenerateStructuredNoteFromDictation({
         model,
         providerInput,
         timeoutMs,
-        extraInstruction: attempt === 2 ? buildRetryInstruction(lastValidationDetails || {}) : ""
+        extraInstruction: attempt === 2 ? buildRetryInstruction(lastValidationDetails || {}, lastRetryFacts) : ""
       });
 
       stage = "extract_response";
@@ -1710,6 +1745,7 @@ async function runGenerateStructuredNoteFromDictation({
       } catch (error) {
         if (attempt === 1) {
           lastValidationDetails = error?.details || null;
+          lastRetryFacts = Array.isArray(error?.retryFacts) ? error.retryFacts : [];
           continue;
         }
         throw error;
@@ -1756,6 +1792,7 @@ module.exports = {
   validateContextInventions,
   validateSemanticFidelity,
   validateCoverageInclusion,
+  buildRetryInstruction,
   buildMentalExamComponents,
   buildMentalExamNarrative,
   buildMentalExamSection,

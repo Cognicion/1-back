@@ -5,6 +5,10 @@ const {
   FORMAT_PERMISSION_FRAY,
   FORMAT_PERMISSION_NAVARRO,
   validateEvolutionText,
+  validateSemanticFidelity,
+  validateCoverageInclusion,
+  buildEvolutionCoverage,
+  buildRetryInstruction,
   buildMentalExamSection,
   requiredInstitutionalFormatPermission,
   runGenerateStructuredNoteFromDictation
@@ -135,6 +139,20 @@ function fakeOpenAIWithOutput(outputText) {
   return {
     responses: {
       create: async () => ({ output_text: outputText })
+    }
+  };
+}
+
+function fakeOpenAISequence(outputs, calls = []) {
+  let index = 0;
+  return {
+    responses: {
+      create: async (request) => {
+        calls.push(request);
+        const output = outputs[Math.min(index, outputs.length - 1)];
+        index += 1;
+        return { output_text: output };
+      }
     }
   };
 }
@@ -451,10 +469,6 @@ const badSemanticOutputs = [
   [
     "construccion ideas delirantes",
     correctedCarlosEvolution.replace("disminucion de la conviccion respecto a las ideas de persecucion previamente referidas", "presenta cuestionamientos respecto a ideas delirantes previas")
-  ],
-  [
-    "parrafo unico",
-    correctedCarlosEvolution.replace(/\n\n/g, " ")
   ]
 ];
 
@@ -473,6 +487,78 @@ for (const [_name, text] of badSemanticOutputs) {
     (error) => error.code === "data-loss" && Array.isArray(error.details?.validationCodes) && error.details.validationCodes.length > 0
   );
 }
+
+// Un solo párrafo es una advertencia de legibilidad, no un bloqueo si la cobertura clínica está completa.
+const carlosSingleParagraph = correctedCarlosEvolution.replace(/\n\n/g, " ");
+const carlosCoverage = buildEvolutionCoverage(carlosPayload());
+assert.ok(validateSemanticFidelity(carlosSingleParagraph, carlosCoverage).some((issue) => issue.code === "single_paragraph_multi_domain_evolution" && issue.severity === "medium"));
+const singleParagraphAccepted = await runWithOutput(JSON.stringify({
+  sections: {
+    evolution: {
+      text: carlosSingleParagraph,
+      sourceUtteranceIds: carlosShortUtterances.map((utterance) => utterance.id),
+      requiresReview: true
+    }
+  },
+  globalWarnings: []
+}), carlosPayload());
+assert.equal(singleParagraphAccepted.sections.evolution.text, carlosSingleParagraph);
+
+// La advertencia de un solo párrafo no oculta una contradicción clínica real.
+await assert.rejects(
+  () => runWithOutput(JSON.stringify({
+    sections: {
+      evolution: {
+        text: carlosSingleParagraph.replace("Niega ideas de muerte, ideacion suicida e intencion de causar dano", "Niega ideacion suicida actual y ausencia de intencion de causar dano"),
+        sourceUtteranceIds: carlosShortUtterances.map((utterance) => utterance.id),
+        requiresReview: true
+      }
+    },
+    globalWarnings: []
+  }), carlosPayload()),
+  (error) => error.code === "data-loss" && error.details?.validationCodes?.includes("DOUBLE_NEGATION")
+);
+
+// Cobertura de riesgo actual: aceptar formulaciones clínicas equivalentes, sin depender de una frase única.
+const suicideCoverageFact = {
+  code: "current_suicidal_ideation_negated",
+  required: true,
+  status: "absent",
+  temporality: "current",
+  requiredPatterns: [/niega/i]
+};
+[
+  "Niega actualmente ideas de muerte e ideación suicida.",
+  "No refiere ideación suicida durante la valoración.",
+  "Sin ideas suicidas en la valoración actual.",
+  "No se identifica riesgo suicida agudo con la información disponible."
+].forEach((text) => {
+  assert.equal(validateCoverageInclusion(text, { facts: [suicideCoverageFact] }).length, 0);
+});
+assert.equal(validateCoverageInclusion("No se documentó valoración suficiente de riesgo actual.", { facts: [suicideCoverageFact] }).some((issue) => issue.severity === "high"), true);
+
+// Un primer intento sin riesgo actual recibe una reparación dirigida y solo se reintenta una vez.
+const retryCalls = [];
+const riskMissingEvolution = validEvolution.replace("Niega ideas suicidas y niega intencion heteroagresiva actual hacia su hermano.", "");
+const retryResult = await runGenerateStructuredNoteFromDictation({
+  data: basePayload(),
+  auth,
+  apiKey: "test-key",
+  OpenAIClass: class {},
+  HttpsErrorClass: TestHttpsError,
+  openaiClient: fakeOpenAISequence([
+    JSON.stringify({ sections: { evolution: { text: riskMissingEvolution, sourceUtteranceIds: baseUtterances.map((utterance) => utterance.id), requiresReview: true } }, globalWarnings: [] }),
+    JSON.stringify({ sections: { evolution: { text: validEvolution, sourceUtteranceIds: baseUtterances.map((utterance) => utterance.id), requiresReview: true } }, globalWarnings: [] })
+  ], retryCalls),
+  logger: { info() {}, error() {} },
+  adminDb: frayAllowedDb,
+  timeoutMs: 500
+});
+assert.equal(retryCalls.length, 2);
+assert.match(JSON.stringify(retryCalls[1]), /MISSING_CURRENT_RISK/);
+assert.match(JSON.stringify(retryCalls[1]), /current_suicidal_ideation_negated/);
+assert.match(retryResult.sections.evolution.text, /Niega ideas suicidas/i);
+assert.match(buildRetryInstruction({ validationCodes: ["MISSING_CURRENT_RISK"] }, [{ code: "current_suicidal_ideation_negated", status: "absent", temporality: "current", proposition: "negacion actual" }]), /estado=absent; temporalidad=current/);
 
 await assert.rejects(
   () => runWithOutput(JSON.stringify({
