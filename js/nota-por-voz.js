@@ -12,7 +12,7 @@ import {
   prepararSubdivisionesAdaptativas,
   repairDuplicateAdaptiveBlockIds,
   validateAdaptiveManifestTree
-} from "./services/conversationSegmentationProviders.js?v=20260725-adaptive-split-v1-2";
+} from "./services/conversationSegmentationProviders.js?v=20260725-adaptive-split-v1-3";
 import { segmentarConversacionClinica } from "./services/clinicalPipeline.js";
 import { VOICE_NOTE_MODULE_VERSION } from "./services/voiceNoteModuleVersion.js";
 import {
@@ -1669,6 +1669,14 @@ async function dividirYReintentarBloquesAdaptativos() {
   state.segmentationMetadata = { ...(state.segmentationMetadata || {}), blockManifest: manifest };
   const parents = getSplittableParentBlocks(manifest);
   const button = $("btnSegmentarConversacionVoz");
+  const verifiedLeaves = getPendingLeafBlocks(manifest);
+  if (!parents.length && verifiedLeaves.length) {
+    const attemptId = `adaptive-${Date.now().toString(36)}-${Math.random().toString(16).slice(2, 8)}`;
+    if (button) { button.disabled = true; button.textContent = "Procesando subbloques…"; }
+    setText("voiceSegmentationStatus", `Reanudando ${verifiedLeaves.length} subbloques verificados…`);
+    renderDetalleTecnicoSegmentacion({ code: "adaptive_split_attempt", stage: "processing_children", retryable: true, details: { attemptId, handlerEntered: true, operationType: "adaptive_split", manifestId: manifest.manifestId || "local", manifestRevision: manifest.manifestRevision ?? manifest.revision ?? 0, splittableParentIds: [], verifiedLeafIds: verifiedLeaves.map((block) => block.blockId), providerCalls: 0 } });
+    return segmentarConProveedor({ onlyBlockKeys: verifiedLeaves.map((block) => block.blockKey), operationType: "adaptive_split" });
+  }
   if (!parents.length) {
     const details = { manifestId: manifest?.manifestId || "local", manifestRevision: manifest?.revision || 0, states: (manifest?.blocks || []).filter(esBloquePadreSegmentacion).map((block) => ({ blockId: block.blockId, status: block.status, attemptCount: block.attemptCount, consecutiveTimeouts: block.consecutiveTimeouts, splitLevel: block.splitLevel, childBlockIds: block.childBlockIds || [] })) };
     console.error("No se pudo iniciar la subdivisión:", details);
@@ -1677,11 +1685,14 @@ async function dividirYReintentarBloquesAdaptativos() {
     return null;
   }
   if (state.segmentationOperation || state.activeSegmentationRequest) return state.activeSegmentationRequest;
-  state.segmentationOperation = { type: "adaptive_split", activeParentIds: parents.map((block) => block.blockId || block.blockKey) };
+  const attemptId = `adaptive-${Date.now().toString(36)}-${Math.random().toString(16).slice(2, 8)}`;
+  state.segmentationOperation = { type: "adaptive_split", activeParentIds: parents.map((block) => block.blockId || block.blockKey), attemptId, startedAt: new Date().toISOString() };
   if (button) { button.disabled = true; button.textContent = "Preparando subdivisión…"; }
   renderBlockManifestSegmentacion(manifest);
+  renderDetalleTecnicoSegmentacion({ code: "adaptive_split_attempt", stage: "click_received", retryable: true, details: { attemptId, handlerEntered: true, operationType: "adaptive_split", isProcessingBefore: false, manifestId: manifest.manifestId || "local", manifestRevision: manifest.manifestRevision ?? manifest.revision ?? 0, splittableParentIds: parents.map((block) => block.blockId) } });
   setText("voiceSegmentationStatus", "Preparando subdivisión de bloques pendientes…");
   try {
+    renderDetalleTecnicoSegmentacion({ code: "adaptive_split_attempt", stage: "manifest_loaded", retryable: true, details: { attemptId, handlerEntered: true, manifestId: manifest.manifestId || "local", manifestRevision: manifest.manifestRevision ?? manifest.revision ?? 0, splittableParentIds: parents.map((block) => block.blockId), lastCompletedStage: "manifest_loaded" } });
     const texto = $("voiceCorrectedTranscript")?.value || $("textoDictadoClinico")?.value || "";
     const persistenceIdentity = {
       transcriptHash: hashTextoVoz(texto),
@@ -1710,6 +1721,7 @@ async function dividirYReintentarBloquesAdaptativos() {
     merged.manifestRevision = candidate.manifestRevision;
     state.segmentationMetadata = { ...(state.segmentationMetadata || {}), ...persistenceIdentity, blockManifest: merged, completedBlocks: counts.completed, totalBlocks: counts.total, pendingBlocks: counts.pending + counts.failed + counts.requiresSplit };
     renderBlockManifestSegmentacion(merged);
+    renderDetalleTecnicoSegmentacion({ code: "adaptive_split_attempt", stage: "split_persisted", retryable: true, details: { attemptId, expectedLeafIds: prepared.createdChildIds, completedParentsBefore: counts.completed, lastCompletedStage: "split_persisted" } });
     const saved = await flushPersistenciaVoz("adaptive-split-prepared", { throwOnError: true });
     const readback = await obtenerSegmentacionNotaVozLocal({ ...contextoPersistenciaVoz(), ...persistenceIdentity });
     const savedIds = new Set(readback?.blockManifest?.blocks?.map((block) => block.blockId) || []);
@@ -1738,6 +1750,7 @@ async function dividirYReintentarBloquesAdaptativos() {
       throw error;
     }
     state.segmentationMetadata.blockManifest = confirmedManifest;
+    renderDetalleTecnicoSegmentacion({ code: "adaptive_split_attempt", stage: "readback_verified", retryable: true, details: { attemptId, verifiedLeafIds: pendingLeaves.map((block) => block.blockId), expectedLeafIds: prepared.createdChildIds, readbackRevision, lastCompletedStage: "readback_verified" } });
     setText("voiceSegmentationStatus", `Subbloques preparados. Procesando ${prepared.createdChildIds.length} bloques…`);
     return await segmentarConProveedor({ onlyBlockKeys: pendingLeaves.map((block) => block.blockKey), operationType: "adaptive_split" });
   } catch (error) {
@@ -2659,7 +2672,11 @@ async function segmentarConProveedor(options = {}) {
   state.activePreflightAbortController = preflightAbort;
   const preflightStartedAt = Date.now();
   setText("voiceSegmentationStatus", "Preparando transcripcion...");
-  renderDetalleTecnicoSegmentacion(null);
+  if (options.operationType === "adaptive_split") {
+    renderDetalleTecnicoSegmentacion({ code: "adaptive_split_attempt", stage: "processing_children", retryable: true, details: { operationType: "adaptive_split", providerCalls: 0, lastCompletedStage: "processing_children" } });
+  } else {
+    renderDetalleTecnicoSegmentacion(null);
+  }
   let snapshot;
   let transcriptHash;
   let cached;
@@ -3024,7 +3041,7 @@ function renderDetalleTecnicoSegmentacion(failure = null, metrics = null) {
   setText("voiceSegmentationTechnicalRetryable", (failure?.retryable || details.retryable) ? "si" : "no");
   setText("voiceSegmentationTechnicalDuration", Number.isFinite(Number(metrics?.elapsedMs)) ? `${Math.round(Number(metrics.elapsedMs))} ms` : "-");
   setText("voiceSegmentationTechnicalBlocks", Number.isFinite(Number(metrics?.blockCount)) ? `${metrics.externalBlockCount || metrics.completedBlocks || 0}/${metrics.blockCount}` : "-");
-  const structuralKeys = ["storedRevision", "candidateRevision", "readbackRevision", "duplicateBlockIds", "repairedBlockIds", "expectedChildIds", "recoveredChildIds", "missingChildIds", "expectedLeafIds", "recoveredLeafIds", "missingLeafIds", "parentChildLinksValid", "treeValidationValid", "storageKeyMatch", "completedParentsBefore", "completedParentsAfter", "providerCalls", "earlyReturnReason", "errorReason"];
+  const structuralKeys = ["attemptId", "handlerEntered", "listenerBindingCount", "buttonElementId", "operationType", "isProcessingBefore", "isProcessingAfter", "lastCompletedStage", "storedRevision", "candidateRevision", "readbackRevision", "duplicateBlockIds", "repairedBlockIds", "expectedChildIds", "recoveredChildIds", "missingChildIds", "expectedLeafIds", "verifiedLeafIds", "recoveredLeafIds", "missingLeafIds", "parentChildLinksValid", "treeValidationValid", "storageKeyMatch", "completedParentsBefore", "completedParentsAfter", "providerCalls", "earlyReturnReason", "errorReason"];
   const structuralDetails = Object.fromEntries(structuralKeys.filter((key) => details[key] !== undefined).map((key) => [key, details[key]]));
   setText("voiceSegmentationTechnicalStructure", Object.keys(structuralDetails).length ? JSON.stringify(structuralDetails) : "-");
 }
@@ -3844,7 +3861,8 @@ function conectarEventos() {
   $("btnSegmentarConversacionVoz")?.addEventListener("click", () => {
     const manifest = state.segmentationMetadata?.blockManifest || {};
     const splittable = getSplittableParentBlocks(manifest);
-    const action = splittable.length
+    const counts = contarBloquesManifest(manifest);
+    const action = (splittable.length || counts.requiresSplit)
       ? dividirYReintentarBloquesAdaptativos()
       : segmentarConProveedor({ onlyBlockKeys: tieneManifiestoActivoPendiente() ? obtenerBlockKeysPendientesManifest(manifest) : [] });
     action.catch((error) => {
