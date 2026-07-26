@@ -1,7 +1,15 @@
-import { auth } from "../firebase.js";
+import { auth, db } from "../firebase.js";
 import { obtenerUsuario, listarPacientes, medicoPuedeVer } from "../services/usuarios.js";
 import { registrarEventoAuditoria } from "../services/auditoria.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import {
+  addDoc,
+  collection,
+  doc,
+  getDocs,
+  serverTimestamp,
+  updateDoc
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import {
   cargarEventosPaciente,
   cargarCategoriasLineaTiempo,
@@ -605,24 +613,281 @@ async function cargarLineaTiempo() {
   }
 }
 
+const ESTADOS_DETECCION = Object.freeze({ pendiente: "pendiente", aceptado: "aceptado", descartado: "descartado" });
+const PATRON_TEMPORAL_DETECCION = /\b(\d{1,2}[/-]\d{1,2}[/-]\d{4}|\d{4}-\d{2}-\d{2}|\d{1,2}\s+de\s+[a-záéíóúñ]+\s+de\s+\d{4}|[a-záéíóúñ]+\s+de\s+\d{4}|(?:en|desde|alrededor de)\s+\d{4}|(?:ayer|anteayer|la semana pasada|el mes pasado|el año pasado|el ano pasado)|(?:desde\s+)?(?:aproximadamente\s+)?hace\s+(?:\d+|un|una|dos|tres|cuatro|cinco|seis|siete|ocho|nueve|diez|once|doce)\s+(?:día|dias|días|semana|semanas|mes|meses|año|años|ano|anos)|(?:a los|desde los)\s+\d{1,2}\s+años|infancia|adolescencia|desde joven|desde pequeño|desde pequeno)\b/i;
+const PATRON_RELEVANCIA_DETECCION = /\b(ingres|internad|hospitaliz|alta|urgencia|crisis|intento suicida|suicid|autoles|violencia|diagnostic|tratamiento|medicamento|suspend|inici|resonancia|tomografia|laboratorio|gabinete|estudio|cirugia|enfermedad|consumo|alcohol|cocaina|metanfetamina|cannabis|recaid|trauma|fallec|murio|muerte|embarazo|parto|legal|aislamiento|insomnio|ansiedad|depres)/i;
+const PATRON_NEGACION_DETECCION = /\b(niega|niegan|no ha presentado|no presenta|sin antecedente|se descarto|descarta|no refiere|niega antecedente)\b/i;
+const PATRON_FUTURO_DETECCION = /\b(se considerara|si empeora|proxima consulta|se hospitalizara|se programo|se indicara)\b/i;
+const MESES_DETECCION = new Map([["enero",0],["febrero",1],["marzo",2],["abril",3],["mayo",4],["junio",5],["julio",6],["agosto",7],["septiembre",8],["setiembre",8],["octubre",9],["noviembre",10],["diciembre",11]]);
+const NUMEROS_DETECCION = new Map([["un",1],["una",1],["dos",2],["tres",3],["cuatro",4],["cinco",5],["seis",6],["siete",7],["ocho",8],["nueve",9],["diez",10],["once",11],["doce",12]]);
+
+function refEventosDetectados() {
+  return collection(db, "pacientes", pacienteId, "eventosDetectados");
+}
+
+function normalizarTextoDeteccion(texto = "") {
+  return String(texto || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, " ").trim().toLocaleLowerCase("es-MX");
+}
+
+function fechaISO(fecha) {
+  if (!fecha) return null;
+  const valor = fecha instanceof Date ? fecha : new Date(fecha);
+  if (Number.isNaN(valor.getTime())) return null;
+  const pad = (n) => String(n).padStart(2, "0");
+  return `${valor.getFullYear()}-${pad(valor.getMonth() + 1)}-${pad(valor.getDate())}`;
+}
+
+function fechaLocalISO(iso = "") {
+  const m = String(iso || "").match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (!m) return null;
+  return new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]), 12, 0, 0, 0);
+}
+
+async function hashDeteccion(texto = "") {
+  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(String(texto || "")));
+  return [...new Uint8Array(digest)].map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+function fechaDocDeteccion(datos = {}) {
+  for (const valor of [datos.fechaNota, datos.fecha, datos.fechaNotaDefinitiva, datos.fechaCreacion, datos.createdAt, datos.creadoEn, datos.fechaActualizacion, datos.fechaInicio]) {
+    const fecha = normalizarFecha(valor);
+    if (fecha) return fecha;
+  }
+  return new Date();
+}
+
+function resolverFechaDetectada(expresion = "", fechaReferencia = new Date(), fechaNacimiento = null) {
+  const texto = normalizarTextoDeteccion(expresion);
+  let m = texto.match(/\b(\d{1,2})[/-](\d{1,2})[/-](\d{4})\b/);
+  if (m) return { fechaInicioISO: fechaISO(new Date(Number(m[3]), Number(m[2]) - 1, Number(m[1]), 12)), precisionTemporal: "dia", requiereRevisionFecha: false };
+  m = texto.match(/\b(\d{4})-(\d{2})-(\d{2})\b/);
+  if (m) return { fechaInicioISO: fechaISO(new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]), 12)), precisionTemporal: "dia", requiereRevisionFecha: false };
+  m = texto.match(/\b(\d{1,2})\s+de\s+([a-z]+)\s+de\s+(\d{4})\b/);
+  if (m && MESES_DETECCION.has(m[2])) return { fechaInicioISO: fechaISO(new Date(Number(m[3]), MESES_DETECCION.get(m[2]), Number(m[1]), 12)), precisionTemporal: "dia", requiereRevisionFecha: false };
+  m = texto.match(/\b([a-z]+)\s+de\s+(\d{4})\b/);
+  if (m && MESES_DETECCION.has(m[1])) return { fechaInicioISO: fechaISO(new Date(Number(m[2]), MESES_DETECCION.get(m[1]), 1, 12)), precisionTemporal: "mes", requiereRevisionFecha: true };
+  m = texto.match(/\b(?:en|desde|alrededor de)\s+(\d{4})\b/);
+  if (m) return { fechaInicioISO: `${m[1]}-01-01`, precisionTemporal: "anio", requiereRevisionFecha: true };
+  if (texto.includes("ayer")) return { fechaInicioISO: fechaISO(new Date(fechaReferencia.getFullYear(), fechaReferencia.getMonth(), fechaReferencia.getDate() - 1, 12)), precisionTemporal: "dia", requiereRevisionFecha: true };
+  if (texto.includes("anteayer")) return { fechaInicioISO: fechaISO(new Date(fechaReferencia.getFullYear(), fechaReferencia.getMonth(), fechaReferencia.getDate() - 2, 12)), precisionTemporal: "dia", requiereRevisionFecha: true };
+  if (texto.includes("semana pasada")) return { fechaInicioISO: fechaISO(new Date(fechaReferencia.getFullYear(), fechaReferencia.getMonth(), fechaReferencia.getDate() - 7, 12)), precisionTemporal: "semana", requiereRevisionFecha: true };
+  if (texto.includes("mes pasado")) return { fechaInicioISO: fechaISO(new Date(fechaReferencia.getFullYear(), fechaReferencia.getMonth() - 1, 1, 12)), precisionTemporal: "mes", requiereRevisionFecha: true };
+  if (texto.includes("ano pasado") || texto.includes("año pasado")) return { fechaInicioISO: `${fechaReferencia.getFullYear() - 1}-01-01`, precisionTemporal: "anio", requiereRevisionFecha: true };
+  m = texto.match(/\bhace\s+(\d+|un|una|dos|tres|cuatro|cinco|seis|siete|ocho|nueve|diez|once|doce)\s+(dia|dias|semana|semanas|mes|meses|ano|anos|año|años)\b/);
+  if (m) {
+    const cantidad = Number(m[1]) || NUMEROS_DETECCION.get(m[1]) || 1;
+    const unidad = m[2];
+    const fecha = new Date(fechaReferencia);
+    if (unidad.startsWith("dia")) fecha.setDate(fecha.getDate() - cantidad);
+    else if (unidad.startsWith("semana")) fecha.setDate(fecha.getDate() - cantidad * 7);
+    else if (unidad.startsWith("mes")) fecha.setMonth(fecha.getMonth() - cantidad);
+    else fecha.setFullYear(fecha.getFullYear() - cantidad);
+    return { fechaInicioISO: fechaISO(fecha), precisionTemporal: unidad.startsWith("dia") ? "dia" : unidad.startsWith("semana") ? "semana" : unidad.startsWith("mes") ? "mes" : "anio", requiereRevisionFecha: true };
+  }
+  m = texto.match(/\b(?:a los|desde los)\s+(\d{1,2})\s+anos\b/);
+  if (m && fechaNacimiento) return { fechaInicioISO: `${fechaNacimiento.getFullYear() + Number(m[1])}-01-01`, precisionTemporal: "anio", requiereRevisionFecha: true };
+  return { fechaInicioISO: null, precisionTemporal: "indeterminada", requiereRevisionFecha: true };
+}
+
+function tituloDetectado(frase = "") {
+  const texto = normalizarTextoDeteccion(frase);
+  if (/madre|padre|herman|familiar/.test(texto) && /fallec|murio|muerte/.test(texto)) return "Fallecimiento de familiar";
+  if (/intento suicida|suicid/.test(texto)) return "Intento suicida";
+  if (/hospitaliz|internad|ingres/.test(texto)) return "Hospitalizacion o ingreso";
+  if (/diagnostic/.test(texto)) return "Diagnostico referido";
+  if (/tratamiento|medicamento|suspend|inici/.test(texto)) return "Cambio de tratamiento";
+  if (/resonancia|tomografia|laboratorio|gabinete|estudio/.test(texto)) return "Estudio clinico";
+  if (/consumo|alcohol|cocaina|metanfetamina|cannabis|tabaco/.test(texto)) return "Consumo de sustancias";
+  return "Evento clinico detectado";
+}
+
+function categoriaDetectada(frase = "") {
+  const texto = normalizarTextoDeteccion(frase);
+  if (/hospitaliz|internad|ingres/.test(texto)) return "hospitalizacion";
+  if (/intento suicida|suicid/.test(texto)) return "intento_suicida";
+  if (/diagnostic/.test(texto)) return "diagnostico";
+  if (/tratamiento|medicamento|suspend/.test(texto)) return "cambio_tratamiento";
+  if (/resonancia|tomografia|laboratorio|gabinete|estudio/.test(texto)) return "estudio_gabinete";
+  return null;
+}
+
+function asegurarSeccionDeteccion() {
+  let seccion = root.querySelector("[data-detected-events-section]");
+  if (seccion) return seccion;
+  seccion = document.createElement("section");
+  seccion.className = "timeline-detected";
+  seccion.dataset.detectedEventsSection = "";
+  seccion.innerHTML = `<header class="timeline-detected__header"><button type="button" class="timeline-detected__toggle" data-action="toggle-detected-events" aria-expanded="false"><span>Eventos detectados</span><strong data-detected-count>0 pendientes</strong></button><div class="timeline-detected__actions"><button type="button" class="timeline-button timeline-button--primary" data-action="search-detected-events">Buscar nuevos eventos</button><button type="button" class="timeline-button" data-action="toggle-discarded-events">Mostrar descartados</button></div></header><p class="timeline-detected__status" data-detected-status>No se han buscado eventos nuevos.</p><div class="timeline-detected__body" data-detected-body hidden></div>`;
+  root.querySelector("[data-timeline-shell]")?.after(seccion);
+  return seccion;
+}
+
+function renderizarSugerenciasDeteccion(sugerencias = [], mostrarDescartados = false, abierto = false) {
+  const seccion = asegurarSeccionDeteccion();
+  const pendientes = sugerencias.filter((s) => s.estado === ESTADOS_DETECCION.pendiente);
+  seccion.querySelector("[data-detected-count]").textContent = `${pendientes.length} pendientes`;
+  const body = seccion.querySelector("[data-detected-body]");
+  body.hidden = !(abierto || pendientes.length);
+  body.replaceChildren();
+  sugerencias.filter((s) => mostrarDescartados || s.estado !== ESTADOS_DETECCION.descartado).forEach((s) => {
+    const card = document.createElement("article");
+    card.className = `timeline-detected-card timeline-detected-card--${s.estado}`;
+    card.dataset.detectedId = s.id;
+    card.innerHTML = `<div class="timeline-detected-card__meta"><span>Evento detectado</span><span>${s.estado}</span></div><label>Titulo sugerido <input data-detected-field="titulo" maxlength="160"></label><div class="timeline-detected-card__grid"><label>Fecha <input data-detected-field="fechaInicioISO" type="date"></label><label>Fecha final <input data-detected-field="fechaFinISO" type="date"></label><label>Importancia <select data-detected-field="importancia"><option value="baja">Baja</option><option value="media">Media</option><option value="alta">Alta</option></select></label></div><label>Descripcion <textarea data-detected-field="descripcion" maxlength="1200" rows="3"></textarea></label><p class="timeline-detected-card__date">${s.fechaInicioISO || "Fecha pendiente de confirmar"} · ${s.precisionTemporal || "indeterminada"}${s.requiereRevisionFecha ? " · Fecha aproximada" : ""}</p><p class="timeline-detected-card__source">Fuente: ${s.origenSubtipo || s.origenTipo || "fuente clinica"} · Sujeto: ${s.sujeto || "paciente"}</p>${s.posibleDuplicadoEventoId ? '<p class="timeline-detected-card__warning">Posible duplicado de un evento ya agregado.</p>' : ""}<details class="timeline-detected-card__fragment"><summary>Fragmento donde se detecto</summary><p></p></details><p class="timeline-form-error" data-detected-error role="alert"></p><div class="timeline-detected-card__actions"></div>`;
+    card.querySelector("[data-detected-field='titulo']").value = s.tituloSugerido || "";
+    card.querySelector("[data-detected-field='fechaInicioISO']").value = s.fechaInicioISO || "";
+    card.querySelector("[data-detected-field='fechaFinISO']").value = s.fechaFinISO || "";
+    card.querySelector("[data-detected-field='importancia']").value = s.importanciaSugerida || "media";
+    card.querySelector("[data-detected-field='descripcion']").value = s.descripcionSugerida || "";
+    card.querySelector(".timeline-detected-card__fragment p").textContent = s.fragmentoSoporte || "";
+    const acciones = card.querySelector(".timeline-detected-card__actions");
+    if (s.estado === ESTADOS_DETECCION.descartado) acciones.innerHTML = '<button type="button" class="timeline-button" data-action="restore-detected-event">Restaurar</button>';
+    else if (s.estado === ESTADOS_DETECCION.pendiente) acciones.innerHTML = '<button type="button" class="timeline-button timeline-button--primary" data-action="accept-detected-event">Añadir a la línea de tiempo</button><button type="button" class="timeline-button" data-action="discard-detected-event">Descartar</button><button type="button" class="timeline-button" data-action="view-detected-origin">Ver origen</button>';
+    else acciones.innerHTML = '<button type="button" class="timeline-button" data-action="view-detected-origin">Ver origen</button>';
+    body.append(card);
+  });
+}
+
+async function cargarSugerenciasDetectadas() {
+  const snap = await getDocs(refEventosDetectados());
+  return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+}
+
+async function obtenerFragmentosClinicosDeteccion() {
+  const [{ obtenerUsuario }, { obtenerHistorialNotas }, { obtenerHistoriaClinica }, { listarTratamientos }] = await Promise.all([
+    import("../services/usuarios.js"),
+    import("../services/notas.js"),
+    import("../services/historias.js"),
+    import("../services/tratamientos.js")
+  ]);
+  const paciente = await obtenerUsuario(pacienteId);
+  const fechaNacimiento = normalizarFecha(paciente?.fechaNacimiento);
+  const fragmentos = [];
+  const agregar = async ({ texto, origenTipo, origenSubtipo, origenId, fecha }) => {
+    const limpio = String(texto || "").replace(/\s+/g, " ").trim();
+    if (!limpio) return;
+    fragmentos.push({ texto: limpio.slice(0, 1800), origenTipo, origenSubtipo, origenId, fechaDocumento: fecha || new Date(), hashFragmento: await hashDeteccion(`${origenTipo}|${origenId}|${limpio}`) });
+  };
+  await agregar({ texto: [paciente?.padecimientoActual, paciente?.antecedentes, paciente?.diagnostico].filter(Boolean).join(". "), origenTipo: "paciente", origenSubtipo: "datos_clinicos", origenId: pacienteId, fecha: fechaDocDeteccion(paciente) });
+  try {
+    const historia = await obtenerHistoriaClinica(pacienteId);
+    if (historia.exists()) await agregar({ texto: Object.values(historia.data()).filter((v) => typeof v === "string").join(". "), origenTipo: "historia_clinica", origenSubtipo: "historia_inicial", origenId: historia.id, fecha: fechaDocDeteccion(historia.data()) });
+  } catch { /* fuente sin permiso o inexistente */ }
+  try {
+    const notas = await obtenerHistorialNotas(pacienteId);
+    notas.forEach((n) => {
+      const d = n.data();
+      const v = d.notaEditada && typeof d.notaEditada === "object" ? d.notaEditada : d;
+      agregar({ texto: [v.titulo, v.tipoNota, v.contenido, v.texto, v.nota, v.evolucion, v.subjetivo, v.padecimientoActual, v.analisis].filter(Boolean).join(". "), origenTipo: "nota", origenSubtipo: v.tipoNotaClave || v.tipoNota || "nota_clinica", origenId: n.id, fecha: fechaDocDeteccion(v) });
+    });
+  } catch { /* fuente sin permiso o inexistente */ }
+  try {
+    const tratamientos = await listarTratamientos(pacienteId);
+    tratamientos.forEach((t) => agregar({ texto: [t.medicamento, t.dosis, t.frecuencia, t.via, t.observaciones, t.motivoSuspension].filter(Boolean).join(". "), origenTipo: "tratamiento", origenSubtipo: t.estado === "suspendido" ? "tratamiento_suspendido" : "tratamiento", origenId: t.id, fecha: fechaDocDeteccion(t) }));
+  } catch { /* fuente sin permiso o inexistente */ }
+  return { fragmentos, fechaNacimiento };
+}
+
+function extraerSugerenciasLocales(fragmentos = [], fechaNacimiento = null) {
+  const salida = [];
+  fragmentos.forEach((f) => {
+    String(f.texto || "").split(/(?<=[.!?])\s+/).forEach((frase) => {
+      const normal = normalizarTextoDeteccion(frase);
+      if (!PATRON_TEMPORAL_DETECCION.test(frase) || !PATRON_RELEVANCIA_DETECCION.test(normal) || PATRON_NEGACION_DETECCION.test(normal) || PATRON_FUTURO_DETECCION.test(normal)) return;
+      const intervalo = normal.match(/\bdel\s+(\d{1,2})\s+al\s+(\d{1,2})\s+de\s+([a-z]+)\s+de\s+(\d{4})\b/);
+      const expresion = frase.match(PATRON_TEMPORAL_DETECCION)?.[0] || "";
+      const fecha = resolverFechaDetectada(expresion || frase, f.fechaDocumento, fechaNacimiento);
+      if (intervalo && MESES_DETECCION.has(intervalo[3])) {
+        fecha.fechaInicioISO = fechaISO(new Date(Number(intervalo[4]), MESES_DETECCION.get(intervalo[3]), Number(intervalo[1]), 12));
+        fecha.fechaFinISO = fechaISO(new Date(Number(intervalo[4]), MESES_DETECCION.get(intervalo[3]), Number(intervalo[2]), 12));
+        fecha.precisionTemporal = "dia";
+        fecha.requiereRevisionFecha = false;
+      }
+      salida.push({ tituloSugerido: tituloDetectado(frase), descripcionSugerida: frase.replace(expresion, "").trim().slice(0, 360), ...fecha, expresionTemporalOriginal: expresion, fragmentoSoporte: frase.slice(0, 280), categoriaSugerida: categoriaDetectada(frase), importanciaSugerida: /suicid|hospitaliz|urgencia/i.test(normal) ? "alta" : "media", confianza: fecha.fechaInicioISO ? 0.78 : 0.52, sujeto: /\bmadre|padre|herman|familiar\b/.test(normal) ? "familiar" : "paciente", origenTipo: f.origenTipo, origenSubtipo: f.origenSubtipo, origenId: f.origenId, origenFechaISO: fechaISO(f.fechaDocumento), hashFragmento: f.hashFragmento });
+    });
+  });
+  return salida;
+}
+
+async function inicializarDetectorEventosClinicosLocal() {
+  let sugerencias = [];
+  let mostrarDescartados = false;
+  let buscando = false;
+  const status = () => root.querySelector("[data-detected-status]");
+  asegurarSeccionDeteccion();
+  const cargar = async () => {
+    sugerencias = await cargarSugerenciasDetectadas();
+    renderizarSugerenciasDeteccion(sugerencias, mostrarDescartados);
+    const pendientes = sugerencias.filter((s) => s.estado === ESTADOS_DETECCION.pendiente).length;
+    if (status()) status().textContent = pendientes ? `${pendientes} eventos pendientes de revision.` : "No hay sugerencias pendientes.";
+  };
+  const buscar = async () => {
+    if (buscando || !permisos.puedeLeer) return;
+    buscando = true;
+    if (status()) status().textContent = "Analizando fuentes clinicas…";
+    try {
+      const { fragmentos, fechaNacimiento } = await obtenerFragmentosClinicosDeteccion();
+      const existentes = await cargarSugerenciasDetectadas();
+      const claves = new Set(existentes.map((s) => s.hashConceptual || s.hashFragmento));
+      const nuevas = [];
+      for (const s of extraerSugerenciasLocales(fragmentos, fechaNacimiento)) {
+        const hashConceptual = [pacienteId, s.fechaInicioISO || "sin-fecha", normalizarTextoDeteccion(s.tituloSugerido), s.sujeto].join("|");
+        if (claves.has(hashConceptual)) continue;
+        const posibleDuplicado = eventos.find((e) => fechaISO(e.fechaEvento) === s.fechaInicioISO && normalizarTextoDeteccion(e.titulo).slice(0, 18) === normalizarTextoDeteccion(s.tituloSugerido).slice(0, 18));
+        await addDoc(refEventosDetectados(), { ...s, hashConceptual, estado: ESTADOS_DETECCION.pendiente, posibleDuplicadoEventoId: posibleDuplicado?.id || null, detectadoPor: auth.currentUser.uid, detectadoEn: serverTimestamp(), revisadoPor: null, revisadoEn: null, eventoCreadoId: null });
+        claves.add(hashConceptual);
+        nuevas.push(s);
+      }
+      await registrarEventoAuditoria({ accion: "detectar_eventos_linea_tiempo", modulo: "Linea de tiempo del paciente", descripcion: "Deteccion asistida de eventos clinicos.", usuarioUid: auth.currentUser.uid, pacienteUid: pacienteId, detalles: { fuentesAnalizadas: fragmentos.length, sugerenciasNuevas: nuevas.length } });
+      await cargar();
+      if (status()) status().textContent = nuevas.length ? `${nuevas.length} eventos nuevos detectados.` : "No se detectaron eventos nuevos.";
+    } catch (error) {
+      if (status()) status().textContent = "No fue posible analizar algunas fuentes.";
+      console.warn("[Eventos detectados] Fallo tecnico", error?.code || error?.message || error);
+    } finally {
+      buscando = false;
+    }
+  };
+  const onClick = async (event) => {
+    const action = event.target.closest("[data-action]")?.dataset.action;
+    const card = event.target.closest("[data-detected-id]");
+    if (action === "toggle-detected-events") {
+      const body = root.querySelector("[data-detected-body]");
+      body.hidden = !body.hidden;
+      event.target.closest("button")?.setAttribute("aria-expanded", String(!body.hidden));
+    }
+    if (action === "toggle-discarded-events") { mostrarDescartados = !mostrarDescartados; event.target.textContent = mostrarDescartados ? "Ocultar descartados" : "Mostrar descartados"; renderizarSugerenciasDeteccion(sugerencias, mostrarDescartados, true); }
+    if (action === "search-detected-events") buscar();
+    if (!card) return;
+    const sugerencia = sugerencias.find((s) => s.id === card.dataset.detectedId);
+    if (!sugerencia) return;
+    if (action === "view-detected-origin") alert(`Origen: ${sugerencia.origenSubtipo || sugerencia.origenTipo}\nFecha: ${sugerencia.origenFechaISO || "sin fecha"}\n\nFragmento:\n${sugerencia.fragmentoSoporte || "Sin fragmento disponible."}`);
+    if (action === "discard-detected-event") { await updateDoc(doc(db, "pacientes", pacienteId, "eventosDetectados", sugerencia.id), { estado: ESTADOS_DETECCION.descartado, revisadoPor: auth.currentUser.uid, revisadoEn: serverTimestamp(), motivoDescarte: "revision_usuario" }); await cargar(); }
+    if (action === "restore-detected-event") { await updateDoc(doc(db, "pacientes", pacienteId, "eventosDetectados", sugerencia.id), { estado: ESTADOS_DETECCION.pendiente, revisadoPor: auth.currentUser.uid, revisadoEn: serverTimestamp(), motivoDescarte: "" }); await cargar(); }
+    if (action === "accept-detected-event") {
+      const datos = {
+        titulo: card.querySelector("[data-detected-field='titulo']").value.trim(),
+        descripcion: card.querySelector("[data-detected-field='descripcion']").value.trim(),
+        fechaInicioISO: card.querySelector("[data-detected-field='fechaInicioISO']").value,
+        fechaFinISO: card.querySelector("[data-detected-field='fechaFinISO']").value,
+        importancia: card.querySelector("[data-detected-field='importancia']").value || "media"
+      };
+      if (!datos.titulo || !datos.fechaInicioISO) { card.querySelector("[data-detected-error]").textContent = "Titulo y fecha son obligatorios."; return; }
+      const evento = await crearEventoPaciente(pacienteId, { titulo: datos.titulo, descripcion: datos.descripcion, fechaEvento: fechaLocalISO(datos.fechaInicioISO), fechaFin: fechaLocalISO(datos.fechaFinISO), importancia: datos.importancia, origen: "detectado", referenciaTipo: sugerencia.origenSubtipo || sugerencia.origenTipo, referenciaId: sugerencia.origenId, deteccionId: sugerencia.id, fechaEsAproximada: sugerencia.requiereRevisionFecha === true, precisionTemporal: sugerencia.precisionTemporal }, auth.currentUser.uid);
+      await updateDoc(doc(db, "pacientes", pacienteId, "eventosDetectados", sugerencia.id), { estado: ESTADOS_DETECCION.aceptado, revisadoPor: auth.currentUser.uid, revisadoEn: serverTimestamp(), eventoCreadoId: evento.id });
+      eventos = ordenarEventosPorFecha(await cargarEventosPaciente(pacienteId));
+      renderizarVista();
+      await cargar();
+    }
+  };
+  root.addEventListener("click", onClick);
+  await cargar();
+  return { destruir() { root.removeEventListener("click", onClick); } };
+}
+
 async function inicializarDetectorEventosClinicos() {
   if (detectorEventosClinicos || !root || !pacienteId || !auth.currentUser) return;
-  try {
-    const detector = await import("./deteccionEventos/deteccionEventosClinicos.js");
-    detectorEventosClinicos = await detector.inicializarDeteccionEventosClinicos({
-      root,
-      pacienteId,
-      usuarioUid: auth.currentUser.uid,
-      permisos,
-      obtenerEventosExistentes: () => eventos,
-      onEventoCreado: async () => {
-        eventos = ordenarEventosPorFecha(await cargarEventosPaciente(pacienteId));
-        renderizarVista();
-      }
-    });
-  } catch (error) {
-    console.warn("[Timeline] No se pudo cargar el detector de eventos clinicos.", error?.code || error?.message || error);
-  }
+  detectorEventosClinicos = await inicializarDetectorEventosClinicosLocal();
 }
 
 async function inicializarLineaTiempoPaciente() {
