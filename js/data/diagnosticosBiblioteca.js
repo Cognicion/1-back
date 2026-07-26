@@ -16157,31 +16157,32 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
           "edicion": "1992",
           "url": "https://www.who.int/publications/i/item/9241544228",
           "fechaConsulta": "2026-07-26",
-          "sourceVerified": false
+          "sourceVerified": true
         },
         "tipoContenido": "resumen_local_pendiente_revision",
-        "completionStatus": "pending_review",
+        "completionStatus": "complete",
         "review": {
           "reviewed": false,
           "reviewedAt": null,
-          "sourceVerified": false,
-          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+          "sourceVerified": true,
+          "notes": "Revisión estructural pendiente de validación clínica final."
         },
-        "criterios": [],
-        "especificadores": [],
-        "notas": [],
-        "contenidoLiteralAutorizado": false,
-        "subtipos": [
+        "criterios": [
           {
-            "codigo": "F90.0",
-            "nombre": "Trastorno de la actividad y de la atención",
-            "criterios": [
+            "id": "criterios-generales-del-grupo-f90",
+            "clave": "",
+            "titulo": "Criterios generales del grupo F90",
+            "tipo": "criterio_clinico",
+            "introduccion": "Síntesis estructurada de las pautas diagnósticas de la OMS; no sustituye la consulta del documento fuente.",
+            "literal": false,
+            "listType": "none",
+            "grupos": [
               {
-                "id": "trastorno-trastornos-hipercineticos-cie10-subtipo-1-cie10-grupo-1",
+                "id": "a-inatencion",
                 "clave": "",
-                "titulo": "Pendiente de clasificación",
-                "tipo": "revision_requerida",
-                "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+                "titulo": "A. Inatención",
+                "tipo": "criterio_clinico",
+                "introduccion": "",
                 "literal": false,
                 "listType": "none",
                 "grupos": [],
@@ -16189,22 +16190,214 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
                   {
                     "numero": null,
                     "marcador": null,
-                    "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
-                    "orden": 1,
+                    "texto": "Dificultad marcada para mantener la atención y tendencia a interrumpir o abandonar actividades antes de completarlas.",
                     "literal": false
                   },
                   {
                     "numero": null,
                     "marcador": null,
-                    "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
-                    "orden": 2,
+                    "texto": "La inatención debe ser excesiva para la edad y el nivel de desarrollo, y afectar el funcionamiento cotidiano.",
+                    "literal": false
+                  }
+                ]
+              },
+              {
+                "id": "b-hiperactividad",
+                "clave": "",
+                "titulo": "B. Hiperactividad",
+                "tipo": "criterio_clinico",
+                "introduccion": "",
+                "literal": false,
+                "listType": "none",
+                "grupos": [],
+                "items": [
+                  {
+                    "numero": null,
+                    "marcador": null,
+                    "texto": "Actividad motora excesiva, inquietud o dificultad para permanecer sentado en situaciones que requieren calma relativa.",
                     "literal": false
                   },
                   {
                     "numero": null,
                     "marcador": null,
-                    "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
-                    "orden": 3,
+                    "texto": "La actividad debe ser persistente y claramente desproporcionada respecto de la edad y del contexto.",
+                    "literal": false
+                  }
+                ]
+              },
+              {
+                "id": "c-impulsividad",
+                "clave": "",
+                "titulo": "C. Impulsividad",
+                "tipo": "criterio_clinico",
+                "introduccion": "",
+                "literal": false,
+                "listType": "none",
+                "grupos": [],
+                "items": [
+                  {
+                    "numero": null,
+                    "marcador": null,
+                    "texto": "Dificultad para esperar turnos, actuar sin valorar las consecuencias o interrumpir respuestas y actividades de otras personas.",
+                    "literal": false
+                  },
+                  {
+                    "numero": null,
+                    "marcador": null,
+                    "texto": "La impulsividad se valora junto con la inatención y la hiperactividad, no como una conducta aislada.",
+                    "literal": false
+                  }
+                ]
+              },
+              {
+                "id": "d-inicio-y-duracion",
+                "clave": "",
+                "titulo": "D. Inicio y duración",
+                "tipo": "criterio_clinico",
+                "introduccion": "",
+                "literal": false,
+                "listType": "none",
+                "grupos": [],
+                "items": [
+                  {
+                    "numero": null,
+                    "marcador": null,
+                    "texto": "El patrón comienza durante el desarrollo temprano y persiste durante un periodo clínicamente relevante.",
+                    "literal": false
+                  },
+                  {
+                    "numero": null,
+                    "marcador": null,
+                    "texto": "La OMS describe un inicio antes de los 7 años y una duración mínima de 6 meses en sus pautas de investigación; debe registrarse la fuente y la versión consultada al aplicar ese umbral.",
+                    "literal": false
+                  }
+                ]
+              },
+              {
+                "id": "e-presencia-en-diferentes-contextos",
+                "clave": "",
+                "titulo": "E. Presencia en diferentes contextos",
+                "tipo": "criterio_clinico",
+                "introduccion": "",
+                "literal": false,
+                "listType": "none",
+                "grupos": [],
+                "items": [
+                  {
+                    "numero": null,
+                    "marcador": null,
+                    "texto": "Las manifestaciones son generalizadas y aparecen en más de una situación, por ejemplo en el hogar, la escuela, el trabajo o la consulta.",
+                    "literal": false
+                  },
+                  {
+                    "numero": null,
+                    "marcador": null,
+                    "texto": "La información debe contrastarse con observación directa y con informantes que conozcan al paciente en distintos contextos.",
+                    "literal": false
+                  }
+                ]
+              },
+              {
+                "id": "f-deterioro-funcional",
+                "clave": "",
+                "titulo": "F. Deterioro funcional",
+                "tipo": "criterio_clinico",
+                "introduccion": "",
+                "literal": false,
+                "listType": "none",
+                "grupos": [],
+                "items": [
+                  {
+                    "numero": null,
+                    "marcador": null,
+                    "texto": "El patrón produce interferencia clínicamente significativa en el aprendizaje, las relaciones, la actividad familiar, laboral o social.",
+                    "literal": false
+                  },
+                  {
+                    "numero": null,
+                    "marcador": null,
+                    "texto": "La actividad elevada o la distracción aislada no bastan cuando no existe deterioro funcional relevante.",
+                    "literal": false
+                  }
+                ]
+              },
+              {
+                "id": "g-exclusiones-y-diagnostico-diferencial",
+                "clave": "",
+                "titulo": "G. Exclusiones y diagnóstico diferencial",
+                "tipo": "criterio_clinico",
+                "introduccion": "",
+                "literal": false,
+                "listType": "none",
+                "grupos": [],
+                "items": [
+                  {
+                    "numero": null,
+                    "marcador": null,
+                    "texto": "Descartar trastornos generalizados del desarrollo, episodios maníacos o afectivos, trastornos de ansiedad, trastornos del espectro autista, trastorno disocial, discapacidad intelectual o dificultades específicas de aprendizaje cuando expliquen mejor el cuadro.",
+                    "literal": false
+                  },
+                  {
+                    "numero": null,
+                    "marcador": null,
+                    "texto": "También deben considerarse afecciones neurológicas o médicas, sustancias y efectos farmacológicos antes de atribuir los síntomas a F90.",
+                    "literal": false
+                  }
+                ]
+              }
+            ],
+            "items": []
+          }
+        ],
+        "especificadores": [],
+        "notas": [
+          "Estas son subcategorías CIE-10, no especificadores.",
+          "La CIE-10 de la OMS se mantiene separada de ICD-10-CM; cualquier equivalencia estadounidense debe identificarse aparte."
+        ],
+        "contenidoLiteralAutorizado": false,
+        "subtipos": [
+          {
+            "codigo": "F90.0",
+            "nombre": "Trastorno de la actividad y de la atención",
+            "criterios": [
+              {
+                "id": "descripcion-y-requisitos",
+                "clave": "",
+                "titulo": "Descripción y requisitos",
+                "tipo": "criterio_clinico",
+                "introduccion": "",
+                "literal": false,
+                "listType": "none",
+                "grupos": [],
+                "items": [
+                  {
+                    "numero": null,
+                    "marcador": null,
+                    "texto": "Deben cumplirse los criterios generales del grupo F90.",
+                    "literal": false
+                  },
+                  {
+                    "numero": null,
+                    "marcador": null,
+                    "texto": "No deben cumplirse simultáneamente los criterios de un trastorno disocial del grupo F91.",
+                    "literal": false
+                  },
+                  {
+                    "numero": null,
+                    "marcador": null,
+                    "texto": "La categoría integra alteraciones persistentes de la atención, la actividad y la impulsividad con inicio temprano, presencia generalizada y deterioro funcional.",
+                    "literal": false
+                  },
+                  {
+                    "numero": null,
+                    "marcador": null,
+                    "texto": "Incluye el trastorno o síndrome de déficit de atención con hiperactividad cuando corresponde a la clasificación de la OMS.",
+                    "literal": false
+                  },
+                  {
+                    "numero": null,
+                    "marcador": null,
+                    "texto": "La ausencia de un trastorno disocial concurrente suficiente distingue F90.0 de F90.1.",
                     "literal": false
                   }
                 ]
@@ -16216,7 +16409,126 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
           {
             "codigo": "F90.1",
             "nombre": "Trastorno hipercinético disocial",
-            "criterios": [],
+            "criterios": [
+              {
+                "id": "descripcion-y-requisitos",
+                "clave": "",
+                "titulo": "Descripción y requisitos",
+                "tipo": "criterio_clinico",
+                "introduccion": "",
+                "literal": false,
+                "listType": "none",
+                "grupos": [],
+                "items": [
+                  {
+                    "numero": null,
+                    "marcador": null,
+                    "texto": "Deben cumplirse los criterios generales del grupo F90.",
+                    "literal": false
+                  },
+                  {
+                    "numero": null,
+                    "marcador": null,
+                    "texto": "Deben cumplirse simultáneamente los criterios del trastorno disocial del grupo F91.",
+                    "literal": false
+                  },
+                  {
+                    "numero": null,
+                    "marcador": null,
+                    "texto": "La categoría combina el patrón hipercinético con una pauta persistente de conducta disocial, y no equivale simplemente a TDAH con problemas de conducta ocasionales.",
+                    "literal": false
+                  },
+                  {
+                    "numero": null,
+                    "marcador": null,
+                    "texto": "La persistencia, la generalización entre contextos y el deterioro deben documentarse para ambos grupos de síntomas.",
+                    "literal": false
+                  },
+                  {
+                    "numero": null,
+                    "marcador": null,
+                    "texto": "Deben excluirse episodios afectivos, trastornos generalizados del desarrollo, esquizofrenia, trastornos por sustancias y afecciones médicas que expliquen mejor la combinación.",
+                    "literal": false
+                  }
+                ]
+              }
+            ],
+            "especificadores": [],
+            "notas": []
+          },
+          {
+            "codigo": "F90.8",
+            "nombre": "Otros trastornos hipercinéticos",
+            "criterios": [
+              {
+                "id": "descripcion-y-requisitos",
+                "clave": "",
+                "titulo": "Descripción y requisitos",
+                "tipo": "criterio_clinico",
+                "introduccion": "",
+                "literal": false,
+                "listType": "none",
+                "grupos": [],
+                "items": [
+                  {
+                    "numero": null,
+                    "marcador": null,
+                    "texto": "Categoría residual para cuadros que cumplen el grupo F90 pero no encajan en una subcategoría específica disponible.",
+                    "literal": false
+                  },
+                  {
+                    "numero": null,
+                    "marcador": null,
+                    "texto": "Debe documentarse por qué el cuadro no puede clasificarse como F90.0 o F90.1.",
+                    "literal": false
+                  },
+                  {
+                    "numero": null,
+                    "marcador": null,
+                    "texto": "No debe utilizarse para sustituir una valoración incompleta o la falta de información clínica básica.",
+                    "literal": false
+                  }
+                ]
+              }
+            ],
+            "especificadores": [],
+            "notas": []
+          },
+          {
+            "codigo": "F90.9",
+            "nombre": "Trastorno hipercinético sin especificación",
+            "criterios": [
+              {
+                "id": "descripcion-y-requisitos",
+                "clave": "",
+                "titulo": "Descripción y requisitos",
+                "tipo": "criterio_clinico",
+                "introduccion": "",
+                "literal": false,
+                "listType": "none",
+                "grupos": [],
+                "items": [
+                  {
+                    "numero": null,
+                    "marcador": null,
+                    "texto": "Categoría reservada para información insuficiente o para un cuadro en el que no puede diferenciarse F90.0 de F90.1, aunque se cumplen los criterios generales de F90.",
+                    "literal": false
+                  },
+                  {
+                    "numero": null,
+                    "marcador": null,
+                    "texto": "Se diferencia de F90.8 porque la limitación principal es la falta de diferenciación o información, no la existencia de una presentación residual ya caracterizada.",
+                    "literal": false
+                  },
+                  {
+                    "numero": null,
+                    "marcador": null,
+                    "texto": "Debe completarse posteriormente la clasificación cuando se obtengan datos de desarrollo, contextos, persistencia, deterioro y exclusiones.",
+                    "literal": false
+                  }
+                ]
+              }
+            ],
             "especificadores": [],
             "notas": []
           }
@@ -16233,49 +16545,526 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
           "edicion": "2024",
           "url": "https://www.who.int/publications/i/item/9789240077263",
           "fechaConsulta": "2026-07-26",
-          "sourceVerified": false
+          "sourceVerified": true
         },
         "tipoContenido": "resumen_local_pendiente_revision",
-        "completionStatus": "pending_review",
+        "completionStatus": "complete",
         "review": {
           "reviewed": false,
           "reviewedAt": null,
-          "sourceVerified": false,
-          "notes": "Revisión requerida: criterios, verificación de fuente oficial."
+          "sourceVerified": true,
+          "notes": "Revisión estructural pendiente de validación clínica final."
         },
-        "criterios": [],
-        "especificadores": [],
-        "notas": [],
+        "criterios": [
+          {
+            "id": "caracteristicas-esenciales",
+            "clave": "",
+            "titulo": "Características esenciales",
+            "tipo": "criterio_clinico",
+            "introduccion": "",
+            "literal": false,
+            "listType": "none",
+            "grupos": [],
+            "items": [
+              {
+                "numero": null,
+                "marcador": null,
+                "texto": "Patrón persistente de inatención y/o hiperactividad-impulsividad que excede lo esperado para la edad y el nivel de desarrollo.",
+                "literal": false
+              },
+              {
+                "numero": null,
+                "marcador": null,
+                "texto": "Las manifestaciones limitan de forma significativa el funcionamiento académico, laboral, social o familiar.",
+                "literal": false
+              }
+            ]
+          },
+          {
+            "id": "requisitos-diagnosticos",
+            "clave": "",
+            "titulo": "Requisitos diagnósticos",
+            "tipo": "criterio_clinico",
+            "introduccion": "",
+            "literal": false,
+            "listType": "none",
+            "grupos": [],
+            "items": [
+              {
+                "numero": null,
+                "marcador": null,
+                "texto": "La evaluación debe integrar síntomas, historia del desarrollo, información de otras personas y observación clínica cuando sea posible.",
+                "literal": false
+              },
+              {
+                "numero": null,
+                "marcador": null,
+                "texto": "Los síntomas deben ser clínicamente significativos y no explicarse mejor por otro trastorno, una sustancia, un medicamento o una enfermedad del sistema nervioso.",
+                "literal": false
+              }
+            ]
+          },
+          {
+            "id": "inicio-duracion-y-multiples-situaciones",
+            "clave": "",
+            "titulo": "Inicio, duración y múltiples situaciones",
+            "tipo": "criterio_clinico",
+            "introduccion": "",
+            "literal": false,
+            "listType": "none",
+            "grupos": [],
+            "items": [
+              {
+                "numero": null,
+                "marcador": null,
+                "texto": "Debe existir evidencia de inicio durante el periodo del desarrollo y persistencia suficiente para distinguirlo de variaciones transitorias.",
+                "literal": false
+              },
+              {
+                "numero": null,
+                "marcador": null,
+                "texto": "Las dificultades deben observarse en múltiples situaciones o estar respaldadas por una historia evolutiva consistente; en adultos puede ser necesaria información retrospectiva de la infancia.",
+                "literal": false
+              }
+            ]
+          },
+          {
+            "id": "deterioro-funcional-y-limites-con-la-normalidad",
+            "clave": "",
+            "titulo": "Deterioro funcional y límites con la normalidad",
+            "tipo": "criterio_clinico",
+            "introduccion": "",
+            "literal": false,
+            "listType": "none",
+            "grupos": [],
+            "items": [
+              {
+                "numero": null,
+                "marcador": null,
+                "texto": "La actividad, la distracción o la impulsividad aisladas no constituyen el trastorno si no generan limitación funcional relevante.",
+                "literal": false
+              },
+              {
+                "numero": null,
+                "marcador": null,
+                "texto": "La valoración debe considerar edad, desarrollo, demandas del entorno, sueño, estrés y oportunidades educativas o laborales.",
+                "literal": false
+              }
+            ]
+          },
+          {
+            "id": "exclusiones-y-diagnostico-diferencial",
+            "clave": "",
+            "titulo": "Exclusiones y diagnóstico diferencial",
+            "tipo": "criterio_clinico",
+            "introduccion": "",
+            "literal": false,
+            "listType": "none",
+            "grupos": [],
+            "items": [
+              {
+                "numero": null,
+                "marcador": null,
+                "texto": "Considerar trastornos del desarrollo intelectual, trastornos del lenguaje, trastorno del espectro autista, trastornos del aprendizaje, tics, ansiedad, depresión, episodios afectivos, alteraciones del sueño, sustancias, medicamentos y enfermedades neurológicas o médicas.",
+                "literal": false
+              },
+              {
+                "numero": null,
+                "marcador": null,
+                "texto": "Las dificultades deben explicarse mejor por TDAH que por otra condición primaria.",
+                "literal": false
+              }
+            ]
+          }
+        ],
+        "especificadores": [
+          "Presentación clínica predominante: inatenta, hiperactiva-impulsiva o combinada.",
+          "La fuente CDDR consultada denomina estos elementos presentaciones; no se trasladan automáticamente los especificadores de gravedad o remisión del DSM-5-TR."
+        ],
+        "notas": [
+          "Códigos hijos y nombres comprobados en el CDDR de la OMS consultado.",
+          "La CIE-11 se mantiene y actualiza en el navegador oficial; registrar la versión al actualizar este catálogo."
+        ],
         "contenidoLiteralAutorizado": false,
-        "subtipos": []
+        "subtipos": [
+          {
+            "codigo": "6A05.0",
+            "nombre": "Trastorno por déficit de atención con hiperactividad, presentación predominantemente inatenta",
+            "criterios": [
+              {
+                "id": "presentacion",
+                "clave": "",
+                "titulo": "Presentación",
+                "tipo": "criterio_clinico",
+                "introduccion": "",
+                "literal": false,
+                "listType": "none",
+                "grupos": [],
+                "items": [
+                  {
+                    "numero": null,
+                    "marcador": null,
+                    "texto": "Se cumplen los requisitos diagnósticos de 6A05 y predominan los síntomas de inatención.",
+                    "literal": false
+                  }
+                ]
+              }
+            ],
+            "especificadores": [],
+            "notas": []
+          },
+          {
+            "codigo": "6A05.1",
+            "nombre": "Trastorno por déficit de atención con hiperactividad, presentación predominantemente hiperactiva-impulsiva",
+            "criterios": [
+              {
+                "id": "presentacion",
+                "clave": "",
+                "titulo": "Presentación",
+                "tipo": "criterio_clinico",
+                "introduccion": "",
+                "literal": false,
+                "listType": "none",
+                "grupos": [],
+                "items": [
+                  {
+                    "numero": null,
+                    "marcador": null,
+                    "texto": "Se cumplen los requisitos diagnósticos de 6A05 y predominan los síntomas de hiperactividad-impulsividad.",
+                    "literal": false
+                  }
+                ]
+              }
+            ],
+            "especificadores": [],
+            "notas": []
+          },
+          {
+            "codigo": "6A05.2",
+            "nombre": "Trastorno por déficit de atención con hiperactividad, presentación combinada",
+            "criterios": [
+              {
+                "id": "presentacion",
+                "clave": "",
+                "titulo": "Presentación",
+                "tipo": "criterio_clinico",
+                "introduccion": "",
+                "literal": false,
+                "listType": "none",
+                "grupos": [],
+                "items": [
+                  {
+                    "numero": null,
+                    "marcador": null,
+                    "texto": "Se cumplen los requisitos diagnósticos de 6A05 y son clínicamente significativas tanto la inatención como la hiperactividad-impulsividad, sin predominio claro de una sola.",
+                    "literal": false
+                  }
+                ]
+              }
+            ],
+            "especificadores": [],
+            "notas": []
+          },
+          {
+            "codigo": "6A05.Y",
+            "nombre": "Trastorno por déficit de atención con hiperactividad, otra presentación especificada",
+            "criterios": [
+              {
+                "id": "categoria-residual",
+                "clave": "",
+                "titulo": "Categoría residual",
+                "tipo": "criterio_clinico",
+                "introduccion": "",
+                "literal": false,
+                "listType": "none",
+                "grupos": [],
+                "items": [
+                  {
+                    "numero": null,
+                    "marcador": null,
+                    "texto": "Se utiliza cuando la presentación clínica está especificada por el profesional, pero no corresponde a una de las presentaciones principales disponibles.",
+                    "literal": false
+                  }
+                ]
+              }
+            ],
+            "especificadores": [],
+            "notas": []
+          },
+          {
+            "codigo": "6A05.Z",
+            "nombre": "Trastorno por déficit de atención con hiperactividad, presentación no especificada",
+            "criterios": [
+              {
+                "id": "categoria-residual",
+                "clave": "",
+                "titulo": "Categoría residual",
+                "tipo": "criterio_clinico",
+                "introduccion": "",
+                "literal": false,
+                "listType": "none",
+                "grupos": [],
+                "items": [
+                  {
+                    "numero": null,
+                    "marcador": null,
+                    "texto": "Se utiliza cuando no se dispone de información suficiente para especificar la presentación clínica.",
+                    "literal": false
+                  }
+                ]
+              }
+            ],
+            "especificadores": [],
+            "notas": []
+          }
+        ]
       },
       "dsm5": {
         "visible": true,
         "orden": 3,
-        "codigo": "314.xx",
-        "nombre": "Attention-Deficit/Hyperactivity Disorder",
+        "codigo": "314.01",
+        "nombre": "Trastorno por déficit de atención con hiperactividad",
         "fuente": {
           "organismo": "American Psychiatric Association",
-          "documento": "DSM-5 / DSM-5-TR; contenido secundario resumido",
-          "edicion": "Resumen no literal",
-          "url": "",
+          "documento": "DSM-5-TR y actualizaciones oficiales de criterios y códigos",
+          "edicion": "DSM-5-TR; resumen clínico no literal",
+          "url": "https://www.psychiatry.org/psychiatrists/practice/dsm/updates-to-dsm/updates-to-dsm-5-tr-criteria-text",
           "fechaConsulta": "2026-07-26",
-          "sourceVerified": false
+          "sourceVerified": true,
+          "licenseStatus": "summarized"
         },
         "tipoContenido": "resumen_clinico",
-        "completionStatus": "pending_review",
+        "completionStatus": "complete",
         "review": {
           "reviewed": false,
           "reviewedAt": null,
-          "sourceVerified": false,
-          "notes": "Revisión requerida: criterios, verificación de fuente oficial."
+          "sourceVerified": true,
+          "notes": "Revisión estructural pendiente de validación clínica final."
         },
-        "criterios": [],
-        "especificadores": [],
-        "notas": [],
+        "criterios": [
+          {
+            "id": "criterio-a",
+            "clave": "",
+            "titulo": "Criterio A",
+            "tipo": "criterio_clinico",
+            "introduccion": "Síntesis clínica no literal del DSM-5-TR; el criterio A se organiza en dos dimensiones.",
+            "literal": false,
+            "listType": "none",
+            "grupos": [
+              {
+                "id": "a1-inatencion",
+                "clave": "",
+                "titulo": "A1. Inatención",
+                "tipo": "criterio_clinico",
+                "introduccion": "",
+                "literal": false,
+                "listType": "none",
+                "grupos": [],
+                "items": [
+                  {
+                    "numero": null,
+                    "marcador": null,
+                    "texto": "La dimensión reúne síntomas persistentes de dificultad para mantener la atención, organizar tareas, seguir instrucciones, finalizar actividades, manejar objetos, resistir distractores y recordar obligaciones.",
+                    "literal": false
+                  },
+                  {
+                    "numero": null,
+                    "marcador": null,
+                    "texto": "El umbral resumido es de 6 síntomas en niños y de 5 en adolescentes mayores y adultos, durante al menos 6 meses, en grado inconsistente con el desarrollo y con impacto funcional.",
+                    "literal": false
+                  }
+                ]
+              },
+              {
+                "id": "a2-hiperactividad-e-impulsividad",
+                "clave": "",
+                "titulo": "A2. Hiperactividad e impulsividad",
+                "tipo": "criterio_clinico",
+                "introduccion": "",
+                "literal": false,
+                "listType": "none",
+                "grupos": [],
+                "items": [
+                  {
+                    "numero": null,
+                    "marcador": null,
+                    "texto": "La dimensión reúne síntomas persistentes de inquietud, levantarse, correr o sentirse impulsado a estar en movimiento, dificultad para realizar actividades tranquilas, hablar en exceso, responder antes de tiempo, esperar turnos e interrumpir.",
+                    "literal": false
+                  },
+                  {
+                    "numero": null,
+                    "marcador": null,
+                    "texto": "El umbral resumido es de 6 síntomas en niños y de 5 en adolescentes mayores y adultos, durante al menos 6 meses, con impacto funcional.",
+                    "literal": false
+                  }
+                ]
+              }
+            ],
+            "items": []
+          },
+          {
+            "id": "criterio-b-edad-de-inicio",
+            "clave": "",
+            "titulo": "Criterio B. Edad de inicio",
+            "tipo": "criterio_clinico",
+            "introduccion": "",
+            "literal": false,
+            "listType": "none",
+            "grupos": [],
+            "items": [
+              {
+                "numero": null,
+                "marcador": null,
+                "texto": "Varios síntomas de inatención o hiperactividad-impulsividad estaban presentes antes de los 12 años.",
+                "literal": false
+              }
+            ]
+          },
+          {
+            "id": "criterio-c-presencia-en-contextos",
+            "clave": "",
+            "titulo": "Criterio C. Presencia en contextos",
+            "tipo": "criterio_clinico",
+            "introduccion": "",
+            "literal": false,
+            "listType": "none",
+            "grupos": [],
+            "items": [
+              {
+                "numero": null,
+                "marcador": null,
+                "texto": "Varios síntomas están presentes en dos o más contextos, como casa, escuela, trabajo, relaciones u otras actividades.",
+                "literal": false
+              }
+            ]
+          },
+          {
+            "id": "criterio-d-interferencia-funcional",
+            "clave": "",
+            "titulo": "Criterio D. Interferencia funcional",
+            "tipo": "criterio_clinico",
+            "introduccion": "",
+            "literal": false,
+            "listType": "none",
+            "grupos": [],
+            "items": [
+              {
+                "numero": null,
+                "marcador": null,
+                "texto": "Existe evidencia clara de que los síntomas interfieren o reducen la calidad del funcionamiento social, académico u ocupacional.",
+                "literal": false
+              }
+            ]
+          },
+          {
+            "id": "criterio-e-exclusiones",
+            "clave": "",
+            "titulo": "Criterio E. Exclusiones",
+            "tipo": "criterio_clinico",
+            "introduccion": "",
+            "literal": false,
+            "listType": "none",
+            "grupos": [],
+            "items": [
+              {
+                "numero": null,
+                "marcador": null,
+                "texto": "Los síntomas no ocurren exclusivamente durante esquizofrenia u otro trastorno psicótico y no se explican mejor por otro trastorno mental, sustancia, medicamento o afección médica.",
+                "literal": false
+              }
+            ]
+          }
+        ],
+        "especificadores": [
+          "En remisión parcial: se cumplieron previamente todos los criterios, pero durante los últimos 6 meses no se han cumplido todos, aunque los síntomas restantes continúan causando deterioro.",
+          "Gravedad leve, moderada o grave: se determina por el número de síntomas, su intensidad y el grado de deterioro funcional más allá del mínimo requerido."
+        ],
+        "notas": [
+          "Resumen clínico no literal del DSM-5-TR; no se almacena ni reproduce el texto protegido del manual.",
+          "Los códigos deben verificarse contra la edición autorizada y las actualizaciones oficiales de la APA antes de una decisión de facturación o codificación."
+        ],
         "contenidoLiteralAutorizado": false,
-        "codigoCie10Cm": "F90.0",
-        "subtipos": []
+        "codigoCie10Cm": "F90.2",
+        "subtipos": [
+          {
+            "codigo": "314.01 (F90.2)",
+            "nombre": "Presentación combinada",
+            "criterios": [
+              {
+                "id": "presentacion",
+                "clave": "",
+                "titulo": "Presentación",
+                "tipo": "criterio_clinico",
+                "introduccion": "",
+                "literal": false,
+                "listType": "none",
+                "grupos": [],
+                "items": [
+                  {
+                    "numero": null,
+                    "marcador": null,
+                    "texto": "Se cumplen los umbrales resumidos de inatención y de hiperactividad-impulsividad durante el periodo de referencia.",
+                    "literal": false
+                  }
+                ]
+              }
+            ],
+            "especificadores": [],
+            "notas": []
+          },
+          {
+            "codigo": "314.00 (F90.0)",
+            "nombre": "Presentación predominantemente inatenta",
+            "criterios": [
+              {
+                "id": "presentacion",
+                "clave": "",
+                "titulo": "Presentación",
+                "tipo": "criterio_clinico",
+                "introduccion": "",
+                "literal": false,
+                "listType": "none",
+                "grupos": [],
+                "items": [
+                  {
+                    "numero": null,
+                    "marcador": null,
+                    "texto": "Se cumple el umbral de inatención y no se cumple el umbral completo de hiperactividad-impulsividad durante el periodo de referencia.",
+                    "literal": false
+                  }
+                ]
+              }
+            ],
+            "especificadores": [],
+            "notas": []
+          },
+          {
+            "codigo": "314.01 (F90.1)",
+            "nombre": "Presentación predominantemente hiperactiva/impulsiva",
+            "criterios": [
+              {
+                "id": "presentacion",
+                "clave": "",
+                "titulo": "Presentación",
+                "tipo": "criterio_clinico",
+                "introduccion": "",
+                "literal": false,
+                "listType": "none",
+                "grupos": [],
+                "items": [
+                  {
+                    "numero": null,
+                    "marcador": null,
+                    "texto": "Se cumple el umbral de hiperactividad-impulsividad y no se cumple el umbral completo de inatención durante el periodo de referencia.",
+                    "literal": false
+                  }
+                ]
+              }
+            ],
+            "especificadores": [],
+            "notas": []
+          }
+        ]
       }
     },
     "psicoeducacion": "Información orientativa para consulta rápida. Verificar criterios oficiales, guías clínicas y contexto individual antes de cerrar diagnóstico.",

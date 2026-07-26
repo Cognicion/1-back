@@ -326,10 +326,14 @@ function textoBusquedaDiagnostico(diagnostico) {
       sistema.codigoCie10Cm,
       sistema.nombre,
       ...(sistema.criterios || []).flatMap(textosGrupo),
+      ...(sistema.especificadores || []),
+      ...(sistema.notas || []),
       ...(sistema.subtipos || []).flatMap((subtipo) => [
         subtipo.codigo,
         subtipo.nombre,
-        ...(subtipo.criterios || []).flatMap(textosGrupo)
+        ...(subtipo.criterios || []).flatMap(textosGrupo),
+        ...(subtipo.especificadores || []),
+        ...(subtipo.notas || [])
       ])
     ])
   ].filter(Boolean).join(" ");
@@ -346,12 +350,12 @@ function renderizarGrupoCriterios(grupo) {
         ? `<ul class="criterios-lista-marcada">${items.map((item) => `<li>${item.marcador ? `<span class="criterio-marcador">${escaparHTML(item.marcador)}.</span>` : ""}${escaparHTML(item.texto)}</li>`).join("")}</ul>`
         : `<ul>${items.map((item) => `<li>${escaparHTML(item.texto)}</li>`).join("")}</ul>`)
     : "";
-  return `<section class="grupo-criterios" data-grupo-criterios="${escaparHTML(grupo.id || "grupo")}">
-    <h5>${escaparHTML(grupo.titulo || "Pendiente de clasificación")}</h5>
+  return `<details class="grupo-criterios" data-grupo-criterios="${escaparHTML(grupo.id || "grupo")}">
+    <summary>${escaparHTML(grupo.titulo || "Criterios")}</summary>
     ${grupo.introduccion ? `<p class="grupo-criterios__intro">${escaparHTML(grupo.introduccion)}</p>` : ""}
     ${lista}
     ${subgrupos.length ? `<div class="criteria-subgroups">${subgrupos.map(renderizarGrupoCriteriosSubgrupo).join("")}</div>` : ""}
-  </section>`;
+  </details>`;
 }
 
 function renderizarGrupoCriteriosSubgrupo(grupo) {
@@ -362,21 +366,32 @@ function renderizarGrupoCriteriosSubgrupo(grupo) {
       ? `<ol>${items.map((item) => `<li${Number.isInteger(item.numero) ? ` value="${item.numero}"` : ""}>${escaparHTML(item.texto)}</li>`).join("")}</ol>`
       : `<ul>${items.map((item) => `<li>${item.marcador ? `<span class="criterio-marcador">${escaparHTML(item.marcador)}.</span>` : ""}${escaparHTML(item.texto)}</li>`).join("")}</ul>`)
     : "";
-  return `<section class="criteria-subgroup"><h6>${escaparHTML(grupo.titulo || "Subgrupo")}</h6>${grupo.introduccion ? `<p>${escaparHTML(grupo.introduccion)}</p>` : ""}${lista}${grupo.grupos?.length ? grupo.grupos.map(renderizarGrupoCriteriosSubgrupo).join("") : ""}</section>`;
+  return `<details class="criteria-subgroup"><summary>${escaparHTML(grupo.titulo || "Subgrupo")}</summary>${grupo.introduccion ? `<p>${escaparHTML(grupo.introduccion)}</p>` : ""}${lista}${grupo.grupos?.length ? grupo.grupos.map(renderizarGrupoCriteriosSubgrupo).join("") : ""}</details>`;
 }
 
 function renderizarCriterios(sistema) {
-  if (!sistema?.criterios?.length) return `<p class="criterios-vacios">Criterios específicos no cargados aún. Consultar la fuente oficial correspondiente.</p>`;
+  if (!sistema?.criterios?.length) return `<p class="criterios-vacios">No hay criterios estructurados en esta edición del catálogo.</p>`;
   return sistema.criterios.map(renderizarGrupoCriterios).join("");
 }
 
-function renderizarSubtiposCie10(sistema) {
+function renderizarSubtiposClasificacion(sistema) {
   if (!sistema?.subtipos?.length) return "";
-  return `<section class="clasificacion-subtipos"><h5>Subtipos y categorías relacionadas</h5>${sistema.subtipos.map((subtipo) => `
+  return `<section class="clasificacion-subtipos"><h5>Subcategorías y presentaciones</h5>${sistema.subtipos.map((subtipo) => `
     <article class="clasificacion-subtipo">
       <h6><span class="codigo-diagnostico">${escaparHTML(subtipo.codigo)}</span> ${escaparHTML(subtipo.nombre)}</h6>
-      ${subtipo.criterios?.length ? renderizarCriterios({ criterios: subtipo.criterios }) : `<p class="criterios-vacios">Criterios específicos no cargados aún. Consultar la fuente oficial correspondiente.</p>`}
+      ${subtipo.criterios?.length ? renderizarCriterios({ criterios: subtipo.criterios }) : `<p class="criterios-vacios">No hay criterios estructurados para esta categoría.</p>`}
     </article>`).join("")}</section>`;
+}
+
+function renderizarMetadatosSistema(sistema) {
+  const especificadores = Array.isArray(sistema?.especificadores) ? sistema.especificadores : [];
+  const notas = Array.isArray(sistema?.notas) ? sistema.notas : [];
+  if (!especificadores.length && !notas.length) return "";
+  const lista = (items) => `<ul>${items.map((item) => `<li>${escaparHTML(item)}</li>`).join("")}</ul>`;
+  return `<section class="sistema-metadatos">
+    ${especificadores.length ? `<details class="sistema-metadatos__grupo"><summary>Especificadores y calificadores</summary>${lista(especificadores)}</details>` : ""}
+    ${notas.length ? `<details class="sistema-metadatos__grupo"><summary>Notas de codificación y fuente</summary>${lista(notas)}</details>` : ""}
+  </section>`;
 }
 
 function renderizarSistemaAcordeon(diagnostico, sistema) {
@@ -408,7 +423,7 @@ function renderizarDetallesDiagnostico(diagnostico, detalles) {
     panel.hidden = abierto;
     if (!abierto && !panel.dataset.rendered) {
           const datosSistema = diagnostico.sistemas[sistema];
-          panel.innerHTML = `${renderizarSubtiposCie10(datosSistema)}${datosSistema.criterios?.length ? renderizarCriterios(datosSistema) : ""}`;
+          panel.innerHTML = `${renderizarSubtiposClasificacion(datosSistema)}${renderizarMetadatosSistema(datosSistema)}${datosSistema.criterios?.length ? renderizarCriterios(datosSistema) : ""}`;
       panel.dataset.rendered = "true";
     }
   }));

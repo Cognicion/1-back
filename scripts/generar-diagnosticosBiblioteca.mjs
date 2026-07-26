@@ -384,6 +384,167 @@ function agruparJerarquiaCie10() {
 
 diagnosticos = agruparJerarquiaCie10();
 
+function grupoContenido(titulo, items = [], introduccion = "") {
+  return {
+    id: normalizar(titulo).replace(/ /g, "-"),
+    clave: "",
+    titulo,
+    tipo: "criterio_clinico",
+    introduccion,
+    literal: false,
+    listType: "none",
+    grupos: [],
+    items: items.map((texto) => ({ numero: null, marcador: null, texto, literal: false }))
+  };
+}
+
+function subtipoF90(codigo, nombre, items) {
+  return {
+    codigo,
+    nombre,
+    criterios: [grupoContenido("Descripción y requisitos", items)],
+    especificadores: [],
+    notas: []
+  };
+}
+
+function completarGrupoF90() {
+  const diagnostico = diagnosticos.find((item) => item.sistemas?.cie10?.codigo === "F90");
+  if (!diagnostico) return;
+
+  const cie10 = diagnostico.sistemas.cie10;
+  cie10.criterios = [{
+    ...grupoContenido("Criterios generales del grupo F90", [], "Síntesis estructurada de las pautas diagnósticas de la OMS; no sustituye la consulta del documento fuente."),
+    grupos: [
+      grupoContenido("A. Inatención", [
+        "Dificultad marcada para mantener la atención y tendencia a interrumpir o abandonar actividades antes de completarlas.",
+        "La inatención debe ser excesiva para la edad y el nivel de desarrollo, y afectar el funcionamiento cotidiano."
+      ]),
+      grupoContenido("B. Hiperactividad", [
+        "Actividad motora excesiva, inquietud o dificultad para permanecer sentado en situaciones que requieren calma relativa.",
+        "La actividad debe ser persistente y claramente desproporcionada respecto de la edad y del contexto."
+      ]),
+      grupoContenido("C. Impulsividad", [
+        "Dificultad para esperar turnos, actuar sin valorar las consecuencias o interrumpir respuestas y actividades de otras personas.",
+        "La impulsividad se valora junto con la inatención y la hiperactividad, no como una conducta aislada."
+      ]),
+      grupoContenido("D. Inicio y duración", [
+        "El patrón comienza durante el desarrollo temprano y persiste durante un periodo clínicamente relevante.",
+        "La OMS describe un inicio antes de los 7 años y una duración mínima de 6 meses en sus pautas de investigación; debe registrarse la fuente y la versión consultada al aplicar ese umbral."
+      ]),
+      grupoContenido("E. Presencia en diferentes contextos", [
+        "Las manifestaciones son generalizadas y aparecen en más de una situación, por ejemplo en el hogar, la escuela, el trabajo o la consulta.",
+        "La información debe contrastarse con observación directa y con informantes que conozcan al paciente en distintos contextos."
+      ]),
+      grupoContenido("F. Deterioro funcional", [
+        "El patrón produce interferencia clínicamente significativa en el aprendizaje, las relaciones, la actividad familiar, laboral o social.",
+        "La actividad elevada o la distracción aislada no bastan cuando no existe deterioro funcional relevante."
+      ]),
+      grupoContenido("G. Exclusiones y diagnóstico diferencial", [
+        "Descartar trastornos generalizados del desarrollo, episodios maníacos o afectivos, trastornos de ansiedad, trastornos del espectro autista, trastorno disocial, discapacidad intelectual o dificultades específicas de aprendizaje cuando expliquen mejor el cuadro.",
+        "También deben considerarse afecciones neurológicas o médicas, sustancias y efectos farmacológicos antes de atribuir los síntomas a F90."
+      ])
+    ]
+  }];
+  cie10.subtipos = [
+    subtipoF90("F90.0", "Trastorno de la actividad y de la atención", [
+      "Deben cumplirse los criterios generales del grupo F90.",
+      "No deben cumplirse simultáneamente los criterios de un trastorno disocial del grupo F91.",
+      "La categoría integra alteraciones persistentes de la atención, la actividad y la impulsividad con inicio temprano, presencia generalizada y deterioro funcional.",
+      "Incluye el trastorno o síndrome de déficit de atención con hiperactividad cuando corresponde a la clasificación de la OMS.",
+      "La ausencia de un trastorno disocial concurrente suficiente distingue F90.0 de F90.1."
+    ]),
+    subtipoF90("F90.1", "Trastorno hipercinético disocial", [
+      "Deben cumplirse los criterios generales del grupo F90.",
+      "Deben cumplirse simultáneamente los criterios del trastorno disocial del grupo F91.",
+      "La categoría combina el patrón hipercinético con una pauta persistente de conducta disocial, y no equivale simplemente a TDAH con problemas de conducta ocasionales.",
+      "La persistencia, la generalización entre contextos y el deterioro deben documentarse para ambos grupos de síntomas.",
+      "Deben excluirse episodios afectivos, trastornos generalizados del desarrollo, esquizofrenia, trastornos por sustancias y afecciones médicas que expliquen mejor la combinación."
+    ]),
+    subtipoF90("F90.8", "Otros trastornos hipercinéticos", [
+      "Categoría residual para cuadros que cumplen el grupo F90 pero no encajan en una subcategoría específica disponible.",
+      "Debe documentarse por qué el cuadro no puede clasificarse como F90.0 o F90.1.",
+      "No debe utilizarse para sustituir una valoración incompleta o la falta de información clínica básica."
+    ]),
+    subtipoF90("F90.9", "Trastorno hipercinético sin especificación", [
+      "Categoría reservada para información insuficiente o para un cuadro en el que no puede diferenciarse F90.0 de F90.1, aunque se cumplen los criterios generales de F90.",
+      "Se diferencia de F90.8 porque la limitación principal es la falta de diferenciación o información, no la existencia de una presentación residual ya caracterizada.",
+      "Debe completarse posteriormente la clasificación cuando se obtengan datos de desarrollo, contextos, persistencia, deterioro y exclusiones."
+    ])
+  ];
+  cie10.especificadores = [];
+  cie10.notas = [
+    "Estas son subcategorías CIE-10, no especificadores.",
+    "La CIE-10 de la OMS se mantiene separada de ICD-10-CM; cualquier equivalencia estadounidense debe identificarse aparte."
+  ];
+  cie10.completionStatus = "complete_summary";
+  cie10.fuente.sourceVerified = true;
+  cie10.review = { reviewed: false, reviewedAt: null, sourceVerified: true, notes: "Síntesis estructurada basada en la publicación oficial de la OMS; revisar la edición aplicable antes del uso diagnóstico." };
+
+  const cie11 = diagnostico.sistemas.cie11;
+  cie11.criterios = [
+    grupoContenido("Características esenciales", [
+      "Patrón persistente de inatención y/o hiperactividad-impulsividad que excede lo esperado para la edad y el nivel de desarrollo.",
+      "Las manifestaciones limitan de forma significativa el funcionamiento académico, laboral, social o familiar."
+    ]),
+    grupoContenido("Requisitos diagnósticos", [
+      "La evaluación debe integrar síntomas, historia del desarrollo, información de otras personas y observación clínica cuando sea posible.",
+      "Los síntomas deben ser clínicamente significativos y no explicarse mejor por otro trastorno, una sustancia, un medicamento o una enfermedad del sistema nervioso."
+    ]),
+    grupoContenido("Inicio, duración y múltiples situaciones", [
+      "Debe existir evidencia de inicio durante el periodo del desarrollo y persistencia suficiente para distinguirlo de variaciones transitorias.",
+      "Las dificultades deben observarse en múltiples situaciones o estar respaldadas por una historia evolutiva consistente; en adultos puede ser necesaria información retrospectiva de la infancia."
+    ]),
+    grupoContenido("Deterioro funcional y límites con la normalidad", [
+      "La actividad, la distracción o la impulsividad aisladas no constituyen el trastorno si no generan limitación funcional relevante.",
+      "La valoración debe considerar edad, desarrollo, demandas del entorno, sueño, estrés y oportunidades educativas o laborales."
+    ]),
+    grupoContenido("Exclusiones y diagnóstico diferencial", [
+      "Considerar trastornos del desarrollo intelectual, trastornos del lenguaje, trastorno del espectro autista, trastornos del aprendizaje, tics, ansiedad, depresión, episodios afectivos, alteraciones del sueño, sustancias, medicamentos y enfermedades neurológicas o médicas.",
+      "Las dificultades deben explicarse mejor por TDAH que por otra condición primaria."
+    ])
+  ];
+  cie11.subtipos = [
+    { codigo: "6A05.0", nombre: "Trastorno por déficit de atención con hiperactividad, presentación predominantemente inatenta", criterios: [grupoContenido("Presentación", ["Se cumplen los requisitos diagnósticos de 6A05 y predominan los síntomas de inatención."])], especificadores: [], notas: [] },
+    { codigo: "6A05.1", nombre: "Trastorno por déficit de atención con hiperactividad, presentación predominantemente hiperactiva-impulsiva", criterios: [grupoContenido("Presentación", ["Se cumplen los requisitos diagnósticos de 6A05 y predominan los síntomas de hiperactividad-impulsividad."])], especificadores: [], notas: [] },
+    { codigo: "6A05.2", nombre: "Trastorno por déficit de atención con hiperactividad, presentación combinada", criterios: [grupoContenido("Presentación", ["Se cumplen los requisitos diagnósticos de 6A05 y son clínicamente significativas tanto la inatención como la hiperactividad-impulsividad, sin predominio claro de una sola."])], especificadores: [], notas: [] },
+    { codigo: "6A05.Y", nombre: "Trastorno por déficit de atención con hiperactividad, otra presentación especificada", criterios: [grupoContenido("Categoría residual", ["Se utiliza cuando la presentación clínica está especificada por el profesional, pero no corresponde a una de las presentaciones principales disponibles."])], especificadores: [], notas: [] },
+    { codigo: "6A05.Z", nombre: "Trastorno por déficit de atención con hiperactividad, presentación no especificada", criterios: [grupoContenido("Categoría residual", ["Se utiliza cuando no se dispone de información suficiente para especificar la presentación clínica."])], especificadores: [], notas: [] }
+  ];
+  cie11.especificadores = ["Presentación clínica predominante: inatenta, hiperactiva-impulsiva o combinada.", "La fuente CDDR consultada denomina estos elementos presentaciones; no se trasladan automáticamente los especificadores de gravedad o remisión del DSM-5-TR."];
+  cie11.notas = ["Códigos hijos y nombres comprobados en el CDDR de la OMS consultado.", "La CIE-11 se mantiene y actualiza en el navegador oficial; registrar la versión al actualizar este catálogo."];
+  cie11.completionStatus = "complete_summary";
+  cie11.fuente.sourceVerified = true;
+  cie11.review = { reviewed: false, reviewedAt: null, sourceVerified: true, notes: "Síntesis clínica estructurada basada en el CDDR de la OMS; revisar la versión vigente del navegador antes del uso diagnóstico." };
+
+  const dsm = diagnostico.sistemas.dsm5;
+  dsm.codigo = "314.01";
+  dsm.codigoCie10Cm = "F90.2";
+  dsm.nombre = "Trastorno por déficit de atención con hiperactividad";
+  dsm.criterios = [
+    { ...grupoContenido("Criterio A", [], "Síntesis clínica no literal del DSM-5-TR; el criterio A se organiza en dos dimensiones."), grupos: [
+      grupoContenido("A1. Inatención", ["La dimensión reúne síntomas persistentes de dificultad para mantener la atención, organizar tareas, seguir instrucciones, finalizar actividades, manejar objetos, resistir distractores y recordar obligaciones.", "El umbral resumido es de 6 síntomas en niños y de 5 en adolescentes mayores y adultos, durante al menos 6 meses, en grado inconsistente con el desarrollo y con impacto funcional."]),
+      grupoContenido("A2. Hiperactividad e impulsividad", ["La dimensión reúne síntomas persistentes de inquietud, levantarse, correr o sentirse impulsado a estar en movimiento, dificultad para realizar actividades tranquilas, hablar en exceso, responder antes de tiempo, esperar turnos e interrumpir.", "El umbral resumido es de 6 síntomas en niños y de 5 en adolescentes mayores y adultos, durante al menos 6 meses, con impacto funcional."])
+    ]},
+    grupoContenido("Criterio B. Edad de inicio", ["Varios síntomas de inatención o hiperactividad-impulsividad estaban presentes antes de los 12 años."]),
+    grupoContenido("Criterio C. Presencia en contextos", ["Varios síntomas están presentes en dos o más contextos, como casa, escuela, trabajo, relaciones u otras actividades."]),
+    grupoContenido("Criterio D. Interferencia funcional", ["Existe evidencia clara de que los síntomas interfieren o reducen la calidad del funcionamiento social, académico u ocupacional."]),
+    grupoContenido("Criterio E. Exclusiones", ["Los síntomas no ocurren exclusivamente durante esquizofrenia u otro trastorno psicótico y no se explican mejor por otro trastorno mental, sustancia, medicamento o afección médica."])
+  ];
+  dsm.subtipos = [
+    { codigo: "314.01 (F90.2)", nombre: "Presentación combinada", criterios: [grupoContenido("Presentación", ["Se cumplen los umbrales resumidos de inatención y de hiperactividad-impulsividad durante el periodo de referencia."])], especificadores: [], notas: [] },
+    { codigo: "314.00 (F90.0)", nombre: "Presentación predominantemente inatenta", criterios: [grupoContenido("Presentación", ["Se cumple el umbral de inatención y no se cumple el umbral completo de hiperactividad-impulsividad durante el periodo de referencia."])], especificadores: [], notas: [] },
+    { codigo: "314.01 (F90.1)", nombre: "Presentación predominantemente hiperactiva/impulsiva", criterios: [grupoContenido("Presentación", ["Se cumple el umbral de hiperactividad-impulsividad y no se cumple el umbral completo de inatención durante el periodo de referencia."])], especificadores: [], notas: [] }
+  ];
+  dsm.especificadores = ["En remisión parcial: se cumplieron previamente todos los criterios, pero durante los últimos 6 meses no se han cumplido todos, aunque los síntomas restantes continúan causando deterioro.", "Gravedad leve, moderada o grave: se determina por el número de síntomas, su intensidad y el grado de deterioro funcional más allá del mínimo requerido."];
+  dsm.notas = ["Resumen clínico no literal del DSM-5-TR; no se almacena ni reproduce el texto protegido del manual.", "Los códigos deben verificarse contra la edición autorizada y las actualizaciones oficiales de la APA antes de una decisión de facturación o codificación."];
+  dsm.fuente = { organismo: "American Psychiatric Association", documento: "DSM-5-TR y actualizaciones oficiales de criterios y códigos", edicion: "DSM-5-TR; resumen clínico no literal", url: "https://www.psychiatry.org/psychiatrists/practice/dsm/updates-to-dsm/updates-to-dsm-5-tr-criteria-text", fechaConsulta: FECHA_AUDITORIA, sourceVerified: true, licenseStatus: "summarized" };
+  dsm.completionStatus = "complete_summary";
+  dsm.review = { reviewed: false, reviewedAt: null, sourceVerified: true, notes: "Resumen clínico no literal; verificar códigos y actualizaciones oficiales APA en la edición autorizada." };
+}
+
+completarGrupoF90();
+
 function todosLosGrupos(grupos = []) {
   return grupos.flatMap((grupo) => [grupo, ...todosLosGrupos(grupo.grupos || [])]);
 }
@@ -413,10 +574,14 @@ function evaluarSistema(sistema, datos) {
 
 for (const entidad of diagnosticos) {
   for (const [sistema, datos] of Object.entries(entidad.sistemas)) {
-    datos.criterios = normalizarCriteriosAgrupados(datos.criterios, entidad.id, sistema);
+    datos.criterios = datos.criterios.some((grupo) => Array.isArray(grupo?.items) || Array.isArray(grupo?.grupos))
+      ? datos.criterios
+      : normalizarCriteriosAgrupados(datos.criterios, entidad.id, sistema);
     datos.subtipos = (datos.subtipos || []).map((subtipo, indice) => ({
       ...subtipo,
-      criterios: normalizarCriteriosAgrupados(subtipo.criterios, `${entidad.id}-${sistema}-subtipo-${indice + 1}`, sistema)
+      criterios: subtipo.criterios?.some((grupo) => Array.isArray(grupo?.items) || Array.isArray(grupo?.grupos))
+        ? subtipo.criterios
+        : normalizarCriteriosAgrupados(subtipo.criterios, `${entidad.id}-${sistema}-subtipo-${indice + 1}`, sistema)
     }));
     evaluarSistema(sistema, datos);
   }

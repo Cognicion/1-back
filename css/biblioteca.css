@@ -739,6 +739,30 @@ html[data-theme="light"] .aviso-clinico-biblioteca {
   color: var(--celtic-300);
 }
 
+.grupo-criterios > summary,
+.criteria-subgroup > summary,
+.sistema-metadatos__grupo > summary {
+  cursor: pointer;
+  font-weight: 700;
+  list-style-position: outside;
+}
+
+.grupo-criterios > summary {
+  color: var(--celtic-300);
+}
+
+.grupo-criterios > summary::marker,
+.criteria-subgroup > summary::marker,
+.sistema-metadatos__grupo > summary::marker {
+  color: var(--accent-primary, var(--celtic-300));
+}
+
+.grupo-criterios[open] > summary,
+.criteria-subgroup[open] > summary,
+.sistema-metadatos__grupo[open] > summary {
+  margin-bottom: 8px;
+}
+
 .grupo-criterios__intro {
   margin: 0 0 8px;
   line-height: 1.5;
@@ -774,6 +798,29 @@ html[data-theme="light"] .aviso-clinico-biblioteca {
   margin: 0 0 6px;
   color: var(--celtic-300);
   font-size: .88rem;
+}
+
+.criteria-subgroup > summary {
+  color: var(--celtic-300);
+  font-size: .88rem;
+}
+
+.sistema-metadatos {
+  display: grid;
+  gap: 10px;
+  margin: 10px 0;
+}
+
+.sistema-metadatos__grupo {
+  padding: 10px 12px;
+  border: 1px solid var(--border-subtle, #ddddda);
+  border-radius: 10px;
+  background: var(--surface-secondary, #ececea);
+}
+
+.sistema-metadatos__grupo ul {
+  margin: 8px 0 0;
+  padding-left: 22px;
 }
 
 .criteria-subgroup p {
@@ -855,6 +902,21 @@ html[data-theme="light"] .grupo-criterios {
 
 html[data-theme="light"] .grupo-criterios h5 {
   color: #285c3b;
+}
+
+html[data-theme="light"] .grupo-criterios > summary,
+html[data-theme="light"] .criteria-subgroup > summary,
+html[data-theme="light"] .sistema-metadatos__grupo > summary {
+  color: var(--library-primary);
+}
+
+html[data-theme="light"] .sistema-metadatos__grupo {
+  background: var(--library-surface-soft);
+  border-color: var(--library-border);
+}
+
+html[data-theme="light"] .sistema-metadatos__grupo li {
+  color: var(--library-text-secondary);
 }
 
 html[data-theme="light"] .grupo-criterios__intro,

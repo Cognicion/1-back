@@ -2,13 +2,21 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { DIAGNOSTICOS_BIBLIOTECA, SISTEMAS_DIAGNOSTICOS } from "../data/diagnosticosBiblioteca.js";
 
-test("F90 y 6A05 se muestran como una sola entidad con subtipos CIE-10", () => {
+test("F90 concentra las tres clasificaciones y sus subcategorías", () => {
   const tdah = DIAGNOSTICOS_BIBLIOTECA.find((diagnostico) => diagnostico.sistemas?.cie10?.codigo === "F90");
   assert.ok(tdah);
   assert.match(tdah.nombre, /TDAH/);
-  assert.deepEqual(tdah.sistemas.cie10.subtipos.map((subtipo) => subtipo.codigo), ["F90.0", "F90.1"]);
+  assert.deepEqual(tdah.sistemas.cie10.subtipos.map((subtipo) => subtipo.codigo), ["F90.0", "F90.1", "F90.8", "F90.9"]);
   assert.equal(tdah.sistemas.cie11.codigo, "6A05");
-  assert.equal(tdah.sistemas.dsm5.codigo, "314.xx");
+  assert.deepEqual(tdah.sistemas.cie11.subtipos.map((subtipo) => subtipo.codigo), ["6A05.0", "6A05.1", "6A05.2", "6A05.Y", "6A05.Z"]);
+  assert.equal(tdah.sistemas.dsm5.codigo, "314.01");
+  assert.deepEqual(tdah.sistemas.dsm5.subtipos.map((subtipo) => subtipo.codigo), ["314.01 (F90.2)", "314.00 (F90.0)", "314.01 (F90.1)"]);
+  assert.equal(tdah.sistemas.cie10.criterios[0].titulo, "Criterios generales del grupo F90");
+  assert.equal(tdah.sistemas.dsm5.criterios.length, 5);
+  assert.ok(tdah.sistemas.cie10.fuente.sourceVerified);
+  assert.ok(tdah.sistemas.cie11.fuente.sourceVerified);
+  assert.equal(tdah.sistemas.dsm5.fuente.licenseStatus, "summarized");
+  assert.doesNotMatch(JSON.stringify(tdah), /Pendiente de clasificación|Criterios específicos no cargados aún|314\\.xx/);
   assert.equal(DIAGNOSTICOS_BIBLIOTECA.some((diagnostico) => diagnostico.sistemas?.cie10?.codigo === "F90.0"), false);
 });
 
