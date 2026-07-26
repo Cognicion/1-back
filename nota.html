@@ -6,7 +6,7 @@
 
 <link rel="stylesheet" href="css/theme.css">
 <link rel="icon" type="image/png" href="assets/favicon-cognicion.png">
-<link rel="stylesheet" href="css/nota.css?v=20260726-notas-historial-tema-v1">
+<link rel="stylesheet" href="css/nota.css?v=20260726-notas-autocomplete-estudios-v1">
 <script src="js/theme-preload.js"></script>
 <link rel="stylesheet" href="css/theme/cognicion-theme.css">
 <script type="module" src="js/services/themeBootstrap.js"></script>
@@ -478,7 +478,12 @@
     <label>Objetivo / Examen mental</label>
     <textarea id="objetivo"></textarea>
 
-    <label>Resultados relevantes de estudios diagnosticos</label>
+    <div class="encabezado-campo-nota">
+        <label for="obsResultadosEstudios">Resultados relevantes de estudios diagnosticos</label>
+        <button id="btnSincronizarEstudiosNota" type="button" class="boton-secundario boton-mini">
+            Sincronizar estudios
+        </button>
+    </div>
     <textarea id="obsResultadosEstudios"></textarea>
 
     <div class="tabla-diagnosticos">
@@ -497,10 +502,10 @@
     <label>Plan</label>
     <textarea id="plan"></textarea>
 
-    <label>Pronostico</label>
+    <label for="obsPronostico">Pronostico</label>
     <textarea id="obsPronostico"></textarea>
 
-    <label>Destino</label>
+    <label for="obsDestino">Destino</label>
     <input id="obsDestino">
 </div>
 
@@ -545,7 +550,7 @@ Cancelar edicion
 
 </div>
 
-<script type="module" src="js/nota.js?v=20260726-notas-historial-tema-v1"></script>
+  <script type="module" src="js/nota.js?v=20260726-notas-autocomplete-estudios-v1"></script>
 <script type="module">import("./js/calculators/calculatorDialog.js");</script>
 
   <script type="module" src="js/components/accesosRapidos.js"></script>

@@ -8,7 +8,7 @@ const [modulo, servicio, html] = await Promise.all([
   readFile(new URL("../../nota.html", import.meta.url), "utf8")
 ]);
 
-const inicioContinuar = modulo.indexOf("window.continuarBorradorDesdeHistorial");
+const inicioContinuar = modulo.indexOf("function continuarBorradorNota");
 const finContinuar = modulo.indexOf("function cargarDatosNotaComoBorrador", inicioContinuar);
 assert.ok(inicioContinuar >= 0 && finContinuar > inicioContinuar, "debe existir el flujo Continuar borrador");
 const flujoContinuar = modulo.slice(inicioContinuar, finContinuar);
@@ -71,6 +71,6 @@ assert.doesNotMatch(
   servicio.slice(servicio.indexOf("export async function guardarBorradorNotaClinica"), servicio.indexOf("export async function finalizarNotaClinica")),
   /arrayUnion|ediciones|notaEditada/
 );
-assert.match(html, /js\/nota\.js\?v=20260716-5/);
+assert.match(html, /js\/nota\.js\?v=20260726-notas-autocomplete-estudios-v1/);
 
 console.log("continuarBorrador: ok");

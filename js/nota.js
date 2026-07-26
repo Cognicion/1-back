@@ -117,6 +117,12 @@ let notasFlotantesPacienteCache = [];
 let catalogoMedicosFirmasCache = [];
 let escalasPreviasNotaCache = [];
 let escalasAplicadasPendientesNota = [];
+let catalogosClinicosNotaCache = {
+  pronostico: [],
+  destino: []
+};
+let catalogosClinicosNotaCargados = false;
+let estudiosSincronizadosNotaIds = new Set();
 let estadoNotaActual = "nueva";
 
 const NOTE_FIELD_REGISTRY = Object.freeze({
@@ -328,14 +334,201 @@ function claveCatalogoPronosticosNota() {
   return `cognicion_catalogo_pronosticos:${uidMedicoActual || auth.currentUser?.uid || "sin_usuario"}`;
 }
 
-function cargarCatalogoPronosticosNota() {
+function normalizarOpcionClinica(texto) {
+  return String(texto ?? "")
+    .normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "")
+    .trim()
+    .replace(/\s+/g, " ")
+    .toLowerCase();
+}
+
+function normalizarTextoVisibleOpcionClinica(texto = "", maximo = 180) {
+  return String(texto ?? "").replace(/<[^>]*>/g, "").replace(/\s+/g, " ").trim().slice(0, maximo);
+}
+
+function hashOpcionClinica(texto = "") {
+  let hash = 2166136261;
+  for (const caracter of texto) {
+    hash ^= caracter.charCodeAt(0);
+    hash = Math.imul(hash, 16777619);
+  }
+  return (hash >>> 0).toString(36);
+}
+
+function referenciaCatalogoClinicoNota(tipoCatalogo, normalizado) {
+  const uidCatalogo = uidMedicoActual || auth.currentUser?.uid || "";
+  if (!uidCatalogo) return null;
+  return doc(db, "usuarios", uidCatalogo, "catalogosClinicosNotas", `${tipoCatalogo}_${hashOpcionClinica(normalizado)}`);
+}
+
+function opcionesInicialesCatalogoClinico(tipoCatalogo) {
+  const catalogos = {
+    pronostico: [
+      "Favorable",
+      "Reservado",
+      "Reservado para la función",
+      "Malo para la vida y la función",
+      "Depende de la evolución clínica"
+    ],
+    destino: [
+      "Se ingresa al servicio de Observación",
+      "Se ingresa a Hospitalización Continua",
+      "Egreso a domicilio",
+      "Referencia a otra unidad",
+      "Continúa en manejo ambulatorio",
+      "Traslado a Urgencias Médicas"
+    ]
+  };
+  return (catalogos[tipoCatalogo] || []).map((texto, index) => ({
+    id: `base_${tipoCatalogo}_${index}`,
+    tipo: tipoCatalogo,
+    texto,
+    normalizado: normalizarOpcionClinica(texto),
+    timesUsed: 0,
+    base: true
+  }));
+}
+
+function opcionesLocalesPronosticoLegado() {
   try {
     const datos = JSON.parse(localStorage.getItem(claveCatalogoPronosticosNota()) || "[]");
-    return Array.isArray(datos) ? datos.filter((item) => String(item || "").trim()) : [];
+    return Array.isArray(datos)
+      ? datos.map((item) => normalizarTextoVisibleOpcionClinica(item)).filter(Boolean)
+      : [];
   } catch (error) {
     console.warn("No se pudo cargar el catalogo de pronosticos:", error);
     return [];
   }
+}
+
+function fusionarOpcionesCatalogoClinico(opciones = []) {
+  const mapa = new Map();
+  for (const opcion of opciones) {
+    const texto = normalizarTextoVisibleOpcionClinica(opcion.texto || opcion);
+    const normalizado = opcion.normalizado || normalizarOpcionClinica(texto);
+    if (!texto || !normalizado) continue;
+    const previa = mapa.get(normalizado);
+    if (!previa || Number(opcion.timesUsed || 0) > Number(previa.timesUsed || 0)) {
+      mapa.set(normalizado, {
+        id: opcion.id || normalizado,
+        tipo: opcion.tipo || "",
+        texto,
+        normalizado,
+        timesUsed: Number(opcion.timesUsed || 0),
+        base: opcion.base === true
+      });
+    }
+  }
+  return [...mapa.values()];
+}
+
+function ordenarOpcionesCatalogoClinico(opciones = [], busqueda = "") {
+  const consulta = normalizarOpcionClinica(busqueda);
+  return [...opciones]
+    .filter((opcion) => !consulta || opcion.normalizado.includes(consulta))
+    .sort((a, b) => {
+      const aInicio = consulta && a.normalizado.startsWith(consulta) ? 1 : 0;
+      const bInicio = consulta && b.normalizado.startsWith(consulta) ? 1 : 0;
+      if (aInicio !== bInicio) return bInicio - aInicio;
+      const uso = Number(b.timesUsed || 0) - Number(a.timesUsed || 0);
+      if (uso) return uso;
+      return a.texto.localeCompare(b.texto, "es", { sensitivity: "base" });
+    });
+}
+
+async function cargarCatalogosClinicosNota() {
+  if (catalogosClinicosNotaCargados) return;
+  const basePronostico = opcionesInicialesCatalogoClinico("pronostico");
+  const baseDestino = opcionesInicialesCatalogoClinico("destino");
+  const legadoPronostico = opcionesLocalesPronosticoLegado().map((texto) => ({
+    tipo: "pronostico",
+    texto,
+    normalizado: normalizarOpcionClinica(texto),
+    timesUsed: 1
+  }));
+  catalogosClinicosNotaCache = {
+    pronostico: fusionarOpcionesCatalogoClinico([...basePronostico, ...legadoPronostico]),
+    destino: fusionarOpcionesCatalogoClinico(baseDestino)
+  };
+
+  try {
+    const uidCatalogo = uidMedicoActual || auth.currentUser?.uid || "";
+    const snap = uidCatalogo
+      ? await getDocs(collection(db, "usuarios", uidCatalogo, "catalogosClinicosNotas"))
+      : { docs: [] };
+    const remotas = snap.docs.map((documento) => ({ id: documento.id, ...documento.data() }));
+    for (const tipo of ["pronostico", "destino"]) {
+      catalogosClinicosNotaCache[tipo] = fusionarOpcionesCatalogoClinico([
+        ...catalogosClinicosNotaCache[tipo],
+        ...remotas.filter((item) => item.tipo === tipo)
+      ]);
+      console.debug("[Notas] Catálogo cargado", {
+        tipo,
+        totalOpciones: catalogosClinicosNotaCache[tipo].length
+      });
+    }
+  } catch (error) {
+    console.warn("[Notas] No se pudieron cargar catálogos clínicos reutilizables:", error?.code || error?.message || "error");
+    for (const tipo of ["pronostico", "destino"]) {
+      console.debug("[Notas] Catálogo cargado", {
+        tipo,
+        totalOpciones: catalogosClinicosNotaCache[tipo].length
+      });
+    }
+  } finally {
+    catalogosClinicosNotaCargados = true;
+  }
+}
+
+async function actualizarCatalogoClinicoNota(tipoCatalogo, texto) {
+  const textoVisible = normalizarTextoVisibleOpcionClinica(texto, 220);
+  const normalizado = normalizarOpcionClinica(textoVisible);
+  if (!textoVisible || !normalizado || !["pronostico", "destino"].includes(tipoCatalogo)) return;
+  const existente = catalogosClinicosNotaCache[tipoCatalogo].find((opcion) => opcion.normalizado === normalizado);
+  const actualizado = {
+    id: existente?.id || `${tipoCatalogo}_${hashOpcionClinica(normalizado)}`,
+    tipo: tipoCatalogo,
+    texto: existente?.texto || textoVisible,
+    normalizado,
+    timesUsed: Number(existente?.timesUsed || 0) + 1
+  };
+  catalogosClinicosNotaCache[tipoCatalogo] = fusionarOpcionesCatalogoClinico([
+    actualizado,
+    ...catalogosClinicosNotaCache[tipoCatalogo].filter((opcion) => opcion.normalizado !== normalizado)
+  ]);
+  const ref = referenciaCatalogoClinicoNota(tipoCatalogo, normalizado);
+  if (!ref) return;
+  try {
+    const actual = await getDoc(ref);
+    const previos = actual.exists() ? actual.data() : {};
+    await setDoc(ref, {
+      tipo: tipoCatalogo,
+      texto: previos.texto || textoVisible,
+      normalizado,
+      timesUsed: Number(previos.timesUsed || 0) + 1,
+      updatedAt: serverTimestamp(),
+      ...(actual.exists() ? {} : {
+        createdAt: serverTimestamp(),
+        createdBy: auth.currentUser?.uid || uidMedicoActual || ""
+      })
+    }, { merge: true });
+  } catch (error) {
+    console.warn("[Notas] No se pudo actualizar catálogo clínico", { tipoCatalogo });
+  }
+}
+
+async function actualizarCatalogosClinicosDesdeNota(datosNota = {}) {
+  const pronostico = datosNota.observacionFray?.pronostico ?? valorCampo("obsPronostico");
+  const destino = datosNota.observacionFray?.destino ?? valorCampo("obsDestino");
+  await Promise.allSettled([
+    actualizarCatalogoClinicoNota("pronostico", pronostico),
+    actualizarCatalogoClinicoNota("destino", destino)
+  ]);
+}
+
+function cargarCatalogoPronosticosNota() {
+  return catalogosClinicosNotaCache.pronostico.map((opcion) => opcion.texto);
 }
 
 function guardarCatalogoPronosticosNota(catalogo = []) {
@@ -429,6 +622,122 @@ function abrirCatalogoPronosticos() {
   });
 }
 
+function inicializarAutocompleteClinico({ input, tipoCatalogo }) {
+  if (!input || input.dataset.autocompleteClinicoInicializado === "true") return;
+  input.dataset.autocompleteClinicoInicializado = "true";
+  input.setAttribute("autocomplete", "off");
+  input.setAttribute("role", "combobox");
+  input.setAttribute("aria-autocomplete", "list");
+  input.setAttribute("aria-expanded", "false");
+
+  const idLista = `autocomplete-${tipoCatalogo}-${input.id || Math.random().toString(36).slice(2)}`;
+  const contenedor = document.createElement("div");
+  contenedor.className = "autocomplete-clinico-nota";
+  const lista = document.createElement("div");
+  lista.id = idLista;
+  lista.className = "autocomplete-clinico-nota__lista";
+  lista.setAttribute("role", "listbox");
+  lista.hidden = true;
+  contenedor.appendChild(lista);
+  input.setAttribute("aria-controls", idLista);
+  input.insertAdjacentElement("afterend", contenedor);
+
+  let opcionesActuales = [];
+  let indiceActivo = -1;
+
+  const cerrar = () => {
+    lista.hidden = true;
+    lista.replaceChildren();
+    input.setAttribute("aria-expanded", "false");
+    input.removeAttribute("aria-activedescendant");
+    indiceActivo = -1;
+  };
+
+  const seleccionar = (indice) => {
+    const opcion = opcionesActuales[indice];
+    if (!opcion) return;
+    input.value = opcion.texto;
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+    input.dispatchEvent(new Event("change", { bubbles: true }));
+    marcarCambiosNotaPendientes();
+    guardarRespaldoTemporalNota();
+    cerrar();
+  };
+
+  const actualizarActivo = () => {
+    lista.querySelectorAll("[role='option']").forEach((item, index) => {
+      const activo = index === indiceActivo;
+      item.setAttribute("aria-selected", String(activo));
+      item.classList.toggle("is-active", activo);
+      if (activo) input.setAttribute("aria-activedescendant", item.id);
+    });
+  };
+
+  const renderizar = () => {
+    const busqueda = input.value || "";
+    opcionesActuales = ordenarOpcionesCatalogoClinico(catalogosClinicosNotaCache[tipoCatalogo] || [], busqueda).slice(0, 8);
+    if (!busqueda.trim() || !opcionesActuales.length) {
+      cerrar();
+      return;
+    }
+    lista.replaceChildren();
+    opcionesActuales.forEach((opcion, index) => {
+      const item = document.createElement("button");
+      item.type = "button";
+      item.id = `${idLista}-opcion-${index}`;
+      item.className = "autocomplete-clinico-nota__opcion";
+      item.setAttribute("role", "option");
+      item.setAttribute("aria-selected", "false");
+      item.textContent = opcion.texto;
+      item.addEventListener("mousedown", (evento) => evento.preventDefault());
+      item.addEventListener("click", () => seleccionar(index));
+      lista.appendChild(item);
+    });
+    indiceActivo = -1;
+    lista.hidden = false;
+    input.setAttribute("aria-expanded", "true");
+  };
+
+  input.addEventListener("input", renderizar);
+  input.addEventListener("focus", renderizar);
+  input.addEventListener("keydown", (evento) => {
+    if (lista.hidden) {
+      if (evento.key === "ArrowDown") renderizar();
+      return;
+    }
+    if (evento.key === "ArrowDown") {
+      evento.preventDefault();
+      indiceActivo = Math.min(opcionesActuales.length - 1, indiceActivo + 1);
+      actualizarActivo();
+    } else if (evento.key === "ArrowUp") {
+      evento.preventDefault();
+      indiceActivo = Math.max(0, indiceActivo - 1);
+      actualizarActivo();
+    } else if (evento.key === "Enter" && indiceActivo >= 0) {
+      evento.preventDefault();
+      seleccionar(indiceActivo);
+    } else if (evento.key === "Escape") {
+      cerrar();
+    }
+  });
+  document.addEventListener("click", (evento) => {
+    if (evento.target === input || contenedor.contains(evento.target)) return;
+    cerrar();
+  });
+}
+
+async function configurarAutocompletadosClinicosNota() {
+  await cargarCatalogosClinicosNota();
+  inicializarAutocompleteClinico({
+    input: document.getElementById("obsPronostico"),
+    tipoCatalogo: "pronostico"
+  });
+  inicializarAutocompleteClinico({
+    input: document.getElementById("obsDestino"),
+    tipoCatalogo: "destino"
+  });
+}
+
 function crearControlesTactilesSeccion(clave, objetivo, minimo = 80, alturaBase = 130) {
   const controles = document.createElement("div");
   controles.className = "controles-tamano-nota";
@@ -439,7 +748,6 @@ function crearControlesTactilesSeccion(clave, objetivo, minimo = 80, alturaBase 
     <button type="button" data-accion="reiniciar" title="Restablecer tamano">Reiniciar</button>
     ${clave === "campo:plan" ? '<button type="button" data-accion="actualizar-plan-indicaciones" title="Actualizar Plan desde indicaciones">Actualizar texto</button>' : ""}
     ${clave === "campo:tratamiento" ? '<button type="button" data-accion="actualizar-tratamiento-indicaciones" title="Actualizar tratamiento e indicaciones">Actualizar texto</button>' : ""}
-    ${clave === "campo:obsPronostico" ? '<button type="button" data-accion="elegir-pronostico" title="Elegir pronostico">Elegir pronostico</button><button type="button" data-accion="agregar-pronostico" title="Agregar pronostico al catalogo">Agregar al catalogo</button>' : ""}
   `;
 
   controles.addEventListener("click", (evento) => {
@@ -454,8 +762,6 @@ function crearControlesTactilesSeccion(clave, objetivo, minimo = 80, alturaBase 
     if (accion === "reiniciar") aplicarAlturaSeccionNota(clave, objetivo, alturaBase, minimo);
     if (accion === "actualizar-plan-indicaciones") actualizarPlanDesdeIndicaciones();
     if (accion === "actualizar-tratamiento-indicaciones") actualizarTratamientoDesdeIndicaciones();
-    if (accion === "agregar-pronostico") agregarPronosticoActualAlCatalogo();
-    if (accion === "elegir-pronostico") abrirCatalogoPronosticos();
   });
 
   return controles;
@@ -2556,6 +2862,215 @@ async function autollenarResultadosEstudiosDiagnosticos(uidPaciente) {
   }
 }
 
+function fechaEstudioNota(estudio = {}) {
+  const valor = estudio.fechaEstudio || estudio.fecha || estudio.fechaRealizacion || estudio.createdAt || estudio.fechaCreacion;
+  if (!valor) return null;
+  if (typeof valor.toDate === "function") return valor.toDate();
+  if (typeof valor.seconds === "number") return new Date(valor.seconds * 1000);
+  const fecha = new Date(valor);
+  return Number.isNaN(fecha.getTime()) ? null : fecha;
+}
+
+function textoSeguroEstudioNota(valor, maximo = 240) {
+  if (valor === null || valor === undefined) return "";
+  if (typeof valor === "object") {
+    const textoObjeto = valor.texto || valor.descripcion || valor.nombre || valor.resultado || valor.resumen || "";
+    return typeof textoObjeto === "string" ? textoObjeto.replace(/\s+/g, " ").trim().slice(0, maximo) : "";
+  }
+  return String(valor).replace(/<[^>]*>/g, "").replace(/\s+/g, " ").trim().slice(0, maximo);
+}
+
+function formatearEstudioParaNota(estudio = {}) {
+  const nombre = textoSeguroEstudioNota(
+    estudio.nombre || estudio.nombreEstudio || estudio.tipo || estudio.estudio || estudio.descripcion,
+    120
+  );
+  const fechaObjeto = fechaEstudioNota(estudio);
+  const resultado = textoSeguroEstudioNota(
+    estudio.resultadoResumen || estudio.resumen || estudio.resultado || estudio.observaciones || estudio.comentario,
+    260
+  );
+  const estado = textoSeguroEstudioNota(estudio.estado || estudio.estatus, 60);
+  const institucion = textoSeguroEstudioNota(estudio.institucion || estudio.laboratorio || estudio.unidad, 100);
+  return {
+    id: String(estudio.id || estudio.estudioId || ""),
+    nombre,
+    fechaObjeto,
+    fecha: fechaObjeto ? formatearFechaDDMMAAAA(fechaObjeto) : "",
+    resultado,
+    estado,
+    institucion
+  };
+}
+
+function estudioDisponibleParaNota(estudio = {}) {
+  if (!estudio || typeof estudio !== "object") return false;
+  if (estudio.eliminado === true || estudio.deleted === true || estudio.archivado === true) return false;
+  const estado = String(estudio.estado || estudio.estatus || "").trim().toLowerCase();
+  if (["eliminado", "borrador", "draft", "incompleto"].includes(estado)) return false;
+  return Boolean(formatearEstudioParaNota(estudio).nombre);
+}
+
+async function cargarEstudiosParaSincronizarNota(uidPaciente) {
+  const estudios = (await listarEstudios(uidPaciente))
+    .filter(estudioDisponibleParaNota)
+    .map(formatearEstudioParaNota)
+    .sort((a, b) => (b.fechaObjeto?.getTime?.() || 0) - (a.fechaObjeto?.getTime?.() || 0));
+  return estudios;
+}
+
+function textoEstudioInsertable(estudio) {
+  const partes = [
+    estudio.nombre,
+    estudio.fecha,
+    estudio.resultado
+  ].filter(Boolean);
+  if (!partes.length) return "";
+  const encabezado = [estudio.nombre, estudio.fecha].filter(Boolean).join(", ");
+  return estudio.resultado ? `- ${encabezado}: ${estudio.resultado}.` : `- ${encabezado}.`;
+}
+
+function insertarTextoEnResultadosEstudios(texto, ids = []) {
+  const campo = document.getElementById("obsResultadosEstudios");
+  if (!campo || !texto.trim()) return;
+  const contenidoActual = campo.value.trimEnd();
+  const encabezado = "ESTUDIOS PREVIOS";
+  const bloque = contenidoActual.toUpperCase().includes(encabezado)
+    ? texto
+    : `${encabezado}\n\n${texto}`;
+  campo.value = contenidoActual ? `${contenidoActual}\n\n${bloque}` : bloque;
+  ids.forEach((id) => {
+    if (id) estudiosSincronizadosNotaIds.add(String(id));
+  });
+  campo.dataset.editadoManual = "true";
+  campo.dispatchEvent(new Event("input", { bubbles: true }));
+  campo.dispatchEvent(new Event("change", { bubbles: true }));
+  campo.focus();
+  campo.selectionStart = campo.selectionEnd = campo.value.length;
+  marcarCambiosNotaPendientes();
+  guardarRespaldoTemporalNota();
+}
+
+function cerrarModalSincronizarEstudiosNota() {
+  document.getElementById("modalSincronizarEstudiosNota")?.remove();
+}
+
+function renderizarListaSincronizarEstudios(modal, estudios = []) {
+  const lista = modal.querySelector("[data-lista-estudios-nota]");
+  if (!lista) return;
+  if (!estudios.length) {
+    lista.innerHTML = '<p class="sincronizar-estudios-vacio">No hay estudios registrados para este paciente.</p>';
+    return;
+  }
+  lista.innerHTML = estudios.map((estudio, index) => {
+    const yaIncluido = estudiosSincronizadosNotaIds.has(String(estudio.id));
+    return `
+      <label class="sincronizar-estudio-item ${yaIncluido ? "is-synced" : ""}">
+        <input type="checkbox" data-study-index="${index}" ${yaIncluido ? "disabled" : ""}>
+        <span>
+          <strong>${escaparHTML(estudio.nombre || "Estudio")}</strong>
+          <small>${escaparHTML([estudio.fecha, estudio.estado, estudio.institucion].filter(Boolean).join(" · "))}</small>
+          ${estudio.resultado ? `<span>${escaparHTML(estudio.resultado)}</span>` : ""}
+          ${yaIncluido ? '<em>Ya incluido en esta nota</em>' : ""}
+        </span>
+      </label>
+    `;
+  }).join("");
+}
+
+async function abrirSincronizacionEstudiosNota() {
+  const uidPaciente = uidPacienteActual || document.getElementById("uidPaciente")?.value || "";
+  if (!uidPaciente) {
+    alert("Selecciona un paciente antes de sincronizar estudios.");
+    return;
+  }
+  if (estadoNotaActual === "definitiva") {
+    alert("La nota definitiva está bloqueada. Para modificarla se requiere el flujo actual de edición/adenda.");
+    return;
+  }
+  cerrarModalSincronizarEstudiosNota();
+  const modal = document.createElement("div");
+  modal.id = "modalSincronizarEstudiosNota";
+  modal.className = "modal-sincronizar-estudios-nota";
+  modal.innerHTML = `
+    <div class="panel-sincronizar-estudios-nota" role="dialog" aria-modal="true" aria-labelledby="tituloSincronizarEstudiosNota">
+      <div class="panel-sincronizar-estudios-header">
+        <div>
+          <span>Estudios del expediente</span>
+          <h3 id="tituloSincronizarEstudiosNota">Sincronizar estudios registrados</h3>
+          <p>Selecciona los estudios del expediente que deseas incorporar a esta nota. Los registros originales no serán modificados.</p>
+        </div>
+        <button type="button" data-cerrar-sincronizar-estudios aria-label="Cerrar">×</button>
+      </div>
+      <div class="estado-sincronizar-estudios" data-estado-estudios-nota>Cargando estudios...</div>
+      <div class="lista-sincronizar-estudios-nota" data-lista-estudios-nota></div>
+      <div class="acciones-sincronizar-estudios-nota">
+        <button type="button" class="boton-secundario" data-seleccionar-todos-estudios>Seleccionar todos</button>
+        <button type="button" class="boton-secundario" data-limpiar-estudios>Limpiar</button>
+        <button type="button" class="boton-secundario" data-cancelar-estudios>Cancelar</button>
+        <button type="button" data-insertar-estudios disabled>Insertar en nota</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+  const estado = modal.querySelector("[data-estado-estudios-nota]");
+  const botonInsertar = modal.querySelector("[data-insertar-estudios]");
+  const actualizarBoton = () => {
+    const total = modal.querySelectorAll("[data-study-index]:checked").length;
+    if (botonInsertar) botonInsertar.disabled = total === 0;
+  };
+  modal.querySelector("[data-cerrar-sincronizar-estudios]")?.addEventListener("click", cerrarModalSincronizarEstudiosNota);
+  modal.querySelector("[data-cancelar-estudios]")?.addEventListener("click", cerrarModalSincronizarEstudiosNota);
+  modal.addEventListener("click", (evento) => {
+    if (evento.target === modal) cerrarModalSincronizarEstudiosNota();
+  });
+  const cerrarConEscape = (evento) => {
+    if (evento.key === "Escape") {
+      cerrarModalSincronizarEstudiosNota();
+      document.removeEventListener("keydown", cerrarConEscape);
+    }
+  };
+  document.addEventListener("keydown", cerrarConEscape);
+
+  try {
+    const estudios = await cargarEstudiosParaSincronizarNota(uidPaciente);
+    console.debug("[Notas] Sincronización de estudios", {
+      patientId: uidPaciente,
+      totalDisponibles: estudios.length,
+      totalSeleccionados: 0
+    });
+    if (estado) estado.textContent = estudios.length ? "Selecciona uno o varios estudios." : "";
+    renderizarListaSincronizarEstudios(modal, estudios);
+    modal.addEventListener("change", (evento) => {
+      if (evento.target.matches("[data-study-index]")) actualizarBoton();
+    });
+    modal.querySelector("[data-seleccionar-todos-estudios]")?.addEventListener("click", () => {
+      modal.querySelectorAll("[data-study-index]:not(:disabled)").forEach((input) => { input.checked = true; });
+      actualizarBoton();
+    });
+    modal.querySelector("[data-limpiar-estudios]")?.addEventListener("click", () => {
+      modal.querySelectorAll("[data-study-index]").forEach((input) => { input.checked = false; });
+      actualizarBoton();
+    });
+    botonInsertar?.addEventListener("click", () => {
+      const seleccionados = [...modal.querySelectorAll("[data-study-index]:checked")]
+        .map((input) => estudios[Number(input.dataset.studyIndex)])
+        .filter(Boolean);
+      console.debug("[Notas] Sincronización de estudios", {
+        patientId: uidPaciente,
+        totalDisponibles: estudios.length,
+        totalSeleccionados: seleccionados.length
+      });
+      const texto = seleccionados.map(textoEstudioInsertable).filter(Boolean).join("\n");
+      insertarTextoEnResultadosEstudios(texto, seleccionados.map((estudio) => estudio.id));
+      cerrarModalSincronizarEstudiosNota();
+    });
+  } catch (error) {
+    console.warn("No fue posible cargar estudios para sincronizar:", error?.code || error?.message || "error");
+    if (estado) estado.textContent = "No fue posible cargar los estudios registrados.";
+  }
+}
+
 function aplicarHistoriaClinicaObservacion(historia = {}) {
   if (!valorCampo("subjetivo")) asignarValor("subjetivo", historia.padecimientoActual || "");
   if (!valorCampo("objetivo")) {
@@ -2668,6 +3183,7 @@ function collectNoteData() {
     objetivo: document.getElementById("objetivo").value,
     analisis: document.getElementById("analisis").value,
     plan: document.getElementById("plan").value,
+    syncedStudyIds: [...estudiosSincronizadosNotaIds],
     signosVitalesVinculados: signosVitalesVinculadosNota(pacienteActualDatos || {}),
     pediatriaNota: leerParametrosPediatriaNota(),
     camposDinamicos: camposDinamicosNota()
@@ -2690,6 +3206,7 @@ function llenarFormularioNota(datos) {
   document.getElementById("objetivo").value = datos.objetivo || "";
   document.getElementById("analisis").value = datos.analisis || "";
   document.getElementById("plan").value = datos.plan || "";
+  estudiosSincronizadosNotaIds = new Set(Array.isArray(datos.syncedStudyIds) ? datos.syncedStudyIds.map(String) : []);
   asignarValor("tratamiento", datos.tratamiento || "");
   asignarValor("medico", datos.medicoResponsable || datos.autor || datos.medico || "");
   asignarValor("ultimaConsulta", datos.ultimaConsulta || "");
@@ -2745,7 +3262,7 @@ function elementosEditablesNota() {
     "#bloqueNotaRapida input, #bloqueNotaRapida textarea, #bloqueNotaRapida select, #bloqueNotaRapida [contenteditable]",
     "#bloqueNotaCompleta input, #bloqueNotaCompleta textarea, #bloqueNotaCompleta select, #bloqueNotaCompleta [contenteditable]",
     "#bloqueObservacionFray input, #bloqueObservacionFray textarea, #bloqueObservacionFray select, #bloqueObservacionFray [contenteditable]",
-    "#tratamiento, #medico, #ultimaConsulta, #proximaConsulta, #tipoNota",
+    "#tratamiento, #medico, #ultimaConsulta, #proximaConsulta, #tipoNota, #btnSincronizarEstudiosNota",
     "[data-note-field]"
   ];
   return [...new Set([...document.querySelectorAll(selectores.join(","))])];
@@ -3513,6 +4030,8 @@ async function inicializarNotaClinica() {
   await cargarBorradoresMedico();
   await cargarCatalogoMedicosFirmas();
   configurarCatalogoMedicosFirmas();
+  await configurarAutocompletadosClinicosNota();
+  document.getElementById("btnSincronizarEstudiosNota")?.addEventListener("click", abrirSincronizacionEstudiosNota);
   document.getElementById("obsResultadosEstudios")?.addEventListener("input", (evento) => {
     evento.target.dataset.editadoManual = "true";
   });
@@ -3785,6 +4304,12 @@ async function guardarNotaMedicaConEstadoLegacy(estadoNota = "definitiva") {
       await vincularEscalasPendientesANota(uidPaciente, idNotaGuardada);
     }
 
+    try {
+      await actualizarCatalogosClinicosDesdeNota(datosNotaClinica);
+    } catch (errorCatalogos) {
+      console.warn("[Notas] No se pudo actualizar catálogo clínico", { tipoCatalogo: "pronostico_destino" });
+    }
+
     const usuario = auth.currentUser;
     const medicoActual = usuario ? await obtenerUsuario(usuario.uid) : null;
     const pacienteActual = await obtenerUsuario(uidPaciente);
@@ -3965,6 +4490,12 @@ async function guardarNotaClinicaSeguro(estadoNota = "definitiva") {
       modoEdicionNota = null;
     }
     if (eraNueva) await vincularEscalasPendientesANota(uidPaciente, confirmada.id);
+
+    try {
+      await actualizarCatalogosClinicosDesdeNota(datosNotaClinica);
+    } catch (errorCatalogos) {
+      console.warn("[Notas] No se pudo actualizar catálogo clínico", { tipoCatalogo: "pronostico_destino" });
+    }
 
     try {
       await actualizarUsuario(uidPaciente, {
