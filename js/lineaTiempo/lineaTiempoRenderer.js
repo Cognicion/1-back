@@ -6,11 +6,20 @@ import {
   formatearFechaCorta,
   generarMarcasTemporales,
   obtenerConfiguracionTipoEvento,
-  obtenerClaveFecha
+  obtenerClaveFecha,
+  ordenarEventosPorFecha
 } from "./lineaTiempoUtils.js";
 
 function textoImportancia(importancia) {
   return importancia === "alta" ? "Importancia alta" : importancia === "baja" ? "Importancia baja" : "Importancia media";
+}
+
+function textoCategoria(evento) {
+  return evento.categoria ? `<small>${escaparHTML(evento.categoria)}</small>` : "";
+}
+
+function textoDescripcion(evento) {
+  return `<p>${escaparHTML(evento.descripcion || "Sin descripción disponible.")}</p>`;
 }
 
 export function renderizarEstados(root, tipo, mensaje = "") {
@@ -24,13 +33,14 @@ export function renderizarEstados(root, tipo, mensaje = "") {
   if (texto) texto.textContent = mensaje;
 }
 
-export function renderizarLineaTiempo(root, eventos, rango, zoom = 1) {
+export function renderizarLineaTiempo(root, eventos, rango, zoom = 1, opciones = {}) {
   const canvas = root.querySelector("[data-timeline-canvas]");
   if (!canvas) return;
   canvas.replaceChildren();
   canvas.style.setProperty("--timeline-zoom", zoom);
-  const grupos = agruparEventosPorFecha(eventos);
-  const posiciones = calcularPosiciones(eventos, rango);
+  const eventosOrdenados = ordenarEventosPorFecha(eventos);
+  const grupos = agruparEventosPorFecha(eventosOrdenados);
+  const posiciones = calcularPosiciones(eventosOrdenados, rango);
   const posicionPorId = new Map(posiciones.map((item) => [item.evento.id, item.posicion]));
   const marcas = generarMarcasTemporales(rango);
   const fragmento = document.createDocumentFragment();
@@ -38,6 +48,15 @@ export function renderizarLineaTiempo(root, eventos, rango, zoom = 1) {
   const eje = document.createElement("div");
   eje.className = "timeline-axis";
   fragmento.appendChild(eje);
+
+  const marcadorFoco = document.createElement("span");
+  marcadorFoco.className = "timeline-focus-marker";
+  marcadorFoco.dataset.timelineFocusMarker = "true";
+  marcadorFoco.hidden = !opciones.hasFocusMarker;
+  marcadorFoco.style.setProperty("--focus-ratio", opciones.focusRatio ?? 0.5);
+  marcadorFoco.setAttribute("aria-hidden", "true");
+  fragmento.appendChild(marcadorFoco);
+
   marcas.forEach((marca) => {
     const marcaNode = document.createElement("span");
     marcaNode.className = "timeline-tick";
@@ -48,16 +67,23 @@ export function renderizarLineaTiempo(root, eventos, rango, zoom = 1) {
   });
 
   grupos.forEach((grupo, grupoIndex) => {
-    const posicion = grupo.items.reduce((suma, item) => suma + (posicionPorId.get(item.id) ?? .5), 0) / grupo.items.length;
+    const posicion = grupo.items.reduce((suma, item) => suma + (posicionPorId.get(item.id) ?? 0.5), 0) / grupo.items.length;
+    const seleccionado = opciones.selectedGroupId === grupo.clave;
     const bloque = document.createElement("div");
     bloque.className = `timeline-event-group timeline-event-group--${grupoIndex % 2 ? "below" : "above"}`;
     bloque.style.setProperty("--event-position", posicion);
+    bloque.style.setProperty("--card-offset-x", posicion < 0.12 ? "70px" : posicion > 0.88 ? "-70px" : "0px");
     bloque.dataset.groupId = grupo.clave;
+    bloque.dataset.eventId = grupo.items.length === 1 ? grupo.items[0].id : "";
     bloque.setAttribute("role", "button");
     bloque.tabIndex = 0;
-    bloque.setAttribute("aria-label", grupo.items.length > 1 ? `${grupo.items.length} eventos del ${formatearFecha(grupo.fecha, { timeStyle: undefined })}` : `${grupo.items[0].titulo}, ${formatearFecha(grupo.fecha)}`);
+    bloque.setAttribute("aria-expanded", String(seleccionado));
+    bloque.dataset.selected = String(seleccionado);
+    bloque.dataset.cardVisible = String(seleccionado);
+    bloque.setAttribute("aria-label", grupo.items.length > 1 ? `${grupo.items.length} eventos del ${formatearFecha(grupo.fecha)}` : `${formatearFechaCorta(grupo.fecha)}, ${grupo.items[0].titulo}, ${textoImportancia(grupo.items[0].importancia)}`);
     const configuracion = obtenerConfiguracionTipoEvento(grupo.items[0].tipo);
-    bloque.innerHTML = `<span class="timeline-event-stem" aria-hidden="true"></span><span class="timeline-event-dot" style="--event-color:${configuracion.color}">${escaparHTML(configuracion.icono)}</span><article class="timeline-event-card"><time>${escaparHTML(formatearFechaCorta(grupo.fecha))}</time><strong>${grupo.items.length > 1 ? `${grupo.items.length} eventos` : escaparHTML(grupo.items[0].titulo)}</strong><small>${escaparHTML(grupo.items.length > 1 ? "Abrir eventos de esta fecha" : `${configuracion.etiqueta} · ${textoImportancia(grupo.items[0].importancia)}`)}</small><p>${escaparHTML(grupo.items.length > 1 ? "Selecciona para consultar el grupo." : grupo.items[0].descripcion || "Sin descripción disponible.")}</p></article>`;
+    const evento = grupo.items[0];
+    bloque.innerHTML = `<span class="timeline-event-stem" aria-hidden="true"></span><span class="timeline-event-dot" style="--event-color:${configuracion.color}" aria-hidden="true">${escaparHTML(configuracion.icono)}</span><article class="timeline-event-card" aria-hidden="${String(!seleccionado)}"><time>${escaparHTML(formatearFechaCorta(grupo.fecha))}</time><strong>${grupo.items.length > 1 ? `${grupo.items.length} eventos` : escaparHTML(evento.titulo)}</strong>${grupo.items.length > 1 ? `<small>${grupo.items.length} eventos en esta fecha</small>` : `${textoCategoria(evento)}<small>${escaparHTML(textoImportancia(evento.importancia))}</small>${textoDescripcion(evento)}`}</article>`;
     fragmento.appendChild(bloque);
   });
 
@@ -86,7 +112,7 @@ export function renderizarDetalleEvento(root, eventos, eventoId = "", grupoId = 
     ];
     titulo.textContent = evento.titulo;
     fecha.textContent = formatearFecha(evento.fechaEvento);
-    categoria.textContent = `${evento.categoria || "Evento clínico"} · ${configuracion.etiqueta}`;
+    categoria.textContent = evento.categoria || "Sin categoría";
     origen.textContent = evento.origen === "automatico" ? "Automático" : "Manual";
     importancia.textContent = textoImportancia(evento.importancia);
     descripcion.textContent = evento.descripcion || "Sin descripción disponible.";

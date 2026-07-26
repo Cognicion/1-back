@@ -14,8 +14,6 @@ import {
 import { configurarInteracciones } from "./lineaTiempoInteractions.js";
 import { iniciarAnimacionADN } from "./lineaTiempoAnimation.js";
 import {
-  MAX_ZOOM,
-  MIN_ZOOM,
   formatearFecha,
   normalizarFecha,
   ordenarEventosPorFecha
@@ -31,6 +29,9 @@ let permisos = { puedeLeer: false, puedeEscribir: false };
 let interacciones = null;
 let animacion = null;
 let zoomActual = 1;
+let focusRatio = 0.5;
+let hasFocusMarker = false;
+let selectedGroupId = null;
 let eventoEditando = null;
 let inicializado = false;
 let destruir = () => {};
@@ -77,7 +78,7 @@ function fechaFormulario(fecha) {
 
 function renderizarVista() {
   const rango = eventos.length ? { minimo: eventos[0].fechaEvento, maximo: eventos.at(-1).fechaEvento, duracion: eventos.at(-1).fechaEvento - eventos[0].fechaEvento } : { minimo: null, maximo: null, duracion: 0 };
-  renderizarLineaTiempo(root, eventos, rango, zoomActual);
+  renderizarLineaTiempo(root, eventos, rango, zoomActual, { focusRatio, hasFocusMarker, selectedGroupId });
   const etiqueta = root.querySelector("[data-zoom-label]");
   if (etiqueta) etiqueta.textContent = `${Math.round(zoomActual * 100)} %`;
   renderizarEstados(root, eventos.length ? "" : "empty");
@@ -288,9 +289,19 @@ async function inicializarLineaTiempoPaciente() {
   const limpiarAcciones = configurarAcciones();
   interacciones = configurarInteracciones({
     root,
-    onSelect: abrirDetalle,
+    onSelect: (seleccion) => { selectedGroupId = seleccion.grupoId; abrirDetalle(seleccion); },
+    onClearSelection: () => { selectedGroupId = null; cerrarDetalle(); },
+    onFocus: (ratio) => {
+      focusRatio = ratio;
+      hasFocusMarker = true;
+      const marcador = root.querySelector("[data-timeline-focus-marker]");
+      if (marcador) {
+        marcador.hidden = false;
+        marcador.style.setProperty("--focus-ratio", ratio);
+      }
+    },
     onZoom: (zoom) => { zoomActual = zoom; renderizarVista(); },
-    onReset: (modo) => { zoomActual = modo === "fit" && eventos.length > 1 ? Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, 1.2)) : 1; renderizarVista(); }
+    onReset: () => { zoomActual = 1; renderizarVista(); }
   });
   animacion = iniciarAnimacionADN(root.querySelector("[data-timeline-dna]"));
   await cargarLineaTiempo();

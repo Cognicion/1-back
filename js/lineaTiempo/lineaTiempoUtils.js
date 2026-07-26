@@ -1,5 +1,5 @@
-export const MIN_ZOOM = 0.6;
-export const MAX_ZOOM = 4;
+export const MIN_ZOOM = 1;
+export const MAX_ZOOM = 12;
 
 export const TIPOS_EVENTO = Object.freeze({
   ingreso: { etiqueta: "Ingreso", icono: "↳", color: "var(--timeline-type-ingreso)" },

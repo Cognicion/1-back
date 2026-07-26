@@ -27,11 +27,14 @@
     </header>
 
     <section class="timeline-toolbar" aria-label="Controles de línea de tiempo">
-      <div class="timeline-toolbar__zoom">
+      <div class="timeline-toolbar__zoom" aria-label="Zoom de la línea de tiempo">
+        <button type="button" class="timeline-button" data-action="zoom-out" aria-label="Alejar línea de tiempo">🔍−</button>
+        <input class="timeline-zoom-range" data-zoom-range type="range" min="1" max="12" step="0.1" value="1" aria-label="Nivel de zoom de la línea de tiempo">
+        <button type="button" class="timeline-button" data-action="zoom-in" aria-label="Acercar línea de tiempo">🔍+</button>
         <button type="button" class="timeline-button" data-action="zoom-out" aria-label="Reducir zoom">−</button>
         <button type="button" class="timeline-button" data-action="zoom-in" aria-label="Aumentar zoom">+</button>
         <button type="button" class="timeline-button" data-action="fit">Ajustar</button>
-        <button type="button" class="timeline-button" data-action="reset">Restablecer</button>
+        <button type="button" class="timeline-button" data-action="reset">Restablecer zoom</button>
       </div>
       <span class="timeline-zoom-label" data-zoom-label>100 %</span>
     </section>
