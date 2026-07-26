@@ -12,6 +12,7 @@ import {
   prepararSubdivisionesAdaptativas
 } from "./services/conversationSegmentationProviders.js?v=20260725-adaptive-split-prepared";
 import { segmentarConversacionClinica } from "./services/clinicalPipeline.js";
+import { VOICE_NOTE_MODULE_VERSION } from "./services/voiceNoteModuleVersion.js";
 import {
   VOICE_NOTE_FIELD_REGISTRY,
   VOICE_NOTE_PROMPT_VERSION,
@@ -166,6 +167,11 @@ const OBSERVATION_DESTINATIONS = [
   ["mentalStatusExam", "Examen mental"],
   ["both", "Ambos"]
 ];
+
+function renderizarVersionModuloNotaVoz() {
+  const target = document.querySelector("[data-voice-module-version]");
+  if (target) target.textContent = VOICE_NOTE_MODULE_VERSION;
+}
 
 const OBSERVATION_GROUPS = {
   activities: [
@@ -1651,25 +1657,48 @@ async function dividirYReintentarBloquesAdaptativos() {
   setText("voiceSegmentationStatus", "Preparando subdivisión de bloques pendientes…");
   try {
     const texto = $("voiceCorrectedTranscript")?.value || $("textoDictadoClinico")?.value || "";
+    const persistenceIdentity = {
+      transcriptHash: hashTextoVoz(texto),
+      promptVersion: CONVERSATION_SEGMENTATION_PROMPT_VERSION,
+      model: "external_callable",
+      segmenterVersion: CONVERSATION_SEGMENTATION_CLIENT_VERSION
+    };
     const prepared = prepararSubdivisionesAdaptativas({
       text: texto,
-      sourceTranscriptHash: state.segmentationMetadata?.transcriptHash || hashTextoVoz(texto),
+      sourceTranscriptHash: persistenceIdentity.transcriptHash,
       cachedBlocks: manifest.blocks,
       parentBlockKeys: parents.map((block) => block.blockKey),
-      model: state.segmentationMetadata?.model || "external_callable"
+      model: persistenceIdentity.model
     });
     if (!prepared.createdChildIds.length) throw new Error("adaptive_split_children_not_created");
     const byKey = new Map(manifest.blocks.map((block) => [block.blockKey || block.blockId, block]));
     prepared.updates.forEach((block) => byKey.set(block.blockKey || block.blockId, block));
-    const candidate = { ...manifest, blocks: ordenarBloquesManifestSegmentacion(Array.from(byKey.values())) };
+    const candidate = {
+      ...manifest,
+      manifestId: manifest.manifestId || `segmentation:${state.voiceSessionId}`,
+      manifestRevision: Number(manifest.manifestRevision ?? manifest.revision ?? 0) + 1,
+      blocks: ordenarBloquesManifestSegmentacion(Array.from(byKey.values()))
+    };
     const merged = fusionarManifiestosSegmentacion(manifest, candidate, { requestedIds: parents.map((block) => block.blockKey) });
     const counts = contarBloquesManifest(merged);
-    state.segmentationMetadata = { ...(state.segmentationMetadata || {}), blockManifest: merged, completedBlocks: counts.completed, totalBlocks: counts.total, pendingBlocks: counts.pending + counts.failed + counts.requiresSplit };
+    merged.manifestRevision = candidate.manifestRevision;
+    state.segmentationMetadata = { ...(state.segmentationMetadata || {}), ...persistenceIdentity, blockManifest: merged, completedBlocks: counts.completed, totalBlocks: counts.total, pendingBlocks: counts.pending + counts.failed + counts.requiresSplit };
     renderBlockManifestSegmentacion(merged);
     const saved = await flushPersistenciaVoz("adaptive-split-prepared", { throwOnError: true });
-    const readback = await obtenerSegmentacionNotaVozLocal({ ...contextoPersistenciaVoz(), transcriptHash: state.segmentationMetadata.transcriptHash || hashTextoVoz(texto), promptVersion: CONVERSATION_SEGMENTATION_PROMPT_VERSION, model: "external_callable", segmenterVersion: CONVERSATION_SEGMENTATION_CLIENT_VERSION });
+    const readback = await obtenerSegmentacionNotaVozLocal({ ...contextoPersistenciaVoz(), ...persistenceIdentity });
     const savedIds = new Set(readback?.blockManifest?.blocks?.map((block) => block.blockId) || []);
-    if (!saved || prepared.createdChildIds.some((id) => !savedIds.has(id))) throw new Error("adaptive_split_persistence_verification_failed");
+    const readbackRevision = Number(readback?.blockManifest?.manifestRevision ?? readback?.blockManifest?.revision ?? 0);
+    const missingChildIds = prepared.createdChildIds.filter((id) => !savedIds.has(id));
+    const parentLinksValid = parents.every((parent) => {
+      const recovered = readback?.blockManifest?.blocks?.find((block) => block.blockKey === parent.blockKey);
+      return recovered && (recovered.childBlockIds || []).every((id) => savedIds.has(id));
+    });
+    if (!saved || readbackRevision < candidate.manifestRevision || missingChildIds.length || !parentLinksValid) {
+      const error = new Error("adaptive_split_persistence_verification_failed");
+      error.details = { storedRevision: Number(manifest.manifestRevision ?? manifest.revision ?? 0), candidateRevision: candidate.manifestRevision, readbackRevision, expectedChildIds: prepared.createdChildIds, recoveredChildIds: Array.from(savedIds).filter((id) => prepared.createdChildIds.includes(id)), missingChildIds, parentChildLinksValid: parentLinksValid, storageKeyMatch: Boolean(readback) };
+      throw error;
+    }
+    state.segmentationMetadata.blockManifest = readback.blockManifest;
     setText("voiceSegmentationStatus", `Subbloques preparados. Procesando ${prepared.createdChildIds.length} bloques…`);
     return await segmentarConProveedor({ onlyBlockKeys: prepared.updates.filter((block) => block.parentBlockId && block.status !== "completed").map((block) => block.blockKey), operationType: "adaptive_split" });
   } catch (error) {
@@ -3532,6 +3561,7 @@ function abrirNotaTradicional() {
 }
 
 function conectarEventos() {
+  renderizarVersionModuloNotaVoz();
   document.querySelectorAll("[data-step-target]").forEach((button) => {
     button.addEventListener("click", async () => {
       await flushPersistenciaVoz("before-step-target");

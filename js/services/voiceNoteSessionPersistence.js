@@ -29,6 +29,35 @@ function clonarSerializable(payload = {}) {
   }
 }
 
+function revisionManifest(manifest = {}) {
+  return Number(manifest.manifestRevision ?? manifest.revision ?? 0) || 0;
+}
+
+function esCompletadoManifest(block = {}) {
+  return ["completed", "success", "completed_from_children"].includes(block.status);
+}
+
+function fusionarManifiestoPersistido(previous = {}, incoming = {}) {
+  const byKey = new Map();
+  [...(previous.blocks || []), ...(incoming.blocks || [])].forEach((block) => {
+    const key = block.blockKey || block.blockId;
+    if (!key) return;
+    const current = byKey.get(key);
+    if (!current || (!esCompletadoManifest(current) && esCompletadoManifest(block))) {
+      byKey.set(key, { ...(current || {}), ...block });
+      return;
+    }
+    if (esCompletadoManifest(current) && !esCompletadoManifest(block)) return;
+    byKey.set(key, { ...current, ...block, childBlockIds: Array.from(new Set([...(current.childBlockIds || []), ...(block.childBlockIds || [])])) });
+  });
+  return {
+    ...previous,
+    ...incoming,
+    manifestRevision: Math.max(revisionManifest(previous), revisionManifest(incoming)),
+    blocks: Array.from(byKey.values())
+  };
+}
+
 function logPersistenciaLocal(stage, payload = {}, extra = {}) {
   try {
     const transcript = payload.transcript || {};
@@ -368,11 +397,16 @@ export async function guardarSegmentacionNotaVozLocal(payload = {}, { ttlMs = VO
   const key = crearSegmentationKeyVoz(payload);
   const previous = await obtener(STORE_SEGMENTATION_RESULTS, key);
   const previousPayload = previous?.payload || null;
+  const storedRevision = revisionManifest(previousPayload?.blockManifest || {});
+  const incomingRevision = revisionManifest(payload.blockManifest || {});
   const incomingCompleted = Number(payload.completedBlocks || payload.blockManifest?.blocks?.filter((block) => ["completed", "success", "completed_from_children"].includes(block.status)).length || 0);
   const previousCompleted = Number(previousPayload?.completedBlocks || previousPayload?.blockManifest?.blocks?.filter((block) => ["completed", "success", "completed_from_children"].includes(block.status)).length || 0);
-  if (previousPayload && incomingCompleted < previousCompleted && !payload.allowOlderProgress) return previousPayload;
-  logPersistenciaLocal("serialization_validated", payload);
-  const safePayload = clonarSerializable(payload);
+  if (previousPayload && (incomingRevision < storedRevision || incomingCompleted < previousCompleted) && !payload.allowOlderProgress) return previousPayload;
+  const mergedManifest = fusionarManifiestoPersistido(previousPayload?.blockManifest || {}, payload.blockManifest || {});
+  if (incomingRevision > storedRevision) mergedManifest.manifestRevision = incomingRevision;
+  const normalizedPayload = { ...payload, blockManifest: mergedManifest };
+  logPersistenciaLocal("serialization_validated", normalizedPayload);
+  const safePayload = clonarSerializable(normalizedPayload);
   const record = clonarSerializable({
     key,
     contextKey,
@@ -400,7 +434,7 @@ export async function guardarSegmentacionNotaVozLocal(payload = {}, { ttlMs = VO
     throw crearErrorPersistencia("IndexedDB no confirmo la lectura posterior de la segmentacion.", "segmentation_verification_failed");
   }
   logPersistenciaLocal("readback_completed", verified.payload, { transactionStatus: "verified" });
-  return record.payload;
+  return verified.payload;
 }
 
 export async function obtenerSegmentacionNotaVozLocal(context = {}) {
