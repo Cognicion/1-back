@@ -17,7 +17,10 @@ import {
   formatearFecha,
   normalizarFecha,
   ordenarEventosPorFecha,
-  debugTimelineRuntime
+  debugTimelineRuntime,
+  normalizarNombreCategoria,
+  obtenerNombreCategoriaEvento,
+  formatearImportanciaEvento
 } from "./lineaTiempoUtils.js";
 import { renderizarDetalleEvento, renderizarEstados, renderizarLineaTiempo } from "./lineaTiempoRenderer.js";
 import { obtenerNombrePacienteParaMostrar } from "../utils/nombresPacientes.js";
@@ -179,8 +182,8 @@ function abrirVentanaFlotanteEvento(evento, marcador) {
   contenido.className = "timeline-event-popover__content";
   contenido.append(
     crearLineaResumen("Fecha", formatearFecha(evento.fechaEvento)),
-    crearLineaResumen("Categoría", evento.categoria || "Sin categoría"),
-    crearLineaResumen("Importancia", evento.importancia || "media")
+    crearLineaResumen("Categoría", obtenerNombreCategoriaEvento(evento, categorias)),
+    crearLineaResumen("Importancia", formatearImportanciaEvento(evento.importancia))
   );
   const descripcion = document.createElement("p");
   descripcion.className = "timeline-event-popover__description";
@@ -235,7 +238,7 @@ function abrirDetalle(seleccion) {
     return;
   }
   selectedGroupId = seleccion.grupoId || null;
-  renderizarDetalleEvento(root, eventos, seleccion.eventoId, seleccion.grupoId);
+  renderizarDetalleEvento(root, eventos, seleccion.eventoId, seleccion.grupoId, categorias);
   root.querySelectorAll("[data-event-id]").forEach((card) => {
     const acciones = card.querySelector(".timeline-detail-event__actions");
     if (!acciones || !permisos.puedeEscribir) return;
@@ -267,11 +270,23 @@ function abrirFormulario(evento = null) {
   form.elements.fechaFin.value = evento?.fechaFin ? fechaFormulario(evento.fechaFin).fecha : "";
   form.elements.descripcion.value = evento?.descripcion || "";
   form.elements.nuevaCategoria.value = "";
-  renderizarCategorias(evento?.categoria || "");
+  renderizarCategorias(obtenerIdCategoriaEvento(evento));
   form.elements.importancia.value = evento?.importancia || "media";
   root.querySelector("[data-form-error]").textContent = "";
   panel.hidden = false;
   form.elements.titulo.focus();
+}
+
+function obtenerIdCategoriaEvento(evento) {
+  if (!evento) return "";
+  if (evento.categoriaId && categorias.some((categoria) => String(categoria.id) === String(evento.categoriaId))) {
+    return String(evento.categoriaId);
+  }
+  const nombre = obtenerNombreCategoriaEvento(evento, categorias);
+  const categoriaCompatible = categorias.find((categoria) =>
+    normalizarNombreCategoria(categoria.nombre) === normalizarNombreCategoria(nombre)
+  );
+  return categoriaCompatible?.id || "";
 }
 
 function renderizarCategorias(seleccion = "") {
@@ -282,7 +297,7 @@ function renderizarCategorias(seleccion = "") {
     .sort((a, b) => a.nombre.localeCompare(b.nombre, "es", { sensitivity: "base" }));
   select.replaceChildren(new Option("Ninguna categoría", ""));
   categoriasActivas.forEach((categoria) => select.add(new Option(categoria.nombre, categoria.id)));
-  const categoriaSeleccionada = categorias.find((categoria) => categoria.id === seleccion || categoria.nombre === seleccion);
+  const categoriaSeleccionada = categorias.find((categoria) => String(categoria.id) === String(seleccion));
   select.value = categoriaSeleccionada?.id || "";
 }
 
@@ -296,7 +311,7 @@ async function agregarCategoria() {
   try {
     const categoria = await crearCategoriaLineaTiempo(auth.currentUser.uid, nombre);
     categorias = [...categorias.filter((item) => item.id !== categoria.id && item.nombre.toLocaleLowerCase("es-MX") !== categoria.nombre.toLocaleLowerCase("es-MX")), categoria];
-    renderizarCategorias(categoria.nombre);
+    renderizarCategorias(categoria.id);
     input.value = "";
   } catch (error) {
     root.querySelector("[data-form-error]").textContent = "No fue posible guardar la categoría.";
@@ -332,12 +347,18 @@ async function guardarFormulario(event) {
   submit.textContent = "Guardando…";
   errorNode.textContent = "";
   try {
+    const categoriaId = form.elements.categoria.value || null;
+    const categoriaNombre = categoriaId
+      ? form.elements.categoria.selectedOptions[0]?.textContent?.trim() || ""
+      : "";
     const datos = {
       titulo: form.elements.titulo.value,
       descripcion: form.elements.descripcion.value,
       fechaEvento,
       fechaFin,
-      categoria: form.elements.categoria.selectedOptions[0]?.textContent || "",
+      categoriaId,
+      categoriaNombre,
+      categoria: categoriaNombre,
       importancia: form.elements.importancia.value,
       origen: eventoEditando?.origen || "manual",
       referenciaId: eventoEditando?.referenciaId || null,

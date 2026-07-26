@@ -8,7 +8,10 @@ import {
   obtenerConfiguracionTipoEvento,
   obtenerClaveFecha,
   ordenarEventosPorFecha,
-  debugTimelineRuntime
+  debugTimelineRuntime,
+  obtenerNombreCategoriaEvento,
+  formatearOrigenEvento,
+  formatearImportanciaEvento
 } from "./lineaTiempoUtils.js";
 
 function textoImportancia(importancia) {
@@ -108,7 +111,39 @@ export function renderizarLineaTiempo(root, eventos, rango, zoom = 1, opciones =
   }
 }
 
-export function renderizarDetalleEvento(root, eventos, eventoId = "", grupoId = "") {
+function crearCampoDetalle(clave, etiqueta) {
+  const campo = document.createElement("div");
+  const termino = document.createElement("dt");
+  const valor = document.createElement("dd");
+  termino.textContent = etiqueta;
+  valor.dataset.detailField = clave;
+  campo.append(termino, valor);
+  return campo;
+}
+
+function asignarTextoDetalle(detalle, campo, valor) {
+  const elemento = detalle.querySelector(`[data-detail-field="${campo}"]`);
+  if (!elemento) {
+    console.warn(`[Línea de tiempo] Falta el campo de detalle: ${campo}`);
+    return;
+  }
+  elemento.textContent = valor;
+}
+
+function formatearHoraEvento(evento) {
+  const fecha = evento.fechaEvento;
+  return fecha.getHours() || fecha.getMinutes()
+    ? fecha.toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit" })
+    : "No especificada";
+}
+
+function obtenerReferenciaEvento(evento) {
+  return evento.referenciaId
+    ? `${evento.referenciaTipo || "Relacionada"} · ${evento.referenciaId}`
+    : "No aplica";
+}
+
+export function renderizarDetalleEvento(root, eventos, eventoId = "", grupoId = "", categorias = []) {
   const eventoParaTraza = eventos.find((evento) => evento.id === eventoId) || eventos.find((evento) => obtenerClaveFecha(evento.fechaEvento) === grupoId);
   debugTimelineRuntime("E-render-detail", { eventId: eventoParaTraza?.id || null });
   const contenido = root.querySelector("[data-detail-content]");
@@ -131,25 +166,38 @@ export function renderizarDetalleEvento(root, eventos, eventoId = "", grupoId = 
     const card = document.createElement("article");
     card.className = "timeline-detail-event";
     card.innerHTML = `<div class="timeline-detail-event__header"><span class="timeline-event-dot" style="--event-color:${configuracion.color}">${escaparHTML(configuracion.icono)}</span><div><h3></h3><p></p></div></div><dl><div><dt>Fecha</dt><dd></dd></div><div><dt>Categoría</dt><dd></dd></div><div><dt>Origen</dt><dd></dd></div><div><dt>Importancia</dt><dd></dd></div></dl><p class="timeline-detail-event__description"></p><div class="timeline-detail-event__actions"></div>`;
-    const [titulo, fecha, categoria, origen, importancia, descripcion] = [
-      card.querySelector("h3"), card.querySelector(".timeline-detail-event__header p"), card.querySelectorAll("dd")[0], card.querySelectorAll("dd")[1], card.querySelectorAll("dd")[2], card.querySelector(".timeline-detail-event__description")
-    ];
-    titulo.textContent = evento.titulo;
-    fecha.textContent = formatearFecha(evento.fechaEvento);
-    categoria.textContent = evento.categoria || "Sin categoría";
-    origen.textContent = evento.origen === "automatico" ? "Automático" : "Manual";
-    importancia.textContent = textoImportancia(evento.importancia);
+    const detallePorClave = card.querySelector("dl");
+    detallePorClave.replaceChildren(
+      crearCampoDetalle("fecha", "Fecha"),
+      crearCampoDetalle("categoria", "Categoría"),
+      crearCampoDetalle("origen", "Origen"),
+      crearCampoDetalle("importancia", "Importancia"),
+      crearCampoDetalle("fechaFinal", "Fecha final"),
+      crearCampoDetalle("hora", "Hora"),
+      crearCampoDetalle("referencia", "Referencia")
+    );
+    const datosDetalle = {
+      fecha: formatearFecha(evento.fechaEvento),
+      categoria: obtenerNombreCategoriaEvento(evento, categorias),
+      origen: formatearOrigenEvento(evento.origen),
+      importancia: formatearImportanciaEvento(evento.importancia),
+      fechaFinal: evento.fechaFin ? formatearFecha(evento.fechaFin) : "No aplica",
+      hora: formatearHoraEvento(evento),
+      referencia: obtenerReferenciaEvento(evento)
+    };
+    const titulo = card.querySelector("h3");
+    const fecha = card.querySelector(".timeline-detail-event__header p");
+    const categoria = detallePorClave.querySelector('[data-detail-field="categoria"]');
+    const origen = detallePorClave.querySelector('[data-detail-field="origen"]');
+    const importancia = detallePorClave.querySelector('[data-detail-field="importancia"]');
+    const descripcion = card.querySelector(".timeline-detail-event__description");
+    titulo.textContent = evento.titulo || "Evento sin título";
+    fecha.textContent = datosDetalle.fecha;
+    categoria.textContent = datosDetalle.categoria;
+    origen.textContent = datosDetalle.origen;
+    importancia.textContent = datosDetalle.importancia;
     descripcion.textContent = evento.descripcion || "Sin descripción disponible.";
-    const detalles = card.querySelector("dl");
-    [
-      ["Fecha final", evento.fechaFin ? formatearFecha(evento.fechaFin) : "No aplica"],
-      ["Hora", evento.fechaEvento.getHours() || evento.fechaEvento.getMinutes() ? evento.fechaEvento.toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit" }) : "No especificada"],
-      ["Referencia", evento.referenciaId ? `${evento.referenciaTipo || "Relacionada"} · ${evento.referenciaId}` : "No aplica"]
-    ].forEach(([etiqueta, valor]) => {
-      const item = document.createElement("div");
-      item.innerHTML = `<dt>${escaparHTML(etiqueta)}</dt><dd>${escaparHTML(valor)}</dd>`;
-      detalles.appendChild(item);
-    });
+    Object.entries(datosDetalle).forEach(([campo, valor]) => asignarTextoDetalle(card, campo, valor));
     card.dataset.eventId = evento.id;
     fragmento.appendChild(card);
   });

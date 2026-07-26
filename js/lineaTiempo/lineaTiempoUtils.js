@@ -139,3 +139,33 @@ export function escaparHTML(valor = "") {
 export function debugTimelineRuntime(paso, datos = {}) {
   console.log(`[Timeline runtime] ${paso}`, datos);
 }
+
+export function normalizarNombreCategoria(nombre) {
+  return String(nombre || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .trim()
+    .toLocaleLowerCase("es-MX");
+}
+
+export function obtenerNombreCategoriaEvento(evento, categorias = []) {
+  if (evento?.categoriaNombre?.trim()) return evento.categoriaNombre.trim();
+  if (evento?.categoriaId) {
+    const categoria = categorias.find((item) => String(item.id) === String(evento.categoriaId));
+    if (categoria?.nombre) return categoria.nombre;
+  }
+  if (evento?.categoria?.trim()) return evento.categoria.trim();
+  return "Sin categoría";
+}
+
+export function formatearOrigenEvento(origen) {
+  const valor = String(origen || "").trim().toLocaleLowerCase("es-MX");
+  if (valor === "manual") return "Manual";
+  if (valor === "automatico" || valor === "automático") return "Automático";
+  return String(origen || "").trim() || "No especificado";
+}
+
+export function formatearImportanciaEvento(importancia) {
+  const etiquetas = { baja: "Baja", media: "Media", alta: "Alta" };
+  return etiquetas[String(importancia || "").trim().toLocaleLowerCase("es-MX")] || "No especificada";
+}

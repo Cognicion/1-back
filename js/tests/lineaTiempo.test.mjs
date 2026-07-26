@@ -7,7 +7,10 @@ import {
   calcularPosiciones,
   generarMarcasTemporales,
   normalizarEvento,
-  ordenarEventosPorFecha
+  ordenarEventosPorFecha,
+  obtenerNombreCategoriaEvento,
+  formatearOrigenEvento,
+  formatearImportanciaEvento
 } from "../lineaTiempo/lineaTiempoUtils.js";
 
 function evento(id, fecha) {
@@ -53,4 +56,16 @@ test("La página general del expediente solo navega a la función y no importa s
   const medico = readFileSync(resolve(root, "js/medico.js"), "utf8");
   assert.equal(paciente.includes("import(\"./lineaTiempo/lineaTiempoPaciente.js\")"), false);
   assert.equal(medico.includes("lineaTiempoPaciente.js"), false);
+});
+
+test("El detalle conserva cada dato clínico en su fuente semántica", () => {
+  const categorias = [{ id: "academico", nombre: "Académico" }];
+  const actual = { categoriaId: "academico", categoriaNombre: "", categoria: "", origen: "manual", importancia: "alta" };
+  const legado = { categoria: "Académico", origen: "automatico", importancia: "media" };
+  assert.equal(obtenerNombreCategoriaEvento(actual, categorias), "Académico");
+  assert.equal(obtenerNombreCategoriaEvento(legado, categorias), "Académico");
+  assert.equal(obtenerNombreCategoriaEvento({}, categorias), "Sin categoría");
+  assert.equal(formatearOrigenEvento(actual.origen), "Manual");
+  assert.equal(formatearOrigenEvento(legado.origen), "Automático");
+  assert.equal(formatearImportanciaEvento(actual.importancia), "Alta");
 });
