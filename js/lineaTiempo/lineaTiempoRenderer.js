@@ -85,7 +85,7 @@ export function renderizarDetalleEvento(root, eventos, eventoId = "", grupoId = 
     ];
     titulo.textContent = evento.titulo;
     fecha.textContent = formatearFecha(evento.fechaEvento);
-    categoria.textContent = `${evento.categoria} · ${configuracion.etiqueta}`;
+    categoria.textContent = `${evento.categoria || "Evento clínico"} · ${configuracion.etiqueta}`;
     origen.textContent = evento.origen === "automatico" ? "Automático" : "Manual";
     importancia.textContent = textoImportancia(evento.importancia);
     descripcion.textContent = evento.descripcion || "Sin descripción disponible.";

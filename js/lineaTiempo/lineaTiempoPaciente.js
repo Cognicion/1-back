@@ -14,7 +14,6 @@ import { iniciarAnimacionADN } from "./lineaTiempoAnimation.js";
 import {
   MAX_ZOOM,
   MIN_ZOOM,
-  TIPOS_EVENTO,
   formatearFecha,
   normalizarFecha,
   ordenarEventosPorFecha
@@ -73,12 +72,6 @@ function fechaFormulario(fecha) {
   };
 }
 
-function cargarSelectTipos() {
-  const select = root.querySelector("[data-event-type]");
-  if (!select) return;
-  select.innerHTML = Object.entries(TIPOS_EVENTO).map(([valor, datos]) => `<option value="${valor}">${datos.etiqueta}</option>`).join("");
-}
-
 function renderizarVista() {
   const rango = eventos.length ? { minimo: eventos[0].fechaEvento, maximo: eventos.at(-1).fechaEvento, duracion: eventos.at(-1).fechaEvento - eventos[0].fechaEvento } : { minimo: null, maximo: null, duracion: 0 };
   renderizarLineaTiempo(root, eventos, rango, zoomActual);
@@ -118,7 +111,6 @@ function abrirFormulario(evento = null) {
   form.elements.fechaFin.value = evento?.fechaFin ? fechaFormulario(evento.fechaFin).fecha : "";
   form.elements.descripcion.value = evento?.descripcion || "";
   form.elements.categoria.value = evento?.categoria || "Evento clínico";
-  form.elements.tipo.value = evento?.tipo || "personalizado";
   form.elements.importancia.value = evento?.importancia || "media";
   root.querySelector("[data-form-error]").textContent = "";
   panel.hidden = false;
@@ -156,7 +148,6 @@ async function guardarFormulario(event) {
       fechaEvento,
       fechaFin,
       categoria: form.elements.categoria.value,
-      tipo: form.elements.tipo.value,
       importancia: form.elements.importancia.value,
       origen: eventoEditando?.origen || "manual",
       referenciaId: eventoEditando?.referenciaId || null,
@@ -247,7 +238,6 @@ async function inicializarLineaTiempoPaciente() {
   back.href = `paciente.html?id=${encodeURIComponent(pacienteId)}`;
   root.querySelector("[data-action='add']").hidden = !permisos.puedeEscribir;
   root.querySelector("[data-action='add-first']").hidden = !permisos.puedeEscribir;
-  cargarSelectTipos();
   const limpiarAcciones = configurarAcciones();
   interacciones = configurarInteracciones({
     root,

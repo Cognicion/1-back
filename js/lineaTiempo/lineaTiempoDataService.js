@@ -42,8 +42,7 @@ function datosGuardables(datos, usuarioUid) {
     descripcion: String(datos.descripcion || "").trim().slice(0, 1200),
     fechaEvento,
     fechaFin,
-    tipo: datos.tipo || "personalizado",
-    categoria: String(datos.categoria || "Evento clínico").trim().slice(0, 80),
+    categoria: String(datos.categoria || "").trim().slice(0, 80),
     importancia: ["baja", "media", "alta"].includes(datos.importancia) ? datos.importancia : "media",
     origen: datos.origen === "automatico" ? "automatico" : "manual",
     referenciaId: datos.referenciaId || null,
@@ -51,7 +50,8 @@ function datosGuardables(datos, usuarioUid) {
     creadoPor: usuarioUid,
     creadoEn: serverTimestamp(),
     actualizadoEn: serverTimestamp(),
-    activo: true
+    activo: true,
+    ...(datos.tipo ? { tipo: datos.tipo } : {})
   };
 }
 
@@ -95,7 +95,7 @@ export async function eliminarEventoPaciente(pacienteId, eventoId, usuarioUid) {
 
 export async function crearEventoLineaTiempoDesdeReferencia({
   pacienteId,
-  tipo = "personalizado",
+  tipo = null,
   referenciaId,
   referenciaTipo,
   titulo,

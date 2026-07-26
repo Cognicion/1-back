@@ -17,12 +17,11 @@ export const TIPOS_EVENTO = Object.freeze({
   evento_adverso: { etiqueta: "Evento adverso", icono: "!", color: "var(--timeline-type-alerta)" },
   intento_suicida: { etiqueta: "Intento suicida", icono: "!", color: "var(--timeline-type-alerta)" },
   seguimiento: { etiqueta: "Seguimiento", icono: "↻", color: "var(--timeline-type-consulta)" },
-  administrativo: { etiqueta: "Administrativo", icono: "□", color: "var(--timeline-type-admin)" },
-  personalizado: { etiqueta: "Personalizado", icono: "•", color: "var(--timeline-type-default)" }
+  administrativo: { etiqueta: "Administrativo", icono: "□", color: "var(--timeline-type-admin)" }
 });
 
-export function obtenerConfiguracionTipoEvento(tipo = "personalizado") {
-  return TIPOS_EVENTO[tipo] || TIPOS_EVENTO.personalizado;
+export function obtenerConfiguracionTipoEvento(tipo = null) {
+  return TIPOS_EVENTO[tipo] || { etiqueta: "Evento clínico", icono: "•", color: "var(--timeline-type-default)" };
 }
 
 export function normalizarFecha(valor) {
@@ -42,8 +41,8 @@ export function normalizarEvento(id, datos = {}) {
     descripcion: String(datos.descripcion || "").trim().slice(0, 1200),
     fechaEvento,
     fechaFin: normalizarFecha(datos.fechaFin),
-    tipo: TIPOS_EVENTO[datos.tipo] ? datos.tipo : "personalizado",
-    categoria: String(datos.categoria || "Evento clínico").trim().slice(0, 80),
+    tipo: TIPOS_EVENTO[datos.tipo] ? datos.tipo : null,
+    categoria: String(datos.categoria || "").trim().slice(0, 80),
     importancia: ["baja", "media", "alta"].includes(datos.importancia) ? datos.importancia : "media",
     origen: datos.origen === "automatico" ? "automatico" : "manual",
     referenciaId: datos.referenciaId ? String(datos.referenciaId).slice(0, 160) : null,
