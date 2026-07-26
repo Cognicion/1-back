@@ -1,0 +1,294 @@
+/* Páginas públicas: las hojas legacy conservan su diseño oscuro base; estas reglas
+   solo se activan con el tema claro real aplicado en <html>. */
+html[data-theme="light"] body {
+  background: var(--light-bg);
+  background-image: none;
+  color: var(--light-text);
+}
+
+html[data-theme="light"] body::before {
+  background: none;
+  opacity: 0;
+}
+
+/* Inicio público */
+html[data-theme="light"] .nav {
+  background: var(--light-surface);
+  border-color: var(--light-border);
+  box-shadow: 0 1px 8px rgb(31 44 35 / 6%);
+  backdrop-filter: none;
+}
+
+html[data-theme="light"] .nav-links a,
+html[data-theme="light"] .nav-links a:hover,
+html[data-theme="light"] .link-secondary {
+  color: var(--light-text-secondary);
+  text-shadow: none;
+}
+
+html[data-theme="light"] .nav-login,
+html[data-theme="light"] .nav-login:hover,
+html[data-theme="light"] .scroll-top-btn,
+html[data-theme="light"] .scroll-top-btn:hover,
+html[data-theme="light"] .btn-secondary {
+  color: var(--light-text);
+  background: var(--light-surface);
+  border-color: var(--light-border-strong);
+  box-shadow: 0 3px 10px rgb(31 44 35 / 8%);
+  text-shadow: none;
+}
+
+html[data-theme="light"] .nav-login:hover,
+html[data-theme="light"] .scroll-top-btn:hover,
+html[data-theme="light"] .btn-secondary:hover {
+  background: var(--light-surface-hover);
+}
+
+html[data-theme="light"] .hero,
+html[data-theme="light"] .section,
+html[data-theme="light"] .capabilities,
+html[data-theme="light"] footer {
+  color: var(--light-text);
+  background: transparent;
+}
+
+html[data-theme="light"] .eyebrow,
+html[data-theme="light"] .link-secondary:hover {
+  color: var(--light-primary-active);
+}
+
+html[data-theme="light"] h1,
+html[data-theme="light"] .section h2,
+html[data-theme="light"] .feature-card h3 {
+  color: var(--light-text);
+}
+
+html[data-theme="light"] .subtitulo,
+html[data-theme="light"] .feature-card p,
+html[data-theme="light"] .philosophy p,
+html[data-theme="light"] footer,
+html[data-theme="light"] .nav-links a {
+  color: var(--light-text-secondary);
+}
+
+html[data-theme="light"] .scope-strip span,
+html[data-theme="light"] .cap-strip,
+html[data-theme="light"] .feature-card,
+html[data-theme="light"] .timeline span {
+  color: var(--light-text-secondary);
+  background: var(--light-surface-soft);
+  background-image: none;
+  border-color: var(--light-border);
+  box-shadow: 0 4px 14px rgb(31 44 35 / 5%);
+}
+
+html[data-theme="light"] .feature-card:hover {
+  background: var(--light-surface-hover);
+  border-color: var(--light-border-strong);
+  box-shadow: 0 8px 20px rgb(31 44 35 / 9%);
+}
+
+html[data-theme="light"] .btn-primary {
+  color: #fff;
+  background: var(--light-primary);
+  border-color: var(--light-primary);
+  box-shadow: 0 4px 12px rgb(79 149 105 / 20%);
+}
+
+html[data-theme="light"] .btn-primary:hover {
+  background: var(--light-primary-hover);
+  border-color: var(--light-primary-hover);
+}
+
+html[data-theme="light"] .science-visual,
+html[data-theme="light"] .science-visual::before,
+html[data-theme="light"] .orbital,
+html[data-theme="light"] .brain,
+html[data-theme="light"] .brain::before,
+html[data-theme="light"] .brain::after {
+  background-image: none;
+  filter: none;
+}
+
+html[data-theme="light"] .brain {
+  background: var(--light-surface-soft);
+  border-color: var(--light-border);
+  box-shadow: 0 12px 28px rgb(31 44 35 / 8%);
+}
+
+/* Inicio de sesión */
+html[data-theme="light"] .regresar {
+  color: var(--light-text);
+  background: var(--light-surface);
+  border-color: var(--light-border);
+  box-shadow: 0 3px 10px rgb(31 44 35 / 8%);
+}
+
+html[data-theme="light"] .login-container {
+  background: var(--light-surface);
+  border-color: var(--light-border);
+  box-shadow: 0 18px 42px rgb(31 44 35 / 12%);
+  backdrop-filter: none;
+}
+
+html[data-theme="light"] .login-info {
+  color: var(--light-text);
+  background: var(--light-primary-soft);
+  background-image: none;
+}
+
+html[data-theme="light"] .subtitulo,
+html[data-theme="light"] .frase p,
+html[data-theme="light"] .version {
+  color: var(--light-text-secondary);
+}
+
+html[data-theme="light"] .lista div,
+html[data-theme="light"] .acceso-privado {
+  color: var(--light-text-secondary);
+  background: var(--light-surface);
+  border-color: var(--light-border);
+}
+
+html[data-theme="light"] .login-form {
+  color: var(--light-text);
+  background: var(--light-surface);
+}
+
+html[data-theme="light"] .login-form h1,
+html[data-theme="light"] .campo label,
+html[data-theme="light"] .acceso-privado strong {
+  color: var(--light-text);
+}
+
+html[data-theme="light"] .descripcion,
+html[data-theme="light"] .enlaces-login p {
+  color: var(--light-text-secondary);
+}
+
+html[data-theme="light"] .campo input {
+  color: var(--light-text);
+  background: #fff;
+  border-color: var(--light-border);
+}
+
+html[data-theme="light"] .campo input::placeholder {
+  color: var(--light-text-muted);
+}
+
+html[data-theme="light"] .boton-login {
+  color: #fff;
+  background: var(--light-primary);
+  border: 1px solid var(--light-primary);
+  box-shadow: 0 3px 10px rgb(79 149 105 / 18%);
+}
+
+html[data-theme="light"] .boton-login:hover {
+  background: var(--light-primary-hover);
+  box-shadow: 0 5px 14px rgb(79 149 105 / 22%);
+}
+
+html[data-theme="light"] .link-secundario {
+  color: var(--light-primary-active);
+}
+
+html[data-theme="light"] .link-secundario:hover {
+  color: var(--light-primary-hover);
+}
+
+html[data-theme="light"] .link-principal {
+  color: var(--light-primary-active);
+  background: var(--light-primary-soft);
+  border-color: var(--light-border-strong);
+}
+
+html[data-theme="light"] .link-principal:hover {
+  background: var(--light-surface-hover);
+}
+
+html[data-theme="light"] .separador {
+  background: var(--light-border);
+}
+
+/* Crear cuenta */
+html[data-theme="light"] .auth-copy,
+html[data-theme="light"] .auth-card {
+  color: var(--light-text);
+}
+
+html[data-theme="light"] .auth-logo {
+  filter: none;
+}
+
+html[data-theme="light"] .auth-copy > span,
+html[data-theme="light"] .nota-registro,
+html[data-theme="light"] #mensaje {
+  color: var(--light-primary-active);
+}
+
+html[data-theme="light"] .auth-copy p,
+html[data-theme="light"] .auth-card p,
+html[data-theme="light"] .checkbox-legal {
+  color: var(--light-text-secondary);
+}
+
+html[data-theme="light"] .beneficios div,
+html[data-theme="light"] .auth-card,
+html[data-theme="light"] .tipo-cuenta-registro {
+  color: var(--light-text);
+  background: var(--light-surface);
+  border-color: var(--light-border);
+  box-shadow: 0 8px 24px rgb(31 44 35 / 8%);
+  backdrop-filter: none;
+}
+
+html[data-theme="light"] .beneficios div {
+  background: var(--light-surface-soft);
+  box-shadow: none;
+}
+
+html[data-theme="light"] .tipo-cuenta-registro button {
+  color: var(--light-text-secondary);
+  background: var(--light-surface-soft);
+  border-color: transparent;
+  box-shadow: none;
+}
+
+html[data-theme="light"] .tipo-cuenta-registro button.activo {
+  color: var(--light-primary-active);
+  background: var(--light-primary-soft);
+  border-color: var(--light-border-strong);
+  box-shadow: none;
+}
+
+html[data-theme="light"] .auth-card input {
+  color: var(--light-text);
+  background: #fff;
+  border-color: var(--light-border);
+}
+
+html[data-theme="light"] .auth-card input::placeholder {
+  color: var(--light-text-muted);
+}
+
+html[data-theme="light"] .auth-card > button:not(.btn-secundario) {
+  color: #fff;
+  background: var(--light-primary);
+  border: 1px solid var(--light-primary);
+  box-shadow: 0 3px 10px rgb(79 149 105 / 18%);
+}
+
+html[data-theme="light"] .auth-card > button:not(.btn-secundario):hover {
+  background: var(--light-primary-hover);
+}
+
+html[data-theme="light"] .auth-card .btn-secundario {
+  color: var(--light-text);
+  background: var(--light-surface);
+  border-color: var(--light-border-strong);
+  box-shadow: none;
+}
+
+html[data-theme="light"] .checkbox-legal a {
+  color: var(--light-primary-active);
+}
