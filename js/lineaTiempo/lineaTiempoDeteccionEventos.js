@@ -1,5 +1,5 @@
 export const DEBUG_EVENT_DETECTION = false;
-export const DETECTED_EVENTS_DEBUG_LABEL = "[Eventos detectados 1.28]";
+export const DETECTED_EVENTS_DEBUG_LABEL = "[Eventos detectados 1.29]";
 
 export const ESTADOS_DETECCION_EVENTOS = Object.freeze({
   pendiente: "pendiente",
@@ -41,7 +41,7 @@ const NUMEROS = new Map([
 
 const PATRON_TEMPORAL = /\b(\d{1,2}[/-]\d{1,2}[/-]\d{4}|\d{4}-\d{2}-\d{2}|\d{1,2}\s+de\s+[a-záéíóúñ]+\s+de\s+\d{4}|(?:principios|mediados|finales)\s+de\s+\d{4}|[a-záéíóúñ]+\s+de\s+\d{4}|(?:en|desde|alrededor de)\s+\d{4}|(?:ayer|anteayer|la semana pasada|el mes pasado|el año pasado|el ano pasado|la próxima semana|la proxima semana|próxima semana|proxima semana)|(?:desde\s+)?(?:aproximadamente\s+)?hace\s+(?:\d+|un|una|dos|tres|cuatro|cinco|seis|siete|ocho|nueve|diez|once|doce)\s+(?:día|dia|dias|días|semana|semanas|mes|meses|año|años|ano|anos)|durante\s+los\s+ultimos\s+(?:\d+|un|una|dos|tres|cuatro|cinco|seis|siete|ocho|nueve|diez|once|doce)\s+(?:dias|semanas|meses|anos|años)|(?:a los|desde los|a partir de los)\s+\d{1,2}\s+(?:años|anos)|en el internamiento previo|durante la hospitalización anterior|durante la hospitalizacion anterior|en la consulta pasada|en el embarazo|en la infancia|durante la adolescencia|al inicio de la universidad|desde joven|desde pequeño|desde pequeno|años atrás|anos atras|hace tiempo|recientemente)\b/giu;
 
-const PATRON_RELEVANCIA = /\b(ingres\w*|internad\w*|hospitaliz\w*|alta|urgencia|crisis|intento suicida|suicid\w*|autoles\w*|violencia|diagnostic\w*|tratamiento|medicamento|suspend\w*|inici\w*|resonancia|tomograf\w*|laboratorio|gabinete|estudio|cirug\w*|enfermedad|consumo|alcohol|cocaina|metanfetamina|cannabis|recaid\w*|trauma|fallec\w*|murio|muerte|embarazo|parto|legal|aislamiento|insomnio|ansiedad|depres\w*|agitaci\w*|crianza|abuso|agresion|convulsion\w*|catatoni\w*|psicosis|consulta)\b/i;
+const PATRON_RELEVANCIA = /\b(ingres\w*|internad\w*|hospitaliz\w*|alta|urgencia|crisis|intento suicida|suicid\w*|autoles\w*|violencia|conductas sexuales de riesgo|riesgo sexual|diagnostic\w*|tratamiento|medicamento|sertralina|clozapina|risperidona|litio|suspend\w*|ajust\w*|aument\w*|disminu\w*|inici\w*|comenz\w*|resonancia|tomograf\w*|laboratorio|gabinete|estudio|cirug\w*|enfermedad|consumo|alcohol|cocaina|metanfetamina|cannabis|recaid\w*|trauma|fallec\w*|murio|muerte|embarazo|parto|legal|aislamiento|insomnio|anhedonia|ansiedad|depres\w*|agitaci\w*|crianza|abuso|agresion|convulsion\w*|catatoni\w*|psicosis|alucin\w*|consulta|padecimiento)\b/i;
 const PATRON_NEGACION_EVENTO = /\b(niega|niegan|sin antecedente(?:s)? de|no ha presentado|no presenta|no refiere|descarta|se descarto)\s+(?:[\wáéíóúñ]+\s+){0,5}(hospitaliz|intento|suicid|convulsion|crisis|consumo|violencia|alucin|ingreso)/i;
 const PATRON_FUTURO = /\b(se valorara|se valorará|se considerara|se considerará|si empeora|proxima consulta|próxima consulta|se hospitalizara|se hospitalizará|se programo|se programó|se indicara|se indicará|proxima semana|próxima semana)\b/i;
 const PATRON_ADMINISTRATIVO = /\b(documento creado|usuario modific|firma registrada|nota firmada|exportacion|exportación|actualizado en|creado en|se agrego diagnostico|se agregó diagnostico|se actualizo tratamiento|se actualizó tratamiento)\b/i;
@@ -196,6 +196,7 @@ export function generarFragmentosTemporales(fuente = {}) {
       fragmentos.push({
         ...expresion,
         textoFragmento,
+        oracionEvento: oracion,
         fechaReferencia: fuente.fechaDocumento,
         origenTipo: fuente.origenTipo,
         origenSubtipo: fuente.origenSubtipo,
@@ -210,6 +211,37 @@ export function generarFragmentosTemporales(fuente = {}) {
           normalizarTextoDeteccion(expresion.expresionTemporal)
         ].join("|"))
       });
+    });
+  });
+  return fragmentos;
+}
+
+function generarFragmentosNarrativosSinFecha(fuente = {}) {
+  const oraciones = oracionesConContexto(fuente.textoAnalizable || "");
+  const fragmentos = [];
+  oraciones.forEach((oracion) => {
+    const normal = normalizarTextoDeteccion(oracion);
+    if (detectarExpresionesTemporalesLocales(oracion).length) return;
+    if (!/(ideacion suicida|ideas suicidas|conductas sexuales de riesgo|autolesion|intento suicida|crisis de ansiedad|alucinaciones auditivas|escuchaba voces)/.test(normal)) return;
+    fragmentos.push({
+      expresionTemporal: null,
+      indiceInicio: 0,
+      indiceFin: 0,
+      textoFragmento: oracion,
+      oracionEvento: oracion,
+      fechaReferencia: fuente.fechaDocumento,
+      origenTipo: fuente.origenTipo,
+      origenSubtipo: fuente.origenSubtipo,
+      origenId: fuente.origenId,
+      origenFechaISO: fechaISO(fuente.fechaDocumento),
+      sourceLabel: fuente.tituloDocumento || fuente.origenSubtipo || fuente.origenTipo,
+      hashFuente: fuente.hashFuente,
+      hashFragmento: hashDeteccionEstable([
+        fuente.origenTipo,
+        fuente.origenId,
+        normalizarTextoDeteccion(oracion),
+        "sin-fecha"
+      ].join("|"))
     });
   });
   return fragmentos;
@@ -275,7 +307,7 @@ export function clasificarTituloYCategoria(texto = "") {
 }
 
 export function debeDescartarFragmento(fragmento = {}) {
-  const texto = normalizarTextoDeteccion(fragmento.textoFragmento || "");
+  const texto = normalizarTextoDeteccion(fragmento.oracionEvento || fragmento.textoFragmento || "");
   if (PATRON_ADMINISTRATIVO.test(texto)) return { descartar: true, motivo: "administrativo" };
   if (!PATRON_RELEVANCIA.test(texto)) return { descartar: true, motivo: "sin_relevancia_clinica" };
   if (PATRON_FUTURO.test(texto)) return { descartar: true, motivo: "futuro_hipotetico" };
@@ -284,14 +316,135 @@ export function debeDescartarFragmento(fragmento = {}) {
 }
 
 function obtenerContextoEvento(fragmento = {}) {
-  const texto = String(fragmento.textoFragmento || "").replace(/\s+/g, " ").trim();
+  const texto = String(fragmento.oracionEvento || fragmento.textoFragmento || "").replace(/\s+/g, " ").trim();
   const expresion = String(fragmento.expresionTemporal || "").trim();
   if (!texto || !expresion) return texto;
   const partes = texto
     .split(/\s*(?:,|;|\sy\s(?=(?:fue|se|suspend|inicio|inició|present|consum|intent|hospitaliz|ingres|egres|tuvo|realiz)))/i)
     .map((parte) => parte.trim())
     .filter(Boolean);
-  return partes.find((parte) => parte.includes(expresion)) || texto;
+  const seleccionada = partes.find((parte) => parte.includes(expresion));
+  if (seleccionada && /\b(inici\w*|comenz\w*|present\w*|suspend\w*|intent\w*|fue|se|tuvo|realiz\w*)\b/i.test(normalizarTextoDeteccion(seleccionada))) {
+    return seleccionada;
+  }
+  return texto;
+}
+
+function terminaIncompleto(texto = "") {
+  return /\b(el|la|los|las|un|una|con|y|o|as[ií]\s+como|debido\s+a|por|para|del|de)$/i.test(String(texto || "").trim());
+}
+
+function completarDescripcion(texto = "") {
+  let salida = String(texto || "").replace(/\s+/g, " ").trim();
+  salida = salida.replace(/\s+(el|la|los|las|un|una|con|y|o|as[ií]\s+como|debido\s+a|por|para|del|de)$/i, "").trim();
+  if (!salida) return "";
+  return /[.!?]$/.test(salida) ? salida : `${salida}.`;
+}
+
+function capitalizar(texto = "") {
+  const valor = String(texto || "").trim();
+  return valor ? `${valor.charAt(0).toLocaleUpperCase("es-MX")}${valor.slice(1)}` : "";
+}
+
+function detectarMedicamento(texto = "") {
+  const m = normalizarTextoDeteccion(texto).match(/\b(sertralina|clozapina|risperidona|olanzapina|quetiapina|litio|valproato|clonazepam|lorazepam|fluoxetina|escitalopram|haloperidol)\b/);
+  return m?.[1] || "";
+}
+
+function crearAtomo({ titulo, tipoEvento, descripcion, fragmento, categoria, importancia = "media", requiereRevisionClinica = false, motivoRevision = null, confianzaSemantica = 0.78 }) {
+  return {
+    tituloSugerido: titulo,
+    tipoEvento,
+    descripcionSugerida: completarDescripcion(descripcion),
+    fragmentoSoporte: fragmento,
+    categoriaSugerida: categoria || null,
+    importanciaSugerida: importancia,
+    requiereRevisionClinica,
+    motivoRevision,
+    confianzaSemantica,
+    confianza: confianzaSemantica
+  };
+}
+
+function crearAtomosClinicos(contexto = "", contextoAmplio = "") {
+  const normal = normalizarTextoDeteccion(contexto);
+  const normalAmplio = normalizarTextoDeteccion(contextoAmplio || contexto);
+  const atomos = [];
+  const med = detectarMedicamento(contexto) || detectarMedicamento(contextoAmplio);
+  if (/\bideacion suicida\b|\bideas suicidas\b|\bideacion autolitica\b/.test(normal)) {
+    atomos.push(crearAtomo({
+      titulo: "Ideacion suicida",
+      tipoEvento: "ideacion_suicida",
+      descripcion: "Se documenta ideacion suicida referida en el periodo descrito, sin evidencia textual suficiente de intento suicida consumado.",
+      fragmento: contexto,
+      categoria: "riesgo_suicida",
+      importancia: "alta",
+      confianzaSemantica: 0.88
+    }));
+  }
+  if (/\bplan suicida\b|\bplan autolitico\b/.test(normal)) {
+    atomos.push(crearAtomo({ titulo: "Plan suicida", tipoEvento: "plan_suicida", descripcion: "Se documenta plan suicida en el periodo descrito.", fragmento: contexto, categoria: "riesgo_suicida", importancia: "alta", confianzaSemantica: 0.9 }));
+  }
+  if (/\bintento suicida\b|\bintento suicidarse\b|\bintento quitarse la vida\b|\bintento autolitico\b|\bintento.*ingesta medicamentosa\b/.test(normal)) {
+    atomos.push(crearAtomo({ titulo: normal.includes("ingesta medicamentosa") ? "Intento suicida mediante ingesta medicamentosa" : "Intento suicida", tipoEvento: "intento_suicida", descripcion: "Se documenta intento suicida ocurrido en el periodo descrito.", fragmento: contexto, categoria: "intento_suicida", importancia: "alta", confianzaSemantica: 0.92 }));
+  }
+  if (/\bautolesion\b|\bse corto\b|\bcortes\b/.test(normal) && !/intencion de morir|suicid/.test(normal)) {
+    atomos.push(crearAtomo({ titulo: "Autolesion sin intencion suicida documentada", tipoEvento: "autolesion_no_suicida", descripcion: "Se documenta autolesion sin evidencia textual suficiente de intencion suicida.", fragmento: contexto, categoria: "autolesion", importancia: "alta", requiereRevisionClinica: true, motivoRevision: "Confirmar intencionalidad suicida.", confianzaSemantica: 0.72 }));
+  }
+  if (/conductas sexuales de riesgo|riesgo sexual/.test(normal)) {
+    atomos.push(crearAtomo({ titulo: "Conductas sexuales de riesgo", tipoEvento: "conducta_riesgo", descripcion: "Se documentan conductas sexuales de riesgo durante el periodo referido.", fragmento: contexto, categoria: "conducta_riesgo", importancia: "media", confianzaSemantica: 0.82 }));
+  }
+  if (/inici\w*|comenz\w*/.test(normal) && /padecimiento/.test(normal)) {
+    atomos.push(crearAtomo({ titulo: "Inicio del padecimiento actual", tipoEvento: "inicio_padecimiento", descripcion: "Se documenta inicio aproximado del padecimiento actual en el periodo referido.", fragmento: contexto, categoria: "inicio_sintomas", importancia: "media", confianzaSemantica: 0.86 }));
+  }
+  if (/inici\w*|comenz\w*/.test(normal) && /consumo|alcohol|cannabis|cocaina|metanfetamina/.test(normal)) {
+    const sustancia = normal.includes("alcohol") ? "alcohol" : normal.includes("cannabis") ? "cannabis" : normal.includes("cocaina") ? "cocaina" : normal.includes("metanfetamina") ? "metanfetamina" : "sustancias";
+    atomos.push(crearAtomo({ titulo: `Inicio de consumo de ${sustancia}`, tipoEvento: "inicio_consumo", descripcion: `Se documenta inicio de consumo de ${sustancia} en el periodo referido.`, fragmento: contexto, categoria: "consumo_sustancias", importancia: "media", confianzaSemantica: 0.86 }));
+  }
+  if (/(inici\w*|comenz\w*)/.test(normal) && /aislamiento|insomnio|anhedonia/.test(normal)) {
+    const sintomas = ["aislamiento", "insomnio", "anhedonia"].filter((s) => normal.includes(s)).join(", ");
+    atomos.push(crearAtomo({ titulo: `Inicio de ${sintomas || "sintomas"}`, tipoEvento: "inicio_sintomas", descripcion: `Se documenta inicio de ${sintomas || "sintomas"} en el periodo referido, sin inferir un diagnostico especifico.`, fragmento: contexto, categoria: "inicio_sintomas", importancia: "media", confianzaSemantica: 0.82 }));
+  }
+  if (/crisis de ansiedad|crisis ansiosa/.test(normal)) {
+    atomos.push(crearAtomo({ titulo: "Crisis de ansiedad", tipoEvento: "crisis_ansiedad", descripcion: "Se documenta crisis de ansiedad en el periodo referido.", fragmento: contexto, categoria: "crisis_ansiedad", importancia: "media", confianzaSemantica: 0.84 }));
+  }
+  if (/hospitaliz\w*|internad\w*|ingres\w*/.test(normal) && !/consider/.test(normal)) {
+    atomos.push(crearAtomo({ titulo: "Hospitalizacion psiquiatrica", tipoEvento: "hospitalizacion", descripcion: "Se documenta hospitalizacion o ingreso en el periodo referido.", fragmento: contexto, categoria: "hospitalizacion", importancia: "alta", confianzaSemantica: 0.86 }));
+  }
+  if (/alta hospitalaria|egres\w*/.test(normal)) {
+    atomos.push(crearAtomo({ titulo: "Alta hospitalaria", tipoEvento: "alta_hospitalaria", descripcion: "Se documenta alta o egreso hospitalario en el periodo referido.", fragmento: contexto, categoria: "hospitalizacion", importancia: "media", confianzaSemantica: 0.82 }));
+  }
+  if (/suspend\w*/.test(normal) && (med || /tratamiento|medicamento/.test(normal) || /tratamiento|medicamento/.test(normalAmplio))) {
+    atomos.push(crearAtomo({ titulo: med ? `Suspension de ${med}` : "Suspension de tratamiento", tipoEvento: "suspension_tratamiento", descripcion: med ? `Se documenta suspension de ${med} en el periodo referido.` : "Se documenta suspension de tratamiento en el periodo referido.", fragmento: contexto, categoria: "cambio_tratamiento", importancia: "media", confianzaSemantica: 0.84 }));
+  }
+  if (/inici\w*/.test(normal) && med) {
+    atomos.push(crearAtomo({ titulo: `Inicio de ${med}`, tipoEvento: "inicio_tratamiento", descripcion: `Se documenta inicio de ${med} en el periodo referido.`, fragmento: contexto, categoria: "cambio_tratamiento", importancia: "media", confianzaSemantica: 0.86 }));
+  }
+  if (/nausea|náusea|vomito|vómito|mareo|somnolencia/.test(normal)) {
+    const sintoma = normal.includes("somnolencia") ? "somnolencia" : normal.includes("mareo") ? "mareo" : normal.includes("vomito") ? "vomito" : "nausea";
+    atomos.push(crearAtomo({ titulo: `Aparicion de ${sintoma}`, tipoEvento: "efecto_adverso", descripcion: `Se documenta aparicion de ${sintoma} en el periodo referido.`, fragmento: contexto, categoria: "efecto_adverso", importancia: "media", confianzaSemantica: 0.76 }));
+  }
+  if (/alucinaciones auditivas|escuchaba voces|escucha voces/.test(normal)) {
+    atomos.push(crearAtomo({ titulo: "Inicio de alucinaciones auditivas", tipoEvento: "sintoma_psicotico", descripcion: "Se documentan alucinaciones auditivas o escucha de voces en el periodo referido, sin inferir diagnostico especifico.", fragmento: contexto, categoria: "sintoma_psicotico", importancia: "alta", confianzaSemantica: 0.8 }));
+  }
+  return atomos;
+}
+
+function crearAtomoGenericoDesdeContexto(contexto = "", clasificacion = {}) {
+  const titulo = clasificacion.tituloSugerido === "Cambio de tratamiento" || clasificacion.tituloSugerido === "Evento clinico detectado"
+    ? "Evento clinico por precisar"
+    : clasificacion.tituloSugerido;
+  return crearAtomo({
+    titulo,
+    tipoEvento: clasificacion.categoriaSugerida || "evento_clinico",
+    descripcion: `Se documenta ${titulo.toLocaleLowerCase("es-MX")} en el periodo referido; requiere revision clinica para precisar el alcance del suceso.`,
+    fragmento: contexto,
+    categoria: clasificacion.categoriaSugerida,
+    importancia: /suicid|hospitaliz|urgencia|violencia|autoles/.test(normalizarTextoDeteccion(contexto)) ? "alta" : "media",
+    requiereRevisionClinica: true,
+    motivoRevision: "El detector local no pudo precisar completamente el nucleo clinico.",
+    confianzaSemantica: 0.58
+  });
 }
 
 export function extraerEventosDesdeFragmentos(fragmentos = [], fechaNacimiento = null) {
@@ -304,34 +457,35 @@ export function extraerEventosDesdeFragmentos(fragmentos = [], fechaNacimiento =
       continue;
     }
     const contextoEvento = obtenerContextoEvento(fragmento);
-    const fecha = resolverFechaTemporal(fragmento.expresionTemporal, fragmento.fechaReferencia, fechaNacimiento);
+    const fecha = fragmento.expresionTemporal
+      ? resolverFechaTemporal(fragmento.expresionTemporal, fragmento.fechaReferencia, fechaNacimiento)
+      : { fechaInicioISO: null, precisionTemporal: "indeterminada", requiereRevisionFecha: true, fechaEsAproximada: true };
     const clasificacion = clasificarTituloYCategoria(contextoEvento);
-    const descripcion = String(contextoEvento || "")
-      .replace(fragmento.expresionTemporal || "", "")
-      .replace(/\s+/g, " ")
-      .trim()
-      .slice(0, 360);
-    const confianza = fecha.fechaInicioISO ? 0.72 : 0.48;
-    eventos.push({
-      ...clasificacion,
-      descripcionSugerida: descripcion || clasificacion.tituloSugerido,
-      ...fecha,
-      expresionTemporalOriginal: fragmento.expresionTemporal,
-      fragmentoSoporte: contextoEvento.slice(0, 500),
-      importanciaSugerida: /suicid|hospitaliz|urgencia|violencia|autoles/.test(normalizarTextoDeteccion(contextoEvento)) ? "alta" : "media",
-      confianza,
-      nivelConfianza: confianza >= 0.85 ? "alta" : confianza >= 0.6 ? "media" : "baja",
-      sujeto: /\bmadre|padre|herman|familiar\b/.test(normalizarTextoDeteccion(contextoEvento)) ? "familiar" : "paciente",
-      estadoAfirmacion: "ocurrido",
-      relevanciaClinica: PATRON_RELEVANCIA.test(contextoEvento) ? "probable" : "baja",
-      origenDeteccion: "narrativo",
-      origenTipo: fragmento.origenTipo,
-      origenSubtipo: fragmento.origenSubtipo,
-      origenId: fragmento.origenId,
-      origenFechaISO: fragmento.origenFechaISO,
-      sourceLabel: fragmento.sourceLabel,
-      hashFuente: fragmento.hashFuente,
-      hashFragmento: fragmento.hashFragmento
+    const atomos = crearAtomosClinicos(contextoEvento, fragmento.oracionEvento || fragmento.textoFragmento || contextoEvento);
+    const candidatos = atomos.length ? atomos : [crearAtomoGenericoDesdeContexto(contextoEvento, clasificacion)];
+    candidatos.forEach((atomo, indiceAtomo) => {
+      const confianza = Math.min(0.98, Number(atomo.confianzaSemantica || atomo.confianza || 0.6));
+      eventos.push({
+        ...clasificacion,
+        ...atomo,
+        descripcionSugerida: completarDescripcion(atomo.descripcionSugerida || atomo.descripcion || atomo.tituloSugerido),
+        ...fecha,
+        expresionTemporalOriginal: fragmento.expresionTemporal,
+        fragmentoSoporte: atomo.fragmentoSoporte || contextoEvento.slice(0, 500),
+        confianza,
+        nivelConfianza: confianza >= 0.85 ? "alta" : confianza >= 0.6 ? "media" : "baja",
+        sujeto: /\bmadre|padre|herman|familiar\b/.test(normalizarTextoDeteccion(contextoEvento)) ? "familiar" : "paciente",
+        estadoAfirmacion: "ocurrido",
+        relevanciaClinica: PATRON_RELEVANCIA.test(contextoEvento) ? "probable" : "baja",
+        origenDeteccion: "narrativo",
+        origenTipo: fragmento.origenTipo,
+        origenSubtipo: fragmento.origenSubtipo,
+        origenId: fragmento.origenId,
+        origenFechaISO: fragmento.origenFechaISO,
+        sourceLabel: fragmento.sourceLabel,
+        hashFuente: fragmento.hashFuente,
+        hashFragmento: hashDeteccionEstable([fragmento.hashFragmento, atomo.tipoEvento || atomo.tituloSugerido, indiceAtomo].join("|"))
+      });
     });
   }
   return { eventos, descartados };
@@ -477,9 +631,18 @@ export function normalizarCandidatoEvento(candidato = {}, pacienteId = "") {
   return {
     ...candidato,
     tituloSugerido: titulo,
-    descripcionSugerida: textoSeguro(candidato.descripcionSugerida).slice(0, 1200) || titulo,
+    descripcionSugerida: completarDescripcion(textoSeguro(candidato.descripcionSugerida).slice(0, 1200) || titulo),
     fechaInicioISO: fecha,
     fechaFinISO: candidato.fechaFinISO || null,
+    precisionTemporal: ["hora", "dia", "semana", "mes", "anio", "contextual", "aproximada", "indeterminada"].includes(candidato.precisionTemporal) ? candidato.precisionTemporal : "indeterminada",
+    fechaEsAproximada: candidato.fechaEsAproximada !== false,
+    fragmentoSoporte: textoSeguro(candidato.fragmentoSoporte).slice(0, 700),
+    tipoEvento: textoSeguro(candidato.tipoEvento) || "evento_clinico",
+    sujeto: ["paciente", "familiar", "otro"].includes(candidato.sujeto) ? candidato.sujeto : "paciente",
+    estadoAfirmacion: ["ocurrido", "negado", "posible", "futuro", "condicional"].includes(candidato.estadoAfirmacion) ? candidato.estadoAfirmacion : "ocurrido",
+    confianzaSemantica: Math.max(0, Math.min(1, Number(candidato.confianzaSemantica ?? candidato.confianza ?? 0.6))),
+    requiereRevisionClinica: candidato.requiereRevisionClinica === true || terminaIncompleto(candidato.descripcionSugerida || "") || titulo === "Evento clinico por precisar",
+    motivoRevision: candidato.motivoRevision || (terminaIncompleto(candidato.descripcionSugerida || "") ? "Descripcion incompleta antes de normalizacion." : null),
     detectedEventId,
     hashConceptual: detectedEventId,
     estado: ESTADOS_DETECCION_EVENTOS.pendiente
@@ -488,7 +651,9 @@ export function normalizarCandidatoEvento(candidato = {}, pacienteId = "") {
 
 export function detectarEventosEnFuentes({ fuentes = [], fechaNacimiento = null, pacienteId = "", incluirEstructurados = false } = {}) {
   const fuentesConTexto = fuentes.filter((fuente) => String(fuente.textoAnalizable || "").trim());
-  const fragmentos = fuentesConTexto.flatMap(generarFragmentosTemporales);
+  const fragmentosTemporales = fuentesConTexto.flatMap(generarFragmentosTemporales);
+  const fragmentosSinFecha = fuentesConTexto.flatMap(generarFragmentosNarrativosSinFecha);
+  const fragmentos = [...fragmentosTemporales, ...fragmentosSinFecha];
   const { eventos, descartados } = extraerEventosDesdeFragmentos(fragmentos, fechaNacimiento);
   const estructurados = incluirEstructurados ? fuentes.flatMap(crearEventosEstructuradosDesdeFuente) : [];
   const normalizados = [...eventos, ...estructurados].map((evento) => normalizarCandidatoEvento(evento, pacienteId));
@@ -512,7 +677,7 @@ export function detectarEventosEnFuentes({ fuentes = [], fechaNacimiento = null,
     fuentesEncontradas: fuentes.length,
     fuentesConTexto: fuentesConTexto.length,
     fragmentosGenerados: fragmentos.length,
-    fragmentosConExpresionesTemporales: fragmentos.length,
+    fragmentosConExpresionesTemporales: fragmentosTemporales.length,
     eventosExtraidos: eventos.length + estructurados.length,
     eventosNormalizados: eventosNormalizados.length,
     eventosDescartados: descartados.length,
@@ -523,6 +688,12 @@ export function detectarEventosEnFuentes({ fuentes = [], fechaNacimiento = null,
     candidatosNarrativos: eventos.length,
     candidatosEstructurados: estructurados.length,
     administrativosDescartados: descartados.filter((item) => item.motivo === "administrativo").length,
+    candidatosTotales: normalizados.length,
+    candidatosClaros: eventosNormalizados.filter((evento) => evento.requiereRevisionClinica !== true).length,
+    candidatosReparados: eventosNormalizados.filter((evento) => evento.motivoRevision === "Descripcion incompleta antes de normalizacion.").length,
+    candidatosDivididos: Math.max(0, eventos.length - fragmentos.length),
+    candidatosAmbiguos: eventosNormalizados.filter((evento) => evento.requiereRevisionClinica === true).length,
+    candidatosDescartadosPorIncoherencia: descartados.filter((item) => item.motivo === "incoherencia_semantica").length,
     duplicadosDetectados: duplicados.length,
     eventos: eventosNormalizados
   };

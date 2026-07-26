@@ -781,6 +781,10 @@ function renderizarSugerenciasDeteccion(sugerencias = [], mostrarDescartados = f
     const etiquetaFuente = [s.sourceLabel || s.origenSubtipo || s.origenTipo || "fuente clinica", s.origenSeccion].filter(Boolean).join(", ");
     const fuenteNodo = card.querySelector(".timeline-detected-card__source");
     if (fuenteNodo) fuenteNodo.textContent = `Detectado en: ${etiquetaFuente}${s.origenFechaISO ? ` del ${s.origenFechaISO}` : ""} · ${s.origenDeteccion || "narrativo"} · Sujeto: ${s.sujeto || "paciente"}`;
+    const certeza = document.createElement("p");
+    certeza.className = "timeline-detected-card__certainty";
+    certeza.textContent = `${s.fechaEsAproximada || s.requiereRevisionFecha ? "Fecha aproximada" : "Fecha exacta"}${s.requiereRevisionClinica ? " · Interpretacion clinica pendiente de revision" : ""}`;
+    fuenteNodo?.before(certeza);
     const resumenFragmento = card.querySelector(".timeline-detected-card__fragment summary");
     if (resumenFragmento) resumenFragmento.textContent = "Fragmento clinico de soporte";
     card.querySelector(".timeline-detected-card__fragment p").textContent = s.fragmentoSoporte || "";
@@ -788,6 +792,14 @@ function renderizarSugerenciasDeteccion(sugerencias = [], mostrarDescartados = f
     if (s.estado === ESTADOS_DETECCION.descartado) acciones.innerHTML = '<button type="button" class="timeline-button" data-action="restore-detected-event">Restaurar</button>';
     else if (s.estado === ESTADOS_DETECCION.pendiente) acciones.innerHTML = '<button type="button" class="timeline-button timeline-button--primary" data-action="accept-detected-event">Añadir a la línea de tiempo</button><button type="button" class="timeline-button" data-action="discard-detected-event">Descartar</button><button type="button" class="timeline-button" data-action="view-detected-origin">Ver origen</button>';
     else acciones.innerHTML = '<button type="button" class="timeline-button" data-action="view-detected-origin">Ver origen</button>';
+    if (s.estado === ESTADOS_DETECCION.pendiente) {
+      const regenerar = document.createElement("button");
+      regenerar.type = "button";
+      regenerar.className = "timeline-button";
+      regenerar.dataset.action = "regenerate-detected-event";
+      regenerar.textContent = "Regenerar propuesta";
+      acciones.querySelector("[data-action='discard-detected-event']")?.before(regenerar);
+    }
     body.append(card);
   });
 }
@@ -1061,7 +1073,13 @@ function resumenDeteccionVacio() {
     tratamientosEstructuradosAnalizados: 0,
     candidatosNarrativos: 0,
     candidatosEstructurados: 0,
-    administrativosDescartados: 0
+    administrativosDescartados: 0,
+    candidatosTotales: 0,
+    candidatosClaros: 0,
+    candidatosReparados: 0,
+    candidatosDivididos: 0,
+    candidatosAmbiguos: 0,
+    candidatosDescartadosPorIncoherencia: 0
   };
 }
 
@@ -1143,6 +1161,40 @@ async function persistirSugerenciasDetectadas127(candidatos = [], existentes = [
     nuevas.push(candidato);
   }
   return { nuevas, duplicadosDetectados };
+}
+
+async function regenerarSugerenciaDetectada(sugerencia = {}) {
+  const fragmento = String(sugerencia.fragmentoSoporte || "").trim();
+  if (!fragmento) throw new Error("FRAGMENTO_SOPORTE_REQUERIDO");
+  const fuente = crearFuenteClinicaComun({
+    origenId: sugerencia.origenId || sugerencia.id,
+    origenTipo: sugerencia.origenTipo || "nota",
+    origenSubtipo: sugerencia.origenSubtipo || "",
+    fechaDocumento: sugerencia.origenFechaISO || sugerencia.sourceDate || null,
+    tituloDocumento: sugerencia.sourceLabel || sugerencia.origenSubtipo || "Fuente clinica",
+    datos: { contenido: fragmento }
+  });
+  const resultado = detectarEventosEnFuentes({ fuentes: [fuente], pacienteId, incluirEstructurados: false });
+  const candidato = resultado.eventos[0];
+  if (!candidato) throw new Error("SIN_PROPUESTA_REGENERADA");
+  await updateDoc(doc(db, "pacientes", pacienteId, "eventosDetectados", sugerencia.id), {
+    tituloSugerido: candidato.tituloSugerido,
+    descripcionSugerida: candidato.descripcionSugerida,
+    tipoEvento: candidato.tipoEvento || null,
+    categoriaSugerida: candidato.categoriaSugerida || null,
+    importanciaSugerida: candidato.importanciaSugerida || sugerencia.importanciaSugerida || "media",
+    fechaInicioISO: candidato.fechaInicioISO || sugerencia.fechaInicioISO || null,
+    fechaFinISO: candidato.fechaFinISO || null,
+    precisionTemporal: candidato.precisionTemporal || sugerencia.precisionTemporal || "indeterminada",
+    fechaEsAproximada: candidato.fechaEsAproximada !== false,
+    requiereRevisionFecha: candidato.requiereRevisionFecha === true,
+    requiereRevisionClinica: candidato.requiereRevisionClinica === true,
+    motivoRevision: candidato.motivoRevision || null,
+    confianzaSemantica: candidato.confianzaSemantica || candidato.confianza || null,
+    estado: ESTADOS_DETECCION.pendiente,
+    regeneradoEn: serverTimestamp(),
+    regeneradoPor: auth.currentUser.uid
+  });
 }
 
 async function inicializarDetectorEventosClinicosLocal() {
@@ -1228,6 +1280,12 @@ async function inicializarDetectorEventosClinicosLocal() {
       resumen.candidatosNarrativos = resultadoDeteccion.candidatosNarrativos || 0;
       resumen.candidatosEstructurados = resultadoDeteccion.candidatosEstructurados || 0;
       resumen.administrativosDescartados = resultadoDeteccion.administrativosDescartados || 0;
+      resumen.candidatosTotales = resultadoDeteccion.candidatosTotales || 0;
+      resumen.candidatosClaros = resultadoDeteccion.candidatosClaros || 0;
+      resumen.candidatosReparados = resultadoDeteccion.candidatosReparados || 0;
+      resumen.candidatosDivididos = resultadoDeteccion.candidatosDivididos || 0;
+      resumen.candidatosAmbiguos = resultadoDeteccion.candidatosAmbiguos || 0;
+      resumen.candidatosDescartadosPorIncoherencia = resultadoDeteccion.candidatosDescartadosPorIncoherencia || 0;
       actualizarProgresoDeteccion("Comparando duplicados...");
       const existentes = await cargarSugerenciasDetectadas();
       const persistencia = await persistirSugerenciasDetectadas127(resultadoDeteccion.eventos, existentes, forzarReanalisis);
@@ -1292,6 +1350,17 @@ async function inicializarDetectorEventosClinicosLocal() {
     const sugerencia = sugerencias.find((s) => s.id === card.dataset.detectedId);
     if (!sugerencia) return;
     if (action === "view-detected-origin") alert(`Origen: ${sugerencia.origenSubtipo || sugerencia.origenTipo}\nFecha: ${sugerencia.origenFechaISO || "sin fecha"}\n\nFragmento:\n${sugerencia.fragmentoSoporte || "Sin fragmento disponible."}`);
+    if (action === "regenerate-detected-event") {
+      try {
+        await regenerarSugerenciaDetectada(sugerencia);
+        await cargar();
+        return;
+      } catch (error) {
+        card.querySelector("[data-detected-error]").textContent = "No fue posible regenerar la propuesta con el fragmento disponible.";
+        console.warn("[Eventos detectados] Error al regenerar propuesta", error?.code || error?.message || error);
+        return;
+      }
+    }
     if (action === "discard-detected-event") { await updateDoc(doc(db, "pacientes", pacienteId, "eventosDetectados", sugerencia.id), { estado: ESTADOS_DETECCION.descartado, revisadoPor: auth.currentUser.uid, revisadoEn: serverTimestamp(), motivoDescarte: "revision_usuario" }); await cargar(); }
     if (action === "restore-detected-event") { await updateDoc(doc(db, "pacientes", pacienteId, "eventosDetectados", sugerencia.id), { estado: ESTADOS_DETECCION.pendiente, revisadoPor: auth.currentUser.uid, revisadoEn: serverTimestamp(), motivoDescarte: "" }); await cargar(); }
     if (action === "accept-detected-event") {

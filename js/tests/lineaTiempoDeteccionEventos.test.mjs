@@ -39,6 +39,20 @@ function detectar(fuentes, opts = {}) {
 }
 
 {
+  const resultado = detectar(fuente("Presentó ideación suicida la semana pasada.", "2026-07-20"));
+  assert.equal(resultado.eventosNormalizados, 1);
+  assert.equal(resultado.eventos[0].tituloSugerido, "Ideacion suicida");
+  assert.notEqual(resultado.eventos[0].tituloSugerido, "Intento suicida");
+}
+
+{
+  const resultado = detectar(fuente("Presentó conductas sexuales de riesgo e ideación suicida."));
+  assert.equal(resultado.eventosNormalizados, 2);
+  assert.deepEqual(resultado.eventos.map((e) => e.tituloSugerido).sort(), ["Conductas sexuales de riesgo", "Ideacion suicida"]);
+  assert.equal(resultado.eventos.every((e) => e.fechaInicioISO === null), true);
+}
+
+{
   const resultado = detectar(fuente("En 2022 inició tratamiento psiquiátrico."));
   assert.equal(resultado.eventosNormalizados, 1);
   assert.equal(resultado.eventos[0].fechaInicioISO, "2022-01-01");
@@ -78,6 +92,38 @@ function detectar(fuentes, opts = {}) {
   const resultado = detectar(fuente("Inició sertralina en enero de 2024 y fue suspendida en marzo de 2024."));
   assert.equal(resultado.eventosNormalizados, 2);
   assert.deepEqual(resultado.eventos.map((e) => e.fechaInicioISO).sort(), ["2024-01-01", "2024-03-01"]);
+  assert.deepEqual(resultado.eventos.map((e) => e.tituloSugerido).sort(), ["Inicio de sertralina", "Suspension de sertralina"]);
+}
+
+{
+  const resultado = detectar(fuente("Refiere inicio del padecimiento hace 13 años. Última cita el 21/07/2026.", "2026-07-22"));
+  assert.equal(resultado.eventosNormalizados, 1);
+  assert.equal(resultado.eventos[0].tituloSugerido, "Inicio del padecimiento actual");
+  assert.equal(resultado.eventos[0].fechaInicioISO, "2013-07-22");
+  assert.equal(resultado.eventos[0].precisionTemporal, "anio");
+  assert.match(resultado.eventos[0].descripcionSugerida, /padecimiento actual/i);
+  assert.doesNotMatch(resultado.eventos[0].descripcionSugerida, /última cita|ultima cita/i);
+}
+
+{
+  const resultado = detectar(fuente("Inició sertralina en marzo de 2024."));
+  assert.equal(resultado.eventosNormalizados, 1);
+  assert.equal(resultado.eventos[0].tituloSugerido, "Inicio de sertralina");
+  assert.notEqual(resultado.eventos[0].tituloSugerido, "Cambio de tratamiento");
+}
+
+{
+  const resultado = detectar(fuente("Comenzó con aislamiento, insomnio y anhedonia en 2022."));
+  assert.equal(resultado.eventosNormalizados, 1);
+  assert.equal(resultado.eventos[0].tituloSugerido, "Inicio de aislamiento, insomnio, anhedonia");
+  assert.doesNotMatch(resultado.eventos[0].tituloSugerido, /depresi/i);
+}
+
+{
+  const resultado = detectar(fuente("Intentó suicidarse mediante ingesta medicamentosa el 10/05/2020."));
+  assert.equal(resultado.eventosNormalizados, 1);
+  assert.equal(resultado.eventos[0].tituloSugerido, "Intento suicida mediante ingesta medicamentosa");
+  assert.equal(resultado.eventos[0].fechaInicioISO, "2020-05-10");
 }
 
 {
@@ -100,6 +146,13 @@ function detectar(fuentes, opts = {}) {
   const resultado = detectar(fuente("Nota firmada el 20/07/2026."));
   assert.equal(resultado.eventosNormalizados, 0);
   assert.equal(resultado.administrativosDescartados, 1);
+}
+
+{
+  const resultado = detectar(fuente("Hace diez años inició consumo.", "2026-07-20"));
+  assert.equal(resultado.eventosNormalizados, 1);
+  assert.equal(resultado.eventos[0].precisionTemporal, "anio");
+  assert.equal(resultado.eventos[0].fechaEsAproximada, true);
 }
 
 {

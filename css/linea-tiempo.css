@@ -81,10 +81,16 @@
 .timeline-detected__status,
 .timeline-detected__progress,
 .timeline-detected-card__date,
+.timeline-detected-card__certainty,
 .timeline-detected-card__source,
 .timeline-detected-card__fragment,
 .timeline-detected__empty {
   color: var(--timeline-text-secondary);
+}
+
+.timeline-detected-card__certainty {
+  font-weight: 700;
+  margin: 0.35rem 0;
 }
 
 .timeline-detected__progress {
