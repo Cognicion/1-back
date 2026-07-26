@@ -279,6 +279,29 @@ async function cargarLineaTiempo() {
   renderizarEstados(root, "loading");
   root.querySelector("[data-timeline-shell]").hidden = true;
   try {
+    const [resultadoEventos, resultadoCategorias] = await Promise.allSettled([
+      cargarEventosPaciente(pacienteId),
+      cargarCategoriasLineaTiempo(auth.currentUser.uid)
+    ]);
+    if (resultadoEventos.status === "rejected") throw resultadoEventos.reason;
+    eventos = ordenarEventosPorFecha(resultadoEventos.value).filter((evento) => {
+      if (!evento?.id) {
+        console.warn("[Timeline 1.15] Evento omitido sin ID.");
+        return false;
+      }
+      if (!(evento.fechaEvento instanceof Date) || Number.isNaN(evento.fechaEvento.getTime())) {
+        console.warn("[Timeline 1.15] Evento omitido con fecha invÃ¡lida.");
+        return false;
+      }
+      return true;
+    });
+    categorias = resultadoCategorias.status === "fulfilled" ? resultadoCategorias.value : [];
+    if (resultadoCategorias.status === "rejected") {
+      console.warn("No se pudieron cargar las categorÃ­as de la lÃ­nea de tiempo.", resultadoCategorias.reason?.code || resultadoCategorias.reason?.message || resultadoCategorias.reason);
+    }
+    renderizarCategorias();
+    renderizarVista();
+    return;
     try {
       categorias = await cargarCategoriasLineaTiempo(auth.currentUser.uid);
     } catch (error) {

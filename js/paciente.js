@@ -866,7 +866,6 @@ function renderizarVistaLaboratorioPaciente(datos = datosPacienteActual || {}) {
       <div class="lab-paciente-top">
         <div>
           <span class="lab-kicker">Vista Laboratorio</span>
-          <h3>${escaparHTML(obtenerNombrePacienteParaMostrar(datos) || "Paciente sin nombre")}</h3>
           <p>Datos generales integrados del expediente. Los campos vacos se muestran como sin registro.</p>
         </div>
         <div class="lab-paciente-id">
