@@ -730,6 +730,40 @@ html[data-theme="light"] .aviso-clinico-biblioteca {
   line-height: 1.5;
 }
 
+.criteria-subgroups {
+  display: grid;
+  gap: 10px;
+  margin-top: 12px;
+  padding-left: 12px;
+  border-left: 2px solid rgba(126, 182, 138, .24);
+}
+
+.criteria-subgroup {
+  padding: 4px 0 4px 10px;
+}
+
+.criteria-subgroup h6 {
+  margin: 0 0 6px;
+  color: var(--celtic-300);
+  font-size: .88rem;
+}
+
+.criteria-subgroup p {
+  margin: 0 0 6px;
+  line-height: 1.5;
+}
+
+.criteria-subgroup ol,
+.criteria-subgroup ul {
+  margin: 6px 0 0;
+}
+
+.criterio-marcador {
+  display: inline-block;
+  min-width: 22px;
+  font-weight: 800;
+}
+
 .item-criterio__numero {
   display: inline-block;
   min-width: 24px;
@@ -797,6 +831,19 @@ html[data-theme="light"] .grupo-criterios h5 {
 
 html[data-theme="light"] .grupo-criterios__intro,
 html[data-theme="light"] .grupo-criterios li {
+  color: var(--library-text-secondary);
+}
+
+html[data-theme="light"] .criteria-subgroups {
+  border-left-color: var(--library-border-strong);
+}
+
+html[data-theme="light"] .criteria-subgroup h6 {
+  color: var(--library-primary);
+}
+
+html[data-theme="light"] .criteria-subgroup p,
+html[data-theme="light"] .criteria-subgroup li {
   color: var(--library-text-secondary);
 }
 

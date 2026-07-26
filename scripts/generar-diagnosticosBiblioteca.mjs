@@ -47,17 +47,54 @@ function categoriaPorCodigo(codigo = "") {
   return "Clínica general";
 }
 
-function nuevoSistema(codigo, nombre, orden) {
+const FECHA_AUDITORIA = new Date().toISOString().slice(0, 10);
+const FUENTES_OFICIALES = {
+  cie10: {
+    organismo: "World Health Organization",
+    documento: "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+    edicion: "1992",
+    url: "https://www.who.int/publications/i/item/9241544228"
+  },
+  cie11: {
+    organismo: "World Health Organization",
+    documento: "Clinical descriptions and diagnostic requirements for ICD-11 mental, behavioural and neurodevelopmental disorders (CDDR)",
+    edicion: "2024",
+    url: "https://www.who.int/publications/i/item/9789240077263"
+  },
+  dsm5: {
+    organismo: "American Psychiatric Association",
+    documento: "DSM-5 / DSM-5-TR; contenido secundario resumido",
+    edicion: "Resumen no literal",
+    url: ""
+  }
+};
+
+function fuenteSistema(sistema) {
+  return { ...FUENTES_OFICIALES[sistema], fechaConsulta: FECHA_AUDITORIA, sourceVerified: false };
+}
+
+function nuevoSistema(codigo, nombre, orden, sistema = orden === 1 ? "cie10" : "cie11") {
   return {
     visible: true,
     orden,
     codigo,
     nombre,
+    fuente: fuenteSistema(sistema),
+    tipoContenido: sistema === "dsm5" ? "resumen_clinico" : "resumen_local_pendiente_revision",
+    completionStatus: "pending_review",
+    review: { reviewed: false, reviewedAt: null, sourceVerified: false, notes: "Requiere verificación contra la fuente oficial antes de marcarse completo." },
     criterios: [],
     especificadores: [],
     notas: [],
     contenidoLiteralAutorizado: false
   };
+}
+
+function separarNumeroDeTexto(texto) {
+  const original = String(texto || "").trim();
+  const coincidencia = original.match(/^(?:\((\d+)\)|([0-9]+)[.)]|([0-9]+)\s[-–])\s*(.*)$/);
+  if (!coincidencia) return { numero: null, marcador: null, texto: original };
+  return { numero: Number(coincidencia[1] || coincidencia[2] || coincidencia[3]), marcador: null, texto: coincidencia[4].trim() };
 }
 
 function criterioComoTexto(criterio) {
@@ -67,72 +104,65 @@ function criterioComoTexto(criterio) {
 
 function normalizarCriteriosAgrupados(criterios = [], entidadId = "diagnostico", sistema = "sistema") {
   if (!Array.isArray(criterios) || !criterios.length) return [];
-  if (criterios.some((criterio) => criterio && typeof criterio === "object" && Array.isArray(criterio.items))) {
-    return criterios.map((grupo, grupoIndex) => ({
-      id: grupo.id || `${entidadId}-${sistema}-grupo-${grupoIndex + 1}`,
-      clave: grupo.clave || "",
-      titulo: grupo.titulo || "Pendiente de clasificación",
-      tipo: grupo.tipo || "grupo_clinico",
-      introduccion: grupo.introduccion || "",
-      literal: false,
-      items: (grupo.items || []).map((item, itemIndex) => ({
-        numero: item.numero ?? null,
-        texto: criterioComoTexto(item),
-        orden: item.orden || itemIndex + 1,
-        literal: false
-      })).filter((item) => item.texto)
-    })).filter((grupo) => grupo.items.length || grupo.introduccion);
-  }
-
   const grupos = [];
-  let grupoActual = null;
-  const crearGrupo = (titulo, clave = "", tipo = "grupo_clinico") => {
-    grupoActual = {
+  let criterioPadre = null;
+  let subgrupoActual = null;
+  const crearGrupo = (titulo, clave = "", tipo = "grupo_clinico", anidar = false) => {
+    const grupo = {
       id: `${entidadId}-${sistema}-grupo-${grupos.length + 1}`,
       clave,
       titulo,
       tipo,
       introduccion: "",
       literal: false,
+      listType: "none",
+      grupos: [],
       items: []
     };
-    grupos.push(grupoActual);
-    return grupoActual;
+    if (anidar && criterioPadre) criterioPadre.grupos.push(grupo);
+    else grupos.push(grupo);
+    return grupo;
   };
-  const asegurarGrupo = () => grupoActual || crearGrupo("Pendiente de clasificación", "", "revision_requerida");
+  const asegurarGrupo = () => criterioPadre || (criterioPadre = crearGrupo("Pendiente de clasificación", "", "revision_requerida"));
+  const asegurarDestino = () => subgrupoActual || asegurarGrupo();
+  const agregarItem = (destino, item) => {
+    if (!destino) return;
+    if (item.numero !== null && item.numero !== undefined) destino.listType = "decimal";
+    if (item.marcador) destino.listType = /^[a-z]$/.test(item.marcador) ? "lower-alpha" : "upper-alpha";
+    destino.items.push({ ...item, orden: destino.items.length + 1, literal: false });
+  };
 
   criterios.forEach((criterio) => {
     const texto = criterioComoTexto(criterio);
     if (!texto) return;
     const limpio = texto.replace(/^\s+/, "");
-    const criterioLetra = limpio.match(/^([A-Z])\)\s*(.*)$/i);
-    const numero = limpio.match(/^(\d+)[.)]\s*(.*)$/);
+    const criterioLetra = limpio.match(/^([A-Z])\)\s*(.*)$/);
+    const letraLista = limpio.match(/^([a-z])[.)]\s*(.*)$/);
     const encabezado = limpio.match(/^(.+):$/);
 
     if (criterioLetra) {
-      const grupo = crearGrupo(`Criterio ${criterioLetra[1].toUpperCase()}`, criterioLetra[1].toUpperCase(), "criterio");
-      if (criterioLetra[2]) grupo.introduccion = criterioLetra[2];
+      criterioPadre = crearGrupo(`Criterio ${criterioLetra[1]}`, criterioLetra[1], "criterio_principal");
+      subgrupoActual = null;
+      if (criterioLetra[2]) criterioPadre.introduccion = criterioLetra[2];
       return;
     }
-    if (numero) {
-      const grupo = asegurarGrupo();
-      grupo.items.push({ numero: Number(numero[1]), texto: numero[2], orden: grupo.items.length + 1, literal: false });
+    if (letraLista) {
+      agregarItem(asegurarDestino(), { numero: null, marcador: letraLista[1], texto: letraLista[2] });
       return;
     }
     if (encabezado && !/^CIE\d+/i.test(encabezado[1])) {
-      crearGrupo(encabezado[1].trim(), "", "grupo_clinico");
+      subgrupoActual = crearGrupo(encabezado[1].trim(), "", "subcategoria", Boolean(criterioPadre));
+      subgrupoActual.listType = "none";
       return;
     }
 
-    const grupo = asegurarGrupo();
-    if (!grupo.items.length && !grupo.introduccion) grupo.introduccion = texto;
-    else grupo.items.push({ numero: null, texto, orden: grupo.items.length + 1, literal: false });
+    const numerado = separarNumeroDeTexto(texto);
+    const destino = asegurarDestino();
+    if (!destino.items.length && !destino.introduccion && numerado.numero === null) destino.introduccion = numerado.texto;
+    else agregarItem(destino, numerado);
   });
 
-  return grupos.map((grupo) => ({
-    ...grupo,
-    items: grupo.items.map((item, index) => ({ ...item, orden: index + 1, literal: false }))
-  })).filter((grupo) => grupo.items.length || grupo.introduccion);
+  return grupos.filter((grupo) => grupo.items.length || grupo.introduccion || grupo.grupos.length);
 }
 
 const diagnosticos = [];
@@ -276,6 +306,10 @@ function anexarAnsiedad(definicion) {
     codigo: definicion.dsm5,
     codigoCie10Cm: definicion.dsm5Cie10,
     nombre: definicion.nombre,
+    fuente: fuenteSistema("dsm5"),
+    tipoContenido: "resumen_clinico",
+    completionStatus: "pending_review",
+    review: { reviewed: false, reviewedAt: null, sourceVerified: false, notes: "Resumen no literal; no sustituye CIE-10 ni CIE-11." },
     criterios: definicion.criterios.map((texto) => ({ texto })),
     especificadores: [],
     notas: [],
@@ -289,9 +323,37 @@ function anexarAnsiedad(definicion) {
 
 ansiedad.forEach(anexarAnsiedad);
 
+function todosLosGrupos(grupos = []) {
+  return grupos.flatMap((grupo) => [grupo, ...todosLosGrupos(grupo.grupos || [])]);
+}
+
+function evaluarSistema(sistema, datos) {
+  const grupos = todosLosGrupos(datos.criterios || []);
+  const texto = grupos.map((grupo) => [grupo.titulo, grupo.introduccion, ...(grupo.items || []).map((item) => item.texto)].filter(Boolean).join(" ")).join(" ").toLowerCase();
+  const faltantes = [];
+  if (!grupos.length) faltantes.push("criterios");
+  if (grupos.some((grupo) => grupo.tipo === "revision_requerida" || grupo.titulo === "Pendiente de clasificación")) faltantes.push("clasificación de grupos");
+  if (!datos.fuente?.sourceVerified) faltantes.push("verificación de fuente oficial");
+  if (sistema === "cie10") {
+    if (!/duraci[oó]n|persistencia|meses|semanas|d[ií]as/.test(texto)) faltantes.push("duración");
+    if (!/exclu|descartar|diferencial/.test(texto)) faltantes.push("exclusiones o diagnóstico diferencial");
+    if (!/deterioro|malestar|funcional|interferencia/.test(texto)) faltantes.push("deterioro o impacto funcional");
+  }
+  const estado = faltantes.length ? (grupos.length ? "partial" : "pending_review") : "complete";
+  datos.completionStatus = estado;
+  datos.review = {
+    reviewed: false,
+    reviewedAt: null,
+    sourceVerified: Boolean(datos.fuente?.sourceVerified),
+    notes: faltantes.length ? `Revisión requerida: ${faltantes.join(", ")}.` : "Revisión estructural pendiente de validación clínica final."
+  };
+  return { faltantes, estado };
+}
+
 for (const entidad of diagnosticos) {
   for (const [sistema, datos] of Object.entries(entidad.sistemas)) {
     datos.criterios = normalizarCriteriosAgrupados(datos.criterios, entidad.id, sistema);
+    evaluarSistema(sistema, datos);
   }
   if (!entidad.descripcionBreve) {
     const textoBase = entidad.psicoeducacion || entidad.nombre;
@@ -324,11 +386,25 @@ const reporte = {
   conflictos: [],
   advertencia: "Revisar equivalencias aproximadas entre sistemas antes de publicar cambios clínicos."
 };
+const auditoriaAnsiedad = diagnosticos
+  .filter((entidad) => entidad.categoria === "Trastornos de ansiedad")
+  .flatMap((entidad) => Object.entries(entidad.sistemas).map(([sistema, datos]) => ({
+    diagnosticoId: entidad.id,
+    diagnostico: entidad.nombre,
+    sistema,
+    estado: datos.completionStatus,
+    faltantes: String(datos.review?.notes || "").replace(/^Revisión requerida:\s*/, "").replace(/\.$/, "").split(", ").filter(Boolean),
+    fuenteActual: datos.fuente || null,
+    requiereRevision: datos.completionStatus !== "complete"
+  })));
+reporte.auditoriaAnsiedad = auditoriaAnsiedad;
 
 const salida = resolve(root, "js/data/diagnosticosBiblioteca.js");
 const reportePath = resolve(root, "reports/diagnosticos-biblioteca-migracion.json");
+const auditoriaPath = resolve(root, "reports/diagnosticos-biblioteca-auditoria-ansiedad.json");
 await mkdir(dirname(salida), { recursive: true });
 await mkdir(dirname(reportePath), { recursive: true });
 await writeFile(salida, `/* Fuente única activa de Biblioteca clínica. Cada diagnóstico es una entidad y sus sistemas están anidados. */\nexport const DIAGNOSTICOS_BIBLIOTECA = ${JSON.stringify(diagnosticos, null, 2)};\n\nexport const SISTEMAS_DIAGNOSTICOS = ["cie10", "cie11", "dsm5"];\n`, "utf8");
 await writeFile(reportePath, JSON.stringify(reporte, null, 2), "utf8");
+await writeFile(auditoriaPath, JSON.stringify(auditoriaAnsiedad, null, 2), "utf8");
 console.log(JSON.stringify(reporte, null, 2));

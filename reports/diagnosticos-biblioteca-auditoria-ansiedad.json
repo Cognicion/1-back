@@ -1,0 +1,404 @@
+[
+  {
+    "diagnosticoId": "trastorno-agorafobia",
+    "diagnostico": "Agorafobia",
+    "sistema": "cie10",
+    "estado": "partial",
+    "faltantes": [
+      "clasificación de grupos",
+      "verificación de fuente oficial",
+      "duración"
+    ],
+    "fuenteActual": {
+      "organismo": "World Health Organization",
+      "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+      "edicion": "1992",
+      "url": "https://www.who.int/publications/i/item/9241544228",
+      "fechaConsulta": "2026-07-26",
+      "sourceVerified": false
+    },
+    "requiereRevision": true
+  },
+  {
+    "diagnosticoId": "trastorno-agorafobia",
+    "diagnostico": "Agorafobia",
+    "sistema": "cie11",
+    "estado": "partial",
+    "faltantes": [
+      "clasificación de grupos",
+      "verificación de fuente oficial"
+    ],
+    "fuenteActual": {
+      "organismo": "World Health Organization",
+      "documento": "Clinical descriptions and diagnostic requirements for ICD-11 mental, behavioural and neurodevelopmental disorders (CDDR)",
+      "edicion": "2024",
+      "url": "https://www.who.int/publications/i/item/9789240077263",
+      "fechaConsulta": "2026-07-26",
+      "sourceVerified": false
+    },
+    "requiereRevision": true
+  },
+  {
+    "diagnosticoId": "trastorno-agorafobia",
+    "diagnostico": "Agorafobia",
+    "sistema": "dsm5",
+    "estado": "partial",
+    "faltantes": [
+      "clasificación de grupos",
+      "verificación de fuente oficial"
+    ],
+    "fuenteActual": {
+      "organismo": "American Psychiatric Association",
+      "documento": "DSM-5 / DSM-5-TR; contenido secundario resumido",
+      "edicion": "Resumen no literal",
+      "url": "",
+      "fechaConsulta": "2026-07-26",
+      "sourceVerified": false
+    },
+    "requiereRevision": true
+  },
+  {
+    "diagnosticoId": "trastorno-trastorno-de-panico",
+    "diagnostico": "Trastorno de pánico",
+    "sistema": "cie10",
+    "estado": "partial",
+    "faltantes": [
+      "clasificación de grupos",
+      "verificación de fuente oficial",
+      "duración"
+    ],
+    "fuenteActual": {
+      "organismo": "World Health Organization",
+      "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+      "edicion": "1992",
+      "url": "https://www.who.int/publications/i/item/9241544228",
+      "fechaConsulta": "2026-07-26",
+      "sourceVerified": false
+    },
+    "requiereRevision": true
+  },
+  {
+    "diagnosticoId": "trastorno-trastorno-de-panico",
+    "diagnostico": "Trastorno de pánico",
+    "sistema": "cie11",
+    "estado": "partial",
+    "faltantes": [
+      "clasificación de grupos",
+      "verificación de fuente oficial"
+    ],
+    "fuenteActual": {
+      "organismo": "World Health Organization",
+      "documento": "Clinical descriptions and diagnostic requirements for ICD-11 mental, behavioural and neurodevelopmental disorders (CDDR)",
+      "edicion": "2024",
+      "url": "https://www.who.int/publications/i/item/9789240077263",
+      "fechaConsulta": "2026-07-26",
+      "sourceVerified": false
+    },
+    "requiereRevision": true
+  },
+  {
+    "diagnosticoId": "trastorno-trastorno-de-panico",
+    "diagnostico": "Trastorno de pánico",
+    "sistema": "dsm5",
+    "estado": "partial",
+    "faltantes": [
+      "clasificación de grupos",
+      "verificación de fuente oficial"
+    ],
+    "fuenteActual": {
+      "organismo": "American Psychiatric Association",
+      "documento": "DSM-5 / DSM-5-TR; contenido secundario resumido",
+      "edicion": "Resumen no literal",
+      "url": "",
+      "fechaConsulta": "2026-07-26",
+      "sourceVerified": false
+    },
+    "requiereRevision": true
+  },
+  {
+    "diagnosticoId": "trastorno-trastorno-de-ansiedad-generalizada",
+    "diagnostico": "Trastorno de ansiedad generalizada",
+    "sistema": "cie10",
+    "estado": "partial",
+    "faltantes": [
+      "verificación de fuente oficial"
+    ],
+    "fuenteActual": {
+      "organismo": "World Health Organization",
+      "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+      "edicion": "1992",
+      "url": "https://www.who.int/publications/i/item/9241544228",
+      "fechaConsulta": "2026-07-26",
+      "sourceVerified": false
+    },
+    "requiereRevision": true
+  },
+  {
+    "diagnosticoId": "trastorno-trastorno-de-ansiedad-generalizada",
+    "diagnostico": "Trastorno de ansiedad generalizada",
+    "sistema": "cie11",
+    "estado": "partial",
+    "faltantes": [
+      "verificación de fuente oficial"
+    ],
+    "fuenteActual": {
+      "organismo": "World Health Organization",
+      "documento": "Clinical descriptions and diagnostic requirements for ICD-11 mental, behavioural and neurodevelopmental disorders (CDDR)",
+      "edicion": "2024",
+      "url": "https://www.who.int/publications/i/item/9789240077263",
+      "fechaConsulta": "2026-07-26",
+      "sourceVerified": false
+    },
+    "requiereRevision": true
+  },
+  {
+    "diagnosticoId": "trastorno-trastorno-de-ansiedad-generalizada",
+    "diagnostico": "Trastorno de ansiedad generalizada",
+    "sistema": "dsm5",
+    "estado": "partial",
+    "faltantes": [
+      "clasificación de grupos",
+      "verificación de fuente oficial"
+    ],
+    "fuenteActual": {
+      "organismo": "American Psychiatric Association",
+      "documento": "DSM-5 / DSM-5-TR; contenido secundario resumido",
+      "edicion": "Resumen no literal",
+      "url": "",
+      "fechaConsulta": "2026-07-26",
+      "sourceVerified": false
+    },
+    "requiereRevision": true
+  },
+  {
+    "diagnosticoId": "trastorno-fobia-especifica",
+    "diagnostico": "Fobia especifica",
+    "sistema": "cie10",
+    "estado": "partial",
+    "faltantes": [
+      "clasificación de grupos",
+      "verificación de fuente oficial",
+      "duración",
+      "exclusiones o diagnóstico diferencial"
+    ],
+    "fuenteActual": {
+      "organismo": "World Health Organization",
+      "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+      "edicion": "1992",
+      "url": "https://www.who.int/publications/i/item/9241544228",
+      "fechaConsulta": "2026-07-26",
+      "sourceVerified": false
+    },
+    "requiereRevision": true
+  },
+  {
+    "diagnosticoId": "trastorno-fobia-especifica",
+    "diagnostico": "Fobia especifica",
+    "sistema": "cie11",
+    "estado": "partial",
+    "faltantes": [
+      "clasificación de grupos",
+      "verificación de fuente oficial"
+    ],
+    "fuenteActual": {
+      "organismo": "World Health Organization",
+      "documento": "Clinical descriptions and diagnostic requirements for ICD-11 mental, behavioural and neurodevelopmental disorders (CDDR)",
+      "edicion": "2024",
+      "url": "https://www.who.int/publications/i/item/9789240077263",
+      "fechaConsulta": "2026-07-26",
+      "sourceVerified": false
+    },
+    "requiereRevision": true
+  },
+  {
+    "diagnosticoId": "trastorno-fobia-especifica",
+    "diagnostico": "Fobia especifica",
+    "sistema": "dsm5",
+    "estado": "partial",
+    "faltantes": [
+      "clasificación de grupos",
+      "verificación de fuente oficial"
+    ],
+    "fuenteActual": {
+      "organismo": "American Psychiatric Association",
+      "documento": "DSM-5 / DSM-5-TR; contenido secundario resumido",
+      "edicion": "Resumen no literal",
+      "url": "",
+      "fechaConsulta": "2026-07-26",
+      "sourceVerified": false
+    },
+    "requiereRevision": true
+  },
+  {
+    "diagnosticoId": "trastorno-trastorno-de-ansiedad-social",
+    "diagnostico": "Trastorno de ansiedad social",
+    "sistema": "cie10",
+    "estado": "partial",
+    "faltantes": [
+      "clasificación de grupos",
+      "verificación de fuente oficial",
+      "exclusiones o diagnóstico diferencial"
+    ],
+    "fuenteActual": {
+      "organismo": "World Health Organization",
+      "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+      "edicion": "1992",
+      "url": "https://www.who.int/publications/i/item/9241544228",
+      "fechaConsulta": "2026-07-26",
+      "sourceVerified": false
+    },
+    "requiereRevision": true
+  },
+  {
+    "diagnosticoId": "trastorno-trastorno-de-ansiedad-social",
+    "diagnostico": "Trastorno de ansiedad social",
+    "sistema": "cie11",
+    "estado": "partial",
+    "faltantes": [
+      "clasificación de grupos",
+      "verificación de fuente oficial"
+    ],
+    "fuenteActual": {
+      "organismo": "World Health Organization",
+      "documento": "Clinical descriptions and diagnostic requirements for ICD-11 mental, behavioural and neurodevelopmental disorders (CDDR)",
+      "edicion": "2024",
+      "url": "https://www.who.int/publications/i/item/9789240077263",
+      "fechaConsulta": "2026-07-26",
+      "sourceVerified": false
+    },
+    "requiereRevision": true
+  },
+  {
+    "diagnosticoId": "trastorno-trastorno-de-ansiedad-social",
+    "diagnostico": "Trastorno de ansiedad social",
+    "sistema": "dsm5",
+    "estado": "partial",
+    "faltantes": [
+      "clasificación de grupos",
+      "verificación de fuente oficial"
+    ],
+    "fuenteActual": {
+      "organismo": "American Psychiatric Association",
+      "documento": "DSM-5 / DSM-5-TR; contenido secundario resumido",
+      "edicion": "Resumen no literal",
+      "url": "",
+      "fechaConsulta": "2026-07-26",
+      "sourceVerified": false
+    },
+    "requiereRevision": true
+  },
+  {
+    "diagnosticoId": "trastorno-trastorno-de-ansiedad-por-separacion",
+    "diagnostico": "Trastorno de ansiedad por separación",
+    "sistema": "dsm5",
+    "estado": "partial",
+    "faltantes": [
+      "clasificación de grupos",
+      "verificación de fuente oficial"
+    ],
+    "fuenteActual": {
+      "organismo": "American Psychiatric Association",
+      "documento": "DSM-5 / DSM-5-TR; contenido secundario resumido",
+      "edicion": "Resumen no literal",
+      "url": "",
+      "fechaConsulta": "2026-07-26",
+      "sourceVerified": false
+    },
+    "requiereRevision": true
+  },
+  {
+    "diagnosticoId": "trastorno-mutismo-selectivo",
+    "diagnostico": "Mutismo selectivo",
+    "sistema": "dsm5",
+    "estado": "partial",
+    "faltantes": [
+      "clasificación de grupos",
+      "verificación de fuente oficial"
+    ],
+    "fuenteActual": {
+      "organismo": "American Psychiatric Association",
+      "documento": "DSM-5 / DSM-5-TR; contenido secundario resumido",
+      "edicion": "Resumen no literal",
+      "url": "",
+      "fechaConsulta": "2026-07-26",
+      "sourceVerified": false
+    },
+    "requiereRevision": true
+  },
+  {
+    "diagnosticoId": "trastorno-trastorno-de-ansiedad-inducido-por-sustancias-o-medicamentos",
+    "diagnostico": "Trastorno de ansiedad inducido por sustancias o medicamentos",
+    "sistema": "dsm5",
+    "estado": "partial",
+    "faltantes": [
+      "clasificación de grupos",
+      "verificación de fuente oficial"
+    ],
+    "fuenteActual": {
+      "organismo": "American Psychiatric Association",
+      "documento": "DSM-5 / DSM-5-TR; contenido secundario resumido",
+      "edicion": "Resumen no literal",
+      "url": "",
+      "fechaConsulta": "2026-07-26",
+      "sourceVerified": false
+    },
+    "requiereRevision": true
+  },
+  {
+    "diagnosticoId": "trastorno-trastorno-de-ansiedad-debido-a-otra-afeccion-medica",
+    "diagnostico": "Trastorno de ansiedad debido a otra afección médica",
+    "sistema": "dsm5",
+    "estado": "partial",
+    "faltantes": [
+      "clasificación de grupos",
+      "verificación de fuente oficial"
+    ],
+    "fuenteActual": {
+      "organismo": "American Psychiatric Association",
+      "documento": "DSM-5 / DSM-5-TR; contenido secundario resumido",
+      "edicion": "Resumen no literal",
+      "url": "",
+      "fechaConsulta": "2026-07-26",
+      "sourceVerified": false
+    },
+    "requiereRevision": true
+  },
+  {
+    "diagnosticoId": "trastorno-otro-trastorno-de-ansiedad-especificado",
+    "diagnostico": "Otro trastorno de ansiedad especificado",
+    "sistema": "dsm5",
+    "estado": "partial",
+    "faltantes": [
+      "clasificación de grupos",
+      "verificación de fuente oficial"
+    ],
+    "fuenteActual": {
+      "organismo": "American Psychiatric Association",
+      "documento": "DSM-5 / DSM-5-TR; contenido secundario resumido",
+      "edicion": "Resumen no literal",
+      "url": "",
+      "fechaConsulta": "2026-07-26",
+      "sourceVerified": false
+    },
+    "requiereRevision": true
+  },
+  {
+    "diagnosticoId": "trastorno-trastorno-de-ansiedad-no-especificado",
+    "diagnostico": "Trastorno de ansiedad no especificado",
+    "sistema": "dsm5",
+    "estado": "partial",
+    "faltantes": [
+      "clasificación de grupos",
+      "verificación de fuente oficial"
+    ],
+    "fuenteActual": {
+      "organismo": "American Psychiatric Association",
+      "documento": "DSM-5 / DSM-5-TR; contenido secundario resumido",
+      "edicion": "Resumen no literal",
+      "url": "",
+      "fechaConsulta": "2026-07-26",
+      "sourceVerified": false
+    },
+    "requiereRevision": true
+  }
+]

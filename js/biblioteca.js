@@ -87,11 +87,28 @@ function validarDiagnosticosBiblioteca(diagnosticos = []) {
     if (!diagnostico?.nombre) errores.push("nombre vacío");
     if (!diagnostico?.sistemas || typeof diagnostico.sistemas !== "object") errores.push("sistemas ausentes");
     const codigos = new Set();
+    const idsGrupos = new Set();
+    const validarGrupo = (grupo, ruta) => {
+      if (!grupo?.id || idsGrupos.has(grupo.id)) errores.push(`grupo sin id o duplicado: ${ruta}`);
+      if (!grupo?.titulo) errores.push(`grupo sin título: ${ruta}`);
+      idsGrupos.add(grupo?.id);
+      const numeros = new Set();
+      (grupo?.items || []).forEach((item) => {
+        if (item.numero !== null && item.numero !== undefined) {
+          if (numeros.has(item.numero)) errores.push(`numeración repetida: ${ruta}:${item.numero}`);
+          numeros.add(item.numero);
+          if (/^(?:\(?\d+\)?[.)]|\d+\s[-–])\s*/.test(String(item.texto || ""))) errores.push(`numeración duplicada en texto: ${ruta}:${item.numero}`);
+        }
+        if (!String(item.texto || "").trim()) errores.push(`ítem sin texto: ${ruta}`);
+      });
+      (grupo?.grupos || []).forEach((subgrupo) => validarGrupo(subgrupo, `${ruta}/${subgrupo.id || "sin-id"}`));
+    };
     Object.entries(diagnostico?.sistemas || {}).forEach(([sistema, datos]) => {
       if (!SYSTEM_ORDER.includes(sistema)) errores.push(`sistema desconocido: ${sistema}`);
       if (datos?.codigo && codigos.has(`${sistema}:${datos.codigo}`)) errores.push(`código duplicado: ${datos.codigo}`);
       if (datos?.codigo) codigos.add(`${sistema}:${datos.codigo}`);
       if (!Array.isArray(datos?.criterios)) errores.push(`criterios inválidos en ${sistema}`);
+      (datos?.criterios || []).forEach((grupo) => validarGrupo(grupo, `${sistema}/${grupo?.id || "sin-id"}`));
     });
     if (errores.length) {
       console.error("Registro omitido de Biblioteca clínica:", diagnostico?.id || diagnostico?.nombre, errores);
@@ -287,6 +304,13 @@ function convertirDiagnosticosManuales() {
 
 function textoBusquedaDiagnostico(diagnostico) {
   const sistemas = Object.values(diagnostico.sistemas || {});
+  const textosGrupo = (grupo) => [
+    grupo.titulo,
+    grupo.introduccion,
+    grupo.texto,
+    ...(grupo.items || []).map((item) => item.texto),
+    ...(grupo.grupos || []).flatMap(textosGrupo)
+  ];
   return [
     diagnostico.nombre,
     diagnostico.descripcionBreve,
@@ -301,23 +325,39 @@ function textoBusquedaDiagnostico(diagnostico) {
       sistema.codigo,
       sistema.codigoCie10Cm,
       sistema.nombre,
-      ...(sistema.criterios || []).flatMap((grupo) => [
-        grupo.titulo,
-        grupo.introduccion,
-        ...(grupo.items || []).map((item) => item.texto),
-        grupo.texto
-      ])
+      ...(sistema.criterios || []).flatMap(textosGrupo)
     ])
   ].filter(Boolean).join(" ");
 }
 
 function renderizarGrupoCriterios(grupo) {
   const items = grupo.items || [];
+  const subgrupos = grupo.grupos || [];
+  const listType = grupo.listType || "none";
+  const lista = items.length
+    ? (listType === "decimal"
+      ? `<ol>${items.map((item) => `<li${Number.isInteger(item.numero) ? ` value="${item.numero}"` : ""}>${escaparHTML(item.texto)}</li>`).join("")}</ol>`
+      : listType === "lower-alpha" || listType === "upper-alpha"
+        ? `<ul class="criterios-lista-marcada">${items.map((item) => `<li>${item.marcador ? `<span class="criterio-marcador">${escaparHTML(item.marcador)}.</span>` : ""}${escaparHTML(item.texto)}</li>`).join("")}</ul>`
+        : `<ul>${items.map((item) => `<li>${escaparHTML(item.texto)}</li>`).join("")}</ul>`)
+    : "";
   return `<section class="grupo-criterios" data-grupo-criterios="${escaparHTML(grupo.id || "grupo")}">
     <h5>${escaparHTML(grupo.titulo || "Pendiente de clasificación")}</h5>
     ${grupo.introduccion ? `<p class="grupo-criterios__intro">${escaparHTML(grupo.introduccion)}</p>` : ""}
-    ${items.length ? `<ol>${items.map((item) => `<li>${item.numero !== null && item.numero !== undefined ? `<span class="item-criterio__numero">${escaparHTML(item.numero)}</span>` : ""}<span>${escaparHTML(item.texto)}</span></li>`).join("")}</ol>` : ""}
+    ${lista}
+    ${subgrupos.length ? `<div class="criteria-subgroups">${subgrupos.map(renderizarGrupoCriteriosSubgrupo).join("")}</div>` : ""}
   </section>`;
+}
+
+function renderizarGrupoCriteriosSubgrupo(grupo) {
+  const items = grupo.items || [];
+  const listType = grupo.listType || "none";
+  const lista = items.length
+    ? (listType === "decimal"
+      ? `<ol>${items.map((item) => `<li${Number.isInteger(item.numero) ? ` value="${item.numero}"` : ""}>${escaparHTML(item.texto)}</li>`).join("")}</ol>`
+      : `<ul>${items.map((item) => `<li>${item.marcador ? `<span class="criterio-marcador">${escaparHTML(item.marcador)}.</span>` : ""}${escaparHTML(item.texto)}</li>`).join("")}</ul>`)
+    : "";
+  return `<section class="criteria-subgroup"><h6>${escaparHTML(grupo.titulo || "Subgrupo")}</h6>${grupo.introduccion ? `<p>${escaparHTML(grupo.introduccion)}</p>` : ""}${lista}${grupo.grupos?.length ? grupo.grupos.map(renderizarGrupoCriteriosSubgrupo).join("") : ""}</section>`;
 }
 
 function renderizarCriterios(sistema) {

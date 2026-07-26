@@ -16,6 +16,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "B24",
         "nombre": "Enfermedad por virus de la inmunodeficiencia humana [VIH], sin otra especificación",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -44,6 +60,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "E00",
         "nombre": "Sindrome congenito de deficiencia de yodo",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -72,6 +104,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "E01",
         "nombre": "Trastornos tiroideos relacionados con deficiencia de yodo",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -100,6 +148,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "E03",
         "nombre": "Otros hipotiroidismos",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: clasificación de grupos, verificación de fuente oficial, duración."
+        },
         "criterios": [
           {
             "id": "trastorno-otros-hipotiroidismos-cie10-grupo-1",
@@ -108,21 +172,26 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
             "tipo": "revision_requerida",
             "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": [
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
                 "orden": 1,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
                 "orden": 2,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
                 "orden": 3,
                 "literal": false
@@ -163,6 +232,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "E05",
         "nombre": "Tirotoxicosis",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: clasificación de grupos, verificación de fuente oficial, duración."
+        },
         "criterios": [
           {
             "id": "trastorno-tirotoxicosis-cie10-grupo-1",
@@ -171,21 +256,26 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
             "tipo": "revision_requerida",
             "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": [
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
                 "orden": 1,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
                 "orden": 2,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
                 "orden": 3,
                 "literal": false
@@ -226,6 +316,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "E10",
         "nombre": "Diabetes mellitus insulinodependiente",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: clasificación de grupos, verificación de fuente oficial, duración."
+        },
         "criterios": [
           {
             "id": "trastorno-diabetes-mellitus-insulinodependiente-cie10-grupo-1",
@@ -234,21 +340,26 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
             "tipo": "revision_requerida",
             "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": [
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
                 "orden": 1,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
                 "orden": 2,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
                 "orden": 3,
                 "literal": false
@@ -289,6 +400,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "E11",
         "nombre": "Diabetes mellitus no insulinodependiente",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: clasificación de grupos, verificación de fuente oficial, duración."
+        },
         "criterios": [
           {
             "id": "trastorno-diabetes-mellitus-no-insulinodependiente-cie10-grupo-1",
@@ -297,21 +424,26 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
             "tipo": "revision_requerida",
             "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": [
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
                 "orden": 1,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
                 "orden": 2,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
                 "orden": 3,
                 "literal": false
@@ -352,6 +484,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "E14",
         "nombre": "Diabetes mellitus no especificada",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -380,6 +528,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "E16",
         "nombre": "Otros trastornos de la secrecion interna del pancreas",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -408,6 +572,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "E22",
         "nombre": "Hiperfuncion de la hipofisis",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -436,6 +616,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "E23",
         "nombre": "Hipofuncion y otros trastornos de la hipofisis",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -464,6 +660,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "E24",
         "nombre": "Sindrome de Cushing",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -492,6 +704,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "E27",
         "nombre": "Otros trastornos de la glandula suprarrenal",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -520,6 +748,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "E28",
         "nombre": "Disfuncion ovarica",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -548,6 +792,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "E29",
         "nombre": "Disfuncion testicular",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -576,6 +836,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "E44",
         "nombre": "Desnutricion proteicocalorica de grado moderado y leve",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: clasificación de grupos, verificación de fuente oficial, duración."
+        },
         "criterios": [
           {
             "id": "trastorno-desnutricion-proteicocalorica-de-grado-moderado-y-leve-cie10-grupo-1",
@@ -584,21 +860,26 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
             "tipo": "revision_requerida",
             "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": [
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
                 "orden": 1,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
                 "orden": 2,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
                 "orden": 3,
                 "literal": false
@@ -639,6 +920,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "E46",
         "nombre": "Desnutricion proteicocalorica no especificada",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -667,6 +964,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "E51.2",
         "nombre": "Encefalopatía de wernicke",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -695,6 +1008,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "E55",
         "nombre": "Deficiencia de vitamina D",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -723,6 +1052,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "E66",
         "nombre": "Obesidad",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: clasificación de grupos, verificación de fuente oficial, duración."
+        },
         "criterios": [
           {
             "id": "trastorno-obesidad-cie10-grupo-1",
@@ -731,21 +1076,26 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
             "tipo": "revision_requerida",
             "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": [
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
                 "orden": 1,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
                 "orden": 2,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
                 "orden": 3,
                 "literal": false
@@ -786,6 +1136,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "E66.0",
         "nombre": "Obesidad debida a exceso de calorias",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -814,6 +1180,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "E66.1",
         "nombre": "Obesidad endogena",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -842,6 +1224,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "E66.2",
         "nombre": "Obesidad de origen exogeno",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -870,6 +1268,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "E66.8",
         "nombre": "Otras formas de obesidad",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -898,6 +1312,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "E66.9",
         "nombre": "Obesidad no especificada",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -926,6 +1356,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "E70",
         "nombre": "Trastornos del metabolismo de los aminoacidos",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -954,6 +1400,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "E71",
         "nombre": "Trastornos del metabolismo de los acidos grasos y de la oxidacion de los acidos grasos",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -983,6 +1445,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "E72",
         "nombre": "Otros trastornos del metabolismo de los carbohidratos",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -1011,6 +1489,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "E73",
         "nombre": "Intolerancia a la lactosa",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -1039,6 +1533,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "E78",
         "nombre": "Trastornos del metabolismo de las lipoproteinas y otras lipidemias",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: clasificación de grupos, verificación de fuente oficial, duración."
+        },
         "criterios": [
           {
             "id": "trastorno-trastornos-del-metabolismo-de-las-lipoproteinas-y-otras-lipidemias-cie10-grupo-1",
@@ -1047,21 +1557,26 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
             "tipo": "revision_requerida",
             "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": [
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
                 "orden": 1,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
                 "orden": 2,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
                 "orden": 3,
                 "literal": false
@@ -1102,6 +1617,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "E87",
         "nombre": "Otros trastornos de los liquidos, electrolitos y equilibrio acido-base",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -1130,6 +1661,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F00",
         "nombre": "Demencia en la enfermedad de Alzheimer",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: clasificación de grupos, verificación de fuente oficial, duración."
+        },
         "criterios": [
           {
             "id": "trastorno-demencia-en-la-enfermedad-de-alzheimer-cie10-grupo-1",
@@ -1138,21 +1685,26 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
             "tipo": "revision_requerida",
             "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": [
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
                 "orden": 1,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
                 "orden": 2,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
                 "orden": 3,
                 "literal": false
@@ -1194,6 +1746,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F00.0",
         "nombre": "Demencia en la enfermedad de Alzheimer con inicio temprano",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -1222,6 +1790,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F00.1",
         "nombre": "Demencia en la enfermedad de Alzheimer con inicio tardío",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -1250,6 +1834,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F00.2",
         "nombre": "Demencia en la enfermedad de Alzheimer, tipo mixto",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -1278,6 +1878,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F01",
         "nombre": "Demencia vascular",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: clasificación de grupos, verificación de fuente oficial, duración."
+        },
         "criterios": [
           {
             "id": "trastorno-demencia-vascular-cie10-grupo-1",
@@ -1286,21 +1902,26 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
             "tipo": "revision_requerida",
             "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": [
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
                 "orden": 1,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
                 "orden": 2,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
                 "orden": 3,
                 "literal": false
@@ -1341,6 +1962,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F01.0",
         "nombre": "Demencia vascular de inicio agudo",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -1369,6 +2006,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F01.1",
         "nombre": "Demencia vascular de inicio subagudo",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -1397,6 +2050,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F01.2",
         "nombre": "Demencia vascular de inicio crónico",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -1425,6 +2094,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F01.3",
         "nombre": "Demencia vascular de inicio no especificado",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -1453,6 +2138,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F01.8",
         "nombre": "Otros tipos de demencia vascular",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -1481,6 +2182,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F01.9",
         "nombre": "Demencia vascular no especificada",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -1509,6 +2226,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F02",
         "nombre": "Demencia en otras enfermedades clasificadas en otra parte",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: clasificación de grupos, verificación de fuente oficial, duración."
+        },
         "criterios": [
           {
             "id": "trastorno-demencia-en-otras-enfermedades-clasificadas-en-otra-parte-cie10-grupo-1",
@@ -1517,21 +2250,26 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
             "tipo": "revision_requerida",
             "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": [
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
                 "orden": 1,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
                 "orden": 2,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
                 "orden": 3,
                 "literal": false
@@ -1572,6 +2310,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F03",
         "nombre": "Demencia no especificada",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: clasificación de grupos, verificación de fuente oficial, duración."
+        },
         "criterios": [
           {
             "id": "trastorno-demencia-no-especificada-cie10-grupo-1",
@@ -1580,21 +2334,26 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
             "tipo": "revision_requerida",
             "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": [
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
                 "orden": 1,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
                 "orden": 2,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
                 "orden": 3,
                 "literal": false
@@ -1635,6 +2394,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F04",
         "nombre": "Síndrome amnésico orgánico no inducido por alcohol u otras sustancias psicoactivas",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -1663,6 +2438,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F05",
         "nombre": "Delirium no inducido por alcohol u otras sustancias psicoactivas",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: clasificación de grupos, verificación de fuente oficial, duración."
+        },
         "criterios": [
           {
             "id": "trastorno-delirium-no-inducido-por-alcohol-u-otras-sustancias-psicoactivas-cie10-grupo-1",
@@ -1671,21 +2462,26 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
             "tipo": "revision_requerida",
             "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": [
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
                 "orden": 1,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
                 "orden": 2,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
                 "orden": 3,
                 "literal": false
@@ -1726,6 +2522,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F05.9",
         "nombre": "Delirium no especificado",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -1754,6 +2566,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F06",
         "nombre": "Otros trastornos mentales debidos a lesión y disfunción cerebral y enfermedad física",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: clasificación de grupos, verificación de fuente oficial, duración."
+        },
         "criterios": [
           {
             "id": "trastorno-otros-trastornos-mentales-debidos-a-lesion-y-disfuncion-cerebral-y-enfermedad-fisica-cie10-grupo-1",
@@ -1762,21 +2590,26 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
             "tipo": "revision_requerida",
             "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": [
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
                 "orden": 1,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
                 "orden": 2,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
                 "orden": 3,
                 "literal": false
@@ -1817,6 +2650,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F07",
         "nombre": "Trastornos de personalidad y comportamiento debidos a enfermedad, lesión o disfunción cerebral",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: clasificación de grupos, verificación de fuente oficial, duración."
+        },
         "criterios": [
           {
             "id": "trastorno-trastornos-de-personalidad-y-comportamiento-debidos-a-enfermedad-lesion-o-disfuncion-cerebral-cie10-grupo-1",
@@ -1825,21 +2674,26 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
             "tipo": "revision_requerida",
             "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": [
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
                 "orden": 1,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
                 "orden": 2,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
                 "orden": 3,
                 "literal": false
@@ -1880,6 +2734,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F09",
         "nombre": "Trastorno mental orgánico o sintomático no especificado",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -1908,6 +2778,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F10",
         "nombre": "Trastornos mentales y del comportamiento debidos al uso de alcohol",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -1936,6 +2822,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F10.1",
         "nombre": "Alcohol: uso nocivo",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: clasificación de grupos, verificación de fuente oficial, duración."
+        },
         "criterios": [
           {
             "id": "trastorno-alcohol-uso-nocivo-cie10-grupo-1",
@@ -1944,21 +2846,26 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
             "tipo": "revision_requerida",
             "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": [
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
                 "orden": 1,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
                 "orden": 2,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
                 "orden": 3,
                 "literal": false
@@ -1999,6 +2906,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F10.2",
         "nombre": "Alcohol: sindrome de dependencia",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: clasificación de grupos, verificación de fuente oficial, duración."
+        },
         "criterios": [
           {
             "id": "trastorno-alcohol-sindrome-de-dependencia-cie10-grupo-1",
@@ -2007,21 +2930,26 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
             "tipo": "revision_requerida",
             "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": [
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
                 "orden": 1,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
                 "orden": 2,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
                 "orden": 3,
                 "literal": false
@@ -2062,6 +2990,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F10.3",
         "nombre": "Alcohol: sindrome de abstinencia",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -2090,6 +3034,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F10.4",
         "nombre": "Alcohol: sindrome de abstinencia con delirium",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -2118,6 +3078,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F10.5",
         "nombre": "Alcohol: trastorno psicotico",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -2146,6 +3122,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F10.6",
         "nombre": "Alcohol: sindrome amnesico",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -2174,6 +3166,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F10.7",
         "nombre": "Alcohol: trastorno psicotico residual y de comienzo tardio",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -2202,6 +3210,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F10.8",
         "nombre": "Alcohol: otros trastornos mentales y del comportamiento",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -2230,6 +3254,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F10.9",
         "nombre": "Alcohol: trastorno mental y del comportamiento no especificado",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -2258,6 +3298,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F11",
         "nombre": "Trastornos mentales y del comportamiento debidos al uso de opioides",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -2286,6 +3342,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F11.0",
         "nombre": "Opioides: intoxicacion aguda",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -2314,6 +3386,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F11.1",
         "nombre": "Opioides: uso nocivo",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -2342,6 +3430,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F11.2",
         "nombre": "Opioides: sindrome de dependencia",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -2370,6 +3474,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F11.3",
         "nombre": "Opioides: sindrome de abstinencia",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -2398,6 +3518,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F11.4",
         "nombre": "Opioides: sindrome de abstinencia con delirium",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -2426,6 +3562,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F11.5",
         "nombre": "Opioides: trastorno psicotico",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -2454,6 +3606,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F11.6",
         "nombre": "Opioides: sindrome amnesico",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -2482,6 +3650,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F11.7",
         "nombre": "Opioides: trastorno psicotico residual y de comienzo tardio",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -2510,6 +3694,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F11.8",
         "nombre": "Opioides: otros trastornos mentales y del comportamiento",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -2538,6 +3738,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F11.9",
         "nombre": "Opioides: trastorno mental y del comportamiento no especificado",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -2566,6 +3782,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F12",
         "nombre": "Trastornos mentales y del comportamiento debidos al uso de cannabinoides",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -2594,6 +3826,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F12.0",
         "nombre": "Cannabinoides: intoxicacion aguda",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -2622,6 +3870,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F12.1",
         "nombre": "Cannabinoides: uso nocivo",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: clasificación de grupos, verificación de fuente oficial, duración."
+        },
         "criterios": [
           {
             "id": "trastorno-cannabinoides-uso-nocivo-cie10-grupo-1",
@@ -2630,21 +3894,26 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
             "tipo": "revision_requerida",
             "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": [
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
                 "orden": 1,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
                 "orden": 2,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
                 "orden": 3,
                 "literal": false
@@ -2685,6 +3954,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F12.2",
         "nombre": "Cannabinoides: sindrome de dependencia",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: clasificación de grupos, verificación de fuente oficial, duración."
+        },
         "criterios": [
           {
             "id": "trastorno-cannabinoides-sindrome-de-dependencia-cie10-grupo-1",
@@ -2693,21 +3978,26 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
             "tipo": "revision_requerida",
             "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": [
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
                 "orden": 1,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
                 "orden": 2,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
                 "orden": 3,
                 "literal": false
@@ -2748,6 +4038,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F12.3",
         "nombre": "Cannabinoides: sindrome de abstinencia",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -2776,6 +4082,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F12.5",
         "nombre": "Cannabinoides: trastorno psicotico",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -2804,6 +4126,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F12.7",
         "nombre": "Cannabinoides: trastorno psicotico residual y de comienzo tardio",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -2832,6 +4170,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F13",
         "nombre": "Trastornos mentales y del comportamiento debidos al uso de sedantes o hipnóticos",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -2860,6 +4214,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F13.0",
         "nombre": "Sedantes o hipnoticos: intoxicacion aguda",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -2888,6 +4258,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F13.1",
         "nombre": "Sedantes o hipnoticos: uso nocivo",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: clasificación de grupos, verificación de fuente oficial, duración."
+        },
         "criterios": [
           {
             "id": "trastorno-sedantes-o-hipnoticos-uso-nocivo-cie10-grupo-1",
@@ -2896,21 +4282,26 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
             "tipo": "revision_requerida",
             "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": [
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
                 "orden": 1,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
                 "orden": 2,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
                 "orden": 3,
                 "literal": false
@@ -2951,6 +4342,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F13.2",
         "nombre": "Sedantes o hipnoticos: sindrome de dependencia",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: clasificación de grupos, verificación de fuente oficial, duración."
+        },
         "criterios": [
           {
             "id": "trastorno-sedantes-o-hipnoticos-sindrome-de-dependencia-cie10-grupo-1",
@@ -2959,21 +4366,26 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
             "tipo": "revision_requerida",
             "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": [
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
                 "orden": 1,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
                 "orden": 2,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
                 "orden": 3,
                 "literal": false
@@ -3014,6 +4426,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F13.3",
         "nombre": "Sedantes o hipnoticos: sindrome de abstinencia",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -3042,6 +4470,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F13.4",
         "nombre": "Sedantes o hipnoticos: sindrome de abstinencia con delirium",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -3070,6 +4514,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F13.5",
         "nombre": "Sedantes o hipnoticos: trastorno psicotico",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -3098,6 +4558,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F13.6",
         "nombre": "Sedantes o hipnoticos: sindrome amnesico",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -3126,6 +4602,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F13.7",
         "nombre": "Sedantes o hipnoticos: trastorno psicotico residual y de comienzo tardio",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -3154,6 +4646,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F14",
         "nombre": "Trastornos mentales y del comportamiento debidos al uso de cocaína",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -3182,6 +4690,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F14.0",
         "nombre": "Cocaina: intoxicacion aguda",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -3210,6 +4734,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F14.1",
         "nombre": "Cocaina: uso nocivo",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -3238,6 +4778,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F14.2",
         "nombre": "Cocaina: sindrome de dependencia",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -3266,6 +4822,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F14.3",
         "nombre": "Cocaina: sindrome de abstinencia",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -3294,6 +4866,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F14.5",
         "nombre": "Cocaina: trastorno psicotico",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -3322,6 +4910,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F14.7",
         "nombre": "Cocaina: trastorno psicotico residual y de comienzo tardio",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -3350,6 +4954,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F15",
         "nombre": "Trastornos mentales y del comportamiento debidos al uso de otros estimulantes, incluida la cafeína",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -3378,6 +4998,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F15.0",
         "nombre": "Otros estimulantes: intoxicacion aguda",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -3406,6 +5042,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F15.1",
         "nombre": "Otros estimulantes: uso nocivo",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: clasificación de grupos, verificación de fuente oficial, duración."
+        },
         "criterios": [
           {
             "id": "trastorno-otros-estimulantes-uso-nocivo-cie10-grupo-1",
@@ -3414,21 +5066,26 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
             "tipo": "revision_requerida",
             "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": [
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
                 "orden": 1,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
                 "orden": 2,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
                 "orden": 3,
                 "literal": false
@@ -3469,6 +5126,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F15.2",
         "nombre": "Otros estimulantes: sindrome de dependencia",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: clasificación de grupos, verificación de fuente oficial, duración."
+        },
         "criterios": [
           {
             "id": "trastorno-otros-estimulantes-sindrome-de-dependencia-cie10-grupo-1",
@@ -3477,21 +5150,26 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
             "tipo": "revision_requerida",
             "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": [
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
                 "orden": 1,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
                 "orden": 2,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
                 "orden": 3,
                 "literal": false
@@ -3532,6 +5210,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F15.3",
         "nombre": "Otros estimulantes: sindrome de abstinencia",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -3560,6 +5254,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F15.5",
         "nombre": "Otros estimulantes: trastorno psicotico",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -3588,6 +5298,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F16",
         "nombre": "Trastornos mentales y del comportamiento debidos al uso de alucinógenos",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -3616,6 +5342,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F17",
         "nombre": "Trastornos mentales y del comportamiento debidos al uso de tabaco",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -3644,6 +5386,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F18",
         "nombre": "Trastornos mentales y del comportamiento debidos al uso de disolventes volátiles",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -3672,6 +5430,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F19",
         "nombre": "Trastornos mentales y del comportamiento debidos al uso de múltiples drogas y otras sustancias psicoactivas",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -3700,6 +5474,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F19.0",
         "nombre": "Multiples drogas y otras sustancias psicoactivas: intoxicacion aguda",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -3728,6 +5518,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F19.1",
         "nombre": "Multiples drogas y otras sustancias psicoactivas: uso nocivo",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: clasificación de grupos, verificación de fuente oficial, duración."
+        },
         "criterios": [
           {
             "id": "trastorno-multiples-drogas-y-otras-sustancias-psicoactivas-uso-nocivo-cie10-grupo-1",
@@ -3736,21 +5542,26 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
             "tipo": "revision_requerida",
             "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": [
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
                 "orden": 1,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
                 "orden": 2,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
                 "orden": 3,
                 "literal": false
@@ -3791,6 +5602,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F19.2",
         "nombre": "Multiples drogas y otras sustancias psicoactivas: sindrome de dependencia",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: clasificación de grupos, verificación de fuente oficial, duración."
+        },
         "criterios": [
           {
             "id": "trastorno-multiples-drogas-y-otras-sustancias-psicoactivas-sindrome-de-dependencia-cie10-grupo-1",
@@ -3799,21 +5626,26 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
             "tipo": "revision_requerida",
             "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": [
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
                 "orden": 1,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
                 "orden": 2,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
                 "orden": 3,
                 "literal": false
@@ -3854,6 +5686,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F19.3",
         "nombre": "Multiples drogas y otras sustancias psicoactivas: sindrome de abstinencia",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -3882,6 +5730,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F19.4",
         "nombre": "Multiples drogas y otras sustancias psicoactivas: sindrome de abstinencia con delirium",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -3910,6 +5774,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F19.5",
         "nombre": "Multiples drogas y otras sustancias psicoactivas: trastorno psicotico",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: clasificación de grupos, verificación de fuente oficial, duración."
+        },
         "criterios": [
           {
             "id": "trastorno-multiples-drogas-y-otras-sustancias-psicoactivas-trastorno-psicotico-cie10-grupo-1",
@@ -3918,21 +5798,26 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
             "tipo": "revision_requerida",
             "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": [
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
                 "orden": 1,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
                 "orden": 2,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
                 "orden": 3,
                 "literal": false
@@ -3973,6 +5858,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F19.6",
         "nombre": "Multiples drogas y otras sustancias psicoactivas: sindrome amnesico",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -4001,6 +5902,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F19.7",
         "nombre": "Multiples drogas y otras sustancias psicoactivas: trastorno psicotico residual y de comienzo tardio",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: clasificación de grupos, verificación de fuente oficial, duración."
+        },
         "criterios": [
           {
             "id": "trastorno-multiples-drogas-y-otras-sustancias-psicoactivas-trastorno-psicotico-residual-y-de-comienzo-tardio-cie10-grupo-1",
@@ -4009,21 +5926,26 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
             "tipo": "revision_requerida",
             "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": [
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
                 "orden": 1,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
                 "orden": 2,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
                 "orden": 3,
                 "literal": false
@@ -4064,6 +5986,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F19.8",
         "nombre": "Multiples drogas y otras sustancias psicoactivas: otros trastornos mentales y del comportamiento",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -4092,6 +6030,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F19.9",
         "nombre": "Multiples drogas y otras sustancias psicoactivas: trastorno mental y del comportamiento no especificado",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -4121,6 +6075,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F20",
         "nombre": "Esquizofrenia",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: clasificación de grupos, verificación de fuente oficial, duración."
+        },
         "criterios": [
           {
             "id": "trastorno-esquizofrenia-cie10-grupo-1",
@@ -4129,21 +6099,26 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
             "tipo": "revision_requerida",
             "introduccion": "Sintomas psicoticos persistentes como delirios, alucinaciones, pensamiento desorganizado o experiencias de influencia/control.",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": [
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Deterioro funcional, sintomas negativos o alteraciones cognitivas pueden estar presentes.",
                 "orden": 1,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Descartar causas organicas, sustancias, trastorno afectivo primario y delirium.",
                 "orden": 2,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Valorar riesgo, red de apoyo, adherencia y rehabilitacion psicosocial.",
                 "orden": 3,
                 "literal": false
@@ -4160,6 +6135,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 2,
         "codigo": "6A20",
         "nombre": "Esquizofrenia",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "Clinical descriptions and diagnostic requirements for ICD-11 mental, behavioural and neurodevelopmental disorders (CDDR)",
+          "edicion": "2024",
+          "url": "https://www.who.int/publications/i/item/9789240077263",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: clasificación de grupos, verificación de fuente oficial."
+        },
         "criterios": [
           {
             "id": "trastorno-esquizofrenia-cie11-grupo-1",
@@ -4168,21 +6159,26 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
             "tipo": "revision_requerida",
             "introduccion": "Sintomas psicoticos persistentes como delirios, alucinaciones, pensamiento desorganizado o experiencias de influencia/control.",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": [
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Deterioro funcional, sintomas negativos o alteraciones cognitivas pueden estar presentes.",
                 "orden": 1,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Descartar causas organicas, sustancias, trastorno afectivo primario y delirium.",
                 "orden": 2,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Valorar riesgo, red de apoyo, adherencia y rehabilitacion psicosocial.",
                 "orden": 3,
                 "literal": false
@@ -4217,6 +6213,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F20.0",
         "nombre": "Esquizofrenia paranoide",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: clasificación de grupos, verificación de fuente oficial, duración."
+        },
         "criterios": [
           {
             "id": "trastorno-esquizofrenia-paranoide-cie10-grupo-1",
@@ -4225,21 +6237,26 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
             "tipo": "revision_requerida",
             "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": [
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
                 "orden": 1,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
                 "orden": 2,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
                 "orden": 3,
                 "literal": false
@@ -4280,6 +6297,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F20.1",
         "nombre": "Esquizofrenia hebefrénica",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: clasificación de grupos, verificación de fuente oficial, duración."
+        },
         "criterios": [
           {
             "id": "trastorno-esquizofrenia-hebefrenica-cie10-grupo-1",
@@ -4288,21 +6321,26 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
             "tipo": "revision_requerida",
             "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": [
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
                 "orden": 1,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
                 "orden": 2,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
                 "orden": 3,
                 "literal": false
@@ -4343,6 +6381,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F20.2",
         "nombre": "Esquizofrenia catatónica",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: clasificación de grupos, verificación de fuente oficial, duración."
+        },
         "criterios": [
           {
             "id": "trastorno-esquizofrenia-catatonica-cie10-grupo-1",
@@ -4351,21 +6405,26 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
             "tipo": "revision_requerida",
             "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": [
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
                 "orden": 1,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
                 "orden": 2,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
                 "orden": 3,
                 "literal": false
@@ -4406,6 +6465,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F20.3",
         "nombre": "Esquizofrenia indiferenciada",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: clasificación de grupos, verificación de fuente oficial, duración."
+        },
         "criterios": [
           {
             "id": "trastorno-esquizofrenia-indiferenciada-cie10-grupo-1",
@@ -4414,21 +6489,26 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
             "tipo": "revision_requerida",
             "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": [
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
                 "orden": 1,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
                 "orden": 2,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
                 "orden": 3,
                 "literal": false
@@ -4469,6 +6549,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F20.4",
         "nombre": "Depresión post-esquizofrénica",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -4497,6 +6593,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F20.5",
         "nombre": "Esquizofrenia residual",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: clasificación de grupos, verificación de fuente oficial, duración."
+        },
         "criterios": [
           {
             "id": "trastorno-esquizofrenia-residual-cie10-grupo-1",
@@ -4505,21 +6617,26 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
             "tipo": "revision_requerida",
             "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": [
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
                 "orden": 1,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
                 "orden": 2,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
                 "orden": 3,
                 "literal": false
@@ -4560,6 +6677,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F20.6",
         "nombre": "Esquizofrenia simple",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: clasificación de grupos, verificación de fuente oficial, duración."
+        },
         "criterios": [
           {
             "id": "trastorno-esquizofrenia-simple-cie10-grupo-1",
@@ -4568,21 +6701,26 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
             "tipo": "revision_requerida",
             "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": [
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
                 "orden": 1,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
                 "orden": 2,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
                 "orden": 3,
                 "literal": false
@@ -4623,6 +6761,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F20.8",
         "nombre": "Otras esquizofrenias",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -4651,6 +6805,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F20.9",
         "nombre": "Esquizofrenia no especificada",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -4681,6 +6851,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F21",
         "nombre": "Trastorno esquizotípico",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -4691,6 +6877,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 2,
         "codigo": "6A22",
         "nombre": "Trastorno esquizotipico",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "Clinical descriptions and diagnostic requirements for ICD-11 mental, behavioural and neurodevelopmental disorders (CDDR)",
+          "edicion": "2024",
+          "url": "https://www.who.int/publications/i/item/9789240077263",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -4719,6 +6921,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F22",
         "nombre": "Trastornos de ideas delirantes persistentes",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -4747,6 +6965,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F23",
         "nombre": "Trastornos psicóticos agudos y transitorios",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -4775,6 +7009,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F24",
         "nombre": "Trastorno de ideas delirantes inducidas",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -4803,6 +7053,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F25",
         "nombre": "Trastornos esquizoafectivos",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -4831,6 +7097,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F25.0",
         "nombre": "Trastorno esquizoafectivo de tipo maníaco",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: clasificación de grupos, verificación de fuente oficial, duración."
+        },
         "criterios": [
           {
             "id": "trastorno-trastorno-esquizoafectivo-de-tipo-maniaco-cie10-grupo-1",
@@ -4839,21 +7121,26 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
             "tipo": "revision_requerida",
             "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": [
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
                 "orden": 1,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
                 "orden": 2,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
                 "orden": 3,
                 "literal": false
@@ -4894,6 +7181,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F25.1",
         "nombre": "Trastorno esquizoafectivo de tipo depresivo",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: clasificación de grupos, verificación de fuente oficial, duración."
+        },
         "criterios": [
           {
             "id": "trastorno-trastorno-esquizoafectivo-de-tipo-depresivo-cie10-grupo-1",
@@ -4902,21 +7205,26 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
             "tipo": "revision_requerida",
             "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": [
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
                 "orden": 1,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
                 "orden": 2,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
                 "orden": 3,
                 "literal": false
@@ -4957,6 +7265,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F25.2",
         "nombre": "Trastorno esquizoafectivo de tipo mixto",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: clasificación de grupos, verificación de fuente oficial, duración."
+        },
         "criterios": [
           {
             "id": "trastorno-trastorno-esquizoafectivo-de-tipo-mixto-cie10-grupo-1",
@@ -4965,21 +7289,26 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
             "tipo": "revision_requerida",
             "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": [
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
                 "orden": 1,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
                 "orden": 2,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
                 "orden": 3,
                 "literal": false
@@ -5020,6 +7349,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F25.8",
         "nombre": "Otros trastornos esquizoafectivos",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -5048,6 +7393,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F25.9",
         "nombre": "Trastorno esquizoafectivo no especificado",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -5076,6 +7437,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F28",
         "nombre": "Otros trastornos psicóticos no orgánicos",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -5104,6 +7481,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F29",
         "nombre": "Psicosis no orgánica no especificada",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: clasificación de grupos, verificación de fuente oficial, duración."
+        },
         "criterios": [
           {
             "id": "trastorno-psicosis-no-organica-no-especificada-cie10-grupo-1",
@@ -5112,21 +7505,26 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
             "tipo": "revision_requerida",
             "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": [
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
                 "orden": 1,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
                 "orden": 2,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
                 "orden": 3,
                 "literal": false
@@ -5167,6 +7565,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F30",
         "nombre": "Episodio maníaco",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -5195,6 +7609,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F30.0",
         "nombre": "Hipomanía",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: clasificación de grupos, verificación de fuente oficial, duración."
+        },
         "criterios": [
           {
             "id": "trastorno-hipomania-cie10-grupo-1",
@@ -5203,21 +7633,26 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
             "tipo": "revision_requerida",
             "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": [
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
                 "orden": 1,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
                 "orden": 2,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
                 "orden": 3,
                 "literal": false
@@ -5258,6 +7693,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F30.1",
         "nombre": "Manía sin síntomas psicóticos",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: clasificación de grupos, verificación de fuente oficial, duración."
+        },
         "criterios": [
           {
             "id": "trastorno-mania-sin-sintomas-psicoticos-cie10-grupo-1",
@@ -5266,21 +7717,26 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
             "tipo": "revision_requerida",
             "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": [
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
                 "orden": 1,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
                 "orden": 2,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
                 "orden": 3,
                 "literal": false
@@ -5321,6 +7777,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F30.2",
         "nombre": "Manía con síntomas psicóticos",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: clasificación de grupos, verificación de fuente oficial, duración."
+        },
         "criterios": [
           {
             "id": "trastorno-mania-con-sintomas-psicoticos-cie10-grupo-1",
@@ -5329,21 +7801,26 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
             "tipo": "revision_requerida",
             "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": [
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
                 "orden": 1,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
                 "orden": 2,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
                 "orden": 3,
                 "literal": false
@@ -5384,6 +7861,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F31",
         "nombre": "Trastorno afectivo bipolar",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: clasificación de grupos, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [
           {
             "id": "trastorno-trastorno-afectivo-bipolar-cie10-grupo-1",
@@ -5392,21 +7885,26 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
             "tipo": "revision_requerida",
             "introduccion": "Presencia de episodios de mania, hipomania y/o depresion segun subtipo.",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": [
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Mania: elevacion/irritabilidad del animo con aumento de energia, menor necesidad de sueno, grandiosidad, verborrea, fuga de ideas, distractibilidad o conductas de riesgo.",
                 "orden": 1,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Valorar psicosis, riesgo, consumo de sustancias y antecedentes familiares.",
                 "orden": 2,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Evitar interpretar depresion recurrente sin tamizar historia de hipomania/mania.",
                 "orden": 3,
                 "literal": false
@@ -5441,6 +7939,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F31.0",
         "nombre": "Trastorno afectivo bipolar, episodio actual hipomaníaco",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: clasificación de grupos, verificación de fuente oficial, duración."
+        },
         "criterios": [
           {
             "id": "trastorno-trastorno-afectivo-bipolar-episodio-actual-hipomaniaco-cie10-grupo-1",
@@ -5449,21 +7963,26 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
             "tipo": "revision_requerida",
             "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": [
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
                 "orden": 1,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
                 "orden": 2,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
                 "orden": 3,
                 "literal": false
@@ -5504,6 +8023,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F31.1",
         "nombre": "Trastorno afectivo bipolar, episodio actual maníaco sin síntomas psicóticos",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: clasificación de grupos, verificación de fuente oficial, duración."
+        },
         "criterios": [
           {
             "id": "trastorno-trastorno-afectivo-bipolar-episodio-actual-maniaco-sin-sintomas-psicoticos-cie10-grupo-1",
@@ -5512,21 +8047,26 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
             "tipo": "revision_requerida",
             "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": [
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
                 "orden": 1,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
                 "orden": 2,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
                 "orden": 3,
                 "literal": false
@@ -5567,6 +8107,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F31.2",
         "nombre": "Trastorno afectivo bipolar, episodio actual maníaco con síntomas psicóticos",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: clasificación de grupos, verificación de fuente oficial, duración."
+        },
         "criterios": [
           {
             "id": "trastorno-trastorno-afectivo-bipolar-episodio-actual-maniaco-con-sintomas-psicoticos-cie10-grupo-1",
@@ -5575,21 +8131,26 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
             "tipo": "revision_requerida",
             "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": [
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
                 "orden": 1,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
                 "orden": 2,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
                 "orden": 3,
                 "literal": false
@@ -5630,6 +8191,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F31.3",
         "nombre": "Trastorno afectivo bipolar, episodio actual depresivo leve o moderado",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: clasificación de grupos, verificación de fuente oficial, duración."
+        },
         "criterios": [
           {
             "id": "trastorno-trastorno-afectivo-bipolar-episodio-actual-depresivo-leve-o-moderado-cie10-grupo-1",
@@ -5638,21 +8215,26 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
             "tipo": "revision_requerida",
             "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": [
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
                 "orden": 1,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
                 "orden": 2,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
                 "orden": 3,
                 "literal": false
@@ -5693,6 +8275,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F31.4",
         "nombre": "Trastorno afectivo bipolar, episodio actual depresivo grave sin síntomas psicóticos",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: clasificación de grupos, verificación de fuente oficial, duración."
+        },
         "criterios": [
           {
             "id": "trastorno-trastorno-afectivo-bipolar-episodio-actual-depresivo-grave-sin-sintomas-psicoticos-cie10-grupo-1",
@@ -5701,21 +8299,26 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
             "tipo": "revision_requerida",
             "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": [
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
                 "orden": 1,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
                 "orden": 2,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
                 "orden": 3,
                 "literal": false
@@ -5756,6 +8359,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F31.5",
         "nombre": "Trastorno afectivo bipolar, episodio actual depresivo grave con síntomas psicóticos",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: clasificación de grupos, verificación de fuente oficial, duración."
+        },
         "criterios": [
           {
             "id": "trastorno-trastorno-afectivo-bipolar-episodio-actual-depresivo-grave-con-sintomas-psicoticos-cie10-grupo-1",
@@ -5764,21 +8383,26 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
             "tipo": "revision_requerida",
             "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": [
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
                 "orden": 1,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
                 "orden": 2,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
                 "orden": 3,
                 "literal": false
@@ -5819,6 +8443,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F31.6",
         "nombre": "Trastorno afectivo bipolar, episodio actual mixto",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: clasificación de grupos, verificación de fuente oficial, duración."
+        },
         "criterios": [
           {
             "id": "trastorno-trastorno-afectivo-bipolar-episodio-actual-mixto-cie10-grupo-1",
@@ -5827,21 +8467,26 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
             "tipo": "revision_requerida",
             "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": [
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
                 "orden": 1,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
                 "orden": 2,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
                 "orden": 3,
                 "literal": false
@@ -5882,6 +8527,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F31.7",
         "nombre": "Trastorno afectivo bipolar actualmente en remisión",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: clasificación de grupos, verificación de fuente oficial, duración."
+        },
         "criterios": [
           {
             "id": "trastorno-trastorno-afectivo-bipolar-actualmente-en-remision-cie10-grupo-1",
@@ -5890,21 +8551,26 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
             "tipo": "revision_requerida",
             "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": [
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
                 "orden": 1,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
                 "orden": 2,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
                 "orden": 3,
                 "literal": false
@@ -5945,6 +8611,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F31.8",
         "nombre": "Otros trastornos afectivos bipolares",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -5973,6 +8655,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F31.9",
         "nombre": "Trastorno afectivo bipolar no especificado",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -6001,6 +8699,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F32",
         "nombre": "Episodio depresivo",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: clasificación de grupos, verificación de fuente oficial."
+        },
         "criterios": [
           {
             "id": "trastorno-episodio-depresivo-cie10-grupo-1",
@@ -6009,21 +8723,26 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
             "tipo": "revision_requerida",
             "introduccion": "Animo deprimido, perdida de interes o disminucion significativa de energia.",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": [
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Sintomas asociados: alteraciones de sueno/apetito, culpa, baja autoestima, concentracion reducida, enlentecimiento/agitación o ideacion suicida.",
                 "orden": 1,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Duracion clinicamente relevante y deterioro funcional.",
                 "orden": 2,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Descartar sustancias, duelo no complicado, condiciones medicas u otros trastornos primarios.",
                 "orden": 3,
                 "literal": false
@@ -6058,6 +8777,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F32.0",
         "nombre": "Episodio depresivo leve",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: clasificación de grupos, verificación de fuente oficial, duración."
+        },
         "criterios": [
           {
             "id": "trastorno-episodio-depresivo-leve-cie10-grupo-1",
@@ -6066,21 +8801,26 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
             "tipo": "revision_requerida",
             "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": [
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
                 "orden": 1,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
                 "orden": 2,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
                 "orden": 3,
                 "literal": false
@@ -6121,6 +8861,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F32.1",
         "nombre": "Episodio depresivo moderado",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: clasificación de grupos, verificación de fuente oficial, duración."
+        },
         "criterios": [
           {
             "id": "trastorno-episodio-depresivo-moderado-cie10-grupo-1",
@@ -6129,21 +8885,26 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
             "tipo": "revision_requerida",
             "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": [
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
                 "orden": 1,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
                 "orden": 2,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
                 "orden": 3,
                 "literal": false
@@ -6184,6 +8945,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F32.2",
         "nombre": "Episodio depresivo grave sin síntomas psicóticos",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: clasificación de grupos, verificación de fuente oficial, duración."
+        },
         "criterios": [
           {
             "id": "trastorno-episodio-depresivo-grave-sin-sintomas-psicoticos-cie10-grupo-1",
@@ -6192,21 +8969,26 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
             "tipo": "revision_requerida",
             "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": [
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
                 "orden": 1,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
                 "orden": 2,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
                 "orden": 3,
                 "literal": false
@@ -6247,6 +9029,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F32.3",
         "nombre": "Episodio depresivo grave con síntomas psicóticos",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: clasificación de grupos, verificación de fuente oficial, duración."
+        },
         "criterios": [
           {
             "id": "trastorno-episodio-depresivo-grave-con-sintomas-psicoticos-cie10-grupo-1",
@@ -6255,21 +9053,26 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
             "tipo": "revision_requerida",
             "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": [
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
                 "orden": 1,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
                 "orden": 2,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
                 "orden": 3,
                 "literal": false
@@ -6310,6 +9113,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F32.8",
         "nombre": "Otros episodios depresivos",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -6338,6 +9157,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F32.9",
         "nombre": "Episodio depresivo no especificado",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -6367,6 +9202,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F33",
         "nombre": "Trastorno depresivo recurrente",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: clasificación de grupos, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [
           {
             "id": "trastorno-trastorno-depresivo-recurrente-cie10-grupo-1",
@@ -6375,21 +9226,26 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
             "tipo": "revision_requerida",
             "introduccion": "Historia de dos o mas episodios depresivos separados por periodos de mejoria.",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": [
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Evaluar gravedad actual, sintomas psicoticos, riesgo suicida y funcionamiento.",
                 "orden": 1,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Explorar bipolaridad antes de iniciar o ajustar antidepresivos.",
                 "orden": 2,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Planear prevencion de recaidas y continuidad terapeutica.",
                 "orden": 3,
                 "literal": false
@@ -6406,6 +9262,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 2,
         "codigo": "6A70",
         "nombre": "Trastorno depresivo recurrente",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "Clinical descriptions and diagnostic requirements for ICD-11 mental, behavioural and neurodevelopmental disorders (CDDR)",
+          "edicion": "2024",
+          "url": "https://www.who.int/publications/i/item/9789240077263",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: clasificación de grupos, verificación de fuente oficial."
+        },
         "criterios": [
           {
             "id": "trastorno-trastorno-depresivo-recurrente-cie11-grupo-1",
@@ -6414,21 +9286,26 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
             "tipo": "revision_requerida",
             "introduccion": "Historia de dos o mas episodios depresivos separados por periodos de mejoria.",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": [
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Evaluar gravedad actual, sintomas psicoticos, riesgo suicida y funcionamiento.",
                 "orden": 1,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Explorar bipolaridad antes de iniciar o ajustar antidepresivos.",
                 "orden": 2,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Planear prevencion de recaidas y continuidad terapeutica.",
                 "orden": 3,
                 "literal": false
@@ -6463,6 +9340,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F33.0",
         "nombre": "Trastorno depresivo recurrente, episodio actual leve",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: clasificación de grupos, verificación de fuente oficial, duración."
+        },
         "criterios": [
           {
             "id": "trastorno-trastorno-depresivo-recurrente-episodio-actual-leve-cie10-grupo-1",
@@ -6471,21 +9364,26 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
             "tipo": "revision_requerida",
             "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": [
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
                 "orden": 1,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
                 "orden": 2,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
                 "orden": 3,
                 "literal": false
@@ -6526,6 +9424,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F33.1",
         "nombre": "Trastorno depresivo recurrente, episodio actual moderado",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: clasificación de grupos, verificación de fuente oficial, duración."
+        },
         "criterios": [
           {
             "id": "trastorno-trastorno-depresivo-recurrente-episodio-actual-moderado-cie10-grupo-1",
@@ -6534,21 +9448,26 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
             "tipo": "revision_requerida",
             "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": [
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
                 "orden": 1,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
                 "orden": 2,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
                 "orden": 3,
                 "literal": false
@@ -6589,6 +9508,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F33.2",
         "nombre": "Trastorno depresivo recurrente, episodio actual grave sin síntomas psicóticos",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: clasificación de grupos, verificación de fuente oficial, duración."
+        },
         "criterios": [
           {
             "id": "trastorno-trastorno-depresivo-recurrente-episodio-actual-grave-sin-sintomas-psicoticos-cie10-grupo-1",
@@ -6597,21 +9532,26 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
             "tipo": "revision_requerida",
             "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": [
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
                 "orden": 1,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
                 "orden": 2,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
                 "orden": 3,
                 "literal": false
@@ -6652,6 +9592,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F33.3",
         "nombre": "Trastorno depresivo recurrente, episodio actual grave con síntomas psicóticos",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: clasificación de grupos, verificación de fuente oficial, duración."
+        },
         "criterios": [
           {
             "id": "trastorno-trastorno-depresivo-recurrente-episodio-actual-grave-con-sintomas-psicoticos-cie10-grupo-1",
@@ -6660,21 +9616,26 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
             "tipo": "revision_requerida",
             "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": [
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
                 "orden": 1,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
                 "orden": 2,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
                 "orden": 3,
                 "literal": false
@@ -6715,6 +9676,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F33.4",
         "nombre": "Trastorno depresivo recurrente actualmente en remisión",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -6743,6 +9720,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F33.8",
         "nombre": "Otros trastornos depresivos recurrentes",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -6771,6 +9764,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F33.9",
         "nombre": "Trastorno depresivo recurrente no especificado",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -6799,6 +9808,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F34",
         "nombre": "Trastornos persistentes del humor",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -6827,6 +9852,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F34.0",
         "nombre": "Ciclotimia",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -6855,6 +9896,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F34.1",
         "nombre": "Distimia",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: clasificación de grupos, verificación de fuente oficial, duración."
+        },
         "criterios": [
           {
             "id": "trastorno-distimia-cie10-grupo-1",
@@ -6863,21 +9920,26 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
             "tipo": "revision_requerida",
             "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": [
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
                 "orden": 1,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
                 "orden": 2,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
                 "orden": 3,
                 "literal": false
@@ -6918,6 +9980,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F38",
         "nombre": "Otros trastornos del humor",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -6946,6 +10024,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F39",
         "nombre": "Trastorno del humor no especificado",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -6974,6 +10068,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F40",
         "nombre": "Trastornos de ansiedad fóbica",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -7004,6 +10114,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F40.0",
         "nombre": "Agorafobia",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: clasificación de grupos, verificación de fuente oficial, duración."
+        },
         "criterios": [
           {
             "id": "trastorno-agorafobia-cie10-grupo-1",
@@ -7012,21 +10138,26 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
             "tipo": "revision_requerida",
             "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": [
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
                 "orden": 1,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
                 "orden": 2,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
                 "orden": 3,
                 "literal": false
@@ -7043,6 +10174,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 2,
         "codigo": "6B02",
         "nombre": "Agorafobia",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "Clinical descriptions and diagnostic requirements for ICD-11 mental, behavioural and neurodevelopmental disorders (CDDR)",
+          "edicion": "2024",
+          "url": "https://www.who.int/publications/i/item/9789240077263",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: clasificación de grupos, verificación de fuente oficial."
+        },
         "criterios": [
           {
             "id": "trastorno-agorafobia-cie11-grupo-1",
@@ -7051,21 +10198,26 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
             "tipo": "revision_requerida",
             "introduccion": "Temor ante situaciones donde escapar o recibir ayuda podría resultar difícil.",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": [
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Puede incluir transporte público, espacios abiertos o cerrados, filas, multitudes y estar fuera de casa sin compañía.",
                 "orden": 1,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Evitación, necesidad de acompañante o exposición con ansiedad intensa.",
                 "orden": 2,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Persistencia, desproporción y deterioro clínicamente significativo.",
                 "orden": 3,
                 "literal": false
@@ -7083,6 +10235,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "codigo": "300.22",
         "codigoCie10Cm": "F40.0",
         "nombre": "Agorafobia",
+        "fuente": {
+          "organismo": "American Psychiatric Association",
+          "documento": "DSM-5 / DSM-5-TR; contenido secundario resumido",
+          "edicion": "Resumen no literal",
+          "url": "",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_clinico",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: clasificación de grupos, verificación de fuente oficial."
+        },
         "criterios": [
           {
             "id": "trastorno-agorafobia-dsm5-grupo-1",
@@ -7091,21 +10259,26 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
             "tipo": "revision_requerida",
             "introduccion": "Temor ante situaciones donde escapar o recibir ayuda podría resultar difícil.",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": [
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Puede incluir transporte público, espacios abiertos o cerrados, filas, multitudes y estar fuera de casa sin compañía.",
                 "orden": 1,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Evitación, necesidad de acompañante o exposición con ansiedad intensa.",
                 "orden": 2,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Persistencia, desproporción y deterioro clínicamente significativo.",
                 "orden": 3,
                 "literal": false
@@ -7153,6 +10326,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F40.1",
         "nombre": "Fobias sociales",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: clasificación de grupos, verificación de fuente oficial, duración."
+        },
         "criterios": [
           {
             "id": "trastorno-fobias-sociales-cie10-grupo-1",
@@ -7161,21 +10350,26 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
             "tipo": "revision_requerida",
             "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": [
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
                 "orden": 1,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
                 "orden": 2,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
                 "orden": 3,
                 "literal": false
@@ -7216,6 +10410,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F40.2",
         "nombre": "Fobias específicas aisladas",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: clasificación de grupos, verificación de fuente oficial, duración."
+        },
         "criterios": [
           {
             "id": "trastorno-fobias-especificas-aisladas-cie10-grupo-1",
@@ -7224,21 +10434,26 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
             "tipo": "revision_requerida",
             "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": [
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
                 "orden": 1,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
                 "orden": 2,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
                 "orden": 3,
                 "literal": false
@@ -7279,6 +10494,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F41",
         "nombre": "Otros trastornos de ansiedad",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -7310,6 +10541,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F41.0",
         "nombre": "Trastorno de pánico",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: clasificación de grupos, verificación de fuente oficial, duración."
+        },
         "criterios": [
           {
             "id": "trastorno-trastorno-de-panico-cie10-grupo-1",
@@ -7318,21 +10565,26 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
             "tipo": "revision_requerida",
             "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": [
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
                 "orden": 1,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
                 "orden": 2,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
                 "orden": 3,
                 "literal": false
@@ -7349,6 +10601,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 2,
         "codigo": "6B01",
         "nombre": "Trastorno de panico",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "Clinical descriptions and diagnostic requirements for ICD-11 mental, behavioural and neurodevelopmental disorders (CDDR)",
+          "edicion": "2024",
+          "url": "https://www.who.int/publications/i/item/9789240077263",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: clasificación de grupos, verificación de fuente oficial."
+        },
         "criterios": [
           {
             "id": "trastorno-trastorno-de-panico-cie11-grupo-1",
@@ -7357,27 +10625,33 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
             "tipo": "revision_requerida",
             "introduccion": "Ataques de pánico recurrentes, de inicio abrupto.",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": [
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Síntomas autonómicos, respiratorios, neurológicos y cognitivos durante los ataques.",
                 "orden": 1,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Preocupación persistente por nuevos ataques o sus consecuencias.",
                 "orden": 2,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Cambios conductuales desadaptativos y deterioro.",
                 "orden": 3,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Distinguir ataque de pánico de trastorno de pánico y descartar sustancias o afecciones médicas.",
                 "orden": 4,
                 "literal": false
@@ -7395,6 +10669,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "codigo": "300.01",
         "codigoCie10Cm": "F41.0",
         "nombre": "Trastorno de pánico",
+        "fuente": {
+          "organismo": "American Psychiatric Association",
+          "documento": "DSM-5 / DSM-5-TR; contenido secundario resumido",
+          "edicion": "Resumen no literal",
+          "url": "",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_clinico",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: clasificación de grupos, verificación de fuente oficial."
+        },
         "criterios": [
           {
             "id": "trastorno-trastorno-de-panico-dsm5-grupo-1",
@@ -7403,27 +10693,33 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
             "tipo": "revision_requerida",
             "introduccion": "Ataques de pánico recurrentes, de inicio abrupto.",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": [
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Síntomas autonómicos, respiratorios, neurológicos y cognitivos durante los ataques.",
                 "orden": 1,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Preocupación persistente por nuevos ataques o sus consecuencias.",
                 "orden": 2,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Cambios conductuales desadaptativos y deterioro.",
                 "orden": 3,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Distinguir ataque de pánico de trastorno de pánico y descartar sustancias o afecciones médicas.",
                 "orden": 4,
                 "literal": false
@@ -7474,230 +10770,287 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F41.1",
         "nombre": "Trastorno de ansiedad generalizada",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: verificación de fuente oficial."
+        },
         "criterios": [
           {
             "id": "trastorno-trastorno-de-ansiedad-generalizada-cie10-grupo-1",
             "clave": "A",
             "titulo": "Criterio A",
-            "tipo": "criterio",
+            "tipo": "criterio_principal",
             "introduccion": "Presencia de un período de por lo menos 6 meses con tensión prominente, preocupación y aprensión sobre los acontecimientos y problemas de la vida diaria.",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": []
           },
           {
             "id": "trastorno-trastorno-de-ansiedad-generalizada-cie10-grupo-2",
             "clave": "B",
             "titulo": "Criterio B",
-            "tipo": "criterio",
+            "tipo": "criterio_principal",
             "introduccion": "Presencia de al menos 4 de los síntomas lsitados a continuación, de los cuales por lo menos uno de ellos debe ser del grupo 1-4:",
             "literal": false,
+            "listType": "none",
+            "grupos": [
+              {
+                "id": "trastorno-trastorno-de-ansiedad-generalizada-cie10-grupo-3",
+                "clave": "",
+                "titulo": "Síntomas autonómicos",
+                "tipo": "subcategoria",
+                "introduccion": "",
+                "literal": false,
+                "listType": "decimal",
+                "grupos": [],
+                "items": [
+                  {
+                    "numero": 1,
+                    "marcador": null,
+                    "texto": "Palpitaciones o golpeo del corazón o ritmo cardiaco acelerado.",
+                    "orden": 1,
+                    "literal": false
+                  },
+                  {
+                    "numero": 2,
+                    "marcador": null,
+                    "texto": "Sudoración.",
+                    "orden": 2,
+                    "literal": false
+                  },
+                  {
+                    "numero": 3,
+                    "marcador": null,
+                    "texto": "Temblores o sacudidas.",
+                    "orden": 3,
+                    "literal": false
+                  },
+                  {
+                    "numero": 4,
+                    "marcador": null,
+                    "texto": "Sequedad de boca (no debida a medicación o deshidratación).",
+                    "orden": 4,
+                    "literal": false
+                  }
+                ]
+              },
+              {
+                "id": "trastorno-trastorno-de-ansiedad-generalizada-cie10-grupo-3",
+                "clave": "",
+                "titulo": "Síntomas relacionados con el pecho y abdomen",
+                "tipo": "subcategoria",
+                "introduccion": "",
+                "literal": false,
+                "listType": "decimal",
+                "grupos": [],
+                "items": [
+                  {
+                    "numero": 5,
+                    "marcador": null,
+                    "texto": "Dificultad para respirar.",
+                    "orden": 1,
+                    "literal": false
+                  },
+                  {
+                    "numero": 6,
+                    "marcador": null,
+                    "texto": "Sensación de ahogo.",
+                    "orden": 2,
+                    "literal": false
+                  },
+                  {
+                    "numero": 7,
+                    "marcador": null,
+                    "texto": "Dolor o molestias en el pecho.",
+                    "orden": 3,
+                    "literal": false
+                  },
+                  {
+                    "numero": 8,
+                    "marcador": null,
+                    "texto": "Náuseas o malestar abdominal (p. ej., estómago revuelto).",
+                    "orden": 4,
+                    "literal": false
+                  }
+                ]
+              },
+              {
+                "id": "trastorno-trastorno-de-ansiedad-generalizada-cie10-grupo-3",
+                "clave": "",
+                "titulo": "Síntomas relacionados con el estado mental",
+                "tipo": "subcategoria",
+                "introduccion": "",
+                "literal": false,
+                "listType": "decimal",
+                "grupos": [],
+                "items": [
+                  {
+                    "numero": 9,
+                    "marcador": null,
+                    "texto": "Sensación de mareo, inestabilidad o desvanecimiento.",
+                    "orden": 1,
+                    "literal": false
+                  },
+                  {
+                    "numero": 10,
+                    "marcador": null,
+                    "texto": "Sensación de que los objetos son irreales (desrealización) o de que uno mismo está distante o no realmente aquí (despersonalización).",
+                    "orden": 2,
+                    "literal": false
+                  },
+                  {
+                    "numero": 11,
+                    "marcador": null,
+                    "texto": "Miedo a perder el control, a perder la conciencia o volverse loco.",
+                    "orden": 3,
+                    "literal": false
+                  },
+                  {
+                    "numero": 12,
+                    "marcador": null,
+                    "texto": "Miedo a morir.",
+                    "orden": 4,
+                    "literal": false
+                  }
+                ]
+              },
+              {
+                "id": "trastorno-trastorno-de-ansiedad-generalizada-cie10-grupo-3",
+                "clave": "",
+                "titulo": "Síntomas generales",
+                "tipo": "subcategoria",
+                "introduccion": "",
+                "literal": false,
+                "listType": "decimal",
+                "grupos": [],
+                "items": [
+                  {
+                    "numero": 13,
+                    "marcador": null,
+                    "texto": "Sofocos de calor o escalofríos.",
+                    "orden": 1,
+                    "literal": false
+                  },
+                  {
+                    "numero": 14,
+                    "marcador": null,
+                    "texto": "aturdimiento o sensación de hormigueo (parestesias).",
+                    "orden": 2,
+                    "literal": false
+                  },
+                  {
+                    "numero": 15,
+                    "marcador": null,
+                    "texto": "Tensión, dolores o molestias musculares.",
+                    "orden": 3,
+                    "literal": false
+                  },
+                  {
+                    "numero": 16,
+                    "marcador": null,
+                    "texto": "Inquietud e incapacidad para relajrse.",
+                    "orden": 4,
+                    "literal": false
+                  },
+                  {
+                    "numero": 17,
+                    "marcador": null,
+                    "texto": "sentimientos de estar al límite o bajo presión, o de tensión mental",
+                    "orden": 5,
+                    "literal": false
+                  },
+                  {
+                    "numero": 18,
+                    "marcador": null,
+                    "texto": "Sensación de nudo en la garganta o dificultad para tragar.",
+                    "orden": 6,
+                    "literal": false
+                  }
+                ]
+              },
+              {
+                "id": "trastorno-trastorno-de-ansiedad-generalizada-cie10-grupo-3",
+                "clave": "",
+                "titulo": "Otros síntomas no específicos",
+                "tipo": "subcategoria",
+                "introduccion": "",
+                "literal": false,
+                "listType": "decimal",
+                "grupos": [],
+                "items": [
+                  {
+                    "numero": 19,
+                    "marcador": null,
+                    "texto": "Respuesta exagerada a pequeñas sorpresas o sobresaltos.",
+                    "orden": 1,
+                    "literal": false
+                  },
+                  {
+                    "numero": 20,
+                    "marcador": null,
+                    "texto": "Dificultad para concentrarse o de mente en blanco, a causa de la preocupación o de la ansiedad.",
+                    "orden": 2,
+                    "literal": false
+                  },
+                  {
+                    "numero": 21,
+                    "marcador": null,
+                    "texto": "Irritabilidad persistente",
+                    "orden": 3,
+                    "literal": false
+                  },
+                  {
+                    "numero": 22,
+                    "marcador": null,
+                    "texto": "Dificultad para conciliar el sueño debido a las preocupaciones.",
+                    "orden": 4,
+                    "literal": false
+                  },
+                  {
+                    "numero": null,
+                    "marcador": null,
+                    "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
+                    "orden": 5,
+                    "literal": false
+                  },
+                  {
+                    "numero": null,
+                    "marcador": null,
+                    "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
+                    "orden": 6,
+                    "literal": false
+                  },
+                  {
+                    "numero": null,
+                    "marcador": null,
+                    "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
+                    "orden": 7,
+                    "literal": false
+                  },
+                  {
+                    "numero": null,
+                    "marcador": null,
+                    "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
+                    "orden": 8,
+                    "literal": false
+                  }
+                ]
+              }
+            ],
             "items": []
-          },
-          {
-            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie10-grupo-3",
-            "clave": "",
-            "titulo": "Síntomas autonómicos",
-            "tipo": "grupo_clinico",
-            "introduccion": "",
-            "literal": false,
-            "items": [
-              {
-                "numero": 1,
-                "texto": "Palpitaciones o golpeo del corazón o ritmo cardiaco acelerado.",
-                "orden": 1,
-                "literal": false
-              },
-              {
-                "numero": 2,
-                "texto": "Sudoración.",
-                "orden": 2,
-                "literal": false
-              },
-              {
-                "numero": 3,
-                "texto": "Temblores o sacudidas.",
-                "orden": 3,
-                "literal": false
-              },
-              {
-                "numero": 4,
-                "texto": "Sequedad de boca (no debida a medicación o deshidratación).",
-                "orden": 4,
-                "literal": false
-              }
-            ]
-          },
-          {
-            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie10-grupo-4",
-            "clave": "",
-            "titulo": "Síntomas relacionados con el pecho y abdomen",
-            "tipo": "grupo_clinico",
-            "introduccion": "",
-            "literal": false,
-            "items": [
-              {
-                "numero": 5,
-                "texto": "Dificultad para respirar.",
-                "orden": 1,
-                "literal": false
-              },
-              {
-                "numero": 6,
-                "texto": "Sensación de ahogo.",
-                "orden": 2,
-                "literal": false
-              },
-              {
-                "numero": 7,
-                "texto": "Dolor o molestias en el pecho.",
-                "orden": 3,
-                "literal": false
-              },
-              {
-                "numero": 8,
-                "texto": "Náuseas o malestar abdominal (p. ej., estómago revuelto).",
-                "orden": 4,
-                "literal": false
-              }
-            ]
-          },
-          {
-            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie10-grupo-5",
-            "clave": "",
-            "titulo": "Síntomas relacionados con el estado mental",
-            "tipo": "grupo_clinico",
-            "introduccion": "",
-            "literal": false,
-            "items": [
-              {
-                "numero": 9,
-                "texto": "Sensación de mareo, inestabilidad o desvanecimiento.",
-                "orden": 1,
-                "literal": false
-              },
-              {
-                "numero": 10,
-                "texto": "Sensación de que los objetos son irreales (desrealización) o de que uno mismo está distante o no realmente aquí (despersonalización).",
-                "orden": 2,
-                "literal": false
-              },
-              {
-                "numero": 11,
-                "texto": "Miedo a perder el control, a perder la conciencia o volverse loco.",
-                "orden": 3,
-                "literal": false
-              },
-              {
-                "numero": 12,
-                "texto": "Miedo a morir.",
-                "orden": 4,
-                "literal": false
-              }
-            ]
-          },
-          {
-            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie10-grupo-6",
-            "clave": "",
-            "titulo": "Síntomas generales",
-            "tipo": "grupo_clinico",
-            "introduccion": "",
-            "literal": false,
-            "items": [
-              {
-                "numero": 13,
-                "texto": "Sofocos de calor o escalofríos.",
-                "orden": 1,
-                "literal": false
-              },
-              {
-                "numero": 14,
-                "texto": "aturdimiento o sensación de hormigueo (parestesias).",
-                "orden": 2,
-                "literal": false
-              },
-              {
-                "numero": 15,
-                "texto": "Tensión, dolores o molestias musculares.",
-                "orden": 3,
-                "literal": false
-              },
-              {
-                "numero": 16,
-                "texto": "Inquietud e incapacidad para relajrse.",
-                "orden": 4,
-                "literal": false
-              },
-              {
-                "numero": 17,
-                "texto": "sentimientos de estar al límite o bajo presión, o de tensión mental",
-                "orden": 5,
-                "literal": false
-              },
-              {
-                "numero": 18,
-                "texto": "Sensación de nudo en la garganta o dificultad para tragar.",
-                "orden": 6,
-                "literal": false
-              }
-            ]
-          },
-          {
-            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie10-grupo-7",
-            "clave": "",
-            "titulo": "Otros síntomas no específicos",
-            "tipo": "grupo_clinico",
-            "introduccion": "",
-            "literal": false,
-            "items": [
-              {
-                "numero": 19,
-                "texto": "Respuesta exagerada a pequeñas sorpresas o sobresaltos.",
-                "orden": 1,
-                "literal": false
-              },
-              {
-                "numero": 20,
-                "texto": "Dificultad para concentrarse o de mente en blanco, a causa de la preocupación o de la ansiedad.",
-                "orden": 2,
-                "literal": false
-              },
-              {
-                "numero": 21,
-                "texto": "Irritabilidad persistente",
-                "orden": 3,
-                "literal": false
-              },
-              {
-                "numero": 22,
-                "texto": "Dificultad para conciliar el sueño debido a las preocupaciones.",
-                "orden": 4,
-                "literal": false
-              },
-              {
-                "numero": null,
-                "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
-                "orden": 5,
-                "literal": false
-              },
-              {
-                "numero": null,
-                "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
-                "orden": 6,
-                "literal": false
-              },
-              {
-                "numero": null,
-                "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
-                "orden": 7,
-                "literal": false
-              },
-              {
-                "numero": null,
-                "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
-                "orden": 8,
-                "literal": false
-              }
-            ]
           }
         ],
         "especificadores": [],
@@ -7709,206 +11062,259 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 2,
         "codigo": "6B00",
         "nombre": "Trastorno de ansiedad generalizada",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "Clinical descriptions and diagnostic requirements for ICD-11 mental, behavioural and neurodevelopmental disorders (CDDR)",
+          "edicion": "2024",
+          "url": "https://www.who.int/publications/i/item/9789240077263",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: verificación de fuente oficial."
+        },
         "criterios": [
           {
             "id": "trastorno-trastorno-de-ansiedad-generalizada-cie11-grupo-1",
             "clave": "A",
             "titulo": "Criterio A",
-            "tipo": "criterio",
+            "tipo": "criterio_principal",
             "introduccion": "Presencia de un período de por lo menos 6 meses con tensión prominente, preocupación y aprensión sobre los acontecimientos y problemas de la vida diaria.",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": []
           },
           {
             "id": "trastorno-trastorno-de-ansiedad-generalizada-cie11-grupo-2",
             "clave": "B",
             "titulo": "Criterio B",
-            "tipo": "criterio",
+            "tipo": "criterio_principal",
             "introduccion": "Presencia de al menos 4 de los síntomas lsitados a continuación, de los cuales por lo menos uno de ellos debe ser del grupo 1-4:",
             "literal": false,
+            "listType": "none",
+            "grupos": [
+              {
+                "id": "trastorno-trastorno-de-ansiedad-generalizada-cie11-grupo-3",
+                "clave": "",
+                "titulo": "Síntomas autonómicos",
+                "tipo": "subcategoria",
+                "introduccion": "",
+                "literal": false,
+                "listType": "decimal",
+                "grupos": [],
+                "items": [
+                  {
+                    "numero": 1,
+                    "marcador": null,
+                    "texto": "Palpitaciones o golpeo del corazón o ritmo cardiaco acelerado.",
+                    "orden": 1,
+                    "literal": false
+                  },
+                  {
+                    "numero": 2,
+                    "marcador": null,
+                    "texto": "Sudoración.",
+                    "orden": 2,
+                    "literal": false
+                  },
+                  {
+                    "numero": 3,
+                    "marcador": null,
+                    "texto": "Temblores o sacudidas.",
+                    "orden": 3,
+                    "literal": false
+                  },
+                  {
+                    "numero": 4,
+                    "marcador": null,
+                    "texto": "Sequedad de boca (no debida a medicación o deshidratación).",
+                    "orden": 4,
+                    "literal": false
+                  }
+                ]
+              },
+              {
+                "id": "trastorno-trastorno-de-ansiedad-generalizada-cie11-grupo-3",
+                "clave": "",
+                "titulo": "Síntomas relacionados con el pecho y abdomen",
+                "tipo": "subcategoria",
+                "introduccion": "",
+                "literal": false,
+                "listType": "decimal",
+                "grupos": [],
+                "items": [
+                  {
+                    "numero": 5,
+                    "marcador": null,
+                    "texto": "Dificultad para respirar.",
+                    "orden": 1,
+                    "literal": false
+                  },
+                  {
+                    "numero": 6,
+                    "marcador": null,
+                    "texto": "Sensación de ahogo.",
+                    "orden": 2,
+                    "literal": false
+                  },
+                  {
+                    "numero": 7,
+                    "marcador": null,
+                    "texto": "Dolor o molestias en el pecho.",
+                    "orden": 3,
+                    "literal": false
+                  },
+                  {
+                    "numero": 8,
+                    "marcador": null,
+                    "texto": "Náuseas o malestar abdominal (p. ej., estómago revuelto).",
+                    "orden": 4,
+                    "literal": false
+                  }
+                ]
+              },
+              {
+                "id": "trastorno-trastorno-de-ansiedad-generalizada-cie11-grupo-3",
+                "clave": "",
+                "titulo": "Síntomas relacionados con el estado mental",
+                "tipo": "subcategoria",
+                "introduccion": "",
+                "literal": false,
+                "listType": "decimal",
+                "grupos": [],
+                "items": [
+                  {
+                    "numero": 9,
+                    "marcador": null,
+                    "texto": "Sensación de mareo, inestabilidad o desvanecimiento.",
+                    "orden": 1,
+                    "literal": false
+                  },
+                  {
+                    "numero": 10,
+                    "marcador": null,
+                    "texto": "Sensación de que los objetos son irreales (desrealización) o de que uno mismo está distante o no realmente aquí (despersonalización).",
+                    "orden": 2,
+                    "literal": false
+                  },
+                  {
+                    "numero": 11,
+                    "marcador": null,
+                    "texto": "Miedo a perder el control, a perder la conciencia o volverse loco.",
+                    "orden": 3,
+                    "literal": false
+                  },
+                  {
+                    "numero": 12,
+                    "marcador": null,
+                    "texto": "Miedo a morir.",
+                    "orden": 4,
+                    "literal": false
+                  }
+                ]
+              },
+              {
+                "id": "trastorno-trastorno-de-ansiedad-generalizada-cie11-grupo-3",
+                "clave": "",
+                "titulo": "Síntomas generales",
+                "tipo": "subcategoria",
+                "introduccion": "",
+                "literal": false,
+                "listType": "decimal",
+                "grupos": [],
+                "items": [
+                  {
+                    "numero": 13,
+                    "marcador": null,
+                    "texto": "Sofocos de calor o escalofríos.",
+                    "orden": 1,
+                    "literal": false
+                  },
+                  {
+                    "numero": 14,
+                    "marcador": null,
+                    "texto": "aturdimiento o sensación de hormigueo (parestesias).",
+                    "orden": 2,
+                    "literal": false
+                  },
+                  {
+                    "numero": 15,
+                    "marcador": null,
+                    "texto": "Tensión, dolores o molestias musculares.",
+                    "orden": 3,
+                    "literal": false
+                  },
+                  {
+                    "numero": 16,
+                    "marcador": null,
+                    "texto": "Inquietud e incapacidad para relajrse.",
+                    "orden": 4,
+                    "literal": false
+                  },
+                  {
+                    "numero": 17,
+                    "marcador": null,
+                    "texto": "sentimientos de estar al límite o bajo presión, o de tensión mental",
+                    "orden": 5,
+                    "literal": false
+                  },
+                  {
+                    "numero": 18,
+                    "marcador": null,
+                    "texto": "Sensación de nudo en la garganta o dificultad para tragar.",
+                    "orden": 6,
+                    "literal": false
+                  }
+                ]
+              },
+              {
+                "id": "trastorno-trastorno-de-ansiedad-generalizada-cie11-grupo-3",
+                "clave": "",
+                "titulo": "Otros síntomas no específicos",
+                "tipo": "subcategoria",
+                "introduccion": "",
+                "literal": false,
+                "listType": "decimal",
+                "grupos": [],
+                "items": [
+                  {
+                    "numero": 19,
+                    "marcador": null,
+                    "texto": "Respuesta exagerada a pequeñas sorpresas o sobresaltos.",
+                    "orden": 1,
+                    "literal": false
+                  },
+                  {
+                    "numero": 20,
+                    "marcador": null,
+                    "texto": "Dificultad para concentrarse o de mente en blanco, a causa de la preocupación o de la ansiedad.",
+                    "orden": 2,
+                    "literal": false
+                  },
+                  {
+                    "numero": 21,
+                    "marcador": null,
+                    "texto": "Irritabilidad persistente",
+                    "orden": 3,
+                    "literal": false
+                  },
+                  {
+                    "numero": 22,
+                    "marcador": null,
+                    "texto": "Dificultad para conciliar el sueño debido a las preocupaciones.",
+                    "orden": 4,
+                    "literal": false
+                  }
+                ]
+              }
+            ],
             "items": []
-          },
-          {
-            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie11-grupo-3",
-            "clave": "",
-            "titulo": "Síntomas autonómicos",
-            "tipo": "grupo_clinico",
-            "introduccion": "",
-            "literal": false,
-            "items": [
-              {
-                "numero": 1,
-                "texto": "Palpitaciones o golpeo del corazón o ritmo cardiaco acelerado.",
-                "orden": 1,
-                "literal": false
-              },
-              {
-                "numero": 2,
-                "texto": "Sudoración.",
-                "orden": 2,
-                "literal": false
-              },
-              {
-                "numero": 3,
-                "texto": "Temblores o sacudidas.",
-                "orden": 3,
-                "literal": false
-              },
-              {
-                "numero": 4,
-                "texto": "Sequedad de boca (no debida a medicación o deshidratación).",
-                "orden": 4,
-                "literal": false
-              }
-            ]
-          },
-          {
-            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie11-grupo-4",
-            "clave": "",
-            "titulo": "Síntomas relacionados con el pecho y abdomen",
-            "tipo": "grupo_clinico",
-            "introduccion": "",
-            "literal": false,
-            "items": [
-              {
-                "numero": 5,
-                "texto": "Dificultad para respirar.",
-                "orden": 1,
-                "literal": false
-              },
-              {
-                "numero": 6,
-                "texto": "Sensación de ahogo.",
-                "orden": 2,
-                "literal": false
-              },
-              {
-                "numero": 7,
-                "texto": "Dolor o molestias en el pecho.",
-                "orden": 3,
-                "literal": false
-              },
-              {
-                "numero": 8,
-                "texto": "Náuseas o malestar abdominal (p. ej., estómago revuelto).",
-                "orden": 4,
-                "literal": false
-              }
-            ]
-          },
-          {
-            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie11-grupo-5",
-            "clave": "",
-            "titulo": "Síntomas relacionados con el estado mental",
-            "tipo": "grupo_clinico",
-            "introduccion": "",
-            "literal": false,
-            "items": [
-              {
-                "numero": 9,
-                "texto": "Sensación de mareo, inestabilidad o desvanecimiento.",
-                "orden": 1,
-                "literal": false
-              },
-              {
-                "numero": 10,
-                "texto": "Sensación de que los objetos son irreales (desrealización) o de que uno mismo está distante o no realmente aquí (despersonalización).",
-                "orden": 2,
-                "literal": false
-              },
-              {
-                "numero": 11,
-                "texto": "Miedo a perder el control, a perder la conciencia o volverse loco.",
-                "orden": 3,
-                "literal": false
-              },
-              {
-                "numero": 12,
-                "texto": "Miedo a morir.",
-                "orden": 4,
-                "literal": false
-              }
-            ]
-          },
-          {
-            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie11-grupo-6",
-            "clave": "",
-            "titulo": "Síntomas generales",
-            "tipo": "grupo_clinico",
-            "introduccion": "",
-            "literal": false,
-            "items": [
-              {
-                "numero": 13,
-                "texto": "Sofocos de calor o escalofríos.",
-                "orden": 1,
-                "literal": false
-              },
-              {
-                "numero": 14,
-                "texto": "aturdimiento o sensación de hormigueo (parestesias).",
-                "orden": 2,
-                "literal": false
-              },
-              {
-                "numero": 15,
-                "texto": "Tensión, dolores o molestias musculares.",
-                "orden": 3,
-                "literal": false
-              },
-              {
-                "numero": 16,
-                "texto": "Inquietud e incapacidad para relajrse.",
-                "orden": 4,
-                "literal": false
-              },
-              {
-                "numero": 17,
-                "texto": "sentimientos de estar al límite o bajo presión, o de tensión mental",
-                "orden": 5,
-                "literal": false
-              },
-              {
-                "numero": 18,
-                "texto": "Sensación de nudo en la garganta o dificultad para tragar.",
-                "orden": 6,
-                "literal": false
-              }
-            ]
-          },
-          {
-            "id": "trastorno-trastorno-de-ansiedad-generalizada-cie11-grupo-7",
-            "clave": "",
-            "titulo": "Otros síntomas no específicos",
-            "tipo": "grupo_clinico",
-            "introduccion": "",
-            "literal": false,
-            "items": [
-              {
-                "numero": 19,
-                "texto": "Respuesta exagerada a pequeñas sorpresas o sobresaltos.",
-                "orden": 1,
-                "literal": false
-              },
-              {
-                "numero": 20,
-                "texto": "Dificultad para concentrarse o de mente en blanco, a causa de la preocupación o de la ansiedad.",
-                "orden": 2,
-                "literal": false
-              },
-              {
-                "numero": 21,
-                "texto": "Irritabilidad persistente",
-                "orden": 3,
-                "literal": false
-              },
-              {
-                "numero": 22,
-                "texto": "Dificultad para conciliar el sueño debido a las preocupaciones.",
-                "orden": 4,
-                "literal": false
-              }
-            ]
           }
         ],
         "especificadores": [],
@@ -7921,6 +11327,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "codigo": "300.02",
         "codigoCie10Cm": "F41.1",
         "nombre": "Trastorno de ansiedad generalizada",
+        "fuente": {
+          "organismo": "American Psychiatric Association",
+          "documento": "DSM-5 / DSM-5-TR; contenido secundario resumido",
+          "edicion": "Resumen no literal",
+          "url": "",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_clinico",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: clasificación de grupos, verificación de fuente oficial."
+        },
         "criterios": [
           {
             "id": "trastorno-trastorno-de-ansiedad-generalizada-dsm5-grupo-1",
@@ -7929,27 +11351,33 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
             "tipo": "revision_requerida",
             "introduccion": "Ansiedad y preocupación excesivas relacionadas con diferentes acontecimientos o áreas de la vida.",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": [
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Dificultad para controlar la preocupación.",
                 "orden": 1,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Síntomas físicos y cognitivos asociados.",
                 "orden": 2,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Duración clínicamente relevante, malestar o deterioro.",
                 "orden": 3,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Descartar sustancias, afecciones médicas y otros trastornos mentales; considerar la presentación infantil.",
                 "orden": 4,
                 "literal": false
@@ -7997,6 +11425,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F41.2",
         "nombre": "Trastorno mixto ansioso-depresivo",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: clasificación de grupos, verificación de fuente oficial, duración."
+        },
         "criterios": [
           {
             "id": "trastorno-trastorno-mixto-ansioso-depresivo-cie10-grupo-1",
@@ -8005,21 +11449,26 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
             "tipo": "revision_requerida",
             "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": [
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
                 "orden": 1,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
                 "orden": 2,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
                 "orden": 3,
                 "literal": false
@@ -8062,6 +11511,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F42",
         "nombre": "Trastorno obsesivo-compulsivo",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: clasificación de grupos, verificación de fuente oficial, duración."
+        },
         "criterios": [
           {
             "id": "trastorno-trastorno-obsesivo-compulsivo-cie10-grupo-1",
@@ -8070,45 +11535,54 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
             "tipo": "revision_requerida",
             "introduccion": "Obsesiones intrusivas y/o compulsiones repetitivas.",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": [
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "La persona intenta resistir o neutralizar pensamientos, imagenes o impulsos.",
                 "orden": 1,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Consumen tiempo o causan deterioro significativo.",
                 "orden": 2,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Diferenciar de psicosis, tics, ansiedad generalizada o personalidad obsesiva.",
                 "orden": 3,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
                 "orden": 4,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
                 "orden": 5,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
                 "orden": 6,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
                 "orden": 7,
                 "literal": false
@@ -8125,6 +11599,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 2,
         "codigo": "6B20",
         "nombre": "Trastorno obsesivo compulsivo",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "Clinical descriptions and diagnostic requirements for ICD-11 mental, behavioural and neurodevelopmental disorders (CDDR)",
+          "edicion": "2024",
+          "url": "https://www.who.int/publications/i/item/9789240077263",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: clasificación de grupos, verificación de fuente oficial."
+        },
         "criterios": [
           {
             "id": "trastorno-trastorno-obsesivo-compulsivo-cie11-grupo-1",
@@ -8133,21 +11623,26 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
             "tipo": "revision_requerida",
             "introduccion": "Obsesiones intrusivas y/o compulsiones repetitivas.",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": [
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "La persona intenta resistir o neutralizar pensamientos, imagenes o impulsos.",
                 "orden": 1,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Consumen tiempo o causan deterioro significativo.",
                 "orden": 2,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Diferenciar de psicosis, tics, ansiedad generalizada o personalidad obsesiva.",
                 "orden": 3,
                 "literal": false
@@ -8188,6 +11683,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F43",
         "nombre": "Reacción a estrés grave y trastornos de adaptación",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -8216,6 +11727,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F43.0",
         "nombre": "Reacción a estrés agudo",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: clasificación de grupos, verificación de fuente oficial, duración."
+        },
         "criterios": [
           {
             "id": "trastorno-reaccion-a-estres-agudo-cie10-grupo-1",
@@ -8224,21 +11751,26 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
             "tipo": "revision_requerida",
             "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": [
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
                 "orden": 1,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
                 "orden": 2,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
                 "orden": 3,
                 "literal": false
@@ -8281,6 +11813,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F43.1",
         "nombre": "Trastorno de estrés postraumático",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: clasificación de grupos, verificación de fuente oficial."
+        },
         "criterios": [
           {
             "id": "trastorno-trastorno-de-estres-postraumatico-cie10-grupo-1",
@@ -8289,45 +11837,54 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
             "tipo": "revision_requerida",
             "introduccion": "Exposicion a evento traumatico.",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": [
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Reexperimentacion, evitacion, amenaza persistente/hipervigilancia y alteraciones cognitivas o emocionales.",
                 "orden": 1,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Deterioro funcional y persistencia posterior al evento.",
                 "orden": 2,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Valorar disociacion, depresion, consumo de sustancias y riesgo suicida.",
                 "orden": 3,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
                 "orden": 4,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
                 "orden": 5,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
                 "orden": 6,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
                 "orden": 7,
                 "literal": false
@@ -8344,6 +11901,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 2,
         "codigo": "6B40",
         "nombre": "Trastorno de estres postraumatico",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "Clinical descriptions and diagnostic requirements for ICD-11 mental, behavioural and neurodevelopmental disorders (CDDR)",
+          "edicion": "2024",
+          "url": "https://www.who.int/publications/i/item/9789240077263",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: clasificación de grupos, verificación de fuente oficial."
+        },
         "criterios": [
           {
             "id": "trastorno-trastorno-de-estres-postraumatico-cie11-grupo-1",
@@ -8352,21 +11925,26 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
             "tipo": "revision_requerida",
             "introduccion": "Exposicion a evento traumatico.",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": [
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Reexperimentacion, evitacion, amenaza persistente/hipervigilancia y alteraciones cognitivas o emocionales.",
                 "orden": 1,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Deterioro funcional y persistencia posterior al evento.",
                 "orden": 2,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Valorar disociacion, depresion, consumo de sustancias y riesgo suicida.",
                 "orden": 3,
                 "literal": false
@@ -8407,6 +11985,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F43.2",
         "nombre": "Trastornos de adaptación",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: clasificación de grupos, verificación de fuente oficial, duración."
+        },
         "criterios": [
           {
             "id": "trastorno-trastornos-de-adaptacion-cie10-grupo-1",
@@ -8415,21 +12009,26 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
             "tipo": "revision_requerida",
             "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": [
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
                 "orden": 1,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
                 "orden": 2,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
                 "orden": 3,
                 "literal": false
@@ -8470,6 +12069,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F44",
         "nombre": "Trastornos disociativos",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: clasificación de grupos, verificación de fuente oficial, duración."
+        },
         "criterios": [
           {
             "id": "trastorno-trastornos-disociativos-cie10-grupo-1",
@@ -8478,21 +12093,26 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
             "tipo": "revision_requerida",
             "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": [
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
                 "orden": 1,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
                 "orden": 2,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
                 "orden": 3,
                 "literal": false
@@ -8533,6 +12153,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F45",
         "nombre": "Trastornos somatomorfos",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: clasificación de grupos, verificación de fuente oficial, duración."
+        },
         "criterios": [
           {
             "id": "trastorno-trastornos-somatomorfos-cie10-grupo-1",
@@ -8541,21 +12177,26 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
             "tipo": "revision_requerida",
             "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": [
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
                 "orden": 1,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
                 "orden": 2,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
                 "orden": 3,
                 "literal": false
@@ -8596,6 +12237,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F48",
         "nombre": "Otros trastornos neuróticos",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -8624,6 +12281,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F50",
         "nombre": "Trastornos de la conducta alimentaria",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -8652,6 +12325,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F50.0",
         "nombre": "Anorexia nerviosa",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: clasificación de grupos, verificación de fuente oficial, duración."
+        },
         "criterios": [
           {
             "id": "trastorno-anorexia-nerviosa-cie10-grupo-1",
@@ -8660,21 +12349,26 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
             "tipo": "revision_requerida",
             "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": [
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
                 "orden": 1,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
                 "orden": 2,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
                 "orden": 3,
                 "literal": false
@@ -8715,6 +12409,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F50.2",
         "nombre": "Bulimia nerviosa",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: clasificación de grupos, verificación de fuente oficial, duración."
+        },
         "criterios": [
           {
             "id": "trastorno-bulimia-nerviosa-cie10-grupo-1",
@@ -8723,21 +12433,26 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
             "tipo": "revision_requerida",
             "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": [
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
                 "orden": 1,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
                 "orden": 2,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
                 "orden": 3,
                 "literal": false
@@ -8778,6 +12493,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F51",
         "nombre": "Trastornos no orgánicos del sueño",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -8806,6 +12537,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F52",
         "nombre": "Disfunción sexual no ocasionada por trastorno ni enfermedad orgánicos",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -8834,6 +12581,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F53",
         "nombre": "Trastornos mentales y del comportamiento asociados con el puerperio, no clasificados en otra parte",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -8862,6 +12625,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F54",
         "nombre": "Factores psicológicos y del comportamiento asociados con trastornos o enfermedades clasificados en otra parte",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -8890,6 +12669,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F55",
         "nombre": "Abuso de sustancias que no producen dependencia",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -8918,6 +12713,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F59",
         "nombre": "Síndromes del comportamiento asociados con alteraciones fisiológicas y factores físicos no especificados",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -8946,6 +12757,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F10.0",
         "nombre": "Alcohol: intoxicacion aguda",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -8974,6 +12801,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F15.7",
         "nombre": "Otros estimulantes: trastorno psicotico residual y de comienzo tardio",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -9002,6 +12845,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F16.0",
         "nombre": "Alucinogenos: intoxicacion aguda",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -9030,6 +12889,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F16.1",
         "nombre": "Alucinogenos: uso nocivo",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -9058,6 +12933,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F16.2",
         "nombre": "Alucinogenos: sindrome de dependencia",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -9086,6 +12977,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F16.5",
         "nombre": "Alucinogenos: trastorno psicotico",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -9114,6 +13021,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F16.7",
         "nombre": "Alucinogenos: trastorno psicotico residual y de comienzo tardio",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -9142,6 +13065,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F17.0",
         "nombre": "Tabaco: intoxicacion aguda",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -9170,6 +13109,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F17.1",
         "nombre": "Tabaco: uso nocivo",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -9198,6 +13153,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F17.2",
         "nombre": "Tabaco: sindrome de dependencia",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -9226,6 +13197,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F17.3",
         "nombre": "Tabaco: sindrome de abstinencia",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -9254,6 +13241,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F18.0",
         "nombre": "Disolventes volatiles: intoxicacion aguda",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -9282,6 +13285,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F18.1",
         "nombre": "Disolventes volatiles: uso nocivo",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -9310,6 +13329,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F18.2",
         "nombre": "Disolventes volatiles: sindrome de dependencia",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -9338,6 +13373,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F18.5",
         "nombre": "Disolventes volatiles: trastorno psicotico",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -9366,6 +13417,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F18.7",
         "nombre": "Disolventes volatiles: trastorno psicotico residual y de comienzo tardio",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -9394,6 +13461,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F60",
         "nombre": "Trastornos específicos de la personalidad",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -9422,6 +13505,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F60.0",
         "nombre": "Trastorno paranoide de la personalidad",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: clasificación de grupos, verificación de fuente oficial, duración."
+        },
         "criterios": [
           {
             "id": "trastorno-trastorno-paranoide-de-la-personalidad-cie10-grupo-1",
@@ -9430,21 +13529,26 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
             "tipo": "revision_requerida",
             "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": [
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
                 "orden": 1,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
                 "orden": 2,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
                 "orden": 3,
                 "literal": false
@@ -9485,6 +13589,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F60.1",
         "nombre": "Trastorno esquizoide de la personalidad",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: clasificación de grupos, verificación de fuente oficial, duración."
+        },
         "criterios": [
           {
             "id": "trastorno-trastorno-esquizoide-de-la-personalidad-cie10-grupo-1",
@@ -9493,21 +13613,26 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
             "tipo": "revision_requerida",
             "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": [
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
                 "orden": 1,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
                 "orden": 2,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
                 "orden": 3,
                 "literal": false
@@ -9548,6 +13673,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F60.2",
         "nombre": "Trastorno disocial de la personalidad",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: clasificación de grupos, verificación de fuente oficial, duración."
+        },
         "criterios": [
           {
             "id": "trastorno-trastorno-disocial-de-la-personalidad-cie10-grupo-1",
@@ -9556,21 +13697,26 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
             "tipo": "revision_requerida",
             "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": [
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
                 "orden": 1,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
                 "orden": 2,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
                 "orden": 3,
                 "literal": false
@@ -9611,6 +13757,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F60.3",
         "nombre": "Trastorno de inestabilidad emocional de la personalidad",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: clasificación de grupos, verificación de fuente oficial, duración."
+        },
         "criterios": [
           {
             "id": "trastorno-trastorno-de-inestabilidad-emocional-de-la-personalidad-cie10-grupo-1",
@@ -9619,21 +13781,26 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
             "tipo": "revision_requerida",
             "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": [
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
                 "orden": 1,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
                 "orden": 2,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
                 "orden": 3,
                 "literal": false
@@ -9674,6 +13841,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F60.4",
         "nombre": "Trastorno histriónico de la personalidad",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: clasificación de grupos, verificación de fuente oficial, duración."
+        },
         "criterios": [
           {
             "id": "trastorno-trastorno-histrionico-de-la-personalidad-cie10-grupo-1",
@@ -9682,21 +13865,26 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
             "tipo": "revision_requerida",
             "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": [
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
                 "orden": 1,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
                 "orden": 2,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
                 "orden": 3,
                 "literal": false
@@ -9737,6 +13925,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F60.5",
         "nombre": "Trastorno anancástico de la personalidad",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: clasificación de grupos, verificación de fuente oficial, duración."
+        },
         "criterios": [
           {
             "id": "trastorno-trastorno-anancastico-de-la-personalidad-cie10-grupo-1",
@@ -9745,93 +13949,111 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
             "tipo": "revision_requerida",
             "introduccion": "CIE10",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": []
           },
           {
             "id": "trastorno-trastorno-anancastico-de-la-personalidad-cie10-grupo-2",
             "clave": "A",
             "titulo": "Criterio A",
-            "tipo": "criterio",
+            "tipo": "criterio_principal",
             "introduccion": "Deben cumplirse los criterios generales para el diagnostico de trastorno de la personalidad.",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": []
           },
           {
             "id": "trastorno-trastorno-anancastico-de-la-personalidad-cie10-grupo-3",
             "clave": "B",
             "titulo": "Criterio B",
-            "tipo": "criterio",
+            "tipo": "criterio_principal",
             "introduccion": "Deben cumplirse al menos cuatro de los siguientes síntomas:",
             "literal": false,
+            "listType": "decimal",
+            "grupos": [],
             "items": [
               {
                 "numero": 1,
+                "marcador": null,
                 "texto": "Sentimientos de duda, y preocupaciones excesivas.",
                 "orden": 1,
                 "literal": false
               },
               {
                 "numero": 2,
+                "marcador": null,
                 "texto": "Preocupación por detalles, listas, reglas, organización u horarios",
                 "orden": 2,
                 "literal": false
               },
               {
                 "numero": 3,
+                "marcador": null,
                 "texto": "Perfeccionismo que interfiere con la finalización de tareas.",
                 "orden": 3,
                 "literal": false
               },
               {
                 "numero": 4,
+                "marcador": null,
                 "texto": "Rectitud y escrupolosidad excesivos",
                 "orden": 4,
                 "literal": false
               },
               {
                 "numero": 5,
+                "marcador": null,
                 "texto": "Preocupación injustificada por la productividad, hasta el extremo de renunciar a actividades placenteras y relaciones itnerpersonales",
                 "orden": 5,
                 "literal": false
               },
               {
                 "numero": 6,
+                "marcador": null,
                 "texto": "Excesiva pedantería y adhesión a las convenciones sociales",
                 "orden": 6,
                 "literal": false
               },
               {
                 "numero": 7,
+                "marcador": null,
                 "texto": "Rigidez y obstinación",
                 "orden": 7,
                 "literal": false
               },
               {
                 "numero": 8,
+                "marcador": null,
                 "texto": "Insistencia irracional se sometan a la propia rutina de ahcer las cosas o resistencia irracional a permitir que los demás realicen sus tareas",
                 "orden": 8,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
                 "orden": 9,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
                 "orden": 10,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
                 "orden": 11,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
                 "orden": 12,
                 "literal": false
@@ -9872,86 +14094,117 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F60.6",
         "nombre": "Trastorno ansioso evasivo de la personalidad",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: verificación de fuente oficial, duración."
+        },
         "criterios": [
           {
             "id": "trastorno-trastorno-ansioso-evasivo-de-la-personalidad-cie10-grupo-1",
             "clave": "A",
             "titulo": "Criterio A",
-            "tipo": "criterio",
+            "tipo": "criterio_principal",
             "introduccion": "Deben cumplirse los criterios generales para el diagnostico de trastorno de la personalidad.",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": []
           },
           {
             "id": "trastorno-trastorno-ansioso-evasivo-de-la-personalidad-cie10-grupo-2",
             "clave": "B",
             "titulo": "Criterio B",
-            "tipo": "criterio",
+            "tipo": "criterio_principal",
             "introduccion": "Deben cumplirse al menos cuatro de los siguientes síntomas:",
             "literal": false,
+            "listType": "decimal",
+            "grupos": [],
             "items": [
               {
                 "numero": 1,
+                "marcador": null,
                 "texto": "Evita actividades laborales o escolares que impliquen un contacto interpersonal significativo, por temor a la critica, desaprobacion o rechazo.",
                 "orden": 1,
                 "literal": false
               },
               {
                 "numero": 2,
+                "marcador": null,
                 "texto": "Esta reacio a implicarse con personas, a menos que este seguro de ser aceptado.",
                 "orden": 2,
                 "literal": false
               },
               {
                 "numero": 3,
+                "marcador": null,
                 "texto": "Muestra restriccion en las relaciones interpersonales debido al miedo a ser avergonzado o ridiculizado.",
                 "orden": 3,
                 "literal": false
               },
               {
                 "numero": 4,
+                "marcador": null,
                 "texto": "Preocupacion por ser criticado o rechazado en situaciones sociales.",
                 "orden": 4,
                 "literal": false
               },
               {
                 "numero": 5,
+                "marcador": null,
                 "texto": "Inhibicion en situaciones interpersonales nuevas debido a sentimientos de inferioridad.",
                 "orden": 5,
                 "literal": false
               },
               {
                 "numero": 6,
+                "marcador": null,
                 "texto": "Se ve a si mismo como socialmente inepto, personalmente poco atractivo o inferior a los demas.",
                 "orden": 6,
                 "literal": false
               },
               {
                 "numero": 7,
+                "marcador": null,
                 "texto": "Es extraordinariamente reacio a asumir riesgos personales o a implicarse en nuevas actividades debido a que pueden resultar embarazosas.",
                 "orden": 7,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
                 "orden": 8,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
                 "orden": 9,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
                 "orden": 10,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
                 "orden": 11,
                 "literal": false
@@ -9992,6 +14245,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F60.7",
         "nombre": "Trastorno dependiente de la personalidad",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: clasificación de grupos, verificación de fuente oficial, duración."
+        },
         "criterios": [
           {
             "id": "trastorno-trastorno-dependiente-de-la-personalidad-cie10-grupo-1",
@@ -10000,21 +14269,26 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
             "tipo": "revision_requerida",
             "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": [
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
                 "orden": 1,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
                 "orden": 2,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
                 "orden": 3,
                 "literal": false
@@ -10055,6 +14329,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F60.8",
         "nombre": "Otros trastornos específicos de la personalidad",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -10083,6 +14373,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F60.9",
         "nombre": "Trastorno específico de la personalidad no especificado",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -10111,6 +14417,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F61",
         "nombre": "Trastornos mixtos y otros trastornos de la personalidad",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: clasificación de grupos, verificación de fuente oficial, duración."
+        },
         "criterios": [
           {
             "id": "trastorno-trastornos-mixtos-y-otros-trastornos-de-la-personalidad-cie10-grupo-1",
@@ -10119,21 +14441,26 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
             "tipo": "revision_requerida",
             "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": [
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
                 "orden": 1,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
                 "orden": 2,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
                 "orden": 3,
                 "literal": false
@@ -10174,6 +14501,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F62",
         "nombre": "Transformación persistente de la personalidad no atribuible a lesión o enfermedad cerebral",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -10202,6 +14545,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F63",
         "nombre": "Trastornos de los hábitos y de los impulsos",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -10230,6 +14589,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F64",
         "nombre": "Trastornos de la identidad de género",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -10258,6 +14633,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F65",
         "nombre": "Trastornos de la preferencia sexual",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -10286,6 +14677,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F66",
         "nombre": "Trastornos psicológicos y del comportamiento asociados con el desarrollo y orientación sexuales",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -10314,6 +14721,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F68",
         "nombre": "Otros trastornos de la personalidad y del comportamiento en adultos",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -10342,6 +14765,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F69",
         "nombre": "Trastorno de la personalidad y del comportamiento en adultos no especificado",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -10370,6 +14809,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F70",
         "nombre": "Retraso mental leve",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: clasificación de grupos, verificación de fuente oficial, duración."
+        },
         "criterios": [
           {
             "id": "trastorno-retraso-mental-leve-cie10-grupo-1",
@@ -10378,21 +14833,26 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
             "tipo": "revision_requerida",
             "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": [
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
                 "orden": 1,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
                 "orden": 2,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
                 "orden": 3,
                 "literal": false
@@ -10433,6 +14893,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F71",
         "nombre": "Retraso mental moderado",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: clasificación de grupos, verificación de fuente oficial, duración."
+        },
         "criterios": [
           {
             "id": "trastorno-retraso-mental-moderado-cie10-grupo-1",
@@ -10441,21 +14917,26 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
             "tipo": "revision_requerida",
             "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": [
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
                 "orden": 1,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
                 "orden": 2,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
                 "orden": 3,
                 "literal": false
@@ -10496,6 +14977,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F72",
         "nombre": "Retraso mental grave",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -10524,6 +15021,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F73",
         "nombre": "Retraso mental profundo",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -10552,6 +15065,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F78",
         "nombre": "Otros tipos de retraso mental",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -10580,6 +15109,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F79",
         "nombre": "Retraso mental no especificado",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: clasificación de grupos, verificación de fuente oficial, duración."
+        },
         "criterios": [
           {
             "id": "trastorno-retraso-mental-no-especificado-cie10-grupo-1",
@@ -10588,21 +15133,26 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
             "tipo": "revision_requerida",
             "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": [
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
                 "orden": 1,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
                 "orden": 2,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
                 "orden": 3,
                 "literal": false
@@ -10643,6 +15193,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F80",
         "nombre": "Trastornos específicos del desarrollo del habla y del lenguaje",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -10671,6 +15237,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F81",
         "nombre": "Trastornos específicos del desarrollo del aprendizaje escolar",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -10699,6 +15281,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F82",
         "nombre": "Trastorno específico del desarrollo de la función motriz",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -10727,6 +15325,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F83",
         "nombre": "Trastornos específicos mixtos del desarrollo",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -10755,6 +15369,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F84",
         "nombre": "Trastornos generalizados del desarrollo",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -10783,29 +15413,50 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F84.0",
         "nombre": "Autismo infantil",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: verificación de fuente oficial, duración."
+        },
         "criterios": [
           {
             "id": "trastorno-autismo-infantil-cie10-grupo-1",
             "clave": "A",
             "titulo": "Criterio A",
-            "tipo": "criterio",
+            "tipo": "criterio_principal",
             "introduccion": "Presencia de un desarrollo anormal o alterado desde antes de los 3 años de edad, que se presenta en una de las siguientes áreas:",
             "literal": false,
+            "listType": "decimal",
+            "grupos": [],
             "items": [
               {
                 "numero": 1,
+                "marcador": null,
                 "texto": "Lenguaje receptivo o expresivo utilizado en la comunicación social.",
                 "orden": 1,
                 "literal": false
               },
               {
                 "numero": 2,
+                "marcador": null,
                 "texto": "Desarrollo de lazos sociales selectivos o interacción social recíproca.",
                 "orden": 2,
                 "literal": false
               },
               {
                 "numero": 3,
+                "marcador": null,
                 "texto": "Juego simbólico y funcional",
                 "orden": 3,
                 "literal": false
@@ -10816,168 +15467,168 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
             "id": "trastorno-autismo-infantil-cie10-grupo-2",
             "clave": "B",
             "titulo": "Criterio B",
-            "tipo": "criterio",
+            "tipo": "criterio_principal",
             "introduccion": "Deben estar presentes al menos 6 síntomas de 1, 2 y 3, incluyendo al menos dos de 1, uno de 2 y uno de 3.",
             "literal": false,
-            "items": [
+            "listType": "none",
+            "grupos": [
               {
-                "numero": 1,
-                "texto": "Alteraciones cualitativas en la interacción social que se manifiestan al menos en dos de las siguientes áreas:",
-                "orden": 1,
-                "literal": false
+                "id": "trastorno-autismo-infantil-cie10-grupo-3",
+                "clave": "",
+                "titulo": "1.Alteraciones cualitativas en la interacción social que se manifiestan al menos en dos de las siguientes áreas",
+                "tipo": "subcategoria",
+                "introduccion": "",
+                "literal": false,
+                "listType": "lower-alpha",
+                "grupos": [],
+                "items": [
+                  {
+                    "numero": null,
+                    "marcador": "a",
+                    "texto": "Fracaso en la utilización adecuada del contacto visual, la expresión facial, la postura corporal y los gestos para regular la interacción social.",
+                    "orden": 1,
+                    "literal": false
+                  },
+                  {
+                    "numero": null,
+                    "marcador": "b",
+                    "texto": "Fracaso en el desarrollo (adecuado a la edad mental y a pesar de tener ocasiones para ello) de relaciones con personas de su edad que impliquen compartir intereses, actividades y emociones",
+                    "orden": 2,
+                    "literal": false
+                  },
+                  {
+                    "numero": null,
+                    "marcador": "c",
+                    "texto": "Ausencia de reciprocidad socioemocional, puesta de manifiesto por una respuesta alterada o anormal hacia las emociones de otras personas, o falta de modulación del comportamiento en respuesta al contexto social o débil integración de los comportamientos social, emocional y comunicativo",
+                    "orden": 3,
+                    "literal": false
+                  },
+                  {
+                    "numero": null,
+                    "marcador": "d",
+                    "texto": "Falta de interés en compartir las alegrías, los intereses o los logros con otros individuos (p. ej., falta de interés en mostrar, traer hacia sí o señalar a otras personas objetos de interés para el niñoo).",
+                    "orden": 4,
+                    "literal": false
+                  }
+                ]
+              },
+              {
+                "id": "trastorno-autismo-infantil-cie10-grupo-3",
+                "clave": "",
+                "titulo": "2. Alteraciones cualitativas en la comunicación que se manifiestan en al menos una de las siguientes áreas",
+                "tipo": "subcategoria",
+                "introduccion": "",
+                "literal": false,
+                "listType": "lower-alpha",
+                "grupos": [],
+                "items": [
+                  {
+                    "numero": null,
+                    "marcador": "a",
+                    "texto": "Retraso o ausencia del desarrollo del lenguaje hablado, aunque no se acompaña de intentos de compensación mediante el recurso de la utilización de gestos alternativos para comunicarse (a menudo precedido por la falta de balbuceo comunicativo",
+                    "orden": 1,
+                    "literal": false
+                  },
+                  {
+                    "numero": null,
+                    "marcador": "b",
+                    "texto": "Fracaso relativo para iniciar o mantener una conversación (cualquiera que sea el nivel de competencia en la utilización del lenguaje alcanzado), en la que es necesario el intercambio de respuestas con el interlocutor",
+                    "orden": 2,
+                    "literal": false
+                  },
+                  {
+                    "numero": null,
+                    "marcador": "c",
+                    "texto": "Uso estereotipado y repetitivo del lenguaje o uso idiosincrásico de palabras o frases",
+                    "orden": 3,
+                    "literal": false
+                  },
+                  {
+                    "numero": null,
+                    "marcador": "d",
+                    "texto": "Ausencia de juegos de simulación espontáneos (en edades tempranas) o de juego social imitativo",
+                    "orden": 4,
+                    "literal": false
+                  }
+                ]
+              },
+              {
+                "id": "trastorno-autismo-infantil-cie10-grupo-3",
+                "clave": "",
+                "titulo": "3. Patrones de comportamientos, intereses y actividades restringidas, repetitivas y estereotipadas, que se manifiestan en al menos una de las siguientes áreas",
+                "tipo": "subcategoria",
+                "introduccion": "",
+                "literal": false,
+                "listType": "lower-alpha",
+                "grupos": [],
+                "items": [
+                  {
+                    "numero": null,
+                    "marcador": "a",
+                    "texto": "Preocupación limitada a uno o más comportamientos estereotipados que son anormales en su contenido. En ocasiones el comportamiento no es anormal en sí, pero sí lo es la intensidad y el carácter restrictivo con que se produce.",
+                    "orden": 1,
+                    "literal": false
+                  },
+                  {
+                    "numero": null,
+                    "marcador": "b",
+                    "texto": "Existe, en apariencia, una adherencia a rutinas o rituales específicos y carentes de sentido.",
+                    "orden": 2,
+                    "literal": false
+                  },
+                  {
+                    "numero": null,
+                    "marcador": "c",
+                    "texto": "Manierismos motores estereotipados y repetitivos que pueden consisitir en palmadas o retorcimientos de las manos o dedos, o movimientos complejos de todo el cuerpo",
+                    "orden": 3,
+                    "literal": false
+                  },
+                  {
+                    "numero": null,
+                    "marcador": "d",
+                    "texto": "Preocupaciones por partes de objetos o por elementos carentes de funcionalidad de los objetos de juego (tales como el olor, la textura de su superficie, el ruido o la vibración que producen)",
+                    "orden": 4,
+                    "literal": false
+                  }
+                ]
               }
-            ]
+            ],
+            "items": []
           },
           {
             "id": "trastorno-autismo-infantil-cie10-grupo-3",
-            "clave": "A",
-            "titulo": "Criterio A",
-            "tipo": "criterio",
-            "introduccion": "Fracaso en la utilización adecuada del contacto visual, la expresión facial, la postura corporal y los gestos para regular la interacción social.",
-            "literal": false,
-            "items": []
-          },
-          {
-            "id": "trastorno-autismo-infantil-cie10-grupo-4",
-            "clave": "B",
-            "titulo": "Criterio B",
-            "tipo": "criterio",
-            "introduccion": "Fracaso en el desarrollo (adecuado a la edad mental y a pesar de tener ocasiones para ello) de relaciones con personas de su edad que impliquen compartir intereses, actividades y emociones",
-            "literal": false,
-            "items": []
-          },
-          {
-            "id": "trastorno-autismo-infantil-cie10-grupo-5",
             "clave": "C",
             "titulo": "Criterio C",
-            "tipo": "criterio",
-            "introduccion": "Ausencia de reciprocidad socioemocional, puesta de manifiesto por una respuesta alterada o anormal hacia las emociones de otras personas, o falta de modulación del comportamiento en respuesta al contexto social o débil integración de los comportamientos social, emocional y comunicativo",
-            "literal": false,
-            "items": []
-          },
-          {
-            "id": "trastorno-autismo-infantil-cie10-grupo-6",
-            "clave": "D",
-            "titulo": "Criterio D",
-            "tipo": "criterio",
-            "introduccion": "Falta de interés en compartir las alegrías, los intereses o los logros con otros individuos (p. ej., falta de interés en mostrar, traer hacia sí o señalar a otras personas objetos de interés para el niñoo).",
-            "literal": false,
-            "items": [
-              {
-                "numero": 2,
-                "texto": "Alteraciones cualitativas en la comunicación que se manifiestan en al menos una de las siguientes áreas:",
-                "orden": 1,
-                "literal": false
-              }
-            ]
-          },
-          {
-            "id": "trastorno-autismo-infantil-cie10-grupo-7",
-            "clave": "A",
-            "titulo": "Criterio A",
-            "tipo": "criterio",
-            "introduccion": "Retraso o ausencia del desarrollo del lenguaje hablado, aunque no se acompaña de intentos de compensación mediante el recurso de la utilización de gestos alternativos para comunicarse (a menudo precedido por la falta de balbuceo comunicativo",
-            "literal": false,
-            "items": []
-          },
-          {
-            "id": "trastorno-autismo-infantil-cie10-grupo-8",
-            "clave": "B",
-            "titulo": "Criterio B",
-            "tipo": "criterio",
-            "introduccion": "Fracaso relativo para iniciar o mantener una conversación (cualquiera que sea el nivel de competencia en la utilización del lenguaje alcanzado), en la que es necesario el intercambio de respuestas con el interlocutor",
-            "literal": false,
-            "items": []
-          },
-          {
-            "id": "trastorno-autismo-infantil-cie10-grupo-9",
-            "clave": "C",
-            "titulo": "Criterio C",
-            "tipo": "criterio",
-            "introduccion": "Uso estereotipado y repetitivo del lenguaje o uso idiosincrásico de palabras o frases",
-            "literal": false,
-            "items": []
-          },
-          {
-            "id": "trastorno-autismo-infantil-cie10-grupo-10",
-            "clave": "D",
-            "titulo": "Criterio D",
-            "tipo": "criterio",
-            "introduccion": "Ausencia de juegos de simulación espontáneos (en edades tempranas) o de juego social imitativo",
-            "literal": false,
-            "items": [
-              {
-                "numero": 3,
-                "texto": "Patrones de comportamientos, intereses y actividades restringidas, repetitivas y estereotipadas, que se manifiestan en al menos una de las siguientes áreas:",
-                "orden": 1,
-                "literal": false
-              }
-            ]
-          },
-          {
-            "id": "trastorno-autismo-infantil-cie10-grupo-11",
-            "clave": "A",
-            "titulo": "Criterio A",
-            "tipo": "criterio",
-            "introduccion": "Preocupación limitada a uno o más comportamientos estereotipados que son anormales en su contenido. En ocasiones el comportamiento no es anormal en sí, pero sí lo es la intensidad y el carácter restrictivo con que se produce.",
-            "literal": false,
-            "items": []
-          },
-          {
-            "id": "trastorno-autismo-infantil-cie10-grupo-12",
-            "clave": "B",
-            "titulo": "Criterio B",
-            "tipo": "criterio",
-            "introduccion": "Existe, en apariencia, una adherencia a rutinas o rituales específicos y carentes de sentido.",
-            "literal": false,
-            "items": []
-          },
-          {
-            "id": "trastorno-autismo-infantil-cie10-grupo-13",
-            "clave": "C",
-            "titulo": "Criterio C",
-            "tipo": "criterio",
-            "introduccion": "Manierismos motores estereotipados y repetitivos que pueden consisitir en palmadas o retorcimientos de las manos o dedos, o movimientos complejos de todo el cuerpo",
-            "literal": false,
-            "items": []
-          },
-          {
-            "id": "trastorno-autismo-infantil-cie10-grupo-14",
-            "clave": "D",
-            "titulo": "Criterio D",
-            "tipo": "criterio",
-            "introduccion": "Preocupaciones por partes de objetos o por elementos carentes de funcionalidad de los objetos de juego (tales como el olor, la textura de su superficie, el ruido o la vibración que producen)",
-            "literal": false,
-            "items": []
-          },
-          {
-            "id": "trastorno-autismo-infantil-cie10-grupo-15",
-            "clave": "C",
-            "titulo": "Criterio C",
-            "tipo": "criterio",
+            "tipo": "criterio_principal",
             "introduccion": "El cuadro clínico no puede atribuirse a otras variedades del trastorno generalizado del desarrollo, a un trastorno específico del desarrollo de la comprensión del lenguaje (F80.2) con problemas socioemocionales secundarios, a trastorno reactivo de la vinculación de la infancia (F94.1), a trastorno de la vinculación de la infancia tipo desinhibido (F94.2), a retraso mental (F70-72) acompañado de trastornos de las emociones y del comportamiento, a esquizofrenia (F20) de comienzo excepcionalmente precoz, ni a síndrome de Rett",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": [
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
                 "orden": 1,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
                 "orden": 2,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
                 "orden": 3,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
                 "orden": 4,
                 "literal": false
@@ -11018,6 +15669,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F84.1",
         "nombre": "Autismo atípico",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -11046,6 +15713,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F84.5",
         "nombre": "Síndrome de Asperger",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: clasificación de grupos, verificación de fuente oficial, duración."
+        },
         "criterios": [
           {
             "id": "trastorno-sindrome-de-asperger-cie10-grupo-1",
@@ -11054,21 +15737,26 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
             "tipo": "revision_requerida",
             "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": [
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
                 "orden": 1,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
                 "orden": 2,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
                 "orden": 3,
                 "literal": false
@@ -11109,6 +15797,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F88",
         "nombre": "Otros trastornos del desarrollo psicológico",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -11137,6 +15841,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F89",
         "nombre": "Trastorno del desarrollo psicológico no especificado",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -11165,6 +15885,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F90",
         "nombre": "Trastornos hipercinéticos",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -11193,6 +15929,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F90.0",
         "nombre": "Trastorno de la actividad y de la atención",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: clasificación de grupos, verificación de fuente oficial, duración."
+        },
         "criterios": [
           {
             "id": "trastorno-trastorno-de-la-actividad-y-de-la-atencion-cie10-grupo-1",
@@ -11201,21 +15953,26 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
             "tipo": "revision_requerida",
             "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": [
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
                 "orden": 1,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
                 "orden": 2,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
                 "orden": 3,
                 "literal": false
@@ -11256,6 +16013,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F90.1",
         "nombre": "Trastorno hipercinético disocial",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -11284,6 +16057,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F91",
         "nombre": "Trastornos disociales",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -11312,6 +16101,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F92",
         "nombre": "Trastornos mixtos disociales y de las emociones",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -11340,6 +16145,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F93",
         "nombre": "Trastornos emocionales de comienzo específico en la niñez",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -11368,6 +16189,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F94",
         "nombre": "Trastornos del comportamiento social de comienzo específico en la niñez y adolescencia",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -11396,6 +16233,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F95",
         "nombre": "Trastornos de tics",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -11424,6 +16277,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F98",
         "nombre": "Otros trastornos emocionales y del comportamiento de comienzo habitual en la niñez y adolescencia",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -11452,6 +16321,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F99",
         "nombre": "Trastorno mental no especificado",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -11480,6 +16365,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "G31.84",
         "nombre": "Deterioro cognitivo de etiología mixta",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -11508,6 +16409,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "G40.0",
         "nombre": "Epilepsia y síndromes epilépticos idiopáticos (focales/parciales) con inicio localizado",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -11536,6 +16453,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "G40.1",
         "nombre": "Epilepsia sintomática focal con ataques parciales simples",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -11564,6 +16497,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "G40.2",
         "nombre": "Epilepsia sintomática focal con ataques parciales complejos",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -11592,6 +16541,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "G40.3",
         "nombre": "Epilepsia generalizada idiopática",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -11620,6 +16585,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "G40.9",
         "nombre": "Epilepsia no especificada",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -11648,6 +16629,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "G93.0",
         "nombre": "Quistes cerebrales",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -11676,6 +16673,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "G93.1",
         "nombre": "Lesión cerebral anóxica (daño por falta de oxígeno)",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -11704,6 +16717,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "G93.2",
         "nombre": "Hipertensión intracraneal benigna",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -11732,6 +16761,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "G93.3",
         "nombre": "Síndrome de fatiga posviral o encefalomielitis miálgica",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -11760,6 +16805,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "G93.4",
         "nombre": "Encefalopatía no especificada",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -11788,6 +16849,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "G93.5",
         "nombre": "Compresión del cerebro",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -11816,6 +16893,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "G93.6",
         "nombre": "Edema cerebral (hinchazón del cerebro)",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -11844,6 +16937,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "G93.7",
         "nombre": "Síndrome de Reye",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -11872,6 +16981,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "G93.8",
         "nombre": "Otros trastornos especificados del cerebro (como esclerosis temporal)",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -11900,6 +17025,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "G93.9",
         "nombre": "Trastorno del encéfalo, no especificado",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -11928,6 +17069,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "I10",
         "nombre": "Hipertensión esencial (primaria)",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: clasificación de grupos, verificación de fuente oficial, duración."
+        },
         "criterios": [
           {
             "id": "trastorno-hipertension-esencial-primaria-cie10-grupo-1",
@@ -11936,21 +17093,26 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
             "tipo": "revision_requerida",
             "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": [
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
                 "orden": 1,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
                 "orden": 2,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
                 "orden": 3,
                 "literal": false
@@ -11991,6 +17153,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "I11",
         "nombre": "Enfermedad cardíaca hipertensiva",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -12019,6 +17197,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "I12",
         "nombre": "Enfermedad renal hipertensiva",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -12047,6 +17241,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "I13",
         "nombre": "Enfermedad cardíaca y renal hipertensiva",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -12075,6 +17285,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "I15",
         "nombre": "Hipertensión secundaria",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -12103,6 +17329,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "I20",
         "nombre": "Angina de pecho",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: clasificación de grupos, verificación de fuente oficial, duración."
+        },
         "criterios": [
           {
             "id": "trastorno-angina-de-pecho-cie10-grupo-1",
@@ -12111,21 +17353,26 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
             "tipo": "revision_requerida",
             "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": [
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
                 "orden": 1,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
                 "orden": 2,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
                 "orden": 3,
                 "literal": false
@@ -12166,6 +17413,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "I21",
         "nombre": "Infarto agudo de miocardio",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: clasificación de grupos, verificación de fuente oficial, duración."
+        },
         "criterios": [
           {
             "id": "trastorno-infarto-agudo-de-miocardio-cie10-grupo-1",
@@ -12174,21 +17437,26 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
             "tipo": "revision_requerida",
             "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": [
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
                 "orden": 1,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
                 "orden": 2,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
                 "orden": 3,
                 "literal": false
@@ -12229,6 +17497,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "I22",
         "nombre": "Infarto agudo de miocardio posterior",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -12257,6 +17541,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "I23",
         "nombre": "Complicaciones posteriores a infarto agudo de miocardio",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -12285,6 +17585,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "I24",
         "nombre": "Otros síndromes coronarios agudos",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -12313,6 +17629,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "I25",
         "nombre": "Enfermedad isquémica crónica del corazón",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: clasificación de grupos, verificación de fuente oficial, duración."
+        },
         "criterios": [
           {
             "id": "trastorno-enfermedad-isquemica-cronica-del-corazon-cie10-grupo-1",
@@ -12321,21 +17653,26 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
             "tipo": "revision_requerida",
             "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": [
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
                 "orden": 1,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
                 "orden": 2,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
                 "orden": 3,
                 "literal": false
@@ -12376,6 +17713,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "I26",
         "nombre": "Embolia pulmonar",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -12404,6 +17757,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "I27",
         "nombre": "Otras enfermedades pulmonares del corazón",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -12432,6 +17801,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "I69",
         "nombre": "Secuelas de enfermedades cerebrovasculares",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -12460,6 +17845,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "J00",
         "nombre": "Rinofaringitis aguda [resfriado común]",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -12488,6 +17889,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "J01",
         "nombre": "Sinusitis aguda",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -12516,6 +17933,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "J01.0",
         "nombre": "Sinusitis maxilar aguda",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -12544,6 +17977,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "J01.1",
         "nombre": "Sinusitis frontal aguda",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -12572,6 +18021,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "J01.2",
         "nombre": "Sinusitis etmoidal aguda",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -12600,6 +18065,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "J01.3",
         "nombre": "Sinusitis esfenoidal aguda",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -12628,6 +18109,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "J01.4",
         "nombre": "Pansinusitis aguda",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -12656,6 +18153,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "J01.8",
         "nombre": "Otras sinusitis agudas",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -12684,6 +18197,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "L00",
         "nombre": "Sindrome estafilococico de la piel escaldada",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -12712,6 +18241,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "L01",
         "nombre": "Impetigo",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -12740,6 +18285,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "L02",
         "nombre": "Absceso cutaneo, furunculo y carbunco",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -12768,6 +18329,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "L03",
         "nombre": "Celulitis",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -12796,6 +18373,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "L04",
         "nombre": "Linfadenitis aguda",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -12824,6 +18417,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "L05",
         "nombre": "Quiste pilonidal",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -12852,6 +18461,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "L08",
         "nombre": "Otras infecciones locales de la piel y del tejido subcutaneo",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -12880,6 +18505,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "L10",
         "nombre": "Penfigo",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -12908,6 +18549,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "L11",
         "nombre": "Otros trastornos acantoliticos",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -12936,6 +18593,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "L12",
         "nombre": "Penfigoide",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -12964,6 +18637,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "L13",
         "nombre": "Otros trastornos ampollosos",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -12992,6 +18681,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "L14",
         "nombre": "Trastornos ampollosos en enfermedades clasificadas en otra parte",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -13020,6 +18725,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "L20",
         "nombre": "Dermatitis atopica",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: clasificación de grupos, verificación de fuente oficial, duración."
+        },
         "criterios": [
           {
             "id": "trastorno-dermatitis-atopica-cie10-grupo-1",
@@ -13028,21 +18749,26 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
             "tipo": "revision_requerida",
             "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": [
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
                 "orden": 1,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
                 "orden": 2,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
                 "orden": 3,
                 "literal": false
@@ -13083,6 +18809,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "L21",
         "nombre": "Dermatitis seborreica",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -13111,6 +18853,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "L22",
         "nombre": "Dermatitis del panal",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -13139,6 +18897,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "L23",
         "nombre": "Dermatitis alergica de contacto",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: clasificación de grupos, verificación de fuente oficial, duración."
+        },
         "criterios": [
           {
             "id": "trastorno-dermatitis-alergica-de-contacto-cie10-grupo-1",
@@ -13147,21 +18921,26 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
             "tipo": "revision_requerida",
             "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": [
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
                 "orden": 1,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
                 "orden": 2,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
                 "orden": 3,
                 "literal": false
@@ -13202,6 +18981,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "L24",
         "nombre": "Dermatitis irritante de contacto",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -13230,6 +19025,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "L25",
         "nombre": "Dermatitis de contacto, forma no especificada",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -13258,6 +19069,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "L26",
         "nombre": "Dermatitis exfoliativa",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -13286,6 +19113,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "L27",
         "nombre": "Dermatitis debida a sustancias ingeridas",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -13314,6 +19157,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "L28",
         "nombre": "Liquen simple cronico y prurigo",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -13342,6 +19201,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "L29",
         "nombre": "Prurito",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -13370,6 +19245,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "L30",
         "nombre": "Otras dermatitis",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -13398,6 +19289,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "L40",
         "nombre": "Psoriasis",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: clasificación de grupos, verificación de fuente oficial, duración."
+        },
         "criterios": [
           {
             "id": "trastorno-psoriasis-cie10-grupo-1",
@@ -13406,21 +19313,26 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
             "tipo": "revision_requerida",
             "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": [
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
                 "orden": 1,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
                 "orden": 2,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
                 "orden": 3,
                 "literal": false
@@ -13461,6 +19373,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "L41",
         "nombre": "Parapsoriasis",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -13489,6 +19417,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "L42",
         "nombre": "Pitiriasis rosada",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -13517,6 +19461,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "L43",
         "nombre": "Liquen plano",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -13545,6 +19505,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "L44",
         "nombre": "Otros trastornos papuloescamosos",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -13573,6 +19549,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "L45",
         "nombre": "Trastornos papuloescamosos en enfermedades clasificadas en otra parte",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -13601,6 +19593,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "L50",
         "nombre": "Urticaria",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: clasificación de grupos, verificación de fuente oficial, duración."
+        },
         "criterios": [
           {
             "id": "trastorno-urticaria-cie10-grupo-1",
@@ -13609,21 +19617,26 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
             "tipo": "revision_requerida",
             "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": [
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
                 "orden": 1,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
                 "orden": 2,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
                 "orden": 3,
                 "literal": false
@@ -13664,6 +19677,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "L51",
         "nombre": "Eritema multiforme",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -13692,6 +19721,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "L52",
         "nombre": "Eritema nudoso",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -13720,6 +19765,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "L53",
         "nombre": "Otras afecciones eritematosas",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -13748,6 +19809,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "L54",
         "nombre": "Eritema en enfermedades clasificadas en otra parte",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -13776,6 +19853,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "L55",
         "nombre": "Quemadura solar",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -13804,6 +19897,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "L56",
         "nombre": "Otros cambios agudos de la piel debidos a radiacion ultravioleta",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -13832,6 +19941,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "L57",
         "nombre": "Cambios de la piel debidos a exposicion cronica a radiacion no ionizante",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -13860,6 +19985,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "L58",
         "nombre": "Radiodermatitis",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -13888,6 +20029,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "L59",
         "nombre": "Otros trastornos de la piel y del tejido subcutaneo relacionados con radiacion",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -13916,6 +20073,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "L60",
         "nombre": "Trastornos de las unas",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -13944,6 +20117,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "L63",
         "nombre": "Alopecia areata",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -13972,6 +20161,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "L64",
         "nombre": "Alopecia androgenica",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -14000,6 +20205,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "L65",
         "nombre": "Otra perdida no cicatricial del pelo",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -14028,6 +20249,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "L66",
         "nombre": "Alopecia cicatricial",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -14056,6 +20293,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "L67",
         "nombre": "Anomalias del color y del tallo del pelo",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -14084,6 +20337,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "L68",
         "nombre": "Hipertricosis",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -14112,6 +20381,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "L70",
         "nombre": "Acne",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: clasificación de grupos, verificación de fuente oficial, duración."
+        },
         "criterios": [
           {
             "id": "trastorno-acne-cie10-grupo-1",
@@ -14120,21 +20405,26 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
             "tipo": "revision_requerida",
             "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": [
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
                 "orden": 1,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
                 "orden": 2,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
                 "orden": 3,
                 "literal": false
@@ -14175,6 +20465,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "L71",
         "nombre": "Rosacea",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -14203,6 +20509,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "L72",
         "nombre": "Quistes foliculares de la piel y del tejido subcutaneo",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -14231,6 +20553,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "L73",
         "nombre": "Otros trastornos foliculares",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -14259,6 +20597,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "L74",
         "nombre": "Trastornos de las glandulas sudoriparas ecrinas",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -14287,6 +20641,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "L75",
         "nombre": "Trastornos de las glandulas sudoriparas apocrinas",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -14315,6 +20685,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "L80",
         "nombre": "Vitiligo",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -14343,6 +20729,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "L81",
         "nombre": "Otros trastornos de la pigmentacion",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -14371,6 +20773,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "L82",
         "nombre": "Queratosis seborreica",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -14399,6 +20817,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "L83",
         "nombre": "Acantosis nigricans",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -14427,6 +20861,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "L84",
         "nombre": "Callos y callosidades",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -14455,6 +20905,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "L85",
         "nombre": "Otros engrosamientos epidermicos",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -14483,6 +20949,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "L87",
         "nombre": "Trastornos de la eliminacion transepidermica",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -14511,6 +20993,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "L88",
         "nombre": "Pioderma gangrenoso",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -14539,6 +21037,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "L89",
         "nombre": "Ulcera de decubito",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -14567,6 +21081,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "L90",
         "nombre": "Trastornos atroficos de la piel",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -14595,6 +21125,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "L91",
         "nombre": "Trastornos hipertroficos de la piel",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -14623,6 +21169,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "L92",
         "nombre": "Trastornos granulomatosos de la piel y del tejido subcutaneo",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -14651,6 +21213,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "L93",
         "nombre": "Lupus eritematoso",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -14679,6 +21257,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "L94",
         "nombre": "Otros trastornos localizados del tejido conjuntivo",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -14707,6 +21301,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "L95",
         "nombre": "Vasculitis limitada a la piel, no clasificada en otra parte",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -14735,6 +21345,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "L97",
         "nombre": "Ulcera de miembro inferior, no clasificada en otra parte",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -14763,6 +21389,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "L98",
         "nombre": "Otros trastornos de la piel y del tejido subcutaneo, no clasificados en otra parte",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -14791,6 +21433,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "L99",
         "nombre": "Otros trastornos de la piel y del tejido subcutaneo en enfermedades clasificadas en otra parte",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -14819,6 +21477,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "S00",
         "nombre": "Contusion de cabeza",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -14847,6 +21521,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "S01",
         "nombre": "Herida de cabeza",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -14875,6 +21565,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "S02",
         "nombre": "Fractura de huesos del craneo y de la cara",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -14903,6 +21609,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "S03",
         "nombre": "Lesion de articulaciones y ligamentos de la cabeza",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -14931,6 +21653,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "S04",
         "nombre": "Lesion de nervios craneales",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -14959,6 +21697,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "S05",
         "nombre": "Lesion del ojo y de sus anexos",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -14987,6 +21741,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "S06",
         "nombre": "Lesion intracraneal",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -15015,6 +21785,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "S07",
         "nombre": "Ablacion de cabeza",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -15043,6 +21829,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "S08",
         "nombre": "Lesion multiple de cabeza",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -15071,6 +21873,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "S09",
         "nombre": "Otras lesiones especificadas de cabeza",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -15099,6 +21917,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "S09.9",
         "nombre": "Lesion de cabeza, no especificada",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -15127,6 +21961,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "S10",
         "nombre": "Contusion de cuello",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -15155,6 +22005,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "S11",
         "nombre": "Herida de cuello",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -15183,6 +22049,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "S12",
         "nombre": "Fractura de vertebras cervicales",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -15211,6 +22093,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "S13",
         "nombre": "Lesion de articulaciones y ligamentos del cuello",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -15239,6 +22137,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "S14",
         "nombre": "Lesion de nervios del cuello",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -15267,6 +22181,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "S15",
         "nombre": "Lesion de vasos sanguineos del cuello",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -15295,6 +22225,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "S16",
         "nombre": "Lesion de musculos y tendones del cuello",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -15323,6 +22269,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "S17",
         "nombre": "Ablacion de cuello",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -15351,6 +22313,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "S18",
         "nombre": "Lesion multiple del cuello",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -15379,6 +22357,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "S19",
         "nombre": "Otras lesiones especificadas del cuello",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -15407,6 +22401,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "S19.9",
         "nombre": "Lesion del cuello, no especificada",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -15435,6 +22445,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "S20",
         "nombre": "Contusion del torax",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -15463,6 +22489,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "S20.0",
         "nombre": "Contusion del torax, no especificada",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -15491,6 +22533,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "S20.1",
         "nombre": "Contusion del torax, con daño de nervios",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -15519,6 +22577,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "S20.2",
         "nombre": "Contusion del torax, con daño de vasos sanguineos",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -15547,6 +22621,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "S20.3",
         "nombre": "Contusion del torax, con daño de musculos y tendones",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -15576,6 +22666,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "S20.4",
         "nombre": "Contusion del torax, con daño de articulaciones y ligamentos",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -15604,6 +22710,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "S20.5",
         "nombre": "Contusion del torax, con daño de piel y tejido subcutaneo",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -15632,6 +22754,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "S20.6",
         "nombre": "Contusion del torax, con daño de huesos",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -15660,6 +22798,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "S20.8",
         "nombre": "Contusion del torax, con daño de otros tejidos",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -15688,6 +22842,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "S21",
         "nombre": "Herida del torax",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -15716,6 +22886,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "S22",
         "nombre": "Fractura de costillas, esternon y torax",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -15744,6 +22930,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "S23",
         "nombre": "Lesion de articulaciones y ligamentos del torax",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -15772,6 +22974,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "S24",
         "nombre": "Lesion de nervios del torax",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -15800,6 +23018,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "S25",
         "nombre": "Lesion de vasos sanguineos del torax",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -15828,6 +23062,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "S26",
         "nombre": "Lesion de musculos y tendones del torax",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -15856,6 +23106,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "S27",
         "nombre": "Ablacion del torax",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -15884,6 +23150,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "S28",
         "nombre": "Lesion multiple del torax",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -15912,6 +23194,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "S29",
         "nombre": "Otras lesiones especificadas del torax",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -15940,6 +23238,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "S29.9",
         "nombre": "Lesion del torax, no especificada",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -15968,6 +23282,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "S30",
         "nombre": "Contusion del abdomen, la region pelvica y la ingle",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -15996,6 +23326,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "S31",
         "nombre": "Herida del abdomen, la region pelvica y la ingle",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -16024,6 +23370,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "S32",
         "nombre": "Fractura de vertebras lumbares y sacras, pelvis y cadera",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -16052,6 +23414,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "S33",
         "nombre": "Lesion de articulaciones y ligamentos del abdomen, la region pelvica y la ingle",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -16080,6 +23458,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "S34",
         "nombre": "Lesion de nervios del abdomen, la region pelvica y la ingle",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -16108,6 +23502,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "S35",
         "nombre": "Lesion de vasos sanguineos del abdomen, la region pelvica y la ingle",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -16136,6 +23546,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "S36",
         "nombre": "Lesion de musculos y tendones del abdomen, la region pelvica y la ingle",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -16164,6 +23590,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "S37",
         "nombre": "Ablacion del abdomen, la region pelvica y la ingle",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -16192,6 +23634,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "S38",
         "nombre": "Lesion multiple del abdomen, la region pelvica y la ingle",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -16220,6 +23678,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "S39",
         "nombre": "Otras lesiones especificadas del abdomen, la region pelvica y la ingle",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -16248,6 +23722,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "S39.9",
         "nombre": "Lesion del abdomen, la region pelvica y la ingle, no especificada",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -16276,6 +23766,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "S40",
         "nombre": "Contusion del hombro y del brazo",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -16304,6 +23810,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "S41",
         "nombre": "Herida del hombro y del brazo",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -16332,6 +23854,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "S42",
         "nombre": "Fractura de la clavicula, escapula y humero",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -16360,6 +23898,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "S43",
         "nombre": "Lesion de articulaciones y ligamentos del hombro y del brazo",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -16388,6 +23942,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "S44",
         "nombre": "Lesion de nervios del hombro y del brazo",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -16416,6 +23986,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "S45",
         "nombre": "Lesion de vasos sanguineos del hombro y del brazo",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -16444,6 +24030,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "S46",
         "nombre": "Lesion de musculos y tendones del hombro y del brazo",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -16472,6 +24074,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "S47",
         "nombre": "Ablacion del hombro y del brazo",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -16500,6 +24118,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "S48",
         "nombre": "Lesion multiple del hombro y del brazo",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -16528,6 +24162,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "S49",
         "nombre": "Otras lesiones especificadas del hombro y del brazo",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -16556,6 +24206,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "S49.9",
         "nombre": "Lesion del hombro y del brazo, no especificada",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -16584,6 +24250,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "S50",
         "nombre": "Contusion del antebrazo",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -16612,6 +24294,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "S51",
         "nombre": "Herida del antebrazo",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -16640,6 +24338,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "S51.0",
         "nombre": "Herida del antebrazo, no especificada",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -16668,6 +24382,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "S51.1",
         "nombre": "Herida del antebrazo, con daño de nervios",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -16696,6 +24426,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "S51.2",
         "nombre": "Herida del antebrazo, con daño de vasos sanguineos",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -16724,6 +24470,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "S51.3",
         "nombre": "Herida del antebrazo, con daño de musculos y tendones",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -16753,6 +24515,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "S51.4",
         "nombre": "Herida del antebrazo, con daño de articulaciones y ligamentos",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -16781,6 +24559,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "S51.5",
         "nombre": "Herida del antebrazo, con daño de piel y tejido subcutaneo",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -16809,6 +24603,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "S51.6",
         "nombre": "Herida del antebrazo, con daño de huesos",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -16837,6 +24647,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "S51.8",
         "nombre": "Herida del antebrazo, con daño de otros tejidos",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -16865,6 +24691,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "S51.9",
         "nombre": "Herida del antebrazo, con daño de tejido no especificado",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -16893,6 +24735,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "S52",
         "nombre": "Fractura del antebrazo",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -16921,6 +24779,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "S52.0",
         "nombre": "Fractura de la epifisis distal del radio",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -16949,6 +24823,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "S52.1",
         "nombre": "Fractura de la epifisis distal del cubito",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -16977,6 +24867,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "S52.2",
         "nombre": "Fractura de la diafisis del radio",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -17005,6 +24911,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "S52.3",
         "nombre": "Fractura de la diafisis del cubito",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -17033,6 +24955,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "S52.4",
         "nombre": "Fractura de la epifisis proximal del radio",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -17061,6 +24999,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "S52.5",
         "nombre": "Fractura de la epifisis proximal del cubito",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -17089,6 +25043,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "S52",
         "nombre": "Fractura del radio y del cubito",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -17117,6 +25087,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "S53",
         "nombre": "Lesion de articulaciones y ligamentos del antebrazo",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -17145,6 +25131,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "S54",
         "nombre": "Lesion de nervios del antebrazo",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -17173,6 +25175,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "S55",
         "nombre": "Lesion de vasos sanguineos del antebrazo",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -17201,6 +25219,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "S56",
         "nombre": "Lesion de musculos y tendones del antebrazo",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -17229,6 +25263,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "S57",
         "nombre": "Ablacion del antebrazo",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -17257,6 +25307,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "S58",
         "nombre": "Lesion multiple del antebrazo",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -17285,6 +25351,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "S59",
         "nombre": "Otras lesiones especificadas del antebrazo",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -17313,6 +25395,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "S59.9",
         "nombre": "Lesion del antebrazo, no especificada",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -17341,6 +25439,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "S60",
         "nombre": "Contusion de la mano",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -17369,6 +25483,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "S61",
         "nombre": "Herida de la mano",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -17397,6 +25527,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "S62",
         "nombre": "Fractura de los huesos del carpo, metacarpo y falanges",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -17425,6 +25571,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "S63",
         "nombre": "Lesion de articulaciones y ligamentos de la mano",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -17453,6 +25615,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "S64",
         "nombre": "Lesion de nervios de la mano",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -17481,6 +25659,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "S65",
         "nombre": "Lesion de vasos sanguineos de la mano",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -17509,6 +25703,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "S66",
         "nombre": "Lesion de musculos y tendones de la mano",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -17537,6 +25747,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "S67",
         "nombre": "Ablacion de la mano",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -17565,6 +25791,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "S68",
         "nombre": "Lesion multiple de la mano",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -17593,6 +25835,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "S69",
         "nombre": "Otras lesiones especificadas de la mano",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -17621,6 +25879,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "S69.9",
         "nombre": "Lesion de la mano, no especificada",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -17649,6 +25923,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "Z00",
         "nombre": "Examen general e investigacion de personas sin quejas o diagnostico informado",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: clasificación de grupos, verificación de fuente oficial, duración."
+        },
         "criterios": [
           {
             "id": "trastorno-examen-general-e-investigacion-de-personas-sin-quejas-o-diagnostico-informado-cie10-grupo-1",
@@ -17657,21 +25947,26 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
             "tipo": "revision_requerida",
             "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": [
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
                 "orden": 1,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
                 "orden": 2,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
                 "orden": 3,
                 "literal": false
@@ -17712,6 +26007,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "Z01",
         "nombre": "Otros examenes especiales e investigaciones de personas sin quejas o diagnostico informado",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -17740,6 +26051,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "Z02",
         "nombre": "Examen medico y consulta con fines administrativos",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -17768,6 +26095,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "Z03",
         "nombre": "Observacion y evaluacion medicas por sospecha de enfermedades y afecciones",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: clasificación de grupos, verificación de fuente oficial, duración."
+        },
         "criterios": [
           {
             "id": "trastorno-observacion-y-evaluacion-medicas-por-sospecha-de-enfermedades-y-afecciones-cie10-grupo-1",
@@ -17776,21 +26119,26 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
             "tipo": "revision_requerida",
             "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": [
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
                 "orden": 1,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
                 "orden": 2,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
                 "orden": 3,
                 "literal": false
@@ -17831,6 +26179,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "Z04",
         "nombre": "Examen y observacion por otras razones",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -17859,6 +26223,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "Z08",
         "nombre": "Examen de seguimiento despues de tratamiento por tumor maligno",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -17887,6 +26267,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "Z09",
         "nombre": "Examen de seguimiento despues de tratamiento por otras afecciones",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -17915,6 +26311,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "Z10",
         "nombre": "Control general de salud de subpoblaciones definidas",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -17943,6 +26355,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "Z11",
         "nombre": "Examen de pesquisa especial para enfermedades infecciosas y parasitarias",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -17971,6 +26399,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "Z12",
         "nombre": "Examen de pesquisa especial para tumores",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -17999,6 +26443,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "Z13",
         "nombre": "Examen de pesquisa especial para otras enfermedades y trastornos",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -18027,6 +26487,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "Z20",
         "nombre": "Contacto con y exposicion a enfermedades transmisibles",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -18055,6 +26531,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "Z21",
         "nombre": "Estado de infeccion asintomatica por VIH",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -18083,6 +26575,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "Z22",
         "nombre": "Portador de enfermedad infecciosa",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -18111,6 +26619,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "Z23",
         "nombre": "Necesidad de inmunizacion contra enfermedad bacteriana unica",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -18139,6 +26663,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "Z24",
         "nombre": "Necesidad de inmunizacion contra ciertas enfermedades virales",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -18167,6 +26707,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "Z25",
         "nombre": "Necesidad de inmunizacion contra otras enfermedades virales unicas",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -18195,6 +26751,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "Z26",
         "nombre": "Necesidad de inmunizacion contra otras enfermedades infecciosas unicas",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -18223,6 +26795,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "Z27",
         "nombre": "Necesidad de inmunizacion contra combinaciones de enfermedades infecciosas",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -18251,6 +26839,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "Z28",
         "nombre": "Inmunizacion no realizada",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -18279,6 +26883,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "Z29",
         "nombre": "Necesidad de otras medidas profilacticas",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -18307,6 +26927,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "Z30",
         "nombre": "Atencion para la anticoncepcion",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -18335,6 +26971,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "Z31",
         "nombre": "Atencion para la procreacion",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -18363,6 +27015,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "Z32",
         "nombre": "Examen y prueba de embarazo",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -18391,6 +27059,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "Z33",
         "nombre": "Estado de embarazo, incidental",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -18419,6 +27103,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "Z34",
         "nombre": "Supervision de embarazo normal",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -18447,6 +27147,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "Z35",
         "nombre": "Supervision de embarazo de alto riesgo",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -18475,6 +27191,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "Z36",
         "nombre": "Pesquisa prenatal",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -18503,6 +27235,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "Z37",
         "nombre": "Producto del parto",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -18531,6 +27279,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "Z38",
         "nombre": "Nacidos vivos segun lugar de nacimiento",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -18559,6 +27323,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "Z39",
         "nombre": "Atencion y examen posparto",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -18587,6 +27367,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "Z40",
         "nombre": "Cirugia profilactica",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -18615,6 +27411,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "Z41",
         "nombre": "Procedimientos para otros propositos que no sean remediar el estado de salud",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -18643,6 +27455,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "Z42",
         "nombre": "Cuidados posteriores a cirugia plastica",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -18671,6 +27499,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "Z43",
         "nombre": "Atencion a orificios artificiales",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -18699,6 +27543,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "Z44",
         "nombre": "Prueba y ajuste de dispositivos protesicos externos",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -18727,6 +27587,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "Z45",
         "nombre": "Ajuste y manejo de dispositivo implantado",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -18755,6 +27631,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "Z46",
         "nombre": "Prueba y ajuste de otros dispositivos",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -18783,6 +27675,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "Z47",
         "nombre": "Otros cuidados posteriores ortopedicos",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -18811,6 +27719,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "Z48",
         "nombre": "Otros cuidados posteriores quirurgicos",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -18839,6 +27763,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "Z49",
         "nombre": "Cuidados relacionados con dialisis",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -18867,6 +27807,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "Z50",
         "nombre": "Atencion que incluye procedimientos de rehabilitacion",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -18895,6 +27851,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "Z51",
         "nombre": "Otra atencion medica",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -18923,6 +27895,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "Z52",
         "nombre": "Donantes de organos y tejidos",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -18951,6 +27939,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "Z53",
         "nombre": "Personas en contacto con servicios de salud para procedimientos no realizados",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -18979,6 +27983,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "Z54",
         "nombre": "Convalecencia",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -19007,6 +28027,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "Z55",
         "nombre": "Problemas relacionados con la educacion y la alfabetizacion",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -19035,6 +28071,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "Z56",
         "nombre": "Problemas relacionados con el empleo y el desempleo",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -19063,6 +28115,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "Z57",
         "nombre": "Exposicion ocupacional a factores de riesgo",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -19091,6 +28159,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "Z58",
         "nombre": "Problemas relacionados con el ambiente fisico",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -19119,6 +28203,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "Z59",
         "nombre": "Problemas relacionados con la vivienda y las circunstancias economicas",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: clasificación de grupos, verificación de fuente oficial, duración."
+        },
         "criterios": [
           {
             "id": "trastorno-problemas-relacionados-con-la-vivienda-y-las-circunstancias-economicas-cie10-grupo-1",
@@ -19127,21 +28227,26 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
             "tipo": "revision_requerida",
             "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": [
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
                 "orden": 1,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
                 "orden": 2,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
                 "orden": 3,
                 "literal": false
@@ -19182,6 +28287,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "Z60",
         "nombre": "Problemas relacionados con el ambiente social",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: clasificación de grupos, verificación de fuente oficial, duración."
+        },
         "criterios": [
           {
             "id": "trastorno-problemas-relacionados-con-el-ambiente-social-cie10-grupo-1",
@@ -19190,21 +28311,26 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
             "tipo": "revision_requerida",
             "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": [
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
                 "orden": 1,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
                 "orden": 2,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
                 "orden": 3,
                 "literal": false
@@ -19245,6 +28371,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "Z61",
         "nombre": "Problemas relacionados con hechos negativos en la ninez",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -19273,6 +28415,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "Z62",
         "nombre": "Otros problemas relacionados con la crianza del nino",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -19301,6 +28459,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "Z63",
         "nombre": "Otros problemas relacionados con el grupo primario de apoyo, incluidas circunstancias familiares",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: clasificación de grupos, verificación de fuente oficial, duración."
+        },
         "criterios": [
           {
             "id": "trastorno-otros-problemas-relacionados-con-el-grupo-primario-de-apoyo-incluidas-circunstancias-familiares-cie10-grupo-1",
@@ -19309,21 +28483,26 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
             "tipo": "revision_requerida",
             "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": [
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
                 "orden": 1,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
                 "orden": 2,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
                 "orden": 3,
                 "literal": false
@@ -19364,6 +28543,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "Z63.0",
         "nombre": "Problemas relacionados con la separacion de los padres",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -19392,6 +28587,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "Z63.1",
         "nombre": "Problemas relacionados con la muerte de un miembro de la familia",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -19420,6 +28631,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "Z63.2",
         "nombre": "Problemas relacionados con el alejamiento de los miembros de la familia",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -19448,6 +28675,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "Z63.3",
         "nombre": "Problemas relacionados con la ausencia de un miembro de la familia",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -19476,6 +28719,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "Z63.4",
         "nombre": "Problemas relacionados con la violencia domestica",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -19504,6 +28763,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "Z63.5",
         "nombre": "Problemas relacionados con la adopcion y el cuidado de crianza",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -19532,6 +28807,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "Z63.6",
         "nombre": "Problemas relacionados con la dependencia de los miembros de la familia",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -19560,6 +28851,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "Z63.7",
         "nombre": "Problemas relacionados con la interaccion con los servicios sociales",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -19588,6 +28895,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "Z63.8",
         "nombre": "Otros problemas relacionados con el grupo primario de apoyo",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -19616,6 +28939,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "Z63.9",
         "nombre": "Problemas relacionados con el grupo primario de apoyo, no especificados",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -19644,6 +28983,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "Z64",
         "nombre": "Problemas relacionados con ciertas circunstancias psicosociales",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -19672,6 +29027,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "Z65",
         "nombre": "Problemas relacionados con otras circunstancias psicosociales",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -19700,6 +29071,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "Z70",
         "nombre": "Consulta relacionada con actitud, conducta u orientacion sexual",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -19728,6 +29115,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "Z71",
         "nombre": "Personas en contacto con servicios de salud para otras consultas y consejos medicos",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -19756,6 +29159,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "Z72",
         "nombre": "Problemas relacionados con el estilo de vida",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: clasificación de grupos, verificación de fuente oficial, duración."
+        },
         "criterios": [
           {
             "id": "trastorno-problemas-relacionados-con-el-estilo-de-vida-cie10-grupo-1",
@@ -19764,21 +29183,26 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
             "tipo": "revision_requerida",
             "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": [
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
                 "orden": 1,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
                 "orden": 2,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
                 "orden": 3,
                 "literal": false
@@ -19819,6 +29243,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "Z73",
         "nombre": "Problemas relacionados con dificultades para afrontar la vida",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -19847,6 +29287,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "Z74",
         "nombre": "Problemas relacionados con dependencia del prestador de servicios",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -19875,6 +29331,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "Z75",
         "nombre": "Problemas relacionados con facilidades de atencion medica y otros servicios de salud",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -19903,6 +29375,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "Z76",
         "nombre": "Personas en contacto con servicios de salud en otras circunstancias",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -19931,6 +29419,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "Z80",
         "nombre": "Historia familiar de tumor maligno",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -19959,6 +29463,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "Z81",
         "nombre": "Historia familiar de trastornos mentales y del comportamiento",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -19987,6 +29507,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "Z82",
         "nombre": "Historia familiar de ciertas discapacidades y enfermedades cronicas",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -20015,6 +29551,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "Z83",
         "nombre": "Historia familiar de otros trastornos especificos",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -20043,6 +29595,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "Z84",
         "nombre": "Historia familiar de otras afecciones",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -20071,6 +29639,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "Z85",
         "nombre": "Historia personal de tumor maligno",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -20099,6 +29683,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "Z86",
         "nombre": "Historia personal de algunas otras enfermedades",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -20127,6 +29727,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "Z86.4",
         "nombre": "antecedentes personales de abuso de sustancias psicoactivas",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -20155,6 +29771,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "Z87",
         "nombre": "Historia personal de otras enfermedades y afecciones",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -20183,6 +29815,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "Z88",
         "nombre": "Historia personal de alergia a drogas, medicamentos y sustancias biologicas",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -20211,6 +29859,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "Z89",
         "nombre": "Ausencia adquirida de miembros",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -20239,6 +29903,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "Z90",
         "nombre": "Ausencia adquirida de organos, no clasificada en otra parte",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -20267,6 +29947,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "Z91",
         "nombre": "Historia personal de factores de riesgo, no clasificados en otra parte",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -20295,6 +29991,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "Z91.5",
         "nombre": "Historia personal de lesión autoinfligida intencionalmente",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: clasificación de grupos, verificación de fuente oficial, duración."
+        },
         "criterios": [
           {
             "id": "trastorno-historia-personal-de-lesion-autoinfligida-intencionalmente-cie10-grupo-1",
@@ -20303,21 +30015,26 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
             "tipo": "revision_requerida",
             "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": [
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
                 "orden": 1,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
                 "orden": 2,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
                 "orden": 3,
                 "literal": false
@@ -20358,6 +30075,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "Z92",
         "nombre": "Historia personal de tratamiento medico",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -20386,6 +30119,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "Z93",
         "nombre": "Estado de orificios artificiales",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -20414,6 +30163,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "Z94",
         "nombre": "Organos y tejidos trasplantados",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -20442,6 +30207,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "Z95",
         "nombre": "Presencia de implantes e injertos cardiovasculares",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -20470,6 +30251,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "Z96",
         "nombre": "Presencia de otros implantes funcionales",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -20498,6 +30295,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "Z97",
         "nombre": "Presencia de otros dispositivos",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -20526,6 +30339,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "Z98",
         "nombre": "Otros estados posquirurgicos",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -20554,6 +30383,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "Z99",
         "nombre": "Dependencia de maquinas y dispositivos capacitantes, no clasificada en otra parte",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial, deterioro o impacto funcional."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -20582,6 +30427,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F22.0",
         "nombre": "Trastorno de ideas delirantes",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: clasificación de grupos, verificación de fuente oficial, duración."
+        },
         "criterios": [
           {
             "id": "trastorno-trastorno-de-ideas-delirantes-cie10-grupo-1",
@@ -20590,21 +30451,26 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
             "tipo": "revision_requerida",
             "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": [
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
                 "orden": 1,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
                 "orden": 2,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
                 "orden": 3,
                 "literal": false
@@ -20645,6 +30511,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F23.0",
         "nombre": "Trastorno psicotico agudo polimorfo sin sintomas de esquizofrenia",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: clasificación de grupos, verificación de fuente oficial, duración."
+        },
         "criterios": [
           {
             "id": "trastorno-trastorno-psicotico-agudo-polimorfo-sin-sintomas-de-esquizofrenia-cie10-grupo-1",
@@ -20653,21 +30535,26 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
             "tipo": "revision_requerida",
             "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": [
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
                 "orden": 1,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
                 "orden": 2,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
                 "orden": 3,
                 "literal": false
@@ -20708,6 +30595,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F23.1",
         "nombre": "Trastorno psicotico agudo polimorfo con sintomas de esquizofrenia",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: clasificación de grupos, verificación de fuente oficial, duración."
+        },
         "criterios": [
           {
             "id": "trastorno-trastorno-psicotico-agudo-polimorfo-con-sintomas-de-esquizofrenia-cie10-grupo-1",
@@ -20716,21 +30619,26 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
             "tipo": "revision_requerida",
             "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": [
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
                 "orden": 1,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
                 "orden": 2,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
                 "orden": 3,
                 "literal": false
@@ -20771,6 +30679,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F23.2",
         "nombre": "Trastorno psicotico agudo de tipo esquizofrenico",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: clasificación de grupos, verificación de fuente oficial, duración."
+        },
         "criterios": [
           {
             "id": "trastorno-trastorno-psicotico-agudo-de-tipo-esquizofrenico-cie10-grupo-1",
@@ -20779,21 +30703,26 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
             "tipo": "revision_requerida",
             "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": [
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
                 "orden": 1,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
                 "orden": 2,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
                 "orden": 3,
                 "literal": false
@@ -20834,6 +30763,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F51.0",
         "nombre": "Insomnio no organico",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: clasificación de grupos, verificación de fuente oficial, duración."
+        },
         "criterios": [
           {
             "id": "trastorno-insomnio-no-organico-cie10-grupo-1",
@@ -20842,21 +30787,26 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
             "tipo": "revision_requerida",
             "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": [
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
                 "orden": 1,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
                 "orden": 2,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
                 "orden": 3,
                 "literal": false
@@ -20897,6 +30847,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F51.5",
         "nombre": "Pesadillas",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: clasificación de grupos, verificación de fuente oficial, duración."
+        },
         "criterios": [
           {
             "id": "trastorno-pesadillas-cie10-grupo-1",
@@ -20905,21 +30871,26 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
             "tipo": "revision_requerida",
             "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": [
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
                 "orden": 1,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
                 "orden": 2,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
                 "orden": 3,
                 "literal": false
@@ -20960,6 +30931,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F91.0",
         "nombre": "Trastorno disocial limitado al contexto familiar",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: clasificación de grupos, verificación de fuente oficial, duración."
+        },
         "criterios": [
           {
             "id": "trastorno-trastorno-disocial-limitado-al-contexto-familiar-cie10-grupo-1",
@@ -20968,21 +30955,26 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
             "tipo": "revision_requerida",
             "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": [
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
                 "orden": 1,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
                 "orden": 2,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
                 "orden": 3,
                 "literal": false
@@ -21023,6 +31015,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F91.1",
         "nombre": "Trastorno disocial en ninos no socializados",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: clasificación de grupos, verificación de fuente oficial, duración."
+        },
         "criterios": [
           {
             "id": "trastorno-trastorno-disocial-en-ninos-no-socializados-cie10-grupo-1",
@@ -21031,21 +31039,26 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
             "tipo": "revision_requerida",
             "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": [
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
                 "orden": 1,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
                 "orden": 2,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
                 "orden": 3,
                 "literal": false
@@ -21086,6 +31099,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F91.2",
         "nombre": "Trastorno disocial en ninos socializados",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: clasificación de grupos, verificación de fuente oficial, duración."
+        },
         "criterios": [
           {
             "id": "trastorno-trastorno-disocial-en-ninos-socializados-cie10-grupo-1",
@@ -21094,21 +31123,26 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
             "tipo": "revision_requerida",
             "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": [
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
                 "orden": 1,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
                 "orden": 2,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
                 "orden": 3,
                 "literal": false
@@ -21149,6 +31183,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F92.0",
         "nombre": "Trastorno disocial depresivo",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: clasificación de grupos, verificación de fuente oficial, duración."
+        },
         "criterios": [
           {
             "id": "trastorno-trastorno-disocial-depresivo-cie10-grupo-1",
@@ -21157,21 +31207,26 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
             "tipo": "revision_requerida",
             "introduccion": "Confirmar que el cuadro clínico corresponde al síndrome o condición descrita por el código.",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": [
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Documentar temporalidad, gravedad, deterioro funcional, comorbilidades y factores precipitantes.",
                 "orden": 1,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Descartar causas médicas, sustancias, efectos farmacológicos u otros diagnósticos diferenciales relevantes.",
                 "orden": 2,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Usar entrevista clínica, exploración física/mental y estudios auxiliares según el contexto.",
                 "orden": 3,
                 "literal": false
@@ -21212,6 +31267,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 2,
         "codigo": "6A21",
         "nombre": "Trastorno esquizoafectivo",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "Clinical descriptions and diagnostic requirements for ICD-11 mental, behavioural and neurodevelopmental disorders (CDDR)",
+          "edicion": "2024",
+          "url": "https://www.who.int/publications/i/item/9789240077263",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -21240,6 +31311,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 2,
         "codigo": "6A23",
         "nombre": "Trastorno psicotico agudo y transitorio",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "Clinical descriptions and diagnostic requirements for ICD-11 mental, behavioural and neurodevelopmental disorders (CDDR)",
+          "edicion": "2024",
+          "url": "https://www.who.int/publications/i/item/9789240077263",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -21268,6 +31355,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 2,
         "codigo": "6A40",
         "nombre": "Trastorno bipolar tipo I",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "Clinical descriptions and diagnostic requirements for ICD-11 mental, behavioural and neurodevelopmental disorders (CDDR)",
+          "edicion": "2024",
+          "url": "https://www.who.int/publications/i/item/9789240077263",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -21296,6 +31399,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 2,
         "codigo": "6A41",
         "nombre": "Trastorno bipolar tipo II",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "Clinical descriptions and diagnostic requirements for ICD-11 mental, behavioural and neurodevelopmental disorders (CDDR)",
+          "edicion": "2024",
+          "url": "https://www.who.int/publications/i/item/9789240077263",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -21324,6 +31443,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 2,
         "codigo": "6A60",
         "nombre": "Episodio depresivo unico",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "Clinical descriptions and diagnostic requirements for ICD-11 mental, behavioural and neurodevelopmental disorders (CDDR)",
+          "edicion": "2024",
+          "url": "https://www.who.int/publications/i/item/9789240077263",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: clasificación de grupos, verificación de fuente oficial."
+        },
         "criterios": [
           {
             "id": "trastorno-episodio-depresivo-unico-cie11-grupo-1",
@@ -21332,21 +31467,26 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
             "tipo": "revision_requerida",
             "introduccion": "Animo deprimido, perdida de interes o disminucion significativa de energia.",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": [
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Sintomas asociados: alteraciones de sueno/apetito, culpa, baja autoestima, concentracion reducida, enlentecimiento/agitación o ideacion suicida.",
                 "orden": 1,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Duracion clinicamente relevante y deterioro funcional.",
                 "orden": 2,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Descartar sustancias, duelo no complicado, condiciones medicas u otros trastornos primarios.",
                 "orden": 3,
                 "literal": false
@@ -21383,6 +31523,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F40.2",
         "nombre": "Fobia específica",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: clasificación de grupos, verificación de fuente oficial, duración, exclusiones o diagnóstico diferencial."
+        },
         "criterios": [
           {
             "id": "trastorno-fobia-especifica-cie10-grupo-1",
@@ -21391,21 +31547,26 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
             "tipo": "revision_requerida",
             "introduccion": "Miedo o ansiedad intensa ante un objeto o situación específica.",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": [
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Respuesta inmediata, evitación o resistencia con ansiedad.",
                 "orden": 1,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Temor desproporcionado y persistente con deterioro clínicamente significativo.",
                 "orden": 2,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Especificar tipo: animal, entorno natural, sangre-inyección-lesión, situacional u otro.",
                 "orden": 3,
                 "literal": false
@@ -21422,6 +31583,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 2,
         "codigo": "6B03",
         "nombre": "Fobia especifica",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "Clinical descriptions and diagnostic requirements for ICD-11 mental, behavioural and neurodevelopmental disorders (CDDR)",
+          "edicion": "2024",
+          "url": "https://www.who.int/publications/i/item/9789240077263",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: clasificación de grupos, verificación de fuente oficial."
+        },
         "criterios": [
           {
             "id": "trastorno-fobia-especifica-cie11-grupo-1",
@@ -21430,21 +31607,26 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
             "tipo": "revision_requerida",
             "introduccion": "Miedo o ansiedad intensa ante un objeto o situación específica.",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": [
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Respuesta inmediata, evitación o resistencia con ansiedad.",
                 "orden": 1,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Temor desproporcionado y persistente con deterioro clínicamente significativo.",
                 "orden": 2,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Especificar tipo: animal, entorno natural, sangre-inyección-lesión, situacional u otro.",
                 "orden": 3,
                 "literal": false
@@ -21462,6 +31644,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "codigo": "300.29",
         "codigoCie10Cm": "F40.2",
         "nombre": "Fobia específica",
+        "fuente": {
+          "organismo": "American Psychiatric Association",
+          "documento": "DSM-5 / DSM-5-TR; contenido secundario resumido",
+          "edicion": "Resumen no literal",
+          "url": "",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_clinico",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: clasificación de grupos, verificación de fuente oficial."
+        },
         "criterios": [
           {
             "id": "trastorno-fobia-especifica-dsm5-grupo-1",
@@ -21470,21 +31668,26 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
             "tipo": "revision_requerida",
             "introduccion": "Miedo o ansiedad intensa ante un objeto o situación específica.",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": [
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Respuesta inmediata, evitación o resistencia con ansiedad.",
                 "orden": 1,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Temor desproporcionado y persistente con deterioro clínicamente significativo.",
                 "orden": 2,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Especificar tipo: animal, entorno natural, sangre-inyección-lesión, situacional u otro.",
                 "orden": 3,
                 "literal": false
@@ -21529,6 +31732,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 1,
         "codigo": "F40.1",
         "nombre": "Trastorno de ansiedad social",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "The ICD-10 Classification of Mental and Behavioural Disorders: Clinical descriptions and diagnostic guidelines",
+          "edicion": "1992",
+          "url": "https://www.who.int/publications/i/item/9241544228",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: clasificación de grupos, verificación de fuente oficial, exclusiones o diagnóstico diferencial."
+        },
         "criterios": [
           {
             "id": "trastorno-trastorno-de-ansiedad-social-cie10-grupo-1",
@@ -21537,27 +31756,33 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
             "tipo": "revision_requerida",
             "introduccion": "Miedo ante situaciones sociales por posible evaluación negativa.",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": [
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Temor a actuar de forma humillante o mostrar síntomas de ansiedad.",
                 "orden": 1,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Las situaciones provocan ansiedad y se evitan o soportan con malestar.",
                 "orden": 2,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Desproporción, persistencia y deterioro clínicamente significativo.",
                 "orden": 3,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Considerar manifestaciones infantiles y especificador relacionado con desempeño.",
                 "orden": 4,
                 "literal": false
@@ -21574,6 +31799,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 2,
         "codigo": "6B04",
         "nombre": "Trastorno de ansiedad social",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "Clinical descriptions and diagnostic requirements for ICD-11 mental, behavioural and neurodevelopmental disorders (CDDR)",
+          "edicion": "2024",
+          "url": "https://www.who.int/publications/i/item/9789240077263",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: clasificación de grupos, verificación de fuente oficial."
+        },
         "criterios": [
           {
             "id": "trastorno-trastorno-de-ansiedad-social-cie11-grupo-1",
@@ -21582,27 +31823,33 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
             "tipo": "revision_requerida",
             "introduccion": "Miedo ante situaciones sociales por posible evaluación negativa.",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": [
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Temor a actuar de forma humillante o mostrar síntomas de ansiedad.",
                 "orden": 1,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Las situaciones provocan ansiedad y se evitan o soportan con malestar.",
                 "orden": 2,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Desproporción, persistencia y deterioro clínicamente significativo.",
                 "orden": 3,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Considerar manifestaciones infantiles y especificador relacionado con desempeño.",
                 "orden": 4,
                 "literal": false
@@ -21620,6 +31867,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "codigo": "300.23",
         "codigoCie10Cm": "F40.1",
         "nombre": "Trastorno de ansiedad social",
+        "fuente": {
+          "organismo": "American Psychiatric Association",
+          "documento": "DSM-5 / DSM-5-TR; contenido secundario resumido",
+          "edicion": "Resumen no literal",
+          "url": "",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_clinico",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: clasificación de grupos, verificación de fuente oficial."
+        },
         "criterios": [
           {
             "id": "trastorno-trastorno-de-ansiedad-social-dsm5-grupo-1",
@@ -21628,27 +31891,33 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
             "tipo": "revision_requerida",
             "introduccion": "Miedo ante situaciones sociales por posible evaluación negativa.",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": [
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Temor a actuar de forma humillante o mostrar síntomas de ansiedad.",
                 "orden": 1,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Las situaciones provocan ansiedad y se evitan o soportan con malestar.",
                 "orden": 2,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Desproporción, persistencia y deterioro clínicamente significativo.",
                 "orden": 3,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Considerar manifestaciones infantiles y especificador relacionado con desempeño.",
                 "orden": 4,
                 "literal": false
@@ -21691,6 +31960,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 2,
         "codigo": "6B41",
         "nombre": "Trastorno de estres postraumatico complejo",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "Clinical descriptions and diagnostic requirements for ICD-11 mental, behavioural and neurodevelopmental disorders (CDDR)",
+          "edicion": "2024",
+          "url": "https://www.who.int/publications/i/item/9789240077263",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -21719,6 +32004,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 2,
         "codigo": "6C40",
         "nombre": "Trastorno por uso de alcohol",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "Clinical descriptions and diagnostic requirements for ICD-11 mental, behavioural and neurodevelopmental disorders (CDDR)",
+          "edicion": "2024",
+          "url": "https://www.who.int/publications/i/item/9789240077263",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -21747,6 +32048,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 2,
         "codigo": "6C41",
         "nombre": "Trastorno por uso de cannabis",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "Clinical descriptions and diagnostic requirements for ICD-11 mental, behavioural and neurodevelopmental disorders (CDDR)",
+          "edicion": "2024",
+          "url": "https://www.who.int/publications/i/item/9789240077263",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -21775,6 +32092,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 2,
         "codigo": "6C43",
         "nombre": "Trastorno por uso de opioides",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "Clinical descriptions and diagnostic requirements for ICD-11 mental, behavioural and neurodevelopmental disorders (CDDR)",
+          "edicion": "2024",
+          "url": "https://www.who.int/publications/i/item/9789240077263",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -21803,6 +32136,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 2,
         "codigo": "6C45",
         "nombre": "Trastorno por uso de estimulantes",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "Clinical descriptions and diagnostic requirements for ICD-11 mental, behavioural and neurodevelopmental disorders (CDDR)",
+          "edicion": "2024",
+          "url": "https://www.who.int/publications/i/item/9789240077263",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -21831,6 +32180,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 2,
         "codigo": "6D70",
         "nombre": "Trastorno del espectro autista",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "Clinical descriptions and diagnostic requirements for ICD-11 mental, behavioural and neurodevelopmental disorders (CDDR)",
+          "edicion": "2024",
+          "url": "https://www.who.int/publications/i/item/9789240077263",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -21859,6 +32224,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "orden": 2,
         "codigo": "6A05",
         "nombre": "Trastorno por deficit de atencion con hiperactividad",
+        "fuente": {
+          "organismo": "World Health Organization",
+          "documento": "Clinical descriptions and diagnostic requirements for ICD-11 mental, behavioural and neurodevelopmental disorders (CDDR)",
+          "edicion": "2024",
+          "url": "https://www.who.int/publications/i/item/9789240077263",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_local_pendiente_revision",
+        "completionStatus": "pending_review",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: criterios, verificación de fuente oficial."
+        },
         "criterios": [],
         "especificadores": [],
         "notas": [],
@@ -21887,6 +32268,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "codigo": "309.21",
         "codigoCie10Cm": "F93.0",
         "nombre": "Trastorno de ansiedad por separación",
+        "fuente": {
+          "organismo": "American Psychiatric Association",
+          "documento": "DSM-5 / DSM-5-TR; contenido secundario resumido",
+          "edicion": "Resumen no literal",
+          "url": "",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_clinico",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: clasificación de grupos, verificación de fuente oficial."
+        },
         "criterios": [
           {
             "id": "trastorno-trastorno-de-ansiedad-por-separacion-dsm5-grupo-1",
@@ -21895,27 +32292,33 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
             "tipo": "revision_requerida",
             "introduccion": "Malestar excesivo ante la separación de figuras de apego.",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": [
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Preocupación por pérdida o acontecimientos que provoquen separación.",
                 "orden": 1,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Resistencia a salir, permanecer solo o dormir separado.",
                 "orden": 2,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Síntomas físicos, persistencia y deterioro clínicamente significativo.",
                 "orden": 3,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Considerar la etapa del desarrollo y descartar otras explicaciones.",
                 "orden": 4,
                 "literal": false
@@ -21958,6 +32361,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "codigo": "313.23",
         "codigoCie10Cm": "F94.0",
         "nombre": "Mutismo selectivo",
+        "fuente": {
+          "organismo": "American Psychiatric Association",
+          "documento": "DSM-5 / DSM-5-TR; contenido secundario resumido",
+          "edicion": "Resumen no literal",
+          "url": "",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_clinico",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: clasificación de grupos, verificación de fuente oficial."
+        },
         "criterios": [
           {
             "id": "trastorno-mutismo-selectivo-dsm5-grupo-1",
@@ -21966,21 +32385,26 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
             "tipo": "revision_requerida",
             "introduccion": "Incapacidad persistente para hablar en determinadas situaciones sociales pese a poder hacerlo en otras.",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": [
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Interferencia académica, laboral o social.",
                 "orden": 1,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Persistencia clínicamente relevante.",
                 "orden": 2,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "No atribuible únicamente a desconocimiento del idioma ni a otro trastorno de la comunicación.",
                 "orden": 3,
                 "literal": false
@@ -22023,6 +32447,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "codigo": "292.89",
         "codigoCie10Cm": "F19.98",
         "nombre": "Trastorno de ansiedad inducido por sustancias o medicamentos",
+        "fuente": {
+          "organismo": "American Psychiatric Association",
+          "documento": "DSM-5 / DSM-5-TR; contenido secundario resumido",
+          "edicion": "Resumen no literal",
+          "url": "",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_clinico",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: clasificación de grupos, verificación de fuente oficial."
+        },
         "criterios": [
           {
             "id": "trastorno-trastorno-de-ansiedad-inducido-por-sustancias-o-medicamentos-dsm5-grupo-1",
@@ -22031,21 +32471,26 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
             "tipo": "revision_requerida",
             "introduccion": "Síntomas de ansiedad predominantes.",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": [
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Relación temporal con intoxicación, abstinencia o exposición a un medicamento.",
                 "orden": 1,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "La sustancia o medicamento es capaz de producir los síntomas.",
                 "orden": 2,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Ausencia de mejor explicación por un trastorno independiente y no aparición exclusiva durante delirium.",
                 "orden": 3,
                 "literal": false
@@ -22088,6 +32533,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "codigo": "293.84",
         "codigoCie10Cm": "F06.4",
         "nombre": "Trastorno de ansiedad debido a otra afección médica",
+        "fuente": {
+          "organismo": "American Psychiatric Association",
+          "documento": "DSM-5 / DSM-5-TR; contenido secundario resumido",
+          "edicion": "Resumen no literal",
+          "url": "",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_clinico",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: clasificación de grupos, verificación de fuente oficial."
+        },
         "criterios": [
           {
             "id": "trastorno-trastorno-de-ansiedad-debido-a-otra-afeccion-medica-dsm5-grupo-1",
@@ -22096,21 +32557,26 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
             "tipo": "revision_requerida",
             "introduccion": "Ansiedad o ataques de pánico predominantes.",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": [
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Evidencia de relación fisiopatológica directa con una afección médica.",
                 "orden": 1,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Excluir otra explicación mental y la aparición exclusiva durante delirium.",
                 "orden": 2,
                 "literal": false
               },
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "Malestar o deterioro clínicamente significativo.",
                 "orden": 3,
                 "literal": false
@@ -22153,6 +32619,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "codigo": "300.09",
         "codigoCie10Cm": "F41.8",
         "nombre": "Otro trastorno de ansiedad especificado",
+        "fuente": {
+          "organismo": "American Psychiatric Association",
+          "documento": "DSM-5 / DSM-5-TR; contenido secundario resumido",
+          "edicion": "Resumen no literal",
+          "url": "",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_clinico",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: clasificación de grupos, verificación de fuente oficial."
+        },
         "criterios": [
           {
             "id": "trastorno-otro-trastorno-de-ansiedad-especificado-dsm5-grupo-1",
@@ -22161,9 +32643,12 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
             "tipo": "revision_requerida",
             "introduccion": "Se presentan síntomas de ansiedad clínicamente significativos.",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": [
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "El profesional especifica la razón por la que no se cumplen todos los criterios de una categoría concreta.",
                 "orden": 1,
                 "literal": false
@@ -22206,6 +32691,22 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
         "codigo": "300.00",
         "codigoCie10Cm": "F41.9",
         "nombre": "Trastorno de ansiedad no especificado",
+        "fuente": {
+          "organismo": "American Psychiatric Association",
+          "documento": "DSM-5 / DSM-5-TR; contenido secundario resumido",
+          "edicion": "Resumen no literal",
+          "url": "",
+          "fechaConsulta": "2026-07-26",
+          "sourceVerified": false
+        },
+        "tipoContenido": "resumen_clinico",
+        "completionStatus": "partial",
+        "review": {
+          "reviewed": false,
+          "reviewedAt": null,
+          "sourceVerified": false,
+          "notes": "Revisión requerida: clasificación de grupos, verificación de fuente oficial."
+        },
         "criterios": [
           {
             "id": "trastorno-trastorno-de-ansiedad-no-especificado-dsm5-grupo-1",
@@ -22214,9 +32715,12 @@ export const DIAGNOSTICOS_BIBLIOTECA = [
             "tipo": "revision_requerida",
             "introduccion": "Predominan síntomas de ansiedad que causan malestar o deterioro.",
             "literal": false,
+            "listType": "none",
+            "grupos": [],
             "items": [
               {
                 "numero": null,
+                "marcador": null,
                 "texto": "No se especifica el motivo de incumplimiento de criterios o la información disponible es insuficiente.",
                 "orden": 1,
                 "literal": false

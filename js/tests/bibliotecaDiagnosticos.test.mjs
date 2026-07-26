@@ -6,7 +6,22 @@ test("Los criterios se almacenan como grupos con listas internas y descripción 
   const tag = DIAGNOSTICOS_BIBLIOTECA.find((diagnostico) => diagnostico.id === "trastorno-trastorno-de-ansiedad-generalizada");
   assert.ok(tag.descripcionBreve);
   assert.ok(tag.sistemas.cie10.criterios.every((grupo) => Array.isArray(grupo.items)));
-  assert.ok(tag.sistemas.cie10.criterios.some((grupo) => grupo.items.length > 1));
+  assert.ok(tag.sistemas.cie10.criterios.some((grupo) => grupo.grupos.some((subgrupo) => subgrupo.items.length > 1)));
+});
+
+test("El criterio B conserva sus subcategorías dentro del mismo grupo padre", () => {
+  const tag = DIAGNOSTICOS_BIBLIOTECA.find((diagnostico) => diagnostico.id === "trastorno-trastorno-de-ansiedad-generalizada");
+  const criterioB = tag.sistemas.cie10.criterios.find((grupo) => grupo.clave === "B");
+  assert.ok(criterioB);
+  assert.ok(criterioB.grupos.length >= 3);
+  assert.ok(criterioB.grupos.some((grupo) => grupo.titulo === "Síntomas autonómicos"));
+  assert.ok(criterioB.grupos.every((grupo) => grupo.items.every((item) => !/^(?:\(?\d+\)?[.)])/.test(item.texto))));
+});
+
+test("El lote de ansiedad conserva fuente registrada y estado de revisión honesto", () => {
+  const ansiedad = DIAGNOSTICOS_BIBLIOTECA.filter((diagnostico) => diagnostico.categoria === "Trastornos de ansiedad");
+  assert.equal(ansiedad.length, 11);
+  assert.ok(ansiedad.every((diagnostico) => Object.values(diagnostico.sistemas).every((sistema) => sistema.fuente && sistema.completionStatus !== "complete")));
 });
 
 test("Biblioteca usa ids únicos y una sola entidad por nombre", () => {
