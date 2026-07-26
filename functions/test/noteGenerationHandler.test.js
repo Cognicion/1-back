@@ -11,6 +11,7 @@ const {
   buildRetryInstruction,
   validateProviderResult,
   buildMentalExamSection,
+  validateMentalExamNarrative,
   requiredInstitutionalFormatPermission,
   runGenerateStructuredNoteFromDictation
 } = require("../noteGenerationHandler");
@@ -266,6 +267,39 @@ const mentalWithVisual = buildMentalExamSection(basePayload({
 assert.ok(mentalWithVisual.components.some((component) => component.domain === "visual_contact"));
 assert.ok(mentalWithVisual.components.some((component) => component.domain === "gait"));
 assert.match(mentalWithVisual.narrative, /Contacto visual|Marcha/);
+
+// v1.43: el Examen mental no conserva diálogo, audio ni valores internos; se repara solo este componente.
+const mentalFixture = basePayload({
+  transcript: {
+    transcriptId: "tx-mental-v143",
+    originalTextHash: "hash-mental-v143",
+    segmentationMode: "hybrid",
+    utterances: [
+      { id: "m-1", sequence: 1, text: "¿Me escucha? Voy a ajustar el volumen.", probableRole: "clinician", speechAct: "question" },
+      { id: "m-2", sequence: 2, text: "Sí, se escucha bajo.", probableRole: "patient", speechAct: "answer" },
+      { id: "m-3", sequence: 3, text: "Me siento ansioso, pero no tengo ideas suicidas actualmente.", probableRole: "patient", speechAct: "answer" }
+    ]
+  },
+  encounterObservation: {
+    modality: "videollamada",
+    gait: [{ value: "not_assessable", label: "No valorable", destinationSections: ["mentalStatusExam"] }]
+  }
+});
+const repairedMental = buildMentalExamSection(mentalFixture, {
+  narrative: "Doctor, ¿me escucha? Ajustaré el volumen. Riesgo suicida: presente. cama_correspondiente."
+});
+assert.equal(repairedMental.repairAttempted, true);
+assert.doesNotMatch(repairedMental.text, /(?:doctor|volumen|audio|cama_correspondiente|[¿?])/i);
+assert.doesNotMatch(repairedMental.text, /riesgo suicida:\s*presente/i);
+assert.match(repairedMental.text, /Niega ideaci[oó]n suicida actual/i);
+assert.match(repairedMental.text, /Marcha no valorable/i);
+assert.equal(repairedMental.validationIssues.some((issue) => issue.severity === "high"), false);
+
+// La polaridad del riesgo, la marcha y los placeholders se validan sin tocar Evolución ni Análisis.
+const deniedRiskComponents = [{ domain: "suicide_risk", status: "denied", sourceType: "transcript_explicit" }];
+assert.ok(validateMentalExamNarrative("Riesgo suicida presente.", deniedRiskComponents).some((issue) => issue.code === "RISK_POLARITY_CONTRADICTION"));
+assert.ok(validateMentalExamNarrative("Marcha sin alteraciones.", []).some((issue) => issue.code === "UNSUPPORTED_OBSERVATION"));
+assert.ok(validateMentalExamNarrative("cama_correspondiente.", []).some((issue) => issue.code === "INTERNAL_PLACEHOLDER"));
 
 await assert.rejects(
   () => runGenerateStructuredNoteFromDictation({

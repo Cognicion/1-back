@@ -15,7 +15,7 @@ import {
 } from "./services/conversationSegmentationProviders.js?v=20260725-adaptive-split-v1-4";
 import { segmentarConversacionClinica } from "./services/clinicalPipeline.js";
 import { validarExamenMentalNarrativo } from "./services/notaAutomatica.js";
-import { VOICE_NOTE_MODULE_VERSION } from "./services/voiceNoteModuleVersion.js?v=20260726-complete-note-v1-42";
+import { VOICE_NOTE_MODULE_VERSION } from "./services/voiceNoteModuleVersion.js?v=20260726-mental-exam-v1-43";
 import {
   VOICE_NOTE_FIELD_REGISTRY,
   VOICE_NOTE_PROMPT_VERSION,
@@ -29,7 +29,7 @@ import {
   guardarTranscripcionVozFirestore,
   leerNotaExistente,
   transferirNotaVozABorrador
-} from "./services/voiceNoteGenerationService.js?v=20260726-complete-note-v1-42";
+} from "./services/voiceNoteGenerationService.js?v=20260726-mental-exam-v1-43";
 import { buscarBorradorNotaClinica } from "./services/notas.js?v=20260716-2";
 import {
   VOICE_NOTE_SESSION_SCHEMA_VERSION,
