@@ -1,4 +1,4 @@
-export const APP_VERSION = "20260726-diagnosticos-v2";
+export const APP_VERSION = "20260726-pharma-modal-v1";
 export const FIRESTORE_DEVICE_PREF_KEY = "cognicion.dispositivoPersonal";
 
 const STATIC_CACHE = `cognicion-static-${APP_VERSION}`;
@@ -27,7 +27,7 @@ function insertarManifestSiFalta() {
   if (document.querySelector('link[rel="manifest"]')) return;
   const link = document.createElement("link");
   link.rel = "manifest";
-  link.href = "./manifest.json?v=20260726-diagnosticos-v2";
+  link.href = "./manifest.json?v=20260726-pharma-modal-v1";
   document.head?.appendChild(link);
 }
 

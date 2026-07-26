@@ -5244,6 +5244,33 @@ function cerrarInteraccionesFarmacologicas() {
   modal.setAttribute("aria-hidden", "true");
 }
 
+function obtenerTextoDiagnosticoInteracciones(diagnostico) {
+  if (typeof diagnostico === "string") return diagnostico.trim();
+  if (!diagnostico || typeof diagnostico !== "object") return "";
+
+  const codigo = diagnostico.codigo ?? diagnostico.code ?? diagnostico.id ?? "";
+  const nombre = diagnostico.nombre
+    ?? diagnostico.name
+    ?? diagnostico.descripcion
+    ?? diagnostico.description
+    ?? diagnostico.textoVisible
+    ?? diagnostico.texto
+    ?? "";
+  const partes = [codigo, nombre]
+    .filter((valor) => typeof valor === "string" || typeof valor === "number")
+    .map((valor) => String(valor).trim())
+    .filter(Boolean);
+  const texto = [...new Set(partes)].join(" - ");
+
+  if (!texto) {
+    console.warn("[Interacciones] Diagnóstico sin texto renderizable", {
+      keys: Object.keys(diagnostico)
+    });
+  }
+
+  return texto;
+}
+
 function renderizarInteraccionesFarmacologicas(medicamentos = [], origen = "tratamiento") {
   const contenedor = document.getElementById("contenidoInteraccionesFarmacologicas");
   if (!contenedor) return;
@@ -5266,13 +5293,13 @@ function renderizarInteraccionesFarmacologicas(medicamentos = [], origen = "trat
   const contextoDiagnostico = diagnosticosEvaluados.length
     ? diagnosticosEvaluados.map((dx) => `
       <li>
-        ${escaparHTML(dx.texto || dx.nombre || "Diagnostico sin texto")}
-        ${dx.estado ? `<small>${escaparHTML(dx.estado)}</small>` : ""}
+        ${escaparHTML(obtenerTextoDiagnosticoInteracciones(dx) || "Diagnóstico sin texto")}
+        ${typeof dx.estado === "string" || typeof dx.estado === "number" ? `<small>${escaparHTML(String(dx.estado))}</small>` : ""}
       </li>
     `).join("")
     : "<li>Sin diagnosticos estructurados evaluables.</li>";
   const categoriasDiagnosticas = diagnosticosDetectados.length
-    ? diagnosticosDetectados.map((dx) => escaparHTML(dx.nombre || dx.id || "")).filter(Boolean).join(", ")
+    ? diagnosticosDetectados.map((dx) => obtenerTextoDiagnosticoInteracciones(dx)).filter(Boolean).map((texto) => escaparHTML(texto)).join(", ")
     : "Sin categorias clinicas detectadas por las reglas locales.";
 
   contenedor.innerHTML = `
@@ -5301,7 +5328,7 @@ function renderizarInteraccionesFarmacologicas(medicamentos = [], origen = "trat
               </div>
               <em>${escaparHTML(alerta.severidad)}</em>
             </div>
-            ${alerta.diagnosticos?.length ? `<small>Contexto: ${escaparHTML(alerta.diagnosticos.join(", "))}</small>` : ""}
+            ${alerta.diagnosticos?.length ? `<small>Contexto: ${alerta.diagnosticos.map((dx) => obtenerTextoDiagnosticoInteracciones(dx)).filter(Boolean).map((texto) => escaparHTML(texto)).join(", ")}</small>` : ""}
             <p>${escaparHTML(alerta.efecto)}</p>
             <small>${escaparHTML(alerta.recomendacion)}</small>
             ${alerta.requiereJustificacion ? "<small>Requiere justificacin clnica si se decide continuar.</small>" : ""}

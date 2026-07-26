@@ -1759,6 +1759,149 @@ body.tema-claro .diagnostico-opcion:focus-visible {
   box-shadow: 0 0 16px rgba(52, 122, 77, 0.16);
 }
 
+/* Interacciones farmacológicas: adaptación localizada del modal al tema claro. */
+body.tema-claro .panel-interacciones-farmacologicas,
+html[data-theme="light"] .panel-interacciones-farmacologicas {
+  background: var(--surface-primary, #fbfcfb);
+  color: var(--cog-text, #17211b);
+  border-color: var(--border-subtle, #ccdacf);
+  box-shadow: 0 24px 70px rgba(32, 70, 50, 0.18);
+  scrollbar-color: #94b39e #e8f0ea;
+}
+
+body.tema-claro .panel-interacciones-farmacologicas .panel-ingreso-header p,
+html[data-theme="light"] .panel-interacciones-farmacologicas .panel-ingreso-header p {
+  color: var(--celtic-700, #245d3a);
+  opacity: 1 !important;
+}
+
+body.tema-claro .panel-interacciones-farmacologicas .panel-ingreso-header h3,
+html[data-theme="light"] .panel-interacciones-farmacologicas .panel-ingreso-header h3 {
+  color: var(--cog-text, #17211b) !important;
+}
+
+body.tema-claro .panel-interacciones-farmacologicas .panel-ingreso-header button,
+html[data-theme="light"] .panel-interacciones-farmacologicas .panel-ingreso-header button {
+  background: var(--surface-accent-soft, #e4f1e8);
+  color: var(--cog-text, #17211b);
+  border-color: var(--border-accent, #7da18a);
+}
+
+body.tema-claro .panel-interacciones-farmacologicas .panel-ingreso-header button:hover,
+html[data-theme="light"] .panel-interacciones-farmacologicas .panel-ingreso-header button:hover,
+body.tema-claro .panel-interacciones-farmacologicas .panel-ingreso-header button:focus-visible,
+html[data-theme="light"] .panel-interacciones-farmacologicas .panel-ingreso-header button:focus-visible {
+  background: var(--surface-accent-hover, #d7ebdd);
+  outline: 2px solid var(--border-accent, #7da18a);
+  outline-offset: 2px;
+}
+
+body.tema-claro .panel-interacciones-farmacologicas .contenido-interacciones-farmacologicas,
+html[data-theme="light"] .panel-interacciones-farmacologicas .contenido-interacciones-farmacologicas {
+  color: var(--cog-text, #17211b) !important;
+}
+
+body.tema-claro .panel-interacciones-farmacologicas .contenido-interacciones-farmacologicas > .texto-suave,
+html[data-theme="light"] .panel-interacciones-farmacologicas .contenido-interacciones-farmacologicas > .texto-suave {
+  color: var(--cog-muted, #46534b) !important;
+  opacity: 1 !important;
+}
+
+body.tema-claro .panel-interacciones-farmacologicas .interacciones-medicamentos-revisados,
+body.tema-claro .panel-interacciones-farmacologicas .interaccion-card,
+html[data-theme="light"] .panel-interacciones-farmacologicas .interacciones-medicamentos-revisados,
+html[data-theme="light"] .panel-interacciones-farmacologicas .interaccion-card {
+  background: var(--surface-secondary, #f2f7f3);
+  color: var(--cog-text, #17211b);
+  border-color: var(--border-subtle, #ccdacf);
+  opacity: 1;
+}
+
+body.tema-claro .panel-interacciones-farmacologicas .interacciones-medicamentos-revisados strong,
+body.tema-claro .panel-interacciones-farmacologicas .interaccion-card strong,
+html[data-theme="light"] .panel-interacciones-farmacologicas .interacciones-medicamentos-revisados strong,
+html[data-theme="light"] .panel-interacciones-farmacologicas .interaccion-card strong {
+  color: var(--cog-text, #17211b) !important;
+  opacity: 1 !important;
+}
+
+body.tema-claro .panel-interacciones-farmacologicas .interacciones-medicamentos-revisados li span,
+body.tema-claro .panel-interacciones-farmacologicas .interacciones-medicamentos-revisados li small,
+body.tema-claro .panel-interacciones-farmacologicas .interaccion-card small,
+html[data-theme="light"] .panel-interacciones-farmacologicas .interacciones-medicamentos-revisados li span,
+html[data-theme="light"] .panel-interacciones-farmacologicas .interacciones-medicamentos-revisados li small,
+html[data-theme="light"] .panel-interacciones-farmacologicas .interaccion-card small {
+  color: var(--cog-muted, #46534b) !important;
+  opacity: 1 !important;
+}
+
+body.tema-claro .panel-interacciones-farmacologicas .interaccion-card p,
+html[data-theme="light"] .panel-interacciones-farmacologicas .interaccion-card p {
+  color: var(--cog-muted, #46534b) !important;
+  opacity: 1 !important;
+}
+
+body.tema-claro .panel-interacciones-farmacologicas .interaccion-card em,
+html[data-theme="light"] .panel-interacciones-farmacologicas .interaccion-card em {
+  color: var(--celtic-700, #245d3a) !important;
+  opacity: 1 !important;
+}
+
+body.tema-claro .panel-interacciones-farmacologicas .interaccion-card .registro-top span,
+html[data-theme="light"] .panel-interacciones-farmacologicas .interaccion-card .registro-top span {
+  color: var(--cog-muted, #46534b) !important;
+  opacity: 1 !important;
+}
+
+body.tema-claro .panel-interacciones-farmacologicas .severidad-ok,
+body.tema-claro .panel-interacciones-farmacologicas .severidad-baja,
+html[data-theme="light"] .panel-interacciones-farmacologicas .severidad-ok,
+html[data-theme="light"] .panel-interacciones-farmacologicas .severidad-baja {
+  background: var(--success-background, #eaf6ee);
+  border-color: var(--success-border, #7da18a);
+  color: var(--success-text, #245d3a);
+}
+
+body.tema-claro .panel-interacciones-farmacologicas .severidad-precaucion,
+body.tema-claro .panel-interacciones-farmacologicas .severidad-media,
+html[data-theme="light"] .panel-interacciones-farmacologicas .severidad-precaucion,
+html[data-theme="light"] .panel-interacciones-farmacologicas .severidad-media {
+  background: var(--warning-background, #f6f2df);
+  border-color: var(--warning-border, #b9a65b);
+  color: var(--warning-text, #51491f);
+}
+
+body.tema-claro .panel-interacciones-farmacologicas .severidad-alta,
+body.tema-claro .panel-interacciones-farmacologicas .severidad-critica,
+html[data-theme="light"] .panel-interacciones-farmacologicas .severidad-alta,
+html[data-theme="light"] .panel-interacciones-farmacologicas .severidad-critica {
+  background: var(--danger-background, #fdeeee);
+  border-color: var(--danger-border, #c77b7b);
+  color: var(--danger-text, #7a2f2f);
+}
+
+body.tema-claro .panel-interacciones-farmacologicas::-webkit-scrollbar,
+html[data-theme="light"] .panel-interacciones-farmacologicas::-webkit-scrollbar {
+  width: 10px;
+}
+
+body.tema-claro .panel-interacciones-farmacologicas::-webkit-scrollbar-track,
+html[data-theme="light"] .panel-interacciones-farmacologicas::-webkit-scrollbar-track {
+  background: #e8f0ea;
+}
+
+body.tema-claro .panel-interacciones-farmacologicas::-webkit-scrollbar-thumb,
+html[data-theme="light"] .panel-interacciones-farmacologicas::-webkit-scrollbar-thumb {
+  background: #94b39e;
+  border: 2px solid #e8f0ea;
+  border-radius: 999px;
+}
+
+body.tema-claro .panel-interacciones-farmacologicas::-webkit-scrollbar-thumb:hover,
+html[data-theme="light"] .panel-interacciones-farmacologicas::-webkit-scrollbar-thumb:hover {
+  background: #6f967b;
+}
+
 .med-alerta-badge:hover,
 .med-alerta-badge:focus-visible {
   border-color: rgba(126, 182, 138, 0.9);
