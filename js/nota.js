@@ -4148,29 +4148,18 @@ async function cargarHistorial(uidPaciente) {
     }
 
     contenedor.innerHTML += `
-      <details style="
-        background:#0d0d0d;
-        border:1px solid #333;
-        border-radius:20px;
-        padding:22px;
-        margin-bottom:20px;
-      ">
+      <details class="version-nota version-nota--historial version-nota--${estadoNota} ${esPrevia ? "version-nota--previa" : ""}">
 
-        <summary style="
-          cursor:pointer;
-          font-size:18px;
-          font-weight:bold;
-          outline:none;
-        ">
+        <summary class="nota-historial-summary">
           ${tituloVisible ? `<span class="nota-titulo-listado">${escaparHTML(tituloVisible)}</span>` : ""}
-          <span class="nota-linea-clinica">${escaparHTML(tipoTexto)} ${escaparHTML(fechaTexto)}${esPrevia ? " (nota previa)" : ""}</span>
+          <span class="nota-linea-clinica">${escaparHTML(tipoTexto)} ${escaparHTML(fechaTexto)}${esPrevia ? ' <span class="nota-previa-badge">nota previa</span>' : ""}</span>
           <small class="nota-meta-listado">${esPrevia ? "" : `${escaparHTML(horaTexto)} · `}${escaparHTML(datos.autor || "Sin médico")} · ${estadoTexto}</small>
           <!--
           ${fechaTexto} · ${horaTexto} · ${datos.autor || "Sin médico"} · ${estadoTexto}
           -->
         </summary>
 
-        <div style="margin-top:20px;">
+        <div class="nota-historial-contenido">
 
           <p><b>Diagnósticos:</b><br>
             ${diagnosticosTexto}

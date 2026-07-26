@@ -326,6 +326,44 @@ button:hover{
     margin-top: 6px;
 }
 
+.version-nota--historial {
+    margin-bottom: 20px;
+    overflow-wrap: anywhere;
+}
+
+.nota-historial-summary {
+    cursor: pointer;
+    font-size: 18px;
+    font-weight: 700;
+    outline: none;
+    list-style-position: outside;
+}
+
+.nota-historial-summary::-webkit-details-marker {
+    color: currentColor;
+}
+
+.nota-historial-contenido {
+    margin-top: 20px;
+    overflow-wrap: anywhere;
+}
+
+.nota-previa-badge {
+    display: inline-flex;
+    align-items: center;
+    width: auto;
+    margin-left: 6px;
+    padding: 2px 8px;
+    border-radius: 999px;
+    border: 1px solid rgba(126,182,138,0.34);
+    background: rgba(82,152,102,0.14);
+    color: var(--celtic-300);
+    font-size: 0.78em;
+    font-weight: 800;
+    line-height: 1.4;
+    vertical-align: middle;
+}
+
 .bloque-pediatria-nota {
     border: 1px solid rgba(126, 182, 138, 0.24);
     border-radius: 20px;
@@ -2530,6 +2568,116 @@ html[data-theme="light"] .boton-secundario:hover,
 html[data-theme="light"] .boton-mini:hover {
   background: var(--action-secondary-hover);
   border-color: var(--accent-hover);
+  color: var(--text-primary);
+}
+
+html[data-theme="light"] #historialNotas {
+  color: var(--text-primary);
+}
+
+html[data-theme="light"] .version-nota {
+  background: var(--surface-secondary);
+  background-image: none;
+  border-color: var(--border-subtle);
+  color: var(--text-primary);
+  box-shadow: var(--shadow-subtle);
+  opacity: 1;
+  filter: none;
+}
+
+html[data-theme="light"] .version-nota--historial {
+  border: 1px solid var(--border-subtle);
+  background: var(--surface-secondary);
+  color: var(--text-primary);
+}
+
+html[data-theme="light"] .version-nota--historial:hover {
+  background: var(--surface-hover);
+  border-color: var(--border-accent, var(--accent-primary));
+}
+
+html[data-theme="light"] .version-nota--historial[open] {
+  background: var(--surface-primary);
+  border-color: var(--border-accent, var(--accent-primary));
+  box-shadow: var(--shadow-medium, var(--shadow-subtle));
+}
+
+html[data-theme="light"] .nota-historial-summary {
+  color: var(--text-primary);
+}
+
+html[data-theme="light"] .nota-historial-summary::marker,
+html[data-theme="light"] .nota-historial-summary::-webkit-details-marker {
+  color: var(--accent-primary);
+}
+
+html[data-theme="light"] .nota-historial-summary:focus-visible {
+  outline: 2px solid var(--focus-ring, var(--accent-primary));
+  outline-offset: 4px;
+  border-radius: 12px;
+}
+
+html[data-theme="light"] .nota-titulo-listado,
+html[data-theme="light"] .nota-linea-clinica,
+html[data-theme="light"] .nota-titulo-detalle,
+html[data-theme="light"] .version-nota h4,
+html[data-theme="light"] .version-nota p,
+html[data-theme="light"] .version-nota b,
+html[data-theme="light"] .nota-historial-contenido {
+  color: var(--text-primary);
+  opacity: 1;
+}
+
+html[data-theme="light"] .nota-titulo-listado {
+  font-weight: 800;
+}
+
+html[data-theme="light"] .nota-linea-clinica {
+  font-weight: 700;
+}
+
+html[data-theme="light"] .nota-meta-listado {
+  color: var(--text-secondary);
+  opacity: 1;
+}
+
+html[data-theme="light"] .nota-previa-badge {
+  background: var(--surface-accent-soft, #e4f1e8);
+  color: var(--success-text, #245d38);
+  border-color: var(--border-accent, #7da18a);
+  opacity: 1;
+}
+
+html[data-theme="light"] .version-nota--borrador {
+  background: var(--surface-tertiary, var(--surface-secondary));
+  color: var(--text-primary);
+  opacity: 1;
+}
+
+html[data-theme="light"] .version-nota--definitiva {
+  background: var(--surface-secondary);
+  color: var(--text-primary);
+  opacity: 1;
+}
+
+html[data-theme="light"] .nota-historial-contenido {
+  border-top: 1px solid var(--border-subtle);
+  padding-top: 18px;
+}
+
+html[data-theme="light"] .acciones-historial-nota .boton-secundario {
+  background: var(--button-secondary-bg, var(--action-secondary-bg));
+  background-image: none;
+  border-color: var(--button-secondary-border, var(--action-secondary-border));
+  color: var(--button-secondary-text, var(--action-secondary-text));
+  box-shadow: none;
+  opacity: 1;
+}
+
+html[data-theme="light"] .acciones-historial-nota .boton-secundario:hover,
+html[data-theme="light"] .acciones-historial-nota .boton-secundario:focus-visible {
+  background: var(--button-secondary-hover, var(--action-secondary-hover));
+  border-color: var(--accent-primary);
   color: var(--text-primary);
 }
 
