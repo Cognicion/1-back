@@ -100,22 +100,6 @@ html[data-theme="light"] .btn-primary:hover {
   border-color: var(--light-primary-hover);
 }
 
-html[data-theme="light"] .science-visual,
-html[data-theme="light"] .science-visual::before,
-html[data-theme="light"] .orbital,
-html[data-theme="light"] .brain,
-html[data-theme="light"] .brain::before,
-html[data-theme="light"] .brain::after {
-  background-image: none;
-  filter: none;
-}
-
-html[data-theme="light"] .brain {
-  background: var(--light-surface-soft);
-  border-color: var(--light-border);
-  box-shadow: 0 12px 28px rgb(31 44 35 / 8%);
-}
-
 /* Inicio de sesión */
 html[data-theme="light"] .regresar {
   color: var(--light-text);

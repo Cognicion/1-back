@@ -55,6 +55,16 @@
   --control-border: var(--border-normal);
   --resize-track-bg: linear-gradient(90deg, var(--black-850) 0%, var(--green-800) 50%, var(--black-850) 100%);
   --resize-handle-bg: var(--green-400);
+  --hero-visual-bg: transparent;
+  --hero-visual-surface: rgb(9 22 15 / 46%);
+  --hero-visual-core: #14221a;
+  --hero-visual-core-secondary: #1b2e23;
+  --hero-visual-border: rgb(103 190 137 / 22%);
+  --hero-visual-line: rgb(103 190 137 / 32%);
+  --hero-visual-primary: #69b986;
+  --hero-visual-secondary: #63c7df;
+  --hero-visual-text: var(--text-primary);
+  --hero-visual-shadow: rgb(5 13 9 / 30%);
   color-scheme: dark;
 }
 
@@ -178,4 +188,14 @@
   --scrollbar-track: #ececea;
   --scrollbar-thumb: #747974;
   --scrollbar-thumb-hover: #315f40;
+  --hero-visual-bg: transparent;
+  --hero-visual-surface: rgb(255 255 255 / 58%);
+  --hero-visual-core: #eef2f0;
+  --hero-visual-core-secondary: #e4ebe7;
+  --hero-visual-border: rgb(41 101 70 / 18%);
+  --hero-visual-line: rgb(56 112 82 / 28%);
+  --hero-visual-primary: #3f865f;
+  --hero-visual-secondary: #58b9d3;
+  --hero-visual-text: #23352b;
+  --hero-visual-shadow: rgb(32 70 50 / 10%);
 }
