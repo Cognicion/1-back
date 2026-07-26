@@ -12,6 +12,7 @@ import {
   obtenerNombreCategoriaEvento,
   formatearOrigenEvento,
   formatearImportanciaEvento
+  ,agruparEventosParaEscalaVisible
 } from "./lineaTiempoUtils.js";
 
 function textoImportancia(importancia) {
@@ -42,14 +43,13 @@ export function renderizarLineaTiempo(root, eventos, rango, zoom = 1, opciones =
   if (!canvas) return;
   canvas.replaceChildren();
   canvas.style.setProperty("--timeline-zoom", zoom);
-  const eventosOrdenados = ordenarEventosPorFecha(eventos).filter((evento) => {
-    const inicio = evento.fechaEvento.getTime();
-    const fin = evento.fechaFin?.getTime?.() || inicio;
-    return fin >= rango.minimo.getTime() && inicio <= rango.maximo.getTime();
+  const elementosVisuales = opciones.elementosVisuales || agruparEventosParaEscalaVisible({
+    eventos: ordenarEventosPorFecha(eventos),
+    rangoVisibleInicioMs: rango.minimo.getTime(),
+    rangoVisibleFinMs: rango.maximo.getTime(),
+    anchoDisponiblePx: canvas.clientWidth || 900,
+    zoom
   });
-  const grupos = agruparEventosPorFecha(eventosOrdenados);
-  const posiciones = calcularPosiciones(eventosOrdenados, rango);
-  const posicionPorId = new Map(posiciones.map((item) => [item.evento.id, item.posicion]));
   const marcas = generarMarcasTemporales(rango, canvas.clientWidth || 900);
   const fragmento = document.createDocumentFragment();
 
@@ -81,23 +81,28 @@ export function renderizarLineaTiempo(root, eventos, rango, zoom = 1, opciones =
     fragmento.appendChild(marcaNode);
   });
 
-  grupos.forEach((grupo, grupoIndex) => {
-    const posicion = grupo.items.reduce((suma, item) => suma + (posicionPorId.get(item.id) ?? 0.5), 0) / grupo.items.length;
+  elementosVisuales.forEach((elemento, grupoIndex) => {
+    const grupo = { items: elemento.items, fecha: new Date(elemento.fechaRepresentativaMs), clave: elemento.idGrupo || elemento.id };
+    const posicion = rango.duracion === 0 ? .5 : Math.min(1, Math.max(0, (elemento.fechaRepresentativaMs - rango.minimo.getTime()) / rango.duracion));
+    const esGrupo = elemento.tipo === "grupo";
     const seleccionado = opciones.selectedGroupId === grupo.clave;
     const bloque = document.createElement("div");
     bloque.className = `timeline-event timeline-event-group timeline-event-group--${grupoIndex % 2 ? "below" : "above"}`;
     bloque.style.setProperty("--event-position", posicion);
     bloque.style.setProperty("--card-offset-x", posicion < 0.12 ? "70px" : posicion > 0.88 ? "-70px" : "0px");
     bloque.dataset.groupId = grupo.clave;
-    bloque.dataset.eventId = grupo.items[0].id;
+    if (!esGrupo) bloque.dataset.eventId = grupo.items[0].id;
+    else bloque.dataset.visualGroupId = elemento.idGrupo;
     bloque.setAttribute("aria-expanded", String(seleccionado));
     bloque.dataset.selected = String(seleccionado);
     bloque.dataset.cardVisible = "false";
-    bloque.setAttribute("aria-label", grupo.items.length > 1 ? `${grupo.items.length} eventos del ${formatearFecha(grupo.fecha)}` : `${formatearFechaCorta(grupo.fecha)}, ${grupo.items[0].titulo}, ${textoImportancia(grupo.items[0].importancia)}`);
+    bloque.setAttribute("aria-label", esGrupo ? `${grupo.items.length} eventos en ${elemento.etiquetaPeriodo}` : `${formatearFechaCorta(grupo.fecha)}, ${grupo.items[0].titulo}, ${textoImportancia(grupo.items[0].importancia)}`);
     const configuracion = obtenerConfiguracionTipoEvento(grupo.items[0].tipo);
     const evento = grupo.items[0];
     const eventoId = grupo.items[0].id;
-    bloque.innerHTML = `<span class="timeline-event-stem" aria-hidden="true"></span><button type="button" class="timeline-event__marker timeline-event-dot${seleccionado ? " is-selected" : ""}" data-event-id="${escaparHTML(eventoId)}" data-group-id="${escaparHTML(grupo.clave)}" aria-expanded="false" aria-pressed="${String(seleccionado)}" aria-label="${escaparHTML(bloque.getAttribute("aria-label"))}" style="--event-color:${configuracion.color}"><span class="timeline-event__marker-core" aria-hidden="true">${escaparHTML(configuracion.icono)}</span></button><article class="timeline-event-card timeline-event__preview" role="tooltip" aria-hidden="true" hidden><time>${escaparHTML(formatearFechaCorta(grupo.fecha))}</time><strong>${grupo.items.length > 1 ? `${grupo.items.length} eventos` : escaparHTML(evento.titulo)}</strong>${grupo.items.length > 1 ? `<small>${grupo.items.length} eventos en esta fecha</small>` : `${textoCategoria(evento)}<small>${escaparHTML(textoImportancia(evento.importancia))}</small>`}</article>`;
+    const atributoIdentificador = esGrupo ? `data-visual-group-id="${escaparHTML(elemento.idGrupo)}"` : `data-event-id="${escaparHTML(eventoId)}"`;
+    const contenidoMarcador = esGrupo ? `<span class="timeline-event__group-count" aria-hidden="true">${grupo.items.length}</span>` : `<span class="timeline-event__marker-core" aria-hidden="true">${escaparHTML(configuracion.icono)}</span>`;
+    bloque.innerHTML = `<span class="timeline-event-stem" aria-hidden="true"></span><button type="button" class="timeline-event__marker timeline-event-dot${esGrupo ? " timeline-event__marker--group" : ""}${seleccionado ? " is-selected" : ""}" ${atributoIdentificador} data-group-id="${escaparHTML(grupo.clave)}" aria-expanded="false" aria-pressed="${String(seleccionado)}" aria-label="${escaparHTML(bloque.getAttribute("aria-label"))}" style="--event-color:${configuracion.color}">${contenidoMarcador}</button><article class="timeline-event-card timeline-event__preview" role="tooltip" aria-hidden="true" hidden><time>${escaparHTML(esGrupo ? elemento.etiquetaPeriodo : formatearFechaCorta(grupo.fecha))}</time><strong>${esGrupo ? `${grupo.items.length} eventos` : escaparHTML(evento.titulo)}</strong>${esGrupo ? `<small>${grupo.items.length} eventos en este periodo</small>` : `${textoCategoria(evento)}<small>${escaparHTML(textoImportancia(evento.importancia))}</small>`}</article>`;
     fragmento.appendChild(bloque);
   });
 

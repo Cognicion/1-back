@@ -35,6 +35,11 @@ export function normalizarFecha(valor) {
       const fechaLocal = new Date(anio, mes - 1, dia, 12, 0, 0, 0);
       return fechaLocal.getFullYear() === anio && fechaLocal.getMonth() === mes - 1 && fechaLocal.getDate() === dia ? fechaLocal : null;
     }
+    const iso = valor.trim().match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (iso) {
+      const [, anio, mes, dia] = iso.map(Number);
+      return new Date(anio, mes - 1, dia, 12, 0, 0, 0);
+    }
   }
   const fecha = new Date(valor);
   return Number.isNaN(fecha.getTime()) ? null : fecha;
@@ -208,4 +213,74 @@ export function formatearOrigenEvento(origen) {
 export function formatearImportanciaEvento(importancia) {
   const etiquetas = { baja: "Baja", media: "Media", alta: "Alta" };
   return etiquetas[String(importancia || "").trim().toLocaleLowerCase("es-MX")] || "No especificada";
+}
+
+export const DISTANCIA_MINIMA_MARCADORES_PX = 44;
+
+function granularidadParaRango(inicioMs, finMs) {
+  const anos = (finMs - inicioMs) / (365.25 * 86400000);
+  if (anos > 20) return "anual";
+  if (anos > 8) return "semestral";
+  if (anos > 3) return "trimestral";
+  if (anos > 1) return "mensual";
+  if (anos > .25) return "semanal";
+  return "dia";
+}
+
+function claveTemporal(fecha, granularidad) {
+  const valor = normalizarFecha(fecha);
+  const ano = valor.getFullYear();
+  const mes = String(valor.getMonth() + 1).padStart(2, "0");
+  if (granularidad === "anual") return String(ano);
+  if (granularidad === "semestral") return `${ano}-S${valor.getMonth() < 6 ? 1 : 2}`;
+  if (granularidad === "trimestral") return `${ano}-T${Math.floor(valor.getMonth() / 3) + 1}`;
+  if (granularidad === "mensual") return `${ano}-${mes}`;
+  if (granularidad === "semanal") {
+    const inicioAno = new Date(ano, 0, 1);
+    const semana = Math.ceil((((valor - inicioAno) / 86400000) + inicioAno.getDay() + 1) / 7);
+    return `${ano}-W${String(semana).padStart(2, "0")}`;
+  }
+  return obtenerClaveFecha(valor);
+}
+
+function etiquetaGranularidad(clave, granularidad) {
+  if (granularidad === "anual") return clave;
+  if (granularidad === "semestral") return `${clave.replace("-S", " · semestre ")}`;
+  if (granularidad === "trimestral") return `${clave.replace("-T", " · trimestre ")}`;
+  return clave;
+}
+
+function granularidadMasAmplia(granularidad) {
+  const orden = ["anual", "semestral", "trimestral", "mensual", "semanal", "dia"];
+  return orden[Math.max(0, orden.indexOf(granularidad) - 1)];
+}
+
+export function agruparEventosParaEscalaVisible({ eventos = [], rangoVisibleInicioMs, rangoVisibleFinMs, anchoDisponiblePx = 900 }) {
+  const visibles = eventos.filter((evento) => {
+    const inicio = evento.fechaEvento.getTime();
+    const fin = evento.fechaFin?.getTime?.() || inicio;
+    return fin >= rangoVisibleInicioMs && inicio <= rangoVisibleFinMs;
+  });
+  if (!visibles.length) return [];
+  let granularidad = granularidadParaRango(rangoVisibleInicioMs, rangoVisibleFinMs);
+  const anchoPorEvento = anchoDisponiblePx / visibles.length;
+  if (anchoPorEvento < DISTANCIA_MINIMA_MARCADORES_PX) granularidad = granularidadMasAmplia(granularidad);
+  const cubetas = new Map();
+  visibles.forEach((evento) => {
+    const clave = claveTemporal(evento.fechaEvento, granularidad);
+    if (!cubetas.has(clave)) cubetas.set(clave, []);
+    cubetas.get(clave).push(evento);
+  });
+  return [...cubetas.entries()].map(([clave, items]) => {
+    const fechaRepresentativaMs = Math.round(items.reduce((suma, evento) => suma + evento.fechaEvento.getTime(), 0) / items.length);
+    if (items.length === 1) return { tipo: "evento", id: items[0].id, evento: items[0], items, fechaRepresentativaMs, granularidad, etiquetaPeriodo: etiquetaGranularidad(clave, granularidad) };
+    return {
+      tipo: "grupo",
+      idGrupo: [granularidad, clave, items.map((evento) => evento.id).sort().join("_")].join(":"),
+      items,
+      fechaRepresentativaMs,
+      granularidad,
+      etiquetaPeriodo: etiquetaGranularidad(clave, granularidad)
+    };
+  }).sort((a, b) => a.fechaRepresentativaMs - b.fechaRepresentativaMs);
 }

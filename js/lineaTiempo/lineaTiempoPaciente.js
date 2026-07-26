@@ -20,7 +20,8 @@ import {
   debugTimelineRuntime,
   normalizarNombreCategoria,
   obtenerNombreCategoriaEvento,
-  formatearImportanciaEvento
+  formatearImportanciaEvento,
+  agruparEventosParaEscalaVisible
 } from "./lineaTiempoUtils.js";
 import { renderizarDetalleEvento, renderizarEstados, renderizarLineaTiempo } from "./lineaTiempoRenderer.js";
 import { obtenerNombrePacienteParaMostrar } from "../utils/nombresPacientes.js";
@@ -43,6 +44,7 @@ let focusRatio = 0.5;
 let focusCanvasX = null;
 let hasFocusMarker = false;
 let selectedGroupId = null;
+let gruposVisuales = new Map();
 let eventoEditando = null;
 let inicializado = false;
 let destruir = () => {};
@@ -167,7 +169,15 @@ function renderizarVista() {
   } : { minimo: null, maximo: null, duracion: 0 };
   const shell = root.querySelector("[data-timeline-shell]");
   if (shell) shell.hidden = !eventos.length;
-  renderizarLineaTiempo(root, eventos, rango, zoomActual, { focusRatio, focusCanvasX, hasFocusMarker, selectedGroupId });
+  const elementosVisuales = eventos.length ? agruparEventosParaEscalaVisible({
+    eventos,
+    rangoVisibleInicioMs,
+    rangoVisibleFinMs,
+    anchoDisponiblePx: root.querySelector("[data-timeline-scroll]")?.clientWidth || 900,
+    zoom: zoomActual
+  }) : [];
+  gruposVisuales = new Map(elementosVisuales.filter((elemento) => elemento.tipo === "grupo").map((elemento) => [elemento.idGrupo, elemento]));
+  renderizarLineaTiempo(root, eventos, rango, zoomActual, { focusRatio, focusCanvasX, hasFocusMarker, selectedGroupId, elementosVisuales });
   const viewport = root.querySelector("[data-timeline-scroll]");
   const viewportActual = document.getElementById("lineaTiempoViewport") || viewport;
   debugTimelineRuntime("viewport-after-render", {
@@ -277,6 +287,39 @@ function abrirVentanaFlotanteEvento(evento, marcador) {
     acciones.append(editar, eliminar);
   }
   ventana.append(encabezado, contenido, acciones);
+  ventana.hidden = false;
+  posicionarVentanaFlotanteEvento(ventana, marcador);
+}
+
+function seleccionarGrupoLineaTiempo(idGrupo, marcador) {
+  const grupo = gruposVisuales.get(idGrupo);
+  if (!grupo) return;
+  const ventana = root.querySelector("#ventanaFlotanteEventoLineaTiempo");
+  if (!ventana) return;
+  ventana.replaceChildren();
+  ventana.dataset.visualGroupId = idGrupo;
+  const encabezado = document.createElement("div");
+  encabezado.className = "timeline-event-popover__header";
+  const titulo = document.createElement("h2");
+  titulo.textContent = `Eventos de ${grupo.etiquetaPeriodo}`;
+  const cerrar = document.createElement("button");
+  cerrar.type = "button";
+  cerrar.className = "timeline-button";
+  cerrar.dataset.action = "close-event-popover";
+  cerrar.textContent = "Cerrar";
+  encabezado.append(titulo, cerrar);
+  const lista = document.createElement("div");
+  lista.className = "timeline-event-popover__group-list";
+  grupo.items.forEach((evento) => {
+    const boton = document.createElement("button");
+    boton.type = "button";
+    boton.className = "timeline-event-popover__group-item";
+    boton.dataset.action = "open-event-from-group";
+    boton.dataset.eventId = evento.id;
+    boton.textContent = `${formatearFecha(evento.fechaEvento)} — ${evento.titulo || "Evento sin título"}`;
+    lista.appendChild(boton);
+  });
+  ventana.append(encabezado, lista);
   ventana.hidden = false;
   posicionarVentanaFlotanteEvento(ventana, marcador);
 }
@@ -478,6 +521,13 @@ function configurarAcciones() {
         abrirDetalle({ eventoId: evento.id, grupoId: "" });
       }
     }
+    if (action === "open-event-from-group") {
+      const eventId = event.target.closest("[data-event-id]")?.dataset.eventId || "";
+      const evento = buscarEvento(eventId);
+      const idGrupo = root.querySelector("#ventanaFlotanteEventoLineaTiempo")?.dataset.visualGroupId;
+      const marcador = idGrupo ? root.querySelector(`[data-visual-group-id="${CSS.escape(idGrupo)}"]`) : null;
+      if (evento && marcador) abrirVentanaFlotanteEvento(evento, marcador);
+    }
     if (action === "add-category") agregarCategoria();
     if (action === "retry") cargarLineaTiempo();
     if (event.target.closest("[data-edit-event]")) {
@@ -578,6 +628,7 @@ async function inicializarLineaTiempoPaciente() {
   interacciones = configurarInteracciones({
     root,
     onSelect: (eventId, marcador) => seleccionarEventoLineaTiempo(eventId, marcador),
+    onSelectGroup: (idGrupo, marcador) => seleccionarGrupoLineaTiempo(idGrupo, marcador),
     onClearSelection: () => { selectedGroupId = null; cerrarDetalle(); },
     onFocus: ({ focusRatio: ratio, focusCanvasX: canvasX, hasFocusMarker: markerVisible }) => {
       focusRatio = ratio;

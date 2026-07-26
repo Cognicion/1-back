@@ -11,7 +11,8 @@ import {
   obtenerNombreCategoriaEvento,
   formatearOrigenEvento,
   formatearImportanciaEvento,
-  seleccionarIntervaloTemporal
+  seleccionarIntervaloTemporal,
+  agruparEventosParaEscalaVisible
 } from "../lineaTiempo/lineaTiempoUtils.js";
 
 function evento(id, fecha) {
@@ -78,4 +79,17 @@ test("Las marcas temporales seleccionan intervalos regulares según el rango vis
   const marcas = generarMarcasTemporales({ minimo: new Date(inicio), maximo: new Date(fin), duracion: fin - inicio }, 1000);
   const internas = marcas.slice(1, -1).map((marca) => marca.fecha.getFullYear());
   assert.deepEqual(internas, [2000, 2005, 2010, 2015, 2020, 2025]);
+});
+
+test("La vista lejana agrupa eventos del mismo año sin alterar sus documentos", () => {
+  const eventos = [
+    evento("a", "2022-01-02"), evento("b", "2022-05-03"), evento("c", "2023-01-01")
+  ];
+  const inicio = new Date(1996, 0, 1).getTime();
+  const fin = new Date(2026, 0, 1).getTime();
+  const elementos = agruparEventosParaEscalaVisible({ eventos, rangoVisibleInicioMs: inicio, rangoVisibleFinMs: fin, anchoDisponiblePx: 1000, zoom: 1 });
+  assert.equal(elementos.length, 2);
+  assert.equal(elementos[0].tipo, "grupo");
+  assert.equal(elementos[0].items.length, 2);
+  assert.equal(eventos.length, 3);
 });
