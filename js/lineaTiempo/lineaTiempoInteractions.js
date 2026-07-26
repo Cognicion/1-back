@@ -21,6 +21,7 @@ export function configurarInteracciones({ root, onSelect, onClearSelection, onZo
   const state = {
     zoom: 1,
     focusRatio: 0.5,
+    focusCanvasX: null,
     hasFocusMarker: false,
     selectedGroupId: null,
     activePointers: new Map(),
@@ -29,7 +30,9 @@ export function configurarInteracciones({ root, onSelect, onClearSelection, onZo
     pinchDistance: 0,
     pinchZoom: 1,
     dragStartX: 0,
+    dragStartY: 0,
     dragScrollLeft: 0,
+    possibleDrag: false,
     movedDuringDrag: false,
     suppressNextClick: false,
     suppressHoverUntilPointerMove: false
@@ -42,17 +45,23 @@ export function configurarInteracciones({ root, onSelect, onClearSelection, onZo
     return { width, start, usable };
   };
 
-  const ratioFromClientX = (clientX) => {
-    if (!viewport) return state.focusRatio;
+  const obtenerCoordenadaCanvasDesdeCliente = (clientX) => {
+    if (!viewport) return 0;
     const rect = viewport.getBoundingClientRect();
-    const metrics = timelineMetrics();
-    return limitar((clientX - rect.left + viewport.scrollLeft - metrics.start) / metrics.usable, 0, 1);
+    return clientX - rect.left + viewport.scrollLeft;
   };
 
-  const setFocus = (clientX) => {
-    state.focusRatio = ratioFromClientX(clientX);
-    state.hasFocusMarker = true;
-    onFocus?.(state.focusRatio);
+  const ratioFromCanvasX = (canvasX) => {
+    const metrics = timelineMetrics();
+    return limitar((canvasX - metrics.start) / metrics.usable, 0, 1);
+  };
+
+  const setFocus = (clientX, showMarker = true) => {
+    const canvasX = obtenerCoordenadaCanvasDesdeCliente(clientX);
+    state.focusCanvasX = canvasX;
+    state.focusRatio = ratioFromCanvasX(canvasX);
+    state.hasFocusMarker = showMarker;
+    onFocus?.({ focusRatio: state.focusRatio, focusCanvasX: showMarker ? canvasX : null, hasFocusMarker: showMarker });
   };
 
   const updateRange = () => {
@@ -117,12 +126,16 @@ export function configurarInteracciones({ root, onSelect, onClearSelection, onZo
     requestAnimationFrame(() => {
       const newMetrics = timelineMetrics();
       const newFocusX = newMetrics.start + state.focusRatio * newMetrics.usable;
+      state.focusCanvasX = newFocusX;
+      if (state.hasFocusMarker) {
+        onFocus?.({ focusRatio: state.focusRatio, focusCanvasX: newFocusX, hasFocusMarker: true });
+      }
       const maxScroll = Math.max(0, viewport.scrollWidth - viewport.clientWidth);
       viewport.scrollLeft = limitar(newFocusX - focusViewportX, 0, maxScroll);
     });
   };
 
-  const applyZoom = (requestedZoom) => {
+  const applyZoom = (requestedZoom, clientX = null) => {
     if (!viewport) return;
     state.suppressHoverUntilPointerMove = true;
     root.querySelectorAll(".timeline-event__preview").forEach((preview) => {
@@ -134,6 +147,13 @@ export function configurarInteracciones({ root, onSelect, onClearSelection, onZo
       item.setAttribute("aria-expanded", "false");
     });
     const oldMetrics = timelineMetrics();
+    const focusCanvasX = Number.isFinite(clientX)
+      ? obtenerCoordenadaCanvasDesdeCliente(clientX)
+      : (Number.isFinite(state.focusCanvasX)
+        ? state.focusCanvasX
+        : oldMetrics.start + state.focusRatio * oldMetrics.usable);
+    state.focusCanvasX = focusCanvasX;
+    state.focusRatio = ratioFromCanvasX(focusCanvasX);
     const oldFocusX = oldMetrics.start + state.focusRatio * oldMetrics.usable;
     const focusViewportX = oldFocusX - viewport.scrollLeft;
     state.zoom = limitar(requestedZoom, MIN_ZOOM, MAX_ZOOM);
@@ -142,10 +162,9 @@ export function configurarInteracciones({ root, onSelect, onClearSelection, onZo
     restoreFocusAfterZoom(focusViewportX);
   };
 
-  const seleccionarMarcador = (marker, clientX) => {
+  const seleccionarMarcador = (marker) => {
     const group = marker?.closest("[data-group-id]");
     if (!group) return false;
-    setFocus(clientX);
     activateGroup(group, true);
     onSelect?.({ eventId: marker.dataset.eventId || group.dataset.eventId, groupId: group.dataset.groupId });
     return true;
@@ -162,9 +181,9 @@ export function configurarInteracciones({ root, onSelect, onClearSelection, onZo
       return;
     }
     if (marker) {
-      seleccionarMarcador(marker, event.clientX);
+      seleccionarMarcador(marker);
     } else {
-      setFocus(event.clientX);
+      setFocus(event.clientX, true);
       closeSelected();
     }
   };
@@ -214,7 +233,6 @@ export function configurarInteracciones({ root, onSelect, onClearSelection, onZo
 
   const onWheel = (event) => {
     if (!event.target.closest("[data-timeline-scroll]")) return;
-    setFocus(event.clientX);
     const horizontal = Math.abs(event.deltaX) > Math.abs(event.deltaY);
     if (horizontal) {
       event.preventDefault();
@@ -223,7 +241,7 @@ export function configurarInteracciones({ root, onSelect, onClearSelection, onZo
     }
     if (event.deltaY !== 0) {
       event.preventDefault();
-      applyZoom(state.zoom * (event.deltaY < 0 ? ZOOM_STEP : 1 / ZOOM_STEP));
+      applyZoom(state.zoom * (event.deltaY < 0 ? ZOOM_STEP : 1 / ZOOM_STEP), event.clientX);
     }
   };
 
@@ -236,15 +254,16 @@ export function configurarInteracciones({ root, onSelect, onClearSelection, onZo
       const pointers = [...state.activePointers.values()];
       state.pinchDistance = distancia(pointers[0], pointers[1]);
       state.pinchZoom = state.zoom;
-      setFocus(puntoMedio(pointers[0], pointers[1]).clientX);
+      setFocus(puntoMedio(pointers[0], pointers[1]).clientX, false);
       return;
     }
     if (event.target.closest("[data-group-id], button, input, article")) return;
-    state.isDragging = true;
+    state.possibleDrag = true;
+    state.isDragging = false;
     state.movedDuringDrag = false;
     state.dragStartX = event.clientX;
+    state.dragStartY = event.clientY;
     state.dragScrollLeft = viewport.scrollLeft;
-    viewport.setPointerCapture?.(event.pointerId);
   };
 
   const onPointerMove = (event) => {
@@ -254,26 +273,33 @@ export function configurarInteracciones({ root, onSelect, onClearSelection, onZo
       const pointers = [...state.activePointers.values()];
       const currentDistance = distancia(pointers[0], pointers[1]);
       const center = puntoMedio(pointers[0], pointers[1]);
-      setFocus(center.clientX);
-      applyZoom(state.pinchZoom * (currentDistance / Math.max(1, state.pinchDistance)));
+      setFocus(center.clientX, false);
+      applyZoom(state.pinchZoom * (currentDistance / Math.max(1, state.pinchDistance)), center.clientX);
       return;
     }
-    if (!state.isDragging || !viewport) return;
+    if (!state.possibleDrag || !viewport) return;
     const delta = event.clientX - state.dragStartX;
-    if (Math.abs(delta) > 3) state.movedDuringDrag = true;
+    const distanceMoved = Math.hypot(delta, event.clientY - state.dragStartY);
+    if (!state.isDragging && distanceMoved <= 8) return;
+    if (!state.isDragging) {
+      state.isDragging = true;
+      viewport.setPointerCapture?.(event.pointerId);
+    }
+    if (Math.abs(delta) > 8) state.movedDuringDrag = true;
     viewport.scrollLeft = state.dragScrollLeft - delta;
   };
 
   const onPointerUp = (event) => {
     const marker = event.target.closest?.(".timeline-event__marker");
-    const wasShortInteraction = marker && !state.movedDuringDrag && !state.isPinching;
+    const wasShortInteraction = marker && !state.movedDuringDrag && !state.isPinching && event.pointerType !== "mouse";
     state.activePointers.delete(event.pointerId);
     if (state.activePointers.size < 2) {
       state.isPinching = false;
       viewport?.classList.remove("is-pinching");
     }
     state.isDragging = false;
-    if (wasShortInteraction && seleccionarMarcador(marker, event.clientX)) {
+    state.possibleDrag = false;
+    if (wasShortInteraction && seleccionarMarcador(marker)) {
       state.suppressNextClick = true;
     }
   };
@@ -284,7 +310,7 @@ export function configurarInteracciones({ root, onSelect, onClearSelection, onZo
   const reset = () => { state.zoom = 1; updateRange(); onReset?.("reset"); };
   const onRangeInput = () => applyZoom(Number(range.value));
 
-  viewport?.addEventListener("click", onClick);
+  viewport?.addEventListener("click", onClick, true);
   viewport?.addEventListener("keydown", onKeydown);
   viewport?.addEventListener("pointerover", onPointerEnter);
   viewport?.addEventListener("pointerout", onPointerLeave);
@@ -302,7 +328,7 @@ export function configurarInteracciones({ root, onSelect, onClearSelection, onZo
   range?.addEventListener("input", onRangeInput);
   updateRange();
 
-  disposables.push(() => viewport?.removeEventListener("click", onClick));
+  disposables.push(() => viewport?.removeEventListener("click", onClick, true));
   disposables.push(() => viewport?.removeEventListener("keydown", onKeydown));
   disposables.push(() => viewport?.removeEventListener("pointerover", onPointerEnter));
   disposables.push(() => viewport?.removeEventListener("pointerout", onPointerLeave));

@@ -53,7 +53,9 @@ export function renderizarLineaTiempo(root, eventos, rango, zoom = 1, opciones =
   marcadorFoco.className = "timeline-focus-marker";
   marcadorFoco.dataset.timelineFocusMarker = "true";
   marcadorFoco.hidden = !opciones.hasFocusMarker;
-  marcadorFoco.style.setProperty("--focus-ratio", opciones.focusRatio ?? 0.5);
+  if (opciones.hasFocusMarker && Number.isFinite(opciones.focusCanvasX)) {
+    marcadorFoco.style.left = `${opciones.focusCanvasX}px`;
+  }
   marcadorFoco.setAttribute("aria-hidden", "true");
   fragmento.appendChild(marcadorFoco);
 
@@ -87,7 +89,7 @@ export function renderizarLineaTiempo(root, eventos, rango, zoom = 1, opciones =
     const configuracion = obtenerConfiguracionTipoEvento(grupo.items[0].tipo);
     const evento = grupo.items[0];
     const eventoId = grupo.items[0].id;
-    bloque.innerHTML = `<span class="timeline-event-stem" aria-hidden="true"></span><button type="button" class="timeline-event__marker timeline-event-dot${seleccionado ? " is-selected" : ""}" data-event-id="${escaparHTML(eventoId)}" data-group-id="${escaparHTML(grupo.clave)}" aria-expanded="false" aria-pressed="${String(seleccionado)}" aria-label="${escaparHTML(bloque.getAttribute("aria-label"))}" style="--event-color:${configuracion.color}">${escaparHTML(configuracion.icono)}</button><article class="timeline-event-card timeline-event__preview" role="tooltip" aria-hidden="true" hidden><time>${escaparHTML(formatearFechaCorta(grupo.fecha))}</time><strong>${grupo.items.length > 1 ? `${grupo.items.length} eventos` : escaparHTML(evento.titulo)}</strong>${grupo.items.length > 1 ? `<small>${grupo.items.length} eventos en esta fecha</small>` : `${textoCategoria(evento)}<small>${escaparHTML(textoImportancia(evento.importancia))}</small>`}</article>`;
+    bloque.innerHTML = `<span class="timeline-event-stem" aria-hidden="true"></span><button type="button" class="timeline-event__marker timeline-event-dot${seleccionado ? " is-selected" : ""}" data-event-id="${escaparHTML(eventoId)}" data-group-id="${escaparHTML(grupo.clave)}" aria-expanded="false" aria-pressed="${String(seleccionado)}" aria-label="${escaparHTML(bloque.getAttribute("aria-label"))}" style="--event-color:${configuracion.color}"><span class="timeline-event__marker-core" aria-hidden="true">${escaparHTML(configuracion.icono)}</span></button><article class="timeline-event-card timeline-event__preview" role="tooltip" aria-hidden="true" hidden><time>${escaparHTML(formatearFechaCorta(grupo.fecha))}</time><strong>${grupo.items.length > 1 ? `${grupo.items.length} eventos` : escaparHTML(evento.titulo)}</strong>${grupo.items.length > 1 ? `<small>${grupo.items.length} eventos en esta fecha</small>` : `${textoCategoria(evento)}<small>${escaparHTML(textoImportancia(evento.importancia))}</small>`}</article>`;
     fragmento.appendChild(bloque);
   });
 

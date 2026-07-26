@@ -31,6 +31,7 @@ let interacciones = null;
 let animacion = null;
 let zoomActual = 1;
 let focusRatio = 0.5;
+let focusCanvasX = null;
 let hasFocusMarker = false;
 let selectedGroupId = null;
 let eventoEditando = null;
@@ -95,7 +96,7 @@ function fechaFormulario(fecha) {
 
 function renderizarVista() {
   const rango = eventos.length ? { minimo: eventos[0].fechaEvento, maximo: eventos.at(-1).fechaEvento, duracion: eventos.at(-1).fechaEvento - eventos[0].fechaEvento } : { minimo: null, maximo: null, duracion: 0 };
-  renderizarLineaTiempo(root, eventos, rango, zoomActual, { focusRatio, hasFocusMarker, selectedGroupId });
+  renderizarLineaTiempo(root, eventos, rango, zoomActual, { focusRatio, focusCanvasX, hasFocusMarker, selectedGroupId });
   const etiqueta = root.querySelector("[data-zoom-label]");
   if (etiqueta) etiqueta.textContent = `${Math.round(zoomActual * 100)} %`;
   renderizarEstados(root, eventos.length ? "" : "empty");
@@ -302,6 +303,7 @@ async function cargarLineaTiempo() {
     renderizarCategorias();
     renderizarVista();
     return;
+    /* Legacy sequential loading removed: events and categories are isolated above. */
     try {
       categorias = await cargarCategoriasLineaTiempo(auth.currentUser.uid);
     } catch (error) {
@@ -342,13 +344,14 @@ async function inicializarLineaTiempoPaciente() {
     root,
     onSelect: (seleccion) => { selectedGroupId = seleccion.grupoId; abrirDetalle(seleccion); },
     onClearSelection: () => { selectedGroupId = null; cerrarDetalle(); },
-    onFocus: (ratio) => {
+    onFocus: ({ focusRatio: ratio, focusCanvasX: canvasX, hasFocusMarker: markerVisible }) => {
       focusRatio = ratio;
-      hasFocusMarker = true;
+      focusCanvasX = canvasX;
+      hasFocusMarker = markerVisible;
       const marcador = root.querySelector("[data-timeline-focus-marker]");
       if (marcador) {
-        marcador.hidden = false;
-        marcador.style.setProperty("--focus-ratio", ratio);
+        marcador.hidden = !markerVisible;
+        if (markerVisible && Number.isFinite(canvasX)) marcador.style.left = `${canvasX}px`;
       }
     },
     onZoom: (zoom) => { zoomActual = zoom; renderizarVista(); },
