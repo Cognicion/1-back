@@ -311,8 +311,8 @@ function subdividirBloqueSeguro(parent = {}, localUtterances = []) {
   if (children.length < 2 && parent.end > parent.start) {
     const middle = Math.max(parent.start, Math.floor((parent.start + parent.end) / 2));
     return [
-      { ...children[0], start: parent.start, end: middle, childIndex: 0, blockId: `${parent.blockId}A` },
-      { ...children[0], start: middle + 1, end: parent.end, childIndex: 1, blockId: `${parent.blockId}B` }
+      { ...children[0], start: parent.start, end: middle, childIndex: 0, blockId: `${parent.blockId}${Number(parent.splitLevel || 0) ? ".1" : "A"}` },
+      { ...children[0], start: middle + 1, end: parent.end, childIndex: 1, blockId: `${parent.blockId}${Number(parent.splitLevel || 0) ? ".2" : "B"}` }
     ];
   }
   return children;
@@ -385,7 +385,7 @@ export function prepararSubdivisionesAdaptativas({
 } = {}) {
   const localUtterances = new RuleBasedConversationSegmentationProvider().segment({ text }).utterances;
   const requested = new Set(parentBlockKeys.filter(Boolean));
-  const parents = cachedBlocks.filter((block) => !block?.parentBlockId && !block?.parentBlockKey);
+  const parents = cachedBlocks.filter((block) => requested.has(block?.blockKey));
   const childrenByKey = new Map(cachedBlocks.filter((block) => block?.parentBlockId || block?.parentBlockKey).map((block) => [block.blockKey, block]));
   const updates = [];
   const createdChildIds = [];
@@ -394,12 +394,12 @@ export function prepararSubdivisionesAdaptativas({
     if (!requested.has(storedParent.blockKey)) return;
     const parentIndex = Number(storedParent.blockIndex);
     if (!Number.isFinite(parentIndex) || !Number.isFinite(Number(storedParent.start)) || !Number.isFinite(Number(storedParent.end))) return;
-    const canonicalParentId = `block-${parentIndex + 1}`;
+    const canonicalParentId = storedParent.blockId || `block-${parentIndex + 1}`;
     const parent = describirBloque({
       localUtterances,
       block: { ...storedParent, blockId: canonicalParentId, splitLevel: Number(storedParent.splitLevel || 0) },
       index: parentIndex,
-      totalBlocks: Number(storedParent.totalBlocks || parents.length),
+      totalBlocks: Number(storedParent.totalBlocks || cachedBlocks.filter((block) => !block?.parentBlockId && !block?.parentBlockKey).length),
       sourceTranscriptHash,
       model
     });
@@ -407,9 +407,9 @@ export function prepararSubdivisionesAdaptativas({
     if (ranges.length < 2) return;
     const childBlocks = ranges.map((range) => describirBloque({
       localUtterances,
-      block: { ...range, parentBlockId: canonicalParentId, parentBlockKey: parent.blockKey, blockId: `${canonicalParentId}${String.fromCharCode(65 + Number(range.childIndex || 0))}` },
+      block: { ...range, parentBlockId: canonicalParentId, parentBlockKey: parent.blockKey, blockId: range.blockId },
       index: parentIndex,
-      totalBlocks: Number(storedParent.totalBlocks || parents.length),
+      totalBlocks: Number(storedParent.totalBlocks || cachedBlocks.filter((block) => !block?.parentBlockId && !block?.parentBlockKey).length),
       sourceTranscriptHash,
       model
     }));
@@ -431,6 +431,8 @@ export function prepararSubdivisionesAdaptativas({
         status: previous?.status || "pending",
         parentBlockId: canonicalParentId,
         parentBlockKey: parent.blockKey,
+        rootParentBlockId: storedParent.rootParentBlockId || (Number(storedParent.splitLevel || 0) ? "" : canonicalParentId),
+        splitPath: child.blockId,
         childBlockIds: previous?.childBlockIds || []
       });
       createdChildIds.push(child.blockId);

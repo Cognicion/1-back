@@ -12,7 +12,7 @@ import {
   prepararSubdivisionesAdaptativas,
   repairDuplicateAdaptiveBlockIds,
   validateAdaptiveManifestTree
-} from "./services/conversationSegmentationProviders.js?v=20260725-adaptive-split-prepared";
+} from "./services/conversationSegmentationProviders.js?v=20260725-adaptive-split-v1-2";
 import { segmentarConversacionClinica } from "./services/clinicalPipeline.js";
 import { VOICE_NOTE_MODULE_VERSION } from "./services/voiceNoteModuleVersion.js";
 import {
@@ -1625,16 +1625,31 @@ function obtenerBlockKeysPendientesManifest(manifest = {}) {
     .filter(Boolean);
 }
 
+function getPendingLeafBlocks(manifest = {}, rootParentIds = []) {
+  const blocks = Array.isArray(manifest?.blocks) ? manifest.blocks : [];
+  const descendantsByParent = new Set(blocks.map((block) => block.parentBlockId).filter(Boolean));
+  const requestedRoots = new Set(rootParentIds.filter(Boolean));
+  return blocks.filter((block) => {
+    if (!block?.blockKey || esBloqueSegmentacionCompletado(block)) return false;
+    if (descendantsByParent.has(block.blockId) || (block.childBlockIds || []).length) return false;
+    if (!["pending", "failed", "cancelled"].includes(block.status || "pending")) return false;
+    return !requestedRoots.size || requestedRoots.has(block.rootParentBlockId) || requestedRoots.has(block.blockId);
+  });
+}
+
 function getSplittableParentBlocks(activeManifest = {}) {
   const blocks = Array.isArray(activeManifest?.blocks) ? activeManifest.blocks : [];
   return blocks.filter((block) => {
-    if (!esBloquePadreSegmentacion(block) || esBloqueSegmentacionCompletado(block)) return false;
+    if (esBloqueSegmentacionCompletado(block)) return false;
     const requiresSplit = block.status === "requires_split"
       || (block.status === "failed" && Number(block.consecutiveTimeouts || 0) >= 2);
     const childrenProcessing = blocks.some((child) => (child.parentBlockKey === block.blockKey || child.parentBlockId === block.blockId) && child.status === "processing");
+    const hasChildren = blocks.some((child) => child.parentBlockId === block.blockId || child.parentBlockKey === block.blockKey)
+      || (block.childBlockIds || []).length > 0;
     return requiresSplit
       && Number(block.splitLevel || 0) < 2
       && !childrenProcessing
+      && !hasChildren
       && Boolean(block.blockKey)
       && Number.isFinite(Number(block.start))
       && Number.isFinite(Number(block.end));
@@ -1709,13 +1724,26 @@ async function dividirYReintentarBloquesAdaptativos() {
       error.details = { storedRevision: Number(manifest.manifestRevision ?? manifest.revision ?? 0), candidateRevision: candidate.manifestRevision, readbackRevision, expectedChildIds: prepared.createdChildIds, recoveredChildIds: Array.from(savedIds).filter((id) => prepared.createdChildIds.includes(id)), missingChildIds, parentChildLinksValid: parentLinksValid, storageKeyMatch: Boolean(readback) };
       throw error;
     }
-    state.segmentationMetadata.blockManifest = readback.blockManifest;
+    const confirmedManifest = repairDuplicateAdaptiveBlockIds(readback.blockManifest || {}).manifest;
+    const treeAfter = validateAdaptiveManifestTree(confirmedManifest);
+    const pendingLeaves = getPendingLeafBlocks(confirmedManifest, parents.map((block) => block.blockId));
+    if (!treeAfter.valid || !pendingLeaves.length) {
+      const error = new Error("adaptive_split_verified_leaves_missing");
+      error.details = {
+        ...treeAfter,
+        expectedChildIds: prepared.createdChildIds,
+        recoveredLeafIds: pendingLeaves.map((block) => block.blockId),
+        earlyReturnReason: !treeAfter.valid ? "tree_validation_failed_after_readback" : "no_pending_leaf_blocks_after_readback"
+      };
+      throw error;
+    }
+    state.segmentationMetadata.blockManifest = confirmedManifest;
     setText("voiceSegmentationStatus", `Subbloques preparados. Procesando ${prepared.createdChildIds.length} bloques…`);
-    return await segmentarConProveedor({ onlyBlockKeys: prepared.updates.filter((block) => block.parentBlockId && block.status !== "completed").map((block) => block.blockKey), operationType: "adaptive_split" });
+    return await segmentarConProveedor({ onlyBlockKeys: pendingLeaves.map((block) => block.blockKey), operationType: "adaptive_split" });
   } catch (error) {
     console.error("No se pudo iniciar la subdivisión:", error?.code || error?.message || error);
     setText("voiceSegmentationStatus", "No se pudo iniciar la subdivisión. Los resultados completados se conservaron.");
-    renderDetalleTecnicoSegmentacion({ code: error?.code || error?.message || "adaptive_split_failed", stage: "adaptive_split", retryable: true, details: { parentBlockIds: parents.map((block) => block.blockId || block.blockKey) } });
+    renderDetalleTecnicoSegmentacion({ code: error?.code || error?.message || "adaptive_split_failed", stage: "adaptive_split", retryable: true, details: { parentBlockIds: parents.map((block) => block.blockId || block.blockKey), ...(error?.details || {}) } });
     throw error;
   } finally {
     state.segmentationOperation = null;
@@ -2996,6 +3024,9 @@ function renderDetalleTecnicoSegmentacion(failure = null, metrics = null) {
   setText("voiceSegmentationTechnicalRetryable", (failure?.retryable || details.retryable) ? "si" : "no");
   setText("voiceSegmentationTechnicalDuration", Number.isFinite(Number(metrics?.elapsedMs)) ? `${Math.round(Number(metrics.elapsedMs))} ms` : "-");
   setText("voiceSegmentationTechnicalBlocks", Number.isFinite(Number(metrics?.blockCount)) ? `${metrics.externalBlockCount || metrics.completedBlocks || 0}/${metrics.blockCount}` : "-");
+  const structuralKeys = ["storedRevision", "candidateRevision", "readbackRevision", "duplicateBlockIds", "repairedBlockIds", "expectedChildIds", "recoveredChildIds", "missingChildIds", "expectedLeafIds", "recoveredLeafIds", "missingLeafIds", "parentChildLinksValid", "treeValidationValid", "storageKeyMatch", "completedParentsBefore", "completedParentsAfter", "providerCalls", "earlyReturnReason", "errorReason"];
+  const structuralDetails = Object.fromEntries(structuralKeys.filter((key) => details[key] !== undefined).map((key) => [key, details[key]]));
+  setText("voiceSegmentationTechnicalStructure", Object.keys(structuralDetails).length ? JSON.stringify(structuralDetails) : "-");
 }
 
 function etiquetaRolActo(segmento = {}) {
