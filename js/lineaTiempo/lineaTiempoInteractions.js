@@ -31,7 +31,8 @@ export function configurarInteracciones({ root, onSelect, onClearSelection, onZo
     dragStartX: 0,
     dragScrollLeft: 0,
     movedDuringDrag: false,
-    suppressNextClick: false
+    suppressNextClick: false,
+    suppressHoverUntilPointerMove: false
   };
 
   const timelineMetrics = () => {
@@ -65,16 +66,17 @@ export function configurarInteracciones({ root, onSelect, onClearSelection, onZo
     state.selectedGroupId = keepSelected ? group.dataset.groupId : null;
     root.querySelectorAll("[data-group-id]").forEach((item) => {
       const selected = item === group && keepSelected;
+      const previewVisible = item === group && !keepSelected;
       item.dataset.selected = String(selected);
-      item.dataset.cardVisible = String(item === group);
-      item.setAttribute("aria-expanded", String(item === group));
+      item.dataset.cardVisible = String(previewVisible);
+      item.setAttribute("aria-expanded", String(previewVisible));
       const marker = item.querySelector(".timeline-event__marker");
       const preview = item.querySelector(".timeline-event__preview");
       marker?.classList.toggle("is-selected", selected);
       marker?.setAttribute("aria-pressed", String(selected));
-      marker?.setAttribute("aria-expanded", String(selected));
-      preview?.toggleAttribute("hidden", !selected);
-      preview?.setAttribute("aria-hidden", String(!selected));
+      marker?.setAttribute("aria-expanded", String(previewVisible));
+      preview?.toggleAttribute("hidden", !previewVisible);
+      preview?.setAttribute("aria-hidden", String(!previewVisible));
     });
   };
 
@@ -122,6 +124,15 @@ export function configurarInteracciones({ root, onSelect, onClearSelection, onZo
 
   const applyZoom = (requestedZoom) => {
     if (!viewport) return;
+    state.suppressHoverUntilPointerMove = true;
+    root.querySelectorAll(".timeline-event__preview").forEach((preview) => {
+      preview.hidden = true;
+      preview.setAttribute("aria-hidden", "true");
+    });
+    root.querySelectorAll("[data-group-id]").forEach((item) => {
+      item.dataset.cardVisible = "false";
+      item.setAttribute("aria-expanded", "false");
+    });
     const oldMetrics = timelineMetrics();
     const oldFocusX = oldMetrics.start + state.focusRatio * oldMetrics.usable;
     const focusViewportX = oldFocusX - viewport.scrollLeft;
@@ -129,10 +140,6 @@ export function configurarInteracciones({ root, onSelect, onClearSelection, onZo
     updateRange();
     onZoom?.(state.zoom, state.focusRatio, state.selectedGroupId, state.hasFocusMarker);
     restoreFocusAfterZoom(focusViewportX);
-    requestAnimationFrame(() => activateGroup(
-      [...root.querySelectorAll("[data-group-id]")].find((item) => item.dataset.groupId === state.selectedGroupId),
-      Boolean(state.selectedGroupId)
-    ));
   };
 
   const seleccionarMarcador = (marker, clientX) => {
@@ -163,6 +170,7 @@ export function configurarInteracciones({ root, onSelect, onClearSelection, onZo
   };
 
   const onPointerEnter = (event) => {
+    if (state.suppressHoverUntilPointerMove) return;
     if (event.relatedTarget?.closest?.(".timeline-event__marker")) return;
     const marker = event.target.closest(".timeline-event__marker");
     const group = marker?.closest("[data-group-id]");
@@ -240,6 +248,7 @@ export function configurarInteracciones({ root, onSelect, onClearSelection, onZo
   };
 
   const onPointerMove = (event) => {
+    state.suppressHoverUntilPointerMove = false;
     if (state.activePointers.has(event.pointerId)) state.activePointers.set(event.pointerId, event);
     if (state.isPinching && state.activePointers.size >= 2) {
       const pointers = [...state.activePointers.values()];
@@ -275,12 +284,12 @@ export function configurarInteracciones({ root, onSelect, onClearSelection, onZo
   const reset = () => { state.zoom = 1; updateRange(); onReset?.("reset"); };
   const onRangeInput = () => applyZoom(Number(range.value));
 
-  root.addEventListener("click", onClick);
-  root.addEventListener("keydown", onKeydown);
-  root.addEventListener("pointerover", onPointerEnter);
-  root.addEventListener("pointerout", onPointerLeave);
-  root.addEventListener("focusin", onFocusIn);
-  root.addEventListener("focusout", onFocusOut);
+  viewport?.addEventListener("click", onClick);
+  viewport?.addEventListener("keydown", onKeydown);
+  viewport?.addEventListener("pointerover", onPointerEnter);
+  viewport?.addEventListener("pointerout", onPointerLeave);
+  viewport?.addEventListener("focusin", onFocusIn);
+  viewport?.addEventListener("focusout", onFocusOut);
   viewport?.addEventListener("wheel", onWheel, { passive: false });
   viewport?.addEventListener("pointerdown", onPointerDown);
   viewport?.addEventListener("pointermove", onPointerMove);
@@ -293,12 +302,12 @@ export function configurarInteracciones({ root, onSelect, onClearSelection, onZo
   range?.addEventListener("input", onRangeInput);
   updateRange();
 
-  disposables.push(() => root.removeEventListener("click", onClick));
-  disposables.push(() => root.removeEventListener("keydown", onKeydown));
-  disposables.push(() => root.removeEventListener("pointerover", onPointerEnter));
-  disposables.push(() => root.removeEventListener("pointerout", onPointerLeave));
-  disposables.push(() => root.removeEventListener("focusin", onFocusIn));
-  disposables.push(() => root.removeEventListener("focusout", onFocusOut));
+  disposables.push(() => viewport?.removeEventListener("click", onClick));
+  disposables.push(() => viewport?.removeEventListener("keydown", onKeydown));
+  disposables.push(() => viewport?.removeEventListener("pointerover", onPointerEnter));
+  disposables.push(() => viewport?.removeEventListener("pointerout", onPointerLeave));
+  disposables.push(() => viewport?.removeEventListener("focusin", onFocusIn));
+  disposables.push(() => viewport?.removeEventListener("focusout", onFocusOut));
   disposables.push(() => viewport?.removeEventListener("wheel", onWheel));
   disposables.push(() => viewport?.removeEventListener("pointerdown", onPointerDown));
   disposables.push(() => viewport?.removeEventListener("pointermove", onPointerMove));
