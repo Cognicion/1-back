@@ -265,7 +265,84 @@ export function formatearImportanciaEvento(importancia) {
   return etiquetas[String(importancia || "").trim().toLocaleLowerCase("es-MX")] || "No especificada";
 }
 
-export const DISTANCIA_MINIMA_MARCADORES_PX = 44;
+export const ESPACIO_ENTRE_MARCADORES_PX = 8;
+export const TAMANO_MINIMO_GRUPO_PX = 28;
+export const TAMANO_MAXIMO_GRUPO_PX = 42;
+export const TAMANOS_EVENTO_POR_IMPORTANCIA = Object.freeze({
+  baja: 18,
+  media: 24,
+  alta: 32,
+  critica: 36
+});
+export const DISTANCIA_MINIMA_MARCADORES_PX = TAMANO_MAXIMO_GRUPO_PX + ESPACIO_ENTRE_MARCADORES_PX;
+
+export function normalizarImportanciaMarcador(valor = "") {
+  const normalizada = String(valor ?? "").trim().toLocaleLowerCase("es-MX");
+  if (["critica", "crítica", "critico", "crítico", "critical", "4"].includes(normalizada)) return "critica";
+  if (["alta", "high", "3"].includes(normalizada)) return "alta";
+  if (["media", "moderada", "medium", "2"].includes(normalizada)) return "media";
+  return "baja";
+}
+
+export function obtenerTamanoMarcadorPorImportancia(valor = "") {
+  return TAMANOS_EVENTO_POR_IMPORTANCIA[normalizarImportanciaMarcador(valor)] || TAMANOS_EVENTO_POR_IMPORTANCIA.media;
+}
+
+export function calcularTamanoGrupo(cantidad = 1) {
+  const total = Math.max(1, Number(cantidad) || 1);
+  const base = 26;
+  const incremento = Math.min(14, Math.log2(Math.max(2, total)) * 5);
+  return Math.max(TAMANO_MINIMO_GRUPO_PX, Math.min(TAMANO_MAXIMO_GRUPO_PX, Math.round(base + incremento)));
+}
+
+function obtenerDiametroElementoVisual(elemento) {
+  if (!elemento) return TAMANOS_EVENTO_POR_IMPORTANCIA.media;
+  if (elemento.tipo === "grupo" || (elemento.items?.length || 0) > 1) {
+    return calcularTamanoGrupo(elemento.items?.length || 1);
+  }
+  return obtenerTamanoMarcadorPorImportancia(elemento.items?.[0]?.importancia || elemento.evento?.importancia);
+}
+
+function obtenerPosicionElementoPx(elemento, inicioMs, finMs, anchoPx) {
+  const duracion = Math.max(1, finMs - inicioMs);
+  return ((elemento.fechaRepresentativaMs - inicioMs) / duracion) * anchoPx;
+}
+
+function crearGrupoVisualPorColision(elementos, granularidad) {
+  const items = elementos.flatMap((elemento) => elemento.items || []).sort((a, b) => a.fechaEvento - b.fechaEvento);
+  const fechaRepresentativaMs = Math.round(items.reduce((suma, evento) => suma + evento.fechaEvento.getTime(), 0) / Math.max(1, items.length));
+  const ids = items.map((evento) => evento.id).sort().join("_");
+  const claves = elementos.map((elemento) => elemento.etiquetaPeriodo).filter(Boolean);
+  const etiquetaPeriodo = claves.length === 1 ? claves[0] : "Eventos cercanos";
+  return {
+    tipo: "grupo",
+    idGrupo: ["colision", granularidad, ids].join(":"),
+    items,
+    fechaRepresentativaMs,
+    granularidad,
+    etiquetaPeriodo
+  };
+}
+
+function agruparElementosVisualesCercanos(elementos, inicioMs, finMs, anchoPx, granularidad) {
+  const ordenados = [...elementos].sort((a, b) => a.fechaRepresentativaMs - b.fechaRepresentativaMs);
+  const resultado = [];
+  for (const elemento of ordenados) {
+    const previo = resultado.at(-1);
+    if (!previo) {
+      resultado.push(elemento);
+      continue;
+    }
+    const distanciaPx = Math.abs(obtenerPosicionElementoPx(elemento, inicioMs, finMs, anchoPx) - obtenerPosicionElementoPx(previo, inicioMs, finMs, anchoPx));
+    const distanciaMinima = obtenerDiametroElementoVisual(elemento) / 2 + obtenerDiametroElementoVisual(previo) / 2 + ESPACIO_ENTRE_MARCADORES_PX;
+    if (distanciaPx < distanciaMinima) {
+      resultado[resultado.length - 1] = crearGrupoVisualPorColision([previo, elemento], granularidad);
+      continue;
+    }
+    resultado.push(elemento);
+  }
+  return resultado;
+}
 
 function granularidadParaRango(inicioMs, finMs) {
   const anos = (finMs - inicioMs) / (365.25 * 86400000);
@@ -321,7 +398,7 @@ export function agruparEventosParaEscalaVisible({ eventos = [], rangoVisibleInic
     if (!cubetas.has(clave)) cubetas.set(clave, []);
     cubetas.get(clave).push(evento);
   });
-  return [...cubetas.entries()].map(([clave, items]) => {
+  const elementos = [...cubetas.entries()].map(([clave, items]) => {
     const fechaRepresentativaMs = Math.round(items.reduce((suma, evento) => suma + evento.fechaEvento.getTime(), 0) / items.length);
     if (items.length === 1) return { tipo: "evento", id: items[0].id, evento: items[0], items, fechaRepresentativaMs, granularidad, etiquetaPeriodo: etiquetaGranularidad(clave, granularidad) };
     return {
@@ -333,4 +410,6 @@ export function agruparEventosParaEscalaVisible({ eventos = [], rangoVisibleInic
       etiquetaPeriodo: etiquetaGranularidad(clave, granularidad)
     };
   }).sort((a, b) => a.fechaRepresentativaMs - b.fechaRepresentativaMs);
+  return agruparElementosVisualesCercanos(elementos, rangoVisibleInicioMs, rangoVisibleFinMs, anchoDisponiblePx, granularidad)
+    .sort((a, b) => a.fechaRepresentativaMs - b.fechaRepresentativaMs);
 }

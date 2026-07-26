@@ -13,7 +13,8 @@ import {
   formatearOrigenEvento,
   formatearImportanciaEvento,
   obtenerEtiquetaOrigenEvento,
-  agruparEventosParaEscalaVisible
+  agruparEventosParaEscalaVisible,
+  calcularTamanoGrupo
 } from "./lineaTiempoUtils.js";
 
 function textoImportancia(importancia) {
@@ -30,7 +31,7 @@ function normalizarImportanciaMarcador(valor = "") {
 
 function tamanoMarcadorPorImportancia(valor = "") {
   const importancia = normalizarImportanciaMarcador(valor);
-  return { baja: 10, media: 14, alta: 19, critica: 24 }[importancia] || 14;
+  return { baja: 18, media: 24, alta: 32, critica: 36 }[importancia] || 24;
 }
 
 function textoCategoria(evento) {
@@ -115,9 +116,9 @@ export function renderizarLineaTiempo(root, eventos, rango, zoom = 1, opciones =
     const evento = grupo.items[0];
     const eventoId = grupo.items[0].id;
     const atributoIdentificador = esGrupo ? `data-visual-group-id="${escaparHTML(elemento.idGrupo)}"` : `data-event-id="${escaparHTML(eventoId)}"`;
-    const contenidoMarcador = esGrupo ? `<span class="timeline-event__group-count" aria-hidden="true">${grupo.items.length}</span>` : `<span class="timeline-event__marker-core" aria-hidden="true">${escaparHTML(configuracion.icono)}</span>`;
+    const contenidoMarcador = esGrupo ? `<span class="timeline-event__group-count" aria-hidden="true">${grupo.items.length}</span>` : "";
     const importanciaNormalizada = normalizarImportanciaMarcador(evento.importancia);
-    const markerSize = tamanoMarcadorPorImportancia(evento.importancia);
+    const markerSize = esGrupo ? calcularTamanoGrupo(grupo.items.length) : tamanoMarcadorPorImportancia(evento.importancia);
     if (!esGrupo) {
       console.debug("[Línea de tiempo] Marcador renderizado", {
         eventId: evento.id,

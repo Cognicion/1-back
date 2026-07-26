@@ -13,7 +13,10 @@ import {
   formatearOrigenEvento,
   formatearImportanciaEvento,
   seleccionarIntervaloTemporal,
-  agruparEventosParaEscalaVisible
+  agruparEventosParaEscalaVisible,
+  calcularTamanoGrupo,
+  obtenerTamanoMarcadorPorImportancia,
+  ESPACIO_ENTRE_MARCADORES_PX
 } from "../lineaTiempo/lineaTiempoUtils.js";
 
 function evento(id, fecha) {
@@ -128,9 +131,31 @@ test("La vista lejana agrupa eventos del mismo año sin alterar sus documentos",
   ];
   const inicio = new Date(1996, 0, 1).getTime();
   const fin = new Date(2026, 0, 1).getTime();
-  const elementos = agruparEventosParaEscalaVisible({ eventos, rangoVisibleInicioMs: inicio, rangoVisibleFinMs: fin, anchoDisponiblePx: 1000, zoom: 1 });
+  const elementos = agruparEventosParaEscalaVisible({ eventos, rangoVisibleInicioMs: inicio, rangoVisibleFinMs: fin, anchoDisponiblePx: 1400, zoom: 1 });
   assert.equal(elementos.length, 2);
   assert.equal(elementos[0].tipo, "grupo");
   assert.equal(elementos[0].items.length, 2);
   assert.equal(eventos.length, 3);
+});
+
+test("Los marcadores usan un diametro visual segun importancia y cantidad agrupada", () => {
+  assert.equal(obtenerTamanoMarcadorPorImportancia("baja"), 18);
+  assert.equal(obtenerTamanoMarcadorPorImportancia("media"), 24);
+  assert.equal(obtenerTamanoMarcadorPorImportancia("alta"), 32);
+  assert.equal(calcularTamanoGrupo(2), 31);
+  assert.ok(calcularTamanoGrupo(20) <= 42);
+  assert.equal(ESPACIO_ENTRE_MARCADORES_PX, 8);
+});
+
+test("Los eventos cercanos se agrupan cuando sus radios reales no caben", () => {
+  const eventos = [
+    normalizarEvento("a", { titulo: "A", fechaEvento: "2026-01-01", importancia: "alta" }),
+    normalizarEvento("b", { titulo: "B", fechaEvento: "2026-01-03", importancia: "alta" })
+  ];
+  const inicio = new Date(2026, 0, 1).getTime();
+  const fin = new Date(2026, 0, 10).getTime();
+  const elementos = agruparEventosParaEscalaVisible({ eventos, rangoVisibleInicioMs: inicio, rangoVisibleFinMs: fin, anchoDisponiblePx: 120, zoom: 1 });
+  assert.equal(elementos.length, 1);
+  assert.equal(elementos[0].tipo, "grupo");
+  assert.deepEqual(elementos[0].items.map((item) => item.id), ["a", "b"]);
 });
