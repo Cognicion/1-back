@@ -301,6 +301,37 @@ assert.ok(validateMentalExamNarrative("Riesgo suicida presente.", deniedRiskComp
 assert.ok(validateMentalExamNarrative("Marcha sin alteraciones.", []).some((issue) => issue.code === "UNSUPPORTED_OBSERVATION"));
 assert.ok(validateMentalExamNarrative("cama_correspondiente.", []).some((issue) => issue.code === "INTERNAL_PLACEHOLDER"));
 
+// v1.44: el estilo se mantiene institucional sin convertir la nota en un resumen automático.
+const redundantAnalysis = validateProviderResult({
+  parsed: {
+    sections: {
+      evolution: { text: validEvolution, sourceUtteranceIds: ["utt-1", "utt-2", "utt-3", "utt-4", "utt-5"] },
+      mentalExam: { narrative: "Durante la entrevista se muestra cooperador; refiere ánimo ansioso.", components: [] },
+      analysis: { text: validEvolution, sourceUtteranceIds: ["utt-1", "utt-2"] }
+    }
+  },
+  payload: basePayload(), requestId: "note-redundancy", HttpsErrorClass: TestHttpsError, attempt: 1
+});
+assert.equal(redundantAnalysis.componentStatus.analysis.status, "invalid");
+assert.ok(redundantAnalysis.sections.analysis.warnings.some((warning) => warning.code === "cross_component_redundancy"));
+
+const styleCorrected = validateProviderResult({
+  parsed: {
+    sections: {
+      evolution: {
+        text: validEvolution.replace("refiere encontrarse mas tranquilo", "reporta mejoría general"),
+        sourceUtteranceIds: ["utt-1", "utt-2", "utt-3", "utt-4", "utt-5"]
+      },
+      mentalExam: { narrative: "Durante la entrevista se muestra cooperador; refiere ánimo ansioso.", components: [] },
+      analysis: { text: "Se trata de paciente masculino de la cuarta década de la vida, con síntomas actuales en integración y necesidad de seguimiento clínico.", sourceUtteranceIds: ["utt-2"] }
+    }
+  },
+  payload: basePayload(), requestId: "note-style", HttpsErrorClass: TestHttpsError, attempt: 1
+});
+assert.doesNotMatch(styleCorrected.sections.evolution.text, /reporta mejor[ií]a general/i);
+assert.match(styleCorrected.sections.evolution.text, /refiere mejor[ií]a respecto/i);
+assert.equal(styleCorrected.componentStatus.analysis.status, "valid");
+
 await assert.rejects(
   () => runGenerateStructuredNoteFromDictation({
     data: basePayload(),

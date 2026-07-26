@@ -44,11 +44,11 @@ Reglas clinicas:
 - No emitas texto fuera del JSON.
 
 Estilo de evolution:
-- Entre dos y cuatro parrafos narrativos proporcionales a la informacion, sin subtitulos internos y sin listas. Si existen tres o mas dominios clinicos, no devuelvas un unico parrafo.
-- Inicio con nombre, sexo, edad, dia de estancia, servicio y criterio solo si estan disponibles.
-- Describe brevemente el abordaje, lugar, posicion, aceptacion, cooperacion y conducta general si fueron documentados.
-- Integra evolucion de sintomas relevantes, riesgo referido, red de apoyo, respuesta/adherencia referidas, consumo si aparece y eventualidades medicas.
-- Cierra con sueno, alimentacion, diuresis, evacuaciones, sintomas fisicos, efectos adversos y eventualidades medicas si fueron documentados.
+- Redacta un bloque narrativo de extension intermedia, sin subtitulos internos, listas ni resumen tematico. Conserva el orden temporal: evolucion, sintomas pertinentes, riesgo actual, tratamiento/efectos, consumo y apoyos solo cuando sean relevantes.
+- Inicia con identificacion clinica minima y modalidad solo si estan disponibles; evita repetir identificadores administrativos.
+- Prefiere "refiere mejoria respecto a la valoracion previa", "al interrogatorio dirigido niega" y "identifica como principal apoyo" cuando los hechos lo sustenten. No uses "reporta mejoria general", "adecuada adherencia parcial" ni frases algoritmicas.
+- Distingue lo referido de lo observado. No conviertas una disminucion de horas de sueno en insomnio, mania o disminucion de necesidad de sueno sin evidencia suficiente.
+- No dupliques en evolution el examen mental ni el razonamiento del analisis; describe hechos y temporalidad, no su interpretacion diagnostica.
 - Respeta generationPreferences.includePatientQuotes. Si es false, no uses comillas ni "sic. Pac."; parafrasea fielmente. Si es true, usa solo citas literales breves de utterances del paciente, maximo generationPreferences.maxPatientQuotes cuando sea mayor que 0; si maxPatientQuotes es 0, no hay maximo automatico, pero limita las citas a las clinicamente indispensables. No corrijas el texto dentro de la cita y coloca "sic. Pac." inmediatamente despues.
 - Usa el bloque OBSERVACIONES MANUALES DEL PROFESIONAL solo como hallazgos observados introducidos manualmente. No los atribuyas al paciente. No amplifiques su significado. No infieras orientacion, cooperacion, psicomotricidad, higiene, marcha, afecto ni riesgo a partir de otra observacion distinta. Respeta destinationSections y evita repetir literalmente la misma observacion.
 - Si modality es videollamada, redacta "valorado mediante videollamada" y limita hallazgos a lo observable por camara. Si modality es llamada telefonica, no generes apariencia, contacto visual, marcha, higiene ni psicomotricidad.
@@ -57,8 +57,9 @@ Estilo de evolution:
 - Distingue de manera explicita lo observado, lo referido y lo no valorable por la modalidad. No afirmes marcha, cama, postura, cognicion global, inteligencia, juicio ni orientacion si no existe una fuente directa. La videollamada no permite inferir marcha y un problema de volumen, audio, camara, conexion, consentimiento o privacidad nunca es un hallazgo mental.
 - Para mentalExam conserva la polaridad y temporalidad del riesgo: una negacion actual de ideacion, intencion o planificacion no puede convertirse en riesgo positivo. Si la informacion es ambigua, marca requiresReview y no la resuelvas inventando.
 - Para mentalExam no copies turnos completos, saludos, preguntas del entrevistador, ajustes tecnicos, datos administrativos ni valores internos como cama_correspondiente, unknown u otros identificadores.
+- Para mentalExam usa un solo parrafo institucional, narrativo y de extension intermedia. Separa afecto observado de animo referido; no uses frases vagas sobre funciones cognitivas ni declares cognicion global, juicio o inteligencia sin exploracion sustentada.
 - La transcripcion Web Speech API no prueba volumen, prosodia, tono real, velocidad acustica ni latencia temporal exacta. No los presentes como observados salvo dictado explicito del profesional.
-- Para analysis, redacta una sintesis clinica breve y distinta de evolution, limitada a sintomas, respuesta y adherencia referidas, efectos adversos, consumo, funcionamiento, riesgo actual y necesidades de seguimiento cuando existan. No inventes diagnosticos, causalidad, estabilidad absoluta, factores protectores ni indicaciones farmacologicas. Si no hay evidencia suficiente, devuelve status "insufficient" y texto vacio.
+- Para analysis inicia preferentemente con "Se trata de paciente masculino/femenino de la [decada] de la vida..." cuando sexo y edad esten disponibles. Integra evolucion, riesgo actual, vulnerabilidades, apoyos documentados y aspectos que requieren vigilancia; no copies el padecimiento actual ni enumeres todos los sintomas otra vez. No inventes diagnosticos, causalidad, estabilidad absoluta, factores protectores ni indicaciones farmacologicas. Si no hay evidencia suficiente, devuelve status "insufficient" y texto vacio.
 
 Devuelve JSON estricto con este esquema:
 {
@@ -1060,6 +1061,9 @@ function validationCodesFromIssues(issues = []) {
 function applyDeterministicEvolutionCorrections(text = "") {
   return normalizeString(text)
     .replace(/\binsomnia\b/gi, "insomnio")
+    .replace(/\breporta mejor[ií]a general\b/gi, "refiere mejoría respecto a la valoración previa")
+    .replace(/\badecuada adherencia parcial\b/gi, "apego parcial al tratamiento")
+    .replace(/\bconforme a referencias cl[ií]nicas\b/gi, "")
     .replace(/[ \t]{2,}/g, " ")
     .replace(/\n{3,}/g, "\n\n")
     .replace(/[ \t]+\n/g, "\n")
@@ -1546,7 +1550,7 @@ function validateMentalExamNarrative(text = "", components = []) {
   if (/[¿?]/.test(value) || /\b(?:le pregunto|quiero preguntarle|responde|pregunta)\b/i.test(value)) issues.push({ code: "CONVERSATIONAL_CONTAMINATION", severity: "high" });
   if (/\b(?:doctor|me escucha|volumen|audio|microfon|conexion|camara|consentimiento|privacidad|plataforma)\b/i.test(value)) issues.push({ code: "TECHNICAL_DIALOGUE", severity: "high" });
   if ((value.match(/\b(?:yo|me siento|tengo|quiero|mi madre|mi familia)\b/gi) || []).length > 1 || /\bsic\.\s*pac\./i.test(value)) issues.push({ code: "CONVERSATIONAL_CONTAMINATION", severity: "high" });
-  if (/\b(?:cama_correspondiente|alino|unknown|undefined|null|other)\b|\[object Object\]|\b(?:evidence|clinicalFinding|sourceType)\s*:/i.test(value)) issues.push({ code: "INTERNAL_PLACEHOLDER", severity: "high" });
+  if (/\b(?:cama_correspondiente|cama correspondiente|alino|unknown|undefined|null|other)\b|\[object Object\]|\b(?:evidence|clinicalFinding|sourceType)\s*:/i.test(value)) issues.push({ code: "INTERNAL_PLACEHOLDER", severity: "high" });
   if (value.length > 1800) issues.push({ code: "CONVERSATIONAL_CONTAMINATION", severity: "high" });
   const sentences = value.split(/(?<=[.!])\s+/).map((item) => normalizeForAccess(item)).filter(Boolean);
   if (new Set(sentences).size !== sentences.length) issues.push({ code: "REPEATED_FRAGMENT", severity: "high" });
@@ -1556,6 +1560,7 @@ function validateMentalExamNarrative(text = "", components = []) {
   if (perceptionDenied && /\b(?:alucinacion|voces).{0,30}\b(?:presente|activa)\b/i.test(normalizeForAccess(value))) issues.push({ code: "PERCEPTION_AUDIO_CONFUSION", severity: "high" });
   const gaitWasObserved = components.some((component) => component.domain === "gait" && component.sourceType === "clinician_visual_observation");
   if (!gaitWasObserved && /\bmarcha.{0,40}\b(?:normal|sin alteraciones|conservada)\b/i.test(value)) issues.push({ code: "UNSUPPORTED_OBSERVATION", severity: "high" });
+  if (/\bfunciones cognitivas b[aá]sicas no reportan alteraciones expl[ií]citas\b/i.test(value)) issues.push({ code: "MECHANICAL_DOMAIN_CONCATENATION", severity: "medium" });
   if (/\b(?:funciones cognitivas|inteligencia).{0,45}\b(?:conservad|normal|integra)\b/i.test(value) && !components.some((component) => ["cognition_context", "intelligence"].includes(component.domain))) issues.push({ code: "UNSUPPORTED_COGNITIVE_INFERENCE", severity: "high" });
   return issues;
 }
@@ -1563,6 +1568,7 @@ function validateMentalExamNarrative(text = "", components = []) {
 function manualMentalPhrase(component = {}) {
   const label = normalizeMentalObservationLabel((component.values || [])[0] || "");
   if (!label) return "";
+  if (/^(?:Valorado|Durante la entrevista|Durante la valoración|En lo observable|Contacto visual|Psicomotricidad|Marcha)/i.test(label)) return label;
   if (component.domain === "encounter.context") {
     if (/videollamada/i.test(label)) return "Valorado mediante videollamada.";
     return "Valorado en " + label + ".";
@@ -1578,13 +1584,22 @@ function manualMentalPhrase(component = {}) {
 }
 
 function structuredMentalPhrase(component = {}) {
+  const existing = normalizeString((component.values || [])[0] || "");
+  if (/^(?:Durante la entrevista|Orientación documentada|Se muestra|Refiere |Niega |Se identificó )/i.test(existing)) return existing;
   if (component.sourceType === "clinician_visual_observation" || component.sourceType === "clinician_manual_entry") return manualMentalPhrase(component);
   const status = component.status || "present";
+  const raw = normalizeClinicalText((component.values || []).join(" "));
   const phrases = {
     consciousness: "Durante la entrevista se observa alerta.",
     orientation: "Orientación documentada durante la entrevista.",
     attitude: "Se muestra cooperador durante la entrevista.",
-    reported_mood: "Refiere cambios en el estado de ánimo; requiere integración clínica.",
+    reported_mood: /ansios|nervios|preocup/.test(raw)
+      ? "Refiere ánimo ansioso o preocupado."
+      : /triste|desesperanz/.test(raw)
+        ? "Refiere ánimo bajo."
+        : /irritable|enojad/.test(raw)
+          ? "Refiere irritabilidad."
+          : "Refiere cambios en el estado de ánimo; requiere integración clínica.",
     perception_reported: status === "denied" ? "Niega alteraciones sensoperceptivas." : "Refiere fenómenos sensoperceptivos que requieren integración clínica.",
     thought_content: "Refiere contenido de pensamiento que requiere integración clínica.",
     suicide_risk: status === "denied" ? "Niega ideación suicida actual; no se documentan intención ni planificación en este hallazgo." : "Se identificó información de riesgo suicida que requiere revisión clínica.",
@@ -1688,11 +1703,26 @@ function analizarEstadoSeccion(text = "", status = "") {
 }
 
 function analysisRepeatsEvolution(analysis = "", evolution = "") {
-  const analysisWords = normalizeForAccess(analysis).match(/[a-z]{4,}/g) || [];
-  const evolutionWords = new Set(normalizeForAccess(evolution).match(/[a-z]{4,}/g) || []);
+  const normalizedAnalysis = normalizeForAccess(analysis);
+  const normalizedEvolution = normalizeForAccess(evolution);
+  const analysisSentences = normalizedAnalysis.split(/[.!?]\s*/).map((sentence) => sentence.trim()).filter((sentence) => sentence.length >= 70);
+  const evolutionSentences = new Set(normalizedEvolution.split(/[.!?]\s*/).map((sentence) => sentence.trim()).filter(Boolean));
+  if (analysisSentences.some((sentence) => evolutionSentences.has(sentence))) return true;
+  const analysisWords = normalizedAnalysis.match(/[a-z]{4,}/g) || [];
+  const evolutionWords = new Set(normalizedEvolution.match(/[a-z]{4,}/g) || []);
   if (analysisWords.length < 12) return false;
   const shared = analysisWords.filter((word) => evolutionWords.has(word)).length;
-  return shared / analysisWords.length > 0.88;
+  return shared / analysisWords.length > 0.88
+    || analysisSentences.some((sentence) => normalizedEvolution.includes(sentence));
+}
+
+function analysisStyleWarnings(analysis = "") {
+  const text = normalizeString(analysis);
+  const warnings = [];
+  if (!text) return warnings;
+  if (!/^se trata de paciente\b/i.test(text)) warnings.push({ code: "non_analytic_commentary", severity: "medium", message: "El análisis no inicia con una integración clínica institucional." });
+  if (/\b(?:reporta mejor[ií]a general|conforme a referencias cl[ií]nicas|conducta estabilizada)\b/i.test(text)) warnings.push({ code: "generic_summary_style", severity: "medium", message: "El análisis contiene una expresión genérica que requiere revisión de estilo." });
+  return warnings;
 }
 
 function validateProviderResult({ parsed, payload, requestId, HttpsErrorClass, attempt = null }) {
@@ -1766,8 +1796,8 @@ function validateProviderResult({ parsed, payload, requestId, HttpsErrorClass, a
   warnings.push(...warningsForUnknownSpeakers(coverage));
   const analysisText = applyDeterministicEvolutionCorrections(rawAnalysis.text || rawAnalysis.narrative || "");
   const analysisStatus = analysisRepeatsEvolution(analysisText, text) ? "invalid" : analizarEstadoSeccion(analysisText, rawAnalysis.status);
-  const analysisWarnings = normalizeWarnings(rawAnalysis.warnings);
-  if (analysisStatus === "invalid") analysisWarnings.push({ code: "analysis_repeats_evolution", message: "El analisis repite excesivamente la evolucion.", severity: "high" });
+  const analysisWarnings = [...normalizeWarnings(rawAnalysis.warnings), ...analysisStyleWarnings(analysisText)];
+  if (analysisStatus === "invalid") analysisWarnings.push({ code: "cross_component_redundancy", message: "El analisis repite excesivamente la evolucion.", severity: "high" });
   const componentStatus = {
     evolution: { status: "valid", validationCodes: [] },
     mentalStatusExam: {
