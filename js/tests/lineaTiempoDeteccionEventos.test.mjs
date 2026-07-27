@@ -208,9 +208,9 @@ function detectar(fuentes, opts = {}) {
     datos: { medicamento: "Sertralina", fechaInicioTratamiento: "2024-01-10", fechaSuspensionTratamiento: "2024-03-20" }
   });
   const resultado = detectar([diagnostico, tratamiento], { incluirEstructurados: true });
-  assert.equal(resultado.eventosNormalizados, 3);
-  assert.equal(resultado.eventos.filter((e) => e.relevanciaClinica === "estructurada").length, 3);
-  assert.equal(resultado.eventos.filter((e) => e.origenDeteccion === "estructurado-clinico").length, 3);
+  assert.equal(resultado.eventosNormalizados, 0);
+  assert.equal(resultado.candidatosEstructurados, 0);
+  assert.equal(resultado.fuentesEstructuradasOmitidas, 2);
 }
 
 {
@@ -274,5 +274,65 @@ function detectar(fuentes, opts = {}) {
   assert.equal(resultado.eventosNormalizados, 1);
   assert.equal(resultado.eventos[0].referenciasOrigen.length, 3);
   assert.equal(resultado.referenciasFusionadas, 2);
+}
+
+{
+  const diagnosticoCie = crearFuenteClinicaComun({
+    origenId: "dx-r45",
+    origenTipo: "diagnostico",
+    fechaDocumento: "2026-07-20",
+    tituloDocumento: "Diagnósticos",
+    datos: { codigo: "R45.851", nombre: "Ideación suicida", texto: "R45.851 - Ideación suicida" }
+  });
+  const resultado = detectar(diagnosticoCie, { incluirEstructurados: true });
+  assert.equal(resultado.eventosNormalizados, 0);
+  assert.equal(resultado.fuentesEstructuradasOmitidas, 1);
+}
+
+{
+  const tratamiento = crearFuenteClinicaComun({
+    origenId: "tx-sertralina",
+    origenTipo: "tratamiento",
+    fechaDocumento: "2026-07-20",
+    tituloDocumento: "Tratamiento e indicaciones",
+    datos: { medicamento: "Sertralina", dosis: "50 mg cada 24 horas", texto: "Sertralina 50 mg cada 24 horas" }
+  });
+  const resultado = detectar(tratamiento, { incluirEstructurados: true });
+  assert.equal(resultado.eventosNormalizados, 0);
+  assert.equal(resultado.fuentesEstructuradasOmitidas, 1);
+}
+
+{
+  const resultado = detectar(fuente("Fue diagnosticado con trastorno bipolar en 2021."));
+  assert.equal(resultado.eventosNormalizados, 1);
+  assert.equal(resultado.eventos[0].origenTipo, "nota");
+}
+
+{
+  const historia = crearFuenteClinicaComun({
+    origenId: "historia-1",
+    origenTipo: "historia_clinica",
+    origenSubtipo: "antecedentes",
+    fechaDocumento: "2026-07-20",
+    tituloDocumento: "Historia clínica",
+    datos: { padecimientoActual: "Inició sertralina hace tres meses." }
+  });
+  const resultado = detectar(historia);
+  assert.equal(resultado.eventosNormalizados, 1);
+  assert.equal(resultado.eventos[0].origenTipo, "historia_clinica");
+}
+
+{
+  const estudioNarrativo = crearFuenteClinicaComun({
+    origenId: "estudio-narrativo",
+    origenTipo: "estudio",
+    origenSubtipo: "electroencefalograma",
+    fechaDocumento: "2025-05-10",
+    tituloDocumento: "Electroencefalograma",
+    datos: { interpretacion: "Se realizó electroencefalograma el 10/05/2025." }
+  });
+  const resultado = detectar(estudioNarrativo);
+  assert.equal(resultado.eventosNormalizados, 1);
+  assert.equal(resultado.eventos[0].origenTipo, "estudio");
 }
 console.log("lineaTiempoDeteccionEventos.test.mjs OK");
