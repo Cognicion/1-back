@@ -1269,6 +1269,16 @@ function ponerEstadoApuntesPaciente(texto) {
   if (estado) estado.textContent = texto;
 }
 
+function crearVistaPreviaApunte(texto, maximo = 120) {
+  const limpio = String(texto ?? "").replace(/\s+/g, " ").trim();
+  if (!limpio) return "Sin contenido";
+  return limpio.length > maximo ? `${limpio.slice(0, maximo).trim()}…` : limpio;
+}
+
+function obtenerTituloVisibleApunte(titulo) {
+  return String(titulo ?? "").replace(/\s+/g, " ").trim() || "Sin título";
+}
+
 async function cargarApuntesMedicoPaciente() {
   const lista = document.getElementById("listaApuntesMedicoPaciente");
   const ref = referenciaApuntesMedicoPaciente();
@@ -1311,9 +1321,9 @@ function renderizarListaApuntesMedicoPaciente() {
   }
 
   lista.innerHTML = filtrados.map((apunte) => `
-    <button type="button" class="apunte-paciente-item ${apunte.id === activo ? "activo" : ""}" data-apunte-paciente="${apunte.id}">
-      <strong>${escaparHTML(apunte.titulo || "Apunte sin titulo")}</strong>
-      <span>${escaparHTML((apunte.contenido || "").slice(0, 92))}</span>
+    <button type="button" class="apunte-paciente-item ${apunte.id === activo ? "activo" : ""}" data-apunte-paciente="${apunte.id}" aria-selected="${apunte.id === activo ? "true" : "false"}" title="${escaparHTML(obtenerTituloVisibleApunte(apunte.titulo))}">
+      <strong class="apunte-paciente-item__titulo">${escaparHTML(obtenerTituloVisibleApunte(apunte.titulo))}</strong>
+      <span class="apunte-paciente-item__preview">${escaparHTML(crearVistaPreviaApunte(apunte.contenido, 120))}</span>
     </button>
   `).join("");
 

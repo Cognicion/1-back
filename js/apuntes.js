@@ -56,6 +56,16 @@ async function cargarApuntes() {
   }
 }
 
+function crearVistaPreviaApunte(texto, maximo = 120) {
+  const limpio = String(texto ?? "").replace(/\s+/g, " ").trim();
+  if (!limpio) return "Sin contenido";
+  return limpio.length > maximo ? `${limpio.slice(0, maximo).trim()}…` : limpio;
+}
+
+function obtenerTituloVisibleApunte(titulo) {
+  return String(titulo ?? "").replace(/\s+/g, " ").trim() || "Sin título";
+}
+
 function renderizarLista() {
   const lista = document.getElementById("listaApuntes");
   const busqueda = (document.getElementById("buscadorApuntes")?.value || "").trim().toLowerCase();
@@ -74,9 +84,9 @@ function renderizarLista() {
   }
 
   lista.innerHTML = filtrados.map((apunte) => `
-    <button type="button" class="apunte-item ${apunte.id === activo ? "activo" : ""}" data-id="${apunte.id}">
-      <strong>${escaparHTML(apunte.titulo || "Sin titulo")}</strong>
-      <span>${escaparHTML((apunte.contenido || "").slice(0, 120))}</span>
+    <button type="button" class="apunte-item ${apunte.id === activo ? "activo" : ""}" data-id="${apunte.id}" aria-selected="${apunte.id === activo ? "true" : "false"}" title="${escaparHTML(obtenerTituloVisibleApunte(apunte.titulo))}">
+      <strong class="apunte-item__titulo">${escaparHTML(obtenerTituloVisibleApunte(apunte.titulo))}</strong>
+      <span class="apunte-item__preview">${escaparHTML(crearVistaPreviaApunte(apunte.contenido, 120))}</span>
     </button>
   `).join("");
 

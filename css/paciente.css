@@ -1294,10 +1294,13 @@ body.tema-claro .diagnostico-opcion:focus-visible {
 
 .lista-apuntes-paciente {
   min-height: 0;
-  overflow: auto;
-  display: grid;
+  overflow-y: auto;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
   align-content: start;
   gap: 8px;
+  padding-right: 4px;
 }
 
 .apuntes-paciente-editor {
@@ -1305,30 +1308,108 @@ body.tema-claro .diagnostico-opcion:focus-visible {
 }
 
 .apunte-paciente-item {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 4px;
+  position: static;
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 58px;
+  margin: 0;
   text-align: left;
   border: 1px solid rgba(190, 196, 188, 0.16);
   border-radius: 14px;
   background: rgba(14, 20, 17, 0.68);
   color: var(--ivory-100);
-  padding: 10px 12px;
+  padding: 9px 12px;
+  overflow: hidden;
   cursor: pointer;
 }
 
 .apunte-paciente-item.activo {
   border-color: rgba(82, 152, 102, 0.56);
-  box-shadow: 0 0 18px rgba(82, 152, 102, 0.12);
+  box-shadow: inset 0 0 0 1px rgba(82, 152, 102, 0.36), 0 0 18px rgba(82, 152, 102, 0.12);
 }
 
 .apunte-paciente-item strong,
 .apunte-paciente-item span {
   display: block;
+  position: static;
+  overflow: hidden;
 }
 
-.apunte-paciente-item span {
-  margin-top: 5px;
+.apunte-paciente-item strong,
+.apunte-paciente-item__titulo {
+  min-width: 0;
+  color: var(--ivory-50);
+  font-size: 13px;
+  line-height: 1.25;
+  font-weight: 800;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.apunte-paciente-item span,
+.apunte-paciente-item__preview {
   color: var(--gray-400);
   font-size: 12px;
   line-height: 1.35;
+  max-height: calc(1.35em * 2);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.apunte-paciente-item:hover {
+  background: rgba(82, 152, 102, 0.16);
+  border-color: rgba(82, 152, 102, 0.42);
+}
+
+.apunte-paciente-item:focus-visible {
+  outline: 2px solid rgba(126, 182, 138, 0.72);
+  outline-offset: 2px;
+}
+
+html[data-theme="light"] .panel-apuntes-paciente,
+body.tema-claro .panel-apuntes-paciente {
+  background: var(--surface-elevated, #ffffff);
+  color: var(--text-primary, #17211b);
+  border-color: var(--border-subtle, #ccdacf);
+}
+
+html[data-theme="light"] .apunte-paciente-item,
+body.tema-claro .apunte-paciente-item {
+  background: var(--surface-secondary, #f2f7f3);
+  color: var(--text-primary, #17211b);
+  border-color: var(--border-subtle, #ccdacf);
+}
+
+html[data-theme="light"] .apunte-paciente-item:hover,
+body.tema-claro .apunte-paciente-item:hover {
+  background: var(--surface-hover, #dcebe1);
+  border-color: var(--border-accent, #7da18a);
+}
+
+html[data-theme="light"] .apunte-paciente-item.activo,
+body.tema-claro .apunte-paciente-item.activo {
+  background: var(--surface-accent-soft, #e5f1e8);
+  border-color: var(--border-accent, #7da18a);
+  box-shadow: inset 0 0 0 1px var(--border-accent, #7da18a);
+}
+
+html[data-theme="light"] .apunte-paciente-item strong,
+html[data-theme="light"] .apunte-paciente-item__titulo,
+body.tema-claro .apunte-paciente-item strong,
+body.tema-claro .apunte-paciente-item__titulo {
+  color: var(--text-primary, #17211b);
+}
+
+html[data-theme="light"] .apunte-paciente-item span,
+html[data-theme="light"] .apunte-paciente-item__preview,
+body.tema-claro .apunte-paciente-item span,
+body.tema-claro .apunte-paciente-item__preview {
+  color: var(--text-secondary, #46534b);
 }
 
 .apuntes-paciente-editor textarea {

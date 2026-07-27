@@ -3699,6 +3699,16 @@ window.eliminarApunteMedicoActual = async function() {
   await cargarBorradoresMedico();
 };
 
+function crearVistaPreviaApunte(texto, maximo = 120) {
+  const limpio = String(texto ?? "").replace(/\s+/g, " ").trim();
+  if (!limpio) return "Sin contenido";
+  return limpio.length > maximo ? `${limpio.slice(0, maximo).trim()}…` : limpio;
+}
+
+function obtenerTituloVisibleApunte(titulo) {
+  return String(titulo ?? "").replace(/\s+/g, " ").trim() || "Sin título";
+}
+
 function renderizarListaApuntes() {
   const lista = document.getElementById("listaApuntesMedico");
   const buscador = document.getElementById("buscadorApuntesMedico");
@@ -3721,10 +3731,12 @@ function renderizarListaApuntes() {
     <button
       type="button"
       class="apunte-lista-item ${apunte.id === activo ? "activo" : ""}"
+      aria-selected="${apunte.id === activo ? "true" : "false"}"
+      title="${escaparHTML(obtenerTituloVisibleApunte(apunte.titulo))}"
       onclick="seleccionarApunteMedico('${apunte.id}')"
     >
-      <strong>${escaparHTML(apunte.titulo || "Sin título")}</strong>
-      <span>${escaparHTML((apunte.contenido || "").slice(0, 90))}</span>
+      <strong class="apunte-lista-item__titulo">${escaparHTML(obtenerTituloVisibleApunte(apunte.titulo))}</strong>
+      <span class="apunte-lista-item__preview">${escaparHTML(crearVistaPreviaApunte(apunte.contenido, 120))}</span>
     </button>
   `).join("");
 }

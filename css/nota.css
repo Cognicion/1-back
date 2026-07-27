@@ -668,19 +668,28 @@ button:hover{
 }
 
 .lista-apuntes-medico {
-    display: grid;
+    display: flex;
+    flex-direction: column;
     align-content: start;
     gap: 8px;
-    overflow: auto;
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
     padding-right: 4px;
 }
 
 .apunte-lista-item {
-    display: grid;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
     gap: 4px;
     width: 100%;
+    min-height: 58px;
     margin: 0;
     padding: 11px 12px;
+    box-sizing: border-box;
+    position: static;
+    overflow: hidden;
     border-radius: 14px;
     border: 1px solid rgba(190,196,188,0.18);
     background: rgba(14,20,17,0.62);
@@ -691,18 +700,45 @@ button:hover{
 .apunte-lista-item.activo {
     border-color: rgba(82,152,102,0.48);
     background: rgba(82,152,102,0.14);
+    box-shadow: inset 0 0 0 1px rgba(82,152,102,0.28);
 }
 
-.apunte-lista-item strong {
+.apunte-lista-item strong,
+.apunte-lista-item__titulo {
     font-size: 13px;
     color: var(--ivory-50);
+    line-height: 1.25;
+    font-weight: 800;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .apunte-lista-item span,
+.apunte-lista-item__preview,
 .apuntes-vacio {
     color: var(--gray-400);
     font-size: 12px;
     line-height: 1.35;
+}
+
+.apunte-lista-item span,
+.apunte-lista-item__preview {
+    display: -webkit-box;
+    max-height: calc(1.35em * 2);
+    overflow: hidden;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+
+.apunte-lista-item:hover {
+    background: rgba(82,152,102,0.16);
+    border-color: rgba(82,152,102,0.42);
+}
+
+.apunte-lista-item:focus-visible {
+    outline: 2px solid rgba(126,182,138,0.72);
+    outline-offset: 2px;
 }
 
 .apunte-editor-panel {
@@ -2795,7 +2831,8 @@ html[data-theme="light"] .selector-formato-nota {
 html[data-theme="light"] .lista-catalogo-pronosticos button,
 html[data-theme="light"] .lista-calculadoras-nota a,
 html[data-theme="light"] .calculadora-teclado button,
-html[data-theme="light"] .nota-flotante-costado-header {
+html[data-theme="light"] .nota-flotante-costado-header,
+html[data-theme="light"] .apunte-lista-item {
   background: var(--surface-secondary);
   background-image: none;
   border-color: var(--border-normal);
@@ -2807,10 +2844,27 @@ html[data-theme="light"] .nota-flotante-costado-header {
 html[data-theme="light"] .lista-catalogo-pronosticos button:hover,
 html[data-theme="light"] .lista-calculadoras-nota a:hover,
 html[data-theme="light"] .calculadora-teclado button:hover,
-html[data-theme="light"] .nota-flotante-costado-header:hover {
+html[data-theme="light"] .nota-flotante-costado-header:hover,
+html[data-theme="light"] .apunte-lista-item:hover {
   background: var(--surface-hover);
   border-color: var(--accent-primary);
   color: var(--text-primary);
+}
+
+html[data-theme="light"] .apunte-lista-item.activo {
+  background: var(--accent-soft, #e5f1e8);
+  border-color: var(--accent-primary, #7da18a);
+  box-shadow: inset 0 0 0 1px var(--accent-primary, #7da18a);
+}
+
+html[data-theme="light"] .apunte-lista-item strong,
+html[data-theme="light"] .apunte-lista-item__titulo {
+  color: var(--text-primary, #17211b);
+}
+
+html[data-theme="light"] .apunte-lista-item span,
+html[data-theme="light"] .apunte-lista-item__preview {
+  color: var(--text-secondary, #46534b);
 }
 
 html[data-theme="light"] .calculadora-pantalla {
