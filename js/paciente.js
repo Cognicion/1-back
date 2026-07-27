@@ -1269,14 +1269,11 @@ function ponerEstadoApuntesPaciente(texto) {
   if (estado) estado.textContent = texto;
 }
 
-function crearVistaPreviaApunte(texto, maximo = 120) {
-  const limpio = String(texto ?? "").replace(/\s+/g, " ").trim();
-  if (!limpio) return "Sin contenido";
-  return limpio.length > maximo ? `${limpio.slice(0, maximo).trim()}…` : limpio;
-}
-
-function obtenerTituloVisibleApunte(titulo) {
-  return String(titulo ?? "").replace(/\s+/g, " ").trim() || "Sin título";
+function obtenerTituloVisibleApunte(apunte) {
+  const titulo = typeof apunte?.titulo === "string"
+    ? apunte.titulo.replace(/\s+/g, " ").trim()
+    : "";
+  return titulo || "Sin título";
 }
 
 async function cargarApuntesMedicoPaciente() {
@@ -1316,20 +1313,31 @@ function renderizarListaApuntesMedicoPaciente() {
   });
 
   if (!filtrados.length) {
-    lista.innerHTML = `<p class="apuntes-vacio-paciente">No se encontraron apuntes.</p>`;
+    const vacio = document.createElement("p");
+    vacio.className = "apuntes-vacio-paciente";
+    vacio.textContent = "No se encontraron apuntes.";
+    lista.replaceChildren(vacio);
     return;
   }
 
-  lista.innerHTML = filtrados.map((apunte) => `
-    <button type="button" class="apunte-paciente-item ${apunte.id === activo ? "activo" : ""}" data-apunte-paciente="${apunte.id}" aria-selected="${apunte.id === activo ? "true" : "false"}" title="${escaparHTML(obtenerTituloVisibleApunte(apunte.titulo))}">
-      <strong class="apunte-paciente-item__titulo">${escaparHTML(obtenerTituloVisibleApunte(apunte.titulo))}</strong>
-      <span class="apunte-paciente-item__preview">${escaparHTML(crearVistaPreviaApunte(apunte.contenido, 120))}</span>
-    </button>
-  `).join("");
+  const fragmento = document.createDocumentFragment();
+  filtrados.forEach((apunte) => {
+    const tituloVisible = obtenerTituloVisibleApunte(apunte);
+    const boton = document.createElement("button");
+    boton.type = "button";
+    boton.className = `apunte-paciente-item ${apunte.id === activo ? "activo" : ""}`;
+    boton.dataset.apuntePaciente = apunte.id;
+    boton.setAttribute("aria-selected", apunte.id === activo ? "true" : "false");
+    boton.title = tituloVisible;
+    boton.addEventListener("click", () => seleccionarApunteMedicoPaciente(apunte.id));
 
-  lista.querySelectorAll("[data-apunte-paciente]").forEach((boton) => {
-    boton.addEventListener("click", () => seleccionarApunteMedicoPaciente(boton.dataset.apuntePaciente));
+    const titulo = document.createElement("span");
+    titulo.className = "apunte-paciente-item__titulo";
+    titulo.textContent = tituloVisible;
+    boton.appendChild(titulo);
+    fragmento.appendChild(boton);
   });
+  lista.replaceChildren(fragmento);
 }
 
 function seleccionarApunteMedicoPaciente(id) {
