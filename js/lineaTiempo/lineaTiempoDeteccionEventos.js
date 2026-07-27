@@ -1,5 +1,5 @@
 export const DEBUG_EVENT_DETECTION = false;
-export const DETECTED_EVENTS_DEBUG_LABEL = "[Eventos detectados 1.29]";
+export const DETECTED_EVENTS_DEBUG_LABEL = "[Eventos detectados 1.30]";
 
 export const ESTADOS_DETECCION_EVENTOS = Object.freeze({
   pendiente: "pendiente",
@@ -22,6 +22,21 @@ const MESES = new Map([
   ["noviembre", 10],
   ["diciembre", 11]
 ]);
+
+const MESES_ETIQUETA = [
+  "Enero",
+  "Febrero",
+  "Marzo",
+  "Abril",
+  "Mayo",
+  "Junio",
+  "Julio",
+  "Agosto",
+  "Septiembre",
+  "Octubre",
+  "Noviembre",
+  "Diciembre"
+];
 
 const NUMEROS = new Map([
   ["un", 1],
@@ -294,6 +309,51 @@ export function resolverFechaTemporal(expresion = "", fechaReferencia = new Date
   return { fechaInicioISO: null, precisionTemporal: "indeterminada", requiereRevisionFecha: true, fechaEsAproximada: true };
 }
 
+function etiquetaTemporalDesdeResolucion(resolucion = {}) {
+  const fecha = convertirFecha(resolucion.fechaInicioISO);
+  if (!fecha) return "Fecha pendiente de confirmar";
+  if (resolucion.precisionTemporal === "mes") return `${MESES_ETIQUETA[fecha.getMonth()]} de ${fecha.getFullYear()}`;
+  if (resolucion.precisionTemporal === "anio") return `${fecha.getFullYear()}`;
+  if (resolucion.precisionTemporal === "semana") return `Semana del ${fechaISO(fecha)}`;
+  return fechaISO(fecha);
+}
+
+function metodoResolucionTemporal(expresion = "", resolucion = {}) {
+  const texto = normalizarTextoDeteccion(expresion);
+  if (!resolucion.fechaInicioISO) return resolucion.precisionTemporal === "contextual" ? "evento_relacionado" : "indeterminada";
+  if (/\d{1,2}[/-]\d{1,2}[/-]\d{4}|\d{4}-\d{2}-\d{2}|\d{1,2}\s+de\s+[a-z]+\s+de\s+\d{4}/.test(texto)) return "fecha_absoluta";
+  if (/[a-z]+\s+de\s+\d{4}/.test(texto)) return "mes_anio";
+  if (/(?:en|desde|alrededor de)\s+\d{4}/.test(texto)) return "anio";
+  if (/semana/.test(texto)) return "relativa_semanas";
+  if (/mes/.test(texto)) return "relativa_meses";
+  if (/ano|anos/.test(texto)) return "relativa_anios";
+  if (/dia|dias|ayer|anteayer/.test(texto)) return "relativa_dias";
+  if (/a los|desde los|a partir de los/.test(texto)) return "edad";
+  return "indeterminada";
+}
+
+export function resolverFechaEventoDetectado({
+  expresionTemporal = "",
+  fragmento = "",
+  fechaReferencia = new Date(),
+  fechaNacimiento = null,
+  eventosRelacionados = []
+} = {}) {
+  const resolucion = expresionTemporal
+    ? resolverFechaTemporal(expresionTemporal, fechaReferencia, fechaNacimiento)
+    : { fechaInicioISO: null, fechaFinISO: null, precisionTemporal: "indeterminada", requiereRevisionFecha: true, fechaEsAproximada: true };
+  return {
+    fechaInicioISO: resolucion.fechaInicioISO || null,
+    fechaFinISO: resolucion.fechaFinISO || null,
+    precisionTemporal: resolucion.precisionTemporal || "indeterminada",
+    fechaEsAproximada: resolucion.fechaEsAproximada !== false,
+    requiereRevisionFecha: resolucion.requiereRevisionFecha !== false,
+    etiquetaTemporal: etiquetaTemporalDesdeResolucion(resolucion),
+    metodoResolucion: metodoResolucionTemporal(expresionTemporal || fragmento, resolucion),
+    eventosRelacionadosConsultados: Array.isArray(eventosRelacionados) ? eventosRelacionados.length : 0
+  };
+}
+
 export function clasificarTituloYCategoria(texto = "") {
   const normal = normalizarTextoDeteccion(texto);
   if (/madre|padre|herman|familiar/.test(normal) && /fallec|murio|muerte/.test(normal)) return { tituloSugerido: "Fallecimiento de familiar", categoriaSugerida: "antecedente_familiar" };
@@ -397,13 +457,13 @@ function crearAtomosClinicos(contexto = "", contextoAmplio = "") {
   if (/inici\w*|comenz\w*/.test(normal) && /padecimiento/.test(normal)) {
     atomos.push(crearAtomo({ titulo: "Inicio del padecimiento actual", tipoEvento: "inicio_padecimiento", descripcion: "Se documenta inicio aproximado del padecimiento actual en el periodo referido.", fragmento: contexto, categoria: "inicio_sintomas", importancia: "media", confianzaSemantica: 0.86 }));
   }
-  if (/inici\w*|comenz\w*/.test(normal) && /consumo|alcohol|cannabis|cocaina|metanfetamina/.test(normal)) {
+  if (/\b(inici\w*|comenz\w*)\s+(?:a\s+)?(?:consum|con\s+consumo)|\binicio\s+de\s+consumo/.test(normal) && /consumo|alcohol|cannabis|cocaina|metanfetamina/.test(normal)) {
     const sustancia = normal.includes("alcohol") ? "alcohol" : normal.includes("cannabis") ? "cannabis" : normal.includes("cocaina") ? "cocaina" : normal.includes("metanfetamina") ? "metanfetamina" : "sustancias";
     atomos.push(crearAtomo({ titulo: `Inicio de consumo de ${sustancia}`, tipoEvento: "inicio_consumo", descripcion: `Se documenta inicio de consumo de ${sustancia} en el periodo referido.`, fragmento: contexto, categoria: "consumo_sustancias", importancia: "media", confianzaSemantica: 0.86 }));
   }
-  if (/(inici\w*|comenz\w*)/.test(normal) && /aislamiento|insomnio|anhedonia/.test(normal)) {
-    const sintomas = ["aislamiento", "insomnio", "anhedonia"].filter((s) => normal.includes(s)).join(", ");
-    atomos.push(crearAtomo({ titulo: `Inicio de ${sintomas || "sintomas"}`, tipoEvento: "inicio_sintomas", descripcion: `Se documenta inicio de ${sintomas || "sintomas"} en el periodo referido, sin inferir un diagnostico especifico.`, fragmento: contexto, categoria: "inicio_sintomas", importancia: "media", confianzaSemantica: 0.82 }));
+  if (/(inici\w*|comenz\w*)/.test(normalAmplio) && /aislamiento|insomnio|anhedonia|ansiedad/.test(normalAmplio)) {
+    const sintomas = ["aislamiento", "insomnio", "anhedonia", "ansiedad"].filter((s) => normalAmplio.includes(s)).join(", ");
+    atomos.push(crearAtomo({ titulo: `Inicio de ${sintomas || "sintomas"}`, tipoEvento: "inicio_sintomas", descripcion: `Se documenta inicio de ${sintomas || "sintomas"} en el periodo referido, sin inferir un diagnostico especifico.`, fragmento: contextoAmplio || contexto, categoria: "inicio_sintomas", importancia: "media", confianzaSemantica: 0.82 }));
   }
   if (/crisis de ansiedad|crisis ansiosa/.test(normal)) {
     atomos.push(crearAtomo({ titulo: "Crisis de ansiedad", tipoEvento: "crisis_ansiedad", descripcion: "Se documenta crisis de ansiedad en el periodo referido.", fragmento: contexto, categoria: "crisis_ansiedad", importancia: "media", confianzaSemantica: 0.84 }));
@@ -419,6 +479,10 @@ function crearAtomosClinicos(contexto = "", contextoAmplio = "") {
   }
   if (/inici\w*/.test(normal) && med) {
     atomos.push(crearAtomo({ titulo: `Inicio de ${med}`, tipoEvento: "inicio_tratamiento", descripcion: `Se documenta inicio de ${med} en el periodo referido.`, fragmento: contexto, categoria: "cambio_tratamiento", importancia: "media", confianzaSemantica: 0.86 }));
+  }
+  if (/aument\w*|increment\w*/.test(normal) && /consumo|alcohol|cannabis|cocaina|metanfetamina/.test(normalAmplio)) {
+    const sustancia = normalAmplio.includes("alcohol") ? "alcohol" : normalAmplio.includes("cannabis") ? "cannabis" : normalAmplio.includes("cocaina") ? "cocaina" : normalAmplio.includes("metanfetamina") ? "metanfetamina" : "sustancias";
+    atomos.push(crearAtomo({ titulo: `Aumento de consumo de ${sustancia}`, tipoEvento: "aumento_consumo", descripcion: `Se documenta aumento de consumo de ${sustancia} en el periodo referido.`, fragmento: contexto, categoria: "consumo_sustancias", importancia: "media", confianzaSemantica: 0.82 }));
   }
   if (/nausea|náusea|vomito|vómito|mareo|somnolencia/.test(normal)) {
     const sintoma = normal.includes("somnolencia") ? "somnolencia" : normal.includes("mareo") ? "mareo" : normal.includes("vomito") ? "vomito" : "nausea";
@@ -457,9 +521,12 @@ export function extraerEventosDesdeFragmentos(fragmentos = [], fechaNacimiento =
       continue;
     }
     const contextoEvento = obtenerContextoEvento(fragmento);
-    const fecha = fragmento.expresionTemporal
-      ? resolverFechaTemporal(fragmento.expresionTemporal, fragmento.fechaReferencia, fechaNacimiento)
-      : { fechaInicioISO: null, precisionTemporal: "indeterminada", requiereRevisionFecha: true, fechaEsAproximada: true };
+    const fecha = resolverFechaEventoDetectado({
+      expresionTemporal: fragmento.expresionTemporal,
+      fragmento: contextoEvento,
+      fechaReferencia: fragmento.fechaReferencia,
+      fechaNacimiento
+    });
     const clasificacion = clasificarTituloYCategoria(contextoEvento);
     const atomos = crearAtomosClinicos(contextoEvento, fragmento.oracionEvento || fragmento.textoFragmento || contextoEvento);
     const candidatos = atomos.length ? atomos : [crearAtomoGenericoDesdeContexto(contextoEvento, clasificacion)];
@@ -649,6 +716,144 @@ export function normalizarCandidatoEvento(candidato = {}, pacienteId = "") {
   };
 }
 
+function accionSemantica(evento = {}) {
+  const texto = normalizarTextoDeteccion(`${evento.tipoEvento || ""} ${evento.tituloSugerido || ""}`);
+  if (/inicio|aparicion|comienzo/.test(texto)) return "inicio";
+  if (/suspension|suspende/.test(texto)) return "suspension";
+  if (/aumento|incremento/.test(texto)) return "aumento";
+  if (/ideacion/.test(texto)) return "ideacion";
+  if (/intento/.test(texto)) return "intento";
+  if (/conducta/.test(texto)) return "conducta";
+  if (/hospitaliz|ingreso/.test(texto)) return "hospitalizacion";
+  return texto.split(" ")[0] || "evento";
+}
+
+function objetoSemantico(evento = {}) {
+  const texto = normalizarTextoDeteccion(evento.tituloSugerido || evento.tipoEvento || "")
+    .replace(/\b(inicio|aparicion|comienzo|suspension|aumento|incremento|de|del|la|el|actual|padecimiento|clinico|evento|por precisar)\b/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  if (!texto && /padecimiento/.test(normalizarTextoDeteccion(evento.tituloSugerido || ""))) return "padecimiento";
+  return texto || normalizarTextoDeteccion(evento.tipoEvento || evento.tituloSugerido || "evento");
+}
+
+function fechaPeriodoSemantico(evento = {}) {
+  if (!evento.fechaInicioISO) return "sin-fecha";
+  if (evento.precisionTemporal === "anio") return evento.fechaInicioISO.slice(0, 4);
+  if (evento.precisionTemporal === "mes") return evento.fechaInicioISO.slice(0, 7);
+  if (evento.precisionTemporal === "semana") return `semana:${evento.fechaInicioISO}`;
+  return evento.fechaInicioISO;
+}
+
+function esGenericoSubordinable(evento = {}) {
+  const titulo = normalizarTextoDeteccion(evento.tituloSugerido || "");
+  return /inicio del padecimiento actual|evento clinico por precisar|cambio clinico|cambio de tratamiento|seguimiento|empeoramiento/.test(titulo);
+}
+
+function especificidadEvento(evento = {}) {
+  let score = 0;
+  const titulo = normalizarTextoDeteccion(evento.tituloSugerido || "");
+  if (!esGenericoSubordinable(evento)) score += 20;
+  score += objetoSemantico(evento).split(/,\s*|\s+y\s+|\s+/).filter(Boolean).length;
+  if (/ideacion suicida|intento suicida|conductas sexuales|sertralina|aislamiento|insomnio|anhedonia|alcohol|crisis/.test(titulo)) score += 8;
+  if (evento.requiereRevisionClinica) score -= 5;
+  return score;
+}
+
+function referenciasOrigenEvento(evento = {}) {
+  const referencia = {
+    origenId: evento.origenId || "",
+    origenTipo: evento.origenTipo || "",
+    origenFecha: evento.origenFechaISO || "",
+    fragmentoHash: evento.hashFragmento || ""
+  };
+  return Array.isArray(evento.referenciasOrigen) && evento.referenciasOrigen.length
+    ? evento.referenciasOrigen
+    : [referencia];
+}
+
+function fusionarReferencias(a = [], b = []) {
+  const mapa = new Map();
+  [...a, ...b].forEach((ref) => {
+    const clave = [ref.origenId, ref.origenTipo, ref.origenFecha, ref.fragmentoHash].join("|");
+    if (!mapa.has(clave)) mapa.set(clave, ref);
+  });
+  return [...mapa.values()];
+}
+
+function huellaSemantica(evento = {}) {
+  return [
+    accionSemantica(evento),
+    objetoSemantico(evento),
+    evento.sujeto || "paciente",
+    fechaPeriodoSemantico(evento)
+  ].join("|");
+}
+
+function consolidarCandidatosSemanticos(eventos = []) {
+  const metricas = {
+    candidatosIniciales: eventos.length,
+    duplicadosExactos: 0,
+    parafrasisConsolidadas: 0,
+    genericosSubordinados: 0,
+    eventosEspecificosConservados: 0,
+    referenciasFusionadas: 0,
+    fechasCalculadas: 0,
+    fechasIndeterminadas: 0
+  };
+  const porExacto = new Map();
+  for (const evento of eventos) {
+    if (evento.fechaInicioISO) metricas.fechasCalculadas += 1;
+    else metricas.fechasIndeterminadas += 1;
+    const exacta = [evento.origenId, evento.hashFragmento, fechaPeriodoSemantico(evento), normalizarTextoDeteccion(evento.tituloSugerido)].join("|");
+    const existente = porExacto.get(exacta);
+    if (existente) {
+      existente.referenciasOrigen = fusionarReferencias(referenciasOrigenEvento(existente), referenciasOrigenEvento(evento));
+      metricas.duplicadosExactos += 1;
+      metricas.referenciasFusionadas += 1;
+    } else {
+      porExacto.set(exacta, { ...evento, referenciasOrigen: referenciasOrigenEvento(evento) });
+    }
+  }
+  const porSemantica = new Map();
+  for (const evento of porExacto.values()) {
+    const clave = huellaSemantica(evento);
+    const existente = porSemantica.get(clave);
+    if (existente) {
+      const ganador = especificidadEvento(evento) > especificidadEvento(existente) ? evento : existente;
+      const perdedor = ganador === evento ? existente : evento;
+      ganador.referenciasOrigen = fusionarReferencias(referenciasOrigenEvento(ganador), referenciasOrigenEvento(perdedor));
+      porSemantica.set(clave, ganador);
+      metricas.parafrasisConsolidadas += 1;
+      metricas.referenciasFusionadas += 1;
+    } else {
+      porSemantica.set(clave, evento);
+    }
+  }
+  const candidatos = [...porSemantica.values()].sort((a, b) => especificidadEvento(b) - especificidadEvento(a));
+  const ocultos = new Set();
+  candidatos.forEach((generico) => {
+    if (!esGenericoSubordinable(generico)) return;
+    const especifico = candidatos.find((evento) => {
+      if (evento === generico || esGenericoSubordinable(evento)) return false;
+      return evento.origenId === generico.origenId
+        && fechaPeriodoSemantico(evento) === fechaPeriodoSemantico(generico)
+        && (evento.hashFragmento === generico.hashFragmento || normalizarTextoDeteccion(evento.fragmentoSoporte) === normalizarTextoDeteccion(generico.fragmentoSoporte))
+        && accionSemantica(evento) === accionSemantica(generico);
+    });
+    if (especifico) {
+      especifico.referenciasOrigen = fusionarReferencias(referenciasOrigenEvento(especifico), referenciasOrigenEvento(generico));
+      generico.subordinadoA = especifico.detectedEventId || especifico.hashConceptual || huellaSemantica(especifico);
+      ocultos.add(generico);
+      metricas.genericosSubordinados += 1;
+      metricas.referenciasFusionadas += 1;
+    }
+  });
+  const visibles = candidatos.filter((evento) => !ocultos.has(evento));
+  metricas.eventosEspecificosConservados = visibles.filter((evento) => !esGenericoSubordinable(evento)).length;
+  return { eventos: visibles, metricas };
+}
+
 export function detectarEventosEnFuentes({ fuentes = [], fechaNacimiento = null, pacienteId = "", incluirEstructurados = false } = {}) {
   const fuentesConTexto = fuentes.filter((fuente) => String(fuente.textoAnalizable || "").trim());
   const fragmentosTemporales = fuentesConTexto.flatMap(generarFragmentosTemporales);
@@ -657,9 +862,10 @@ export function detectarEventosEnFuentes({ fuentes = [], fechaNacimiento = null,
   const { eventos, descartados } = extraerEventosDesdeFragmentos(fragmentos, fechaNacimiento);
   const estructurados = incluirEstructurados ? fuentes.flatMap(crearEventosEstructuradosDesdeFuente) : [];
   const normalizados = [...eventos, ...estructurados].map((evento) => normalizarCandidatoEvento(evento, pacienteId));
+  const consolidacion = consolidarCandidatosSemanticos(normalizados);
   const unicos = new Map();
   const duplicados = [];
-  for (const evento of normalizados) {
+  for (const evento of consolidacion.eventos) {
     const clave = evento.detectedEventId || evento.hashConceptual;
     if (!clave) continue;
     if (unicos.has(clave)) {
@@ -694,7 +900,8 @@ export function detectarEventosEnFuentes({ fuentes = [], fechaNacimiento = null,
     candidatosDivididos: Math.max(0, eventos.length - fragmentos.length),
     candidatosAmbiguos: eventosNormalizados.filter((evento) => evento.requiereRevisionClinica === true).length,
     candidatosDescartadosPorIncoherencia: descartados.filter((item) => item.motivo === "incoherencia_semantica").length,
-    duplicadosDetectados: duplicados.length,
+    duplicadosDetectados: duplicados.length + consolidacion.metricas.duplicadosExactos + consolidacion.metricas.parafrasisConsolidadas + consolidacion.metricas.genericosSubordinados,
+    ...consolidacion.metricas,
     eventos: eventosNormalizados
   };
 }

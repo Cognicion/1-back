@@ -759,6 +759,35 @@ function estadoCompatibleSugerencia(sugerencia = {}) {
   return ESTADOS_DETECCION[estado] || ESTADOS_DETECCION.pendiente;
 }
 
+const MESES_ETIQUETA_DETECCION = [
+  "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+  "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
+];
+
+function etiquetaFechaSugerenciaDetectada(sugerencia = {}) {
+  if (sugerencia.etiquetaTemporal && !/pendiente/i.test(sugerencia.etiquetaTemporal)) return sugerencia.etiquetaTemporal;
+  const fecha = String(sugerencia.fechaInicioISO || "").slice(0, 10);
+  if (!fecha) return "Fecha pendiente de confirmar";
+  const [anio, mes, dia] = fecha.split("-").map(Number);
+  if (sugerencia.precisionTemporal === "anio") return String(anio);
+  if (sugerencia.precisionTemporal === "mes") return `${MESES_ETIQUETA_DETECCION[(mes || 1) - 1]} de ${anio}`;
+  if (sugerencia.precisionTemporal === "semana") return `Semana del ${fecha}`;
+  return `${String(dia).padStart(2, "0")}/${String(mes).padStart(2, "0")}/${anio}`;
+}
+
+function etiquetaCertezaSugerenciaDetectada(sugerencia = {}) {
+  if (!sugerencia.fechaInicioISO) return "Fecha pendiente de confirmar";
+  if (sugerencia.precisionTemporal === "anio") return "Fecha aproximada al año";
+  if (sugerencia.precisionTemporal === "mes") return "Fecha aproximada al mes";
+  if (sugerencia.precisionTemporal === "semana") return "Fecha aproximada";
+  return sugerencia.fechaEsAproximada || sugerencia.requiereRevisionFecha ? "Fecha aproximada" : "Fecha exacta";
+}
+
+function etiquetaReferenciasSugerenciaDetectada(sugerencia = {}) {
+  const refs = Array.isArray(sugerencia.referenciasOrigen) ? sugerencia.referenciasOrigen : [];
+  return refs.length > 1 ? `Detectado en ${refs.length} referencias` : "";
+}
+
 function renderizarSugerenciasDeteccion(sugerencias = [], mostrarDescartados = false, abierto = false, filtro = "todos") {
   const seccion = asegurarSeccionDeteccion();
   const sugerenciasDisponibles = filtrarEventosDetectadosDisponibles(sugerencias, eventos, mostrarDescartados);
@@ -778,13 +807,26 @@ function renderizarSugerenciasDeteccion(sugerencias = [], mostrarDescartados = f
     card.querySelector("[data-detected-field='fechaFinISO']").value = s.fechaFinISO || "";
     card.querySelector("[data-detected-field='importancia']").value = s.importanciaSugerida || "media";
     card.querySelector("[data-detected-field='descripcion']").value = s.descripcionSugerida || "";
+    const fechaResumen = card.querySelector(".timeline-detected-card__date");
+    if (fechaResumen) fechaResumen.textContent = etiquetaFechaSugerenciaDetectada(s);
+    const precisionCampo = document.createElement("p");
+    precisionCampo.className = "timeline-detected-card__precision";
+    precisionCampo.textContent = `Precisión: ${s.precisionTemporal || "indeterminada"}`;
+    card.querySelector(".timeline-detected-card__grid")?.after(precisionCampo);
     const etiquetaFuente = [s.sourceLabel || s.origenSubtipo || s.origenTipo || "fuente clinica", s.origenSeccion].filter(Boolean).join(", ");
     const fuenteNodo = card.querySelector(".timeline-detected-card__source");
     if (fuenteNodo) fuenteNodo.textContent = `Detectado en: ${etiquetaFuente}${s.origenFechaISO ? ` del ${s.origenFechaISO}` : ""} · ${s.origenDeteccion || "narrativo"} · Sujeto: ${s.sujeto || "paciente"}`;
     const certeza = document.createElement("p");
     certeza.className = "timeline-detected-card__certainty";
-    certeza.textContent = `${s.fechaEsAproximada || s.requiereRevisionFecha ? "Fecha aproximada" : "Fecha exacta"}${s.requiereRevisionClinica ? " · Interpretacion clinica pendiente de revision" : ""}`;
+    certeza.textContent = `${etiquetaCertezaSugerenciaDetectada(s)}${s.requiereRevisionClinica ? " · Interpretacion clinica pendiente de revision" : ""}`;
     fuenteNodo?.before(certeza);
+    const referencias = etiquetaReferenciasSugerenciaDetectada(s);
+    if (referencias && fuenteNodo) {
+      const refs = document.createElement("p");
+      refs.className = "timeline-detected-card__references";
+      refs.textContent = referencias;
+      fuenteNodo.before(refs);
+    }
     const resumenFragmento = card.querySelector(".timeline-detected-card__fragment summary");
     if (resumenFragmento) resumenFragmento.textContent = "Fragmento clinico de soporte";
     card.querySelector(".timeline-detected-card__fragment p").textContent = s.fragmentoSoporte || "";
@@ -1155,7 +1197,7 @@ async function persistirSugerenciasDetectadas127(candidatos = [], existentes = [
       revisadoPor: null,
       revisadoEn: null,
       eventoCreadoId: null,
-      detectorVersion: "1.27"
+      detectorVersion: "1.30"
     });
     clavesCandidato.forEach((clave) => claves.add(clave));
     nuevas.push(candidato);
@@ -1384,7 +1426,7 @@ async function inicializarDetectorEventosClinicosLocal() {
         await cargar();
         return;
       }
-      const evento = await crearEventoPaciente(pacienteId, { titulo: datos.titulo, descripcion: datos.descripcion, fechaEvento: fechaLocalISO(datos.fechaInicioISO), fechaFin: fechaLocalISO(datos.fechaFinISO), importancia: datos.importancia, origen: "detectado", referenciaTipo: sugerencia.origenSubtipo || sugerencia.origenTipo, referenciaId: sugerencia.origenId, detectedEventId, deteccionId: sugerencia.id, sourceType: sugerencia.origenTipo || "", sourceId: sugerencia.origenId || "", sourceLabel: sugerencia.origenSubtipo || sugerencia.origenTipo || "", sourceDate: sugerencia.origenFechaISO || "", fechaEsAproximada: sugerencia.requiereRevisionFecha === true, precisionTemporal: sugerencia.precisionTemporal }, auth.currentUser.uid);
+      const evento = await crearEventoPaciente(pacienteId, { titulo: datos.titulo, descripcion: datos.descripcion, fechaEvento: fechaLocalISO(datos.fechaInicioISO), fechaFin: fechaLocalISO(datos.fechaFinISO), importancia: datos.importancia, origen: "detectado", referenciaTipo: sugerencia.origenSubtipo || sugerencia.origenTipo, referenciaId: sugerencia.origenId, detectedEventId, deteccionId: sugerencia.id, sourceType: sugerencia.origenTipo || "", sourceId: sugerencia.origenId || "", sourceLabel: sugerencia.origenSubtipo || sugerencia.origenTipo || "", sourceDate: sugerencia.origenFechaISO || "", fechaEsAproximada: sugerencia.fechaEsAproximada === true || sugerencia.requiereRevisionFecha === true, precisionTemporal: sugerencia.precisionTemporal }, auth.currentUser.uid);
       await updateDoc(doc(db, "pacientes", pacienteId, "eventosDetectados", sugerencia.id), { detectedEventId, estado: ESTADOS_DETECCION.aceptado, revisadoPor: auth.currentUser.uid, revisadoEn: serverTimestamp(), eventoCreadoId: evento.id });
       eventos = ordenarEventosPorFecha(await cargarEventosPaciente(pacienteId));
       renderizarVista();

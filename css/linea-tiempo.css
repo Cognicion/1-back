@@ -82,15 +82,23 @@
 .timeline-detected__progress,
 .timeline-detected-card__date,
 .timeline-detected-card__certainty,
+.timeline-detected-card__precision,
+.timeline-detected-card__references,
 .timeline-detected-card__source,
 .timeline-detected-card__fragment,
 .timeline-detected__empty {
   color: var(--timeline-text-secondary);
 }
 
-.timeline-detected-card__certainty {
+.timeline-detected-card__certainty,
+.timeline-detected-card__references {
   font-weight: 700;
   margin: 0.35rem 0;
+}
+
+.timeline-detected-card__precision {
+  margin: -0.35rem 0 0.45rem;
+  font-size: 0.86rem;
 }
 
 .timeline-detected__progress {

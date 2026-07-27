@@ -1,4 +1,4 @@
-import assert from "node:assert/strict";
+﻿import assert from "node:assert/strict";
 import {
   crearFuenteClinicaComun,
   detectarEventosEnFuentes,
@@ -218,4 +218,61 @@ function detectar(fuentes, opts = {}) {
   assert.equal(generarFragmentosTemporales(f).length, 2);
 }
 
+
+{
+  const resultado = detectar(fuente("Inició con insomnio en septiembre de 2025."));
+  assert.equal(resultado.eventosNormalizados, 1);
+  assert.equal(resultado.eventos[0].fechaInicioISO, "2025-09-01");
+  assert.equal(resultado.eventos[0].precisionTemporal, "mes");
+  assert.equal(resultado.eventos[0].etiquetaTemporal, "Septiembre de 2025");
+}
+
+{
+  const resultado = detectar(fuente("Inició consumo en 2013."));
+  assert.equal(resultado.eventosNormalizados, 1);
+  assert.equal(resultado.eventos[0].fechaInicioISO, "2013-01-01");
+  assert.equal(resultado.eventos[0].precisionTemporal, "anio");
+}
+
+{
+  const resultado = detectar(fuente("Hace una semana presentó crisis de ansiedad.", "2026-07-22"));
+  assert.equal(resultado.eventosNormalizados, 1);
+  assert.equal(resultado.eventos[0].fechaInicioISO, "2026-07-15");
+  assert.equal(resultado.eventos[0].precisionTemporal, "semana");
+  assert.equal(resultado.eventos[0].fechaEsAproximada, true);
+}
+
+{
+  const resultado = detectar(fuente("Inició padecimiento con aislamiento, insomnio y anhedonia en septiembre de 2025."));
+  assert.equal(resultado.eventosNormalizados, 1);
+  assert.equal(resultado.eventos[0].tituloSugerido, "Inicio de aislamiento, insomnio, anhedonia");
+  assert.equal(resultado.genericosSubordinados, 1);
+}
+
+{
+  const resultado = detectar(fuente("En septiembre de 2025 inició con insomnio y aumentó su consumo de alcohol."));
+  assert.equal(resultado.eventosNormalizados, 2);
+  assert.deepEqual(resultado.eventos.map((e) => e.tituloSugerido).sort(), ["Aumento de consumo de alcohol", "Inicio de insomnio"]);
+}
+
+{
+  const resultado = detectar(fuente("Inició ansiedad en septiembre de 2025. Posteriormente presentó ideación suicida."));
+  const ansiedad = resultado.eventos.find((e) => /ansiedad/i.test(e.tituloSugerido));
+  const ideacion = resultado.eventos.find((e) => /Ideacion suicida/i.test(e.tituloSugerido));
+  assert.ok(ansiedad);
+  assert.ok(ideacion);
+  assert.equal(ansiedad.fechaInicioISO, "2025-09-01");
+  assert.equal(ideacion.fechaInicioISO, null);
+}
+
+{
+  const resultado = detectar([
+    fuente("Inició con insomnio en septiembre de 2025.", "2025-10-01", { origenId: "nota-a" }),
+    fuente("Inició con insomnio en septiembre de 2025.", "2025-10-02", { origenId: "nota-b" }),
+    fuente("Inició con insomnio en septiembre de 2025.", "2025-10-03", { origenId: "nota-c" })
+  ]);
+  assert.equal(resultado.eventosNormalizados, 1);
+  assert.equal(resultado.eventos[0].referenciasOrigen.length, 3);
+  assert.equal(resultado.referenciasFusionadas, 2);
+}
 console.log("lineaTiempoDeteccionEventos.test.mjs OK");
