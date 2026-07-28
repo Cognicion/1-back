@@ -267,6 +267,17 @@ function normalizeAdminString(value = "") {
   return UNAVAILABLE_ADMIN_VALUES.has(clean.toLowerCase()) ? "" : clean;
 }
 
+function profileIsAdministrator(profile = {}, auth = {}) {
+  const roles = [profile.rol, profile.role, profile.tipoRol, profile.tipoUsuario, ...(Array.isArray(profile.roles) ? profile.roles : [])]
+    .map((value) => normalizeForAccess(value));
+  return Boolean(auth.token?.admin || profile.admin === true || profile.esAdmin === true || profile.isAdmin === true || roles.some((role) => ["admin", "administrador", "superadmin", "admin_principal", "administrador_principal"].includes(role)));
+}
+
+function profileAccountActive(profile = {}) {
+  const estado = normalizeForAccess(profile.estadoCuenta || profile.estado || profile.status || "activo");
+  return profile.activo !== false && profile.active !== false && !["desactivado", "deshabilitado", "suspendido", "eliminado", "disabled", "suspended", "deleted"].includes(estado);
+}
+
 function normalizePositiveInteger(value) {
   const clean = normalizeString(value);
   if (UNAVAILABLE_ADMIN_VALUES.has(clean.toLowerCase())) return null;
@@ -531,7 +542,7 @@ function arrayIncludesUid(values, uid = "") {
 function patientAllowsActorAccess(patient = {}, actorUid = "", actorProfile = {}) {
   if (!actorUid) return false;
   const role = normalizeForAccess(actorProfile.rol || actorProfile.role);
-  if (["admin", "administrador"].includes(role) || actorProfile.admin === true) return true;
+  if (["admin", "administrador", "superadmin", "admin_principal", "administrador_principal"].includes(role) || actorProfile.admin === true || actorProfile.esAdmin === true) return true;
   const ownerFields = [
     patient.creadoPor,
     patient.ownerUid,
@@ -601,13 +612,15 @@ async function validateFormatEntitlement({ payload, auth, adminDb, HttpsErrorCla
   const profile = actorProfile || null;
   const snap = profile ? null : await adminDb.collection("usuarios").doc(auth.uid).get();
   const resolvedProfile = profile || (snap?.exists ? (snap.data() || {}) : {});
-  const allowed = profileHasInstitutionalFormat(resolvedProfile, requiredPermission);
+  const adminAccess = profileIsAdministrator(resolvedProfile, auth);
+  const allowed = profileAccountActive(resolvedProfile) && (adminAccess || profileHasInstitutionalFormat(resolvedProfile, requiredPermission));
   safeLog(logger, allowed ? "info" : "warn", {
     requestId,
     stage,
     formatId,
     requiredPermission,
     allowed,
+    origin: adminAccess ? "rol_admin" : "permiso_individual",
     actorHash: hashText(auth.uid).slice(0, 16)
   });
   if (!allowed) {

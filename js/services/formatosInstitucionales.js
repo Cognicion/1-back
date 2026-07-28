@@ -1,3 +1,5 @@
+import { isAdministrator, normalizarRol } from "../utils/roles.js";
+
 export const FORMAT_PERMISSION_FRAY = "fray_clinical_formats";
 export const FORMAT_PERMISSION_NAVARRO = "navarro_referral_format";
 
@@ -55,6 +57,20 @@ const LEGACY_PERMISSION_ALIASES = Object.freeze({
   referencia_navarro: FORMAT_PERMISSION_NAVARRO,
   navarro: FORMAT_PERMISSION_NAVARRO
 });
+
+export const ACCIONES_FORMATO = Object.freeze([
+  "ver", "editar", "guardar_borrador", "generar", "descargar", "imprimir", "cancelar", "administrar_permisos"
+]);
+
+function cuentaActiva(usuario = {}) {
+  const estado = normalizarRol(usuario.estadoCuenta || usuario.estado || usuario.status || "activo");
+  return usuario.activo !== false && usuario.active !== false && usuario.cuentaActiva !== false &&
+    !["desactivado", "deshabilitado", "suspendido", "eliminado", "deleted", "disabled", "suspended"].includes(estado);
+}
+
+export function esAdministradorFormato(usuario = {}, claims = null) {
+  return isAdministrator({ ...(usuario || {}), claims: claims || usuario?.claims || {} });
+}
 
 function normalizar(valor = "") {
   return String(valor || "")
@@ -136,6 +152,7 @@ function permisoExplicitoVigente(usuario = {}, permissionId = "") {
 }
 
 export function usuarioEsActorProfesionalFormato(usuario = {}) {
+  if (esAdministradorFormato(usuario)) return true;
   const texto = normalizar([
     usuario.rol,
     usuario.role,
@@ -158,12 +175,13 @@ export function usuarioEsActorProfesionalFormato(usuario = {}) {
     "medicina interna",
     "paidopsiquiatra"
   ].some((termino) => texto.includes(termino));
+  if (texto.includes("psicolog")) return true;
   if (usuario.perfilMedicoVerificado === true || usuario.medicoVerificado === true) return true;
   return rolMedico || (tieneCedula && texto.includes("admin_medico"));
 }
 
 export function usuarioPuedeAdministrarPermisosFormato(usuario = {}) {
-  return ["admin", "administrador"].includes(normalizar(usuario.rol || usuario.role));
+  return esAdministradorFormato(usuario);
 }
 
 export function resolverFormatoClinico(formatId = "") {
@@ -222,11 +240,64 @@ export function permisosFormatosDesdeUsuario(usuario = {}) {
 }
 
 export function usuarioTieneFormatoInstitucional(usuario = {}, permissionId = "") {
+  const resolved = resolverFormatoClinico(permissionId);
   const formato = FORMATOS_INSTITUCIONALES.find((item) => item.id === permissionId || item.legacyId === permissionId);
   const idPermiso = formato?.id || permissionId;
-  if (!usuarioEsActorProfesionalFormato(usuario)) return false;
-  if (!permisoExplicitoVigente(usuario, idPermiso)) return false;
-  return membresiaInstitucionalActiva(usuario, formato?.institutionId || "");
+  if (!cuentaActiva(usuario) || !usuarioEsActorProfesionalFormato(usuario)) return false;
+  if (permisoExplicitoVigente(usuario, resolved.formatId) || permisoExplicitoVigente(usuario, idPermiso)) return true;
+  return membresiaInstitucionalActiva(usuario, formato?.institutionId || resolved.institutionId || "");
+}
+
+function permisoIncluyeAccion(valor, accion = "ver") {
+  if (valor === true) return true;
+  if (!valor || typeof valor !== "object") return false;
+  if (valor[accion] === true) return true;
+  if (valor.ver === true && accion === "ver") return true;
+  return valor.todas === true || valor.all === true;
+}
+
+export function resolverPermisosEfectivosFormatos({ usuario = {}, claims = null, catalogoFormatos = FRAY_FORMAT_IDS } = {}) {
+  const admin = esAdministradorFormato(usuario, claims);
+  if (!cuentaActiva(usuario)) return { accesoGlobal: false, origen: "cuenta_inactiva", formatosPermitidos: [], accionesPermitidas: {}, cuentaActiva: false };
+  if (admin) {
+    return {
+      accesoGlobal: true,
+      origen: "rol_admin",
+      formatosPermitidos: "*",
+      accionesPermitidas: "*",
+      cuentaActiva: true
+    };
+  }
+  if (!usuarioEsActorProfesionalFormato(usuario)) return { accesoGlobal: false, origen: "rol_no_autorizado", formatosPermitidos: [], accionesPermitidas: {}, cuentaActiva: true };
+  const permisos = permisosFormatosDesdeUsuario(usuario);
+  const formatosPermitidos = [];
+  const accionesPermitidas = {};
+  catalogoFormatos.forEach((formatId) => {
+    const resolved = resolverFormatoClinico(formatId);
+    const metadata = usuario.formatPermissionMetadata?.[resolved.permissionId] || usuario.metadataPermisosFormatos?.[resolved.permissionId] || null;
+    const metadataEstado = normalizar(metadata?.status || metadata?.estado || "active");
+    if (metadata && ["revoked", "revocado", "inactive", "inactivo"].includes(metadataEstado)) return;
+    const valor = permisos[normalizarPermisoFormato(formatId)] ?? permisos[resolved.permissionId];
+    const acciones = {};
+    ACCIONES_FORMATO.forEach((accion) => { if (permisoIncluyeAccion(valor, accion)) acciones[accion] = true; });
+    if (Object.keys(acciones).length || permisoIncluyeAccion(valor, "ver")) {
+      formatosPermitidos.push(formatId);
+      accionesPermitidas[formatId] = acciones;
+    }
+  });
+  return { accesoGlobal: false, origen: formatosPermitidos.length ? "permisos_individuales" : "sin_acceso", formatosPermitidos, accionesPermitidas, cuentaActiva: true };
+}
+
+export function puedeAccederFormato({ usuario = {}, claims = null, formatoId = "", accion = "ver" } = {}) {
+  const resultado = resolverPermisosEfectivosFormatos({ usuario, claims, catalogoFormatos: [formatoId] });
+  if (!resultado.cuentaActiva) return false;
+  if (resultado.accesoGlobal) {
+    console.debug("[Autorizacion:Admin]", { uid: usuario.uid || usuario.id || null, rol: normalizarRol(usuario.rol || usuario.role || ""), formatoId, accion, origen: resultado.origen, resultado: "permitido" });
+    return true;
+  }
+  const permitido = Boolean(resultado.accionesPermitidas?.[formatoId]?.[accion]);
+  console.debug("[FormatosFray:Permisos]", { uid: usuario.uid || usuario.id || null, rol: normalizarRol(usuario.rol || usuario.role || ""), formatoId, accion, origen: resultado.origen, resultado: permitido ? "permitido" : "denegado" });
+  return permitido;
 }
 
 export async function obtenerPermisosFormatosUsuario(uid, usuarioPrecargado = null) {
@@ -248,10 +319,10 @@ export async function obtenerPermisosFormatosUsuario(uid, usuarioPrecargado = nu
 export function usuarioPuedeUsarFormato(valor = "", permisos = {}, rol = "", usuario = null) {
   const resolved = resolverFormatoClinico(valor);
   if (!resolved.institutional) return true;
-  if (usuario) return usuarioTieneFormatoInstitucional(usuario, resolved.permissionId);
-  const rolNormalizado = normalizar(rol);
-  if (["admin", "administrador", "paciente"].includes(rolNormalizado)) return false;
-  return permisos[resolved.permissionId] === true;
+  if (usuario) return puedeAccederFormato({ usuario, formatoId: resolved.formatId, accion: "ver" });
+  const rolNormalizado = normalizarRol(rol);
+  if (["admin", "administrador", "superadmin", "admin_principal", "administrador_principal"].includes(rolNormalizado)) return true;
+  return permisoIncluyeAccion(permisos[resolved.formatId], "ver") || permisoIncluyeAccion(permisos[resolved.permissionId], "ver");
 }
 
 export function obtenerEntitlementsFormatos(usuario = {}) {

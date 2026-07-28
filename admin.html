@@ -181,13 +181,20 @@
     <div class="tabla-header">
       <div>
         <h2>Permisos institucionales de formatos</h2>
-        <p>Autoriza paquetes de formatos institucionales a medicos o perfiles medicos compatibles. No concede acceso a pacientes ajenos.</p>
+        <p>Administra permisos granulares de usuarios y consulta el acceso global de administradores. No concede acceso a pacientes ajenos.</p>
       </div>
       <button id="btnActualizarFormatosAdmin" type="button">Actualizar formatos</button>
     </div>
 
     <div class="filtros-auditoria">
       <input id="filtroFormatosAdmin" placeholder="Buscar medico, correo, cedula, rol o institucion">
+      <select id="filtroFormatosRolAdmin" aria-label="Filtrar por rol">
+        <option value="">Todos los roles</option>
+        <option value="admin">Administradores</option>
+        <option value="medico">Médicos</option>
+        <option value="psicologo">Psicólogos</option>
+        <option value="otros">Otros roles</option>
+      </select>
       <select id="filtroFormatosInstitucionAdmin">
         <option value="">Todas las instituciones</option>
       </select>

@@ -8,7 +8,9 @@ import {
   FORMAT_PERMISSION_FRAY,
   FORMAT_PERMISSION_NAVARRO,
   permisosFormatosDesdeUsuario,
-  usuarioEsActorProfesionalFormato
+  usuarioEsActorProfesionalFormato,
+  esAdministradorFormato,
+  resolverPermisosEfectivosFormatos
 } from "./services/formatosInstitucionales.js?v=20260719-actor-format-permissions";
 import {
   obtenerNombrePacienteParaMostrar,
@@ -156,7 +158,10 @@ function datosUsuarioSonAdmin(datos = {}) {
     datos.tipoRol,
     datos.tipoUsuario,
     datos.perfil,
-    datos.cargoSistema
+    datos.cargoSistema,
+    datos.claims?.role,
+    datos.claims?.rol,
+    datos.claims?.userRole
   ];
 
   if (camposRol.some((valor) => ROLES_ADMIN_VALIDOS.has(normalizarRolAdmin(valor)))) {
@@ -182,9 +187,11 @@ async function usuarioPuedeAccederAdmin(user) {
   if (user.uid === ADMIN_UID) return { permitido: true, datos: { rol: "admin", esAdminPrincipal: true } };
 
   try {
+    const tokenResult = await user.getIdTokenResult().catch(() => ({ claims: {} }));
+    const claims = tokenResult?.claims || {};
     const snapUsuario = await getDoc(doc(db, "usuarios", user.uid));
     if (!snapUsuario.exists()) return { permitido: false, datos: null };
-    const datos = snapUsuario.data();
+    const datos = { ...snapUsuario.data(), claims };
     return {
       permitido: datosUsuarioSonAdmin(datos),
       datos
@@ -262,7 +269,7 @@ function configurarFiltros() {
   document.getElementById("btnAutorizarNavarroVisibles")?.addEventListener("click", () => aplicarFormatoUsuariosVisiblesAdmin(FORMAT_PERMISSION_NAVARRO, true));
   document.getElementById("btnRetirarNavarroVisibles")?.addEventListener("click", () => aplicarFormatoUsuariosVisiblesAdmin(FORMAT_PERMISSION_NAVARRO, false));
 
-  ["filtroFormatosAdmin", "filtroFormatosInstitucionAdmin"].forEach((id) => {
+  ["filtroFormatosAdmin", "filtroFormatosRolAdmin", "filtroFormatosInstitucionAdmin"].forEach((id) => {
     document.getElementById(id)?.addEventListener("input", renderizarFormatosAdmin);
     document.getElementById(id)?.addEventListener("change", renderizarFormatosAdmin);
   });
@@ -1368,8 +1375,12 @@ function poblarInstitucionesFormatosAdmin() {
 
 function usuariosFiltradosFormatosAdmin() {
   const texto = normalizar(document.getElementById("filtroFormatosAdmin")?.value || "");
+  const rolFiltro = normalizarRolAdmin(document.getElementById("filtroFormatosRolAdmin")?.value || "");
   const institucion = document.getElementById("filtroFormatosInstitucionAdmin")?.value || "";
-  return usuariosAdmin.filter(usuarioEsActorProfesionalFormato).filter((usuario) => {
+  return usuariosAdmin.filter((usuario) => usuarioEsActorProfesionalFormato(usuario) || esAdministradorFormato(usuario)).filter((usuario) => {
+    const esAdmin = esAdministradorFormato(usuario);
+    const rolUsuario = normalizarRolAdmin(usuario.rol || usuario.role || "");
+    const coincideRol = !rolFiltro || (rolFiltro === "admin" ? esAdmin : rolFiltro === "otros" ? !esAdmin && !["medico", "medica", "psicologo", "psicologa"].includes(rolUsuario) : rolUsuario.includes(rolFiltro));
     const institucionUsuario = institucionUsuarioFormato(usuario);
     const coincideInstitucion = !institucion || institucionUsuario === institucion;
     const coincideTexto = !texto || normalizar([
@@ -1381,7 +1392,7 @@ function usuariosFiltradosFormatosAdmin() {
       usuario.id,
       institucionUsuario
     ].join(" ")).includes(texto);
-    return coincideInstitucion && coincideTexto;
+    return coincideRol && coincideInstitucion && coincideTexto;
   });
 }
 
@@ -1399,16 +1410,16 @@ function renderizarFormatosAdmin() {
 
   contenedor.innerHTML = usuarios.map((usuario) => {
     const permisos = permisosFormatosDesdeUsuario(usuario);
+    const esAdmin = esAdministradorFormato(usuario);
+    const cuentaActiva = usuario.activo !== false && usuario.active !== false && !["desactivado", "suspendido", "eliminado", "disabled", "suspended"].includes(normalizarRolAdmin(usuario.estado || usuario.status || ""));
     const institucionTexto = institucionUsuarioFormato(usuario);
     const controles = formatosControlables.map((formato) => {
-      const autorizado = permisos[formato.id] === true;
+      const autorizado = esAdmin ? cuentaActiva : permisos[formato.id] === true;
       return `
         <div class="usuario-admin-meta formato-admin-control">
           <span>${escaparHTML(formato.nombre)}</span>
-          <span>${autorizado ? "Autorizado" : "Sin acceso"}</span>
-          <button type="button" data-toggle-formato-admin="${escaparHTML(usuario.id)}" data-formato="${escaparHTML(formato.id)}" data-valor="${autorizado ? "false" : "true"}">
-            ${autorizado ? (formato.id === FORMAT_PERMISSION_NAVARRO ? "Revocar formato Navarro al medico" : "Revocar formatos Fray al medico") : (formato.id === FORMAT_PERMISSION_NAVARRO ? "Otorgar formato Navarro al medico" : "Otorgar formatos Fray al medico")}
-          </button>
+          <span>${esAdmin ? (cuentaActiva ? "Acceso global" : "Cuenta desactivada") : (autorizado ? "Permiso individual" : "Sin acceso")}</span>
+          ${esAdmin ? "<small>El acceso global proviene del rol de administrador y no puede retirarse desde permisos individuales.</small>" : `<button type="button" data-toggle-formato-admin="${escaparHTML(usuario.id)}" data-formato="${escaparHTML(formato.id)}" data-valor="${autorizado ? "false" : "true"}">${autorizado ? "Revocar permiso" : "Otorgar permiso"}</button>`}
         </div>
       `;
     }).join("");
@@ -1420,7 +1431,8 @@ function renderizarFormatosAdmin() {
           <p>${escaparHTML(usuario.email || "Sin correo")}</p>
           <small>UID: ${escaparHTML(usuario.id)}</small>
           <div class="usuario-admin-meta">
-            <span>${escaparHTML(etiquetaRolUsuario(usuario.rol || "sin_rol"))}</span>
+            <span>${escaparHTML(esAdmin ? "Administrador" : etiquetaRolUsuario(usuario.rol || "sin_rol"))}${esAdmin && !cuentaActiva ? " · Cuenta desactivada" : ""}</span>
+            ${esAdmin && cuentaActiva ? "<span>Acceso global a todos los formatos</span>" : ""}
             <span>Institucion: ${escaparHTML(institucionTexto)}</span>
             <span>Cedula: ${escaparHTML(usuario.cedulaProfesional || usuario.cedula || "Sin registro")}</span>
           </div>
@@ -1435,6 +1447,13 @@ function renderizarFormatosAdmin() {
   contenedor.querySelectorAll("[data-toggle-formato-admin]").forEach((boton) => {
     boton.addEventListener("click", alternarFormatoUsuarioAdmin);
   });
+  usuarios.filter((usuario) => esAdministradorFormato(usuario)).forEach((usuario) => {
+    registrarAuditoriaAdmin("consultar_acceso_global_formatos", "Se consultó el acceso global de un administrador a formatos.", {
+      usuarioObjetivoUid: usuario.id,
+      origenPermiso: "rol_admin",
+      cuentaActiva: usuario.activo !== false && usuario.active !== false
+    }).catch(() => {});
+  });
 }
 
 async function alternarFormatoUsuarioAdmin(evento) {
@@ -1445,6 +1464,11 @@ async function alternarFormatoUsuarioAdmin(evento) {
   const usuario = usuariosAdmin.find((item) => item.id === uid);
 
   if (!uid || !formato || !usuario) return;
+  if (esAdministradorFormato(usuario)) {
+    console.debug("[CentroControl:Formatos]", { uid: usuario.id, rol: "admin", formatoId: formato, action: "toggle", result: "global-access-preserved" });
+    alert("Este usuario conserva acceso a todos los formatos por su rol de administrador.");
+    return;
+  }
   if (!usuarioEsActorProfesionalFormato(usuario)) {
     alert("Los permisos institucionales de formatos solo pueden otorgarse a medicos o perfiles medicos compatibles.");
     return;
@@ -1475,9 +1499,11 @@ async function alternarFormatoUsuarioAdmin(evento) {
 }
 
 async function aplicarFormatoUsuariosVisiblesAdmin(formato, valor) {
-  const usuarios = usuariosFiltradosFormatosAdmin();
+  const visibles = usuariosFiltradosFormatosAdmin();
+  const usuarios = visibles.filter((usuario) => !esAdministradorFormato(usuario));
+  const administradoresOmitidos = visibles.length - usuarios.length;
   if (!usuarios.length) {
-    alert("No hay usuarios visibles para actualizar.");
+    alert(administradoresOmitidos ? "Los usuarios administradores conservan acceso global y no se modifican con casillas individuales." : "No hay usuarios no administradores visibles para actualizar.");
     return;
   }
 
@@ -1503,7 +1529,7 @@ async function aplicarFormatoUsuariosVisiblesAdmin(formato, valor) {
   await registrarAuditoriaAdmin(
     valor ? "autorizar_formato_institucional_masivo" : "retirar_formato_institucional_masivo",
     `${valor ? "Autorizo" : "Retiro"} formato ${formato} a ${usuarios.length} usuario(s) visibles`,
-    { totalUsuarios: usuarios.length }
+    { totalUsuarios: usuarios.length, administradoresOmitidos }
   );
   await cargarUsuariosAdmin();
 }

@@ -803,7 +803,7 @@ await assert.rejects(
     logger: { info() {}, warn() {}, error() {} },
     adminDb: fakeAdminDb({
       __docs: {
-        [auth.uid]: { rol: "admin", institucion: "Hospital Psiquiatrico Fray Bernardino Alvarez" },
+        [auth.uid]: { rol: "admin", activo: false, institucion: "Hospital Psiquiatrico Fray Bernardino Alvarez" },
         "paciente-1": defaultPatientDoc
       }
     }),

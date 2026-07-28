@@ -1922,7 +1922,7 @@ function iniciarCargaExpedientePaciente() {
 
 
 function formatoInstitucionalPermitidoPaciente(valor = "") {
-  return usuarioPuedeUsarFormato(valor, permisosFormatosUsuarioActual, rolUsuarioActual);
+  return usuarioPuedeUsarFormato(valor, permisosFormatosUsuarioActual, rolUsuarioActual, medicoActualDatos);
 }
 
 function aplicarPermisosFormatosPaciente() {
@@ -1931,7 +1931,7 @@ function aplicarPermisosFormatosPaciente() {
     ["#indicacionesFormato", "cognicion", "Cognicion"],
     ["#recetaFormato", "cognicion", "Cognicion - Receta general"],
     ["#solicitudEstudioFormato", "cognicion", "Cognicion - Solicitud general"]
-  ], permisosFormatosUsuarioActual, { rol: rolUsuarioActual });
+  ], permisosFormatosUsuarioActual, { rol: rolUsuarioActual, usuario: medicoActualDatos });
 }
 
 function alertaFormatoNoAutorizado() {
@@ -6070,7 +6070,7 @@ async function abrirSolicitudImagenologiaPaciente() {
     uidPaciente,
     servicio: datosPacienteActual.servicioInstitucional || datosPacienteActual.servicio || medicoActualDatos.servicio || "",
     onPersist: async (solicitud, definitiva) => {
-      const resultado = await guardarSolicitudImagenologia(uidPaciente, solicitud, { definitiva });
+      const resultado = await guardarSolicitudImagenologia(uidPaciente, solicitud, { definitiva, usuario: medicoActualDatos });
       await registrarAccionExpediente({
         accion: definitiva ? "generar_solicitud_imagenologia" : "guardar_borrador_solicitud_imagenologia",
         descripcion: definitiva ? "Se generó una solicitud institucional de imagenología." : "Se guardó un borrador de solicitud de imagenología.",

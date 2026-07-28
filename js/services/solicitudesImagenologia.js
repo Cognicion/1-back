@@ -1,5 +1,6 @@
 import { db } from "../firebase.js";
 import { collection, doc, getDocs, setDoc, writeBatch, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { puedeAccederFormato } from "./formatosInstitucionales.js";
 
 const limpiar = (valor) => {
   if (valor === undefined || typeof valor === "function") return undefined;
@@ -14,8 +15,11 @@ export function crearSolicitudImagenologiaId() {
   return globalThis.crypto?.randomUUID?.() || `solicitud-img-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 }
 
-export async function guardarSolicitudImagenologia(uidPaciente, solicitud, { definitiva = false } = {}) {
+export async function guardarSolicitudImagenologia(uidPaciente, solicitud, { definitiva = false, usuario = null } = {}) {
   if (!uidPaciente) throw Object.assign(new Error("Paciente no identificado"), { code: "patient-id-missing" });
+  if (usuario && !puedeAccederFormato({ usuario, formatoId: "solicitud_imagenologia", accion: definitiva ? "generar" : "guardar_borrador" })) {
+    throw Object.assign(new Error("Permiso insuficiente para la solicitud de imagenología"), { code: "permission-denied" });
+  }
   const solicitudId = solicitud.id || crearSolicitudImagenologiaId();
   const estado = definitiva ? "solicitado" : "borrador";
   const referencia = doc(db, "usuarios", uidPaciente, "solicitudesEstudios", solicitudId);
