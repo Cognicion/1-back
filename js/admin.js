@@ -1,5 +1,7 @@
 ﻿import { auth, db } from "./firebase.js";
 import { iniciarMonitoreoSesion } from "./services/sesion.js";
+import { actualizarReconocimientoColaborador } from "./services/colaboradores.js";
+import { TIPOS_COLABORADOR } from "./config/tiposColaborador.js";
 import { registrarEventoAuditoria, resumenError } from "./services/auditoria.js";
 import {
   FORMATOS_INSTITUCIONALES,
@@ -1252,6 +1254,8 @@ function renderizarUsuariosAdmin() {
           ${esAdminActual ? "<small>Administrador principal protegido.</small>" : ""}
         </div>
 
+        ${renderizarControlColaboradorAdmin(usuario)}
+
         <div class="paciente-admin-acciones">
           <button type="button" ${esAdminActual ? "disabled" : ""} onclick="cambiarRolUsuarioAdmin('${usuario.id}')">
             Cambiar rol
@@ -1263,6 +1267,81 @@ function renderizarUsuariosAdmin() {
       </article>
     `;
   }).join("");
+
+  contenedor.querySelectorAll("[data-guardar-colaborador]").forEach((boton) => {
+    boton.addEventListener("click", guardarReconocimientoColaboradorAdmin);
+  });
+  contenedor.querySelectorAll("[data-retirar-colaborador]").forEach((boton) => {
+    boton.addEventListener("click", retirarReconocimientoColaboradorAdmin);
+  });
+}
+
+function renderizarControlColaboradorAdmin(usuario = {}) {
+  const actual = usuario.colaborador || {};
+  const tipoActual = actual.activo === true && TIPOS_COLABORADOR[actual.tipo] ? actual.tipo : "ninguno";
+  const opciones = Object.values(TIPOS_COLABORADOR).map((tipo) => `
+    <option value="${escaparHTML(tipo.value || "")}" ${tipoActual === (tipo.value || "ninguno") ? "selected" : ""}>${escaparHTML(tipo.label)}</option>
+  `).join("");
+  return `
+    <div class="reconocimiento-admin-control">
+      <h4>Reconocimiento y colaboración</h4>
+      <p class="usuario-admin-meta">Estado: <strong>${actual.activo === true ? "Activo" : "Inactivo"}</strong> · Tipo: <strong>${escaparHTML(TIPOS_COLABORADOR[tipoActual]?.label || "No es colaborador")}</strong></p>
+      ${actual.fechaAsignacion ? `<small>Fecha de asignación: ${escaparHTML(formatearFechaAdmin(actual.fechaAsignacion))}</small>` : ""}
+      ${actual.asignadoPor ? `<small>Asignado por: ${escaparHTML(actual.asignadoPor)}</small>` : ""}
+      <label for="colaborador-${escaparHTML(usuario.id)}">Tipo de colaborador</label>
+      <select id="colaborador-${escaparHTML(usuario.id)}" data-tipo-colaborador="${escaparHTML(usuario.id)}">${opciones}</select>
+      <div class="paciente-admin-acciones">
+        <button type="button" data-guardar-colaborador="${escaparHTML(usuario.id)}">Guardar</button>
+        <button type="button" class="boton-peligro" data-retirar-colaborador="${escaparHTML(usuario.id)}" ${actual.activo === true ? "" : "disabled"}>Retirar reconocimiento</button>
+      </div>
+    </div>
+  `;
+}
+
+function actualizarBloqueColaboradorAdmin(usuario, tarjeta) {
+  const control = tarjeta?.querySelector(".reconocimiento-admin-control");
+  if (!control) return;
+  control.outerHTML = renderizarControlColaboradorAdmin(usuario);
+  tarjeta.querySelector("[data-guardar-colaborador]")?.addEventListener("click", guardarReconocimientoColaboradorAdmin);
+  tarjeta.querySelector("[data-retirar-colaborador]")?.addEventListener("click", retirarReconocimientoColaboradorAdmin);
+}
+
+async function guardarReconocimientoColaboradorAdmin(evento) {
+  const boton = evento.currentTarget;
+  const tarjeta = boton.closest(".usuario-admin-card");
+  const uid = boton.dataset.guardarColaborador || "";
+  const usuario = usuariosAdmin.find((item) => item.id === uid);
+  const tipo = document.querySelector(`[data-tipo-colaborador="${CSS.escape(uid)}"]`)?.value || "";
+  if (!usuario) return;
+  if (!tipo) return retirarReconocimientoColaboradorAdmin({ currentTarget: { dataset: { retirarColaborador: uid }, closest: () => tarjeta } });
+  const categoria = TIPOS_COLABORADOR[tipo]?.label || tipo;
+  if (!confirm(`¿Deseas asignar a este usuario la categoría “${categoria}”?`)) return;
+  boton.disabled = true;
+  try {
+    console.debug("[colaborador] cambio solicitado", usuario.id, tipo);
+    await actualizarReconocimientoColaborador({ usuarioId: uid, tipo });
+    usuario.colaborador = { activo: true, tipo, fechaAsignacion: new Date(), asignadoPor: adminActual?.uid || "" };
+    actualizarBloqueColaboradorAdmin(usuario, tarjeta);
+    alert("Reconocimiento actualizado correctamente.");
+  } catch (error) {
+    alert(`No se pudo actualizar el reconocimiento: ${error.message}`);
+    boton.disabled = false;
+  }
+}
+
+async function retirarReconocimientoColaboradorAdmin(evento) {
+  const uid = evento.currentTarget?.dataset?.retirarColaborador || "";
+  const usuario = usuariosAdmin.find((item) => item.id === uid);
+  const tarjeta = evento.currentTarget?.closest?.(".usuario-admin-card");
+  if (!usuario || !confirm("¿Deseas retirar el reconocimiento de colaborador a este usuario?")) return;
+  try {
+    await actualizarReconocimientoColaborador({ usuarioId: uid, tipo: null });
+    usuario.colaborador = { activo: false, tipo: null, fechaAsignacion: null, asignadoPor: null };
+    actualizarBloqueColaboradorAdmin(usuario, tarjeta);
+    alert("Reconocimiento actualizado correctamente.");
+  } catch (error) {
+    alert(`No se pudo retirar el reconocimiento: ${error.message}`);
+  }
 }
 
 

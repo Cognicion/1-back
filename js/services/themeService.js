@@ -2,6 +2,7 @@ import { doc, getDoc, setDoc, updateDoc } from "https://www.gstatic.com/firebase
 import { db } from "../firebase.js";
 
 const LEGACY_KEYS = ["cognicion.apariencia.modoInterfaz", "theme"];
+const LAST_THEME_STORAGE_KEY = "cognicion:theme:last";
 const pendingByUid = new Map();
 const userSelectionVersion = new Map();
 
@@ -25,6 +26,10 @@ function writeStorage(key, value) {
   try { localStorage.setItem(key, value); } catch (error) { console.warn("No se pudo guardar el tema local.", error); }
 }
 
+function writeLastTheme(value) {
+  writeStorage(LAST_THEME_STORAGE_KEY, value);
+}
+
 function removeStorage(key) {
   try { localStorage.removeItem(key); } catch { /* almacenamiento no disponible */ }
 }
@@ -44,6 +49,7 @@ export function applyTheme(theme) {
   const root = document.documentElement;
   root.dataset.theme = normalizedTheme;
   root.style.colorScheme = normalizedTheme;
+  root.style.backgroundColor = normalizedTheme === "dark" ? "#050505" : "#f3f3f1";
   updateThemeSelectorUI(normalizedTheme);
   return normalizedTheme;
 }
@@ -78,22 +84,28 @@ export async function getThemeFromUserProfile(uid, profile = null) {
 
 export async function initializeThemeForUser(user, profile = null) {
   const uid = user?.uid;
-  if (!uid) return applyTheme("light");
+  if (!uid) return applyTheme(document.documentElement.dataset.theme || readStorage(LAST_THEME_STORAGE_KEY) || "light");
   if (pendingByUid.has(uid)) return pendingByUid.get(uid);
 
   const task = (async () => {
     const versionAtStart = userSelectionVersion.get(uid) || 0;
     migrateLegacyTheme(uid);
     const storageKey = getThemeStorageKey(uid);
-    const localValue = readStorage(storageKey);
+    const localValue = readStorage(storageKey) || readStorage(LAST_THEME_STORAGE_KEY) || document.documentElement.dataset.theme;
     const localTheme = normalizeTheme(localValue);
     applyTheme(localTheme);
 
     try {
       const remoteTheme = await getThemeFromUserProfile(uid, profile);
+      console.debug("[ThemeBootstrap] sincronización remota finalizada", {
+        localTheme,
+        remoteTheme: remoteTheme || null,
+        discrepancia: Boolean(remoteTheme && remoteTheme !== localTheme)
+      });
       if (isValidTheme(remoteTheme) && versionAtStart === (userSelectionVersion.get(uid) || 0)) {
         const appliedTheme = applyTheme(remoteTheme);
         writeStorage(storageKey, appliedTheme);
+        writeLastTheme(appliedTheme);
         return appliedTheme;
       }
     } catch (error) {
@@ -103,6 +115,7 @@ export async function initializeThemeForUser(user, profile = null) {
       return normalizeTheme(readStorage(storageKey));
     }
     writeStorage(storageKey, localTheme);
+    writeLastTheme(localTheme);
     return localTheme;
   })().finally(() => pendingByUid.delete(uid));
 
@@ -130,8 +143,10 @@ export async function setThemeForUser(user, theme) {
   userSelectionVersion.set(user.uid, (userSelectionVersion.get(user.uid) || 0) + 1);
   const storageKey = getThemeStorageKey(user.uid);
   writeStorage(storageKey, normalizedTheme);
+  writeLastTheme(normalizedTheme);
   try {
     await saveThemeToUserProfile(user.uid, normalizedTheme);
+    console.debug("[ThemeBootstrap] preferencia sincronizada con Firestore", { appliedTheme: normalizedTheme });
   } catch (error) {
     console.warn("El tema se guardó localmente, pero no pudo sincronizarse con Firestore.", error);
   }

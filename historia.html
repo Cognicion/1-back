@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="es" data-theme="light">
 <head>
+<script src="js/theme-preload.js"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
@@ -8,7 +9,6 @@
 
 <link rel="stylesheet" href="css/theme.css">
 <link rel="stylesheet" href="css/historia.css">
-<script src="js/theme-preload.js"></script>
 <link rel="stylesheet" href="css/theme/cognicion-theme.css">
 <script type="module" src="js/services/themeBootstrap.js"></script>
 </head>
@@ -31,6 +31,12 @@
         <button class="tab" data-seccion="mental">🔎 Exploración mental</button>
         <button class="tab" data-seccion="diagnostico">🩺 Diagnóstico</button>
         <button class="tab" data-seccion="plan">📌 Plan</button>
+
+        <div class="historia-tabs-adicionales" aria-label="Historias complementarias">
+            <button class="tab" data-seccion="familiar">Historia familiar</button>
+            <button class="tab" data-seccion="academica">Historia academica</button>
+            <button class="tab" data-seccion="laboral">Historia laboral</button>
+        </div>
 
         <button class="boton-secundario" onclick="descargarHistoriaPDF()">
             Descargar PDF
@@ -141,8 +147,28 @@
                 <textarea id="riesgoPrevio"></textarea>
             </section>
 
+            <section class="seccion" id="familiar">
+                <h3>Historia familiar</h3>
+                <label for="historiaFamiliar">Historia familiar</label>
+                <textarea id="historiaFamiliar" rows="8" placeholder="Composición, dinámica, relaciones significativas, pérdidas, violencia, red de apoyo y situación familiar actual."></textarea>
+            </section>
+
+            <section class="seccion" id="academica">
+                <h3>Historia académica</h3>
+                <label for="historiaAcademica">Historia académica</label>
+                <textarea id="historiaAcademica" rows="8" placeholder="Trayectoria escolar, nivel alcanzado, rendimiento, dificultades, adaptación, estudios actuales y motivos de abandono."></textarea>
+            </section>
+
+            <section class="seccion" id="laboral">
+                <h3>Historia laboral</h3>
+                <label for="historiaLaboral">Historia laboral</label>
+                <textarea id="historiaLaboral" rows="8" placeholder="Inicio de vida laboral, empleos, actividad actual, cambios, conflictos, incapacidades, desempeño y situación laboral."></textarea>
+            </section>
+
             <section class="seccion" id="sustancias">
                 <h3>Consumo de sustancias</h3>
+
+                <div id="selectorSustanciasHistoria"></div>
 
                 <label>Tabaco</label>
                 <textarea id="tabaco"></textarea>
@@ -215,7 +241,7 @@
 
 </main>
 
-<script type="module" src="js/historia.js?v=20260726-weight-persistence"></script>
+<script type="module" src="js/historia.js?v=20260728-history-substances-v1"></script>
 
   <script type="module" src="js/components/accesosRapidos.js"></script>
   <script>

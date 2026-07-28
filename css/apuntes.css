@@ -3,6 +3,10 @@
 body {
   margin: 0;
   min-height: 100vh;
+  height: 100%;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
   font-family: Arial, Helvetica, sans-serif;
   color: var(--white-950);
   background:
@@ -14,6 +18,7 @@ body {
 body.bloqueado main { display: none; }
 
 .topbar-apuntes {
+  flex: 0 0 auto;
   padding: 24px 7%;
   display: flex;
   justify-content: space-between;
@@ -42,9 +47,12 @@ body.bloqueado main { display: none; }
 
 .apuntes-shell {
   width: min(1280px, calc(100% - 40px));
-  margin: 28px auto;
+  flex: 1 1 auto;
+  min-height: 0;
+  margin: 20px auto;
+  align-self: stretch;
   display: grid;
-  grid-template-columns: 330px minmax(0, 1fr);
+  grid-template-columns: 320px minmax(0, 1fr);
   gap: 20px;
 }
 
@@ -61,12 +69,14 @@ body.bloqueado main { display: none; }
   display: grid;
   grid-template-rows: auto auto minmax(0, 1fr);
   gap: 12px;
-  height: calc(100vh - 144px);
+  min-height: 0;
+  height: auto;
   padding: 18px;
 }
 
 .apuntes-editor {
-  min-height: calc(100vh - 144px);
+  min-height: 0;
+  height: auto;
   display: grid;
   grid-template-rows: auto minmax(0, 1fr) auto;
   gap: 14px;
@@ -86,6 +96,9 @@ button {
 }
 
 textarea {
+  min-height: 0;
+  height: auto;
+  overflow: auto;
   resize: none;
   line-height: 1.45;
 }
@@ -254,11 +267,21 @@ html[data-theme="light"] .boton-peligro {
   border: 1px solid rgba(122, 39, 34, 0.22);
 }
 
-@media (max-width: 860px) {
+@media (max-width: 899px) {
+  html,
+  body {
+    height: auto;
+    min-height: 100%;
+    overflow: auto;
+  }
+
   .topbar-apuntes,
-  .apuntes-shell,
-  .acciones-apuntes {
+  .apuntes-shell {
     grid-template-columns: 1fr;
+  }
+
+  .apuntes-shell {
+    grid-template-rows: minmax(15rem, 40vh) minmax(60vh, auto);
   }
 
   .topbar-apuntes {
@@ -272,6 +295,30 @@ html[data-theme="light"] .boton-peligro {
   }
 
   .apuntes-sidebar {
-    max-height: 42vh;
+    min-height: 15rem;
+    max-height: none;
+  }
+
+  .apuntes-editor {
+    min-height: 60vh;
+  }
+
+  .acciones-apuntes {
+    grid-template-columns: minmax(0, 1fr) 120px 120px;
+  }
+}
+
+@media (max-width: 560px) {
+  .apuntes-shell {
+    width: min(100% - 20px, 1280px);
+    margin: 12px auto 20px;
+  }
+
+  .acciones-apuntes {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .acciones-apuntes span {
+    grid-column: 1 / -1;
   }
 }

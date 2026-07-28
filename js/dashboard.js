@@ -23,6 +23,7 @@ import {
 import { getAuthenticatedUserOnce, getUserProfileOnce } from "./services/authContextService.js";
 import { registrarEventoAuditoria } from "./services/auditoria.js";
 import { iniciarMonitoreoSesion } from "./services/sesion.js";
+import { renderizarReconocimientoColaborador } from "./components/reconocimientoColaborador.js";
 import { aplicarAparienciaGuardada, sincronizarAparienciaUsuario } from "./services/apariencia.js";
 import { ROL_ENFERMERIA_SALUD_MENTAL, usuarioEsPersonalClinico } from "./utils/roles.js";
 import {
@@ -396,6 +397,10 @@ async function inicializarDashboard() {
   const tarjetaSofia = document.getElementById("tarjetaSofia");
 
   actualizarTarjetasAdmin(rolUsuario);
+  renderizarReconocimientoColaborador({
+    contenedor: document.getElementById("reconocimientoColaborador"),
+    colaborador: datos?.colaborador
+  });
 
   if (tarjetaSofia && usuarioEsAdmin(rolUsuario)) {
     tarjetaSofia.style.display = "";

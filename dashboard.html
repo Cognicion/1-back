@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="es" data-theme="light">
 <head>
+<script src="js/theme-preload.js"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>COGNICIÓN | Dashboard médico</title>
@@ -1253,8 +1254,8 @@ footer {
 
 </style>
   <!-- dashboard-deploy: 2026-07-02 18:22:52 -06:00 -->
-<script src="js/theme-preload.js"></script>
 <link rel="stylesheet" href="css/theme/cognicion-theme.css">
+<link rel="stylesheet" href="css/reconocimiento-colaborador.css">
 <style id="dashboard-light-theme-structure">
 html[data-theme="light"] body {
   --bg: var(--page-bg);
@@ -1505,6 +1506,8 @@ html[data-theme="light"] .app-shell { max-width: 1440px; width: min(100% - 40px,
         </div>
     </section>
 
+    <div id="reconocimientoColaborador" hidden></div>
+
     <section class="dashboard-section" aria-labelledby="modulosTitulo">
         <div class="section-heading">
             <div>
@@ -1723,7 +1726,7 @@ document.addEventListener("DOMContentLoaded", function () {
   console.timeEnd?.("COGNICION dashboard | primera fase HTML");
 }, { once: true });
 </script>
-<script type="module" src="js/dashboard.js?v=20260718-session-persistence"></script>
+<script type="module" src="js/dashboard.js?v=20260727-colaboradores-v1"></script>
 <script type="module" src="js/components/accesosRapidos.js"></script>
 <script type="module" src="js/components/themeSelector.js"></script>
 <script>

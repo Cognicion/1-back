@@ -9,6 +9,67 @@ const OPENAI_API_KEY = defineSecret("OPENAI_API_KEY");
 if (!admin.apps.length) admin.initializeApp();
 const adminDb = admin.firestore();
 
+const ADMIN_UID = "NQ0CU5PSDBUgVrk56sjPEVhOs2D3";
+const TIPOS_COLABORADOR_VALIDOS = new Set(["colaborador", "destacado", "estrella"]);
+const ROLES_ADMIN_VALIDOS = new Set(["admin", "administrador", "superadmin", "adminprincipal", "administradorprincipal"]);
+
+function normalizarRolAdmin(valor = "") {
+  return String(valor || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[\s_-]+/g, "").trim();
+}
+
+function datosUsuarioEsAdmin(datos = {}) {
+  const roles = Array.isArray(datos.roles) ? datos.roles : Object.entries(datos.roles || {}).filter(([, activo]) => activo).map(([rol]) => rol);
+  const permisos = Array.isArray(datos.permisos) ? datos.permisos : Object.entries(datos.permisos || {}).filter(([, activo]) => activo).map(([permiso]) => permiso);
+  return [datos.rol, datos.role, datos.tipoRol, datos.tipoUsuario, datos.perfil, datos.cargoSistema, ...roles, ...permisos]
+    .some((valor) => ROLES_ADMIN_VALIDOS.has(normalizarRolAdmin(valor)))
+    || datos.admin === true || datos.esAdmin === true || datos.isAdmin === true || datos.claims?.admin === true;
+}
+
+exports.actualizarReconocimientoColaborador = onCall(async (request) => {
+  if (!request.auth?.uid) throw new HttpsError("unauthenticated", "Debes iniciar sesión.");
+  const adminUid = request.auth.uid;
+  const usuarioId = String(request.data?.usuarioId || "").trim();
+  const tipo = request.data?.tipo ? String(request.data.tipo).trim() : null;
+  if (!usuarioId) throw new HttpsError("invalid-argument", "Falta el usuario objetivo.");
+  if (usuarioId === adminUid) throw new HttpsError("permission-denied", "No puedes asignarte este reconocimiento.");
+  if (tipo !== null && !TIPOS_COLABORADOR_VALIDOS.has(tipo)) throw new HttpsError("invalid-argument", "Tipo de colaborador no permitido.");
+
+  const adminSnap = await adminDb.doc(`usuarios/${adminUid}`).get();
+  if (adminUid !== ADMIN_UID && (!adminSnap.exists || !datosUsuarioEsAdmin(adminSnap.data()))) {
+    throw new HttpsError("permission-denied", "No tienes permisos administrativos para esta operación.");
+  }
+
+  const usuarioRef = adminDb.doc(`usuarios/${usuarioId}`);
+  const usuarioSnap = await usuarioRef.get();
+  if (!usuarioSnap.exists) throw new HttpsError("not-found", "Usuario objetivo no encontrado.");
+  const anterior = usuarioSnap.data()?.colaborador || {};
+  const valorAnterior = { activo: anterior.activo === true, tipo: anterior.activo === true ? anterior.tipo || null : null };
+  const activo = Boolean(tipo);
+  const valorNuevo = { activo, tipo: activo ? tipo : null };
+  const marcaTiempo = activo ? admin.firestore.FieldValue.serverTimestamp() : null;
+  const nuevoColaborador = {
+    activo,
+    tipo: valorNuevo.tipo,
+    fechaAsignacion: marcaTiempo,
+    asignadoPor: activo ? adminUid : null
+  };
+  const auditoriaRef = adminDb.collection("auditoria").doc();
+  const batch = adminDb.batch();
+  batch.update(usuarioRef, { colaborador: nuevoColaborador });
+  batch.set(auditoriaRef, {
+    accion: "actualizar_tipo_colaborador",
+    modulo: "Panel administracion",
+    usuarioObjetivoId: usuarioId,
+    valorAnterior,
+    valorNuevo,
+    realizadoPor: adminUid,
+    exito: true,
+    fecha: admin.firestore.FieldValue.serverTimestamp()
+  });
+  await batch.commit();
+  return { ok: true, valorAnterior, valorNuevo };
+});
+
 exports.chatSofia = onCall(
   {
     secrets: [OPENAI_API_KEY],

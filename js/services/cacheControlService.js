@@ -1,4 +1,4 @@
-export const APP_VERSION = "20260726-notas-historial-tema-v1";
+export const APP_VERSION = "20260728-history-substances-v1";
 export const FIRESTORE_DEVICE_PREF_KEY = "cognicion.dispositivoPersonal";
 
 const STATIC_CACHE = `cognicion-static-${APP_VERSION}`;

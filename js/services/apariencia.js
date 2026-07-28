@@ -68,6 +68,7 @@ export function obtenerModoInterfazLocalCognicion() {
 
 export function guardarModoInterfazLocalCognicion(modo) {
   const modoSeguro = normalizarModoInterfazCognicion(modo);
+  try { localStorage.setItem("cognicion:theme:last", modoSeguro); } catch (_) { /* almacenamiento no disponible */ }
   return modoSeguro;
 }
 
@@ -103,7 +104,7 @@ export function aplicarTemaCognicion(tema) {
 }
 
 export function aplicarAparienciaGuardada() {
-  applyTheme("light");
+  applyTheme(document.documentElement.dataset.theme || "light");
   return aplicarTemaCognicion(obtenerTemaLocalCognicion());
 }
 

@@ -1266,3 +1266,13 @@ select:disabled {
 .lecturas-aviso-admin li {
   margin: 4px 0;
 }
+.reconocimiento-admin-control {
+  margin-top: 1rem;
+  padding: .9rem;
+  border: 1px solid var(--border-color, rgba(100, 116, 139, .25));
+  border-radius: 12px;
+}
+.reconocimiento-admin-control h4 { margin: 0 0 .5rem; }
+.reconocimiento-admin-control label { display: block; margin-top: .65rem; font-weight: 600; }
+.reconocimiento-admin-control select { width: 100%; margin-top: .25rem; }
+.reconocimiento-admin-control small { display: block; margin-top: .25rem; opacity: .75; }

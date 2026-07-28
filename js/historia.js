@@ -4,6 +4,7 @@ import { iniciarMonitoreoSesion } from "./services/sesion.js";
 import { obtenerNombrePacienteParaMostrar } from "./utils/nombresPacientes.js";
 import { usuarioEsPersonalClinico } from "./utils/roles.js";
 import { getAuthenticatedUserOnce, getUserProfileOnce } from "./services/authContextService.js";
+import { crearGestorSustanciasHistoria } from "./components/sustanciasHistoria.js";
 
 import {
   obtenerUsuario,
@@ -17,6 +18,7 @@ import {
 
 let uidPaciente = null;
 let pacienteActual = {};
+let gestorSustanciasHistoria = null;
 
 iniciarMonitoreoSesion("Historia clinica");
 
@@ -119,6 +121,10 @@ async function inicializarHistoriaClinica() {
   if (!uidPaciente) return;
 
   await cargarPaciente();
+  gestorSustanciasHistoria = crearGestorSustanciasHistoria({
+    contenedor: document.getElementById("selectorSustanciasHistoria"),
+    edadPaciente: calcularEdad(obtenerFechaNacimiento(pacienteActual))
+  });
   await cargarHistoria();
 }
 
@@ -157,14 +163,22 @@ async function cargarHistoria() {
     perimetroAbdominal: valorInstitucional(pacienteActual, "perimetroAbdominal"),
     diagnosticoClinico: pacienteActual.datosClinicosResumen?.diagnostico?.texto || pacienteActual.diagnostico?.texto || pacienteActual.diagnostico || "",
     codigoDiagnostico: pacienteActual.datosClinicosResumen?.diagnostico?.codigo || pacienteActual.diagnostico?.codigo || "",
-    tratamientoFarmacologico: pacienteActual.datosClinicosResumen?.tratamientoActivo || pacienteActual.tratamiento || ""
+    tratamientoFarmacologico: pacienteActual.datosClinicosResumen?.tratamientoActivo || pacienteActual.tratamiento || "",
+    historiaFamiliar: "",
+    historiaAcademica: "",
+    historiaLaboral: "",
+    sustancias: { seleccionadas: [], observacionesGenerales: "" }
   };
 
   const datos = historia.exists() ? { ...raiz, ...historia.data() } : raiz;
 
   Object.keys(datos).forEach((campo) => {
+    if (campo === "sustancias") return;
     const elemento = document.getElementById(campo);
     if (elemento) elemento.value = datos[campo];
+  });
+  gestorSustanciasHistoria?.cargar(datos.sustancias, {
+    consumoSustancias: datos.consumoSustancias
   });
   if (!datos.imc) calcularIMCHistoria();
 }
@@ -186,6 +200,8 @@ window.guardarHistoria = async () => {
       console.warn("Campo de historia ignorado porque no tiene id:", campo);
       return;
     }
+
+    if (campo.closest("#selectorSustanciasHistoria, #bloquesSustanciasHistoria") || id === "observacionesSustanciasHistoria") return;
 
     if (
       campo.type === "button" ||
@@ -220,6 +236,22 @@ window.guardarHistoria = async () => {
   datos.perimetroAbdominal = normalizarMedidaClinica(datos.perimetroAbdominal) || String(datos.perimetroAbdominal || "").trim();
   calcularIMCHistoria();
   datos.imc = String(document.getElementById("imc")?.value || "").trim();
+
+  datos.sustancias = gestorSustanciasHistoria?.obtenerDatos() || { seleccionadas: [], observacionesGenerales: "" };
+  const advertenciasSustancias = gestorSustanciasHistoria?.validar() || [];
+  const advertenciaBloqueante = advertenciasSustancias.find((advertencia) => advertencia.includes("otra sustancia seleccionada"));
+  if (advertenciaBloqueante) {
+    alert(advertenciaBloqueante);
+    return;
+  }
+  if (advertenciasSustancias.length) {
+    alert("Se encontraron advertencias en el consumo de sustancias. La información se conservará y puedes revisarla antes de continuar.");
+  }
+
+  console.debug("[HistoriaClinica] datos preparados para guardar", {
+    pacienteId: uidPaciente,
+    sustanciasSeleccionadas: datos.sustancias.seleccionadas.length
+  });
 
   await guardarHistoriaClinica(uidPaciente, datos);
 

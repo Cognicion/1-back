@@ -1,4 +1,4 @@
-const CACHE_VERSION = "20260718-cache-v1";
+const CACHE_VERSION = "20260728-history-substances-v1";
 const STATIC_CACHE = `cognicion-static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `cognicion-runtime-${CACHE_VERSION}`;
 

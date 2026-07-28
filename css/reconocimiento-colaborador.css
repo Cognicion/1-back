@@ -1,0 +1,32 @@
+#reconocimientoColaborador {
+  width: min(100% - 2rem, 1180px);
+  margin: 0 auto 1.25rem;
+}
+
+.reconocimiento-colaborador {
+  border: 1px solid var(--border-color, rgba(100, 116, 139, .28));
+  border-left: 4px solid var(--accent-color, #2563eb);
+  border-radius: 16px;
+  padding: 1.25rem 1.4rem;
+  background: var(--surface-color, #fff);
+  color: var(--text-color, #172033);
+  box-shadow: 0 8px 24px rgba(15, 23, 42, .08);
+}
+
+.reconocimiento-estrella { border-left-color: #d49a00; }
+.reconocimiento-colaborador-cabecera { display: flex; gap: .8rem; align-items: center; }
+.reconocimiento-icono { font-size: 1.7rem; line-height: 1; }
+.reconocimiento-kicker { margin: 0; font-size: .72rem; letter-spacing: .08em; text-transform: uppercase; opacity: .72; }
+.reconocimiento-colaborador h2 { margin: .2rem 0 0; font-size: 1.05rem; }
+.reconocimiento-colaborador > p { max-width: 75ch; line-height: 1.6; margin-bottom: 0; }
+.reconocimiento-contactos { margin-top: 1rem; border-top: 1px solid var(--border-color, rgba(100, 116, 139, .22)); padding-top: .8rem; }
+.reconocimiento-contactos summary { cursor: pointer; font-weight: 700; }
+.reconocimiento-contactos-contenido { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: .25rem 1.2rem; margin-top: .8rem; }
+.reconocimiento-contactos p { margin: .25rem 0; overflow-wrap: anywhere; line-height: 1.45; }
+.reconocimiento-colaborador a { color: inherit; font-weight: 700; text-decoration: underline; }
+
+@media (max-width: 600px) {
+  #reconocimientoColaborador { width: min(100% - 1rem, 1180px); }
+  .reconocimiento-colaborador { padding: 1rem; }
+  .reconocimiento-contactos-contenido { grid-template-columns: 1fr; }
+}
