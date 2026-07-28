@@ -1507,6 +1507,83 @@ body.tema-claro .apunte-paciente-item__titulo {
   padding-right: 104px;
 }
 
+.solicitud-fray-preview {
+  min-height: 560px;
+  padding: 24px;
+  color: var(--text-primary);
+  background: var(--surface-primary);
+  border: 1px solid var(--border-subtle);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.solicitud-formato-error {
+  padding: 24px;
+  color: var(--text-primary);
+  border: 1px solid var(--danger-500, #b42318);
+  border-radius: 12px;
+}
+
+.solicitud-fray-preview header {
+  padding-bottom: 16px;
+  text-align: center;
+  border-bottom: 2px solid var(--border-subtle);
+}
+
+.solicitud-fray-preview header strong {
+  display: block;
+  font-size: 11px;
+  letter-spacing: .04em;
+}
+
+.solicitud-fray-preview header h2 {
+  margin: 16px 0 6px;
+  font-size: 19px;
+}
+
+.solicitud-fray-preview h3 {
+  margin: 18px 0 8px;
+  font-size: 12px;
+}
+
+.solicitud-fray-preview p {
+  margin: 6px 0;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.solicitud-fray-preview table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11px;
+}
+
+.solicitud-fray-preview th,
+.solicitud-fray-preview td {
+  padding: 7px;
+  text-align: left;
+  border: 1px solid var(--border-subtle);
+}
+
+.solicitud-fray-preview footer {
+  margin-top: 24px;
+  font-size: 10px;
+  text-align: center;
+}
+
+.solicitud-fray-firmas {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-top: 52px;
+  font-size: 10px;
+  text-align: center;
+}
+
+.solicitud-fray-firmas span {
+  padding-top: 8px;
+  border-top: 1px solid var(--border-subtle);
+}
+
 .solicitud-logo {
   position: absolute;
   top: 24px;

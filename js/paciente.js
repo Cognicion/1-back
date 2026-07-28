@@ -11,7 +11,9 @@ import {
 import {
   aplicarPermisosFormatosPagina,
   obtenerPermisosFormatosUsuario,
-  usuarioPuedeUsarFormato
+  usuarioPuedeUsarFormato,
+  resolverFormatoSolicitud,
+  FORMATO_SOLICITUD_IMAGENOLOGIA
 } from "./services/formatosInstitucionales.js";
 import {
   obtenerTemaLocalCognicion,
@@ -167,6 +169,7 @@ const VISTAS_DATOS_GENERALES_PACIENTE = Object.freeze({
 });
 let estudiosSolicitudActual = [];
 let solicitudImagenologiaModulePromise = null;
+let solicitudImagenologiaActiva = null;
 const CLAVE_CATALOGO_MANUAL = "cognicion_catalogo_diagnosticos_manual";
 let catalogoManualDiagnosticos = cargarCatalogoManualDiagnosticos();
 const CLAVE_MEDICAMENTOS_MANUALES = "cognicion_catalogo_medicamentos_manual";
@@ -2326,9 +2329,9 @@ window.mostrarEstudios = async function() {
   ocultarSecciones();
   document.getElementById("seccionEstudios").style.display = "block";
   const formatoImagen = document.getElementById("solicitudEstudioFormato");
-  if (formatoImagen && ![...formatoImagen.options].some((opcion) => opcion.value === "solicitud_imagenologia") && usuarioPuedeUsarFormato("solicitud_imagenologia", permisosFormatosUsuarioActual, rolUsuarioActual, medicoActualDatos)) {
+  if (formatoImagen && ![...formatoImagen.options].some((opcion) => opcion.value === FORMATO_SOLICITUD_IMAGENOLOGIA.clave) && usuarioPuedeUsarFormato("solicitud_imagenologia", permisosFormatosUsuarioActual, rolUsuarioActual, medicoActualDatos)) {
     const opcion = document.createElement("option");
-    opcion.value = "solicitud_imagenologia";
+    opcion.value = FORMATO_SOLICITUD_IMAGENOLOGIA.clave;
     opcion.textContent = "Formatos Fray · Solicitud de estudio de imagenología · FTO-HPFBA-EXPC-IMG-SEI";
     formatoImagen.appendChild(opcion);
   }
@@ -6064,7 +6067,7 @@ async function abrirSolicitudImagenologiaPaciente() {
     ]);
   }
   const [{ abrirSolicitudImagenologia }, { guardarSolicitudImagenologia }] = await solicitudImagenologiaModulePromise;
-  abrirSolicitudImagenologia({
+  solicitudImagenologiaActiva = abrirSolicitudImagenologia({
     paciente: datosPacienteActual,
     medico: { ...medicoActualDatos, uid: auth.currentUser?.uid || "" },
     uidPaciente,
@@ -7087,15 +7090,20 @@ function configurarSolicitudEstudios() {
 
   categoria.addEventListener("change", () => {
     renderizarOpciones();
-    if (categoria.value === "imagen") abrirSolicitudImagenologiaPaciente();
+    const formato = resolverFormatoSolicitud(valorCampo("solicitudEstudioFormato"));
+    if (categoria.value === "imagen" && formato?.id === FORMATO_SOLICITUD_IMAGENOLOGIA.clave) {
+      abrirSolicitudImagenologiaPaciente();
+    }
   });
   renderizarOpciones();
 }
 
 function datosSolicitudEstudiosActual() {
   const fecha = valorCampo("solicitudEstudioFecha") || fechaISOHoy();
+  const formatoId = resolverFormatoSolicitud(valorCampo("solicitudEstudioFormato"))?.id || valorCampo("solicitudEstudioFormato") || "cognicion";
   return {
-    formato: valorCampo("solicitudEstudioFormato") || "cognicion",
+    formatoId,
+    formato: formatoId,
     fecha,
     pacienteNombre: obtenerNombrePacienteActual(),
     edad: calcularEdad(obtenerFechaNacimiento(datosPacienteActual || {})),
@@ -7115,6 +7123,61 @@ function datosSolicitudEstudiosActual() {
     cedula: medicoActualDatos?.cedula || medicoActualDatos?.cedulaProfesional || "",
     estudios: estudiosSolicitudActual
   };
+}
+
+function formatoSolicitudActivo(datos = datosSolicitudEstudiosActual()) {
+  return resolverFormatoSolicitud(datos.formatoId || datos.formato);
+}
+
+function datosImagenologiaDesdeSolicitudBase(datos) {
+  return {
+    id: "",
+    pacienteId: uidPaciente,
+    formatoId: FORMATO_SOLICITUD_IMAGENOLOGIA.clave,
+    solicitud: { fecha: datos.fecha, hora: "", fechaCita: "", horaCita: "" },
+    paciente: {
+      expediente: datos.expediente,
+      nombreCompleto: datos.pacienteNombre,
+      fechaNacimiento: datos.fechaNacimiento,
+      edad: datos.edad,
+      curp: datosPacienteActual?.curp || "",
+      sexo: datos.sexo,
+      genero: datosPacienteActual?.genero || "",
+      pa: datosPacienteActual?.pa || datosPacienteActual?.presionArterial || "",
+      camaConsultorio: datos.cama,
+      pesoKg: datosPacienteActual?.peso || datosPacienteActual?.somatometria?.peso || "",
+      tallaM: datosPacienteActual?.talla || datosPacienteActual?.somatometria?.talla || "",
+      servicio: datosPacienteActual?.servicioInstitucional || datosPacienteActual?.servicio || "",
+      alergias: datosPacienteActual?.alergias || ""
+    },
+    datosClinicos: datos.motivo || "",
+    estudios: datos.estudios.map((estudio, indice) => ({
+      id: `estudio-${indice + 1}`,
+      tipo: datos.prioridad === "Urgente" ? "Urgente" : "Ordinario",
+      modalidad: estudio.categoria === "imagen" ? "Imagen" : "",
+      nombre: estudio.nombre,
+      region: "",
+      contraste: "",
+      observaciones: "",
+      criterioUrgencia: ""
+    })),
+    medicoSolicitante: {
+      uid: auth.currentUser?.uid || "",
+      nombre: datos.solicita,
+      cargo: medicoActualDatos?.cargo || medicoActualDatos?.grado || medicoActualDatos?.especialidad || "",
+      cedulaProfesional: datos.cedula,
+      servicio: datosPacienteActual?.servicioInstitucional || datosPacienteActual?.servicio || ""
+    },
+    medicoAdscrito: { nombre: "", cedulaEspecialidad: "" }
+  };
+}
+
+function htmlSolicitudImagenologiaPreview(datos) {
+  const estudios = datos.estudios?.length
+    ? datos.estudios.map((item) => `<tr><td>${escaparHTML(item.tipo)}</td><td>${escaparHTML(item.nombre)}</td><td>${escaparHTML(item.criterioUrgencia || "")}</td></tr>`).join("")
+    : "<tr><td colspan=\"3\">Sin estudios solicitados.</td></tr>";
+  const paciente = datos.paciente || {};
+  return `<div class="solicitud-fray-preview"><header><strong>SECRETARÍA DE SALUD</strong><br><strong>COMISIÓN NACIONAL DE SALUD MENTAL Y ADICCIONES</strong><br><strong>HOSPITAL PSIQUIÁTRICO FRAY BERNARDINO ÁLVAREZ</strong><h2>SOLICITUD DE ESTUDIO DE IMAGENOLOGÍA</h2><strong>FTO-HPFBA-EXPC-IMG-SEI</strong></header><section><h3>Datos de la solicitud</h3><p>Fecha: ${escaparHTML(datos.solicitud?.fecha || "")} · Hora: ${escaparHTML(datos.solicitud?.hora || "")}</p><h3>Identificación del paciente</h3><p>Paciente: ${escaparHTML(paciente.nombreCompleto || "")} · Expediente: ${escaparHTML(paciente.expediente || "")}</p><p>Fecha de nacimiento: ${escaparHTML(paciente.fechaNacimiento || "")} · Edad: ${escaparHTML(paciente.edad || "")} · Sexo: ${escaparHTML(paciente.sexo || "")}</p><h3>Datos físicos y ubicación</h3><p>PA: ${escaparHTML(paciente.pa || "")} · Cama o consultorio: ${escaparHTML(paciente.camaConsultorio || "")} · Peso: ${escaparHTML(paciente.pesoKg || "")} · Talla: ${escaparHTML(paciente.tallaM || "")}</p><p>Servicio: ${escaparHTML(paciente.servicio || "")} · Alergias: ${escaparHTML(paciente.alergias || "Sin información registrada")}</p><h3>Datos clínicos y sospecha diagnóstica</h3><p>${escaparHTML(datos.datosClinicos || "").replace(/\n/g, "<br>")}</p><h3>Estudios solicitados</h3><table><thead><tr><th>Tipo</th><th>Estudio</th><th>Criterio de urgencia</th></tr></thead><tbody>${estudios}</tbody></table><h3>Datos médicos</h3><p>Médico solicitante: ${escaparHTML(datos.medicoSolicitante?.nombre || "")} · Cédula: ${escaparHTML(datos.medicoSolicitante?.cedulaProfesional || "")}</p><p>Médico adscrito: ____________________ · Cédula de especialidad: ____________________</p><div class="solicitud-fray-firmas"><span>Firma médico solicitante</span><span>Firma médico adscrito</span></div></section><footer>Solicitud institucional · Snapshot de datos al momento de emisión</footer></div>`;
 }
 
 function renderizarListaSolicitudEstudios() {
@@ -7143,6 +7206,13 @@ function renderizarListaSolicitudEstudios() {
 }
 
 function htmlSolicitudEstudiosPreview(datos = datosSolicitudEstudiosActual()) {
+  const formato = formatoSolicitudActivo(datos);
+  if (!formato) {
+    return `<div class="solicitud-formato-error" role="alert"><strong>No se encontró el generador del formato ${escaparHTML(datos.formatoId || datos.formato || "desconocido")}.</strong><p>La solicitud no fue sustituida por otro formato.</p></div>`;
+  }
+  if (formato?.id === FORMATO_SOLICITUD_IMAGENOLOGIA.clave) {
+    return htmlSolicitudImagenologiaPreview(datosImagenologiaDesdeSolicitudBase(datos));
+  }
   const estudios = datos.estudios?.length
     ? datos.estudios.map((item) => `
       <li>
@@ -7188,7 +7258,26 @@ function htmlSolicitudEstudiosPreview(datos = datosSolicitudEstudiosActual()) {
 function actualizarPreviewSolicitudEstudios() {
   const preview = document.getElementById("solicitudEstudiosPreview");
   if (!preview) return;
-  preview.innerHTML = htmlSolicitudEstudiosPreview();
+  const datos = datosSolicitudEstudiosActual();
+  const formato = formatoSolicitudActivo(datos);
+  console.debug("[Estudios:Preview]", { formatoId: datos.formatoId, rendererId: formato?.id === FORMATO_SOLICITUD_IMAGENOLOGIA.clave ? "renderSolicitudImagenologia" : formato ? "htmlSolicitudEstudiosPreview" : null, result: formato ? "rendered" : "format-not-found" });
+  preview.replaceChildren();
+  preview.innerHTML = htmlSolicitudEstudiosPreview(datos);
+}
+
+function manejarCambioFormatoSolicitud() {
+  const formatoId = resolverFormatoSolicitud(valorCampo("solicitudEstudioFormato"))?.id;
+  const categoria = document.getElementById("solicitudEstudioCategoria");
+  solicitudImagenologiaActiva?.cerrar?.();
+  solicitudImagenologiaActiva = null;
+  if (formatoId === FORMATO_SOLICITUD_IMAGENOLOGIA.clave) {
+    if (categoria) categoria.value = "imagen";
+    console.debug("[Estudios:FormatoSeleccionado]", { formatoId, categoria: "imagen", rendererId: "renderSolicitudImagenologia", generatorId: "crearDocumentoWordFray" });
+    abrirSolicitudImagenologiaPaciente();
+  } else {
+    console.debug("[Estudios:FormatoSeleccionado]", { formatoId: formatoId || null, categoria: categoria?.value || null, rendererId: "htmlSolicitudEstudiosPreview", generatorId: "generarSolicitudCognicion" });
+  }
+  actualizarPreviewSolicitudEstudios();
 }
 
 function agregarEstudioSolicitud() {
@@ -7224,6 +7313,17 @@ function limpiarSolicitudEstudios() {
 
 async function guardarSolicitudEstudios() {
   const datos = datosSolicitudEstudiosActual();
+  const formato = formatoSolicitudActivo(datos);
+  if (!formato) {
+    console.error("[FormatosFray:Resolver]", { formatoId: datos.formatoId, result: "not-found" });
+    alert(`No se encontró el generador del formato ${datos.formatoId}. La solicitud no fue sustituida por otro formato.`);
+    return;
+  }
+  if (formato.id === FORMATO_SOLICITUD_IMAGENOLOGIA.clave) {
+    alert("Guarda la solicitud desde el formulario institucional de imagenología.");
+    if (!solicitudImagenologiaActiva) abrirSolicitudImagenologiaPaciente();
+    return;
+  }
   if (!datos.estudios.length) {
     alert("Agrega al menos un estudio a la solicitud.");
     return;
@@ -7248,10 +7348,45 @@ async function guardarSolicitudEstudios() {
   alert("Solicitud de estudios guardada.");
 }
 
-function descargarSolicitudEstudios() {
+async function descargarSolicitudEstudios() {
   const datos = datosSolicitudEstudiosActual();
   if (!datos.estudios.length) {
     alert("Agrega al menos un estudio a la solicitud.");
+    return;
+  }
+
+  const formato = formatoSolicitudActivo(datos);
+  if (!formato) {
+    console.error("[FormatosFray:Resolver]", { formatoId: datos.formatoId, result: "not-found" });
+    alert(`No se encontró el generador del formato ${datos.formatoId}. La solicitud no fue sustituida por otro formato.`);
+    return;
+  }
+
+  if (formato.id === FORMATO_SOLICITUD_IMAGENOLOGIA.clave) {
+    const snapshot = datosImagenologiaDesdeSolicitudBase(datos);
+    console.debug("[Estudios:Exportacion]", { formatoId: formato.id, tipoExportacion: "docx", generatorId: "crearDocumentoWordFray", result: "started" });
+    const { crearDocumentoWordFray, nombreSeguroNotaWord } = await import("./services/frayDocx.js");
+    const documento = crearDocumentoWordFray({
+      titulo: "SOLICITUD DE ESTUDIO DE IMAGENOLOGÍA",
+      institucionSuperior: "SECRETARÍA DE SALUD",
+      institucionIntermedia: "COMISIÓN NACIONAL DE SALUD MENTAL Y ADICCIONES",
+      institucion: "HOSPITAL PSIQUIÁTRICO FRAY BERNARDINO ÁLVAREZ",
+      paciente: snapshot.paciente,
+      servicio: snapshot.paciente.servicio,
+      fecha: snapshot.solicitud.fecha,
+      tituloFormato: formato.clave,
+      secciones: [
+        { titulo: "FTO-HPFBA-EXPC-IMG-SEI · DATOS CLÍNICOS", contenido: snapshot.datosClinicos },
+        { titulo: "ESTUDIOS SOLICITADOS", contenido: snapshot.estudios.map((e) => `${e.tipo} · ${e.nombre}`).join("\n") },
+        { titulo: "MÉDICOS", contenido: `Solicitante: ${snapshot.medicoSolicitante.nombre}\nCédula: ${snapshot.medicoSolicitante.cedulaProfesional}\nAdscrito: ____________________` }
+      ],
+      medicoSolicitante: snapshot.medicoSolicitante
+    });
+    const enlace = document.createElement("a");
+    enlace.href = URL.createObjectURL(documento);
+    enlace.download = nombreSeguroNotaWord({ tipoNota: "Solicitud_imagenologia_FTO-HPFBA-EXPC-IMG-SEI", apellidoPaciente: datos.pacienteNombre || "Paciente", fecha: datos.fecha });
+    enlace.click();
+    URL.revokeObjectURL(enlace.href);
     return;
   }
 
@@ -7551,6 +7686,7 @@ document.getElementById("agregarEstudioSolicitud")?.addEventListener("click", ag
 document.getElementById("limpiarSolicitudEstudios")?.addEventListener("click", limpiarSolicitudEstudios);
 document.getElementById("guardarSolicitudEstudios")?.addEventListener("click", guardarSolicitudEstudios);
 document.getElementById("descargarSolicitudEstudios")?.addEventListener("click", descargarSolicitudEstudios);
+document.getElementById("solicitudEstudioFormato")?.addEventListener("change", manejarCambioFormatoSolicitud);
 [
   "solicitudEstudioFormato",
   "solicitudEstudioFecha",

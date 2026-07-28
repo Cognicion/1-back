@@ -22,6 +22,29 @@ export const FORMATO_SOLICITUD_IMAGENOLOGIA = Object.freeze({
   descripcion: "Solicitud institucional para radiografías, tomografía, resonancia magnética, ultrasonido y otros estudios de imagen."
 });
 
+export const FORMATO_SOLICITUD_GENERAL = Object.freeze({
+  id: "cognicion",
+  clave: "COGNICION-SOLICITUD-GENERAL",
+  origen: "cognicion",
+  categoria: "general"
+});
+
+export function resolverFormatoSolicitud(formatoId = "") {
+  const valor = String(formatoId || "").trim();
+  if (valor === FORMATO_SOLICITUD_IMAGENOLOGIA.clave || valor === FORMATO_SOLICITUD_IMAGENOLOGIA.id) {
+    return {
+      ...FORMATO_SOLICITUD_IMAGENOLOGIA,
+      id: FORMATO_SOLICITUD_IMAGENOLOGIA.clave,
+      origen: "fray",
+      categoria: "imagen"
+    };
+  }
+  if (!valor || valor === FORMATO_SOLICITUD_GENERAL.id || valor === FORMATO_SOLICITUD_GENERAL.clave) {
+    return FORMATO_SOLICITUD_GENERAL;
+  }
+  return null;
+}
+
 export const NAVARRO_FORMAT_IDS = Object.freeze([
   "referencia_navarro"
 ]);
