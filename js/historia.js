@@ -5,6 +5,8 @@ import { obtenerNombrePacienteParaMostrar } from "./utils/nombresPacientes.js";
 import { usuarioEsPersonalClinico } from "./utils/roles.js";
 import { getAuthenticatedUserOnce, getUserProfileOnce } from "./services/authContextService.js";
 import { crearGestorSustanciasHistoria } from "./components/sustanciasHistoria.js";
+import { configurarCamposRedimensionables } from "./components/redimensionadorCampos.js";
+import { esPacienteMujer } from "./utils/sexo.js";
 
 import {
   obtenerUsuario,
@@ -13,12 +15,14 @@ import {
 
 import {
   guardarHistoriaClinica,
-  obtenerHistoriaClinica
+  obtenerHistoriaClinica,
+  sanitizarDatosHistoriaClinica
 } from "./services/historias.js";
 
 let uidPaciente = null;
 let pacienteActual = {};
 let gestorSustanciasHistoria = null;
+let guardandoHistoria = false;
 
 iniciarMonitoreoSesion("Historia clinica");
 
@@ -126,6 +130,7 @@ async function inicializarHistoriaClinica() {
     edadPaciente: calcularEdad(obtenerFechaNacimiento(pacienteActual))
   });
   await cargarHistoria();
+  configurarCamposNarrativosHistoria();
 }
 
 inicializarHistoriaClinica().catch((error) => {
@@ -167,6 +172,7 @@ async function cargarHistoria() {
     historiaFamiliar: "",
     historiaAcademica: "",
     historiaLaboral: "",
+    antecedentesGinecoobstetricos: "",
     sustancias: { seleccionadas: [], observacionesGenerales: "" }
   };
 
@@ -180,14 +186,102 @@ async function cargarHistoria() {
   gestorSustanciasHistoria?.cargar(datos.sustancias, {
     consumoSustancias: datos.consumoSustancias
   });
+  actualizarVisibilidadGinecoobstetricos(datos.antecedentesGinecoobstetricos);
   if (!datos.imc) calcularIMCHistoria();
 }
 
+function actualizarVisibilidadGinecoobstetricos(valorGuardado = "") {
+  const bloque = document.getElementById("bloqueGinecoobstetricos");
+  const campo = document.getElementById("antecedentesGinecoobstetricos");
+  const aviso = document.getElementById("avisoGinecoobstetricos");
+  if (!bloque || !campo) return;
+  const tieneContenido = Boolean(String(campo.value || valorGuardado || "").trim());
+  const visiblePorSexo = esPacienteMujer({ ...pacienteActual, sexo: document.getElementById("sexo")?.value || pacienteActual.sexo });
+  bloque.hidden = !visiblePorSexo && !tieneContenido;
+  if (aviso) {
+    aviso.hidden = visiblePorSexo || !tieneContenido;
+    aviso.textContent = "Existen antecedentes ginecoobstetricos guardados; se muestran porque contienen información, aunque el sexo actual no corresponde al apartado.";
+  }
+}
+
+function configurarCamposNarrativosHistoria() {
+  const items = [...document.querySelectorAll("#formHistoria textarea")].map((objetivo) => ({
+    objetivo,
+    clave: `historia:${objetivo.id || "sin-id"}`,
+    minimo: 80,
+    alturaBase: Math.max(130, Number(objetivo.rows || 5) * 22)
+  }));
+  configurarCamposRedimensionables({
+    items,
+    onAction: (accion, item) => console.debug("[HistoriaClinica:Expandir]", { etapa: accion, campo: item.clave, resultado: "ok" })
+  });
+}
+
+function obtenerDatosHistoriaClinica() {
+  etapaActual = "obtener-datos";
+  const datos = {};
+  calcularIMCHistoria();
+  document.querySelectorAll("input, textarea, select").forEach((campo) => {
+    const id = campo.id?.trim();
+    if (!id || campo.closest("#selectorSustanciasHistoria, #bloquesSustanciasHistoria") || id === "observacionesSustanciasHistoria") return;
+    if (["button", "submit", "reset"].includes(campo.type)) return;
+    if (campo.type === "checkbox") datos[id] = campo.checked;
+    else if (campo.type === "radio") {
+      if (campo.checked) datos[id] = campo.value;
+    } else datos[id] = campo.value;
+  });
+  const pesoNormalizado = normalizarMedidaClinica(datos.peso);
+  if (datos.peso?.trim() && !pesoNormalizado) throw Object.assign(new Error("PESO_INVALIDO"), { code: "validation/invalid-weight" });
+  datos.peso = pesoNormalizado;
+  datos.talla = normalizarMedidaClinica(datos.talla) || String(datos.talla || "").trim();
+  datos.perimetroAbdominal = normalizarMedidaClinica(datos.perimetroAbdominal) || String(datos.perimetroAbdominal || "").trim();
+  calcularIMCHistoria();
+  datos.imc = String(document.getElementById("imc")?.value || "").trim();
+  datos.sustancias = gestorSustanciasHistoria?.obtenerDatos() || { seleccionadas: [], observacionesGenerales: "" };
+  const advertencias = gestorSustanciasHistoria?.validar() || [];
+  const bloqueante = advertencias.find((advertencia) => advertencia.includes("otra sustancia seleccionada"));
+  if (bloqueante) throw Object.assign(new Error(bloqueante), { code: "validation/substances" });
+  if (advertencias.length) alert("Se encontraron advertencias en el consumo de sustancias. La información se conservará y puedes revisarla antes de continuar.");
+  return sanitizarDatosHistoriaClinica(datos);
+}
+
+function mostrarEstadoGuardadoHistoria(texto = "") {
+  const estado = document.getElementById("estadoGuardarHistoria");
+  if (estado) estado.textContent = texto;
+}
+
+function bloquearGuardarHistoria(bloquear) {
+  const boton = document.getElementById("guardarHistoria");
+  if (!boton) return;
+  boton.disabled = bloquear;
+  boton.setAttribute("aria-busy", String(bloquear));
+}
+
+function manejarErrorGuardadoHistoria(error, etapaActual) {
+  const code = error?.code || null;
+  console.error("[HistoriaClinica:Guardar]", { code, name: error?.name || null, message: error?.message || null, stage: etapaActual });
+  const detalle = code ? ` Código: ${code}` : "";
+  const mensaje = code === "permission-denied" || code === "PERMISSION_DENIED"
+    ? "No tienes permisos para guardar esta historia clínica."
+    : code === "patient-id-missing"
+      ? "No se identificó el paciente seleccionado."
+      : String(code || "").startsWith("validation/")
+        ? `Revisa los datos de la historia clínica.${detalle}`
+        : `No fue posible guardar la historia clínica.${detalle}`;
+  mostrarEstadoGuardadoHistoria("Error al guardar");
+  alert(mensaje);
+}
+
 window.guardarHistoria = async () => {
+  if (guardandoHistoria) return;
+  guardandoHistoria = true;
+  let etapaActual = "inicio";
+  bloquearGuardarHistoria(true);
+  mostrarEstadoGuardadoHistoria("Guardando...");
   try {
+    etapaActual = "validar-paciente";
     if (!uidPaciente) {
-      alert("No hay paciente seleccionado. Abre esta historia desde el expediente o desde la lista de pacientes.");
-      return;
+      throw Object.assign(new Error("No hay paciente seleccionado"), { code: "patient-id-missing" });
     }
 
   const datos = {};
@@ -228,6 +322,7 @@ window.guardarHistoria = async () => {
 
   const pesoNormalizado = normalizarMedidaClinica(datos.peso);
   if (datos.peso?.trim() && !pesoNormalizado) {
+    throw Object.assign(new Error("Peso clínico inválido"), { code: "validation/invalid-weight" });
     alert("Registra un peso numérico válido.");
     return;
   }
@@ -241,6 +336,7 @@ window.guardarHistoria = async () => {
   const advertenciasSustancias = gestorSustanciasHistoria?.validar() || [];
   const advertenciaBloqueante = advertenciasSustancias.find((advertencia) => advertencia.includes("otra sustancia seleccionada"));
   if (advertenciaBloqueante) {
+    throw Object.assign(new Error(advertenciaBloqueante), { code: "validation/substances" });
     alert(advertenciaBloqueante);
     return;
   }
@@ -253,24 +349,27 @@ window.guardarHistoria = async () => {
     sustanciasSeleccionadas: datos.sustancias.seleccionadas.length
   });
 
-  await guardarHistoriaClinica(uidPaciente, datos);
+  etapaActual = "persistir-historia";
+  const datosSeguros = sanitizarDatosHistoriaClinica(datos);
+  await guardarHistoriaClinica(uidPaciente, datosSeguros);
 
-  const pacienteActual = await obtenerUsuario(uidPaciente);
-  const tipoPaciente = datos.tipoPaciente || inferirTipoPaciente(pacienteActual);
-  const institucionPaciente = campoConRespaldo(datos, pacienteActual, "institucionPaciente", ["institucion"]);
-  const servicioInstitucional = campoConRespaldo(datos, pacienteActual, "servicioInstitucional", ["servicio"]);
-  const expediente = campoConRespaldo(datos, pacienteActual, "expediente", ["numeroExpediente"]);
-  const cama = campoConRespaldo(datos, pacienteActual, "cama");
-  const sexo = campoConRespaldo(datos, pacienteActual, "sexo");
-  const genero = campoConRespaldo(datos, pacienteActual, "genero", ["identidadGenero"]);
-  const alergias = campoConRespaldo(datos, pacienteActual, "alergias");
-  const tipoSangre = campoConRespaldo(datos, pacienteActual, "tipoSangre");
-  const peso = campoConRespaldo(datos, pacienteActual, "peso");
-  const talla = campoConRespaldo(datos, pacienteActual, "talla");
-  const imc = campoConRespaldo(datos, pacienteActual, "imc");
-  const perimetroAbdominal = campoConRespaldo(datos, pacienteActual, "perimetroAbdominal");
+  etapaActual = "actualizar-paciente";
+  const pacienteDatosActuales = await obtenerUsuario(uidPaciente);
+  const tipoPaciente = datos.tipoPaciente || inferirTipoPaciente(pacienteDatosActuales);
+  const institucionPaciente = campoConRespaldo(datos, pacienteDatosActuales, "institucionPaciente", ["institucion"]);
+  const servicioInstitucional = campoConRespaldo(datos, pacienteDatosActuales, "servicioInstitucional", ["servicio"]);
+  const expediente = campoConRespaldo(datos, pacienteDatosActuales, "expediente", ["numeroExpediente"]);
+  const cama = campoConRespaldo(datos, pacienteDatosActuales, "cama");
+  const sexo = campoConRespaldo(datos, pacienteDatosActuales, "sexo");
+  const genero = campoConRespaldo(datos, pacienteDatosActuales, "genero", ["identidadGenero"]);
+  const alergias = campoConRespaldo(datos, pacienteDatosActuales, "alergias");
+  const tipoSangre = campoConRespaldo(datos, pacienteDatosActuales, "tipoSangre");
+  const peso = campoConRespaldo(datos, pacienteDatosActuales, "peso");
+  const talla = campoConRespaldo(datos, pacienteDatosActuales, "talla");
+  const imc = campoConRespaldo(datos, pacienteDatosActuales, "imc");
+  const perimetroAbdominal = campoConRespaldo(datos, pacienteDatosActuales, "perimetroAbdominal");
 
-  await actualizarUsuario(uidPaciente, {
+  await actualizarUsuario(uidPaciente, sanitizarDatosHistoriaClinica({
     tipoPaciente,
     institucionPaciente,
     institucion: institucionPaciente,
@@ -288,7 +387,7 @@ window.guardarHistoria = async () => {
     imc,
     perimetroAbdominal,
     datosInstitucionales: {
-      ...(pacienteActual?.datosInstitucionales || {}),
+      ...(pacienteDatosActuales?.datosInstitucionales || {}),
       tipoPaciente,
       institucionPaciente,
       servicioInstitucional,
@@ -304,27 +403,27 @@ window.guardarHistoria = async () => {
       perimetroAbdominal
     },
     signosVitales: {
-      ...(pacienteActual?.signosVitales || {}),
+      ...(pacienteDatosActuales?.signosVitales || {}),
       peso,
       talla,
       imc,
       perimetroAbdominal
     },
     somatometria: {
-      ...(pacienteActual?.somatometria || {}),
+      ...(pacienteDatosActuales?.somatometria || {}),
       peso,
       talla,
       imc,
       perimetroAbdominal
     },
     datosClinicosResumen: {
-      ...(pacienteActual?.datosClinicosResumen || {}),
+      ...(pacienteDatosActuales?.datosClinicosResumen || {}),
       diagnosticoManualHistoria: datos.diagnosticoClinico || "",
       codigoDiagnosticoHistoria: datos.codigoDiagnostico || "",
       tratamientoHistoria: datos.tratamientoFarmacologico || "",
       fechaActualizacionHistoria: new Date().toISOString()
     }
-  });
+  }));
 
   pacienteActual = await obtenerUsuario(uidPaciente) || pacienteActual;
   if (String(valorInstitucional(pacienteActual, "peso")) !== String(peso)) {
@@ -335,7 +434,9 @@ window.guardarHistoria = async () => {
   const medico = usuario ? await obtenerUsuario(usuario.uid) : null;
   const paciente = pacienteActual || await obtenerUsuario(uidPaciente);
 
-  await registrarEventoAuditoria({
+  etapaActual = "auditoria";
+  try {
+    await registrarEventoAuditoria({
     accion: "guardar_historia_clinica",
     modulo: "Historia clínica",
     descripcion: "El medico guardo historia clinica.",
@@ -348,14 +449,23 @@ window.guardarHistoria = async () => {
     detalles: {
       camposRegistrados: Object.values(datos).filter(Boolean).length
     }
-  });
+    });
+  } catch (error) {
+    console.error("[HistoriaClinica:Guardar]", { code: error?.code || null, name: error?.name || null, message: error?.message || null, stage: "auditoria" });
+  }
 
+    mostrarEstadoGuardadoHistoria("Guardado");
     alert("Historia clinica guardada.");
   } catch (error) {
+    manejarErrorGuardadoHistoria(error, etapaActual);
+    return;
     console.error("No se pudo guardar la historia clínica.", {
       codigo: error?.code || null
     });
     alert("No fue posible guardar la historia clínica. Verifica tu conexión y permisos, e inténtalo de nuevo.");
+  } finally {
+    guardandoHistoria = false;
+    bloquearGuardarHistoria(false);
   }
 };
 
@@ -382,3 +492,6 @@ tabs.forEach((tab) => {
   document.getElementById(id)?.addEventListener("input", calcularIMCHistoria);
   document.getElementById(id)?.addEventListener("change", calcularIMCHistoria);
 });
+
+document.getElementById("sexo")?.addEventListener("input", () => actualizarVisibilidadGinecoobstetricos());
+document.getElementById("sexo")?.addEventListener("change", () => actualizarVisibilidadGinecoobstetricos());

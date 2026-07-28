@@ -27,6 +27,7 @@ import {
 } from "./data/pruebasInteractivas.js";
 import { obtenerNombrePacienteParaMostrar } from "./utils/nombresPacientes.js";
 import { normalizarTextoFrecuencia } from "./utils/frecuencias.js";
+import { configurarCamposRedimensionables } from "./components/redimensionadorCampos.js";
 import {
   calcularPuntajeEscala,
   crearResumenEscala,
@@ -860,24 +861,30 @@ function prepararPanelRedimensionable(panel, clave, alturaGuardada) {
 }
 
 function configurarSeccionesRedimensionablesNota() {
-  const alturas = cargarAlturasNota();
-
-  camposNotaRedimensionables.forEach((id) => {
-    envolverCampoRedimensionable(
-      document.getElementById(id),
-      `campo:${id}`,
-      alturas[`campo:${id}`]
-    );
+  configurarCamposRedimensionables({
+    items: [
+      ...camposNotaRedimensionables.map((id) => ({
+        objetivo: document.getElementById(id),
+        clave: `campo:${id}`,
+        minimo: 80,
+        alturaBase: 130,
+        accionesExtra: id === "plan"
+          ? '<button type="button" data-accion="actualizar-plan-indicaciones" title="Actualizar Plan desde indicaciones">Actualizar texto</button>'
+          : id === "tratamiento"
+            ? '<button type="button" data-accion="actualizar-tratamiento-indicaciones" title="Actualizar tratamiento e indicaciones">Actualizar texto</button>'
+            : ""
+      })),
+      ...[...document.querySelectorAll("#bloqueObservacionFray > .observacion-seccion, #bloqueObservacionFray > details.observacion-seccion")]
+        .map((objetivo, index) => ({ objetivo, clave: `observacion:${index}`, minimo: 110, alturaBase: 180, panel: true })),
+      { objetivo: document.querySelector("#bloqueNotaCompleta .tabla-diagnosticos"), clave: "panel:diagnosticos-cie10", minimo: 110, alturaBase: 180, panel: true }
+    ],
+    cargarEstado: cargarAlturasNota,
+    guardarEstado: guardarEstadoSeccionNota,
+    onAction: (accion) => {
+      if (accion === "actualizar-plan-indicaciones") actualizarPlanDesdeIndicaciones();
+      if (accion === "actualizar-tratamiento-indicaciones") actualizarTratamientoDesdeIndicaciones();
+    }
   });
-
-  document.querySelectorAll("#bloqueObservacionFray > .observacion-seccion, #bloqueObservacionFray > details.observacion-seccion")
-    .forEach((panel, index) => prepararPanelRedimensionable(panel, `observacion:${index}`, alturas[`observacion:${index}`]));
-
-  prepararPanelRedimensionable(
-    document.querySelector("#bloqueNotaCompleta .tabla-diagnosticos"),
-    "panel:diagnosticos-cie10",
-    alturas["panel:diagnosticos-cie10"]
-  );
 }
 
 const buscadorDiagnostico = document.getElementById("buscadorDiagnostico");

@@ -1,5 +1,5 @@
 export const DEBUG_EVENT_DETECTION = false;
-export const DETECTED_EVENTS_DEBUG_LABEL = "[Eventos detectados 1.31]";
+export const DETECTED_EVENTS_DEBUG_LABEL = "[Eventos detectados 1.32]";
 
 export const ESTADOS_DETECCION_EVENTOS = Object.freeze({
   pendiente: "pendiente",
@@ -37,6 +37,9 @@ const MESES_ETIQUETA = [
   "Noviembre",
   "Diciembre"
 ];
+
+const PATRON_TEMPORAL_CUALITATIVO = /\b(?:a\s+)?(?:principios|inicios|comienzos|mediados|mitad|finales|fines)\s+de\s+\d{4}\b|\b(?:ultimos|Ãºltimos)\s+meses\s+de\s+\d{4}\b/giu;
+const PATRON_TEMPORAL_MES_ANIO = /\b(?:enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|setiembre|octubre|noviembre|diciembre)\s+del?\s+\d{4}\b/giu;
 
 const NUMEROS = new Map([
   ["un", 1],
@@ -214,29 +217,63 @@ function oracionesConContexto(texto = "") {
     .filter(Boolean);
 }
 
+export function segmentarClausulasClinicas(fragmento = "") {
+  const texto = limpiarHTMLConFechas(fragmento).replace(/\s+/g, " ").trim();
+  if (!texto) return [];
+  const partes = texto
+    .split(/(?<=[.!?])\s+|\s+(?=(?:y|ademas|ademÃ¡s|posteriormente|desde|tras|despues|despuÃ©s|asi como|asÃ­ como|con antecedente de)\s+(?:antecedente|fallec|murio|muriÃ³|muerte|inicio|iniciÃ³|comenz|manejo|psicoterap|terapia|fue|se|present|hospitaliz|ingres|consum|suspend|realiz|tuvo))/iu)
+    .map((parte) => parte.trim())
+    .filter(Boolean);
+  let cursor = 0;
+  return partes.map((textoClausula) => {
+    const indiceInicio = texto.indexOf(textoClausula, cursor);
+    cursor = indiceInicio + textoClausula.length;
+    const complementoMatch = textoClausula.match(/\(([^()]*)\)/);
+    return {
+      texto: textoClausula,
+      complemento: complementoMatch?.[1]?.trim() || "",
+      indiceInicio,
+      indiceFin: cursor
+    };
+  });
+}
+
 export function detectarExpresionesTemporalesLocales(texto = "") {
-  return [...String(texto || "").matchAll(PATRON_TEMPORAL)].map((match) => ({
-    expresionTemporal: match[0],
-    indiceInicio: match.index,
-    indiceFin: match.index + match[0].length
+  const coincidencias = [
+    ...String(texto || "").matchAll(PATRON_TEMPORAL),
+    ...String(texto || "").matchAll(PATRON_TEMPORAL_CUALITATIVO),
+    ...String(texto || "").matchAll(PATRON_TEMPORAL_MES_ANIO)
+  ].sort((a, b) => a.index - b.index);
+  const unicas = [];
+  coincidencias.forEach((match) => {
+    const indiceInicio = match.index || 0;
+    const indiceFin = indiceInicio + match[0].length;
+    if (unicas.some((item) => indiceInicio < item.indiceFin && indiceFin > item.indiceInicio)) return;
+    unicas.push({ indiceInicio, indiceFin, expresionTemporal: match[0] });
+  });
+  return unicas.map((match) => ({
+    expresionTemporal: match.expresionTemporal,
+    expresionTemporalPropia: match.expresionTemporal,
+    indiceInicioTemporal: match.indiceInicio,
+    indiceFinTemporal: match.indiceFin,
+    indiceInicio: match.indiceInicio,
+    indiceFin: match.indiceFin
   }));
 }
 
 export function generarFragmentosTemporales(fuente = {}) {
   const oraciones = oracionesConContexto(fuente.textoAnalizable || "");
   const fragmentos = [];
-  oraciones.forEach((oracion, index) => {
-    const expresiones = detectarExpresionesTemporalesLocales(oracion);
+  oraciones.flatMap((oracion) => segmentarClausulasClinicas(oracion).map((clausula) => ({ ...clausula, contextoAmplio: oracion }))).forEach((clausula) => {
+    const expresiones = detectarExpresionesTemporalesLocales(clausula.texto);
     expresiones.forEach((expresion) => {
-      const textoFragmento = [
-        oraciones[index - 1] || "",
-        oracion,
-        oraciones[index + 1] || ""
-      ].filter(Boolean).join(" ").slice(0, 900);
       fragmentos.push({
         ...expresion,
-        textoFragmento,
-        oracionEvento: oracion,
+        textoFragmento: clausula.texto.slice(0, 900),
+        oracionEvento: clausula.texto,
+        clausulaOrigen: clausula.texto,
+        complementoClausula: clausula.complemento,
+        contextoAmplio: clausula.contextoAmplio || clausula.texto,
         fechaReferencia: fuente.fechaDocumento,
         origenTipo: fuente.origenTipo,
         origenSubtipo: fuente.origenSubtipo,
@@ -247,7 +284,7 @@ export function generarFragmentosTemporales(fuente = {}) {
         hashFragmento: hashDeteccionEstable([
           fuente.origenTipo,
           fuente.origenId,
-          normalizarTextoDeteccion(oracion),
+          normalizarTextoDeteccion(clausula.texto),
           normalizarTextoDeteccion(expresion.expresionTemporal)
         ].join("|"))
       });
@@ -305,12 +342,14 @@ export function resolverFechaTemporal(expresion = "", fechaReferencia = new Date
   if (m) return { fechaInicioISO: fechaISO(new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]), 12)), precisionTemporal: "dia", requiereRevisionFecha: false, fechaEsAproximada: false };
   m = texto.match(/\b(\d{1,2})\s+de\s+([a-z]+)\s+de\s+(\d{4})\b/);
   if (m && MESES.has(m[2])) return { fechaInicioISO: fechaISO(new Date(Number(m[3]), MESES.get(m[2]), Number(m[1]), 12)), precisionTemporal: "dia", requiereRevisionFecha: false, fechaEsAproximada: false };
-  m = texto.match(/\b([a-z]+)\s+de\s+(\d{4})\b/);
+  m = texto.match(/\b([a-z]+)\s+del?\s+(\d{4})\b/);
   if (m && MESES.has(m[1])) return { fechaInicioISO: fechaISO(new Date(Number(m[2]), MESES.get(m[1]), 1, 12)), precisionTemporal: "mes", requiereRevisionFecha: true, fechaEsAproximada: true };
-  m = texto.match(/\b(principios|mediados|finales)\s+de\s+(\d{4})\b/);
+  m = texto.match(/\b(?:a\s+)?(principios|inicios|comienzos|mediados|mitad|finales|fines)\s+de\s+(\d{4})\b|\b(?:ultimos|Ãºltimos)\s+meses\s+de\s+(\d{4})\b/);
   if (m) {
-    const mes = m[1] === "principios" ? 0 : m[1] === "mediados" ? 5 : 9;
-    return { fechaInicioISO: fechaISO(new Date(Number(m[2]), mes, 1, 12)), precisionTemporal: "aproximada", requiereRevisionFecha: true, fechaEsAproximada: true };
+    const periodo = m[1] || m[3];
+    const anio = Number(m[2] || m[4]);
+    const mes = /principios|inicios|comienzos/.test(periodo) ? 1 : /mediados|mitad/.test(periodo) ? 5 : 10;
+    return { fechaInicioISO: fechaISO(new Date(anio, mes, 1, 12)), precisionTemporal: "periodo_anual", requiereRevisionFecha: true, fechaEsAproximada: true, etiquetaTemporal: capitalizar(expresion || `${periodo} de ${anio}`) };
   }
   m = texto.match(/\b(?:en|desde|alrededor de)\s+(\d{4})\b/);
   if (m) return { fechaInicioISO: `${m[1]}-01-01`, precisionTemporal: "anio", requiereRevisionFecha: true, fechaEsAproximada: true };
@@ -335,6 +374,7 @@ export function resolverFechaTemporal(expresion = "", fechaReferencia = new Date
 }
 
 function etiquetaTemporalDesdeResolucion(resolucion = {}) {
+  if (resolucion.etiquetaTemporal) return resolucion.etiquetaTemporal;
   const fecha = convertirFecha(resolucion.fechaInicioISO);
   if (!fecha) return "Fecha pendiente de confirmar";
   if (resolucion.precisionTemporal === "mes") return `${MESES_ETIQUETA[fecha.getMonth()]} de ${fecha.getFullYear()}`;
@@ -347,6 +387,7 @@ function metodoResolucionTemporal(expresion = "", resolucion = {}) {
   const texto = normalizarTextoDeteccion(expresion);
   if (!resolucion.fechaInicioISO) return resolucion.precisionTemporal === "contextual" ? "evento_relacionado" : "indeterminada";
   if (/\d{1,2}[/-]\d{1,2}[/-]\d{4}|\d{4}-\d{2}-\d{2}|\d{1,2}\s+de\s+[a-z]+\s+de\s+\d{4}/.test(texto)) return "fecha_absoluta";
+  if (/(?:principios|inicios|comienzos|mediados|mitad|finales|fines)\s+de\s+\d{4}|ultimos\s+meses\s+de\s+\d{4}/.test(texto)) return "periodo_anual";
   if (/[a-z]+\s+de\s+\d{4}/.test(texto)) return "mes_anio";
   if (/(?:en|desde|alrededor de)\s+\d{4}/.test(texto)) return "anio";
   if (/semana/.test(texto)) return "relativa_semanas";
@@ -451,11 +492,53 @@ function crearAtomo({ titulo, tipoEvento, descripcion, fragmento, categoria, imp
   };
 }
 
+function crearAtomoNarrativoEspecifico(contexto = "") {
+  const normal = normalizarTextoDeteccion(contexto);
+  const fallecimiento = normal.match(/(?:fallecimiento|fallecio|muerte|murio)\s+(?:de\s+)?(?:su\s+)?(padre|madre|hermano|hermana|pareja|esposo|esposa|hijo|hija|familiar)/);
+  if (fallecimiento) {
+    const relacion = fallecimiento[1];
+    const tituloRelacion = relacion === "esposo" || relacion === "esposa" ? "pareja" : relacion;
+    const articuloRelacion = /madre|hermana|pareja|esposa|hija/.test(tituloRelacion) ? "de la" : "del";
+    const inicioDescripcion = Math.max(0, fallecimiento.index || 0);
+    const detalle = contexto.slice(inicioDescripcion).replace(/[()]/g, "").trim();
+    return [
+      {
+        ...crearAtomo({
+          titulo: `Fallecimiento ${articuloRelacion} ${tituloRelacion}`,
+          tipoEvento: "fallecimiento_familiar",
+          descripcion: capitalizar(detalle),
+          fragmento: contexto,
+          categoria: "antecedente_familiar",
+          importancia: "alta",
+          confianzaSemantica: 0.94
+        }),
+        sujeto: "familiar",
+        relacionSujeto: tituloRelacion,
+        contextoClinico: /estresor/.test(normal) ? "estresor vital" : ""
+      }
+    ];
+  }
+  if (/manejo psicoterapeutico|psicoterapia|inicio de terapia|inici\w*\s+(?:la\s+)?terapia/.test(normal)) {
+    const motivo = contexto.match(/\b(?:por|debido a)\s+(.+)$/i)?.[1]?.replace(/[()]/g, "").trim();
+    return [crearAtomo({
+      titulo: "Inicio de manejo psicoterapeutico",
+      tipoEvento: "inicio_psicoterapia",
+      descripcion: `Inicio de manejo psicoterapeutico${motivo ? ` por ${motivo}` : ""}`,
+      fragmento: contexto,
+      categoria: "cambio_tratamiento",
+      importancia: "media",
+      confianzaSemantica: 0.9
+    })];
+  }
+  return [];
+}
+
 function crearAtomosClinicos(contexto = "", contextoAmplio = "") {
   const normal = normalizarTextoDeteccion(contexto);
   const normalAmplio = normalizarTextoDeteccion(contextoAmplio || contexto);
   const atomos = [];
   const med = detectarMedicamento(contexto) || detectarMedicamento(contextoAmplio);
+  atomos.push(...crearAtomoNarrativoEspecifico(contexto));
   if (/\bideacion suicida\b|\bideas suicidas\b|\bideacion autolitica\b/.test(normal)) {
     atomos.push(crearAtomo({
       titulo: "Ideacion suicida",
@@ -536,6 +619,22 @@ function crearAtomoGenericoDesdeContexto(contexto = "", clasificacion = {}) {
   });
 }
 
+export function validarCorrespondenciaEventoFecha(candidato = {}) {
+  const expresion = normalizarTextoDeteccion(candidato.expresionTemporalPropia || candidato.expresionTemporalOriginal || "");
+  const clausula = normalizarTextoDeteccion(candidato.clausulaOrigen || candidato.fragmentoSoporte || "");
+  const titulo = normalizarTextoDeteccion(candidato.tituloSugerido || "");
+  const sujeto = normalizarTextoDeteccion(candidato.sujeto || "");
+  const temporalEnClausula = !expresion || clausula.includes(expresion);
+  const familiarCompatible = sujeto !== "familiar" || /fallec|muerte|murio|padre|madre|herman|pareja|familiar/.test(`${titulo} ${clausula}`);
+  const tituloCompatible = Boolean(titulo && (/fallec|muerte|murio|inicio|manejo|psicoterap|terapia|hospital|consumo|tratamiento|sintomat/.test(titulo) || candidato.requiereRevisionClinica));
+  return {
+    valida: temporalEnClausula && familiarCompatible && tituloCompatible,
+    temporalEnClausula,
+    familiarCompatible,
+    tituloCompatible
+  };
+}
+
 export function extraerEventosDesdeFragmentos(fragmentos = [], fechaNacimiento = null) {
   const eventos = [];
   const descartados = [];
@@ -553,7 +652,7 @@ export function extraerEventosDesdeFragmentos(fragmentos = [], fechaNacimiento =
       fechaNacimiento
     });
     const clasificacion = clasificarTituloYCategoria(contextoEvento);
-    const atomos = crearAtomosClinicos(contextoEvento, fragmento.oracionEvento || fragmento.textoFragmento || contextoEvento);
+    const atomos = crearAtomosClinicos(contextoEvento, fragmento.contextoAmplio || fragmento.oracionEvento || fragmento.textoFragmento || contextoEvento);
     const candidatos = atomos.length ? atomos : [crearAtomoGenericoDesdeContexto(contextoEvento, clasificacion)];
     candidatos.forEach((atomo, indiceAtomo) => {
       const confianza = Math.min(0.98, Number(atomo.confianzaSemantica || atomo.confianza || 0.6));
@@ -563,6 +662,10 @@ export function extraerEventosDesdeFragmentos(fragmentos = [], fechaNacimiento =
         descripcionSugerida: completarDescripcion(atomo.descripcionSugerida || atomo.descripcion || atomo.tituloSugerido),
         ...fecha,
         expresionTemporalOriginal: fragmento.expresionTemporal,
+        expresionTemporalPropia: fragmento.expresionTemporalPropia || fragmento.expresionTemporal,
+        indiceInicioTemporal: fragmento.indiceInicioTemporal ?? fragmento.indiceInicio ?? 0,
+        indiceFinTemporal: fragmento.indiceFinTemporal ?? fragmento.indiceFin ?? 0,
+        clausulaOrigen: fragmento.clausulaOrigen || fragmento.oracionEvento || contextoEvento,
         fragmentoSoporte: atomo.fragmentoSoporte || contextoEvento.slice(0, 500),
         confianza,
         nivelConfianza: confianza >= 0.85 ? "alta" : confianza >= 0.6 ? "media" : "baja",
@@ -578,6 +681,15 @@ export function extraerEventosDesdeFragmentos(fragmentos = [], fechaNacimiento =
         hashFuente: fragmento.hashFuente,
         hashFragmento: hashDeteccionEstable([fragmento.hashFragmento, atomo.tipoEvento || atomo.tituloSugerido, indiceAtomo].join("|"))
       });
+      const candidato = eventos.at(-1);
+      const correspondencia = validarCorrespondenciaEventoFecha(candidato);
+      if (!correspondencia.valida) {
+        candidato.requiereRevisionClinica = true;
+        candidato.requiereRevisionFecha = true;
+        candidato.motivoRevision = "La fecha requiere revisión de correspondencia con la cláusula clínica.";
+      }
+      candidato.accionPrincipal = accionSemantica(candidato);
+      candidato.objetoClinico = objetoSemantico(candidato);
     });
   }
   return { eventos, descartados };
@@ -726,7 +838,7 @@ export function normalizarCandidatoEvento(candidato = {}, pacienteId = "") {
     descripcionSugerida: completarDescripcion(textoSeguro(candidato.descripcionSugerida).slice(0, 1200) || titulo),
     fechaInicioISO: fecha,
     fechaFinISO: candidato.fechaFinISO || null,
-    precisionTemporal: ["hora", "dia", "semana", "mes", "anio", "contextual", "aproximada", "indeterminada"].includes(candidato.precisionTemporal) ? candidato.precisionTemporal : "indeterminada",
+    precisionTemporal: ["hora", "dia", "semana", "mes", "anio", "periodo_anual", "contextual", "aproximada", "indeterminada"].includes(candidato.precisionTemporal) ? candidato.precisionTemporal : "indeterminada",
     fechaEsAproximada: candidato.fechaEsAproximada !== false,
     fragmentoSoporte: textoSeguro(candidato.fragmentoSoporte).slice(0, 700),
     tipoEvento: textoSeguro(candidato.tipoEvento) || "evento_clinico",
@@ -764,7 +876,7 @@ function objetoSemantico(evento = {}) {
 
 function fechaPeriodoSemantico(evento = {}) {
   if (!evento.fechaInicioISO) return "sin-fecha";
-  if (evento.precisionTemporal === "anio") return evento.fechaInicioISO.slice(0, 4);
+  if (evento.precisionTemporal === "anio" || evento.precisionTemporal === "periodo_anual") return evento.fechaInicioISO.slice(0, 4);
   if (evento.precisionTemporal === "mes") return evento.fechaInicioISO.slice(0, 7);
   if (evento.precisionTemporal === "semana") return `semana:${evento.fechaInicioISO}`;
   return evento.fechaInicioISO;

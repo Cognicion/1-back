@@ -51,9 +51,10 @@
                 <p id="datosPaciente">Paciente seleccionado</p>
             </div>
 
-            <button class="boton-principal" onclick="guardarHistoria()">
+            <button id="guardarHistoria" class="boton-principal" onclick="guardarHistoria()">
                 Guardar historia
             </button>
+            <span id="estadoGuardarHistoria" class="historia-estado-guardado" role="status" aria-live="polite"></span>
         </header>
 
         <form id="formHistoria">
@@ -129,6 +130,12 @@
 
                 <label>Antecedentes personales no patológicos</label>
                 <textarea id="apnp"></textarea>
+
+                <div id="bloqueGinecoobstetricos" hidden>
+                    <label for="antecedentesGinecoobstetricos">Antecedentes ginecoobstetricos</label>
+                    <textarea id="antecedentesGinecoobstetricos" rows="8" placeholder="Menarca, ritmo menstrual, FUM, vida sexual, gestas, partos, cesareas, abortos, anticoncepcion, embarazo actual, menopausia y antecedentes obstetricos relevantes."></textarea>
+                    <p id="avisoGinecoobstetricos" class="historia-aviso-contexto" hidden></p>
+                </div>
             </section>
 
             <section class="seccion" id="psiquiatria">
@@ -241,7 +248,7 @@
 
 </main>
 
-<script type="module" src="js/historia.js?v=20260728-history-substances-v1"></script>
+<script type="module" src="js/historia.js?v=20260728-history-save-expand-v1"></script>
 
   <script type="module" src="js/components/accesosRapidos.js"></script>
   <script>

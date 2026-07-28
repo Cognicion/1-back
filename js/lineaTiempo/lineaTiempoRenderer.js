@@ -170,6 +170,18 @@ function formatearHoraEvento(evento) {
     : "No especificada";
 }
 
+function formatearFechaDetalleEvento(evento) {
+  if (evento.etiquetaTemporal && evento.fechaEsAproximada) {
+    const precision = evento.precisionTemporal === "mes"
+      ? "Fecha aproximada al mes"
+      : evento.precisionTemporal === "periodo_anual"
+        ? "Fecha aproximada: periodo del año"
+        : "Fecha aproximada";
+    return `${evento.etiquetaTemporal} · ${precision}`;
+  }
+  return formatearFecha(evento.fechaEvento);
+}
+
 function obtenerReferenciaEvento(evento) {
   return evento.referenciaId
     ? `${evento.referenciaTipo || "Relacionada"} · ${evento.referenciaId}`
@@ -212,7 +224,7 @@ export function renderizarDetalleEvento(root, eventos, eventoId = "", grupoId = 
     );
     const etiquetaOrigenDetectado = obtenerEtiquetaOrigenEvento(evento);
     const datosDetalle = {
-      fecha: formatearFecha(evento.fechaEvento),
+      fecha: formatearFechaDetalleEvento(evento),
       categoria: obtenerNombreCategoriaEvento(evento, categorias),
       origen: formatearOrigenEvento(evento.origen),
       importancia: formatearImportanciaEvento(evento.importancia),

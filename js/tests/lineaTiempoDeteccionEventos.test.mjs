@@ -2,7 +2,10 @@
 import {
   crearFuenteClinicaComun,
   detectarEventosEnFuentes,
-  generarFragmentosTemporales
+  generarFragmentosTemporales,
+  resolverFechaTemporal,
+  segmentarClausulasClinicas,
+  validarCorrespondenciaEventoFecha
 } from "../lineaTiempo/lineaTiempoDeteccionEventos.js";
 
 function fuente(texto, fechaDocumento = "2026-07-20", extra = {}) {
@@ -23,6 +26,57 @@ function detectar(fuentes, opts = {}) {
     pacienteId: "paciente-prueba",
     incluirEstructurados: opts.incluirEstructurados === true
   });
+}
+
+{
+  const texto = "antecedente de estresor de vida en marzo del 2022 (fallecimiento de su padre secundario a infección postoperatoria de tumor cerebral) y antecedente de manejo psicoterapéutico desde finales de 2024 por sintomatología afectiva ansiosa y depresiva";
+  const resultado = detectar(fuente(texto));
+  assert.equal(resultado.eventosNormalizados, 2);
+  const fallecimiento = resultado.eventos.find((evento) => /fallecimiento del padre/i.test(evento.tituloSugerido));
+  const psicoterapia = resultado.eventos.find((evento) => /manejo psicoterapeutico/i.test(evento.tituloSugerido));
+  assert.equal(fallecimiento.fechaInicioISO, "2022-03-01");
+  assert.equal(fallecimiento.precisionTemporal, "mes");
+  assert.equal(fallecimiento.etiquetaTemporal, "Marzo de 2022");
+  assert.equal(fallecimiento.sujeto, "familiar");
+  assert.equal(fallecimiento.relacionSujeto, "padre");
+  assert.match(fallecimiento.descripcionSugerida, /infecciÃ³n postoperatoria|infección postoperatoria/i);
+  assert.equal(psicoterapia.fechaInicioISO, "2024-11-01");
+  assert.equal(psicoterapia.precisionTemporal, "periodo_anual");
+  assert.equal(psicoterapia.etiquetaTemporal, "Finales de 2024");
+  assert.equal(psicoterapia.sujeto, "paciente");
+  assert.match(psicoterapia.descripcionSugerida, /sintomatolog/i);
+}
+
+{
+  const clausulas = segmentarClausulasClinicas("Falleció su padre en 2022. Inició psicoterapia en 2024.");
+  assert.equal(clausulas.length, 2);
+  const resultado = detectar(fuente("Falleció su padre en 2022. Inició psicoterapia en 2024."));
+  assert.deepEqual(resultado.eventos.map((evento) => evento.fechaInicioISO).sort(), ["2022-01-01", "2024-01-01"]);
+}
+
+{
+  const resultado = detectar(fuente("Antecedente de rinitis y alergias."));
+  assert.equal(resultado.eventosNormalizados, 0);
+}
+
+{
+  const resultado = detectar(fuente("Falleció su madre en mayo de 2020."));
+  assert.equal(resultado.eventos[0].tituloSugerido, "Fallecimiento de la madre");
+  assert.equal(resultado.eventos[0].fechaInicioISO, "2020-05-01");
+}
+
+{
+  const fecha = resolverFechaTemporal("a fines de 2024");
+  assert.equal(fecha.fechaInicioISO, "2024-11-01");
+  assert.equal(fecha.precisionTemporal, "periodo_anual");
+  assert.equal(fecha.fechaEsAproximada, true);
+  assert.equal(fecha.etiquetaTemporal, "A fines de 2024");
+}
+
+{
+  const candidato = { tituloSugerido: "Fallecimiento del padre", sujeto: "familiar", expresionTemporalPropia: "marzo de 2022", clausulaOrigen: "Fallecimiento del padre en marzo de 2022" };
+  assert.equal(validarCorrespondenciaEventoFecha(candidato).valida, true);
+  assert.equal(validarCorrespondenciaEventoFecha({ ...candidato, clausulaOrigen: "Inicio de terapia en finales de 2024" }).valida, false);
 }
 
 {

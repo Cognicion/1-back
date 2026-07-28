@@ -78,6 +78,9 @@ export function normalizarEvento(id, datos = {}) {
     sourceDate: normalizarFecha(datos.sourceDate),
     fechaEsAproximada: datos.fechaEsAproximada === true,
     precisionTemporal: datos.precisionTemporal || "",
+    etiquetaTemporal: datos.etiquetaTemporal ? String(datos.etiquetaTemporal).trim().slice(0, 120) : "",
+    relacionSujeto: datos.relacionSujeto ? String(datos.relacionSujeto).trim().slice(0, 80) : "",
+    contextoClinico: datos.contextoClinico ? String(datos.contextoClinico).trim().slice(0, 120) : "",
     activo: datos.activo !== false
   };
 }

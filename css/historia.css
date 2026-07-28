@@ -8,6 +8,83 @@ body {
     font-family: Arial, Helvetica, sans-serif;
 }
 
+.seccion-redimensionable-compartida,
+.panel-nota-redimensionable {
+    position: relative;
+    margin: 14px 0 18px;
+    padding-bottom: 14px;
+}
+
+.seccion-redimensionable-compartida textarea {
+    min-height: 80px;
+    max-height: 620px;
+    margin-bottom: 0;
+    resize: none;
+    overflow-y: auto;
+}
+
+.controles-tamano-compartidos {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 6px;
+    margin: 0 0 8px;
+}
+
+.controles-tamano-compartidos button {
+    min-width: 38px;
+    margin: 0;
+    padding: 7px 10px;
+    border: 1px solid var(--control-border);
+    border-radius: 999px;
+    background: var(--control-bg);
+    color: var(--control-text);
+    font-size: 12px;
+    line-height: 1;
+}
+
+.separador-vertical-compartido {
+    position: absolute;
+    right: 14px;
+    bottom: 3px;
+    left: 14px;
+    height: 18px;
+    cursor: ns-resize;
+    touch-action: none;
+    border: 1px solid var(--border-subtle);
+    border-radius: 999px;
+    background: var(--resize-track-bg);
+    opacity: .55;
+}
+
+.separador-vertical-compartido::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 68px;
+    height: 4px;
+    transform: translate(-50%, -50%);
+    border-radius: 999px;
+    background: var(--resize-handle-bg);
+}
+
+.seccion-contraida textarea,
+.seccion-contraida.panel-nota-redimensionable {
+    opacity: .74;
+}
+
+.historia-aviso-contexto {
+    color: var(--text-secondary);
+    font-size: 13px;
+}
+
+.historia-estado-guardado {
+    min-width: 110px;
+    color: var(--text-secondary);
+    font-size: 13px;
+}
+
 .historia-tabs-adicionales {
     display: grid;
     gap: 12px;
@@ -161,6 +238,18 @@ body {
 }
 
 @media print {
+    .controles-tamano-compartidos,
+    .separador-vertical-compartido {
+        display: none !important;
+    }
+
+    .seccion-redimensionable-compartida textarea,
+    .panel-nota-redimensionable {
+        height: auto !important;
+        max-height: none !important;
+        overflow: visible !important;
+    }
+
     .sustancia-bloque details:not([open]) > .sustancia-campos {
         display: block;
     }

@@ -799,6 +799,7 @@ function etiquetaFechaSugerenciaDetectada(sugerencia = {}) {
   if (!fecha) return "Fecha pendiente de confirmar";
   const [anio, mes, dia] = fecha.split("-").map(Number);
   if (sugerencia.precisionTemporal === "anio") return String(anio);
+  if (sugerencia.precisionTemporal === "periodo_anual") return sugerencia.etiquetaTemporal || `Periodo de ${anio}`;
   if (sugerencia.precisionTemporal === "mes") return `${MESES_ETIQUETA_DETECCION[(mes || 1) - 1]} de ${anio}`;
   if (sugerencia.precisionTemporal === "semana") return `Semana del ${fecha}`;
   return `${String(dia).padStart(2, "0")}/${String(mes).padStart(2, "0")}/${anio}`;
@@ -808,6 +809,7 @@ function etiquetaCertezaSugerenciaDetectada(sugerencia = {}) {
   if (!sugerencia.fechaInicioISO) return "Fecha pendiente de confirmar";
   if (sugerencia.precisionTemporal === "anio") return "Fecha aproximada al año";
   if (sugerencia.precisionTemporal === "mes") return "Fecha aproximada al mes";
+  if (sugerencia.precisionTemporal === "periodo_anual") return "Fecha aproximada: periodo del año";
   if (sugerencia.precisionTemporal === "semana") return "Fecha aproximada";
   return sugerencia.fechaEsAproximada || sugerencia.requiereRevisionFecha ? "Fecha aproximada" : "Fecha exacta";
 }
@@ -1213,7 +1215,7 @@ async function persistirSugerenciasDetectadas127(candidatos = [], existentes = [
       revisadoPor: null,
       revisadoEn: null,
       eventoCreadoId: null,
-      detectorVersion: "1.31"
+      detectorVersion: "1.32"
     });
     clavesCandidato.forEach((clave) => claves.add(clave));
     nuevas.push(candidato);
@@ -1233,26 +1235,64 @@ async function regenerarSugerenciaDetectada(sugerencia = {}) {
     datos: { contenido: fragmento }
   });
   const resultado = detectarEventosEnFuentes({ fuentes: [fuente], pacienteId, incluirEstructurados: false });
-  const candidato = resultado.eventos[0];
+  const candidatos = resultado.eventos;
+  const candidato = candidatos[0];
   if (!candidato) throw new Error("SIN_PROPUESTA_REGENERADA");
+  const camposPropuesta = (valor) => ({
+    tituloSugerido: valor.tituloSugerido,
+    descripcionSugerida: valor.descripcionSugerida,
+    tipoEvento: valor.tipoEvento || null,
+    categoriaSugerida: valor.categoriaSugerida || null,
+    importanciaSugerida: valor.importanciaSugerida || sugerencia.importanciaSugerida || "media",
+    fechaInicioISO: valor.fechaInicioISO || null,
+    fechaFinISO: valor.fechaFinISO || null,
+    precisionTemporal: valor.precisionTemporal || "indeterminada",
+    fechaEsAproximada: valor.fechaEsAproximada !== false,
+    etiquetaTemporal: valor.etiquetaTemporal || null,
+    requiereRevisionFecha: valor.requiereRevisionFecha === true,
+    requiereRevisionClinica: valor.requiereRevisionClinica === true,
+    motivoRevision: valor.motivoRevision || null,
+    confianzaSemantica: valor.confianzaSemantica || valor.confianza || null,
+    sujeto: valor.sujeto || "paciente",
+    relacionSujeto: valor.relacionSujeto || null,
+    expresionTemporalOriginal: valor.expresionTemporalOriginal || null,
+    expresionTemporalPropia: valor.expresionTemporalPropia || null,
+    clausulaOrigen: valor.clausulaOrigen || null,
+    fragmentoSoporte: valor.fragmentoSoporte || fragmento
+  });
   await updateDoc(doc(db, "pacientes", pacienteId, "eventosDetectados", sugerencia.id), {
-    tituloSugerido: candidato.tituloSugerido,
-    descripcionSugerida: candidato.descripcionSugerida,
-    tipoEvento: candidato.tipoEvento || null,
-    categoriaSugerida: candidato.categoriaSugerida || null,
-    importanciaSugerida: candidato.importanciaSugerida || sugerencia.importanciaSugerida || "media",
-    fechaInicioISO: candidato.fechaInicioISO || sugerencia.fechaInicioISO || null,
-    fechaFinISO: candidato.fechaFinISO || null,
-    precisionTemporal: candidato.precisionTemporal || sugerencia.precisionTemporal || "indeterminada",
-    fechaEsAproximada: candidato.fechaEsAproximada !== false,
-    requiereRevisionFecha: candidato.requiereRevisionFecha === true,
-    requiereRevisionClinica: candidato.requiereRevisionClinica === true,
-    motivoRevision: candidato.motivoRevision || null,
-    confianzaSemantica: candidato.confianzaSemantica || candidato.confianza || null,
+    ...camposPropuesta(candidato),
+    detectorVersion: "1.32",
     estado: ESTADOS_DETECCION.pendiente,
     regeneradoEn: serverTimestamp(),
     regeneradoPor: auth.currentUser.uid
   });
+  for (const adicional of candidatos.slice(1)) {
+    await addDoc(refEventosDetectados(), {
+      ...adicional,
+      ...camposPropuesta(adicional),
+      estado: ESTADOS_DETECCION.pendiente,
+      detectedEventId: adicional.detectedEventId || hashDeteccionEstable([pacienteId, sugerencia.id, adicional.tituloSugerido, adicional.fechaInicioISO || "sin-fecha"].join("|")),
+      hashConceptual: adicional.hashConceptual || adicional.detectedEventId || null,
+      origenId: sugerencia.origenId || adicional.origenId || "",
+      origenTipo: sugerencia.origenTipo || adicional.origenTipo || "nota",
+      origenSubtipo: sugerencia.origenSubtipo || adicional.origenSubtipo || "",
+      sourceLabel: sugerencia.sourceLabel || adicional.sourceLabel || "Fuente clinica",
+      origenFechaISO: sugerencia.origenFechaISO || adicional.origenFechaISO || null,
+      posibleDuplicadoEventoId: null,
+      detectadoPor: auth.currentUser.uid,
+      detectadoEn: serverTimestamp(),
+      revisadoPor: null,
+      revisadoEn: null,
+      eventoCreadoId: null,
+      detectorVersion: "1.32",
+      regeneradoDesdeSugerenciaId: sugerencia.id
+    });
+  }
+  return {
+    divididas: Math.max(0, candidatos.length - 1),
+    fechasReasignadas: candidatos.filter((valor) => valor.fechaInicioISO !== sugerencia.fechaInicioISO).length
+  };
 }
 
 async function inicializarDetectorEventosClinicosLocal() {
@@ -1411,7 +1451,8 @@ async function inicializarDetectorEventosClinicosLocal() {
     if (action === "view-detected-origin") alert(`Origen: ${sugerencia.origenSubtipo || sugerencia.origenTipo}\nFecha: ${sugerencia.origenFechaISO || "sin fecha"}\n\nFragmento:\n${sugerencia.fragmentoSoporte || "Sin fragmento disponible."}`);
     if (action === "regenerate-detected-event") {
       try {
-        await regenerarSugerenciaDetectada(sugerencia);
+        const resumenRegeneracion = await regenerarSugerenciaDetectada(sugerencia);
+        console.debug("[Eventos detectados 1.32] Regeneración completada", resumenRegeneracion);
         await cargar();
         return;
       } catch (error) {
@@ -1450,7 +1491,7 @@ async function inicializarDetectorEventosClinicosLocal() {
         await cargar();
         return;
       }
-      const evento = await crearEventoPaciente(pacienteId, { titulo: datos.titulo, descripcion: datos.descripcion, fechaEvento: fechaLocalISO(datos.fechaInicioISO), fechaFin: fechaLocalISO(datos.fechaFinISO), importancia: datos.importancia, origen: "detectado", referenciaTipo: sugerencia.origenSubtipo || sugerencia.origenTipo, referenciaId: sugerencia.origenId, detectedEventId, deteccionId: sugerencia.id, sourceType: sugerencia.origenTipo || "", sourceId: sugerencia.origenId || "", sourceLabel: sugerencia.origenSubtipo || sugerencia.origenTipo || "", sourceDate: sugerencia.origenFechaISO || "", fechaEsAproximada: sugerencia.fechaEsAproximada === true || sugerencia.requiereRevisionFecha === true, precisionTemporal: sugerencia.precisionTemporal }, auth.currentUser.uid);
+      const evento = await crearEventoPaciente(pacienteId, { titulo: datos.titulo, descripcion: datos.descripcion, fechaEvento: fechaLocalISO(datos.fechaInicioISO), fechaFin: fechaLocalISO(datos.fechaFinISO), importancia: datos.importancia, origen: "detectado", referenciaTipo: sugerencia.origenSubtipo || sugerencia.origenTipo, referenciaId: sugerencia.origenId, detectedEventId, deteccionId: sugerencia.id, sourceType: sugerencia.origenTipo || "", sourceId: sugerencia.origenId || "", sourceLabel: sugerencia.origenSubtipo || sugerencia.origenTipo || "", sourceDate: sugerencia.origenFechaISO || "", fechaEsAproximada: sugerencia.fechaEsAproximada === true || sugerencia.requiereRevisionFecha === true, precisionTemporal: sugerencia.precisionTemporal, etiquetaTemporal: sugerencia.etiquetaTemporal, relacionSujeto: sugerencia.relacionSujeto, contextoClinico: sugerencia.contextoClinico }, auth.currentUser.uid);
       await updateDoc(doc(db, "pacientes", pacienteId, "eventosDetectados", sugerencia.id), { detectedEventId, estado: ESTADOS_DETECCION.aceptado, revisadoPor: auth.currentUser.uid, revisadoEn: serverTimestamp(), eventoCreadoId: evento.id });
       eventos = ordenarEventosPorFecha(await cargarEventosPaciente(pacienteId));
       renderizarVista();

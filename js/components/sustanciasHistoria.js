@@ -4,6 +4,7 @@ import {
   CATEGORIAS_SUSTANCIAS_POR_ID,
   SUSTANCIAS_POR_ID
 } from "../data/catalogoSustancias.js";
+import { configurarCamposRedimensionables } from "./redimensionadorCampos.js";
 
 const OTRA_SUSTANCIA_ID = "otra-sustancia";
 
@@ -174,6 +175,10 @@ export function crearGestorSustanciasHistoria({ contenedor, edadPaciente = null 
       `;
     }).join("");
     bloques.querySelectorAll("details[data-sustancia-details]").forEach((detalle) => detalle.addEventListener("toggle", actualizarAria));
+    configurarCamposRedimensionables({
+      items: [...bloques.querySelectorAll("textarea")].map((objetivo) => ({ objetivo, clave: `sustancia:${objetivo.dataset.sustanciaId || objetivo.id}`, minimo: 80, alturaBase: 130 })),
+      onAction: (accion, item) => console.debug("[HistoriaClinica:Expandir]", { etapa: accion, campo: item.clave, resultado: "ok" })
+    });
   }
 
   function actualizarAria(evento) {
