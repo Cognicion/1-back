@@ -9,8 +9,16 @@ export const FRAY_FORMAT_IDS = Object.freeze([
   "evolucion_observacion",
   "egreso_traslado_observacion",
   "urgencias",
-  "contrarreferencia"
+  "contrarreferencia",
+  "solicitud_imagenologia"
 ]);
+
+export const FORMATO_SOLICITUD_IMAGENOLOGIA = Object.freeze({
+  id: "solicitud_imagenologia",
+  clave: "FTO-HPFBA-EXPC-IMG-SEI",
+  nombre: "Solicitud de estudio de imagenología",
+  descripcion: "Solicitud institucional para radiografías, tomografía, resonancia magnética, ultrasonido y otros estudios de imagen."
+});
 
 export const NAVARRO_FORMAT_IDS = Object.freeze([
   "referencia_navarro"
@@ -21,10 +29,11 @@ export const FORMATOS_INSTITUCIONALES = Object.freeze([
     id: FORMAT_PERMISSION_FRAY,
     legacyId: "fray",
     nombre: "Formatos Fray",
-    descripcion: "Ingreso, evolucion, egreso/traslado, urgencias y contrarreferencia institucional Fray.",
+    descripcion: "Ingreso, evolucion, egreso/traslado, urgencias, contrarreferencia y solicitud institucional de imagenologia Fray.",
     institutionId: INSTITUTION_FRAY,
     requiereAutorizacion: true,
-    valores: FRAY_FORMAT_IDS
+    valores: FRAY_FORMAT_IDS,
+    formatos: [FORMATO_SOLICITUD_IMAGENOLOGIA]
   },
   {
     id: FORMAT_PERMISSION_NAVARRO,

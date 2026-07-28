@@ -76,6 +76,7 @@ import {
   actualizarEstudio,
   eliminarEstudio
 } from "./services/estudios.js";
+import { listarSolicitudesImagenologia } from "./services/solicitudesImagenologia.js?v=20260728-img-request-v1";
 
 import {
   crearNotaRapida,
@@ -148,6 +149,7 @@ let tratamientosCacheCargado = false;
 let tratamientosCachePatientId = "";
 let tratamientosCargaToken = 0;
 let estudiosCache = [];
+let solicitudesImagenologiaCache = [];
 let escalasAsignadasCache = new Map();
 let diagnosticosCatalogoActual = [];
 let diagnosticoReemplazoIndex = null;
@@ -164,6 +166,7 @@ const VISTAS_DATOS_GENERALES_PACIENTE = Object.freeze({
   LABORATORIO: "laboratorio"
 });
 let estudiosSolicitudActual = [];
+let solicitudImagenologiaModulePromise = null;
 const CLAVE_CATALOGO_MANUAL = "cognicion_catalogo_diagnosticos_manual";
 let catalogoManualDiagnosticos = cargarCatalogoManualDiagnosticos();
 const CLAVE_MEDICAMENTOS_MANUALES = "cognicion_catalogo_medicamentos_manual";
@@ -2322,6 +2325,13 @@ window.mostrarReceta = async function() {
 window.mostrarEstudios = async function() {
   ocultarSecciones();
   document.getElementById("seccionEstudios").style.display = "block";
+  const formatoImagen = document.getElementById("solicitudEstudioFormato");
+  if (formatoImagen && ![...formatoImagen.options].some((opcion) => opcion.value === "solicitud_imagenologia") && usuarioPuedeUsarFormato("solicitud_imagenologia", permisosFormatosUsuarioActual, rolUsuarioActual, medicoActualDatos)) {
+    const opcion = document.createElement("option");
+    opcion.value = "solicitud_imagenologia";
+    opcion.textContent = "Formatos Fray · Solicitud de estudio de imagenología · FTO-HPFBA-EXPC-IMG-SEI";
+    formatoImagen.appendChild(opcion);
+  }
   if (!valorCampo("solicitudEstudioFecha")) ponerValor("solicitudEstudioFecha", fechaISOHoy());
   if (!valorCampo("solicitudEstudioSolicita")) {
     ponerValor("solicitudEstudioSolicita", medicoActualDatos?.nombre || datosPacienteActual?.medicoTratante || "");
@@ -6038,6 +6048,40 @@ window.abrirHistoriaClinica = function() {
   window.location.href = `historia.html?id=${uidPaciente}`;
 };
 
+async function abrirSolicitudImagenologiaPaciente() {
+  if (!uidPaciente || !datosPacienteActual) {
+    alert("No se identificó el paciente seleccionado.");
+    return;
+  }
+  if (!usuarioPuedeUsarFormato("solicitud_imagenologia", permisosFormatosUsuarioActual, rolUsuarioActual, medicoActualDatos)) {
+    alert("Este formato requiere autorización institucional.");
+    return;
+  }
+  if (!solicitudImagenologiaModulePromise) {
+    solicitudImagenologiaModulePromise = Promise.all([
+      import("./components/solicitudImagenologia.js?v=20260728-img-request-v1"),
+      import("./services/solicitudesImagenologia.js?v=20260728-img-request-v1")
+    ]);
+  }
+  const [{ abrirSolicitudImagenologia }, { guardarSolicitudImagenologia }] = await solicitudImagenologiaModulePromise;
+  abrirSolicitudImagenologia({
+    paciente: datosPacienteActual,
+    medico: { ...medicoActualDatos, uid: auth.currentUser?.uid || "" },
+    uidPaciente,
+    servicio: datosPacienteActual.servicioInstitucional || datosPacienteActual.servicio || medicoActualDatos.servicio || "",
+    onPersist: async (solicitud, definitiva) => {
+      const resultado = await guardarSolicitudImagenologia(uidPaciente, solicitud, { definitiva });
+      await registrarAccionExpediente({
+        accion: definitiva ? "generar_solicitud_imagenologia" : "guardar_borrador_solicitud_imagenologia",
+        descripcion: definitiva ? "Se generó una solicitud institucional de imagenología." : "Se guardó un borrador de solicitud de imagenología.",
+        detalles: { solicitudId: resultado.solicitudId, estudios: solicitud.estudios?.length || 0, estado: resultado.estado }
+      });
+      if (definitiva) await cargarEstudiosPaciente();
+      return resultado;
+    }
+  });
+}
+
 window.abrirLineaTiempoPaciente = function() {
   if (!auth.currentUser || !uidPaciente) {
     alert("No se encontró el paciente o la sesión actual.");
@@ -7299,9 +7343,14 @@ async function cargarEstudiosPaciente() {
 
   try {
     estudiosCache = await listarEstudios(uidPaciente);
-    contenedor.innerHTML = estudiosCache.length
-      ? estudiosCache.map(renderizarEstudio).join("")
-      : "<p>Aun no hay estudios registrados.</p>";
+    try {
+      solicitudesImagenologiaCache = await listarSolicitudesImagenologia(uidPaciente);
+    } catch (error) {
+      solicitudesImagenologiaCache = [];
+      console.error("[SolicitudImagen:Documento]", { code: error?.code || null, stage: "list-drafts", result: "error" });
+    }
+    const borradores = solicitudesImagenologiaCache.filter((solicitud) => solicitud.estado === "borrador");
+    contenedor.innerHTML = [...borradores.map(renderizarBorradorSolicitud), ...estudiosCache.map(renderizarEstudio)].join("") || "<p>Aun no hay estudios registrados.</p>";
     vincularAccionesEstudios();
   } catch (error) {
     console.error("Error al cargar estudios:", error);
@@ -7309,13 +7358,17 @@ async function cargarEstudiosPaciente() {
   }
 }
 
+function renderizarBorradorSolicitud(solicitud) {
+  return `<article class="registro-card solicitud-borrador-card"><div class="registro-top"><div><strong>Borrador de solicitud</strong><span>FTO-HPFBA-EXPC-IMG-SEI · ${escaparHTML(solicitud.solicitud?.fecha || solicitud.fechaActualizacion || "")}</span></div></div><p>${escaparHTML((solicitud.estudios || []).map((e) => e.nombre).join(", ") || "Sin estudios agregados")}</p><small>El borrador no se considera estudio solicitado.</small></article>`;
+}
+
 function renderizarEstudio(estudio) {
   return `
     <article class="registro-card">
       <div class="registro-top">
-        <div>
-          <strong>${escaparHTML(estudio.nombre || "Estudio")}</strong>
-          <span>${escaparHTML(estudio.tipo || "Sin tipo")}  ${escaparHTML(formatearFecha(estudio.fecha))}</span>
+      <div>
+        <strong>${escaparHTML(estudio.nombre || "Estudio")}</strong>
+        <span>${escaparHTML(estudio.tipo || "Sin tipo")} · ${escaparHTML(estudio.estado || "registrado")} · ${escaparHTML(formatearFecha(estudio.fecha))}</span>
         </div>
       </div>
       ${estudio.resultado ? `<p><b>Resultado:</b> ${escaparHTML(estudio.resultado)}</p>` : ""}
@@ -7492,6 +7545,7 @@ document.getElementById("agregarEstudioSolicitud")?.addEventListener("click", ag
 document.getElementById("limpiarSolicitudEstudios")?.addEventListener("click", limpiarSolicitudEstudios);
 document.getElementById("guardarSolicitudEstudios")?.addEventListener("click", guardarSolicitudEstudios);
 document.getElementById("descargarSolicitudEstudios")?.addEventListener("click", descargarSolicitudEstudios);
+document.getElementById("abrirSolicitudImagenologia")?.addEventListener("click", abrirSolicitudImagenologiaPaciente);
 [
   "solicitudEstudioFormato",
   "solicitudEstudioFecha",

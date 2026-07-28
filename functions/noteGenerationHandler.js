@@ -11,7 +11,7 @@ const MAX_UTTERANCE_CHARS = 1800;
 const MAX_TOTAL_CHARS = 60000;
 const FORMAT_PERMISSION_FRAY = "fray_clinical_formats";
 const FORMAT_PERMISSION_NAVARRO = "navarro_referral_format";
-const FRAY_FORMAT_IDS = new Set(["ingreso_observacion", "evolucion_observacion", "egreso_traslado_observacion", "urgencias", "contrarreferencia"]);
+const FRAY_FORMAT_IDS = new Set(["ingreso_observacion", "evolucion_observacion", "egreso_traslado_observacion", "urgencias", "contrarreferencia", "solicitud_imagenologia"]);
 const NAVARRO_FORMAT_IDS = new Set(["referencia_navarro"]);
 
 const NOTE_PROMPT = `
