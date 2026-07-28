@@ -7,6 +7,8 @@ import { getAuthenticatedUserOnce, getUserProfileOnce } from "./services/authCon
 import { crearGestorSustanciasHistoria } from "./components/sustanciasHistoria.js";
 import { configurarCamposRedimensionables } from "./components/redimensionadorCampos.js";
 import { esPacienteMujer } from "./utils/sexo.js";
+import { crearGestorHitosDesarrolloHistoria } from "./components/hitosDesarrolloHistoria.js";
+import { crearGestorFamiliogramaHistoria } from "./components/familiogramaHistoria.js";
 
 import {
   obtenerUsuario,
@@ -22,7 +24,11 @@ import {
 let uidPaciente = null;
 let pacienteActual = {};
 let gestorSustanciasHistoria = null;
+let gestorHitosDesarrollo = null;
+let gestorFamiliograma = null;
 let guardandoHistoria = false;
+let modoVistaHistoria = "completa";
+let etapaActual = "inicio";
 
 iniciarMonitoreoSesion("Historia clinica");
 
@@ -129,8 +135,14 @@ async function inicializarHistoriaClinica() {
     contenedor: document.getElementById("selectorSustanciasHistoria"),
     edadPaciente: calcularEdad(obtenerFechaNacimiento(pacienteActual))
   });
+  gestorHitosDesarrollo = crearGestorHitosDesarrolloHistoria({
+    contenedor: document.getElementById("hitosDesarrolloHistoria"),
+    edadPaciente: calcularEdad(obtenerFechaNacimiento(pacienteActual))
+  });
+  gestorFamiliograma = crearGestorFamiliogramaHistoria({ contenedor: document.getElementById("familiogramaHistoria") });
   await cargarHistoria();
   configurarCamposNarrativosHistoria();
+  configurarVistaHistoria();
 }
 
 inicializarHistoriaClinica().catch((error) => {
@@ -173,21 +185,38 @@ async function cargarHistoria() {
     historiaAcademica: "",
     historiaLaboral: "",
     antecedentesGinecoobstetricos: "",
+    antecedentesPerinatales: "",
+    hitosDesarrollo: { registros: [], observacionesGenerales: "" },
+    familiograma: { personas: [], relaciones: [], observacionesGenerales: "" },
     sustancias: { seleccionadas: [], observacionesGenerales: "" }
   };
 
   const datos = historia.exists() ? { ...raiz, ...historia.data() } : raiz;
 
+  datos.exploracionMental = componerExploracionMentalNarrativa(datos);
   Object.keys(datos).forEach((campo) => {
-    if (campo === "sustancias") return;
+    if (["sustancias", "hitosDesarrollo", "familiograma"].includes(campo)) return;
     const elemento = document.getElementById(campo);
     if (elemento) elemento.value = datos[campo];
   });
   gestorSustanciasHistoria?.cargar(datos.sustancias, {
     consumoSustancias: datos.consumoSustancias
   });
+  gestorHitosDesarrollo?.cargar(datos.hitosDesarrollo);
+  gestorFamiliograma?.cargar(datos.familiograma);
   actualizarVisibilidadGinecoobstetricos(datos.antecedentesGinecoobstetricos);
   if (!datos.imc) calcularIMCHistoria();
+}
+
+function componerExploracionMentalNarrativa(datos = {}) {
+  if (String(datos.exploracionMental || "").trim()) return String(datos.exploracionMental);
+  const camposLegado = [
+    ["apariencia", "Apariencia y conducta"], ["lenguaje", "Lenguaje"], ["afecto", "Estado de ánimo y afecto"],
+    ["pensamiento", "Pensamiento"], ["sensopercepcion", "Sensopercepción"], ["cognicion", "Funciones cognitivas"], ["juicio", "Juicio e insight"]
+  ];
+  const narrativa = camposLegado.filter(([clave]) => String(datos[clave] || "").trim()).map(([clave, etiqueta]) => `${etiqueta}: ${datos[clave]}`).join("\n");
+  if (narrativa) console.debug("[HistoriaClinica:ExploracionMental]", { action: "legacy-composed", field: "exploracionMental", result: "ok" });
+  return narrativa;
 }
 
 function actualizarVisibilidadGinecoobstetricos(valorGuardado = "") {
@@ -238,6 +267,8 @@ function obtenerDatosHistoriaClinica() {
   calcularIMCHistoria();
   datos.imc = String(document.getElementById("imc")?.value || "").trim();
   datos.sustancias = gestorSustanciasHistoria?.obtenerDatos() || { seleccionadas: [], observacionesGenerales: "" };
+  datos.hitosDesarrollo = gestorHitosDesarrollo?.obtenerDatos() || { registros: [], observacionesGenerales: "" };
+  datos.familiograma = gestorFamiliograma?.obtenerDatos() || { personas: [], relaciones: [], observacionesGenerales: "" };
   const advertencias = gestorSustanciasHistoria?.validar() || [];
   const bloqueante = advertencias.find((advertencia) => advertencia.includes("otra sustancia seleccionada"));
   if (bloqueante) throw Object.assign(new Error(bloqueante), { code: "validation/substances" });
@@ -343,6 +374,10 @@ window.guardarHistoria = async () => {
   if (advertenciasSustancias.length) {
     alert("Se encontraron advertencias en el consumo de sustancias. La información se conservará y puedes revisarla antes de continuar.");
   }
+  const advertenciasHitos = gestorHitosDesarrollo?.validar() || [];
+  if (advertenciasHitos.length) alert("Se encontraron advertencias en los hitos del desarrollo. La información se conservará y puedes revisarla antes de continuar.");
+  const advertenciasFamiliograma = gestorFamiliograma?.validar() || [];
+  if (advertenciasFamiliograma.length) alert("Se encontraron advertencias en el familiograma. La información se conservará y puedes revisarla antes de continuar.");
 
   console.debug("[HistoriaClinica] datos preparados para guardar", {
     pacienteId: uidPaciente,
@@ -473,20 +508,34 @@ window.descargarHistoriaPDF = () => {
   window.print();
 };
 
-const tabs = document.querySelectorAll(".tab");
-const secciones = document.querySelectorAll(".seccion");
-
-tabs.forEach((tab) => {
-  tab.addEventListener("click", () => {
-    tabs.forEach((t) => t.classList.remove("activo"));
-    secciones.forEach((s) => s.classList.remove("activa"));
-
-    tab.classList.add("activo");
-
-    const seccion = document.getElementById(tab.dataset.seccion);
-    if (seccion) seccion.classList.add("activa");
+function configurarVistaHistoria() {
+  const navegacion = document.querySelector(".historia-sidebar");
+  if (!navegacion || navegacion.dataset.vistaConfigurada === "true") return;
+  navegacion.dataset.vistaConfigurada = "true";
+  const orden = ["completa", "ficha", "antecedentes", "desarrollo", "familiograma", "familiar", "academica", "laboral", "psiquiatria", "sustancias", "padecimiento", "mental", "diagnostico", "plan"];
+  const tabs = [...navegacion.querySelectorAll(".tab")];
+  tabs.sort((a, b) => orden.indexOf(a.dataset.seccion) - orden.indexOf(b.dataset.seccion)).forEach((tab) => navegacion.insertBefore(tab, navegacion.querySelector(".boton-secundario")));
+  navegacion.addEventListener("click", (evento) => {
+    const tab = evento.target.closest(".tab");
+    if (!tab) return;
+    evento.preventDefault();
+    mostrarVistaHistoria(tab.dataset.seccion, tabs);
   });
-});
+  mostrarVistaHistoria("completa", tabs);
+}
+
+function mostrarVistaHistoria(seccionId, tabs = [...document.querySelectorAll(".tab")]) {
+  const ordenClinico = ["ficha", "antecedentes", "desarrollo", "familiar", "familiograma", "academica", "laboral", "psiquiatria", "sustancias", "padecimiento", "mental", "diagnostico", "plan"];
+  const formulario = document.getElementById("formHistoria");
+  const seccionesIniciales = [...document.querySelectorAll("#formHistoria > .seccion")];
+  ordenClinico.forEach((id) => { const seccion = document.getElementById(id); if (seccion && seccionesIniciales.includes(seccion)) formulario?.appendChild(seccion); });
+  const secciones = [...document.querySelectorAll("#formHistoria > .seccion")];
+  modoVistaHistoria = seccionId === "completa" ? "completa" : "seccion";
+  document.querySelector(".historia-contenido")?.classList.toggle("historia-vista-completa", modoVistaHistoria === "completa");
+  secciones.forEach((seccion) => seccion.classList.toggle("activa", modoVistaHistoria === "completa" || seccion.id === seccionId));
+  tabs.forEach((tab) => { const activo = tab.dataset.seccion === seccionId; tab.classList.toggle("activo", activo); tab.setAttribute("aria-current", activo ? "page" : "false"); });
+  console.debug("[HistoriaClinica:Vista]", { action: "view-changed", mode: modoVistaHistoria, section: seccionId });
+}
 
 ["peso", "talla"].forEach((id) => {
   document.getElementById(id)?.addEventListener("input", calcularIMCHistoria);

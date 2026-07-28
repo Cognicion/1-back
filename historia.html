@@ -20,6 +20,7 @@
 <main class="historia-layout">
 
     <aside class="historia-sidebar">
+        <button class="tab activo" data-seccion="completa">Vista completa</button>
         <h1>Cognición</h1>
         <p>Historia clínica</p>
 
@@ -31,6 +32,9 @@
         <button class="tab" data-seccion="mental">🔎 Exploración mental</button>
         <button class="tab" data-seccion="diagnostico">🩺 Diagnóstico</button>
         <button class="tab" data-seccion="plan">📌 Plan</button>
+
+        <button class="tab" data-seccion="desarrollo">Hitos del desarrollo</button>
+        <button class="tab" data-seccion="familiograma">Familiograma</button>
 
         <div class="historia-tabs-adicionales" aria-label="Historias complementarias">
             <button class="tab" data-seccion="familiar">Historia familiar</button>
@@ -125,6 +129,9 @@
                 <label>Antecedentes heredofamiliares</label>
                 <textarea id="ahf"></textarea>
 
+                <label for="antecedentesPerinatales">Antecedentes perinatales</label>
+                <textarea id="antecedentesPerinatales" rows="7" placeholder="Embarazo, parto, periodo neonatal y eventos perinatales relevantes."></textarea>
+
                 <label>Antecedentes personales patológicos</label>
                 <textarea id="app"></textarea>
 
@@ -195,6 +202,9 @@
             </section>
 
             <section class="seccion" id="mental">
+                <label for="exploracionMental">ExploraciÃ³n mental narrativa</label>
+                <textarea id="exploracionMental" rows="12" placeholder="Describe apariencia, conducta, lenguaje, afecto, pensamiento, sensopercepciÃ³n, cogniciÃ³n, juicio e insight."></textarea>
+                <div class="exploracion-mental-legado" aria-hidden="true">
                 <h3>Exploración mental</h3>
 
                 <label>Apariencia y conducta</label>
@@ -217,6 +227,17 @@
 
                 <label>Juicio e insight</label>
                 <textarea id="juicio"></textarea>
+                </div>
+            </section>
+
+            <section class="seccion" id="desarrollo">
+                <h3>Hitos del desarrollo</h3>
+                <div id="hitosDesarrolloHistoria"></div>
+            </section>
+
+            <section class="seccion" id="familiograma">
+                <h3>Familiograma</h3>
+                <div id="familiogramaHistoria"></div>
             </section>
 
             <section class="seccion" id="diagnostico">
@@ -248,7 +269,7 @@
 
 </main>
 
-<script type="module" src="js/historia.js?v=20260728-history-save-expand-v1"></script>
+<script type="module" src="js/historia.js?v=20260728-history-complete-v1"></script>
 
   <script type="module" src="js/components/accesosRapidos.js"></script>
   <script>

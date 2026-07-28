@@ -355,6 +355,162 @@ body {
     display: block;
 }
 
+.historia-vista-completa .seccion {
+    display: block;
+    padding-bottom: 28px;
+    margin-bottom: 28px;
+    border-bottom: 1px solid var(--border-subtle, rgba(190,196,188,0.2));
+}
+
+.historia-vista-completa .seccion:last-child {
+    border-bottom: 0;
+}
+
+.exploracion-mental-legado {
+    display: none;
+}
+
+.hitos-controles,
+.familiograma-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: end;
+    margin-bottom: 18px;
+}
+
+.hitos-controles label,
+.familiograma-form label {
+    margin: 0;
+}
+
+.hitos-controles input[type="search"],
+.hitos-controles select {
+    min-width: 180px;
+}
+
+.hitos-check {
+    display: inline-flex !important;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600 !important;
+}
+
+.hitos-check input {
+    width: auto;
+}
+
+.historia-resumen,
+.historia-aviso-contexto {
+    color: var(--gray-400, #aab2a9);
+    font-size: 0.92rem;
+}
+
+.hitos-grupo {
+    margin: 18px 0;
+}
+
+.hitos-grupo h4 {
+    margin: 0 0 8px;
+}
+
+.hito-item,
+.familiograma-editor,
+.familiograma-textual {
+    border: 1px solid var(--border-subtle, rgba(190,196,188,0.2));
+    border-radius: 14px;
+    background: var(--surface-soft, rgba(255,255,255,0.04));
+    margin: 8px 0;
+}
+
+.hito-item summary {
+    cursor: pointer;
+    padding: 13px;
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.hito-item summary small {
+    color: var(--gray-400, #aab2a9);
+}
+
+.hito-campos,
+.familiograma-form {
+    padding: 0 14px 14px;
+}
+
+.hito-dos-columnas,
+.familiograma-editor {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.familiograma-editor {
+    padding: 14px;
+    align-items: start;
+}
+
+.familiograma-form {
+    display: grid;
+    gap: 10px;
+}
+
+.familiograma-form h4 {
+    margin: 4px 0;
+}
+
+.familiograma-lienzo {
+    min-width: 0;
+    overflow: hidden;
+}
+
+.familiograma-lienzo svg {
+    width: 100%;
+    min-height: 300px;
+    border: 1px solid var(--border-subtle, rgba(190,196,188,0.2));
+    border-radius: 12px;
+    background: var(--surface-soft, rgba(255,255,255,0.03));
+    touch-action: none;
+}
+
+.familiograma-nodo {
+    fill: var(--surface-card, #243027);
+    stroke: var(--celtic-400, #78bd85);
+    stroke-width: 2;
+}
+
+.familiograma-nodo.paciente {
+    stroke-width: 4;
+}
+
+.familiograma-relacion {
+    stroke: var(--gray-400, #aab2a9);
+    stroke-width: 2;
+}
+
+.familiograma-lienzo text {
+    fill: var(--text-primary, #f3f5ef);
+    font-size: 12px;
+}
+
+.familiograma-textual {
+    padding: 12px 16px;
+}
+
+@media (max-width: 700px) {
+    .hito-dos-columnas,
+    .familiograma-editor {
+        grid-template-columns: 1fr;
+    }
+
+    .hitos-controles > *,
+    .familiograma-toolbar > * {
+        width: 100%;
+    }
+}
+
 .seccion h3 {
     font-size: 24px;
     margin-bottom: 24px;
