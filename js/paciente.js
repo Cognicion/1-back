@@ -7074,6 +7074,9 @@ function configurarSolicitudEstudios() {
   const estudio = document.getElementById("solicitudEstudioNombre");
   if (!categoria || !estudio) return;
 
+  if (categoria.dataset.solicitudConfigurada === "true") return;
+  categoria.dataset.solicitudConfigurada = "true";
+
   const renderizarOpciones = () => {
     const tipo = categoria.value || "laboratorio";
     estudio.innerHTML = (CATALOGO_SOLICITUD_ESTUDIOS[tipo] || [])
@@ -7082,7 +7085,10 @@ function configurarSolicitudEstudios() {
     actualizarPreviewSolicitudEstudios();
   };
 
-  categoria.addEventListener("change", renderizarOpciones);
+  categoria.addEventListener("change", () => {
+    renderizarOpciones();
+    if (categoria.value === "imagen") abrirSolicitudImagenologiaPaciente();
+  });
   renderizarOpciones();
 }
 
@@ -7545,7 +7551,6 @@ document.getElementById("agregarEstudioSolicitud")?.addEventListener("click", ag
 document.getElementById("limpiarSolicitudEstudios")?.addEventListener("click", limpiarSolicitudEstudios);
 document.getElementById("guardarSolicitudEstudios")?.addEventListener("click", guardarSolicitudEstudios);
 document.getElementById("descargarSolicitudEstudios")?.addEventListener("click", descargarSolicitudEstudios);
-document.getElementById("abrirSolicitudImagenologia")?.addEventListener("click", abrirSolicitudImagenologiaPaciente);
 [
   "solicitudEstudioFormato",
   "solicitudEstudioFecha",
