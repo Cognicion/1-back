@@ -298,6 +298,86 @@ function zipSinCompresion(archivos) {
   return salida;
 }
 
+const PLANTILLA_DOCX_IMAGENOLOGIA = "assets/formatos-fray/FTO-HPFBA-EXPC-IMG-SEI.docx";
+
+function leerU16(view, offset) { return view.getUint16(offset, true); }
+function leerU32(view, offset) { return view.getUint32(offset, true); }
+
+async function descomprimirEntrada(bytes, metodo) {
+  if (metodo === 0) return bytes;
+  if (metodo !== 8 || typeof DecompressionStream === "undefined") {
+    throw new Error("La plantilla DOCX utiliza una compresión no compatible con este navegador.");
+  }
+  const flujo = new Blob([bytes]).stream().pipeThrough(new DecompressionStream("deflate-raw"));
+  return new Uint8Array(await new Response(flujo).arrayBuffer());
+}
+
+async function leerEntradasDocx(buffer) {
+  const bytes = new Uint8Array(buffer);
+  const view = new DataView(buffer);
+  let eocd = -1;
+  for (let i = bytes.length - 22; i >= Math.max(0, bytes.length - 65557); i -= 1) {
+    if (leerU32(view, i) === 0x06054b50) { eocd = i; break; }
+  }
+  if (eocd < 0) throw new Error("La plantilla DOCX no contiene un directorio ZIP válido.");
+  const total = leerU16(view, eocd + 10);
+  const inicio = leerU32(view, eocd + 16);
+  const decoder = new TextDecoder();
+  const entradas = [];
+  let cursor = inicio;
+  for (let i = 0; i < total; i += 1) {
+    if (leerU32(view, cursor) !== 0x02014b50) throw new Error("Directorio ZIP inválido en la plantilla DOCX.");
+    const metodo = leerU16(view, cursor + 10);
+    const comprimido = leerU32(view, cursor + 20);
+    const nombreLongitud = leerU16(view, cursor + 28);
+    const extraLongitud = leerU16(view, cursor + 30);
+    const comentarioLongitud = leerU16(view, cursor + 32);
+    const local = leerU32(view, cursor + 42);
+    const nombre = decoder.decode(bytes.slice(cursor + 46, cursor + 46 + nombreLongitud));
+    const localNombre = leerU16(view, local + 26);
+    const localExtra = leerU16(view, local + 28);
+    const inicioDatos = local + 30 + localNombre + localExtra;
+    const contenido = await descomprimirEntrada(bytes.slice(inicioDatos, inicioDatos + comprimido), metodo);
+    entradas.push({ nombre, contenido });
+    cursor += 46 + nombreLongitud + extraLongitud + comentarioLongitud;
+  }
+  return entradas;
+}
+
+function contenidoXml(valor = "") {
+  return xml(valor).replace(/\r\n?/g, "\n").replace(/\n/g, "</w:t><w:br/><w:t xml:space=\"preserve\">");
+}
+
+function reemplazarControlesXml(documento, valores) {
+  return documento.replace(/<w:sdt\b[\s\S]*?<\/w:sdt>/g, (bloque) => {
+    const coincidencia = bloque.match(/<w:tag\s+w:val="([^"]+)"\s*\/>/);
+    const clave = coincidencia?.[1];
+    if (!clave || valores[clave] === undefined) return bloque;
+    let aplicado = false;
+    return bloque.replace(/(<w:t(?:\s[^>]*)?>)[\s\S]*?(<\/w:t>)/g, (completo, inicio, fin) => {
+      if (aplicado) return `${inicio}${fin}`;
+      aplicado = true;
+      return `${inicio}${contenidoXml(valores[clave])}${fin}`;
+    });
+  });
+}
+
+export async function crearDocumentoWordDesdePlantilla({ plantillaUrl = PLANTILLA_DOCX_IMAGENOLOGIA, valores = {} } = {}) {
+  const respuesta = await fetch(plantillaUrl, { cache: "no-store" });
+  if (!respuesta.ok) throw Object.assign(new Error(`No se pudo cargar la plantilla DOCX (${respuesta.status}).`), { code: `template-${respuesta.status}` });
+  const entradas = await leerEntradasDocx(await respuesta.arrayBuffer());
+  const partes = entradas.map(({ nombre, contenido }) => {
+    if (nombre !== "word/document.xml") return { nombre, contenido };
+    let documento = new TextDecoder().decode(contenido);
+    documento = reemplazarControlesXml(documento, valores);
+    Object.entries(valores).forEach(([clave, valor]) => {
+      documento = documento.split(`{{${clave}}}`).join(contenidoXml(valor));
+    });
+    return { nombre, contenido: new TextEncoder().encode(documento) };
+  });
+  return new Blob([zipSinCompresion(partes)], { type: MIME_DOCX });
+}
+
 export function crearDocumentoWordFray(datos, imagenes = []) {
   const logos = imagenes.filter((imagen) => imagen?.bytes instanceof Uint8Array).slice(0, 2);
   const relacionesImagen = logos.map((imagen, indice) => `<Relationship Id="rIdLogo${indice + 1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/logo${indice + 1}.${imagen.extension || "png"}"/>`).join("");

@@ -1,6 +1,6 @@
 import { FORMATO_SOLICITUD_IMAGENOLOGIA } from "../services/formatosInstitucionales.js";
 import { CATALOGO_ESTUDIOS_IMAGEN, CATEGORIAS_IMAGEN } from "../data/catalogoEstudiosImagen.js";
-import { crearDocumentoWordFray, nombreSeguroNotaWord } from "../services/frayDocx.js";
+import { crearDocumentoWordDesdePlantilla, nombreSeguroNotaWord } from "../services/frayDocx.js";
 
 const escapar = (v) => String(v ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;" }[c]));
 const normalizar = (v) => String(v ?? "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
@@ -36,24 +36,123 @@ function datosWord(datos) {
   return { titulo: `${FORMATO_SOLICITUD_IMAGENOLOGIA.nombre} · ${FORMATO_SOLICITUD_IMAGENOLOGIA.clave}`, paciente: { nombre: datos.paciente.nombreCompleto, fechaNacimiento: datos.paciente.fechaNacimiento, edad: datos.paciente.edad, expediente: datos.paciente.expediente, sexo: datos.paciente.sexo, genero: datos.paciente.genero, cama: datos.paciente.camaConsultorio, alergias: datos.paciente.alergias }, servicio: datos.paciente.servicio, fecha: datos.solicitud.fecha, hora: datos.solicitud.hora, secciones: [{ titulo: "DATOS FÍSICOS Y UBICACIÓN", contenido: `PA: ${datos.paciente.pa}\nPeso: ${datos.paciente.pesoKg}\nTalla: ${datos.paciente.tallaM}\nCama o consultorio: ${datos.paciente.camaConsultorio}` }, { titulo: "DATOS CLÍNICOS Y SOSPECHA DIAGNÓSTICA", contenido: datos.datosClinicos }, { titulo: "ESTUDIOS SOLICITADOS", contenido: datos.estudios.map((e) => [e.tipo, e.modalidad, e.nombre, e.region, e.contraste, e.observaciones, e.criterioUrgencia].filter(Boolean).join(" | ")).join("\n") }, { titulo: "MÉDICOS", contenido: `Solicitante: ${datos.medicoSolicitante.nombre}\n${datos.medicoSolicitante.cargo}\nCédula: ${datos.medicoSolicitante.cedulaProfesional}\nAdscrito: ${datos.medicoAdscrito.nombre}\nCédula de especialidad: ${datos.medicoAdscrito.cedulaEspecialidad}` }], firmas: [{ nombre: datos.medicoSolicitante.nombre, cargo: datos.medicoSolicitante.cargo, cedula: datos.medicoSolicitante.cedulaProfesional }, { nombre: datos.medicoAdscrito.nombre, cargo: "Médico adscrito", cedula: datos.medicoAdscrito.cedulaEspecialidad }] };
 }
 
-export function abrirSolicitudImagenologia({ paciente = {}, medico = {}, uidPaciente = "", onPersist, onAudit, servicio = "" } = {}) {
+export function abrirSolicitudImagenologia({ paciente = {}, medico = {}, uidPaciente = "", onPersist, onAudit, servicio = "", catalogoMedicos = [] } = {}) {
   const overlay = document.createElement("div");
   overlay.className = "solicitud-imagen-overlay";
   const medicoInicial = perfilMedico(medico);
   const p = { expediente: campo(paciente, "expediente", ["numeroExpediente"]), nombreCompleto: nombrePaciente(paciente), fechaNacimiento: fechaNacimiento(paciente), curp: campo(paciente, "curp", ["CURP"]), sexo: campo(paciente, "sexo"), genero: campo(paciente, "genero", ["identidadGenero"]), pa: campo(paciente, "pa", ["presionArterial"]), camaConsultorio: campo(paciente, "cama", ["consultorio", "camaConsultorio"]), pesoKg: campo(paciente, "peso"), tallaM: campo(paciente, "talla"), servicio: servicio || campo(paciente, "servicioInstitucional", ["servicio"]) || medicoInicial.servicio, alergias: campo(paciente, "alergias") };
   const estado = { id: "", datosClinicos: "", alergiasConfirmadas: normalizar(p.alergias) === "negadas", estudios: [] };
+  const catalogo = Array.from(new Map([
+    ...catalogoMedicos,
+    { id: medicoInicial.uid || "solicitante-actual", ...medicoInicial }
+  ].filter((item) => item?.id || item?.uid).map((item) => [item.id || item.uid, {
+    id: item.id || item.uid,
+    uid: item.uid || item.id || "",
+    nombre: item.nombre || item.nombreCompleto || "",
+    cargo: item.cargo || item.grado || item.especialidad || "",
+    cedula: item.cedula || item.cedulaProfesional || "",
+    especialidad: item.especialidad || item.cargo || "",
+    firmaId: item.firmaId || ""
+  }])).values());
+  const opcionesMedicos = (seleccionado = "") => `<option value="">Seleccionar médico</option>${catalogo.map((item) => `<option value="${escapar(item.id)}" ${item.id === seleccionado ? "selected" : ""}>${escapar(item.nombre || "Sin nombre")}</option>`).join("")}`;
   overlay.innerHTML = `<div class="solicitud-imagen-dialog" role="dialog" aria-modal="true" aria-labelledby="tituloSolicitudImagen"><header class="solicitud-imagen-header"><div><p class="eyebrow">Formatos Fray · ${FORMATO_SOLICITUD_IMAGENOLOGIA.clave}</p><h2 id="tituloSolicitudImagen">${FORMATO_SOLICITUD_IMAGENOLOGIA.nombre}</h2></div><button type="button" data-img-action="cerrar" aria-label="Cerrar solicitud">×</button></header><form id="formSolicitudImagen"><fieldset><legend>Datos de la solicitud</legend><div class="solicitud-imagen-grid"><label>Fecha de solicitud<input name="fecha" type="date" value="${hoy()}"></label><label>Hora de solicitud<input name="hora" type="time" value="${hora()}"></label><label>Fecha de cita<input name="fechaCita" type="date"></label><label>Hora de cita<input name="horaCita" type="time"></label></div></fieldset><fieldset><legend>Identificación del paciente</legend><div class="solicitud-imagen-grid"><label>Nombre completo<input name="nombreCompleto" value="${escapar(p.nombreCompleto)}"></label><label>Número de expediente<input name="expediente" value="${escapar(p.expediente)}"></label><label>Fecha de nacimiento<input name="fechaNacimiento" type="date" value="${escapar(p.fechaNacimiento)}"></label><label>Edad<input name="edad" readonly value="${escapar(edadDesde(p.fechaNacimiento))}"></label><label>CURP<input name="curp" value="${escapar(p.curp)}"></label><label>Sexo<input name="sexo" value="${escapar(p.sexo)}"></label><label>Género<input name="genero" value="${escapar(p.genero)}"></label></div></fieldset><fieldset><legend>Datos físicos y ubicación</legend><p class="solicitud-img-nota">PA se conserva con la etiqueta institucional; su significado/unidad requiere validación del formato original.</p><div class="solicitud-imagen-grid"><label>PA<input name="pa" value="${escapar(p.pa)}"></label><label>Cama o consultorio<input name="camaConsultorio" value="${escapar(p.camaConsultorio)}"></label><label>Peso<input name="pesoKg" value="${escapar(p.pesoKg)}"><small>Último registro disponible</small></label><label>Talla<input name="tallaM" value="${escapar(p.tallaM)}"><small>Último registro disponible</small></label><label>Servicio solicitante<input name="servicio" value="${escapar(p.servicio)}"></label><label>Alergias<input name="alergias" value="${escapar(p.alergias)}" placeholder="Sin información registrada"><span class="solicitud-check"><input name="alergiasConfirmadas" type="checkbox" ${estado.alergiasConfirmadas ? "checked" : ""}> Confirmar alergias negadas</span></label></div></fieldset><fieldset><legend>Datos clínicos y sospecha diagnóstica</legend><label>Datos clínicos para solicitar el estudio<textarea name="datosClinicos" rows="6"></textarea></label><button type="button" class="boton-secundario" data-img-action="sincronizar">Sincronizar datos clínicos</button></fieldset><fieldset><legend>Estudios a solicitar</legend><div class="solicitud-imagen-grid"><label>Tipo de solicitud<select name="tipo"><option value="Ordinario">Ordinario</option><option value="Urgente">Urgente</option></select></label><label>Estudio del catálogo<input name="buscarEstudio" list="catalogoImagenLista" placeholder="Buscar por nombre o sinónimo"><datalist id="catalogoImagenLista">${CATALOGO_ESTUDIOS_IMAGEN.filter((e) => e.activo).map((e) => `<option value="${escapar(e.nombre)}">${escapar(e.sinonimos.join(", "))}</option>`).join("")}</datalist></label><label>Modalidad<select name="modalidad">${CATEGORIAS_IMAGEN.map((e) => `<option value="${e.id}">${escapar(e.nombre)}</option>`).join("")}</select></label><label>Región anatómica<input name="region"></label><label>Contraste<select name="contraste"><option value="">No especificado</option><option value="sin contraste">Sin contraste</option><option value="con contraste">Con contraste</option></select></label><label>Proyección/protocolo<input name="protocolo"></label><label>Observaciones técnicas<textarea name="observacionesEstudio" rows="2"></textarea></label><label>Criterio de urgencia<textarea name="criterioUrgencia" rows="2"></textarea></label></div><button type="button" class="boton-secundario" data-img-action="agregar-estudio">Añadir estudio</button><div id="listaEstudiosImagenSolicitud" class="solicitud-imagen-estudios"></div></fieldset><fieldset><legend>Médicos</legend><div class="solicitud-imagen-grid"><label>Médico solicitante<input name="medicoNombre" value="${escapar(medicoInicial.nombre)}"></label><label>Cargo o grado<input name="medicoCargo" value="${escapar(medicoInicial.cargo)}"></label><label>Cédula profesional<input name="medicoCedula" value="${escapar(medicoInicial.cedulaProfesional)}"></label><label>Servicio<input name="medicoServicio" value="${escapar(medicoInicial.servicio || p.servicio)}"></label><label>Médico adscrito<input name="adscritoNombre" placeholder="Seleccionar o capturar médico autorizado"></label><label>Cédula de especialidad<input name="adscritoCedula"></label></div><p class="solicitud-img-nota">Recibe la solicitud queda en blanco para ser completado por Imagenología.</p></fieldset><section id="datosFaltantesSolicitudImagen" class="solicitud-datos-faltantes" aria-live="polite"></section><div class="solicitud-imagen-actions"><button type="button" class="boton-secundario" data-img-action="borrador">Guardar borrador</button><button type="button" class="boton-principal" data-img-action="generar">Generar solicitud</button><button type="button" class="boton-secundario" data-img-action="word">Descargar Word</button><button type="button" class="boton-secundario" data-img-action="pdf">Imprimir / PDF</button></div></form></div>`;
   document.body.appendChild(overlay);
   const form = overlay.querySelector("#formSolicitudImagen");
   const valor = (name) => form.elements[name]?.value || "";
-  const datos = () => { const fechaNac = valor("fechaNacimiento"); const alergias = valor("alergias") || (form.elements.alergiasConfirmadas.checked ? "NEGADAS" : ""); return { id: estado.id, pacienteId: uidPaciente, formatoId: FORMATO_SOLICITUD_IMAGENOLOGIA.clave, solicitud: { fecha: valor("fecha"), hora: valor("hora"), fechaCita: valor("fechaCita"), horaCita: valor("horaCita") }, paciente: { expediente: valor("expediente"), nombreCompleto: valor("nombreCompleto"), fechaNacimiento: fechaNac, edad: edadDesde(fechaNac), curp: valor("curp"), sexo: valor("sexo"), genero: valor("genero"), pa: valor("pa"), camaConsultorio: valor("camaConsultorio"), pesoKg: valor("pesoKg"), tallaM: valor("tallaM"), servicio: valor("servicio"), alergias }, datosClinicos: valor("datosClinicos"), estudios: estado.estudios.map((e) => ({ ...e })), medicoSolicitante: { uid: medicoInicial.uid, nombre: valor("medicoNombre"), cargo: valor("medicoCargo"), cedulaProfesional: valor("medicoCedula"), servicio: valor("medicoServicio"), firmaId: medicoInicial.firmaId }, medicoAdscrito: { nombre: valor("adscritoNombre"), cedulaEspecialidad: valor("adscritoCedula") }, actualizadoPor: medicoInicial.uid }; };
+  function insertarSelectorMedico(inputName, selectName, seleccionado = "") {
+    const input = form.elements[inputName];
+    if (!input) return;
+    const select = document.createElement("select");
+    select.name = selectName;
+    select.setAttribute("aria-label", inputName === "adscritoNombre" ? "Médico adscrito" : "Médico solicitante");
+    select.innerHTML = opcionesMedicos(seleccionado);
+    input.closest("label")?.insertBefore(select, input);
+    select.addEventListener("change", () => {
+      const medicoSeleccionado = catalogo.find((item) => item.id === select.value);
+      if (!medicoSeleccionado) {
+        input.value = "";
+        if (inputName === "adscritoNombre") form.elements.adscritoCedula.value = "";
+        return;
+      }
+      input.value = medicoSeleccionado.nombre;
+      if (inputName === "medicoNombre") {
+        form.elements.medicoCargo.value = medicoSeleccionado.cargo;
+        form.elements.medicoCedula.value = medicoSeleccionado.cedula;
+      } else {
+        form.elements.adscritoCedula.value = medicoSeleccionado.cedula || medicoSeleccionado.especialidad || "";
+      }
+    });
+    if (seleccionado) select.dispatchEvent(new Event("change"));
+  }
+  insertarSelectorMedico("medicoNombre", "medicoSolicitanteId", medicoInicial.uid);
+  insertarSelectorMedico("adscritoNombre", "adscritoId");
+  const datos = () => { const fechaNac = valor("fechaNacimiento"); const alergias = valor("alergias") || (form.elements.alergiasConfirmadas.checked ? "NEGADAS" : ""); const solicitante = catalogo.find((item) => item.id === valor("medicoSolicitanteId")) || medicoInicial; const adscrito = catalogo.find((item) => item.id === valor("adscritoId")) || {}; return { id: estado.id, pacienteId: uidPaciente, formatoId: FORMATO_SOLICITUD_IMAGENOLOGIA.clave, solicitud: { fecha: valor("fecha"), hora: valor("hora"), fechaCita: valor("fechaCita"), horaCita: valor("horaCita") }, paciente: { expediente: valor("expediente"), nombreCompleto: valor("nombreCompleto"), fechaNacimiento: fechaNac, edad: edadDesde(fechaNac), curp: valor("curp"), sexo: valor("sexo"), genero: valor("genero"), pa: valor("pa"), camaConsultorio: valor("camaConsultorio"), pesoKg: valor("pesoKg"), tallaM: valor("tallaM"), servicio: valor("servicio"), alergias }, datosClinicos: valor("datosClinicos"), estudios: estado.estudios.map((e) => ({ ...e })), medicoSolicitante: { uid: solicitante.uid || medicoInicial.uid, nombre: valor("medicoNombre"), cargo: valor("medicoCargo"), cedulaProfesional: valor("medicoCedula"), servicio: valor("medicoServicio"), firmaId: solicitante.firmaId || medicoInicial.firmaId }, medicoAdscrito: { uid: adscrito.uid || "", nombre: valor("adscritoNombre"), cedulaEspecialidad: valor("adscritoCedula"), especialidad: adscrito.especialidad || "", firmaId: adscrito.firmaId || "" }, actualizadoPor: medicoInicial.uid }; };
   function faltantes(actual = datos()) { const f = []; const p2 = actual.paciente; if (!p2.expediente) f.push({ clave: "expediente", etiqueta: "Número de expediente", obligatorio: true }); if (!p2.nombreCompleto) f.push({ clave: "nombreCompleto", etiqueta: "Nombre del paciente", obligatorio: true }); if (!p2.fechaNacimiento) f.push({ clave: "fechaNacimiento", etiqueta: "Fecha de nacimiento", obligatorio: true }); if (!p2.sexo) f.push({ clave: "sexo", etiqueta: "Sexo", obligatorio: true }); if (!p2.servicio) f.push({ clave: "servicio", etiqueta: "Servicio solicitante", obligatorio: true }); if (!actual.datosClinicos.trim()) f.push({ clave: "datosClinicos", etiqueta: "Datos clínicos y sospecha diagnóstica", obligatorio: true }); if (!actual.estudios.length) f.push({ clave: "estudios", etiqueta: "Al menos un estudio solicitado", obligatorio: true }); if (!actual.medicoSolicitante.nombre) f.push({ clave: "medicoNombre", etiqueta: "Médico solicitante", obligatorio: true }); if (!actual.medicoSolicitante.cedulaProfesional) f.push({ clave: "medicoCedula", etiqueta: "Cédula profesional del solicitante", obligatorio: true }); if (actual.estudios.some((e) => e.tipo === "Urgente" && !e.criterioUrgencia.trim())) f.push({ clave: "criterioUrgencia", etiqueta: "Criterio de urgencia", obligatorio: true }); if (!p2.curp) f.push({ clave: "curp", etiqueta: "CURP", obligatorio: false }); if (!p2.pesoKg) f.push({ clave: "pesoKg", etiqueta: "Peso", obligatorio: false }); if (!p2.tallaM) f.push({ clave: "tallaM", etiqueta: "Talla", obligatorio: false }); if (!actual.medicoAdscrito.nombre) f.push({ clave: "adscritoNombre", etiqueta: "Médico adscrito", obligatorio: false }); return f; }
   function actualizarFaltantes() { const panel = overlay.querySelector("#datosFaltantesSolicitudImagen"); const f = faltantes(); panel.innerHTML = `<h3>Datos faltantes</h3>${f.length ? `<ul>${f.map((x) => `<li><button type="button" data-img-focus="${x.clave}">${escapar(x.etiqueta)}</button>${x.obligatorio ? " <small>(obligatorio para generar)</small>" : " <small>(recomendado)</small>"}</li>`).join("")}</ul>` : "<p>Datos completos. La solicitud puede generarse.</p>"; panel.dataset.obligatorios = f.filter((x) => x.obligatorio).length; }
   function renderizarEstudios() { const lista = overlay.querySelector("#listaEstudiosImagenSolicitud"); lista.innerHTML = estado.estudios.length ? estado.estudios.map((e, i) => `<article><strong>${escapar(e.nombre)}</strong><span>${escapar(e.modalidad)} · ${escapar(e.region)} · ${escapar(e.tipo)}</span><button type="button" data-img-remove="${i}">Quitar</button></article>`).join("") : "<p>No hay estudios agregados.</p>"; }
   function agregarEstudio() { const nombre = valor("buscarEstudio").trim(); if (!nombre) return; const encontrado = CATALOGO_ESTUDIOS_IMAGEN.find((e) => normalizar(e.nombre) === normalizar(nombre) || e.sinonimos.some((s) => normalizar(s) === normalizar(nombre))); const item = { id: idLocal(), catalogoId: encontrado?.id || "manual", tipo: valor("tipo") || "Ordinario", modalidad: valor("modalidad"), nombre: encontrado?.nombre || nombre, region: valor("region") || encontrado?.region || "", protocolo: valor("protocolo"), contraste: valor("contraste"), observaciones: valor("observacionesEstudio"), criterioUrgencia: valor("criterioUrgencia") }; const duplicado = estado.estudios.some((e) => normalizar(e.nombre) === normalizar(item.nombre) && e.modalidad === item.modalidad); if (duplicado && !window.confirm("Este estudio ya está agregado. ¿Deseas añadirlo nuevamente?")) return; estado.estudios.push(item); renderizarEstudios(); actualizarFaltantes(); }
   function sincronizarClinica() { const propuestas = [paciente.padecimientoActual, paciente.datosClinicosResumen?.diagnostico?.texto, paciente.diagnostico?.texto, paciente.exploracionMental].filter((x) => String(x || "").trim()); if (!propuestas.length) return; form.elements.datosClinicos.value = propuestas.join("\n"); actualizarFaltantes(); }
-  async function persistir(definitiva) { const actual = datos(); const faltan = faltantes(); if (definitiva && faltan.some((f) => f.obligatorio)) { const primero = faltan.find((f) => f.obligatorio); overlay.querySelector(`[name="${primero.clave}"]`)?.focus(); overlay.querySelector(".solicitud-datos-faltantes")?.scrollIntoView({ behavior: "smooth", block: "center" }); overlay.querySelector(".solicitud-datos-faltantes")?.classList.add("resaltado"); setTimeout(() => overlay.querySelector(".solicitud-datos-faltantes")?.classList.remove("resaltado"), 1200); return; } actual.id = estado.id || actual.id || ""; console.debug("[SolicitudImagen:Validacion]", { solicitudId: estado.id || null, pacienteId: uidPaciente, missing: faltan.filter((f) => f.obligatorio).map((f) => f.clave), studyCount: actual.estudios.length, result: definitiva ? "definitive-attempt" : "draft" }); const resultado = await onPersist?.(actual, definitiva); estado.id = resultado?.solicitudId || actual.id || estado.id; if (definitiva) { overlay.querySelector(".solicitud-imagen-dialog")?.classList.add("guardado"); alert("Solicitud de imagenología registrada."); } else alert("Borrador de solicitud guardado."); }
-  function descargarWord() { const blob = crearDocumentoWordFray(datosWord(datos())); const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = nombreSeguroNotaWord({ tipoNota: "Solicitud_imagenologia_FTO-HPFBA-EXPC-IMG-SEI", apellidoPaciente: datos().paciente.nombreCompleto || "Paciente", fecha: datos().solicitud.fecha }); a.click(); URL.revokeObjectURL(a.href); console.debug("[SolicitudImagen:Documento]", { solicitudId: estado.id || null, pacienteId: uidPaciente, stage: "word", result: "ok" }); }
+  async function persistir(definitiva) { const actual = datos(); const faltan = faltantes(); if (!actual.medicoAdscrito.nombre && !faltan.some((f) => f.clave === "adscritoNombre")) faltan.push({ clave: "adscritoNombre", etiqueta: "M?dico adscrito", obligatorio: true }); if (definitiva && faltan.some((f) => f.obligatorio)) { const lista = faltan.filter((f) => f.obligatorio).map((f) => `• ${f.etiqueta}`).join('\n'); if (!window.confirm(`Datos faltantes para completar la solicitud de imagenología\n\n${lista}\n\nSelecciona Aceptar para completar los datos o Cancelar para volver.`)) return; const primero = faltan.find((f) => f.obligatorio); overlay.querySelector(`[name="${primero.clave}"]`)?.focus(); overlay.querySelector(".solicitud-datos-faltantes")?.scrollIntoView({ behavior: "smooth", block: "center" }); overlay.querySelector(".solicitud-datos-faltantes")?.classList.add("resaltado"); setTimeout(() => overlay.querySelector(".solicitud-datos-faltantes")?.classList.remove("resaltado"), 1200); return; } actual.id = estado.id || actual.id || ""; console.debug("[SolicitudImagen:Validacion]", { solicitudId: estado.id || null, pacienteId: uidPaciente, missing: faltan.filter((f) => f.obligatorio).map((f) => f.clave), studyCount: actual.estudios.length, result: definitiva ? "definitive-attempt" : "draft" }); const resultado = await onPersist?.(actual, definitiva); estado.id = resultado?.solicitudId || actual.id || estado.id; if (definitiva) { overlay.querySelector(".solicitud-imagen-dialog")?.classList.add("guardado"); alert("Solicitud de imagenología registrada."); } else alert("Borrador de solicitud guardado."); }
+  function fechaPlantilla(valor = "") {
+    return /^\d{4}-\d{2}-\d{2}$/.test(valor) ? valor.split("-").reverse().join("/") : valor;
+  }
+
+  function valoresPlantilla(actual) {
+    const clinicos = String(actual.datosClinicos || "").split(/\n+/);
+    const solicitante = actual.medicoSolicitante || {};
+    const adscrito = actual.medicoAdscrito || {};
+    return {
+      fechaSolicitud: fechaPlantilla(actual.solicitud.fecha),
+      horaSolicitud: actual.solicitud.hora,
+      fechaNacimiento: fechaPlantilla(actual.paciente.fechaNacimiento),
+      FECHA_CITA: fechaPlantilla(actual.solicitud.fechaCita),
+      HORA_CITA: actual.solicitud.horaCita,
+      fechaCita: fechaPlantilla(actual.solicitud.fechaCita),
+      horaCita: actual.solicitud.horaCita,
+      NUMERO_EXPEDIENTE: actual.paciente.expediente,
+      NOMBRE_COMPLETO: actual.paciente.nombreCompleto,
+      EDAD: actual.paciente.edad,
+      CURP: actual.paciente.curp,
+      PA: actual.paciente.pa,
+      CAMA_CONSULTORIO: actual.paciente.camaConsultorio,
+      PESO: actual.paciente.pesoKg,
+      TALLA: actual.paciente.tallaM,
+      ALERGIAS: actual.paciente.alergias,
+      ESTUDIO: actual.estudios.map((item) => item.nombre).join("\n"),
+      DATOS_CLINICOS_1: clinicos[0] || "",
+      DATOS_CLINICOS_2: clinicos[1] || "",
+      DATOS_CLINICOS_3: clinicos[2] || "",
+      MEDICO_SOLICITANTE: solicitante.nombre,
+      CARGO_SOLICITANTE: solicitante.cargo,
+      CEDULA_SOLICITANTE: solicitante.cedulaProfesional,
+      MEDICO_ADSCRITO: adscrito.nombre,
+      CEDULA_ADSCRITO: adscrito.cedulaEspecialidad,
+      sexo: actual.paciente.sexo,
+      "g?nero": actual.paciente.genero,
+      "servicio solicitante": actual.paciente.servicio,
+      tipo: actual.estudios[0]?.tipo || "Ordinario",
+      "criterio de urgencia": actual.estudios.find((item) => item.tipo === "Urgente")?.criterioUrgencia || ""
+    };
+  }
+
+  async function descargarWord() {
+    const actual = datos();
+    const faltan = faltantes(actual);
+    if (!actual.medicoAdscrito.nombre && !faltan.some((item) => item.clave === "adscritoNombre")) faltan.push({ clave: "adscritoNombre", etiqueta: "M?dico adscrito", obligatorio: true });
+    if (faltan.some((item) => item.obligatorio)) {
+      alert(`Datos faltantes para completar la solicitud de imagenolog?a\n\n${faltan.filter((item) => item.obligatorio).map((item) => `? ${item.etiqueta}`).join("\n")}`);
+      actualizarFaltantes();
+      return;
+    }
+    const blob = await crearDocumentoWordDesdePlantilla({ valores: valoresPlantilla(actual) });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = nombreSeguroNotaWord({ tipoNota: "Solicitud_imagenologia_FTO-HPFBA-EXPC-IMG-SEI", apellidoPaciente: actual.paciente.nombreCompleto || "Paciente", fecha: actual.solicitud.fecha });
+    a.click();
+    URL.revokeObjectURL(a.href);
+    console.debug("[SolicitudImagen:Documento]", { solicitudId: estado.id || null, pacienteId: uidPaciente, stage: "word-template", result: "ok" });
+  }
+
   function imprimir() { abrirVentana(htmlDocumento(datos()), FORMATO_SOLICITUD_IMAGENOLOGIA.clave).print(); console.debug("[SolicitudImagen:Documento]", { solicitudId: estado.id || null, pacienteId: uidPaciente, stage: "print", result: "ok" }); }
   overlay.addEventListener("input", actualizarFaltantes); overlay.addEventListener("change", actualizarFaltantes); overlay.addEventListener("click", (e) => { const action = e.target.closest("[data-img-action]")?.dataset.imgAction; if (action === "cerrar") overlay.remove(); if (action === "agregar-estudio") agregarEstudio(); if (action === "sincronizar") sincronizarClinica(); if (action === "borrador") persistir(false).catch((err) => { console.error("[SolicitudImagen:Documento]", { code: err?.code || null, stage: "draft", result: "error" }); alert("No fue posible guardar el borrador."); }); if (action === "generar") persistir(true).catch((err) => { console.error("[SolicitudImagen:Documento]", { code: err?.code || null, stage: "definitive", result: "error" }); alert("No fue posible registrar la solicitud."); }); if (action === "word") descargarWord(); if (action === "pdf") imprimir(); const remove = e.target.closest("[data-img-remove]"); if (remove) { estado.estudios.splice(Number(remove.dataset.imgRemove), 1); renderizarEstudios(); actualizarFaltantes(); } const focus = e.target.closest("[data-img-focus]")?.dataset.imgFocus; if (focus) overlay.querySelector(`[name="${focus}"]`)?.focus(); });
   overlay.addEventListener("keydown", (e) => { if (e.key === "Escape") overlay.remove(); });

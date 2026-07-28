@@ -6071,6 +6071,7 @@ async function abrirSolicitudImagenologiaPaciente() {
     paciente: datosPacienteActual,
     medico: { ...medicoActualDatos, uid: auth.currentUser?.uid || "" },
     uidPaciente,
+    catalogoMedicos: catalogoMedicosFirmasIndicacionesCache,
     servicio: datosPacienteActual.servicioInstitucional || datosPacienteActual.servicio || medicoActualDatos.servicio || "",
     onPersist: async (solicitud, definitiva) => {
       const resultado = await guardarSolicitudImagenologia(uidPaciente, solicitud, { definitiva, usuario: medicoActualDatos });
@@ -7364,30 +7365,21 @@ async function descargarSolicitudEstudios() {
 
   if (formato.id === FORMATO_SOLICITUD_IMAGENOLOGIA.clave) {
     const snapshot = datosImagenologiaDesdeSolicitudBase(datos);
-    console.debug("[Estudios:Exportacion]", { formatoId: formato.id, tipoExportacion: "docx", generatorId: "crearDocumentoWordFray", result: "started" });
-    const { crearDocumentoWordFray, nombreSeguroNotaWord } = await import("./services/frayDocx.js");
-    const documento = crearDocumentoWordFray({
-      titulo: "SOLICITUD DE ESTUDIO DE IMAGENOLOGÍA",
-      institucionSuperior: "SECRETARÍA DE SALUD",
-      institucionIntermedia: "COMISIÓN NACIONAL DE SALUD MENTAL Y ADICCIONES",
-      institucion: "HOSPITAL PSIQUIÁTRICO FRAY BERNARDINO ÁLVAREZ",
-      paciente: snapshot.paciente,
-      servicio: snapshot.paciente.servicio,
-      fecha: snapshot.solicitud.fecha,
-      tituloFormato: formato.clave,
-      secciones: [
-        { titulo: "FTO-HPFBA-EXPC-IMG-SEI · DATOS CLÍNICOS", contenido: snapshot.datosClinicos },
-        { titulo: "ESTUDIOS SOLICITADOS", contenido: snapshot.estudios.map((e) => `${e.tipo} · ${e.nombre}`).join("\n") },
-        { titulo: "MÉDICOS", contenido: `Solicitante: ${snapshot.medicoSolicitante.nombre}\nCédula: ${snapshot.medicoSolicitante.cedulaProfesional}\nAdscrito: ____________________` }
-      ],
-      medicoSolicitante: snapshot.medicoSolicitante
-    });
-    const enlace = document.createElement("a");
-    enlace.href = URL.createObjectURL(documento);
+    const { crearDocumentoWordDesdePlantilla, nombreSeguroNotaWord } = await import("./services/frayDocx.js");
+    console.debug("[Estudios:Exportacion]", { formatoId: formato.id, tipoExportacion: "docx", generatorId: "crearDocumentoWordDesdePlantilla", result: "started" });
+    const valores = {
+      fechaSolicitud: datos.fecha, horaSolicitud: "", fechaNacimiento: snapshot.paciente.fechaNacimiento, FECHA_CITA: "", HORA_CITA: "", fechaCita: "", horaCita: "",
+      NUMERO_EXPEDIENTE: snapshot.paciente.expediente, NOMBRE_COMPLETO: snapshot.paciente.nombreCompleto, EDAD: snapshot.paciente.edad, CURP: snapshot.paciente.curp,
+      PA: snapshot.paciente.pa, CAMA_CONSULTORIO: snapshot.paciente.camaConsultorio, PESO: snapshot.paciente.pesoKg, TALLA: snapshot.paciente.tallaM,
+      ALERGIAS: snapshot.paciente.alergias, ESTUDIO: snapshot.estudios.map((item) => item.nombre).join("\n"), DATOS_CLINICOS_1: snapshot.datosClinicos, DATOS_CLINICOS_2: "", DATOS_CLINICOS_3: "",
+      MEDICO_SOLICITANTE: snapshot.medicoSolicitante.nombre, CARGO_SOLICITANTE: snapshot.medicoSolicitante.cargo, CEDULA_SOLICITANTE: snapshot.medicoSolicitante.cedulaProfesional,
+      MEDICO_ADSCRITO: "", CEDULA_ADSCRITO: "", sexo: snapshot.paciente.sexo, "g?nero": snapshot.paciente.genero, "servicio solicitante": snapshot.paciente.servicio,
+      tipo: snapshot.estudios[0]?.tipo || "Ordinario", "criterio de urgencia": ""
+    };
+    const documento = await crearDocumentoWordDesdePlantilla({ valores });
+    const enlace = document.createElement("a"); enlace.href = URL.createObjectURL(documento);
     enlace.download = nombreSeguroNotaWord({ tipoNota: "Solicitud_imagenologia_FTO-HPFBA-EXPC-IMG-SEI", apellidoPaciente: datos.pacienteNombre || "Paciente", fecha: datos.fecha });
-    enlace.click();
-    URL.revokeObjectURL(enlace.href);
-    return;
+    enlace.click(); URL.revokeObjectURL(enlace.href); return;
   }
 
   const html = `<!DOCTYPE html>
