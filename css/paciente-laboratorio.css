@@ -538,6 +538,83 @@
   padding: 16px;
 }
 
+.resumen-cuadro-encabezado {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.resumen-cuadro-encabezado > span {
+  color: var(--accent-primary);
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+}
+
+.resumen-cuadro-editar {
+  width: auto;
+  min-height: 32px;
+  padding: 6px 12px;
+}
+
+.resumen-dato-oculto {
+  color: var(--text-secondary);
+  font-size: 1.1rem;
+}
+
+.resumen-pediatrico-compacto {
+  display: grid;
+  gap: 4px;
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.resumen-editor-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  background: color-mix(in srgb, var(--surface-primary) 76%, transparent);
+}
+
+.resumen-editor-card {
+  width: min(720px, 100%);
+  max-height: min(88vh, 760px);
+  overflow: auto;
+  padding: 20px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 18px;
+  background: var(--surface-secondary);
+  color: var(--text-primary);
+  box-shadow: 0 20px 60px rgba(0,0,0,.28);
+}
+
+.resumen-editor-card header,
+.resumen-editor-card footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.resumen-editor-card header { margin-bottom: 16px; }
+.resumen-editor-card header h3 { margin: 0; }
+.resumen-editor-card header button { width: auto; }
+.resumen-editor-campos { display: grid; gap: 12px; }
+.resumen-editor-campos label { display: grid; gap: 6px; }
+.resumen-editor-campos textarea { min-height: 88px; resize: vertical; }
+.resumen-editor-campos label > span { font-size: .82rem; color: var(--text-secondary); }
+.resumen-editor-campos input[type="checkbox"] { width: auto; display: inline-block; }
+.resumen-editor-error { min-height: 1.4em; color: var(--danger, #c65b5b); }
+.resumen-editor-card footer { justify-content: flex-end; margin-top: 16px; }
+.resumen-editor-card footer button { width: auto; }
+
 .lab-muted {
   color: var(--text-secondary);
   line-height: 1.5;
