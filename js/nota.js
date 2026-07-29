@@ -6,7 +6,6 @@ import { iniciarMonitoreoSesion } from "./services/sesion.js";
 import { usuarioEsPersonalClinico } from "./utils/roles.js";
 import { CIE10 } from "./data/cie10.js";
 import { CIE11 } from "./data/cie11.js";
-import { MEDICAMENTOS } from "./data/medicamentos.js";
 import { ESCALAS_PSIQUIATRICAS, interpretarEscala } from "./data/escalasPsiquiatricas.js";
 import {
   ESCALAS_MEDICINA_GENERAL,
@@ -1003,39 +1002,6 @@ if (buscadorDiagnostico && resultadosCIE10 && cie10Codigo && cie10Nombre) {
       resultadosCIE10.appendChild(item);
     });
   });
-}
-
-const buscadorMedicamento = document.getElementById("buscadorMedicamento");
-const resultadosMedicamentos = document.getElementById("resultadosMedicamentos");
-
-if (buscadorMedicamento && resultadosMedicamentos) {
-  buscadorMedicamento.addEventListener("input", () => {
-    const texto = buscadorMedicamento.value.toLowerCase().trim();
-    resultadosMedicamentos.innerHTML = "";
-
-    if (texto.length < 2) return;
-
-    MEDICAMENTOS.filter((med) =>
-      med.nombre.toLowerCase().includes(texto) ||
-      med.clase.toLowerCase().includes(texto)
-    ).slice(0, 10).forEach((med) => {
-      const item = document.createElement("div");
-      item.className = "resultado-cie10";
-      item.innerHTML = `<strong>${med.nombre}</strong> - ${med.clase}<br><small>${med.dosisHabitual} | ${med.notas}</small>`;
-      item.addEventListener("click", () => {
-        const tratamiento = document.getElementById("tratamiento");
-        const textoMed = `${med.nombre} (${med.clase}) - ${med.dosisHabitual}. ${med.notas}`;
-        tratamiento.value = tratamiento.value
-          ? `${tratamiento.value}\n${textoMed}`
-          : textoMed;
-        buscadorMedicamento.value = "";
-        resultadosMedicamentos.innerHTML = "";
-      });
-      resultadosMedicamentos.appendChild(item);
-    });
-  });
-
-  sincronizarDiagnosticosObservacion();
 }
 
 function configurarPanelEscalaNota() {
@@ -3201,13 +3167,11 @@ function collectNoteData() {
     tipoAtencion: contexto.tipo,
     usuarioId: uidMedicoActual || auth.currentUser?.uid || "",
     usuarioNombre: perfilMedicoActual.nombre || perfilMedicoActual.nombreCompleto || auth.currentUser?.displayName || auth.currentUser?.email || "",
-    medicoResponsable: valorCampo("medico") || observacionFray.firma1Nombre || perfilMedicoActual.nombre || perfilMedicoActual.nombreCompleto || "",
+    medicoResponsable: observacionFray.firma1Nombre || perfilMedicoActual.nombre || perfilMedicoActual.nombreCompleto || "",
     servicio: observacionFray.servicio || pacienteActualDatos.servicio || "",
     tratamiento: valorCampo("tratamiento"),
     diagnosticos: normalizarDiagnosticosNota(diagnosticosSeleccionados),
     diagnosticoCatalogoVisible: diagnosticoCatalogoVisible?.value || "auto",
-    ultimaConsulta: valorCampo("ultimaConsulta"),
-    proximaConsulta: valorCampo("proximaConsulta"),
     observacionFray,
     tipoNota: tipoNota?.value || "completa",
     tipoNotaClave: `${tipoNota?.value || "completa"}:${observacionFray.tipoNota || formato}`,
@@ -3244,9 +3208,6 @@ function llenarFormularioNota(datos) {
   document.getElementById("plan").value = datos.plan || "";
   estudiosSincronizadosNotaIds = new Set(Array.isArray(datos.syncedStudyIds) ? datos.syncedStudyIds.map(String) : []);
   asignarValor("tratamiento", datos.tratamiento || "");
-  asignarValor("medico", datos.medicoResponsable || datos.autor || datos.medico || "");
-  asignarValor("ultimaConsulta", datos.ultimaConsulta || "");
-  asignarValor("proximaConsulta", datos.proximaConsulta || "");
   if (diagnosticoCatalogoVisible) diagnosticoCatalogoVisible.value = datos.diagnosticoCatalogoVisible || "auto";
 
   const diagnosticosFuente =
@@ -3312,7 +3273,7 @@ function elementosEditablesNota() {
     "#bloqueNotaRapida input, #bloqueNotaRapida textarea, #bloqueNotaRapida select, #bloqueNotaRapida [contenteditable]",
     "#bloqueNotaCompleta input, #bloqueNotaCompleta textarea, #bloqueNotaCompleta select, #bloqueNotaCompleta [contenteditable]",
     "#bloqueObservacionFray input, #bloqueObservacionFray textarea, #bloqueObservacionFray select, #bloqueObservacionFray [contenteditable]",
-    "#tratamiento, #medico, #ultimaConsulta, #proximaConsulta, #tipoNota, #btnSincronizarEstudiosNota",
+    "#tratamiento, #tipoNota, #btnSincronizarEstudiosNota",
     "[data-note-field]"
   ];
   return [...new Set([...document.querySelectorAll(selectores.join(","))])];
@@ -4219,9 +4180,6 @@ async function cargarPaciente(uidPaciente) {
   }
 
   const tratamiento = document.getElementById("tratamiento");
-  const medico = document.getElementById("medico");
-  const ultimaConsulta = document.getElementById("ultimaConsulta");
-  const proximaConsulta = document.getElementById("proximaConsulta");
 
   diagnosticosSeleccionados = diagnosticosPreviosPacienteNota(datos);
 
@@ -4242,9 +4200,6 @@ async function cargarPaciente(uidPaciente) {
   }
 
   if (tratamiento) tratamiento.value = datos.tratamiento || datos.datosClinicosResumen?.tratamientoActivo || datos.datosClinicosResumen?.tratamientoHistoria || "";
-  if (medico) medico.value = datos.medicoTratante || "";
-  if (ultimaConsulta) ultimaConsulta.value = datos.ultimaConsulta || "";
-  if (proximaConsulta) proximaConsulta.value = datos.proximaConsulta || "";
   if (diagnosticoCatalogoVisible) {
     diagnosticoCatalogoVisible.value = datos.diagnosticoCatalogoVisible || "auto";
   }
@@ -4299,9 +4254,6 @@ async function guardarNotaMedicaConEstadoLegacy(estadoNota = "definitiva") {
   const diagnostico = diagnosticoActual();
 
   const tratamiento = document.getElementById("tratamiento").value;
-  const medico = document.getElementById("medico").value;
-  const ultimaConsulta = document.getElementById("ultimaConsulta").value;
-  const proximaConsulta = document.getElementById("proximaConsulta").value;
 
   const datosNotaClinica = leerFormularioNota();
   const metadatosAdicionales = validarMetadatosAdicionalesNota({
@@ -4331,9 +4283,6 @@ async function guardarNotaMedicaConEstadoLegacy(estadoNota = "definitiva") {
       diagnosticos: diagnosticosSeleccionados,
       historialDiagnosticos: diagnosticosSeleccionados,
       tratamiento,
-      medicoTratante: medico,
-      ultimaConsulta,
-      proximaConsulta,
       ...datosPersistentesInstitucionales
     });
 
@@ -4350,8 +4299,6 @@ async function guardarNotaMedicaConEstadoLegacy(estadoNota = "definitiva") {
       diagnosticos: diagnosticosSeleccionados,
       historialDiagnosticos: diagnosticosSeleccionados,
       tratamiento,
-      ultimaConsulta,
-      proximaConsulta
     };
 
     let idNotaGuardada = notaEditandoId || "";
@@ -4485,8 +4432,6 @@ async function guardarNotaClinicaSeguro(estadoNota = "definitiva") {
     } = datosNotaClinica;
     const tratamiento = datosNotaClinica.tratamiento;
     const medico = datosNotaClinica.medicoResponsable || perfilMedicoActual.nombre || perfilMedicoActual.nombreCompleto || auth.currentUser.displayName || "";
-    const ultimaConsulta = datosNotaClinica.ultimaConsulta;
-    const proximaConsulta = datosNotaClinica.proximaConsulta;
     const catalogoVisible = datosNotaClinica.diagnosticoCatalogoVisible;
     const contenidoClinico = [
       datosNotaClinica.notaRapida, datosNotaClinica.subjetivo, datosNotaClinica.objetivo,
@@ -4517,8 +4462,6 @@ async function guardarNotaClinicaSeguro(estadoNota = "definitiva") {
       diagnosticos: diagnosticosSeleccionados,
       historialDiagnosticos: diagnosticosSeleccionados,
       tratamiento,
-      ultimaConsulta,
-      proximaConsulta
     };
     const eraNueva = !notaEditandoId;
     const datosEditor = {
@@ -4566,9 +4509,6 @@ async function guardarNotaClinicaSeguro(estadoNota = "definitiva") {
         diagnosticos: diagnosticosSeleccionados,
         historialDiagnosticos: diagnosticosSeleccionados,
         tratamiento,
-        medicoTratante: medico,
-        ultimaConsulta,
-        proximaConsulta,
         ...(esFormatoFray() ? datosPersistentesDesdeObservacion(datosNotaClinica.observacionFray) : {})
       });
     } catch (errorPerfil) {
@@ -4905,7 +4845,7 @@ function valorFirmaPdfCognicion(tarjeta, campo) {
 }
 
 function obtenerFirmasPdfCognicion() {
-  return [...document.querySelectorAll("#bloqueObservacionFray .seccion-firmas .firma-campo")]
+  return [...document.querySelectorAll(".seccion-firmas .firma-campo")]
     .map((tarjeta, indice) => ({
       orden: indice,
       nombre: valorFirmaPdfCognicion(tarjeta, "nombre"),
@@ -5154,12 +5094,11 @@ function construirContenedorPdfCognicion(exportData = datosExportacionCognicion(
   }
   const bloqueSignosVitales = crearSeccionSignosVitalesPdfCognicion(exportData.signosVitales);
   if (bloqueSignosVitales) documento.appendChild(bloqueSignosVitales);
-  ["tratamiento", "medico", "ultimaConsulta", "proximaConsulta"].forEach(agregarCampo);
+  ["tratamiento"].forEach(agregarCampo);
 
   const bloqueObservacion = agregarNodo(document.getElementById("bloqueObservacionFray"));
   bloqueObservacion?.classList.remove("oculto");
   bloqueObservacion?.querySelector(".grid-vitales")?.closest(".observacion-seccion")?.remove();
-  if (bloqueObservacion) reemplazarFirmasPdfCognicion(bloqueObservacion);
   bloqueObservacion?.querySelectorAll("details").forEach((detalle) => { detalle.open = true; });
   if (bloqueObservacion) bloqueObservacion.replaceWith(...bloqueObservacion.childNodes);
 
@@ -5174,7 +5113,9 @@ function construirContenedorPdfCognicion(exportData = datosExportacionCognicion(
   ));
   agregarNodo(tituloNota);
   const bloqueNota = tipoNota?.value === "rapida" ? bloqueNotaRapida : bloqueNotaCompleta;
-  agregarNodo(bloqueNota)?.classList.remove("oculto");
+  const bloqueNotaPdf = agregarNodo(bloqueNota);
+  bloqueNotaPdf?.classList.remove("oculto");
+  if (bloqueNotaPdf) reemplazarFirmasPdfCognicion(bloqueNotaPdf);
 
   convertirControlesPdfCognicion(documento);
   return documento;

@@ -1788,8 +1788,7 @@ button:hover{
 #resultadosCIE10Lista,
 #resultadosCIE11Lista,
 #resultadosCIE10,
-.resultados-cie10,
-#resultadosMedicamentos {
+.resultados-cie10 {
   margin-top: 8px;
   border-radius: 14px;
   overflow: hidden;

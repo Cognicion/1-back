@@ -310,26 +310,8 @@
 
 <div id="diagnosticosSeleccionados"></div>
 
-<label>Tratamiento visible para paciente</label>
-<input
-    id="buscadorMedicamento"
-    type="text"
-    placeholder="Buscar medicamento. Ej. sertralina, litio, quetiapina"
-    autocomplete="off"
->
-<div id="resultadosMedicamentos"></div>
+<label for="tratamiento">Tratamiento e indicaciones</label>
 <textarea id="tratamiento" placeholder="Medicamentos actuales"></textarea>
-
-<label>Medico tratante visible para paciente</label>
-<input id="medico" placeholder="Dr. Aldo Sandokan Aguilar Valenzuela">
-
-<label>Ultima consulta visible para paciente</label>
-<input id="ultimaConsulta" type="date">
-
-<label>Proxima consulta visible para paciente</label>
-<input id="proximaConsulta" type="date">
-
-<hr>
 
 <input id="obsTipoNota" type="hidden" value="evolucion">
 <input id="obsFechaNota" type="hidden">
@@ -351,56 +333,6 @@
         </div>
     </div>
 
-    <details class="observacion-seccion firmas-extra">
-        <summary>Firmas</summary>
-        <datalist id="catalogoMedicosFirmas"></datalist>
-        <div class="grid-observacion seccion-firmas">
-            <div class="firma-campo" data-firma="1">
-                <div class="firma-campo-header">
-                    <strong>Firma campo 1</strong>
-                    <button type="button" class="boton-secundario boton-mini" data-guardar-medico-firma="1">
-                        Agregar al catalogo
-                    </button>
-                    <button type="button" class="boton-secundario boton-mini" data-limpiar-firma="1">
-                        Limpiar
-                    </button>
-                </div>
-                <label>Nombre <input id="obsFirma1Nombre" list="catalogoMedicosFirmas" data-firma-nombre="1"></label>
-                <label>Cargo <input id="obsFirma1Cargo" placeholder="Ej. Medico adscrito"></label>
-                <label>Cedula <input id="obsFirma1Cedula"></label>
-            </div>
-
-            <div class="firma-campo" data-firma="2">
-                <div class="firma-campo-header">
-                    <strong>Firma campo 2</strong>
-                    <button type="button" class="boton-secundario boton-mini" data-guardar-medico-firma="2">
-                        Agregar al catalogo
-                    </button>
-                    <button type="button" class="boton-secundario boton-mini" data-limpiar-firma="2">
-                        Limpiar
-                    </button>
-                </div>
-                <label>Nombre <input id="obsFirma2Nombre" list="catalogoMedicosFirmas" data-firma-nombre="2"></label>
-                <label>Cargo <input id="obsFirma2Cargo" placeholder="Ej. Medico residente"></label>
-                <label>Cedula <input id="obsFirma2Cedula"></label>
-            </div>
-
-            <div class="firma-campo" data-firma="3">
-                <div class="firma-campo-header">
-                    <strong>Firma campo 3</strong>
-                    <button type="button" class="boton-secundario boton-mini" data-guardar-medico-firma="3">
-                        Agregar al catalogo
-                    </button>
-                    <button type="button" class="boton-secundario boton-mini" data-limpiar-firma="3">
-                        Limpiar
-                    </button>
-                </div>
-                <label>Nombre <input id="obsFirma3Nombre" list="catalogoMedicosFirmas" data-firma-nombre="3"></label>
-                <label>Cargo <input id="obsFirma3Cargo" placeholder="Ej. Medico residente"></label>
-                <label>Cedula <input id="obsFirma3Cedula"></label>
-            </div>
-        </div>
-    </details>
 </section>
 
 <section id="bloquePediatriaNota" class="bloque-pediatria-nota oculto">
@@ -472,11 +404,11 @@
     <label>Subjetivo / Padecimiento actual o evolucion</label>
     <textarea id="subjetivo"></textarea>
 
-    <label>Exploracion fisica y neurologica</label>
-    <textarea id="obsExploracionFisicaNeurologica"></textarea>
-
     <label>Objetivo / Examen mental</label>
     <textarea id="objetivo"></textarea>
+
+    <label>Exploracion fisica y neurologica</label>
+    <textarea id="obsExploracionFisicaNeurologica"></textarea>
 
     <div class="encabezado-campo-nota">
         <label for="obsResultadosEstudios">Resultados relevantes de estudios diagnosticos</label>
@@ -498,6 +430,57 @@
 
     <label>Analisis clinico</label>
     <textarea id="analisis"></textarea>
+
+    <details class="observacion-seccion firmas-extra">
+        <summary>Firmas</summary>
+        <datalist id="catalogoMedicosFirmas"></datalist>
+        <div class="grid-observacion seccion-firmas">
+            <div class="firma-campo" data-firma="1">
+                <div class="firma-campo-header">
+                    <strong>Firma campo 1</strong>
+                    <button type="button" class="boton-secundario boton-mini" data-guardar-medico-firma="1">
+                        Agregar al catalogo
+                    </button>
+                    <button type="button" class="boton-secundario boton-mini" data-limpiar-firma="1">
+                        Limpiar
+                    </button>
+                </div>
+                <label>Nombre <input id="obsFirma1Nombre" list="catalogoMedicosFirmas" data-firma-nombre="1"></label>
+                <label>Cargo <input id="obsFirma1Cargo" placeholder="Ej. Medico adscrito"></label>
+                <label>Cedula <input id="obsFirma1Cedula"></label>
+            </div>
+
+            <div class="firma-campo" data-firma="2">
+                <div class="firma-campo-header">
+                    <strong>Firma campo 2</strong>
+                    <button type="button" class="boton-secundario boton-mini" data-guardar-medico-firma="2">
+                        Agregar al catalogo
+                    </button>
+                    <button type="button" class="boton-secundario boton-mini" data-limpiar-firma="2">
+                        Limpiar
+                    </button>
+                </div>
+                <label>Nombre <input id="obsFirma2Nombre" list="catalogoMedicosFirmas" data-firma-nombre="2"></label>
+                <label>Cargo <input id="obsFirma2Cargo" placeholder="Ej. Medico residente"></label>
+                <label>Cedula <input id="obsFirma2Cedula"></label>
+            </div>
+
+            <div class="firma-campo" data-firma="3">
+                <div class="firma-campo-header">
+                    <strong>Firma campo 3</strong>
+                    <button type="button" class="boton-secundario boton-mini" data-guardar-medico-firma="3">
+                        Agregar al catalogo
+                    </button>
+                    <button type="button" class="boton-secundario boton-mini" data-limpiar-firma="3">
+                        Limpiar
+                    </button>
+                </div>
+                <label>Nombre <input id="obsFirma3Nombre" list="catalogoMedicosFirmas" data-firma-nombre="3"></label>
+                <label>Cargo <input id="obsFirma3Cargo" placeholder="Ej. Medico residente"></label>
+                <label>Cedula <input id="obsFirma3Cedula"></label>
+            </div>
+        </div>
+    </details>
 
     <label>Plan</label>
     <textarea id="plan"></textarea>
