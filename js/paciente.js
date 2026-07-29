@@ -1056,7 +1056,8 @@ function renderizarBloqueSomatometriaLab(datos = {}) {
   const peso = valorPaciente(datos, ["peso", "somatometria.peso", "signosVitales.peso", "datosInstitucionales.peso"]);
   const talla = valorPaciente(datos, ["talla", "somatometria.talla", "signosVitales.talla", "datosInstitucionales.talla"]);
   const imc = valorPaciente(datos, ["imc", "somatometria.imc", "signosVitales.imc", "datosInstitucionales.imc"], "Sin registro");
-  const pediatrico = Boolean(edad && edad.años < 18);
+  const edadAnios = Number(edad?.["años"] ?? edad?.["aÃ±os"]);
+  const pediatrico = Boolean(edad && Number.isFinite(edadAnios) && edadAnios < 18);
   return `
     <article class="lab-card resumen-cuadro" data-resumen-cuadro="somatometria">
       ${encabezadoCuadroResumen("Somatometría", "somatometria")}
@@ -1070,18 +1071,35 @@ function renderizarBloqueSomatometriaLab(datos = {}) {
 }
 
 function renderizarResumenPediatricoCompacto(datos, edad, peso, talla, imc) {
-  const sexo = valorPaciente(datos, ["sexo", "datosInstitucionales.sexo"], "").trim();
+  const sexo = String(valorPaciente(datos, ["sexo", "datosInstitucionales.sexo"], "")).trim();
   const pesoNumero = numeroDesdeTexto(peso);
   const tallaNumero = numeroDesdeTexto(talla);
   const tallaCm = tallaNumero > 3 ? tallaNumero : tallaNumero * 100;
-  const assessment = buildGrowthAssessment({
-    sexo,
-    fechaNacimiento: obtenerFechaNacimiento(datos),
-    pesoKg: pesoNumero,
-    tallaCm: tallaNumero,
-    tallaUnidad: tallaNumero > 3 ? "cm" : "m",
-    perimetroCefalico: valorPaciente(datos, ["perimetroCefalico", "perimetroCefalicoCm", "somatometria.perimetroCefalico"], "")
-  });
+  const fechaNacimiento = obtenerFechaNacimiento(datos);
+  const perimetroCefalico = numeroDesdeTexto(valorPaciente(datos, ["perimetroCefalico", "perimetroCefalicoCm", "somatometria.perimetroCefalico"], ""));
+
+  if (!fechaNacimiento || !sexo || !Number.isFinite(pesoNumero) || pesoNumero <= 0 || !Number.isFinite(tallaCm) || tallaCm <= 0) {
+    return `<p class="lab-muted">Sin datos suficientes para calcular percentiles</p>`;
+  }
+
+  let assessment;
+  try {
+    assessment = buildGrowthAssessment({
+      sexo,
+      fechaNacimiento,
+      pesoKg: pesoNumero,
+      tallaCm,
+      tallaUnidad: "cm",
+      perimetroCefalico: perimetroCefalico > 0 ? perimetroCefalico : ""
+    });
+  } catch (error) {
+    console.error("[PACIENTE] etapa fallida:", "percentiles pediátricos", {
+      name: error?.name || null,
+      code: error?.code || null,
+      message: error?.message || null
+    });
+    return `<p class="lab-muted">Sin datos suficientes para calcular percentiles</p>`;
+  }
   const listos = assessment.indicators.filter((indicador) => indicador.status === "ready");
   if (!listos.length) return `<p class="lab-muted">Sin datos suficientes para calcular percentiles</p>`;
   return `<div class="resumen-pediatrico-compacto"><b>Datos pediátricos · ${escaparHTML(edad.edadCronologicaTexto)}</b>${listos.map((indicador) => `<small>${escaparHTML(indicador.label)}: P${Number(indicador.percentile).toFixed(1)} · Z ${Number(indicador.z).toFixed(2)}</small>`).join("")}</div>`;
@@ -1097,7 +1115,7 @@ function renderizarBloqueSeguridadLab(datos = {}) {
   `;
 }
 
-function renderizarVistaLaboratorioPaciente(datos = datosPacienteActual || {}) {
+function renderizarVistaLaboratorioPacienteLegacy(datos = datosPacienteActual || {}) {
   const contenedor = document.getElementById("datosGeneralesLaboratorio");
   if (!contenedor || !datos) return;
 
@@ -1191,7 +1209,7 @@ function renderizarVistaLaboratorioPaciente(datos = datosPacienteActual || {}) {
         </article>
         <article class="lab-card lab-card-lista">
           <span>Lnea clnica</span>
-          <ul>${timelineFinal.map((item) => `<li><b>${escaparHTML(item.etiqueta)}:</b> ${escaparHTML(item.valor)}</li>`).join("")}</ul>
+          <ul>${listaTimelineLaboratorio(datos).map((item) => `<li><b>${escaparHTML(item.etiqueta)}:</b> ${escaparHTML(item.valor)}</li>`).join("")}</ul>
         </article>
       </div>
     </div>
@@ -1206,10 +1224,10 @@ function renderizarVistaLaboratorioPaciente(datos = datosPacienteActual || {}) {
   const edad = calcularEdad(fechaNacimiento);
   const tipoPaciente = datos.tipoPaciente || datos.datosInstitucionales?.tipoPaciente || "privada";
   const mostrarInstitucional = pacienteRequiereCamposInstitucionales(tipoPaciente);
-  const equipoClinico = obtenerEquipoClinicoPaciente(datos);
-  const diagnosticos = listaDiagnosticosLaboratorio(datos);
-  const tratamientos = listaTratamientosLaboratorio(datos);
-  const estudios = listaEstudiosLaboratorio(datos);
+  const equipoClinico = resolverBloqueResumenSeguro("equipo clínico", () => obtenerEquipoClinicoPaciente(datos), []);
+  const diagnosticos = resolverBloqueResumenSeguro("diagnósticos", () => listaDiagnosticosLaboratorio(datos), ["Sin diagnósticos registrados"]);
+  const tratamientos = resolverBloqueResumenSeguro("tratamiento activo", () => listaTratamientosLaboratorio(datos), ["Sin tratamiento activo registrado"]);
+  const estudios = resolverBloqueResumenSeguro("estudios", () => listaEstudiosLaboratorio(datos), ["Sin estudios registrados"]);
   contenedor.innerHTML = `
     <div class="lab-paciente-shell">
       <div class="lab-paciente-top">
@@ -1227,11 +1245,11 @@ function renderizarVistaLaboratorioPaciente(datos = datosPacienteActual || {}) {
       </div>
       <div class="lab-vitales-global-actions"><button type="button" onclick="abrirGraficaGlobalSignosVitalesPaciente()">Ver gráfica de signos vitales</button></div>
       <div class="lab-info-grid">
-        ${renderizarBloqueIdentificacionLab(datos, tipoPaciente)}
-        ${renderizarBloqueInstitucionLab(datos, mostrarInstitucional)}
-        ${renderizarBloqueIngresoLab(datos, mostrarInstitucional)}
-        ${renderizarBloqueSomatometriaLab(datos)}
-        ${renderizarBloqueSeguridadLab(datos)}
+        ${resolverBloqueResumenSeguro("identificación", () => renderizarBloqueIdentificacionLab(datos, tipoPaciente))}
+        ${resolverBloqueResumenSeguro("institución", () => renderizarBloqueInstitucionLab(datos, mostrarInstitucional), "")}
+        ${resolverBloqueResumenSeguro("ingreso y consultas", () => renderizarBloqueIngresoLab(datos, mostrarInstitucional))}
+        ${resolverBloqueResumenSeguro("somatometría", () => renderizarBloqueSomatometriaLab(datos))}
+        ${resolverBloqueResumenSeguro("seguridad clínica", () => renderizarBloqueSeguridadLab(datos))}
         <article class="lab-card lab-card-lista resumen-cuadro" data-resumen-cuadro="diagnosticos">
           ${encabezadoCuadroResumen("Diagnósticos", "diagnosticos", false)}<ul>${renderizarListaLab(diagnosticos)}</ul>
         </article>
@@ -1266,7 +1284,8 @@ function renderizarResumenPediatricoPaciente(datos = datosPacienteActual || {}) 
   if (!bloque) return;
 
   const edad = calcularEdadPediatrica(obtenerFechaNacimiento(datos));
-  const esPediatrico = Boolean(edad && edad.años < 18);
+  const edadAnios = Number(edad?.["años"] ?? edad?.["aÃ±os"]);
+  const esPediatrico = Boolean(edad && Number.isFinite(edadAnios) && edadAnios < 18);
 
   bloque.style.display = esPediatrico ? "" : "none";
   if (boton) boton.style.display = esPediatrico ? "" : "none";
@@ -1385,12 +1404,39 @@ function ejecutarSeguroPaciente(etiqueta, tarea) {
   try {
     const resultado = typeof tarea === "function" ? tarea() : null;
     if (resultado && typeof resultado.catch === "function") {
-      resultado.catch((error) => console.error(`Error en ${etiqueta}:`, error));
+      resultado.catch((error) => manejarErrorLocalPaciente(etiqueta, error));
     }
     return resultado;
   } catch (error) {
-    console.error(`Error en ${etiqueta}:`, error);
+    manejarErrorLocalPaciente(etiqueta, error);
     return null;
+  }
+}
+
+function manejarErrorLocalPaciente(etiqueta, error) {
+  console.error("[PACIENTE] etapa fallida:", etiqueta, {
+    name: error?.name || null,
+    code: error?.code || null,
+    message: error?.message || null
+  });
+
+  const selectores = {
+    "vista laboratorio de datos generales": "#datosGeneralesLaboratorio",
+    "diagnósticos del resumen": "#diagnostico",
+    "panel de diagnósticos": "#panelDiagnosticos",
+    "resumen pediátrico del paciente": "#resumenPediatriaPaciente"
+  };
+  const bloque = document.querySelector(selectores[etiqueta] || "");
+  if (!bloque || bloque.childElementCount > 0) return;
+  bloque.innerHTML = `<p class="lab-muted">No fue posible cargar este bloque. El resto del expediente continúa disponible.</p>`;
+}
+
+function resolverBloqueResumenSeguro(etiqueta, renderizar, alterno = "<p class=\"lab-muted\">Sin información disponible.</p>") {
+  try {
+    return renderizar();
+  } catch (error) {
+    manejarErrorLocalPaciente(`resumen: ${etiqueta}`, error);
+    return alterno;
   }
 }
 
@@ -2367,6 +2413,7 @@ async function obtenerPacientePorListaAutorizada(uid) {
 }
 
 async function cargarDatosPaciente() {
+  console.debug("[PACIENTE] inicio", { patientId: uidPaciente || null });
   if (!uidPaciente) {
     datosPacienteActual = null;
     ponerTexto("nombrePaciente", "Paciente no seleccionado");
@@ -2390,6 +2437,7 @@ async function cargarDatosPaciente() {
     }
   }
   datosPacienteActual = datos;
+  console.debug("[PACIENTE] datos base cargados", { patientId: uidPaciente });
 
   if (!datos) {
     try {
@@ -2418,6 +2466,7 @@ async function cargarDatosPaciente() {
 
   ponerTexto("nombrePaciente", obtenerNombrePacienteParaMostrar(datos) || "Paciente sin nombre");
   actualizarAvisoFormatoNombrePaciente(datos);
+  console.debug("[PACIENTE] estructura principal renderizada", { patientId: uidPaciente });
 
   ponerTexto("correoPaciente", datos.email || "Sin correo");
 
@@ -2463,9 +2512,11 @@ async function cargarDatosPaciente() {
   ejecutarSeguroPaciente("selector de vista de datos generales", inicializarSelectorVistaDatosGeneralesPaciente);
 
   ejecutarSeguroPaciente("diagnsticos del resumen", () => renderizarDiagnosticos(datos));
+  console.debug("[PACIENTE] diagnósticos cargados", { patientId: uidPaciente });
   ejecutarSeguroPaciente("panel de diagnsticos", renderizarPanelDiagnosticos);
 
   ponerTexto("tratamiento", datos.tratamiento || "Sin tratamiento registrado");
+  console.debug("[PACIENTE] tratamiento cargado", { patientId: uidPaciente });
 
   ponerTexto("medicoTratante", datos.medicoTratante || "Sin mdico tratante");
 
@@ -2527,7 +2578,9 @@ async function cargarDatosPaciente() {
   ejecutarSeguroPaciente("estancia del paciente", () => actualizarEstanciaPaciente(datos));
   ejecutarSeguroPaciente("visibilidad de campos institucionales", () => actualizarVisibilidadCamposInstitucionalesPaciente(datos));
   ejecutarSeguroPaciente("vista laboratorio de datos generales", () => renderizarVistaLaboratorioPaciente(datos));
+  console.debug("[PACIENTE] resumen cargado", { patientId: uidPaciente });
   ejecutarSeguroPaciente("resumen peditrico del paciente", () => renderizarResumenPediatricoPaciente(datos));
+  console.debug("[PACIENTE] expediente listo", { patientId: uidPaciente });
 }
 
 window.mostrarResumen = function() {
