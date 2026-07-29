@@ -29,6 +29,7 @@ import {
   usuarioEsEnfermeriaSaludMental
 } from "./utils/roles.js";
 import { calcularEdadPediatrica } from "./pediatria/edad.js";
+import { buildGrowthAssessment } from "./services/growth/growthCalculationService.js";
 import {
   calcularIMC as calcularIMCPediatrico,
   mantenimientoHollidaySegar,
@@ -675,11 +676,32 @@ function listaDiagnosticosLaboratorio(datos = datosPacienteActual || {}) {
 function listaTratamientosLaboratorio(datos = datosPacienteActual || {}) {
   const activos = tratamientosCache
     .filter(esTratamientoVigente)
-    .map((tratamiento) => tratamiento.medicamento || tratamiento.nombre || tratamiento.texto)
+    .map((tratamiento) => normalizarIndicacionesParaResumen(tratamiento))
+    .flat()
     .filter(Boolean);
   if (activos.length) return activos;
   const resumen = datos.tratamiento || datos.tratamientoActual || datos.datosClinicosResumen?.tratamiento;
-  return resumen ? [resumen] : ["Sin tratamiento activo registrado"];
+  const normalizadas = normalizarIndicacionesParaResumen(resumen);
+  return normalizadas.length ? normalizadas : ["Sin tratamiento activo registrado"];
+}
+
+function normalizarIndicacionesParaResumen(valor) {
+  if (Array.isArray(valor)) {
+    return valor.flatMap((item) => normalizarIndicacionesParaResumen(item)).filter(Boolean);
+  }
+  if (valor && typeof valor === "object") {
+    const textoEstructurado = valor.indicacion || valor.texto || valor.descripcion || valor.nombre || valor.medicamento;
+    if (textoEstructurado) return normalizarIndicacionesParaResumen(String(textoEstructurado));
+    const lista = valor.indicaciones || valor.items || valor.tratamientos;
+    return lista ? normalizarIndicacionesParaResumen(lista) : [];
+  }
+  const texto = String(valor || "").trim();
+  if (!texto) return [];
+  return texto
+    .split(/(?=^\s*\d+[.)]\s+)/m)
+    .flatMap((bloque) => bloque.split(/\r?\n/))
+    .map((linea) => linea.trim())
+    .filter((linea) => linea && !/^(tratamiento farmacológico actual|indicaciones vigentes):?$/i.test(linea));
 }
 
 function listaEstudiosLaboratorio(datos = datosPacienteActual || {}) {
@@ -707,7 +729,7 @@ function listaTimelineLaboratorio(datos = datosPacienteActual || {}) {
 }
 
 function renderizarListaLab(items) {
-  return items.map((item) => `<li>${escaparHTML(item)}</li>`).join("");
+  return items.map((item) => `<li>${escaparHTML(String(item))}</li>`).join("");
 }
 
 const OPCIONES_SELECT_PACIENTE = {
@@ -794,10 +816,6 @@ function renderizarEquipoClinicoLab(equipo = []) {
     ? equipo.map((item, index) => `
         <div class="lab-equipo-item" data-equipo-index="${index}">
           <p><b>${escaparHTML(item.cargo || "Personal clínico")}:</b> ${escaparHTML(item.nombre || "Sin nombre")}</p>
-          <div>
-            <button class="boton-editar-dato" onclick="editarEquipoClinicoPaciente(${index})">Editar</button>
-            <button class="boton-editar-dato" onclick="eliminarEquipoClinicoPaciente(${index})">Quitar</button>
-          </div>
         </div>
       `).join("")
     : `<p class="lab-muted">Sin integrantes registrados. Agrega personal clínico con el botón +.</p>`;
@@ -831,14 +849,197 @@ function renderizarGaugeVital(clave, datos = {}) {
   `;
 }
 
+const CAMPOS_RESUMEN_PACIENTE = Object.freeze({
+  identificacion: [
+    ["email", "Correo", "text", ["email", "correo"]],
+    ["fechaNacimiento", "Fecha de nacimiento", "date", ["fechaNacimiento"]],
+    ["sexo", "Sexo", "text", ["sexo"]],
+    ["genero", "Género", "text", ["genero", "identidadGenero"]],
+    ["curp", "CURP", "text", ["curp", "datosInstitucionales.curp"]],
+    ["telefono", "Teléfono", "text", ["telefono"]]
+  ],
+  institucion: [
+    ["institucionPaciente", "Institución", "text", ["institucionPaciente", "institucion"]],
+    ["expediente", "Expediente institucional", "text", ["expediente", "numeroExpediente"]],
+    ["cama", "Cama", "text", ["cama"]]
+  ],
+  ingreso: [
+    ["fechaIngreso", "Fecha de ingreso", "date", ["fechaIngreso"]],
+    ["servicioInstitucional", "Servicio", "text", ["servicioInstitucional", "servicio"]],
+    ["ultimoIngreso", "Último ingreso", "date", ["ultimoIngreso"]],
+    ["ultimaConsulta", "Última consulta", "date", ["ultimaConsulta"]],
+    ["numeroConsultas", "Número de consultas", "number", ["numeroConsultas", "consultasTotales", "conteoConsultas"]],
+    ["proximaConsulta", "Próxima consulta", "date", ["proximaConsulta"]],
+    ["fechaEgreso", "Fecha de egreso", "date", ["fechaEgreso"]],
+    ["tipoAtencion", "Tipo de atención", "text", ["tipoAtencion"]]
+  ],
+  somatometria: [
+    ["peso", "Peso", "number", ["peso", "signosVitales.peso", "somatometria.peso"]],
+    ["talla", "Talla", "number", ["talla", "signosVitales.talla", "somatometria.talla"]],
+    ["perimetroAbdominal", "Perímetro abdominal", "number", ["perimetroAbdominal", "signosVitales.perimetroAbdominal", "somatometria.perimetroAbdominal"]]
+  ],
+  seguridad: [
+    ["alergias", "Alergias", "textarea", ["alergias", "datosInstitucionales.alergias"]],
+    ["tipoSangre", "Tipo de sangre", "text", ["tipoSangre", "datosInstitucionales.tipoSangre"]]
+  ],
+  equipo: [["equipoClinico", "Equipo clínico", "textarea", ["equipoClinico"]]]
+});
+
+function resumenPuedeEditar() {
+  return ["admin", "administrador", "medico", "psicologo", "enfermeria", "enfermero"]
+    .includes(String(rolUsuarioActual || "").toLowerCase());
+}
+
+function obtenerVisibilidadResumenPaciente(datos = {}) {
+  return { ...(datos.visibilidadResumen || {}) };
+}
+
+function renderizarDatoResumenPaciente(datos, campo, valor) {
+  if (obtenerVisibilidadResumenPaciente(datos)[campo] === false) {
+    return '<span class="resumen-dato-oculto" title="Dato oculto en el resumen" aria-label="Dato oculto en el resumen">👁̸</span>';
+  }
+  return escaparHTML(valor ?? "Sin registro");
+}
+
+function encabezadoResumenPaciente(titulo, seccionId, editable = true) {
+  return `<div class="resumen-cuadro-encabezado"><span>${escaparHTML(titulo)}</span>${editable && resumenPuedeEditar()
+    ? `<button type="button" class="resumen-cuadro-editar" data-resumen-editar="${escaparHTML(seccionId)}">Editar</button>`
+    : ""}</div>`;
+}
+
+function valorInicialResumenPaciente(datos, campo, rutas) {
+  if (campo === "equipoClinico") {
+    return obtenerEquipoClinicoPaciente(datos).map((item) => `${item.cargo || "Personal clínico"}: ${item.nombre || ""}`).join("\n");
+  }
+  return valorPaciente(datos, rutas, "");
+}
+
+function valorFechaEditorResumen(valor) {
+  return String(valor || "").match(/^\d{4}-\d{2}-\d{2}/)?.[0] || "";
+}
+
+function abrirEditorResumen({ seccionId, titulo, campos, valoresActuales }) {
+  if (!resumenPuedeEditar()) return;
+  document.getElementById("modalEditorResumenPaciente")?.remove();
+  const modal = document.createElement("div");
+  modal.id = "modalEditorResumenPaciente";
+  modal.className = "resumen-editor-overlay";
+  modal.innerHTML = `<section class="resumen-editor-card" role="dialog" aria-modal="true" aria-labelledby="tituloEditorResumen">
+    <header><h3 id="tituloEditorResumen">${escaparHTML(titulo)}</h3><button type="button" data-cerrar-resumen aria-label="Cerrar">×</button></header>
+    <div class="resumen-editor-campos">${campos.map(([campo, etiqueta, tipo]) => {
+      const valor = valoresActuales[campo] || "";
+      const control = tipo === "textarea"
+        ? `<textarea data-resumen-campo="${campo}">${escaparHTML(valor)}</textarea>`
+        : `<input data-resumen-campo="${campo}" type="${tipo}" value="${escaparHTML(tipo === "date" ? valorFechaEditorResumen(valor) : valor)}">`;
+      return `<label>${escaparHTML(etiqueta)}${control}<span><input type="checkbox" data-resumen-oculto="${campo}" ${obtenerVisibilidadResumenPaciente(datosPacienteActual || {})[campo] === false ? "checked" : ""}> Ocultar este dato en el resumen</span></label>`;
+    }).join("")}</div>
+    <p class="resumen-editor-error" data-resumen-error role="alert"></p>
+    <footer><button type="button" data-cerrar-resumen>Cancelar</button><button type="button" data-guardar-resumen>Guardar</button></footer>
+  </section>`;
+  document.body.appendChild(modal);
+  const cerrar = () => modal.remove();
+  modal.querySelectorAll("[data-cerrar-resumen]").forEach((boton) => boton.addEventListener("click", cerrar));
+  modal.querySelector("[data-guardar-resumen]")?.addEventListener("click", async () => {
+    try {
+      const valores = Object.fromEntries(campos.map(([campo]) => [campo, modal.querySelector(`[data-resumen-campo="${campo}"]`)?.value || ""]));
+      const visibilidad = Object.fromEntries(campos.map(([campo]) => [campo, !modal.querySelector(`[data-resumen-oculto="${campo}"]`)?.checked]));
+      await guardarEditorResumen(seccionId, valores, visibilidad);
+      cerrar();
+    } catch (error) {
+      const errorNodo = modal.querySelector("[data-resumen-error]");
+      if (errorNodo) errorNodo.textContent = error.message || "No fue posible guardar el cuadro.";
+    }
+  });
+  console.debug("[RESUMEN STEP 5] modal inicializado", { seccionId });
+}
+
+async function guardarEditorResumen(seccionId, valores, visibilidad) {
+  const actualizacion = { ...valores, visibilidadResumen: { ...obtenerVisibilidadResumenPaciente(datosPacienteActual || {}), ...visibilidad } };
+  if (seccionId === "equipo") {
+    actualizacion.equipoClinico = String(valores.equipoClinico || "").split(/\r?\n/).map((linea) => {
+      const [cargo, ...nombre] = linea.split(":");
+      return { cargo: cargo.trim(), nombre: nombre.join(":").trim() };
+    }).filter((item) => item.cargo && item.nombre);
+  }
+  await actualizarUsuario(uidPaciente, actualizacion);
+  datosPacienteActual = { ...(datosPacienteActual || {}), ...actualizacion };
+  renderizarVistaLaboratorioPaciente(datosPacienteActual);
+  console.debug("[RESUMEN STEP 6] visibilidad aplicada", { seccionId });
+}
+
+function renderizarBloqueIdentificacionLab(datos = {}, tipoPaciente = "privada") {
+  const fechaNacimiento = obtenerFechaNacimiento(datos);
+  return `<article class="lab-card resumen-cuadro" data-resumen-cuadro="identificacion">
+    ${encabezadoResumenPaciente("Identificación", "identificacion")}
+    <p><b>Correo:</b> ${renderizarDatoResumenPaciente(datos, "email", valorPaciente(datos, ["email", "correo"], "Sin correo"))}</p>
+    <p><b>Fecha de nacimiento:</b> ${renderizarDatoResumenPaciente(datos, "fechaNacimiento", formatearFecha(fechaNacimiento))}</p>
+    <p><b>Sexo:</b> ${renderizarDatoResumenPaciente(datos, "sexo", valorPaciente(datos, ["sexo"]))}</p>
+    <p><b>Género:</b> ${renderizarDatoResumenPaciente(datos, "genero", valorPaciente(datos, ["genero", "identidadGenero"]))}</p>
+    <p><b>CURP:</b> ${renderizarDatoResumenPaciente(datos, "curp", valorPaciente(datos, ["curp", "datosInstitucionales.curp"]))}</p>
+    <p><b>Teléfono:</b> ${renderizarDatoResumenPaciente(datos, "telefono", valorPaciente(datos, ["telefono"], "Sin teléfono"))}</p>
+    <p><b>Tipo:</b> ${escaparHTML(etiquetaTipoPaciente(tipoPaciente))}</p>
+  </article>`;
+}
+
+function renderizarBloqueSomatometriaLab(datos = {}) {
+  return `<article class="lab-card resumen-cuadro" data-resumen-cuadro="somatometria">
+    ${encabezadoResumenPaciente("Somatometría", "somatometria")}
+    <p><b>Peso:</b> ${renderizarDatoResumenPaciente(datos, "peso", valorPaciente(datos, ["peso", "somatometria.peso", "signosVitales.peso"], "Sin registro"))}</p>
+    <p><b>Talla:</b> ${renderizarDatoResumenPaciente(datos, "talla", valorPaciente(datos, ["talla", "somatometria.talla", "signosVitales.talla"], "Sin registro"))}</p>
+    <p><b>Perímetro abdominal:</b> ${renderizarDatoResumenPaciente(datos, "perimetroAbdominal", valorPaciente(datos, ["perimetroAbdominal", "somatometria.perimetroAbdominal", "signosVitales.perimetroAbdominal"], "Sin registro"))}</p>
+    <p><b>IMC:</b> ${renderizarDatoResumenPaciente(datos, "imc", valorPaciente(datos, ["imc", "somatometria.imc", "signosVitales.imc"], "Sin registro"))}</p>
+    ${renderizarResumenPediatricoSeguro(datos)}
+  </article>`;
+}
+
+function renderizarResumenPediatricoSeguro(datos = {}) {
+  const edad = calcularEdadPediatrica(obtenerFechaNacimiento(datos));
+  const edadAnios = Number(edad?.["años"] ?? edad?.["aÃ±os"]);
+  if (!edad || !Number.isFinite(edadAnios) || edadAnios >= 18) return "";
+
+  const sexo = valorPaciente(datos, ["sexo", "datosInstitucionales.sexo"], "");
+  const peso = numeroDesdeTexto(valorPaciente(datos, ["peso", "somatometria.peso", "signosVitales.peso"], ""));
+  const tallaNumero = numeroDesdeTexto(valorPaciente(datos, ["talla", "somatometria.talla", "signosVitales.talla"], ""));
+  const tallaCm = tallaNumero > 3 ? tallaNumero : tallaNumero * 100;
+  if (!sexo || !Number.isFinite(peso) || peso <= 0 || !Number.isFinite(tallaCm) || tallaCm <= 0) {
+    return `<p class="lab-muted">Sin datos suficientes para calcular percentiles</p>`;
+  }
+
+  try {
+    const assessment = buildGrowthAssessment({
+      sexo,
+      fechaNacimiento: obtenerFechaNacimiento(datos),
+      pesoKg: peso,
+      tallaCm,
+      tallaUnidad: "cm",
+      perimetroCefalico: numeroDesdeTexto(valorPaciente(datos, ["perimetroCefalico", "somatometria.perimetroCefalico"], ""))
+    });
+    const indicadores = assessment.indicators.filter((item) => item.status === "ready");
+    if (!indicadores.length) return `<p class="lab-muted">Sin datos suficientes para calcular percentiles</p>`;
+    console.debug("[RESUMEN STEP 7] pediatría aplicada");
+    return `<div class="resumen-pediatrico-compacto"><b>Datos pediátricos</b>${indicadores.map((item) => `<small>${escaparHTML(item.label)}: P${Number(item.percentile).toFixed(1)} · Z ${Number(item.z).toFixed(2)}</small>`).join("")}</div>`;
+  } catch (error) {
+    console.error("[PACIENTE] pediatría:", { name: error?.name || null, code: error?.code || null, message: error?.message || null });
+    return `<p class="lab-muted">Sin datos suficientes para calcular percentiles</p>`;
+  }
+}
+
+function renderizarBloqueSeguridadLab(datos = {}) {
+  return `<article class="lab-card resumen-cuadro" data-resumen-cuadro="seguridad">
+    ${encabezadoResumenPaciente("Seguridad clínica", "seguridad")}
+    <p><b>Alergias:</b> ${renderizarDatoResumenPaciente(datos, "alergias", valorPaciente(datos, ["alergias", "datosInstitucionales.alergias"], "Sin registro"))}</p>
+    <p><b>Tipo de sangre:</b> ${renderizarDatoResumenPaciente(datos, "tipoSangre", valorPaciente(datos, ["tipoSangre", "datosInstitucionales.tipoSangre"], "Sin registro"))}</p>
+  </article>`;
+}
+
 function renderizarBloqueInstitucionLab(datos = {}, mostrarInstitucional = false) {
   if (!mostrarInstitucional) return "";
   return `
-    <article class="lab-card">
-      <span>Institución</span>
-      <p><b>Institución:</b> ${escaparHTML(valorPaciente(datos, ["institucionPaciente", "institucion"]))} <button class="boton-editar-dato" onclick="editarCampoPaciente('institucionPaciente', 'Institución', 'text')">Editar</button></p>
-      <p><b>Expediente institucional:</b> ${escaparHTML(valorPaciente(datos, ["expediente", "numeroExpediente"], "Sin expediente"))} <button class="boton-editar-dato" onclick="editarCampoPaciente('expediente', 'Expediente institucional', 'text')">Editar</button></p>
-      <p><b>Cama:</b> ${escaparHTML(valorPaciente(datos, ["cama"]))} <button class="boton-editar-dato" onclick="editarCampoPaciente('cama', 'Cama', 'text')">Editar</button></p>
+    <article class="lab-card resumen-cuadro" data-resumen-cuadro="institucion">
+      ${encabezadoResumenPaciente("Institución", "institucion")}
+      <p><b>Institución:</b> ${renderizarDatoResumenPaciente(datos, "institucionPaciente", valorPaciente(datos, ["institucionPaciente", "institucion"]))}</p>
+      <p><b>Expediente institucional:</b> ${renderizarDatoResumenPaciente(datos, "expediente", valorPaciente(datos, ["expediente", "numeroExpediente"], "Sin expediente"))}</p>
+      <p><b>Cama:</b> ${renderizarDatoResumenPaciente(datos, "cama", valorPaciente(datos, ["cama"], "Sin cama"))}</p>
     </article>
   `;
 }
@@ -847,17 +1048,17 @@ function renderizarBloqueIngresoLab(datos = {}, mostrarInstitucional = false) {
   const fechaIngreso = obtenerFechaIngreso(datos);
   const consultas = valorPaciente(datos, ["numeroConsultas", "consultasTotales", "conteoConsultas"], "Sin registro");
   return `
-    <article class="lab-card">
-      <span>Ingreso y consultas</span>
+    <article class="lab-card resumen-cuadro" data-resumen-cuadro="ingreso">
+      ${encabezadoResumenPaciente("Ingreso y consultas", "ingreso")}
       ${mostrarInstitucional ? `
-        <p><b>Fecha de ingreso:</b> ${escaparHTML(formatearFecha(fechaIngreso))} <button class="boton-editar-dato" onclick="abrirSelectorIngresoPaciente()">Editar</button></p>
-        <p><b>Servicio:</b> ${escaparHTML(valorPaciente(datos, ["servicioInstitucional", "servicio"]))} <button class="boton-editar-dato" onclick="editarCampoPaciente('servicioInstitucional', 'Servicio institucional', 'text')">Editar</button></p>
+        <p><b>Fecha de ingreso:</b> ${renderizarDatoResumenPaciente(datos, "fechaIngreso", formatearFecha(fechaIngreso))}</p>
+        <p><b>Servicio:</b> ${renderizarDatoResumenPaciente(datos, "servicioInstitucional", valorPaciente(datos, ["servicioInstitucional", "servicio"]))}</p>
         <p><b>Estancia:</b> <span id="labEstanciaPaciente">${escaparHTML(formatearEstancia(calcularDiasEstancia(fechaIngreso)))}</span></p>
-        <p><b>Último ingreso:</b> ${escaparHTML(formatearFecha(obtenerUltimoIngreso(datos)))} <button class="boton-editar-dato" onclick="abrirSelectorUltimoIngresoPaciente()">Editar</button></p>
+        <p><b>Último ingreso:</b> ${renderizarDatoResumenPaciente(datos, "ultimoIngreso", formatearFecha(obtenerUltimoIngreso(datos)))}</p>
       ` : ""}
-      <p><b>Última consulta:</b> ${escaparHTML(formatearFecha(datos.ultimaConsulta) || "Sin fecha")} <button class="boton-editar-dato" onclick="editarCampoPaciente('ultimaConsulta', 'Última consulta', 'date')">Editar</button></p>
-      <p><b>Número de consultas:</b> ${escaparHTML(consultas)} <button class="boton-editar-dato" onclick="editarCampoPaciente('numeroConsultas', 'Número de consultas', 'number')">Editar</button></p>
-      <p><b>Próxima consulta:</b> ${escaparHTML(datos.proximaConsulta ? formatearFecha(datos.proximaConsulta) : "Sin programar")} <button class="boton-editar-dato" onclick="editarCampoPaciente('proximaConsulta', 'Próxima consulta', 'date')">Editar</button></p>
+      <p><b>Última consulta:</b> ${renderizarDatoResumenPaciente(datos, "ultimaConsulta", formatearFecha(datos.ultimaConsulta) || "Sin fecha")}</p>
+      <p><b>Número de consultas:</b> ${renderizarDatoResumenPaciente(datos, "numeroConsultas", consultas)}</p>
+      <p><b>Próxima consulta:</b> ${renderizarDatoResumenPaciente(datos, "proximaConsulta", datos.proximaConsulta ? formatearFecha(datos.proximaConsulta) : "Sin programar")}</p>
     </article>
   `;
 }
@@ -874,19 +1075,11 @@ function renderizarVistaLaboratorioPaciente(datos = datosPacienteActual || {}) {
   const diagnosticos = listaDiagnosticosLaboratorio(datos);
   const tratamientos = listaTratamientosLaboratorio(datos);
   const estudios = listaEstudiosLaboratorio(datos);
-  const timeline = listaTimelineLaboratorio(datos);
-  const timelineVisible = mostrarInstitucional
-    ? timeline
-    : timeline.filter((item) => !["Ingreso", "Ultimo ingreso"].includes(item.etiqueta));
-  const timelineFinal = timelineVisible.length
-    ? timelineVisible
-    : [{ etiqueta: "Seguimiento", valor: "Sin eventos cronologicos registrados" }];
-
   contenedor.innerHTML = `
     <div class="lab-paciente-shell">
       <div class="lab-paciente-top">
         <div>
-          <span class="lab-kicker">Vista Laboratorio</span>
+          <span class="lab-kicker">Resumen del expediente</span>
           <p>Datos generales integrados del expediente. Los campos vacos se muestran como sin registro.</p>
         </div>
         <div class="lab-paciente-id">
@@ -912,40 +1105,14 @@ function renderizarVistaLaboratorioPaciente(datos = datosPacienteActual || {}) {
       </div>
 
       <div class="lab-info-grid">
-        <article class="lab-card">
-          <span>Identificacin</span>
-          <p><b>Correo:</b> ${escaparHTML(valorPaciente(datos, ["email", "correo"], "Sin correo"))}</p>
-          <p><b>Fecha de nacimiento:</b> ${escaparHTML(formatearFecha(fechaNacimiento))} <button class="boton-editar-dato" onclick="abrirSelectorFechaNacimientoPaciente()">Editar</button></p>
-          <p><b>Sexo:</b> ${escaparHTML(valorPaciente(datos, ["sexo"]))} <button class="boton-editar-dato" onclick="editarCampoPaciente('sexo', 'Sexo', 'text')">Editar</button></p>
-          <p><b>Gnero:</b> ${escaparHTML(valorPaciente(datos, ["genero", "identidadGenero"]))} <button class="boton-editar-dato" onclick="editarCampoPaciente('genero', 'Gnero', 'text')">Editar</button></p>
-          <p><b>CURP:</b> ${escaparHTML(valorPaciente(datos, ["curp", "datosInstitucionales.curp"]))} <button class="boton-editar-dato" onclick="editarCampoPaciente('curp', 'CURP', 'text')">Editar</button></p>
-          <p><b>Telfono:</b> ${escaparHTML(valorPaciente(datos, ["telefono"], "Sin telfono"))} <button class="boton-editar-dato" onclick="editarCampoPaciente('telefono', 'Telfono', 'text')">Editar</button></p>
-          <p><b>Tipo:</b> ${escaparHTML(etiquetaTipoPaciente(tipoPaciente))}</p>
-          <button class="boton-editar-dato" onclick="editarTipoPaciente()">Editar tipo</button>
-        </article>
+        ${renderizarBloqueIdentificacionLab(datos, tipoPaciente)}
 
         ${renderizarBloqueInstitucionLab(datos, mostrarInstitucional)}
         ${renderizarBloqueIngresoLab(datos, mostrarInstitucional)}
 
-        <article class="lab-card">
-          <span>Equipo clnico</span>
-          ${renderizarEquipoClinicoLab(equipoClinico)}
-          <button class="lab-equipo-add" type="button" onclick="agregarEquipoClinicoPaciente()" aria-label="Agregar integrante al equipo clnico">+</button>
-        </article>
+        ${renderizarBloqueSomatometriaLab(datos)}
 
-        <article class="lab-card">
-          <span>Somatometra</span>
-          <p><b>Peso:</b> ${escaparHTML(valorPaciente(datos, ["peso", "somatometria.peso", "signosVitales.peso", "datosInstitucionales.peso"]))} <button class="boton-editar-dato" onclick="editarCampoPaciente('peso', 'Peso', 'text')">Editar</button></p>
-          <p><b>Talla:</b> ${escaparHTML(valorPaciente(datos, ["talla", "somatometria.talla", "signosVitales.talla", "datosInstitucionales.talla"]))} <button class="boton-editar-dato" onclick="editarCampoPaciente('talla', 'Talla', 'text')">Editar</button></p>
-          <p><b>Permetro abdominal:</b> ${escaparHTML(valorPaciente(datos, ["perimetroAbdominal", "somatometria.perimetroAbdominal", "signosVitales.perimetroAbdominal", "datosInstitucionales.perimetroAbdominal"]))} <button class="boton-editar-dato" onclick="editarCampoPaciente('perimetroAbdominal', 'Permetro abdominal', 'text')">Editar</button></p>
-          <p><b>IMC:</b> ${escaparHTML(valorPaciente(datos, ["imc", "somatometria.imc", "signosVitales.imc", "datosInstitucionales.imc"], "Sin registro"))}</p>
-        </article>
-
-        <article class="lab-card">
-          <span>Seguridad clnica</span>
-          <p><b>Alergias:</b> ${escaparHTML(valorPaciente(datos, ["alergias", "datosInstitucionales.alergias"]))} <button class="boton-editar-dato" onclick="editarCampoPaciente('alergias', 'Alergias', 'textarea')">Editar</button></p>
-          <p><b>Tipo de sangre:</b> ${escaparHTML(valorPaciente(datos, ["tipoSangre", "datosInstitucionales.tipoSangre"]))} <button class="boton-editar-dato" onclick="editarCampoPaciente('tipoSangre', 'Tipo de sangre', 'text')">Editar</button></p>
-        </article>
+        ${renderizarBloqueSeguridadLab(datos)}
 
         <article class="lab-card lab-card-lista">
           <span>Diagnsticos</span>
@@ -953,19 +1120,32 @@ function renderizarVistaLaboratorioPaciente(datos = datosPacienteActual || {}) {
         </article>
         <article class="lab-card lab-card-lista">
           <span>Tratamiento activo</span>
-          <ul>${renderizarListaLab(tratamientos)}</ul>
+          <ol>${renderizarListaLab(tratamientos)}</ol>
         </article>
         <article class="lab-card lab-card-lista">
           <span>Estudios</span>
           <ul>${renderizarListaLab(estudios)}</ul>
         </article>
-        <article class="lab-card lab-card-lista">
-          <span>Lnea clnica</span>
-          <ul>${timelineFinal.map((item) => `<li><b>${escaparHTML(item.etiqueta)}:</b> ${escaparHTML(item.valor)}</li>`).join("")}</ul>
+        <article class="lab-card resumen-cuadro" data-resumen-cuadro="equipo">
+          ${encabezadoResumenPaciente("Equipo clínico", "equipo")}
+          ${renderizarEquipoClinicoLab(equipoClinico)}
+          <button class="lab-equipo-add" type="button" onclick="agregarEquipoClinicoPaciente()" aria-label="Agregar integrante al equipo clnico">+</button>
         </article>
       </div>
     </div>
   `;
+  contenedor.querySelectorAll("[data-resumen-editar]").forEach((boton) => {
+    boton.addEventListener("click", () => {
+      const seccionId = boton.dataset.resumenEditar;
+      const campos = CAMPOS_RESUMEN_PACIENTE[seccionId] || [];
+      const valoresActuales = Object.fromEntries(campos.map(([campo, , , rutas]) => [campo, valorInicialResumenPaciente(datos, campo, rutas)]));
+      abrirEditorResumen({ seccionId, titulo: boton.parentElement?.querySelector("span")?.textContent || seccionId, campos, valoresActuales });
+    });
+  });
+  console.debug("[RESUMEN STEP 4] botones consolidados");
+  console.debug("[RESUMEN STEP 1] línea clínica eliminada");
+  console.debug("[RESUMEN STEP 2] equipo clínico reordenado");
+  console.debug("[RESUMEN STEP 3] tratamiento normalizado", { indicaciones: tratamientos.length });
 }
 function obtenerPesoPaciente(datos = {}) {
   return datos.peso || datos.signosVitales?.peso || datos.somatometria?.peso || datos.datosInstitucionales?.peso || "";

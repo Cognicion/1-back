@@ -92,6 +92,7 @@ import {
 } from "./services/historias.js";
 import { listarEstudios } from "./services/estudios.js";
 import { listarTratamientos } from "./services/tratamientos.js";
+import { construirActualizacionSignosVitalesDesdeNota } from "./services/signosVitalesNotas.js";
 import { calcularEdadPediatrica, formatearFechaDDMMAAAA } from "./pediatria/edad.js";
 import {
   calcularIMC as calcularIMCPediatrico,
@@ -4534,6 +4535,20 @@ async function guardarNotaClinicaSeguro(estadoNota = "definitiva") {
 
     try {
       const pacienteActual = await obtenerUsuario(uidPaciente);
+      try {
+        const actualizacionSignos = construirActualizacionSignosVitalesDesdeNota({
+          paciente: pacienteActual || {},
+          nota: notaPayload,
+          sourceNoteId: confirmada.id,
+          createdBy: auth.currentUser.uid
+        });
+        if (actualizacionSignos) {
+          await actualizarUsuario(uidPaciente, actualizacionSignos);
+          console.debug("[RESUMEN] signos vitales sincronizados desde nota:", confirmada.id);
+        }
+      } catch (errorSignos) {
+        console.error("[RESUMEN] no se pudieron sincronizar signos vitales desde nota", { noteId: confirmada.id, code: errorSignos?.code || null });
+      }
       await registrarEventoAuditoria({
         accion: esEdicionVersionada
           ? (esBorrador ? "guardar_version_borrador_nota_medica" : "guardar_version_definitiva_nota_medica")
