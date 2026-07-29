@@ -226,14 +226,27 @@ export async function crearUsuario(uid,datos){
 
 export async function crearPacienteProvisional(datos){
 
+    const payload = {
+        ...datos,
+        rol:"paciente",
+        tieneCuenta:false,
+        fechaCreacion:new Date().toISOString()
+    };
+
+    console.log("===== PAYLOAD FIRESTORE =====");
+    console.log(payload);
+    console.log("IMC:", payload.imc);
+    console.log("typeof:", typeof payload.imc);
+    console.log("instanceof HTMLInputElement:", typeof HTMLInputElement !== "undefined" && payload.imc instanceof HTMLInputElement);
+    console.log("constructor:", payload.imc?.constructor?.name);
+    debugger;
+    if (typeof HTMLInputElement !== "undefined" && payload.imc instanceof HTMLInputElement) {
+        throw new Error("Valor DOM inválido en payload.imc");
+    }
+
     const refPaciente = await addDoc(
         collection(db,"usuarios"),
-        {
-            ...datos,
-            rol:"paciente",
-            tieneCuenta:false,
-            fechaCreacion:new Date().toISOString()
-        }
+        payload
     );
     invalidarListasPacientes();
     return refPaciente;

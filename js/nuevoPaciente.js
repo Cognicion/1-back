@@ -13,7 +13,7 @@ import {
 import {
   obtenerUsuario,
   crearPacienteProvisional
-} from "./services/usuarios.js";
+} from "./services/usuarios.js?v=20260729-imc-payload-fix";
 import { registrarEventoAuditoria } from "./services/auditoria.js";
 import { usuarioEsPersonalClinico } from "./utils/roles.js";
 import { iniciarMonitoreoSesion } from "./services/sesion.js";
