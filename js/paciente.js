@@ -944,6 +944,7 @@ const CAMPOS_INSTITUCION_INGRESO = Object.freeze([
   ["cama", "Cama", "text", ["cama"], "Institución"],
   ["fechaIngreso", "Fecha de ingreso", "date", ["fechaIngreso"], "Ingreso y consultas"],
   ["servicioInstitucional", "Servicio", "text", ["servicioInstitucional", "servicio"], "Ingreso y consultas"],
+  ["estancia", "Estancia", "text", ["estancia"], "Ingreso y consultas"],
   ["ultimoIngreso", "Último ingreso", "date", ["ultimoIngreso"], "Ingreso y consultas"],
   ["ultimaConsulta", "Última consulta", "date", ["ultimaConsulta"], "Ingreso y consultas"],
   ["numeroConsultas", "Número de consultas", "number", ["numeroConsultas", "consultasTotales", "conteoConsultas"], "Ingreso y consultas"],
@@ -958,6 +959,7 @@ const CAMPOS_VISIBILIDAD_RESUMEN = Object.freeze({
   cama: "cama",
   fechaIngreso: "fechaIngreso",
   servicioInstitucional: "servicio",
+  estancia: "estancia",
   ultimoIngreso: "ultimoIngreso",
   ultimaConsulta: "ultimaConsulta",
   numeroConsultas: "numeroConsultas",
@@ -972,6 +974,21 @@ const CAMPOS_VISIBILIDAD_RESUMEN = Object.freeze({
   institucion: "institucion",
   expedienteInstitucional: "expedienteInstitucional",
   servicio: "servicio"
+});
+
+const CAMPOS_VISIBILIDAD_INSTITUCION_INGRESO = Object.freeze({
+  institucion: "institucion",
+  expedienteInstitucional: "expedienteInstitucional",
+  cama: "cama",
+  fechaIngreso: "fechaIngreso",
+  servicio: "servicio",
+  estancia: "estancia",
+  ultimoIngreso: "ultimoIngreso",
+  ultimaConsulta: "ultimaConsulta",
+  numeroConsultas: "numeroConsultas",
+  proximaConsulta: "proximaConsulta",
+  fechaEgreso: "fechaEgreso",
+  tipoAtencion: "tipoAtencion"
 });
 
 function resolverCampoVisibilidad(campoId) {
@@ -1028,6 +1045,18 @@ function renderizarDatoResumenPaciente(datos, campo, valor) {
   return escaparHTML(valor ?? "Sin registro");
 }
 
+function debeMostrarCampoResumen(campoId, visibilidadResumen = {}) {
+  return visibilidadResumen[resolverCampoVisibilidad(campoId)] !== false;
+}
+
+function renderizarDatoVertical({ campoId, etiqueta, valor, visibilidadResumen }) {
+  if (!debeMostrarCampoResumen(campoId, visibilidadResumen)) return "";
+  return `<div class="resumen-dato resumen-dato--vertical" data-campo-id="${escaparHTML(resolverCampoVisibilidad(campoId))}">
+    <span class="resumen-dato__etiqueta">${escaparHTML(etiqueta)}</span>
+    <span class="resumen-dato__valor">${escaparHTML(valor ?? "Sin registro")}</span>
+  </div>`;
+}
+
 function encabezadoResumenPaciente(titulo, seccionId, editable = true) {
   return `<div class="resumen-cuadro-encabezado"><span>${escaparHTML(titulo)}</span>${editable && resumenPuedeEditar()
     ? `<button type="button" class="resumen-cuadro-editar" data-resumen-editar="${escaparHTML(seccionId)}">Editar</button>`
@@ -1035,6 +1064,7 @@ function encabezadoResumenPaciente(titulo, seccionId, editable = true) {
 }
 
 function valorInicialResumenPaciente(datos, campo, rutas) {
+  if (campo === "estancia") return formatearEstancia(calcularDiasEstancia(obtenerFechaIngreso(datos)));
   if (campo === "equipoClinico") {
     return obtenerEquipoClinicoPaciente(datos).map((item) => `${item.cargo || "Personal clínico"}: ${item.nombre || ""}`).join("\n");
   }
@@ -1093,7 +1123,9 @@ async function guardarEditorResumen(seccionId, valores, visibilidad) {
   const payloadVisibilidad = Object.fromEntries(Object.entries(visibilidad).map(([campoId, visible]) => [resolverCampoVisibilidad(campoId), visible === true]));
   const visibilidadActual = obtenerVisibilidadResumenPaciente(datosPacienteActual || {});
   const visibilidadResumen = { ...visibilidadActual, ...payloadVisibilidad };
-  const actualizacion = { ...valores, visibilidadResumen };
+  const valoresPersistibles = { ...valores };
+  delete valoresPersistibles.estancia;
+  const actualizacion = { ...valoresPersistibles, visibilidadResumen };
   console.debug("[VISIBILIDAD] payload a guardar", payloadVisibilidad);
   console.debug("[RESUMEN] visibilidad guardada:", seccionId);
   if (seccionId === "equipo") {
@@ -1129,7 +1161,7 @@ function renderizarCuadroResumenPaciente(seccionId) {
   const tipoPaciente = datos.tipoPaciente || datos.datosInstitucionales?.tipoPaciente || "privada";
   const renderizadores = {
     identificacion: () => renderizarBloqueIdentificacionLab(datos, tipoPaciente),
-    institucionIngreso: () => renderizarBloqueInstitucionIngresoCorregido(datos, pacienteRequiereCamposInstitucionales(tipoPaciente)),
+    institucionIngreso: () => renderizarBloqueInstitucionIngresoVertical(datos, pacienteRequiereCamposInstitucionales(tipoPaciente)),
     somatometria: () => renderizarBloqueSomatometriaLab(datos),
     seguridad: () => renderizarBloqueSeguridadLab(datos),
     equipo: () => `<article class="lab-card resumen-cuadro" data-resumen-cuadro="equipo">${encabezadoResumenPaciente("Equipo clínico", "equipo")}${renderizarEquipoClinicoLab(obtenerEquipoClinicoPaciente(datos))}<button class="lab-equipo-add" type="button" onclick="agregarEquipoClinicoPaciente()" aria-label="Agregar integrante al equipo clínico">+</button></article>`
@@ -1289,7 +1321,7 @@ function renderizarVistaLaboratorioPaciente(datos = datosPacienteActual || {}) {
       <div class="lab-info-grid">
         ${renderizarBloqueIdentificacionLab(datos, tipoPaciente)}
 
-        ${renderizarBloqueInstitucionIngresoCorregido(datos, mostrarInstitucional)}
+        ${renderizarBloqueInstitucionIngresoVertical(datos, mostrarInstitucional)}
 
         ${renderizarBloqueSomatometriaLab(datos)}
 
@@ -1376,6 +1408,35 @@ function renderizarBloqueInstitucionIngresoCorregido(datos = {}, mostrarInstituc
         ${renderizarFilaInstitucionIngreso("Pr&oacute;xima consulta", renderizarDatoResumenPaciente(datos, "proximaConsulta", datos.proximaConsulta ? formatearFecha(datos.proximaConsulta) : "Sin programar"))}
         ${renderizarFilaInstitucionIngreso("Fecha de egreso", renderizarDatoResumenPaciente(datos, "fechaEgreso", formatearFecha(datos.fechaEgreso) || "Sin registro"))}
         ${renderizarFilaInstitucionIngreso("Tipo de atenci&oacute;n", renderizarDatoResumenPaciente(datos, "tipoAtencion", valorPaciente(datos, ["tipoAtencion"], "Sin registro")))}
+      </div>
+    </div>
+  </article>`;
+}
+
+function renderizarBloqueInstitucionIngresoVertical(datos = {}, mostrarInstitucional = false) {
+  if (!mostrarInstitucional) return "";
+  const visibilidadResumen = obtenerVisibilidadResumenPaciente(datos);
+  const fechaIngreso = obtenerFechaIngreso(datos);
+  const consultas = valorPaciente(datos, ["numeroConsultas", "consultasTotales", "conteoConsultas"], "Sin registro");
+  const estancia = formatearEstancia(calcularDiasEstancia(fechaIngreso));
+  return `<article class="lab-card resumen-cuadro resumen-card--institucion-ingreso" data-resumen-cuadro="institucionIngreso">
+    ${encabezadoResumenPaciente("INSTITUCIÓN E INGRESO", "institucionIngreso")}
+    <div class="institucion-ingreso-grid">
+      <div class="institucion-ingreso-columna">
+        ${renderizarDatoVertical({ campoId: CAMPOS_VISIBILIDAD_INSTITUCION_INGRESO.institucion, etiqueta: "Institución", valor: valorPaciente(datos, ["institucionPaciente", "institucion"], "Sin registro"), visibilidadResumen })}
+        ${renderizarDatoVertical({ campoId: CAMPOS_VISIBILIDAD_INSTITUCION_INGRESO.expedienteInstitucional, etiqueta: "Expediente institucional", valor: valorPaciente(datos, ["expediente", "numeroExpediente"], "Sin expediente"), visibilidadResumen })}
+        ${renderizarDatoVertical({ campoId: CAMPOS_VISIBILIDAD_INSTITUCION_INGRESO.cama, etiqueta: "Cama", valor: valorPaciente(datos, ["cama"], "Sin cama"), visibilidadResumen })}
+        ${renderizarDatoVertical({ campoId: CAMPOS_VISIBILIDAD_INSTITUCION_INGRESO.fechaIngreso, etiqueta: "Fecha de ingreso", valor: formatearFecha(fechaIngreso), visibilidadResumen })}
+        ${renderizarDatoVertical({ campoId: CAMPOS_VISIBILIDAD_INSTITUCION_INGRESO.servicio, etiqueta: "Servicio", valor: valorPaciente(datos, ["servicioInstitucional", "servicio"], "Sin servicio"), visibilidadResumen })}
+        ${renderizarDatoVertical({ campoId: CAMPOS_VISIBILIDAD_INSTITUCION_INGRESO.estancia, etiqueta: "Estancia", valor: estancia, visibilidadResumen })}
+      </div>
+      <div class="institucion-ingreso-columna">
+        ${renderizarDatoVertical({ campoId: CAMPOS_VISIBILIDAD_INSTITUCION_INGRESO.ultimoIngreso, etiqueta: "Último ingreso", valor: formatearFecha(obtenerUltimoIngreso(datos)), visibilidadResumen })}
+        ${renderizarDatoVertical({ campoId: CAMPOS_VISIBILIDAD_INSTITUCION_INGRESO.ultimaConsulta, etiqueta: "Última consulta", valor: formatearFecha(datos.ultimaConsulta) || "Sin fecha", visibilidadResumen })}
+        ${renderizarDatoVertical({ campoId: CAMPOS_VISIBILIDAD_INSTITUCION_INGRESO.numeroConsultas, etiqueta: "Número de consultas", valor: consultas, visibilidadResumen })}
+        ${renderizarDatoVertical({ campoId: CAMPOS_VISIBILIDAD_INSTITUCION_INGRESO.proximaConsulta, etiqueta: "Próxima consulta", valor: datos.proximaConsulta ? formatearFecha(datos.proximaConsulta) : "Sin programar", visibilidadResumen })}
+        ${renderizarDatoVertical({ campoId: CAMPOS_VISIBILIDAD_INSTITUCION_INGRESO.fechaEgreso, etiqueta: "Fecha de egreso", valor: formatearFecha(datos.fechaEgreso) || "Sin registro", visibilidadResumen })}
+        ${renderizarDatoVertical({ campoId: CAMPOS_VISIBILIDAD_INSTITUCION_INGRESO.tipoAtencion, etiqueta: "Tipo de atención", valor: valorPaciente(datos, ["tipoAtencion"], "Sin registro"), visibilidadResumen })}
       </div>
     </div>
   </article>`;

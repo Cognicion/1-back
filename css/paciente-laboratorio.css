@@ -905,8 +905,8 @@
 
 .resumen-card--institucion-ingreso .institucion-ingreso-grid {
   display: grid;
-  grid-template-columns: minmax(210px, 0.75fr) minmax(360px, 1.45fr);
-  column-gap: 36px;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 28px;
   row-gap: 16px;
   align-items: start;
   min-width: 0;
@@ -940,9 +940,39 @@
   text-transform: none;
 }
 
+.resumen-card--institucion-ingreso .resumen-dato--vertical {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  margin: 0;
+}
+
+.resumen-card--institucion-ingreso .resumen-dato--vertical .resumen-dato__etiqueta {
+  white-space: normal;
+  color: var(--text-secondary);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: none;
+}
+
+.resumen-card--institucion-ingreso .resumen-dato--vertical .resumen-dato__valor {
+  display: block;
+  overflow-wrap: anywhere;
+  word-break: normal;
+}
+
+.resumen-card--institucion-ingreso .institucion-ingreso-columna {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+
 @media (min-width: 721px) and (max-width: 1100px) {
   .resumen-card--institucion-ingreso .institucion-ingreso-grid {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
     gap: 24px;
   }
 }
