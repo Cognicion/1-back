@@ -30,7 +30,9 @@ import {
   obtenerNombreCategoriaEvento,
   obtenerEtiquetaOrigenEvento,
   formatearImportanciaEvento,
-  agruparEventosParaEscalaVisible
+  agruparEventosParaEscalaVisible,
+  DURACION_MINIMA_VISIBLE_MS,
+  calcularZoomMaximoDinamico
 } from "./lineaTiempoUtils.js";
 import { renderizarDetalleEvento, renderizarEstados, renderizarLineaTiempo } from "./lineaTiempoRenderer.js";
 import { obtenerNombrePacienteParaMostrar } from "../utils/nombresPacientes.js";
@@ -143,7 +145,7 @@ function sincronizarRangoTotal() {
 function actualizarRangoVisible(zoom, focoRatio = null) {
   if (rangoTotalInicioMs === null || rangoTotalFinMs === null) return;
   const duracionTotal = Math.max(1, rangoTotalFinMs - rangoTotalInicioMs);
-  const duracionVisible = Math.max(86400000, duracionTotal / zoom);
+  const duracionVisible = Math.max(DURACION_MINIMA_VISIBLE_MS, duracionTotal / zoom);
   if (zoom <= 1) {
     rangoVisibleInicioMs = rangoTotalInicioMs;
     rangoVisibleFinMs = rangoTotalFinMs;
@@ -206,7 +208,7 @@ function renderizarVista() {
     connected: Boolean(viewportActual?.isConnected)
   });
   const etiqueta = root.querySelector("[data-zoom-label]");
-  if (etiqueta) etiqueta.textContent = `${Math.round(zoomActual * 100)} %`;
+  if (etiqueta) etiqueta.textContent = `${new Intl.NumberFormat("es-MX").format(Math.round(zoomActual * 100))} %`;
   renderizarEstados(root, eventos.length ? "" : "empty");
   if (shell) shell.hidden = !eventos.length;
 }
@@ -1555,6 +1557,9 @@ async function inicializarLineaTiempoPaciente() {
     },
     onZoom: (zoom, ratio, _grupoId, _hasMarker, tieneFocoTemporal) => { zoomActual = zoom; actualizarRangoVisible(zoom, tieneFocoTemporal ? ratio : null); renderizarVista(); },
     onPan: (proporcion) => { desplazarVentanaTemporal(proporcion); renderizarVista(); },
+    getZoomMax: () => calcularZoomMaximoDinamico(
+      rangoTotalInicioMs === null || rangoTotalFinMs === null ? 0 : rangoTotalFinMs - rangoTotalInicioMs
+    ),
     onReset: () => { zoomActual = 1; actualizarRangoVisible(1); renderizarVista(); }
   });
   animacion = iniciarAnimacionADN(root.querySelector("[data-timeline-dna]"));

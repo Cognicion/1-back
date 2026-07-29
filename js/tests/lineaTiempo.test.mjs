@@ -13,6 +13,10 @@ import {
   formatearOrigenEvento,
   formatearImportanciaEvento,
   seleccionarIntervaloTemporal,
+  DURACION_MINIMA_VISIBLE_MS,
+  calcularZoomMaximoDinamico,
+  sliderAZoom,
+  zoomASlider,
   agruparEventosParaEscalaVisible,
   calcularTamanoGrupo,
   obtenerTamanoMarcadorPorImportancia,
@@ -110,6 +114,23 @@ test("Las marcas temporales seleccionan intervalos regulares según el rango vis
   const marcas = generarMarcasTemporales({ minimo: new Date(inicio), maximo: new Date(fin), duracion: fin - inicio }, 1000);
   const internas = marcas.slice(1, -1).map((marca) => marca.fecha.getFullYear());
   assert.deepEqual(internas, [2000, 2005, 2010, 2015, 2020]);
+});
+
+test("El zoom dinámico alcanza una ventana mínima de un día y usa slider logarítmico", () => {
+  const duracionTotal = 3 * 365 * DURACION_MINIMA_VISIBLE_MS;
+  const zoomMaximo = calcularZoomMaximoDinamico(duracionTotal);
+  assert.ok(Math.abs(zoomMaximo - duracionTotal / DURACION_MINIMA_VISIBLE_MS) < 0.000001);
+  assert.ok(Math.abs(sliderAZoom(1000, zoomMaximo) - zoomMaximo) < 0.000001);
+  assert.equal(Math.round(zoomASlider(1, zoomMaximo)), 0);
+  assert.equal(Math.round((duracionTotal / zoomMaximo)), DURACION_MINIMA_VISIBLE_MS);
+});
+
+test("La escala diaria conserva marcas de días consecutivos", () => {
+  const inicio = new Date(2026, 6, 20).getTime();
+  const fin = new Date(2026, 6, 24).getTime();
+  const marcas = generarMarcasTemporales({ minimo: new Date(inicio), maximo: new Date(fin), duracion: fin - inicio }, 900);
+  assert.deepEqual(marcas.slice(1, -1).map((marca) => marca.fecha.getDate()), [21, 22, 23]);
+  assert.ok(marcas.every((marca) => marca.intervalo === "dia"));
 });
 
 test("La etiqueta final exacta reserva su extremo y no se duplica", () => {

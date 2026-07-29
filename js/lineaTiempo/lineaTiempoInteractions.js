@@ -1,6 +1,7 @@
-import { MAX_ZOOM, MIN_ZOOM, debugTimelineRuntime } from "./lineaTiempoUtils.js";
+import { MIN_ZOOM, debugTimelineRuntime, sliderAZoom, zoomASlider } from "./lineaTiempoUtils.js";
 
-const ZOOM_STEP = 1.15;
+const FACTOR_ZOOM_RUEDA = 1.18;
+const FACTOR_ZOOM_BOTON = 1.25;
 
 function limitar(valor, minimo, maximo) {
   return Math.min(maximo, Math.max(minimo, valor));
@@ -14,7 +15,7 @@ function puntoMedio(a, b) {
   return { clientX: (a.clientX + b.clientX) / 2, clientY: (a.clientY + b.clientY) / 2 };
 }
 
-export function configurarInteracciones({ root, onSelect, onSelectGroup, onClearSelection, onZoom, onReset, onFocus, onPan }) {
+export function configurarInteracciones({ root, onSelect, onSelectGroup, onClearSelection, onZoom, onReset, onFocus, onPan, getZoomMax }) {
   const viewport = root.querySelector("[data-timeline-scroll]");
   const range = root.querySelector("[data-zoom-range]");
   const disposables = [];
@@ -69,9 +70,10 @@ export function configurarInteracciones({ root, onSelect, onSelectGroup, onClear
   };
 
   const updateRange = () => {
-    if (range) range.value = String(state.zoom);
+    const zoomMaximo = getZoomMax?.() || 10;
+    if (range) range.value = String(Math.round(zoomASlider(state.zoom, zoomMaximo)));
     const label = root.querySelector("[data-zoom-label]");
-    if (label) label.textContent = `${Math.round(state.zoom * 100)} %`;
+    if (label) label.textContent = `${new Intl.NumberFormat("es-MX").format(Math.round(state.zoom * 100))} %`;
   };
 
   const activateGroup = (group, keepSelected = true) => {
@@ -160,7 +162,7 @@ export function configurarInteracciones({ root, onSelect, onSelectGroup, onClear
     state.focusRatio = ratioFromCanvasX(focusCanvasX);
     const oldFocusX = oldMetrics.start + state.focusRatio * oldMetrics.usable;
     const focusViewportX = oldFocusX - viewport.scrollLeft;
-    state.zoom = limitar(requestedZoom, MIN_ZOOM, MAX_ZOOM);
+    state.zoom = limitar(requestedZoom, MIN_ZOOM, getZoomMax?.() || 10);
     updateRange();
     onZoom?.(state.zoom, state.focusRatio, state.selectedGroupId, state.hasFocusMarker, Number.isFinite(clientX) || state.hasFocusMarker);
     restoreFocusAfterZoom(focusViewportX);
@@ -266,7 +268,7 @@ export function configurarInteracciones({ root, onSelect, onSelectGroup, onClear
     }
     if (event.deltaY !== 0) {
       event.preventDefault();
-      applyZoom(state.zoom * (event.deltaY < 0 ? ZOOM_STEP : 1 / ZOOM_STEP), event.clientX);
+      applyZoom(state.zoom * (event.deltaY < 0 ? FACTOR_ZOOM_RUEDA : 1 / FACTOR_ZOOM_RUEDA), event.clientX);
     }
   };
 
@@ -330,11 +332,11 @@ export function configurarInteracciones({ root, onSelect, onSelectGroup, onClear
     }
   };
 
-  const zoomOut = () => applyZoom(state.zoom / ZOOM_STEP);
-  const zoomIn = () => applyZoom(state.zoom * ZOOM_STEP);
+  const zoomOut = () => applyZoom(state.zoom / FACTOR_ZOOM_BOTON);
+  const zoomIn = () => applyZoom(state.zoom * FACTOR_ZOOM_BOTON);
   const fit = () => { state.zoom = 1; updateRange(); onReset?.("fit"); };
   const reset = () => { state.zoom = 1; updateRange(); onReset?.("reset"); };
-  const onRangeInput = () => applyZoom(Number(range.value));
+  const onRangeInput = () => applyZoom(sliderAZoom(Number(range.value), getZoomMax?.() || 10));
 
   viewport?.addEventListener("click", onClick, true);
   if (viewport) {

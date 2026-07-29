@@ -36,6 +36,7 @@ import {
 } from "./pediatria/formulas.js";
 import { getAuthenticatedUserOnce, getUserProfileOnce } from "./services/authContextService.js";
 import { guardarTransferenciaClinicaLocal } from "./services/clinicalLocalStore.js";
+import { resolverExpedienteInstitucional, formatearFechaDocumento, formatearHoraLocalDocumento } from "./services/solicitudImagenologiaPlantilla.js";
 
 import {
   collection,
@@ -7137,7 +7138,7 @@ function datosImagenologiaDesdeSolicitudBase(datos) {
     formatoId: FORMATO_SOLICITUD_IMAGENOLOGIA.clave,
     solicitud: { fecha: datos.fecha, hora: "", fechaCita: "", horaCita: "" },
     paciente: {
-      expediente: datos.expediente,
+      expediente: resolverExpedienteInstitucional(datosPacienteActual || {}),
       nombreCompleto: datos.pacienteNombre,
       fechaNacimiento: datos.fechaNacimiento,
       edad: datos.edad,
@@ -7368,7 +7369,7 @@ async function descargarSolicitudEstudios() {
     const { crearDocumentoWordDesdePlantilla, nombreSeguroNotaWord } = await import("./services/frayDocx.js");
     console.debug("[Estudios:Exportacion]", { formatoId: formato.id, tipoExportacion: "docx", generatorId: "crearDocumentoWordDesdePlantilla", result: "started" });
     const valores = {
-      fechaSolicitud: datos.fecha, horaSolicitud: "", fechaNacimiento: snapshot.paciente.fechaNacimiento, FECHA_CITA: "", HORA_CITA: "", fechaCita: "", horaCita: "",
+      fechaSolicitud: formatearFechaDocumento(new Date()), horaSolicitud: formatearHoraLocalDocumento(new Date()), fechaNacimiento: formatearFechaDocumento(snapshot.paciente.fechaNacimiento), FECHA_CITA: "", HORA_CITA: "", fechaCita: "", horaCita: "",
       NUMERO_EXPEDIENTE: snapshot.paciente.expediente, NOMBRE_COMPLETO: snapshot.paciente.nombreCompleto, EDAD: snapshot.paciente.edad, CURP: snapshot.paciente.curp,
       PA: snapshot.paciente.pa, CAMA_CONSULTORIO: snapshot.paciente.camaConsultorio, PESO: snapshot.paciente.pesoKg, TALLA: snapshot.paciente.tallaM,
       ALERGIAS: snapshot.paciente.alergias, ESTUDIO: snapshot.estudios.map((item) => item.nombre).join("\n"), DATOS_CLINICOS_1: snapshot.datosClinicos, DATOS_CLINICOS_2: "", DATOS_CLINICOS_3: "",

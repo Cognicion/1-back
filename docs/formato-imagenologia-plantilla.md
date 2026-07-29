@@ -20,3 +20,5 @@ La selección de médico solicitante y médico adscrito reutiliza `catalogoMedic
 Los controles institucionales conservados se identifican por las etiquetas `fechaSolicitud`, `horaSolicitud`, `fechaNacimiento`, `sexo`, `género`, `servicio solicitante`, `tipo` y `criterio de urgencia`. Los campos sin control existente usan marcadores como `{{NOMBRE_COMPLETO}}`, `{{CURP}}`, `{{ESTUDIO}}`, `{{DATOS_CLINICOS_1}}`, `{{MEDICO_SOLICITANTE}}` y `{{MEDICO_ADSCRITO}}`.
 
 El motor `crearDocumentoWordDesdePlantilla` mantiene intactas las partes del paquete DOCX salvo `word/document.xml`; no reconstruye el documento ni sustituye sus logos o tablas.
+
+La resolución de datos institucionales está centralizada en `js/services/solicitudImagenologiaPlantilla.js`: `resolverExpedienteInstitucional`, `formatearFechaDocumento`, `formatearHoraLocalDocumento` y los normalizadores del catálogo médico. La hora y la fecha de solicitud se recalculan inmediatamente antes de persistir o descargar.

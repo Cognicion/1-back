@@ -1,5 +1,23 @@
 export const MIN_ZOOM = 1;
-export const MAX_ZOOM = 10;
+export const DURACION_MINIMA_VISIBLE_MS = 24 * 60 * 60 * 1000;
+export const MAX_ZOOM_TECNICO = 20000;
+
+export function calcularZoomMaximoDinamico(duracionTotalMs) {
+  const duracion = Math.max(0, Number(duracionTotalMs) || 0);
+  return Math.min(Math.max(10, duracion / DURACION_MINIMA_VISIBLE_MS), MAX_ZOOM_TECNICO);
+}
+
+export function sliderAZoom(valorSlider, zoomMaximo) {
+  const progreso = Math.min(1, Math.max(0, Number(valorSlider) || 0) / 1000);
+  const maximo = Math.max(MIN_ZOOM, Number(zoomMaximo) || MIN_ZOOM);
+  return Math.exp(Math.log(maximo) * progreso);
+}
+
+export function zoomASlider(zoom, zoomMaximo) {
+  const maximo = Math.max(MIN_ZOOM, Number(zoomMaximo) || MIN_ZOOM);
+  if (maximo <= MIN_ZOOM) return 0;
+  return Math.min(1000, Math.max(0, (Math.log(Math.max(MIN_ZOOM, Number(zoom) || MIN_ZOOM)) / Math.log(maximo)) * 1000));
+}
 
 export const TIPOS_EVENTO = Object.freeze({
   ingreso: { etiqueta: "Ingreso", icono: "↳", color: "var(--timeline-type-ingreso)" },
@@ -128,7 +146,7 @@ export function seleccionarIntervaloTemporal(inicioMs, finMs, anchoDisponiblePx 
   const duracionDias = Math.max(1, (finMs - inicioMs) / 86400000);
   const maxEtiquetas = Math.max(5, Math.min(10, Math.floor(anchoDisponiblePx / 110)));
   const opciones = [
-    [1, "dia"], [2, "dias"], [7, "semana"], [14, "semanas"], [30, "mes"], [91, "3-meses"],
+    [1, "dia"], [2, "dias"], [3, "3-dias"], [7, "semana"], [14, "semanas"], [30, "mes"], [91, "3-meses"],
     [182, "6-meses"], [365, "anio"], [730, "2-anios"], [1826, "5-anios"], [3652, "10-anios"]
   ];
   return opciones.find(([dias]) => duracionDias / dias <= maxEtiquetas)?.[1] || "10-anios";
@@ -138,6 +156,7 @@ function avanzarIntervalo(fecha, intervalo) {
   const siguiente = new Date(fecha);
   if (intervalo === "dia") siguiente.setDate(siguiente.getDate() + 1);
   else if (intervalo === "dias") siguiente.setDate(siguiente.getDate() + 2);
+  else if (intervalo === "3-dias") siguiente.setDate(siguiente.getDate() + 3);
   else if (intervalo === "semana") siguiente.setDate(siguiente.getDate() + 7);
   else if (intervalo === "semanas") siguiente.setDate(siguiente.getDate() + 14);
   else if (intervalo === "mes") siguiente.setMonth(siguiente.getMonth() + 1, 1);
@@ -153,7 +172,7 @@ function avanzarIntervalo(fecha, intervalo) {
 function alinearIntervalo(fecha, intervalo) {
   const alineada = new Date(fecha);
   alineada.setHours(12, 0, 0, 0);
-  if (intervalo === "dia" || intervalo === "dias") return alineada;
+  if (intervalo === "dia" || intervalo === "dias" || intervalo === "3-dias") return alineada;
   if (intervalo === "semana" || intervalo === "semanas") {
     alineada.setDate(alineada.getDate() - ((alineada.getDay() + 6) % 7));
     return alineada;
@@ -178,15 +197,17 @@ export function generarMarcasTemporales(rango, anchoDisponiblePx = 900) {
   const inicioMs = rango.minimo.getTime();
   const finMs = rango.maximo.getTime();
   const intervalo = seleccionarIntervaloTemporal(inicioMs, finMs, anchoDisponiblePx);
-  const marcas = [{ fecha: new Date(rango.minimo), posicion: 0, esExtremo: true, tipo: "extremo-inicial" }];
+  const marcas = [{ fecha: new Date(rango.minimo), posicion: 0, esExtremo: true, tipo: "extremo-inicial", intervalo }];
   let cursor = alinearIntervalo(rango.minimo, intervalo);
-  if (cursor <= rango.minimo) cursor = avanzarIntervalo(cursor, intervalo);
-  while (cursor < rango.maximo) {
-    const posicion = (cursor - rango.minimo) / rango.duracion;
-    if (posicion > 0 && posicion < 1) marcas.push({ fecha: new Date(cursor), posicion });
+  if (cursor <= rango.minimo || obtenerClaveFecha(cursor) === obtenerClaveFecha(rango.minimo)) {
     cursor = avanzarIntervalo(cursor, intervalo);
   }
-  marcas.push({ fecha: new Date(rango.maximo), posicion: 1, esExtremo: true, tipo: "extremo-final" });
+  while (cursor < rango.maximo) {
+    const posicion = (cursor - rango.minimo) / rango.duracion;
+    if (posicion > 0 && posicion < 1) marcas.push({ fecha: new Date(cursor), posicion, intervalo });
+    cursor = avanzarIntervalo(cursor, intervalo);
+  }
+  marcas.push({ fecha: new Date(rango.maximo), posicion: 1, esExtremo: true, tipo: "extremo-final", intervalo });
   const marcasUnicas = [...new Map(marcas.map((marca) => [marca.fecha.getTime(), marca])).values()];
   const etiquetaFinal = formatearFechaCorta(rango.maximo);
   const etiquetaInicial = formatearFechaCorta(rango.minimo);
@@ -208,6 +229,17 @@ export function formatearFecha(fecha, opciones = {}) {
 export function formatearFechaCorta(fecha) {
   const valor = normalizarFecha(fecha);
   return valor ? valor.toLocaleDateString("es-MX", { day: "2-digit", month: "short", year: "numeric" }) : "Sin fecha";
+}
+
+export function formatearEtiquetaMarcaTemporal(fecha, intervalo, rango = null) {
+  const valor = normalizarFecha(fecha);
+  if (!valor) return "Sin fecha";
+  if (["anio", "2-anios", "5-anios", "10-anios"].includes(intervalo)) return String(valor.getFullYear());
+  if (["mes", "3-meses", "6-meses"].includes(intervalo)) {
+    return valor.toLocaleDateString("es-MX", { month: "short", year: "numeric" }).replace(/\./g, "");
+  }
+  const cruzaAnio = rango?.minimo && rango?.maximo && rango.minimo.getFullYear() !== rango.maximo.getFullYear();
+  return valor.toLocaleDateString("es-MX", { day: "2-digit", month: "short", ...(cruzaAnio ? { year: "numeric" } : {}) }).replace(/\./g, "");
 }
 
 export function escaparHTML(valor = "") {

@@ -4,6 +4,7 @@ import {
   escaparHTML,
   formatearFecha,
   formatearFechaCorta,
+  formatearEtiquetaMarcaTemporal,
   generarMarcasTemporales,
   obtenerConfiguracionTipoEvento,
   obtenerClaveFecha,
@@ -86,7 +87,7 @@ export function renderizarLineaTiempo(root, eventos, rango, zoom = 1, opciones =
     const marcaNode = document.createElement("span");
     marcaNode.className = "timeline-tick";
     marcaNode.style.left = `${marca.posicion * 100}%`;
-    marcaNode.textContent = formatearFechaCorta(marca.fecha);
+    marcaNode.textContent = formatearEtiquetaMarcaTemporal(marca.fecha, marca.intervalo, rango);
     if (marca.esExtremo) {
       marcaNode.dataset.endpoint = "true";
       marcaNode.classList.add(marca.tipo === "extremo-inicial" ? "timeline-tick--inicio" : "timeline-tick--final");
