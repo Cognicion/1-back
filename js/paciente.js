@@ -952,16 +952,46 @@ const CAMPOS_INSTITUCION_INGRESO = Object.freeze([
   ["tipoAtencion", "Tipo de atención", "text", ["tipoAtencion"], "Ingreso y consultas"]
 ]);
 
+const CAMPOS_VISIBILIDAD_RESUMEN = Object.freeze({
+  institucionPaciente: "institucion",
+  expediente: "expedienteInstitucional",
+  cama: "cama",
+  fechaIngreso: "fechaIngreso",
+  servicioInstitucional: "servicio",
+  ultimoIngreso: "ultimoIngreso",
+  ultimaConsulta: "ultimaConsulta",
+  numeroConsultas: "numeroConsultas",
+  proximaConsulta: "proximaConsulta",
+  fechaEgreso: "fechaEgreso",
+  tipoAtencion: "tipoAtencion",
+  curp: "curp",
+  telefono: "telefono",
+  peso: "peso",
+  talla: "talla",
+  tipoSangre: "tipoSangre",
+  institucion: "institucion",
+  expedienteInstitucional: "expedienteInstitucional",
+  servicio: "servicio"
+});
+
+function resolverCampoVisibilidad(campoId) {
+  return CAMPOS_VISIBILIDAD_RESUMEN[campoId] || campoId;
+}
+
 function resumenPuedeEditar() {
   return ["admin", "administrador", "medico", "psicologo", "enfermeria", "enfermero"]
     .includes(String(rolUsuarioActual || "").toLowerCase());
 }
 
 function obtenerVisibilidadResumenPaciente(datos = {}) {
-  return {
+  const configuracion = {
     ...(datos.datosInstitucionales?.visibilidadResumen || {}),
     ...(datos.visibilidadResumen || {})
   };
+  return Object.entries(configuracion).reduce((resultado, [campoId, visible]) => {
+    resultado[resolverCampoVisibilidad(campoId)] = visible;
+    return resultado;
+  }, {});
 }
 
 function crearIndicadorDatoOculto() {
@@ -969,8 +999,13 @@ function crearIndicadorDatoOculto() {
 }
 
 function renderizarCampoResumen({ campo, valor, visibilidadResumen = {} }) {
-  if (visibilidadResumen?.[campo] === false) {
-    console.debug("[RESUMEN] campo oculto aplicado:", campo);
+  const campoId = resolverCampoVisibilidad(campo);
+  console.debug("[VISIBILIDAD] valor leído durante render", {
+    campoId,
+    configuracion: visibilidadResumen?.[campoId]
+  });
+  if (visibilidadResumen?.[campoId] === false) {
+    console.debug("[RESUMEN] campo oculto aplicado:", campoId);
     return crearIndicadorDatoOculto();
   }
   return escaparHTML(valor ?? "Sin registro");
@@ -1024,7 +1059,8 @@ function abrirEditorResumen({ seccionId, titulo, campos, valoresActuales }) {
         ? `<textarea data-resumen-campo="${campo}">${escaparHTML(valor)}</textarea>`
         : `<input data-resumen-campo="${campo}" type="${tipo}" value="${escaparHTML(tipo === "date" ? valorFechaEditorResumen(valor) : valor)}">`;
       const subtitulo = grupo && (index === 0 || campos[index - 1]?.[4] !== grupo) ? `<h4 class="resumen-editor-subtitulo">${escaparHTML(grupo)}</h4>` : "";
-      return `${subtitulo}<label>${escaparHTML(etiqueta)}${control}<span class="resumen-ocultar-control"><input class="resumen-ocultar-checkbox" type="checkbox" data-resumen-oculto="${campo}" ${obtenerVisibilidadResumenPaciente(datosPacienteActual || {})[campo] === false ? "checked" : ""}><span>Ocultar este dato en el resumen</span></span></label>`;
+      const campoId = resolverCampoVisibilidad(campo);
+      return `${subtitulo}<label>${escaparHTML(etiqueta)}${control}<span class="resumen-ocultar-control"><input class="resumen-ocultar-checkbox" type="checkbox" data-resumen-oculto="${campo}" ${obtenerVisibilidadResumenPaciente(datosPacienteActual || {})[campoId] === false ? "checked" : ""}><span>Ocultar este dato en el resumen</span></span></label>`;
     }).join("")}</div>
     <p class="resumen-editor-error" data-resumen-error role="alert"></p>
     <footer><button type="button" data-cerrar-resumen>Cancelar</button><button type="button" data-guardar-resumen>Guardar</button></footer>
@@ -1035,7 +1071,14 @@ function abrirEditorResumen({ seccionId, titulo, campos, valoresActuales }) {
   modal.querySelector("[data-guardar-resumen]")?.addEventListener("click", async () => {
     try {
       const valores = Object.fromEntries(campos.map(([campo]) => [campo, modal.querySelector(`[data-resumen-campo="${campo}"]`)?.value || ""]));
-      const visibilidad = Object.fromEntries(campos.map(([campo]) => [campo, !modal.querySelector(`[data-resumen-oculto="${campo}"]`)?.checked]));
+      const visibilidad = Object.fromEntries(campos.map(([campo]) => {
+        const campoId = resolverCampoVisibilidad(campo);
+        const checkbox = modal.querySelector(`[data-resumen-oculto="${campo}"]`);
+        const checked = Boolean(checkbox?.checked);
+        const visible = !checked;
+        console.debug("[VISIBILIDAD] checkbox leído", { seccionId, campoId, checked });
+        return [campoId, visible];
+      }));
       await guardarEditorResumen(seccionId, valores, visibilidad);
       cerrar();
     } catch (error) {
@@ -1047,7 +1090,11 @@ function abrirEditorResumen({ seccionId, titulo, campos, valoresActuales }) {
 }
 
 async function guardarEditorResumen(seccionId, valores, visibilidad) {
-  const actualizacion = { ...valores, visibilidadResumen: { ...obtenerVisibilidadResumenPaciente(datosPacienteActual || {}), ...visibilidad } };
+  const payloadVisibilidad = Object.fromEntries(Object.entries(visibilidad).map(([campoId, visible]) => [resolverCampoVisibilidad(campoId), visible === true]));
+  const visibilidadActual = obtenerVisibilidadResumenPaciente(datosPacienteActual || {});
+  const visibilidadResumen = { ...visibilidadActual, ...payloadVisibilidad };
+  const actualizacion = { ...valores, visibilidadResumen };
+  console.debug("[VISIBILIDAD] payload a guardar", payloadVisibilidad);
   console.debug("[RESUMEN] visibilidad guardada:", seccionId);
   if (seccionId === "equipo") {
     actualizacion.equipoClinico = String(valores.equipoClinico || "").split(/\r?\n/).map((linea) => {
@@ -1057,6 +1104,7 @@ async function guardarEditorResumen(seccionId, valores, visibilidad) {
   }
   await actualizarUsuario(uidPaciente, actualizacion);
   datosPacienteActual = { ...(datosPacienteActual || {}), ...actualizacion };
+  console.debug("[VISIBILIDAD] estado local actualizado", visibilidadResumen);
   renderizarCuadroResumenPaciente(seccionId);
   console.debug("[RESUMEN STEP 6] visibilidad aplicada", { seccionId });
 }
@@ -1311,7 +1359,7 @@ function renderizarBloqueInstitucionIngresoCorregido(datos = {}, mostrarInstituc
   const fechaIngreso = obtenerFechaIngreso(datos);
   const consultas = valorPaciente(datos, ["numeroConsultas", "consultasTotales", "conteoConsultas"], "Sin registro");
   return `<article class="lab-card resumen-cuadro resumen-card--institucion-ingreso" data-resumen-cuadro="institucionIngreso">
-    ${encabezadoResumenPaciente("Instituci&oacute;n e ingreso", "institucionIngreso")}
+    ${encabezadoResumenPaciente("INSTITUCIÓN E INGRESO", "institucionIngreso")}
     <div class="institucion-ingreso-grid">
       <div class="institucion-ingreso-columna">
         ${renderizarFilaInstitucionIngreso("Instituci&oacute;n", renderizarDatoResumenPaciente(datos, "institucionPaciente", valorPaciente(datos, ["institucionPaciente", "institucion"], "Sin registro")))}
