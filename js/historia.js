@@ -30,6 +30,7 @@ let gestorFamiliograma = null;
 let guardandoHistoria = false;
 let modoVistaHistoria = "completa";
 let etapaActual = "inicio";
+let historiaActualDatos = {};
 
 iniciarMonitoreoSesion("Historia clinica");
 
@@ -194,6 +195,7 @@ async function cargarHistoria() {
   };
 
   const datos = historia.exists() ? { ...raiz, ...historia.data() } : raiz;
+  historiaActualDatos = datos;
 
   datos.exploracionMental = componerExploracionMentalNarrativa(datos);
   Object.keys(datos).forEach((campo) => {
@@ -503,6 +505,21 @@ window.guardarHistoria = async () => {
 
 window.descargarHistoriaPDF = () => {
   window.print();
+};
+
+window.abrirExportacionHistoriaNueva = async () => {
+  try {
+    const { abrirExportacionHistoria } = await import("./export/historiaClinicaExport.js?v=20260729-history-export-v1");
+    await abrirExportacionHistoria({
+      paciente: pacienteActual,
+      historia: historiaActualDatos,
+      gestores: { sustancias: gestorSustanciasHistoria, hitosDesarrollo: gestorHitosDesarrollo, familiograma: gestorFamiliograma },
+      uidMedico: auth.currentUser?.uid || ""
+    });
+  } catch (error) {
+    console.error("No se pudo abrir el nuevo formato de historia clínica", error);
+    alert("No fue posible preparar la vista previa de la historia clínica.");
+  }
 };
 
 function configurarVistaHistoria() {

@@ -1,0 +1,33 @@
+.hc-documento { --hc-verde:#1f6b58; --hc-texto:#1d2a27; --hc-linea:#d8e2de; background:#fff; color:var(--hc-texto); font-family:Arial,Helvetica,sans-serif; font-size:10.5pt; line-height:1.42; max-width:760px; margin:0 auto; padding:28px 34px 36px; box-sizing:border-box; }
+.hc-documento * { box-sizing:border-box; }
+.hc-portada { border-top:5px solid var(--hc-verde); padding-top:16px; }
+.hc-marca { color:var(--hc-verde); font-size:18px; font-weight:700; letter-spacing:.08em; }
+.hc-titulo { font-size:25px; letter-spacing:.04em; margin:4px 0 22px; }
+.hc-meta { color:#5b6a65; font-size:9pt; margin-bottom:18px; }
+.hc-bloque { margin:0 0 17px; break-inside:avoid; page-break-inside:avoid; }
+.hc-bloque--largo { break-inside:auto; page-break-inside:auto; }
+.hc-bloque__titulo { color:var(--hc-verde); font-size:11pt; letter-spacing:.045em; border-bottom:1px solid var(--hc-linea); padding-bottom:4px; margin:0 0 8px; break-after:avoid; page-break-after:avoid; }
+.hc-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:0 22px; }
+.hc-dato { padding:5px 0 7px; border-bottom:1px solid #edf2ef; min-width:0; }
+.hc-dato__etiqueta { display:block; color:#6c7975; font-size:8.5pt; margin-bottom:1px; }
+.hc-dato__valor { overflow-wrap:anywhere; }
+.hc-texto { white-space:pre-wrap; margin:0; }
+.hc-tabla { width:100%; border-collapse:collapse; table-layout:fixed; margin-top:5px; font-size:9pt; }
+.hc-tabla th,.hc-tabla td { border-bottom:1px solid var(--hc-linea); padding:6px 5px; text-align:left; vertical-align:top; overflow-wrap:anywhere; }
+.hc-tabla th { color:var(--hc-verde); font-size:8pt; text-transform:uppercase; }
+.hc-familiograma { width:100%; max-height:310px; border:1px solid var(--hc-linea); margin-top:6px; }
+.hc-firmas { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:30px; margin-top:20px; break-inside:avoid; page-break-inside:avoid; }
+.hc-firma { border-top:1px solid #72827c; padding-top:7px; min-height:64px; }
+.hc-firma strong { display:block; }
+.hc-pie { border-top:1px solid var(--hc-linea); color:#71807b; font-size:8pt; margin-top:28px; padding-top:7px; display:flex; justify-content:space-between; }
+.hc-segunda-pagina { display:none; }
+.hc-modal { position:fixed; inset:0; z-index:10000; background:rgba(21,38,33,.46); display:grid; place-items:center; padding:18px; }
+.hc-modal[hidden] { display:none; }
+.hc-modal__panel { background:#fff; width:min(900px,100%); height:min(92vh,1100px); display:flex; flex-direction:column; border-top:5px solid var(--hc-verde); }
+.hc-modal__acciones { display:flex; gap:8px; flex-wrap:wrap; padding:12px 16px; border-bottom:1px solid var(--hc-linea); }
+.hc-modal__acciones button { border:1px solid var(--hc-verde); background:#fff; color:var(--hc-verde); padding:8px 12px; cursor:pointer; }
+.hc-modal__acciones button:first-child { background:var(--hc-verde); color:#fff; }
+.hc-modal__cerrar { margin-left:auto; border-color:#89958f!important; color:#43534d!important; }
+.hc-modal__vista { overflow:auto; padding:18px; background:#eef2f0; flex:1; }
+@media (max-width:700px) { .hc-documento{padding:20px 16px 28px;font-size:10pt}.hc-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.hc-firmas{grid-template-columns:1fr}.hc-titulo{font-size:21px} }
+@media print { .hc-modal{position:static;background:#fff;padding:0}.hc-modal__panel{height:auto;border:0}.hc-modal__acciones{display:none}.hc-modal__vista{padding:0;background:#fff}.hc-documento{max-width:none}.hc-segunda-pagina{display:block} @page{size:A4;margin:12mm 14mm 15mm} }
