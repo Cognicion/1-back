@@ -958,10 +958,31 @@ function resumenPuedeEditar() {
 }
 
 function obtenerVisibilidadResumenPaciente(datos = {}) {
-  return { ...(datos.visibilidadResumen || {}) };
+  return {
+    ...(datos.datosInstitucionales?.visibilidadResumen || {}),
+    ...(datos.visibilidadResumen || {})
+  };
+}
+
+function crearIndicadorDatoOculto() {
+  return '<span class="resumen-dato-oculto" title="Dato oculto en el resumen" aria-label="Dato oculto en el resumen"><span aria-hidden="true">&#128065;&#824;</span></span>';
+}
+
+function renderizarCampoResumen({ campo, valor, visibilidadResumen = {} }) {
+  if (visibilidadResumen?.[campo] === false) {
+    console.debug("[RESUMEN] campo oculto aplicado:", campo);
+    return crearIndicadorDatoOculto();
+  }
+  return escaparHTML(valor ?? "Sin registro");
 }
 
 function renderizarDatoResumenPaciente(datos, campo, valor) {
+  return renderizarCampoResumen({
+    campo,
+    valor,
+    visibilidadResumen: obtenerVisibilidadResumenPaciente(datos)
+  });
+  /* Compatibilidad con la implementación anterior, ya no ejecutada. */
   if (obtenerVisibilidadResumenPaciente(datos)[campo] === false) {
     console.debug("[RESUMEN] campo oculto aplicado:", campo);
     return '<span class="resumen-dato-oculto" title="Dato oculto en el resumen" aria-label="Dato oculto en el resumen"><span aria-hidden="true">&#128065;&#824;</span></span>';

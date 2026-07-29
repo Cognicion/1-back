@@ -860,8 +860,8 @@
 .resumen-cuadro[data-resumen-cuadro="institucionIngreso"] {
   grid-column: span 2;
   display: grid;
-  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.4fr);
-  gap: 1.25rem;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.2fr);
+  gap: 24px;
   padding: 1.15rem;
 }
 
