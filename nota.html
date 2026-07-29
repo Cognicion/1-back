@@ -8,6 +8,7 @@
 <link rel="stylesheet" href="css/theme.css">
 <link rel="icon" type="image/png" href="assets/favicon-cognicion.png">
 <link rel="stylesheet" href="css/nota.css?v=20260729-signos-vitales-export-v1">
+<link rel="stylesheet" href="css/components/mis-apuntes-flotante.css">
 <link rel="stylesheet" href="css/theme/cognicion-theme.css">
 <script type="module" src="js/services/themeBootstrap.js"></script>
 </head>
@@ -23,7 +24,7 @@
         Inicio
     </button>
 
-    <button class="boton-secundario" onclick="abrirBorradoresMedico()">
+    <button class="boton-secundario" onclick="abrirApuntesMedicoPaciente()">
         Mis apuntes
     </button>
 
@@ -36,45 +37,35 @@
     </button>
 </div>
 
-<div id="fondoBorradoresMedico" class="fondo-borradores-medico oculto" onclick="cerrarBorradoresMedico()"></div>
+<div id="fondoApuntesMedicoPaciente" class="fondo-apuntes-paciente oculto" onclick="cerrarApuntesMedicoPaciente()"></div>
 
-<section id="panelBorradoresMedico" class="panel-borradores-medico" aria-hidden="true">
-    <div class="panel-borradores-header">
+<section id="panelApuntesMedicoPaciente" class="panel-apuntes-paciente" aria-hidden="true">
+    <div class="panel-apuntes-header">
         <div>
             <span>Mis apuntes</span>
             <small>Apuntes privados del medico, disponibles en todos los pacientes.</small>
         </div>
-        <button type="button" class="boton-cerrar-panel" onclick="cerrarBorradoresMedico()">Cerrar</button>
+        <button type="button" class="boton-cerrar-panel" onclick="cerrarApuntesMedicoPaciente()">Cerrar</button>
     </div>
 
-    <div class="apuntes-layout">
-        <aside class="apuntes-lista-panel">
-            <input id="buscadorApuntesMedico" placeholder="Buscar por titulo o texto...">
-            <button type="button" class="boton-secundario" onclick="nuevoApunteMedico()">Nuevo apunte</button>
-            <div id="listaApuntesMedico" class="lista-apuntes-medico">
-                Cargando apuntes...
-            </div>
+    <div class="apuntes-paciente-layout">
+        <aside class="apuntes-paciente-lista">
+            <input id="buscadorApuntesPaciente" placeholder="Buscar por titulo o texto...">
+            <button type="button" class="boton-secundario" onclick="nuevoApunteMedicoPaciente()">Nuevo apunte</button>
+            <div id="listaApuntesMedicoPaciente" class="lista-apuntes-paciente">Cargando apuntes...</div>
         </aside>
 
-        <section class="apunte-editor-panel">
-            <input id="apunteMedicoId" type="hidden">
-            <input id="apunteMedicoTitulo" placeholder="Titulo del apunte">
-            <textarea
-                id="borradoresMedicoTexto"
-                class="borradores-medico-texto"
-                placeholder="Ideas, pendientes, frases clinicas, recordatorios o borradores generales..."
-            ></textarea>
+        <section class="apuntes-paciente-editor">
+            <input id="apunteMedicoPacienteId" type="hidden">
+            <input id="apunteMedicoPacienteTitulo" placeholder="Titulo del apunte">
+            <textarea id="apunteMedicoPacienteContenido" placeholder="Escribe apuntes, ideas clinicas o borradores generales..."></textarea>
+            <div class="panel-apuntes-acciones">
+                <span id="estadoApuntesMedicoPaciente">Sin guardar</span>
+                <button type="button" class="boton-secundario" onclick="guardarApunteMedicoPaciente()">Guardar</button>
+                <button type="button" class="boton-secundario" onclick="nuevoApunteMedicoPaciente()">Nuevo</button>
+                <button type="button" class="boton-secundario boton-peligro-suave" onclick="eliminarApunteMedicoPaciente()">Eliminar</button>
+            </div>
         </section>
-    </div>
-
-    <div class="panel-borradores-acciones">
-        <span id="estadoBorradoresMedico">Sin guardar</span>
-        <button type="button" class="boton-secundario" onclick="guardarBorradoresMedico()">
-            Guardar
-        </button>
-        <button type="button" class="boton-secundario boton-peligro-suave" onclick="eliminarApunteMedicoActual()">
-            Eliminar
-        </button>
     </div>
 </section>
 
@@ -199,7 +190,12 @@
     </button>
 </div>
 
-<details class="panel-escala-nota">
+<div class="controles-secciones-nota" aria-label="Controles de apartados">
+    <button id="expandirSeccionesNota" type="button" class="boton-secundario boton-mini">Expandir todos</button>
+    <button id="contraerSeccionesNota" type="button" class="boton-secundario boton-mini">Contraer todos</button>
+</div>
+
+<details class="panel-escala-nota nota-seccion-colapsable" data-nota-seccion="escalas">
     <summary class="panel-escala-header panel-escala-summary">
         <div>
             <h3>Aplicar escala</h3>
@@ -208,7 +204,7 @@
         <span class="indicador-panel-escala">Abrir</span>
     </summary>
 
-    <div class="panel-escala-contenido">
+    <div class="panel-escala-contenido nota-seccion-contenido">
     <div class="grid-observacion">
         <label>Tipo de escala
             <select id="filtroTipoEscalaNota">
@@ -263,7 +259,10 @@
 
 
 
-<label for="buscadorDiagnostico">Diagnostico visible para paciente (CIE-10)</label>
+<details id="seccionDiagnosticos" class="nota-seccion-colapsable" data-nota-seccion="diagnosticos">
+<summary>Diagnosticos</summary>
+<div class="nota-seccion-contenido">
+<label for="buscadorDiagnostico">Buscar diagnostico</label>
 <input
     id="buscadorDiagnostico"
     type="text"
@@ -310,8 +309,25 @@
 
 <div id="diagnosticosSeleccionados"></div>
 
+    <div class="tabla-diagnosticos">
+        <div class="tabla-diagnosticos-header">
+            <h3>Diagnosticos incluidos en esta nota</h3>
+            <button id="btnSincronizarDxObs" type="button" class="boton-secundario">Sincronizar diagnosticos</button>
+        </div>
+        <div id="obsDiagnosticosLista" class="diagnosticos-word-lista">
+            Sin diagnosticos sincronizados.
+        </div>
+    </div>
+</div>
+</details>
+
+<details id="seccionTratamiento" class="nota-seccion-colapsable" data-nota-seccion="tratamiento">
+<summary>Tratamiento e indicaciones</summary>
+<div class="nota-seccion-contenido">
 <label for="tratamiento">Tratamiento e indicaciones</label>
 <textarea id="tratamiento" placeholder="Medicamentos actuales"></textarea>
+</div>
+</details>
 
 <input id="obsTipoNota" type="hidden" value="evolucion">
 <input id="obsFechaNota" type="hidden">
@@ -319,8 +335,9 @@
 <input id="obsDiasEstancia" type="hidden">
 
 <section id="bloqueObservacionFray" class="bloque-observacion">
-    <div class="observacion-seccion">
-        <h3>Signos vitales y somatometria</h3>
+    <details id="seccionSignosVitales" class="observacion-seccion nota-seccion-colapsable" data-nota-seccion="signos-vitales">
+        <summary>Signos vitales y somatometria</summary>
+        <div class="nota-seccion-contenido">
         <div class="grid-vitales">
             <label class="campo-vital">Presion arterial <input id="obsPresionArterial" placeholder="Ej. 120/80 mmHg"></label>
             <label class="campo-vital">Temperatura <input id="obsTemperatura" placeholder="Ej. 36.5 C"></label>
@@ -331,11 +348,14 @@
             <label class="campo-vital">Talla <input id="obsTalla" placeholder="m"></label>
             <label class="campo-vital">IMC <input id="obsIMC" readonly placeholder="Automatico"></label>
         </div>
-    </div>
+        </div>
+    </details>
 
 </section>
 
-<section id="bloquePediatriaNota" class="bloque-pediatria-nota oculto">
+<details id="bloquePediatriaNota" class="bloque-pediatria-nota nota-seccion-colapsable oculto" data-nota-seccion="pediatria">
+    <summary>Parametros pediatricos</summary>
+    <div class="nota-seccion-contenido">
     <div class="pediatria-nota-header">
         <div>
             <span>Parámetros pediátricos</span>
@@ -357,7 +377,8 @@
         <label>Regla 4-2-1 <input id="notaPedRegla421" readonly></label>
     </div>
     <textarea id="notaPediatriaResumen" readonly placeholder="Resumen pediátrico automático"></textarea>
-</section>
+    </div>
+</details>
 
 <h2>Nota interna medica</h2>
 
@@ -395,21 +416,42 @@
     Cargar datos de nota previa
 </button>
 
-<div id="bloqueNotaRapida" class="bloque-nota-rapida oculto">
+<details id="bloqueNotaRapida" class="bloque-nota-rapida nota-seccion-colapsable oculto" data-nota-seccion="nota-rapida">
+    <summary>Nota rapida</summary>
+    <div class="nota-seccion-contenido">
     <label>Nota rapida</label>
     <textarea id="notaRapida" placeholder="Resumen breve de evolucion, indicaciones o seguimiento"></textarea>
-</div>
+    </div>
+</details>
 
 <div id="bloqueNotaCompleta">
+    <details id="seccionSubjetivo" class="nota-seccion-colapsable" data-nota-seccion="subjetivo">
+    <summary>Subjetivo / Padecimiento actual o evolucion</summary>
+    <div class="nota-seccion-contenido">
     <label>Subjetivo / Padecimiento actual o evolucion</label>
     <textarea id="subjetivo"></textarea>
+    </div>
+    </details>
 
+    <details id="seccionObjetivo" class="nota-seccion-colapsable" data-nota-seccion="objetivo">
+    <summary>Objetivo / Examen mental</summary>
+    <div class="nota-seccion-contenido">
     <label>Objetivo / Examen mental</label>
     <textarea id="objetivo"></textarea>
+    </div>
+    </details>
 
+    <details id="seccionExploracion" class="nota-seccion-colapsable" data-nota-seccion="exploracion">
+    <summary>Exploracion fisica y neurologica</summary>
+    <div class="nota-seccion-contenido">
     <label>Exploracion fisica y neurologica</label>
     <textarea id="obsExploracionFisicaNeurologica"></textarea>
+    </div>
+    </details>
 
+    <details id="seccionEstudios" class="nota-seccion-colapsable" data-nota-seccion="estudios">
+    <summary>Resultados relevantes de estudios diagnosticos</summary>
+    <div class="nota-seccion-contenido">
     <div class="encabezado-campo-nota">
         <label for="obsResultadosEstudios">Resultados relevantes de estudios diagnosticos</label>
         <button id="btnSincronizarEstudiosNota" type="button" class="boton-secundario boton-mini">
@@ -417,22 +459,20 @@
         </button>
     </div>
     <textarea id="obsResultadosEstudios"></textarea>
-
-    <div class="tabla-diagnosticos">
-        <div class="tabla-diagnosticos-header">
-            <h3>Diagnosticos CIE-10</h3>
-            <button id="btnSincronizarDxObs" type="button" class="boton-secundario">Sincronizar diagnosticos</button>
-        </div>
-        <div id="obsDiagnosticosLista" class="diagnosticos-word-lista">
-            Sin diagnosticos CIE-10 sincronizados.
-        </div>
     </div>
+    </details>
 
+    <details id="seccionAnalisis" class="nota-seccion-colapsable" data-nota-seccion="analisis">
+    <summary>Analisis clinico</summary>
+    <div class="nota-seccion-contenido">
     <label>Analisis clinico</label>
     <textarea id="analisis"></textarea>
+    </div>
+    </details>
 
-    <details class="observacion-seccion firmas-extra">
+    <details id="seccionFirmas" class="observacion-seccion firmas-extra nota-seccion-colapsable" data-nota-seccion="firmas">
         <summary>Firmas</summary>
+        <div class="nota-seccion-contenido">
         <datalist id="catalogoMedicosFirmas"></datalist>
         <div class="grid-observacion seccion-firmas">
             <div class="firma-campo" data-firma="1">
@@ -480,19 +520,37 @@
                 <label>Cedula <input id="obsFirma3Cedula"></label>
             </div>
         </div>
+        </div>
     </details>
 
+    <details id="seccionPlan" class="nota-seccion-colapsable" data-nota-seccion="plan">
+    <summary>Plan</summary>
+    <div class="nota-seccion-contenido">
     <label>Plan</label>
     <textarea id="plan"></textarea>
+    </div>
+    </details>
 
+    <details id="seccionPronostico" class="nota-seccion-colapsable" data-nota-seccion="pronostico">
+    <summary>Pronostico</summary>
+    <div class="nota-seccion-contenido">
     <label for="obsPronostico">Pronostico</label>
     <textarea id="obsPronostico"></textarea>
+    </div>
+    </details>
 
+    <details id="seccionDestino" class="nota-seccion-colapsable" data-nota-seccion="destino">
+    <summary>Destino</summary>
+    <div class="nota-seccion-contenido">
     <label for="obsDestino">Destino</label>
     <input id="obsDestino">
+    </div>
+    </details>
 </div>
 
-<section class="selector-formato-nota">
+<details class="selector-formato-nota nota-seccion-colapsable" data-nota-seccion="formato">
+    <summary>Formato de descarga</summary>
+    <div class="nota-seccion-contenido">
     <label for="formatoNota">Formato de descarga</label>
     <select id="formatoNota">
         <option value="cognicion">PDF Cognicion</option>
@@ -503,7 +561,8 @@
     <p class="ayuda-formato">
         La nota se captura una sola vez en Cognicion. Este selector solo cambia el formato de descarga.
     </p>
-</section>
+    </div>
+</details>
 
 <div class="acciones-guardado-nota">
     <button id="btnGuardarBorradorNota" type="button" class="boton-secundario" onclick="guardarBorradorNota()">
@@ -534,6 +593,7 @@ Cancelar edicion
 </div>
 
   <script type="module" src="js/nota.js?v=20260729-signos-vitales-export-v1"></script>
+<script type="module" src="js/components/misApuntesFlotante.js"></script>
 <script type="module">import("./js/calculators/calculatorDialog.js");</script>
 
   <script type="module" src="js/components/accesosRapidos.js"></script>

@@ -882,7 +882,7 @@ function configurarSeccionesRedimensionablesNota() {
       })),
       ...[...document.querySelectorAll("#bloqueObservacionFray > .observacion-seccion, #bloqueObservacionFray > details.observacion-seccion")]
         .map((objetivo, index) => ({ objetivo, clave: `observacion:${index}`, minimo: 110, alturaBase: 180, panel: true })),
-      { objetivo: document.querySelector("#bloqueNotaCompleta .tabla-diagnosticos"), clave: "panel:diagnosticos-cie10", minimo: 110, alturaBase: 180, panel: true }
+      { objetivo: document.querySelector("#seccionDiagnosticos .tabla-diagnosticos"), clave: "panel:diagnosticos-cie10", minimo: 110, alturaBase: 180, panel: true }
     ],
     cargarEstado: cargarAlturasNota,
     guardarEstado: guardarEstadoSeccionNota,
@@ -1595,7 +1595,8 @@ function normalizarDiagnosticoNota(dx = {}, index = 0) {
 
 function normalizarDiagnosticosNota(lista = []) {
   const vistos = new Set();
-  return lista
+  const fuente = Array.isArray(lista) ? lista : (lista ? [lista] : []);
+  return fuente
     .map((dx, index) => normalizarDiagnosticoNota(dx, index))
     .sort((a, b) => (Number(a.orden) || 0) - (Number(b.orden) || 0))
     .filter((dx) => {
@@ -1608,12 +1609,30 @@ function normalizarDiagnosticosNota(lista = []) {
     .map((dx, index) => ({ ...dx, orden: index }));
 }
 
+function resolverDiagnosticosNota(nota = {}) {
+  const diagnosticosCanonicos = Array.isArray(nota?.diagnosticos) ? nota.diagnosticos : [];
+  if (diagnosticosCanonicos.length) return normalizarDiagnosticosNota(diagnosticosCanonicos);
+
+  const historicos = Array.isArray(nota?.historialDiagnosticos) ? nota.historialDiagnosticos : [];
+  if (historicos.length) return normalizarDiagnosticosNota(historicos);
+
+  const legado = nota?.diagnostico || nota?.diagnosticosTexto || nota?.diagnosticosLegacy || [];
+  return normalizarDiagnosticosNota(legado);
+}
+
 function claveDiagnosticoNota(dx = {}) {
   if (!dx) return "";
   if (typeof dx === "string") return normalizarTextoBusqueda(dx);
+  // `id` local se deriva del índice de captura; no es estable entre notas antiguas.
+  const diagnosticoId = String(dx.diagnosticoId || dx.idCatalogo || dx.catalogoId || "").trim();
+  if (diagnosticoId) return `id:${diagnosticoId}`;
+  const sistema = normalizarTextoBusqueda(dx.sistema || dx.catalogo || dx.sistemaClasificacion || "CIE-10");
   const codigo = String(dx.codigo || "").trim().toLowerCase();
   const nombre = normalizarTextoBusqueda(dx.nombre || dx.texto || dx.descripcion || dx.diagnostico || "");
-  return codigo || nombre;
+  const especificador = normalizarTextoBusqueda(dx.especificador || dx.especificadores || "");
+  return codigo
+    ? `${sistema}:${codigo}:${especificador}`
+    : `${sistema}:${nombre}:${especificador}`;
 }
 
 function textoDiagnosticoConEstado(dx) {
@@ -2575,6 +2594,54 @@ async function resumenTratamientoIndicacionesNota(uidPaciente) {
   return partes.join("\n\n");
 }
 
+function actualizarEstadoSeccionColapsable(seccion) {
+  const resumen = seccion.querySelector(":scope > summary");
+  const contenido = seccion.querySelector(":scope > .nota-seccion-contenido");
+  if (!resumen || !contenido) return;
+  if (!contenido.id) contenido.id = `contenido-${seccion.dataset.notaSeccion || seccion.id}`;
+  resumen.setAttribute("aria-controls", contenido.id);
+  resumen.setAttribute("aria-expanded", String(seccion.open));
+}
+
+function mostrarSeccionDeCampoNota(campo, { enfocar = false } = {}) {
+  const seccion = campo?.closest?.("details.nota-seccion-colapsable");
+  if (!seccion) return false;
+  seccion.open = true;
+  actualizarEstadoSeccionColapsable(seccion);
+  if (enfocar) requestAnimationFrame(() => campo.focus({ preventScroll: true }));
+  return true;
+}
+
+function inicializarSeccionesColapsablesNota() {
+  const secciones = [...document.querySelectorAll("details.nota-seccion-colapsable")];
+  secciones.forEach((seccion) => {
+    seccion.open = false;
+    actualizarEstadoSeccionColapsable(seccion);
+    if (seccion.dataset.colapsableConfigurada === "1") return;
+    seccion.dataset.colapsableConfigurada = "1";
+    seccion.addEventListener("toggle", () => actualizarEstadoSeccionColapsable(seccion));
+  });
+
+  document.getElementById("expandirSeccionesNota")?.addEventListener("click", () => {
+    secciones.filter((seccion) => !seccion.classList.contains("oculto")).forEach((seccion) => {
+      seccion.open = true;
+      actualizarEstadoSeccionColapsable(seccion);
+    });
+  });
+  document.getElementById("contraerSeccionesNota")?.addEventListener("click", () => {
+    secciones.forEach((seccion) => {
+      seccion.open = false;
+      actualizarEstadoSeccionColapsable(seccion);
+    });
+  });
+
+  document.addEventListener("invalid", (evento) => {
+    mostrarSeccionDeCampoNota(evento.target, { enfocar: true });
+  }, true);
+}
+
+inicializarSeccionesColapsablesNota();
+
 async function aplicarPlanTratamientoIndicacionesNota(uidPaciente, opciones = {}) {
   const resumen = await resumenTratamientoIndicacionesNota(uidPaciente);
   if (!resumen) return "";
@@ -3210,17 +3277,8 @@ function llenarFormularioNota(datos) {
   asignarValor("tratamiento", datos.tratamiento || "");
   if (diagnosticoCatalogoVisible) diagnosticoCatalogoVisible.value = datos.diagnosticoCatalogoVisible || "auto";
 
-  const diagnosticosFuente =
-    Array.isArray(datos.diagnosticos) && datos.diagnosticos.length
-     ? datos.diagnosticos
-      : Array.isArray(datos.historialDiagnosticos)
-       ? datos.historialDiagnosticos
-       : [];
-
-diagnosticosSeleccionados =
-  normalizarDiagnosticosNota(diagnosticosFuente);
-
-renderizarDiagnosticosSeleccionados();
+  diagnosticosSeleccionados = resolverDiagnosticosNota(datos);
+  renderizarDiagnosticosSeleccionados();
 
   document.querySelectorAll("[data-note-field]").forEach((elemento) => {
     const valor = datos.camposDinamicos?.[elemento.dataset.noteField];
@@ -4050,7 +4108,6 @@ async function inicializarNotaClinica() {
   configurarPrevencionPerdidaNota();
   permisosFormatosActual = await obtenerPermisosFormatosUsuario(user.uid, usuario);
   aplicarPermisosFormatoNota();
-  await cargarBorradoresMedico();
   await cargarCatalogoMedicosFirmas();
   configurarCatalogoMedicosFirmas();
   await configurarAutocompletadosClinicosNota();
@@ -4058,17 +4115,6 @@ async function inicializarNotaClinica() {
   document.getElementById("obsResultadosEstudios")?.addEventListener("input", (evento) => {
     evento.target.dataset.editadoManual = "true";
   });
-  document.getElementById("borradoresMedicoTexto")?.addEventListener("input", () => {
-    const estado = document.getElementById("estadoBorradoresMedico");
-    if (estado) estado.textContent = "Cambios sin guardar";
-  });
-  document.getElementById("apunteMedicoTitulo")?.addEventListener("input", () => {
-    const estado = document.getElementById("estadoBorradoresMedico");
-    if (estado) estado.textContent = "Cambios sin guardar";
-    renderizarListaApuntes();
-  });
-  document.getElementById("buscadorApuntesMedico")?.addEventListener("input", renderizarListaApuntes);
-
   const parametros = new URLSearchParams(window.location.search);
   uidPacienteActual = parametros.get("id");
 
@@ -5105,7 +5151,9 @@ function construirContenedorPdfCognicion(exportData = datosExportacionCognicion(
   const bloquePediatria = document.getElementById("bloquePediatriaNota");
   const omitirPediatria = document.getElementById("omitirPediatriaNota")?.checked;
   if (bloquePediatria && !bloquePediatria.classList.contains("oculto") && !omitirPediatria) {
-    agregarNodo(bloquePediatria)?.classList.remove("oculto");
+    const bloquePediatriaPdf = agregarNodo(bloquePediatria);
+    bloquePediatriaPdf?.classList.remove("oculto");
+    if (bloquePediatriaPdf?.matches("details")) bloquePediatriaPdf.open = true;
   }
 
   const tituloNota = [...fuente.children].find((elemento) => (
@@ -5115,7 +5163,16 @@ function construirContenedorPdfCognicion(exportData = datosExportacionCognicion(
   const bloqueNota = tipoNota?.value === "rapida" ? bloqueNotaRapida : bloqueNotaCompleta;
   const bloqueNotaPdf = agregarNodo(bloqueNota);
   bloqueNotaPdf?.classList.remove("oculto");
-  if (bloqueNotaPdf) reemplazarFirmasPdfCognicion(bloqueNotaPdf);
+  if (bloqueNotaPdf) {
+    bloqueNotaPdf.querySelectorAll("details").forEach((detalle) => { detalle.open = true; });
+    const tablaDiagnosticos = clonarNodoPdfCognicion(document.querySelector("#seccionDiagnosticos .tabla-diagnosticos"));
+    const analisisPdf = bloqueNotaPdf.querySelector("#seccionAnalisis");
+    if (tablaDiagnosticos && tipoNota?.value !== "rapida") {
+      if (analisisPdf) analisisPdf.before(tablaDiagnosticos);
+      else bloqueNotaPdf.appendChild(tablaDiagnosticos);
+    }
+    reemplazarFirmasPdfCognicion(bloqueNotaPdf);
+  }
 
   convertirControlesPdfCognicion(documento);
   return documento;

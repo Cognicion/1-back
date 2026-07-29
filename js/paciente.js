@@ -1751,17 +1751,6 @@ async function guardarMedicoCatalogoIndicaciones({ nombre, cargo, cedula, firmaD
   return actualizado;
 }
 
-function referenciaApuntesMedicoPaciente() {
-  const uidMedico = auth.currentUser?.uid;
-  if (!uidMedico) return null;
-  return collection(db, "usuarios", uidMedico, "apuntesMedico");
-}
-
-function ponerEstadoApuntesPaciente(texto) {
-  const estado = document.getElementById("estadoApuntesMedicoPaciente");
-  if (estado) estado.textContent = texto;
-}
-
 function obtenerTituloVisibleApunte(apunte) {
   const titulo = typeof apunte?.titulo === "string"
     ? apunte.titulo.replace(/\s+/g, " ").trim()
@@ -8152,8 +8141,6 @@ document.getElementById("abrirMedicamentoManual")?.addEventListener("click", abr
 document.getElementById("cerrarMedicamentoManual")?.addEventListener("click", cerrarMedicamentoManual);
 document.getElementById("cancelarMedicamentoManual")?.addEventListener("click", cerrarMedicamentoManual);
 document.getElementById("guardarMedicamentoManual")?.addEventListener("click", guardarMedicamentoManual);
-document.querySelector("#panelApuntesMedicoPaciente .boton-cerrar-panel")?.addEventListener("click", window.cerrarApuntesMedicoPaciente);
-document.getElementById("fondoApuntesMedicoPaciente")?.addEventListener("click", window.cerrarApuntesMedicoPaciente);
 document.getElementById("guardarEstudio")?.addEventListener("click", guardarEstudioPaciente);
 document.getElementById("limpiarEstudio")?.addEventListener("click", limpiarFormularioEstudio);
 document.getElementById("agregarEstudioSolicitud")?.addEventListener("click", agregarEstudioSolicitud);
@@ -8186,9 +8173,6 @@ document.getElementById("diagnosticoCatalogo")?.addEventListener("change", () =>
 document.getElementById("agregarDiagnosticoManual")?.addEventListener("click", agregarDiagnosticoManualPaciente);
 document.getElementById("crearCarpetaPaciente")?.addEventListener("click", () => asignarCarpetaPorNombre(valorCampo("nuevaCarpetaPaciente")));
 document.getElementById("asignarCarpetaPaciente")?.addEventListener("click", () => asignarCarpetaPorNombre(valorCampo("selectorCarpetasPaciente")));
-document.getElementById("buscadorApuntesPaciente")?.addEventListener("input", debouncePaciente(renderizarListaApuntesMedicoPaciente, 160));
-document.getElementById("apunteMedicoPacienteTitulo")?.addEventListener("input", () => ponerEstadoApuntesPaciente("Cambios sin guardar"));
-document.getElementById("apunteMedicoPacienteContenido")?.addEventListener("input", () => ponerEstadoApuntesPaciente("Cambios sin guardar"));
 document.getElementById("guardarNotaFlotante")?.addEventListener("click", guardarNotaFlotantePaciente);
 document.getElementById("nuevaNotaFlotante")?.addEventListener("click", limpiarNotaFlotantePaciente);
 document.getElementById("cerrarAvisoNombrePaciente")?.addEventListener("click", () => {
