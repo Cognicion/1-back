@@ -149,6 +149,26 @@ function calcularIMCNuevoPaciente() {
   return imcTexto;
 }
 
+function sanitizarPayloadFirestore(valor, ruta = "payload") {
+  if (typeof Node !== "undefined" && valor instanceof Node) {
+    throw new Error(`Valor DOM inválido en ${ruta}`);
+  }
+  if (typeof valor === "function") {
+    throw new Error(`Función inválida en ${ruta}`);
+  }
+  if (typeof valor === "undefined") return null;
+  if (Array.isArray(valor)) {
+    return valor.map((item, index) => sanitizarPayloadFirestore(item, `${ruta}[${index}]`));
+  }
+  if (valor && typeof valor === "object") {
+    return Object.fromEntries(Object.entries(valor).map(([clave, item]) => [
+      clave,
+      sanitizarPayloadFirestore(item, `${ruta}.${clave}`)
+    ]));
+  }
+  return valor;
+}
+
 function obtenerTipoPacienteNuevo() {
   const selector = document.getElementById("tipoPaciente");
   const manual = document.getElementById("tipoPacienteManual");
@@ -385,6 +405,7 @@ window.guardarPacienteNuevo = async function() {
   const tipoSangre = document.getElementById("tipoSangre")?.value || "";
   const peso = document.getElementById("peso")?.value || "";
   const talla = document.getElementById("talla")?.value || "";
+  const imc = calcularIMC(peso, talla);
   calcularIMCNuevoPaciente();
   const perimetroAbdominal = document.getElementById("perimetroAbdominal")?.value || "";
   const diasEstancia = document.getElementById("diasEstancia")?.value || "";
@@ -488,7 +509,11 @@ window.guardarPacienteNuevo = async function() {
   }
 
   try {
-    const refPaciente = await crearPacienteProvisional(paciente);
+    const payloadFirestore = sanitizarPayloadFirestore(paciente);
+    console.debug("[NUEVO PACIENTE] tipo de imc:", typeof payloadFirestore.imc);
+    console.debug("[NUEVO PACIENTE] imc es nodo DOM:", typeof Node !== "undefined" && payloadFirestore.imc instanceof Node);
+    console.debug("[NUEVO PACIENTE] payload validado");
+    const refPaciente = await crearPacienteProvisional(payloadFirestore);
     const medico = await obtenerUsuario(uidMedico);
 
     await registrarEventoAuditoria({
@@ -511,7 +536,8 @@ window.guardarPacienteNuevo = async function() {
     window.location.href = "medico.html";
 
   } catch(error) {
-    alert("Error: " + error.message);
+    console.error("[NUEVO PACIENTE] error al guardar:", error);
+    alert("No fue posible guardar al paciente. Revisa los datos e intenta nuevamente.");
   }
 }
 })
