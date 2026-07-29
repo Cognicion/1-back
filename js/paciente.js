@@ -1081,7 +1081,7 @@ function renderizarCuadroResumenPaciente(seccionId) {
   const tipoPaciente = datos.tipoPaciente || datos.datosInstitucionales?.tipoPaciente || "privada";
   const renderizadores = {
     identificacion: () => renderizarBloqueIdentificacionLab(datos, tipoPaciente),
-    institucionIngreso: () => renderizarBloqueInstitucionIngresoLab(datos, pacienteRequiereCamposInstitucionales(tipoPaciente)),
+    institucionIngreso: () => renderizarBloqueInstitucionIngresoCorregido(datos, pacienteRequiereCamposInstitucionales(tipoPaciente)),
     somatometria: () => renderizarBloqueSomatometriaLab(datos),
     seguridad: () => renderizarBloqueSeguridadLab(datos),
     equipo: () => `<article class="lab-card resumen-cuadro" data-resumen-cuadro="equipo">${encabezadoResumenPaciente("Equipo clínico", "equipo")}${renderizarEquipoClinicoLab(obtenerEquipoClinicoPaciente(datos))}<button class="lab-equipo-add" type="button" onclick="agregarEquipoClinicoPaciente()" aria-label="Agregar integrante al equipo clínico">+</button></article>`
@@ -1241,7 +1241,7 @@ function renderizarVistaLaboratorioPaciente(datos = datosPacienteActual || {}) {
       <div class="lab-info-grid">
         ${renderizarBloqueIdentificacionLab(datos, tipoPaciente)}
 
-        ${renderizarBloqueInstitucionIngresoLab(datos, mostrarInstitucional)}
+        ${renderizarBloqueInstitucionIngresoCorregido(datos, mostrarInstitucional)}
 
         ${renderizarBloqueSomatometriaLab(datos)}
 
@@ -1300,6 +1300,37 @@ function renderizarBloqueInstitucionIngresoLab(datos = {}, mostrarInstitucional 
 }
 function obtenerPesoPaciente(datos = {}) {
   return datos.peso || datos.signosVitales?.peso || datos.somatometria?.peso || datos.datosInstitucionales?.peso || "";
+}
+
+function renderizarFilaInstitucionIngreso(etiqueta, valor) {
+  return `<p class="resumen-dato"><b class="resumen-dato__etiqueta">${etiqueta}:</b><span class="resumen-dato__valor">${valor}</span></p>`;
+}
+
+function renderizarBloqueInstitucionIngresoCorregido(datos = {}, mostrarInstitucional = false) {
+  if (!mostrarInstitucional) return "";
+  const fechaIngreso = obtenerFechaIngreso(datos);
+  const consultas = valorPaciente(datos, ["numeroConsultas", "consultasTotales", "conteoConsultas"], "Sin registro");
+  return `<article class="lab-card resumen-cuadro resumen-card--institucion-ingreso" data-resumen-cuadro="institucionIngreso">
+    ${encabezadoResumenPaciente("Instituci&oacute;n e ingreso", "institucionIngreso")}
+    <div class="institucion-ingreso-grid">
+      <div class="institucion-ingreso-columna">
+        ${renderizarFilaInstitucionIngreso("Instituci&oacute;n", renderizarDatoResumenPaciente(datos, "institucionPaciente", valorPaciente(datos, ["institucionPaciente", "institucion"], "Sin registro")))}
+        ${renderizarFilaInstitucionIngreso("Expediente institucional", renderizarDatoResumenPaciente(datos, "expediente", valorPaciente(datos, ["expediente", "numeroExpediente"], "Sin expediente")))}
+        ${renderizarFilaInstitucionIngreso("Cama", renderizarDatoResumenPaciente(datos, "cama", valorPaciente(datos, ["cama"], "Sin cama")))}
+      </div>
+      <div class="institucion-ingreso-columna">
+        ${renderizarFilaInstitucionIngreso("Fecha de ingreso", renderizarDatoResumenPaciente(datos, "fechaIngreso", formatearFecha(fechaIngreso)))}
+        ${renderizarFilaInstitucionIngreso("Servicio", renderizarDatoResumenPaciente(datos, "servicioInstitucional", valorPaciente(datos, ["servicioInstitucional", "servicio"], "Sin servicio")))}
+        ${renderizarFilaInstitucionIngreso("Estancia", `<span id="labEstanciaPaciente">${escaparHTML(formatearEstancia(calcularDiasEstancia(fechaIngreso)))}</span>`)}
+        ${renderizarFilaInstitucionIngreso("&Uacute;ltimo ingreso", renderizarDatoResumenPaciente(datos, "ultimoIngreso", formatearFecha(obtenerUltimoIngreso(datos))))}
+        ${renderizarFilaInstitucionIngreso("&Uacute;ltima consulta", renderizarDatoResumenPaciente(datos, "ultimaConsulta", formatearFecha(datos.ultimaConsulta) || "Sin fecha"))}
+        ${renderizarFilaInstitucionIngreso("N&uacute;mero de consultas", renderizarDatoResumenPaciente(datos, "numeroConsultas", consultas))}
+        ${renderizarFilaInstitucionIngreso("Pr&oacute;xima consulta", renderizarDatoResumenPaciente(datos, "proximaConsulta", datos.proximaConsulta ? formatearFecha(datos.proximaConsulta) : "Sin programar"))}
+        ${renderizarFilaInstitucionIngreso("Fecha de egreso", renderizarDatoResumenPaciente(datos, "fechaEgreso", formatearFecha(datos.fechaEgreso) || "Sin registro"))}
+        ${renderizarFilaInstitucionIngreso("Tipo de atenci&oacute;n", renderizarDatoResumenPaciente(datos, "tipoAtencion", valorPaciente(datos, ["tipoAtencion"], "Sin registro")))}
+      </div>
+    </div>
+  </article>`;
 }
 
 function obtenerTallaPaciente(datos = {}) {

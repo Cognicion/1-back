@@ -898,6 +898,57 @@
   }
 }
 
+.resumen-card--institucion-ingreso {
+  display: block !important;
+  grid-column: span 2;
+}
+
+.resumen-card--institucion-ingreso .institucion-ingreso-grid {
+  display: grid;
+  grid-template-columns: minmax(230px, 0.85fr) minmax(320px, 1.35fr);
+  gap: 32px;
+  align-items: start;
+}
+
+.resumen-card--institucion-ingreso .institucion-ingreso-columna {
+  min-width: 0;
+}
+
+.resumen-card--institucion-ingreso .resumen-dato {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  column-gap: 8px;
+  align-items: start;
+  margin: 0 0 10px;
+}
+
+.resumen-card--institucion-ingreso .resumen-dato__etiqueta {
+  white-space: nowrap;
+}
+
+.resumen-card--institucion-ingreso .resumen-dato__valor {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+@media (min-width: 721px) and (max-width: 1100px) {
+  .resumen-card--institucion-ingreso .institucion-ingreso-grid {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 24px;
+  }
+}
+
+@media (max-width: 720px) {
+  .resumen-card--institucion-ingreso {
+    grid-column: 1;
+  }
+
+  .resumen-card--institucion-ingreso .institucion-ingreso-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+}
+
 .resumen-subgrupo + .resumen-subgrupo {
   margin-top: 12px;
   padding-top: 10px;
