@@ -11,24 +11,53 @@ function persistir(guardarEstado, clave, cambios) {
   guardarEstado?.(clave, cambios);
 }
 
+function marcarCambioProgramatico(objetivo, callback) {
+  objetivo.dataset.resizeInitializing = "true";
+  callback();
+  const liberarMarca = () => {
+    delete objetivo.dataset.resizeInitializing;
+  };
+  if (typeof requestAnimationFrame === "function") {
+    requestAnimationFrame(() => requestAnimationFrame(liberarMarca));
+    return;
+  }
+  queueMicrotask(liberarMarca);
+}
+
 function aplicarAltura({ objetivo, contenedor, clave, altura, minimo, guardarEstado }) {
-  objetivo.style.height = `${Math.max(minimo, Math.round(altura))}px`;
+  const alturaAplicada = Math.max(minimo, Math.round(altura));
+  marcarCambioProgramatico(objetivo, () => {
+    objetivo.style.height = `${alturaAplicada}px`;
+    objetivo.dataset.manualResize = "true";
+  });
   contenedor.classList.remove("seccion-contraida");
   persistir(guardarEstado, clave, { altura: objetivo.getBoundingClientRect().height, contraida: false });
 }
 
-function alternarContraer({ objetivo, contenedor, clave, minimo, guardarEstado }) {
+function reiniciarAltura(item, contexto) {
+  const alturaBase = Math.max(contexto.minimo, item.alturaBase || 130);
+  marcarCambioProgramatico(contexto.objetivo, () => {
+    delete contexto.objetivo.dataset.manualResize;
+    contexto.objetivo.style.height = `${alturaBase}px`;
+  });
+  contexto.contenedor.classList.remove("seccion-contraida");
+  persistir(contexto.guardarEstado, contexto.clave, { altura: alturaBase, contraida: false });
+}
+
+function alternarContraer({ objetivo, contenedor, clave, minimo, guardarEstado, cargarEstado }) {
   const contraer = !contenedor.classList.contains("seccion-contraida");
   if (contraer) {
     persistir(guardarEstado, clave, {
       altura: Math.max(minimo, Math.round(objetivo.getBoundingClientRect().height)),
       contraida: true
     });
-    objetivo.style.height = `${minimo}px`;
+    marcarCambioProgramatico(objetivo, () => {
+      objetivo.style.height = `${minimo}px`;
+    });
     contenedor.classList.add("seccion-contraida");
     return;
   }
-  const estado = contexto.cargarEstado?.()[clave];
+  const estado = cargarEstado?.()[clave];
   aplicarAltura({ objetivo, contenedor, clave, altura: alturaInicial(estado) || 130, minimo, guardarEstado });
 }
 
@@ -49,7 +78,7 @@ function crearControles(item, contexto) {
     if (accion === "menos") aplicarAltura({ ...contexto, altura: contexto.objetivo.getBoundingClientRect().height - 48 });
     if (accion === "mas") aplicarAltura({ ...contexto, altura: contexto.objetivo.getBoundingClientRect().height + 48 });
     if (accion === "contraer") alternarContraer(contexto);
-    if (accion === "reiniciar") aplicarAltura({ ...contexto, altura: item.alturaBase || 130 });
+    if (accion === "reiniciar") reiniciarAltura(item, contexto);
     contexto.onAction?.(accion, item);
   });
   return controles;
@@ -67,6 +96,7 @@ function crearSeparador(item, contexto) {
     const altoInicial = contexto.objetivo.getBoundingClientRect().height;
     const mover = (movimiento) => {
       contexto.objetivo.style.height = `${Math.max(contexto.minimo, altoInicial + movimiento.clientY - inicioY)}px`;
+      contexto.objetivo.dataset.manualResize = "true";
       contexto.contenedor.classList.remove("seccion-contraida");
     };
     const terminar = (final) => {
@@ -94,6 +124,7 @@ function observarRedimensionamientoNativo(campo, item, guardarEstado) {
     const alturaActual = Math.round(campo.getBoundingClientRect().height);
     if (!alturaActual || alturaActual === alturaAnterior) return;
     alturaAnterior = alturaActual;
+    if (campo.dataset.resizeInitializing === "true") return;
     campo.dataset.manualResize = "true";
     persistir(guardarEstado, item.clave, { altura: alturaActual, contraida: false });
   });

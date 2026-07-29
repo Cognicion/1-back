@@ -27,7 +27,7 @@ import {
 } from "./data/pruebasInteractivas.js";
 import { obtenerNombrePacienteParaMostrar } from "./utils/nombresPacientes.js";
 import { normalizarTextoFrecuencia } from "./utils/frecuencias.js";
-import { configurarCamposRedimensionables } from "./components/redimensionadorCampos.js";
+import { configurarCamposRedimensionables } from "./components/redimensionadorCampos.js?v=20260729-native-resize-v2";
 import {
   calcularPuntajeEscala,
   crearResumenEscala,
@@ -61,6 +61,7 @@ import {
   deleteDoc,
   query,
   orderBy,
+  limit,
   serverTimestamp,
   setDoc,
   Timestamp,
@@ -95,6 +96,7 @@ import { listarTratamientos } from "./services/tratamientos.js";
 import { construirActualizacionSignosVitalesDesdeNota } from "./services/signosVitalesNotas.js";
 import { calcularEdadPediatrica, formatearFechaDDMMAAAA } from "./pediatria/edad.js";
 import { calcularIMC as calcularIMCCentral } from "./utils/imc.js";
+import { construirTratamientoEIndicaciones } from "./utils/tratamientoIndicaciones.js";
 import {
   calcularIMC as calcularIMCPediatrico,
   mantenimientoHollidaySegar,
@@ -2553,32 +2555,54 @@ function formatearIndicacionTratamientoNota(t = {}) {
 }
 
 async function resumenTratamientoIndicacionesNota(uidPaciente) {
-  const partes = [];
+  let medicamentosActivos = [];
+  let indicacionesEstructuradas = null;
   try {
     const tratamientos = await listarTratamientos(uidPaciente);
-    const activos = tratamientos
+    medicamentosActivos = tratamientos
       .filter((t) => String(t.estado || "activo").toLowerCase() === "activo")
       .map(formatearIndicacionTratamientoNota)
       .filter(Boolean);
-    if (activos.length) {
-      partes.push(`Tratamiento farmacológico actual:\n${activos.map((item) => `- ${item}`).join("\n")}`);
-    }
   } catch (error) {
     console.warn("No se pudo cargar tratamiento activo para la nota:", error);
   }
 
   try {
-    const snap = await getDocs(query(collection(db, "usuarios", uidPaciente, "indicaciones"), orderBy("fechaCreacion", "desc")));
+    const snap = await getDocs(query(
+      collection(db, "usuarios", uidPaciente, "indicaciones"),
+      orderBy("fechaCreacion", "desc"),
+      limit(1)
+    ));
     const ultima = snap.docs.map((docIndicacion) => ({ id: docIndicacion.id, ...docIndicacion.data() }))[0];
-    if (ultima?.indicaciones) {
-      partes.push(`Indicaciones vigentes:\n${ultima.indicaciones}`);
-    }
+    indicacionesEstructuradas = ultima?.indicaciones || null;
   } catch (error) {
     console.warn("No se pudieron cargar indicaciones vigentes para la nota:", error);
   }
 
   const resumenPaciente = pacienteActualDatos?.tratamiento || pacienteActualDatos?.datosClinicosResumen?.tratamientoActivo || "";
-  if (!partes.length && resumenPaciente) partes.push(`Tratamiento farmacológico actual:\n${resumenPaciente}`);
+  const composicion = construirTratamientoEIndicaciones({
+    medicamentosActivos,
+    indicacionesEstructuradas,
+    tratamientoTextoLegado: resumenPaciente
+  });
+  const partes = [];
+
+  if (composicion.medicamentos.length) {
+    partes.push(`Tratamiento farmacológico actual:\n${composicion.medicamentos.map((item) => `- ${item}`).join("\n")}`);
+  }
+
+  if (composicion.indicaciones.length) {
+    const titulo = composicion.origen === "legado"
+      ? "Tratamiento e indicaciones"
+      : "Indicaciones vigentes";
+    partes.push(`${titulo}:\n${composicion.indicaciones.map((item, index) => `${index + 1}. ${item}`).join("\n")}`);
+  }
+
+  console.debug("[NOTA] tratamiento e indicaciones compuesto", {
+    origen: composicion.origen,
+    medicamentos: composicion.medicamentos.length,
+    indicaciones: composicion.indicaciones.length
+  });
   return partes.join("\n\n");
 }
 

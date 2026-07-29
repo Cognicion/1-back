@@ -133,6 +133,19 @@ textarea{
     resize: vertical;
     overflow: auto;
     max-height: none;
+    box-sizing: border-box;
+}
+
+.seccion-redimensionable-compartida {
+    position: relative;
+    min-width: 0;
+    margin: 14px 0 18px;
+    padding: 0 0 16px;
+}
+
+.seccion-redimensionable-compartida label {
+    margin-top: 0;
+    margin-bottom: 8px;
 }
 
 .panel-nota-redimensionable {
@@ -259,9 +272,9 @@ textarea{
 .separador-vertical-nota {
     position: absolute;
     left: 14px;
-    right: 14px;
-    bottom: 3px;
-    height: 18px;
+    right: 36px;
+    bottom: 2px;
+    height: 10px;
     cursor: ns-resize;
     touch-action: none;
     border-radius: 999px;
@@ -1967,7 +1980,7 @@ button:hover{
   }
 
   .separador-vertical-nota {
-    height: 26px;
+    display: none;
   }
 
   .notas-flotantes-costado {

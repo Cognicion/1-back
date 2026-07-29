@@ -30,6 +30,7 @@ import {
 } from "./utils/roles.js";
 import { calcularEdadPediatrica } from "./pediatria/edad.js";
 import { calcularIMC as calcularIMCCentral } from "./utils/imc.js";
+import { construirTratamientoEIndicaciones } from "./utils/tratamientoIndicaciones.js";
 import { buildGrowthAssessment } from "./services/growth/growthCalculationService.js";
 import {
   calcularIMC as calcularIMCPediatrico,
@@ -168,6 +169,9 @@ let textoIndicacionesEditado = false;
 let apuntesMedicoPacienteCache = [];
 let catalogoMedicosFirmasIndicacionesCache = [];
 let indicacionesPacienteCache = [];
+let indicacionResumenCacheCargada = false;
+let indicacionResumenCachePacienteId = "";
+let indicacionResumenCargaPromise = null;
 let medicamentosRecetaActual = [];
 const VISTAS_DATOS_GENERALES_PACIENTE = Object.freeze({
   CLASICA: "clasica",
@@ -675,72 +679,80 @@ function listaDiagnosticosLaboratorio(datos = datosPacienteActual || {}) {
 }
 
 function listaTratamientosLaboratorio(datos = datosPacienteActual || {}) {
-  const origenIndicaciones = tratamientosCache.some(esTratamientoVigente) ? "estructurado" : "legado";
-  const activos = tratamientosCache
+  void asegurarIndicacionResumenPaciente();
+
+  const medicamentosDesdeCache = tratamientosCache
     .filter(esTratamientoVigente)
-    .map((tratamiento) => normalizarIndicacionesParaResumen(tratamiento))
-    .flat()
+    .map((tratamiento) => formatearIndicacionTratamientoConCambio(tratamiento, true))
     .filter(Boolean);
-  if (activos.length) {
-    const deduplicadas = deduplicarIndicacionesResumen(activos);
-    console.debug("[RESUMEN] indicaciones origen:", origenIndicaciones);
-    console.debug("[RESUMEN] indicaciones antes:", activos.length);
-    console.debug("[RESUMEN] indicaciones después:", deduplicadas.length);
-    return deduplicadas;
-  }
-  const resumen = datos.tratamiento || datos.tratamientoActual || datos.datosClinicosResumen?.tratamiento;
-  const normalizadas = normalizarIndicacionesParaResumen(resumen);
-  const deduplicadas = deduplicarIndicacionesResumen(normalizadas);
-  console.debug("[RESUMEN] indicaciones origen:", origenIndicaciones);
-  console.debug("[RESUMEN] indicaciones antes:", normalizadas.length);
-  console.debug("[RESUMEN] indicaciones después:", deduplicadas.length);
-  return deduplicadas.length ? deduplicadas : ["Sin tratamiento activo registrado"];
-}
-
-function limpiarNumeracionIndicacion(texto = "") {
-  return String(texto).replace(/^\s*\d+[.)\-]*\s*/, "").trim();
-}
-
-function normalizarClaveIndicacion(texto = "") {
-  return limpiarNumeracionIndicacion(texto)
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/\s+/g, " ")
-    .replace(/[.,;:]+$/g, "")
-    .trim();
-}
-
-function deduplicarIndicacionesResumen(indicaciones = []) {
-  const vistos = new Set();
-  const resultado = [];
-  indicaciones.forEach((indicacion) => {
-    const texto = limpiarNumeracionIndicacion(indicacion);
-    const clave = normalizarClaveIndicacion(texto);
-    if (!clave || vistos.has(clave)) return;
-    vistos.add(clave);
-    resultado.push(texto);
+  const tratamientosPersistidos = datos.datosClinicosResumen?.tratamientosActivos;
+  const medicamentosActivos = medicamentosDesdeCache.length
+    ? medicamentosDesdeCache
+    : Array.isArray(tratamientosPersistidos) && tratamientosPersistidos.length
+      ? tratamientosPersistidos
+        .map((tratamiento) => formatearIndicacionTratamientoConCambio(tratamiento, true))
+        .filter(Boolean)
+      : datos.tratamiento || datos.tratamientoActual || datos.datosClinicosResumen?.tratamientoActivo || "";
+  const indicacionesEstructuradas = indicacionesPacienteCache[0]?.indicaciones
+    || datos.indicacionesEstructuradas
+    || datos.indicacionesActuales
+    || datos.datosClinicosResumen?.indicaciones
+    || null;
+  const tratamientoTextoLegado = datos.tratamiento
+    || datos.tratamientoActual
+    || datos.datosClinicosResumen?.tratamientoActivo
+    || "";
+  const composicion = construirTratamientoEIndicaciones({
+    medicamentosActivos,
+    indicacionesEstructuradas,
+    tratamientoTextoLegado
   });
-  return resultado;
+
+  console.debug("[RESUMEN] indicaciones origen:", composicion.origen);
+  console.debug("[RESUMEN] indicaciones antes:", medicamentosActivos.length);
+  console.debug("[RESUMEN] indicaciones después:", composicion.contenidoResumen.length);
+  return composicion.contenidoResumen.length
+    ? composicion.contenidoResumen
+    : ["Sin tratamiento activo registrado"];
 }
 
-function normalizarIndicacionesParaResumen(valor) {
-  if (Array.isArray(valor)) {
-    return valor.flatMap((item) => normalizarIndicacionesParaResumen(item)).filter(Boolean);
+async function asegurarIndicacionResumenPaciente() {
+  const pacienteId = String(uidPaciente || "").trim();
+  if (!pacienteId) return;
+  if (indicacionResumenCacheCargada && indicacionResumenCachePacienteId === pacienteId) return;
+  if (indicacionResumenCargaPromise && indicacionResumenCachePacienteId === pacienteId) {
+    return indicacionResumenCargaPromise;
   }
-  if (valor && typeof valor === "object") {
-    const textoEstructurado = valor.indicacion || valor.texto || valor.descripcion || valor.nombre || valor.medicamento;
-    if (textoEstructurado) return normalizarIndicacionesParaResumen(String(textoEstructurado));
-    const lista = valor.indicaciones || valor.items || valor.tratamientos;
-    return lista ? normalizarIndicacionesParaResumen(lista) : [];
-  }
-  const texto = String(valor || "").trim();
-  if (!texto) return [];
-  return texto
-    .split(/(?=^\s*\d+[.)]\s+)/m)
-    .flatMap((bloque) => bloque.split(/\r?\n/))
-    .map((linea) => limpiarNumeracionIndicacion(linea))
-    .filter((linea) => linea && !/^(tratamiento farmacológico actual|indicaciones vigentes):?$/i.test(linea));
+
+  indicacionResumenCachePacienteId = pacienteId;
+  indicacionResumenCargaPromise = getDocs(query(
+    collection(db, "usuarios", pacienteId, "indicaciones"),
+    orderBy("fechaCreacion", "desc"),
+    limit(1)
+  ))
+    .then((snap) => {
+      if (pacienteId !== String(uidPaciente || "").trim()) return;
+      indicacionesPacienteCache = snap.docs.map((docIndicacion) => ({
+        id: docIndicacion.id,
+        ...docIndicacion.data()
+      }));
+      indicacionResumenCacheCargada = true;
+      renderizarVistaLaboratorioPaciente(datosPacienteActual || {});
+    })
+    .catch((error) => {
+      if (pacienteId !== String(uidPaciente || "").trim()) return;
+      indicacionResumenCacheCargada = true;
+      console.warn("[RESUMEN] No se pudo cargar la última indicación estructurada.", {
+        codigo: error?.code || null
+      });
+    })
+    .finally(() => {
+      if (indicacionResumenCachePacienteId === pacienteId) {
+        indicacionResumenCargaPromise = null;
+      }
+    });
+
+  return indicacionResumenCargaPromise;
 }
 
 function listaEstudiosLaboratorio(datos = datosPacienteActual || {}) {
@@ -5634,6 +5646,9 @@ function invalidarContextoTratamientosPaciente() {
   tratamientosCacheCargado = false;
   tratamientosCachePatientId = "";
   indicacionesPacienteCache = [];
+  indicacionResumenCacheCargada = false;
+  indicacionResumenCachePacienteId = "";
+  indicacionResumenCargaPromise = null;
   cerrarInteraccionesFarmacologicas();
 }
 
@@ -6045,6 +6060,9 @@ async function cargarIndicacionesPaciente() {
     id: docIndicacion.id,
     ...docIndicacion.data()
   }));
+  indicacionResumenCacheCargada = true;
+  indicacionResumenCachePacienteId = String(uidPaciente || "").trim();
+  renderizarVistaLaboratorioPaciente(datosPacienteActual || {});
 
   lista.innerHTML = indicacionesPacienteCache.length === 0
     ? "<p>No hay indicaciones registradas.</p>"
