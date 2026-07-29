@@ -1691,6 +1691,46 @@ button:hover{
         grid-template-columns: repeat(4, minmax(110px, 1fr)) !important;
     }
 
+    .cognicion-pdf-documento .pdf-signos-vitales-cognicion {
+        margin: 20px 0;
+        break-inside: avoid;
+        page-break-inside: avoid;
+    }
+
+    .cognicion-pdf-documento .pdf-signos-vitales-cognicion h2 {
+        margin: 0 0 10px;
+        padding-bottom: 6px;
+        border-bottom: 1px solid #333;
+        color: #000;
+        font-size: 14px;
+    }
+
+    .cognicion-pdf-documento .pdf-signos-vitales-cognicion__grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 8px 14px;
+        margin: 0;
+    }
+
+    .cognicion-pdf-documento .pdf-signos-vitales-cognicion__grid > div {
+        min-width: 0;
+    }
+
+    .cognicion-pdf-documento .pdf-signos-vitales-cognicion dt {
+        font-size: 10px;
+        font-weight: 700;
+    }
+
+    .cognicion-pdf-documento .pdf-signos-vitales-cognicion dd {
+        margin: 2px 0 0;
+        font-size: 12px;
+    }
+
+    .cognicion-pdf-documento .pdf-signos-vitales-cognicion__fecha {
+        margin: 10px 0 0;
+        font-size: 10px;
+    }
+
     .cognicion-pdf-documento .pdf-firmas-seccion {
         border: none !important;
         box-shadow: none !important;

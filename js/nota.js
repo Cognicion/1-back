@@ -93,7 +93,10 @@ import {
 } from "./services/historias.js";
 import { listarEstudios } from "./services/estudios.js";
 import { listarTratamientos } from "./services/tratamientos.js";
-import { construirActualizacionSignosVitalesDesdeNota } from "./services/signosVitalesNotas.js";
+import {
+  construirActualizacionSignosVitalesDesdeNota,
+  resolverSignosVitalesNota
+} from "./services/signosVitalesNotas.js";
 import { calcularEdadPediatrica, formatearFechaDDMMAAAA } from "./pediatria/edad.js";
 import { calcularIMC as calcularIMCCentral } from "./utils/imc.js";
 import { construirTratamientoEIndicaciones } from "./utils/tratamientoIndicaciones.js";
@@ -3268,7 +3271,21 @@ renderizarDiagnosticosSeleccionados();
     else elemento.value = String(valor);
   });
   
-  llenarFormularioObservacionFray(datos.observacionFray || {});
+  const signosVitalesNota = resolverSignosVitalesNota(datos, {
+    paciente: pacienteActualDatos || {},
+    sourceNoteId: datos.id || datos.notaId || notaEditandoId || ""
+  }) || {};
+  llenarFormularioObservacionFray({
+    ...(datos.observacionFray || {}),
+    presionArterial: signosVitalesNota.presionArterial ?? datos.observacionFray?.presionArterial ?? "",
+    temperatura: signosVitalesNota.temperatura ?? datos.observacionFray?.temperatura ?? "",
+    frecuenciaCardiaca: signosVitalesNota.frecuenciaCardiaca ?? datos.observacionFray?.frecuenciaCardiaca ?? "",
+    frecuenciaRespiratoria: signosVitalesNota.frecuenciaRespiratoria ?? datos.observacionFray?.frecuenciaRespiratoria ?? "",
+    saturacionO2: signosVitalesNota.saturacionOxigeno ?? datos.observacionFray?.saturacionO2 ?? "",
+    peso: signosVitalesNota.peso ?? datos.observacionFray?.peso ?? "",
+    talla: signosVitalesNota.talla ?? datos.observacionFray?.talla ?? "",
+    imc: signosVitalesNota.imc ?? datos.observacionFray?.imc ?? ""
+  });
   sincronizarParametrosPediatriaNota(datos.pediatriaNota || datos["ped?atriaNota"] || null);
   sincronizarTipoNota();
   sincronizarFormatoNota();
@@ -4964,6 +4981,121 @@ function esperarRenderPdfCognicion() {
   });
 }
 
+const CAMPOS_SIGNOS_VITALES_PDF_COGNICION = Object.freeze([
+  ["presionArterial", "Presión arterial", "mmHg"],
+  ["frecuenciaCardiaca", "Frecuencia cardíaca", "lpm"],
+  ["frecuenciaRespiratoria", "Frecuencia respiratoria", "rpm"],
+  ["temperatura", "Temperatura", "°C"],
+  ["saturacionOxigeno", "SpO₂", "%"],
+  ["peso", "Peso", "kg"],
+  ["talla", "Talla", "m"],
+  ["imc", "IMC", "kg/m²"],
+  ["glucosa", "Glucosa", "mg/dL"]
+]);
+
+function valorConUnidadSignoVital(valor, unidad) {
+  const texto = String(valor ?? "").trim();
+  if (!texto) return "";
+  if (unidad === "m" && /^[-+]?\d+(?:[.,]\d+)?$/.test(texto)) {
+    const talla = Number(texto.replace(",", "."));
+    if (Number.isFinite(talla) && talla > 3) return `${Number((talla / 100).toFixed(2))} m`;
+  }
+  const unidadesExistentes = {
+    mmHg: /mm\s*hg/i,
+    lpm: /\blpm\b/i,
+    rpm: /\brpm\b/i,
+    "°C": /°\s*c|\bgrados?\s*c\b|\bc\b$/i,
+    "%": /%/,
+    kg: /\bkg\b/i,
+    m: /\b(?:cm|m)\b/i,
+    "kg/m²": /kg\s*\/\s*m(?:2|²)/i,
+    "mg/dL": /mg\s*\/\s*dl/i
+  };
+  return unidadesExistentes[unidad]?.test(texto) ? texto : `${texto} ${unidad}`;
+}
+
+function formatearFechaHoraVitalesCognicion(signosVitales = {}) {
+  const fecha = String(signosVitales.fechaToma || "").trim();
+  const hora = String(signosVitales.horaToma || "").trim();
+  const coincidencia = fecha.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  const fechaVisible = coincidencia
+    ? `${coincidencia[3]}/${coincidencia[2]}/${coincidencia[1]}`
+    : fecha;
+  return [fechaVisible, hora].filter(Boolean).join(" ");
+}
+
+function crearSeccionSignosVitalesPdfCognicion(signosVitales) {
+  if (!signosVitales) return null;
+  const valores = CAMPOS_SIGNOS_VITALES_PDF_COGNICION
+    .map(([clave, etiqueta, unidad]) => ({
+      clave,
+      etiqueta,
+      valor: valorConUnidadSignoVital(signosVitales[clave], unidad)
+    }))
+    .filter(({ valor }) => valor);
+  if (!valores.length) return null;
+
+  const seccion = document.createElement("section");
+  seccion.className = "pdf-signos-vitales-cognicion";
+  const titulo = document.createElement("h2");
+  titulo.textContent = "SIGNOS VITALES";
+  seccion.appendChild(titulo);
+
+  const lista = document.createElement("dl");
+  lista.className = "pdf-signos-vitales-cognicion__grid";
+  valores.forEach(({ etiqueta, valor }) => {
+    const item = document.createElement("div");
+    const termino = document.createElement("dt");
+    const descripcion = document.createElement("dd");
+    termino.textContent = etiqueta;
+    descripcion.textContent = valor;
+    item.append(termino, descripcion);
+    lista.appendChild(item);
+  });
+  seccion.appendChild(lista);
+
+  const fechaHora = formatearFechaHoraVitalesCognicion(signosVitales);
+  if (fechaHora) {
+    const toma = document.createElement("p");
+    toma.className = "pdf-signos-vitales-cognicion__fecha";
+    toma.textContent = `Fecha y hora de toma: ${fechaHora}`;
+    seccion.appendChild(toma);
+  }
+  return seccion;
+}
+
+function datosExportacionCognicion() {
+  const formulario = collectNoteData();
+  const {
+    signosVitalesVinculados: _signosActualesPaciente,
+    ...formularioDeLaNota
+  } = formulario;
+  const notaGuardada = notaEditandoId
+    ? datosVigentesNota(notasHistorial[notaEditandoId] || {})
+    : {};
+  const signosGuardados = resolverSignosVitalesNota(notaGuardada, {
+    paciente: pacienteActualDatos || {},
+    sourceNoteId: notaEditandoId || notaGuardada.id || ""
+  });
+  const signosFormulario = resolverSignosVitalesNota(formularioDeLaNota, {
+    paciente: {},
+    sourceNoteId: ""
+  });
+  const signosVitales = signosGuardados || signosFormulario
+    ? { ...(signosGuardados || {}), ...(signosFormulario || {}) }
+    : null;
+  const exportData = {
+    ...notaGuardada,
+    ...formularioDeLaNota,
+    signosVitales
+  };
+  console.debug("[EXPORT COGNICIÓN] signos vitales incluidos:", {
+    tieneSignosVitales: Boolean(exportData.signosVitales),
+    camposDisponibles: Object.keys(exportData.signosVitales ?? {})
+  });
+  return exportData;
+}
+
 async function esperarImagenesPdfCognicion(contenedor) {
   const imagenes = [...contenedor.querySelectorAll("img")];
   await Promise.all(imagenes.map(async (imagen) => {
@@ -4981,7 +5113,7 @@ async function esperarImagenesPdfCognicion(contenedor) {
   }));
 }
 
-function construirContenedorPdfCognicion() {
+function construirContenedorPdfCognicion(exportData = datosExportacionCognicion()) {
   const fuente = document.querySelector(".contenedor");
   if (!fuente) throw new Error("No se encontro el contenedor de la nota clinica Cognicion.");
 
@@ -5020,10 +5152,13 @@ function construirContenedorPdfCognicion() {
     }
     documento.appendChild(bloqueMetadatos);
   }
+  const bloqueSignosVitales = crearSeccionSignosVitalesPdfCognicion(exportData.signosVitales);
+  if (bloqueSignosVitales) documento.appendChild(bloqueSignosVitales);
   ["tratamiento", "medico", "ultimaConsulta", "proximaConsulta"].forEach(agregarCampo);
 
   const bloqueObservacion = agregarNodo(document.getElementById("bloqueObservacionFray"));
   bloqueObservacion?.classList.remove("oculto");
+  bloqueObservacion?.querySelector(".grid-vitales")?.closest(".observacion-seccion")?.remove();
   if (bloqueObservacion) reemplazarFirmasPdfCognicion(bloqueObservacion);
   bloqueObservacion?.querySelectorAll("details").forEach((detalle) => { detalle.open = true; });
   if (bloqueObservacion) bloqueObservacion.replaceWith(...bloqueObservacion.childNodes);

@@ -71,6 +71,6 @@ assert.doesNotMatch(
   servicio.slice(servicio.indexOf("export async function guardarBorradorNotaClinica"), servicio.indexOf("export async function finalizarNotaClinica")),
   /arrayUnion|ediciones|notaEditada/
 );
-assert.match(html, /js\/nota\.js\?v=20260726-notas-autocomplete-estudios-v1/);
+assert.match(html, /js\/nota\.js\?v=20260729-signos-vitales-export-v1/);
 
 console.log("continuarBorrador: ok");
