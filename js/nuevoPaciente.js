@@ -138,13 +138,13 @@ function calcularIMCNuevoPaciente() {
 
   if (!campoIMC) return "";
 
-  const imc = calcularIMC(peso, talla);
-  if (imc === null) {
+  const imcCalculado = calcularIMC(peso, talla);
+  if (imcCalculado === null) {
     campoIMC.value = "";
     return "";
   }
 
-  const imcTexto = imc.toFixed(2);
+  const imcTexto = imcCalculado.toFixed(2);
   campoIMC.value = imcTexto;
   return imcTexto;
 }
@@ -405,7 +405,7 @@ window.guardarPacienteNuevo = async function() {
   const tipoSangre = document.getElementById("tipoSangre")?.value || "";
   const peso = document.getElementById("peso")?.value || "";
   const talla = document.getElementById("talla")?.value || "";
-  const imc = calcularIMC(peso, talla);
+  const imcCalculado = calcularIMC(peso, talla);
   calcularIMCNuevoPaciente();
   const perimetroAbdominal = document.getElementById("perimetroAbdominal")?.value || "";
   const diasEstancia = document.getElementById("diasEstancia")?.value || "";
@@ -459,7 +459,7 @@ window.guardarPacienteNuevo = async function() {
     tipoSangre,
     peso,
     talla,
-    imc,
+    imc: imcCalculado,
     perimetroAbdominal,
     signosVitales,
     somatometria,
@@ -485,7 +485,7 @@ window.guardarPacienteNuevo = async function() {
       tipoSangre,
       peso,
       talla,
-      imc,
+      imc: imcCalculado,
       perimetroAbdominal,
       diasEstancia
     },

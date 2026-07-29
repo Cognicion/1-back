@@ -233,13 +233,17 @@ export async function crearPacienteProvisional(datos){
         fechaCreacion:new Date().toISOString()
     };
 
-    console.log("===== PAYLOAD FIRESTORE =====");
-    console.log(payload);
-    console.log("IMC:", payload.imc);
-    console.log("typeof:", typeof payload.imc);
-    console.log("instanceof HTMLInputElement:", typeof HTMLInputElement !== "undefined" && payload.imc instanceof HTMLInputElement);
-    console.log("constructor:", payload.imc?.constructor?.name);
-    debugger;
+    console.table(Object.entries(payload).map(([campo, valor]) => ({
+        campo,
+        tipo: typeof valor,
+        constructor: valor?.constructor?.name || null,
+        esNodo: typeof Node !== "undefined" && valor instanceof Node
+    })));
+    console.debug("[NUEVO PACIENTE] payload.imc", {
+        tipo: typeof payload.imc,
+        constructor: payload.imc?.constructor?.name || null,
+        esInput: typeof HTMLInputElement !== "undefined" && payload.imc instanceof HTMLInputElement
+    });
     if (typeof HTMLInputElement !== "undefined" && payload.imc instanceof HTMLInputElement) {
         throw new Error("Valor DOM inválido en payload.imc");
     }
