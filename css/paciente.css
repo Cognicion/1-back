@@ -1184,21 +1184,6 @@ body.tema-claro .diagnostico-opcion:focus-visible {
   accent-color: var(--celtic-400);
 }
 
-.boton-apuntes-flotante {
-  position: fixed;
-  right: 22px;
-  bottom: 22px;
-  z-index: 95;
-  border: 1px solid rgba(126, 182, 138, 0.32);
-  border-radius: 999px;
-  background: linear-gradient(135deg, var(--celtic-600), var(--celtic-300));
-  color: #fff;
-  font-weight: 900;
-  padding: 12px 18px;
-  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.36), 0 0 24px rgba(82, 152, 102, 0.22);
-  cursor: pointer;
-}
-
 .fondo-apuntes-paciente {
   position: fixed;
   inset: 0;

@@ -674,15 +674,53 @@ function listaDiagnosticosLaboratorio(datos = datosPacienteActual || {}) {
 }
 
 function listaTratamientosLaboratorio(datos = datosPacienteActual || {}) {
+  const origenIndicaciones = tratamientosCache.some(esTratamientoVigente) ? "estructurado" : "legado";
   const activos = tratamientosCache
     .filter(esTratamientoVigente)
     .map((tratamiento) => normalizarIndicacionesParaResumen(tratamiento))
     .flat()
     .filter(Boolean);
-  if (activos.length) return activos;
+  if (activos.length) {
+    const deduplicadas = deduplicarIndicacionesResumen(activos);
+    console.debug("[RESUMEN] indicaciones origen:", origenIndicaciones);
+    console.debug("[RESUMEN] indicaciones antes:", activos.length);
+    console.debug("[RESUMEN] indicaciones después:", deduplicadas.length);
+    return deduplicadas;
+  }
   const resumen = datos.tratamiento || datos.tratamientoActual || datos.datosClinicosResumen?.tratamiento;
   const normalizadas = normalizarIndicacionesParaResumen(resumen);
-  return normalizadas.length ? normalizadas : ["Sin tratamiento activo registrado"];
+  const deduplicadas = deduplicarIndicacionesResumen(normalizadas);
+  console.debug("[RESUMEN] indicaciones origen:", origenIndicaciones);
+  console.debug("[RESUMEN] indicaciones antes:", normalizadas.length);
+  console.debug("[RESUMEN] indicaciones después:", deduplicadas.length);
+  return deduplicadas.length ? deduplicadas : ["Sin tratamiento activo registrado"];
+}
+
+function limpiarNumeracionIndicacion(texto = "") {
+  return String(texto).replace(/^\s*\d+[.)\-]*\s*/, "").trim();
+}
+
+function normalizarClaveIndicacion(texto = "") {
+  return limpiarNumeracionIndicacion(texto)
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/\s+/g, " ")
+    .replace(/[.,;:]+$/g, "")
+    .trim();
+}
+
+function deduplicarIndicacionesResumen(indicaciones = []) {
+  const vistos = new Set();
+  const resultado = [];
+  indicaciones.forEach((indicacion) => {
+    const texto = limpiarNumeracionIndicacion(indicacion);
+    const clave = normalizarClaveIndicacion(texto);
+    if (!clave || vistos.has(clave)) return;
+    vistos.add(clave);
+    resultado.push(texto);
+  });
+  return resultado;
 }
 
 function normalizarIndicacionesParaResumen(valor) {
@@ -700,7 +738,7 @@ function normalizarIndicacionesParaResumen(valor) {
   return texto
     .split(/(?=^\s*\d+[.)]\s+)/m)
     .flatMap((bloque) => bloque.split(/\r?\n/))
-    .map((linea) => linea.trim())
+    .map((linea) => limpiarNumeracionIndicacion(linea))
     .filter((linea) => linea && !/^(tratamiento farmacológico actual|indicaciones vigentes):?$/i.test(linea));
 }
 
@@ -856,7 +894,7 @@ function renderizarGaugeVital(clave, datos = {}) {
   `;
 }
 
-const VERSION_RESUMEN_EXPEDIENTE = "1.38";
+const VERSION_RESUMEN_EXPEDIENTE = "1.39";
 const CAMPOS_RESUMEN_PACIENTE = Object.freeze({
   identificacion: [
     ["email", "Correo", "text", ["email", "correo"]],
@@ -918,7 +956,8 @@ function obtenerVisibilidadResumenPaciente(datos = {}) {
 
 function renderizarDatoResumenPaciente(datos, campo, valor) {
   if (obtenerVisibilidadResumenPaciente(datos)[campo] === false) {
-    return '<span class="resumen-dato-oculto" title="Dato oculto en el resumen" aria-label="Dato oculto en el resumen"><span aria-hidden="true">&#128065;&#824;</span><small>Oculto</small></span>';
+    console.debug("[RESUMEN] campo oculto aplicado:", campo);
+    return '<span class="resumen-dato-oculto" title="Dato oculto en el resumen" aria-label="Dato oculto en el resumen"><span aria-hidden="true">&#128065;&#824;</span></span>';
   }
   if (obtenerVisibilidadResumenPaciente(datos)[campo] === false) {
     return '<span class="resumen-dato-oculto" title="Dato oculto en el resumen" aria-label="Dato oculto en el resumen">👁̸</span>';
@@ -981,6 +1020,7 @@ function abrirEditorResumen({ seccionId, titulo, campos, valoresActuales }) {
 
 async function guardarEditorResumen(seccionId, valores, visibilidad) {
   const actualizacion = { ...valores, visibilidadResumen: { ...obtenerVisibilidadResumenPaciente(datosPacienteActual || {}), ...visibilidad } };
+  console.debug("[RESUMEN] visibilidad guardada:", seccionId);
   if (seccionId === "equipo") {
     actualizacion.equipoClinico = String(valores.equipoClinico || "").split(/\r?\n/).map((linea) => {
       const [cargo, ...nombre] = linea.split(":");
