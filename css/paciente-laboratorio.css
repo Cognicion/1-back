@@ -858,9 +858,11 @@
 }
 
 .resumen-cuadro[data-resumen-cuadro="institucionIngreso"] {
+  grid-column: span 2;
   display: grid;
-  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
-  gap: 1rem;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.4fr);
+  gap: 1.25rem;
+  padding: 1.15rem;
 }
 
 .resumen-cuadro[data-resumen-cuadro="institucionIngreso"] > .resumen-cuadro-encabezado {
@@ -870,11 +872,29 @@
 .resumen-cuadro[data-resumen-cuadro="institucionIngreso"] > .resumen-subgrupo {
   min-width: 0;
   margin-top: 0;
+  padding: 0.15rem 0.2rem;
+}
+
+.resumen-cuadro[data-resumen-cuadro="institucionIngreso"] > .resumen-subgrupo p {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  align-items: baseline;
+  column-gap: 0.45rem;
+  row-gap: 0.35rem;
+}
+
+.resumen-cuadro[data-resumen-cuadro="institucionIngreso"] > .resumen-subgrupo p > b {
+  white-space: nowrap;
 }
 
 @media (max-width: 720px) {
   .resumen-cuadro[data-resumen-cuadro="institucionIngreso"] {
+    grid-column: 1;
     grid-template-columns: 1fr;
+  }
+
+  .resumen-cuadro[data-resumen-cuadro="institucionIngreso"] > .resumen-subgrupo p {
+    display: block;
   }
 }
 

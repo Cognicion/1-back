@@ -122,7 +122,17 @@ textarea{
 .seccion-nota-redimensionable textarea {
     min-height: 80px;
     margin-bottom: 0;
-    resize: none;
+    resize: vertical;
+    overflow: auto;
+    max-height: none;
+}
+
+.seccion-redimensionable-compartida textarea {
+    min-height: 80px;
+    margin-bottom: 0;
+    resize: vertical;
+    overflow: auto;
+    max-height: none;
 }
 
 .panel-nota-redimensionable {

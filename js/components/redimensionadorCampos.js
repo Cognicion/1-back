@@ -86,6 +86,20 @@ function crearSeparador(item, contexto) {
   return separador;
 }
 
+function observarRedimensionamientoNativo(campo, item, guardarEstado) {
+  if (!campo || typeof ResizeObserver === "undefined" || campo.dataset.observadorResize === "true") return;
+  campo.dataset.observadorResize = "true";
+  let alturaAnterior = Math.round(campo.getBoundingClientRect().height);
+  const observador = new ResizeObserver(() => {
+    const alturaActual = Math.round(campo.getBoundingClientRect().height);
+    if (!alturaActual || alturaActual === alturaAnterior) return;
+    alturaAnterior = alturaActual;
+    campo.dataset.manualResize = "true";
+    persistir(guardarEstado, item.clave, { altura: alturaActual, contraida: false });
+  });
+  observador.observe(campo);
+}
+
 function envolverCampo(item, estado, opciones) {
   const campo = item.objetivo;
   if (!campo || (item.panel ? campo.dataset.redimensionCompartido === "true" : campo.closest(".seccion-redimensionable-compartida"))) return;
@@ -120,6 +134,7 @@ function envolverCampo(item, estado, opciones) {
     campo.style.height = `${item.minimo || 80}px`;
   }
   seccion.appendChild(crearSeparador(item, contexto));
+  observarRedimensionamientoNativo(campo, item, contexto.guardarEstado);
 }
 
 export function configurarCamposRedimensionables({ items = [], cargarEstado = () => ({}), guardarEstado = () => {}, onAction } = {}) {
