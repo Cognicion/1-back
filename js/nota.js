@@ -94,6 +94,7 @@ import { listarEstudios } from "./services/estudios.js";
 import { listarTratamientos } from "./services/tratamientos.js";
 import { construirActualizacionSignosVitalesDesdeNota } from "./services/signosVitalesNotas.js";
 import { calcularEdadPediatrica, formatearFechaDDMMAAAA } from "./pediatria/edad.js";
+import { calcularIMC as calcularIMCCentral } from "./utils/imc.js";
 import {
   calcularIMC as calcularIMCPediatrico,
   mantenimientoHollidaySegar,
@@ -2348,12 +2349,12 @@ function calcularIMCNota() {
 
   if (!campoIMC) return "";
 
-  if (!peso || !talla || talla <= 0) {
+  const imc = calcularIMCCentral(peso, talla);
+  if (imc === null) {
     campoIMC.value = "";
     return "";
   }
 
-  const imc = peso / (talla * talla);
   const imcTexto = imc.toFixed(2);
   campoIMC.value = imcTexto;
   return imcTexto;

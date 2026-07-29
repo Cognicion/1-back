@@ -1,4 +1,5 @@
 import { auth, db } from "./firebase.js";
+import { calcularIMC } from "./utils/imc.js";
 
 import {
   onAuthStateChanged
@@ -137,12 +138,12 @@ function calcularIMCNuevoPaciente() {
 
   if (!campoIMC) return "";
 
-  if (!peso || !talla) {
+  const imc = calcularIMC(peso, talla);
+  if (imc === null) {
     campoIMC.value = "";
     return "";
   }
 
-  const imc = peso / (talla * talla);
   const imcTexto = imc.toFixed(2);
   campoIMC.value = imcTexto;
   return imcTexto;
@@ -384,20 +385,18 @@ window.guardarPacienteNuevo = async function() {
   const tipoSangre = document.getElementById("tipoSangre")?.value || "";
   const peso = document.getElementById("peso")?.value || "";
   const talla = document.getElementById("talla")?.value || "";
-  const imc = calcularIMCNuevoPaciente();
+  calcularIMCNuevoPaciente();
   const perimetroAbdominal = document.getElementById("perimetroAbdominal")?.value || "";
   const diasEstancia = document.getElementById("diasEstancia")?.value || "";
   const expedienteCognicion = await generarExpedienteCognicion();
   const signosVitales = {
     peso,
     talla,
-    imc,
     perimetroAbdominal
   };
   const somatometria = {
     peso,
     talla,
-    imc,
     perimetroAbdominal
   };
 

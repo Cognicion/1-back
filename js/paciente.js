@@ -29,6 +29,7 @@ import {
   usuarioEsEnfermeriaSaludMental
 } from "./utils/roles.js";
 import { calcularEdadPediatrica } from "./pediatria/edad.js";
+import { calcularIMC as calcularIMCCentral } from "./utils/imc.js";
 import { buildGrowthAssessment } from "./services/growth/growthCalculationService.js";
 import {
   calcularIMC as calcularIMCPediatrico,
@@ -876,7 +877,13 @@ function renderizarGaugeVital(clave, datos = {}) {
   const signo = SIGNOS_VITALES_LAB[clave];
   if (!signo) return "";
   const registroVisible = obtenerRegistroVisibleSignoVital(datos, clave);
-  const valor = registroVisible?.valor || valorPaciente(datos, signo.rutas, "Sin registro");
+  const talla = obtenerTallaPaciente(datos);
+  const imcCalculado = clave === "imc"
+    ? calcularIMCCentral(obtenerPesoPaciente(datos), Number(talla) > 3 ? Number(talla) / 100 : talla)
+    : null;
+  const valor = clave === "imc"
+    ? (imcCalculado === null ? "Sin registro" : imcCalculado.toFixed(2))
+    : (registroVisible?.valor || valorPaciente(datos, signo.rutas, "Sin registro"));
   const meta = registroVisible?.texto
     ? `<small class="lab-gauge-meta ${registroVisible.esHoy ? "es-hoy" : "es-ultimo"}">${escaparHTML(registroVisible.texto)}</small>`
     : "";
@@ -894,7 +901,7 @@ function renderizarGaugeVital(clave, datos = {}) {
   `;
 }
 
-const VERSION_RESUMEN_EXPEDIENTE = "1.39";
+const VERSION_RESUMEN_EXPEDIENTE = "1.40";
 const CAMPOS_RESUMEN_PACIENTE = Object.freeze({
   identificacion: [
     ["email", "Correo", "text", ["email", "correo"]],
@@ -1083,12 +1090,16 @@ function renderizarBloqueIdentificacionLab(datos = {}, tipoPaciente = "privada")
 }
 
 function renderizarBloqueSomatometriaLab(datos = {}) {
+  const peso = obtenerPesoPaciente(datos);
+  const talla = obtenerTallaPaciente(datos);
+  const tallaMetros = Number(talla) > 3 ? Number(talla) / 100 : talla;
+  const imcCalculado = calcularIMCCentral(peso, tallaMetros);
   return `<article class="lab-card resumen-cuadro" data-resumen-cuadro="somatometria">
     ${encabezadoResumenPaciente("Somatometría", "somatometria")}
     <p><b>Peso:</b> ${renderizarDatoResumenPaciente(datos, "peso", valorPaciente(datos, ["peso", "somatometria.peso", "signosVitales.peso"], "Sin registro"))}</p>
     <p><b>Talla:</b> ${renderizarDatoResumenPaciente(datos, "talla", valorPaciente(datos, ["talla", "somatometria.talla", "signosVitales.talla"], "Sin registro"))}</p>
     <p><b>Perímetro abdominal:</b> ${renderizarDatoResumenPaciente(datos, "perimetroAbdominal", valorPaciente(datos, ["perimetroAbdominal", "somatometria.perimetroAbdominal", "signosVitales.perimetroAbdominal"], "Sin registro"))}</p>
-    <p><b>IMC:</b> ${renderizarDatoResumenPaciente(datos, "imc", valorPaciente(datos, ["imc", "somatometria.imc", "signosVitales.imc"], "Sin registro"))}</p>
+    <p><b>IMC:</b> ${renderizarDatoResumenPaciente(datos, "imc", imcCalculado === null ? "Sin registro" : imcCalculado.toFixed(2))}</p>
     ${renderizarResumenPediatricoSeguro(datos)}
   </article>`;
 }
@@ -3574,25 +3585,14 @@ async function guardarCampoPacienteInline(campo, nuevoValor, datos = {}) {
     if (campo === "institucionPaciente") actualizacion.institucion = nuevoValor;
     if (campo === "servicioInstitucional") actualizacion.servicio = nuevoValor;
     if (campo === "expediente") actualizacion.numeroExpediente = nuevoValor;
-    if (["peso", "talla", "imc", "perimetroAbdominal"].includes(campo)) {
-      const pesoBase = campo === "peso" ? nuevoValor : (datosActuales?.peso || datosActuales?.signosVitales?.peso || datosActuales?.somatometria?.peso || datosActuales?.datosInstitucionales?.peso || "");
-      const tallaBase = campo === "talla" ? nuevoValor : (datosActuales?.talla || datosActuales?.signosVitales?.talla || datosActuales?.somatometria?.talla || datosActuales?.datosInstitucionales?.talla || "");
-      const pesoNumero = numeroDesdeTexto(pesoBase);
-      const tallaNumero = numeroDesdeTexto(tallaBase);
-      const imcCalculado = pesoNumero && tallaNumero ? (pesoNumero / (tallaNumero * tallaNumero)).toFixed(2) : "";
-      if (imcCalculado && campo !== "imc") {
-        actualizacion.imc = imcCalculado;
-        datosInstitucionales.imc = imcCalculado;
-      }
+    if (["peso", "talla", "perimetroAbdominal"].includes(campo)) {
       actualizacion.signosVitales = {
         ...(datosActuales?.signosVitales || {}),
         [campo]: nuevoValor,
-        ...(imcCalculado && campo !== "imc" ? { imc: imcCalculado } : {})
       };
       actualizacion.somatometria = {
         ...(datosActuales?.somatometria || {}),
         [campo]: nuevoValor,
-        ...(imcCalculado && campo !== "imc" ? { imc: imcCalculado } : {})
       };
     }
   }

@@ -9,6 +9,7 @@ import { configurarCamposRedimensionables } from "./components/redimensionadorCa
 import { esPacienteMujer } from "./utils/sexo.js";
 import { crearGestorHitosDesarrolloHistoria } from "./components/hitosDesarrolloHistoria.js";
 import { crearGestorFamiliogramaHistoria } from "./components/familiogramaHistoria.js";
+import { calcularIMC } from "./utils/imc.js";
 
 import {
   obtenerUsuario,
@@ -107,8 +108,9 @@ function calcularIMCHistoria() {
   const peso = numeroClinico(document.getElementById("peso")?.value || "");
   const talla = numeroClinico(document.getElementById("talla")?.value || "");
   const campoIMC = document.getElementById("imc");
-  if (!campoIMC || !peso || !talla) return;
-  campoIMC.value = (peso / (talla * talla)).toFixed(2);
+  if (!campoIMC) return;
+  const imc = calcularIMC(peso, talla);
+  campoIMC.value = imc === null ? "" : imc.toFixed(2);
 }
 
 async function inicializarHistoriaClinica() {
@@ -401,7 +403,6 @@ window.guardarHistoria = async () => {
   const tipoSangre = campoConRespaldo(datos, pacienteDatosActuales, "tipoSangre");
   const peso = campoConRespaldo(datos, pacienteDatosActuales, "peso");
   const talla = campoConRespaldo(datos, pacienteDatosActuales, "talla");
-  const imc = campoConRespaldo(datos, pacienteDatosActuales, "imc");
   const perimetroAbdominal = campoConRespaldo(datos, pacienteDatosActuales, "perimetroAbdominal");
 
   await actualizarUsuario(uidPaciente, sanitizarDatosHistoriaClinica({
@@ -419,7 +420,6 @@ window.guardarHistoria = async () => {
     tipoSangre,
     peso,
     talla,
-    imc,
     perimetroAbdominal,
     datosInstitucionales: {
       ...(pacienteDatosActuales?.datosInstitucionales || {}),
@@ -434,21 +434,18 @@ window.guardarHistoria = async () => {
       tipoSangre,
       peso,
       talla,
-      imc,
       perimetroAbdominal
     },
     signosVitales: {
       ...(pacienteDatosActuales?.signosVitales || {}),
       peso,
       talla,
-      imc,
       perimetroAbdominal
     },
     somatometria: {
       ...(pacienteDatosActuales?.somatometria || {}),
       peso,
       talla,
-      imc,
       perimetroAbdominal
     },
     datosClinicosResumen: {

@@ -115,7 +115,7 @@ export function calcularIMC(pesoKg, tallaCm) {
   if (!peso || !talla) return null;
   const metros = talla / 100;
   if (metros <= 0) return null;
-  return peso / (metros * metros);
+  return calcularIMCMetros(peso, metros);
 }
 
 export function superficieCorporal(pesoKg, tallaCm) {
@@ -228,3 +228,4 @@ function normalCdf(z) {
   const p = d * t * (0.3193815 + t * (-0.3565638 + t * (1.781478 + t * (-1.821256 + t * 1.330274))));
   return z > 0 ? 1 - p : p;
 }
+import { calcularIMC as calcularIMCMetros } from "../utils/imc.js";
