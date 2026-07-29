@@ -29,7 +29,6 @@ import {
   usuarioEsEnfermeriaSaludMental
 } from "./utils/roles.js";
 import { calcularEdadPediatrica } from "./pediatria/edad.js";
-import { buildGrowthAssessment } from "./services/growth/growthCalculationService.js";
 import {
   calcularIMC as calcularIMCPediatrico,
   mantenimientoHollidaySegar,
@@ -96,6 +95,9 @@ let ESCALAS_PSIQUIATRICAS = [];
 let ESCALAS_COGNITIVAS = [];
 let crearResumenEscala = null;
 let listarEscalasAplicadas = null;
+console.info("[PACIENTE BUILD] 1.36-fix-20260729-01");
+console.info("[PACIENTE] módulo evaluado");
+
 let dependenciasEscalasPacientePromise = null;
 
 function formatearFechaEscalaFallback(valor, conHora = false) {
@@ -673,17 +675,11 @@ function listaDiagnosticosLaboratorio(datos = datosPacienteActual || {}) {
 function listaTratamientosLaboratorio(datos = datosPacienteActual || {}) {
   const activos = tratamientosCache
     .filter(esTratamientoVigente)
-    .map((tratamiento) => formatearIndicacionTratamientoConCambio(tratamiento, true) || tratamiento.medicamento || tratamiento.nombre || tratamiento.texto)
+    .map((tratamiento) => tratamiento.medicamento || tratamiento.nombre || tratamiento.texto)
     .filter(Boolean);
   if (activos.length) return activos;
-  const estructurados = Array.isArray(datos.datosClinicosResumen?.tratamientosActivos)
-    ? datos.datosClinicosResumen.tratamientosActivos
-      .map((tratamiento) => formatearIndicacionTratamientoConCambio(tratamiento, true) || tratamiento.medicamento || tratamiento.nombre || tratamiento.texto)
-      .filter(Boolean)
-    : [];
-  if (estructurados.length) return estructurados;
   const resumen = datos.tratamiento || datos.tratamientoActual || datos.datosClinicosResumen?.tratamiento;
-  return resumen ? String(resumen).split(/\r?\n/).map((linea) => linea.trim()).filter(Boolean) : ["Sin tratamiento activo registrado"];
+  return resumen ? [resumen] : ["Sin tratamiento activo registrado"];
 }
 
 function listaEstudiosLaboratorio(datos = datosPacienteActual || {}) {
@@ -711,178 +707,8 @@ function listaTimelineLaboratorio(datos = datosPacienteActual || {}) {
 }
 
 function renderizarListaLab(items) {
-  return items.map((item, index) => `<li>${escaparHTML(String(item).replace(/^\s*\d+[.)]\s*/, ""))}${items.length > 1 ? "" : ""}</li>`).join("");
+  return items.map((item) => `<li>${escaparHTML(item)}</li>`).join("");
 }
-
-function obtenerVisibilidadResumen(datos = {}) {
-  return { ...(datos.visibilidadResumen || {}) };
-}
-
-function datoVisibleResumen(datos, campo, valor, alterno = "Sin registro") {
-  const visibilidad = obtenerVisibilidadResumen(datos);
-  if (visibilidad[campo] === false) {
-    return '<span class="resumen-dato-oculto" title="Dato oculto en el resumen" aria-label="Dato oculto en el resumen">👁̸</span>';
-  }
-  return escaparHTML(valor ?? alterno);
-}
-
-function puedeEditarResumenPaciente() {
-  return ["admin", "administrador", "medico", "psicologo", "enfermeria", "enfermero"].includes(String(rolUsuarioActual || "").toLowerCase());
-}
-
-function encabezadoCuadroResumen(titulo, cuadroId, editable = true) {
-  const boton = editable && puedeEditarResumenPaciente()
-    ? `<button type="button" class="resumen-cuadro-editar" data-resumen-editar="${escaparHTML(cuadroId)}">Editar</button>`
-    : "";
-  return `<div class="resumen-cuadro-encabezado"><span>${escaparHTML(titulo)}</span>${boton}</div>`;
-}
-
-const CAMPOS_RESUMEN_EDITABLES = Object.freeze({
-  identificacion: [
-    ["email", "Correo", "text"], ["fechaNacimiento", "Fecha de nacimiento", "date"],
-    ["sexo", "Sexo", "text"], ["genero", "Género", "text"], ["curp", "CURP", "text"], ["telefono", "Teléfono", "text"]
-  ],
-  institucion: [["institucionPaciente", "Institución", "text"], ["expediente", "Expediente institucional", "text"], ["cama", "Cama", "text"]],
-  ingreso: [
-    ["fechaIngreso", "Fecha de ingreso", "date"], ["servicioInstitucional", "Servicio", "text"],
-    ["ultimoIngreso", "Último ingreso", "date"], ["ultimaConsulta", "Última consulta", "date"],
-    ["numeroConsultas", "Número de consultas", "number"], ["proximaConsulta", "Próxima consulta", "date"],
-    ["fechaEgreso", "Fecha de egreso", "date"], ["motivoIngreso", "Motivo de ingreso", "textarea"], ["tipoAtencion", "Tipo de atención", "text"]
-  ],
-  somatometria: [["peso", "Peso", "number"], ["talla", "Talla", "number"], ["perimetroAbdominal", "Perímetro abdominal", "number"]],
-  seguridad: [["alergias", "Alergias", "textarea"], ["tipoSangre", "Tipo de sangre", "text"]]
-});
-
-function valorCampoResumen(datos = {}, campo) {
-  const rutas = {
-    email: ["email", "correo"], curp: ["curp", "datosInstitucionales.curp"], genero: ["genero", "identidadGenero"],
-    institucionPaciente: ["institucionPaciente", "institucion"], expediente: ["expediente", "numeroExpediente"],
-    servicioInstitucional: ["servicioInstitucional", "servicio"], fechaNacimiento: ["fechaNacimiento", "datosInstitucionales.fechaNacimiento"],
-    peso: ["peso", "signosVitales.peso", "somatometria.peso", "datosInstitucionales.peso"],
-    talla: ["talla", "signosVitales.talla", "somatometria.talla", "datosInstitucionales.talla"],
-    perimetroAbdominal: ["perimetroAbdominal", "signosVitales.perimetroAbdominal", "somatometria.perimetroAbdominal", "datosInstitucionales.perimetroAbdominal"],
-    fechaIngreso: ["fechaIngreso", "datosInstitucionales.fechaIngreso"], ultimoIngreso: ["ultimoIngreso", "datosInstitucionales.ultimoIngreso"]
-  };
-  if (campo === "fechaNacimiento") return obtenerFechaNacimiento(datos) || "";
-  if (campo === "fechaIngreso") return obtenerFechaIngreso(datos) || "";
-  if (campo === "ultimoIngreso") return obtenerUltimoIngreso(datos) || "";
-  return valorPaciente(datos, rutas[campo] || [campo], "");
-}
-
-function valorFechaInputResumen(valor) {
-  return partesFechaIngreso(valor).fecha || (String(valor || "").match(/^\d{4}-\d{2}-\d{2}/)?.[0] || "");
-}
-
-function abrirEditorCuadroResumen(cuadroId) {
-  if (!puedeEditarResumenPaciente()) return;
-  if (cuadroId === "tratamiento") {
-    mostrarTratamiento();
-    return;
-  }
-  const campos = CAMPOS_RESUMEN_EDITABLES[cuadroId];
-  if (!campos) {
-    if (cuadroId === "equipo") abrirEditorEquipoResumen();
-    return;
-  }
-  document.getElementById("modalEditorResumenPaciente")?.remove();
-  const datos = datosPacienteActual || {};
-  const modal = document.createElement("div");
-  modal.id = "modalEditorResumenPaciente";
-  modal.className = "resumen-editor-overlay";
-  modal.innerHTML = `<section class="resumen-editor-card" role="dialog" aria-modal="true" aria-labelledby="tituloEditorResumen">
-    <header><h3 id="tituloEditorResumen">Editar ${escaparHTML(cuadroId)}</h3><button type="button" data-cerrar-resumen-editor aria-label="Cerrar">×</button></header>
-    <div class="resumen-editor-campos">${campos.map(([campo, etiqueta, tipo]) => {
-      const valor = valorCampoResumen(datos, campo);
-      const control = tipo === "textarea"
-        ? `<textarea data-resumen-campo="${campo}">${escaparHTML(valor)}</textarea>`
-        : `<input data-resumen-campo="${campo}" type="${tipo}" value="${escaparHTML(tipo === "date" ? valorFechaInputResumen(valor) : valor)}">`;
-      const oculto = obtenerVisibilidadResumen(datos)[campo] === false;
-      return `<label>${escaparHTML(etiqueta)}${control}<span><input type="checkbox" data-resumen-oculto="${campo}" ${oculto ? "checked" : ""}> Ocultar este dato en el resumen</span></label>`;
-    }).join("")}</div>
-    <p class="resumen-editor-error" data-resumen-editor-error role="alert"></p>
-    <footer><button type="button" class="boton-secundario" data-cerrar-resumen-editor>Cancelar</button><button type="button" data-guardar-resumen-editor>Guardar</button></footer>
-  </section>`;
-  document.body.appendChild(modal);
-  const cerrar = () => modal.remove();
-  modal.querySelectorAll("[data-cerrar-resumen-editor]").forEach((boton) => boton.addEventListener("click", cerrar));
-  modal.querySelector("[data-guardar-resumen-editor]")?.addEventListener("click", async () => {
-    const error = modal.querySelector("[data-resumen-editor-error]");
-    const valores = Object.fromEntries(campos.map(([campo]) => [campo, modal.querySelector(`[data-resumen-campo="${campo}"]`)?.value || ""]));
-    try {
-      await guardarCuadroResumen(cuadroId, valores, modal);
-      console.debug("[RESUMEN] cuadro editado:", cuadroId);
-      cerrar();
-    } catch (e) {
-      if (error) error.textContent = e.message || "No fue posible guardar el cuadro.";
-    }
-  });
-}
-
-async function guardarCuadroResumen(cuadroId, valores, modal) {
-  const datos = datosPacienteActual || {};
-  const actualizacion = {};
-  const institucional = { ...(datos.datosInstitucionales || {}) };
-  const signos = { ...(datos.signosVitales || {}) };
-  const somatometria = { ...(datos.somatometria || {}) };
-  for (const [campo, valorOriginal] of Object.entries(valores)) {
-    let valor = valorOriginal;
-    if (["peso", "talla", "perimetroAbdominal", "numeroConsultas"].includes(campo) && valor !== "" && !Number.isFinite(Number(valor))) {
-      throw new Error(`El campo ${campo} debe ser numérico.`);
-    }
-    if (["fechaNacimiento", "fechaIngreso", "ultimoIngreso", "ultimaConsulta", "proximaConsulta", "fechaEgreso"].includes(campo) && valor) {
-      valor = campo === "fechaNacimiento" ? valor : `${valor}T00:00`;
-    }
-    actualizacion[campo] = valor;
-    if (["institucionPaciente", "expediente", "cama", "servicioInstitucional", "fechaNacimiento", "fechaIngreso", "ultimoIngreso", "alergias", "tipoSangre"].includes(campo)) institucional[campo] = valor;
-    if (["peso", "talla", "perimetroAbdominal"].includes(campo)) {
-      signos[campo] = valor; somatometria[campo] = valor;
-    }
-  }
-  if (Object.hasOwn(valores, "peso") || Object.hasOwn(valores, "talla")) {
-    const peso = Number(valores.peso || valorCampoResumen(datos, "peso"));
-    const talla = Number(valores.talla || valorCampoResumen(datos, "talla"));
-    if (peso > 0 && talla > 0) actualizacion.imc = (peso / (talla > 3 ? (talla / 100) ** 2 : talla ** 2)).toFixed(2);
-  }
-  actualizacion.datosInstitucionales = institucional;
-  actualizacion.signosVitales = signos;
-  actualizacion.somatometria = somatometria;
-  actualizacion.visibilidadResumen = {
-    ...obtenerVisibilidadResumen(datos),
-    ...Object.fromEntries(Object.entries(valores).map(([campo]) => [campo, !modal.querySelector(`[data-resumen-oculto="${campo}"]`)?.checked]))
-  };
-  await actualizarUsuario(uidPaciente, actualizacion);
-  datosPacienteActual = { ...datos, ...actualizacion };
-  try {
-    await registrarEventoAuditoria({
-      accion: "editar_resumen_expediente",
-      modulo: "Resumen del expediente",
-      descripcion: `Actualización del cuadro ${cuadroId}.`,
-      usuarioUid: auth.currentUser?.uid || "",
-      usuarioRol: rolUsuarioActual,
-      pacienteUid: uidPaciente,
-      exito: true,
-      detalles: { cuadroId }
-    });
-  } catch (errorAuditoria) {
-    console.warn("[RESUMEN] No se pudo registrar auditoría del cuadro", { cuadroId, code: errorAuditoria?.code || null });
-  }
-  console.debug("[RESUMEN] visibilidad actualizada:", cuadroId, true);
-  renderizarVistaLaboratorioPaciente(datosPacienteActual);
-}
-
-function abrirEditorEquipoResumen() {
-  const equipo = obtenerEquipoClinicoPaciente(datosPacienteActual || {});
-  const texto = equipo.map((item) => `${item.cargo || "Personal clínico"}: ${item.nombre || ""}`).join("\n");
-  const nombre = window.prompt("Edita el equipo clínico, un integrante por renglón (cargo: nombre).", texto);
-  if (nombre === null) return;
-  const equipoNuevo = nombre.split(/\r?\n/).map((linea) => {
-    const [cargo, ...resto] = linea.split(":");
-    return { cargo: cargo.trim(), nombre: resto.join(":").trim() };
-  }).filter((item) => item.cargo && item.nombre);
-  guardarEquipoClinicoPaciente(equipoNuevo).then(() => console.debug("[RESUMEN] cuadro editado:", "equipo"));
-}
-
-function obtenerPesoPaciente(datos = {}) {
 
 const OPCIONES_SELECT_PACIENTE = {
   sexo: ["Femenino", "Masculino", "Intersexual", "No especificado", "Otro..."],
@@ -968,6 +794,10 @@ function renderizarEquipoClinicoLab(equipo = []) {
     ? equipo.map((item, index) => `
         <div class="lab-equipo-item" data-equipo-index="${index}">
           <p><b>${escaparHTML(item.cargo || "Personal clínico")}:</b> ${escaparHTML(item.nombre || "Sin nombre")}</p>
+          <div>
+            <button class="boton-editar-dato" onclick="editarEquipoClinicoPaciente(${index})">Editar</button>
+            <button class="boton-editar-dato" onclick="eliminarEquipoClinicoPaciente(${index})">Quitar</button>
+          </div>
         </div>
       `).join("")
     : `<p class="lab-muted">Sin integrantes registrados. Agrega personal clínico con el botón +.</p>`;
@@ -1004,11 +834,11 @@ function renderizarGaugeVital(clave, datos = {}) {
 function renderizarBloqueInstitucionLab(datos = {}, mostrarInstitucional = false) {
   if (!mostrarInstitucional) return "";
   return `
-    <article class="lab-card resumen-cuadro" data-resumen-cuadro="institucion">
-      ${encabezadoCuadroResumen("Institución", "institucion")}
-      <p><b>Institución:</b> ${datoVisibleResumen(datos, "institucionPaciente", valorPaciente(datos, ["institucionPaciente", "institucion"]))}</p>
-      <p><b>Expediente institucional:</b> ${datoVisibleResumen(datos, "expediente", valorPaciente(datos, ["expediente", "numeroExpediente"], "Sin expediente"))}</p>
-      <p><b>Cama:</b> ${datoVisibleResumen(datos, "cama", valorPaciente(datos, ["cama"]))}</p>
+    <article class="lab-card">
+      <span>Institución</span>
+      <p><b>Institución:</b> ${escaparHTML(valorPaciente(datos, ["institucionPaciente", "institucion"]))} <button class="boton-editar-dato" onclick="editarCampoPaciente('institucionPaciente', 'Institución', 'text')">Editar</button></p>
+      <p><b>Expediente institucional:</b> ${escaparHTML(valorPaciente(datos, ["expediente", "numeroExpediente"], "Sin expediente"))} <button class="boton-editar-dato" onclick="editarCampoPaciente('expediente', 'Expediente institucional', 'text')">Editar</button></p>
+      <p><b>Cama:</b> ${escaparHTML(valorPaciente(datos, ["cama"]))} <button class="boton-editar-dato" onclick="editarCampoPaciente('cama', 'Cama', 'text')">Editar</button></p>
     </article>
   `;
 }
@@ -1017,105 +847,22 @@ function renderizarBloqueIngresoLab(datos = {}, mostrarInstitucional = false) {
   const fechaIngreso = obtenerFechaIngreso(datos);
   const consultas = valorPaciente(datos, ["numeroConsultas", "consultasTotales", "conteoConsultas"], "Sin registro");
   return `
-    <article class="lab-card resumen-cuadro" data-resumen-cuadro="ingreso">
-      ${encabezadoCuadroResumen("Ingreso y consultas", "ingreso")}
+    <article class="lab-card">
+      <span>Ingreso y consultas</span>
       ${mostrarInstitucional ? `
-        <p><b>Fecha de ingreso:</b> ${datoVisibleResumen(datos, "fechaIngreso", formatearFecha(fechaIngreso))}</p>
-        <p><b>Servicio:</b> ${datoVisibleResumen(datos, "servicioInstitucional", valorPaciente(datos, ["servicioInstitucional", "servicio"]))}</p>
+        <p><b>Fecha de ingreso:</b> ${escaparHTML(formatearFecha(fechaIngreso))} <button class="boton-editar-dato" onclick="abrirSelectorIngresoPaciente()">Editar</button></p>
+        <p><b>Servicio:</b> ${escaparHTML(valorPaciente(datos, ["servicioInstitucional", "servicio"]))} <button class="boton-editar-dato" onclick="editarCampoPaciente('servicioInstitucional', 'Servicio institucional', 'text')">Editar</button></p>
         <p><b>Estancia:</b> <span id="labEstanciaPaciente">${escaparHTML(formatearEstancia(calcularDiasEstancia(fechaIngreso)))}</span></p>
-        <p><b>Último ingreso:</b> ${datoVisibleResumen(datos, "ultimoIngreso", formatearFecha(obtenerUltimoIngreso(datos)))}</p>
+        <p><b>Último ingreso:</b> ${escaparHTML(formatearFecha(obtenerUltimoIngreso(datos)))} <button class="boton-editar-dato" onclick="abrirSelectorUltimoIngresoPaciente()">Editar</button></p>
       ` : ""}
-      <p><b>Última consulta:</b> ${datoVisibleResumen(datos, "ultimaConsulta", datos.ultimaConsulta ? formatearFecha(datos.ultimaConsulta) : "Sin fecha")}</p>
-      <p><b>Número de consultas:</b> ${datoVisibleResumen(datos, "numeroConsultas", consultas)}</p>
-      <p><b>Próxima consulta:</b> ${datoVisibleResumen(datos, "proximaConsulta", datos.proximaConsulta ? formatearFecha(datos.proximaConsulta) : "Sin programar")}</p>
-      ${datos.fechaEgreso ? `<p><b>Fecha de egreso:</b> ${datoVisibleResumen(datos, "fechaEgreso", formatearFecha(datos.fechaEgreso))}</p>` : ""}
-      ${datos.motivoIngreso ? `<p><b>Motivo de ingreso:</b> ${datoVisibleResumen(datos, "motivoIngreso", datos.motivoIngreso)}</p>` : ""}
-      ${datos.tipoAtencion ? `<p><b>Tipo de atención:</b> ${datoVisibleResumen(datos, "tipoAtencion", datos.tipoAtencion)}</p>` : ""}
+      <p><b>Última consulta:</b> ${escaparHTML(formatearFecha(datos.ultimaConsulta) || "Sin fecha")} <button class="boton-editar-dato" onclick="editarCampoPaciente('ultimaConsulta', 'Última consulta', 'date')">Editar</button></p>
+      <p><b>Número de consultas:</b> ${escaparHTML(consultas)} <button class="boton-editar-dato" onclick="editarCampoPaciente('numeroConsultas', 'Número de consultas', 'number')">Editar</button></p>
+      <p><b>Próxima consulta:</b> ${escaparHTML(datos.proximaConsulta ? formatearFecha(datos.proximaConsulta) : "Sin programar")} <button class="boton-editar-dato" onclick="editarCampoPaciente('proximaConsulta', 'Próxima consulta', 'date')">Editar</button></p>
     </article>
   `;
 }
 
-function renderizarBloqueIdentificacionLab(datos = {}, tipoPaciente = "privada") {
-  const fechaNacimiento = obtenerFechaNacimiento(datos);
-  return `
-    <article class="lab-card resumen-cuadro" data-resumen-cuadro="identificacion">
-      ${encabezadoCuadroResumen("Identificación", "identificacion")}
-      <p><b>Correo:</b> ${datoVisibleResumen(datos, "email", valorPaciente(datos, ["email", "correo"], "Sin correo"))}</p>
-      <p><b>Fecha de nacimiento:</b> ${datoVisibleResumen(datos, "fechaNacimiento", formatearFecha(fechaNacimiento))}</p>
-      <p><b>Sexo:</b> ${datoVisibleResumen(datos, "sexo", valorPaciente(datos, ["sexo"]))}</p>
-      <p><b>Género:</b> ${datoVisibleResumen(datos, "genero", valorPaciente(datos, ["genero", "identidadGenero"]))}</p>
-      <p><b>CURP:</b> ${datoVisibleResumen(datos, "curp", valorPaciente(datos, ["curp", "datosInstitucionales.curp"]))}</p>
-      <p><b>Teléfono:</b> ${datoVisibleResumen(datos, "telefono", valorPaciente(datos, ["telefono"], "Sin teléfono"))}</p>
-      <p><b>Tipo:</b> ${escaparHTML(etiquetaTipoPaciente(tipoPaciente))}</p>
-    </article>
-  `;
-}
-
-function renderizarBloqueSomatometriaLab(datos = {}) {
-  const edad = calcularEdadPediatrica(obtenerFechaNacimiento(datos));
-  const peso = valorPaciente(datos, ["peso", "somatometria.peso", "signosVitales.peso", "datosInstitucionales.peso"]);
-  const talla = valorPaciente(datos, ["talla", "somatometria.talla", "signosVitales.talla", "datosInstitucionales.talla"]);
-  const imc = valorPaciente(datos, ["imc", "somatometria.imc", "signosVitales.imc", "datosInstitucionales.imc"], "Sin registro");
-  const edadAnios = Number(edad?.["años"] ?? edad?.["aÃ±os"]);
-  const pediatrico = Boolean(edad && Number.isFinite(edadAnios) && edadAnios < 18);
-  return `
-    <article class="lab-card resumen-cuadro" data-resumen-cuadro="somatometria">
-      ${encabezadoCuadroResumen("Somatometría", "somatometria")}
-      <p><b>Peso:</b> ${datoVisibleResumen(datos, "peso", peso)}</p>
-      <p><b>Talla:</b> ${datoVisibleResumen(datos, "talla", talla)}</p>
-      <p><b>Perímetro abdominal:</b> ${datoVisibleResumen(datos, "perimetroAbdominal", valorPaciente(datos, ["perimetroAbdominal", "somatometria.perimetroAbdominal", "signosVitales.perimetroAbdominal", "datosInstitucionales.perimetroAbdominal"]))}</p>
-      <p><b>IMC:</b> ${datoVisibleResumen(datos, "imc", imc)}</p>
-      ${pediatrico ? renderizarResumenPediatricoCompacto(datos, edad, peso, talla, imc) : ""}
-    </article>
-  `;
-}
-
-function renderizarResumenPediatricoCompacto(datos, edad, peso, talla, imc) {
-  const sexo = String(valorPaciente(datos, ["sexo", "datosInstitucionales.sexo"], "")).trim();
-  const pesoNumero = numeroDesdeTexto(peso);
-  const tallaNumero = numeroDesdeTexto(talla);
-  const tallaCm = tallaNumero > 3 ? tallaNumero : tallaNumero * 100;
-  const fechaNacimiento = obtenerFechaNacimiento(datos);
-  const perimetroCefalico = numeroDesdeTexto(valorPaciente(datos, ["perimetroCefalico", "perimetroCefalicoCm", "somatometria.perimetroCefalico"], ""));
-
-  if (!fechaNacimiento || !sexo || !Number.isFinite(pesoNumero) || pesoNumero <= 0 || !Number.isFinite(tallaCm) || tallaCm <= 0) {
-    return `<p class="lab-muted">Sin datos suficientes para calcular percentiles</p>`;
-  }
-
-  let assessment;
-  try {
-    assessment = buildGrowthAssessment({
-      sexo,
-      fechaNacimiento,
-      pesoKg: pesoNumero,
-      tallaCm,
-      tallaUnidad: "cm",
-      perimetroCefalico: perimetroCefalico > 0 ? perimetroCefalico : ""
-    });
-  } catch (error) {
-    console.error("[PACIENTE] etapa fallida:", "percentiles pediátricos", {
-      name: error?.name || null,
-      code: error?.code || null,
-      message: error?.message || null
-    });
-    return `<p class="lab-muted">Sin datos suficientes para calcular percentiles</p>`;
-  }
-  const listos = assessment.indicators.filter((indicador) => indicador.status === "ready");
-  if (!listos.length) return `<p class="lab-muted">Sin datos suficientes para calcular percentiles</p>`;
-  return `<div class="resumen-pediatrico-compacto"><b>Datos pediátricos · ${escaparHTML(edad.edadCronologicaTexto)}</b>${listos.map((indicador) => `<small>${escaparHTML(indicador.label)}: P${Number(indicador.percentile).toFixed(1)} · Z ${Number(indicador.z).toFixed(2)}</small>`).join("")}</div>`;
-}
-
-function renderizarBloqueSeguridadLab(datos = {}) {
-  return `
-    <article class="lab-card resumen-cuadro" data-resumen-cuadro="seguridad">
-      ${encabezadoCuadroResumen("Seguridad clínica", "seguridad")}
-      <p><b>Alergias:</b> ${datoVisibleResumen(datos, "alergias", valorPaciente(datos, ["alergias", "datosInstitucionales.alergias"]))}</p>
-      <p><b>Tipo de sangre:</b> ${datoVisibleResumen(datos, "tipoSangre", valorPaciente(datos, ["tipoSangre", "datosInstitucionales.tipoSangre"]))}</p>
-    </article>
-  `;
-}
-
-function renderizarVistaLaboratorioPacienteLegacy(datos = datosPacienteActual || {}) {
+function renderizarVistaLaboratorioPaciente(datos = datosPacienteActual || {}) {
   const contenedor = document.getElementById("datosGeneralesLaboratorio");
   if (!contenedor || !datos) return;
 
@@ -1127,12 +874,19 @@ function renderizarVistaLaboratorioPacienteLegacy(datos = datosPacienteActual ||
   const diagnosticos = listaDiagnosticosLaboratorio(datos);
   const tratamientos = listaTratamientosLaboratorio(datos);
   const estudios = listaEstudiosLaboratorio(datos);
+  const timeline = listaTimelineLaboratorio(datos);
+  const timelineVisible = mostrarInstitucional
+    ? timeline
+    : timeline.filter((item) => !["Ingreso", "Ultimo ingreso"].includes(item.etiqueta));
+  const timelineFinal = timelineVisible.length
+    ? timelineVisible
+    : [{ etiqueta: "Seguimiento", valor: "Sin eventos cronologicos registrados" }];
 
   contenedor.innerHTML = `
     <div class="lab-paciente-shell">
       <div class="lab-paciente-top">
         <div>
-          <span class="lab-kicker">Resumen del expediente</span>
+          <span class="lab-kicker">Vista Laboratorio</span>
           <p>Datos generales integrados del expediente. Los campos vacos se muestran como sin registro.</p>
         </div>
         <div class="lab-paciente-id">
@@ -1158,10 +912,8 @@ function renderizarVistaLaboratorioPacienteLegacy(datos = datosPacienteActual ||
       </div>
 
       <div class="lab-info-grid">
-        ${renderizarBloqueIdentificacionLab(datos, tipoPaciente)}
-        <!-- bloque de identificación renderizado de forma reutilizable -->
-        ${false ? `<article class="lab-card">
-          <span>Identificación</span>
+        <article class="lab-card">
+          <span>Identificacin</span>
           <p><b>Correo:</b> ${escaparHTML(valorPaciente(datos, ["email", "correo"], "Sin correo"))}</p>
           <p><b>Fecha de nacimiento:</b> ${escaparHTML(formatearFecha(fechaNacimiento))} <button class="boton-editar-dato" onclick="abrirSelectorFechaNacimientoPaciente()">Editar</button></p>
           <p><b>Sexo:</b> ${escaparHTML(valorPaciente(datos, ["sexo"]))} <button class="boton-editar-dato" onclick="editarCampoPaciente('sexo', 'Sexo', 'text')">Editar</button></p>
@@ -1170,7 +922,7 @@ function renderizarVistaLaboratorioPacienteLegacy(datos = datosPacienteActual ||
           <p><b>Telfono:</b> ${escaparHTML(valorPaciente(datos, ["telefono"], "Sin telfono"))} <button class="boton-editar-dato" onclick="editarCampoPaciente('telefono', 'Telfono', 'text')">Editar</button></p>
           <p><b>Tipo:</b> ${escaparHTML(etiquetaTipoPaciente(tipoPaciente))}</p>
           <button class="boton-editar-dato" onclick="editarTipoPaciente()">Editar tipo</button>
-        </article>` : ""}
+        </article>
 
         ${renderizarBloqueInstitucionLab(datos, mostrarInstitucional)}
         ${renderizarBloqueIngresoLab(datos, mostrarInstitucional)}
@@ -1209,67 +961,12 @@ function renderizarVistaLaboratorioPacienteLegacy(datos = datosPacienteActual ||
         </article>
         <article class="lab-card lab-card-lista">
           <span>Lnea clnica</span>
-          <ul>${listaTimelineLaboratorio(datos).map((item) => `<li><b>${escaparHTML(item.etiqueta)}:</b> ${escaparHTML(item.valor)}</li>`).join("")}</ul>
+          <ul>${timelineFinal.map((item) => `<li><b>${escaparHTML(item.etiqueta)}:</b> ${escaparHTML(item.valor)}</li>`).join("")}</ul>
         </article>
       </div>
     </div>
   `;
 }
-// Render del resumen rediseñado. Se mantiene separado para que la vista clásica
-// y los datos históricos sigan siendo compatibles durante la transición.
-function renderizarVistaLaboratorioPaciente(datos = datosPacienteActual || {}) {
-  const contenedor = document.getElementById("datosGeneralesLaboratorio");
-  if (!contenedor || !datos) return;
-  const fechaNacimiento = obtenerFechaNacimiento(datos);
-  const edad = calcularEdad(fechaNacimiento);
-  const tipoPaciente = datos.tipoPaciente || datos.datosInstitucionales?.tipoPaciente || "privada";
-  const mostrarInstitucional = pacienteRequiereCamposInstitucionales(tipoPaciente);
-  const equipoClinico = resolverBloqueResumenSeguro("equipo clínico", () => obtenerEquipoClinicoPaciente(datos), []);
-  const diagnosticos = resolverBloqueResumenSeguro("diagnósticos", () => listaDiagnosticosLaboratorio(datos), ["Sin diagnósticos registrados"]);
-  const tratamientos = resolverBloqueResumenSeguro("tratamiento activo", () => listaTratamientosLaboratorio(datos), ["Sin tratamiento activo registrado"]);
-  const estudios = resolverBloqueResumenSeguro("estudios", () => listaEstudiosLaboratorio(datos), ["Sin estudios registrados"]);
-  contenedor.innerHTML = `
-    <div class="lab-paciente-shell">
-      <div class="lab-paciente-top">
-        <div><span class="lab-kicker">Resumen del expediente</span><p>Datos clínicos integrados del expediente.</p></div>
-        <div class="lab-paciente-id"><span>Expediente Cognición</span><strong>${escaparHTML(valorPaciente(datos, ["expedienteCognicion", "datosInstitucionales.expedienteCognicion"], "Sin expediente"))}</strong></div>
-      </div>
-      <div class="lab-metricas-panel lab-metricas-sin-modelo">
-        <div class="lab-gauge principal"><span>Edad</span><strong>${edad !== "" ? `${escaparHTML(edad)} años` : "Sin registro"}</strong></div>
-        ${renderizarGaugeVital("presionArterial", datos)}
-        ${renderizarGaugeVital("frecuenciaCardiaca", datos)}
-        ${renderizarGaugeVital("frecuenciaRespiratoria", datos)}
-        ${renderizarGaugeVital("temperatura", datos)}
-        ${renderizarGaugeVital("saturacionO2", datos)}
-        ${renderizarGaugeVital("imc", datos)}
-      </div>
-      <div class="lab-vitales-global-actions"><button type="button" onclick="abrirGraficaGlobalSignosVitalesPaciente()">Ver gráfica de signos vitales</button></div>
-      <div class="lab-info-grid">
-        ${resolverBloqueResumenSeguro("identificación", () => renderizarBloqueIdentificacionLab(datos, tipoPaciente))}
-        ${resolverBloqueResumenSeguro("institución", () => renderizarBloqueInstitucionLab(datos, mostrarInstitucional), "")}
-        ${resolverBloqueResumenSeguro("ingreso y consultas", () => renderizarBloqueIngresoLab(datos, mostrarInstitucional))}
-        ${resolverBloqueResumenSeguro("somatometría", () => renderizarBloqueSomatometriaLab(datos))}
-        ${resolverBloqueResumenSeguro("seguridad clínica", () => renderizarBloqueSeguridadLab(datos))}
-        <article class="lab-card lab-card-lista resumen-cuadro" data-resumen-cuadro="diagnosticos">
-          ${encabezadoCuadroResumen("Diagnósticos", "diagnosticos", false)}<ul>${renderizarListaLab(diagnosticos)}</ul>
-        </article>
-        <article class="lab-card lab-card-lista resumen-cuadro" data-resumen-cuadro="tratamiento">
-          ${encabezadoCuadroResumen("Tratamiento activo", "tratamiento")}<ol>${renderizarListaLab(tratamientos)}</ol>
-        </article>
-        <article class="lab-card lab-card-lista resumen-cuadro" data-resumen-cuadro="estudios">
-          ${encabezadoCuadroResumen("Estudios", "estudios", false)}<ul>${renderizarListaLab(estudios)}</ul>
-        </article>
-        <article class="lab-card resumen-cuadro" data-resumen-cuadro="equipo">
-          ${encabezadoCuadroResumen("Equipo clínico", "equipo")}${renderizarEquipoClinicoLab(equipoClinico)}
-          <button class="lab-equipo-add" type="button" onclick="agregarEquipoClinicoPaciente()" aria-label="Agregar integrante al equipo clínico">+</button>
-        </article>
-      </div>
-    </div>`;
-  contenedor.querySelectorAll("[data-resumen-editar]").forEach((boton) => {
-    boton.addEventListener("click", () => abrirEditorCuadroResumen(boton.dataset.resumenEditar));
-  });
-}
-
 function obtenerPesoPaciente(datos = {}) {
   return datos.peso || datos.signosVitales?.peso || datos.somatometria?.peso || datos.datosInstitucionales?.peso || "";
 }
@@ -1284,8 +981,7 @@ function renderizarResumenPediatricoPaciente(datos = datosPacienteActual || {}) 
   if (!bloque) return;
 
   const edad = calcularEdadPediatrica(obtenerFechaNacimiento(datos));
-  const edadAnios = Number(edad?.["años"] ?? edad?.["aÃ±os"]);
-  const esPediatrico = Boolean(edad && Number.isFinite(edadAnios) && edadAnios < 18);
+  const esPediatrico = Boolean(edad && edad.años < 18);
 
   bloque.style.display = esPediatrico ? "" : "none";
   if (boton) boton.style.display = esPediatrico ? "" : "none";
@@ -1404,39 +1100,12 @@ function ejecutarSeguroPaciente(etiqueta, tarea) {
   try {
     const resultado = typeof tarea === "function" ? tarea() : null;
     if (resultado && typeof resultado.catch === "function") {
-      resultado.catch((error) => manejarErrorLocalPaciente(etiqueta, error));
+      resultado.catch((error) => console.error(`Error en ${etiqueta}:`, error));
     }
     return resultado;
   } catch (error) {
-    manejarErrorLocalPaciente(etiqueta, error);
+    console.error(`Error en ${etiqueta}:`, error);
     return null;
-  }
-}
-
-function manejarErrorLocalPaciente(etiqueta, error) {
-  console.error("[PACIENTE] etapa fallida:", etiqueta, {
-    name: error?.name || null,
-    code: error?.code || null,
-    message: error?.message || null
-  });
-
-  const selectores = {
-    "vista laboratorio de datos generales": "#datosGeneralesLaboratorio",
-    "diagnósticos del resumen": "#diagnostico",
-    "panel de diagnósticos": "#panelDiagnosticos",
-    "resumen pediátrico del paciente": "#resumenPediatriaPaciente"
-  };
-  const bloque = document.querySelector(selectores[etiqueta] || "");
-  if (!bloque || bloque.childElementCount > 0) return;
-  bloque.innerHTML = `<p class="lab-muted">No fue posible cargar este bloque. El resto del expediente continúa disponible.</p>`;
-}
-
-function resolverBloqueResumenSeguro(etiqueta, renderizar, alterno = "<p class=\"lab-muted\">Sin información disponible.</p>") {
-  try {
-    return renderizar();
-  } catch (error) {
-    manejarErrorLocalPaciente(`resumen: ${etiqueta}`, error);
-    return alterno;
   }
 }
 
@@ -2413,7 +2082,6 @@ async function obtenerPacientePorListaAutorizada(uid) {
 }
 
 async function cargarDatosPaciente() {
-  console.debug("[PACIENTE] inicio", { patientId: uidPaciente || null });
   if (!uidPaciente) {
     datosPacienteActual = null;
     ponerTexto("nombrePaciente", "Paciente no seleccionado");
@@ -2437,7 +2105,6 @@ async function cargarDatosPaciente() {
     }
   }
   datosPacienteActual = datos;
-  console.debug("[PACIENTE] datos base cargados", { patientId: uidPaciente });
 
   if (!datos) {
     try {
@@ -2466,7 +2133,6 @@ async function cargarDatosPaciente() {
 
   ponerTexto("nombrePaciente", obtenerNombrePacienteParaMostrar(datos) || "Paciente sin nombre");
   actualizarAvisoFormatoNombrePaciente(datos);
-  console.debug("[PACIENTE] estructura principal renderizada", { patientId: uidPaciente });
 
   ponerTexto("correoPaciente", datos.email || "Sin correo");
 
@@ -2512,11 +2178,9 @@ async function cargarDatosPaciente() {
   ejecutarSeguroPaciente("selector de vista de datos generales", inicializarSelectorVistaDatosGeneralesPaciente);
 
   ejecutarSeguroPaciente("diagnsticos del resumen", () => renderizarDiagnosticos(datos));
-  console.debug("[PACIENTE] diagnósticos cargados", { patientId: uidPaciente });
   ejecutarSeguroPaciente("panel de diagnsticos", renderizarPanelDiagnosticos);
 
   ponerTexto("tratamiento", datos.tratamiento || "Sin tratamiento registrado");
-  console.debug("[PACIENTE] tratamiento cargado", { patientId: uidPaciente });
 
   ponerTexto("medicoTratante", datos.medicoTratante || "Sin mdico tratante");
 
@@ -2578,9 +2242,7 @@ async function cargarDatosPaciente() {
   ejecutarSeguroPaciente("estancia del paciente", () => actualizarEstanciaPaciente(datos));
   ejecutarSeguroPaciente("visibilidad de campos institucionales", () => actualizarVisibilidadCamposInstitucionalesPaciente(datos));
   ejecutarSeguroPaciente("vista laboratorio de datos generales", () => renderizarVistaLaboratorioPaciente(datos));
-  console.debug("[PACIENTE] resumen cargado", { patientId: uidPaciente });
   ejecutarSeguroPaciente("resumen peditrico del paciente", () => renderizarResumenPediatricoPaciente(datos));
-  console.debug("[PACIENTE] expediente listo", { patientId: uidPaciente });
 }
 
 window.mostrarResumen = function() {
