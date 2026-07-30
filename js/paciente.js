@@ -168,6 +168,7 @@ let campoFechaIngresoModal = "fechaIngreso";
 let textoIndicacionesEditado = false;
 let apuntesMedicoPacienteCache = [];
 let catalogoMedicosFirmasIndicacionesCache = [];
+let catalogoMedicosFirmasIndicacionesPromise = null;
 let indicacionesPacienteCache = [];
 let indicacionResumenCacheCargada = false;
 let indicacionResumenCachePacienteId = "";
@@ -178,6 +179,15 @@ const VISTAS_DATOS_GENERALES_PACIENTE = Object.freeze({
   LABORATORIO: "laboratorio"
 });
 let estudiosSolicitudActual = [];
+const estadoSolicitud = {
+  categoria: "laboratorio",
+  medicoSolicitanteId: "",
+  medicoAdscritoId: "",
+  modoSolicitante: "catalogo",
+  modoAdscrito: "catalogo",
+  manualSolicitante: { nombre: "", cargo: "", cedula: "" },
+  manualAdscrito: { nombre: "", cargo: "", cedula: "" }
+};
 let solicitudImagenologiaModulePromise = null;
 let solicitudImagenologiaActiva = null;
 const CLAVE_CATALOGO_MANUAL = "cognicion_catalogo_diagnosticos_manual";
@@ -913,7 +923,7 @@ function renderizarGaugeVital(clave, datos = {}) {
   `;
 }
 
-const VERSION_RESUMEN_EXPEDIENTE = "1.40";
+const VERSION_RESUMEN_EXPEDIENTE = "1.41";
 const CAMPOS_RESUMEN_PACIENTE = Object.freeze({
   identificacion: [
     ["email", "Correo", "text", ["email", "correo"]],
@@ -1638,16 +1648,21 @@ function renderizarCatalogoMedicosFirmasIndicaciones() {
 }
 
 async function cargarCatalogoMedicosFirmasIndicaciones() {
+  if (catalogoMedicosFirmasIndicacionesCache.length) return catalogoMedicosFirmasIndicacionesCache;
+  if (catalogoMedicosFirmasIndicacionesPromise) return catalogoMedicosFirmasIndicacionesPromise;
   const ref = referenciaCatalogoMedicosFirmasIndicaciones();
-  if (!ref) return;
-
-  const snap = await getDocs(query(ref, orderBy("nombre")));
-  catalogoMedicosFirmasIndicacionesCache = snap.docs.map((docMedico) => ({
-    id: docMedico.id,
-    ...docMedico.data()
-  }));
-
-  renderizarCatalogoMedicosFirmasIndicaciones();
+  if (!ref) return [];
+  catalogoMedicosFirmasIndicacionesPromise = (async () => {
+    const snap = await getDocs(query(ref, orderBy("nombre")));
+    catalogoMedicosFirmasIndicacionesCache = snap.docs.map((docMedico) => ({ id: docMedico.id, ...docMedico.data() }));
+    renderizarCatalogoMedicosFirmasIndicaciones();
+    return catalogoMedicosFirmasIndicacionesCache;
+  })();
+  try {
+    return await catalogoMedicosFirmasIndicacionesPromise;
+  } finally {
+    catalogoMedicosFirmasIndicacionesPromise = null;
+  }
 }
 
 function buscarMedicoFirmaIndicacionesPorNombre(nombre) {
@@ -2815,7 +2830,18 @@ window.mostrarEstudios = async function() {
   if (!valorCampo("solicitudEstudioSolicita")) {
     ponerValor("solicitudEstudioSolicita", medicoActualDatos?.nombre || datosPacienteActual?.medicoTratante || "");
   }
+  if (!catalogoMedicosFirmasIndicacionesCache.length) {
+    await cargarCatalogoMedicosFirmasIndicaciones().catch((error) => console.warn("No se pudo cargar el catálogo de médicos para la solicitud", error));
+  }
   configurarSolicitudEstudios();
+  configurarMedicosSolicitud();
+  if (!estadoSolicitud.medicoSolicitanteId && estadoSolicitud.modoSolicitante === "catalogo") {
+    const uidActual = auth.currentUser?.uid || medicoActualDatos?.uid || "";
+    const nombreActual = normalizarTextoBusqueda(medicoActualDatos?.nombre || medicoActualDatos?.nombreCompleto || "");
+    const medicoActualCatalogo = catalogoMedicosFirmasIndicacionesCache.find((medico) => medico.id === uidActual || normalizarTextoBusqueda(medico.nombre) === nombreActual);
+    if (medicoActualCatalogo) estadoSolicitud.medicoSolicitanteId = medicoActualCatalogo.id;
+  }
+  renderizarSelectoresMedicosSolicitud();
   if (resolverFormatoSolicitud(valorCampo("solicitudEstudioFormato"))?.id === FORMATO_SOLICITUD_IMAGENOLOGIA.clave && !solicitudImagenologiaActiva) {
     manejarCambioFormatoSolicitud();
   }
@@ -7554,6 +7580,143 @@ function descargarRecetaPaciente() {
   URL.revokeObjectURL(url);
 }
 
+function normalizarCategoriaEstudio(valor = "") {
+  const v = String(valor || "").trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  if (["imagen", "image", "imagenologia"].includes(v)) return "imagen";
+  if (["laboratorio", "lab"].includes(v)) return "laboratorio";
+  return v;
+}
+
+function obtenerEstudiosPorCategoria(categoria = "") {
+  return [...(CATALOGO_SOLICITUD_ESTUDIOS[normalizarCategoriaEstudio(categoria)] || [])];
+}
+
+function sincronizarEstudiosPorCategoria(categoriaSeleccionada = "") {
+  const categoriaSelect = document.getElementById("solicitudEstudioCategoria");
+  const estudioSelect = document.getElementById("solicitudEstudioNombre");
+  const categoria = normalizarCategoriaEstudio(categoriaSeleccionada || categoriaSelect?.value || "laboratorio");
+  estadoSolicitud.categoria = categoria;
+  if (categoriaSelect && categoriaSelect.value !== categoria) categoriaSelect.value = categoria;
+  if (!estudioSelect) return;
+  const estudios = obtenerEstudiosPorCategoria(categoria);
+  estudioSelect.replaceChildren(new Option("Seleccionar estudio", ""));
+  estudios.forEach((nombre) => estudioSelect.add(new Option(nombre, nombre)));
+  estudioSelect.value = "";
+  console.debug("[SOLICITUD ESTUDIO] categoría inicial:", estadoSolicitud.categoria);
+  console.debug("[SOLICITUD ESTUDIO] estudios cargados:", estudios.length);
+  actualizarPreviewSolicitudEstudios();
+}
+
+function normalizarMedicoSolicitud(medico = {}) {
+  return {
+    id: medico.id || medico.uid || "",
+    nombre: medico.nombreCompleto || medico.nombre || medico.displayName || "",
+    cargo: medico.cargoCompleto || medico.cargo || medico.grado || medico.especialidad || "",
+    cedulaProfesional: medico.cedulaProfesional || medico.cedula || "",
+    cedulaEspecialidad: medico.cedulaEspecialidad || medico.cedulaEspecialidadMedica || medico.cedulaProfesional || medico.cedula || "",
+    especialidad: medico.especialidad || medico.cargoCompleto || medico.cargo || "",
+    firmaId: medico.firmaId || medico.firma || ""
+  };
+}
+
+function medicoSolicitudDesdeEstado(tipo) {
+  const esAdscrito = tipo === "adscrito";
+  const modo = esAdscrito ? estadoSolicitud.modoAdscrito : estadoSolicitud.modoSolicitante;
+  if (modo === "otro") {
+    const manual = esAdscrito ? estadoSolicitud.manualAdscrito : estadoSolicitud.manualSolicitante;
+    return { id: "__otro__", nombre: manual.nombre, cargo: manual.cargo, cedulaProfesional: manual.cedula, cedulaEspecialidad: manual.cedula, especialidad: manual.cargo, firmaId: "" };
+  }
+  const id = esAdscrito ? estadoSolicitud.medicoAdscritoId : estadoSolicitud.medicoSolicitanteId;
+  return normalizarMedicoSolicitud(catalogoMedicosFirmasIndicacionesCache.find((medico) => medico.id === id) || {});
+}
+
+function actualizarModoManualMedicoSolicitud(tipo) {
+  const esAdscrito = tipo === "adscrito";
+  const contenedor = document.getElementById(esAdscrito ? "solicitudMedicoAdscritoOtro" : "solicitudMedicoSolicitanteOtro");
+  const modo = esAdscrito ? estadoSolicitud.modoAdscrito : estadoSolicitud.modoSolicitante;
+  if (contenedor) contenedor.hidden = modo !== "otro";
+}
+
+function renderizarSelectoresMedicosSolicitud() {
+  const contenedor = document.getElementById("solicitudMedicosInstitucional");
+  const solicitante = document.getElementById("solicitudMedicoSolicitanteId");
+  const adscrito = document.getElementById("solicitudMedicoAdscritoId");
+  if (!contenedor || !solicitante || !adscrito) return;
+  const esFray = resolverFormatoSolicitud(valorCampo("solicitudEstudioFormato"))?.id === FORMATO_SOLICITUD_IMAGENOLOGIA.clave;
+  contenedor.hidden = !esFray;
+  const campoSolicitaAnterior = document.getElementById("solicitudEstudioSolicita")?.closest("label");
+  if (campoSolicitaAnterior) campoSolicitaAnterior.hidden = esFray;
+  const opciones = `<option value="">Seleccionar médico</option>${catalogoMedicosFirmasIndicacionesCache.map((medico) => {
+    const normalizado = normalizarMedicoSolicitud(medico);
+    const detalle = [normalizado.cargo, normalizado.cedulaProfesional ? `Céd. ${normalizado.cedulaProfesional}` : ""].filter(Boolean).join(" · ");
+    return `<option value="${escaparHTML(normalizado.id)}">${escaparHTML(normalizado.nombre || "Sin nombre")}${detalle ? ` — ${escaparHTML(detalle)}` : ""}</option>`;
+  }).join("")}<option value="__otro__">Otro…</option>`;
+  const valorSolicitante = estadoSolicitud.modoSolicitante === "otro" ? "__otro__" : estadoSolicitud.medicoSolicitanteId;
+  const valorAdscrito = estadoSolicitud.modoAdscrito === "otro" ? "__otro__" : estadoSolicitud.medicoAdscritoId;
+  solicitante.innerHTML = opciones;
+  adscrito.innerHTML = opciones;
+  solicitante.value = valorSolicitante;
+  adscrito.value = valorAdscrito;
+  actualizarModoManualMedicoSolicitud("solicitante");
+  actualizarModoManualMedicoSolicitud("adscrito");
+  console.debug("[SOLICITUD ESTUDIO] solicitante:", estadoSolicitud.medicoSolicitanteId);
+  console.debug("[SOLICITUD ESTUDIO] adscrito:", estadoSolicitud.medicoAdscritoId);
+  console.debug("[SOLICITUD ESTUDIO] modo solicitante:", estadoSolicitud.modoSolicitante);
+  console.debug("[SOLICITUD ESTUDIO] modo adscrito:", estadoSolicitud.modoAdscrito);
+}
+
+function validarMedicosSolicitud() {
+  if (resolverFormatoSolicitud(valorCampo("solicitudEstudioFormato"))?.id !== FORMATO_SOLICITUD_IMAGENOLOGIA.clave) return [];
+  const faltantes = [];
+  const solicitante = medicoSolicitudDesdeEstado("solicitante");
+  const adscrito = medicoSolicitudDesdeEstado("adscrito");
+  if (estadoSolicitud.modoSolicitante === "otro") {
+    if (!solicitante.nombre) faltantes.push("Nombre del médico solicitante");
+    if (!solicitante.cargo) faltantes.push("Cargo del médico solicitante");
+    if (!solicitante.cedulaProfesional) faltantes.push("Cédula profesional del solicitante");
+  } else {
+    if (!estadoSolicitud.medicoSolicitanteId) faltantes.push("ID del médico solicitante");
+    if (!solicitante.nombre) faltantes.push("Nombre del médico solicitante");
+    if (!solicitante.cargo) faltantes.push("Cargo del médico solicitante");
+    if (!solicitante.cedulaProfesional) faltantes.push("Cédula profesional del solicitante");
+  }
+  if (estadoSolicitud.modoAdscrito === "otro") {
+    if (!adscrito.nombre) faltantes.push("Nombre del médico adscrito");
+    if (!adscrito.especialidad) faltantes.push("Especialidad o cargo del médico adscrito");
+    if (!adscrito.cedulaEspecialidad) faltantes.push("Cédula de especialidad del adscrito");
+  } else {
+    if (!estadoSolicitud.medicoAdscritoId) faltantes.push("ID del médico adscrito");
+    if (!adscrito.nombre) faltantes.push("Nombre del médico adscrito");
+    if (!adscrito.cedulaEspecialidad) faltantes.push("Cédula de especialidad del adscrito");
+  }
+  return faltantes;
+}
+
+function configurarMedicosSolicitud() {
+  const solicitante = document.getElementById("solicitudMedicoSolicitanteId");
+  const adscrito = document.getElementById("solicitudMedicoAdscritoId");
+  if (!solicitante || !adscrito || solicitante.dataset.configurado === "true") return;
+  solicitante.dataset.configurado = "true";
+  const configurar = (select, tipo) => select.addEventListener("change", () => {
+    const esAdscrito = tipo === "adscrito";
+    if (select.value === "__otro__") {
+      if (esAdscrito) { estadoSolicitud.medicoAdscritoId = ""; estadoSolicitud.modoAdscrito = "otro"; }
+      else { estadoSolicitud.medicoSolicitanteId = ""; estadoSolicitud.modoSolicitante = "otro"; }
+    } else {
+      if (esAdscrito) { estadoSolicitud.medicoAdscritoId = select.value; estadoSolicitud.modoAdscrito = "catalogo"; }
+      else { estadoSolicitud.medicoSolicitanteId = select.value; estadoSolicitud.modoSolicitante = "catalogo"; }
+    }
+    actualizarModoManualMedicoSolicitud(tipo);
+    actualizarPreviewSolicitudEstudios();
+  });
+  configurar(solicitante, "solicitante");
+  configurar(adscrito, "adscrito");
+  [
+    ["solicitudMedicoSolicitanteNombre", "manualSolicitante", "nombre"], ["solicitudMedicoSolicitanteCargo", "manualSolicitante", "cargo"], ["solicitudMedicoSolicitanteCedula", "manualSolicitante", "cedula"],
+    ["solicitudMedicoAdscritoNombre", "manualAdscrito", "nombre"], ["solicitudMedicoAdscritoCargo", "manualAdscrito", "cargo"], ["solicitudMedicoAdscritoCedula", "manualAdscrito", "cedula"]
+  ].forEach(([id, grupo, campo]) => document.getElementById(id)?.addEventListener("input", (evento) => { estadoSolicitud[grupo][campo] = evento.target.value; actualizarPreviewSolicitudEstudios(); }));
+}
+
 function configurarSolicitudEstudios() {
   const categoria = document.getElementById("solicitudEstudioCategoria");
   const estudio = document.getElementById("solicitudEstudioNombre");
@@ -7562,26 +7725,26 @@ function configurarSolicitudEstudios() {
   if (categoria.dataset.solicitudConfigurada === "true") return;
   categoria.dataset.solicitudConfigurada = "true";
 
-  const renderizarOpciones = () => {
-    const tipo = categoria.value || "laboratorio";
-    estudio.innerHTML = (CATALOGO_SOLICITUD_ESTUDIOS[tipo] || [])
-      .map((nombre) => `<option value="${escaparHTML(nombre)}">${escaparHTML(nombre)}</option>`)
-      .join("");
-    actualizarPreviewSolicitudEstudios();
-  };
-
   categoria.addEventListener("change", () => {
-    renderizarOpciones();
+    sincronizarEstudiosPorCategoria(categoria.value);
   });
-  renderizarOpciones();
+  sincronizarEstudiosPorCategoria(categoria.value || "laboratorio");
 }
 
 function datosSolicitudEstudiosActual() {
   const fecha = valorCampo("solicitudEstudioFecha") || fechaISOHoy();
   const formatoId = resolverFormatoSolicitud(valorCampo("solicitudEstudioFormato"))?.id || valorCampo("solicitudEstudioFormato") || "cognicion";
+  const esFray = formatoId === FORMATO_SOLICITUD_IMAGENOLOGIA.clave;
+  const medicoSolicitante = esFray ? medicoSolicitudDesdeEstado("solicitante") : normalizarMedicoSolicitud(medicoActualDatos || {});
+  const medicoAdscrito = esFray ? medicoSolicitudDesdeEstado("adscrito") : {};
   return {
     formatoId,
     formato: formatoId,
+    categoria: estadoSolicitud.categoria,
+    medicoSolicitanteId: estadoSolicitud.medicoSolicitanteId,
+    medicoAdscritoId: estadoSolicitud.medicoAdscritoId,
+    modoSolicitante: estadoSolicitud.modoSolicitante,
+    modoAdscrito: estadoSolicitud.modoAdscrito,
     fecha,
     pacienteNombre: obtenerNombrePacienteActual(),
     edad: calcularEdad(obtenerFechaNacimiento(datosPacienteActual || {})),
@@ -7597,8 +7760,10 @@ function datosSolicitudEstudiosActual() {
     institucion: datosPacienteActual?.institucionPaciente || datosPacienteActual?.institucion || "",
     prioridad: valorCampo("solicitudEstudioPrioridad") || "Ordinaria",
     motivo: valorCampo("solicitudEstudioMotivo"),
-    solicita: valorCampo("solicitudEstudioSolicita") || medicoActualDatos?.nombre || datosPacienteActual?.medicoTratante || "Mdico solicitante",
-    cedula: medicoActualDatos?.cedula || medicoActualDatos?.cedulaProfesional || "",
+    solicita: medicoSolicitante.nombre || valorCampo("solicitudEstudioSolicita") || datosPacienteActual?.medicoTratante || "Médico solicitante",
+    cedula: medicoSolicitante.cedulaProfesional || "",
+    medicoSolicitante,
+    medicoAdscrito,
     estudios: estudiosSolicitudActual
   };
 }
@@ -7639,14 +7804,8 @@ function datosImagenologiaDesdeSolicitudBase(datos) {
       observaciones: "",
       criterioUrgencia: ""
     })),
-    medicoSolicitante: {
-      uid: auth.currentUser?.uid || "",
-      nombre: datos.solicita,
-      cargo: medicoActualDatos?.cargo || medicoActualDatos?.grado || medicoActualDatos?.especialidad || "",
-      cedulaProfesional: datos.cedula,
-      servicio: datosPacienteActual?.servicioInstitucional || datosPacienteActual?.servicio || ""
-    },
-    medicoAdscrito: { nombre: "", cedulaEspecialidad: "" }
+    medicoSolicitante: { uid: datos.medicoSolicitante?.id || auth.currentUser?.uid || "", nombre: datos.medicoSolicitante?.nombre || datos.solicita, cargo: datos.medicoSolicitante?.cargo || "", cedulaProfesional: datos.medicoSolicitante?.cedulaProfesional || datos.cedula, servicio: datosPacienteActual?.servicioInstitucional || datosPacienteActual?.servicio || "", firmaId: datos.medicoSolicitante?.firmaId || "" },
+    medicoAdscrito: { uid: datos.medicoAdscrito?.id || "", nombre: datos.medicoAdscrito?.nombre || "", cedulaEspecialidad: datos.medicoAdscrito?.cedulaEspecialidad || "", especialidad: datos.medicoAdscrito?.especialidad || datos.medicoAdscrito?.cargo || "", firmaId: datos.medicoAdscrito?.firmaId || "" }
   };
 }
 
@@ -7751,18 +7910,20 @@ function manejarCambioFormatoSolicitud() {
   if (formatoId === FORMATO_SOLICITUD_IMAGENOLOGIA.clave) {
     if (categoria) {
       categoria.value = "imagen";
-      categoria.dispatchEvent(new Event("change"));
+      sincronizarEstudiosPorCategoria(categoria.value);
     }
+    renderizarSelectoresMedicosSolicitud();
     console.debug("[Estudios:FormatoSeleccionado]", { formatoId, categoria: "imagen", rendererId: "renderSolicitudImagenologia", generatorId: "crearDocumentoWordFray" });
     abrirSolicitudImagenologiaPaciente();
   } else {
+    renderizarSelectoresMedicosSolicitud();
     console.debug("[Estudios:FormatoSeleccionado]", { formatoId: formatoId || null, categoria: categoria?.value || null, rendererId: "htmlSolicitudEstudiosPreview", generatorId: "generarSolicitudCognicion" });
   }
   actualizarPreviewSolicitudEstudios();
 }
 
 function agregarEstudioSolicitud() {
-  const categoria = valorCampo("solicitudEstudioCategoria") || "laboratorio";
+  const categoria = estadoSolicitud.categoria || normalizarCategoriaEstudio(valorCampo("solicitudEstudioCategoria") || "laboratorio");
   const nombre = valorCampo("solicitudEstudioNombre");
 
   if (!nombre) {
@@ -7784,10 +7945,19 @@ function agregarEstudioSolicitud() {
 
 function limpiarSolicitudEstudios() {
   estudiosSolicitudActual = [];
+  estadoSolicitud.medicoSolicitanteId = "";
+  estadoSolicitud.medicoAdscritoId = "";
+  estadoSolicitud.modoSolicitante = "catalogo";
+  estadoSolicitud.modoAdscrito = "catalogo";
+  estadoSolicitud.manualSolicitante = { nombre: "", cargo: "", cedula: "" };
+  estadoSolicitud.manualAdscrito = { nombre: "", cargo: "", cedula: "" };
+  ["solicitudMedicoSolicitanteNombre", "solicitudMedicoSolicitanteCargo", "solicitudMedicoSolicitanteCedula", "solicitudMedicoAdscritoNombre", "solicitudMedicoAdscritoCargo", "solicitudMedicoAdscritoCedula"].forEach((id) => ponerValor(id, ""));
   ponerValor("solicitudEstudioMotivo", "");
   ponerValor("solicitudEstudioPrioridad", "Ordinaria");
   ponerValor("solicitudEstudioFecha", fechaISOHoy());
   ponerValor("solicitudEstudioSolicita", medicoActualDatos?.nombre || datosPacienteActual?.medicoTratante || "");
+  sincronizarEstudiosPorCategoria(estadoSolicitud.categoria || "laboratorio");
+  renderizarSelectoresMedicosSolicitud();
   renderizarListaSolicitudEstudios();
   actualizarPreviewSolicitudEstudios();
 }
@@ -7798,6 +7968,11 @@ async function guardarSolicitudEstudios() {
   if (!formato) {
     console.error("[FormatosFray:Resolver]", { formatoId: datos.formatoId, result: "not-found" });
     alert(`No se encontró el generador del formato ${datos.formatoId}. La solicitud no fue sustituida por otro formato.`);
+    return;
+  }
+  const faltantesMedicos = validarMedicosSolicitud();
+  if (faltantesMedicos.length) {
+    alert(`Datos faltantes de médicos:\n\n${faltantesMedicos.map((item) => `• ${item}`).join("\n")}`);
     return;
   }
   if (formato.id === FORMATO_SOLICITUD_IMAGENOLOGIA.clave) {
@@ -7842,6 +8017,11 @@ async function descargarSolicitudEstudios() {
     alert(`No se encontró el generador del formato ${datos.formatoId}. La solicitud no fue sustituida por otro formato.`);
     return;
   }
+  const faltantesMedicos = validarMedicosSolicitud();
+  if (faltantesMedicos.length) {
+    alert(`Datos faltantes de médicos:\n\n${faltantesMedicos.map((item) => `• ${item}`).join("\n")}`);
+    return;
+  }
 
   if (formato.id === FORMATO_SOLICITUD_IMAGENOLOGIA.clave) {
     const snapshot = datosImagenologiaDesdeSolicitudBase(datos);
@@ -7853,7 +8033,7 @@ async function descargarSolicitudEstudios() {
       PA: snapshot.paciente.pa, CAMA_CONSULTORIO: snapshot.paciente.camaConsultorio, PESO: snapshot.paciente.pesoKg, TALLA: snapshot.paciente.tallaM,
       ALERGIAS: snapshot.paciente.alergias, ESTUDIO: snapshot.estudios.map((item) => item.nombre).join("\n"), DATOS_CLINICOS_1: snapshot.datosClinicos, DATOS_CLINICOS_2: "", DATOS_CLINICOS_3: "",
       MEDICO_SOLICITANTE: snapshot.medicoSolicitante.nombre, CARGO_SOLICITANTE: snapshot.medicoSolicitante.cargo, CEDULA_SOLICITANTE: snapshot.medicoSolicitante.cedulaProfesional,
-      MEDICO_ADSCRITO: "", CEDULA_ADSCRITO: "", sexo: snapshot.paciente.sexo, "g?nero": snapshot.paciente.genero, "servicio solicitante": snapshot.paciente.servicio,
+      MEDICO_ADSCRITO: snapshot.medicoAdscrito?.nombre || "", CEDULA_ADSCRITO: snapshot.medicoAdscrito?.cedulaEspecialidad || "", sexo: snapshot.paciente.sexo, "g?nero": snapshot.paciente.genero, "servicio solicitante": snapshot.paciente.servicio,
       tipo: snapshot.estudios[0]?.tipo || "Ordinario", "criterio de urgencia": ""
     };
     const documento = await crearDocumentoWordDesdePlantilla({ valores });

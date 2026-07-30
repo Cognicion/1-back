@@ -956,6 +956,25 @@
           </label>
         </div>
 
+        <div id="solicitudMedicosInstitucional" class="form-grid" hidden>
+          <label>Médico solicitante
+            <select id="solicitudMedicoSolicitanteId"></select>
+          </label>
+          <label>Médico adscrito
+            <select id="solicitudMedicoAdscritoId"></select>
+          </label>
+          <div id="solicitudMedicoSolicitanteOtro" hidden>
+            <label>Nombre completo<input id="solicitudMedicoSolicitanteNombre"></label>
+            <label>Cargo completo<input id="solicitudMedicoSolicitanteCargo"></label>
+            <label>Cédula profesional<input id="solicitudMedicoSolicitanteCedula"></label>
+          </div>
+          <div id="solicitudMedicoAdscritoOtro" hidden>
+            <label>Nombre completo<input id="solicitudMedicoAdscritoNombre"></label>
+            <label>Especialidad o cargo<input id="solicitudMedicoAdscritoCargo"></label>
+            <label>Cédula de especialidad<input id="solicitudMedicoAdscritoCedula"></label>
+          </div>
+        </div>
+
         <div class="form-actions">
           <button id="agregarEstudioSolicitud" type="button" class="boton-secundario">Agregar estudio</button>
           <button id="limpiarSolicitudEstudios" type="button" class="boton-secundario">Limpiar solicitud</button>
