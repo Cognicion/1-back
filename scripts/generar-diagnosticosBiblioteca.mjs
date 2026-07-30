@@ -197,6 +197,22 @@ function agregarClasificacion(sistema, registro) {
   if (!entidad.sistemas[sistema]) {
     entidad.sistemas[sistema] = nuevoSistema(registro.codigo, registro.nombre, ORDEN_SISTEMAS[sistema]);
   }
+  if (Array.isArray(registro.criterios) && registro.criterios.length) {
+    entidad.sistemas[sistema].criterios = registro.criterios;
+    entidad.sistemas[sistema].tipoContenido = "resumen_clinico_estructurado_no_literal";
+    entidad.sistemas[sistema].completionStatus = "complete_summary";
+    entidad.sistemas[sistema].fuente.sourceVerified = true;
+    entidad.sistemas[sistema].review = {
+      reviewed: false,
+      reviewedAt: null,
+      sourceVerified: true,
+      notes: "Síntesis estructurada no literal basada en el CDDR de la OMS; revisar la versión vigente antes del uso diagnóstico."
+    };
+    entidad.sistemas[sistema].notas = [
+      "Criterios resumidos y no literales; no sustituyen la entrevista clínica ni el juicio profesional.",
+      "La CIE-11 es una clasificación que se actualiza por versión; registrar la versión consultada al actualizar este catálogo."
+    ];
+  }
   entidad.aliases = [...new Set([...entidad.aliases, registro.nombre, registro.codigo])];
   return entidad;
 }

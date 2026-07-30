@@ -1,12 +1,12 @@
 {
-  "fecha": "2026-07-26T00:57:44.851Z",
+  "fecha": "2026-07-30T14:54:59.031Z",
   "fuentes": [
     "js/data/cie10.js",
     "js/data/cie11.js",
     "js/data/bibliotecaClinica.js",
     "js/data/diagnosticosClinicosExtendidos.js"
   ],
-  "totalDiagnosticos": 589,
+  "totalDiagnosticos": 596,
   "duplicadosPorId": 0,
   "duplicadosNombresEntrada": [
     {
