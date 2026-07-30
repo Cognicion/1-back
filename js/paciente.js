@@ -98,7 +98,7 @@ let ESCALAS_PSIQUIATRICAS = [];
 let ESCALAS_COGNITIVAS = [];
 let crearResumenEscala = null;
 let listarEscalasAplicadas = null;
-console.info("[PACIENTE BUILD] 1.36-fix-20260729-01");
+console.info("[PACIENTE BUILD] solicitud-estudios-1.41-20260730");
 console.info("[PACIENTE] módulo evaluado");
 
 let dependenciasEscalasPacientePromise = null;
