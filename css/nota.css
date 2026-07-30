@@ -1751,9 +1751,9 @@ details.nota-seccion-colapsable > summary:focus-visible {
     .cognicion-pdf-evolucion__marcas {
         display: flex;
         align-items: center;
-        justify-content: center;
-        gap: 16pt;
-        margin: 0 0 8pt;
+        justify-content: space-between;
+        margin: 0 0 4pt;
+        padding: 0 10pt;
     }
 
     .cognicion-pdf-evolucion__marcas img:first-child { width: 128px; height: auto; }

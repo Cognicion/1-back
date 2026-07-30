@@ -931,6 +931,7 @@ function configurarSeccionesRedimensionablesNota() {
             : ""
       })),
       ...[...document.querySelectorAll("#bloqueObservacionFray > .observacion-seccion, #bloqueObservacionFray > details.observacion-seccion")]
+        .filter((objetivo) => objetivo.id !== "seccionSignosVitales")
         .map((objetivo, index) => ({ objetivo, clave: `observacion:${index}`, minimo: 110, alturaBase: 180, panel: true }))
     ],
     cargarEstado: cargarAlturasNota,
