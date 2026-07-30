@@ -185,6 +185,10 @@
         Generar desde dictado
     </button>
 
+    <button id="btnCargarNotaPrevia" type="button" class="boton-secundario" onclick="cargarNotaPreviaEnFormulario()">
+        Cargar datos de nota previa
+    </button>
+
     <button id="abrirEscalasPreviasNota" type="button" class="boton-secundario">
         Escalas previas
     </button>
@@ -266,25 +270,6 @@
 <input id="obsHoraNota" type="hidden">
 <input id="obsDiasEstancia" type="hidden">
 
-<section id="bloqueObservacionFray" class="bloque-observacion">
-    <details id="seccionSignosVitales" class="observacion-seccion nota-seccion-colapsable" data-nota-seccion="signos-vitales">
-        <summary>Signos vitales y somatometria</summary>
-        <div class="nota-seccion-contenido">
-        <div class="grid-vitales">
-            <label class="campo-vital">Presion arterial <input id="obsPresionArterial" placeholder="Ej. 120/80 mmHg"></label>
-            <label class="campo-vital">Temperatura <input id="obsTemperatura" placeholder="Ej. 36.5 C"></label>
-            <label class="campo-vital">Frecuencia cardíaca <input id="obsFrecuenciaCardiaca" placeholder="lpm"></label>
-            <label class="campo-vital">Frecuencia respiratoria <input id="obsFrecuenciaRespiratoria" placeholder="rpm"></label>
-            <label class="campo-vital">Saturacion O2 <input id="obsSaturacionO2" placeholder="%"></label>
-            <label class="campo-vital">Peso <input id="obsPeso" placeholder="kg"></label>
-            <label class="campo-vital">Talla <input id="obsTalla" placeholder="m"></label>
-            <label class="campo-vital">IMC <input id="obsIMC" readonly placeholder="Automatico"></label>
-        </div>
-        </div>
-    </details>
-
-</section>
-
 <details id="bloquePediatriaNota" class="bloque-pediatria-nota nota-seccion-colapsable oculto" data-nota-seccion="pediatria">
     <summary>Parametros pediatricos</summary>
     <div class="nota-seccion-contenido">
@@ -328,6 +313,24 @@
     aria-describedby="ayudaNotaPrevia"
 >
 
+<section id="bloqueObservacionFray" class="bloque-observacion">
+    <details id="seccionSignosVitales" class="observacion-seccion nota-seccion-colapsable" data-nota-seccion="signos-vitales">
+        <summary>Signos vitales y somatometria</summary>
+        <div class="nota-seccion-contenido">
+        <div class="grid-vitales">
+            <label class="campo-vital">Presion arterial <input id="obsPresionArterial" placeholder="Ej. 120/80 mmHg"></label>
+            <label class="campo-vital">Temperatura <input id="obsTemperatura" placeholder="Ej. 36.5 C"></label>
+            <label class="campo-vital">Frecuencia cardíaca <input id="obsFrecuenciaCardiaca" placeholder="lpm"></label>
+            <label class="campo-vital">Frecuencia respiratoria <input id="obsFrecuenciaRespiratoria" placeholder="rpm"></label>
+            <label class="campo-vital">Saturacion O2 <input id="obsSaturacionO2" placeholder="%"></label>
+            <label class="campo-vital">Peso <input id="obsPeso" placeholder="kg"></label>
+            <label class="campo-vital">Talla <input id="obsTalla" placeholder="m"></label>
+            <label class="campo-vital">IMC <input id="obsIMC" readonly placeholder="Automatico"></label>
+        </div>
+        </div>
+    </details>
+</section>
+
 <label class="control-nota-previa">
     <input type="checkbox" id="esNotaPrevia" name="esNotaPrevia">
     Esta nota corresponde a una fecha previa
@@ -341,10 +344,6 @@
     </p>
     <p id="errorNotaPrevia" class="error-nota-previa" role="alert" aria-live="assertive"></p>
 </div>
-
-<button id="btnCargarNotaPrevia" type="button" class="boton-secundario" onclick="cargarNotaPreviaEnFormulario()">
-    Cargar datos de nota previa
-</button>
 
 <details id="bloqueNotaRapida" class="bloque-nota-rapida nota-seccion-colapsable oculto" data-nota-seccion="nota-rapida">
     <summary>Nota rapida</summary>
