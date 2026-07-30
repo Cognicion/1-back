@@ -2816,6 +2816,9 @@ window.mostrarEstudios = async function() {
     ponerValor("solicitudEstudioSolicita", medicoActualDatos?.nombre || datosPacienteActual?.medicoTratante || "");
   }
   configurarSolicitudEstudios();
+  if (resolverFormatoSolicitud(valorCampo("solicitudEstudioFormato"))?.id === FORMATO_SOLICITUD_IMAGENOLOGIA.clave && !solicitudImagenologiaActiva) {
+    manejarCambioFormatoSolicitud();
+  }
   renderizarListaSolicitudEstudios();
   actualizarPreviewSolicitudEstudios();
   await cargarEstudiosPaciente();
@@ -7569,10 +7572,6 @@ function configurarSolicitudEstudios() {
 
   categoria.addEventListener("change", () => {
     renderizarOpciones();
-    const formato = resolverFormatoSolicitud(valorCampo("solicitudEstudioFormato"));
-    if (categoria.value === "imagen" && formato?.id === FORMATO_SOLICITUD_IMAGENOLOGIA.clave) {
-      abrirSolicitudImagenologiaPaciente();
-    }
   });
   renderizarOpciones();
 }
@@ -7750,7 +7749,10 @@ function manejarCambioFormatoSolicitud() {
   solicitudImagenologiaActiva?.cerrar?.();
   solicitudImagenologiaActiva = null;
   if (formatoId === FORMATO_SOLICITUD_IMAGENOLOGIA.clave) {
-    if (categoria) categoria.value = "imagen";
+    if (categoria) {
+      categoria.value = "imagen";
+      categoria.dispatchEvent(new Event("change"));
+    }
     console.debug("[Estudios:FormatoSeleccionado]", { formatoId, categoria: "imagen", rendererId: "renderSolicitudImagenologia", generatorId: "crearDocumentoWordFray" });
     abrirSolicitudImagenologiaPaciente();
   } else {
