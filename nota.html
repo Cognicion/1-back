@@ -470,59 +470,6 @@
     </div>
     </details>
 
-    <details id="seccionFirmas" class="observacion-seccion firmas-extra nota-seccion-colapsable" data-nota-seccion="firmas">
-        <summary>Firmas</summary>
-        <div class="nota-seccion-contenido">
-        <datalist id="catalogoMedicosFirmas"></datalist>
-        <div class="grid-observacion seccion-firmas">
-            <div class="firma-campo" data-firma="1">
-                <div class="firma-campo-header">
-                    <strong>Firma campo 1</strong>
-                    <button type="button" class="boton-secundario boton-mini" data-guardar-medico-firma="1">
-                        Agregar al catalogo
-                    </button>
-                    <button type="button" class="boton-secundario boton-mini" data-limpiar-firma="1">
-                        Limpiar
-                    </button>
-                </div>
-                <label>Nombre <input id="obsFirma1Nombre" list="catalogoMedicosFirmas" data-firma-nombre="1"></label>
-                <label>Cargo <input id="obsFirma1Cargo" placeholder="Ej. Medico adscrito"></label>
-                <label>Cedula <input id="obsFirma1Cedula"></label>
-            </div>
-
-            <div class="firma-campo" data-firma="2">
-                <div class="firma-campo-header">
-                    <strong>Firma campo 2</strong>
-                    <button type="button" class="boton-secundario boton-mini" data-guardar-medico-firma="2">
-                        Agregar al catalogo
-                    </button>
-                    <button type="button" class="boton-secundario boton-mini" data-limpiar-firma="2">
-                        Limpiar
-                    </button>
-                </div>
-                <label>Nombre <input id="obsFirma2Nombre" list="catalogoMedicosFirmas" data-firma-nombre="2"></label>
-                <label>Cargo <input id="obsFirma2Cargo" placeholder="Ej. Medico residente"></label>
-                <label>Cedula <input id="obsFirma2Cedula"></label>
-            </div>
-
-            <div class="firma-campo" data-firma="3">
-                <div class="firma-campo-header">
-                    <strong>Firma campo 3</strong>
-                    <button type="button" class="boton-secundario boton-mini" data-guardar-medico-firma="3">
-                        Agregar al catalogo
-                    </button>
-                    <button type="button" class="boton-secundario boton-mini" data-limpiar-firma="3">
-                        Limpiar
-                    </button>
-                </div>
-                <label>Nombre <input id="obsFirma3Nombre" list="catalogoMedicosFirmas" data-firma-nombre="3"></label>
-                <label>Cargo <input id="obsFirma3Cargo" placeholder="Ej. Medico residente"></label>
-                <label>Cedula <input id="obsFirma3Cedula"></label>
-            </div>
-        </div>
-        </div>
-    </details>
-
     <details id="seccionPlan" class="nota-seccion-colapsable" data-nota-seccion="plan">
     <summary>Plan</summary>
     <div class="nota-seccion-contenido">
@@ -547,6 +494,45 @@
     </div>
     </details>
 </div>
+
+<details id="seccionFirmas" class="observacion-seccion firmas-extra nota-seccion-colapsable" data-nota-seccion="firmas">
+    <summary>Firmas</summary>
+    <div class="nota-seccion-contenido">
+    <datalist id="catalogoMedicosFirmas"></datalist>
+    <div class="grid-observacion seccion-firmas">
+        <div class="firma-campo" data-firma="1">
+            <div class="firma-campo-header">
+                <strong>Firma campo 1</strong>
+                <button type="button" class="boton-secundario boton-mini" data-guardar-medico-firma="1">Agregar al catalogo</button>
+                <button type="button" class="boton-secundario boton-mini" data-limpiar-firma="1">Limpiar</button>
+            </div>
+            <label>Nombre <input id="obsFirma1Nombre" list="catalogoMedicosFirmas" data-firma-nombre="1"></label>
+            <label>Cargo <input id="obsFirma1Cargo" placeholder="Ej. Medico adscrito"></label>
+            <label>Cedula <input id="obsFirma1Cedula"></label>
+        </div>
+        <div class="firma-campo" data-firma="2">
+            <div class="firma-campo-header">
+                <strong>Firma campo 2</strong>
+                <button type="button" class="boton-secundario boton-mini" data-guardar-medico-firma="2">Agregar al catalogo</button>
+                <button type="button" class="boton-secundario boton-mini" data-limpiar-firma="2">Limpiar</button>
+            </div>
+            <label>Nombre <input id="obsFirma2Nombre" list="catalogoMedicosFirmas" data-firma-nombre="2"></label>
+            <label>Cargo <input id="obsFirma2Cargo" placeholder="Ej. Medico residente"></label>
+            <label>Cedula <input id="obsFirma2Cedula"></label>
+        </div>
+        <div class="firma-campo" data-firma="3">
+            <div class="firma-campo-header">
+                <strong>Firma campo 3</strong>
+                <button type="button" class="boton-secundario boton-mini" data-guardar-medico-firma="3">Agregar al catalogo</button>
+                <button type="button" class="boton-secundario boton-mini" data-limpiar-firma="3">Limpiar</button>
+            </div>
+            <label>Nombre <input id="obsFirma3Nombre" list="catalogoMedicosFirmas" data-firma-nombre="3"></label>
+            <label>Cargo <input id="obsFirma3Cargo" placeholder="Ej. Medico residente"></label>
+            <label>Cedula <input id="obsFirma3Cedula"></label>
+        </div>
+    </div>
+    </div>
+</details>
 
 <details class="selector-formato-nota nota-seccion-colapsable" data-nota-seccion="formato">
     <summary>Formato de descarga</summary>

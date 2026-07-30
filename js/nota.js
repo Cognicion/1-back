@@ -303,7 +303,54 @@ async function indicacionesGeneradasGuardadasNota() {
   }
 }
 
+function fechaIndicacionNota(indicacion = {}) {
+  const valor = indicacion.fechaActualizacion || indicacion.fechaCreacion || indicacion.fecha || indicacion.createdAt || "";
+  if (typeof valor?.toDate === "function") return valor.toDate().getTime();
+  if (typeof valor?.seconds === "number") return valor.seconds * 1000;
+  const fecha = new Date(valor);
+  return Number.isNaN(fecha.getTime()) ? 0 : fecha.getTime();
+}
+
+function textoIndicacionesNota(indicaciones) {
+  const composicion = construirTratamientoEIndicaciones({ indicacionesEstructuradas: indicaciones });
+  return composicion.indicaciones
+    .map((indicacion, indice) => `${indice + 1}. ${indicacion}`)
+    .join("\n");
+}
+
+async function obtenerUltimasIndicacionesGuardadasNota() {
+  const pacienteId = uidPacienteActual || document.getElementById("uidPaciente")?.value || "";
+  if (!pacienteId) return "";
+
+  const referencia = collection(db, "usuarios", pacienteId, "indicaciones");
+  let documentos = [];
+  try {
+    const snap = await getDocs(query(referencia, orderBy("fechaCreacion", "desc"), limit(1)));
+    documentos = snap.docs.map((docIndicacion) => ({ id: docIndicacion.id, ...docIndicacion.data() }));
+  } catch (error) {
+    console.warn("No se pudo ordenar la última indicación; se usará orden defensivo local.", error);
+  }
+
+  if (!documentos.length) {
+    try {
+      const snap = await getDocs(referencia);
+      documentos = snap.docs.map((docIndicacion) => ({ id: docIndicacion.id, ...docIndicacion.data() }));
+    } catch (error) {
+      console.warn("No se pudieron consultar las indicaciones del paciente:", error);
+      return "";
+    }
+  }
+
+  const ultima = documentos
+    .sort((a, b) => fechaIndicacionNota(b) - fechaIndicacionNota(a))
+    .find((indicacion) => textoIndicacionesNota(indicacion.indicaciones || indicacion.indicacionesTexto || indicacion.texto));
+  return ultima ? textoIndicacionesNota(ultima.indicaciones || ultima.indicacionesTexto || ultima.texto) : "";
+}
+
 async function obtenerIndicacionesGeneradasActuales() {
+  const ultimaGuardada = await obtenerUltimasIndicacionesGuardadasNota();
+  if (ultimaGuardada) return ultimaGuardada;
+
   const campoVisible = document.getElementById("indicacionesTexto");
   if (campoVisible) return String(campoVisible.value || campoVisible.textContent || "").trim();
   return indicacionesGeneradasGuardadasNota();
@@ -2555,17 +2602,7 @@ async function resumenTratamientoIndicacionesNota(uidPaciente) {
     console.warn("No se pudo cargar tratamiento activo para la nota:", error);
   }
 
-  try {
-    const snap = await getDocs(query(
-      collection(db, "usuarios", uidPaciente, "indicaciones"),
-      orderBy("fechaCreacion", "desc"),
-      limit(1)
-    ));
-    const ultima = snap.docs.map((docIndicacion) => ({ id: docIndicacion.id, ...docIndicacion.data() }))[0];
-    indicacionesEstructuradas = ultima?.indicaciones || null;
-  } catch (error) {
-    console.warn("No se pudieron cargar indicaciones vigentes para la nota:", error);
-  }
+  indicacionesEstructuradas = await obtenerUltimasIndicacionesGuardadasNota();
 
   const resumenPaciente = pacienteActualDatos?.tratamiento || pacienteActualDatos?.datosClinicosResumen?.tratamientoActivo || "";
   const composicion = construirTratamientoEIndicaciones({
@@ -5171,8 +5208,10 @@ function construirContenedorPdfCognicion(exportData = datosExportacionCognicion(
       if (analisisPdf) analisisPdf.before(tablaDiagnosticos);
       else bloqueNotaPdf.appendChild(tablaDiagnosticos);
     }
-    reemplazarFirmasPdfCognicion(bloqueNotaPdf);
   }
+  const bloqueFirmasPdf = agregarNodo(document.getElementById("seccionFirmas"));
+  if (bloqueFirmasPdf?.matches("details")) bloqueFirmasPdf.open = true;
+  if (bloqueFirmasPdf) reemplazarFirmasPdfCognicion(bloqueFirmasPdf);
 
   convertirControlesPdfCognicion(documento);
   return documento;
