@@ -1741,6 +1741,83 @@ details.nota-seccion-colapsable > summary:focus-visible {
         border-top: 1px solid #999;
         margin: 28px 0;
     }
+
+    .cognicion-pdf-evolucion {
+        padding: 36pt !important;
+        font-family: Arial, sans-serif;
+        font-size: 9pt;
+    }
+
+    .cognicion-pdf-evolucion__marcas {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 16pt;
+        margin: 0 0 8pt;
+    }
+
+    .cognicion-pdf-evolucion__marcas img:first-child { width: 128px; height: auto; }
+    .cognicion-pdf-evolucion__marcas img:last-child { width: 42px; height: 42px; object-fit: contain; }
+
+    .cognicion-pdf-evolucion h1 {
+        margin: 0 0 8pt;
+        padding: 0;
+        border: none;
+        font-size: 11.5pt;
+        text-align: center;
+        letter-spacing: .2pt;
+    }
+
+    .cognicion-pdf-evolucion__identificacion {
+        margin: 0 0 7pt;
+        font-size: 8.6pt;
+        line-height: 1.35;
+    }
+
+    .cognicion-pdf-evolucion__bloque,
+    .cognicion-pdf-evolucion__signos {
+        margin: 8pt 0;
+        break-inside: avoid;
+        page-break-inside: avoid;
+    }
+
+    .cognicion-pdf-evolucion h2 {
+        margin: 0 0 3pt;
+        font-size: 9.5pt;
+        text-align: left;
+    }
+
+    .cognicion-pdf-evolucion__contenido {
+        min-height: 42pt;
+        padding: 4pt;
+        border: 1px solid #222;
+        white-space: pre-wrap;
+        line-height: 1.15;
+    }
+
+    .cognicion-pdf-evolucion table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 0;
+    }
+
+    .cognicion-pdf-evolucion th,
+    .cognicion-pdf-evolucion td {
+        padding: 3pt;
+        border: 1px solid #222;
+        vertical-align: top;
+        text-align: left;
+    }
+
+    .cognicion-pdf-evolucion__signos th,
+    .cognicion-pdf-evolucion__signos td {
+        padding: 1.4pt 3.2pt;
+        text-align: center;
+        white-space: nowrap;
+    }
+
+    .cognicion-pdf-evolucion__signos th { font-size: 6.6pt; }
+    .cognicion-pdf-evolucion__signos td { font-size: 7.4pt; }
 }
 
 #resultadosCIE10Lista,

@@ -5185,7 +5185,7 @@ async function esperarImagenesPdfCognicion(contenedor) {
   }));
 }
 
-function construirContenedorPdfCognicion(exportData = datosExportacionCognicion()) {
+function construirContenedorPdfCognicionLegacy(exportData = datosExportacionCognicion()) {
   const fuente = document.querySelector(".contenedor");
   if (!fuente) throw new Error("No se encontro el contenedor de la nota clinica Cognicion.");
 
@@ -5255,6 +5255,123 @@ function construirContenedorPdfCognicion(exportData = datosExportacionCognicion(
   if (bloqueFirmasPdf) reemplazarFirmasPdfCognicion(bloqueFirmasPdf);
 
   convertirControlesPdfCognicion(documento);
+  return documento;
+}
+
+function agregarBloqueEvolucionPdfCognicion(documento, titulo, contenido) {
+  const texto = String(contenido || "").trim();
+  if (!texto) return;
+  const seccion = document.createElement("section");
+  seccion.className = "cognicion-pdf-evolucion__bloque";
+  const encabezado = document.createElement("h2");
+  encabezado.textContent = titulo;
+  const cuerpo = document.createElement("div");
+  cuerpo.className = "cognicion-pdf-evolucion__contenido";
+  cuerpo.textContent = texto;
+  seccion.append(encabezado, cuerpo);
+  documento.appendChild(seccion);
+}
+
+function crearTablaSignosEvolucionPdfCognicion(signosVitales = {}) {
+  const valores = CAMPOS_SIGNOS_VITALES_PDF_COGNICION
+    .map(([clave, etiqueta, unidad]) => ({ etiqueta, valor: valorConUnidadSignoVital(signosVitales[clave], unidad) }))
+    .filter(({ valor }) => valor);
+  if (!valores.length) return null;
+
+  const seccion = document.createElement("section");
+  seccion.className = "cognicion-pdf-evolucion__signos";
+  const titulo = document.createElement("h2");
+  titulo.textContent = "SIGNOS VITALES Y SOMATOMETRÍA";
+  const tabla = document.createElement("table");
+  const encabezado = tabla.createTHead().insertRow();
+  const fila = tabla.createTBody().insertRow();
+  valores.forEach(({ etiqueta, valor }) => {
+    const th = document.createElement("th");
+    th.textContent = etiqueta;
+    const td = document.createElement("td");
+    td.textContent = valor;
+    encabezado.appendChild(th);
+    fila.appendChild(td);
+  });
+  seccion.append(titulo, tabla);
+  return seccion;
+}
+
+function crearSeccionDiagnosticosEvolucionPdfCognicion(diagnosticos = []) {
+  const seleccionados = normalizarDiagnosticosNota(diagnosticos);
+  if (!seleccionados.length) return null;
+  const seccion = document.createElement("section");
+  seccion.className = "cognicion-pdf-evolucion__bloque";
+  const titulo = document.createElement("h2");
+  titulo.textContent = "DIAGNÓSTICOS";
+  const tabla = document.createElement("table");
+  const encabezado = tabla.createTHead().insertRow();
+  ["CÓDIGO", "DIAGNÓSTICO"].forEach((texto) => {
+    const th = document.createElement("th");
+    th.textContent = texto;
+    encabezado.appendChild(th);
+  });
+  const cuerpo = tabla.createTBody();
+  seleccionados.forEach((diagnostico) => {
+    const fila = cuerpo.insertRow();
+    const codigo = fila.insertCell();
+    codigo.textContent = diagnostico.codigo || "—";
+    const texto = fila.insertCell();
+    texto.textContent = textoDiagnosticoConEstado(diagnostico);
+  });
+  seccion.append(titulo, tabla);
+  return seccion;
+}
+
+function construirContenedorPdfCognicion(exportData = datosExportacionCognicion()) {
+  const documento = document.createElement("main");
+  documento.className = "contenedor cognicion-pdf-documento cognicion-pdf-evolucion";
+  documento.setAttribute("aria-label", "Nota clínica Cognición para PDF");
+
+  const marcas = document.createElement("div");
+  marcas.className = "cognicion-pdf-evolucion__marcas";
+  ["assets/logo-cognicion.png", "assets/favicon-cognicion.png"].forEach((ruta) => {
+    const logo = document.createElement("img");
+    logo.src = ruta;
+    logo.alt = "Cognición";
+    marcas.appendChild(logo);
+  });
+  documento.appendChild(marcas);
+
+  const titulo = document.createElement("h1");
+  titulo.textContent = "NOTA CLÍNICA DE EVOLUCIÓN";
+  documento.appendChild(titulo);
+
+  const paciente = datosInstitucionalesPaciente(pacienteActualDatos || {});
+  const identificacion = document.createElement("p");
+  identificacion.className = "cognicion-pdf-evolucion__identificacion";
+  identificacion.textContent = [
+    `Paciente: ${obtenerNombrePacienteParaMostrar(pacienteActualDatos || {}) || "—"}`,
+    paciente.expediente ? `Expediente: ${paciente.expediente}` : "",
+    paciente.edad ? `Edad: ${paciente.edad}` : "",
+    paciente.sexo ? `Sexo: ${paciente.sexo}` : "",
+    `Fecha: ${formatoFechaFray(exportData.fechaNotaInput || exportData.observacionFray?.fechaNota || new Date().toISOString().slice(0, 10))}`,
+    exportData.observacionFray?.horaNota ? `Hora: ${exportData.observacionFray.horaNota}` : ""
+  ].filter(Boolean).join(" · ");
+  documento.appendChild(identificacion);
+
+  const signos = crearTablaSignosEvolucionPdfCognicion(exportData.signosVitales);
+  if (signos) documento.appendChild(signos);
+
+  const observacion = exportData.observacionFray || {};
+  agregarBloqueEvolucionPdfCognicion(documento, "SUBJETIVO / PADECIMIENTO ACTUAL O EVOLUCIÓN", exportData.subjetivo || exportData.notaRapida);
+  agregarBloqueEvolucionPdfCognicion(documento, "EXPLORACIÓN FÍSICA Y NEUROLÓGICA", observacion.exploracionFisicaNeurologica);
+  agregarBloqueEvolucionPdfCognicion(documento, "OBJETIVO / EXAMEN MENTAL", exportData.objetivo);
+  agregarBloqueEvolucionPdfCognicion(documento, "RESULTADOS RELEVANTES DE ESTUDIOS DIAGNÓSTICOS", observacion.resultadosEstudios);
+  const diagnosticos = crearSeccionDiagnosticosEvolucionPdfCognicion(exportData.diagnosticos);
+  if (diagnosticos) documento.appendChild(diagnosticos);
+  agregarBloqueEvolucionPdfCognicion(documento, "PLAN, TRATAMIENTO E INDICACIONES", exportData.plan || exportData.tratamiento);
+  agregarBloqueEvolucionPdfCognicion(documento, "COMENTARIO Y ANÁLISIS CLÍNICO", exportData.analisis);
+  agregarBloqueEvolucionPdfCognicion(documento, "PRONÓSTICO", observacion.pronostico);
+  agregarBloqueEvolucionPdfCognicion(documento, "DESTINO", observacion.destino);
+
+  const firmas = crearSeccionFirmasPdfCognicion(obtenerFirmasPdfCognicion());
+  if (firmas) documento.appendChild(firmas);
   return documento;
 }
 
