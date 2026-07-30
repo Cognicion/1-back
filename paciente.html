@@ -952,18 +952,17 @@
               <option value="Preferente">Preferente</option>
             </select>
           </label>
-          <label>Médico solicitante
-            <input id="solicitudEstudioSolicita" placeholder="Medico solicitante">
-          </label>
         </div>
 
-        <div id="solicitudMedicosInstitucional" class="form-grid" hidden>
+        <div id="solicitudMedicosInstitucional" class="form-grid">
           <label>Médico solicitante
             <select id="solicitudMedicoSolicitanteId"></select>
           </label>
-          <label>Médico adscrito
-            <select id="solicitudMedicoAdscritoId"></select>
-          </label>
+          <div id="solicitudMedicoAdscritoCampo">
+            <label>Médico adscrito
+              <select id="solicitudMedicoAdscritoId"></select>
+            </label>
+          </div>
           <div id="solicitudMedicoSolicitanteOtro" hidden>
             <label>Nombre completo<input id="solicitudMedicoSolicitanteNombre"></label>
             <label>Cargo completo<input id="solicitudMedicoSolicitanteCargo"></label>
