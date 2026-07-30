@@ -5249,12 +5249,6 @@ function construirContenedorPdfCognicion(exportData = datosExportacionCognicion(
   bloqueNotaPdf?.classList.remove("oculto");
   if (bloqueNotaPdf) {
     bloqueNotaPdf.querySelectorAll("details").forEach((detalle) => { detalle.open = true; });
-    const tablaDiagnosticos = crearSeccionDiagnosticosPdfCognicion(exportData.diagnosticos);
-    const analisisPdf = bloqueNotaPdf.querySelector("#seccionAnalisis");
-    if (tablaDiagnosticos && tipoNota?.value !== "rapida") {
-      if (analisisPdf) analisisPdf.before(tablaDiagnosticos);
-      else bloqueNotaPdf.appendChild(tablaDiagnosticos);
-    }
   }
   const bloqueFirmasPdf = agregarNodo(document.getElementById("seccionFirmas"));
   if (bloqueFirmasPdf?.matches("details")) bloqueFirmasPdf.open = true;

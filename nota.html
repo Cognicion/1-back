@@ -259,61 +259,6 @@
 
 
 
-<details id="seccionDiagnosticos" class="nota-seccion-colapsable" data-nota-seccion="diagnosticos">
-<summary>Diagnosticos</summary>
-<div class="nota-seccion-contenido">
-<label for="buscadorDiagnostico">Buscar diagnostico</label>
-<input
-    id="buscadorDiagnostico"
-    type="text"
-    placeholder="Buscar por codigo o diagnostico. Ej. F33.2 o depresivo"
-    autocomplete="off"
->
-
-<div id="resultadosCIE10"></div>
-
-<input type="hidden" id="cie10Codigo">
-<input type="hidden" id="cie10Nombre">
-
-<div class="tabla-diagnosticos-header diagnosticos-acciones-principales">
-    <h3>Diagnosticos seleccionados</h3>
-    <button id="btnSincronizarDxObs" type="button" class="boton-secundario">Sincronizar diagnosticos</button>
-</div>
-<div class="grid-diagnosticos">
-    <div>
-        <label for="buscadorCIE10">Diagnostico CIE-10</label>
-        <input
-            id="buscadorCIE10"
-            type="text"
-            placeholder="Buscar CIE-10. Ej. F33.2 o depresivo"
-            autocomplete="off"
-        >
-        <div id="resultadosCIE10Lista"></div>
-    </div>
-
-    <div>
-        <label for="buscadorCIE11">Diagnostico CIE-11</label>
-        <input
-            id="buscadorCIE11"
-            type="text"
-            placeholder="Buscar CIE-11. Ej. 6A70 o depresivo"
-            autocomplete="off"
-        >
-        <div id="resultadosCIE11Lista"></div>
-    </div>
-</div>
-
-<label for="diagnosticoCatalogoVisible">Mostrar en panel medico</label>
-<select id="diagnosticoCatalogoVisible">
-    <option value="auto">Automatico / diagnostico principal</option>
-    <option value="CIE-10">CIE-10</option>
-    <option value="CIE-11">CIE-11</option>
-</select>
-
-<div id="diagnosticosSeleccionados"></div>
-</div>
-</details>
-
 <textarea id="tratamiento" hidden aria-hidden="true" tabindex="-1"></textarea>
 
 <input id="obsTipoNota" type="hidden" value="evolucion">
@@ -454,6 +399,40 @@
     <div class="nota-seccion-contenido">
     <label>Analisis clinico</label>
     <textarea id="analisis"></textarea>
+    </div>
+    </details>
+
+    <details id="seccionDiagnosticos" class="nota-seccion-colapsable" data-nota-seccion="diagnosticos">
+    <summary>Diagnosticos</summary>
+    <div class="nota-seccion-contenido">
+    <label for="buscadorDiagnostico">Buscar diagnostico</label>
+    <input id="buscadorDiagnostico" type="text" placeholder="Buscar por codigo o diagnostico. Ej. F33.2 o depresivo" autocomplete="off">
+    <div id="resultadosCIE10"></div>
+    <input type="hidden" id="cie10Codigo">
+    <input type="hidden" id="cie10Nombre">
+    <div class="tabla-diagnosticos-header diagnosticos-acciones-principales">
+        <h3>Diagnosticos seleccionados</h3>
+        <button id="btnSincronizarDxObs" type="button" class="boton-secundario">Sincronizar diagnosticos</button>
+    </div>
+    <div class="grid-diagnosticos">
+        <div>
+            <label for="buscadorCIE10">Diagnostico CIE-10</label>
+            <input id="buscadorCIE10" type="text" placeholder="Buscar CIE-10. Ej. F33.2 o depresivo" autocomplete="off">
+            <div id="resultadosCIE10Lista"></div>
+        </div>
+        <div>
+            <label for="buscadorCIE11">Diagnostico CIE-11</label>
+            <input id="buscadorCIE11" type="text" placeholder="Buscar CIE-11. Ej. 6A70 o depresivo" autocomplete="off">
+            <div id="resultadosCIE11Lista"></div>
+        </div>
+    </div>
+    <label for="diagnosticoCatalogoVisible">Mostrar en panel medico</label>
+    <select id="diagnosticoCatalogoVisible">
+        <option value="auto">Automatico / diagnostico principal</option>
+        <option value="CIE-10">CIE-10</option>
+        <option value="CIE-11">CIE-11</option>
+    </select>
+    <div id="diagnosticosSeleccionados"></div>
     </div>
     </details>
 

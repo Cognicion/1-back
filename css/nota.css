@@ -155,6 +155,14 @@ textarea{
     overflow: auto;
 }
 
+/* Un panel redimensionable no debe conservar su altura al cerrarse como apartado. */
+details.nota-seccion-colapsable.panel-nota-redimensionable:not([open]) {
+    height: auto !important;
+    min-height: 0;
+    padding-bottom: 0;
+    overflow: hidden;
+}
+
 .controles-tamano-nota {
     display: flex;
     flex-wrap: wrap;
