@@ -213,7 +213,6 @@ iniciarMonitoreoSesion("Nota medica");
 
 const CLAVE_ALTURAS_NOTA = "cognicion_nota_alturas_secciones";
 const camposNotaRedimensionables = [
-  "tratamiento",
   "notaRapida",
   "subjetivo",
   "obsExploracionFisicaNeurologica",
@@ -379,6 +378,10 @@ async function asignarTextoCampoNotaDesdeIndicaciones(idCampo, etiquetaCampo) {
 function actualizarPlanDesdeIndicaciones() {
   asignarTextoCampoNotaDesdeIndicaciones("plan", "Plan");
 }
+
+document.getElementById("plan")?.addEventListener("input", (evento) => {
+  asignarValor("tratamiento", evento.target.value);
+});
 
 function actualizarTratamientoDesdeIndicaciones() {
   asignarTextoCampoNotaDesdeIndicaciones("tratamiento", "Tratamiento e indicaciones");
@@ -3335,9 +3338,9 @@ function llenarFormularioNota(datos) {
   document.getElementById("subjetivo").value = datos.subjetivo || "";
   document.getElementById("objetivo").value = datos.objetivo || "";
   document.getElementById("analisis").value = datos.analisis || "";
-  document.getElementById("plan").value = datos.plan || "";
+  document.getElementById("plan").value = datos.plan || datos.tratamiento || "";
   estudiosSincronizadosNotaIds = new Set(Array.isArray(datos.syncedStudyIds) ? datos.syncedStudyIds.map(String) : []);
-  asignarValor("tratamiento", datos.tratamiento || "");
+  asignarValor("tratamiento", datos.tratamiento || datos.plan || "");
   if (diagnosticoCatalogoVisible) diagnosticoCatalogoVisible.value = datos.diagnosticoCatalogoVisible || "auto";
 
   diagnosticosSeleccionados = resolverDiagnosticosNota(datos);
@@ -5223,8 +5226,6 @@ function construirContenedorPdfCognicion(exportData = datosExportacionCognicion(
   }
   const bloqueSignosVitales = crearSeccionSignosVitalesPdfCognicion(exportData.signosVitales);
   if (bloqueSignosVitales) documento.appendChild(bloqueSignosVitales);
-  ["tratamiento"].forEach(agregarCampo);
-
   const bloqueObservacion = agregarNodo(document.getElementById("bloqueObservacionFray"));
   bloqueObservacion?.classList.remove("oculto");
   bloqueObservacion?.querySelector(".grid-vitales")?.closest(".observacion-seccion")?.remove();
@@ -5871,8 +5872,7 @@ window.descargarNotaSeleccionada = async function() {
           { titulo: "EXAMEN MENTAL", contenido: datosNota.objetivo },
           { titulo: "RESULTADOS RELEVANTES DE ESTUDIOS", contenido: observacion.resultadosEstudios },
           { titulo: "COMENTARIO Y ANÁLISIS CLÍNICO", contenido: datosNota.analisis },
-          { titulo: "PLAN", contenido: datosNota.plan },
-          { titulo: "TRATAMIENTO E INDICACIONES", contenido: datosNota.tratamiento },
+          { titulo: "PLAN, TRATAMIENTO E INDICACIONES", contenido: datosNota.plan || datosNota.tratamiento },
           { titulo: "PRONÓSTICO", contenido: observacion.pronostico },
           { titulo: "DESTINO", contenido: observacion.destino }
         ];

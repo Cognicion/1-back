@@ -314,13 +314,7 @@
 </div>
 </details>
 
-<details id="seccionTratamiento" class="nota-seccion-colapsable" data-nota-seccion="tratamiento">
-<summary>Tratamiento e indicaciones</summary>
-<div class="nota-seccion-contenido">
-<label for="tratamiento">Tratamiento e indicaciones</label>
-<textarea id="tratamiento" placeholder="Medicamentos actuales"></textarea>
-</div>
-</details>
+<textarea id="tratamiento" hidden aria-hidden="true" tabindex="-1"></textarea>
 
 <input id="obsTipoNota" type="hidden" value="evolucion">
 <input id="obsFechaNota" type="hidden">
@@ -464,9 +458,9 @@
     </details>
 
     <details id="seccionPlan" class="nota-seccion-colapsable" data-nota-seccion="plan">
-    <summary>Plan</summary>
+    <summary>Plan, tratamiento e indicaciones</summary>
     <div class="nota-seccion-contenido">
-    <label>Plan</label>
+    <label for="plan">Plan, tratamiento e indicaciones</label>
     <textarea id="plan"></textarea>
     </div>
     </details>
