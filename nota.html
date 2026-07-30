@@ -275,7 +275,10 @@
 <input type="hidden" id="cie10Codigo">
 <input type="hidden" id="cie10Nombre">
 
-<h3>Diagnosticos seleccionados</h3>
+<div class="tabla-diagnosticos-header diagnosticos-acciones-principales">
+    <h3>Diagnosticos seleccionados</h3>
+    <button id="btnSincronizarDxObs" type="button" class="boton-secundario">Sincronizar diagnosticos</button>
+</div>
 <div class="grid-diagnosticos">
     <div>
         <label for="buscadorCIE10">Diagnostico CIE-10</label>
@@ -308,16 +311,6 @@
 </select>
 
 <div id="diagnosticosSeleccionados"></div>
-
-    <div class="tabla-diagnosticos">
-        <div class="tabla-diagnosticos-header">
-            <h3>Diagnosticos incluidos en esta nota</h3>
-            <button id="btnSincronizarDxObs" type="button" class="boton-secundario">Sincronizar diagnosticos</button>
-        </div>
-        <div id="obsDiagnosticosLista" class="diagnosticos-word-lista">
-            Sin diagnosticos sincronizados.
-        </div>
-    </div>
 </div>
 </details>
 

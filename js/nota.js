@@ -928,8 +928,7 @@ function configurarSeccionesRedimensionablesNota() {
             : ""
       })),
       ...[...document.querySelectorAll("#bloqueObservacionFray > .observacion-seccion, #bloqueObservacionFray > details.observacion-seccion")]
-        .map((objetivo, index) => ({ objetivo, clave: `observacion:${index}`, minimo: 110, alturaBase: 180, panel: true })),
-      { objetivo: document.querySelector("#seccionDiagnosticos .tabla-diagnosticos"), clave: "panel:diagnosticos-cie10", minimo: 110, alturaBase: 180, panel: true }
+        .map((objetivo, index) => ({ objetivo, clave: `observacion:${index}`, minimo: 110, alturaBase: 180, panel: true }))
     ],
     cargarEstado: cargarAlturasNota,
     guardarEstado: guardarEstadoSeccionNota,
@@ -1671,7 +1670,7 @@ function claveDiagnosticoNota(dx = {}) {
   if (!dx) return "";
   if (typeof dx === "string") return normalizarTextoBusqueda(dx);
   // `id` local se deriva del índice de captura; no es estable entre notas antiguas.
-  const diagnosticoId = String(dx.diagnosticoId || dx.idCatalogo || dx.catalogoId || "").trim();
+  const diagnosticoId = String(dx.diagnosticoId || dx.idCatalogo || dx.catalogoId || (dx.manual ? dx.id : "") || "").trim();
   if (diagnosticoId) return `id:${diagnosticoId}`;
   const sistema = normalizarTextoBusqueda(dx.sistema || dx.catalogo || dx.sistemaClasificacion || "CIE-10");
   const codigo = String(dx.codigo || "").trim().toLowerCase();
@@ -1824,6 +1823,7 @@ function renderizarDiagnosticosSeleccionadosEditable() {
             data-dx-index="${index}"
             data-dx-campo="nombre"
             oninput="actualizarDiagnosticoSeleccionado(this)"
+            onchange="guardarEdicionDiagnosticoPaciente(this)"
             placeholder="Texto visible"
           >
           <div class="diagnostico-orden-nota">
@@ -1880,6 +1880,31 @@ window.actualizarDiagnosticoSeleccionado = function(campo) {
   sincronizarDiagnosticosObservacion();
 };
 
+window.guardarEdicionDiagnosticoPaciente = async function(campo) {
+  const index = Number(campo?.dataset?.dxIndex);
+  if (!Number.isInteger(index) || !diagnosticosSeleccionados[index]) return;
+
+  const pacienteId = uidPacienteActual || document.getElementById("uidPaciente")?.value || "";
+  if (!pacienteId) return;
+
+  const diagnosticos = normalizarDiagnosticosNota(diagnosticosSeleccionados);
+  try {
+    await actualizarUsuario(pacienteId, {
+      diagnostico: diagnosticos[0] || null,
+      diagnosticos,
+      historialDiagnosticos: diagnosticos
+    });
+    pacienteActualDatos = {
+      ...(pacienteActualDatos || {}),
+      diagnostico: diagnosticos[0] || null,
+      diagnosticos,
+      historialDiagnosticos: diagnosticos
+    };
+  } catch (error) {
+    console.warn("No se pudo guardar la edición del diagnóstico del paciente:", error);
+  }
+};
+
 window.agregarDiagnosticoManualNota = function() {
   diagnosticosSeleccionados = normalizarDiagnosticosNota(diagnosticosSeleccionados);
   diagnosticosSeleccionados.push(normalizarDiagnosticoNota({
@@ -1888,6 +1913,7 @@ window.agregarDiagnosticoManualNota = function() {
     catalogo: "Manual",
     texto: "Diagnostico manual",
     manual: true,
+    diagnosticoId: `manual-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`,
     fechaSeleccion: new Date().toISOString()
   }, diagnosticosSeleccionados.length));
 
@@ -4990,6 +5016,26 @@ function crearSeccionFirmasPdfCognicion(firmas = []) {
   return seccion;
 }
 
+function crearSeccionDiagnosticosPdfCognicion(diagnosticos = []) {
+  const seleccionados = normalizarDiagnosticosNota(diagnosticos);
+  if (!seleccionados.length) return null;
+
+  const seccion = document.createElement("section");
+  seccion.className = "tabla-diagnosticos";
+  const encabezado = document.createElement("h3");
+  encabezado.textContent = "DIAGNOSTICOS";
+  seccion.appendChild(encabezado);
+
+  const lista = document.createElement("ul");
+  seleccionados.forEach((diagnostico) => {
+    const item = document.createElement("li");
+    item.textContent = textoDiagnosticoConEstado(diagnostico);
+    lista.appendChild(item);
+  });
+  seccion.appendChild(lista);
+  return seccion;
+}
+
 function reemplazarFirmasPdfCognicion(contenedor) {
   const editorFirmas = contenedor.querySelector(".firmas-extra");
   if (!editorFirmas) return;
@@ -5202,7 +5248,7 @@ function construirContenedorPdfCognicion(exportData = datosExportacionCognicion(
   bloqueNotaPdf?.classList.remove("oculto");
   if (bloqueNotaPdf) {
     bloqueNotaPdf.querySelectorAll("details").forEach((detalle) => { detalle.open = true; });
-    const tablaDiagnosticos = clonarNodoPdfCognicion(document.querySelector("#seccionDiagnosticos .tabla-diagnosticos"));
+    const tablaDiagnosticos = crearSeccionDiagnosticosPdfCognicion(exportData.diagnosticos);
     const analisisPdf = bloqueNotaPdf.querySelector("#seccionAnalisis");
     if (tablaDiagnosticos && tipoNota?.value !== "rapida") {
       if (analisisPdf) analisisPdf.before(tablaDiagnosticos);
