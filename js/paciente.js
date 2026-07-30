@@ -6531,9 +6531,16 @@ async function abrirSolicitudImagenologiaPaciente() {
     alert("Este formato requiere autorización institucional.");
     return;
   }
+  if (!catalogoMedicosFirmasIndicacionesCache.length) {
+    try {
+      await cargarCatalogoMedicosFirmasIndicaciones();
+    } catch (error) {
+      console.error("No se pudo cargar el catálogo de médicos del Fray:", error);
+    }
+  }
   if (!solicitudImagenologiaModulePromise) {
     solicitudImagenologiaModulePromise = Promise.all([
-      import("./components/solicitudImagenologia.js?v=20260728-img-request-v1"),
+      import("./components/solicitudImagenologia.js?v=20260730-img-request-v2"),
       import("./services/solicitudesImagenologia.js?v=20260728-img-request-v1")
     ]);
   }
