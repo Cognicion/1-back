@@ -1610,8 +1610,7 @@ function normalizarTextoBusqueda(valor = "") {
     .replace(/[\u0300-\u036f]/g, "");
 }
 
-function referenciaCatalogoMedicosFirmasIndicaciones() {
-  const uidMedico = auth.currentUser?.uid;
+function referenciaCatalogoMedicosFirmasIndicaciones(uidMedico = auth.currentUser?.uid || "") {
   if (!uidMedico) return null;
   return collection(db, "usuarios", uidMedico, "catalogoMedicosFirmas");
 }
@@ -1650,11 +1649,21 @@ function renderizarCatalogoMedicosFirmasIndicaciones() {
 async function cargarCatalogoMedicosFirmasIndicaciones() {
   if (catalogoMedicosFirmasIndicacionesCache.length) return catalogoMedicosFirmasIndicacionesCache;
   if (catalogoMedicosFirmasIndicacionesPromise) return catalogoMedicosFirmasIndicacionesPromise;
-  const ref = referenciaCatalogoMedicosFirmasIndicaciones();
+  const usuarioAutenticado = auth.currentUser || await getAuthenticatedUserOnce().catch(() => null);
+  const ref = referenciaCatalogoMedicosFirmasIndicaciones(usuarioAutenticado?.uid || "");
   if (!ref) return [];
   catalogoMedicosFirmasIndicacionesPromise = (async () => {
-    const snap = await getDocs(query(ref, orderBy("nombre")));
-    catalogoMedicosFirmasIndicacionesCache = snap.docs.map((docMedico) => ({ id: docMedico.id, ...docMedico.data() }));
+    let snap;
+    try {
+      snap = await getDocs(query(ref, orderBy("nombre")));
+    } catch (error) {
+      console.warn("No se pudo ordenar el catálogo de médicos por nombre; se cargará sin orden.", error);
+      snap = await getDocs(ref);
+    }
+    catalogoMedicosFirmasIndicacionesCache = snap.docs
+      .map((docMedico) => ({ id: docMedico.id, ...docMedico.data() }))
+      .sort((a, b) => normalizarTextoBusqueda(a.nombreCompleto || a.nombre || a.displayName).localeCompare(normalizarTextoBusqueda(b.nombreCompleto || b.nombre || b.displayName), "es"));
+    console.debug("[SOLICITUD ESTUDIO] catálogo de médicos cargado:", catalogoMedicosFirmasIndicacionesCache.length);
     renderizarCatalogoMedicosFirmasIndicaciones();
     return catalogoMedicosFirmasIndicacionesCache;
   })();
