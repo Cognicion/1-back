@@ -13,8 +13,15 @@ import {
   obtenerPermisosFormatosUsuario,
   usuarioPuedeUsarFormato,
   resolverFormatoSolicitud,
-  FORMATO_SOLICITUD_IMAGENOLOGIA
+  FORMATO_SOLICITUD_IMAGENOLOGIA,
+  FORMATO_SOLICITUD_LABORATORIO_FRAY
 } from "./services/formatosInstitucionales.js";
+import {
+  CATALOGO_FRAY_ANALISIS_CLINICOS,
+  CATALOGO_FRAY_ANALISIS_CLINICOS_PLANO,
+  ID_FORMATO_LABORATORIO_FRAY
+} from "./catalogs/catalogoLaboratorioFray.js";
+import { renderizarFormularioLaboratorioFray } from "./components/solicitudLaboratorioFray.js";
 import {
   obtenerTemaLocalCognicion,
   TEMAS_COGNICION
@@ -98,7 +105,7 @@ let ESCALAS_PSIQUIATRICAS = [];
 let ESCALAS_COGNITIVAS = [];
 let crearResumenEscala = null;
 let listarEscalasAplicadas = null;
-console.info("[PACIENTE BUILD] solicitud-estudios-1.41-20260730");
+console.info("[PACIENTE BUILD] diagnosticos-descartables-1.42-20260731");
 console.info("[PACIENTE] módulo evaluado");
 
 let dependenciasEscalasPacientePromise = null;
@@ -187,7 +194,17 @@ const estadoSolicitud = {
   modoSolicitante: "catalogo",
   modoAdscrito: "catalogo",
   manualSolicitante: { nombre: "", cargo: "", cedula: "" },
-  manualAdscrito: { nombre: "", cargo: "", cedula: "" }
+  manualAdscrito: { nombre: "", cargo: "", cedula: "" },
+  estudiosFrayLaboratorio: [],
+  frayLaboratorio: {
+    tipo: "Ordinario",
+    derechohabiencia: "Sin registro",
+    sospechaDiagnostica: "",
+    motivoUrgencia: "",
+    observaciones: "",
+    consentimientoHiv: false,
+    cultivo: ""
+  }
 };
 let solicitudImagenologiaModulePromise = null;
 let solicitudImagenologiaActiva = null;
@@ -683,7 +700,7 @@ function valorPaciente(datos, rutas, alterno = "Sin registro") {
 }
 
 function listaDiagnosticosLaboratorio(datos = datosPacienteActual || {}) {
-  const diagnosticos = obtenerHistorialDiagnosticos(datos)
+  const diagnosticos = obtenerDiagnosticosActivos(datos)
     .map((dx) => formatearDiagnostico(dx))
     .filter((dx) => dx && dx !== "Sin diagnostico");
   return diagnosticos.length ? diagnosticos : ["Sin diagnstico registrado"];
@@ -2132,9 +2149,15 @@ const ESTADOS_DIAGNOSTICO = [
   "Remisión",
   "Diferencial"
 ];
+const ESTADO_DIAGNOSTICO_ACTIVO = "activo";
+const ESTADO_DIAGNOSTICO_DESCARTADO = "descartado";
 
-function estadoDiagnosticoValido(estado) {
+function estadoClinicoDiagnosticoValido(estado) {
   return ESTADOS_DIAGNOSTICO.includes(estado) ? estado : "";
+}
+
+function diagnosticoEstaActivo(diagnostico = {}) {
+  return diagnostico.estado !== ESTADO_DIAGNOSTICO_DESCARTADO;
 }
 
 function crearIdDiagnostico(diagnostico, index = 0) {
@@ -2156,7 +2179,8 @@ function normalizarDiagnostico(diagnostico = {}, catalogoFallback = "CIE-10", in
       texto: diagnostico,
       catalogo: catalogoFallback,
       fechaSeleccion: new Date().toISOString(),
-      estado: "",
+      estado: ESTADO_DIAGNOSTICO_ACTIVO,
+      estadoClinico: "",
       orden: index
     };
     return { ...base, id: crearIdDiagnostico(base, index) };
@@ -2165,14 +2189,25 @@ function normalizarDiagnostico(diagnostico = {}, catalogoFallback = "CIE-10", in
   const catalogo = diagnostico.catalogo || catalogoFallback;
   const nombre = diagnostico.nombre || diagnostico.texto || diagnostico.descripcion || "";
   const orden = Number.isFinite(Number(diagnostico.orden)) ? Number(diagnostico.orden) : index;
+  const estadoAnterior = String(diagnostico.estado || "");
+  const estado = estadoAnterior === ESTADO_DIAGNOSTICO_DESCARTADO
+    ? ESTADO_DIAGNOSTICO_DESCARTADO
+    : ESTADO_DIAGNOSTICO_ACTIVO;
+  const estadoClinico = diagnostico.estadoClinico || (
+    estadoAnterior && ![ESTADO_DIAGNOSTICO_ACTIVO, ESTADO_DIAGNOSTICO_DESCARTADO].includes(estadoAnterior)
+      ? estadoClinicoDiagnosticoValido(estadoAnterior)
+      : ""
+  );
   const normalizado = {
+    ...diagnostico,
     id: diagnostico.id || "",
     codigo: diagnostico.codigo || "",
     nombre,
     texto: diagnostico.texto || `${diagnostico.codigo || ""}${diagnostico.codigo && nombre ? " - " : ""}${nombre}`.trim() || nombre,
     catalogo,
     fechaSeleccion: diagnostico.fechaSeleccion || new Date().toISOString(),
-    estado: estadoDiagnosticoValido(diagnostico.estado),
+    estado,
+    estadoClinico,
     orden,
     manual: diagnostico.manual === true,
     agregadoManual: diagnostico.agregadoManual === true,
@@ -2221,6 +2256,14 @@ function obtenerHistorialDiagnosticos(datos = datosPacienteActual || {}) {
   return deduplicarHistorialDiagnosticos(recolectarDiagnosticosPaciente(datos));
 }
 
+function obtenerDiagnosticosActivos(datos = datosPacienteActual || {}) {
+  return obtenerHistorialDiagnosticos(datos).filter(diagnosticoEstaActivo);
+}
+
+function obtenerDiagnosticosDescartados(datos = datosPacienteActual || {}) {
+  return obtenerHistorialDiagnosticos(datos).filter((dx) => !diagnosticoEstaActivo(dx));
+}
+
 function renderizarDiagnosticos(datos) {
   const diagnosticoDiv = document.getElementById("diagnostico");
 
@@ -2228,8 +2271,8 @@ function renderizarDiagnosticos(datos) {
 
   diagnosticoDiv.innerHTML = "";
 
-  const historial = obtenerHistorialDiagnosticos(datos);
-  const principal = historial[0] || (datos.diagnostico ? normalizarDiagnostico(datos.diagnostico, datos.diagnostico?.catalogo || "CIE-10") : "");
+  const historial = obtenerDiagnosticosActivos(datos);
+  const principal = historial[0] || "";
 
   if (historial.length === 0) {
     const linea = document.createElement("div");
@@ -2315,14 +2358,17 @@ function renderizarPanelDiagnosticos() {
   if (!contenedor) return;
 
   const historial = obtenerHistorialDiagnosticos();
+  const activos = historial.filter(diagnosticoEstaActivo);
+  const descartados = historial.filter((dx) => !diagnosticoEstaActivo(dx));
 
   if (!historial.length) {
     contenedor.innerHTML = "<p>Aun no hay diagnosticos registrados.</p>";
     return;
   }
 
-  contenedor.innerHTML = historial.map((dx, index) => {
-    const esPrincipal = index === 0;
+  const renderActivo = (dx) => {
+    const index = historial.findIndex((item) => item.id === dx.id);
+    const esPrincipal = activos[0]?.id === dx.id;
     return `
       <article class="registro-card diagnostico-card">
         <div class="registro-top">
@@ -2336,18 +2382,49 @@ function renderizarPanelDiagnosticos() {
           <label class="diagnostico-estado-label">
             Estado
             <select data-estado-diagnostico="${index}">
-              ${opcionesEstadoDiagnostico(dx.estado)}
+              ${opcionesEstadoDiagnostico(dx.estadoClinico)}
             </select>
           </label>
           <button type="button" data-mover-diagnostico="${index}" data-direccion="-1" ${index === 0 ? "disabled" : ""}>?</button>
           <button type="button" data-mover-diagnostico="${index}" data-direccion="1" ${index === historial.length - 1 ? "disabled" : ""}>?</button>
           <button type="button" data-reemplazar-diagnostico="${index}">Cambiar por catalogo</button>
           <button type="button" data-editar-diagnostico="${index}">Editar codigo/texto</button>
-          <button type="button" class="boton-peligro" data-quitar-diagnostico="${index}">Quitar</button>
+          <button type="button" data-descartar-diagnostico="${index}">Descartar diagnóstico</button>
+          <button type="button" class="boton-peligro" data-quitar-diagnostico="${index}">Eliminar diagnóstico</button>
         </div>
       </article>
     `;
-  }).join("");
+  };
+
+  const renderDescartado = (dx) => {
+    const index = historial.findIndex((item) => item.id === dx.id);
+    return `
+      <article class="registro-card diagnostico-card diagnostico-descartado">
+        <div class="registro-top">
+          <div>
+            <strong>▱ ${escaparHTML(dx.catalogo || "CIE")} ${escaparHTML(dx.codigo || "")}</strong>
+            <span><s>${escaparHTML(dx.nombre || dx.texto || "Diagnostico")}</s></span>
+          </div>
+          <span class="diagnostico-principal-badge">Descartado</span>
+        </div>
+        <p class="texto-suave">Creado: ${escaparHTML(formatearFechaEscalaFallback(dx.fechaSeleccion))} · Descartado: ${escaparHTML(formatearFechaEscalaFallback(dx.fechaDescartado))}</p>
+        <p class="texto-suave">Descartado por: ${escaparHTML(dx.usuarioDescartadoNombre || dx.usuarioDescartado || "Sin registro")}</p>
+        <p class="texto-suave">${escaparHTML(dx.motivoDescartado || "Sin motivo indicado.")}</p>
+        <div class="registro-actions diagnostico-orden-acciones">
+          <button type="button" data-restaurar-diagnostico="${index}">Restaurar</button>
+          <button type="button" class="boton-peligro" data-quitar-diagnostico="${index}">Eliminar diagnóstico</button>
+        </div>
+      </article>
+    `;
+  };
+
+  contenedor.innerHTML = `
+    <div class="diagnosticos-activos">${activos.map(renderActivo).join("") || "<p>No hay diagnósticos activos.</p>"}</div>
+    <div class="diagnosticos-historial">
+      <h3>Historial de diagnósticos descartados</h3>
+      ${descartados.map(renderDescartado).join("") || "<p class=\"texto-suave\">No hay diagnósticos descartados.</p>"}
+    </div>
+  `;
 
   contenedor.querySelectorAll("[data-estado-diagnostico]").forEach((selector) => {
     selector.addEventListener("change", () => cambiarEstadoDiagnosticoPaciente(Number(selector.dataset.estadoDiagnostico), selector.value));
@@ -2367,6 +2444,12 @@ function renderizarPanelDiagnosticos() {
 
   contenedor.querySelectorAll("[data-quitar-diagnostico]").forEach((boton) => {
     boton.addEventListener("click", () => quitarDiagnosticoPaciente(Number(boton.dataset.quitarDiagnostico)));
+  });
+  contenedor.querySelectorAll("[data-descartar-diagnostico]").forEach((boton) => {
+    boton.addEventListener("click", () => descartarDiagnosticoPaciente(Number(boton.dataset.descartarDiagnostico)));
+  });
+  contenedor.querySelectorAll("[data-restaurar-diagnostico]").forEach((boton) => {
+    boton.addEventListener("click", () => restaurarDiagnosticoPaciente(Number(boton.dataset.restaurarDiagnostico)));
   });
 }
 
@@ -2836,6 +2919,12 @@ window.mostrarEstudios = async function() {
     opcion.textContent = "Formatos Fray · Solicitud de estudio de imagenología · FTO-HPFBA-EXPC-IMG-SEI";
     formatoImagen.appendChild(opcion);
   }
+  if (formatoImagen && ![...formatoImagen.options].some((opcion) => opcion.value === ID_FORMATO_LABORATORIO_FRAY) && usuarioPuedeUsarFormato(ID_FORMATO_LABORATORIO_FRAY, permisosFormatosUsuarioActual, rolUsuarioActual, medicoActualDatos)) {
+    const opcion = document.createElement("option");
+    opcion.value = ID_FORMATO_LABORATORIO_FRAY;
+    opcion.textContent = "Formatos Fray · Solicitud de análisis clínicos · FTO-HPFBA-EXPC-LAB-SAC";
+    formatoImagen.appendChild(opcion);
+  }
   if (!valorCampo("solicitudEstudioFecha")) ponerValor("solicitudEstudioFecha", fechaISOHoy());
   if (!catalogoMedicosFirmasIndicacionesCache.length) {
     await cargarCatalogoMedicosFirmasIndicaciones().catch((error) => console.warn("No se pudo cargar el catálogo de médicos para la solicitud", error));
@@ -2848,7 +2937,7 @@ window.mostrarEstudios = async function() {
     const medicoActualCatalogo = catalogoMedicosFirmasIndicacionesCache.find((medico) => medico.id === uidActual || normalizarTextoBusqueda(medico.nombre) === nombreActual);
     if (medicoActualCatalogo) estadoSolicitud.medicoSolicitanteId = medicoActualCatalogo.id;
   }
-  sincronizarCamposMedicosPorFormato(valorCampo("solicitudEstudioFormato"));
+  sincronizarFormularioPorFormatoSolicitud(valorCampo("solicitudEstudioFormato"));
   if (resolverFormatoSolicitud(valorCampo("solicitudEstudioFormato"))?.id === FORMATO_SOLICITUD_IMAGENOLOGIA.clave && !solicitudImagenologiaActiva) {
     manejarCambioFormatoSolicitud();
   }
@@ -4664,7 +4753,7 @@ async function guardarHistorialDiagnosticos(historial, opciones = {}) {
       .map(limpiarDiagnosticoParaFirestore);
   }
 
-  const diagnosticoPrincipal = limpio[0] || "";
+  const diagnosticoPrincipal = limpio.find(diagnosticoEstaActivo) || "";
 
   await actualizarUsuario(uidPaciente, {
     diagnostico: diagnosticoPrincipal || deleteField(),
@@ -4731,7 +4820,12 @@ async function agregarDiagnosticoPaciente(index, botonOrigen = null) {
         return;
       }
 
-      historial[diagnosticoReemplazoIndex] = { ...normalizarDiagnostico(diagnostico, diagnostico.catalogo || "CIE-10", diagnosticoReemplazoIndex), estado: anterior.estado, orden: anterior.orden };
+      historial[diagnosticoReemplazoIndex] = {
+        ...normalizarDiagnostico(diagnostico, diagnostico.catalogo || "CIE-10", diagnosticoReemplazoIndex),
+        estado: anterior.estado,
+        estadoClinico: anterior.estadoClinico || "",
+        orden: anterior.orden
+      };
 
       await guardarHistorialDiagnosticos(historial);
 
@@ -4978,7 +5072,10 @@ async function cambiarEstadoDiagnosticoPaciente(index, estado) {
 
   historial[index] = {
     ...historial[index],
-    estado: estadoDiagnosticoValido(estado)
+    estado: historial[index].estado === ESTADO_DIAGNOSTICO_DESCARTADO
+      ? ESTADO_DIAGNOSTICO_DESCARTADO
+      : ESTADO_DIAGNOSTICO_ACTIVO,
+    estadoClinico: estadoClinicoDiagnosticoValido(estado)
   };
 
   await guardarHistorialDiagnosticos(historial);
@@ -4993,20 +5090,76 @@ async function cambiarEstadoDiagnosticoPaciente(index, estado) {
   renderizarPanelDiagnosticos();
   renderizarDiagnosticos(datosPacienteActual);
 }
+
+async function descartarDiagnosticoPaciente(index) {
+  const historial = obtenerHistorialDiagnosticos();
+  const diagnostico = historial[index];
+  if (!diagnostico || !diagnosticoEstaActivo(diagnostico)) return;
+
+  const motivo = prompt("Motivo para descartar el diagnóstico (opcional):", "");
+  if (motivo === null) return;
+
+  const usuario = auth.currentUser;
+  const perfil = usuario ? await obtenerUsuario(usuario.uid).catch(() => null) : null;
+  historial[index] = {
+    ...diagnostico,
+    estado: ESTADO_DIAGNOSTICO_DESCARTADO,
+    fechaDescartado: new Date().toISOString(),
+    usuarioDescartado: usuario?.uid || "",
+    usuarioDescartadoNombre: perfil?.nombre || usuario?.email || "",
+    motivoDescartado: motivo.trim()
+  };
+
+  await guardarHistorialDiagnosticos(historial);
+  await registrarAccionDiagnosticoSegura({
+    accion: "descartar_diagnostico",
+    descripcion: "El medico descarto un diagnostico sin eliminarlo del expediente.",
+    detalles: {
+      diagnostico: formatearDiagnostico(diagnostico),
+      diagnosticoId: diagnostico.id,
+      motivo: motivo.trim() || null
+    }
+  });
+  await cargarDatosPaciente();
+}
+
+async function restaurarDiagnosticoPaciente(index) {
+  const historial = obtenerHistorialDiagnosticos();
+  const diagnostico = historial[index];
+  if (!diagnostico || diagnosticoEstaActivo(diagnostico)) return;
+
+  const { fechaDescartado, usuarioDescartado, usuarioDescartadoNombre, motivoDescartado, ...resto } = diagnostico;
+  historial[index] = {
+    ...resto,
+    estado: ESTADO_DIAGNOSTICO_ACTIVO
+  };
+
+  await guardarHistorialDiagnosticos(historial);
+  await registrarAccionDiagnosticoSegura({
+    accion: "restaurar_diagnostico",
+    descripcion: "El medico restauro un diagnostico descartado.",
+    detalles: {
+      diagnostico: formatearDiagnostico(diagnostico),
+      diagnosticoId: diagnostico.id
+    }
+  });
+  await cargarDatosPaciente();
+}
+
 async function quitarDiagnosticoPaciente(index) {
   const historial = obtenerHistorialDiagnosticos();
   const diagnostico = historial[index];
 
   if (!diagnostico) return;
-  if (!confirm("Quitar este diagnstico del expediente?")) return;
+  if (!confirm("Este diagnóstico se eliminará permanentemente del expediente.\n\nSi únicamente ya no aplica para el paciente, se recomienda utilizar \'Descartar diagnóstico\'.\n\n¿Deseas eliminarlo definitivamente?")) return;
 
   const nuevoHistorial = historial.filter((_, i) => i !== index);
 
   await guardarHistorialDiagnosticos(nuevoHistorial, { permitirEliminar: true });
 
   await registrarAccionExpediente({
-    accion: "quitar_diagnostico",
-    descripcion: "El medico quito un diagnostico del expediente.",
+    accion: "eliminar_diagnostico",
+    descripcion: "El medico elimino definitivamente un diagnostico del expediente.",
     detalles: {
       diagnostico: formatearDiagnostico(diagnostico)
     }
@@ -7598,6 +7751,95 @@ function obtenerEstudiosPorCategoria(categoria = "") {
   return [...(CATALOGO_SOLICITUD_ESTUDIOS[normalizarCategoriaEstudio(categoria)] || [])];
 }
 
+function esFormatoFrayLaboratorio(formatoId = estadoSolicitud.formatoId) {
+  return formatoId === ID_FORMATO_LABORATORIO_FRAY || formatoId === FORMATO_SOLICITUD_LABORATORIO_FRAY.clave;
+}
+
+function obtenerEstudiosFrayLaboratorioSeleccionados() {
+  return Array.isArray(estadoSolicitud.estudiosFrayLaboratorio) ? estadoSolicitud.estudiosFrayLaboratorio.map((item) => ({ ...item })) : [];
+}
+
+function configurarCamposLaboratorioFray() {
+  const ids = [
+    ["solicitudFrayLaboratorioTipo", "tipo"],
+    ["solicitudFrayLaboratorioDerechohabiencia", "derechohabiencia"],
+    ["solicitudFrayLaboratorioDiagnostico", "sospechaDiagnostica"],
+    ["solicitudFrayLaboratorioUrgencia", "motivoUrgencia"],
+    ["solicitudFrayLaboratorioObservaciones", "observaciones"],
+    ["solicitudFrayLaboratorioConsentimientoHiv", "consentimientoHiv"]
+  ];
+  ids.forEach(([id, clave]) => {
+    const nodo = document.getElementById(id);
+    if (!nodo || nodo.dataset.configurado === "true") return;
+    nodo.dataset.configurado = "true";
+    nodo.addEventListener(nodo.type === "checkbox" ? "change" : "input", () => {
+      estadoSolicitud.frayLaboratorio[clave] = nodo.type === "checkbox" ? nodo.checked : nodo.value;
+      actualizarVistaCamposLaboratorioFray();
+      actualizarPreviewSolicitudEstudios();
+    });
+  });
+  actualizarVistaCamposLaboratorioFray();
+}
+
+function actualizarVistaCamposLaboratorioFray() {
+  const urgente = valorCampo("solicitudFrayLaboratorioTipo") === "Urgente" || estadoSolicitud.frayLaboratorio.tipo === "Urgente";
+  const motivo = document.getElementById("solicitudFrayLaboratorioMotivoUrgencia");
+  if (motivo) motivo.hidden = !urgente;
+  const antiHiv = estadoSolicitud.estudiosFrayLaboratorio.some((item) => item.id === "anti_hiv_1_2");
+  const aviso = document.getElementById("solicitudFrayLaboratorioHivAviso");
+  if (aviso) aviso.hidden = !antiHiv;
+  const confirmacion = document.getElementById("solicitudFrayLaboratorioConsentimientoHiv");
+  if (confirmacion && !antiHiv) {
+    confirmacion.checked = false;
+    estadoSolicitud.frayLaboratorio.consentimientoHiv = false;
+  }
+}
+
+function sincronizarFormularioPorFormatoSolicitud(formatoId = "") {
+  const formato = resolverFormatoSolicitud(formatoId || valorCampo("solicitudEstudioFormato"));
+  estadoSolicitud.formatoId = formato?.id || formatoId || valorCampo("solicitudEstudioFormato") || "cognicion";
+  const esFrayLaboratorioActivo = esFormatoFrayLaboratorio(estadoSolicitud.formatoId);
+  const panel = document.getElementById("solicitudFrayLaboratorioPanel");
+  const campos = document.getElementById("solicitudFrayLaboratorioCampos");
+  const categoriaSelect = document.getElementById("solicitudEstudioCategoria");
+  const estudioSelect = document.getElementById("solicitudEstudioNombre");
+  const agregar = document.getElementById("agregarEstudioSolicitud");
+  const estudioLabel = estudioSelect?.closest("label");
+  const motivoGeneralLabel = document.getElementById("solicitudEstudioMotivo")?.closest("label");
+  const prioridadGeneralLabel = document.getElementById("solicitudEstudioPrioridad")?.closest("label");
+  if (panel) panel.hidden = !esFrayLaboratorioActivo;
+  if (campos) campos.hidden = !esFrayLaboratorioActivo;
+  if (categoriaSelect) categoriaSelect.disabled = esFrayLaboratorioActivo;
+  if (estudioSelect) estudioSelect.disabled = esFrayLaboratorioActivo;
+  if (agregar) agregar.hidden = esFrayLaboratorioActivo;
+  if (estudioLabel) estudioLabel.hidden = esFrayLaboratorioActivo;
+  if (motivoGeneralLabel) motivoGeneralLabel.hidden = esFrayLaboratorioActivo;
+  if (prioridadGeneralLabel) prioridadGeneralLabel.hidden = esFrayLaboratorioActivo;
+  configurarCamposLaboratorioFray();
+
+  if (esFrayLaboratorioActivo) {
+    if (categoriaSelect) categoriaSelect.value = "laboratorio";
+    estadoSolicitud.categoria = "laboratorio";
+    estudiosSolicitudActual = [];
+    sincronizarEstudiosPorCategoria("laboratorio");
+    renderizarFormularioLaboratorioFray(panel, obtenerEstudiosFrayLaboratorioSeleccionados(), (seleccionados) => {
+      estadoSolicitud.estudiosFrayLaboratorio = seleccionados;
+      actualizarVistaCamposLaboratorioFray();
+      actualizarPreviewSolicitudEstudios();
+    });
+  } else {
+    estadoSolicitud.estudiosFrayLaboratorio = [];
+    estadoSolicitud.frayLaboratorio = { tipo: "Ordinario", derechohabiencia: "Sin registro", sospechaDiagnostica: "", motivoUrgencia: "", observaciones: "", consentimientoHiv: false, cultivo: "" };
+    ["solicitudFrayLaboratorioDiagnostico", "solicitudFrayLaboratorioUrgencia", "solicitudFrayLaboratorioObservaciones"].forEach((id) => ponerValor(id, ""));
+    ponerValor("solicitudFrayLaboratorioTipo", "Ordinario");
+    ponerValor("solicitudFrayLaboratorioDerechohabiencia", "Sin registro");
+    const consentimiento = document.getElementById("solicitudFrayLaboratorioConsentimientoHiv");
+    if (consentimiento) consentimiento.checked = false;
+  }
+  sincronizarCamposMedicosPorFormato(estadoSolicitud.formatoId);
+  actualizarVistaCamposLaboratorioFray();
+}
+
 function sincronizarEstudiosPorCategoria(categoriaSeleccionada = "") {
   const categoriaSelect = document.getElementById("solicitudEstudioCategoria");
   const estudioSelect = document.getElementById("solicitudEstudioNombre");
@@ -7721,6 +7963,20 @@ function validarMedicosSolicitud() {
   return faltantes;
 }
 
+function validarSolicitudLaboratorioFray(datos = datosSolicitudEstudiosActual()) {
+  if (!esFormatoFrayLaboratorio(datos.formatoId)) return [];
+  const faltantes = [];
+  if (!datos.expediente) faltantes.push("Número de expediente institucional");
+  if (!datos.pacienteNombre) faltantes.push("Nombre completo del paciente");
+  if (!datos.servicio) faltantes.push("Servicio solicitante");
+  if (!datos.frayLaboratorio?.sospechaDiagnostica) faltantes.push("Sospecha diagnóstica");
+  if (!datos.estudios.length) faltantes.push("Al menos un análisis clínico");
+  if (datos.estudios.some((item) => item.id === "cultivo" && !item.texto)) faltantes.push("Especificación del cultivo");
+  if (datos.frayLaboratorio?.tipo === "Urgente" && !datos.frayLaboratorio.motivoUrgencia) faltantes.push("Motivo de urgencia");
+  if (datos.estudios.some((item) => item.id === "anti_hiv_1_2") && !datos.frayLaboratorio?.consentimientoHiv) faltantes.push("Confirmación de consentimiento informado para Ac. anti-HIV 1 y 2");
+  return faltantes;
+}
+
 function configurarMedicosSolicitud() {
   const solicitante = document.getElementById("solicitudMedicoSolicitanteId");
   const adscrito = document.getElementById("solicitudMedicoAdscritoId");
@@ -7764,6 +8020,10 @@ function datosSolicitudEstudiosActual() {
   const fecha = valorCampo("solicitudEstudioFecha") || fechaISOHoy();
   const formatoId = estadoSolicitud.formatoId || resolverFormatoSolicitud(valorCampo("solicitudEstudioFormato"))?.id || "cognicion";
   const esFray = formatoId === FORMATO_SOLICITUD_IMAGENOLOGIA.clave;
+  const esFrayLaboratorioActivo = esFormatoFrayLaboratorio(formatoId);
+  const expedienteSolicitud = esFrayLaboratorioActivo
+    ? resolverExpedienteInstitucional(datosPacienteActual || {})
+    : (datosPacienteActual?.expedienteCognicion || datosPacienteActual?.datosInstitucionales?.expedienteCognicion || datosPacienteActual?.expediente || datosPacienteActual?.numeroExpediente || "");
   const medicoSolicitante = medicoSolicitudDesdeEstado("solicitante");
   const medicoAdscrito = esFray ? medicoSolicitudDesdeEstado("adscrito") : {};
   const datos = {
@@ -7778,20 +8038,25 @@ function datosSolicitudEstudiosActual() {
     edad: calcularEdad(obtenerFechaNacimiento(datosPacienteActual || {})),
     fechaNacimiento: obtenerFechaNacimiento(datosPacienteActual || {}),
     sexo: datosPacienteActual?.sexo || datosPacienteActual?.datosInstitucionales?.sexo || "",
-    expediente:
-      datosPacienteActual?.expedienteCognicion ||
-      datosPacienteActual?.datosInstitucionales?.expedienteCognicion ||
-      datosPacienteActual?.expediente ||
-      datosPacienteActual?.numeroExpediente ||
-      "",
+    expediente: expedienteSolicitud,
     cama: datosPacienteActual?.cama || datosPacienteActual?.datosInstitucionales?.cama || "",
     institucion: datosPacienteActual?.institucionPaciente || datosPacienteActual?.institucion || "",
-    prioridad: valorCampo("solicitudEstudioPrioridad") || "Ordinaria",
-    motivo: valorCampo("solicitudEstudioMotivo"),
+    prioridad: esFrayLaboratorioActivo ? (valorCampo("solicitudFrayLaboratorioTipo") || "Ordinario") : (valorCampo("solicitudEstudioPrioridad") || "Ordinaria"),
+    motivo: esFrayLaboratorioActivo ? valorCampo("solicitudFrayLaboratorioObservaciones") : valorCampo("solicitudEstudioMotivo"),
+    servicio: datosPacienteActual?.servicioInstitucional || datosPacienteActual?.servicio || "",
+    sospechaDiagnostica: esFrayLaboratorioActivo ? valorCampo("solicitudFrayLaboratorioDiagnostico") : "",
+    frayLaboratorio: esFrayLaboratorioActivo ? {
+      tipo: valorCampo("solicitudFrayLaboratorioTipo") || "Ordinario",
+      derechohabiencia: valorCampo("solicitudFrayLaboratorioDerechohabiencia") || "Sin registro",
+      sospechaDiagnostica: valorCampo("solicitudFrayLaboratorioDiagnostico"),
+      motivoUrgencia: valorCampo("solicitudFrayLaboratorioUrgencia"),
+      observaciones: valorCampo("solicitudFrayLaboratorioObservaciones"),
+      consentimientoHiv: Boolean(document.getElementById("solicitudFrayLaboratorioConsentimientoHiv")?.checked)
+    } : null,
     solicita: medicoSolicitante.nombre || "Médico solicitante",
     cedula: medicoSolicitante.cedulaProfesional || "",
     medicoSolicitante,
-    estudios: estudiosSolicitudActual
+    estudios: esFrayLaboratorioActivo ? obtenerEstudiosFrayLaboratorioSeleccionados() : estudiosSolicitudActual
   };
   if (esFray) {
     datos.medicoAdscritoId = estadoSolicitud.medicoAdscritoId;
@@ -7849,6 +8114,27 @@ function htmlSolicitudImagenologiaPreview(datos) {
   return `<div class="solicitud-fray-preview"><header><strong>SECRETARÍA DE SALUD</strong><br><strong>COMISIÓN NACIONAL DE SALUD MENTAL Y ADICCIONES</strong><br><strong>HOSPITAL PSIQUIÁTRICO FRAY BERNARDINO ÁLVAREZ</strong><h2>SOLICITUD DE ESTUDIO DE IMAGENOLOGÍA</h2><strong>FTO-HPFBA-EXPC-IMG-SEI</strong></header><section><h3>Datos de la solicitud</h3><p>Fecha: ${escaparHTML(datos.solicitud?.fecha || "")} · Hora: ${escaparHTML(datos.solicitud?.hora || "")}</p><h3>Identificación del paciente</h3><p>Paciente: ${escaparHTML(paciente.nombreCompleto || "")} · Expediente: ${escaparHTML(paciente.expediente || "")}</p><p>Fecha de nacimiento: ${escaparHTML(paciente.fechaNacimiento || "")} · Edad: ${escaparHTML(paciente.edad || "")} · Sexo: ${escaparHTML(paciente.sexo || "")}</p><h3>Datos físicos y ubicación</h3><p>PA: ${escaparHTML(paciente.pa || "")} · Cama o consultorio: ${escaparHTML(paciente.camaConsultorio || "")} · Peso: ${escaparHTML(paciente.pesoKg || "")} · Talla: ${escaparHTML(paciente.tallaM || "")}</p><p>Servicio: ${escaparHTML(paciente.servicio || "")} · Alergias: ${escaparHTML(paciente.alergias || "Sin información registrada")}</p><h3>Datos clínicos y sospecha diagnóstica</h3><p>${escaparHTML(datos.datosClinicos || "").replace(/\n/g, "<br>")}</p><h3>Estudios solicitados</h3><table><thead><tr><th>Tipo</th><th>Estudio</th><th>Criterio de urgencia</th></tr></thead><tbody>${estudios}</tbody></table><h3>Datos médicos</h3><p>Médico solicitante: ${escaparHTML(datos.medicoSolicitante?.nombre || "")} · Cédula: ${escaparHTML(datos.medicoSolicitante?.cedulaProfesional || "")}</p><p>Médico adscrito: ____________________ · Cédula de especialidad: ____________________</p><div class="solicitud-fray-firmas"><span>Firma médico solicitante</span><span>Firma médico adscrito</span></div></section><footer>Solicitud institucional · Snapshot de datos al momento de emisión</footer></div>`;
 }
 
+function htmlSolicitudLaboratorioFrayPreview(datos) {
+  const seleccionados = new Map((datos.estudios || []).map((item) => [item.id, item]));
+  const categorias = CATALOGO_FRAY_ANALISIS_CLINICOS.map((categoria) => `
+    <section><h4>${escaparHTML(categoria.nombre)}</h4><ul>${categoria.estudios.map((estudio) => {
+      const item = seleccionados.get(estudio.id);
+      return `<li>${item ? "☒" : "☐"} ${escaparHTML(estudio.nombre)}${item?.texto ? ` ${escaparHTML(item.texto)}` : ""}</li>`;
+    }).join("")}</ul></section>
+  `).join("");
+  const laboratorio = datos.frayLaboratorio || {};
+  return `<div class="solicitud-fray-laboratorio-preview">
+    <header><strong>SECRETARÍA DE SALUD</strong><h2>SOLICITUD DE ANÁLISIS CLÍNICOS</h2><span>FTO-HPFBA-EXPC-LAB-SAC</span></header>
+    <div class="receta-datos"><p><b>Paciente:</b> ${escaparHTML(datos.pacienteNombre)}</p><p><b>Expediente:</b> ${escaparHTML(datos.expediente)}</p><p><b>Fecha:</b> ${escaparHTML(formatearFechaDocumento(datos.fecha))}</p><p><b>Servicio:</b> ${escaparHTML(datos.servicio)}</p><p><b>Edad:</b> ${escaparHTML(datos.edad)}</p><p><b>Cama:</b> ${escaparHTML(datos.cama)}</p><p><b>Tipo:</b> ${escaparHTML(laboratorio.tipo || "Ordinario")}</p><p><b>Derechohabiencia:</b> ${escaparHTML(laboratorio.derechohabiencia || "Sin registro")}</p></div>
+    <p><b>Sospecha diagnóstica:</b> ${escaparHTML(laboratorio.sospechaDiagnostica || "")}</p>
+    <div class="solicitud-fray-laboratorio-categorias-preview">${categorias}</div>
+    ${laboratorio.motivoUrgencia ? `<p><b>Motivo de urgencia:</b> ${escaparHTML(laboratorio.motivoUrgencia)}</p>` : ""}
+    ${laboratorio.observaciones ? `<p><b>Observaciones:</b> ${escaparHTML(laboratorio.observaciones)}</p>` : ""}
+    ${seleccionados.has("anti_hiv_1_2") ? `<p class="solicitud-fray-lab-hiv"><b>Consentimiento informado:</b> ${laboratorio.consentimientoHiv ? "Confirmado" : "Pendiente"}</p>` : ""}
+    <footer><b>Médico solicitante:</b> ${escaparHTML(datos.medicoSolicitante?.nombre || "")} · <b>Cédula:</b> ${escaparHTML(datos.medicoSolicitante?.cedulaProfesional || "")}</footer>
+  </div>`;
+}
+
 function renderizarListaSolicitudEstudios() {
   const contenedor = document.getElementById("listaSolicitudEstudios");
   if (!contenedor) return;
@@ -7882,6 +8168,7 @@ function htmlSolicitudEstudiosPreview(datos = datosSolicitudEstudiosActual()) {
   if (formato?.id === FORMATO_SOLICITUD_IMAGENOLOGIA.clave) {
     return htmlSolicitudImagenologiaPreview(datosImagenologiaDesdeSolicitudBase(datos));
   }
+  if (esFormatoFrayLaboratorio(formato.id)) return htmlSolicitudLaboratorioFrayPreview(datos);
   const estudios = datos.estudios?.length
     ? datos.estudios.map((item) => `
       <li>
@@ -7939,16 +8226,17 @@ function manejarCambioFormatoSolicitud() {
   const categoria = document.getElementById("solicitudEstudioCategoria");
   solicitudImagenologiaActiva?.cerrar?.();
   solicitudImagenologiaActiva = null;
+  sincronizarFormularioPorFormatoSolicitud(formatoId);
   if (formatoId === FORMATO_SOLICITUD_IMAGENOLOGIA.clave) {
     if (categoria) {
       categoria.value = "imagen";
       sincronizarEstudiosPorCategoria(categoria.value);
     }
-    sincronizarCamposMedicosPorFormato(formatoId);
     console.debug("[Estudios:FormatoSeleccionado]", { formatoId, categoria: "imagen", rendererId: "renderSolicitudImagenologia", generatorId: "crearDocumentoWordFray" });
     abrirSolicitudImagenologiaPaciente();
+  } else if (esFormatoFrayLaboratorio(formatoId)) {
+    console.debug("[Estudios:FormatoSeleccionado]", { formatoId, categoria: "laboratorio", rendererId: "renderSolicitudLaboratorioFray", generatorId: "crearDocumentoWordDesdePlantilla" });
   } else {
-    sincronizarCamposMedicosPorFormato(formatoId);
     console.debug("[Estudios:FormatoSeleccionado]", { formatoId: formatoId || null, categoria: categoria?.value || null, rendererId: "htmlSolicitudEstudiosPreview", generatorId: "generarSolicitudCognicion" });
   }
   actualizarPreviewSolicitudEstudios();
@@ -7983,12 +8271,17 @@ function limpiarSolicitudEstudios() {
   estadoSolicitud.modoAdscrito = "catalogo";
   estadoSolicitud.manualSolicitante = { nombre: "", cargo: "", cedula: "" };
   estadoSolicitud.manualAdscrito = { nombre: "", cargo: "", cedula: "" };
-  ["solicitudMedicoSolicitanteNombre", "solicitudMedicoSolicitanteCargo", "solicitudMedicoSolicitanteCedula", "solicitudMedicoAdscritoNombre", "solicitudMedicoAdscritoCargo", "solicitudMedicoAdscritoCedula"].forEach((id) => ponerValor(id, ""));
+  estadoSolicitud.estudiosFrayLaboratorio = [];
+  estadoSolicitud.frayLaboratorio = { tipo: "Ordinario", derechohabiencia: "Sin registro", sospechaDiagnostica: "", motivoUrgencia: "", observaciones: "", consentimientoHiv: false, cultivo: "" };
+  ["solicitudMedicoSolicitanteNombre", "solicitudMedicoSolicitanteCargo", "solicitudMedicoSolicitanteCedula", "solicitudMedicoAdscritoNombre", "solicitudMedicoAdscritoCargo", "solicitudMedicoAdscritoCedula", "solicitudFrayLaboratorioDiagnostico", "solicitudFrayLaboratorioUrgencia", "solicitudFrayLaboratorioObservaciones"].forEach((id) => ponerValor(id, ""));
+  ponerValor("solicitudFrayLaboratorioTipo", "Ordinario");
+  ponerValor("solicitudFrayLaboratorioDerechohabiencia", "Sin registro");
+  const consentimientoHiv = document.getElementById("solicitudFrayLaboratorioConsentimientoHiv");
+  if (consentimientoHiv) consentimientoHiv.checked = false;
   ponerValor("solicitudEstudioMotivo", "");
   ponerValor("solicitudEstudioPrioridad", "Ordinaria");
   ponerValor("solicitudEstudioFecha", fechaISOHoy());
-  sincronizarEstudiosPorCategoria(estadoSolicitud.categoria || "laboratorio");
-  sincronizarCamposMedicosPorFormato(estadoSolicitud.formatoId);
+  sincronizarFormularioPorFormatoSolicitud(estadoSolicitud.formatoId);
   renderizarListaSolicitudEstudios();
   actualizarPreviewSolicitudEstudios();
 }
@@ -8004,6 +8297,11 @@ async function guardarSolicitudEstudios() {
   const faltantesMedicos = validarMedicosSolicitud();
   if (faltantesMedicos.length) {
     alert(`Datos faltantes de médicos:\n\n${faltantesMedicos.map((item) => `• ${item}`).join("\n")}`);
+    return;
+  }
+  const faltantesLaboratorio = validarSolicitudLaboratorioFray(datos);
+  if (faltantesLaboratorio.length) {
+    alert(`Datos faltantes de la solicitud de laboratorio:\n\n${faltantesLaboratorio.map((item) => `• ${item}`).join("\n")}`);
     return;
   }
   if (formato.id === FORMATO_SOLICITUD_IMAGENOLOGIA.clave) {
@@ -8053,6 +8351,11 @@ async function descargarSolicitudEstudios() {
     alert(`Datos faltantes de médicos:\n\n${faltantesMedicos.map((item) => `• ${item}`).join("\n")}`);
     return;
   }
+  const faltantesLaboratorio = validarSolicitudLaboratorioFray(datos);
+  if (faltantesLaboratorio.length) {
+    alert(`Datos faltantes de la solicitud de laboratorio:\n\n${faltantesLaboratorio.map((item) => `• ${item}`).join("\n")}`);
+    return;
+  }
 
   if (formato.id === FORMATO_SOLICITUD_IMAGENOLOGIA.clave) {
     const snapshot = datosImagenologiaDesdeSolicitudBase(datos);
@@ -8071,6 +8374,53 @@ async function descargarSolicitudEstudios() {
     const enlace = document.createElement("a"); enlace.href = URL.createObjectURL(documento);
     enlace.download = nombreSeguroNotaWord({ tipoNota: "Solicitud_imagenologia_FTO-HPFBA-EXPC-IMG-SEI", apellidoPaciente: datos.pacienteNombre || "Paciente", fecha: datos.fecha });
     enlace.click(); URL.revokeObjectURL(enlace.href); return;
+  }
+
+  if (esFormatoFrayLaboratorio(formato.id)) {
+    const { crearDocumentoWordDesdePlantilla, nombreSeguroNotaWord } = await import("./services/frayDocx.js");
+    const fechaGeneracion = new Date();
+    const expedienteInstitucional = resolverExpedienteInstitucional(datosPacienteActual || {});
+    const nombrePaciente = datos.pacienteNombre || "";
+    const medico = datos.medicoSolicitante || {};
+    const observaciones = datos.frayLaboratorio?.observaciones || "";
+    const reemplazosTexto = {
+      "189 032": expedienteInstitucional,
+      "LESLIE MICHELLE HUGHES OCAMPO": nombrePaciente,
+      "HUOL021215MDFGCSA5": datosPacienteActual?.curp || "",
+      "LABORATORIOS DE INGRESO": observaciones,
+      "Karla Fernanda López Sánchez": medico.nombre || "",
+      "12742251": medico.cedulaProfesional || ""
+    };
+    const valores = {
+      Servicio: datos.servicio,
+      Sexo: datos.sexo,
+      "Género": datosPacienteActual?.genero || "",
+      "Motivo de urgencia": datos.frayLaboratorio?.motivoUrgencia || "",
+      tipo: datos.frayLaboratorio?.tipo || "Ordinario",
+      derechohabiencia: datos.frayLaboratorio?.derechohabiencia || "Sin registro",
+      CULTIVO_PERSONALIZADO: datos.estudios.find((item) => item.id === "cultivo")?.texto || "",
+      CEDULA_SOLICITANTE: medico.cedulaProfesional || "",
+      fechaSolicitud: formatearFechaDocumento(fechaGeneracion),
+      horaSolicitud: formatearHoraLocalDocumento(fechaGeneracion),
+      fechaNacimiento: formatearFechaDocumento(datos.fechaNacimiento),
+      EDAD: datos.edad || "",
+      CAMA: datos.cama || ""
+    };
+    const documento = await crearDocumentoWordDesdePlantilla({
+      plantillaUrl: "assets/formatos-fray/FTO-HPFBA-EXPC-LAB-SAC.docx",
+      valores,
+      checkboxIds: CATALOGO_FRAY_ANALISIS_CLINICOS_PLANO.map((item) => item.id),
+      checkboxSeleccionados: datos.estudios.map((item) => item.id),
+      controlesSinEtiqueta: [formatearFechaDocumento(fechaGeneracion), formatearHoraLocalDocumento(fechaGeneracion), formatearFechaDocumento(datos.fechaNacimiento)],
+      reemplazosTexto,
+      limpiarPrefijoMedico: true
+    });
+    const enlace = document.createElement("a");
+    enlace.href = URL.createObjectURL(documento);
+    enlace.download = nombreSeguroNotaWord({ tipoNota: "Solicitud_analisis_clinicos_FTO-HPFBA-EXPC-LAB-SAC", apellidoPaciente: datos.pacienteNombre || "Paciente", fecha: datos.fecha });
+    enlace.click();
+    URL.revokeObjectURL(enlace.href);
+    return;
   }
 
   const html = `<!DOCTYPE html>

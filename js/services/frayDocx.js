@@ -300,6 +300,17 @@ function zipSinCompresion(archivos) {
 
 const PLANTILLA_DOCX_IMAGENOLOGIA = "assets/formatos-fray/FTO-HPFBA-EXPC-IMG-SEI.docx";
 
+function reemplazarCasillasLaboratorioXml(documento, ids = [], seleccionados = []) {
+  const elegidos = new Set(seleccionados);
+  let indice = 0;
+  return documento.replace(/<w:sdt\b[\s\S]*?<\/w:sdt>/g, (bloque) => {
+    if (!bloque.includes("w14:checkbox") || !/[☐☒]/.test(bloque)) return bloque;
+    const id = ids[indice++];
+    const marcado = id ? elegidos.has(id) : false;
+    return bloque.replace(/[☐☒]/, marcado ? "☒" : "☐");
+  });
+}
+
 function leerU16(view, offset) { return view.getUint16(offset, true); }
 function leerU32(view, offset) { return view.getUint32(offset, true); }
 
@@ -362,7 +373,16 @@ function reemplazarControlesXml(documento, valores) {
   });
 }
 
-export async function crearDocumentoWordDesdePlantilla({ plantillaUrl = PLANTILLA_DOCX_IMAGENOLOGIA, valores = {} } = {}) {
+function reemplazarControlesSinEtiquetaXml(documento, valores = []) {
+  let indice = 0;
+  return documento.replace(/<w:sdt\b[\s\S]*?<\/w:sdt>/g, (bloque) => {
+    if (bloque.includes("<w:tag") || bloque.includes("w14:checkbox") || indice >= valores.length) return bloque;
+    const valor = valores[indice++];
+    return bloque.replace(/(<w:t(?:\s[^>]*)?>)[\s\S]*?(<\/w:t>)/, `$1${contenidoXml(valor)}$2`);
+  });
+}
+
+export async function crearDocumentoWordDesdePlantilla({ plantillaUrl = PLANTILLA_DOCX_IMAGENOLOGIA, valores = {}, checkboxIds = [], checkboxSeleccionados = [], controlesSinEtiqueta = [], reemplazosTexto = {}, limpiarPrefijoMedico = false } = {}) {
   const respuesta = await fetch(plantillaUrl, { cache: "no-store" });
   if (!respuesta.ok) throw Object.assign(new Error(`No se pudo cargar la plantilla DOCX (${respuesta.status}).`), { code: `template-${respuesta.status}` });
   const entradas = await leerEntradasDocx(await respuesta.arrayBuffer());
@@ -370,9 +390,25 @@ export async function crearDocumentoWordDesdePlantilla({ plantillaUrl = PLANTILL
     if (nombre !== "word/document.xml") return { nombre, contenido };
     let documento = new TextDecoder().decode(contenido);
     documento = reemplazarControlesXml(documento, valores);
+    if (controlesSinEtiqueta.length) documento = reemplazarControlesSinEtiquetaXml(documento, controlesSinEtiqueta);
     Object.entries(valores).forEach(([clave, valor]) => {
       documento = documento.split(`{{${clave}}}`).join(contenidoXml(valor));
     });
+    Object.entries(reemplazosTexto).forEach(([origen, destino]) => {
+      documento = documento.split(xml(origen)).join(contenidoXml(destino));
+    });
+    if (valores.EDAD !== undefined) documento = documento.replace(/(<w:t(?:\s[^>]*)?>Edad: <\/w:t>[\s\S]*?<w:t(?:\s[^>]*)?>)\d+(<\/w:t>)/, `$1${xml(valores.EDAD)}$2`);
+    if (valores.CAMA !== undefined) documento = documento.replace(/(<w:t(?:\s[^>]*)?>Cama\s*<\/w:t>[\s\S]*?<w:t(?:\s[^>]*)?>)\d+(<\/w:t>)/, `$1${xml(valores.CAMA)}$2`);
+    if (valores.CEDULA_SOLICITANTE !== undefined) {
+      documento = documento.replace(/(Cédula profesional:[\s\S]*?)(<w:t(?:\s[^>]*)?>)1(<\/w:t>)[\s\S]*?(<w:t(?:\s[^>]*)?>)2742251(<\/w:t>)/, `$1$2${xml(valores.CEDULA_SOLICITANTE)}$3$4$5`);
+    }
+    if (limpiarPrefijoMedico) {
+      documento = documento.replace(/<w:t>Dr<\/w:t>/, "<w:t></w:t>")
+        .replace(/<w:t>a<\/w:t>/, "<w:t></w:t>")
+        .replace(/<w:t>\. <\/w:t>/, "<w:t></w:t>");
+    }
+    if (checkboxIds.length) documento = reemplazarCasillasLaboratorioXml(documento, checkboxIds, checkboxSeleccionados);
+    if (valores.CULTIVO_PERSONALIZADO) documento = documento.replace("Cultivo de:", `Cultivo de: ${xml(valores.CULTIVO_PERSONALIZADO)}`);
     documento = documento.replace(/(Médico adscrito:[^<]*?) {3,}(Cédula de especialidad:)/g, "$1 $2");
     documento = documento.replace(/(Cédula de especialidad:[^<]*?)[ \t]{2,}(Firma:)/g, "$1 $2");
     return { nombre, contenido: new TextEncoder().encode(documento) };

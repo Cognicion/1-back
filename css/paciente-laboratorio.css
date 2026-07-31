@@ -841,6 +841,95 @@
   }
 }
 
+.solicitud-fray-lab-panel,
+.solicitud-fray-lab-campos {
+  margin: 14px 0;
+  padding: 16px;
+  border: 1px solid var(--border-normal);
+  border-radius: 16px;
+  background: var(--surface-secondary);
+}
+
+.solicitud-fray-lab-panel[hidden],
+.solicitud-fray-lab-campos[hidden] {
+  display: none !important;
+}
+
+.solicitud-fray-lab-panel h3 {
+  margin: 0 0 12px;
+}
+
+.solicitud-fray-lab-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.solicitud-fray-lab-toolbar > strong {
+  margin-right: auto;
+  color: var(--text-primary);
+}
+
+.solicitud-fray-lab-toolbar > span,
+.solicitud-fray-lab-categoria summary small {
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.solicitud-fray-lab-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.solicitud-fray-lab-categorias {
+  display: grid;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.solicitud-fray-lab-categoria {
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  background: var(--surface-primary);
+}
+
+.solicitud-fray-lab-categoria summary {
+  display: flex;
+  justify-content: space-between;
+  cursor: pointer;
+  padding: 10px 12px;
+  font-weight: 800;
+}
+
+.solicitud-fray-lab-estudios {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 7px 14px;
+  padding: 0 12px 12px;
+}
+
+.solicitud-fray-lab-estudio {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  color: var(--text-secondary);
+}
+
+.solicitud-fray-lab-cultivo {
+  grid-column: 1 / -1;
+}
+
+.solicitud-fray-lab-hiv {
+  display: grid;
+  gap: 8px;
+  margin-top: 12px;
+  padding: 12px;
+  border-left: 3px solid #eab308;
+  background: rgba(234, 179, 8, .1);
+}
+
 .resumen-cuadro-encabezado {
   display: flex;
   align-items: center;

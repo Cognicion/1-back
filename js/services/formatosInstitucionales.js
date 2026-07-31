@@ -12,7 +12,8 @@ export const FRAY_FORMAT_IDS = Object.freeze([
   "egreso_traslado_observacion",
   "urgencias",
   "contrarreferencia",
-  "solicitud_imagenologia"
+  "solicitud_imagenologia",
+  "fray-laboratorio-fto-hpfba-expc-lab-sac"
 ]);
 
 export const FORMATO_SOLICITUD_IMAGENOLOGIA = Object.freeze({
@@ -20,6 +21,13 @@ export const FORMATO_SOLICITUD_IMAGENOLOGIA = Object.freeze({
   clave: "FTO-HPFBA-EXPC-IMG-SEI",
   nombre: "Solicitud de estudio de imagenología",
   descripcion: "Solicitud institucional para radiografías, tomografía, resonancia magnética, ultrasonido y otros estudios de imagen."
+});
+
+export const FORMATO_SOLICITUD_LABORATORIO_FRAY = Object.freeze({
+  id: "fray-laboratorio-fto-hpfba-expc-lab-sac",
+  clave: "FTO-HPFBA-EXPC-LAB-SAC",
+  nombre: "Solicitud de análisis clínicos",
+  descripcion: "Solicitud institucional de análisis clínicos Fray."
 });
 
 export const FORMATO_SOLICITUD_GENERAL = Object.freeze({
@@ -37,6 +45,14 @@ export function resolverFormatoSolicitud(formatoId = "") {
       id: FORMATO_SOLICITUD_IMAGENOLOGIA.clave,
       origen: "fray",
       categoria: "imagen"
+    };
+  }
+  if (valor === FORMATO_SOLICITUD_LABORATORIO_FRAY.clave || valor === FORMATO_SOLICITUD_LABORATORIO_FRAY.id) {
+    return {
+      ...FORMATO_SOLICITUD_LABORATORIO_FRAY,
+      id: FORMATO_SOLICITUD_LABORATORIO_FRAY.id,
+      origen: "fray",
+      categoria: "laboratorio"
     };
   }
   if (!valor || valor === FORMATO_SOLICITUD_GENERAL.id || valor === FORMATO_SOLICITUD_GENERAL.clave) {
@@ -58,7 +74,7 @@ export const FORMATOS_INSTITUCIONALES = Object.freeze([
     institutionId: INSTITUTION_FRAY,
     requiereAutorizacion: true,
     valores: FRAY_FORMAT_IDS,
-    formatos: [FORMATO_SOLICITUD_IMAGENOLOGIA]
+    formatos: [FORMATO_SOLICITUD_IMAGENOLOGIA, FORMATO_SOLICITUD_LABORATORIO_FRAY]
   },
   {
     id: FORMAT_PERMISSION_NAVARRO,

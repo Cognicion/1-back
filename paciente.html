@@ -940,6 +940,41 @@
           </label>
         </div>
 
+        <section id="solicitudFrayLaboratorioPanel" class="solicitud-fray-lab-panel" hidden aria-labelledby="solicitudFrayLaboratorioTitulo">
+          <h3 id="solicitudFrayLaboratorioTitulo">Solicitud de análisis clínicos</h3>
+        </section>
+
+        <section id="solicitudFrayLaboratorioCampos" class="solicitud-fray-lab-campos" hidden>
+          <div class="form-grid">
+            <label>Sospecha diagnóstica
+              <input id="solicitudFrayLaboratorioDiagnostico" placeholder="Diagnóstico o sospecha clínica">
+            </label>
+            <label>Tipo de estudio
+              <select id="solicitudFrayLaboratorioTipo">
+                <option value="Ordinario">Ordinario</option>
+                <option value="Urgente">Urgente</option>
+              </select>
+            </label>
+            <label>Derechohabiencia
+              <select id="solicitudFrayLaboratorioDerechohabiencia">
+                <option value="Sí">Sí</option>
+                <option value="No">No</option>
+                <option value="Sin registro" selected>Sin registro</option>
+              </select>
+            </label>
+          </div>
+          <label id="solicitudFrayLaboratorioMotivoUrgencia" hidden>Motivo de urgencia
+            <textarea id="solicitudFrayLaboratorioUrgencia" rows="2"></textarea>
+          </label>
+          <label>Observaciones
+            <textarea id="solicitudFrayLaboratorioObservaciones" rows="3" placeholder="Ej. Laboratorios de ingreso."></textarea>
+          </label>
+          <div id="solicitudFrayLaboratorioHivAviso" class="solicitud-fray-lab-hiv" hidden>
+            <strong>Este estudio requiere consentimiento informado conforme al formato institucional.</strong>
+            <label><input id="solicitudFrayLaboratorioConsentimientoHiv" type="checkbox"> Confirmo que se cuenta con el consentimiento informado requerido.</label>
+          </div>
+        </section>
+
         <label>Indicacion clinica / motivo
           <textarea id="solicitudEstudioMotivo" placeholder="Ej. Valoracion inicial, seguimiento metabolico, descartar patologia organica, control farmacologico."></textarea>
         </label>
@@ -1150,7 +1185,7 @@
       }
     }, 15000);
   </script>
-<script type="module" src="js/paciente.js?v=solicitud-estudios-1.41-20260730-8ea25d3"></script>
+<script type="module" src="js/paciente.js?v=20260719-patient-access-syntax&build=diagnosticos-descartables-1.42-20260731"></script>
   <script type="module" src="js/components/misApuntesFlotante.js"></script>
   <script type="module" src="js/components/accesosRapidos.js"></script>
 </body>
