@@ -14,7 +14,11 @@ import { registrarEventoAuditoria } from "./services/auditoria.js";
 import { iniciarMonitoreoSesion } from "./services/sesion.js";
 import { crearCodigoPacienteParaMedico } from "./services/vinculacion.js";
 import { normalizarTextoFrecuencia } from "./utils/frecuencias.js";
-import { usuarioEsPersonalClinico, usuarioEsProfesionalTipoMedico } from "./utils/roles.js";
+import {
+  isAdministrator,
+  usuarioEsPersonalClinico,
+  usuarioEsProfesionalTipoMedico
+} from "./utils/roles.js";
 
 import {
   onAuthStateChanged
@@ -89,8 +93,12 @@ onAuthStateChanged(auth, async (user) => {
       uidSeguimiento = pacientePreview;
       datosSeguimiento = snapPaciente.data();
       document.body.classList.add("modo-preview");
-    } else if (datos.rol !== "paciente" && !usuarioEsProfesionalTipoMedico(datos.rol)) {
-      alert("Este modulo esta disponible para pacientes y medicos.");
+    } else if (
+      !isAdministrator(datos) &&
+      datos.rol !== "paciente" &&
+      !usuarioEsProfesionalTipoMedico(datos.rol)
+    ) {
+      alert("Este modulo esta disponible para pacientes, personal clinico y administradores.");
       window.location.href = "dashboard.html";
       return;
     }

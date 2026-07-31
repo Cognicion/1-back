@@ -100,7 +100,7 @@ export function normalizarHistoriaClinicaParaExportacion({ paciente = {}, histor
   }
   const familiograma = ui.familiograma || historia.familiograma || {};
   if (familiograma.personas?.length) secciones.splice(11, 0, { clave: "familiograma", titulo: "Familiograma", kind: "family", data: familiograma });
-  const dx = deduplicar([...(Array.isArray(historia.diagnosticos) ? historia.diagnosticos : []), ...(tiene(campos.diagnosticoClinico) ? [{ diagnostico: campos.diagnosticoClinico, codigo: campos.codigoDiagnostico, estado: campos.estadoDiagnostico, sistema: campos.sistemaDiagnostico }] : [])].map((item) => ({ codigo: texto(item.codigo || item.cie10), diagnostico: texto(item.diagnostico || item.nombre || item.texto), estado: texto(item.estado || ""), sistema: texto(item.sistema || item.sistemaDiagnostico || "") })).filter((item) => item.diagnostico || item.codigo));
+  const dx = deduplicar([...(Array.isArray(historia.diagnosticos) ? historia.diagnosticos : []), ...(tiene(campos.diagnosticoClinico) ? [{ diagnostico: campos.diagnosticoClinico, codigo: campos.codigoDiagnostico, estado: campos.estadoDiagnostico, sistema: campos.sistemaDiagnostico }] : [])].filter((item) => item?.estado !== "descartado").map((item) => ({ codigo: texto(item.codigo || item.cie10), diagnostico: texto(item.diagnostico || item.nombre || item.texto), estado: texto(item.estado || ""), sistema: texto(item.sistema || item.sistemaDiagnostico || "") })).filter((item) => item.diagnostico || item.codigo));
   const signos = paciente.signosVitales || historia.signosVitales || {};
   return {
     version: HISTORIA_CLINICA_EXPORT_VERSION,

@@ -2208,3 +2208,14 @@ html[data-theme="light"] .panel-interacciones-farmacologicas::-webkit-scrollbar-
 .solicitud-imagen-dialog fieldset{border:1px solid var(--border-subtle,rgba(190,196,188,.2));border-radius:12px;margin:14px 0;padding:12px}.solicitud-imagen-dialog legend{font-weight:800;padding:0 6px}.solicitud-imagen-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.solicitud-imagen-dialog label{margin:0}.solicitud-imagen-dialog small{display:block;color:var(--gray-400,#aab2a9);margin-top:4px}.solicitud-check{display:flex;align-items:center;gap:7px;margin-top:7px}.solicitud-check input{width:auto}.solicitud-img-nota{color:var(--gray-400,#aab2a9);font-size:.88rem}.solicitud-imagen-estudios article{display:grid;grid-template-columns:1.6fr 1fr auto;gap:10px;align-items:center;border:1px solid var(--border-subtle,rgba(190,196,188,.2));padding:9px;border-radius:10px;margin-top:8px}.solicitud-imagen-estudios article span{color:var(--gray-400,#aab2a9);font-size:.9rem}.solicitud-imagen-estudios article button{justify-self:end}.solicitud-datos-faltantes{border:1px solid var(--border-subtle,rgba(190,196,188,.25));border-radius:12px;padding:12px;margin-top:16px;background:var(--surface-soft,rgba(255,255,255,.04))}.solicitud-datos-faltantes h3{margin:0 0 8px}.solicitud-datos-faltantes ul{margin:0;padding-left:20px}.solicitud-datos-faltantes button{border:0;background:none;color:inherit;text-decoration:underline;cursor:pointer}.solicitud-datos-faltantes.resaltado{outline:2px solid var(--warning,#d8a84e)}.solicitud-imagen-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px}
 @media(max-width:700px){.solicitud-imagen-overlay{padding:8px}.solicitud-imagen-dialog{padding:14px}.solicitud-imagen-grid{grid-template-columns:1fr}.solicitud-imagen-estudios article{grid-template-columns:1fr}.solicitud-imagen-estudios article button{justify-self:start}.solicitud-imagen-actions button{width:100%}}
 @media print{.solicitud-imagen-overlay{display:none}}
+
+.diagnostico-descartado {
+  color: var(--gray-400, #aab2a9);
+  opacity: .82;
+  border-color: var(--border-subtle, rgba(190, 196, 188, .2));
+}
+.diagnostico-descartado .registro-top strong,
+.diagnostico-descartado .registro-top span,
+.diagnostico-descartado p { color: inherit; }
+.diagnosticos-historial { margin-top: 22px; padding-top: 16px; border-top: 1px solid var(--border-subtle, rgba(190, 196, 188, .2)); }
+.diagnosticos-historial h3 { color: var(--gray-400, #aab2a9); font-size: 1rem; }

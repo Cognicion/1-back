@@ -240,6 +240,7 @@ function diagnosticoDesdeObjeto(item, origen = "expediente") {
     return texto ? { texto, estado: "confirmado", origen } : null;
   }
   if (typeof item !== "object") return null;
+  if (item.estado === "descartado") return null;
   const codigo = item.codigo || item.cie10 || item.cie11 || item.codigoCie10 || item.codigoCie11 || "";
   const nombre = item.nombre || item.diagnostico || item.descripcion || item.texto || item.label || item.visibleText || "";
   const textoVisible = [codigo, nombre].filter(Boolean).join(" - ").trim();

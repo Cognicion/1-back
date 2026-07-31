@@ -364,12 +364,13 @@ function extraerDiagnosticos(expediente) {
   const dx = [];
   const agregar = (item) => {
     if (!item) return;
+    if (typeof item === "object" && item.estado === "descartado") return;
     if (typeof item === "string") dx.push({ texto: item, nombre: item });
     else if (typeof item === "object") dx.push({ ...item, texto: item.texto || item.nombre || item.diagnostico || item.codigo || "Diagnostico" });
   };
   agregar(paciente.diagnostico);
   (paciente.diagnosticos || []).forEach(agregar);
-  (paciente.historialDiagnosticos || []).forEach(agregar);
+  (paciente.historialDiagnosticos || []).filter((item) => item?.estado !== "descartado").forEach(agregar);
   (expediente.notas || []).forEach((nota) => (nota.diagnosticos || nota.diagnosticosSeleccionados || []).forEach?.(agregar));
   return mezclarDiagnosticos(dx).sort((a, b) => (a.orden ?? 999) - (b.orden ?? 999));
 }

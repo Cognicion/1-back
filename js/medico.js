@@ -7,7 +7,10 @@ import {
   normalizarTextoBusquedaPaciente,
   textoBusquedaPaciente
 } from "./utils/nombresPacientes.js";
-import { canUseMedicalPanel } from "./utils/roles.js?v=20260719-admin-universal-modules";
+import {
+  canUseMedicalPanel,
+  isAdministrator
+} from "./utils/roles.js?v=20260719-admin-universal-modules";
 
 import { auth, db } from "./firebase.js";
 
@@ -125,7 +128,7 @@ async function inicializarPanelMedico() {
 
   if (btnAdmin) {
     btnAdmin.style.display =
-      user.uid === ADMIN_UID || rolUsuarioActual === "admin" ? "inline-flex" : "none";
+      user.uid === ADMIN_UID || isAdministrator(perfilUsuario) ? "inline-flex" : "none";
   }
 
   console.log("UID del médico:", user.uid);
