@@ -374,6 +374,7 @@ export async function crearDocumentoWordDesdePlantilla({ plantillaUrl = PLANTILL
       documento = documento.split(`{{${clave}}}`).join(contenidoXml(valor));
     });
     documento = documento.replace(/(Médico adscrito:[^<]*?) {3,}(Cédula de especialidad:)/g, "$1 $2");
+    documento = documento.replace(/(Cédula de especialidad:[^<]*?)[ \t]{2,}(Firma:)/g, "$1 $2");
     return { nombre, contenido: new TextEncoder().encode(documento) };
   });
   return new Blob([zipSinCompresion(partes)], { type: MIME_DOCX });
