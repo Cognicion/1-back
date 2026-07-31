@@ -22,12 +22,12 @@
           if (isValid(storedTheme)) return storedTheme;
         }
       }
-    } catch (_) { /* se usa claro como fallback seguro */ }
-    return "light";
+    } catch (_) { /* se usa oscuro como fallback seguro */ }
+    return "dark";
   };
   const apply = () => {
     const storedTheme = readImmediateTheme();
-    const appliedTheme = isValid(storedTheme) ? storedTheme : "light";
+    const appliedTheme = isValid(storedTheme) ? storedTheme : "dark";
     root.dataset.theme = appliedTheme;
     root.style.colorScheme = appliedTheme;
     root.style.backgroundColor = appliedTheme === "dark" ? "#050505" : "#f3f3f1";

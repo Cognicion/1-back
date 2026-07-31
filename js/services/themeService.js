@@ -11,7 +11,7 @@ export function getThemeStorageKey(uid) {
 }
 
 export function normalizeTheme(value) {
-  return value === "dark" ? "dark" : "light";
+  return value === "light" ? "light" : "dark";
 }
 
 function isValidTheme(value) {
@@ -84,7 +84,7 @@ export async function getThemeFromUserProfile(uid, profile = null) {
 
 export async function initializeThemeForUser(user, profile = null) {
   const uid = user?.uid;
-  if (!uid) return applyTheme(document.documentElement.dataset.theme || readStorage(LAST_THEME_STORAGE_KEY) || "light");
+  if (!uid) return applyTheme(document.documentElement.dataset.theme || readStorage(LAST_THEME_STORAGE_KEY) || "dark");
   if (pendingByUid.has(uid)) return pendingByUid.get(uid);
 
   const task = (async () => {
