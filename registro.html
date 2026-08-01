@@ -8,6 +8,7 @@
   <link rel="icon" type="image/png" href="assets/favicon-cognicion.png">
   <link rel="stylesheet" href="css/theme.css">
   <link rel="stylesheet" href="css/registro.css">
+  <link rel="stylesheet" href="css/legal.css">
 <link rel="stylesheet" href="css/theme/cognicion-theme.css">
 <link rel="stylesheet" href="css/theme/public-pages-light.css">
 <script type="module" src="js/services/themeBootstrap.js"></script>
@@ -53,13 +54,21 @@
 
     <input id="password" type="password" placeholder="Contrasena">
 
-    <label class="checkbox-legal">
-      <input type="checkbox" id="aceptaAviso">
-      <span>
-        He leido y acepto el
-        <a href="aviso-privacidad.html" target="_blank">Aviso de Privacidad</a>
-      </span>
-    </label>
+    <div class="legal-consents" aria-describedby="mensajeLegal">
+      <label class="checkbox-legal" for="aceptaAviso">
+        <input type="checkbox" id="aceptaAviso">
+        <span>He leído y acepto el <button type="button" class="legal-link" data-legal-document="privacy_notice">Aviso de Privacidad</button>.</span>
+      </label>
+      <label class="checkbox-legal" for="aceptaBeta">
+        <input type="checkbox" id="aceptaBeta">
+        <span>He leído y acepto el <button type="button" class="legal-link" data-legal-document="beta_consent">Consentimiento para uso de la plataforma Beta</button>.</span>
+      </label>
+      <label class="checkbox-legal checkbox-opcional" for="aceptaComunicaciones">
+        <input type="checkbox" id="aceptaComunicaciones">
+        <span>Autorizo recibir avisos, novedades y comunicaciones relacionadas con COGNICIÓN Labs.</span>
+      </label>
+      <p id="mensajeLegal" class="mensaje-legal" role="alert"></p>
+    </div>
 
     <button id="btnCrearCuenta" type="button">Crear cuenta</button>
 

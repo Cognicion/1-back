@@ -198,6 +198,32 @@ button:hover {
   text-decoration: underline;
 }
 
+.legal-consents { margin-top: 18px; }
+.legal-link { display: inline; width: auto; margin: 0; padding: 0; border: 0; border-radius: 0; background: transparent; color: var(--celtic-400); font: inherit; text-decoration: underline; cursor: pointer; }
+.legal-link:hover { box-shadow: none; }
+.checkbox-opcional { margin-top: 10px; }
+.mensaje-legal { min-height: 22px; margin: 4px 0 0; color: #f59e0b !important; font-size: 13px; }
+.legal-modal-open { overflow: hidden; }
+.legal-modal-backdrop { position: fixed; inset: 0; z-index: 1000; display: grid; place-items: center; padding: 18px; background: rgba(15, 23, 42, .62); }
+.legal-modal-backdrop.oculto { display: none; }
+.legal-modal { width: min(760px, 100%); max-height: min(88vh, 820px); display: flex; flex-direction: column; overflow: hidden; border: 1px solid rgba(126,182,138,.35); border-radius: 18px; background: var(--black-950, #111827); color: var(--white-950, #f8fafc); box-shadow: 0 24px 70px rgba(0,0,0,.38); }
+.legal-modal header, .legal-modal footer { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 18px 22px; border-bottom: 1px solid rgba(148,163,184,.2); }
+.legal-modal footer { justify-content: flex-end; border-top: 1px solid rgba(148,163,184,.2); border-bottom: 0; }
+.legal-modal h2 { margin: 3px 0; font-size: 22px; }
+.legal-modal p { margin: 0; color: var(--gray-400, #cbd5e1); line-height: 1.65; white-space: pre-line; }
+.legal-modal-content { overflow: auto; padding: 22px; }
+.legal-modal-content section + section { margin-top: 24px; }
+.legal-modal-content h3 { margin: 0 0 8px; color: var(--celtic-300, #86efac); font-size: 16px; }
+.legal-modal-type { color: var(--celtic-300, #86efac); font-size: 11px; letter-spacing: .12em; text-transform: uppercase; }
+.legal-modal-close { width: auto; margin: 0; padding: 8px 12px; font-size: 22px; line-height: 1; }
+.legal-modal footer .legal-modal-close { font-size: 14px; padding: 11px 20px; }
+
+html[data-theme="light"] .legal-modal { background: #ffffff; color: #172033; }
+html[data-theme="light"] .legal-modal p { color: #475569; }
+html[data-theme="light"] .legal-modal header, html[data-theme="light"] .legal-modal footer { border-color: #dbe4ee; }
+
+@media (max-width: 520px) { .legal-modal-backdrop { padding: 0; } .legal-modal { max-height: 100vh; border-radius: 0; } .legal-modal-content { padding: 18px; } }
+
 @media (max-width: 900px) {
   .auth-shell {
     grid-template-columns: 1fr;

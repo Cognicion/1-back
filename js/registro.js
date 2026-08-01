@@ -21,8 +21,11 @@ import {
   ETIQUETA_ROL_ENFERMERIA_SALUD_MENTAL,
   ROL_ENFERMERIA_SALUD_MENTAL
 } from "./utils/roles.js";
+import { abrirLegalModal } from "./legal/legalModal.js";
+import { betaConsent, privacyNotice } from "./legal/legalDocuments.js";
+import { guardarConsentimientosLegales } from "./legal/legalConsentService.js";
 
-const VERSION_AVISO_PRIVACIDAD = "beta-2026-06-29";
+const VERSION_AVISO_PRIVACIDAD = "2026-08-01";
 
 const btnCrearCuenta = document.getElementById("btnCrearCuenta");
 let tipoCuentaSeleccionada = "paciente";
@@ -87,7 +90,7 @@ async function validarCodigoAutorizacionMedico(codigo) {
   return { codigo: codigoNormalizado, ref: codigoRef, datos: datosCodigo };
 }
 
-async function crearCuentaProfesional({ nombre, email, password, codigoAutorizacion, aceptaAviso, mensaje, rol }) {
+async function crearCuentaProfesional({ nombre, email, password, codigoAutorizacion, aceptaAviso, aceptaBeta, aceptaComunicaciones, mensaje, rol }) {
   const rolProfesional = rol === "psicologo"
     ? "psicologo"
     : rol === ROL_ENFERMERIA_SALUD_MENTAL
@@ -104,8 +107,8 @@ async function crearCuentaProfesional({ nombre, email, password, codigoAutorizac
     return;
   }
 
-  if (!aceptaAviso) {
-    mensaje.textContent = "Debes aceptar el Aviso de Privacidad para crear tu cuenta.";
+  if (!aceptaAviso || !aceptaBeta) {
+    mensaje.textContent = "Debes leer y aceptar el Aviso de Privacidad y el Consentimiento Beta para crear tu cuenta.";
     return;
   }
 
@@ -143,6 +146,16 @@ async function crearCuentaProfesional({ nombre, email, password, codigoAutorizac
     creadoConCodigoAutorizacion: autorizacion.codigo,
     autorizadoPorAdminUid: autorizacion.datos.creadoPorUid || ""
   });
+
+  console.log("[LEGAL][SIGNUP] Cuenta creada");
+  try {
+    await guardarConsentimientosLegales(uidProfesional, { communications: aceptaComunicaciones });
+    console.log("[LEGAL][SIGNUP] Consentimientos guardados");
+  } catch (errorConsentimientos) {
+    console.error("[LEGAL][SIGNUP] Error de persistencia", { code: errorConsentimientos?.code || "unknown" });
+    mensaje.textContent = "La cuenta se creó, pero no pudimos guardar tus consentimientos. Revisa tu conexión y reintenta antes de continuar.";
+    throw errorConsentimientos;
+  }
 
   await updateDoc(autorizacion.ref, {
     usado: true,
@@ -185,7 +198,22 @@ btnCrearCuenta.addEventListener("click", async () => {
   const codigoAutorizacion = document.getElementById("codigoAutorizacionMedico").value.trim().toUpperCase();
   const password = document.getElementById("password").value;
   const aceptaAviso = document.getElementById("aceptaAviso").checked;
+  const aceptaBeta = document.getElementById("aceptaBeta").checked;
+  const aceptaComunicaciones = document.getElementById("aceptaComunicaciones").checked;
   const mensaje = document.getElementById("mensaje");
+  const mensajeLegal = document.getElementById("mensajeLegal");
+  console.log("[LEGAL][SIGNUP] Estado inicial", { privacyAccepted: aceptaAviso, betaAccepted: aceptaBeta, communicationsAccepted: aceptaComunicaciones });
+  if (aceptaAviso) console.log("[LEGAL][SIGNUP] Aviso aceptado");
+  if (aceptaBeta) console.log("[LEGAL][SIGNUP] Consentimiento Beta aceptado");
+  console.log("[LEGAL][SIGNUP] Comunicaciones", { accepted: aceptaComunicaciones });
+
+  if (!aceptaAviso || !aceptaBeta) {
+    const textoLegal = "Debes leer y aceptar el Aviso de Privacidad y el Consentimiento Beta para crear tu cuenta.";
+    mensajeLegal.textContent = textoLegal;
+    mensaje.textContent = textoLegal;
+    return;
+  }
+  mensajeLegal.textContent = "";
 
   if (["medico", "psicologo", ROL_ENFERMERIA_SALUD_MENTAL].includes(tipoCuentaSeleccionada)) {
     try {
@@ -195,6 +223,8 @@ btnCrearCuenta.addEventListener("click", async () => {
         password,
         codigoAutorizacion,
         aceptaAviso,
+        aceptaBeta,
+        aceptaComunicaciones,
         mensaje,
         rol: tipoCuentaSeleccionada
       });
@@ -208,7 +238,6 @@ btnCrearCuenta.addEventListener("click", async () => {
         mensaje.textContent = "Contrasena demasiado debil.";
       } else {
         mensaje.textContent = error.message;
-        alert(error.message);
       }
     }
     return;
@@ -218,11 +247,6 @@ btnCrearCuenta.addEventListener("click", async () => {
 
   if (!nombre || !email || (!correoMedico && !codigoVinculacion) || !password) {
       mensaje.textContent = "Completa nombre, correo, contrasena y correo medico o codigo de vinculacion.";
-    return;
-  }
-
-  if (!aceptaAviso) {
-    mensaje.textContent = "Debes aceptar el Aviso de Privacidad para crear tu cuenta.";
     return;
   }
 
@@ -294,6 +318,16 @@ btnCrearCuenta.addEventListener("click", async () => {
       fechaCreacion: fechaActual
     });
 
+    console.log("[LEGAL][SIGNUP] Cuenta creada");
+    try {
+      await guardarConsentimientosLegales(uidPaciente, { communications: aceptaComunicaciones });
+      console.log("[LEGAL][SIGNUP] Consentimientos guardados");
+    } catch (errorConsentimientos) {
+      console.error("[LEGAL][SIGNUP] Error de persistencia", { code: errorConsentimientos?.code || "unknown" });
+      mensaje.textContent = "La cuenta se creó, pero no pudimos guardar tus consentimientos. Revisa tu conexión y reintenta antes de continuar.";
+      throw errorConsentimientos;
+    }
+
     let resultadoVinculacion = null;
 
     if (codigoVinculacion) {
@@ -355,7 +389,10 @@ btnCrearCuenta.addEventListener("click", async () => {
       mensaje.textContent = "Contrasena demasiado debil.";
     } else {
       mensaje.textContent = error.message;
-      alert(error.message);
     }
   }
 });
+
+document.querySelectorAll("[data-legal-document]").forEach((trigger) => trigger.addEventListener("click", () => {
+  abrirLegalModal(trigger.dataset.legalDocument === "beta_consent" ? betaConsent : privacyNotice, trigger);
+}));

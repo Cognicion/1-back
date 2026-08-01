@@ -14,6 +14,9 @@ import {
   TEMAS_COGNICION
 } from "./services/apariencia.js";
 import { iniciarMonitoreoSesion } from "./services/sesion.js";
+import { abrirLegalModal } from "./legal/legalModal.js";
+import { betaConsent, privacyNotice } from "./legal/legalDocuments.js";
+import { actualizarPreferenciaComunicaciones, obtenerEstadoConsentimientoLegal } from "./legal/legalConsentService.js";
 
 aplicarAparienciaGuardada();
 iniciarMonitoreoSesion("Configuracion - Apariencia");
@@ -42,6 +45,12 @@ function nombreModoInterfaz(modo) {
 
 function textoPreferenciaActiva() {
   return `Preferencia activa: ${nombreTema(temaGuardado)} - ${nombreModoInterfaz(modoInterfazGuardado)}.`;
+}
+
+function formatearFechaLegal(valor) {
+  if (!valor) return "pendiente";
+  const fecha = typeof valor.toDate === "function" ? valor.toDate() : new Date(valor);
+  return Number.isNaN(fecha.getTime()) ? "pendiente" : fecha.toLocaleString("es-MX");
 }
 
 function hayCambiosPendientes() {
@@ -198,6 +207,23 @@ onAuthStateChanged(auth, async (user) => {
     return;
   }
   uidActual = user.uid;
+  document.getElementById("verAvisoPrivacidad")?.addEventListener("click", (event) => abrirLegalModal(privacyNotice, event.currentTarget));
+  document.getElementById("verConsentimientoBeta")?.addEventListener("click", (event) => abrirLegalModal(betaConsent, event.currentTarget));
+  const preferenciaComunicaciones = document.getElementById("preferenciaComunicaciones");
+  const estadoComunicaciones = document.getElementById("estadoComunicaciones");
+  try {
+    const legal = await obtenerEstadoConsentimientoLegal(user);
+    const estadoLegal = document.getElementById("estadoLegal");
+    estadoLegal.textContent = `Aviso: ${legal.privacyAccepted ? legal.privacyVersion : "pendiente"} (${formatearFechaLegal(legal.privacyAcceptedAt)}) · Consentimiento Beta: ${legal.betaAccepted ? legal.betaVersion : "pendiente"} (${formatearFechaLegal(legal.betaAcceptedAt)}). ${legal.requiresUpdate ? "Requiere actualización." : "Vigente."}`;
+    preferenciaComunicaciones.checked = legal.communicationsAccepted;
+    preferenciaComunicaciones.addEventListener("change", async () => {
+      preferenciaComunicaciones.disabled = true;
+      try { await actualizarPreferenciaComunicaciones(uidActual, preferenciaComunicaciones.checked); estadoComunicaciones.textContent = "Preferencia guardada."; } catch (error) { preferenciaComunicaciones.checked = !preferenciaComunicaciones.checked; estadoComunicaciones.textContent = "No se pudo guardar la preferencia. Intenta nuevamente."; console.error("[LEGAL][SETTINGS] Error de persistencia", { code: error?.code || "unknown" }); } finally { preferenciaComunicaciones.disabled = false; }
+    });
+  } catch (error) {
+    document.getElementById("estadoLegal").textContent = "No se pudieron cargar los consentimientos.";
+    console.error("[LEGAL][SETTINGS] Error de lectura", { code: error?.code || "unknown" });
+  }
   temaGuardado = await sincronizarAparienciaUsuario(user.uid);
   temaPendiente = temaGuardado;
   modoInterfazGuardado = obtenerModoInterfazLocalCognicion();

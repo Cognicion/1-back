@@ -8,6 +8,7 @@
   <link rel="icon" type="image/png" href="assets/favicon-cognicion.png">
   <link rel="stylesheet" href="css/theme.css">
 <link rel="stylesheet" href="css/theme/cognicion-theme.css">
+<link rel="stylesheet" href="css/legal.css">
 <script type="module" src="js/services/themeBootstrap.js"></script>
 </head>
 <body>
@@ -44,6 +45,23 @@
         <button id="restaurarTemaApariencia" class="btn-secundario" type="button">Restaurar predeterminado</button>
       </div>
       <p id="estadoApariencia" class="config-status">Cargando preferencia...</p>
+    </section>
+
+    <section class="config-card legal-settings" aria-labelledby="tituloLegal">
+      <span class="config-kicker">Legal</span>
+      <h2 id="tituloLegal">Documentos y consentimientos</h2>
+      <p>Consulta los documentos aceptados y la evidencia registrada para tu cuenta.</p>
+      <div id="estadoLegal" class="config-status">Cargando consentimientos...</div>
+      <div class="legal-settings-actions">
+        <button id="verAvisoPrivacidad" class="btn-secundario" type="button">Aviso de Privacidad</button>
+        <button id="verConsentimientoBeta" class="btn-secundario" type="button">Consentimiento Beta</button>
+      </div>
+      <label class="checkbox-legal" for="preferenciaComunicaciones">
+        <input id="preferenciaComunicaciones" type="checkbox">
+        <span>Autorizo recibir avisos, novedades y comunicaciones relacionadas con COGNICIÓN Labs.</span>
+      </label>
+      <p id="estadoComunicaciones" class="config-status" role="status"></p>
+      <p>Para retirar un consentimiento, ejercer derechos ARCO o solicitar eliminación: <a href="mailto:aldo.sandokan@gmail.com">aldo.sandokan@gmail.com</a></p>
     </section>
   </main>
 
