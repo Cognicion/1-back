@@ -359,16 +359,20 @@ function contenidoXml(valor = "") {
   return xml(valor).replace(/\r\n?/g, "\n").replace(/\n/g, "</w:t><w:br/><w:t xml:space=\"preserve\">");
 }
 
-function reemplazarControlesXml(documento, valores) {
+function reemplazarControlesXml(documento, valores, ocurrencias = {}) {
+  const indicesOcurrencias = {};
   return documento.replace(/<w:sdt\b[\s\S]*?<\/w:sdt>/g, (bloque) => {
     const coincidencia = bloque.match(/<w:tag\s+w:val="([^"]+)"\s*\/>/);
     const clave = coincidencia?.[1];
     if (!clave || valores[clave] === undefined) return bloque;
+    const indice = indicesOcurrencias[clave] || 0;
+    indicesOcurrencias[clave] = indice + 1;
+    const valor = Array.isArray(ocurrencias[clave]) ? (ocurrencias[clave][indice] ?? "") : valores[clave];
     let aplicado = false;
     return bloque.replace(/(<w:t(?:\s[^>]*)?>)[\s\S]*?(<\/w:t>)/g, (completo, inicio, fin) => {
       if (aplicado) return `${inicio}${fin}`;
       aplicado = true;
-      return `${inicio}${contenidoXml(valores[clave])}${fin}`;
+      return `${inicio}${contenidoXml(valor)}${fin}`;
     });
   });
 }
@@ -382,14 +386,14 @@ function reemplazarControlesSinEtiquetaXml(documento, valores = []) {
   });
 }
 
-export async function crearDocumentoWordDesdePlantilla({ plantillaUrl = PLANTILLA_DOCX_IMAGENOLOGIA, valores = {}, checkboxIds = [], checkboxSeleccionados = [], controlesSinEtiqueta = [], reemplazosTexto = {}, limpiarPrefijoMedico = false } = {}) {
+export async function crearDocumentoWordDesdePlantilla({ plantillaUrl = PLANTILLA_DOCX_IMAGENOLOGIA, valores = {}, checkboxIds = [], checkboxSeleccionados = [], controlesSinEtiqueta = [], reemplazosTexto = {}, limpiarPrefijoMedico = false, controlesEtiquetados = {} } = {}) {
   const respuesta = await fetch(plantillaUrl, { cache: "no-store" });
   if (!respuesta.ok) throw Object.assign(new Error(`No se pudo cargar la plantilla DOCX (${respuesta.status}).`), { code: `template-${respuesta.status}` });
   const entradas = await leerEntradasDocx(await respuesta.arrayBuffer());
   const partes = entradas.map(({ nombre, contenido }) => {
     if (nombre !== "word/document.xml") return { nombre, contenido };
     let documento = new TextDecoder().decode(contenido);
-    documento = reemplazarControlesXml(documento, valores);
+    documento = reemplazarControlesXml(documento, valores, controlesEtiquetados);
     if (controlesSinEtiqueta.length) documento = reemplazarControlesSinEtiquetaXml(documento, controlesSinEtiqueta);
     Object.entries(valores).forEach(([clave, valor]) => {
       documento = documento.split(`{{${clave}}}`).join(contenidoXml(valor));

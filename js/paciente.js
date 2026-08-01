@@ -8625,6 +8625,9 @@ async function descargarSolicitudEstudios() {
       checkboxIds: CATALOGO_FRAY_ANALISIS_CLINICOS_PLANO.map((item) => item.id),
       checkboxSeleccionados: datos.estudios.map((item) => item.id),
       controlesSinEtiqueta: [formatearFechaDocumento(fechaGeneracion), formatearHoraLocalDocumento(fechaGeneracion), formatearFechaDocumento(datos.fechaNacimiento)],
+      controlesEtiquetados: {
+        "Motivo de urgencia": [datos.frayLaboratorio?.sospechaDiagnostica || "", datos.frayLaboratorio?.motivoUrgencia || ""]
+      },
       reemplazosTexto,
       limpiarPrefijoMedico: true
     });
