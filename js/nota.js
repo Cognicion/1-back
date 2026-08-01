@@ -3284,6 +3284,9 @@ function obtenerContextoAtencion(uidPaciente = uidPacienteActual) {
 function collectNoteData() {
   const formato = formatoNota?.value || "cognicion";
   const observacionFray = leerFormularioObservacionFray();
+  const signosVitales = resolverSignosVitalesNota({ observacionFray }, {
+    paciente: pacienteActualDatos || {}
+  });
   const contexto = obtenerContextoAtencion();
   const metadatosAdicionales = leerMetadatosAdicionalesNota();
 
@@ -3307,6 +3310,7 @@ function collectNoteData() {
     diagnosticos: normalizarDiagnosticosNota(diagnosticosSeleccionados),
     diagnosticoCatalogoVisible: diagnosticoCatalogoVisible?.value || "auto",
     observacionFray,
+    signosVitales,
     tipoNota: tipoNota?.value || "completa",
     tipoNotaClave: `${tipoNota?.value || "completa"}:${observacionFray.tipoNota || formato}`,
     titulo: metadatosAdicionales.titulo,
