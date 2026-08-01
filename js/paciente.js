@@ -181,6 +181,73 @@ let indicacionResumenCacheCargada = false;
 let indicacionResumenCachePacienteId = "";
 let indicacionResumenCargaPromise = null;
 let medicamentosRecetaActual = [];
+const ID_PACIENTE_BORRADOR_NUEVO = "__nuevo_paciente__";
+let draftClinicoNuevoInicializado = false;
+
+function contextoNuevoPacienteDraft() {
+  return window.COGNICION_NUEVO_PACIENTE_DRAFT || null;
+}
+
+function modoNuevoPacienteDraft() {
+  return Boolean(contextoNuevoPacienteDraft());
+}
+
+function asegurarEstructuraDraftClinico() {
+  const draft = contextoNuevoPacienteDraft();
+  if (!draft) return null;
+  draft.datosPersonales = draft.datosPersonales || {};
+  draft.diagnosticos = Array.isArray(draft.diagnosticos) ? draft.diagnosticos : [];
+  draft.tratamiento = draft.tratamiento || {};
+  draft.tratamiento.medicamentos = Array.isArray(draft.tratamiento.medicamentos)
+    ? draft.tratamiento.medicamentos
+    : [];
+  draft.tratamiento.indicaciones = Array.isArray(draft.tratamiento.indicaciones)
+    ? draft.tratamiento.indicaciones
+    : [];
+  draft.datosClinicosResumen = draft.datosClinicosResumen || {};
+  return draft;
+}
+
+function sincronizarDatosPacienteDesdeDraft() {
+  const draft = asegurarEstructuraDraftClinico();
+  if (!draft) return;
+  const diagnosticoPrincipal = draft.diagnosticos.find((dx) => dx && dx.estado !== ESTADO_DIAGNOSTICO_DESCARTADO) || "";
+  datosPacienteActual = {
+    ...(datosPacienteActual || {}),
+    ...(draft.datosPersonales || {}),
+    diagnostico: diagnosticoPrincipal,
+    historialDiagnosticos: draft.diagnosticos,
+    tratamiento: draft.datosClinicosResumen.tratamientoActivo || "",
+    indicacionesEstructuradas: draft.tratamiento.indicaciones[0]?.indicaciones || draft.indicacionesEstructuradas || null,
+    datosClinicosResumen: {
+      ...(draft.datosClinicosResumen || {}),
+      diagnostico: diagnosticoPrincipal || null,
+      historialDiagnosticos: draft.diagnosticos
+    }
+  };
+}
+
+function sincronizarDraftTratamientoResumen() {
+  const draft = asegurarEstructuraDraftClinico();
+  if (!draft) return;
+  const activos = tratamientosCache.filter(esTratamientoVigente);
+  const resumen = activos.map((t) =>
+    formatearIndicacionTratamientoConCambio(t, true)
+  ).filter(Boolean).join("\n");
+  draft.tratamiento.medicamentos = tratamientosCache;
+  draft.datosClinicosResumen = {
+    ...(draft.datosClinicosResumen || {}),
+    tratamientoActivo: resumen,
+    tratamientosActivos: activos,
+    medicamentosDosisDia: activos.map((t) => ({
+      medicamento: t.medicamento || "",
+      dosisDia: t.dosisTotalDia || calcularDosisTotalDiaTratamiento(t).texto || "",
+      cantidadTotalDia: t.cantidadTotalDia || ""
+    })),
+    fechaActualizacionTratamiento: new Date().toISOString()
+  };
+  sincronizarDatosPacienteDesdeDraft();
+}
 const VISTAS_DATOS_GENERALES_PACIENTE = Object.freeze({
   CLASICA: "clasica",
   LABORATORIO: "laboratorio"
@@ -2662,6 +2729,14 @@ async function obtenerPacientePorListaAutorizada(uid) {
 }
 
 async function cargarDatosPaciente() {
+  if (modoNuevoPacienteDraft()) {
+    sincronizarDatosPacienteDesdeDraft();
+    ejecutarSeguroPaciente("diagnosticos del resumen borrador", () => renderizarDiagnosticos(datosPacienteActual || {}));
+    ejecutarSeguroPaciente("panel de diagnosticos borrador", renderizarPanelDiagnosticos);
+    ponerTexto("tratamiento", datosPacienteActual?.tratamiento || "Sin tratamiento registrado");
+    return;
+  }
+
   if (!uidPaciente) {
     datosPacienteActual = null;
     ponerTexto("nombrePaciente", "Paciente no seleccionado");
@@ -4736,6 +4811,34 @@ window.marcarDiagnosticoPrincipal = async function(index) {
 
 async function guardarHistorialDiagnosticos(historial, opciones = {}) {
   const permitirEliminar = opciones.permitirEliminar === true;
+  if (modoNuevoPacienteDraft()) {
+    const draft = asegurarEstructuraDraftClinico();
+    const historialActual = draft?.diagnosticos || [];
+    let limpio = normalizarHistorialDiagnosticos(historial)
+      .map(limpiarDiagnosticoParaFirestore);
+
+    if (!permitirEliminar && historialActual.length > limpio.length) {
+      const clavesNuevas = new Set(limpio.map(claveDiagnostico).filter(Boolean));
+      const preservados = historialActual.filter((dx) => {
+        const clave = claveDiagnostico(dx);
+        return clave && !clavesNuevas.has(clave);
+      });
+      limpio = normalizarHistorialDiagnosticos([...limpio, ...preservados])
+        .map(limpiarDiagnosticoParaFirestore);
+    }
+
+    const diagnosticoPrincipal = limpio.find(diagnosticoEstaActivo) || "";
+    draft.diagnosticos = limpio;
+    draft.datosClinicosResumen = {
+      ...(draft.datosClinicosResumen || {}),
+      diagnostico: diagnosticoPrincipal || null,
+      historialDiagnosticos: limpio,
+      fechaActualizacionDiagnosticos: new Date().toISOString()
+    };
+    sincronizarDatosPacienteDesdeDraft();
+    return;
+  }
+
   const remoto = await obtenerUsuario(uidPaciente).catch(() => null);
   const baseActual = remoto || datosPacienteActual || {};
   const historialActual = obtenerHistorialDiagnosticos(baseActual);
@@ -5750,6 +5853,14 @@ function datosIndicacionesFormulario() {
 }
 
 async function asegurarTratamientosCache() {
+  if (modoNuevoPacienteDraft()) {
+    const draft = asegurarEstructuraDraftClinico();
+    tratamientosCache = (draft?.tratamiento?.medicamentos || []).map(normalizarTratamientoFrecuenciaPaciente);
+    tratamientosCachePatientId = ID_PACIENTE_BORRADOR_NUEVO;
+    tratamientosCacheCargado = true;
+    return;
+  }
+
   const patientIdActual = String(uidPaciente || "").trim();
   if (!patientIdActual) {
     throw new Error("No se pudo identificar al paciente activo.");
@@ -6213,6 +6324,28 @@ async function guardarIndicacionesPaciente() {
     return;
   }
 
+  if (modoNuevoPacienteDraft()) {
+    const draft = asegurarEstructuraDraftClinico();
+    const indicacion = {
+      id: `draft-indicaciones-${Date.now()}`,
+      ...datos,
+      medicoUid: auth.currentUser?.uid || "",
+      fechaCreacion: new Date().toISOString()
+    };
+    draft.tratamiento.indicaciones.unshift(indicacion);
+    draft.indicacionesEstructuradas = datos;
+    draft.datosClinicosResumen = {
+      ...(draft.datosClinicosResumen || {}),
+      indicaciones: datos,
+      fechaActualizacionIndicaciones: new Date().toISOString()
+    };
+    indicacionesPacienteCache = draft.tratamiento.indicaciones;
+    sincronizarDatosPacienteDesdeDraft();
+    await cargarIndicacionesPaciente();
+    alert("Indicaciones guardadas en el borrador del paciente.");
+    return;
+  }
+
   await addDoc(collection(db, "usuarios", uidPaciente, "indicaciones"), {
     ...datos,
     medicoUid: auth.currentUser?.uid || "",
@@ -6233,6 +6366,12 @@ async function cargarIndicacionesPaciente() {
   const lista = document.getElementById("listaIndicacionesPaciente");
   if (!lista) return;
 
+  if (modoNuevoPacienteDraft()) {
+    const draft = asegurarEstructuraDraftClinico();
+    indicacionesPacienteCache = draft?.tratamiento?.indicaciones || [];
+    indicacionResumenCacheCargada = true;
+    indicacionResumenCachePacienteId = ID_PACIENTE_BORRADOR_NUEVO;
+  } else {
   const snap = await getDocs(query(collection(db, "usuarios", uidPaciente, "indicaciones"), orderBy("fechaCreacion", "desc")));
   indicacionesPacienteCache = snap.docs.map((docIndicacion) => ({
     id: docIndicacion.id,
@@ -6241,6 +6380,7 @@ async function cargarIndicacionesPaciente() {
   indicacionResumenCacheCargada = true;
   indicacionResumenCachePacienteId = String(uidPaciente || "").trim();
   renderizarVistaLaboratorioPaciente(datosPacienteActual || {});
+  }
 
   lista.innerHTML = indicacionesPacienteCache.length === 0
     ? "<p>No hay indicaciones registradas.</p>"
@@ -6942,6 +7082,48 @@ async function guardarTratamientoPaciente() {
     if (!continuar) return;
   }
 
+  if (modoNuevoPacienteDraft()) {
+    const ahora = new Date().toISOString();
+    const tratamientoDraft = {
+      ...normalizarTratamientoFrecuenciaPaciente(datos),
+      id: tratamientoId || `draft-tratamiento-${Date.now()}`,
+      creadoPorRol: datos._auditoria?.usuarioRol || "",
+      creadoPorNombre: datos._auditoria?.usuarioNombre || "",
+      modificadoPor: datos._auditoria?.usuarioUid || "",
+      modificadoPorRol: datos._auditoria?.usuarioRol || "",
+      modificadoPorNombre: datos._auditoria?.usuarioNombre || "",
+      fechaCreacion: datos.fechaCreacion || ahora,
+      fechaActualizacion: ahora,
+      historialCambios: [
+        ...(Array.isArray(datos.historialCambios) ? datos.historialCambios : []),
+        {
+          accion: tratamientoId ? "actualizar" : "crear",
+          usuarioUid: datos._auditoria?.usuarioUid || "",
+          usuarioNombre: datos._auditoria?.usuarioNombre || "",
+          usuarioRol: datos._auditoria?.usuarioRol || "",
+          fecha: ahora,
+          hora: ahora
+        }
+      ]
+    };
+    delete tratamientoDraft._auditoria;
+    const indice = tratamientosCache.findIndex((t) => t.id === tratamientoDraft.id);
+    if (indice >= 0) {
+      tratamientosCache[indice] = tratamientoDraft;
+    } else {
+      tratamientosCache.unshift(tratamientoDraft);
+    }
+    sincronizarDraftTratamientoResumen();
+    limpiarFormularioTratamiento();
+    await cargarTratamientosPaciente();
+    renderizarMedicamentosIndicaciones();
+    if (document.getElementById("seccionIndicaciones")?.style.display !== "none") {
+      actualizarTextoIndicaciones();
+    }
+    alert("Tratamiento guardado en el borrador del paciente.");
+    return;
+  }
+
   if (tratamientoId) {
     await actualizarTratamiento(uidPaciente, tratamientoId, datos);
   } else {
@@ -6974,6 +7156,20 @@ async function cargarTratamientosPaciente() {
   const activos = document.getElementById("tratamientosActivos");
   const suspendidos = document.getElementById("tratamientosSuspendidos");
   if (!activos || !suspendidos) return;
+  if (modoNuevoPacienteDraft()) {
+    await asegurarTratamientosCache();
+    const listaActivos = tratamientosCache.filter(esTratamientoVigente);
+    const listaSuspendidos = tratamientosCache.filter((t) => t.estado === "suspendido");
+    activos.innerHTML = listaActivos.length
+      ? listaActivos.map(renderizarTratamiento).join("")
+      : "<p>An no hay tratamientos activos.</p>";
+    suspendidos.innerHTML = listaSuspendidos.length
+      ? listaSuspendidos.map(renderizarTratamiento).join("")
+      : "<p>No hay tratamientos suspendidos.</p>";
+    vincularAccionesTratamientos();
+    return;
+  }
+
   const patientIdAlIniciar = String(uidPaciente || "").trim();
   if (!patientIdAlIniciar) return;
   const token = ++tratamientosCargaToken;
@@ -7116,6 +7312,16 @@ function editarTratamientoPaciente(id) {
 async function eliminarTratamientoPaciente(id) {
   if (!confirm("Eliminar este tratamiento del expediente?")) return;
   const tratamiento = tratamientosCache.find((item) => item.id === id);
+  if (modoNuevoPacienteDraft()) {
+    tratamientosCache = tratamientosCache.filter((item) => item.id !== id);
+    sincronizarDraftTratamientoResumen();
+    await cargarTratamientosPaciente();
+    renderizarMedicamentosIndicaciones();
+    if (document.getElementById("seccionIndicaciones")?.style.display !== "none") {
+      actualizarTextoIndicaciones();
+    }
+    return;
+  }
   await eliminarTratamiento(uidPaciente, id);
   await registrarAccionExpediente({
     accion: "eliminar_tratamiento",
@@ -7138,6 +7344,13 @@ async function sincronizarResumenTratamiento() {
   const resumen = activos.map((t) =>
     formatearIndicacionTratamientoConCambio(t, true)
   ).filter(Boolean).join("\n");
+
+  if (modoNuevoPacienteDraft()) {
+    sincronizarDraftTratamientoResumen();
+    const tratamiento = document.getElementById("tratamiento");
+    if (tratamiento) tratamiento.innerText = resumen || "Sin tratamiento registrado";
+    return;
+  }
 
   await actualizarUsuario(uidPaciente, {
     tratamiento: resumen,
@@ -8881,6 +9094,7 @@ async function vincularCuentaPacienteDesdeMedico() {
 }
 
 async function registrarAccionExpediente({ accion, descripcion, detalles = {} }) {
+  if (modoNuevoPacienteDraft()) return;
   const usuario = auth.currentUser;
   if (!usuario) return;
 
@@ -8901,5 +9115,61 @@ async function registrarAccionExpediente({ accion, descripcion, detalles = {} })
   });
 }
 
-iniciarCargaExpedientePaciente();
-cargarReporteGlobalDiferido();
+window.inicializarPacienteClinicoDraft = function({ datosPaciente = {}, medico = {}, rol = "" } = {}) {
+  const draft = asegurarEstructuraDraftClinico();
+  uidPaciente = ID_PACIENTE_BORRADOR_NUEVO;
+  medicoActualDatos = medico || {};
+  rolUsuarioActual = rol || medicoActualDatos?.rol || "medico";
+  permisosFormatosUsuarioActual = {};
+  if (draft) {
+    draft.datosPersonales = {
+      ...(draft.datosPersonales || {}),
+      ...(datosPaciente || {})
+    };
+    tratamientosCache = (draft.tratamiento.medicamentos || []).map(normalizarTratamientoFrecuenciaPaciente);
+    tratamientosCachePatientId = ID_PACIENTE_BORRADOR_NUEVO;
+    tratamientosCacheCargado = true;
+    indicacionesPacienteCache = draft.tratamiento.indicaciones || [];
+    indicacionResumenCacheCargada = true;
+    indicacionResumenCachePacienteId = ID_PACIENTE_BORRADOR_NUEVO;
+  }
+  sincronizarDatosPacienteDesdeDraft();
+  ordenarTratamientoEIndicaciones();
+  renderizarPanelDiagnosticos();
+  renderizarResultadosBusquedaDiagnosticos();
+  configurarCatalogoMedicamentosTratamiento();
+  renderizarCatalogosIndicaciones();
+  if (!draftClinicoNuevoInicializado) {
+    limpiarFormularioTratamiento();
+    draftClinicoNuevoInicializado = true;
+  }
+  renderizarMedicamentosIndicaciones();
+  autollenarIndicaciones();
+  cargarTratamientosPaciente();
+  cargarIndicacionesPaciente();
+};
+
+window.obtenerEstadoClinicoDraftPaciente = function() {
+  const draft = asegurarEstructuraDraftClinico();
+  if (!draft) return null;
+  sincronizarDraftTratamientoResumen();
+  const indicacionActual = datosIndicacionesFormulario();
+  if (indicacionActual.indicaciones) {
+    draft.indicacionesEstructuradas = indicacionActual;
+    draft.datosClinicosResumen = {
+      ...(draft.datosClinicosResumen || {}),
+      indicaciones: indicacionActual
+    };
+  }
+  return {
+    diagnosticos: draft.diagnosticos || [],
+    tratamiento: draft.tratamiento || { medicamentos: [], indicaciones: [] },
+    datosClinicosResumen: draft.datosClinicosResumen || {},
+    indicacionesEstructuradas: draft.indicacionesEstructuradas || null
+  };
+};
+
+if (!modoNuevoPacienteDraft()) {
+  iniciarCargaExpedientePaciente();
+  cargarReporteGlobalDiferido();
+}

@@ -4,6 +4,7 @@
 <script src="js/theme-preload.js"></script>
 <meta charset="UTF-8">
 <link rel="icon" type="image/png" href="assets/favicon-cognicion.png">
+<link rel="stylesheet" href="css/paciente.css?v=20260726-apuntes-layout-v3">
 
 <title>Nuevo paciente</title>
 
@@ -581,7 +582,7 @@ html[data-theme="light"] .panel-ingreso::-webkit-scrollbar-thumb:hover{backgroun
 
     <div>
         <label>Diagnóstico principal</label>
-        <input id="diagnostico">
+        <input id="diagnosticoTextoInicial">
     </div>
 
     <div>
@@ -593,9 +594,15 @@ html[data-theme="light"] .panel-ingreso::-webkit-scrollbar-thumb:hover{backgroun
 <br>
 
 <label>Tratamiento actual</label>
-<textarea id="tratamiento"></textarea>
+<textarea id="tratamientoTextoInicial"></textarea>
 
 <br><br>
+
+<div class="form-actions">
+  <button type="button" class="boton-secundario" onclick="mostrarDiagnosticosNuevoPaciente()">DiagnÃ³sticos</button>
+  <button type="button" class="boton-secundario" onclick="mostrarTratamientoNuevoPaciente()">Tratamiento e indicaciones</button>
+</div>
+<div id="clinicaNuevoPacienteHost"></div>
 
 <label>Observaciones</label>
 <textarea id="observaciones"></textarea>
@@ -641,7 +648,7 @@ Guardar paciente
     </div>
 </div>
 
-<script type="module" src="js/nuevoPaciente.js?v=20260729-imc-payload-fix"></script>
+<script type="module" src="js/nuevoPaciente.js?v=20260731-nuevo-clinica-draft"></script>
 
   <script type="module" src="js/components/accesosRapidos.js"></script>
   <script type="module" src="js/reportes.js"></script>

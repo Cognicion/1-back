@@ -252,6 +252,20 @@ export const MEDICAMENTOS = [
     presentaciones: ["capsulas de 250 mg", "jarabe de 250 mg/5 ml"]
   },
   {
+    nombre: "Valproato semisodico",
+    clase: "Estabilizador del animo",
+    dosisHabitual: "500-2000 mg/dia",
+    notas: "Vigilar PFH, plaquetas; teratogenicidad.",
+    presentaciones: [
+      "tabletas de liberacion retardada de 125 mg",
+      "tabletas de liberacion retardada de 250 mg",
+      "tabletas de liberacion retardada de 500 mg",
+      "capsulas de liberacion retardada de 125 mg",
+      "tabletas de liberacion prolongada de 250 mg",
+      "tabletas de liberacion prolongada de 500 mg"
+    ]
+  },
+  {
     nombre: "Lamotrigina",
     clase: "Estabilizador del animo",
     dosisHabitual: "25-200 mg/dia",

@@ -7,6 +7,7 @@ import {
 
 import {
   collection,
+  addDoc,
   getDocs
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
@@ -15,12 +16,25 @@ import {
   crearPacienteProvisional
 } from "./services/usuarios.js?v=20260729-imc-payload-fix";
 import { registrarEventoAuditoria } from "./services/auditoria.js";
+import { crearTratamiento } from "./services/tratamientos.js";
 import { usuarioEsPersonalClinico } from "./utils/roles.js";
 import { iniciarMonitoreoSesion } from "./services/sesion.js";
 import { construirNombreCompletoPaciente } from "./utils/nombresPacientes.js";
 
 let uidMedico = "";
 let medicoActualDatos = {};
+const nuevoPacienteDraft = {
+  datosPersonales: {},
+  diagnosticos: [],
+  tratamiento: {
+    medicamentos: [],
+    indicaciones: []
+  },
+  datosClinicosResumen: {}
+};
+window.COGNICION_NUEVO_PACIENTE_DRAFT = nuevoPacienteDraft;
+let moduloClinicoNuevoPacientePromise = null;
+let markupClinicoNuevoPacientePromise = null;
 
 iniciarMonitoreoSesion("Nuevo paciente");
 
@@ -194,6 +208,16 @@ function actualizarVistaTipoPacienteNuevo() {
   manual?.classList.toggle("campo-condicional-oculto", !esOtro);
 }
 
+function ocultarCamposClinicosLegadoNuevo() {
+  document.getElementById("diagnosticoTextoInicial")?.closest("div")?.style.setProperty("display", "none");
+  const tratamiento = document.getElementById("tratamientoTextoInicial");
+  if (tratamiento) {
+    tratamiento.style.display = "none";
+    const etiqueta = tratamiento.previousElementSibling;
+    if (etiqueta?.tagName === "LABEL") etiqueta.style.display = "none";
+  }
+}
+
 function obtenerExpedienteCognicion(paciente = {}) {
   const institucional = paciente.datosInstitucionales || {};
   return paciente.expedienteCognicion || institucional.expedienteCognicion || "";
@@ -348,6 +372,132 @@ async function generarExpedienteCognicion() {
   return `C${consecutivoMayor + 1}-${anio}`;
 }
 
+function actualizarDatosPersonalesDraftNuevo() {
+  const nombres = document.getElementById("nombresPaciente")?.value || "";
+  const apellidoPaterno = document.getElementById("apellidoPaternoPaciente")?.value || "";
+  const apellidoMaterno = document.getElementById("apellidoMaternoPaciente")?.value || "";
+  const nombreCompleto = construirNombreCompletoPaciente({ nombres, apellidoPaterno, apellidoMaterno });
+  nuevoPacienteDraft.datosPersonales = {
+    ...(nuevoPacienteDraft.datosPersonales || {}),
+    nombre: nombreCompleto,
+    nombreCompleto,
+    nombres: nombres.trim().replace(/\s+/g, " "),
+    apellidoPaterno: apellidoPaterno.trim().replace(/\s+/g, " "),
+    apellidoMaterno: apellidoMaterno.trim().replace(/\s+/g, " "),
+    nombreEstructurado: true,
+    fechaNacimiento: document.getElementById("fechaNacimiento")?.value || "",
+    edadManual: valorEdadManual(),
+    sexo: document.getElementById("sexo")?.value || "",
+    genero: document.getElementById("genero")?.value || "",
+    curp: document.getElementById("curp")?.value || "",
+    telefono: document.getElementById("telefono")?.value || "",
+    email: document.getElementById("email")?.value || "",
+    tipoPaciente: obtenerTipoPacienteNuevo(),
+    institucionPaciente: document.getElementById("institucionPaciente")?.value || "",
+    servicioInstitucional: document.getElementById("servicioInstitucional")?.value || "",
+    expediente: document.getElementById("expediente")?.value || "",
+    cama: document.getElementById("cama")?.value || "",
+    alergias: document.getElementById("alergias")?.value || ""
+  };
+}
+
+async function cargarModuloClinicoNuevoPaciente() {
+  actualizarDatosPersonalesDraftNuevo();
+  await asegurarMarkupClinicoNuevoPaciente();
+  if (!moduloClinicoNuevoPacientePromise) {
+    moduloClinicoNuevoPacientePromise = import("./paciente.js?v=20260731-nuevo-paciente-draft");
+  }
+  await moduloClinicoNuevoPacientePromise;
+  window.inicializarPacienteClinicoDraft?.({
+    datosPaciente: nuevoPacienteDraft.datosPersonales,
+    medico: medicoActualDatos,
+    rol: medicoActualDatos?.rol || "medico"
+  });
+}
+
+async function asegurarMarkupClinicoNuevoPaciente() {
+  const host = document.getElementById("clinicaNuevoPacienteHost");
+  if (!host || document.getElementById("seccionDiagnosticos")) return;
+  if (!markupClinicoNuevoPacientePromise) {
+    markupClinicoNuevoPacientePromise = (async () => {
+      const respuesta = await fetch("paciente.html", { cache: "force-cache" });
+      const html = await respuesta.text();
+      const documento = new DOMParser().parseFromString(html, "text/html");
+      const ids = [
+        "seccionDiagnosticos",
+        "seccionTratamiento",
+        "seccionIndicaciones",
+        "modalInteraccionesFarmacologicas",
+        "modalMedicamentoManual"
+      ];
+      const resumenTratamiento = document.createElement("div");
+      resumenTratamiento.id = "tratamiento";
+      resumenTratamiento.className = "oculto";
+      resumenTratamiento.setAttribute("aria-hidden", "true");
+      host.appendChild(resumenTratamiento);
+      ids.forEach((id) => {
+        const nodo = documento.getElementById(id);
+        if (!nodo) return;
+        const clon = nodo.cloneNode(true);
+        if (clon.tagName === "SECTION") clon.style.display = "none";
+        clon.querySelectorAll('[onclick*="abrirApuntesMedicoPaciente"]').forEach((boton) => boton.remove());
+        host.appendChild(clon);
+      });
+    })();
+  }
+  await markupClinicoNuevoPacientePromise;
+}
+
+function ocultarSeccionesClinicasNuevoPaciente() {
+  document.getElementById("seccionDiagnosticos")?.style.setProperty("display", "none");
+  document.getElementById("seccionTratamiento")?.style.setProperty("display", "none");
+  document.getElementById("seccionIndicaciones")?.style.setProperty("display", "none");
+}
+
+window.mostrarDiagnosticosNuevoPaciente = async function() {
+  await cargarModuloClinicoNuevoPaciente();
+  ocultarSeccionesClinicasNuevoPaciente();
+  document.getElementById("seccionDiagnosticos")?.style.setProperty("display", "block");
+  window.mostrarDiagnosticos?.();
+};
+
+window.mostrarTratamientoNuevoPaciente = async function() {
+  await cargarModuloClinicoNuevoPaciente();
+  ocultarSeccionesClinicasNuevoPaciente();
+  document.getElementById("seccionTratamiento")?.style.setProperty("display", "block");
+  document.getElementById("seccionIndicaciones")?.style.setProperty("display", "block");
+  await window.mostrarTratamiento?.();
+};
+
+async function guardarClinicaDraftEnPaciente(pacienteId) {
+  if (!pacienteId) return;
+  const estado = window.obtenerEstadoClinicoDraftPaciente?.() || {
+    diagnosticos: nuevoPacienteDraft.diagnosticos || [],
+    tratamiento: nuevoPacienteDraft.tratamiento || { medicamentos: [], indicaciones: [] },
+    datosClinicosResumen: nuevoPacienteDraft.datosClinicosResumen || {},
+    indicacionesEstructuradas: nuevoPacienteDraft.indicacionesEstructuradas || null
+  };
+  const medicamentos = Array.isArray(estado.tratamiento?.medicamentos)
+    ? estado.tratamiento.medicamentos
+    : [];
+  const indicaciones = Array.isArray(estado.tratamiento?.indicaciones)
+    ? estado.tratamiento.indicaciones
+    : [];
+
+  const operaciones = [
+    ...medicamentos.map((medicamento) => {
+      const { id, ...datosMedicamento } = medicamento || {};
+      return crearTratamiento(pacienteId, datosMedicamento);
+    }),
+    ...indicaciones.map((indicacion) => {
+      const { id, ...datosIndicacion } = indicacion || {};
+      return addDoc(collection(db, "usuarios", pacienteId, "indicaciones"), datosIndicacion);
+    })
+  ];
+
+  if (operaciones.length) await Promise.all(operaciones);
+}
+
 onAuthStateChanged(auth, async (user) => {
   if (!user) {
     window.location.href = "login.html";
@@ -381,6 +531,7 @@ document.getElementById("edadManual")?.addEventListener("change", () => sincroni
 document.getElementById("edadManual")?.addEventListener("blur", () => sincronizarEdadConFecha("edad"));
 document.getElementById("tipoPaciente")?.addEventListener("change", actualizarVistaTipoPacienteNuevo);
 actualizarVistaTipoPacienteNuevo();
+ocultarCamposClinicosLegadoNuevo();
 ["peso", "talla"].forEach((id) => {
   document.getElementById(id)?.addEventListener("input", calcularIMCNuevoPaciente);
   document.getElementById(id)?.addEventListener("change", calcularIMCNuevoPaciente);
@@ -427,6 +578,26 @@ window.guardarPacienteNuevo = async function() {
   const apellidoMaterno = document.getElementById("apellidoMaternoPaciente")?.value || "";
   const nombreCompleto = construirNombreCompletoPaciente({ nombres, apellidoPaterno, apellidoMaterno });
   if (document.getElementById("nombre")) document.getElementById("nombre").value = nombreCompleto;
+  actualizarDatosPersonalesDraftNuevo();
+  const estadoClinicoDraft = window.obtenerEstadoClinicoDraftPaciente?.() || {
+    diagnosticos: nuevoPacienteDraft.diagnosticos || [],
+    tratamiento: nuevoPacienteDraft.tratamiento || { medicamentos: [], indicaciones: [] },
+    datosClinicosResumen: nuevoPacienteDraft.datosClinicosResumen || {},
+    indicacionesEstructuradas: nuevoPacienteDraft.indicacionesEstructuradas || null
+  };
+  const historialDiagnosticos = Array.isArray(estadoClinicoDraft.diagnosticos)
+    ? estadoClinicoDraft.diagnosticos
+    : [];
+  const diagnosticoPrincipal = historialDiagnosticos.find((dx) => dx && dx.estado !== "descartado") || document.getElementById("diagnosticoTextoInicial")?.value || "";
+  const resumenTratamiento = estadoClinicoDraft.datosClinicosResumen?.tratamientoActivo || document.getElementById("tratamientoTextoInicial")?.value || "";
+  const datosClinicosResumen = {
+    ...(estadoClinicoDraft.datosClinicosResumen || {}),
+    diagnostico: diagnosticoPrincipal || null,
+    historialDiagnosticos,
+    tratamientoActivo: resumenTratamiento,
+    tratamientosActivos: estadoClinicoDraft.datosClinicosResumen?.tratamientosActivos || [],
+    indicaciones: estadoClinicoDraft.datosClinicosResumen?.indicaciones || estadoClinicoDraft.indicacionesEstructuradas || null
+  };
 
   const paciente = {
     nombre: nombreCompleto,
@@ -491,9 +662,13 @@ window.guardarPacienteNuevo = async function() {
     },
     medicoTratante: medicoTratanteNombre,
     medicoTratanteNombre,
-    diagnostico: document.getElementById("diagnostico").value,
+    diagnostico: diagnosticoPrincipal,
+    historialDiagnosticos,
     ultimaConsulta: document.getElementById("ultimaConsulta").value,
-    tratamiento: document.getElementById("tratamiento").value,
+    tratamiento: resumenTratamiento,
+    tratamientoActual: resumenTratamiento,
+    indicacionesEstructuradas: estadoClinicoDraft.indicacionesEstructuradas || null,
+    datosClinicosResumen,
     observaciones: document.getElementById("observaciones").value,
     creadoPor: uidMedico,
     ownerUid: uidMedico,
@@ -514,6 +689,7 @@ window.guardarPacienteNuevo = async function() {
     console.debug("[NUEVO PACIENTE] imc es nodo DOM:", typeof Node !== "undefined" && payloadFirestore.imc instanceof Node);
     console.debug("[NUEVO PACIENTE] payload validado");
     const refPaciente = await crearPacienteProvisional(payloadFirestore);
+    await guardarClinicaDraftEnPaciente(refPaciente.id);
     const medico = await obtenerUsuario(uidMedico);
 
     await registrarEventoAuditoria({
