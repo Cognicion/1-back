@@ -5826,8 +5826,11 @@ async function htmlWordFrayObservacion() {
       padding: 0;
     }
 
+        .encabezado,
+        .encabezado tr,
+        .encabezado td { border: none !important; outline: none; }
         .encabezado { width: 100%; table-layout: fixed; border-collapse: collapse; margin: 0 0 8pt; }
-        .encabezado td { border: none; vertical-align: middle; padding: 0 0 4pt; }
+        .encabezado td { vertical-align: middle; padding: 0 0 4pt; }
         .encabezado-logo-izq { width: 20%; text-align: left; }
         .encabezado-centro { width: 62%; text-align: center; font-weight: 700; font-size: 11pt; line-height: 1.12; text-transform: uppercase; white-space: nowrap; }
         .encabezado-logo-der { width: 14%; text-align: right; }
