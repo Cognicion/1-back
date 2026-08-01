@@ -4365,7 +4365,7 @@ async function guardarNotaMedicaConEstadoLegacy(estadoNota = "definitiva") {
 
   diagnosticosSeleccionados = normalizarDiagnosticosNota(diagnosticosSeleccionados);
   await refrescarDatosVivosParaNota(uidPaciente, {
-    forzarSignosVitales: true,
+    forzarSignosVitales: false,
     forzarPlan: false
   });
   const diagnostico = diagnosticoActual();
@@ -4523,7 +4523,7 @@ async function guardarNotaClinicaSeguro(estadoNota = "definitiva") {
 
     diagnosticosSeleccionados = normalizarDiagnosticosNota(diagnosticosSeleccionados);
     await refrescarDatosVivosParaNota(uidPaciente, {
-      forzarSignosVitales: true,
+      forzarSignosVitales: false,
       forzarPlan: false
     });
     const diagnostico = diagnosticoActual();
