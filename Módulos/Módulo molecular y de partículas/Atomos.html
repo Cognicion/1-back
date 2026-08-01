@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+    <title>Simulador Atómico</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: Arial, sans-serif;
+            background: #111827;
+            color: #f9fafb;
+        }
+
+        header {
+            padding: 20px;
+            border-bottom: 1px solid #374151;
+        }
+
+        main {
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            gap: 20px;
+            padding: 20px;
+        }
+
+        .panel {
+            background: #1f2937;
+            border: 1px solid #374151;
+            border-radius: 14px;
+            padding: 18px;
+        }
+
+        label {
+            display: block;
+            margin-top: 14px;
+            margin-bottom: 6px;
+        }
+
+        select,
+        input,
+        button {
+            width: 100%;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #4b5563;
+            background: #111827;
+            color: #f9fafb;
+        }
+
+        button {
+            margin-top: 14px;
+            cursor: pointer;
+        }
+
+        .visualizador {
+            min-height: 520px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .atomo {
+            position: relative;
+            width: 320px;
+            height: 320px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .nube {
+            position: absolute;
+            border-radius: 50%;
+            border: 1px solid rgba(96, 165, 250, 0.4);
+            background: radial-gradient(
+                circle,
+                rgba(96, 165, 250, 0.3),
+                rgba(96, 165, 250, 0.03) 70%,
+                transparent
+            );
+            transition: width 0.4s, height 0.4s;
+        }
+
+        .nucleo {
+            position: relative;
+            z-index: 2;
+            width: 74px;
+            height: 74px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            font-weight: bold;
+            background: radial-gradient(circle, #f59e0b, #b45309);
+            box-shadow: 0 0 28px rgba(245, 158, 11, 0.6);
+        }
+
+        .datos {
+            width: 100%;
+            margin-top: 20px;
+            display: grid;
+            grid-template-columns: repeat(3, minmax(120px, 1fr));
+            gap: 10px;
+        }
+
+        .dato {
+            background: #111827;
+            border: 1px solid #374151;
+            border-radius: 10px;
+            padding: 12px;
+        }
+
+        .dato strong {
+            display: block;
+            margin-bottom: 5px;
+            color: #93c5fd;
+        }
+
+        .estado-ion {
+            margin-top: 12px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        @media (max-width: 800px) {
+            main {
+                grid-template-columns: 1fr;
+            }
+
+            .datos {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <h1>Simulador Atómico PRUEBA 1</h1>
+        <p>Modelo inicial de elementos, isótopos e iones.</p>
+    </header>
+
+    <main>
+        <section class="panel">
+            <h2>Controles</h2>
+
+            <label for="elementoSelect">
+                Elemento
+            </label>
+
+            <select id="elementoSelect"></select>
+
+            <label for="isotopoSelect">
+                Isótopo
+            </label>
+
+            <select id="isotopoSelect"></select>
+
+            <label for="cargaInput">
+                Carga del ion
+            </label>
+
+            <input
+                id="cargaInput"
+                type="number"
+                min="-3"
+                max="3"
+                value="0"
+            >
+
+            <button id="actualizarBtn">
+                Actualizar átomo
+            </button>
+
+            <div
+                id="estadoIon"
+                class="estado-ion"
+            ></div>
+        </section>
+
+        <section class="panel visualizador">
+            <div class="atomo">
+                <div
+                    id="nube"
+                    class="nube"
+                ></div>
+
+                <div
+                    id="nucleo"
+                    class="nucleo"
+                >
+                    H
+                </div>
+            </div>
+
+            <div
+                id="datos"
+                class="datos"
+            ></div>
+        </section>
+    </main>
+
+    <script>
+        const elementos = [
+            {
+                ID: "H",
+                Nombre: "Hidrógeno",
+                Simbolo: "H",
+                NumeroAtomico: 1,
+                MasaAtomica: 1.008,
+                Categoria: "No metal",
+                Grupo: 1,
+                Periodo: 1,
+                Bloque: "s",
+                RadioAtomicoPm: 53,
+                ConfiguracionElectronica: "1s¹",
+                Isotopos: [
+                    {
+                        Nombre: "Protio",
+                        NumeroMasa: 1
+                    },
+                    {
+                        Nombre: "Deuterio",
+                        NumeroMasa: 2
+                    },
+                    {
+                        Nombre: "Tritio",
+                        NumeroMasa: 3
+                    }
+                ]
+            },
+            {
+                ID: "He",
+                Nombre: "Helio",
+                Simbolo: "He",
+                NumeroAtomico: 2,
+                MasaAtomica: 4.002602,
+                Categoria: "Gas noble",
+                Grupo: 18,
+                Periodo: 1,
+                Bloque: "s",
+                RadioAtomicoPm: 31,
+                ConfiguracionElectronica: "1s²",
+                Isotopos: [
+                    {
+                        Nombre: "Helio-3",
+                        NumeroMasa: 3
+                    },
+                    {
+                        Nombre: "Helio-4",
+                        NumeroMasa: 4
+                    }
+                ]
+            },
+            {
+                ID: "Li",
+                Nombre: "Litio",
+                Simbolo: "Li",
+                NumeroAtomico: 3,
+                MasaAtomica: 6.94,
+                Categoria: "Metal alcalino",
+                Grupo: 1,
+                Periodo: 2,
+                Bloque: "s",
+                RadioAtomicoPm: 167,
+                ConfiguracionElectronica: "1s² 2s¹",
+                Isotopos: [
+                    {
+                        Nombre: "Litio-6",
+                        NumeroMasa: 6
+                    },
+                    {
+                        Nombre: "Litio-7",
+                        NumeroMasa: 7
+                    }
+                ]
+            },
+            {
+                ID: "C",
+                Nombre: "Carbono",
+                Simbolo: "C",
+                NumeroAtomico: 6,
+                MasaAtomica: 12.011,
+                Categoria: "No metal",
+                Grupo: 14,
+                Periodo: 2,
+                Bloque: "p",
+                RadioAtomicoPm: 67,
+                ConfiguracionElectronica: "1s² 2s² 2p²",
+                Isotopos: [
+                    {
+                        Nombre: "Carbono-12",
+                        NumeroMasa: 12
+                    },
+                    {
+                        Nombre: "Carbono-13",
+                        NumeroMasa: 13
+                    },
+                    {
+                        Nombre: "Carbono-14",
+                        NumeroMasa: 14
+                    }
+                ]
+            },
+            {
+                ID: "O",
+                Nombre: "Oxígeno",
+                Simbolo: "O",
+                NumeroAtomico: 8,
+                MasaAtomica: 15.999,
+                Categoria: "No metal",
+                Grupo: 16,
+                Periodo: 2,
+                Bloque: "p",
+                RadioAtomicoPm: 48,
+                ConfiguracionElectronica: "1s² 2s² 2p⁴",
+                Isotopos: [
+                    {
+                        Nombre: "Oxígeno-16",
+                        NumeroMasa: 16
+                    },
+                    {
+                        Nombre: "Oxígeno-17",
+                        NumeroMasa: 17
+                    },
+                    {
+                        Nombre: "Oxígeno-18",
+                        NumeroMasa: 18
+                    }
+                ]
+            }
+        ];
+
+        const elementoSelect =
+            document.getElementById("elementoSelect");
+
+        const isotopoSelect =
+            document.getElementById("isotopoSelect");
+
+        const cargaInput =
+            document.getElementById("cargaInput");
+
+        const actualizarBtn =
+            document.getElementById("actualizarBtn");
+
+        const nucleo =
+            document.getElementById("nucleo");
+
+        const nube =
+            document.getElementById("nube");
+
+        const datos =
+            document.getElementById("datos");
+
+        const estadoIon =
+            document.getElementById("estadoIon");
+
+        function cargarElementos() {
+            elementoSelect.innerHTML = "";
+
+            elementos.forEach((elemento, indice) => {
+                const option =
+                    document.createElement("option");
+
+                option.value = indice;
+                option.textContent =
+                    `${elemento.Nombre} (${elemento.Simbolo})`;
+
+                elementoSelect.appendChild(option);
+            });
+        }
+
+        function cargarIsotopos() {
+            const elemento =
+                elementos[elementoSelect.value];
+
+            isotopoSelect.innerHTML = "";
+
+            elemento.Isotopos.forEach((isotopo, indice) => {
+                const option =
+                    document.createElement("option");
+
+                option.value = indice;
+                option.textContent =
+                    `${isotopo.Nombre} (A = ${isotopo.NumeroMasa})`;
+
+                isotopoSelect.appendChild(option);
+            });
+        }
+
+        function calcularEstadoAtomico(
+            elemento,
+            isotopo,
+            carga
+        ) {
+            const protones =
+                elemento.NumeroAtomico;
+
+            const neutrones =
+                isotopo.NumeroMasa -
+                elemento.NumeroAtomico;
+
+            const electrones =
+                elemento.NumeroAtomico -
+                carga;
+
+            return {
+                protones,
+                neutrones,
+                electrones,
+                carga
+            };
+        }
+
+        function obtenerNombreIon(elemento, carga) {
+            if (carga === 0) {
+                return `${elemento.Nombre} neutro`;
+            }
+
+            if (carga > 0) {
+                return `${elemento.Nombre} ${carga}+`;
+            }
+
+            return `${elemento.Nombre} ${Math.abs(carga)}−`;
+        }
+
+        function calcularRadioVisual(radioPm) {
+            const radioMinimo = 100;
+            const radioMaximo = 280;
+
+            const radioNormalizado =
+                Math.max(
+                    radioMinimo,
+                    Math.min(
+                        radioMaximo,
+                        radioPm * 1.6
+                    )
+                );
+
+            return radioNormalizado;
+        }
+
+        function renderizarAtomo() {
+            const elemento =
+                elementos[elementoSelect.value];
+
+            const isotopo =
+                elemento.Isotopos[isotopoSelect.value];
+
+            const carga =
+                Number(cargaInput.value);
+
+            const estado =
+                calcularEstadoAtomico(
+                    elemento,
+                    isotopo,
+                    carga
+                );
+
+            if (estado.electrones < 0) {
+                alert(
+                    "La carga seleccionada produce un número inválido de electrones."
+                );
+                return;
+            }
+
+            nucleo.textContent =
+                elemento.Simbolo;
+
+            const radioVisual =
+                calcularRadioVisual(
+                    elemento.RadioAtomicoPm
+                );
+
+            nube.style.width =
+                `${radioVisual}px`;
+
+            nube.style.height =
+                `${radioVisual}px`;
+
+            estadoIon.textContent =
+                obtenerNombreIon(
+                    elemento,
+                    carga
+                );
+
+            datos.innerHTML = `
+                <div class="dato">
+                    <strong>Elemento</strong>
+                    ${elemento.Nombre}
+                </div>
+
+                <div class="dato">
+                    <strong>Símbolo</strong>
+                    ${elemento.Simbolo}
+                </div>
+
+                <div class="dato">
+                    <strong>Número atómico</strong>
+                    ${elemento.NumeroAtomico}
+                </div>
+
+                <div class="dato">
+                    <strong>Número de masa</strong>
+                    ${isotopo.NumeroMasa}
+                </div>
+
+                <div class="dato">
+                    <strong>Protones</strong>
+                    ${estado.protones}
+                </div>
+
+                <div class="dato">
+                    <strong>Neutrones</strong>
+                    ${estado.neutrones}
+                </div>
+
+                <div class="dato">
+                    <strong>Electrones</strong>
+                    ${estado.electrones}
+                </div>
+
+                <div class="dato">
+                    <strong>Carga</strong>
+                    ${estado.carga}
+                </div>
+
+                <div class="dato">
+                    <strong>Configuración</strong>
+                    ${elemento.ConfiguracionElectronica}
+                </div>
+
+                <div class="dato">
+                    <strong>Grupo</strong>
+                    ${elemento.Grupo}
+                </div>
+
+                <div class="dato">
+                    <strong>Período</strong>
+                    ${elemento.Periodo}
+                </div>
+
+                <div class="dato">
+                    <strong>Bloque</strong>
+                    ${elemento.Bloque}
+                </div>
+            `;
+        }
+
+        elementoSelect.addEventListener(
+            "change",
+            () => {
+                cargarIsotopos();
+                cargaInput.value = 0;
+                renderizarAtomo();
+            }
+        );
+
+        isotopoSelect.addEventListener(
+            "change",
+            renderizarAtomo
+        );
+
+        cargaInput.addEventListener(
+            "input",
+            renderizarAtomo
+        );
+
+        actualizarBtn.addEventListener(
+            "click",
+            renderizarAtomo
+        );
+
+        cargarElementos();
+        cargarIsotopos();
+        renderizarAtomo();
+    </script>
+</body>
+</html>
