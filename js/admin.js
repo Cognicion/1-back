@@ -39,7 +39,6 @@ import {
   listarReportesUsuarios,
   responderReporteUsuario
 } from "./services/reportes.js";
-import { iniciarDescubrimientoPatrones } from "./admin/patternDiscovery/patternDiscoveryController.js?v=20260802-patterns-v1";
 
 import {
   onAuthStateChanged
@@ -124,6 +123,15 @@ const SUBCOLECCIONES_USUARIO_MEDICO = [
 ];
 
 iniciarMonitoreoSesion("Panel administracion");
+console.log("[ADMIN] HTML cargado; esperando autenticación");
+
+function actualizarEstadoArranque(mensaje, error = false) {
+  const estado = document.getElementById("adminStartupState");
+  if (estado) {
+    estado.querySelector("span")?.replaceChildren(document.createTextNode(mensaje));
+  }
+  document.body.classList.toggle("admin-startup-error", error);
+}
 
 function eventoAuditoriaVisible(evento = {}) {
   return !ACCIONES_AUDITORIA_OCULTAS.has(evento.accion);
@@ -204,33 +212,55 @@ async function usuarioPuedeAccederAdmin(user) {
 }
 
 onAuthStateChanged(auth, async (user) => {
-  if (!user) {
-    window.location.href = "login.html";
-    return;
-  }
+  console.log("[ADMIN] Cambio de autenticación", { autenticado: Boolean(user) });
+  try {
+    if (!user) {
+      actualizarEstadoArranque("Sesión no encontrada. Redirigiendo al inicio de sesión…", true);
+      window.location.href = "login.html";
+      return;
+    }
 
-  const accesoAdmin = await usuarioPuedeAccederAdmin(user);
-  if (!accesoAdmin.permitido) {
-    alert("Acceso restringido al administrador.");
-    window.location.href = "dashboard.html";
-    return;
-  }
+    console.log("[ADMIN] Usuario autenticado", user.uid);
+    actualizarEstadoArranque("Verificando rol de administrador…");
+    const accesoAdmin = await usuarioPuedeAccederAdmin(user);
+    if (!accesoAdmin.permitido) {
+      console.warn("[ADMIN] Rol no autorizado", accesoAdmin.datos?.rol || "sin rol");
+      actualizarEstadoArranque("Acceso restringido. Redirigiendo al Centro de Control…", true);
+      alert("Acceso restringido al administrador.");
+      window.location.href = "dashboard.html";
+      return;
+    }
 
-  adminActual = user;
-  document.body.classList.remove("bloqueado");
-  configurarFiltros();
-  await cargarResumen();
-  await cargarCodigosMedicoAdmin();
-  await cargarUsuariosAdmin();
-  await cargarPacientesAdmin();
-  await cargarReportesUsuariosAdmin();
-  await cargarAvisosAdmin();
-  await cargarMensajesAdmin();
-  await cargarAuditoria();
-  iniciarDescubrimientoPatrones().catch((error) => {
-    console.error("No se pudo iniciar el Motor de Descubrimiento de Patrones", error);
-    document.getElementById("estadoPatronesTexto")?.replaceChildren(document.createTextNode("No se pudo leer la base clínica con las reglas actuales."));
-  });
+    console.log("[ADMIN] Rol confirmado");
+    adminActual = user;
+    document.body.classList.remove("bloqueado", "admin-startup-error");
+    document.getElementById("adminStartupState")?.setAttribute("hidden", "");
+    console.log("[ADMIN] Iniciando render");
+    configurarFiltros();
+    await cargarResumen();
+    await cargarCodigosMedicoAdmin();
+    await cargarUsuariosAdmin();
+    await cargarPacientesAdmin();
+    await cargarReportesUsuariosAdmin();
+    await cargarAvisosAdmin();
+    await cargarMensajesAdmin();
+    await cargarAuditoria();
+    console.log("[ADMIN] Render principal completado");
+
+    // El motor es secundario: un fallo suyo no debe impedir el panel administrativo.
+    import("./admin/patternDiscovery/patternDiscoveryController.js?v=20260802-patterns-v1")
+      .then(({ iniciarDescubrimientoPatrones }) => iniciarDescubrimientoPatrones())
+      .then(() => console.log("[ADMIN] Motor de patrones iniciado"))
+      .catch((error) => {
+        console.error("[ADMIN] Error no bloqueante en Motor de patrones", error);
+        document.getElementById("estadoPatronesTexto")?.replaceChildren(document.createTextNode("No se pudo iniciar este módulo; el Centro de Control sigue disponible."));
+      });
+  } catch (error) {
+    console.error("[ADMIN] Error durante el arranque", error);
+    document.body.classList.add("bloqueado");
+    document.getElementById("adminStartupState")?.removeAttribute("hidden");
+    actualizarEstadoArranque("No se pudo iniciar el Centro de Control. Revisa la consola para el detalle.", true);
+  }
 });
 
 function configurarFiltros() {

@@ -10,9 +10,19 @@
   <link rel="icon" type="image/png" href="assets/favicon-cognicion.png">
 <link rel="stylesheet" href="css/theme/cognicion-theme.css">
 <script type="module" src="js/services/themeBootstrap.js"></script>
+<script>
+  console.log("[ADMIN INLINE] HTML ejecutado");
+  window.addEventListener("error", (event) => console.error("[ADMIN WINDOW ERROR]", event.error || event.message));
+  window.addEventListener("unhandledrejection", (event) => console.error("[ADMIN PROMISE ERROR]", event.reason));
+</script>
 </head>
 
 <body class="bloqueado">
+
+<div id="adminStartupState" class="admin-startup-state" role="status" aria-live="polite">
+  <strong>Centro de Control</strong>
+  <span>Verificando autenticación y permisos…</span>
+</div>
 
 <noscript>
   <div style="padding:24px;color:white;background:#7f1d1d;font-family:Arial">
