@@ -1,4 +1,5 @@
 const { HttpsError } = require("firebase-functions/v2/https");
+const admin = require("firebase-admin");
 
 const ADMIN_UID = "NQ0CU5PSDBUgVrk56sjPEVhOs2D3";
 const ADMIN_ROLES = new Set(["admin", "administrador", "superadmin", "adminprincipal", "administradorprincipal"]);
@@ -78,30 +79,33 @@ async function discoverTextPatterns({ request, db }) {
   const rows = new Map();
   let totalNotas = 0;
   let batchesProcessed = 0;
-  for (let offset = 0; offset < usuarios.docs.length; offset += PATTERN_CONFIG.batchSize) {
-    const lote = usuarios.docs.slice(offset, offset + PATTERN_CONFIG.batchSize);
-    batchesProcessed++;
-    for (const usuario of lote) {
-      const perfil = usuario.data() || {};
-      for (const collectionName of TEXT_COLLECTIONS) {
-      let snapshot;
-      try { snapshot = await db.collection(`usuarios/${usuario.id}/${collectionName}`).get(); } catch { continue; }
+  for (const usuario of usuarios.docs) {
+    const perfil = usuario.data() || {};
+    for (const collectionName of TEXT_COLLECTIONS) {
+      let lastDoc = null;
+      while (true) {
+        let query = db.collection(`usuarios/${usuario.id}/${collectionName}`).orderBy(admin.firestore.FieldPath.documentId()).limit(PATTERN_CONFIG.batchSize);
+        if (lastDoc) query = query.startAfter(lastDoc);
+        let snapshot;
+        try { snapshot = await query.get(); } catch { break; }
+        batchesProcessed++;
         for (const note of snapshot.docs) {
-        totalNotas++;
-        const data = note.data() || {};
-        const meta = metadata(data, perfil.rol === "paciente" ? usuario.id : "");
-        if (!matches(meta, filters)) continue;
-        const notaId = `usuarios:${usuario.id}:${collectionName}:${note.id}`;
-        for (const source of collectTexts(data)) {
-          const words = tokens(source.texto);
-          const example = anonymize(source.texto);
-          for (let n = PATTERN_CONFIG.minimumTokens; n <= Math.min(PATTERN_CONFIG.maximumTokens, words.length); n++) for (let i = 0; i <= words.length - n; i++) {
-            const tipo = n === 1 ? "word" : n === 2 ? "bigram" : n === 3 ? "trigram" : "phrase";
-            const clave = words.slice(i, i + n).join(" ");
-            add(rows, `${tipo}:${clave}`, { ...meta, notaId, campo: source.campo, ejemplo, tipo, n, clave });
+          totalNotas++;
+          const data = note.data() || {};
+          const meta = metadata(data, perfil.rol === "paciente" ? usuario.id : "");
+          if (!matches(meta, filters)) continue;
+          const notaId = `usuarios:${usuario.id}:${collectionName}:${note.id}`;
+          for (const source of collectTexts(data)) {
+            const words = tokens(source.texto);
+            for (let n = PATTERN_CONFIG.minimumTokens; n <= Math.min(PATTERN_CONFIG.maximumTokens, words.length); n++) for (let i = 0; i <= words.length - n; i++) {
+              const tipo = n === 1 ? "word" : n === 2 ? "bigram" : n === 3 ? "trigram" : "phrase";
+              const clave = words.slice(i, i + n).join(" ");
+              add(rows, `${tipo}:${clave}`, { ...meta, notaId, campo: source.campo, tipo, n, clave });
+            }
           }
         }
-        }
+        if (snapshot.size < PATTERN_CONFIG.batchSize) break;
+        lastDoc = snapshot.docs[snapshot.docs.length - 1];
       }
     }
   }
