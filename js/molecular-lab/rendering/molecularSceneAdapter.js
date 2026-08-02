@@ -1,0 +1,2 @@
+import { vectorNmToWorld } from "./displayScale.js"; export const atomWorldPosition=atom=>vectorNmToWorld(atom.position_nm);
+export function buildSceneSnapshot(molecule){return {atoms:molecule.getAtoms().map(atom=>({id:atom.id,elementId:atom.elementId,position:atomWorldPosition(atom)})),bonds:molecule.getBonds().map(bond=>({id:bond.id,atomAId:bond.atomAId,atomBId:bond.atomBId,order:bond.order}))};}

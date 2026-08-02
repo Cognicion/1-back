@@ -1,0 +1,4 @@
+import { buildBenchmark } from "./benchmarkMolecules.js";
+const deform=(molecule,ids,delta)=>{ids.forEach((id,index)=>{const atom=molecule.getAtom(id);atom.setPosition({x:atom.position_nm.x+delta*(index+1),y:atom.position_nm.y-delta*index,z:atom.position_nm.z});});return molecule;};
+export const PHASE3_BENCHMARKS=["H2","H2O","NH3","CH4","CO2","HCl"];
+export function buildDeformedBenchmark(name){const molecule=buildBenchmark(name),atoms=molecule.getAtoms();if(name==="H2")return deform(molecule,[atoms[1].id],0.015);if(name==="H2O")return deform(molecule,[atoms[1].id,atoms[2].id],0.012);if(name==="NH3")return deform(molecule,[atoms[1].id,atoms[2].id,atoms[3].id],0.01);if(name==="CH4")return deform(molecule,[atoms[1].id,atoms[2].id,atoms[3].id,atoms[4].id],0.008);if(name==="CO2")return deform(molecule,[atoms[1].id,atoms[2].id],0.01);return deform(molecule,[atoms[1].id],0.012);}

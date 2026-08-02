@@ -1,0 +1,4 @@
+export const MAX_RENDERED_ATOMS_PHASE_4=250; export const MAX_RENDERED_BONDS_PHASE_4=400; export const MAX_VISIBLE_LABELS=40;
+export const FORCE_VECTOR_VISUAL_SCALE=0.12; export const MAX_FORCE_VECTOR_WORLD_LENGTH=2.5; export const MIN_FORCE_VECTOR_VISIBLE_MAGNITUDE=0.001;
+export const RENDER_QUALITY=Object.freeze({low:{sphereSegments:12,cylinderSegments:8,maxPixelRatio:1,shadows:false},medium:{sphereSegments:20,cylinderSegments:12,maxPixelRatio:1.5,shadows:false},high:{sphereSegments:32,cylinderSegments:16,maxPixelRatio:2,shadows:true}});
+export const DEFAULT_RENDER_SETTINGS=Object.freeze({displayMode:"ball-and-stick",bondStyle:"cylinder",bondColorMode:"uniform",quality:"medium",showHydrogens:true,showLabels:false,showForces:false,showGrid:true,showAxes:true,atomVisualScale:0.32,vanDerWaalsVisualScale:0.55,forceVectorVisualScale:FORCE_VECTOR_VISUAL_SCALE});

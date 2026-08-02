@@ -1,0 +1,2 @@
+export function createMolecularLabState(){return {molecule:null,repository:null,candidates:[],decisions:[],traces:[],selectedElementId:"C",nextAtomNumber:1,traceLimit:200,energyStale:true,forcesStale:true,measurement:null,geometrySnapshots:{drag:null,minimization:null,benchmark:null},minimization:{status:"idle",result:null}};}
+export function addTrace(state,trace){state.traces=[...state.traces,trace].slice(-state.traceLimit);}

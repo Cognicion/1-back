@@ -1,0 +1,11 @@
+[
+ {"atomType":"H","sigma_nm":0.250,"epsilon_kJmol":0.0657,"chargeModel":"formal-charge-mode","source":"Educational phase-3 parameter set; limited benchmark use","revision":"0.1"},
+ {"atomType":"C-sp3","sigma_nm":0.340,"epsilon_kJmol":0.276,"chargeModel":"formal-charge-mode","source":"Educational phase-3 parameter set; limited benchmark use","revision":"0.1"},
+ {"atomType":"C-sp2","sigma_nm":0.335,"epsilon_kJmol":0.276,"chargeModel":"formal-charge-mode","source":"Educational phase-3 parameter set; limited benchmark use","revision":"0.1"},
+ {"atomType":"C-sp","sigma_nm":0.330,"epsilon_kJmol":0.276,"chargeModel":"formal-charge-mode","source":"Educational phase-3 parameter set; limited benchmark use","revision":"0.1"},
+ {"atomType":"N-neutral-trivalent","sigma_nm":0.325,"epsilon_kJmol":0.711,"chargeModel":"formal-charge-mode","source":"Educational phase-3 parameter set; limited benchmark use","revision":"0.1"},
+ {"atomType":"O","sigma_nm":0.296,"epsilon_kJmol":0.878,"chargeModel":"formal-charge-mode","source":"Educational phase-3 parameter set; limited benchmark use","revision":"0.1"},
+ {"atomType":"O-hydroxyl","sigma_nm":0.300,"epsilon_kJmol":0.650,"chargeModel":"formal-charge-mode","source":"Educational phase-3 parameter set; limited benchmark use","revision":"0.1"},
+ {"atomType":"O-carbonyl","sigma_nm":0.296,"epsilon_kJmol":0.878,"chargeModel":"formal-charge-mode","source":"Educational phase-3 parameter set; limited benchmark use","revision":"0.1"},
+ {"atomType":"halogen","sigma_nm":0.350,"epsilon_kJmol":1.000,"chargeModel":"formal-charge-mode","source":"Educational phase-3 parameter set; limited benchmark use","revision":"0.1"}
+]

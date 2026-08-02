@@ -1,0 +1,6 @@
+[
+ {"id":"H-O-H","atomTypes":["H-hetero","O-hydroxyl","H-hetero"],"equilibriumAngle_rad":1.823869,"forceConstant_kJMolRad2":450,"units":{"angle":"rad","force":"kJ/mol/rad2"},"source":"Educational phase-3 parameter set; water reference geometry","revision":"0.1","confidence":"limited","notes":"Benchmark-only."},
+ {"id":"H-N-H","atomTypes":["H-hetero","N-neutral-trivalent","H-hetero"],"equilibriumAngle_rad":1.867502,"forceConstant_kJMolRad2":350,"units":{"angle":"rad","force":"kJ/mol/rad2"},"source":"Educational phase-3 parameter set; ammonia reference geometry","revision":"0.1","confidence":"limited","notes":"Benchmark-only."},
+ {"id":"H-C-H","atomTypes":["H","C-sp3","H"],"equilibriumAngle_rad":1.910633,"forceConstant_kJMolRad2":320,"units":{"angle":"rad","force":"kJ/mol/rad2"},"source":"Educational phase-3 parameter set; methane reference geometry","revision":"0.1","confidence":"limited","notes":"Benchmark-only."},
+ {"id":"O-C-O","atomTypes":["O-carbonyl","C-sp2","O-carbonyl"],"equilibriumAngle_rad":3.141593,"forceConstant_kJMolRad2":500,"units":{"angle":"rad","force":"kJ/mol/rad2"},"source":"Educational phase-3 parameter set; carbon dioxide reference geometry","revision":"0.1","confidence":"limited","notes":"Benchmark-only."}
+]

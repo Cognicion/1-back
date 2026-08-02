@@ -1,0 +1,1 @@
+import * as THREE from "three"; export function createGrid(){const group=new THREE.Group();group.add(new THREE.GridHelper(20,20,0x44617e,0x26394d));group.add(new THREE.AxesHelper(2));return group;} export function applySceneTheme(grid,isLight){grid.traverse(node=>node.material?.color?.set(isLight?0x5a718a:0x44617e));}

@@ -1,0 +1,1 @@
+export const FORCE_FIELD_METADATA=Object.freeze({id:"cognicion-classical-phase3",version:"0.1",scope:"educational-classical",source:"Parámetros iniciales documentados para esta fase; no es un campo de fuerza completo",revision:"phase-3",notes:"No representa química cuántica ni reactividad."});

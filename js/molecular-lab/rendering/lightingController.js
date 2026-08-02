@@ -1,0 +1,1 @@
+import * as THREE from "three"; export function addLighting(scene){scene.add(new THREE.HemisphereLight(0xffffff,0x25354a,2.4));const key=new THREE.DirectionalLight(0xffffff,2.2);key.position.set(4,6,7);scene.add(key);return {updateTheme:isLight=>{scene.background=new THREE.Color(isLight?0xf4f7fb:0x0d1420);}};}

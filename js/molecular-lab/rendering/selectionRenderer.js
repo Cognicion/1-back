@@ -1,0 +1,1 @@
+import * as THREE from "three"; export function applySelection(mesh,selected){if(!mesh?.material)return;mesh.material.emissive?.set(selected?0xffcc66:0x000000);mesh.material.emissiveIntensity=selected?.55:0;mesh.scale.setScalar(selected?1.15:1);}

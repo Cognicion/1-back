@@ -1,0 +1,12 @@
+const finite = value => typeof value === "number" && Number.isFinite(value);
+export const createVector3 = (x = 0, y = 0, z = 0) => { if (![x,y,z].every(finite)) throw new TypeError("Vector no finito"); return Object.freeze({ x, y, z }); };
+export const isFiniteVector3 = vector => Boolean(vector) && [vector.x, vector.y, vector.z].every(finite);
+const assert = vector => { if (!isFiniteVector3(vector)) throw new TypeError("Vector no finito"); };
+export const add = (a,b) => { assert(a); assert(b); return createVector3(a.x+b.x,a.y+b.y,a.z+b.z); };
+export const subtract = (a,b) => { assert(a); assert(b); return createVector3(a.x-b.x,a.y-b.y,a.z-b.z); };
+export const scale = (vector, scalar) => { assert(vector); if (!finite(scalar)) throw new TypeError("Escalar no finito"); return createVector3(vector.x*scalar,vector.y*scalar,vector.z*scalar); };
+export const dot = (a,b) => { assert(a); assert(b); return a.x*b.x+a.y*b.y+a.z*b.z; };
+export const cross = (a,b) => { assert(a); assert(b); return createVector3(a.y*b.z-a.z*b.y,a.z*b.x-a.x*b.z,a.x*b.y-a.y*b.x); };
+export const magnitude = vector => Math.sqrt(dot(vector,vector));
+export const normalize = vector => { const length = magnitude(vector); if (length === 0) throw new RangeError("No se puede normalizar el vector cero"); return scale(vector, 1/length); };
+export const distance = (a,b) => magnitude(subtract(a,b));

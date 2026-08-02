@@ -1,0 +1,3 @@
+import { validateElementCatalog } from "../data/elementRepository.js"; import { MoleculeGraph } from "../chemistry/moleculeGraph.js";
+export function validateMolecule(molecule,repository) { const integrity=molecule.validateIntegrity(),graph=new MoleculeGraph(molecule),errors=[...integrity.errors],warnings=[];molecule.getAtoms().forEach(atom=>{if(!repository.has(atom.elementId))errors.push(`Elemento inexistente: ${atom.elementId}`);if(!atom.validate().valid)errors.push(`Átomo no finito: ${atom.id}`);});if(graph.duplicateEdges().length)errors.push("Hay enlaces duplicados");return {valid:errors.length===0,errors,warnings,components:graph.connectedComponents(),hasCycle:graph.hasCycle(),totalFormalCharge:molecule.totalFormalCharge()};}
+export { validateElementCatalog };

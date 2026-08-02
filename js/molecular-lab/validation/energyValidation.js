@@ -1,0 +1,2 @@
+export function validateFiniteEnergy(result){const values=[result.totalEnergy_kJmol,...Object.values(result.components).map(component=>component.energy_kJmol)];return {valid:values.every(value=>value===null||Number.isFinite(value)),errors:values.some(value=>value!==null&&!Number.isFinite(value))?["Energía no finita"]:[]};}
+export function validateActionReaction(forceA,forceB,tolerance=1e-8){const error=Math.hypot(forceA.x+forceB.x,forceA.y+forceB.y,forceA.z+forceB.z);return {error,tolerance,passed:error<=tolerance};}

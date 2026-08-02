@@ -1,0 +1,1 @@
+export function disposeObject3D(object){if(!object)return;object.traverse?.(node=>{node.geometry?.dispose?.();const materials=Array.isArray(node.material)?node.material:[node.material];materials.filter(Boolean).forEach(material=>{Object.values(material).forEach(value=>value?.isTexture&&value.dispose?.());material.dispose?.();});});object.parent?.remove(object);}
