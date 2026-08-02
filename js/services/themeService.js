@@ -51,12 +51,12 @@ export function applyTheme(theme) {
   root.style.colorScheme = normalizedTheme === "light" ? "light" : "dark";
   root.style.backgroundColor = normalizedTheme === "light" ? "#f3f3f1" : "#050505";
   if (normalizedTheme === "biocelular") {
-    void import("./biocellularThemeController.js")
+    void import("../themes/biocellularThemeController.js")
       .then(({ activateBiocellularTheme }) => { console.debug("[BIOCELULAR] Módulo cargado"); return activateBiocellularTheme(); })
       .catch((error) => console.error("[BIOCELULAR] Error al importar el controlador", error));
   } else {
     if (globalThis.__cognicionBiocellularDeactivate) globalThis.__cognicionBiocellularDeactivate();
-    else void import("./biocellularThemeController.js").then(({ deactivateBiocellularTheme }) => deactivateBiocellularTheme()).catch((error) => console.error("[BIOCELULAR] Error al limpiar el controlador", error));
+    else void import("../themes/biocellularThemeController.js").then(({ deactivateBiocellularTheme }) => deactivateBiocellularTheme()).catch((error) => console.error("[BIOCELULAR] Error al limpiar el controlador", error));
   }
   updateThemeSelectorUI(normalizedTheme);
   return normalizedTheme;

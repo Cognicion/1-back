@@ -111,7 +111,12 @@ html[data-theme="biocelular"] ::selection { color: #170609; background: #ffbd58;
   overflow: hidden;
   pointer-events: none;
   isolation: isolate;
-  background: linear-gradient(145deg, #100407, #2a0a13 52%, #0b0205);
+  background:
+    radial-gradient(circle at 14% 24%, transparent 0 92px, rgb(225 102 78 / 34%) 96px 101px, transparent 106px),
+    radial-gradient(circle at 80% 20%, transparent 0 128px, rgb(255 189 88 / 24%) 132px 137px, transparent 143px),
+    radial-gradient(circle at 76% 78%, transparent 0 84px, rgb(201 66 69 / 30%) 88px 93px, transparent 99px),
+    radial-gradient(circle at 22% 84%, rgb(201 66 69 / 24%), transparent 24%),
+    linear-gradient(145deg, #100407, #2a0a13 52%, #0b0205);
 }
 
 #cognicion-biocellular-background::after {

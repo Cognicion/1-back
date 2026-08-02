@@ -43,7 +43,7 @@
       document.head.appendChild(link);
     }
     if (appliedTheme === "biocelular") {
-      void import("./js/themes/biocellularThemeController.js")
+      void import("./themes/biocellularThemeController.js")
         .then(({ activateBiocellularTheme }) => activateBiocellularTheme())
         .catch((error) => console.error("[BIOCELULAR] Error en bootstrap temprano", error));
     }
