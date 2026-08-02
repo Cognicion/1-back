@@ -1,4 +1,5 @@
 export const PATTERN_CONFIG = Object.freeze({
+  defaultIncludeFunctionWords: false,
   defaultThreshold: 3,
   minimumThreshold: 2,
   maximumThreshold: 1000,

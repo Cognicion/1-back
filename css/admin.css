@@ -70,6 +70,11 @@ body.admin-startup-error .admin-startup-state span { color: #fca5a5; }
 
 .patrones-admin .estado-patrones { color: var(--gray-400); min-height: 20px; }
 .patrones-acciones { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; }
+.patrones-filtros-principales { display: flex; flex-wrap: wrap; gap: 12px; align-items: stretch; margin: 14px 0; }
+.patrones-conectores { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; padding: 12px; border: 1px solid var(--black-700); border-radius: 12px; color: var(--gray-300); }
+.patrones-control-label { color: var(--ivory-50); font-weight: 600; }
+.patrones-conectores button.activo { background: var(--celtic-600); color: var(--ivory-50); }
+.patrones-conectores small { flex-basis: 100%; color: var(--gray-500); font-size: 12px; }
 .patrones-umbral { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin: 14px 0; padding: 12px; border: 1px solid var(--black-700); border-radius: 12px; color: var(--gray-300); }
 .patrones-umbral label { color: var(--ivory-50); font-weight: 600; }
 .patrones-umbral input { width: 86px; text-align: center; }
