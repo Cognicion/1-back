@@ -539,11 +539,11 @@ function renderizarAccesoMotorPatrones() {
   seccion.id = "seccionMotorPatronesAdmin";
   seccion.className = "card tabla-card admin-section patrones-admin";
   seccion.innerHTML = `
-    <div class="tabla-header"><div><h2>Motor de Descubrimiento de Patrones</h2><p>Texto clínico · solo lectura. Los datos se solicitan únicamente al pulsar “Actualizar índice”.</p></div><button id="btnActualizarPatronesTexto" type="button">Actualizar índice</button></div>
-    <p id="estadoPatronesTexto" class="estado-patrones" aria-live="polite">Módulo listo. Pulsa “Actualizar índice” para solicitar resultados.</p>
+    <div class="tabla-header"><div><h2>Motor de Descubrimiento de Patrones</h2><p>Texto clínico · solo lectura. Solo conserva frases con el umbral confirmado.</p></div><div class="patrones-acciones"><button id="btnAnalizarPatronesTexto" type="button">Analizar textos</button><button id="btnExportarPatronesExcel" type="button" disabled>Exportar Excel</button><button id="btnExportarPatronesCsv" type="button" disabled>Exportar CSV</button><button id="btnLimpiarPatronesTexto" type="button">Limpiar resultados temporales</button></div></div>
+    <p id="estadoPatronesTexto" class="estado-patrones" aria-live="polite">Módulo listo. No se han leído textos clínicos.</p>
+    <div class="patrones-resumen"><span>Umbral actual: <strong id="umbralPatronesTexto">3 apariciones</strong></span><span>Documentos revisados: <strong id="documentosPatronesTexto">0</strong></span><span>Lotes procesados: <strong id="lotesPatronesTexto">0</strong></span><span>Candidatas temporales: <strong id="candidatasPatronesTexto">0</strong></span><span>Patrones confirmados: <strong id="confirmadosPatronesTexto">0</strong></span><span>Tiempo: <strong id="tiempoPatronesTexto">0 ms</strong></span></div>
     <div class="filtros-auditoria patrones-filtros"><input id="filtroPatronBusqueda" placeholder="Buscar frase o palabra"><input id="filtroPatronMedico" placeholder="UID médico"><input id="filtroPatronPaciente" placeholder="UID paciente"><input id="filtroPatronInstitucion" placeholder="Institución"><input id="filtroPatronServicio" placeholder="Servicio / atención"><input id="filtroPatronDesde" type="date" aria-label="Fecha desde"><input id="filtroPatronHasta" type="date" aria-label="Fecha hasta"></div>
-    <div class="tabla-scroll"><table><thead><tr><th>Frase</th><th>Frecuencia</th><th>Pacientes</th><th>Médicos</th><th>Notas</th><th>Última aparición</th></tr></thead><tbody id="tablaPatronesTexto"><tr><td colspan="6">Sin datos cargados.</td></tr></tbody></table></div>
-    <aside id="detallePatronTexto" class="detalle-patron" hidden></aside>`;
+    <div class="tabla-scroll"><table><thead><tr><th>Frase</th><th>Frase normalizada</th><th>Frecuencia total</th><th>Notas</th><th>Pacientes</th><th>Médicos</th><th>Primera aparición</th><th>Última aparición</th><th>Palabras</th></tr></thead><tbody id="tablaPatronesTexto"><tr><td colspan="9">Sin resultados temporales.</td></tr></tbody></table></div>`;
   principal.appendChild(seccion);
 }
 

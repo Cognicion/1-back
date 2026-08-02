@@ -3,6 +3,7 @@ const { HttpsError } = require("firebase-functions/v2/https");
 const ADMIN_UID = "NQ0CU5PSDBUgVrk56sjPEVhOs2D3";
 const ADMIN_ROLES = new Set(["admin", "administrador", "superadmin", "adminprincipal", "administradorprincipal"]);
 const TEXT_COLLECTIONS = ["notasMedicas", "notas", "notasClinicas", "notasRapidas", "historiaClinica"];
+const PATTERN_CONFIG = Object.freeze({ minimumOccurrences: 3, minimumTokens: 2, maximumTokens: 20, batchSize: 25, pageSize: 50 });
 const META_KEYS = /^(id|uid|uuid|path|ruta|url|email|correo|telefono|tel|curp|rfc|timestamp|createdat|updatedat|fecha|hora|version|estado|rol|sexo|edad|nombre|apellido|expediente|pacienteid|pacienteuid|medicouid|institucionid)$/i;
 
 function roleIsAdmin(value = "") {
@@ -57,18 +58,13 @@ function matches(meta, filters = {}) {
 
 function add(map, key, item) {
   let row = map.get(key);
-  if (!row) row = { clave: item.clave, tipo: item.tipo, n: item.n, frecuencia: 0, notas: new Set(), pacientes: new Set(), medicos: new Set(), ejemplos: [], primeraAparicion: item.fecha, ultimaAparicion: item.fecha, porDiagnostico: new Map(), porAnio: new Map() };
+  if (!row) row = { clave: item.clave, tipo: item.tipo, n: item.n, frecuencia: 0, notas: new Set(), pacientes: new Set(), medicos: new Set(), primeraAparicion: item.fecha, ultimaAparicion: item.fecha };
   row.frecuencia++;
   if (item.notaId) row.notas.add(item.notaId);
   if (item.pacienteUid) row.pacientes.add(item.pacienteUid);
   if (item.medicoUid) row.medicos.add(item.medicoUid);
   if (item.fecha && (!row.primeraAparicion || item.fecha < row.primeraAparicion)) row.primeraAparicion = item.fecha;
   if (item.fecha > row.ultimaAparicion) row.ultimaAparicion = item.fecha;
-  const diagnosis = item.diagnostico || "Sin diagnostico";
-  row.porDiagnostico.set(diagnosis, (row.porDiagnostico.get(diagnosis) || 0) + 1);
-  const year = item.fecha ? item.fecha.slice(0, 4) : "Sin fecha";
-  row.porAnio.set(year, (row.porAnio.get(year) || 0) + 1);
-  if (row.ejemplos.length < 3 && item.ejemplo) row.ejemplos.push({ texto: item.ejemplo, contexto: item.campo });
   map.set(key, row);
 }
 
@@ -76,16 +72,21 @@ async function discoverTextPatterns({ request, db }) {
   const adminUid = await assertAdmin(request, db);
   const inicio = Date.now();
   const filters = request.data?.filtros || {};
-  const limit = Math.min(Math.max(Number(request.data?.limite || 500), 1), 500);
+  const threshold = Math.max(PATTERN_CONFIG.minimumOccurrences, Number(request.data?.threshold || PATTERN_CONFIG.minimumOccurrences));
+  const limit = Math.min(Math.max(Number(request.data?.pageSize || PATTERN_CONFIG.pageSize), 1), 500);
   const usuarios = await db.collection("usuarios").get();
   const rows = new Map();
   let totalNotas = 0;
-  for (const usuario of usuarios.docs) {
-    const perfil = usuario.data() || {};
-    for (const collectionName of TEXT_COLLECTIONS) {
+  let batchesProcessed = 0;
+  for (let offset = 0; offset < usuarios.docs.length; offset += PATTERN_CONFIG.batchSize) {
+    const lote = usuarios.docs.slice(offset, offset + PATTERN_CONFIG.batchSize);
+    batchesProcessed++;
+    for (const usuario of lote) {
+      const perfil = usuario.data() || {};
+      for (const collectionName of TEXT_COLLECTIONS) {
       let snapshot;
       try { snapshot = await db.collection(`usuarios/${usuario.id}/${collectionName}`).get(); } catch { continue; }
-      for (const note of snapshot.docs) {
+        for (const note of snapshot.docs) {
         totalNotas++;
         const data = note.data() || {};
         const meta = metadata(data, perfil.rol === "paciente" ? usuario.id : "");
@@ -94,18 +95,20 @@ async function discoverTextPatterns({ request, db }) {
         for (const source of collectTexts(data)) {
           const words = tokens(source.texto);
           const example = anonymize(source.texto);
-          for (let n = 1; n <= Math.min(20, words.length); n++) for (let i = 0; i <= words.length - n; i++) {
+          for (let n = PATTERN_CONFIG.minimumTokens; n <= Math.min(PATTERN_CONFIG.maximumTokens, words.length); n++) for (let i = 0; i <= words.length - n; i++) {
             const tipo = n === 1 ? "word" : n === 2 ? "bigram" : n === 3 ? "trigram" : "phrase";
             const clave = words.slice(i, i + n).join(" ");
             add(rows, `${tipo}:${clave}`, { ...meta, notaId, campo: source.campo, ejemplo, tipo, n, clave });
           }
         }
+        }
       }
     }
   }
-  const filas = [...rows.values()].map((row) => ({ ...row, notas: row.notas.size, pacientes: row.pacientes.size, medicos: row.medicos.size, ejemplos: row.ejemplos, porDiagnostico: Object.fromEntries(row.porDiagnostico), porAnio: Object.fromEntries(row.porAnio) })).sort((a, b) => b.frecuencia - a.frecuencia || a.clave.localeCompare(b.clave)).slice(0, limit);
-  await db.collection("auditoria").add({ accion: "consultar_patrones_texto", modulo: "Motor de Descubrimiento de Patrones", usuarioUid: adminUid, filtros: { ...filters }, cantidadResultados: filas.length, totalNotas, duracionMs: Date.now() - inicio, fecha: new Date().toISOString(), exito: true });
-  return { filas, totalNotas };
+  const temporaryCandidates = rows.size;
+  const patterns = [...rows.values()].filter((row) => row.frecuencia >= threshold).map((row) => ({ phrase: row.clave, normalizedPhrase: row.clave, frequency: row.frecuencia, noteCount: row.notas.size, patientCount: row.pacientes.size, physicianCount: row.medicos.size, firstSeenAt: row.primeraAparicion, lastSeenAt: row.ultimaAparicion, tokenCount: row.n })).filter((row) => !filters.busqueda || `${row.phrase} ${row.normalizedPhrase}`.includes(String(filters.busqueda).toLowerCase())).sort((a, b) => b.frequency - a.frequency || a.normalizedPhrase.localeCompare(b.normalizedPhrase)).slice(0, limit);
+  await db.collection("auditoria").add({ accion: "analizar_patrones_texto", modulo: "Motor de Descubrimiento de Patrones", usuarioUid: adminUid, filtros: { ...filters }, umbral: threshold, cantidadResultados: patterns.length, totalNotas, duracionMs: Date.now() - inicio, fecha: new Date().toISOString(), exito: true });
+  return { patterns, stats: { documentsProcessed: totalNotas, batchesProcessed, temporaryCandidates, confirmedPatterns: patterns.length, threshold, elapsedMs: Date.now() - inicio } };
 }
 
 module.exports = { discoverTextPatterns };

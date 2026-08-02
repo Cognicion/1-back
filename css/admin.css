@@ -69,9 +69,13 @@ body.admin-startup-error .admin-startup-state span { color: #fca5a5; }
 }
 
 .patrones-admin .estado-patrones { color: var(--gray-400); min-height: 20px; }
+.patrones-acciones { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; }
+.patrones-resumen { display: flex; flex-wrap: wrap; gap: 10px; margin: 14px 0; color: var(--gray-400); }
+.patrones-resumen span { border: 1px solid var(--black-700); border-radius: 999px; padding: 7px 10px; font-size: 12px; }
+.patrones-resumen strong { color: var(--ivory-50); }
 .patrones-filtros { grid-template-columns: repeat(4, minmax(150px, 1fr)); }
 .tabla-scroll { overflow-x: auto; }
-.patrones-admin table { min-width: 760px; }
+.patrones-admin table { min-width: 1100px; }
 .patrones-admin td small { display: block; color: var(--gray-500); margin-top: 4px; }
 .enlace-patron { border: 0; background: transparent; color: var(--ivory-50); cursor: pointer; text-align: left; font-weight: 600; padding: 0; }
 .enlace-patron:hover { color: var(--celtic-400); text-decoration: underline; }
