@@ -50,6 +50,26 @@ function diagnoseLayout(host) {
     element.style.outline = `2px solid ${colors[index]}`;
     outlined.push([element, previous]);
   });
+  const login = document.querySelector("#login, .login-container, #loginForm, .login-form, form");
+  if (login) {
+    document.body.classList.add("biocellular-login-page");
+    const style = getComputedStyle(login);
+    const rect = login.getBoundingClientRect();
+    console.debug("[BIOCELULAR LOGIN] Elemento encontrado", login.id || login.className || login.tagName);
+    console.debug("[BIOCELULAR LOGIN] display", style.display);
+    console.debug("[BIOCELULAR LOGIN] visibility", style.visibility);
+    console.debug("[BIOCELULAR LOGIN] opacity", style.opacity);
+    console.debug("[BIOCELULAR LOGIN] position", style.position);
+    console.debug("[BIOCELULAR LOGIN] zIndex", style.zIndex);
+    console.debug("[BIOCELULAR LOGIN] boundingRect", { top: rect.top, left: rect.left, width: rect.width, height: rect.height });
+    console.debug("[BIOCELULAR LOGIN] transform", style.transform);
+    console.debug("[BIOCELULAR LOGIN] color", style.color);
+    console.debug("[BIOCELULAR LOGIN] background", style.backgroundColor);
+    console.debug("[BIOCELULAR LOGIN] pointerEvents", style.pointerEvents);
+    if (host.dataset.diagnostic === "true") login.style.outline = "4px solid #39ff88";
+  } else {
+    console.warn("[BIOCELULAR LOGIN] Elemento no encontrado");
+  }
   window.setTimeout(() => outlined.forEach(([element, outline]) => { element.style.outline = outline; }), 1500);
 }
 
@@ -80,6 +100,7 @@ export async function activateBiocellularTheme() {
 
 export function deactivateBiocellularTheme() {
   cleanup?.(); cleanup = null;
+  document.body?.classList.remove("biocellular-login-page");
   console.debug("[BIOCELULAR] Recursos destruidos");
   document.getElementById(HOST_ID)?.remove();
   document.getElementById(STYLE_ID)?.remove();
