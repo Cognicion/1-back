@@ -248,7 +248,7 @@ onAuthStateChanged(auth, async (user) => {
     console.log("[ADMIN] Render principal completado");
 
     // El motor es secundario: un fallo suyo no debe impedir el panel administrativo.
-    import("./admin/patternDiscovery/patternDiscoveryController.js?v=20260802-patterns-v1")
+    import("./admin/patternDiscovery/patternDiscoveryController.js?v=20260802-patterns-v2")
       .then(({ iniciarDescubrimientoPatrones }) => iniciarDescubrimientoPatrones())
       .then(() => console.log("[ADMIN] Motor de patrones iniciado"))
       .catch((error) => {
