@@ -107,7 +107,7 @@ html[data-theme="biocelular"] ::selection { color: #170609; background: #ffbd58;
 #cognicion-biocellular-background {
   position: fixed;
   inset: 0;
-  z-index: 0;
+  z-index: 1;
   overflow: hidden;
   pointer-events: none;
   isolation: isolate;
@@ -122,6 +122,16 @@ html[data-theme="biocelular"] ::selection { color: #170609; background: #ffbd58;
   background: radial-gradient(ellipse at center, transparent 18%, rgb(8 2 4 / var(--biocellular-overlay-opacity)) 70%, rgb(4 1 2 / 68%));
 }
 
+#cognicion-biocellular-background[data-diagnostic="true"] {
+  background: rgb(255 0 255 / 28%) !important;
+  outline: 3px solid #ffff00;
+}
+
+#cognicion-biocellular-background[data-diagnostic="true"] .biocellular-background {
+  outline: 3px solid #ffff00;
+  outline-offset: -3px;
+}
+
 .biocellular-background {
   position: absolute;
   inset: 0;
@@ -133,7 +143,11 @@ html[data-theme="biocelular"] ::selection { color: #170609; background: #ffbd58;
   pointer-events: none;
 }
 
-html[data-theme="biocelular"] body > *:not(#cognicion-biocellular-background) { position: relative; z-index: 1; }
+html[data-theme="biocelular"] body > main,
+html[data-theme="biocelular"] body > .dashboard-footer {
+  position: relative;
+  z-index: 3;
+}
 
 @media (prefers-reduced-transparency: reduce) {
   html[data-theme="biocelular"] :where(.card, .tarjeta, .panel, .config-card, header) { background: #220910; }
