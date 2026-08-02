@@ -72,9 +72,12 @@ body.admin-startup-error .admin-startup-state span { color: #fca5a5; }
 .patrones-acciones { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; }
 .patrones-filtros-principales { display: flex; flex-wrap: wrap; gap: 12px; align-items: stretch; margin: 14px 0; }
 .patrones-conectores { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; padding: 12px; border: 1px solid var(--black-700); border-radius: 12px; color: var(--gray-300); }
+.patrones-preposiciones { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; padding: 12px; border: 1px solid var(--black-700); border-radius: 12px; color: var(--gray-300); }
 .patrones-control-label { color: var(--ivory-50); font-weight: 600; }
 .patrones-conectores button.activo { background: var(--celtic-600); color: var(--ivory-50); }
+.patrones-preposiciones button.activo { background: var(--celtic-600); color: var(--ivory-50); }
 .patrones-conectores small { flex-basis: 100%; color: var(--gray-500); font-size: 12px; }
+.patrones-preposiciones small { flex-basis: 100%; color: var(--gray-500); font-size: 12px; }
 .patrones-umbral { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin: 14px 0; padding: 12px; border: 1px solid var(--black-700); border-radius: 12px; color: var(--gray-300); }
 .patrones-umbral label { color: var(--ivory-50); font-weight: 600; }
 .patrones-umbral input { width: 86px; text-align: center; }
@@ -85,7 +88,7 @@ body.admin-startup-error .admin-startup-state span { color: #fca5a5; }
 .patrones-resumen strong { color: var(--ivory-50); }
 .patrones-filtros { grid-template-columns: repeat(4, minmax(150px, 1fr)); }
 .tabla-scroll { overflow-x: auto; }
-.patrones-admin table { min-width: 1100px; }
+.patrones-admin table { min-width: 1250px; }
 .patrones-admin td small { display: block; color: var(--gray-500); margin-top: 4px; }
 .enlace-patron { border: 0; background: transparent; color: var(--ivory-50); cursor: pointer; text-align: left; font-weight: 600; padding: 0; }
 .enlace-patron:hover { color: var(--celtic-400); text-decoration: underline; }

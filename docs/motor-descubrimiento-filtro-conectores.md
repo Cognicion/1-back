@@ -1,6 +1,6 @@
-# Filtro de conectores del Motor de Patrones
+# Filtros lingüísticos del Motor de Patrones
 
-Los resultados se clasifican una sola vez con `isFunctionWordPattern` después de recibir el análisis. La clasificación marca como funcional únicamente una frase cuyos tokens pertenecen todos al conjunto español de palabras funcionales.
+Los resultados se clasifican una sola vez con `isFunctionWordPattern` después de recibir el análisis. Conectores y preposiciones son categorías independientes. La firma derivada se construye con `buildLexicalSignature`; `sin` está protegido y nunca se elimina.
 
 Flujo:
 
@@ -11,9 +11,10 @@ texto clínico
   -> conteo en lotes
   -> clasificación funcional o informativa
   -> filtro de conectores
+  -> filtro de preposiciones
   -> umbral de frecuencia
   -> filtros administrativos
   -> renderizado y exportación
 ```
 
-El estado predeterminado es `Excluir conectores`. Cambiarlo solo filtra el arreglo disponible en memoria; no vuelve a leer Firestore, tokenizar ni reconstruir el análisis. Las frases clínicas que contienen conectores se conservan completas.
+Los estados predeterminados son `Excluir conectores` y `Excluir preposiciones`. Cambiarlos solo deriva firmas sobre el arreglo disponible en memoria; no vuelve a leer Firestore, tokenizar ni reconstruir el análisis. `displayPhrase` y la frase original se conservan completas.

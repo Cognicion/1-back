@@ -1,6 +1,6 @@
-const COLUMNAS = ["Frase", "Frase normalizada", "Frecuencia total", "Número de notas", "Número de pacientes", "Número de médicos", "Primera aparición", "Última aparición", "Número de palabras"];
+const COLUMNAS = ["Frase original", "Frase normalizada", "Firma léxica", "Frecuencia total", "Número de notas", "Número de pacientes", "Número de médicos", "Primera aparición", "Última aparición", "Número de palabras"];
 const escCsv = (v) => `"${String(v ?? "").replace(/"/g, '""')}"`;
-const filasPlanos = (filas = [], metadata = {}) => [["Conectores incluidos", metadata.includeFunctionWords ? "Sí" : "No"], ["Umbral aplicado", metadata.threshold ?? ""], ["Fecha de generación", metadata.generatedAt || new Date().toISOString()], [], COLUMNAS, ...filas.map((f) => [f.phrase, f.normalizedPhrase, f.frequency, f.noteCount, f.patientCount, f.physicianCount, f.firstSeenAt || "", f.lastSeenAt || "", f.tokenCount])];
+const filasPlanos = (filas = [], metadata = {}) => [["Conectores incluidos", metadata.includeConnectors ? "Sí" : "No"], ["Preposiciones incluidas", metadata.includePrepositions ? "Sí" : "No"], ["Umbral aplicado", metadata.threshold ?? ""], ["Fecha de generación", metadata.generatedAt || new Date().toISOString()], [], COLUMNAS, ...filas.map((f) => [f.displayPhrase || f.phrase, f.normalizedPhrase, f.lexicalSignature || "", f.frequency, f.noteCount, f.patientCount, f.physicianCount, f.firstSeenAt || "", f.lastSeenAt || "", f.tokenCount])];
 
 export function exportarPatronesCsv(filas = [], metadata = {}) {
   const contenido = "\uFEFF" + filasPlanos(filas, metadata).map((fila) => fila.map(escCsv).join(",")).join("\r\n");
