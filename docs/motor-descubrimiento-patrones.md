@@ -26,8 +26,9 @@ Visualización administrativa
 - No escribe, actualiza ni elimina documentos de Firestore.
 - No muestra la sección en los paneles de médicos, psicólogos o pacientes.
 - El navegador no lee expedientes ni mantiene listeners de Firestore. Los datos se solicitan mediante la callable administrativa `discoverTextPatterns` y regresan agregados.
-- La configuración central es: mínimo 3 apariciones, mínimo 2 palabras, máximo 20 palabras, lotes de 25 y página de 50.
-- No se usa IndexedDB, Firestore analítico ni caché local para el corpus o candidatos. Solo vive en memoria el arreglo final de patrones confirmados durante la sesión.
+- La configuración central es: umbral inicial 3, mínimo 2, máximo 1000, mínimo 2 palabras, máximo 20 palabras, lotes de 25 y página visible de 50.
+- El umbral se modifica filtrando el arreglo ya recibido; no reconstruye índices, tokeniza ni consulta Firestore otra vez. Solo se guarda el entero de preferencia en `localStorage`.
+- No se usa IndexedDB, Firestore analítico ni caché local para el corpus o candidatos. Solo vive en memoria el arreglo agregado desde 2 apariciones durante la sesión.
 - Se pueden exportar únicamente resultados agregados a CSV o XLSX; nunca se exportan textos completos, nombres, teléfonos, correos o identificadores directos.
 - La callable exige autenticación y rol admin desde claims o el perfil verificado en Admin SDK. Registra auditoría sin texto clínico completo.
 - Las colecciones analíticas no se exponen al cliente. El repositorio no contiene las reglas Firestore existentes de la plataforma; por seguridad no se añadió un archivo incompleto que pudiera bloquear rutas clínicas. Si se crean colecciones analíticas, deben añadirse al ruleset existente con `allow read, write: if false`.

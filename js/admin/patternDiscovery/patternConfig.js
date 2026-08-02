@@ -1,7 +1,9 @@
 export const PATTERN_CONFIG = Object.freeze({
-  minimumOccurrences: 3,
+  defaultThreshold: 3,
+  minimumThreshold: 2,
+  maximumThreshold: 1000,
+  pageSize: 50,
   minimumTokens: 2,
   maximumTokens: 20,
-  batchSize: 25,
-  pageSize: 50
+  batchSize: 25
 });

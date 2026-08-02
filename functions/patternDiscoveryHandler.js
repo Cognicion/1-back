@@ -4,7 +4,7 @@ const admin = require("firebase-admin");
 const ADMIN_UID = "NQ0CU5PSDBUgVrk56sjPEVhOs2D3";
 const ADMIN_ROLES = new Set(["admin", "administrador", "superadmin", "adminprincipal", "administradorprincipal"]);
 const TEXT_COLLECTIONS = ["notasMedicas", "notas", "notasClinicas", "notasRapidas", "historiaClinica"];
-const PATTERN_CONFIG = Object.freeze({ minimumOccurrences: 3, minimumTokens: 2, maximumTokens: 20, batchSize: 25, pageSize: 50 });
+const PATTERN_CONFIG = Object.freeze({ defaultThreshold: 3, minimumThreshold: 2, maximumThreshold: 1000, minimumTokens: 2, maximumTokens: 20, batchSize: 25, pageSize: 50 });
 const META_KEYS = /^(id|uid|uuid|path|ruta|url|email|correo|telefono|tel|curp|rfc|timestamp|createdat|updatedat|fecha|hora|version|estado|rol|sexo|edad|nombre|apellido|expediente|pacienteid|pacienteuid|medicouid|institucionid)$/i;
 
 function roleIsAdmin(value = "") {
@@ -73,8 +73,7 @@ async function discoverTextPatterns({ request, db }) {
   const adminUid = await assertAdmin(request, db);
   const inicio = Date.now();
   const filters = request.data?.filtros || {};
-  const threshold = Math.max(PATTERN_CONFIG.minimumOccurrences, Number(request.data?.threshold || PATTERN_CONFIG.minimumOccurrences));
-  const limit = Math.min(Math.max(Number(request.data?.pageSize || PATTERN_CONFIG.pageSize), 1), 500);
+  const threshold = PATTERN_CONFIG.minimumThreshold;
   const usuarios = await db.collection("usuarios").get();
   const rows = new Map();
   let totalNotas = 0;
@@ -110,7 +109,7 @@ async function discoverTextPatterns({ request, db }) {
     }
   }
   const temporaryCandidates = rows.size;
-  const patterns = [...rows.values()].filter((row) => row.frecuencia >= threshold).map((row) => ({ phrase: row.clave, normalizedPhrase: row.clave, frequency: row.frecuencia, noteCount: row.notas.size, patientCount: row.pacientes.size, physicianCount: row.medicos.size, firstSeenAt: row.primeraAparicion, lastSeenAt: row.ultimaAparicion, tokenCount: row.n })).filter((row) => !filters.busqueda || `${row.phrase} ${row.normalizedPhrase}`.includes(String(filters.busqueda).toLowerCase())).sort((a, b) => b.frequency - a.frequency || a.normalizedPhrase.localeCompare(b.normalizedPhrase)).slice(0, limit);
+  const patterns = [...rows.values()].filter((row) => row.frecuencia >= threshold).map((row) => ({ phrase: row.clave, normalizedPhrase: row.clave, frequency: row.frecuencia, noteCount: row.notas.size, patientCount: row.pacientes.size, physicianCount: row.medicos.size, firstSeenAt: row.primeraAparicion, lastSeenAt: row.ultimaAparicion, tokenCount: row.n })).filter((row) => !filters.busqueda || `${row.phrase} ${row.normalizedPhrase}`.includes(String(filters.busqueda).toLowerCase())).sort((a, b) => b.frequency - a.frequency || a.normalizedPhrase.localeCompare(b.normalizedPhrase));
   await db.collection("auditoria").add({ accion: "analizar_patrones_texto", modulo: "Motor de Descubrimiento de Patrones", usuarioUid: adminUid, filtros: { ...filters }, umbral: threshold, cantidadResultados: patterns.length, totalNotas, duracionMs: Date.now() - inicio, fecha: new Date().toISOString(), exito: true });
   return { patterns, stats: { documentsProcessed: totalNotas, batchesProcessed, temporaryCandidates, confirmedPatterns: patterns.length, threshold, elapsedMs: Date.now() - inicio } };
 }
