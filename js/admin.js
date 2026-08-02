@@ -554,7 +554,7 @@ async function cargarMotorPatronesBajoDemanda() {
   const requestId = patternModuleRequestId;
   if (!patternModulePromise) {
     console.log("[ADMIN] Importando Motor de Patrones tras clic explícito");
-    patternModulePromise = import("./admin/patternDiscovery/patternDiscoveryController.js?v=20260802-patterns-v5");
+    patternModulePromise = import("./admin/patternDiscovery/patternDiscoveryController.js?v=20260802-patterns-v6");
   }
   const modulo = await patternModulePromise;
   if (requestId !== patternModuleRequestId || !document.getElementById("seccionMotorPatronesAdmin")) throw new Error("PATTERN_DISCOVERY_CANCELLED");
