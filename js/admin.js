@@ -253,7 +253,8 @@ onAuthStateChanged(auth, async (user) => {
       .then(() => console.log("[ADMIN] Motor de patrones iniciado"))
       .catch((error) => {
         console.error("[ADMIN] Error no bloqueante en Motor de patrones", error);
-        document.getElementById("estadoPatronesTexto")?.replaceChildren(document.createTextNode("No se pudo iniciar este módulo; el Centro de Control sigue disponible."));
+        const detalle = error?.message ? ` (${error.message})` : "";
+        document.getElementById("estadoPatronesTexto")?.replaceChildren(document.createTextNode(`No se pudo iniciar este módulo${detalle}; el Centro de Control sigue disponible.`));
       });
   } catch (error) {
     console.error("[ADMIN] Error durante el arranque", error);

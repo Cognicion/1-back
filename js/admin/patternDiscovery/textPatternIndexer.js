@@ -8,7 +8,7 @@ const raices = ["usuarios", "pacientes"];
 const valor = (d, claves) => claves.map((k) => d[k]).find(Boolean) || "";
 
 export async function construirIndiceIncremental({ onProgress } = {}) {
-  const indice = cargarIndice();
+  const indice = await cargarIndice();
   const usuarios = await getDocs(collection(db, "usuarios"));
   let procesadas = 0, modificadas = 0;
   for (const usuario of usuarios.docs) {
@@ -28,6 +28,6 @@ export async function construirIndiceIncremental({ onProgress } = {}) {
     onProgress?.({ procesadas, modificadas });
   }
   indice.version = 1; indice.actualizadoEn = new Date().toISOString(); indice.totalNotas = Object.keys(indice.notas).length;
-  guardarIndice(indice);
+  await guardarIndice(indice);
   return indice;
 }

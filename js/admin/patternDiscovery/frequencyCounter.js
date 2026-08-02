@@ -17,27 +17,28 @@ export function indexarNota(datos = {}, referencia = {}) {
   const meta = metaNota(datos, referencia);
   const fuentes = extraerTextosClinicos(datos);
   const ngramas = [];
-  fuentes.forEach(({ campo, texto }) => extraerNgramas(texto, 1, 20).forEach((ngram) => ngramas.push({ ...ngram, campo, ejemplo: anonimizarTexto(texto), ...meta }));
+  fuentes.forEach(({ campo, texto }) => extraerNgramas(texto, 1, 20).forEach((ngram) => ngramas.push({ ...ngram, campo, ejemplo: anonimizarTexto(texto) })));
   return { ...meta, firma: JSON.stringify(datos), ngramas };
 }
 
 export function construirFrecuencias(notas = []) {
   const mapa = new Map();
   notas.forEach((nota) => nota.ngramas.forEach((item) => {
-    const clave = `${item.tipo}:${item.clave}`;
+    const dato = { ...nota, ...item };
+    const clave = `${dato.tipo}:${dato.clave}`;
     let actual = mapa.get(clave);
-    if (!actual) actual = { clave: item.clave, tipo: item.tipo, n: item.n, frecuencia: 0, notas: new Set(), pacientes: new Set(), medicos: new Set(), ejemplos: [], primeraAparicion: item.fecha, ultimaAparicion: item.fecha, campos: new Map(), diagnosticos: new Map(), anios: new Map() };
+    if (!actual) actual = { clave: dato.clave, tipo: dato.tipo, n: dato.n, frecuencia: 0, notas: new Set(), pacientes: new Set(), medicos: new Set(), ejemplos: [], primeraAparicion: dato.fecha, ultimaAparicion: dato.fecha, campos: new Map(), diagnosticos: new Map(), anios: new Map() };
     actual.frecuencia += 1;
-    if (item.notaId) actual.notas.add(item.notaId);
-    if (item.pacienteUid) actual.pacientes.add(item.pacienteUid);
-    if (item.medicoUid) actual.medicos.add(item.medicoUid);
-    if (item.fecha && (!actual.primeraAparicion || item.fecha < actual.primeraAparicion)) actual.primeraAparicion = item.fecha;
-    if (item.fecha > actual.ultimaAparicion) actual.ultimaAparicion = item.fecha;
-    actual.campos.set(item.campo, (actual.campos.get(item.campo) || 0) + 1);
-    actual.diagnosticos.set(item.diagnostico || "Sin diagnóstico", (actual.diagnosticos.get(item.diagnostico || "Sin diagnóstico") || 0) + 1);
-    const anio = item.fecha ? item.fecha.slice(0, 4) : "Sin fecha";
+    if (dato.notaId) actual.notas.add(dato.notaId);
+    if (dato.pacienteUid) actual.pacientes.add(dato.pacienteUid);
+    if (dato.medicoUid) actual.medicos.add(dato.medicoUid);
+    if (dato.fecha && (!actual.primeraAparicion || dato.fecha < actual.primeraAparicion)) actual.primeraAparicion = dato.fecha;
+    if (dato.fecha > actual.ultimaAparicion) actual.ultimaAparicion = dato.fecha;
+    actual.campos.set(dato.campo, (actual.campos.get(dato.campo) || 0) + 1);
+    actual.diagnosticos.set(dato.diagnostico || "Sin diagnostico", (actual.diagnosticos.get(dato.diagnostico || "Sin diagnostico") || 0) + 1);
+    const anio = dato.fecha ? dato.fecha.slice(0, 4) : "Sin fecha";
     actual.anios.set(anio, (actual.anios.get(anio) || 0) + 1);
-    if (actual.ejemplos.length < 3 && item.ejemplo) actual.ejemplos.push({ texto: item.ejemplo, contexto: item.campo });
+    if (actual.ejemplos.length < 3 && dato.ejemplo) actual.ejemplos.push({ texto: dato.ejemplo, contexto: dato.campo });
     mapa.set(clave, actual);
   }));
   return [...mapa.values()].map((item) => ({ ...item, notas: item.notas.size, pacientes: item.pacientes.size, medicos: item.medicos.size, ejemplos: item.ejemplos, porDiagnostico: Object.fromEntries(item.diagnosticos), porAnio: Object.fromEntries(item.anios), porCampo: Object.fromEntries(item.campos) })).sort((a, b) => b.frecuencia - a.frecuencia || a.clave.localeCompare(b.clave));
