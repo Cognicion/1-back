@@ -84,9 +84,13 @@ let codigosMedicoAdmin = [];
 let avisosGlobalesAdmin = [];
 let notasPorPaciente = {};
 let adminActual = null;
+let adminDatosActual = null;
 let conversacionesAdmin = [];
 let conversacionAdminActiva = null;
 let mensajesAdminActivos = [];
+let patternModulePromise = null;
+let patternModuleInstance = null;
+let patternModuleRequestId = 0;
 const CLAVE_ALTURAS_RESPUESTAS_REPORTE = "cognicion_admin_alturas_respuestas_reportes";
 const ESTADOS_REPORTE_ADMIN = [
   "nuevo",
@@ -233,9 +237,11 @@ onAuthStateChanged(auth, async (user) => {
 
     console.log("[ADMIN] Rol confirmado");
     adminActual = user;
+    adminDatosActual = accesoAdmin.datos || { rol: "admin" };
     document.body.classList.remove("bloqueado", "admin-startup-error");
     document.getElementById("adminStartupState")?.setAttribute("hidden", "");
     console.log("[ADMIN] Iniciando render");
+    renderizarAccesoMotorPatrones();
     configurarFiltros();
     await cargarResumen();
     await cargarCodigosMedicoAdmin();
@@ -247,15 +253,6 @@ onAuthStateChanged(auth, async (user) => {
     await cargarAuditoria();
     console.log("[ADMIN] Render principal completado");
 
-    // El motor es secundario: un fallo suyo no debe impedir el panel administrativo.
-    import("./admin/patternDiscovery/patternDiscoveryController.js?v=20260802-patterns-v2")
-      .then(({ iniciarDescubrimientoPatrones }) => iniciarDescubrimientoPatrones())
-      .then(() => console.log("[ADMIN] Motor de patrones iniciado"))
-      .catch((error) => {
-        console.error("[ADMIN] Error no bloqueante en Motor de patrones", error);
-        const detalle = error?.message ? ` (${error.message})` : "";
-        document.getElementById("estadoPatronesTexto")?.replaceChildren(document.createTextNode(`No se pudo iniciar este módulo${detalle}; el Centro de Control sigue disponible.`));
-      });
   } catch (error) {
     console.error("[ADMIN] Error durante el arranque", error);
     document.body.classList.add("bloqueado");
@@ -526,13 +523,64 @@ function configurarNavegacionCentroControl() {
   mostrarSeccionAdmin("seccionUsuariosRecientes");
 }
 
+function renderizarAccesoMotorPatrones() {
+  if (!datosUsuarioSonAdmin(adminDatosActual || {})) return;
+  const navegacion = document.querySelector(".admin-section-nav");
+  const principal = document.querySelector("main.admin-contenedor");
+  if (!navegacion || !principal || document.getElementById("seccionMotorPatronesAdmin")) return;
+
+  const boton = document.createElement("button");
+  boton.type = "button";
+  boton.dataset.adminSection = "seccionMotorPatronesAdmin";
+  boton.textContent = "Motor de Descubrimiento de Patrones";
+  navegacion.appendChild(boton);
+
+  const seccion = document.createElement("section");
+  seccion.id = "seccionMotorPatronesAdmin";
+  seccion.className = "card tabla-card admin-section patrones-admin";
+  seccion.innerHTML = `
+    <div class="tabla-header"><div><h2>Motor de Descubrimiento de Patrones</h2><p>Texto clínico · solo lectura. Los datos se solicitan únicamente al pulsar “Actualizar índice”.</p></div><button id="btnActualizarPatronesTexto" type="button">Actualizar índice</button></div>
+    <p id="estadoPatronesTexto" class="estado-patrones" aria-live="polite">Módulo listo. Pulsa “Actualizar índice” para solicitar resultados.</p>
+    <div class="filtros-auditoria patrones-filtros"><input id="filtroPatronBusqueda" placeholder="Buscar frase o palabra"><input id="filtroPatronMedico" placeholder="UID médico"><input id="filtroPatronPaciente" placeholder="UID paciente"><input id="filtroPatronInstitucion" placeholder="Institución"><input id="filtroPatronServicio" placeholder="Servicio / atención"><input id="filtroPatronDesde" type="date" aria-label="Fecha desde"><input id="filtroPatronHasta" type="date" aria-label="Fecha hasta"></div>
+    <div class="tabla-scroll"><table><thead><tr><th>Frase</th><th>Frecuencia</th><th>Pacientes</th><th>Médicos</th><th>Notas</th><th>Última aparición</th></tr></thead><tbody id="tablaPatronesTexto"><tr><td colspan="6">Sin datos cargados.</td></tr></tbody></table></div>
+    <aside id="detallePatronTexto" class="detalle-patron" hidden></aside>`;
+  principal.appendChild(seccion);
+}
+
+async function cargarMotorPatronesBajoDemanda() {
+  if (!adminActual || !datosUsuarioSonAdmin(adminDatosActual || {})) throw new Error("PATTERN_DISCOVERY_FORBIDDEN");
+  if (patternModuleInstance) return patternModuleInstance;
+  const requestId = patternModuleRequestId;
+  if (!patternModulePromise) {
+    console.log("[ADMIN] Importando Motor de Patrones tras clic explícito");
+    patternModulePromise = import("./admin/patternDiscovery/patternDiscoveryController.js?v=20260802-patterns-v3");
+  }
+  const modulo = await patternModulePromise;
+  if (requestId !== patternModuleRequestId || !document.getElementById("seccionMotorPatronesAdmin")) throw new Error("PATTERN_DISCOVERY_CANCELLED");
+  patternModuleInstance = await modulo.inicializarMotorDescubrimientoPatrones({ authUser: adminActual, userRole: "admin" });
+  return patternModuleInstance;
+}
+
+function destruirMotorPatronesActivo() {
+  patternModuleRequestId += 1;
+  patternModuleInstance?.destruirMotorDescubrimientoPatrones?.();
+  patternModuleInstance = null;
+}
+
 function mostrarSeccionAdmin(idSeccion) {
+  if (idSeccion !== "seccionMotorPatronesAdmin") destruirMotorPatronesActivo();
   document.querySelectorAll(".admin-section").forEach((seccion) => {
     seccion.style.display = seccion.id === idSeccion ? "block" : "none";
   });
   document.querySelectorAll("[data-admin-section]").forEach((boton) => {
     boton.classList.toggle("activo", boton.dataset.adminSection === idSeccion);
   });
+  if (idSeccion === "seccionMotorPatronesAdmin") {
+    void cargarMotorPatronesBajoDemanda().catch((error) => {
+      console.error("[ADMIN] Error al cargar Motor de Patrones", error);
+      document.getElementById("estadoPatronesTexto")?.replaceChildren(document.createTextNode(`No se pudo cargar el módulo: ${error.message || "error desconocido"}`));
+    });
+  }
 }
 
 function actualizarCampoUsuarioAviso() {

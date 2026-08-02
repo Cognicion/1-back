@@ -6,14 +6,14 @@ Primera fase: `Texto`, exclusiva del Centro de Control y visible solo para admin
 
 ```text
 Nota clínica
-  ↓ lectura de colecciones compatibles
+  ↓ lectura administrativa en Cloud Function
 Normalización (espacios, minúsculas, acentos, puntuación y exclusiones)
   ↓
 Tokenización
   ↓
 Extracción de palabras, bigramas, trigramas y frases de 4–20 palabras
   ↓
-Actualización incremental del índice local por firma de nota
+Actualización del índice analítico en backend
   ↓
 Frecuencias, pacientes, médicos, notas, fechas y ejemplos anonimizados
   ↓
@@ -25,8 +25,9 @@ Visualización administrativa
 - No usa IA, modelos predictivos, Monte Carlo ni servicios externos.
 - No escribe, actualiza ni elimina documentos de Firestore.
 - No muestra la sección en los paneles de médicos, psicólogos o pacientes.
-- El índice se conserva en `localStorage` del navegador del administrador. Una firma evita reprocesar una nota que no cambió; la primera lectura recorre las rutas compatibles para crear el inventario inicial.
-- Las colecciones soportadas son `usuarios/*/{notasMedicas,notas,notasClinicas,notasRapidas,historiaClinica}` y sus equivalentes bajo `pacientes`.
+- El navegador no lee expedientes ni mantiene listeners de Firestore. Los datos se solicitan mediante la callable administrativa `discoverTextPatterns` y regresan agregados.
+- La callable exige autenticación y rol admin desde claims o el perfil verificado en Admin SDK. Registra auditoría sin texto clínico completo.
+- Las colecciones analíticas no se exponen al cliente. El repositorio no contiene las reglas Firestore existentes de la plataforma; por seguridad no se añadió un archivo incompleto que pudiera bloquear rutas clínicas. Si se crean colecciones analíticas, deben añadirse al ruleset existente con `allow read, write: if false`.
 
 ## Evolución prevista
 

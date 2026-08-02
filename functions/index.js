@@ -4,6 +4,7 @@ const OpenAI = require("openai");
 const admin = require("firebase-admin");
 const { runSegmentClinicalConversation } = require("./segmentationHandler");
 const { runGenerateStructuredNoteFromDictation } = require("./noteGenerationHandler");
+const { discoverTextPatterns } = require("./patternDiscoveryHandler");
 
 const OPENAI_API_KEY = defineSecret("OPENAI_API_KEY");
 if (!admin.apps.length) admin.initializeApp();
@@ -68,6 +69,10 @@ exports.actualizarReconocimientoColaborador = onCall(async (request) => {
   });
   await batch.commit();
   return { ok: true, valorAnterior, valorNuevo };
+});
+
+exports.discoverTextPatterns = onCall({ timeoutSeconds: 300, memory: "1GiB" }, async (request) => {
+  return discoverTextPatterns({ request, db: adminDb });
 });
 
 exports.chatSofia = onCall(
