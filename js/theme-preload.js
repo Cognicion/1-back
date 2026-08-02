@@ -42,6 +42,11 @@
       link.href = "css/theme/biocellular.css";
       document.head.appendChild(link);
     }
+    if (appliedTheme === "biocelular") {
+      void import("./js/themes/biocellularThemeController.js")
+        .then(({ activateBiocellularTheme }) => activateBiocellularTheme())
+        .catch((error) => console.error("[BIOCELULAR] Error en bootstrap temprano", error));
+    }
     root.__cognicionThemeBootstrap = { storedTheme, appliedTheme };
     if (window.performance?.mark) window.performance.mark("cognicion:theme-bootstrap:applied");
     console.debug("[ThemeBootstrap] aplicado antes del primer render", { storedTheme, appliedTheme, source: "localStorage" });
