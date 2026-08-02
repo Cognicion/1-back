@@ -5,6 +5,7 @@ import {
   aplicarModoInterfazCognicion,
   aplicarTemaCognicion,
   guardarModoInterfazUsuario,
+  guardarPreferenciasBiocellularUsuario,
   guardarPreferenciaAparienciaUsuario,
   MODOS_INTERFAZ_COGNICION,
   obtenerModoInterfazLocalCognicion,
@@ -13,6 +14,7 @@ import {
   sincronizarAparienciaUsuario,
   TEMAS_COGNICION
 } from "./services/apariencia.js";
+import { getBiocellularPreferences } from "./themes/biocellularPreferences.js";
 import { iniciarMonitoreoSesion } from "./services/sesion.js";
 import { abrirLegalModal } from "./legal/legalModal.js";
 import { betaConsent, privacyNotice } from "./legal/legalDocuments.js";
@@ -26,6 +28,8 @@ let temaGuardado = aplicarAparienciaGuardada();
 let temaPendiente = temaGuardado;
 let modoInterfazGuardado = obtenerModoInterfazLocalCognicion();
 let modoInterfazPendiente = modoInterfazGuardado;
+let biocellularPendiente = getBiocellularPreferences();
+let biocellularGuardado = { ...biocellularPendiente };
 let guardandoApariencia = false;
 
 function estado(texto) {
@@ -54,7 +58,9 @@ function formatearFechaLegal(valor) {
 }
 
 function hayCambiosPendientes() {
-  return temaPendiente !== temaGuardado || modoInterfazPendiente !== modoInterfazGuardado;
+  return temaPendiente !== temaGuardado
+    || modoInterfazPendiente !== modoInterfazGuardado
+    || JSON.stringify(biocellularPendiente) !== JSON.stringify(biocellularGuardado);
 }
 
 function actualizarBotonesAccion() {
@@ -74,6 +80,8 @@ function actualizarBotonesAccion() {
 function actualizarVistaPrevia() {
   aplicarTemaCognicion(temaPendiente);
   aplicarModoInterfazCognicion(modoInterfazPendiente);
+  const settings = document.getElementById("biocellularSettings");
+  if (settings) settings.hidden = modoInterfazPendiente !== MODOS_INTERFAZ_COGNICION.BIOCELULAR;
 }
 
 function estadoVistaPrevia() {
@@ -140,6 +148,13 @@ function renderizarModosInterfaz() {
     });
   });
 
+  document.querySelectorAll("[data-bio-setting]").forEach((control) => {
+    const key = control.dataset.bioSetting;
+    if (control.type === "checkbox") control.checked = Boolean(biocellularPendiente[key]);
+    else control.value = biocellularPendiente[key] || control.value;
+    control.onchange = () => { biocellularPendiente = { ...biocellularPendiente, [key]: control.type === "checkbox" ? control.checked : control.value }; globalThis.__cognicionBiocellularRefresh?.(biocellularPendiente); actualizarBotonesAccion(); estadoVistaPrevia(); };
+  });
+
   actualizarBotonesAccion();
 }
 
@@ -157,6 +172,10 @@ async function aplicarTemaPendiente() {
       modoInterfazGuardado = await guardarModoInterfazUsuario(uidActual, modoInterfazPendiente);
       modoInterfazPendiente = modoInterfazGuardado;
     }
+    if (JSON.stringify(biocellularPendiente) !== JSON.stringify(biocellularGuardado)) {
+      biocellularGuardado = await guardarPreferenciasBiocellularUsuario(uidActual, biocellularPendiente);
+      biocellularPendiente = { ...biocellularGuardado };
+    }
     actualizarVistaPrevia();
     renderizarTemas();
     renderizarModosInterfaz();
@@ -173,6 +192,7 @@ async function aplicarTemaPendiente() {
 function cancelarVistaPrevia() {
   temaPendiente = temaGuardado;
   modoInterfazPendiente = modoInterfazGuardado;
+  biocellularPendiente = { ...biocellularGuardado };
   actualizarVistaPrevia();
   renderizarTemas();
   renderizarModosInterfaz();
@@ -183,6 +203,7 @@ function cancelarVistaPrevia() {
 function restaurarTemaPredeterminado() {
   temaPendiente = TEMAS_COGNICION.LABORATORIO;
   modoInterfazPendiente = MODOS_INTERFAZ_COGNICION.CLARO;
+  biocellularPendiente = getBiocellularPreferences();
   actualizarVistaPrevia();
   renderizarTemas();
   renderizarModosInterfaz();
@@ -228,6 +249,8 @@ onAuthStateChanged(auth, async (user) => {
   temaPendiente = temaGuardado;
   modoInterfazGuardado = obtenerModoInterfazLocalCognicion();
   modoInterfazPendiente = modoInterfazGuardado;
+  biocellularGuardado = getBiocellularPreferences();
+  biocellularPendiente = { ...biocellularGuardado };
   renderizarTemas();
   renderizarModosInterfaz();
   actualizarBotonesAccion();

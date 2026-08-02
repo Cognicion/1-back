@@ -6,6 +6,7 @@ import {
   normalizeTheme,
   setThemeForUser
 } from "./themeService.js";
+import { getBiocellularPreferences, saveBiocellularPreferences } from "../themes/biocellularPreferences.js";
 
 export const TEMAS_COGNICION = Object.freeze({
   CLASICA: "clasica",
@@ -14,7 +15,8 @@ export const TEMAS_COGNICION = Object.freeze({
 
 export const MODOS_INTERFAZ_COGNICION = Object.freeze({
   OSCURO: "dark",
-  CLARO: "light"
+  CLARO: "light",
+  BIOCELULAR: "biocelular"
 });
 
 export const OPCIONES_TEMA_COGNICION = [
@@ -42,6 +44,12 @@ export const OPCIONES_MODO_INTERFAZ_COGNICION = [
     nombre: "Claro",
     icono: "\u2600\uFE0F",
     descripcion: "Gris neutro, paneles blancos, texto oscuro y acento verde profundo."
+  },
+  {
+    id: MODOS_INTERFAZ_COGNICION.BIOCELULAR,
+    nombre: "Biocelular",
+    icono: "◉",
+    descripcion: "Entorno microscópico orgánico, científico y cinematográfico, con animación ligera."
   }
 ];
 
@@ -145,10 +153,12 @@ export async function sincronizarAparienciaUsuario(uid, datosUsuario = null) {
     }
   }
   const temaRemoto = datos?.preferencias?.apariencia?.tema || datos?.apariencia?.tema || datos?.temaApariencia;
+  const biocellularRemoto = datos?.preferencias?.apariencia?.biocelular;
   const modoRemoto = datos?.preferencias?.apariencia?.modoInterfaz || datos?.preferencias?.tema || datos?.apariencia?.modoInterfaz || datos?.modoInterfaz;
   const tema = temaRemoto ? normalizarTemaCognicion(temaRemoto) : obtenerTemaLocalCognicion();
   const modoInterfaz = normalizarModoInterfazCognicion(modoRemoto);
   guardarTemaLocalCognicion(tema);
+  if (biocellularRemoto && typeof biocellularRemoto === "object") saveBiocellularPreferences(biocellularRemoto);
   await initializeThemeForUser(uid ? { uid } : null, datos);
   aplicarTemaCognicion(tema);
   return tema;
@@ -168,6 +178,14 @@ export async function guardarPreferenciaAparienciaUsuario(uid, tema) {
     }, { merge: true });
   }
   return temaSeguro;
+}
+
+export async function guardarPreferenciasBiocellularUsuario(uid, preferences) {
+  const value = saveBiocellularPreferences(preferences);
+  if (uid) {
+    await setDoc(doc(db, "usuarios", uid), { preferencias: { apariencia: { biocelular: value } } }, { merge: true });
+  }
+  return value;
 }
 export async function guardarModoInterfazUsuario(uid, modo) {
   const modoSeguro = guardarModoInterfazLocalCognicion(modo);

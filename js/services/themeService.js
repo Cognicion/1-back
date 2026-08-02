@@ -11,11 +11,11 @@ export function getThemeStorageKey(uid) {
 }
 
 export function normalizeTheme(value) {
-  return value === "light" ? "light" : "dark";
+  return value === "light" || value === "biocelular" ? value : "dark";
 }
 
 function isValidTheme(value) {
-  return value === "light" || value === "dark";
+  return value === "light" || value === "dark" || value === "biocelular";
 }
 
 function readStorage(key) {
@@ -48,8 +48,14 @@ export function applyTheme(theme) {
   const normalizedTheme = normalizeTheme(theme);
   const root = document.documentElement;
   root.dataset.theme = normalizedTheme;
-  root.style.colorScheme = normalizedTheme;
-  root.style.backgroundColor = normalizedTheme === "dark" ? "#050505" : "#f3f3f1";
+  root.style.colorScheme = normalizedTheme === "light" ? "light" : "dark";
+  root.style.backgroundColor = normalizedTheme === "light" ? "#f3f3f1" : "#050505";
+  if (normalizedTheme === "biocelular") {
+    void import("./biocellularThemeController.js").then(({ activateBiocellularTheme }) => activateBiocellularTheme());
+  } else {
+    if (globalThis.__cognicionBiocellularDeactivate) globalThis.__cognicionBiocellularDeactivate();
+    else void import("./biocellularThemeController.js").then(({ deactivateBiocellularTheme }) => deactivateBiocellularTheme());
+  }
   updateThemeSelectorUI(normalizedTheme);
   return normalizedTheme;
 }

@@ -39,6 +39,31 @@
         <div id="modoInterfazApariencia" class="modo-interfaz-grid" aria-live="polite"></div>
       </div>
 
+      <div id="biocellularSettings" class="biocellular-settings" hidden aria-labelledby="tituloBiocellular">
+        <span class="config-kicker">Configuración exclusiva</span>
+        <h3 id="tituloBiocellular">Biocelular</h3>
+        <p>Modula el fondo microscópico sin afectar datos, módulos ni funciones clínicas.</p>
+        <div class="biocellular-settings-grid">
+          <label>Estilo celular<select data-bio-setting="style"><option value="sutil">Sutil</option><option value="organico">Orgánico</option><option value="infeccion-activa">Infección activa</option></select></label>
+          <label>Intensidad<select data-bio-setting="intensity"><option value="baja">Baja</option><option value="media">Media</option><option value="alta">Alta</option></select></label>
+          <label>Velocidad<select data-bio-setting="speed"><option value="muy-lenta">Muy lenta</option><option value="lenta">Lenta</option><option value="normal">Normal</option></select></label>
+          <label>Partículas<select data-bio-setting="particles"><option value="desactivadas">Desactivadas</option><option value="pocas">Pocas</option><option value="medias">Medias</option><option value="muchas">Muchas</option></select></label>
+          <label>Profundidad<select data-bio-setting="depth"><option value="baja">Baja</option><option value="media">Media</option><option value="alta">Alta</option></select></label>
+          <label>Desenfoque<select data-bio-setting="blur"><option value="bajo">Bajo</option><option value="medio">Medio</option><option value="alto">Alto</option></select></label>
+          <label>Interacción con cursor<select data-bio-setting="interaction"><option value="desactivada">Desactivada</option><option value="sutil">Sutil</option></select></label>
+        </div>
+        <div class="biocellular-toggles">
+          <label><input type="checkbox" data-bio-setting="pauseHidden"> Pausar con pestaña inactiva</label>
+          <label><input type="checkbox" data-bio-setting="respectReducedMotion"> Respetar reducir movimiento</label>
+          <label><input type="checkbox" data-bio-setting="reduceQuality"> Reducir calidad automáticamente</label>
+          <label><input type="checkbox" data-bio-setting="disableTouch"> Desactivar interacción en touch</label>
+          <label><input type="checkbox" data-bio-setting="disableMobile"> Desactivar animación en móvil</label>
+          <label><input type="checkbox" data-bio-setting="batterySaverStatic"> Fondo estático en ahorro de batería</label>
+          <label><input type="checkbox" data-bio-setting="limitFps"> Limitar FPS</label>
+          <label><input type="checkbox" data-bio-setting="reduceOnTables"> Reducir en tablas extensas</label>
+        </div>
+      </div>
+
       <div class="config-actions" aria-label="Acciones de apariencia">
         <button id="aplicarTemaApariencia" class="btn-primario" type="button">Aplicar tema</button>
         <button id="cancelarTemaApariencia" class="btn-secundario" type="button">Cancelar</button>

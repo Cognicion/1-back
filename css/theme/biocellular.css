@@ -1,0 +1,121 @@
+html[data-theme="biocelular"] {
+  color-scheme: dark;
+  --page-bg: #120609;
+  --page-bg-alt: #240b10;
+  --surface-primary: rgb(27 8 13 / 91%);
+  --surface-secondary: rgb(47 12 20 / 86%);
+  --surface-tertiary: #35131a;
+  --surface-elevated: #45151d;
+  --surface-hover: #571b24;
+  --surface-selected: #64202b;
+  --text-primary: #fff1d5;
+  --text-secondary: #dfc8b5;
+  --text-muted: #b99688;
+  --text-disabled: #846a66;
+  --text-inverse: #170609;
+  --border-subtle: rgb(164 54 63 / 30%);
+  --border-normal: rgb(205 79 68 / 52%);
+  --border-strong: #db6a4b;
+  --border-active: #ffbd58;
+  --accent-primary: #c94245;
+  --accent-hover: #e1664e;
+  --accent-active: #9f2938;
+  --accent-soft: rgb(203 66 69 / 22%);
+  --action-primary-bg: #9f2938;
+  --action-primary-text: #fff7e7;
+  --action-primary-hover: #c94245;
+  --action-secondary-bg: rgb(39 11 17 / 85%);
+  --action-secondary-text: #ffe8ca;
+  --action-secondary-hover: #571b24;
+  --button-primary-bg: #9f2938;
+  --button-primary-hover: #c94245;
+  --button-primary-active: #7f1f2d;
+  --button-primary-text: #fff7e7;
+  --button-primary-border: #d2644b;
+  --button-secondary-bg: rgb(31 9 14 / 86%);
+  --button-secondary-hover: #571b24;
+  --button-secondary-active: #64202b;
+  --button-secondary-text: #ffe8ca;
+  --button-secondary-border: rgb(205 79 68 / 52%);
+  --input-bg: rgb(24 7 12 / 94%);
+  --input-text: #fff1d5;
+  --input-placeholder: #b99688;
+  --input-border: rgb(205 79 68 / 52%);
+  --input-border-focus: #ffbd58;
+  --focus-ring: #ffbd58;
+  --scrollbar-track: #1c080d;
+  --scrollbar-thumb: #9f2938;
+  --scrollbar-thumb-hover: #db6a4b;
+  --toolbar-bg: linear-gradient(180deg, #2e0c14, #16060a);
+  --toolbar-border: rgb(205 79 68 / 52%);
+  --bio-bg-deep: #100407;
+  --bio-bg-panel: rgb(34 8 14 / 88%);
+  --bio-red: #c94245;
+  --bio-crimson: #761b2a;
+  --bio-amber: #ffbd58;
+  --bio-orange: #e1664e;
+  --bio-glow: rgb(255 145 62 / 24%);
+  --bio-shadow: 0 24px 80px rgb(0 0 0 / 42%);
+}
+
+html[data-theme="biocelular"] body {
+  background: var(--bio-bg-deep);
+  color: var(--text-primary);
+}
+
+html[data-theme="biocelular"] :where(body, main, .app-shell, .contenedor, .contenedor-principal) {
+  color: var(--text-primary);
+  background-color: transparent;
+}
+
+html[data-theme="biocelular"] :where(.card, .tarjeta, .module-card, .panel, .panel-lab, .seccion, .contenido, .hero, .workspace-section, .bloque, .nota-card, .paciente-card, .escala-card, .config-card, .feature-card) {
+  color: var(--text-primary);
+  background: var(--bio-bg-panel);
+  border-color: var(--border-subtle);
+  box-shadow: var(--bio-shadow), inset 0 1px 0 rgb(255 189 88 / 5%);
+}
+
+html[data-theme="biocelular"] :where(h1, h2, h3, h4, strong, .title, .card-title, .module-card__title) { color: var(--text-primary); }
+html[data-theme="biocelular"] :where(p, small, .description, .subtitle, .card-description, .module-card__description, .muted) { color: var(--text-secondary); opacity: 1; }
+html[data-theme="biocelular"] :where(input, select, textarea) { color: var(--input-text); background: var(--input-bg); border-color: var(--input-border); }
+html[data-theme="biocelular"] :where(input, select, textarea):focus { border-color: var(--input-border-focus); box-shadow: 0 0 0 3px rgb(255 189 88 / 18%); }
+html[data-theme="biocelular"] :where(.navbar-medico, .navbar, .nav, .topbar, header) { background: rgb(19 5 9 / 88%); border-color: var(--border-subtle); box-shadow: 0 10px 36px rgb(0 0 0 / 24%); }
+html[data-theme="biocelular"] :where(button, .btn, a.btn, .btn-secundario, .btn-secondary, .secondary-button, .ghost-button) { color: var(--button-secondary-text); background: var(--button-secondary-bg); border-color: var(--button-secondary-border); }
+html[data-theme="biocelular"] :where(button, .btn, a.btn):hover:not(:disabled) { border-color: var(--bio-amber); box-shadow: 0 0 22px var(--bio-glow); }
+html[data-theme="biocelular"] :where(.btn-primario, .btn-primary, .primary-button, .boton-principal) { color: var(--button-primary-text); background: var(--button-primary-bg); border-color: var(--button-primary-border); }
+html[data-theme="biocelular"] :where(button, .btn, a.btn):focus-visible { outline: 3px solid rgb(255 189 88 / 72%); outline-offset: 3px; }
+html[data-theme="biocelular"] ::selection { color: #170609; background: #ffbd58; }
+
+#cognicion-biocellular-background {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  isolation: isolate;
+  background: linear-gradient(145deg, #100407, #2a0a13 52%, #0b0205);
+}
+
+#cognicion-biocellular-background::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(ellipse at center, transparent 18%, rgb(8 2 4 / 24%) 70%, rgb(4 1 2 / 68%));
+}
+
+.biocellular-background {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  opacity: .94;
+  pointer-events: none;
+}
+
+html[data-theme="biocelular"] body > *:not(#cognicion-biocellular-background) { position: relative; z-index: 1; }
+
+@media (prefers-reduced-transparency: reduce) {
+  html[data-theme="biocelular"] :where(.card, .tarjeta, .panel, .config-card, header) { background: #220910; }
+}
