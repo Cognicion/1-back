@@ -49,6 +49,18 @@ body.bloqueado header {
   margin-bottom: 24px;
 }
 
+.patrones-admin .estado-patrones { color: var(--gray-400); min-height: 20px; }
+.patrones-filtros { grid-template-columns: repeat(4, minmax(150px, 1fr)); }
+.tabla-scroll { overflow-x: auto; }
+.patrones-admin table { min-width: 760px; }
+.patrones-admin td small { display: block; color: var(--gray-500); margin-top: 4px; }
+.enlace-patron { border: 0; background: transparent; color: var(--ivory-50); cursor: pointer; text-align: left; font-weight: 600; padding: 0; }
+.enlace-patron:hover { color: var(--celtic-400); text-decoration: underline; }
+.detalle-patron { margin-top: 22px; padding: 20px; border: 1px solid var(--black-700); border-radius: 12px; background: var(--black-900); }
+.detalle-patron blockquote { margin: 10px 0; padding: 10px 14px; border-left: 3px solid var(--celtic-600); color: var(--gray-300); }
+.detalle-patron blockquote small { display: block; margin-top: 6px; color: var(--gray-500); }
+@media (max-width: 850px) { .patrones-filtros { grid-template-columns: 1fr 1fr; } }
+
 .card {
   background: var(--black-850);
   border: 1px solid var(--black-800);

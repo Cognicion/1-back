@@ -39,6 +39,7 @@ import {
   listarReportesUsuarios,
   responderReporteUsuario
 } from "./services/reportes.js";
+import { iniciarDescubrimientoPatrones } from "./admin/patternDiscovery/patternDiscoveryController.js?v=20260802-patterns-v1";
 
 import {
   onAuthStateChanged
@@ -226,6 +227,10 @@ onAuthStateChanged(auth, async (user) => {
   await cargarAvisosAdmin();
   await cargarMensajesAdmin();
   await cargarAuditoria();
+  iniciarDescubrimientoPatrones().catch((error) => {
+    console.error("No se pudo iniciar el Motor de Descubrimiento de Patrones", error);
+    document.getElementById("estadoPatronesTexto")?.replaceChildren(document.createTextNode("No se pudo leer la base clínica con las reglas actuales."));
+  });
 });
 
 function configurarFiltros() {

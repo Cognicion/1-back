@@ -83,7 +83,8 @@
     <button type="button" data-admin-section="seccionReportesAdmin">Reportes</button>
     <button type="button" data-admin-section="seccionMensajesAdmin">Mensajes</button>
     <button type="button" data-admin-section="seccionAuditoriaAdmin">Auditoria</button>
-    <button type="button" data-admin-section="seccionCodigosAdmin">Codigos medicos</button>
+  <button type="button" data-admin-section="seccionCodigosAdmin">Codigos medicos</button>
+    <button type="button" data-admin-section="seccionMotorPatronesAdmin">Motor de Descubrimiento de Patrones</button>
   </nav>
 
   <section id="seccionUsuariosRecientes" class="card tabla-card admin-section">
@@ -405,9 +406,36 @@
     </div>
   </section>
 
+  <section id="seccionMotorPatronesAdmin" class="card tabla-card admin-section patrones-admin">
+    <div class="tabla-header">
+      <div>
+        <h2>Motor de Descubrimiento de Patrones</h2>
+        <p>Texto clínico · solo lectura. Normaliza y compara frases sin modificar expedientes ni Firestore.</p>
+      </div>
+      <button id="btnActualizarPatronesTexto" type="button">Actualizar índice</button>
+    </div>
+    <p id="estadoPatronesTexto" class="estado-patrones" aria-live="polite">Preparando índice…</p>
+    <div class="filtros-auditoria patrones-filtros">
+      <input id="filtroPatronBusqueda" placeholder="Buscar frase o palabra">
+      <input id="filtroPatronMedico" placeholder="UID médico">
+      <input id="filtroPatronPaciente" placeholder="UID paciente">
+      <input id="filtroPatronInstitucion" placeholder="Institución">
+      <input id="filtroPatronServicio" placeholder="Servicio / atención">
+      <input id="filtroPatronDesde" type="date" aria-label="Fecha desde">
+      <input id="filtroPatronHasta" type="date" aria-label="Fecha hasta">
+    </div>
+    <div class="tabla-scroll">
+      <table>
+        <thead><tr><th>Frase</th><th>Frecuencia</th><th>Pacientes</th><th>Médicos</th><th>Notas</th><th>Última aparición</th></tr></thead>
+        <tbody id="tablaPatronesTexto"><tr><td colspan="6">Cargando patrones…</td></tr></tbody>
+      </table>
+    </div>
+    <aside id="detallePatronTexto" class="detalle-patron" hidden></aside>
+  </section>
+
 </main>
 
-<script type="module" src="js/admin.js?v=20260727-colaboradores-v1"></script>
+<script type="module" src="js/admin.js?v=20260802-patterns-v1"></script>
 <script type="module" src="js/reportes.js"></script>
   <script type="module" src="js/components/accesosRapidos.js"></script>
 </body>
