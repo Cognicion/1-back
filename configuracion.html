@@ -51,8 +51,12 @@
           <label>Profundidad<select data-bio-setting="depth"><option value="baja">Baja</option><option value="media">Media</option><option value="alta">Alta</option></select></label>
           <label>Desenfoque<select data-bio-setting="blur"><option value="bajo">Bajo</option><option value="medio">Medio</option><option value="alto">Alto</option></select></label>
           <label>Interacción con cursor<select data-bio-setting="interaction"><option value="desactivada">Desactivada</option><option value="sutil">Sutil</option></select></label>
-        </div>
-        <div class="biocellular-toggles">
+           <label>Calidad<select data-bio-setting="quality"><option value="media">Automática / media</option><option value="baja">Baja</option><option value="alta">Alta</option></select></label>
+           <label>Animación<select data-bio-setting="animation"><option value="ligera">Ligera</option><option value="completa">Completa</option><option value="estatica">Estática</option></select></label>
+           <label>Resolución<select data-bio-setting="renderScale"><option value="0.8">Media</option><option value="0.6">Baja</option><option value="1">Nativa</option></select></label>
+           <label>Límite de FPS<select data-bio-setting="fps"><option value="18">18 FPS</option><option value="12">12 FPS</option><option value="24">24 FPS</option></select></label>
+         </div>
+         <div class="biocellular-toggles">
           <label><input type="checkbox" data-bio-setting="pauseHidden"> Pausar con pestaña inactiva</label>
           <label><input type="checkbox" data-bio-setting="respectReducedMotion"> Respetar reducir movimiento</label>
           <label><input type="checkbox" data-bio-setting="reduceQuality"> Reducir calidad automáticamente</label>
@@ -60,7 +64,9 @@
           <label><input type="checkbox" data-bio-setting="disableMobile"> Desactivar animación en móvil</label>
           <label><input type="checkbox" data-bio-setting="batterySaverStatic"> Fondo estático en ahorro de batería</label>
           <label><input type="checkbox" data-bio-setting="limitFps"> Limitar FPS</label>
-          <label><input type="checkbox" data-bio-setting="reduceOnTables"> Reducir en tablas extensas</label>
+           <label><input type="checkbox" data-bio-setting="reduceOnTables"> Reducir en tablas extensas</label>
+           <label><input type="checkbox" data-bio-setting="reduceWhileScrolling"> Reducir durante scroll</label>
+           <label><input type="checkbox" data-bio-setting="pauseDuringFastScroll"> Pausar durante scroll rápido</label>
         </div>
       </div>
 

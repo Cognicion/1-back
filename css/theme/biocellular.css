@@ -156,6 +156,15 @@ html[data-theme="biocelular"] body > .dashboard-footer {
   z-index: 3;
 }
 
+/* El Canvas ya aporta la profundidad; evitar recalcular blur por tarjeta durante el scroll. */
+html[data-theme="biocelular"] :where(.module-card, .activity-card, .quick-action, .hero, .workspace-section, .card, .panel, .config-card) {
+  backdrop-filter: none !important;
+}
+
+html[data-theme="biocelular"] :where(header, .navbar, .topbar, .navbar-medico) {
+  backdrop-filter: blur(6px) !important;
+}
+
 /* El fondo decorativo nunca debe crear una capa por encima del acceso. */
 html[data-theme="biocelular"] .login-container {
   position: relative;

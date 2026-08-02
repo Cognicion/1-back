@@ -1,6 +1,8 @@
 export const BIOCELLULAR_DEFAULTS = Object.freeze({
   style: "sutil", intensity: "baja", speed: "muy-lenta", particles: "pocas", depth: "media", blur: "medio", interaction: "desactivada",
-  pauseHidden: true, respectReducedMotion: true, reduceQuality: true, disableTouch: true, disableMobile: false, batterySaverStatic: false, limitFps: true, reduceOnTables: true
+  pauseHidden: true, respectReducedMotion: true, reduceQuality: true, disableTouch: true, disableMobile: false, batterySaverStatic: false, limitFps: true, reduceOnTables: true,
+  quality: "media", animation: "ligera", fps: 18, renderScale: 0.8, dprMax: 1,
+  pauseDuringFastScroll: true, reduceWhileScrolling: true, dynamicBlur: false, parallax: "bajo"
 });
 
 const KEY = "cognicion.apariencia.biocelular";
