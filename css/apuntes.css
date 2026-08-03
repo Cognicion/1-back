@@ -1,9 +1,15 @@
 * { box-sizing: border-box; }
 
+html,
+body {
+  width: 100%;
+  max-width: 100%;
+}
+
 body {
   margin: 0;
-  min-height: 100vh;
-  height: 100%;
+  min-height: 100dvh;
+  height: 100dvh;
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -47,10 +53,12 @@ body.bloqueado main { display: none; }
 
 .apuntes-shell {
   width: min(1280px, calc(100% - 40px));
-  flex: 1 1 auto;
+  flex: 1 1 0;
   min-height: 0;
+  min-width: 0;
   margin: 20px auto;
   align-self: stretch;
+  overflow: hidden;
   display: grid;
   grid-template-columns: 320px minmax(0, 1fr);
   gap: 20px;
@@ -281,6 +289,11 @@ html[data-theme="light"] .boton-peligro {
     height: auto;
     min-height: 100%;
     overflow: auto;
+  }
+
+  .apuntes-shell {
+    flex: 0 0 auto;
+    overflow: visible;
   }
 
   .topbar-apuntes,

@@ -65,10 +65,11 @@
 }
 
 .reporte-widget-contraido .reporte-float-btn {
-  right: -104px;
+  right: 0;
   width: 142px;
   min-width: 142px;
   border-radius: 18px 0 0 18px;
+  clip-path: inset(0 0 0 104px);
 }
 
 .reporte-widget-contraido .reporte-float-btn span,

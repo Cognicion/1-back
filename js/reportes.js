@@ -40,7 +40,7 @@ function asegurarCssReporte() {
   if (document.querySelector('link[href="css/reportes.css"]')) return;
   const link = document.createElement("link");
   link.rel = "stylesheet";
-  link.href = "css/reportes.css";
+  link.href = "css/reportes.css?v=20260803-apuntes-layout-v1";
   document.head.appendChild(link);
 }
 function obtenerLocalStorageSeguro(clave) {
