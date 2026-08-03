@@ -680,6 +680,55 @@ function abrirCatalogoPronosticos() {
   });
 }
 
+let portalAutocompleteClinicoNota = null;
+let autocompleteClinicoActivoNota = null;
+
+function obtenerPortalAutocompleteClinicoNota() {
+  if (portalAutocompleteClinicoNota?.isConnected) return portalAutocompleteClinicoNota;
+
+  portalAutocompleteClinicoNota = document.createElement("div");
+  portalAutocompleteClinicoNota.id = "autocompleteClinicoNotaPortal";
+  portalAutocompleteClinicoNota.className = "autocomplete-clinico-nota__lista autocomplete-clinico-nota__lista--portal";
+  portalAutocompleteClinicoNota.setAttribute("role", "listbox");
+  portalAutocompleteClinicoNota.hidden = true;
+  document.body.appendChild(portalAutocompleteClinicoNota);
+  return portalAutocompleteClinicoNota;
+}
+
+function posicionarAutocompleteClinicoActivoNota() {
+  const activo = autocompleteClinicoActivoNota;
+  if (!activo || activo.lista.hidden) return;
+
+  const margen = 8;
+  const separacion = 4;
+  const rectangulo = activo.input.getBoundingClientRect();
+  const viewportAlto = window.visualViewport?.height || window.innerHeight;
+  const viewportAncho = window.visualViewport?.width || window.innerWidth;
+  const espacioInferior = Math.max(0, viewportAlto - rectangulo.bottom - margen);
+  const espacioSuperior = Math.max(0, rectangulo.top - margen);
+  const abrirArriba = espacioInferior < 180 && espacioSuperior > espacioInferior;
+  const altoMaximo = Math.max(96, Math.min(260, (abrirArriba ? espacioSuperior : espacioInferior)));
+  const ancho = Math.min(rectangulo.width, Math.max(0, viewportAncho - (margen * 2)));
+  const izquierda = Math.max(margen, Math.min(rectangulo.left, viewportAncho - margen - ancho));
+
+  activo.lista.style.left = `${izquierda}px`;
+  activo.lista.style.width = `${ancho}px`;
+  activo.lista.style.maxHeight = `${altoMaximo}px`;
+  activo.lista.dataset.posicion = abrirArriba ? "arriba" : "abajo";
+  activo.lista.style.top = abrirArriba ? "auto" : `${rectangulo.bottom + separacion}px`;
+  activo.lista.style.bottom = abrirArriba ? `${viewportAlto - rectangulo.top + separacion}px` : "auto";
+}
+
+function cerrarAutocompleteClinicoNota(input = null) {
+  if (!autocompleteClinicoActivoNota || (input && autocompleteClinicoActivoNota.input !== input)) return;
+  const { input: campo, lista } = autocompleteClinicoActivoNota;
+  lista.hidden = true;
+  lista.replaceChildren();
+  campo.setAttribute("aria-expanded", "false");
+  campo.removeAttribute("aria-activedescendant");
+  autocompleteClinicoActivoNota = null;
+}
+
 function inicializarAutocompleteClinico({ input, tipoCatalogo }) {
   if (!input || input.dataset.autocompleteClinicoInicializado === "true") return;
   input.dataset.autocompleteClinicoInicializado = "true";
@@ -689,25 +738,14 @@ function inicializarAutocompleteClinico({ input, tipoCatalogo }) {
   input.setAttribute("aria-expanded", "false");
 
   const idLista = `autocomplete-${tipoCatalogo}-${input.id || Math.random().toString(36).slice(2)}`;
-  const contenedor = document.createElement("div");
-  contenedor.className = "autocomplete-clinico-nota";
-  const lista = document.createElement("div");
-  lista.id = idLista;
-  lista.className = "autocomplete-clinico-nota__lista";
-  lista.setAttribute("role", "listbox");
-  lista.hidden = true;
-  contenedor.appendChild(lista);
+  const lista = obtenerPortalAutocompleteClinicoNota();
   input.setAttribute("aria-controls", idLista);
-  input.insertAdjacentElement("afterend", contenedor);
 
   let opcionesActuales = [];
   let indiceActivo = -1;
 
   const cerrar = () => {
-    lista.hidden = true;
-    lista.replaceChildren();
-    input.setAttribute("aria-expanded", "false");
-    input.removeAttribute("aria-activedescendant");
+    cerrarAutocompleteClinicoNota(input);
     indiceActivo = -1;
   };
 
@@ -732,12 +770,14 @@ function inicializarAutocompleteClinico({ input, tipoCatalogo }) {
   };
 
   const renderizar = () => {
+    if (autocompleteClinicoActivoNota?.input !== input) cerrarAutocompleteClinicoNota();
     const busqueda = input.value || "";
     opcionesActuales = ordenarOpcionesCatalogoClinico(catalogosClinicosNotaCache[tipoCatalogo] || [], busqueda).slice(0, 8);
     if (!busqueda.trim() || !opcionesActuales.length) {
       cerrar();
       return;
     }
+    cerrarAutocompleteClinicoNota();
     lista.replaceChildren();
     opcionesActuales.forEach((opcion, index) => {
       const item = document.createElement("button");
@@ -753,7 +793,10 @@ function inicializarAutocompleteClinico({ input, tipoCatalogo }) {
     });
     indiceActivo = -1;
     lista.hidden = false;
+    lista.id = idLista;
+    autocompleteClinicoActivoNota = { input, lista };
     input.setAttribute("aria-expanded", "true");
+    posicionarAutocompleteClinicoActivoNota();
   };
 
   input.addEventListener("input", renderizar);
@@ -779,9 +822,11 @@ function inicializarAutocompleteClinico({ input, tipoCatalogo }) {
     }
   });
   document.addEventListener("click", (evento) => {
-    if (evento.target === input || contenedor.contains(evento.target)) return;
+    if (evento.target === input || lista.contains(evento.target)) return;
     cerrar();
   });
+  window.addEventListener("resize", posicionarAutocompleteClinicoActivoNota);
+  window.addEventListener("scroll", posicionarAutocompleteClinicoActivoNota, true);
 }
 
 async function configurarAutocompletadosClinicosNota() {

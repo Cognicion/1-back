@@ -3172,15 +3172,7 @@ body.calculator-modal-open { overflow: hidden; }
   margin: 0;
 }
 
-.autocomplete-clinico-nota {
-  position: relative;
-  z-index: 35;
-}
-
 .autocomplete-clinico-nota__lista {
-  position: absolute;
-  inset-inline: 0;
-  top: 4px;
   display: grid;
   max-height: min(260px, 44vh);
   overflow-y: auto;
@@ -3188,6 +3180,13 @@ body.calculator-modal-open { overflow: hidden; }
   border-radius: 12px;
   background: var(--surface-elevated, var(--panel-bg, #111812));
   box-shadow: 0 14px 30px rgba(0,0,0,0.18);
+}
+
+/* Portal único en body: evita que el overflow: clip de los apartados recorte la lista. */
+.autocomplete-clinico-nota__lista--portal {
+  position: fixed;
+  z-index: 1000;
+  overscroll-behavior: contain;
 }
 
 .autocomplete-clinico-nota__lista[hidden] {
