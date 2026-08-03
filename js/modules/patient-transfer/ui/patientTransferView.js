@@ -251,6 +251,23 @@ function renderVitalSignsCandidates(doc) {
     </section>`;
 }
 
+function renderClinicalSections(doc) {
+  const sections = doc.sections || {};
+  const campos = [
+    ["Subjetivo", "subjetivo"], ["Objetivo", "objetivo"], ["Examen mental", "examenMental"],
+    ["Análisis", "analisis"], ["Diagnósticos", "diagnosticos"], ["Tratamiento", "tratamiento"],
+    ["Plan", "plan"], ["Pronóstico", "pronostico"], ["Destino", "destino"]
+  ];
+  return `
+    <section class="patient-transfer-clinical-sections">
+      <h4>Secciones clínicas</h4>
+      ${campos.map(([label, key]) => `
+        <label>${label}
+          <textarea readonly>${escapeHtml(sections[key] || (key === "analisis" ? "No se detectó una sección de análisis explícita." : ""))}</textarea>
+        </label>`).join("")}
+    </section>`;
+}
+
 function renderDocument(doc, groups = [], currentGroupId = "") {
   const selected = doc.confirmedType?.key || doc.metadata?.suggestedType?.key || "tipo_no_reconocido";
   return `
@@ -276,6 +293,7 @@ function renderDocument(doc, groups = [], currentGroupId = "") {
         <span>${Object.keys(doc.sections || {}).length ? Object.keys(doc.sections).join(", ") : "Sin secciones reconocidas"}</span>
       </div>
       ${renderVitalSignsCandidates(doc)}
+      ${renderClinicalSections(doc)}
       ${renderDiagnosisCandidates(doc)}
       ${renderTreatmentCandidates(doc)}
       ${renderExtractionDebug(doc)}

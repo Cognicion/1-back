@@ -287,6 +287,19 @@
   color: #cbd5e1;
 }
 
+.patient-transfer-clinical-sections {
+  display: grid;
+  gap: 10px;
+  margin: 12px 0;
+  padding: 10px;
+  border: 1px solid rgba(56, 189, 248, .2);
+  border-radius: 10px;
+  background: rgba(15, 23, 42, .5);
+}
+
+.patient-transfer-clinical-sections h4 { margin: 0; color: #e0f2fe; }
+.patient-transfer-clinical-sections textarea { min-height: 72px; resize: vertical; }
+
 .patient-transfer-actions {
   position: sticky;
   bottom: 0;

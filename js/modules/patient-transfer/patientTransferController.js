@@ -157,7 +157,16 @@ async function analyzeOneFile(item, user) {
     detectedFieldCount: Object.values(fields).filter((field) => String(field?.value || "").trim()).length,
     conflictCount: conflicts.length
   });
+  console.info("[patient-transfer] clinical-sections:start", { fileId: item.id, blockCount: blocks.length });
   const sectionsResult = parseClinicalSections(blocks);
+  console.info("[patient-transfer] clinical-sections:headings-found", {
+    fileId: item.id,
+    headings: sectionsResult.encabezados.map(({ key, position }) => ({ key, position }))
+  });
+  console.info("[patient-transfer] clinical-sections:result", {
+    fileId: item.id,
+    sections: Object.fromEntries(Object.entries(sectionsResult.secciones).map(([key, value]) => [key, Boolean(value)]))
+  });
   const metadata = parseNoteMetadata({ text: fullText, sections: sectionsResult.secciones, fields });
   const clinicalAnalysis = analyzeDocumentClinically({ fullText, blocks });
   const clinicalCandidates = extractClinicalCandidates({
@@ -166,6 +175,8 @@ async function analyzeOneFile(item, user) {
     blocks,
     fullText
   });
+  console.info("[patient-transfer] diagnoses:detected", { fileId: item.id, count: clinicalCandidates.diagnoses.length });
+  console.info("[patient-transfer] treatments:detected", { fileId: item.id, count: clinicalCandidates.treatments.length });
   const vitalSignsCandidates = extractVitalSignsCandidates(blocks);
   const duplicateStatus = duplicate ? "exact_duplicate" : sameBatch ? "duplicate_in_batch" : "nuevo";
 
@@ -186,6 +197,7 @@ async function analyzeOneFile(item, user) {
     fullText,
     sections: sectionsResult.secciones,
     sectionsFound: sectionsResult.encontradas,
+    sectionHeadings: sectionsResult.encabezados,
     metadata,
     clinicalAnalysis,
     vitalSignsCandidates,
@@ -229,6 +241,7 @@ async function analyzeSelectedFiles() {
     groupCount: groups.length,
     documentCount: documents.length
   });
+  console.info("[patient-transfer] review-state:updated", { groupCount: groups.length, documentCount: documents.length });
   setPatientTransferExecutionState({
     transferOperationId: groups[0]?.documents?.[0]?.transferOperationId || "",
     lastCompletedStage: "awaiting_review"
@@ -238,6 +251,7 @@ async function analyzeSelectedFiles() {
   renderTransferFiles(selectedFiles);
   renderDetectedGroups(analyzedGroups);
   console.info("[docx-import] patient-fields:rendered", { groupCount: analyzedGroups.length });
+  console.info("[patient-transfer] review-ui:rendered", { groupCount: analyzedGroups.length });
   setPatientTransferMessage("Revision lista. Confirme antes de guardar.", 100);
 }
 

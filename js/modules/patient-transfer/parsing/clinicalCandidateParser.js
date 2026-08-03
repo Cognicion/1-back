@@ -122,7 +122,7 @@ export function extractClinicalCandidates(document = {}) {
   const treatmentsText = [sections.tratamiento, sections.plan]
     .filter(Boolean)
     .join("\n");
-  const narrativeText = [sections.padecimientoActual, sections.antecedentesPersonales, sections.motivoConsulta]
+  const narrativeText = [sections.subjetivo]
     .filter(Boolean)
     .join("\n");
 
@@ -131,22 +131,33 @@ export function extractClinicalCandidates(document = {}) {
     return {
       id: `${document.id || "doc"}-dx-${index}`,
       rawText: line,
-      code,
+      code: code || null,
       codingSystem: detectCodingSystem(code),
       normalizedLabel: cleanDiagnosisLabel(line, code),
+      normalizedName: cleanDiagnosisLabel(line, code),
       sourceSection: sections.diagnosticos ? "diagnosticos" : "analisis",
       sourceLocation: { documentId: document.id || "", lineIndex: index },
+      detectionRule: code ? "codigo-clinico" : "seccion-diagnostica",
       statusSuggestion: statusForDiagnosis(line),
       temporality: /\b(?:antecedente|previo|previamente)\b/i.test(line) ? "historical" : "current",
       negated: /\b(?:niega|sin datos de|se descarta)\b/i.test(line),
-      confirmedByDoctor: false
+      confirmedByDoctor: false,
+      selectedForImport: false
     };
   }).filter((candidate) => candidate.normalizedLabel)
     .concat(extractHistoricalDiagnosisCandidates(narrativeText, document.id || ""));
 
   const treatments = splitClinicalLines(treatmentsText)
     .flatMap((line, index) => expandMedicationCandidates(line, document.id || "", sections.tratamiento ? "tratamiento" : "plan", index))
-    .concat(splitClinicalLines(narrativeText).flatMap((line, index) => expandMedicationCandidates(line, document.id || "", "antecedente_narrativo", index)));
+    .concat(splitClinicalLines(narrativeText).flatMap((line, index) => expandMedicationCandidates(line, document.id || "", "antecedente_narrativo", index)))
+    .map((candidate) => ({
+      ...candidate,
+      genericName: candidate.medicationName || "",
+      schedule: candidate.frequencyRaw || "",
+      duration: "",
+      temporality: candidate.statusSuggestion === "Antecedente" ? "historical" : "current",
+      selectedForImport: false
+    }));
 
   return { diagnoses, treatments };
 }
