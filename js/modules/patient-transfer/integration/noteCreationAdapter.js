@@ -12,6 +12,8 @@ export function buildImportedNotePayload({ document, confirmedType, sourceFile, 
   const type = confirmedType || metadata.suggestedType || {};
   const date = metadata.documentDate || "";
   const hour = metadata.documentHour || "";
+  const vitalCandidate = (document.vitalSignsCandidates || []).find((candidate) => candidate.include === true);
+  const vitalSigns = document.vitalSignsPayload || {};
   return {
     tipoNota: type.label || "Nota clinica importada",
     tipoNotaClave: `traspaso_docx:${type.key || "tipo_no_reconocido"}`,
@@ -27,6 +29,13 @@ export function buildImportedNotePayload({ document, confirmedType, sourceFile, 
     tratamiento: sectionValue(sections, "tratamiento") || sectionValue(sections, "plan"),
     fechaNotaInput: date,
     horaNotaInput: hour,
+    signosVitales: Object.keys(vitalSigns).length ? vitalSigns : null,
+    observacionFray: Object.keys(vitalSigns).length ? {
+      fechaNota: date,
+      horaNota: hour,
+      ...vitalSigns,
+      vitalSignsSourceId: vitalCandidate?.id || ""
+    } : null,
     importacionDocx: {
       imported: true,
       importMethod: "docx-patient-transfer",

@@ -117,4 +117,31 @@ assert.equal(separated.fields.nombre.nameSplit.nombreSource, "explicit-separated
 const type = sugerirTipoNota({ textoPlano: `NOTA DE INGRESO AL SERVICIO DE OBSERVACIÓN\n${headerText}`, secciones: { objetivo: "x", examenMental: "x", tratamiento: "x" } });
 assert.equal(type.key, "nota_ingreso");
 
+const arellanoHeader = [
+  "Nombre completo del paciente: ARELLANO FRANCO ANA LIZBETH Fecha de nacimiento: 02/03/1989 Edad: 37",
+  "No. de expediente: 198 141 No. de cama: Cama: 02 Fecha: 31/07/2026 Hora: 21:00 hrs Sexo: MUJER Género: FEMENINO-CIS",
+  "Servicio: OBSERVACIÓN Alergias: LÁTEX Días de estancia en el servicio de observación: PRIMERAS HORAS"
+].join("\n");
+const arellano = parsePatientFields([{ type: "paragraph", text: arellanoHeader, rawRuns: [], source: { blockIndex: 1 } }], "arellano");
+const arellanoValues = fieldValues(arellano.fields);
+assert.equal(arellanoValues.nombre, "ANA LIZBETH ARELLANO FRANCO");
+assert.equal(arellanoValues.nombres, "ANA LIZBETH");
+assert.equal(arellanoValues.apellidoPaterno, "ARELLANO");
+assert.equal(arellanoValues.apellidoMaterno, "FRANCO");
+assert.equal(arellano.fields.nombre.nameSplit.ruleApplied, "institutional-paternal-maternal-given");
+assert.equal(arellanoValues.fechaNacimiento, "02/03/1989");
+assert.equal(arellanoValues.edad, "37");
+assert.equal(arellanoValues.expediente, "198 141");
+assert.equal(arellanoValues.cama, "02");
+assert.equal(arellanoValues.fecha, "31/07/2026");
+assert.equal(arellanoValues.hora, "21:00");
+assert.equal(arellanoValues.sexo, "MUJER");
+assert.equal(arellanoValues.genero, "FEMENINO-CIS");
+assert.equal(arellanoValues.servicio, "OBSERVACIÓN");
+assert.equal(arellanoValues.alergias, "LÁTEX");
+assert.equal(arellano.fields.alergias.conflict, false);
+
+const fechaTruncada = parsePatientFields([{ type: "paragraph", text: "Fecha de nacimiento: 02/03/198 Edad: 37", source: { blockIndex: 0 } }], "fecha-truncada");
+assert.equal(fieldValues(fechaTruncada.fields).fechaNacimiento, "");
+
 console.log("patient-transfer-field-parser.test.mjs OK");

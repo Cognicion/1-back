@@ -16,6 +16,7 @@ export const MEDICAMENTOS = [
   {
     nombre: "Sertralina",
     clase: "ISRS",
+    brandNames: ["Zoloft", "Asertral"],
     dosisHabitual: "50-200 mg/dia",
     notas: "Depresion, ansiedad, TOC, TEPT.",
     presentaciones: ["tabletas de 25 mg", "tabletas de 50 mg", "tabletas de 100 mg"]
@@ -156,6 +157,7 @@ export const MEDICAMENTOS = [
   {
     nombre: "Quetiapina",
     clase: "Antipsicotico atipico",
+    brandNames: ["Seroquel"],
     dosisHabitual: "50-800 mg/dia",
     notas: "Sedacion frecuente.",
     presentaciones: ["tabletas de 25 mg", "tabletas de 100 mg", "tabletas de 200 mg", "tabletas de 300 mg", "tabletas XR de 50 mg", "tabletas XR de 200 mg", "tabletas XR de 300 mg", "tabletas XR de 400 mg"]

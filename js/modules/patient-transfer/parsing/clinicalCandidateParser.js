@@ -27,7 +27,7 @@ function statusForDiagnosis(text = "") {
 function statusForTreatment(text = "") {
   const normalized = normalizeText(text);
   if (/\b(?:suspendio|suspender|suspendido|se suspende)\b/.test(normalized)) return "Suspende";
-  if (/\b(?:previo|previamente|antecedente)\b/.test(normalized)) return "Antecedente";
+  if (/\b(?:recibio|previamente|previo|antecedente|en \d{4}|durante \d+ meses|instauro manejo|manejo a base de)\b/.test(normalized)) return "Antecedente";
   if (/\b(?:inicio|iniciar|se inicia)\b/.test(normalized)) return "Inicia";
   if (/\b(?:aumento|aumentar|subir|incrementar)\b/.test(normalized)) return "Aumenta";
   if (/\b(?:disminuyo|disminuir|bajar|reducir)\b/.test(normalized)) return "Disminuye";
@@ -73,12 +73,56 @@ function parseMedicationLine(line = "") {
   };
 }
 
+function extractHistoricalDiagnosisCandidates(text = "", documentId = "") {
+  return splitClinicalLines(text).flatMap((line, index) => {
+    const match = line.match(/\bdiagn[oó]stico\s+de\s+([^.;,\n]+?)(?:\s+(?:diagnosticado|en|desde)\b|$)/i);
+    if (!match) return [];
+    return [{
+      id: `${documentId || "doc"}-dx-hx-${index}`,
+      rawText: line,
+      code: "",
+      codingSystem: "",
+      normalizedLabel: match[1].trim(),
+      sourceSection: "antecedente_narrativo",
+      sourceLocation: { documentId, lineIndex: index },
+      statusSuggestion: "Antecedente",
+      temporality: "historical",
+      negated: /\b(?:niega|sin datos de|se descarta)\b/i.test(line),
+      confirmedByDoctor: false
+    }];
+  });
+}
+
+function expandMedicationCandidates(line = "", documentId = "", sourceSection = "tratamiento", index = 0) {
+  const parsed = parseMedicationLine(line);
+  const normalized = normalizeText(line);
+  const listMatch = line.match(/\b(clonazepam|paroxetina|lamotrigina|quetiapina|risperidona|olanzapina|sertralina|fluoxetina|valproato|litio)\b(?:[\s, y]+(?:clonazepam|paroxetina|lamotrigina|quetiapina|risperidona|olanzapina|sertralina|fluoxetina|valproato|litio)\b)+/ig);
+  if (!listMatch) return parsed ? [{ id: `${documentId || "doc"}-tx-${index}`, ...parsed, sourceSection, sourceLocation: { documentId, lineIndex: index }, confirmedByDoctor: false }] : [];
+  const names = [...new Set(line.match(/\b(clonazepam|paroxetina|lamotrigina|quetiapina|risperidona|olanzapina|sertralina|fluoxetina|valproato|litio)\b/ig) || [])];
+  return names.map((name, itemIndex) => ({
+    id: `${documentId || "doc"}-tx-${index}-${itemIndex}`,
+    medicationName: name,
+    dose: "",
+    doseUnit: "",
+    route: "",
+    frequencyRaw: "",
+    statusSuggestion: /\b(?:recibio|previamente|previo|antecedente|en \d{4}|instauro manejo|manejo a base de)\b/.test(normalized) ? "Antecedente" : statusForTreatment(line),
+    sourceText: line,
+    sourceSection,
+    sourceLocation: { documentId, lineIndex: index },
+    confirmedByDoctor: false
+  }));
+}
+
 export function extractClinicalCandidates(document = {}) {
   const sections = document.sections || {};
   const diagnosesText = [sections.diagnosticos, sections.analisis]
     .filter(Boolean)
     .join("\n");
   const treatmentsText = [sections.tratamiento, sections.plan]
+    .filter(Boolean)
+    .join("\n");
+  const narrativeText = [sections.padecimientoActual, sections.antecedentesPersonales, sections.motivoConsulta]
     .filter(Boolean)
     .join("\n");
 
@@ -97,21 +141,12 @@ export function extractClinicalCandidates(document = {}) {
       negated: /\b(?:niega|sin datos de|se descarta)\b/i.test(line),
       confirmedByDoctor: false
     };
-  }).filter((candidate) => candidate.normalizedLabel);
+  }).filter((candidate) => candidate.normalizedLabel)
+    .concat(extractHistoricalDiagnosisCandidates(narrativeText, document.id || ""));
 
   const treatments = splitClinicalLines(treatmentsText)
-    .map((line, index) => {
-      const parsed = parseMedicationLine(line);
-      if (!parsed) return null;
-      return {
-        id: `${document.id || "doc"}-tx-${index}`,
-        ...parsed,
-        sourceSection: sections.tratamiento ? "tratamiento" : "plan",
-        sourceLocation: { documentId: document.id || "", lineIndex: index },
-        confirmedByDoctor: false
-      };
-    })
-    .filter(Boolean);
+    .flatMap((line, index) => expandMedicationCandidates(line, document.id || "", sections.tratamiento ? "tratamiento" : "plan", index))
+    .concat(splitClinicalLines(narrativeText).flatMap((line, index) => expandMedicationCandidates(line, document.id || "", "antecedente_narrativo", index)));
 
   return { diagnoses, treatments };
 }

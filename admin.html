@@ -417,6 +417,17 @@
 
 </main>
 
+<dialog id="dialogoEliminarPacienteAdmin" class="dialogo-peligro-admin">
+  <h2>Eliminar paciente</h2>
+  <p>Esta acción eliminará permanentemente el paciente <strong data-paciente-nombre></strong> y toda su información clínica.</p>
+  <p>Esta operación no puede deshacerse.</p>
+  <p>¿Desea continuar?</p>
+  <div class="dialogo-peligro-acciones">
+    <button type="button" data-cancelar-eliminacion>Cancelar</button>
+    <button type="button" class="boton-peligro" data-confirmar-eliminacion>Eliminar definitivamente</button>
+  </div>
+</dialog>
+
 <script type="module" src="js/admin.js?v=20260802-patterns-v6"></script>
 <script type="module" src="js/reportes.js"></script>
   <script type="module" src="js/components/accesosRapidos.js"></script>

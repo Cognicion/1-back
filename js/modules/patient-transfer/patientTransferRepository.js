@@ -6,6 +6,8 @@ import { DOCX_IMPORT_CONFIG } from "../importacionDocx/docxImportConfig.js";
 import { createTransferredPatient } from "./integration/patientCreationAdapter.js";
 import { buildImportedNotePayload, createTransferredNote } from "./integration/noteCreationAdapter.js";
 import { createImportedDiagnoses, createImportedTreatments } from "./integration/clinicalDataImportAdapter.js";
+import { vitalSignsToNotePayload } from "./parsing/vitalSignsParser.js";
+import { construirActualizacionSignosVitalesDesdeNota } from "../../services/signosVitalesNotas.js";
 import { withPatientTransferTimeout } from "./patientTransferTimeout.js";
 import {
   addDoc,
@@ -34,6 +36,7 @@ const TIMEOUTS = Object.freeze({
   storage: 45000,
   createNote: 25000,
   createClinicalData: 25000,
+  createVitals: 20000,
   audit: 15000,
   lock: 15000
 });
@@ -283,8 +286,12 @@ export async function saveTransferredGroups({ groups = [], user, onProgress = nu
     let diagnosesOmitted = 0;
     let treatmentsCreated = 0;
     let treatmentsOmitted = 0;
+    let vitalSignsCreated = 0;
+    let anthropometryCreated = 0;
     const diagnosisIds = [];
     const treatmentIds = [];
+    const vitalSignRecordIds = [];
+    const anthropometryRecordIds = [];
     let sourceSaved = false;
     let auditRegistered = false;
     const operationId = transferOperationIdForGroup(group);
@@ -308,6 +315,8 @@ export async function saveTransferredGroups({ groups = [], user, onProgress = nu
           patientReused: true,
           notesCreated: 0,
           notesExisting: operation.data.noteIds?.length || 0,
+          vitalSignsCreated: operation.data.vitalSignCount || 0,
+          anthropometryCreated: operation.data.anthropometryCount || 0,
           diagnosesCreated: operation.data.diagnosisCount || 0,
           diagnosesOmitted: 0,
           treatmentsCreated: operation.data.treatmentCount || 0,
@@ -374,8 +383,10 @@ export async function saveTransferredGroups({ groups = [], user, onProgress = nu
         }
         onProgress?.({ stage, message: `Creando nota ${documentResults.length + 1}...`, progress: 50 });
         traceTransfer(stage, { operation: "guardarBorradorNotaClinica", path: `usuarios/${patientId}/notasMedicas`, authUid: user.uid, patientId });
+        const selectedVitals = (document.vitalSignsCandidates || []).find((candidate) => candidate.include === true);
+        const vitalSignsPayload = selectedVitals ? vitalSignsToNotePayload(selectedVitals, group.confirmedFields || {}) : {};
         const notePayload = buildImportedNotePayload({
-          document,
+          document: { ...document, vitalSignsPayload },
           confirmedType: document.confirmedType,
           sourceFile: { name: document.file.name, hash: document.hash },
           importId: operationId,
@@ -395,6 +406,28 @@ export async function saveTransferredGroups({ groups = [], user, onProgress = nu
           }
         }, noteImportKey), TIMEOUTS.createNote);
         traceTransfer("create-note-success", { authUid: user.uid, transferOperationId: operationId, patientId, noteId: note.notaId || note.id });
+        if (Object.keys(vitalSignsPayload).length) {
+          stage = "creating_vital_signs";
+          onProgress?.({ stage, message: "Registrando signos vitales...", progress: 54 });
+          await timed(`create-vitals-${documentResults.length + 1}`, async () => {
+            const patientSnap = await getDoc(doc(db, "usuarios", patientId));
+            const update = construirActualizacionSignosVitalesDesdeNota({
+              paciente: patientSnap.exists() ? patientSnap.data() : {},
+              nota: { ...notePayload, observacionFray: notePayload.observacionFray || {}, signosVitales: vitalSignsPayload },
+              sourceNoteId: note.notaId || note.id || noteImportKey,
+              createdBy: user.uid
+            });
+            if (!update) return null;
+            await setDoc(doc(db, "usuarios", patientId), update, { merge: true });
+            return update;
+          }, TIMEOUTS.createVitals);
+          vitalSignsCreated += 1;
+          vitalSignRecordIds.push(`${note.notaId || note.id || noteImportKey}:signos`);
+          if (vitalSignsPayload.peso || vitalSignsPayload.talla || vitalSignsPayload.imc) {
+            anthropometryCreated += 1;
+            anthropometryRecordIds.push(`${note.notaId || note.id || noteImportKey}:somatometria`);
+          }
+        }
 
         stage = "creating_diagnoses";
         onProgress?.({ stage, message: "Registrando diagnosticos confirmados...", progress: 58 });
@@ -523,8 +556,12 @@ export async function saveTransferredGroups({ groups = [], user, onProgress = nu
         completedAtIso: new Date().toISOString(),
         documentCount: documentResults.length,
         noteIds: documentResults.map((doc) => doc.noteId).filter(Boolean),
+        vitalSignRecordIds,
+        anthropometryRecordIds,
         diagnosisIds,
         treatmentIds,
+        vitalSignCount: vitalSignsCreated,
+        anthropometryCount: anthropometryCreated,
         diagnosisCount: diagnosesCreated,
         treatmentCount: treatmentsCreated,
         sourceSaved,
@@ -558,6 +595,10 @@ export async function saveTransferredGroups({ groups = [], user, onProgress = nu
         transferOperationId: operationId,
         notesCreated: documentResults.filter((item) => item.duplicateStatus !== "note_existing").length,
         notesExisting: documentResults.filter((item) => item.duplicateStatus === "note_existing").length,
+        vitalSignsCreated,
+        anthropometryCreated,
+        vitalSignRecordIds,
+        anthropometryRecordIds,
         diagnosesCreated,
         diagnosesOmitted,
         diagnosisIds,
@@ -585,8 +626,12 @@ export async function saveTransferredGroups({ groups = [], user, onProgress = nu
         failureStage: stage,
         patientId,
         noteIds: documentResults.map((doc) => doc.noteId).filter(Boolean),
+        vitalSignRecordIds,
+        anthropometryRecordIds,
         diagnosisIds,
         treatmentIds,
+        vitalSignCount: vitalSignsCreated,
+        anthropometryCount: anthropometryCreated,
         diagnosisCount: diagnosesCreated,
         treatmentCount: treatmentsCreated,
         sourceSaved,
@@ -624,6 +669,10 @@ export async function saveTransferredGroups({ groups = [], user, onProgress = nu
         error: error.message || String(error),
         notesCreated: documentResults.filter((item) => item.duplicateStatus !== "note_existing").length,
         notesExisting: documentResults.filter((item) => item.duplicateStatus === "note_existing").length,
+        vitalSignsCreated,
+        anthropometryCreated,
+        vitalSignRecordIds,
+        anthropometryRecordIds,
         diagnosesCreated,
         diagnosesOmitted,
         diagnosisIds,

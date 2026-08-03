@@ -213,6 +213,32 @@ function renderTreatmentCandidates(doc) {
     </section>`;
 }
 
+function renderVitalSignsCandidates(doc) {
+  const candidates = doc.vitalSignsCandidates || [];
+  if (!candidates.length) return "";
+  return `
+    <section class="patient-transfer-candidates">
+      <h4>Signos vitales detectados</h4>
+      ${candidates.map((candidate) => {
+        const vital = candidate.vitalSigns || {};
+        const pressure = vital.bloodPressure ? `${vital.bloodPressure.systolic}/${vital.bloodPressure.diastolic} mmHg` : "";
+        return `
+          <article>
+            <label><input type="checkbox" data-transfer-vitals-include="${doc.id}:${candidate.id}" checked> Incluir</label>
+            <input data-transfer-vitals-pa="${doc.id}:${candidate.id}" value="${escapeHtml(pressure)}" placeholder="PA">
+            <input data-transfer-vitals-temp="${doc.id}:${candidate.id}" value="${escapeHtml(vital.temperature?.value ?? "")}" placeholder="Temperatura">
+            <input data-transfer-vitals-fc="${doc.id}:${candidate.id}" value="${escapeHtml(vital.heartRate?.value ?? "")}" placeholder="FC">
+            <input data-transfer-vitals-fr="${doc.id}:${candidate.id}" value="${escapeHtml(vital.respiratoryRate?.value ?? "")}" placeholder="FR">
+            <input data-transfer-vitals-sato2="${doc.id}:${candidate.id}" value="${escapeHtml(vital.oxygenSaturation?.value ?? "")}" placeholder="SatO2">
+            <input data-transfer-vitals-peso="${doc.id}:${candidate.id}" value="${escapeHtml(vital.weight?.value ?? "")}" placeholder="Peso">
+            <input data-transfer-vitals-talla="${doc.id}:${candidate.id}" value="${escapeHtml(vital.height?.value ?? "")}" placeholder="Talla">
+            <input data-transfer-vitals-imc="${doc.id}:${candidate.id}" value="${escapeHtml(vital.bmi?.value ?? vital.bmiCalculated?.value ?? "")}" placeholder="IMC">
+            <small>Fuente: tabla ${escapeHtml(candidate.sourceLocation?.tableIndex ?? "")}</small>
+          </article>`;
+      }).join("")}
+    </section>`;
+}
+
 function renderDocument(doc, groups = [], currentGroupId = "") {
   const selected = doc.confirmedType?.key || doc.metadata?.suggestedType?.key || "tipo_no_reconocido";
   return `
@@ -237,6 +263,7 @@ function renderDocument(doc, groups = [], currentGroupId = "") {
         <strong>Secciones encontradas</strong>
         <span>${Object.keys(doc.sections || {}).length ? Object.keys(doc.sections).join(", ") : "Sin secciones reconocidas"}</span>
       </div>
+      ${renderVitalSignsCandidates(doc)}
       ${renderDiagnosisCandidates(doc)}
       ${renderTreatmentCandidates(doc)}
       ${renderExtractionDebug(doc)}
@@ -312,10 +339,31 @@ export function readTransferReview(groups = []) {
         statusSuggestion: modal.querySelector(`[data-transfer-tx-status="${doc.id}:${candidate.id}"]`)?.value || candidate.statusSuggestion,
         confirmedByDoctor: modal.querySelector(`[data-transfer-tx-include="${doc.id}:${candidate.id}"]`)?.checked || false
       }));
+      const vitalSignsCandidates = (doc.vitalSignsCandidates || []).map((candidate) => {
+        const key = `${doc.id}:${candidate.id}`;
+        const pa = modal.querySelector(`[data-transfer-vitals-pa="${key}"]`)?.value?.trim() || "";
+        const pressureMatch = pa.match(/(\d{2,3})\s*\/\s*(\d{2,3})/);
+        return {
+          ...candidate,
+          include: modal.querySelector(`[data-transfer-vitals-include="${key}"]`)?.checked || false,
+          vitalSigns: {
+            ...(candidate.vitalSigns || {}),
+            bloodPressure: pressureMatch ? { systolic: Number(pressureMatch[1]), diastolic: Number(pressureMatch[2]), unit: "mmHg", rawValue: pa } : candidate.vitalSigns?.bloodPressure,
+            temperature: { value: Number(modal.querySelector(`[data-transfer-vitals-temp="${key}"]`)?.value || NaN), unit: "°C" },
+            heartRate: { value: Number(modal.querySelector(`[data-transfer-vitals-fc="${key}"]`)?.value || NaN), unit: "lpm" },
+            respiratoryRate: { value: Number(modal.querySelector(`[data-transfer-vitals-fr="${key}"]`)?.value || NaN), unit: "rpm" },
+            oxygenSaturation: { value: Number(modal.querySelector(`[data-transfer-vitals-sato2="${key}"]`)?.value || NaN), unit: "%" },
+            weight: { value: Number(modal.querySelector(`[data-transfer-vitals-peso="${key}"]`)?.value || NaN), unit: "kg" },
+            height: { value: Number(modal.querySelector(`[data-transfer-vitals-talla="${key}"]`)?.value || NaN), unit: "m" },
+            bmi: { value: Number(modal.querySelector(`[data-transfer-vitals-imc="${key}"]`)?.value || NaN), unit: "kg/m²" }
+          }
+        };
+      });
       return {
         ...doc,
         omitted: modal.querySelector(`[data-transfer-omit-doc="${doc.id}"]`)?.checked || false,
         confirmedType: rule,
+        vitalSignsCandidates,
         diagnosisCandidates,
         treatmentCandidates
       };
@@ -339,6 +387,7 @@ export function renderTransferResults(results = []) {
         <article class="patient-transfer-result ${result.status}">
           <strong>${result.status === "completed" ? "Traspaso completado" : "Traspaso no completado"}</strong>
           <span>Notas: ${result.notesCreated || 0} creadas / ${result.notesExisting || 0} ya existentes</span>
+          <span>Signos vitales: ${result.vitalSignsCreated || 0} registrados / Somatometria: ${result.anthropometryCreated || 0}</span>
           <span>Diagnosticos: ${result.diagnosesCreated || 0} registrados / ${result.diagnosesOmitted || 0} omitidos</span>
           <span>Tratamientos: ${result.treatmentsCreated || 0} registrados / ${result.treatmentsOmitted || 0} omitidos</span>
           <span>Documento original: ${result.sourceSaved === false ? "No guardado" : "Guardado"} / Auditoria: ${result.auditRegistered === false ? "No registrada" : "Registrada"}</span>

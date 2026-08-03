@@ -840,6 +840,11 @@ select:disabled {
   background: #dc2626 !important;
 }
 
+.boton-eliminar-paciente-solicitud { width: fit-content; font-weight: 800; }
+.dialogo-peligro-admin { max-width: 520px; border: 1px solid #ef4444; border-radius: 16px; padding: 24px; color: #e5e7eb; background: var(--black-900); }
+.dialogo-peligro-admin::backdrop { background: rgba(0, 0, 0, .72); }
+.dialogo-peligro-acciones { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
+
 .notas-admin-lista {
   display: grid;
   gap: 10px;

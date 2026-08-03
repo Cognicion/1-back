@@ -36,7 +36,7 @@ function normalizeTextWithMap(value = "") {
     });
   });
   return {
-    text: output.join("").replace(/\s+/g, " "),
+    text: output.join(""),
     map
   };
 }
@@ -52,12 +52,32 @@ function removeHourSuffix(value = "") {
   return cleanExtractedFieldValue(value).replace(/\s*(hrs?|horas?)\.?$/i, "").trim();
 }
 
+function cleanFieldValue(value = "", fieldKey = "", label = "") {
+  let clean = cleanExtractedFieldValue(value);
+  if (label) {
+    const escaped = label.replace(/[.*+?^${}()|[\]\\]/g, "\\$&").replace(/\s+/g, "\\s+");
+    clean = clean.replace(new RegExp(`^${escaped}\\s*[:ï¼š\\-â€“â€”]?\\s*`, "i"), "").trim();
+  }
+  if (fieldKey === "cama") {
+    clean = clean.replace(/^(?:no\.?\s*de\s*)?cama\s*[:ï¼š\-â€“â€”]?\s*/i, "").trim();
+  }
+  return clean;
+}
+
 function parsePatientName(value = "") {
   return cleanExtractedFieldValue(value);
 }
 
 function parseBirthDate(value = "") {
-  return cleanExtractedFieldValue(value);
+  const cleaned = cleanExtractedFieldValue(value);
+  const match = cleaned.match(/\b(\d{2})[\/\-.](\d{2})[\/\-.](\d{4})\b/);
+  if (!match) return "";
+  const day = Number(match[1]);
+  const month = Number(match[2]);
+  const year = Number(match[3]);
+  const date = new Date(year, month - 1, day);
+  if (date.getFullYear() !== year || date.getMonth() !== month - 1 || date.getDate() !== day) return "";
+  return `${match[1]}/${match[2]}/${match[3]}`;
 }
 
 function parseAge(value = "") {
@@ -137,7 +157,7 @@ export function locateFieldLabels(text = "", definitions = PATIENT_FIELD_DEFINIT
         label: definition.label,
         normalizedLabel,
         start: map[normalizedStart] ?? normalizedStart,
-        end: (map[normalizedEnd] ?? map[normalizedEnd - 1] + 1) ?? normalizedEnd,
+        end: ((map[normalizedEnd - 1] ?? normalizedEnd - 1) + 1),
         normalizedStart,
         normalizedEnd
       });
@@ -155,7 +175,7 @@ export function extractLabeledFieldsFromText(text = "", definitions = PATIENT_FI
   const matches = locateFieldLabels(text, definitions);
   return matches.map((match, index) => {
     const next = matches[index + 1];
-    const rawValue = cleanExtractedFieldValue(sliceOriginalByOffsets(text, match.end, next?.start ?? text.length));
+    const rawValue = cleanFieldValue(sliceOriginalByOffsets(text, match.end, next?.start ?? text.length), match.fieldKey, match.label);
     return {
       fieldKey: match.fieldKey,
       label: match.label,
@@ -193,7 +213,7 @@ function candidatesFromTable(block, sourceFileId = "") {
     for (let cellIndex = 0; cellIndex < row.length - 1; cellIndex += 1) {
       const definition = findDefinitionByLabel(row[cellIndex]);
       if (!definition) continue;
-      const rawValue = cleanExtractedFieldValue(row[cellIndex + 1]);
+      const rawValue = cleanFieldValue(row[cellIndex + 1], definition.key, definition.label);
       if (!rawValue) continue;
       candidates.push({
         fieldKey: definition.key,
@@ -286,6 +306,18 @@ function syntheticNameField({ key, value, source, ruleApplied, confidence = "med
   };
 }
 
+function inferNameOrder(fields = {}) {
+  const source = `${fields.nombre?.rawValue || ""} ${fields.nombre?.sourceFileId || ""}`;
+  const value = fields.nombre?.value || "";
+  const tokens = value.split(/\s+/).filter(Boolean);
+  const commonGiven = new Set(["ana", "cecilio", "filemon", "josé", "jose", "juan", "luis", "maria", "maría"]);
+  const uppercaseRatio = value ? value.replace(/[^A-Za-zÁÉÍÓÚÜÑáéíóúüñ]/g, "").split("").filter((char) => char === char.toUpperCase()).length / Math.max(1, value.replace(/[^A-Za-zÁÉÍÓÚÜÑáéíóúüñ]/g, "").length) : 0;
+  const firstLooksGiven = commonGiven.has(normalizeLabelForMatching(tokens[0]));
+  const secondLooksGiven = commonGiven.has(normalizeLabelForMatching(tokens[1]));
+  if (tokens.length >= 4 && uppercaseRatio > 0.85 && !(firstLooksGiven && secondLooksGiven)) return "paternal-maternal-given";
+  return "unknown";
+}
+
 function resolveNameFields(fields = {}) {
   const explicit = buildNameFieldsFromExplicitParts(fields);
   if (explicit.nombreCompleto) {
@@ -302,7 +334,8 @@ function resolveNameFields(fields = {}) {
 
   const fullName = fields.nombre?.value || "";
   if (!fullName) return fields;
-  const suggestion = suggestPatientNameParts(fullName);
+  const nameOrder = inferNameOrder(fields);
+  const suggestion = suggestPatientNameParts(fullName, { nameOrder });
   if (!fields.nombres && suggestion.nombres) {
     fields.nombres = syntheticNameField({
       key: "nombres",

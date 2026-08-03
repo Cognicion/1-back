@@ -473,6 +473,13 @@
         <input id="notaFlotanteId" type="hidden">
         <div class="form-grid">
           <label>Titulo<input id="notaFlotanteTitulo" placeholder="Ej. Pendiente familiar"></label>
+          <label>Duración
+            <select id="tratamientoDuracion">
+              <option value="">Seleccionar duración</option><option>7 días</option><option>14 días</option><option>21 días</option>
+              <option>30 días</option><option>60 días</option><option>90 días</option><option>Indefinido</option><option value="otro">Otro...</option>
+            </select>
+            <input id="tratamientoDuracionOtra" placeholder="Otra duración" hidden>
+          </label>
           <label>Estado
             <select id="notaFlotanteContraida">
               <option value="false">Mostrar abierta</option>
@@ -565,6 +572,15 @@
             <datalist id="catalogoMedicamentosPsiquiatricos"></datalist>
             <small id="estadoCatalogoMedicamento" class="ayuda-catalogo-medicamento"></small>
           </label>
+          <label>Presentación
+            <select id="tratamientoPresentacion"><option value="">Seleccionar presentación</option></select>
+            <small id="tratamientoPrincipiosActivos" class="ayuda-catalogo-medicamento"></small>
+          </label>
+          <div class="tratamiento-captura-rapida">
+            <span class="campo-label">Dosis habitual</span>
+            <div id="tratamientoDosisRapidas" class="tratamiento-dosis-chips"></div>
+            <input id="tratamientoDosisOtra" placeholder="Otra dosis personalizada">
+          </div>
           <label>Via<input id="tratamientoVia" placeholder="Ej. via oral" list="opcionesViaTratamiento"></label>
           <datalist id="opcionesViaTratamiento">
             <option value="via oral"></option>
@@ -592,6 +608,14 @@
               <button type="button" data-frecuencia-tratamiento="4 veces al día">4 veces al día</button>
             </div>
           </label>
+          <label>Frecuencia rápida
+            <select id="tratamientoFrecuenciaRapida">
+              <option value="">Seleccionar frecuencia</option><option>Cada 24 horas</option><option>Cada 12 horas</option>
+              <option>Cada 8 horas</option><option>Cada 6 horas</option><option>Cada 4 horas</option><option>Cada semana</option>
+              <option>PRN</option><option>SOS</option><option value="otro">Otro...</option>
+            </select>
+            <input id="tratamientoFrecuenciaOtra" placeholder="Otra frecuencia" hidden>
+          </label>
           <label>Modo de frecuencia
             <select id="tratamientoModoFrecuencia">
               <option value="horas_especificas">Horas especificas</option>
@@ -611,6 +635,16 @@
           <input id="tratamientoDosis" type="hidden">
           <input id="tratamientoHorarios" type="hidden">
           <div id="contenedorTomasTratamiento" class="tratamiento-tomas-grid"></div>
+          <label>Modo de horario
+            <select id="tratamientoModoHorario"><option value="horas">Horario</option><option value="momentos">Momento del día</option></select>
+          </label>
+          <fieldset class="tratamiento-momentos-dia"><legend>Momentos del día</legend>
+            <label><input type="checkbox" data-momento-dia value="Mañana"> Mañana</label>
+            <label><input type="checkbox" data-momento-dia value="Mediodía"> Mediodía</label>
+            <label><input type="checkbox" data-momento-dia value="Tarde"> Tarde</label>
+            <label><input type="checkbox" data-momento-dia value="Noche"> Noche</label>
+            <label><input type="checkbox" data-momento-dia value="Al acostarse"> Al acostarse</label>
+          </fieldset>
           <datalist id="catalogoHorariosTratamiento">
             <option value="06:00"></option>
             <option value="08:00"></option>

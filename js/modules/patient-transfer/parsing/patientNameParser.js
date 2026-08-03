@@ -76,6 +76,19 @@ export function suggestPatientNameParts(fullName = "", options = {}) {
   if (tokens.length === 2) {
     return { nombres: tokens[0], apellidoPaterno: tokens[1], apellidoMaterno: "", confidence: "low", requiresReview: true, ruleApplied: "single-surname-only", originalValue };
   }
+  if (options.nameOrder === "paternal-maternal-given" && tokens.length >= 3) {
+    return {
+      nombres: tokens.slice(2).join(" "),
+      apellidoPaterno: tokens[0],
+      apellidoMaterno: tokens[1],
+      confidence: "medium",
+      requiresReview: true,
+      ruleApplied: "institutional-paternal-maternal-given",
+      nameOrder: "paternal-maternal-given",
+      originalValue,
+      normalizedForMatching: normalizarTextoBusquedaPaciente(originalValue)
+    };
+  }
   if (tokens.length === 3 && COMMON_SECOND_GIVEN_NAMES.has(tokenKey(tokens[1]))) {
     return {
       nombres: tokens.slice(0, 2).join(" "),

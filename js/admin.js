@@ -1,5 +1,6 @@
 ﻿import { auth, db } from "./firebase.js";
 import { iniciarMonitoreoSesion } from "./services/sesion.js";
+import { obtenerFunctions } from "./firebase.js";
 import { actualizarReconocimientoColaborador } from "./services/colaboradores.js";
 import { TIPOS_COLABORADOR } from "./config/tiposColaborador.js";
 import { registrarEventoAuditoria, resumenError } from "./services/auditoria.js";
@@ -57,6 +58,7 @@ import {
   updateDoc,
   where
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { httpsCallable } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-functions.js";
 
 const ADMIN_UID = "NQ0CU5PSDBUgVrk56sjPEVhOs2D3";
 const ROLES_ADMIN_VALIDOS = new Set([
@@ -2266,6 +2268,7 @@ function detalleSolicitudEliminacionHTML(reporte = {}) {
     usuario: "Usuario"
   };
   const recurso = etiquetas[reporte.recursoTipo] || reporte.recursoTipo || "Registro";
+  const esSolicitudPaciente = reporte.recursoTipo === "paciente" && reporte.pacienteUid;
 
   return `
     <div class="reporte-usuario-detalle">
@@ -2279,9 +2282,53 @@ function detalleSolicitudEliminacionHTML(reporte = {}) {
         <span>UID paciente: ${escaparHTML(reporte.pacienteUid || "Sin UID")}</span>
         <span>Motivo: ${escaparHTML(reporte.motivoSolicitud || "No indicado")}</span>
       </div>
+      ${esSolicitudPaciente ? `<button type="button" class="boton-peligro boton-eliminar-paciente-solicitud" onclick="eliminarPacienteDesdeSolicitudAdmin('${escaparHTML(reporte.id)}')">🗑 Eliminar paciente</button>` : ""}
     </div>
   `;
 }
+
+function solicitarConfirmacionEliminacionPacienteAdmin(pacienteNombre = "este paciente") {
+  const dialogo = document.getElementById("dialogoEliminarPacienteAdmin");
+  if (!dialogo) return Promise.resolve(confirm(`Esta acción eliminará permanentemente el paciente ${pacienteNombre} y toda su información clínica.\n\nEsta operación no puede deshacerse.\n\n¿Desea continuar?`));
+  dialogo.querySelector("[data-paciente-nombre]").textContent = pacienteNombre;
+  dialogo.showModal();
+  return new Promise((resolve) => {
+    const cerrar = (resultado) => { dialogo.close(); resolve(resultado); };
+    dialogo.querySelector("[data-confirmar-eliminacion]").onclick = () => cerrar(true);
+    dialogo.querySelector("[data-cancelar-eliminacion]").onclick = () => cerrar(false);
+    dialogo.oncancel = () => cerrar(false);
+  });
+}
+
+window.eliminarPacienteDesdeSolicitudAdmin = async function(solicitudId) {
+  const solicitud = reportesUsuariosAdmin.find((item) => item.id === solicitudId);
+  const uidPaciente = solicitud?.pacienteUid || "";
+  if (!solicitud || !uidPaciente || solicitud.recursoTipo !== "paciente") return;
+  if (!adminActual || !(await usuarioPuedeAccederAdmin(adminActual)).permitido) {
+    alert("No tienes permisos administrativos para ejecutar esta acción.");
+    return;
+  }
+  const nombre = solicitud.pacienteNombre || solicitud.usuarioRegistrado?.nombre || "este paciente";
+  if (!(await solicitarConfirmacionEliminacionPacienteAdmin(nombre))) return;
+  const boton = document.querySelector(`[onclick="eliminarPacienteDesdeSolicitudAdmin('${solicitudId}')"]`);
+  if (boton) { boton.disabled = true; boton.textContent = "Eliminando…"; }
+  try {
+    const eliminar = httpsCallable(await obtenerFunctions(), "eliminarPacienteDefinitivamente");
+    await eliminar({ pacienteUid: uidPaciente, pacienteNombre: nombre, solicitudId, motivo: solicitud.motivoSolicitud || "" });
+    reportesUsuariosAdmin = reportesUsuariosAdmin.filter((item) => item.pacienteUid !== uidPaciente && item.id !== solicitudId);
+    pacientesAdmin = pacientesAdmin.filter((item) => item.id !== uidPaciente);
+    delete notasPorPaciente[uidPaciente];
+    renderizarReportesUsuariosAdmin();
+    renderizarPacientesAdmin();
+    await cargarResumen();
+    await cargarUsuariosAdmin();
+    await cargarAuditoria();
+    alert("Paciente eliminado correctamente.");
+  } catch (error) {
+    if (boton) { boton.disabled = false; boton.textContent = "🗑 Eliminar paciente"; }
+    alert("No se pudo eliminar el paciente: " + error.message);
+  }
+};
 
 function opcionEstadoReporte(valor, actual) {
   return `<option value="${valor}" ${valor === actual ? "selected" : ""}>${valor}</option>`;

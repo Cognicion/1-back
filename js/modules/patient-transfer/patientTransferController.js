@@ -7,6 +7,7 @@ import { normalizeDocxBlocks, normalizedBlocksToText } from "./docx/docxBlockNor
 import { parsePatientFields, fieldValues } from "./parsing/patientFieldParser.js";
 import { parseClinicalSections } from "./parsing/clinicalSectionParser.js";
 import { extractClinicalCandidates } from "./parsing/clinicalCandidateParser.js";
+import { extractVitalSignsCandidates } from "./parsing/vitalSignsParser.js";
 import { parseNoteMetadata } from "./parsing/noteMetadataParser.js";
 import { groupDocumentsByPatient } from "./parsing/documentGroupingService.js";
 import { analyzeDocumentClinically } from "./integration/clinicalAnalysisAdapter.js";
@@ -159,6 +160,7 @@ async function analyzeOneFile(item, user) {
     blocks,
     fullText
   });
+  const vitalSignsCandidates = extractVitalSignsCandidates(blocks);
   const duplicateStatus = duplicate ? "exact_duplicate" : sameBatch ? "duplicate_in_batch" : "nuevo";
 
   item.status = duplicate ? "warning" : "ok";
@@ -180,6 +182,7 @@ async function analyzeOneFile(item, user) {
     sectionsFound: sectionsResult.encontradas,
     metadata,
     clinicalAnalysis,
+    vitalSignsCandidates,
     diagnosisCandidates: clinicalCandidates.diagnoses,
     treatmentCandidates: clinicalCandidates.treatments,
     duplicate,

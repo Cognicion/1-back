@@ -26,6 +26,93 @@ function datosUsuarioEsAdmin(datos = {}) {
     || datos.admin === true || datos.esAdmin === true || datos.isAdmin === true || datos.claims?.admin === true;
 }
 
+function contieneUidPaciente(valor, uidPaciente, clave = "") {
+  if (valor === uidPaciente && /(paciente|patient|usuario).*(uid|id)|(uid|id).*(paciente|patient|usuario)/i.test(clave)) return true;
+  if (Array.isArray(valor)) return valor.some((item) => contieneUidPaciente(item, uidPaciente, clave));
+  if (valor && typeof valor === "object") return Object.entries(valor).some(([subClave, subValor]) => contieneUidPaciente(subValor, uidPaciente, subClave));
+  return false;
+}
+
+function documentoPerteneceAPaciente(ruta, datos, uidPaciente) {
+  const segmentos = ruta.split("/");
+  if ((segmentos[0] === "usuarios" || segmentos[0] === "pacientes") && segmentos[1] === uidPaciente) return true;
+  if (segmentos[0] === "auditoria") return false;
+  return Object.entries(datos || {}).some(([clave, valor]) => contieneUidPaciente(valor, uidPaciente, clave));
+}
+
+async function eliminarDocumentoYDescendientes(ref) {
+  await adminDb.recursiveDelete(ref);
+}
+
+async function eliminarDocumentosRelacionadosEnColecciones(uidPaciente, resumen) {
+  const coleccionesRaiz = await adminDb.listCollections();
+  async function visitarColeccion(coleccion) {
+    for (const ref of await coleccion.listDocuments()) {
+      const snap = await ref.get();
+      if (!snap.exists) continue;
+      if (documentoPerteneceAPaciente(ref.path, snap.data(), uidPaciente)) {
+        await eliminarDocumentoYDescendientes(ref);
+        resumen.documentosRelacionados = (resumen.documentosRelacionados || 0) + 1;
+        continue;
+      }
+      for (const subcoleccion of await ref.listCollections()) await visitarColeccion(subcoleccion);
+    }
+  }
+  for (const coleccion of coleccionesRaiz) if (coleccion.id !== "auditoria") await visitarColeccion(coleccion);
+}
+
+async function eliminarArchivosPaciente(uidPaciente, resumen) {
+  const [archivos] = await admin.storage().bucket().getFiles();
+  const uidEscapado = uidPaciente.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const patron = new RegExp(`(?:^|/|-)${uidEscapado}(?:/|$|[._-])`);
+  const relacionados = archivos.filter((archivo) => patron.test(archivo.name));
+  if (relacionados.length) await Promise.all(relacionados.map((archivo) => archivo.delete()));
+  resumen.archivosStorage = relacionados.length;
+}
+
+exports.eliminarPacienteDefinitivamente = onCall(async (request) => {
+  if (!request.auth?.uid) throw new HttpsError("unauthenticated", "Debes iniciar sesión.");
+  const adminUid = request.auth.uid;
+  const uidPaciente = String(request.data?.pacienteUid || "").trim();
+  const solicitudId = String(request.data?.solicitudId || "").trim();
+  const motivo = String(request.data?.motivo || "").trim();
+  if (!uidPaciente || !solicitudId) throw new HttpsError("invalid-argument", "La eliminación debe originarse en una solicitud válida.");
+
+  const adminSnap = await adminDb.doc(`usuarios/${adminUid}`).get();
+  if (adminUid !== ADMIN_UID && (!adminSnap.exists || !datosUsuarioEsAdmin(adminSnap.data()))) {
+    throw new HttpsError("permission-denied", "No tienes permisos administrativos para eliminar pacientes.");
+  }
+  const solicitudSnap = await adminDb.doc(`reportesUsuarios/${solicitudId}`).get();
+  const solicitud = solicitudSnap.exists ? solicitudSnap.data() : null;
+  if (!solicitud || (solicitud.tipo !== "solicitud_eliminacion" && solicitud.categoria !== "solicitud_eliminacion") || solicitud.recursoTipo !== "paciente" || solicitud.pacienteUid !== uidPaciente) {
+    throw new HttpsError("failed-precondition", "La solicitud de eliminación no es válida para este paciente.");
+  }
+  const pacienteSnap = await adminDb.doc(`usuarios/${uidPaciente}`).get();
+  const paciente = pacienteSnap.exists ? pacienteSnap.data() : {};
+  const nombrePaciente = paciente.nombre || paciente.nombreCompleto || request.data?.pacienteNombre || "Paciente sin nombre";
+  const resumen = { uidPaciente, nombrePaciente };
+  await eliminarDocumentoYDescendientes(adminDb.doc(`usuarios/${uidPaciente}`));
+  await eliminarDocumentoYDescendientes(adminDb.doc(`pacientes/${uidPaciente}`));
+  await eliminarDocumentosRelacionadosEnColecciones(uidPaciente, resumen);
+  await eliminarArchivosPaciente(uidPaciente, resumen);
+  if (solicitudId) await adminDb.doc(`reportesUsuarios/${solicitudId}`).delete().catch(() => {});
+  await adminDb.collection("auditoria").add({
+    accion: "Paciente eliminado definitivamente",
+    modulo: "Panel administracion",
+    descripcion: "El administrador eliminó definitivamente un paciente y toda su información asociada.",
+    usuarioUid: adminUid,
+    usuarioNombre: request.auth.token?.email || adminUid,
+    usuarioRol: "admin",
+    pacienteUid: uidPaciente,
+    pacienteNombre: nombrePaciente,
+    exito: true,
+    detalles: { motivo, solicitudId, ...resumen },
+    fecha: admin.firestore.FieldValue.serverTimestamp(),
+    fechaTexto: new Date().toISOString()
+  });
+  return { ok: true, ...resumen };
+});
+
 exports.actualizarReconocimientoColaborador = onCall(async (request) => {
   if (!request.auth?.uid) throw new HttpsError("unauthenticated", "Debes iniciar sesión.");
   const adminUid = request.auth.uid;
