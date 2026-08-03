@@ -246,6 +246,34 @@
   resize: vertical;
 }
 
+.patient-transfer-debug {
+  margin: 10px 0;
+  padding: 10px;
+  border: 1px solid rgba(125, 211, 252, .2);
+  border-radius: 10px;
+  background: rgba(2, 6, 23, .42);
+}
+
+.patient-transfer-debug pre {
+  max-height: 220px;
+  overflow: auto;
+  white-space: pre-wrap;
+}
+
+.patient-transfer-debug table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.patient-transfer-debug th,
+.patient-transfer-debug td {
+  border-bottom: 1px solid rgba(148, 163, 184, .18);
+  padding: 6px;
+  text-align: left;
+  vertical-align: top;
+}
+
 .patient-transfer-sections {
   display: grid;
   gap: 5px;

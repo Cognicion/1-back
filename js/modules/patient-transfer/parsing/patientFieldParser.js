@@ -1,128 +1,328 @@
 import { FIELD_RULES } from "../../importacionDocx/docxImportConfig.js";
 
-function normalizeLabel(value = "") {
-  return String(value)
+const DEBUG_FLAG = "cognicion.debug.patientTransfer";
+
+export const PATIENT_FIELD_DEFINITIONS = FIELD_RULES.map((rule) => ({
+  key: rule.key,
+  label: rule.label,
+  labels: [...rule.aliases].sort((a, b) => b.length - a.length)
+}));
+
+function debugPatientFields(stage, payload = {}) {
+  if (typeof localStorage === "undefined" || localStorage.getItem(DEBUG_FLAG) !== "1") return;
+  console.info("[PATIENT TRANSFER FIELDS]", { stage, ...payload });
+}
+
+export function normalizeLabelForMatching(value = "") {
+  return String(value || "")
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[:：]/g, "")
+    .replace(/[.:：]/g, "")
     .replace(/\s+/g, " ")
     .trim()
     .toLowerCase();
 }
 
-function cleanValue(value = "") {
-  return String(value || "").replace(/\s+/g, " ").trim();
+function normalizeTextWithMap(value = "") {
+  const output = [];
+  const map = [];
+  [...String(value || "")].forEach((char, index) => {
+    const normalized = char.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+    const replacement = /\s/.test(normalized) ? " " : normalized;
+    [...replacement].forEach((item) => {
+      output.push(item);
+      map.push(index);
+    });
+  });
+  return {
+    text: output.join("").replace(/\s+/g, " "),
+    map
+  };
 }
 
-function normalizeDate(value = "") {
-  const text = cleanValue(value);
-  const iso = text.match(/\b(\d{4})[-/](\d{1,2})[-/](\d{1,2})\b/);
-  if (iso) return `${iso[1]}-${iso[2].padStart(2, "0")}-${iso[3].padStart(2, "0")}`;
-  const mx = text.match(/\b(\d{1,2})[-/](\d{1,2})[-/](\d{2,4})\b/);
-  if (mx) {
-    const year = mx[3].length === 2 ? `20${mx[3]}` : mx[3];
-    return `${year}-${mx[2].padStart(2, "0")}-${mx[1].padStart(2, "0")}`;
-  }
-  return text;
+export function cleanExtractedFieldValue(value = "") {
+  return String(value || "")
+    .replace(/^[\s:：\-–—]+/, "")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
-function normalizeHour(value = "") {
-  const match = cleanValue(value).match(/\b(\d{1,2}):(\d{2})\b/);
-  return match ? `${match[1].padStart(2, "0")}:${match[2]}` : cleanValue(value);
+function removeHourSuffix(value = "") {
+  return cleanExtractedFieldValue(value).replace(/\s*(hrs?|horas?)\.?$/i, "").trim();
 }
 
-function normalizeField(key, value) {
-  if (key === "fecha" || key === "fechaNacimiento") return normalizeDate(value);
-  if (key === "hora") return normalizeHour(value);
-  if (key === "edad") return cleanValue(value).match(/\d{1,3}/)?.[0] || cleanValue(value);
-  return cleanValue(value);
+function parsePatientName(value = "") {
+  return cleanExtractedFieldValue(value);
 }
 
-function findRule(label = "") {
-  const normalized = normalizeLabel(label);
-  return FIELD_RULES.find((rule) =>
-    rule.aliases.some((alias) => normalized === normalizeLabel(alias) || normalized.endsWith(normalizeLabel(alias)))
+function parseBirthDate(value = "") {
+  return cleanExtractedFieldValue(value);
+}
+
+function parseAge(value = "") {
+  const age = Number(cleanExtractedFieldValue(value).match(/\b\d{1,3}\b/)?.[0] || NaN);
+  return Number.isFinite(age) && age >= 0 && age <= 130 ? String(age) : cleanExtractedFieldValue(value);
+}
+
+function parseRecordNumber(value = "") {
+  return cleanExtractedFieldValue(value);
+}
+
+function parseDocumentTime(value = "") {
+  const match = removeHourSuffix(value).match(/\b([01]?\d|2[0-3]):([0-5]\d)\b/);
+  return match ? `${match[1].padStart(2, "0")}:${match[2]}` : removeHourSuffix(value);
+}
+
+function parseSex(value = "") {
+  return cleanExtractedFieldValue(value);
+}
+
+function parseGender(value = "") {
+  return cleanExtractedFieldValue(value);
+}
+
+function parseService(value = "") {
+  return cleanExtractedFieldValue(value);
+}
+
+function normalizeValueForField(key, value) {
+  if (key === "nombre") return parsePatientName(value);
+  if (key === "fechaNacimiento") return parseBirthDate(value);
+  if (key === "edad") return parseAge(value);
+  if (key === "expediente") return parseRecordNumber(value);
+  if (key === "fecha") return cleanExtractedFieldValue(value);
+  if (key === "hora") return parseDocumentTime(value);
+  if (key === "sexo") return parseSex(value);
+  if (key === "genero") return parseGender(value);
+  if (key === "servicio") return parseService(value);
+  return cleanExtractedFieldValue(value);
+}
+
+function buildLabelMatcher(definitions = PATIENT_FIELD_DEFINITIONS) {
+  const labels = definitions.flatMap((definition) =>
+    definition.labels.map((label) => ({
+      key: definition.key,
+      label,
+      normalized: normalizeLabelForMatching(label)
+    }))
+  ).sort((a, b) => b.normalized.length - a.normalized.length);
+  const pattern = labels
+    .map((item) => item.normalized.replace(/[.*+?^${}()|[\]\\]/g, "\\$&").replace(/\s+/g, "[\\s.]+"))
+    .join("|");
+  return { labels, regex: new RegExp(`(?:^|\\s)(${pattern})\\s*(?::|：|-|–|—|\\t|\\s{2,})`, "gi") };
+}
+
+function findDefinitionByLabel(label = "") {
+  const normalized = normalizeLabelForMatching(label);
+  return PATIENT_FIELD_DEFINITIONS.find((definition) =>
+    definition.labels.some((item) => normalized === normalizeLabelForMatching(item))
   );
 }
 
-function makeDetectedField({ key, value, method, source, confidence, sourceFileId = "" }) {
-  return {
-    value: normalizeField(key, value),
-    detectionMethod: method,
+export function locateFieldLabels(text = "", definitions = PATIENT_FIELD_DEFINITIONS) {
+  const { text: normalizedText, map } = normalizeTextWithMap(text);
+  const { labels, regex } = buildLabelMatcher(definitions);
+  const matches = [];
+  let match = regex.exec(normalizedText);
+  while (match) {
+    const normalizedLabel = normalizeLabelForMatching(match[1]);
+    const definition = labels.find((item) => item.normalized === normalizedLabel);
+    if (definition) {
+      const leadingSpace = match[0].startsWith(" ") ? 1 : 0;
+      const normalizedStart = match.index + leadingSpace;
+      const normalizedEnd = regex.lastIndex;
+      matches.push({
+        fieldKey: definition.key,
+        label: definition.label,
+        normalizedLabel,
+        start: map[normalizedStart] ?? normalizedStart,
+        end: (map[normalizedEnd] ?? map[normalizedEnd - 1] + 1) ?? normalizedEnd,
+        normalizedStart,
+        normalizedEnd
+      });
+    }
+    match = regex.exec(normalizedText);
+  }
+  return matches.sort((a, b) => a.start - b.start || b.end - a.end);
+}
+
+function sliceOriginalByOffsets(original = "", start = 0, end = original.length) {
+  return original.slice(Math.max(0, start), Math.max(start, end));
+}
+
+export function extractLabeledFieldsFromText(text = "", definitions = PATIENT_FIELD_DEFINITIONS) {
+  const matches = locateFieldLabels(text, definitions);
+  return matches.map((match, index) => {
+    const next = matches[index + 1];
+    const rawValue = cleanExtractedFieldValue(sliceOriginalByOffsets(text, match.end, next?.start ?? text.length));
+    return {
+      fieldKey: match.fieldKey,
+      label: match.label,
+      rawValue,
+      normalizedValue: normalizeValueForField(match.fieldKey, rawValue),
+      start: match.start,
+      end: next?.start ?? text.length,
+      detectionRule: "multi-label-text"
+    };
+  }).filter((candidate) => candidate.rawValue);
+}
+
+function candidatesFromParagraph(block, sourceFileId = "") {
+  const candidates = extractLabeledFieldsFromText(block.text).map((candidate) => ({
+    ...candidate,
+    sourceType: "paragraph",
     sourceFileId,
-    sourceLocation: source || {},
-    confidence,
+    blockIndex: block.source?.blockIndex,
+    detectionRule: "paragraph-multi-label",
+    confidence: "alta"
+  }));
+  debugPatientFields("paragraph", {
+    blockIndex: block.source?.blockIndex,
+    blockType: "paragraph",
+    rawRuns: block.rawRuns || [],
+    reconstructedText: block.text,
+    candidates: candidates.map(({ fieldKey, label, rawValue, detectionRule }) => ({ fieldKey, label, rawValue, detectionRule }))
+  });
+  return candidates;
+}
+
+function candidatesFromTable(block, sourceFileId = "") {
+  const candidates = [];
+  block.rows.forEach((row, rowIndex) => {
+    for (let cellIndex = 0; cellIndex < row.length - 1; cellIndex += 1) {
+      const definition = findDefinitionByLabel(row[cellIndex]);
+      if (!definition) continue;
+      const rawValue = cleanExtractedFieldValue(row[cellIndex + 1]);
+      if (!rawValue) continue;
+      candidates.push({
+        fieldKey: definition.key,
+        label: definition.label,
+        rawValue,
+        normalizedValue: normalizeValueForField(definition.key, rawValue),
+        sourceType: "table",
+        sourceFileId,
+        blockIndex: block.source?.blockIndex,
+        tableIndex: block.source?.tableIndex,
+        rowIndex,
+        cellIndex: cellIndex + 1,
+        detectionRule: "table-label-adjacent-cell",
+        confidence: "alta"
+      });
+    }
+    for (let cellIndex = 0; cellIndex < row.length; cellIndex += 1) {
+      const text = row.slice(cellIndex, cellIndex + 2).join(" ");
+      extractLabeledFieldsFromText(text).forEach((candidate) => {
+        candidates.push({
+          ...candidate,
+          sourceType: "table",
+          sourceFileId,
+          blockIndex: block.source?.blockIndex,
+          tableIndex: block.source?.tableIndex,
+          rowIndex,
+          cellIndex,
+          detectionRule: "table-multi-label",
+          confidence: "alta"
+        });
+      });
+    }
+  });
+  debugPatientFields("table", {
+    blockIndex: block.source?.blockIndex,
+    tableIndex: block.source?.tableIndex,
+    rows: block.rows,
+    candidates: candidates.map(({ fieldKey, label, rawValue, detectionRule }) => ({ fieldKey, label, rawValue, detectionRule }))
+  });
+  return candidates;
+}
+
+function scoreCandidate(candidate) {
+  let score = 0;
+  if (candidate.sourceType === "table") score += 30;
+  if (candidate.sourceType === "paragraph") score += 20;
+  if (candidate.blockIndex <= 8) score += 20;
+  if (candidate.confidence === "alta") score += 10;
+  if (candidate.normalizedValue) score += 5;
+  return score;
+}
+
+function candidateToField(candidate, alternatives = [], conflict = false) {
+  return {
+    value: candidate.normalizedValue,
+    rawValue: candidate.rawValue,
+    normalizedValue: candidate.normalizedValue,
+    detectionMethod: candidate.detectionRule,
+    sourceFileId: candidate.sourceFileId,
+    sourceLocation: {
+      sourceType: candidate.sourceType,
+      blockIndex: candidate.blockIndex,
+      tableIndex: candidate.tableIndex,
+      rowIndex: candidate.rowIndex,
+      cellIndex: candidate.cellIndex,
+      start: candidate.start,
+      end: candidate.end
+    },
+    confidence: candidate.confidence,
+    alternatives,
+    conflict,
     confirmed: false
   };
 }
 
-function parseParagraphLine(line = "") {
-  const match = String(line).match(/^([^:：]{2,70})[:：]\s*(.+)$/);
-  return match ? { label: match[1], value: match[2] } : null;
+export function resolveFieldCandidates(candidates = []) {
+  const grouped = new Map();
+  candidates.forEach((candidate) => {
+    if (!grouped.has(candidate.fieldKey)) grouped.set(candidate.fieldKey, []);
+    grouped.get(candidate.fieldKey).push(candidate);
+  });
+
+  const fields = {};
+  const conflicts = [];
+  grouped.forEach((items, key) => {
+    const sorted = [...items].sort((a, b) => scoreCandidate(b) - scoreCandidate(a));
+    const selected = sorted[0];
+    const alternatives = sorted.slice(1);
+    const conflict = alternatives.some((item) => item.normalizedValue !== selected.normalizedValue);
+    if (conflict) conflicts.push({ key, current: selected, alternatives });
+    fields[key] = candidateToField(selected, alternatives, conflict);
+  });
+  return { fields, conflicts };
 }
 
 export function parsePatientFields(blocks = [], sourceFileId = "") {
-  const fields = {};
-  const conflicts = [];
-
-  blocks.forEach((block) => {
-    if (block.type === "table") {
-      block.rows.forEach((row, rowIndex) => {
-        if (row.length < 2) return;
-        const rule = findRule(row[0]);
-        if (!rule) return;
-        const detected = makeDetectedField({
-          key: rule.key,
-          value: row.slice(1).join(" "),
-          method: "labeled-table-field",
-          source: { ...block.source, rowIndex, cellIndex: 1, sourceFileId },
-          sourceFileId,
-          confidence: "alta"
-        });
-        if (fields[rule.key] && fields[rule.key].value !== detected.value) {
-          conflicts.push({ key: rule.key, current: fields[rule.key], incoming: detected });
-          return;
-        }
-        fields[rule.key] = fields[rule.key] || detected;
-      });
-      return;
-    }
-
-    const pair = parseParagraphLine(block.text);
-    if (!pair) return;
-    const rule = findRule(pair.label);
-    if (!rule) return;
-    const detected = makeDetectedField({
-      key: rule.key,
-      value: pair.value,
-      method: "labeled-paragraph-field",
-      source: { ...block.source, sourceFileId },
-      sourceFileId,
-      confidence: "alta"
-    });
-    if (fields[rule.key] && fields[rule.key].value !== detected.value) {
-      conflicts.push({ key: rule.key, current: fields[rule.key], incoming: detected });
-      return;
-    }
-    fields[rule.key] = fields[rule.key] || detected;
+  const candidates = blocks.flatMap((block) => {
+    if (block.type === "table") return candidatesFromTable(block, sourceFileId);
+    return candidatesFromParagraph(block, sourceFileId);
   });
 
   const fullText = blocks.map((block) => block.type === "paragraph" ? block.text : block.rows.map((row) => row.join(" ")).join("\n")).join("\n");
-  if (!fields.curp) {
-    const curp = fullText.match(/\b[A-Z][AEIOUX][A-Z]{2}\d{6}[HM][A-Z]{5}[A-Z0-9]\d\b/i)?.[0];
-    if (curp) {
-      fields.curp = makeDetectedField({
-        key: "curp",
-        value: curp.toUpperCase(),
-        method: "curp-pattern",
-        source: { sourceFileId },
-        sourceFileId,
-        confidence: "media"
-      });
-    }
+  const curp = fullText.match(/\b[A-Z][AEIOUX][A-Z]{2}\d{6}[HM][A-Z]{5}[A-Z0-9]\d\b/i)?.[0];
+  if (curp) {
+    candidates.push({
+      fieldKey: "curp",
+      label: "CURP",
+      rawValue: curp.toUpperCase(),
+      normalizedValue: curp.toUpperCase(),
+      sourceType: "pattern",
+      sourceFileId,
+      detectionRule: "curp-pattern",
+      confidence: "media"
+    });
   }
 
-  return { fields, conflicts };
+  const resolved = resolveFieldCandidates(candidates);
+  debugPatientFields("resolved", {
+    fields: Object.fromEntries(Object.entries(resolved.fields).map(([key, field]) => [key, {
+      value: field.value,
+      rawValue: field.rawValue,
+      detectionMethod: field.detectionMethod,
+      sourceLocation: field.sourceLocation,
+      confidence: field.confidence,
+      conflict: field.conflict
+    }])),
+    conflicts: resolved.conflicts.map((item) => item.key)
+  });
+
+  return { ...resolved, candidates };
 }
 
 export function fieldValues(fields = {}) {

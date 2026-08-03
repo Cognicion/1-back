@@ -16,6 +16,10 @@ export function buildPatientPayload(fields = {}, user = {}) {
     servicio: fields.servicio || "",
     expediente: fields.expediente || "",
     numeroExpediente: fields.expediente || "",
+    cama: fields.cama || "",
+    genero: fields.genero || "",
+    alergias: fields.alergias || "",
+    diasEstancia: fields.diasEstancia || "",
     medicoTratante: fields.medicoTratante || "",
     medicoAdscritoEncargado: fields.medicoAdscrito || "",
     datosInstitucionales: {
@@ -27,7 +31,11 @@ export function buildPatientPayload(fields = {}, user = {}) {
       curp: fields.curp || "",
       institucionPaciente: fields.institucion || "",
       servicioInstitucional: fields.servicio || "",
-      expediente: fields.expediente || ""
+      expediente: fields.expediente || "",
+      cama: fields.cama || "",
+      genero: fields.genero || "",
+      alergias: fields.alergias || "",
+      diasEstancia: fields.diasEstancia || ""
     },
     origenTraspasoPacientesDocx: true,
     creadoPor: user.uid || "",

@@ -16,6 +16,7 @@ export function normalizeDocxBlocks(blocks = []) {
     return {
       type: "paragraph",
       text: String(block.texto || block.text || ""),
+      rawRuns: block.rawRuns || [],
       source
     };
   }).filter((block) => block.type === "table" || block.text);

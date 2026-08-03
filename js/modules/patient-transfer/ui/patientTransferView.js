@@ -15,6 +15,17 @@ function escapeHtml(value = "") {
   return String(value).replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[char]));
 }
 
+function debugEnabled() {
+  return typeof localStorage !== "undefined" && localStorage.getItem("cognicion.debug.patientTransfer") === "1";
+}
+
+function fieldStatus(field) {
+  if (!field) return "No encontrado";
+  if (field.conflict) return "Conflicto";
+  if (field.sourceLocation?.sourceType === "table") return "Detectado desde tabla";
+  return "Detectado desde encabezado";
+}
+
 function ensureRoot() {
   if (root) return root;
   root = document.createElement("div");
@@ -111,9 +122,34 @@ function renderFields(group) {
     return `
       <label>${rule.label}
         <input data-transfer-field="${group.id}:${rule.key}" value="${escapeHtml(field?.value || "")}" placeholder="${rule.label}">
-        <small>${field ? `${field.detectionMethod} · confianza ${field.confidence}` : "No encontrado"}</small>
+        <small>${fieldStatus(field)}${field ? ` · confianza ${field.confidence}` : ""}</small>
       </label>`;
   }).join("");
+}
+
+function renderExtractionDebug(doc) {
+  if (!debugEnabled()) return "";
+  const fields = Object.entries(doc.fields || {}).map(([key, field]) => `
+    <tr>
+      <td>${escapeHtml(key)}</td>
+      <td>${escapeHtml(field.value || "")}</td>
+      <td>${escapeHtml(field.rawValue || "")}</td>
+      <td>${escapeHtml(field.detectionMethod || "")}</td>
+      <td>${escapeHtml(JSON.stringify(field.sourceLocation || {}))}</td>
+    </tr>`).join("");
+  return `
+    <details class="patient-transfer-debug">
+      <summary>Ver extraccion</summary>
+      <h4>Texto reconstruido</h4>
+      <pre>${escapeHtml(doc.fullText || "")}</pre>
+      <h4>Campos detectados</h4>
+      <table>
+        <thead><tr><th>Campo</th><th>Valor</th><th>Valor original</th><th>Regla</th><th>Origen</th></tr></thead>
+        <tbody>${fields || `<tr><td colspan="5">Sin campos detectados.</td></tr>`}</tbody>
+      </table>
+      <h4>Bloques</h4>
+      <pre>${escapeHtml(JSON.stringify((doc.blocks || []).slice(0, 30), null, 2))}</pre>
+    </details>`;
 }
 
 function renderDocument(doc, groups = [], currentGroupId = "") {
@@ -140,6 +176,7 @@ function renderDocument(doc, groups = [], currentGroupId = "") {
         <strong>Secciones encontradas</strong>
         <span>${Object.keys(doc.sections || {}).length ? Object.keys(doc.sections).join(", ") : "Sin secciones reconocidas"}</span>
       </div>
+      ${renderExtractionDebug(doc)}
       <textarea readonly>${escapeHtml(doc.fullText || "")}</textarea>
     </details>`;
 }

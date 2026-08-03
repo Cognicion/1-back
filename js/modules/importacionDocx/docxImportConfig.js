@@ -12,16 +12,20 @@ export const DOCX_IMPORT_CONFIG = Object.freeze({
 });
 
 export const FIELD_RULES = Object.freeze([
-  { key: "nombre", label: "Nombre", aliases: ["nombre", "nombre del paciente", "paciente"] },
+  { key: "nombre", label: "Nombre", aliases: ["nombre completo del paciente", "nombre del paciente", "nombre completo", "nombre", "paciente"] },
   { key: "edad", label: "Edad", aliases: ["edad"] },
-  { key: "sexo", label: "Sexo", aliases: ["sexo", "genero", "genero/sexo"] },
-  { key: "fechaNacimiento", label: "Fecha de nacimiento", aliases: ["fecha de nacimiento", "nacimiento", "f. nacimiento"] },
+  { key: "sexo", label: "Sexo", aliases: ["sexo"] },
+  { key: "genero", label: "Genero", aliases: ["genero", "genero/sexo"] },
+  { key: "fechaNacimiento", label: "Fecha de nacimiento", aliases: ["fecha de nacimiento", "fecha nacimiento", "nacimiento", "f. nacimiento"] },
   { key: "curp", label: "CURP", aliases: ["curp"] },
-  { key: "expediente", label: "Numero de expediente", aliases: ["expediente", "numero de expediente", "no. expediente", "num. expediente"] },
+  { key: "expediente", label: "Numero de expediente", aliases: ["no. de expediente", "numero de expediente", "numero expediente", "no de expediente", "no. expediente", "num. expediente", "expediente"] },
+  { key: "cama", label: "Numero de cama", aliases: ["no. de cama", "numero de cama", "numero cama", "no de cama", "cama"] },
   { key: "institucion", label: "Institucion", aliases: ["institucion", "unidad", "hospital"] },
   { key: "servicio", label: "Servicio", aliases: ["servicio", "area"] },
   { key: "fecha", label: "Fecha", aliases: ["fecha", "fecha de nota", "fecha de elaboracion"] },
   { key: "hora", label: "Hora", aliases: ["hora", "hora de nota"] },
+  { key: "alergias", label: "Alergias", aliases: ["alergias", "alergia"] },
+  { key: "diasEstancia", label: "Dias de estancia", aliases: ["dias de estancia en el servicio de observacion", "dias de estancia", "estancia"] },
   { key: "medicoTratante", label: "Medico tratante", aliases: ["medico tratante", "psiquiatra tratante", "medico responsable"] },
   { key: "medicoAdscrito", label: "Medico adscrito", aliases: ["medico adscrito", "adscrito", "medico adscrito encargado"] }
 ]);
@@ -45,7 +49,7 @@ export const NOTE_TYPE_RULES = Object.freeze([
   { key: "historia_clinica", label: "Historia clinica", terms: ["historia clinica", "antecedentes heredofamiliares", "antecedentes personales"] },
   { key: "nota_inicial", label: "Nota inicial", terms: ["nota inicial", "primera vez", "valoracion inicial"] },
   { key: "nota_evolucion", label: "Nota de evolucion", terms: ["nota de evolucion", "evolucion", "subjetivo", "objetivo", "analisis", "plan"] },
-  { key: "nota_ingreso", label: "Nota de ingreso", terms: ["nota de ingreso", "ingreso hospitalario", "motivo de ingreso"] },
+  { key: "nota_ingreso", label: "Nota de ingreso", terms: ["nota de ingreso al servicio de observacion", "nota de ingreso", "ingreso a observacion", "nota inicial de ingreso", "ingreso hospitalario", "motivo de ingreso"] },
   { key: "nota_urgencias", label: "Nota de urgencias", terms: ["nota de urgencias", "urgencias", "triage"] },
   { key: "nota_egreso", label: "Nota de egreso", terms: ["nota de egreso", "alta", "egreso"] },
   { key: "interconsulta", label: "Interconsulta", terms: ["interconsulta", "servicio interconsultante", "pregunta clinica"] },

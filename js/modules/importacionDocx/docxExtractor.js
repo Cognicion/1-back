@@ -121,14 +121,22 @@ function parseXml(xmlTexto) {
   return new DOMParser().parseFromString(xmlTexto, "application/xml");
 }
 
-function textoDeNodo(nodo) {
+function runsDeNodo(nodo) {
   const partes = [];
   nodo.querySelectorAll("*").forEach((item) => {
     if (item.localName === "t") partes.push(item.textContent || "");
     if (item.localName === "tab") partes.push("\t");
     if (item.localName === "br") partes.push("\n");
   });
-  return partes.join("").replace(/\s+\n/g, "\n").replace(/[ \t]+/g, " ").trim();
+  return partes;
+}
+
+function reconstruirTextoRuns(runs = []) {
+  return runs.join("").replace(/\s+\n/g, "\n").replace(/[ \t]+/g, " ").trim();
+}
+
+function textoDeNodo(nodo) {
+  return reconstruirTextoRuns(runsDeNodo(nodo));
 }
 
 function extraerTabla(tabla) {
@@ -141,8 +149,9 @@ function extraerTabla(tabla) {
 
 function bloqueDesdeNodo(nodo, origen) {
   if (nodo.localName === "p") {
-    const texto = textoDeNodo(nodo);
-    return texto ? { tipo: "paragraph", texto, origen } : null;
+    const rawRuns = runsDeNodo(nodo);
+    const texto = reconstruirTextoRuns(rawRuns);
+    return texto ? { tipo: "paragraph", texto, rawRuns, origen } : null;
   }
   if (nodo.localName === "tbl") {
     const filas = extraerTabla(nodo);

@@ -7,10 +7,16 @@ function normalizar(valor = "") {
     .toLowerCase();
 }
 
+function primeraLineaSignificativa(texto = "") {
+  return String(texto || "").split(/\n+/).map((linea) => linea.trim()).find(Boolean) || "";
+}
+
 export function sugerirTipoNota({ textoPlano = "", secciones = {} } = {}) {
   const texto = normalizar(`${textoPlano}\n${Object.keys(secciones).join(" ")}`);
+  const titulo = normalizar(primeraLineaSignificativa(textoPlano));
   const resultados = NOTE_TYPE_RULES.map((regla) => {
-    const puntos = regla.terms.reduce((total, term) => total + (texto.includes(normalizar(term)) ? 1 : 0), 0);
+    const puntosTitulo = regla.terms.reduce((total, term) => total + (titulo.includes(normalizar(term)) ? 10 : 0), 0);
+    const puntos = regla.terms.reduce((total, term) => total + (texto.includes(normalizar(term)) ? 1 : 0), puntosTitulo);
     return { ...regla, puntos };
   }).sort((a, b) => b.puntos - a.puntos);
 
