@@ -152,6 +152,11 @@ async function analyzeOneFile(item, user) {
   renderTransferFiles(selectedFiles);
 
   const { fields, conflicts } = parsePatientFields(blocks, item.id);
+  console.info("[docx-import] patient-fields:parsed", {
+    fileId: item.id,
+    detectedFieldCount: Object.values(fields).filter((field) => String(field?.value || "").trim()).length,
+    conflictCount: conflicts.length
+  });
   const sectionsResult = parseClinicalSections(blocks);
   const metadata = parseNoteMetadata({ text: fullText, sections: sectionsResult.secciones, fields });
   const clinicalAnalysis = analyzeDocumentClinically({ fullText, blocks });
@@ -220,6 +225,10 @@ async function analyzeSelectedFiles() {
       : { ...group, candidates };
   }));
   analyzedGroups = setPatientTransferGroups(groups);
+  console.info("[docx-import] patient-fields:state-updated", {
+    groupCount: groups.length,
+    documentCount: documents.length
+  });
   setPatientTransferExecutionState({
     transferOperationId: groups[0]?.documents?.[0]?.transferOperationId || "",
     lastCompletedStage: "awaiting_review"
@@ -228,6 +237,7 @@ async function analyzeSelectedFiles() {
   setPatientTransferVisualStatus(TRANSFER_STATUS.AWAITING_REVIEW);
   renderTransferFiles(selectedFiles);
   renderDetectedGroups(analyzedGroups);
+  console.info("[docx-import] patient-fields:rendered", { groupCount: analyzedGroups.length });
   setPatientTransferMessage("Revision lista. Confirme antes de guardar.", 100);
 }
 
