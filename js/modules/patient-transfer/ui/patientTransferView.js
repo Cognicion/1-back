@@ -36,8 +36,8 @@ function ensureRoot() {
       <header class="patient-transfer-header">
         <div>
           <p>Importacion documental</p>
-          <h2 id="patientTransferTitle">Traspasar pacientes</h2>
-          <span>Cargue notas clinicas previas en formato DOCX para crear pacientes y agregar sus antecedentes documentales a COGNICION.</span>
+          <h2 id="patientTransferTitle">Importar pacientes y notas externas</h2>
+          <span>Cargue notas clínicas externas para crear pacientes nuevos o agregar notas a pacientes existentes.</span>
           <small>La informacion detectada debera revisarse antes de guardarse.</small>
         </div>
         <button type="button" data-transfer-close aria-label="Cerrar">Cerrar</button>
