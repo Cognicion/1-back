@@ -85,6 +85,10 @@ export function setPatientTransferMessage(message = "", progress = 0) {
   modal.querySelector("[data-transfer-progress]").value = progress;
 }
 
+export function setPatientTransferVisualStatus(status = "idle") {
+  ensureRoot().dataset.transferStatus = status;
+}
+
 export function showPatientTransferError(message = "") {
   const box = ensureRoot().querySelector("[data-transfer-error]");
   box.hidden = !message;
@@ -393,7 +397,7 @@ export function renderTransferResults(results = []) {
       <h3>Resultado final</h3>
       ${results.map((result) => `
         <article class="patient-transfer-result ${result.status}">
-          <strong>${result.status === "completed" ? "Traspaso completado" : "Traspaso no completado"}</strong>
+          <strong>${result.status === "completed" ? "Traspaso completado" : result.status === "partially_completed" ? "Traspaso parcialmente completado" : "Traspaso no completado"}</strong>
           <span>Notas: ${result.notesCreated || 0} creadas / ${result.notesExisting || 0} ya existentes</span>
           <span>Signos vitales: ${result.vitalSignsCreated || 0} registrados / Somatometria: ${result.anthropometryCreated || 0}</span>
           <span>Diagnosticos: ${result.diagnosesCreated || 0} registrados / ${result.diagnosesOmitted || 0} omitidos</span>
@@ -404,6 +408,9 @@ export function renderTransferResults(results = []) {
           ${result.stage ? `<span>Etapa: ${escapeHtml(result.stage)}</span>` : ""}
           ${result.error ? `<small>${escapeHtml(result.error)}</small>` : ""}
           ${result.patientId ? `<a href="paciente.html?id=${encodeURIComponent(result.patientId)}" target="_blank" rel="noopener">Abrir expediente</a>` : ""}
+          ${result.patientId ? `<a href="paciente.html?id=${encodeURIComponent(result.patientId)}#diagnosticos" target="_blank" rel="noopener">Ver diagnósticos</a>` : ""}
+          ${result.patientId ? `<a href="paciente.html?id=${encodeURIComponent(result.patientId)}#tratamientos" target="_blank" rel="noopener">Ver tratamiento</a>` : ""}
+          ${result.status !== "completed" ? `<button type="button" data-transfer-retry>Reintentar</button><button type="button" data-transfer-back-review>Volver a revisión</button>` : ""}
           <button type="button" data-transfer-import-another>Importar otro paciente</button>
           <button type="button" data-transfer-close-result>Cerrar</button>
         </article>`).join("")}
@@ -416,6 +423,10 @@ export function renderTransferFailure(error) {
       <h3>Traspaso no completado</h3>
       <p>Etapa: ${escapeHtml(error?.stage || "guardado")}</p>
       <p>Motivo: ${escapeHtml(error?.message || String(error || "Error desconocido"))}</p>
+      <p>Detalle técnico: ${escapeHtml(error?.message || String(error || "Error desconocido"))}</p>
+      <button type="button" data-transfer-retry>Reintentar</button>
+      <button type="button" data-transfer-back-review>Volver a revisión</button>
+      <button type="button" data-transfer-close-result>Cerrar</button>
     </section>
   `);
 }

@@ -45,6 +45,8 @@ assert.match(view, /data-transfer-tx-include/, "la UI exige confirmacion explici
 assert.match(view, /No se detectaron diagnosticos explicitos/, "la seccion de diagnosticos se muestra aunque no haya candidatos");
 assert.match(view, /No se detectaron tratamientos explicitos/, "la seccion de tratamientos se muestra aunque no haya candidatos");
 assert.match(view, /data-transfer-close-result/, "la UI ofrece cierre claro despues del resultado");
+assert.match(view, /data-transfer-back-review/, "la UI permite volver a la revision tras un fallo");
+assert.match(view, /setPatientTransferVisualStatus/, "la UI diferencia saving, fallo y resultado final");
 
 const adapter = read("js/modules/patient-transfer/integration/patientCreationAdapter.js");
 assert.match(adapter, /nombres/, "payload de paciente incluye nombres");
@@ -53,12 +55,18 @@ assert.match(adapter, /apellidoMaterno/, "payload de paciente incluye apellido m
 assert.match(adapter, /nombreCompleto/, "payload de paciente mantiene nombre completo compatible");
 
 const controller = read("js/modules/patient-transfer/patientTransferController.js");
+const transferState = read("js/modules/patient-transfer/patientTransferState.js");
 assert.match(controller, /transferOperationId: `docx_\$\{hash\}`/, "el operationId se crea desde el analisis del hash");
 assert.match(controller, /try \{[\s\S]*saveTransferredGroups[\s\S]*catch/, "el guardado principal usa try/catch");
 assert.match(controller, /finally \{[\s\S]*setTransferSavingState\(false\)/, "el guardado principal siempre libera saving en finally");
 assert.match(controller, /isTransferSaving\(\)/, "evita doble confirmacion");
 assert.match(controller, /render-result:start/, "traza inicio de render final");
 assert.match(controller, /render-result:success/, "traza exito de render final");
+assert.match(controller, /setPatientTransferExecutionState\(\{[\s\S]*isSaving: true/, "guarda saving en el estado central antes de persistir");
+assert.match(controller, /data-transfer-retry/, "el controlador permite reintentar usando la misma revision");
+assert.match(transferState, /transferOperationId/, "el operationId se conserva en el estado central");
+assert.match(transferState, /lastCompletedStage/, "el estado conserva la ultima etapa alcanzada");
+assert.match(transferState, /isSaving/, "el estado central expone el bloqueo de guardado");
 
 const timeout = read("js/modules/patient-transfer/patientTransferTimeout.js");
 assert.match(timeout, /PatientTransferTimeoutError/, "existe error especifico de timeout");

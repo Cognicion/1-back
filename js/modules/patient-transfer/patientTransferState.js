@@ -16,7 +16,16 @@ const state = {
   files: [],
   groups: [],
   results: [],
-  warnings: []
+  warnings: [],
+  transferOperationId: "",
+  lastCompletedStage: "",
+  patientId: "",
+  noteIds: [],
+  diagnosisIds: [],
+  treatmentIds: [],
+  vitalSignIds: [],
+  sourceDocumentPath: "",
+  isSaving: false
 };
 
 export function resetPatientTransferState() {
@@ -25,6 +34,15 @@ export function resetPatientTransferState() {
   state.groups = [];
   state.results = [];
   state.warnings = [];
+  state.transferOperationId = "";
+  state.lastCompletedStage = "";
+  state.patientId = "";
+  state.noteIds = [];
+  state.diagnosisIds = [];
+  state.treatmentIds = [];
+  state.vitalSignIds = [];
+  state.sourceDocumentPath = "";
+  state.isSaving = false;
   return getPatientTransferState();
 }
 
@@ -52,12 +70,32 @@ export function addPatientTransferWarning(warning = "") {
   if (warning) state.warnings.push(warning);
 }
 
+export function setPatientTransferExecutionState(next = {}) {
+  const allowed = [
+    "transferOperationId", "lastCompletedStage", "patientId", "noteIds",
+    "diagnosisIds", "treatmentIds", "vitalSignIds", "sourceDocumentPath", "isSaving"
+  ];
+  allowed.forEach((key) => {
+    if (Object.prototype.hasOwnProperty.call(next, key)) state[key] = next[key];
+  });
+  return getPatientTransferState();
+}
+
 export function getPatientTransferState() {
   return {
     status: state.status,
     files: state.files,
     groups: state.groups,
     results: state.results,
-    warnings: state.warnings
+    warnings: state.warnings,
+    transferOperationId: state.transferOperationId,
+    lastCompletedStage: state.lastCompletedStage,
+    patientId: state.patientId,
+    noteIds: state.noteIds,
+    diagnosisIds: state.diagnosisIds,
+    treatmentIds: state.treatmentIds,
+    vitalSignIds: state.vitalSignIds,
+    sourceDocumentPath: state.sourceDocumentPath,
+    isSaving: state.isSaving
   };
 }

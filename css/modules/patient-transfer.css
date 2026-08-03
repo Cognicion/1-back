@@ -110,6 +110,12 @@
   accent-color: #38bdf8;
 }
 
+.patient-transfer-modal[data-transfer-status="failed"] .patient-transfer-progress progress,
+.patient-transfer-modal[data-transfer-status="partially_completed"] .patient-transfer-progress progress,
+.patient-transfer-modal[data-transfer-status="completed"] .patient-transfer-progress progress {
+  accent-color: #94a3b8;
+}
+
 .patient-transfer-error,
 .patient-transfer-warning {
   margin: 12px 0;
@@ -301,6 +307,11 @@
   display: inline-flex;
   margin-top: 8px;
   color: #7dd3fc;
+}
+
+.patient-transfer-result button,
+.patient-transfer-summary button {
+  margin: 10px 8px 0 0;
 }
 
 .patient-transfer-candidates {
