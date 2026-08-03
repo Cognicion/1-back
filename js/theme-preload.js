@@ -55,4 +55,10 @@
   window.aplicarTemaLocalInmediato = apply;
   apply();
   window.addEventListener("pageshow", apply);
+  // El encabezado se carga de forma diferida y solo monta la fase autenticada validada.
+  window.addEventListener("DOMContentLoaded", () => {
+    void import("./components/globalAppHeader.js")
+      .then(({ scheduleGlobalAppHeader }) => scheduleGlobalAppHeader())
+      .catch((error) => console.warn("[GLOBAL HEADER] Error de carga", error));
+  }, { once: true });
 }());
