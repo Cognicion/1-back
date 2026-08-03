@@ -170,7 +170,11 @@ function renderExtractionDebug(doc) {
 
 function renderDiagnosisCandidates(doc) {
   const candidates = doc.diagnosisCandidates || [];
-  if (!candidates.length) return "";
+  if (!candidates.length) return `
+    <section class="patient-transfer-candidates">
+      <h4>Diagnosticos detectados</h4>
+      <p>No se detectaron diagnosticos explicitos en este documento.</p>
+    </section>`;
   return `
     <section class="patient-transfer-candidates">
       <h4>Diagnosticos detectados</h4>
@@ -193,7 +197,11 @@ function renderDiagnosisCandidates(doc) {
 
 function renderTreatmentCandidates(doc) {
   const candidates = doc.treatmentCandidates || [];
-  if (!candidates.length) return "";
+  if (!candidates.length) return `
+    <section class="patient-transfer-candidates">
+      <h4>Tratamientos detectados</h4>
+      <p>No se detectaron tratamientos explicitos.</p>
+    </section>`;
   return `
     <section class="patient-transfer-candidates">
       <h4>Tratamientos detectados</h4>

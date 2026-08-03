@@ -349,7 +349,7 @@ export async function saveTransferredGroups({ groups = [], user, onProgress = nu
           stage = "creating_patient";
           onProgress?.({ stage, message: "Creando paciente...", progress: 30 });
           traceTransfer("create-patient-start", { operation: "crearPacienteProvisional", authUid: user.uid, role: user.rol || "", patientName: group.confirmedFields?.nombre || "", transferOperationId: operationId });
-          const patientRef = await timed("create-patient", () => createTransferredPatient({ ...group.confirmedFields, transferOperationId }, user), TIMEOUTS.createPatient);
+          const patientRef = await timed("create-patient", () => createTransferredPatient({ ...group.confirmedFields, transferOperationId: operationId }, user), TIMEOUTS.createPatient);
           patientId = patientRef.id;
           patientCreated = true;
           traceTransfer("create-patient-success", { operation: "crearPacienteProvisional", authUid: user.uid, patientId, transferOperationId: operationId });
