@@ -6,6 +6,8 @@
   <title>Panel Médico | Cognición</title>
   <link rel="icon" type="image/png" href="assets/favicon-cognicion.png">
   <link rel="stylesheet" href="css/medico.css?v=20260716-2">
+  <link rel="stylesheet" href="css/modules/importacion-docx.css?v=20260802-docx-import-v1">
+  <link rel="stylesheet" href="css/modules/patient-transfer.css?v=20260803-patient-transfer-v1">
 <link rel="stylesheet" href="css/theme/cognicion-theme.css">
 <script type="module" src="js/services/themeBootstrap.js"></script>
 </head>
@@ -155,6 +157,14 @@
 
           <button type="button" id="btnActualizarPacientes" class="boton-filtro-atencion">
             Actualizar
+          </button>
+
+          <button type="button" id="btnImportarDocxPaciente" class="boton-filtro-atencion">
+            Importar paciente / nota desde DOCX
+          </button>
+
+          <button type="button" id="btnTraspasarPacientes" class="boton-filtro-atencion">
+            ⇄ Traspasar pacientes
           </button>
 
         <button onclick="window.location.href='nuevo-paciente.html'">
@@ -386,7 +396,7 @@
 
 </main>
 
-<script type="module" src="js/medico.js?v=20260731-admin-access"></script>
+<script type="module" src="js/medico.js?v=20260803-patient-transfer-v1"></script>
 
   <script type="module" src="js/components/accesosRapidos.js"></script>
   <script>

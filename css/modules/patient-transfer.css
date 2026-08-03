@@ -1,0 +1,276 @@
+.patient-transfer-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1500;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 22px;
+  background: rgba(2, 6, 23, .74);
+  backdrop-filter: blur(10px);
+}
+
+.patient-transfer-modal.abierto {
+  display: flex;
+}
+
+.patient-transfer-panel {
+  width: min(1320px, 97vw);
+  max-height: 93vh;
+  overflow: auto;
+  border: 1px solid rgba(56, 189, 248, .24);
+  border-radius: 18px;
+  background: linear-gradient(180deg, rgba(15, 23, 42, .98), rgba(8, 13, 24, .98));
+  box-shadow: 0 28px 90px rgba(0, 0, 0, .55);
+  color: #e5eefc;
+}
+
+.patient-transfer-header {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 18px 22px;
+  border-bottom: 1px solid rgba(148, 163, 184, .18);
+  background: rgba(15, 23, 42, .96);
+}
+
+.patient-transfer-header p {
+  margin: 0 0 5px;
+  color: #38bdf8;
+  font-size: 12px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.patient-transfer-header h2 {
+  margin: 0 0 6px;
+}
+
+.patient-transfer-header span,
+.patient-transfer-header small,
+.patient-transfer-muted {
+  display: block;
+  color: #94a3b8;
+}
+
+.patient-transfer-body {
+  padding: 22px;
+}
+
+.patient-transfer-dropzone {
+  display: grid;
+  place-items: center;
+  gap: 10px;
+  min-height: 190px;
+  border: 1px dashed rgba(56, 189, 248, .58);
+  border-radius: 16px;
+  background: rgba(14, 165, 233, .08);
+  text-align: center;
+}
+
+.patient-transfer-dropzone.activo {
+  border-color: #22d3ee;
+  background: rgba(34, 211, 238, .14);
+}
+
+.patient-transfer-dropzone strong {
+  font-size: 20px;
+}
+
+.patient-transfer-header button,
+.patient-transfer-dropzone button,
+.patient-transfer-actions button,
+.patient-transfer-file button {
+  border: 1px solid rgba(148, 163, 184, .32);
+  border-radius: 12px;
+  background: rgba(15, 23, 42, .9);
+  color: #e5eefc;
+  padding: 10px 14px;
+  cursor: pointer;
+}
+
+.patient-transfer-progress {
+  margin: 16px 0;
+}
+
+.patient-transfer-progress div {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 6px;
+  color: #cbd5e1;
+  font-size: 13px;
+}
+
+.patient-transfer-progress progress {
+  width: 100%;
+  height: 12px;
+  accent-color: #38bdf8;
+}
+
+.patient-transfer-error,
+.patient-transfer-warning {
+  margin: 12px 0;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(248, 113, 113, .35);
+  background: rgba(127, 29, 29, .35);
+  color: #fecaca;
+}
+
+.patient-transfer-warning {
+  border-color: rgba(251, 191, 36, .45);
+  background: rgba(120, 53, 15, .32);
+  color: #fde68a;
+}
+
+.patient-transfer-file-list {
+  display: grid;
+  gap: 10px;
+}
+
+.patient-transfer-file,
+.patient-transfer-group,
+.patient-transfer-summary,
+.patient-transfer-result {
+  margin-top: 14px;
+  padding: 16px;
+  border: 1px solid rgba(148, 163, 184, .18);
+  border-radius: 14px;
+  background: rgba(15, 23, 42, .72);
+}
+
+.patient-transfer-file {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.patient-transfer-file.ok strong {
+  color: #86efac;
+}
+
+.patient-transfer-file.warning strong {
+  color: #fde68a;
+}
+
+.patient-transfer-file.error strong {
+  color: #fecaca;
+}
+
+.patient-transfer-file span,
+.patient-transfer-file small,
+.patient-transfer-result span,
+.patient-transfer-result small {
+  display: block;
+  color: #94a3b8;
+}
+
+.patient-transfer-group > header {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 14px;
+}
+
+.patient-transfer-group header p {
+  margin: 0 0 4px;
+  color: #38bdf8;
+  font-size: 12px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.patient-transfer-group h3 {
+  margin: 0 0 4px;
+}
+
+.patient-transfer-mode,
+.patient-transfer-note-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 12px 0;
+}
+
+.patient-transfer-field-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 12px;
+  margin: 12px 0;
+}
+
+.patient-transfer-panel label {
+  display: grid;
+  gap: 6px;
+  color: #cbd5e1;
+  font-size: 13px;
+}
+
+.patient-transfer-panel input,
+.patient-transfer-panel select,
+.patient-transfer-panel textarea {
+  width: 100%;
+  border: 1px solid rgba(148, 163, 184, .28);
+  border-radius: 10px;
+  background: rgba(2, 6, 23, .62);
+  color: #f8fafc;
+  padding: 10px 11px;
+}
+
+.patient-transfer-note {
+  margin-top: 12px;
+  border: 1px solid rgba(56, 189, 248, .18);
+  border-radius: 12px;
+  padding: 12px;
+  background: rgba(2, 6, 23, .34);
+}
+
+.patient-transfer-note summary {
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.patient-transfer-note summary span {
+  margin-left: 8px;
+  color: #38bdf8;
+  font-weight: 500;
+}
+
+.patient-transfer-note textarea {
+  min-height: 190px;
+  margin-top: 10px;
+  resize: vertical;
+}
+
+.patient-transfer-sections {
+  display: grid;
+  gap: 5px;
+  margin: 10px 0;
+  color: #cbd5e1;
+}
+
+.patient-transfer-actions {
+  position: sticky;
+  bottom: 0;
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 18px;
+  padding-top: 14px;
+  background: rgba(8, 13, 24, .96);
+}
+
+.patient-transfer-actions button:last-child {
+  border-color: rgba(56, 189, 248, .65);
+  background: linear-gradient(135deg, rgba(14, 165, 233, .9), rgba(37, 99, 235, .9));
+}
+
+.patient-transfer-result a {
+  display: inline-flex;
+  margin-top: 8px;
+  color: #7dd3fc;
+}

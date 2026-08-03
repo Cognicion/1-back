@@ -1,0 +1,304 @@
+import { getAuthenticatedUserOnce, getUserProfileOnce } from "../../services/authContextService.js";
+import { TRANSFER_STATUS, resetPatientTransferState, setPatientTransferFiles, setPatientTransferGroups, setPatientTransferResults, setPatientTransferStatus } from "./patientTransferState.js";
+import { validateTransferDocxFile } from "./docx/docxValidator.js";
+import { calculateDocxHash, calculateNormalizedTextHash } from "./docx/docxHashService.js";
+import { extractDocx } from "./docx/docxExtractor.js";
+import { normalizeDocxBlocks, normalizedBlocksToText } from "./docx/docxBlockNormalizer.js";
+import { parsePatientFields, fieldValues } from "./parsing/patientFieldParser.js";
+import { parseClinicalSections } from "./parsing/clinicalSectionParser.js";
+import { parseNoteMetadata } from "./parsing/noteMetadataParser.js";
+import { groupDocumentsByPatient } from "./parsing/documentGroupingService.js";
+import { analyzeDocumentClinically } from "./integration/clinicalAnalysisAdapter.js";
+import { findDuplicateImport, findExistingPatientCandidates, saveTransferredGroups } from "./patientTransferRepository.js";
+import {
+  closePatientTransferView,
+  getPatientTransferRoot,
+  openPatientTransferView,
+  readTransferReview,
+  renderDetectedGroups,
+  renderTransferFiles,
+  renderTransferResults,
+  setPatientTransferMessage,
+  showPatientTransferError
+} from "./ui/patientTransferView.js";
+
+let initialized = false;
+let selectedFiles = [];
+let analyzedGroups = [];
+
+function fileId(file, index) {
+  return `file-${Date.now()}-${index}-${Math.random().toString(16).slice(2)}`;
+}
+
+function yieldToBrowser() {
+  return new Promise((resolve) => {
+    if ("requestIdleCallback" in window) {
+      window.requestIdleCallback(resolve, { timeout: 80 });
+      return;
+    }
+    window.setTimeout(resolve, 0);
+  });
+}
+
+function normalizeGroupAfterMove(group) {
+  const fields = {};
+  const conflicts = [];
+  group.documents.forEach((document) => {
+    Object.entries(document.fields || {}).forEach(([key, field]) => {
+      if (!fields[key]) {
+        fields[key] = field;
+        return;
+      }
+      if (String(fields[key].value || "").trim().toLowerCase() !== String(field.value || "").trim().toLowerCase()) {
+        conflicts.push({ key, current: fields[key], incoming: field });
+      }
+    });
+    conflicts.push(...(document.conflicts || []));
+  });
+  return {
+    ...group,
+    fields,
+    conflicts,
+    ambiguous: conflicts.length > 0 || !fields.nombre?.value
+  };
+}
+
+function moveDocumentToGroup(documentId = "", targetGroupId = "") {
+  if (!documentId || !targetGroupId) return;
+  let movingDocument = null;
+  analyzedGroups = analyzedGroups.map((group) => {
+    const remaining = group.documents.filter((document) => {
+      if (document.id !== documentId) return true;
+      movingDocument = document;
+      return false;
+    });
+    return { ...group, documents: remaining };
+  }).filter((group) => group.documents.length);
+
+  if (!movingDocument) return;
+  if (targetGroupId === "__new__") {
+    analyzedGroups.push(normalizeGroupAfterMove({
+      id: `group-${Date.now()}`,
+      groupingKey: `manual:${movingDocument.id}`,
+      fields: {},
+      documents: [movingDocument],
+      conflicts: [],
+      candidates: [],
+      action: "create",
+      selectedPatientId: "",
+      omitted: false
+    }));
+  } else {
+    analyzedGroups = analyzedGroups.map((group) => group.id === targetGroupId
+      ? normalizeGroupAfterMove({ ...group, documents: [...group.documents, movingDocument] })
+      : group);
+  }
+  analyzedGroups = analyzedGroups.map(normalizeGroupAfterMove);
+  setPatientTransferGroups(analyzedGroups);
+  renderDetectedGroups(analyzedGroups);
+}
+
+function addFiles(files = []) {
+  const existingNames = new Set(selectedFiles.map((item) => `${item.file.name}:${item.file.size}`));
+  const next = [...selectedFiles];
+  [...files].forEach((file, index) => {
+    const key = `${file.name}:${file.size}`;
+    if (existingNames.has(key)) return;
+    existingNames.add(key);
+    next.push({ id: fileId(file, index), file, status: "pending", statusLabel: "Pendiente" });
+  });
+  selectedFiles = next;
+  setPatientTransferFiles(selectedFiles);
+  renderTransferFiles(selectedFiles);
+  showPatientTransferError("");
+}
+
+async function analyzeOneFile(item, user) {
+  item.status = "validating";
+  item.statusLabel = "Validando";
+  renderTransferFiles(selectedFiles);
+
+  const validation = await validateTransferDocxFile(item.file);
+  if (!validation.valid) {
+    item.status = "error";
+    item.statusLabel = "Error";
+    item.error = validation.errors.join(" ");
+    return null;
+  }
+
+  const hash = await calculateDocxHash(item.file);
+  item.hash = hash;
+  const sameBatch = selectedFiles.filter((candidate) => candidate.hash === hash).length > 1;
+
+  item.status = "extracting";
+  item.statusLabel = "Extrayendo";
+  renderTransferFiles(selectedFiles);
+
+  const extracted = await extractDocx(item.file);
+  const blocks = normalizeDocxBlocks(extracted.bloques);
+  const fullText = normalizedBlocksToText(blocks);
+  const textHash = await calculateNormalizedTextHash(fullText);
+  const duplicate = await findDuplicateImport({ hash, textHash, userUid: user.uid });
+
+  item.status = "analyzing";
+  item.statusLabel = "Analizando";
+  renderTransferFiles(selectedFiles);
+
+  const { fields, conflicts } = parsePatientFields(blocks, item.id);
+  const sectionsResult = parseClinicalSections(blocks);
+  const metadata = parseNoteMetadata({ text: fullText, sections: sectionsResult.secciones, fields });
+  const clinicalAnalysis = analyzeDocumentClinically({ fullText, blocks });
+  const duplicateStatus = duplicate ? "exact_duplicate" : sameBatch ? "duplicate_in_batch" : "nuevo";
+
+  item.status = duplicate ? "warning" : "ok";
+  item.statusLabel = duplicate ? "Ya importado" : "Procesado correctamente";
+  item.error = "";
+
+  return {
+    id: item.id,
+    file: item.file,
+    hash,
+    textHash,
+    fields,
+    fieldValues: fieldValues(fields),
+    conflicts,
+    blocks,
+    fullText,
+    sections: sectionsResult.secciones,
+    sectionsFound: sectionsResult.encontradas,
+    metadata,
+    clinicalAnalysis,
+    duplicate,
+    duplicateStatus,
+    duplicateStatusLabel: duplicate ? "Ya importado" : sameBatch ? "Duplicado en esta carga" : "Nuevo"
+  };
+}
+
+async function analyzeSelectedFiles() {
+  if (!selectedFiles.length) {
+    showPatientTransferError("Agrega al menos un archivo DOCX.");
+    return;
+  }
+  const user = await getAuthenticatedUserOnce();
+  if (!user) throw new Error("No se pudo identificar al usuario.");
+
+  setPatientTransferStatus(TRANSFER_STATUS.VALIDATING);
+  showPatientTransferError("");
+  const documents = [];
+  for (let index = 0; index < selectedFiles.length; index += 1) {
+    setPatientTransferMessage(`Procesando ${index + 1} de ${selectedFiles.length}`, Math.round((index / selectedFiles.length) * 90));
+    const document = await analyzeOneFile(selectedFiles[index], user);
+    if (document) documents.push(document);
+    await yieldToBrowser();
+  }
+
+  setPatientTransferStatus(TRANSFER_STATUS.ANALYZING);
+  let groups = groupDocumentsByPatient(documents);
+  groups = await Promise.all(groups.map(async (group) => {
+    const candidates = await findExistingPatientCandidates(fieldValues(group.fields), user.uid);
+    return { ...group, candidates };
+  }));
+  analyzedGroups = setPatientTransferGroups(groups);
+  setPatientTransferStatus(TRANSFER_STATUS.AWAITING_REVIEW);
+  renderTransferFiles(selectedFiles);
+  renderDetectedGroups(analyzedGroups);
+  setPatientTransferMessage("Revision lista. Confirme antes de guardar.", 100);
+}
+
+async function saveReviewedTransfer() {
+  if (!analyzedGroups.length) {
+    showPatientTransferError("Analiza los documentos antes de confirmar.");
+    return;
+  }
+  const user = await getAuthenticatedUserOnce();
+  const profile = user ? await getUserProfileOnce(user.uid) : null;
+  if (!user) throw new Error("No se pudo identificar al usuario.");
+
+  const reviewedGroups = readTransferReview(analyzedGroups);
+  const blocking = reviewedGroups.find((group) =>
+    !group.omitted && group.action === "associate" && !group.selectedPatientId
+  );
+  if (blocking) {
+    showPatientTransferError("Selecciona el paciente existente antes de asociar notas.");
+    return;
+  }
+
+  const summary = {
+    newPatients: reviewedGroups.filter((group) => !group.omitted && group.action === "create").length,
+    existingPatients: reviewedGroups.filter((group) => !group.omitted && group.action === "associate").length,
+    notes: reviewedGroups.reduce((total, group) => total + (group.omitted ? 0 : group.documents.filter((doc) => !doc.omitted && doc.duplicateStatus === "nuevo").length), 0),
+    omittedFiles: reviewedGroups.reduce((total, group) => total + group.documents.filter((doc) => doc.omitted || doc.duplicateStatus !== "nuevo").length, 0),
+    possibleDuplicates: reviewedGroups.reduce((total, group) => total + group.documents.filter((doc) => doc.duplicateStatus !== "nuevo").length, 0),
+    pendingFields: reviewedGroups.reduce((total, group) => total + Object.values(group.confirmedFields || {}).filter((value) => !value).length, 0)
+  };
+  const confirmed = window.confirm(`Resumen del traspaso\n\nPacientes nuevos: ${summary.newPatients}\nPacientes existentes: ${summary.existingPatients}\nNotas que se crearan: ${summary.notes}\nArchivos omitidos: ${summary.omittedFiles}\nPosibles duplicados: ${summary.possibleDuplicates}\nCampos pendientes: ${summary.pendingFields}\n\n¿Confirmar traspaso?`);
+  if (!confirmed) return;
+
+  setPatientTransferStatus(TRANSFER_STATUS.SAVING);
+  setPatientTransferMessage("Guardando traspaso...", 50);
+  const results = await saveTransferredGroups({
+    groups: reviewedGroups,
+    user: { ...profile, uid: user.uid, email: user.email }
+  });
+  setPatientTransferResults(results);
+  setPatientTransferStatus(results.some((item) => item.status === "failed") ? TRANSFER_STATUS.PARTIALLY_COMPLETED : TRANSFER_STATUS.COMPLETED);
+  setPatientTransferMessage("Traspaso finalizado.", 100);
+  renderTransferResults(results);
+  window.dispatchEvent(new CustomEvent("cognicion:patient-transfer-completed", { detail: { results } }));
+}
+
+function resetAndOpen() {
+  resetPatientTransferState();
+  selectedFiles = [];
+  analyzedGroups = [];
+  openPatientTransferView();
+  renderTransferFiles(selectedFiles);
+  renderDetectedGroups([]);
+  setPatientTransferMessage("Esperando documentos...", 0);
+  showPatientTransferError("");
+}
+
+export function initializePatientTransfer() {
+  if (initialized) return { openPatientTransfer: resetAndOpen };
+  initialized = true;
+  const root = getPatientTransferRoot();
+  const input = root.querySelector("#patientTransferInput");
+  const dropzone = root.querySelector("[data-transfer-dropzone]");
+
+  root.querySelector("[data-transfer-close]")?.addEventListener("click", closePatientTransferView);
+  root.querySelector("[data-transfer-cancel]")?.addEventListener("click", () => {
+    setPatientTransferStatus(TRANSFER_STATUS.CANCELLED);
+    closePatientTransferView();
+  });
+  root.querySelector("[data-transfer-select]")?.addEventListener("click", () => input?.click());
+  root.querySelector("[data-transfer-analyze]")?.addEventListener("click", () => analyzeSelectedFiles().catch((error) => showPatientTransferError(error.message || String(error))));
+  root.querySelector("[data-transfer-save]")?.addEventListener("click", () => saveReviewedTransfer().catch((error) => showPatientTransferError(error.message || String(error))));
+
+  input?.addEventListener("change", (event) => addFiles(event.target.files || []));
+  dropzone?.addEventListener("dragover", (event) => {
+    event.preventDefault();
+    dropzone.classList.add("activo");
+  });
+  dropzone?.addEventListener("dragleave", () => dropzone.classList.remove("activo"));
+  dropzone?.addEventListener("drop", (event) => {
+    event.preventDefault();
+    dropzone.classList.remove("activo");
+    addFiles(event.dataTransfer?.files || []);
+  });
+
+  root.addEventListener("click", (event) => {
+    const removeButton = event.target.closest("[data-transfer-remove-file]");
+    if (!removeButton) return;
+    selectedFiles = selectedFiles.filter((item) => item.id !== removeButton.dataset.transferRemoveFile);
+    setPatientTransferFiles(selectedFiles);
+    renderTransferFiles(selectedFiles);
+  });
+
+  root.addEventListener("change", (event) => {
+    const targetSelect = event.target.closest("[data-transfer-document-target]");
+    if (!targetSelect) return;
+    moveDocumentToGroup(targetSelect.dataset.transferDocumentTarget, targetSelect.value);
+  });
+
+  return { openPatientTransfer: resetAndOpen };
+}

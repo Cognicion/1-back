@@ -54,6 +54,8 @@ const FILTROS_ATENCION_DEFAULT = ["hospitalizados", "privado", "hpfba", "hpijnn"
 const STORAGE_FILTROS_ATENCION = "cognicion.medico.filtrosAtencion";
 let filtrosAtencionActuales = cargarPreferenciasFiltroAtencion();
 let mostrarPacientesArchivados = false;
+let importadorDocxPromise = null;
+let traspasoPacientesPromise = null;
 
 const COLUMNAS_PACIENTES = [
   { key: "cama", label: "Cama", cssVar: "--col-cama" },
@@ -168,6 +170,8 @@ async function inicializarPanelMedico() {
   inicializarCarpetasPacientes();
   inicializarPacientesArchivados();
   inicializarPanelMedicoColapsable();
+  inicializarImportacionDocxLazy();
+  inicializarTraspasoPacientesLazy();
 
   await cargarCarpetasMedico(user.uid);
   await cargarPacientes(user.uid);
@@ -193,6 +197,45 @@ function inicializarPanelMedicoColapsable() {
 
   botonContraer?.addEventListener("click", () => actualizarEstado(true));
   botonExpandir?.addEventListener("click", () => actualizarEstado(false));
+}
+
+function inicializarImportacionDocxLazy() {
+  document.getElementById("btnImportarDocxPaciente")?.addEventListener("click", async () => {
+    try {
+      if (!importadorDocxPromise) {
+        importadorDocxPromise = import("./modules/importacionDocx/docxImportController.js")
+          .then((modulo) => modulo.inicializarImportacionDocxMedico());
+      }
+      const importador = await importadorDocxPromise;
+      await importador.abrir();
+    } catch (error) {
+      console.error("No se pudo abrir el importador DOCX:", error);
+      alert("No se pudo abrir el importador DOCX. Revisa la consola e intenta nuevamente.");
+    }
+  });
+
+  window.addEventListener("cognicion:docx-importado", () => {
+    if (uidMedicoActual) cargarPacientes(uidMedicoActual, { forzar: true });
+  });
+}
+
+function inicializarTraspasoPacientesLazy() {
+  document.getElementById("btnTraspasarPacientes")?.addEventListener("click", async () => {
+    try {
+      if (!traspasoPacientesPromise) {
+        traspasoPacientesPromise = import("./modules/patient-transfer/index.js");
+      }
+      const modulo = await traspasoPacientesPromise;
+      modulo.openPatientTransfer();
+    } catch (error) {
+      console.error("No se pudo abrir Traspasar pacientes:", error);
+      alert("No se pudo abrir Traspasar pacientes. Revisa la consola e intenta nuevamente.");
+    }
+  });
+
+  window.addEventListener("cognicion:patient-transfer-completed", () => {
+    if (uidMedicoActual) cargarPacientes(uidMedicoActual, { forzar: true });
+  });
 }
 
 async function refrescarPacientesSiCorresponde() {

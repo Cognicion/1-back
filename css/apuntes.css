@@ -76,11 +76,13 @@ body.bloqueado main { display: none; }
 
 .apuntes-editor {
   min-height: 0;
+  min-width: 0;
   height: auto;
   display: grid;
   grid-template-rows: auto minmax(0, 1fr) auto;
   gap: 14px;
   padding: 22px;
+  overflow: hidden;
 }
 
 input,
@@ -96,9 +98,15 @@ button {
 }
 
 textarea {
+  display: block;
   min-height: 0;
+  min-width: 0;
   height: auto;
-  overflow: auto;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+  -webkit-overflow-scrolling: touch;
   resize: none;
   line-height: 1.45;
 }
