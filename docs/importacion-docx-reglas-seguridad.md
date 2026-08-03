@@ -41,3 +41,39 @@ match /importacionesDocx/{uid}/{hash}/{fileName} {
 ```
 
 Si se conservan rutas antiguas o rutas de traspaso, deben acotarse por `uid` del mismo modo.
+
+## Traspasar pacientes
+
+El modulo `Traspasar pacientes` ya no debe usar colecciones raiz para metadatos de traspaso o duplicados.
+
+Rutas Firestore esperadas:
+
+```text
+usuarios/{uid}/traspasosPacientes/{transferId}
+usuarios/{uid}/importacionesDocx/{sourceFileHash}
+usuarios/{patientId}/documentosImportados/{documentId}
+usuarios/{patientId}/notasMedicas/{noteId}
+```
+
+Fragmento conceptual:
+
+```rules
+match /usuarios/{uid}/traspasosPacientes/{transferId} {
+  allow read, create, update: if request.auth != null
+    && request.auth.uid == uid
+    && request.resource.data.ownerUid == request.auth.uid;
+}
+
+match /usuarios/{uid}/importacionesDocx/{sourceFileHash} {
+  allow read, create, update: if request.auth != null
+    && request.auth.uid == uid
+    && request.resource.data.ownerUid == request.auth.uid;
+}
+```
+
+Rutas que no deben utilizarse:
+
+```text
+traspasosPacientes/{transferId}
+importacionesDocx/{importacionId}
+```

@@ -1,4 +1,5 @@
 import { FIELD_RULES, NOTE_TYPE_RULES } from "../../importacionDocx/docxImportConfig.js";
+import { construirNombreCompletoPaciente } from "../../../utils/nombresPacientes.js";
 
 let root = null;
 
@@ -220,6 +221,11 @@ export function readTransferReview(groups = []) {
     FIELD_RULES.forEach((rule) => {
       confirmedFields[rule.key] = modal.querySelector(`[data-transfer-field="${group.id}:${rule.key}"]`)?.value?.trim() || "";
     });
+    confirmedFields.nombre = construirNombreCompletoPaciente({
+      nombres: confirmedFields.nombres,
+      apellidoPaterno: confirmedFields.apellidoPaterno,
+      apellidoMaterno: confirmedFields.apellidoMaterno
+    }) || confirmedFields.nombre;
     const documents = group.documents.map((doc) => {
       const typeKey = modal.querySelector(`[data-transfer-note-type="${doc.id}"]`)?.value || "tipo_no_reconocido";
       const rule = NOTE_TYPE_RULES.find((item) => item.key === typeKey) || { key: "tipo_no_reconocido", label: "Tipo no reconocido" };
@@ -246,10 +252,25 @@ export function renderTransferResults(results = []) {
       <h3>Resultado final</h3>
       ${results.map((result) => `
         <article class="patient-transfer-result ${result.status}">
-          <strong>${result.status === "completed" ? "Traspaso completado" : result.status}</strong>
-          <span>Paciente: ${escapeHtml(result.patientId || "sin paciente")} · Notas importadas: ${result.notesCreated || 0}</span>
+          <strong>${result.status === "completed" ? "Traspaso completado" : "Traspaso no completado"}</strong>
+          <span>Paciente: ${escapeHtml(result.patientName || (result.patientId ? "Paciente creado/asociado" : "No creado"))} · Notas importadas: ${result.notesCreated || 0}</span>
+          ${result.stage ? `<span>Etapa: ${escapeHtml(result.stage)}</span>` : ""}
           ${result.error ? `<small>${escapeHtml(result.error)}</small>` : ""}
           ${result.patientId ? `<a href="paciente.html?id=${encodeURIComponent(result.patientId)}" target="_blank" rel="noopener">Abrir expediente</a>` : ""}
         </article>`).join("")}
     </section>`;
+}
+
+export function syncPatientNameInputs(event) {
+  const input = event.target.closest("[data-transfer-field]");
+  if (!input) return;
+  const [groupId, key] = String(input.dataset.transferField || "").split(":");
+  if (!groupId || !["nombres", "apellidoPaterno", "apellidoMaterno"].includes(key)) return;
+  const modal = ensureRoot();
+  const fullNameInput = modal.querySelector(`[data-transfer-field="${groupId}:nombre"]`);
+  if (!fullNameInput) return;
+  const nombres = modal.querySelector(`[data-transfer-field="${groupId}:nombres"]`)?.value || "";
+  const apellidoPaterno = modal.querySelector(`[data-transfer-field="${groupId}:apellidoPaterno"]`)?.value || "";
+  const apellidoMaterno = modal.querySelector(`[data-transfer-field="${groupId}:apellidoMaterno"]`)?.value || "";
+  fullNameInput.value = construirNombreCompletoPaciente({ nombres, apellidoPaterno, apellidoMaterno });
 }

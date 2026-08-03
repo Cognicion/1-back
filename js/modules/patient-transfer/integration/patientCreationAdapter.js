@@ -1,10 +1,18 @@
 import { crearPacienteProvisional } from "../../../services/usuarios.js?v=20260729-imc-payload-fix";
+import { construirNombreCompletoPaciente } from "../../../utils/nombresPacientes.js";
 
 export function buildPatientPayload(fields = {}, user = {}) {
-  const name = fields.nombre || "Paciente importado sin nombre";
+  const nombres = String(fields.nombres || "").trim().replace(/\s+/g, " ");
+  const apellidoPaterno = String(fields.apellidoPaterno || "").trim().replace(/\s+/g, " ");
+  const apellidoMaterno = String(fields.apellidoMaterno || "").trim().replace(/\s+/g, " ");
+  const name = construirNombreCompletoPaciente({ nombres, apellidoPaterno, apellidoMaterno }) || fields.nombre || "Paciente importado sin nombre";
   return {
     nombre: name,
     nombreCompleto: name,
+    nombres,
+    apellidoPaterno,
+    apellidoMaterno,
+    nombreEstructurado: Boolean(nombres || apellidoPaterno || apellidoMaterno),
     edadManual: fields.edad || "",
     sexo: fields.sexo || "",
     fechaNacimiento: fields.fechaNacimiento || "",
@@ -25,6 +33,9 @@ export function buildPatientPayload(fields = {}, user = {}) {
     datosInstitucionales: {
       nombrePaciente: name,
       nombreCompleto: name,
+      nombres,
+      apellidoPaterno,
+      apellidoMaterno,
       edadManual: fields.edad || "",
       sexo: fields.sexo || "",
       fechaNacimiento: fields.fechaNacimiento || "",

@@ -8,10 +8,14 @@ import { buildImportedNotePayload, createTransferredNote } from "./integration/n
 import {
   addDoc,
   collection,
+  deleteDoc,
+  doc,
+  getDoc,
   getDocs,
   limit,
   query,
   serverTimestamp,
+  setDoc,
   updateDoc,
   where
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
@@ -22,6 +26,14 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
 
 const TRANSFER_COLLECTION = "traspasosPacientes";
+
+function traceTransfer(stage, data = {}) {
+  console.info("[PATIENT TRANSFER]", {
+    module: "patient-transfer",
+    stage,
+    ...data
+  });
+}
 
 function safeFileName(name = "documento.docx") {
   return String(name).replace(/[^\w.\-]+/g, "_").slice(0, 140) || "documento.docx";
@@ -76,15 +88,24 @@ export async function findExistingPatientCandidates(fields = {}, userUid = "") {
 
 export async function findDuplicateImport({ hash = "", textHash = "", userUid = "" } = {}) {
   if (!userUid) return null;
-  const checks = [];
-  if (hash) checks.push(query(collection(db, DOCX_IMPORT_CONFIG.duplicateCollection), where("hash", "==", hash), where("usuarioUid", "==", userUid), limit(1)));
-  if (textHash) checks.push(query(collection(db, DOCX_IMPORT_CONFIG.duplicateCollection), where("textHash", "==", textHash), where("usuarioUid", "==", userUid), limit(1)));
-  if (!checks.length) return null;
-  const settled = await Promise.allSettled(checks.map((check) => getDocs(check)));
-  for (const result of settled) {
-    if (result.status === "fulfilled" && !result.value.empty) {
-      const docSnap = result.value.docs[0];
-      return { id: docSnap.id, ...docSnap.data() };
+  if (hash) {
+    const exactPath = `usuarios/${userUid}/${DOCX_IMPORT_CONFIG.duplicateUserSubcollection}/${hash}`;
+    traceTransfer("duplicate-check", { operation: "getDoc", path: exactPath, authUid: userUid });
+    const exact = await getDoc(doc(db, "usuarios", userUid, DOCX_IMPORT_CONFIG.duplicateUserSubcollection, hash));
+    if (exact.exists()) return { id: exact.id, ...exact.data(), duplicateStatus: "duplicado_exacto" };
+  }
+  if (textHash) {
+    const path = `usuarios/${userUid}/${DOCX_IMPORT_CONFIG.duplicateUserSubcollection}`;
+    traceTransfer("duplicate-check", { operation: "getDocs", path, authUid: userUid, query: { ownerUid: userUid, textHash } });
+    const snap = await getDocs(query(
+      collection(db, "usuarios", userUid, DOCX_IMPORT_CONFIG.duplicateUserSubcollection),
+      where("ownerUid", "==", userUid),
+      where("textHash", "==", textHash),
+      limit(1)
+    ));
+    if (!snap.empty) {
+      const docSnap = snap.docs[0];
+      return { id: docSnap.id, ...docSnap.data(), duplicateStatus: "posible_duplicado" };
     }
   }
   return null;
@@ -93,6 +114,7 @@ export async function findDuplicateImport({ hash = "", textHash = "", userUid = 
 async function uploadOriginalDocx({ file, hash, userUid, patientId }) {
   const storage = await obtenerStorage();
   const path = `${DOCX_IMPORT_CONFIG.storageRoot}/${userUid}/patient-transfer/${patientId}/${hash}/${safeFileName(file.name)}`;
+  traceTransfer("upload-source-document", { operation: "uploadBytes", path, authUid: userUid, patientId });
   const storageRef = ref(storage, path);
   await uploadBytes(storageRef, file, {
     contentType: file.type || "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
@@ -102,7 +124,10 @@ async function uploadOriginalDocx({ file, hash, userUid, patientId }) {
 }
 
 async function createTransferImportRecord({ user, group, patientId, documentResults, status }) {
-  return addDoc(collection(db, TRANSFER_COLLECTION), {
+  const path = `usuarios/${user.uid}/${TRANSFER_COLLECTION}`;
+  traceTransfer("create-transfer-record", { operation: "addDoc", path, authUid: user.uid, role: user.rol || "", patientId, status });
+  return addDoc(collection(db, "usuarios", user.uid, TRANSFER_COLLECTION), {
+    ownerUid: user.uid,
     usuarioUid: user.uid,
     usuarioNombre: user.nombre || user.email || "",
     status,
@@ -135,18 +160,26 @@ export async function saveTransferredGroups({ groups = [], user }) {
 
     let patientId = group.selectedPatientId || "";
     let patientCreated = false;
+    let stage = "pending";
     const documentResults = [];
     try {
       if (group.action === "create") {
+        stage = "creating_patient";
+        traceTransfer(stage, { operation: "crearPacienteProvisional", authUid: user.uid, role: user.rol || "", patientName: group.confirmedFields?.nombre || "" });
         const patientRef = await createTransferredPatient(group.confirmedFields, user);
         patientId = patientRef.id;
         patientCreated = true;
+        traceTransfer(stage, { operation: "crearPacienteProvisional", authUid: user.uid, patientId, result: "created" });
       }
       if (!patientId) throw new Error("Selecciona un paciente existente o confirma crear uno nuevo.");
 
+      stage = "creating_transfer_record";
       const transferRef = await createTransferImportRecord({ user, group, patientId, documentResults: [], status: "saving" });
       for (const document of group.documents.filter((item) => !item.omitted && item.duplicateStatus === "nuevo")) {
+        stage = "uploading_source";
         const uploaded = await uploadOriginalDocx({ file: document.file, hash: document.hash, userUid: user.uid, patientId });
+        stage = "creating_note";
+        traceTransfer(stage, { operation: "guardarBorradorNotaClinica", path: `usuarios/${patientId}/notasMedicas`, authUid: user.uid, patientId });
         const notePayload = buildImportedNotePayload({
           document,
           confirmedType: document.confirmedType,
@@ -167,6 +200,8 @@ export async function saveTransferredGroups({ groups = [], user }) {
         };
         documentResults.push(record);
 
+        stage = "creating_patient_document_record";
+        traceTransfer(stage, { operation: "addDoc", path: `usuarios/${patientId}/documentosImportados`, authUid: user.uid, patientId, noteId: record.noteId });
         await addDoc(collection(db, "usuarios", patientId, "documentosImportados"), {
           importacionId: transferRef.id,
           importMethod: "docx-patient-transfer",
@@ -186,9 +221,14 @@ export async function saveTransferredGroups({ groups = [], user }) {
           fechaISO: new Date().toISOString()
         });
 
-        await addDoc(collection(db, DOCX_IMPORT_CONFIG.duplicateCollection), {
+        stage = "creating_duplicate_record";
+        const duplicateRef = doc(db, "usuarios", user.uid, DOCX_IMPORT_CONFIG.duplicateUserSubcollection, document.hash);
+        traceTransfer(stage, { operation: "setDoc", path: `usuarios/${user.uid}/${DOCX_IMPORT_CONFIG.duplicateUserSubcollection}/${document.hash}`, authUid: user.uid, patientId, noteId: record.noteId });
+        await setDoc(duplicateRef, {
+          ownerUid: user.uid,
           usuarioUid: user.uid,
           pacienteId,
+          sourceFileHash: document.hash,
           hash: document.hash,
           textHash: document.textHash,
           archivoNombre: document.file.name,
@@ -201,9 +241,11 @@ export async function saveTransferredGroups({ groups = [], user }) {
           notaId: record.noteId,
           creadoEn: serverTimestamp(),
           fechaISO: new Date().toISOString()
-        });
+        }, { merge: true });
       }
 
+      stage = "updating_transfer_record";
+      traceTransfer(stage, { operation: "updateDoc", path: `usuarios/${user.uid}/${TRANSFER_COLLECTION}/${transferRef.id}`, authUid: user.uid, patientId, notesCreated: documentResults.length });
       await updateDoc(transferRef, {
         status: "completed",
         completedAt: serverTimestamp(),
@@ -221,6 +263,8 @@ export async function saveTransferredGroups({ groups = [], user }) {
         }))
       });
 
+      stage = "creating_audit";
+      traceTransfer(stage, { operation: "registrarEventoAuditoria", authUid: user.uid, role: user.rol || "", patientId });
       await registrarEventoAuditoria({
         accion: "traspasar_pacientes_docx",
         modulo: "Traspasar pacientes",
@@ -234,8 +278,28 @@ export async function saveTransferredGroups({ groups = [], user }) {
         detalles: { groupId: group.id, patientCreated, documents: documentResults.length }
       });
 
-      results.push({ groupId: group.id, status: "completed", patientId, patientCreated, notesCreated: documentResults.length, documents: documentResults });
+      results.push({ groupId: group.id, status: "completed", patientId, patientName: group.confirmedFields?.nombre || "", patientCreated, notesCreated: documentResults.length, documents: documentResults });
     } catch (error) {
+      traceTransfer(stage || "failed", {
+        operation: "firebase-write",
+        authUid: user.uid,
+        role: user.rol || "",
+        patientId,
+        errorCode: error?.code || error?.name || "unknown",
+        message: error?.message || String(error),
+        partialState: { patientCreated, notesCreated: documentResults.length }
+      });
+      if (patientCreated && !documentResults.length && patientId) {
+        await deleteDoc(doc(db, "usuarios", patientId)).catch((rollbackError) => {
+          traceTransfer("rollback_patient_failed", {
+            operation: "deleteDoc",
+            path: `usuarios/${patientId}`,
+            authUid: user.uid,
+            patientId,
+            errorCode: rollbackError?.code || rollbackError?.name || "unknown"
+          });
+        });
+      }
       await registrarEventoAuditoria({
         accion: "traspasar_pacientes_docx",
         modulo: "Traspasar pacientes",
@@ -248,7 +312,15 @@ export async function saveTransferredGroups({ groups = [], user }) {
         exito: false,
         detalles: { groupId: group.id, error: resumenError(error) }
       }).catch(() => {});
-      results.push({ groupId: group.id, status: "failed", patientId, error: error.message || String(error), notesCreated: documentResults.length });
+      results.push({
+        groupId: group.id,
+        status: documentResults.length ? "partially_completed" : "failed",
+        patientId: documentResults.length ? patientId : "",
+        patientName: group.confirmedFields?.nombre || "",
+        stage,
+        error: error.message || String(error),
+        notesCreated: documentResults.length
+      });
     }
   }
   return results;

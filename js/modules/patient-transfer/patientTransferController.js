@@ -19,7 +19,8 @@ import {
   renderTransferFiles,
   renderTransferResults,
   setPatientTransferMessage,
-  showPatientTransferError
+  showPatientTransferError,
+  syncPatientNameInputs
 } from "./ui/patientTransferView.js";
 
 let initialized = false;
@@ -241,8 +242,9 @@ async function saveReviewedTransfer() {
     user: { ...profile, uid: user.uid, email: user.email }
   });
   setPatientTransferResults(results);
-  setPatientTransferStatus(results.some((item) => item.status === "failed") ? TRANSFER_STATUS.PARTIALLY_COMPLETED : TRANSFER_STATUS.COMPLETED);
-  setPatientTransferMessage("Traspaso finalizado.", 100);
+  const hasFailures = results.some((item) => item.status === "failed" || item.status === "partially_completed");
+  setPatientTransferStatus(hasFailures ? TRANSFER_STATUS.PARTIALLY_COMPLETED : TRANSFER_STATUS.COMPLETED);
+  setPatientTransferMessage(hasFailures ? "Traspaso no completado." : "Traspaso finalizado.", 100);
   renderTransferResults(results);
   window.dispatchEvent(new CustomEvent("cognicion:patient-transfer-completed", { detail: { results } }));
 }
@@ -296,9 +298,10 @@ export function initializePatientTransfer() {
 
   root.addEventListener("change", (event) => {
     const targetSelect = event.target.closest("[data-transfer-document-target]");
-    if (!targetSelect) return;
-    moveDocumentToGroup(targetSelect.dataset.transferDocumentTarget, targetSelect.value);
+    if (targetSelect) moveDocumentToGroup(targetSelect.dataset.transferDocumentTarget, targetSelect.value);
   });
+
+  root.addEventListener("input", syncPatientNameInputs);
 
   return { openPatientTransfer: resetAndOpen };
 }

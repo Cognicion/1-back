@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { parsePatientFields, fieldValues, extractLabeledFieldsFromText } from "../js/modules/patient-transfer/parsing/patientFieldParser.js";
+import { buildFullPatientName, suggestPatientNameParts } from "../js/modules/patient-transfer/parsing/patientNameParser.js";
 import { sugerirTipoNota } from "../js/modules/importacionDocx/noteTypeDetector.js";
 
 const headerText = [
@@ -43,8 +44,12 @@ const parsed = parsePatientFields([
   }
 ], "archivo-prueba");
 
-assert.deepEqual(fieldValues(parsed.fields), {
+const values = fieldValues(parsed.fields);
+assert.deepEqual(values, {
   nombre: "FILEMON CECILIO ARTEAGA BALTAZAR",
+  nombres: "FILEMON CECILIO",
+  apellidoPaterno: "ARTEAGA",
+  apellidoMaterno: "BALTAZAR",
   fechaNacimiento: "22/11/1947",
   edad: "78",
   expediente: "198 150",
@@ -57,6 +62,8 @@ assert.deepEqual(fieldValues(parsed.fields), {
   alergias: "NEGADAS",
   diasEstancia: "Primeras horas"
 });
+assert.equal(parsed.fields.nombre.nameSplit.ruleApplied, "last-two-surnames");
+assert.equal(parsed.fields.nombre.nameSplit.requiresReview, true);
 
 const tableParsed = parsePatientFields([
   {
@@ -73,6 +80,39 @@ const duplicated = parsePatientFields([
   { type: "paragraph", text: "Nombre completo del paciente: B", source: { blockIndex: 1 } }
 ], "conflicto");
 assert.equal(duplicated.fields.nombre.conflict, true);
+
+assert.deepEqual(suggestPatientNameParts("FILEMON CECILIO ARTEAGA BALTAZAR"), {
+  nombres: "FILEMON CECILIO",
+  apellidoPaterno: "ARTEAGA",
+  apellidoMaterno: "BALTAZAR",
+  confidence: "high",
+  requiresReview: true,
+  ruleApplied: "last-two-surnames",
+  originalValue: "FILEMON CECILIO ARTEAGA BALTAZAR",
+  normalizedForMatching: "filemon cecilio arteaga baltazar"
+});
+assert.equal(suggestPatientNameParts("JUAN PÉREZ LÓPEZ").nombres, "JUAN");
+assert.equal(suggestPatientNameParts("JUAN PÉREZ LÓPEZ").apellidoPaterno, "PÉREZ");
+assert.equal(suggestPatientNameParts("JUAN PÉREZ LÓPEZ").apellidoMaterno, "LÓPEZ");
+const compound = suggestPatientNameParts("MARÍA FERNANDA DE LA CRUZ HERNÁNDEZ");
+assert.equal(compound.nombres, "MARÍA FERNANDA");
+assert.equal(compound.apellidoPaterno, "DE LA CRUZ");
+assert.equal(compound.apellidoMaterno, "HERNÁNDEZ");
+assert.equal(compound.requiresReview, true);
+assert.equal(suggestPatientNameParts("JOSÉ LUIS PÉREZ").apellidoMaterno, "");
+assert.equal(suggestPatientNameParts("ANA").requiresReview, true);
+assert.equal(suggestPatientNameParts("Sr. ANA-MARÍA PÉREZ LÓPEZ").nombres, "ANA-MARÍA");
+assert.equal(buildFullPatientName({ nombres: "FILEMON CECILIO", apellidoPaterno: "ARTEAGA", apellidoMaterno: "BALTAZAR" }), "FILEMON CECILIO ARTEAGA BALTAZAR");
+
+const separated = parsePatientFields([
+  {
+    type: "table",
+    rows: [["Apellido paterno", "ARTEAGA", "Apellido materno", "BALTAZAR", "Nombre", "FILEMON CECILIO"]],
+    source: { blockIndex: 3, tableIndex: 1, origin: "body" }
+  }
+], "separado");
+assert.equal(separated.fields.nombre.value, "FILEMON CECILIO ARTEAGA BALTAZAR");
+assert.equal(separated.fields.nombre.nameSplit.nombreSource, "explicit-separated-fields");
 
 const type = sugerirTipoNota({ textoPlano: `NOTA DE INGRESO AL SERVICIO DE OBSERVACIÓN\n${headerText}`, secciones: { objetivo: "x", examenMental: "x", tratamiento: "x" } });
 assert.equal(type.key, "nota_ingreso");

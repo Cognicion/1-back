@@ -1,4 +1,5 @@
 import { FIELD_RULES } from "../../importacionDocx/docxImportConfig.js";
+import { buildFullPatientName, buildNameFieldsFromExplicitParts, suggestPatientNameParts } from "./patientNameParser.js";
 
 const DEBUG_FLAG = "cognicion.debug.patientTransfer";
 
@@ -264,8 +265,82 @@ function candidateToField(candidate, alternatives = [], conflict = false) {
     confidence: candidate.confidence,
     alternatives,
     conflict,
+    nameSplit: candidate.nameSplit || null,
     confirmed: false
   };
+}
+
+function syntheticNameField({ key, value, source, ruleApplied, confidence = "medium", nameSplit = null }) {
+  return {
+    value,
+    rawValue: value,
+    normalizedValue: value,
+    detectionMethod: ruleApplied,
+    sourceFileId: source?.sourceFileId || "",
+    sourceLocation: source?.sourceLocation || {},
+    confidence,
+    alternatives: [],
+    conflict: false,
+    nameSplit,
+    confirmed: false
+  };
+}
+
+function resolveNameFields(fields = {}) {
+  const explicit = buildNameFieldsFromExplicitParts(fields);
+  if (explicit.nombreCompleto) {
+    fields.nombre = syntheticNameField({
+      key: "nombre",
+      value: explicit.nombreCompleto,
+      source: fields.nombres || fields.apellidoPaterno || fields.apellidoMaterno,
+      ruleApplied: "explicit-separated-fields",
+      confidence: "alta",
+      nameSplit: { ...explicit, requiresReview: false, ruleApplied: "explicit-separated-fields" }
+    });
+    return fields;
+  }
+
+  const fullName = fields.nombre?.value || "";
+  if (!fullName) return fields;
+  const suggestion = suggestPatientNameParts(fullName);
+  if (!fields.nombres && suggestion.nombres) {
+    fields.nombres = syntheticNameField({
+      key: "nombres",
+      value: suggestion.nombres,
+      source: fields.nombre,
+      ruleApplied: suggestion.ruleApplied,
+      confidence: suggestion.confidence === "high" ? "media" : "baja",
+      nameSplit: suggestion
+    });
+  }
+  if (!fields.apellidoPaterno && suggestion.apellidoPaterno) {
+    fields.apellidoPaterno = syntheticNameField({
+      key: "apellidoPaterno",
+      value: suggestion.apellidoPaterno,
+      source: fields.nombre,
+      ruleApplied: suggestion.ruleApplied,
+      confidence: suggestion.confidence === "high" ? "media" : "baja",
+      nameSplit: suggestion
+    });
+  }
+  if (!fields.apellidoMaterno && suggestion.apellidoMaterno) {
+    fields.apellidoMaterno = syntheticNameField({
+      key: "apellidoMaterno",
+      value: suggestion.apellidoMaterno,
+      source: fields.nombre,
+      ruleApplied: suggestion.ruleApplied,
+      confidence: suggestion.confidence === "high" ? "media" : "baja",
+      nameSplit: suggestion
+    });
+  }
+  fields.nombre.nameSplit = suggestion;
+  fields.nombre.confidence = fields.nombre.confidence || "media";
+  fields.nombre.value = buildFullPatientName({
+    nombres: fields.nombres?.value || "",
+    apellidoPaterno: fields.apellidoPaterno?.value || "",
+    apellidoMaterno: fields.apellidoMaterno?.value || ""
+  }) || fullName;
+  return fields;
 }
 
 export function resolveFieldCandidates(candidates = []) {
@@ -285,7 +360,7 @@ export function resolveFieldCandidates(candidates = []) {
     if (conflict) conflicts.push({ key, current: selected, alternatives });
     fields[key] = candidateToField(selected, alternatives, conflict);
   });
-  return { fields, conflicts };
+  return { fields: resolveNameFields(fields), conflicts };
 }
 
 export function parsePatientFields(blocks = [], sourceFileId = "") {

@@ -12,7 +12,10 @@ export const DOCX_IMPORT_CONFIG = Object.freeze({
 });
 
 export const FIELD_RULES = Object.freeze([
-  { key: "nombre", label: "Nombre", aliases: ["nombre completo del paciente", "nombre del paciente", "nombre completo", "nombre", "paciente"] },
+  { key: "nombre", label: "Nombre completo", aliases: ["nombre completo del paciente", "nombre del paciente", "nombre completo", "paciente"] },
+  { key: "nombres", label: "Nombre(s)", aliases: ["nombre o nombres", "nombre(s)", "nombres", "nombre"] },
+  { key: "apellidoPaterno", label: "Apellido paterno", aliases: ["apellido paterno", "primer apellido"] },
+  { key: "apellidoMaterno", label: "Apellido materno", aliases: ["apellido materno", "segundo apellido"] },
   { key: "edad", label: "Edad", aliases: ["edad"] },
   { key: "sexo", label: "Sexo", aliases: ["sexo"] },
   { key: "genero", label: "Genero", aliases: ["genero", "genero/sexo"] },
