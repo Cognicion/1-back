@@ -103,21 +103,6 @@ function normalizarPresentaciones(medicamento = {}) {
     .filter(Boolean);
 }
 
-function separarPrincipiosActivos(medicamento = {}) {
-  const declarados = medicamento.principiosActivos || medicamento.activeIngredients;
-  if (Array.isArray(declarados) && declarados.length) return listaUnica(declarados);
-  const nombre = medicamento.genericName || medicamento.nombreGenerico || medicamento.nombre || "";
-  return listaUnica(String(nombre).split(/\s*(?:\/|\+|\by\b|\be\b)\s*/i));
-}
-
-function dosisDesdePresentaciones(presentaciones = []) {
-  const dosis = presentaciones.flatMap((presentacion) =>
-    [...String(presentacion.texto || "").matchAll(/(\d+(?:[.,]\d+)?)\s*(mg|mcg|µg|g|ml|ui|u)\b/gi)]
-      .map(([, valor, unidad]) => `${valor.replace(",", ".")} ${unidad.replace("µg", "mcg")}`)
-  );
-  return listaUnica(dosis);
-}
-
 function normalizarMedicamentoBase(medicamento, origen = "catalogo") {
   const nombre = medicamento.nombre || medicamento.genericName || medicamento.nombreGenerico || medicamento.id || "";
   const id = medicamento.id || slugMedicamento(nombre);
@@ -134,7 +119,6 @@ function normalizarMedicamentoBase(medicamento, origen = "catalogo") {
     specialties: listaUnica(medicamento.specialties, medicamento.especialidades),
     brandNames: listaUnica(medicamento.brandNames, medicamento.marcas, medicamento.nombresComerciales),
     synonyms: listaUnica(medicamento.synonyms, medicamento.sinonimos),
-    principiosActivos: separarPrincipiosActivos(medicamento),
     presentaciones,
     formulations: medicamento.formulations || presentaciones.map((presentacion, index) => ({
       id: `${id}-p${index + 1}`,
@@ -143,8 +127,6 @@ function normalizarMedicamentoBase(medicamento, origen = "catalogo") {
       active: presentacion.activo !== false
     })),
     dosisHabitual: medicamento.dosisHabitual || medicamento.adultDosing?.[0]?.usualDose?.text || "",
-    dosisHabituales: listaUnica(medicamento.dosisHabituales, medicamento.doses, dosisDesdePresentaciones(presentaciones)),
-    frecuenciasSugeridas: listaUnica(medicamento.frecuenciasSugeridas, medicamento.frecuencias, medicamento.dosisHabitual?.match(/cada\s+\d+\s+horas?/gi)),
     adultDosing: medicamento.adultDosing || (medicamento.dosisHabitual ? [{
       indicationId: "uso_habitual",
       population: "adult",
@@ -216,9 +198,6 @@ function fusionarMedicamentos(existente, entrante) {
     formulations,
     brandNames: listaUnica(existente.brandNames, entrante.brandNames),
     synonyms: listaUnica(existente.synonyms, entrante.synonyms),
-    principiosActivos: listaUnica(existente.principiosActivos, entrante.principiosActivos),
-    dosisHabituales: listaUnica(existente.dosisHabituales, entrante.dosisHabituales),
-    frecuenciasSugeridas: listaUnica(existente.frecuenciasSugeridas, entrante.frecuenciasSugeridas),
     especialidades: listaUnica(existente.especialidades, entrante.especialidades),
     specialties: listaUnica(existente.specialties, entrante.specialties),
     indications: listaUnica(existente.indications, entrante.indications),

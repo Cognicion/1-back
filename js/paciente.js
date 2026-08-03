@@ -1,5 +1,5 @@
 import { auth, db } from "./firebase.js";
-import { MEDICAMENTOS_PRESENTACIONES, MEDICAMENTOS_MAESTROS, medicamentoPorTexto } from "./data/medicamentos.js";
+import { MEDICAMENTOS_PRESENTACIONES } from "./data/medicamentos.js";
 import { CIE10 } from "./data/cie10.js";
 import { CIE11 } from "./data/cie11.js";
 import { registrarEventoAuditoria } from "./services/auditoria.js";
@@ -2076,12 +2076,10 @@ function configurarCatalogoMedicamentosTratamiento() {
 
     if (seleccionado) campo.value = seleccionado.texto;
     actualizarEstado();
-    actualizarCapturaFarmacologica();
   });
 
   campo.addEventListener("input", () => {
     actualizarEstado();
-    actualizarCapturaFarmacologica();
   });
 
   document.addEventListener("catalogoMedicamentosActualizado", () => {
@@ -2225,55 +2223,6 @@ const ESTADO_DIAGNOSTICO_DESCARTADO = "descartado";
 
 function estadoClinicoDiagnosticoValido(estado) {
   return ESTADOS_DIAGNOSTICO.includes(estado) ? estado : "";
-}
-
-function medicamentoSeleccionadoTratamiento() {
-  return medicamentoPorTexto(valorCampo("tratamientoMedicamento"))
-    || MEDICAMENTOS_MAESTROS.find((medicamento) => medicamento.nombre.toLowerCase() === valorCampo("tratamientoMedicamento").toLowerCase())
-    || null;
-}
-
-function actualizarCapturaFarmacologica() {
-  const medicamento = medicamentoSeleccionadoTratamiento();
-  const presentacion = document.getElementById("tratamientoPresentacion");
-  const dosisRapidas = document.getElementById("tratamientoDosisRapidas");
-  const principios = document.getElementById("tratamientoPrincipiosActivos");
-  if (!presentacion || !dosisRapidas) return;
-
-  const presentaciones = medicamento?.presentaciones || [];
-  presentacion.innerHTML = `<option value="">Seleccionar presentación</option>${presentaciones.map((item, index) =>
-    `<option value="${escaparHTML(item.texto)}" data-via="${escaparHTML(item.via || "oral")}" data-index="${index}">${escaparHTML(item.texto)}</option>`).join("")}`;
-  const actual = valorCampo("tratamientoPresentacion");
-  if (actual && presentaciones.some((item) => item.texto === actual)) presentacion.value = actual;
-  if (!presentacion.value) {
-    const textoMedicamento = valorCampo("tratamientoMedicamento").toLowerCase();
-    const heredada = presentaciones.find((item) => textoMedicamento.includes(item.texto.toLowerCase()));
-    if (heredada) presentacion.value = heredada.texto;
-  }
-  const dosis = medicamento?.dosisHabituales || [];
-  dosisRapidas.innerHTML = dosis.map((dosisItem) =>
-    `<button type="button" class="tratamiento-dosis-chip" data-dosis-rapida="${escaparHTML(dosisItem)}">${escaparHTML(dosisItem)}</button>`).join("")
-    + `<button type="button" class="tratamiento-dosis-chip tratamiento-dosis-otra" data-dosis-otra>Otra...</button>`;
-  dosisRapidas.querySelectorAll("[data-dosis-rapida]").forEach((boton) => boton.addEventListener("click", () => {
-    ponerValor("tratamientoDosis", boton.dataset.dosisRapida || "");
-    ponerValor("tratamientoDosisOtra", "");
-    actualizarDosisTotalDiaTratamiento();
-  }));
-  dosisRapidas.querySelector("[data-dosis-otra]")?.addEventListener("click", () => document.getElementById("tratamientoDosisOtra")?.focus());
-  if (principios) principios.textContent = medicamento?.principiosActivos?.length
-    ? `Principios activos: ${medicamento.principiosActivos.join(" / ")}` : "";
-}
-
-function sincronizarCapturaFarmacologica() {
-  const presentacion = document.getElementById("tratamientoPresentacion");
-  const opcion = presentacion?.selectedOptions?.[0];
-  if (opcion?.value) {
-    ponerValor("tratamientoVia", opcion.dataset.via || valorCampo("tratamientoVia"));
-    const medicamento = medicamentoSeleccionadoTratamiento();
-    ponerValor("tratamientoMedicamento", `${medicamento?.genericName || valorCampo("tratamientoMedicamento")}, ${opcion.value}.`);
-  }
-  const otra = valorCampo("tratamientoDosisOtra");
-  if (otra) ponerValor("tratamientoDosis", otra);
 }
 
 function diagnosticoEstaActivo(diagnostico = {}) {
@@ -6128,7 +6077,6 @@ function renderizarMedicamentosIndicaciones() {
 function tratamientosActivosParaInteracciones() {
   return obtenerTratamientosVigentesUnicos()
     .map((t) => ({
-      ...t,
       id: t.id || "",
       medicamento: t.medicamento || t.genericName || t.nombre || "",
       indicacion: formatearIndicacionTratamiento(t, false),
@@ -6151,7 +6099,6 @@ function tratamientosSeleccionadosIndicacionesParaInteracciones() {
       const tratamiento = activos.find((t) => formatearIndicacionTratamientoConCambio(t, true) === indicacionSeleccionada);
       if (tratamiento) {
         return {
-          ...tratamiento,
           id: tratamiento.id || `indicacion-${index}`,
           medicamento: tratamiento.medicamento || "Medicamento sin nombre",
           indicacion: formatearIndicacionTratamiento(tratamiento, false),
@@ -6957,17 +6904,12 @@ window.abrirLineaTiempoPaciente = function() {
 };
 
 function datosFormularioTratamiento() {
-  sincronizarCapturaFarmacologica();
   sincronizarCamposTratamientoDesdeTomas();
   actualizarDosisTotalDiaTratamiento();
   const tomas = leerTomasTratamiento();
   const cambio = obtenerCambioTratamientoDesdeFormulario();
   const datos = {
     medicamento: valorCampo("tratamientoMedicamento"),
-    medicamentoId: medicamentoSeleccionadoTratamiento()?.id || "",
-    genericName: medicamentoSeleccionadoTratamiento()?.genericName || "",
-    principiosActivos: medicamentoSeleccionadoTratamiento()?.principiosActivos || [],
-    presentacion: valorCampo("tratamientoPresentacion"),
     dosis: valorCampo("tratamientoDosis"),
     frecuencia: normalizarTextoFrecuenciaTratamiento(valorCampo("tratamientoFrecuencia")),
     modoFrecuencia: valorCampo("tratamientoModoFrecuencia") || "horas_especificas",
@@ -6982,11 +6924,6 @@ function datosFormularioTratamiento() {
     fechaSuspension: valorCampo("tratamientoFechaSuspension"),
     motivoSuspension: valorCampo("tratamientoMotivoSuspension"),
     observaciones: valorCampo("tratamientoObservaciones"),
-    duracion: valorCampo("tratamientoDuracion") === "otro"
-      ? valorCampo("tratamientoDuracionOtra")
-      : valorCampo("tratamientoDuracion"),
-    modoHorario: valorCampo("tratamientoModoHorario") || "horas",
-    momentosDia: [...document.querySelectorAll("[data-momento-dia]:checked")].map((elemento) => elemento.value),
     creadoPor: auth.currentUser?.uid || "",
     _auditoria: {
       usuarioUid: auth.currentUser?.uid || "",
@@ -7076,7 +7013,6 @@ function limpiarFormularioTratamiento() {
   [
     "tratamientoId",
     "tratamientoMedicamento",
-    "tratamientoPresentacion",
     "tratamientoDosis",
     "tratamientoFrecuencia",
     "tratamientoModoFrecuencia",
@@ -7089,8 +7025,6 @@ function limpiarFormularioTratamiento() {
     "tratamientoFechaSuspension",
     "tratamientoMotivoSuspension",
     "tratamientoObservaciones",
-    "tratamientoDuracion",
-    "tratamientoDuracionOtra",
     "tratamientoCambioIndicacion",
     "tratamientoCambioIndicacionTexto"
   ].forEach((id) => ponerValor(id, ""));
@@ -7102,9 +7036,6 @@ function limpiarFormularioTratamiento() {
   ponerValor("tratamientoVecesDia", "3");
   ponerValor("tratamientoFrecuencia", "3 veces al día");
   actualizarCampoCambioTratamiento();
-  ponerValor("tratamientoDuracion", "30 días");
-  document.querySelectorAll("[data-momento-dia]").forEach((elemento) => { elemento.checked = false; });
-  actualizarCapturaFarmacologica();
   renderizarTomasTratamiento();
 }
 
@@ -7131,7 +7062,6 @@ async function guardarTratamientoPaciente() {
   const medicamentosPrevios = tratamientosCache
     .filter((t) => esTratamientoVigente(t) && t.id !== tratamientoId)
     .map((t) => ({
-      ...t,
       id: t.id || "",
       medicamento: t.medicamento || "",
       indicacion: formatearIndicacionTratamiento(t, false),
@@ -7139,7 +7069,7 @@ async function guardarTratamientoPaciente() {
     }));
   const medicamentosParaEvaluacion = datos.estado === "suspendido"
     ? medicamentosPrevios
-    : [...medicamentosPrevios, { ...datos, medicamento: datos.medicamento, indicacion: formatearIndicacionTratamiento(datos, false), dosisDia: datos.dosisTotalDia }];
+    : [...medicamentosPrevios, { medicamento: datos.medicamento, indicacion: formatearIndicacionTratamiento(datos, false), dosisDia: datos.dosisTotalDia }];
   const evaluacionNuevo = detectarAlertasClinicasMedicamentos(
     medicamentosParaEvaluacion,
     datosPacienteActual || {}
@@ -7322,7 +7252,6 @@ function indicadorSeguridadTratamiento(tratamiento) {
   const lista = existe
     ? medicamentos
     : [...medicamentos, {
-      ...tratamiento,
       id: tratamiento.id || "",
       medicamento: tratamiento.medicamento || "",
       indicacion: formatearIndicacionTratamiento(tratamiento, false),
@@ -7360,7 +7289,6 @@ function editarTratamientoPaciente(id) {
 
   ponerValor("tratamientoId", t.id);
   ponerValor("tratamientoMedicamento", t.medicamento);
-  ponerValor("tratamientoPresentacion", t.presentacion || "");
   ponerValor("tratamientoDosis", t.dosis);
   ponerValor("tratamientoFrecuencia", normalizarTextoFrecuenciaTratamiento(t.frecuencia));
   ponerValor("tratamientoModoFrecuencia", t.modoFrecuencia || "horas_especificas");
@@ -7377,11 +7305,6 @@ function editarTratamientoPaciente(id) {
   ponerValor("tratamientoFechaSuspension", t.fechaSuspension || t["fechaSuspensi?n"] || "");
   ponerValor("tratamientoMotivoSuspension", t.motivoSuspension || t["motivoSuspensi?n"] || "");
   ponerValor("tratamientoObservaciones", t.observaciones);
-  ponerValor("tratamientoDuracion", t.duracion || "");
-  ponerValor("tratamientoDuracionOtra", t.duracion && !["7 días", "14 días", "21 días", "30 días", "60 días", "90 días", "Indefinido"].includes(t.duracion) ? t.duracion : "");
-  ponerValor("tratamientoModoHorario", t.modoHorario || "horas");
-  document.querySelectorAll("[data-momento-dia]").forEach((elemento) => { elemento.checked = (t.momentosDia || []).includes(elemento.value); });
-  actualizarCapturaFarmacologica();
   ponerValor("tratamientoCambioIndicacion", CAMBIOS_TRATAMIENTO_PERMITIDOS.has(t.cambioIndicacion || "") ? (t.cambioIndicacion || "") : "");
   ponerValor("tratamientoCambioIndicacionTexto", normalizarTextoCambioTratamiento(t.cambioIndicacionTexto || ""));
   actualizarCampoCambioTratamiento();
@@ -9000,26 +8923,6 @@ document.getElementById("tratamientoModoFrecuencia")?.addEventListener("change",
 document.getElementById("tratamientoVecesDia")?.addEventListener("change", () => {
   renderizarTomasTratamiento();
 });
-document.getElementById("tratamientoPresentacion")?.addEventListener("change", () => {
-  sincronizarCapturaFarmacologica();
-  actualizarCapturaFarmacologica();
-});
-document.getElementById("tratamientoDosisOtra")?.addEventListener("input", sincronizarCapturaFarmacologica);
-document.getElementById("tratamientoFrecuenciaRapida")?.addEventListener("change", (evento) => {
-  const esOtro = evento.target.value === "otro";
-  const otro = document.getElementById("tratamientoFrecuenciaOtra");
-  if (otro) otro.hidden = !esOtro;
-  if (!esOtro && evento.target.value) ponerValor("tratamientoFrecuencia", evento.target.value);
-  if (esOtro) otro?.focus();
-});
-document.getElementById("tratamientoFrecuenciaOtra")?.addEventListener("input", (evento) => ponerValor("tratamientoFrecuencia", evento.target.value));
-document.getElementById("tratamientoDuracion")?.addEventListener("change", (evento) => {
-  const esOtro = evento.target.value === "otro";
-  const otro = document.getElementById("tratamientoDuracionOtra");
-  if (otro) otro.hidden = !esOtro;
-});
-configurarCatalogoMedicamentosTratamiento();
-actualizarCapturaFarmacologica();
 renderizarTomasTratamiento();
 configurarMenuFrecuenciaTratamiento();
 document.getElementById("abrirMedicamentoManual")?.addEventListener("click", abrirMedicamentoManual);

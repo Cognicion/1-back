@@ -112,13 +112,10 @@ function textoMedicamento(medicamento) {
     medicamento.activeIngredients,
     medicamento.ingredienteActivo,
     medicamento.ingredientesActivos,
-    ...(Array.isArray(medicamento.principiosActivos) ? medicamento.principiosActivos : [medicamento.principiosActivos]),
     medicamento.nombre,
     medicamento.texto,
     medicamento.indicacion,
-    medicamento.presentacion,
-    medicamento.dosis,
-    medicamento.frecuencia
+    medicamento.presentacion
   ].filter(Boolean).map((valor) => String(valor).trim()))].join(" ");
 }
 
