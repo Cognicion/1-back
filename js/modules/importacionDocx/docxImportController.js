@@ -1,5 +1,6 @@
 import { auth } from "../../firebase.js";
 import { getAuthenticatedUserOnce, getUserProfileOnce } from "../../services/authContextService.js";
+import { isAdministrator } from "../../utils/roles.js?v=20260719-admin-universal-modules";
 import { validarArchivoDocx, calcularHashArchivo } from "./docxValidator.js";
 import { extraerDocx } from "./docxExtractor.js";
 import { extraerCamposClinicos } from "./clinicalFieldParser.js";
@@ -24,11 +25,12 @@ let estado = {
   hash: "",
   resultado: null,
   duplicado: null,
-  usuario: null
+  usuario: null,
+  ultimoErrorTecnico: null
 };
 
 function reiniciarEstadoParcial() {
-  estado = { ...estado, file: null, hash: "", resultado: null, duplicado: null };
+  estado = { ...estado, file: null, hash: "", resultado: null, duplicado: null, ultimoErrorTecnico: null };
   mostrarErrorDocx("");
   mostrarDuplicadoDocx(null);
   actualizarProgresoDocx(0, "Esperando archivo...");
@@ -37,6 +39,19 @@ function reiniciarEstadoParcial() {
     preview.hidden = true;
     preview.innerHTML = "";
   }
+}
+
+function mostrarErrorImportacion(mensaje, error = null, etapa = "") {
+  estado.ultimoErrorTecnico = error ? {
+    module: "docx-import",
+    stage: etapa,
+    uid: estado.usuario?.uid || auth.currentUser?.uid || "",
+    role: estado.usuario?.rol || "",
+    errorCode: error?.code || error?.name || "",
+    message: error?.message || String(error)
+  } : null;
+  const puedeVerDetalles = Boolean(estado.usuario?.esAdmin || localStorage.getItem("cognicion.debug.docxImport") === "1");
+  mostrarErrorDocx(mensaje, puedeVerDetalles ? estado.ultimoErrorTecnico : null);
 }
 
 function construirResultado({ bloques, textoPlano, hash, duplicado }) {
@@ -67,23 +82,31 @@ async function analizarArchivo(file) {
     return;
   }
 
-  actualizarProgresoDocx(15, "Calculando hash...");
+  actualizarProgresoDocx(10, "Validacion completada.");
+  actualizarProgresoDocx(20, "Calculando hash...");
   const hash = await calcularHashArchivo(file);
   estado.hash = hash;
 
   actualizarProgresoDocx(30, "Verificando duplicados...");
-  const duplicado = await buscarImportacionDuplicada({ hash, usuarioUid: estado.usuario.uid });
-  estado.duplicado = duplicado;
-  mostrarDuplicadoDocx(duplicado);
+  let duplicado = null;
+  try {
+    duplicado = await buscarImportacionDuplicada({ hash, usuarioUid: estado.usuario.uid, rol: estado.usuario.rol });
+    estado.duplicado = duplicado;
+    mostrarDuplicadoDocx(duplicado);
+  } catch (error) {
+    actualizarProgresoDocx(30, "Error durante la verificacion de duplicados");
+    mostrarErrorImportacion(error.message || "No fue posible verificar duplicados.", error, "duplicate-check");
+    return;
+  }
 
-  actualizarProgresoDocx(55, "Extrayendo DOCX...");
+  actualizarProgresoDocx(45, "Extrayendo DOCX...");
   const extraccion = await extraerDocx(file);
 
-  actualizarProgresoDocx(75, "Detectando campos y secciones...");
+  actualizarProgresoDocx(65, "Detectando campos y secciones...");
   const resultado = construirResultado({ ...extraccion, hash, duplicado });
   estado.resultado = resultado;
 
-  actualizarProgresoDocx(90, "Buscando pacientes candidatos...");
+  actualizarProgresoDocx(80, "Buscando pacientes candidatos...");
   const pacientes = await buscarPacientesCandidatos(estado.usuario.uid, resultado.campos);
 
   renderizarPreviewDocx({ resultado, pacientes });
@@ -134,7 +157,7 @@ function enlazarEventos() {
   modal.querySelector("[data-docx-seleccionar]")?.addEventListener("click", () => input?.click());
   input?.addEventListener("change", () => {
     const file = input.files?.[0];
-    if (file) analizarArchivo(file).catch((error) => mostrarErrorDocx(error.message || String(error)));
+    if (file) analizarArchivo(file).catch((error) => mostrarErrorImportacion(error.message || String(error), error, "analysis"));
   });
 
   ["dragenter", "dragover"].forEach((evento) => {
@@ -151,14 +174,17 @@ function enlazarEventos() {
   });
   dropzone?.addEventListener("drop", (event) => {
     const file = event.dataTransfer?.files?.[0];
-    if (file) analizarArchivo(file).catch((error) => mostrarErrorDocx(error.message || String(error)));
+    if (file) analizarArchivo(file).catch((error) => mostrarErrorImportacion(error.message || String(error), error, "analysis"));
   });
 
   modal.addEventListener("click", (event) => {
     if (event.target === modal) cerrarImportacionDocxUI();
     if (event.target.closest("[data-docx-cancelar]")) cerrarImportacionDocxUI();
+    if (event.target.closest("[data-docx-reintentar]") && estado.file) {
+      analizarArchivo(estado.file).catch((error) => mostrarErrorImportacion(error.message || String(error), error, "retry"));
+    }
     if (event.target.closest("[data-docx-confirmar]")) {
-      confirmarImportacion().catch((error) => mostrarErrorDocx(error.message || String(error)));
+      confirmarImportacion().catch((error) => mostrarErrorImportacion(error.message || String(error), error, "save"));
     }
   });
 }
@@ -174,7 +200,8 @@ export async function abrirImportadorDocx() {
     uid: user.uid,
     email: user.email || "",
     nombre: perfil?.nombre || perfil?.nombreCompleto || user.displayName || user.email || "",
-    rol: perfil?.rol || ""
+    rol: perfil?.rol || "",
+    esAdmin: isAdministrator(perfil)
   };
   asegurarImportacionDocxUI();
   abrirImportacionDocxUI();

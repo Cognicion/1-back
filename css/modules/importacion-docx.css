@@ -124,6 +124,36 @@
   color: #fde68a;
 }
 
+.docx-import-error-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.docx-import-error-actions button {
+  border: 1px solid rgba(248, 113, 113, .45);
+  border-radius: 10px;
+  background: rgba(15, 23, 42, .86);
+  color: #fee2e2;
+  padding: 8px 12px;
+  cursor: pointer;
+}
+
+.docx-import-error-actions details {
+  width: 100%;
+}
+
+.docx-import-error-actions pre {
+  max-height: 180px;
+  overflow: auto;
+  border-radius: 10px;
+  background: rgba(2, 6, 23, .62);
+  padding: 10px;
+  white-space: pre-wrap;
+}
+
 .docx-preview-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));

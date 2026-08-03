@@ -7,7 +7,8 @@ export const DOCX_IMPORT_CONFIG = Object.freeze({
     ""
   ],
   storageRoot: "importacionesDocx",
-  duplicateCollection: "importacionesDocx"
+  duplicateCollection: "importacionesDocx",
+  duplicateUserSubcollection: "importacionesDocx"
 });
 
 export const FIELD_RULES = Object.freeze([

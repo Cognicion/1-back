@@ -8,7 +8,7 @@ import {
   addDoc,
   collection,
   doc,
-  getDocs,
+  setDoc,
   serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import {
@@ -23,15 +23,8 @@ function nombreSeguro(nombre = "documento.docx") {
 
 async function generarExpedienteCognicion() {
   const anio = String(new Date().getFullYear()).slice(-2);
-  const snap = await getDocs(collection(db, "usuarios"));
-  let consecutivoMayor = 999;
-  snap.forEach((docPaciente) => {
-    const datos = docPaciente.data();
-    const expediente = datos.expedienteCognicion || datos.datosInstitucionales?.expedienteCognicion || "";
-    const coincidencia = /^C(\d+)-(\d{2})$/.exec(expediente);
-    if (coincidencia && coincidencia[2] === anio) consecutivoMayor = Math.max(consecutivoMayor, Number(coincidencia[1]));
-  });
-  return `C${consecutivoMayor + 1}-${anio}`;
+  const semilla = Date.now().toString().slice(-6);
+  return `C${semilla}-${anio}`;
 }
 
 function payloadPacienteDesdeCampos(campos = {}, usuarioUid = "") {
@@ -141,9 +134,12 @@ export async function guardarImportacionDocx({ file, hash, usuario, campos, secc
     if (!pacienteId) throw new Error("Selecciona un paciente o crea uno nuevo.");
 
     const archivoOriginal = await subirDocumentoOriginal({ file, hash, usuarioUid: usuario.uid });
-    const refImportacion = await addDoc(collection(db, DOCX_IMPORT_CONFIG.duplicateCollection), {
+    const refImportacion = doc(db, "usuarios", usuario.uid, DOCX_IMPORT_CONFIG.duplicateUserSubcollection, hash);
+    await setDoc(refImportacion, {
+      ownerUid: usuario.uid,
       usuarioUid: usuario.uid,
       pacienteId,
+      sourceFileHash: hash,
       hash,
       archivoNombre: file.name,
       archivoTamano: file.size,
@@ -158,7 +154,7 @@ export async function guardarImportacionDocx({ file, hash, usuario, campos, secc
       pacienteCreado,
       creadoEn: serverTimestamp(),
       fechaISO: new Date().toISOString()
-    });
+    }, { merge: true });
     importacionId = refImportacion.id;
 
     await addDoc(collection(db, "usuarios", pacienteId, "documentosImportados"), {

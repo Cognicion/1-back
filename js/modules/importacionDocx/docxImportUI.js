@@ -76,11 +76,22 @@ export function cerrarImportacionDocxUI() {
   modal.setAttribute("aria-hidden", "true");
 }
 
-export function mostrarErrorDocx(mensaje = "") {
+export function mostrarErrorDocx(mensaje = "", detalles = null) {
   const error = document.querySelector("[data-docx-error]");
   if (!error) return;
   error.hidden = !mensaje;
-  error.textContent = mensaje;
+  if (!mensaje) {
+    error.innerHTML = "";
+    return;
+  }
+  error.innerHTML = `
+    <strong>${escaparHTML(mensaje)}</strong>
+    <div class="docx-import-error-actions">
+      <button type="button" data-docx-reintentar>Reintentar</button>
+      <button type="button" data-docx-cancelar>Cerrar</button>
+      ${detalles ? `<details><summary>Ver detalles tecnicos</summary><pre>${escaparHTML(JSON.stringify(detalles, null, 2))}</pre></details>` : ""}
+    </div>
+  `;
 }
 
 export function mostrarDuplicadoDocx(duplicado) {
