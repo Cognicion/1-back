@@ -2078,9 +2078,7 @@ function configurarCatalogoMedicamentosTratamiento() {
     actualizarEstado();
   });
 
-  campo.addEventListener("input", () => {
-    actualizarEstado();
-  });
+  campo.addEventListener("input", actualizarEstado);
 
   document.addEventListener("catalogoMedicamentosActualizado", () => {
     renderizarCatalogo();
