@@ -27,6 +27,7 @@ import {
 import { obtenerNombrePacienteParaMostrar } from "./utils/nombresPacientes.js";
 import { normalizarTextoFrecuencia } from "./utils/frecuencias.js";
 import { configurarCamposRedimensionables } from "./components/redimensionadorCampos.js?v=20260729-native-resize-v2";
+import { abrirModalDiagnosticoManual } from "./components/diagnosticoManualModal.js";
 import {
   calcularPuntajeEscala,
   crearResumenEscala,
@@ -1799,7 +1800,7 @@ function renderizarDiagnosticosSeleccionadosEditable() {
         <small>Agrega un diagnostico sin buscarlo en catalogo, o usa esta area para un especificador clinico.</small>
       </div>
       <button type="button" class="boton-secundario" onclick="agregarDiagnosticoManualNota()">
-        Agregar diagnostico manual
+        + Agregar diagnóstico manual
       </button>
     </div>
   `;
@@ -1910,19 +1911,44 @@ window.guardarEdicionDiagnosticoPaciente = async function(campo) {
 };
 
 window.agregarDiagnosticoManualNota = function() {
-  diagnosticosSeleccionados = normalizarDiagnosticosNota(diagnosticosSeleccionados);
-  diagnosticosSeleccionados.push(normalizarDiagnosticoNota({
-    codigo: "",
-    nombre: "Diagnostico manual",
-    catalogo: "Manual",
-    texto: "Diagnostico manual",
-    manual: true,
-    diagnosticoId: `manual-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`,
-    fechaSeleccion: new Date().toISOString()
-  }, diagnosticosSeleccionados.length));
+  abrirModalDiagnosticoManual({
+    alGuardar: async ({ nombre, catalogo, codigo, descripcion, observaciones, estado, incluirEnCatalogo }) => {
+      diagnosticosSeleccionados = normalizarDiagnosticosNota(diagnosticosSeleccionados);
+      const indice = diagnosticosSeleccionados.length;
+      const diagnostico = normalizarDiagnosticoNota({
+        codigo,
+        nombre,
+        catalogo,
+        sistema: catalogo,
+        descripcion,
+        observaciones,
+        estado,
+        texto: `${codigo ? `${codigo} - ` : ""}${nombre}`,
+        manual: true,
+        diagnosticoId: `manual-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`,
+        fechaSeleccion: new Date().toISOString()
+      }, indice);
 
-  diagnosticosSeleccionados = normalizarDiagnosticosNota(diagnosticosSeleccionados);
-  renderizarDiagnosticosSeleccionados();
+      diagnosticosSeleccionados.push(diagnostico);
+      diagnosticosSeleccionados = normalizarDiagnosticosNota(diagnosticosSeleccionados);
+
+      if (incluirEnCatalogo) {
+        window.incluirDiagnosticoManualEnCatalogo(indice, { silencioso: true });
+      }
+
+      renderizarDiagnosticosSeleccionados();
+      try {
+        await registrarEventoAuditoria({
+          accion: "agregar_diagnostico_manual_en_nota",
+          modulo: "Nota medica",
+          pacienteId: uidPacienteActual || document.getElementById("uidPaciente")?.value || null,
+          detalle: { catalogo, codigo: codigo || null, incluirEnCatalogo }
+        });
+      } catch (errorAuditoria) {
+        console.warn("No se pudo registrar la auditoría del diagnóstico manual:", errorAuditoria);
+      }
+    }
+  });
 };
 
 window.moverDiagnosticoSeleccionado = function(index, direccion) {
@@ -1935,7 +1961,7 @@ window.moverDiagnosticoSeleccionado = function(index, direccion) {
   diagnosticosSeleccionados = diagnosticosSeleccionados.map((dx, orden) => ({ ...dx, orden }));
   renderizarDiagnosticosSeleccionados();
 };
-window.incluirDiagnosticoManualEnCatalogo = function(index) {
+window.incluirDiagnosticoManualEnCatalogo = function(index, { silencioso = false } = {}) {
   const dx = diagnosticosSeleccionados[index];
   if (!dx) return;
 
@@ -1944,8 +1970,8 @@ window.incluirDiagnosticoManualEnCatalogo = function(index) {
   const nombre = (dx.nombre || dx.texto || "").trim();
 
   if (!nombre) {
-    alert("Escribe el texto visible antes de incluir el diagnostico en la biblioteca.");
-    return;
+    if (!silencioso) alert("Escribe el texto visible antes de incluir el diagnostico en la biblioteca.");
+    return false;
   }
 
   const existeEnBase = codigo && catalogo !== "Manual" && catalogoDiagnosticosCombinado().some((item) =>
@@ -1960,8 +1986,8 @@ window.incluirDiagnosticoManualEnCatalogo = function(index) {
   );
 
   if (existeEnBase || existeManual) {
-    alert("Ese codigo ya existe en el catalogo seleccionado.");
-    return;
+    if (!silencioso) alert("Ese codigo ya existe en el catalogo seleccionado.");
+    return false;
   }
 
   catalogoManualDiagnosticos.push({
@@ -1983,8 +2009,9 @@ window.incluirDiagnosticoManualEnCatalogo = function(index) {
     incluidoEnCatalogo: true
   };
 
-  alert(`Diagnostico incluido en ${catalogo}.`);
+  if (!silencioso) alert(`Diagnostico incluido en ${catalogo}.`);
   renderizarDiagnosticosSeleccionados();
+  return true;
 };
 
 window.eliminarDiagnostico = function(index) {

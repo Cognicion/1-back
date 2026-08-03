@@ -1,0 +1,37 @@
+.diagnostico-manual-modal {
+  width: min(640px, calc(100vw - 32px));
+  max-height: min(760px, calc(100dvh - 32px));
+  overflow: auto;
+  padding: 0;
+  color: var(--text-primary, #eef6ef);
+  background: var(--surface-elevated, #101914);
+  border: 1px solid var(--border-subtle, #31513c);
+  border-radius: 16px;
+  box-shadow: 0 22px 60px rgba(0, 0, 0, .45);
+}
+
+.diagnostico-manual-modal::backdrop { background: rgba(0, 0, 0, .62); }
+.diagnostico-manual-modal__form { display: grid; gap: 18px; padding: 20px; }
+.diagnostico-manual-modal__encabezado { display: flex; justify-content: space-between; gap: 16px; align-items: flex-start; }
+.diagnostico-manual-modal__encabezado h2 { margin: 0; font-size: 1.15rem; }
+.diagnostico-manual-modal__encabezado p { margin: 5px 0 0; color: var(--text-secondary, #aebbb1); font-size: .9rem; }
+.diagnostico-manual-modal__cerrar { min-width: 36px; min-height: 36px; padding: 0; font-size: 1.5rem; line-height: 1; }
+.diagnostico-manual-modal__campos { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.diagnostico-manual-modal label { display: grid; gap: 6px; font-weight: 600; }
+.diagnostico-manual-modal small { color: var(--text-secondary, #aebbb1); font-size: .8rem; font-weight: 400; }
+.diagnostico-manual-modal input,
+.diagnostico-manual-modal select,
+.diagnostico-manual-modal textarea { width: 100%; box-sizing: border-box; }
+.diagnostico-manual-modal__ancho-completo { grid-column: 1 / -1; }
+.diagnostico-manual-modal__biblioteca { grid-template-columns: auto 1fr; align-items: center; font-size: .92rem; }
+.diagnostico-manual-modal__biblioteca input { width: auto; }
+.diagnostico-manual-modal__error { margin: 0; color: #ffaaa1; }
+.diagnostico-manual-modal__acciones { display: flex; justify-content: flex-end; gap: 10px; flex-wrap: wrap; }
+
+@media (max-width: 640px) {
+  .diagnostico-manual-modal { width: calc(100vw - 16px); max-height: calc(100dvh - 16px); }
+  .diagnostico-manual-modal__form { padding: 16px; }
+  .diagnostico-manual-modal__campos { grid-template-columns: 1fr; }
+  .diagnostico-manual-modal__ancho-completo { grid-column: auto; }
+  .diagnostico-manual-modal__acciones > button { flex: 1 1 auto; }
+}
