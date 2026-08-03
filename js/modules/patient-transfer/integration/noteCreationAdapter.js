@@ -44,7 +44,9 @@ export function buildImportedNotePayload({ document, confirmedType, sourceFile, 
   };
 }
 
-export async function createTransferredNote(patientId, payload) {
-  const ref = doc(collection(db, "usuarios", patientId, "notasMedicas"));
+export async function createTransferredNote(patientId, payload, noteId = "") {
+  const ref = noteId
+    ? doc(db, "usuarios", patientId, "notasMedicas", noteId)
+    : doc(collection(db, "usuarios", patientId, "notasMedicas"));
   return guardarBorradorNotaClinica(patientId, ref.id, payload);
 }

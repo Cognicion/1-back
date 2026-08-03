@@ -91,6 +91,21 @@ export function showPatientTransferError(message = "") {
   box.textContent = message;
 }
 
+export function setTransferSavingState(isSaving = false) {
+  const modal = ensureRoot();
+  modal.dataset.saving = isSaving ? "true" : "false";
+  modal.querySelector("[data-transfer-save]").disabled = isSaving;
+  modal.querySelector("[data-transfer-analyze]").disabled = isSaving;
+  modal.querySelector("[data-transfer-select]").disabled = isSaving;
+  modal.querySelectorAll("[data-transfer-remove-file]").forEach((button) => {
+    button.disabled = isSaving;
+  });
+}
+
+export function isTransferSaving() {
+  return ensureRoot().dataset.saving === "true";
+}
+
 export function renderTransferFiles(files = []) {
   const modal = ensureRoot();
   modal.querySelector("[data-transfer-count]").textContent = `${files.length} archivos`;
@@ -112,7 +127,7 @@ function renderCandidateSelect(group) {
     <label>Paciente existente
       <select data-transfer-existing="${group.id}">
         <option value="">Seleccionar paciente</option>
-        ${candidates.map((candidate) => option(candidate.id, `${candidate.name} ${candidate.expediente ? `· ${candidate.expediente}` : ""}`)).join("")}
+        ${candidates.map((candidate) => option(candidate.id, `${candidate.name} ${candidate.expediente ? `· ${candidate.expediente}` : ""}`, candidate.id === group.selectedPatientId)).join("")}
       </select>
     </label>`;
 }
@@ -153,6 +168,51 @@ function renderExtractionDebug(doc) {
     </details>`;
 }
 
+function renderDiagnosisCandidates(doc) {
+  const candidates = doc.diagnosisCandidates || [];
+  if (!candidates.length) return "";
+  return `
+    <section class="patient-transfer-candidates">
+      <h4>Diagnosticos detectados</h4>
+      ${candidates.map((candidate) => `
+        <article>
+          <label><input type="checkbox" data-transfer-dx-include="${doc.id}:${candidate.id}"> Incluir</label>
+          <input data-transfer-dx-name="${doc.id}:${candidate.id}" value="${escapeHtml(candidate.normalizedLabel || candidate.rawText || "")}" placeholder="Diagnostico">
+          <input data-transfer-dx-code="${doc.id}:${candidate.id}" value="${escapeHtml(candidate.code || "")}" placeholder="Codigo">
+          <select data-transfer-dx-system="${doc.id}:${candidate.id}">
+            ${["", "CIE-10", "CIE-11", "DSM-5"].map((item) => option(item, item || "Sin sistema", item === (candidate.codingSystem || ""))).join("")}
+          </select>
+          <select data-transfer-dx-status="${doc.id}:${candidate.id}">
+            ${["Confirmado", "Probable", "A descartar", "Diferencial", "En seguimiento", "Antecedente", "Remision", "Descartado"].map((item) => option(item, item, item === candidate.statusSuggestion)).join("")}
+          </select>
+          <label><input type="checkbox" data-transfer-dx-principal="${doc.id}:${candidate.id}"> Principal</label>
+          <small>Fuente: ${escapeHtml(candidate.sourceSection || "")} - ${escapeHtml(candidate.rawText || "")}</small>
+        </article>`).join("")}
+    </section>`;
+}
+
+function renderTreatmentCandidates(doc) {
+  const candidates = doc.treatmentCandidates || [];
+  if (!candidates.length) return "";
+  return `
+    <section class="patient-transfer-candidates">
+      <h4>Tratamientos detectados</h4>
+      ${candidates.map((candidate) => `
+        <article>
+          <label><input type="checkbox" data-transfer-tx-include="${doc.id}:${candidate.id}"> Incluir</label>
+          <input data-transfer-tx-name="${doc.id}:${candidate.id}" value="${escapeHtml(candidate.medicationName || "")}" placeholder="Medicamento">
+          <input data-transfer-tx-dose="${doc.id}:${candidate.id}" value="${escapeHtml(candidate.dose || "")}" placeholder="Dosis">
+          <input data-transfer-tx-unit="${doc.id}:${candidate.id}" value="${escapeHtml(candidate.doseUnit || "")}" placeholder="Unidad">
+          <input data-transfer-tx-route="${doc.id}:${candidate.id}" value="${escapeHtml(candidate.route || "")}" placeholder="Via">
+          <input data-transfer-tx-frequency="${doc.id}:${candidate.id}" value="${escapeHtml(candidate.frequencyRaw || "")}" placeholder="Frecuencia">
+          <select data-transfer-tx-status="${doc.id}:${candidate.id}">
+            ${["Inicia", "Continua", "Aumenta", "Disminuye", "Suspende", "Pendiente traer", "Antecedente", "Otro"].map((item) => option(item, item, item === candidate.statusSuggestion)).join("")}
+          </select>
+          <small>Fuente: ${escapeHtml(candidate.sourceSection || "")} - ${escapeHtml(candidate.sourceText || "")}</small>
+        </article>`).join("")}
+    </section>`;
+}
+
 function renderDocument(doc, groups = [], currentGroupId = "") {
   const selected = doc.confirmedType?.key || doc.metadata?.suggestedType?.key || "tipo_no_reconocido";
   return `
@@ -177,6 +237,8 @@ function renderDocument(doc, groups = [], currentGroupId = "") {
         <strong>Secciones encontradas</strong>
         <span>${Object.keys(doc.sections || {}).length ? Object.keys(doc.sections).join(", ") : "Sin secciones reconocidas"}</span>
       </div>
+      ${renderDiagnosisCandidates(doc)}
+      ${renderTreatmentCandidates(doc)}
       ${renderExtractionDebug(doc)}
       <textarea readonly>${escapeHtml(doc.fullText || "")}</textarea>
     </details>`;
@@ -229,10 +291,33 @@ export function readTransferReview(groups = []) {
     const documents = group.documents.map((doc) => {
       const typeKey = modal.querySelector(`[data-transfer-note-type="${doc.id}"]`)?.value || "tipo_no_reconocido";
       const rule = NOTE_TYPE_RULES.find((item) => item.key === typeKey) || { key: "tipo_no_reconocido", label: "Tipo no reconocido" };
+      const diagnosisCandidates = (doc.diagnosisCandidates || []).map((candidate) => ({
+        ...candidate,
+        include: modal.querySelector(`[data-transfer-dx-include="${doc.id}:${candidate.id}"]`)?.checked || false,
+        normalizedLabel: modal.querySelector(`[data-transfer-dx-name="${doc.id}:${candidate.id}"]`)?.value?.trim() || candidate.normalizedLabel || "",
+        code: modal.querySelector(`[data-transfer-dx-code="${doc.id}:${candidate.id}"]`)?.value?.trim() || "",
+        codingSystem: modal.querySelector(`[data-transfer-dx-system="${doc.id}:${candidate.id}"]`)?.value || "",
+        statusSuggestion: modal.querySelector(`[data-transfer-dx-status="${doc.id}:${candidate.id}"]`)?.value || candidate.statusSuggestion,
+        principal: modal.querySelector(`[data-transfer-dx-principal="${doc.id}:${candidate.id}"]`)?.checked || false,
+        confirmedByDoctor: modal.querySelector(`[data-transfer-dx-include="${doc.id}:${candidate.id}"]`)?.checked || false
+      }));
+      const treatmentCandidates = (doc.treatmentCandidates || []).map((candidate) => ({
+        ...candidate,
+        include: modal.querySelector(`[data-transfer-tx-include="${doc.id}:${candidate.id}"]`)?.checked || false,
+        medicationName: modal.querySelector(`[data-transfer-tx-name="${doc.id}:${candidate.id}"]`)?.value?.trim() || "",
+        dose: modal.querySelector(`[data-transfer-tx-dose="${doc.id}:${candidate.id}"]`)?.value?.trim() || "",
+        doseUnit: modal.querySelector(`[data-transfer-tx-unit="${doc.id}:${candidate.id}"]`)?.value?.trim() || "",
+        route: modal.querySelector(`[data-transfer-tx-route="${doc.id}:${candidate.id}"]`)?.value?.trim() || "",
+        frequencyRaw: modal.querySelector(`[data-transfer-tx-frequency="${doc.id}:${candidate.id}"]`)?.value?.trim() || "",
+        statusSuggestion: modal.querySelector(`[data-transfer-tx-status="${doc.id}:${candidate.id}"]`)?.value || candidate.statusSuggestion,
+        confirmedByDoctor: modal.querySelector(`[data-transfer-tx-include="${doc.id}:${candidate.id}"]`)?.checked || false
+      }));
       return {
         ...doc,
         omitted: modal.querySelector(`[data-transfer-omit-doc="${doc.id}"]`)?.checked || false,
-        confirmedType: rule
+        confirmedType: rule,
+        diagnosisCandidates,
+        treatmentCandidates
       };
     });
     return {
@@ -253,12 +338,29 @@ export function renderTransferResults(results = []) {
       ${results.map((result) => `
         <article class="patient-transfer-result ${result.status}">
           <strong>${result.status === "completed" ? "Traspaso completado" : "Traspaso no completado"}</strong>
+          <span>Notas: ${result.notesCreated || 0} creadas / ${result.notesExisting || 0} ya existentes</span>
+          <span>Diagnosticos: ${result.diagnosesCreated || 0} registrados / ${result.diagnosesOmitted || 0} omitidos</span>
+          <span>Tratamientos: ${result.treatmentsCreated || 0} registrados / ${result.treatmentsOmitted || 0} omitidos</span>
+          <span>Documento original: ${result.sourceSaved === false ? "No guardado" : "Guardado"} / Auditoria: ${result.auditRegistered === false ? "No registrada" : "Registrada"}</span>
           <span>Paciente: ${escapeHtml(result.patientName || (result.patientId ? "Paciente creado/asociado" : "No creado"))} · Notas importadas: ${result.notesCreated || 0}</span>
+          <span>Paciente reutilizado: ${result.patientReused ? "si" : "no"} · Notas ya existentes: ${result.notesExisting || 0} · Duplicados evitados: ${result.duplicatesAvoided || 0}</span>
           ${result.stage ? `<span>Etapa: ${escapeHtml(result.stage)}</span>` : ""}
           ${result.error ? `<small>${escapeHtml(result.error)}</small>` : ""}
           ${result.patientId ? `<a href="paciente.html?id=${encodeURIComponent(result.patientId)}" target="_blank" rel="noopener">Abrir expediente</a>` : ""}
+          <button type="button" data-transfer-import-another>Importar otro paciente</button>
+          <button type="button" data-transfer-close-result>Cerrar</button>
         </article>`).join("")}
     </section>`;
+}
+
+export function renderTransferFailure(error) {
+  ensureRoot().querySelector("[data-transfer-review]").insertAdjacentHTML("afterbegin", `
+    <section class="patient-transfer-summary">
+      <h3>Traspaso no completado</h3>
+      <p>Etapa: ${escapeHtml(error?.stage || "guardado")}</p>
+      <p>Motivo: ${escapeHtml(error?.message || String(error || "Error desconocido"))}</p>
+    </section>
+  `);
 }
 
 export function syncPatientNameInputs(event) {

@@ -302,3 +302,105 @@
   margin-top: 8px;
   color: #7dd3fc;
 }
+
+.patient-transfer-candidates {
+  display: grid;
+  gap: 8px;
+  margin: 12px 0;
+  padding: 10px;
+  border: 1px solid rgba(56, 189, 248, .2);
+  border-radius: 10px;
+  background: rgba(15, 23, 42, .5);
+}
+
+.patient-transfer-candidates h4 {
+  margin: 0;
+  color: #e0f2fe;
+}
+
+.patient-transfer-candidates article {
+  display: grid;
+  grid-template-columns: minmax(90px, .6fr) repeat(4, minmax(110px, 1fr));
+  gap: 8px;
+  align-items: center;
+}
+
+.patient-transfer-candidates small {
+  grid-column: 1 / -1;
+  color: #93a4ba;
+}
+
+.patient-transfer-candidates input,
+.patient-transfer-candidates select {
+  min-width: 0;
+}
+
+.patient-duplicates-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1510;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 22px;
+  background: rgba(2, 6, 23, .74);
+}
+
+.patient-duplicates-modal.abierto {
+  display: flex;
+}
+
+.patient-duplicates-panel {
+  width: min(1180px, 96vw);
+  max-height: 90vh;
+  overflow: auto;
+  border: 1px solid rgba(56, 189, 248, .24);
+  border-radius: 18px;
+  background: rgba(15, 23, 42, .98);
+  color: #e5eefc;
+}
+
+.patient-duplicates-panel header,
+.patient-duplicates-body {
+  padding: 18px 22px;
+}
+
+.patient-duplicates-panel header {
+  display: flex;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(148, 163, 184, .18);
+}
+
+.patient-duplicates-body label {
+  display: grid;
+  gap: 6px;
+}
+
+.patient-duplicates-body input,
+.patient-duplicates-body button {
+  border: 1px solid rgba(148, 163, 184, .3);
+  border-radius: 10px;
+  background: rgba(2, 6, 23, .62);
+  color: #f8fafc;
+  padding: 10px;
+}
+
+.patient-duplicates-actions {
+  display: flex;
+  gap: 10px;
+  margin: 12px 0;
+}
+
+.patient-duplicates-body table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.patient-duplicates-body th,
+.patient-duplicates-body td {
+  border-bottom: 1px solid rgba(148, 163, 184, .18);
+  padding: 8px;
+  text-align: left;
+  vertical-align: top;
+}

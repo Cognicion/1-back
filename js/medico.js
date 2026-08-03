@@ -56,6 +56,7 @@ let filtrosAtencionActuales = cargarPreferenciasFiltroAtencion();
 let mostrarPacientesArchivados = false;
 let importadorDocxPromise = null;
 let traspasoPacientesPromise = null;
+let revisionDuplicadosPromise = null;
 
 const COLUMNAS_PACIENTES = [
   { key: "cama", label: "Cama", cssVar: "--col-cama" },
@@ -172,6 +173,7 @@ async function inicializarPanelMedico() {
   inicializarPanelMedicoColapsable();
   inicializarImportacionDocxLazy();
   inicializarTraspasoPacientesLazy();
+  inicializarRevisionDuplicadosLazy();
 
   await cargarCarpetasMedico(user.uid);
   await cargarPacientes(user.uid);
@@ -234,6 +236,25 @@ function inicializarTraspasoPacientesLazy() {
   });
 
   window.addEventListener("cognicion:patient-transfer-completed", () => {
+    if (uidMedicoActual) cargarPacientes(uidMedicoActual, { forzar: true });
+  });
+}
+
+function inicializarRevisionDuplicadosLazy() {
+  document.getElementById("btnRevisarDuplicadosPacientes")?.addEventListener("click", async () => {
+    try {
+      if (!revisionDuplicadosPromise) {
+        revisionDuplicadosPromise = import("./modules/patient-duplicates/index.js");
+      }
+      const modulo = await revisionDuplicadosPromise;
+      modulo.openPatientDuplicateReview();
+    } catch (error) {
+      console.error("No se pudo abrir la revision de duplicados:", error);
+      alert("No se pudo abrir la revision de duplicados. Revisa la consola e intenta nuevamente.");
+    }
+  });
+
+  window.addEventListener("cognicion:patient-duplicates-merged", () => {
     if (uidMedicoActual) cargarPacientes(uidMedicoActual, { forzar: true });
   });
 }
@@ -1391,6 +1412,7 @@ function deduplicarPacientes(pacientes = []) {
 
 function pacienteArchivadoParaMedico(paciente) {
   if (!paciente || !uidMedicoActual) return false;
+  if (paciente.status === "merged" || paciente.status === "archived" || paciente.hiddenFromActiveLists === true) return true;
   return Boolean(paciente.archivadoPorMedico?.[uidMedicoActual]);
 }
 

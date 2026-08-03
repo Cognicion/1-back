@@ -6,6 +6,7 @@ import { extractDocx } from "./docx/docxExtractor.js";
 import { normalizeDocxBlocks, normalizedBlocksToText } from "./docx/docxBlockNormalizer.js";
 import { parsePatientFields, fieldValues } from "./parsing/patientFieldParser.js";
 import { parseClinicalSections } from "./parsing/clinicalSectionParser.js";
+import { extractClinicalCandidates } from "./parsing/clinicalCandidateParser.js";
 import { parseNoteMetadata } from "./parsing/noteMetadataParser.js";
 import { groupDocumentsByPatient } from "./parsing/documentGroupingService.js";
 import { analyzeDocumentClinically } from "./integration/clinicalAnalysisAdapter.js";
@@ -17,9 +18,12 @@ import {
   readTransferReview,
   renderDetectedGroups,
   renderTransferFiles,
+  renderTransferFailure,
   renderTransferResults,
   setPatientTransferMessage,
+  setTransferSavingState,
   showPatientTransferError,
+  isTransferSaving,
   syncPatientNameInputs
 } from "./ui/patientTransferView.js";
 
@@ -149,6 +153,12 @@ async function analyzeOneFile(item, user) {
   const sectionsResult = parseClinicalSections(blocks);
   const metadata = parseNoteMetadata({ text: fullText, sections: sectionsResult.secciones, fields });
   const clinicalAnalysis = analyzeDocumentClinically({ fullText, blocks });
+  const clinicalCandidates = extractClinicalCandidates({
+    id: item.id,
+    sections: sectionsResult.secciones,
+    blocks,
+    fullText
+  });
   const duplicateStatus = duplicate ? "exact_duplicate" : sameBatch ? "duplicate_in_batch" : "nuevo";
 
   item.status = duplicate ? "warning" : "ok";
@@ -159,6 +169,7 @@ async function analyzeOneFile(item, user) {
     id: item.id,
     file: item.file,
     hash,
+    transferOperationId: `docx_${hash}`,
     textHash,
     fields,
     fieldValues: fieldValues(fields),
@@ -169,6 +180,8 @@ async function analyzeOneFile(item, user) {
     sectionsFound: sectionsResult.encontradas,
     metadata,
     clinicalAnalysis,
+    diagnosisCandidates: clinicalCandidates.diagnoses,
+    treatmentCandidates: clinicalCandidates.treatments,
     duplicate,
     duplicateStatus,
     duplicateStatusLabel: duplicate ? "Ya importado" : sameBatch ? "Duplicado en esta carga" : "Nuevo"
@@ -197,7 +210,10 @@ async function analyzeSelectedFiles() {
   let groups = groupDocumentsByPatient(documents);
   groups = await Promise.all(groups.map(async (group) => {
     const candidates = await findExistingPatientCandidates(fieldValues(group.fields), user.uid);
-    return { ...group, candidates };
+    const strongCandidate = candidates.find((candidate) => candidate.score >= 2);
+    return strongCandidate
+      ? { ...group, candidates, action: "associate", selectedPatientId: strongCandidate.id }
+      : { ...group, candidates };
   }));
   analyzedGroups = setPatientTransferGroups(groups);
   setPatientTransferStatus(TRANSFER_STATUS.AWAITING_REVIEW);
@@ -207,6 +223,7 @@ async function analyzeSelectedFiles() {
 }
 
 async function saveReviewedTransfer() {
+  if (isTransferSaving()) return;
   if (!analyzedGroups.length) {
     showPatientTransferError("Analiza los documentos antes de confirmar.");
     return;
@@ -235,18 +252,37 @@ async function saveReviewedTransfer() {
   const confirmed = window.confirm(`Resumen del traspaso\n\nPacientes nuevos: ${summary.newPatients}\nPacientes existentes: ${summary.existingPatients}\nNotas que se crearan: ${summary.notes}\nArchivos omitidos: ${summary.omittedFiles}\nPosibles duplicados: ${summary.possibleDuplicates}\nCampos pendientes: ${summary.pendingFields}\n\n¿Confirmar traspaso?`);
   if (!confirmed) return;
 
+  setTransferSavingState(true);
   setPatientTransferStatus(TRANSFER_STATUS.SAVING);
-  setPatientTransferMessage("Guardando traspaso...", 50);
-  const results = await saveTransferredGroups({
-    groups: reviewedGroups,
-    user: { ...profile, uid: user.uid, email: user.email }
-  });
-  setPatientTransferResults(results);
-  const hasFailures = results.some((item) => item.status === "failed" || item.status === "partially_completed");
-  setPatientTransferStatus(hasFailures ? TRANSFER_STATUS.PARTIALLY_COMPLETED : TRANSFER_STATUS.COMPLETED);
-  setPatientTransferMessage(hasFailures ? "Traspaso no completado." : "Traspaso finalizado.", 100);
-  renderTransferResults(results);
-  window.dispatchEvent(new CustomEvent("cognicion:patient-transfer-completed", { detail: { results } }));
+  setPatientTransferMessage("Guardando traspaso...", 5);
+  try {
+    setPatientTransferMessage("Validacion completada. Creando paciente...", 15);
+    const results = await saveTransferredGroups({
+      groups: reviewedGroups,
+      user: { ...profile, uid: user.uid, email: user.email },
+      onProgress: ({ message, progress }) => setPatientTransferMessage(message, progress)
+    });
+    setPatientTransferResults(results);
+    const hasFailures = results.some((item) => item.status === "failed" || item.status === "partially_completed");
+    setPatientTransferStatus(hasFailures ? TRANSFER_STATUS.PARTIALLY_COMPLETED : TRANSFER_STATUS.COMPLETED);
+    setPatientTransferMessage(hasFailures ? "Traspaso no completado." : "Traspaso completado.", hasFailures ? 85 : 100);
+    console.info("[patient-transfer] render-result:start", { results: results.length });
+    renderTransferResults(results);
+    console.info("[patient-transfer] render-result:success", { results: results.length });
+    window.dispatchEvent(new CustomEvent("cognicion:patient-transfer-completed", { detail: { results } }));
+  } catch (error) {
+    console.error("[patient-transfer] save:failed", {
+      stage: error?.stage || "save",
+      code: error?.code || error?.name || "unknown",
+      message: error?.message || String(error)
+    });
+    setPatientTransferStatus(TRANSFER_STATUS.FAILED);
+    setPatientTransferMessage("Traspaso no completado.", 85);
+    showPatientTransferError(error?.message || String(error));
+    renderTransferFailure(error);
+  } finally {
+    setTransferSavingState(false);
+  }
 }
 
 function resetAndOpen() {
@@ -267,8 +303,18 @@ export function initializePatientTransfer() {
   const input = root.querySelector("#patientTransferInput");
   const dropzone = root.querySelector("[data-transfer-dropzone]");
 
-  root.querySelector("[data-transfer-close]")?.addEventListener("click", closePatientTransferView);
+  root.querySelector("[data-transfer-close]")?.addEventListener("click", () => {
+    if (isTransferSaving()) {
+      showPatientTransferError("El traspaso se esta guardando. Espere a que termine.");
+      return;
+    }
+    closePatientTransferView();
+  });
   root.querySelector("[data-transfer-cancel]")?.addEventListener("click", () => {
+    if (isTransferSaving()) {
+      showPatientTransferError("El traspaso se esta guardando. Espere a que termine.");
+      return;
+    }
     setPatientTransferStatus(TRANSFER_STATUS.CANCELLED);
     closePatientTransferView();
   });
@@ -289,6 +335,14 @@ export function initializePatientTransfer() {
   });
 
   root.addEventListener("click", (event) => {
+    if (event.target.closest("[data-transfer-close-result]")) {
+      closePatientTransferView();
+      return;
+    }
+    if (event.target.closest("[data-transfer-import-another]")) {
+      resetAndOpen();
+      return;
+    }
     const removeButton = event.target.closest("[data-transfer-remove-file]");
     if (!removeButton) return;
     selectedFiles = selectedFiles.filter((item) => item.id !== removeButton.dataset.transferRemoveFile);
