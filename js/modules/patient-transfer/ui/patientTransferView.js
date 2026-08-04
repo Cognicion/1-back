@@ -184,7 +184,7 @@ function renderDiagnosisCandidates(doc) {
       <h4>Diagnosticos detectados</h4>
       ${candidates.map((candidate) => `
         <article>
-          <label><input type="checkbox" data-transfer-dx-include="${doc.id}:${candidate.id}"> Incluir</label>
+          <label><input type="checkbox" data-transfer-dx-include="${doc.id}:${candidate.id}" ${candidate.selectedForImport ? "checked" : ""}> Incluir</label>
           <input data-transfer-dx-name="${doc.id}:${candidate.id}" value="${escapeHtml(candidate.normalizedLabel || candidate.rawText || "")}" placeholder="Diagnostico">
           <input data-transfer-dx-code="${doc.id}:${candidate.id}" value="${escapeHtml(candidate.code || "")}" placeholder="Codigo">
           <select data-transfer-dx-system="${doc.id}:${candidate.id}">
@@ -194,7 +194,7 @@ function renderDiagnosisCandidates(doc) {
             ${["Confirmado", "Probable", "A descartar", "Diferencial", "En seguimiento", "Antecedente", "Remision", "Descartado"].map((item) => option(item, item, item === candidate.statusSuggestion)).join("")}
           </select>
           <label><input type="checkbox" data-transfer-dx-principal="${doc.id}:${candidate.id}"> Principal</label>
-          <small>Fuente: ${escapeHtml(candidate.sourceSection || "")} - ${escapeHtml(candidate.rawText || "")}</small>
+          <small>Fuente: ${escapeHtml(candidate.sourceSection || "")} · ${escapeHtml(candidate.temporality || "")} · ${escapeHtml(candidate.rawText || "")}</small>
         </article>`).join("")}
     </section>`;
 }
@@ -211,7 +211,7 @@ function renderTreatmentCandidates(doc) {
       <h4>Tratamientos detectados</h4>
       ${candidates.map((candidate) => `
         <article>
-          <label><input type="checkbox" data-transfer-tx-include="${doc.id}:${candidate.id}"> Incluir</label>
+          <label><input type="checkbox" data-transfer-tx-include="${doc.id}:${candidate.id}" ${candidate.selectedForImport ? "checked" : ""}> Incluir</label>
           <input data-transfer-tx-name="${doc.id}:${candidate.id}" value="${escapeHtml(candidate.medicationName || "")}" placeholder="Medicamento">
           <input data-transfer-tx-dose="${doc.id}:${candidate.id}" value="${escapeHtml(candidate.dose || "")}" placeholder="Dosis">
           <input data-transfer-tx-unit="${doc.id}:${candidate.id}" value="${escapeHtml(candidate.doseUnit || "")}" placeholder="Unidad">
@@ -220,7 +220,7 @@ function renderTreatmentCandidates(doc) {
           <select data-transfer-tx-status="${doc.id}:${candidate.id}">
             ${["Inicia", "Continua", "Aumenta", "Disminuye", "Suspende", "Pendiente traer", "Antecedente", "Otro"].map((item) => option(item, item, item === candidate.statusSuggestion)).join("")}
           </select>
-          <small>Fuente: ${escapeHtml(candidate.sourceSection || "")} - ${escapeHtml(candidate.sourceText || "")}</small>
+          <small>Fuente: ${escapeHtml(candidate.sourceSection || "")} · ${escapeHtml(candidate.temporality || "")} · ${escapeHtml(candidate.sourceText || "")}</small>
         </article>`).join("")}
     </section>`;
 }
@@ -351,6 +351,7 @@ export function readTransferReview(groups = []) {
       const diagnosisCandidates = (doc.diagnosisCandidates || []).map((candidate) => ({
         ...candidate,
         include: modal.querySelector(`[data-transfer-dx-include="${doc.id}:${candidate.id}"]`)?.checked || false,
+        selectedForImport: modal.querySelector(`[data-transfer-dx-include="${doc.id}:${candidate.id}"]`)?.checked || false,
         normalizedLabel: modal.querySelector(`[data-transfer-dx-name="${doc.id}:${candidate.id}"]`)?.value?.trim() || candidate.normalizedLabel || "",
         code: modal.querySelector(`[data-transfer-dx-code="${doc.id}:${candidate.id}"]`)?.value?.trim() || "",
         codingSystem: modal.querySelector(`[data-transfer-dx-system="${doc.id}:${candidate.id}"]`)?.value || "",
@@ -361,6 +362,7 @@ export function readTransferReview(groups = []) {
       const treatmentCandidates = (doc.treatmentCandidates || []).map((candidate) => ({
         ...candidate,
         include: modal.querySelector(`[data-transfer-tx-include="${doc.id}:${candidate.id}"]`)?.checked || false,
+        selectedForImport: modal.querySelector(`[data-transfer-tx-include="${doc.id}:${candidate.id}"]`)?.checked || false,
         medicationName: modal.querySelector(`[data-transfer-tx-name="${doc.id}:${candidate.id}"]`)?.value?.trim() || "",
         dose: modal.querySelector(`[data-transfer-tx-dose="${doc.id}:${candidate.id}"]`)?.value?.trim() || "",
         doseUnit: modal.querySelector(`[data-transfer-tx-unit="${doc.id}:${candidate.id}"]`)?.value?.trim() || "",

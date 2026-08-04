@@ -40,9 +40,11 @@ function diagnosisPayload(candidate = {}, context = {}) {
     fecha: context.date || new Date().toISOString().slice(0, 10),
     notas: `Importado desde DOCX: ${context.fileName || ""}`.trim(),
     fuenteImportacionDocx: true,
+    imported: true,
     transferOperationId: context.transferOperationId,
     sourceFileHash: context.sourceFileHash,
     sourceNoteId: context.noteId,
+    sourceDocumentName: context.fileName || "",
     importCandidateKey: diagnosisKey(candidate),
     sourceSection: candidate.sourceSection || "",
     sourceLocation: candidate.sourceLocation || null,
@@ -65,9 +67,11 @@ function treatmentPayload(candidate = {}, context = {}) {
     indicacion: "",
     observaciones: candidate.sourceText || "",
     origenImportacionDocx: true,
+    imported: true,
     transferOperationId: context.transferOperationId,
     sourceFileHash: context.sourceFileHash,
     sourceNoteId: context.noteId,
+    sourceDocumentName: context.fileName || "",
     importCandidateKey: treatmentKey(candidate),
     sourceSection: candidate.sourceSection || "",
     sourceLocation: candidate.sourceLocation || null,
@@ -80,8 +84,13 @@ function treatmentPayload(candidate = {}, context = {}) {
 }
 
 export async function createImportedDiagnoses(patientId, candidates = [], context = {}) {
-  const selected = candidates.filter((candidate) => candidate.include === true);
-  if (!selected.length) return { created: [], existing: [], omitted: candidates.length };
+  const selected = candidates.filter((candidate) => candidate.selectedForImport === true || candidate.include === true);
+  console.info("[patient-transfer] diagnoses:selected", { detected: candidates.length, selected: selected.length });
+  console.info("[patient-transfer] diagnoses:persist-start", { patientId, selected: selected.length });
+  if (!selected.length) {
+    console.info("[patient-transfer] diagnoses:persist-success", { patientId, created: 0, existing: 0 });
+    return { created: [], existing: [], omitted: candidates.length };
+  }
 
   const patient = await obtenerUsuario(patientId).catch(() => null);
   const current = Array.isArray(patient?.historialDiagnosticos) ? patient.historialDiagnosticos : [];
@@ -120,12 +129,18 @@ export async function createImportedDiagnoses(patientId, candidates = [], contex
     });
   }
 
+  console.info("[patient-transfer] diagnoses:persist-success", { patientId, created: created.length, existing: existing.length });
   return { created, existing, omitted: candidates.length - selected.length };
 }
 
 export async function createImportedTreatments(patientId, candidates = [], context = {}) {
-  const selected = candidates.filter((candidate) => candidate.include === true);
-  if (!selected.length) return { created: [], existing: [], omitted: candidates.length };
+  const selected = candidates.filter((candidate) => candidate.selectedForImport === true || candidate.include === true);
+  console.info("[patient-transfer] treatments:selected", { detected: candidates.length, selected: selected.length });
+  console.info("[patient-transfer] treatments:persist-start", { patientId, selected: selected.length });
+  if (!selected.length) {
+    console.info("[patient-transfer] treatments:persist-success", { patientId, created: 0, existing: 0 });
+    return { created: [], existing: [], omitted: candidates.length };
+  }
 
   const current = await listarTratamientos(patientId).catch(() => []);
   const seen = new Set(current.map((item) => item.importCandidateKey || treatmentKey(item)).filter(Boolean));
@@ -145,5 +160,6 @@ export async function createImportedTreatments(patientId, candidates = [], conte
     created.push({ id: ref.id, ...payload });
   }
 
+  console.info("[patient-transfer] treatments:persist-success", { patientId, created: created.length, existing: existing.length });
   return { created, existing, omitted: candidates.length - selected.length };
 }

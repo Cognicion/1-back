@@ -35,7 +35,7 @@ assert.match(medico, /import\("\.\/modules\/patient-transfer\/index\.js"\)/, "el
 assert.doesNotMatch(medico, /modules\/importacionDocx\/docxImportController/, "medico.js no abre el importador local simplificado");
 
 const html = read("medico.html");
-assert.match(html, /Importar paciente \/ nota desde DOCX/, "medico.html conserva el boton unico de importacion");
+assert.match(html, /id="btnImportarDocxPaciente"/, "medico.html conserva el boton unico de importacion");
 assert.doesNotMatch(html, /btnTraspasarPacientes/, "medico.html no conserva un segundo boton de traspaso");
 assert.match(html, /patient-transfer\.css/, "medico.html carga estilos del modulo");
 

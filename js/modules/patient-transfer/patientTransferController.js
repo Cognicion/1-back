@@ -169,6 +169,15 @@ async function analyzeOneFile(item, user) {
   });
   const metadata = parseNoteMetadata({ text: fullText, sections: sectionsResult.secciones, fields });
   const clinicalAnalysis = analyzeDocumentClinically({ fullText, blocks });
+  console.info("[patient-transfer] clinical-text:available", {
+    fileId: item.id,
+    hasText: Boolean(fullText.trim()),
+    sectionKeys: Object.keys(sectionsResult.secciones).filter((key) => sectionsResult.secciones[key])
+  });
+  console.info("[patient-transfer] diagnosis-parser:start", { fileId: item.id });
+  console.info("[patient-transfer] diagnosis-parser:sections", { fileId: item.id, sections: ["diagnosticos", "analisis", "subjetivo"].filter((key) => sectionsResult.secciones[key]) });
+  console.info("[patient-transfer] treatment-parser:start", { fileId: item.id });
+  console.info("[patient-transfer] treatment-parser:sections", { fileId: item.id, sections: ["tratamiento", "plan", "subjetivo"].filter((key) => sectionsResult.secciones[key]) });
   const clinicalCandidates = extractClinicalCandidates({
     id: item.id,
     sections: sectionsResult.secciones,
@@ -177,6 +186,8 @@ async function analyzeOneFile(item, user) {
   });
   console.info("[patient-transfer] diagnoses:detected", { fileId: item.id, count: clinicalCandidates.diagnoses.length });
   console.info("[patient-transfer] treatments:detected", { fileId: item.id, count: clinicalCandidates.treatments.length });
+  console.info("[patient-transfer] diagnosis-parser:candidates", { fileId: item.id, count: clinicalCandidates.diagnoses.length, rules: [...new Set(clinicalCandidates.diagnoses.map((item) => item.detectionRule))] });
+  console.info("[patient-transfer] treatment-parser:candidates", { fileId: item.id, count: clinicalCandidates.treatments.length, sections: [...new Set(clinicalCandidates.treatments.map((item) => item.sourceSection))] });
   const vitalSignsCandidates = extractVitalSignsCandidates(blocks);
   const duplicateStatus = duplicate ? "exact_duplicate" : sameBatch ? "duplicate_in_batch" : "nuevo";
 
@@ -184,7 +195,7 @@ async function analyzeOneFile(item, user) {
   item.statusLabel = duplicate ? "Ya importado" : "Procesado correctamente";
   item.error = "";
 
-  return {
+  const documentCandidate = {
     id: item.id,
     file: item.file,
     hash,
@@ -207,6 +218,9 @@ async function analyzeOneFile(item, user) {
     duplicateStatus,
     duplicateStatusLabel: duplicate ? "Ya importado" : sameBatch ? "Duplicado en esta carga" : "Nuevo"
   };
+  console.assert(Array.isArray(documentCandidate.diagnosisCandidates), "diagnosisCandidates must be an array");
+  console.assert(Array.isArray(documentCandidate.treatmentCandidates), "treatmentCandidates must be an array");
+  return documentCandidate;
 }
 
 async function analyzeSelectedFiles() {
@@ -252,6 +266,10 @@ async function analyzeSelectedFiles() {
   renderDetectedGroups(analyzedGroups);
   console.info("[docx-import] patient-fields:rendered", { groupCount: analyzedGroups.length });
   console.info("[patient-transfer] review-ui:rendered", { groupCount: analyzedGroups.length });
+  console.info("[patient-transfer] clinical-candidates:rendered", {
+    diagnoses: analyzedGroups.reduce((total, group) => total + group.documents.reduce((count, doc) => count + doc.diagnosisCandidates.length, 0), 0),
+    treatments: analyzedGroups.reduce((total, group) => total + group.documents.reduce((count, doc) => count + doc.treatmentCandidates.length, 0), 0)
+  });
   setPatientTransferMessage("Revision lista. Confirme antes de guardar.", 100);
 }
 
