@@ -150,9 +150,65 @@
 
 .patient-transfer-file {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 12px;
+}
+
+.patient-transfer-file-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.patient-transfer-file-mode {
+  min-width: 0;
+  margin: 12px 0 0;
+  padding: 10px 0 0;
+  border: 0;
+  border-top: 1px solid rgba(148, 163, 184, .18);
+}
+
+.patient-transfer-file-mode legend {
+  margin-bottom: 7px;
+  padding: 0;
+  color: #cbd5e1;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.patient-transfer-file-mode-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+}
+
+.patient-transfer-panel .patient-transfer-file-mode-options label {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: #e5eefc;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.patient-transfer-panel .patient-transfer-file-mode-options input {
+  width: auto;
+  margin: 0;
+  padding: 0;
+  accent-color: #38bdf8;
+}
+
+.patient-transfer-panel .patient-transfer-file-mode-options input:focus-visible {
+  outline: 2px solid #7dd3fc;
+  outline-offset: 3px;
+}
+
+.patient-transfer-file-mode > small {
+  margin-top: 7px;
+}
+
+.patient-transfer-file-mode .patient-transfer-reanalysis-message {
+  color: #fde68a;
 }
 
 .patient-transfer-file.ok strong {
@@ -316,6 +372,17 @@
   color: #93a4ba;
 }
 
+.patient-transfer-detected-notes p,
+.patient-transfer-detected-notes ul {
+  margin: 0 0 8px;
+}
+
+.patient-transfer-detected-notes ul {
+  display: grid;
+  gap: 3px;
+  padding-left: 20px;
+}
+
 .patient-transfer-note-segment > summary {
   display: flex;
   align-items: center;
@@ -429,6 +496,15 @@
 }
 
 @media (max-width: 700px) {
+  .patient-transfer-file {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .patient-transfer-file > button {
+    align-self: flex-end;
+  }
+
   .patient-transfer-note-segment > summary {
     align-items: flex-start;
     flex-wrap: wrap;

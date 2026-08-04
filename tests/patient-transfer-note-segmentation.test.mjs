@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { parseClinicalSections } from "../js/modules/patient-transfer/parsing/clinicalSectionParser.js";
 import { detectMultipleClinicalNotes, expandSegmentedDocumentsForPersistence, mergeClinicalSegments, segmentClinicalNotes, splitClinicalSegment } from "../js/modules/patient-transfer/parsing/clinicalNoteSegmenter.js";
+import { initializeFileMultipleNotesMode, updateFileMultipleNotesMode } from "../js/modules/patient-transfer/state/multipleNotesModeState.js";
 
 const blocks = [
   { type: "paragraph", text: "NOTA DE EVOLUCIÓN", source: { blockIndex: 0 } },
@@ -28,6 +29,31 @@ assert.match(multiple[0].sections.subjetivo, /Primera evolución/);
 assert.match(multiple[1].sections.subjetivo, /Segunda evolución/);
 assert.equal(multiple[0].date, "01/08/2026");
 assert.equal(multiple[1].date, "02/08/2026");
+
+const automatic = segmentClinicalNotes({ blocks, multipleNotesMode: "auto", proposedBoundaries: detection.proposedNoteBoundaries, documentId: "doc-auto" });
+assert.equal(automatic.length, 2, "el modo automático usa los límites detectados");
+
+const explicitSingle = segmentClinicalNotes({ blocks, multipleNotesMode: "single", proposedBoundaries: detection.proposedNoteBoundaries, documentId: "doc-single" });
+assert.equal(explicitSingle.length, 1, "una sola nota ignora deliberadamente los límites detectados");
+
+const explicitMultiple = segmentClinicalNotes({ blocks, multipleNotesMode: "multiple", proposedBoundaries: detection.proposedNoteBoundaries, documentId: "doc-multiple" });
+assert.equal(explicitMultiple.length, 2, "varias notas usa los límites detectados");
+const multipleWithoutProposal = segmentClinicalNotes({ blocks, multipleNotesMode: "multiple", proposedBoundaries: [], documentId: "doc-multiple-fallback" });
+assert.equal(multipleWithoutProposal.length, 2, "varias notas puede recuperar límites desde títulos clínicos explícitos");
+
+const fileModes = [
+  initializeFileMultipleNotesMode({ id: "file-a" }),
+  initializeFileMultipleNotesMode({ id: "file-b" }),
+  initializeFileMultipleNotesMode({ id: "file-c" })
+];
+const independentModes = updateFileMultipleNotesMode(
+  updateFileMultipleNotesMode(fileModes, "file-b", "multiple"),
+  "file-c",
+  "single"
+);
+assert.deepEqual(independentModes.map((item) => item.multipleNotesMode), ["auto", "multiple", "single"], "cada DOCX conserva un modo independiente");
+assert.equal(independentModes[1].containsMultipleNotes, true);
+assert.equal(independentModes[0].containsMultipleNotes, false);
 
 const joined = mergeClinicalSegments(multiple, multiple[0].id);
 assert.equal(joined.length, 1, "permite unir notas contiguas");

@@ -104,24 +104,49 @@ export function setTransferSavingState(isSaving = false) {
   modal.querySelectorAll("[data-transfer-remove-file]").forEach((button) => {
     button.disabled = isSaving;
   });
+  modal.querySelectorAll("[data-transfer-file-multiple-mode], [data-transfer-review-multiple-mode]").forEach((control) => {
+    control.disabled = isSaving;
+  });
 }
 
 export function isTransferSaving() {
   return ensureRoot().dataset.saving === "true";
 }
 
+function renderMultipleNotesModeOptions({ documentId, mode = "auto", context = "file", disabled = false }) {
+  const normalizedMode = ["auto", "single", "multiple"].includes(mode) ? mode : "auto";
+  const attribute = context === "review" ? "data-transfer-review-multiple-mode" : "data-transfer-file-multiple-mode";
+  const name = `transfer-${context}-multiple-mode-${documentId}`;
+  return `
+    <div class="patient-transfer-file-mode-options" role="radiogroup" aria-label="Tipo de contenido del documento">
+      <label><input type="radio" name="${name}" value="auto" ${attribute}="${documentId}" ${normalizedMode === "auto" ? "checked" : ""} ${disabled ? "disabled" : ""}> Detectar automáticamente</label>
+      <label><input type="radio" name="${name}" value="single" ${attribute}="${documentId}" ${normalizedMode === "single" ? "checked" : ""} ${disabled ? "disabled" : ""}> Una sola nota</label>
+      <label><input type="radio" name="${name}" value="multiple" ${attribute}="${documentId}" ${normalizedMode === "multiple" ? "checked" : ""} ${disabled ? "disabled" : ""}> Varias notas</label>
+    </div>`;
+}
+
 export function renderTransferFiles(files = []) {
   const modal = ensureRoot();
   modal.querySelector("[data-transfer-count]").textContent = `${files.length} archivos`;
-  modal.querySelector("[data-transfer-files]").innerHTML = files.length ? files.map((item) => `
-    <article class="patient-transfer-file ${item.status || ""}">
-      <div>
+  modal.querySelector("[data-transfer-files]").innerHTML = files.length ? files.map((item) => {
+    const modeHelpId = `transfer-file-mode-help-${item.id}`;
+    const modeLocked = ["validating", "extracting", "analyzing"].includes(item.status);
+    return `
+    <article class="patient-transfer-file ${item.status || ""}" data-transfer-file-card="${item.id}">
+      <div class="patient-transfer-file-main">
         <strong>${escapeHtml(item.file.name)}</strong>
         <span>${fileSize(item.file.size)} · ${escapeHtml(item.statusLabel || "Pendiente")}</span>
         ${item.error ? `<small>${escapeHtml(item.error)}</small>` : ""}
+        <fieldset class="patient-transfer-file-mode" aria-describedby="${modeHelpId}">
+          <legend>¿Este archivo contiene más de una nota?</legend>
+          ${renderMultipleNotesModeOptions({ documentId: item.id, mode: item.multipleNotesMode, disabled: modeLocked })}
+          <small id="${modeHelpId}">Actívela cuando el documento incluya varias evoluciones, notas de ingreso, egreso o registros de fechas distintas.</small>
+          ${item.needsReanalysis ? `<small class="patient-transfer-reanalysis-message">La forma de segmentación cambió. Vuelva a analizar el documento.</small>` : ""}
+        </fieldset>
       </div>
       <button type="button" data-transfer-remove-file="${item.id}">Eliminar</button>
-    </article>`).join("") : "";
+    </article>`;
+  }).join("") : "";
 }
 
 function renderCandidateSelect(group) {
@@ -395,6 +420,9 @@ function renderNoteSegment(doc, segment, index) {
 
 function renderDocument(doc, groups = [], currentGroupId = "") {
   const selected = doc.confirmedType?.key || doc.metadata?.suggestedType?.key || "tipo_no_reconocido";
+  const mode = ["auto", "single", "multiple"].includes(doc.multipleNotesMode) ? doc.multipleNotesMode : "auto";
+  const detectedNotes = doc.detectedNoteSummaries?.length ? doc.detectedNoteSummaries : doc.noteSegments || [];
+  const detectedCount = detectedNotes.length;
   return `
     <details class="patient-transfer-note" open>
       <summary>${escapeHtml(doc.file.name)} <span>${escapeHtml(doc.duplicateStatusLabel || "Nuevo")}</span></summary>
@@ -414,19 +442,23 @@ function renderDocument(doc, groups = [], currentGroupId = "") {
         <label><input type="checkbox" data-transfer-omit-doc="${doc.id}" ${doc.omitted ? "checked" : ""}> Omitir archivo</label>
       </div>
       <div class="patient-transfer-multiple-notes">
-        <label><input type="checkbox" data-transfer-multiple-notes="${doc.id}" ${doc.containsMultipleNotes ? "checked" : ""}> ¿Este archivo contiene más de una nota?</label>
-        <small>Actívela cuando el documento incluya varias evoluciones, notas de ingreso, seguimientos o registros de fechas distintas.</small>
-        ${doc.probableMultipleNotes ? `<div class="patient-transfer-warning">
-          <p>Se detectaron varias notas posibles en este archivo.</p>
-          <button type="button" data-transfer-analyze-multiple="${doc.id}">Analizar como varias notas</button>
-          <button type="button" data-transfer-keep-single="${doc.id}">Mantener como una sola</button>
+        <strong>Tipo de contenido</strong>
+        ${renderMultipleNotesModeOptions({ documentId: doc.id, mode, context: "review" })}
+        <small>La detección automática conserva las divisiones clínicas encontradas; una decisión manual requiere volver a analizar.</small>
+        ${doc.segmentationNeedsReanalysis ? `<div class="patient-transfer-warning"><p>La forma de segmentación cambió. Vuelva a analizar el documento.</p></div>` : ""}
+        ${(doc.probableMultipleNotes || detectedCount > 1) ? `<div class="patient-transfer-warning patient-transfer-detected-notes">
+          <p>Se detectaron ${detectedCount} notas posibles.</p>
+          ${mode === "multiple" ? `<small>Se analizará como varias notas.</small>` : ""}
+          <ul>${detectedNotes.map((note) => `<li>${escapeHtml(note.date || "Sin fecha")} · ${escapeHtml(note.time || "Sin hora")}</li>`).join("")}</ul>
+          ${(doc.noteSegments || []).length > 1 ? `<button type="button" data-transfer-review-divisions="${doc.id}">Revisar divisiones</button>` : ""}
+          ${mode !== "single" ? `<button type="button" data-transfer-keep-single="${doc.id}">Tratar como una sola nota</button>` : ""}
         </div>` : ""}
       </div>
       <div class="patient-transfer-sections">
         <strong>Secciones encontradas</strong>
         <span>${Object.keys(doc.sections || {}).length ? Object.keys(doc.sections).join(", ") : "Sin secciones reconocidas"}</span>
       </div>
-      <section class="patient-transfer-note-segments">
+      <section class="patient-transfer-note-segments" id="transfer-note-segments-${doc.id}">
         ${(doc.noteSegments || []).map((segment, index) => renderNoteSegment(doc, segment, index)).join("")}
       </section>
       ${renderExtractionDebug(doc)}
@@ -611,7 +643,8 @@ export function readTransferReview(groups = []) {
       return {
         ...doc,
         omitted: modal.querySelector(`[data-transfer-omit-doc="${doc.id}"]`)?.checked || false,
-        containsMultipleNotes: modal.querySelector(`[data-transfer-multiple-notes="${doc.id}"]`)?.checked || false,
+        multipleNotesMode: doc.multipleNotesMode || "auto",
+        containsMultipleNotes: (doc.noteSegments || []).length > 1,
         confirmedType: rule,
         vitalSignsCandidates,
         noteSegments,

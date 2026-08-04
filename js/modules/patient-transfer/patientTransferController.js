@@ -11,6 +11,7 @@ import { detectMultipleClinicalNotes, expandSegmentedDocumentsForPersistence, me
 import { extractVitalSignsCandidates } from "./parsing/vitalSignsParser.js";
 import { parseNoteMetadata } from "./parsing/noteMetadataParser.js";
 import { preserveManualSubjectiveEdits, updateSubjectiveSegmentValue } from "./state/subjectiveSegmentState.js";
+import { initializeFileMultipleNotesMode, MULTIPLE_NOTES_MODES, normalizeMultipleNotesMode, updateFileMultipleNotesMode } from "./state/multipleNotesModeState.js";
 import { groupDocumentsByPatient } from "./parsing/documentGroupingService.js";
 import { analyzeDocumentClinically } from "./integration/clinicalAnalysisAdapter.js";
 import { findDuplicateImport, findExistingPatientCandidates, saveTransferredGroups } from "./patientTransferRepository.js";
@@ -247,7 +248,12 @@ function addFiles(files = []) {
     const key = `${file.name}:${file.size}`;
     if (existingNames.has(key)) return;
     existingNames.add(key);
-    next.push({ id: fileId(file, index), file, status: "pending", statusLabel: "Pendiente" });
+    next.push(initializeFileMultipleNotesMode({
+      id: fileId(file, index),
+      file,
+      status: "pending",
+      statusLabel: "Pendiente"
+    }));
   });
   selectedFiles = next;
   setPatientTransferFiles(selectedFiles);
@@ -329,12 +335,13 @@ async function analyzeOneFile(item, user) {
     fullText,
     headings: sectionsResult.encabezados
   });
-  const splitExplicitNotes = multipleNotesDetection.explicitNoteCount > 1;
+  const multipleNotesMode = normalizeMultipleNotesMode(item.multipleNotesMode);
   const duplicateStatus = duplicate ? "exact_duplicate" : sameBatch ? "duplicate_in_batch" : "nuevo";
 
   item.status = duplicate ? "warning" : "ok";
   item.statusLabel = duplicate ? "Ya importado" : "Procesado correctamente";
   item.error = "";
+  item.needsReanalysis = false;
 
   let documentCandidate = {
     id: item.id,
@@ -355,7 +362,9 @@ async function analyzeOneFile(item, user) {
     vitalSignsCandidates,
     diagnosisCandidates: clinicalCandidates.diagnoses,
     treatmentCandidates: clinicalCandidates.treatments,
-    containsMultipleNotes: splitExplicitNotes,
+    multipleNotesMode,
+    containsMultipleNotes: multipleNotesMode === MULTIPLE_NOTES_MODES.MULTIPLE,
+    segmentationNeedsReanalysis: false,
     probableMultipleNotes: multipleNotesDetection.probableMultipleNotes,
     multipleNotesReasons: multipleNotesDetection.reasons,
     proposedNoteBoundaries: multipleNotesDetection.proposedNoteBoundaries,
@@ -364,13 +373,32 @@ async function analyzeOneFile(item, user) {
     duplicateStatus,
     duplicateStatusLabel: duplicate ? "Ya importado" : sameBatch ? "Duplicado en esta carga" : "Nuevo"
   };
-  documentCandidate = applySegmentsToDocument(documentCandidate, segmentClinicalNotes({
+  const selectedSegments = segmentClinicalNotes({
     blocks,
     fullText,
-    manualMultipleNotes: splitExplicitNotes,
+    multipleNotesMode,
     proposedBoundaries: multipleNotesDetection.proposedNoteBoundaries,
     documentId: item.id
-  }));
+  });
+  const automaticallyDetectedSegments = multipleNotesMode === MULTIPLE_NOTES_MODES.SINGLE
+    ? segmentClinicalNotes({
+        blocks,
+        fullText,
+        multipleNotesMode: MULTIPLE_NOTES_MODES.AUTO,
+        proposedBoundaries: multipleNotesDetection.proposedNoteBoundaries,
+        documentId: item.id
+      })
+    : selectedSegments;
+  documentCandidate = applySegmentsToDocument({
+    ...documentCandidate,
+    detectedNoteSummaries: automaticallyDetectedSegments.map((segment) => ({
+      id: segment.id,
+      date: segment.date || "",
+      time: segment.time || "",
+      noteType: segment.noteType || "Nota clínica"
+    }))
+  }, selectedSegments);
+  documentCandidate.containsMultipleNotes = documentCandidate.noteSegments.length > 1;
   console.assert(Array.isArray(documentCandidate.diagnosisCandidates), "diagnosisCandidates must be an array");
   console.assert(Array.isArray(documentCandidate.treatmentCandidates), "treatmentCandidates must be an array");
   return documentCandidate;
@@ -431,6 +459,12 @@ async function saveReviewedTransfer({ reuseReviewedGroups = false } = {}) {
   if (isTransferSaving()) return;
   if (!analyzedGroups.length) {
     showPatientTransferError("Analiza los documentos antes de confirmar.");
+    return;
+  }
+  const pendingSegmentation = analyzedGroups.some((group) => (group.documents || [])
+    .some((document) => document.segmentationNeedsReanalysis));
+  if (pendingSegmentation) {
+    showPatientTransferError("La forma de segmentación cambió. Vuelva a analizar el documento antes de confirmar.");
     return;
   }
   const user = await getAuthenticatedUserOnce();
@@ -555,17 +589,23 @@ function syncReviewedGroupsFromView() {
   console.info("[patient-transfer] review-state:updated", counts);
 }
 
-function setDocumentMultipleNotes(documentId, enabled) {
-  updateDocumentById(documentId, (document) => {
-    const segments = segmentClinicalNotes({
-      blocks: document.blocks,
-      fullText: document.fullText,
-      manualMultipleNotes: enabled,
-      proposedBoundaries: document.proposedNoteBoundaries || [],
-      documentId: document.id
-    });
-    return applySegmentsToDocument({ ...document, containsMultipleNotes: enabled }, segments);
-  });
+function setFileMultipleNotesMode(documentId, value, { afterAnalysis = false } = {}) {
+  const multipleNotesMode = normalizeMultipleNotesMode(value);
+  selectedFiles = updateFileMultipleNotesMode(selectedFiles, documentId, multipleNotesMode)
+    .map((item) => item.id === documentId && afterAnalysis
+      ? { ...item, needsReanalysis: true, status: "pending", statusLabel: "Pendiente de reanálisis" }
+      : item);
+  setPatientTransferFiles(selectedFiles);
+  renderTransferFiles(selectedFiles);
+
+  if (!afterAnalysis) return;
+  updateDocumentById(documentId, (document) => ({
+    ...document,
+    multipleNotesMode,
+    segmentationNeedsReanalysis: true
+  }));
+  setPatientTransferMessage("La forma de segmentación cambió. Vuelva a analizar el documento.", 100);
+  showPatientTransferError("La forma de segmentación cambió. Vuelva a analizar el documento.");
 }
 
 function splitDocumentSegment(documentId, segmentId) {
@@ -621,16 +661,15 @@ export function initializePatientTransfer() {
   });
 
   root.addEventListener("click", (event) => {
-    const analyzeMultipleButton = event.target.closest("[data-transfer-analyze-multiple]");
-    if (analyzeMultipleButton) {
-      syncReviewedGroupsFromView();
-      setDocumentMultipleNotes(analyzeMultipleButton.dataset.transferAnalyzeMultiple, true);
-      return;
-    }
     const keepSingleButton = event.target.closest("[data-transfer-keep-single]");
     if (keepSingleButton) {
       syncReviewedGroupsFromView();
-      setDocumentMultipleNotes(keepSingleButton.dataset.transferKeepSingle, false);
+      setFileMultipleNotesMode(keepSingleButton.dataset.transferKeepSingle, MULTIPLE_NOTES_MODES.SINGLE, { afterAnalysis: true });
+      return;
+    }
+    const reviewDivisionsButton = event.target.closest("[data-transfer-review-divisions]");
+    if (reviewDivisionsButton) {
+      document.getElementById(`transfer-note-segments-${reviewDivisionsButton.dataset.transferReviewDivisions}`)?.scrollIntoView({ behavior: "smooth", block: "start" });
       return;
     }
     const splitButton = event.target.closest("[data-transfer-split-segment]");
@@ -672,10 +711,19 @@ export function initializePatientTransfer() {
   });
 
   root.addEventListener("change", (event) => {
-    const multipleToggle = event.target.closest("[data-transfer-multiple-notes]");
-    if (multipleToggle) {
+    const fileMode = event.target.closest("[data-transfer-file-multiple-mode]");
+    if (fileMode) {
+      const documentId = fileMode.dataset.transferFileMultipleMode;
+      const alreadyAnalyzed = analyzedGroups.some((group) => (group.documents || [])
+        .some((document) => document.id === documentId));
+      if (alreadyAnalyzed) syncReviewedGroupsFromView();
+      setFileMultipleNotesMode(documentId, fileMode.value, { afterAnalysis: alreadyAnalyzed });
+      return;
+    }
+    const reviewMode = event.target.closest("[data-transfer-review-multiple-mode]");
+    if (reviewMode) {
       syncReviewedGroupsFromView();
-      setDocumentMultipleNotes(multipleToggle.dataset.transferMultipleNotes, multipleToggle.checked);
+      setFileMultipleNotesMode(reviewMode.dataset.transferReviewMultipleMode, reviewMode.value, { afterAnalysis: true });
       return;
     }
     const targetSelect = event.target.closest("[data-transfer-document-target]");

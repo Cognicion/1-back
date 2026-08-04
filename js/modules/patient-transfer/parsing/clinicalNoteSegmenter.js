@@ -180,15 +180,36 @@ function createSegment(documentId, blocks, index) {
   return segment;
 }
 
-export function segmentClinicalNotes({ blocks = [], fullText = "", manualMultipleNotes = false, proposedBoundaries = [], documentId = "doc" } = {}) {
+export function segmentClinicalNotes({
+  blocks = [],
+  fullText = "",
+  manualMultipleNotes = false,
+  multipleNotesMode,
+  proposedBoundaries = [],
+  documentId = "doc"
+} = {}) {
   void fullText;
-  let boundaries = manualMultipleNotes
-    ? [...new Set(proposedBoundaries.map((item) => Number(item.blockIndex ?? item)).filter((value) => Number.isInteger(value) && value >= 0))].sort((a, b) => a - b)
-    : [];
+  const mode = ["auto", "single", "multiple"].includes(multipleNotesMode)
+    ? multipleNotesMode
+    : manualMultipleNotes ? "multiple" : "single";
+  const proposedIndexes = [...new Set(proposedBoundaries
+    .map((item) => Number(item.blockIndex ?? item))
+    .filter((value) => Number.isInteger(value) && value >= 0))]
+    .sort((a, b) => a - b);
+  const titleIndexes = blocks
+    .map((block, index) => noteTitle(blockText(block)) ? blockIndex(block, index) : null)
+    .filter(Number.isInteger);
+  let boundaries = mode === "single"
+    ? []
+    : proposedIndexes.length ? proposedIndexes : mode === "multiple" ? titleIndexes : [];
   // El primer título identifica la primera nota; no debe crear un segmento de preámbulo independiente.
   const firstTitleBlock = blocks.find((block) => noteTitle(blockText(block)))?.source?.blockIndex;
   if (Number.isInteger(firstTitleBlock) && boundaries[0] === firstTitleBlock) boundaries = boundaries.slice(1);
-  if (!boundaries.length) return [createSegment(documentId, blocks, 0)];
+  if (!boundaries.length) {
+    const segments = [createSegment(documentId, blocks, 0)];
+    console.info("[patient-transfer] note-segmentation:result", { documentId, multipleNotesMode: mode, segmentCount: segments.length });
+    return segments;
+  }
 
   const groups = [];
   let current = [];
@@ -201,7 +222,9 @@ export function segmentClinicalNotes({ blocks = [], fullText = "", manualMultipl
     current.push(block);
   });
   if (current.length) groups.push(current);
-  return groups.filter((group) => group.length).map((group, index) => createSegment(documentId, group, index));
+  const segments = groups.filter((group) => group.length).map((group, index) => createSegment(documentId, group, index));
+  console.info("[patient-transfer] note-segmentation:result", { documentId, multipleNotesMode: mode, segmentCount: segments.length });
+  return segments;
 }
 
 export function splitClinicalSegment(segments = [], segmentId = "") {
