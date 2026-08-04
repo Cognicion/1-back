@@ -1,4 +1,4 @@
-import { MEDICAMENTOS, medicamentoPorTexto } from "../../../data/medicamentos.js";
+import { MEDICAMENTOS, MEDICAMENTOS_MAESTROS, medicamentoPorTexto } from "../../../data/medicamentos.js";
 
 function normalizeText(value = "") {
   return String(value || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, " ").trim().toLowerCase();
@@ -89,11 +89,16 @@ export function detectDiagnosisCandidates({ sections = {}, fullText = "", source
 
 const medicationNames = [...new Set(MEDICAMENTOS.map((item) => String(item.nombre || "").trim()).filter(Boolean))];
 const PRESENTATIONS = ["tabletas", "tableta", "comprimidos", "comprimido", "capsulas", "capsula", "jarabe", "solucion", "suspension", "gotas", "polvo", "ampolla", "vial", "parche", "spray", "inhalador", "crema", "unguento", "supositorio"];
+// Productos que aparecen en documentos clínicos pero no forman parte del
+// catálogo farmacológico estructurado. Se conservan como candidatos manuales.
+const MANUAL_MEDICATION_NAMES = ["Yasmin", "Lactobacilos", "Lamotrigina"];
 
 function escapeRegex(value = "") { return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); }
 
 export function parseClinicalQuantity(value = "") {
   const source = String(value || "").trim().toLowerCase().replace(",", ".");
+  const words = { una: 1, un: 1, uno: 1, dos: 2, tres: 3 };
+  if (words[source] != null) return words[source];
   const fractions = { "¼": 0.25, "½": 0.5, "¾": 0.75, "⅓": 1 / 3, "⅔": 2 / 3, "⅛": 0.125, "⅜": 0.375, "⅝": 0.625, "⅞": 0.875 };
   if (fractions[source] != null) return fractions[source];
   const mixed = source.match(/^(\d+)\s*([¼½¾⅓⅔⅛⅜⅝⅞])$/);
@@ -124,7 +129,7 @@ function presentationFromText(text = "") {
 }
 
 function normalizeTime(value = "") {
-  const clean = String(value || "").toLowerCase().replace(/\s+/g, "").replace(/h(?:oras?)?$/, "");
+  const clean = String(value || "").toLowerCase().replace(/\s+/g, "").replace(/(?:h|hr|hrs|hora|horas)$/i, "");
   if (!/^\d{1,4}(?::\d{1,2})?$/.test(clean)) return "";
   const [rawHour, rawMinute = "0"] = clean.includes(":") ? clean.split(":") : [clean, "0"];
   const hour = Number(rawHour);
@@ -135,19 +140,19 @@ function normalizeTime(value = "") {
 
 export function parseMedicationSchedules(text = "") {
   const source = normalizeText(text);
-  const timePattern = /\b(\d{1,4}:\d{1,2}\s*h?|\d{1,4}\s*(?:h|horas?))\b/gi;
+  const timePattern = /\b(\d{1,4}:\d{1,2}\s*h?|\d{1,4}\s*(?:h|hrs?|horas?))\b/gi;
   const schedules = [];
   let match;
   while ((match = timePattern.exec(source))) {
     const time = normalizeTime(match[1]);
     if (!time) continue;
     const before = source.slice(Math.max(0, match.index - 50), match.index);
-    const quantityMatches = [...before.matchAll(/(\d+(?:[.,]\d+)?|[¼½¾⅓⅔⅛⅜⅝⅞]|\d+\s*\/\s*\d+)\s*(?:de\s+)?(tabletas?|capsulas?|comprimidos?|ml|mililitros|cucharadas?|cucharaditas?|vasos?|gotas?)/gi)];
+    const quantityMatches = [...before.matchAll(/(\d+(?:[.,]\d+)?|una|un|uno|dos|tres|[¼½¾⅓⅔⅛⅜⅝⅞]|\d+\s*\/\s*\d+)\s*(?:de\s+)?(tabletas?|capsulas?|comprimidos?|ml|mililitros|cucharadas?|cucharaditas?|vasos?|gotas?)/gi)];
     const nonContainerQuantities = quantityMatches.filter((item) => !/^vaso/i.test(item[2]));
     let quantityMatch = (nonContainerQuantities.length ? nonContainerQuantities : quantityMatches).at(-1);
     if (!quantityMatch) {
       const after = source.slice(match.index + match[0].length, match.index + match[0].length + 45);
-      quantityMatch = after.match(/^[\s·:,-]*(\d+(?:[.,]\d+)?|[¼½¾⅓⅔⅛⅜⅝⅞]|\d+\s*\/\s*\d+)\s*(?:de\s+)?(tabletas?|capsulas?|comprimidos?|ml|mililitros|cucharadas?|cucharaditas?|vasos?|gotas?)/i);
+      quantityMatch = after.match(/^[\s·:,-]*(\d+(?:[.,]\d+)?|una|un|uno|dos|tres|[¼½¾⅓⅔⅛⅜⅝⅞]|\d+\s*\/\s*\d+)\s*(?:de\s+)?(tabletas?|capsulas?|comprimidos?|ml|mililitros|cucharadas?|cucharaditas?|vasos?|gotas?)/i);
     }
     schedules.push({
       time,
@@ -167,7 +172,7 @@ function routeFromText(text = "") {
 
 function frequencyFromText(text = "") {
   const value = normalizeText(text);
-  return value.match(/\b(?:\d+\s+veces?\s+al\s+dia|cada\s+\d+\s*horas?|\d+\s+vez\s+al\s+dia|por\s+la\s+(?:manana|noche)|al\s+acostarse|prn|en\s+caso\s+necesario|dosis\s+unica|1-0-1|diario)\b/i)?.[0] || "";
+  return value.match(/\b(?:\d+|una|dos|tres)\s+veces?\s+al\s+dia|\b(?:\d+|una|dos|tres)\s+vez\s+al\s+dia|\bcada\s+\d+\s*horas?|\bpor\s+la\s+(?:manana|noche)|\bal\s+acostarse|\bprn\b|\ben\s+caso\s+necesario|\bdosis\s+unica|\b1-0-1\b|\bdiario\b/i)?.[0] || "";
 }
 
 function actionFromText(text = "") {
@@ -182,24 +187,30 @@ function actionFromText(text = "") {
 }
 
 export function splitMedicationItems(text = "", medicationCatalog = MEDICAMENTOS) {
-  const names = [...new Set(medicationCatalog.map((item) => String(item.nombre || "").trim()).filter(Boolean))].sort((a, b) => b.length - a.length);
+  const catalog = [...medicationCatalog, ...MEDICAMENTOS_MAESTROS];
+  const names = [...new Set([...catalog.flatMap((item) => [item.nombre, item.nombreGenerico]), ...MANUAL_MEDICATION_NAMES].map((name) => String(name || "").trim()).filter(Boolean))].sort((a, b) => b.length - a.length);
   const markers = /(?:^|\s)([a-z]|\d+)[.)](?:-|\s)*(?=[A-Za-zÁÉÍÓÚáéíóúÑñ])/g;
   const marked = [];
   let match;
   while ((match = markers.exec(String(text || "")))) marked.push(match.index + (match[0].startsWith(" ") ? 1 : 0));
-  const chunks = marked.length ? marked.map((start, index) => String(text).slice(start, marked[index + 1] ?? String(text).length).replace(/^\s*[a-z\d]+[.)]\s*/i, "").trim()).filter(Boolean) : [String(text || "").trim()];
+  const source = String(text || "");
+  const nameStarts = [];
+  names.forEach((name) => {
+    const pattern = new RegExp(`\\b${escapeRegex(name)}\\b`, "gi");
+    let nameMatch;
+    while ((nameMatch = pattern.exec(source))) nameStarts.push(nameMatch.index);
+  });
+  const manualStartPattern = /(?:^|[\n\r.;]|\b\d{1,4}(?::\d{1,2})?\s*h(?:oras?)?)\s*([A-ZÁÉÍÓÚÑ][A-Za-zÁÉÍÓÚáéíóúÑñ-]{2,}(?:\s+(?:forte|simibacilos))?)(?=\s*(?:\(|,|\d|tabletas?|capsulas?|jarabe|polvo|tomar|via|administrar))/g;
+  const excludedStarts = new Set(["tomar", "administrar", "aplicar", "via", "iniciar", "inicio", "inicia", "se inicio", "continua", "suspender"]);
+  while ((match = manualStartPattern.exec(source))) {
+    const candidate = match[1].trim();
+    if (!excludedStarts.has(normalizeText(candidate))) nameStarts.push(match.index + match[0].lastIndexOf(candidate));
+  }
+  const starts = [...new Set([...marked, ...nameStarts])].sort((a, b) => a - b);
+  const chunks = starts.length ? starts.map((start, index) => source.slice(start, starts[index + 1] ?? source.length).replace(/^\s*[a-z\d]+[.)]\s*/i, "").trim()).filter(Boolean) : [source.trim()];
   const output = [];
   chunks.forEach((chunk) => {
-    const positions = names.map((name) => ({ name, index: chunk.toLowerCase().indexOf(String(name).toLowerCase()) })).filter((item) => item.index >= 0).sort((a, b) => a.index - b.index);
-    if (positions.length <= 1) { if (chunk) output.push(chunk); return; }
-    positions.forEach((item, index) => {
-      let value = chunk.slice(item.index, positions[index + 1]?.index ?? chunk.length).replace(/^[,;\s]+/, "").trim();
-      if (index < positions.length - 1) {
-        const sentenceBoundary = value.lastIndexOf(". ");
-        if (sentenceBoundary >= 0) value = value.slice(0, sentenceBoundary + 1).trim();
-      }
-      if (value) output.push(value);
-    });
+    if (chunk) output.push(chunk.replace(/^[,;\s]+/, "").trim());
   });
   const result = output.length ? output : chunks;
   console.info("[patient-transfer] medication:item-split", JSON.stringify({ itemCount: result.length, itemLengths: result.map((item) => item.length) }));
@@ -207,19 +218,19 @@ export function splitMedicationItems(text = "", medicationCatalog = MEDICAMENTOS
 }
 
 function medicationMentions(line = "", catalog = MEDICAMENTOS) {
-  const names = [...new Set(catalog.map((item) => String(item.nombre || "").trim()).filter(Boolean))];
+  const names = [...new Set([...catalog, ...MEDICAMENTOS_MAESTROS].flatMap((item) => [item.nombre, item.nombreGenerico]).concat(MANUAL_MEDICATION_NAMES).map((name) => String(name || "").trim()).filter(Boolean))];
   return names.filter((name) => new RegExp(`\\b${escapeRegex(name)}\\b`, "i").test(line));
 }
 
 function inferManualMedicationName(item = "") {
   if (!/(?:tabletas?|capsulas?|jarabe|polvo|solucion|suspension|gotas?|\d+\s*(?:mg|g|ml|mcg|µg)|via\s+oral|tomar|administrar)/i.test(item)) return "";
-  const match = String(item).match(/^([A-Za-zÁÉÍÓÚáéíóúÑñ]+(?:\s+[A-Za-zÁÉÍÓÚáéíóúÑñ]+){0,3})(?=\s+(?:tabletas?|capsulas?|jarabe|polvo|solucion|suspension|gotas?|\d)|\s*$)/i);
+  const match = String(item).match(/^([A-Za-zÁÉÍÓÚáéíóúÑñ-]+(?:\s+[A-Za-zÁÉÍÓÚáéíóúÑñ-]+){0,3})(?=\s*(?:\(|,|\s+(?:tabletas?|capsulas?|jarabe|polvo|solucion|suspension|gotas?|\d))|\s*$)/i);
   const value = match?.[1]?.trim() || "";
   if (/^(?:tomar|administrar|aplicar|via|oral|se|inicia|continua|suspender|suspendido)$/i.test(value)) return "";
   return value;
 }
 
-function medicationCandidate({ name, line, index, section, documentId, fullText, date = "" }) {
+function medicationCandidate({ name, line, contextText = line, index, section, documentId, fullText, date = "" }) {
   const catalogItem = medicamentoPorTexto(name);
   const lowerLine = String(line || "").toLowerCase();
   const nameStart = lowerLine.indexOf(String(name || "").toLowerCase());
@@ -227,9 +238,9 @@ function medicationCandidate({ name, line, index, section, documentId, fullText,
   const strength = parseMedicationStrength(detail);
   const frequency = frequencyFromText(detail);
   const schedule = parseMedicationSchedules(detail);
-  const action = actionFromText(line);
+  const action = actionFromText(contextText);
   const statusSuggestion = action === "Continúa" ? statusForTreatment(line) : action;
-  const administration = normalizeText(detail).match(/(?:tomar|administrar|aplicar)\s+(\d+(?:[.,]\d+)?|[¼½¾⅓⅔⅛⅜⅝⅞]|\d+\s*\/\s*\d+)\s*(?:de\s+)?(tabletas?|capsulas?|comprimidos?|ml|cucharadas?|cucharaditas?|vasos?|gotas?)/i);
+  const administration = normalizeText(detail).match(/(?:tomar|administrar|aplicar)\s+(\d+(?:[.,]\d+)?|una|un|uno|dos|tres|[¼½¾⅓⅔⅛⅜⅝⅞]|\d+\s*\/\s*\d+)\s*(?:de\s+)?(tabletas?|capsulas?|comprimidos?|ml|cucharadas?|cucharaditas?|vasos?|gotas?)/i);
   const itemName = String(catalogItem?.nombre || name || "").replace(/\s+/g, " ").trim();
   const candidate = {
     id: `${documentId || "doc"}-tx-${section}-${index}-${normalizeText(itemName)}-${normalizeText(action)}`,
@@ -256,6 +267,7 @@ function medicationCandidate({ name, line, index, section, documentId, fullText,
     temporality: statusSuggestion === "Antecedente" ? "historical" : "current",
     date,
     sourceText: line,
+    rawMedicationText: line,
     sourceSection: section,
     evidence: { strength: strength.rawStrength, route: routeFromText(detail), frequency, scheduleCount: schedule.length },
     confidence: strength.rawStrength || schedule.length || frequency ? "high" : "medium",
@@ -278,20 +290,45 @@ export function detectTreatmentCandidates({ sections = {}, fullText = "", source
   const candidates = [];
   const seen = new Set();
   sources.forEach(({ section, text }) => String(text).split(/\n/).map((value, index) => ({ text: value.trim(), index })).filter(({ text: value }) => value.length >= 3).forEach(({ text: sourceLine, index: lineIndex }) => {
+    const processedNames = new Set();
     splitMedicationItems(sourceLine, medicationCatalog).forEach((item, itemIndex) => {
       if (/\b(?:niega|sin uso de|no usa|no toma)\b/i.test(item)) return;
+      const itemStart = sourceLine.toLowerCase().indexOf(String(item).toLowerCase());
+      const prefix = itemStart >= 0 ? sourceLine.slice(Math.max(0, itemStart - 60), itemStart) : "";
+      if (/\b(?:niega|sin uso de|no usa|no toma)\b/i.test(prefix)) return;
       const names = medicationMentions(item, medicationCatalog);
       const resolvedNames = names.length ? names : [inferManualMedicationName(item)].filter(Boolean);
-      const itemStart = sourceLine.toLowerCase().indexOf(String(item).toLowerCase());
-      const clauseStart = itemStart >= 0 ? Math.max(sourceLine.lastIndexOf(".", itemStart - 1), sourceLine.lastIndexOf(";", itemStart - 1)) + 1 : 0;
-      const contextualItem = itemStart >= 0 ? `${sourceLine.slice(clauseStart, itemStart)}${item}` : item;
       resolvedNames.forEach((name) => {
-        const candidate = medicationCandidate({ name, line: contextualItem, index: lineIndex * 100 + itemIndex, section, documentId, fullText, date });
+        processedNames.add(normalizeText(name));
+        const candidate = medicationCandidate({ name, line: item, contextText: `${prefix}${item}`, index: lineIndex * 100 + itemIndex, section, documentId, fullText, date });
         const key = [candidate.normalizedMedicationName, candidate.action, candidate.date, candidate.sourceSection, candidate.strengthValue, candidate.frequencyRaw, candidate.scheduleText].join(":");
         if (seen.has(key)) return;
         seen.add(key);
         candidates.push(candidate);
       });
+    });
+    // Las listas narrativas pueden tener varios nombres sin presentación ni
+    // incisos. Completar únicamente los nombres que no quedaron cubiertos por
+    // los fragmentos, conservando el nombre como texto fuente aislado.
+    medicationMentions(sourceLine, medicationCatalog).forEach((name, fallbackIndex) => {
+      if (processedNames.has(normalizeText(name))) return;
+      const nameStart = sourceLine.toLowerCase().indexOf(String(name).toLowerCase());
+      const namePrefix = nameStart >= 0 ? sourceLine.slice(Math.max(0, nameStart - 60), nameStart) : "";
+      if (/\b(?:niega|sin uso de|no usa|no toma)\b/i.test(namePrefix)) return;
+      const candidate = medicationCandidate({
+        name,
+        line: name,
+        contextText: sourceLine.slice(0, sourceLine.indexOf(".") >= 0 ? sourceLine.indexOf(".") + 1 : sourceLine.length),
+        index: lineIndex * 100 + 50 + fallbackIndex,
+        section,
+        documentId,
+        fullText,
+        date
+      });
+      const key = [candidate.normalizedMedicationName, candidate.action, candidate.date, candidate.sourceSection, candidate.strengthValue, candidate.frequencyRaw, candidate.scheduleText].join(":");
+      if (seen.has(key)) return;
+      seen.add(key);
+      candidates.push(candidate);
     });
   }));
   return candidates;

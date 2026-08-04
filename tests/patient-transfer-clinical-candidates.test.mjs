@@ -106,4 +106,21 @@ assert.equal(historical.action, "Antecedente");
 assert.equal(historical.strengthValue, null);
 assert.deepEqual(historical.schedule, []);
 
+const ismeraiMedicationText = "Sertralina, tabletas de 50 mg. Tomar via oral 1 vez al dia. 1 tableta a las 08:00 Pregabalina 75 mg capsulas, tomar via oral, una vez al dia, una capsula a las 22 hrs Espironolactona tabletas 100mg. Via oral. Tomar 1 vez al dia. Tomar 1 tableta a las 15:00h Colchicina tabletas 1mg. Via oral. Tomar 1 vez al dia. Tomar 1 tableta a las 15:00 H. Yasmin (Drospirenona/Etinilestradiol 3mg/0.03mg) Tomar via oral 1 vez al dia. Tomar 1 tableta a las 22:00h. Lactobacilos forte simibacilos capsulas, tomar via oral, 2 veces al dia, una capsula a las 08 hrs y una a las 15 hrs";
+const ismeraiItems = splitMedicationItems(ismeraiMedicationText);
+assert.equal(ismeraiItems.length, 6, "separa los seis medicamentos de Ismerai");
+const ismeraiTreatments = detectTreatmentCandidates({ sections: { medicamentos: ismeraiMedicationText }, documentId: "ismerai" });
+assert.deepEqual(ismeraiTreatments.map((item) => item.medicationName), ["Sertralina", "Pregabalina", "Espironolactona", "Colchicina", "Yasmin", "Lactobacilos"]);
+const ismeraiByName = Object.fromEntries(ismeraiTreatments.map((item) => [item.medicationName, item]));
+assert.equal(ismeraiByName.Sertralina.frequencyRaw, "1 vez al dia");
+assert.deepEqual(ismeraiByName.Sertralina.schedule.map((item) => item.time), ["08:00"]);
+assert.equal(ismeraiByName.Pregabalina.strengthValue, 75);
+assert.equal(ismeraiByName.Pregabalina.administrationQuantity, 1);
+assert.deepEqual(ismeraiByName.Pregabalina.schedule.map((item) => item.time), ["22:00"]);
+assert.deepEqual(ismeraiByName.Espironolactona.schedule.map((item) => item.time), ["15:00"]);
+assert.deepEqual(ismeraiByName.Colchicina.schedule.map((item) => item.time), ["15:00"]);
+assert.deepEqual(ismeraiByName.Yasmin.schedule.map((item) => item.time), ["22:00"]);
+assert.deepEqual(ismeraiByName.Lactobacilos.schedule.map((item) => item.time), ["08:00", "15:00"]);
+assert.ok(ismeraiTreatments.every((item) => item.rawMedicationText && !item.rawMedicationText.includes("COMENTARIO")), "cada candidato conserva únicamente su texto fuente");
+
 console.log("patient-transfer-clinical-candidates.test.mjs OK");
