@@ -158,7 +158,7 @@ exports.actualizarReconocimientoColaborador = onCall(async (request) => {
   return { ok: true, valorAnterior, valorNuevo };
 });
 
-exports.discoverTextPatterns = onCall({ timeoutSeconds: 300, memory: "1GiB" }, async (request) => {
+exports.discoverTextPatterns = onCall({ region: "us-central1", timeoutSeconds: 300, memory: "1GiB" }, async (request) => {
   return discoverTextPatterns({ request, db: adminDb });
 });
 
