@@ -676,3 +676,5 @@ export const CIE10 = [
   { codigo: "F91.2", nombre: "Trastorno disocial en ninos socializados" },
   { codigo: "F92.0", nombre: "Trastorno disocial depresivo" }
 ];
+
+export { CIE10_CAPITULO_AB } from "./catalogoCie10CapituloAB.js";

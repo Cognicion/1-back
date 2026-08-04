@@ -13,6 +13,7 @@ async function evaluateModule(relativePath, exportNames, prelude = "") {
 }
 
 const { CIE10 } = await evaluateModule("js/data/cie10.js", ["CIE10"]);
+const { CIE10_CAPITULO_AB } = await evaluateModule("js/data/catalogoCie10CapituloAB.js", ["CIE10_CAPITULO_AB"]);
 const { CIE11 } = await evaluateModule("js/data/cie11.js", ["CIE11"]);
 const { CRITERIOS_DIAGNOSTICOS, PSICOEDUCACION } = await evaluateModule("js/data/bibliotecaClinica.js", ["CRITERIOS_DIAGNOSTICOS", "PSICOEDUCACION"]);
 const { CRITERIOS_DIAGNOSTICOS_EXTENDIDOS } = await evaluateModule(
@@ -192,16 +193,54 @@ function obtenerEntidad(nombre, categoria = "Clínica general") {
   return entidad;
 }
 
+function obtenerEntidadCie10Unica(registro) {
+  const entidad = {
+    id: registro.id,
+    nombre: registro.nombre,
+    descripcionBreve: registro.descripcionBreve || "",
+    categoria: registro.categoria || categoriaPorCodigo(registro.codigo),
+    subcategoria: registro.subcategoria || registro.categoria || categoriaPorCodigo(registro.codigo),
+    aliases: [],
+    sistemas: {},
+    psicoeducacion: "",
+    diagnosticoDiferencial: [],
+    comorbilidades: [],
+    evaluacionClinica: [],
+    referencias: []
+  };
+  diagnosticos.push(entidad);
+  return entidad;
+}
+
 function agregarClasificacion(sistema, registro) {
-  const entidad = obtenerEntidad(registro.nombre, categoriaPorCodigo(registro.codigo));
+  const datosRegistro = registro.sistemas?.[sistema] || {};
+  const entidad = diagnosticos.find((item) => item.sistemas?.[sistema]?.codigo === registro.codigo)
+    || (String(registro.id || "").startsWith("cie10-")
+      ? obtenerEntidadCie10Unica(registro)
+      : obtenerEntidad(registro.nombre, categoriaPorCodigo(registro.codigo)));
   if (!entidad.sistemas[sistema]) {
     entidad.sistemas[sistema] = nuevoSistema(registro.codigo, registro.nombre, ORDEN_SISTEMAS[sistema]);
+  }
+  if (datosRegistro.jerarquia) entidad.sistemas[sistema].jerarquia = datosRegistro.jerarquia;
+  if (Array.isArray(datosRegistro.notas)) entidad.sistemas[sistema].notas = datosRegistro.notas;
+  if (Array.isArray(registro.criterios || datosRegistro.criterios) && (registro.criterios || datosRegistro.criterios).length) {
+    entidad.sistemas[sistema].criterios = registro.criterios || datosRegistro.criterios;
+    entidad.sistemas[sistema].tipoContenido = "resumen_clinico_estructurado_no_literal";
+    entidad.sistemas[sistema].completionStatus = "complete_summary";
+    entidad.sistemas[sistema].fuente.sourceVerified = true;
+    entidad.sistemas[sistema].review = {
+      reviewed: false,
+      reviewedAt: null,
+      sourceVerified: true,
+      notes: "Síntesis estructurada basada en la clasificación tabular oficial de la OMS; no sustituye una ficha clínica ni el juicio profesional."
+    };
   }
   entidad.aliases = [...new Set([...entidad.aliases, registro.nombre, registro.codigo])];
   return entidad;
 }
 
 for (const registro of CIE10) agregarClasificacion("cie10", registro);
+for (const registro of CIE10_CAPITULO_AB) agregarClasificacion("cie10", registro);
 for (const registro of CIE11) agregarClasificacion("cie11", registro);
 
 function tokensCodigo(codigo = "") {
@@ -603,12 +642,21 @@ function duplicadosPorClave(registros) {
   return [...conteo.entries()].filter(([, cantidad]) => cantidad > 1).map(([clave, cantidad]) => ({ clave, cantidad }));
 }
 
+function duplicadosPorCodigo(registros) {
+  const conteo = new Map();
+  registros.forEach((registro) => {
+    const codigo = registro.codigo || registro.sistemas?.cie10?.codigo;
+    if (codigo) conteo.set(codigo, (conteo.get(codigo) || 0) + 1);
+  });
+  return [...conteo.entries()].filter(([, cantidad]) => cantidad > 1).map(([codigo, cantidad]) => ({ codigo, cantidad }));
+}
+
 const duplicadosNombresEntrada = duplicadosPorClave([...CIE10, ...CIE11]);
-const duplicadosCodigosCie10 = duplicadosPorClave(CIE10.map((registro) => ({ codigo: registro.codigo })));
+const duplicadosCodigosCie10 = duplicadosPorCodigo(CIE10_CAPITULO_AB);
 const duplicadosCodigosCie11 = duplicadosPorClave(CIE11.map((registro) => ({ codigo: registro.codigo })));
 const reporte = {
   fecha: new Date().toISOString(),
-  fuentes: ["js/data/cie10.js", "js/data/cie11.js", "js/data/bibliotecaClinica.js", "js/data/diagnosticosClinicosExtendidos.js"],
+  fuentes: ["js/data/cie10.js", "js/data/catalogoCie10CapituloAB.js (OMS 2019)", "js/data/cie11.js", "js/data/bibliotecaClinica.js", "js/data/diagnosticosClinicosExtendidos.js"],
   totalDiagnosticos: diagnosticos.length,
   duplicadosPorId: duplicados.length,
   duplicadosNombresEntrada,
@@ -629,12 +677,25 @@ const auditoriaAnsiedad = diagnosticos
   })));
 reporte.auditoriaAnsiedad = auditoriaAnsiedad;
 
+const contenidoCie10CapituloAB = {};
+diagnosticos.forEach((diagnostico) => {
+  const sistema = diagnostico.sistemas?.cie10;
+  if (!sistema?.jerarquia?.capitulo || sistema.jerarquia.capitulo.codigo !== "I") return;
+  const contenidoId = `cie10-${sistema.codigo.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
+  contenidoCie10CapituloAB[contenidoId] = sistema.criterios || [];
+  sistema.contenidoId = contenidoId;
+  sistema.criterios = [];
+});
+
 const salida = resolve(root, "js/data/diagnosticosBiblioteca.js");
+const contenidoSalida = resolve(root, "js/data/catalogoCie10CapituloABContenido.js");
 const reportePath = resolve(root, "reports/diagnosticos-biblioteca-migracion.json");
 const auditoriaPath = resolve(root, "reports/diagnosticos-biblioteca-auditoria-ansiedad.json");
 await mkdir(dirname(salida), { recursive: true });
+await mkdir(dirname(contenidoSalida), { recursive: true });
 await mkdir(dirname(reportePath), { recursive: true });
 await writeFile(salida, `/* Fuente única activa de Biblioteca clínica. Cada diagnóstico es una entidad y sus sistemas están anidados. */\nexport const DIAGNOSTICOS_BIBLIOTECA = ${JSON.stringify(diagnosticos, null, 2)};\n\nexport const SISTEMAS_DIAGNOSTICOS = ["cie10", "cie11", "dsm5"];\n`, "utf8");
+await writeFile(contenidoSalida, `/* Contenido clínico del Capítulo I CIE-10. Se carga bajo demanda al expandir una fila. */\nexport const CONTENIDO_CIE10_CAPITULO_AB = ${JSON.stringify(contenidoCie10CapituloAB, null, 2)};\n`, "utf8");
 await writeFile(reportePath, JSON.stringify(reporte, null, 2), "utf8");
 await writeFile(auditoriaPath, JSON.stringify(auditoriaAnsiedad, null, 2), "utf8");
 console.log(JSON.stringify(reporte, null, 2));

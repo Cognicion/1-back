@@ -1,6 +1,20 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { DIAGNOSTICOS_BIBLIOTECA, SISTEMAS_DIAGNOSTICOS } from "../data/diagnosticosBiblioteca.js";
+import { CIE10_CAPITULO_AB } from "../data/catalogoCie10CapituloAB.js";
+import { CONTENIDO_CIE10_CAPITULO_AB } from "../data/catalogoCie10CapituloABContenido.js";
+
+test("El Capítulo I CIE-10 está completo, jerarquizado y preparado para carga diferida", () => {
+  const fuente = new Set(CIE10_CAPITULO_AB.map((registro) => registro.codigo));
+  const biblioteca = DIAGNOSTICOS_BIBLIOTECA.filter((diagnostico) => fuente.has(diagnostico.sistemas?.cie10?.codigo));
+  assert.equal(fuente.size, 924);
+  assert.equal(biblioteca.length, fuente.size);
+  assert.equal(new Set(biblioteca.map((diagnostico) => diagnostico.sistemas.cie10.codigo)).size, fuente.size);
+  assert.equal(Object.keys(CONTENIDO_CIE10_CAPITULO_AB).length, fuente.size);
+  assert.ok(biblioteca.every((diagnostico) => diagnostico.sistemas.cie10.contenidoId && diagnostico.sistemas.cie10.criterios.length === 0));
+  assert.ok(Object.values(CONTENIDO_CIE10_CAPITULO_AB).every((criterios) => criterios.length === 15));
+  assert.ok(biblioteca.every((diagnostico) => diagnostico.sistemas.cie10.jerarquia?.capitulo?.codigo === "I"));
+});
 
 test("F90 concentra las tres clasificaciones y sus subcategorías", () => {
   const tdah = DIAGNOSTICOS_BIBLIOTECA.find((diagnostico) => diagnostico.sistemas?.cie10?.codigo === "F90");
@@ -42,11 +56,13 @@ test("El lote de ansiedad conserva fuente registrada y estado de revisión hones
   assert.ok(ansiedad.every((diagnostico) => Object.values(diagnostico.sistemas).every((sistema) => sistema.fuente && sistema.completionStatus !== "complete")));
 });
 
-test("Biblioteca usa ids únicos y una sola entidad por nombre", () => {
+test("Biblioteca usa ids únicos y no duplica códigos CIE-10", () => {
   const ids = DIAGNOSTICOS_BIBLIOTECA.map((diagnostico) => diagnostico.id);
-  const nombres = DIAGNOSTICOS_BIBLIOTECA.map((diagnostico) => diagnostico.nombre.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase());
   assert.equal(new Set(ids).size, ids.length);
-  assert.equal(new Set(nombres).size, nombres.length);
+  const codigosCie10 = DIAGNOSTICOS_BIBLIOTECA
+    .map((diagnostico) => diagnostico.sistemas?.cie10?.codigo)
+    .filter((codigo) => codigo && /^([AB]\\d{2})(?:\\.\\d+)?$/.test(codigo));
+  assert.equal(new Set(codigosCie10).size, codigosCie10.length);
 });
 
 test("Las entidades de ansiedad tienen resumen DSM-5 estructurado y no literal", () => {

@@ -1,4 +1,6 @@
 export const GRUPOS_CIE10_BIBLIOTECA = [
+  { id: "A", etiqueta: "A00-A99 · Enfermedades infecciosas y parasitarias", descripcion: "Enfermedades infecciosas y parasitarias del Capítulo I de la CIE-10." },
+  { id: "B", etiqueta: "B00-B99 · Enfermedades infecciosas y parasitarias", descripcion: "Enfermedades infecciosas y parasitarias del Capítulo I de la CIE-10." },
   { id: "todos", etiqueta: "Todos los CIE-10", descripcion: "Muestra todos los diagnósticos disponibles." },
   { id: "F", etiqueta: "F00-F99 · Trastornos mentales y del comportamiento", descripcion: "Psiquiatría, neurodesarrollo, consumo de sustancias y salud mental." },
   { id: "E", etiqueta: "E00-E90 · Endocrino, nutrición y metabolismo", descripcion: "Diabetes, tiroides, nutrición, metabolismo y trastornos relacionados." },
@@ -259,7 +261,8 @@ function unico(lista = []) {
 export function obtenerGrupoCie10(codigo = "") {
   const limpio = String(codigo || "").trim().toUpperCase();
   const letra = limpio.charAt(0);
-  return GRUPOS_CIE10_BIBLIOTECA.find((grupo) => grupo.id === letra) || GRUPOS_CIE10_BIBLIOTECA[0];
+  return GRUPOS_CIE10_BIBLIOTECA.find((grupo) => grupo.id === letra)
+    || GRUPOS_CIE10_BIBLIOTECA.find((grupo) => grupo.id === "todos");
 }
 
 export function obtenerPerfilDiagnostico(codigo = "") {

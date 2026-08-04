@@ -1,12 +1,13 @@
 {
-  "fecha": "2026-07-26T00:57:44.851Z",
+  "fecha": "2026-08-04T00:26:57.518Z",
   "fuentes": [
     "js/data/cie10.js",
+    "js/data/catalogoCie10CapituloAB.js (OMS 2019)",
     "js/data/cie11.js",
     "js/data/bibliotecaClinica.js",
     "js/data/diagnosticosClinicosExtendidos.js"
   ],
-  "totalDiagnosticos": 589,
+  "totalDiagnosticos": 1511,
   "duplicadosPorId": 0,
   "duplicadosNombresEntrada": [
     {
@@ -71,24 +72,7 @@
     }
   ],
   "duplicadosCodigos": {
-    "cie10": [
-      {
-        "clave": "f61",
-        "cantidad": 2
-      },
-      {
-        "clave": "f62",
-        "cantidad": 2
-      },
-      {
-        "clave": "f63",
-        "cantidad": 2
-      },
-      {
-        "clave": "s52",
-        "cantidad": 2
-      }
-    ],
+    "cie10": [],
     "cie11": []
   },
   "conflictos": [],

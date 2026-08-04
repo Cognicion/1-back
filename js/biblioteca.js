@@ -21,6 +21,7 @@ let sistemasVisibles = cargarPreferencia(CLAVE_SISTEMAS_VISIBLES, { cie10: true,
 let DIAGNOSTICOS_VALIDOS = [];
 let PSICOEDUCACION = [];
 let diagnosticosPorId = new Map();
+let contenidoCie10CapituloABPromise = null;
 try {
   localStorage.removeItem("biblioteca-sistemas-orden");
 } catch (error) {
@@ -53,6 +54,14 @@ function cargarPreferencia(clave, respaldo) {
     console.warn(`No se pudo cargar la preferencia ${clave}:`, error);
     return { ...respaldo };
   }
+}
+
+async function cargarContenidoCie10CapituloAB() {
+  if (!contenidoCie10CapituloABPromise) {
+    contenidoCie10CapituloABPromise = import("./data/catalogoCie10CapituloABContenido.js")
+      .then((modulo) => modulo.CONTENIDO_CIE10_CAPITULO_AB || {});
+  }
+  return contenidoCie10CapituloABPromise;
 }
 
 function guardarPreferenciaSistemas() {
@@ -408,7 +417,13 @@ function renderizarSistemaAcordeon(diagnostico, sistema) {
     </section>`;
 }
 
-function renderizarDetallesDiagnostico(diagnostico, detalles) {
+async function renderizarDetallesDiagnostico(diagnostico, detalles) {
+  const contenidoId = diagnostico.sistemas?.cie10?.contenidoId;
+  if (contenidoId && !diagnostico.sistemas.cie10.criterios?.length) {
+    detalles.innerHTML = '<p class="criterios-vacios">Cargando contenido clínico…</p>';
+    const contenido = await cargarContenidoCie10CapituloAB();
+    diagnostico.sistemas.cie10.criterios = contenido[contenidoId] || [];
+  }
   const sistemas = SYSTEM_ORDER.map((sistema) => renderizarSistemaAcordeon(diagnostico, sistema)).join("");
   const psico = diagnostico.psicoeducacion ? `<section class="contenido-diagnostico"><h4>Psicoeducación</h4><p>${escaparHTML(diagnostico.psicoeducacion)}</p></section>` : "";
   const diferencial = diagnostico.diagnosticoDiferencial?.length ? listaResumen("Diagnóstico diferencial", diagnostico.diagnosticoDiferencial) : "";
