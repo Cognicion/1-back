@@ -4,6 +4,7 @@ import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase
 import { aplicarAparienciaGuardada } from "./services/apariencia.js";
 import { obtenerNombrePacienteParaMostrar } from "./utils/nombresPacientes.js";
 import { usuarioEsPersonalClinico } from "./utils/roles.js";
+import { emitSofiaState } from "./sofia-mascota/mascotaEvents.js";
 import {
   analizarInteraccionesMedicamentos,
   cargarExpedientePacienteSofia,
@@ -144,6 +145,7 @@ limpiarCritica?.addEventListener("click", () => {
 });
 
 async function cargarPacienteSeleccionado(idPaciente) {
+  emitSofiaState("analyzing", "patient-selection");
   setLoadingPanels("Construyendo paciente digital...");
   try {
     expedienteActual = await cargarExpedientePacienteSofia(idPaciente);
@@ -157,8 +159,10 @@ async function cargarPacienteSeleccionado(idPaciente) {
     renderStack("prediccionSofia", construirPacienteDigital(expedienteActual).riesgos.map((r) => ({ titulo: r.titulo, nivel: r.nivel, detalle: `Factores: ${(r.factores || []).join(", ")}`, accion: `Variables faltantes: ${(r.faltantes || []).join(", ")}` })));
     renderStack("labsSofia", generarRecomendacionesLaboratorio(expedienteActual).map((r) => ({ titulo: r.estudio, nivel: r.prioridad, detalle: r.motivo, accion: `${r.periodicidad}. ${r.relacion}` })));
     renderFarmaco(expedienteActual);
+    emitSofiaState("completed", "patient-selection", { duration: 1600, fallbackState: "idle" });
   } catch (error) {
     console.error(error);
+    emitSofiaState("error", "patient-selection", { duration: 2200, fallbackState: "idle" });
     renderEstadoVacio("No se pudo cargar el expediente del paciente seleccionado.");
   }
 }
@@ -265,6 +269,7 @@ function filtrarTimeline(valor) {
 }
 
 function setLoadingPanels(texto) {
+  emitSofiaState("analyzing", "panel-loading");
   ["pacienteDigitalSofia", "alertasSofia", "prediccionSofia", "timelineSofia", "mapaSofia", "narrativaSofia", "razonamientoSofia", "labsSofia", "farmacoSofia"].forEach((id) => {
     const el = document.getElementById(id);
     if (el) { el.className = `${el.className.split(" ")[0]} empty-state`; el.textContent = texto; }
@@ -284,6 +289,8 @@ formSofia?.addEventListener("submit", async (e) => {
   mensajeSofia.value = "";
   const mensajePensando = agregarMensaje("SOFIA esta pensando...", "sofia", "mensaje-pensando");
   activarCarga();
+  emitSofiaState("thinking", "chat-submit");
+  let chatFailed = false;
   try {
     const chatSofia = await obtenerCallableSofia();
     const resultado = await chatSofia({ mensaje });
@@ -292,9 +299,12 @@ formSofia?.addEventListener("submit", async (e) => {
     mensajePensando.textContent = respuesta;
   } catch (error) {
     console.error(error);
+    chatFailed = true;
+    emitSofiaState("error", "chat-submit", { duration: 2200, fallbackState: "idle" });
     mensajePensando.className = "msg sofia mensaje-error";
     mensajePensando.textContent = "SOFIA tuvo un problema para responder. Intenta de nuevo en unos segundos.";
   } finally {
+    if (!chatFailed) emitSofiaState("idle", "chat-finished");
     desactivarCarga();
     chatBox.scrollTop = chatBox.scrollHeight;
   }
