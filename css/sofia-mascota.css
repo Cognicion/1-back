@@ -1,4 +1,4 @@
-.sofia-mascot { --mascot-size: 96px; position: fixed; right: 22px; bottom: max(22px, env(safe-area-inset-bottom)); z-index: 30; width: var(--mascot-size); font-family: inherit; color: var(--sofia-text, #f2f3ee); pointer-events: none; }
+.sofia-mascot { --mascot-size: 96px; position: fixed; right: 180px; bottom: max(22px, env(safe-area-inset-bottom)); z-index: 30; width: var(--mascot-size); height: var(--mascot-size); display: block; visibility: visible; opacity: 1; font-family: inherit; color: var(--sofia-text, #f2f3ee); pointer-events: none; }
 .sofia-mascot[data-position="bottom-left"] { right: auto; left: 22px; }
 .sofia-mascot[data-size="small"] { --mascot-size: 72px; }
 .sofia-mascot[data-size="large"] { --mascot-size: 112px; }
@@ -25,5 +25,5 @@
 .sofia-mascot.is-animated[data-state="idle"] .sofia-mascot__sprite { animation: mascot-float 4s ease-in-out infinite; } .sofia-mascot.is-animated[data-state="thinking"] .sofia-mascot__sprite, .sofia-mascot.is-animated[data-state="reading"] .sofia-mascot__sprite { animation: mascot-attention 1.8s ease-in-out infinite; }
 .sofia-mascot.is-paused .sofia-mascot__sprite, .sofia-mascot.animations-off .sofia-mascot__sprite { animation: none !important; }
 @keyframes mascot-float { 50% { transform: translateY(-3px); } } @keyframes mascot-attention { 50% { transform: translateY(-2px) rotate(1deg); } } @keyframes mascot-hop { 50% { transform: translateY(-9px); } } @keyframes mascot-shake { 50% { transform: translateX(4px); } }
-@media (max-width: 720px) { .sofia-mascot { right: 12px; bottom: max(12px, env(safe-area-inset-bottom)); --mascot-size: 72px; } .sofia-mascot[data-position="bottom-left"] { left: 12px; } .sofia-mascot__panel { bottom: calc(var(--mascot-size) + 10px); } }
+@media (max-width: 720px) { .sofia-mascot { right: 166px; bottom: max(12px, env(safe-area-inset-bottom)); --mascot-size: 72px; } .sofia-mascot[data-position="bottom-left"] { left: 12px; right: auto; } .sofia-mascot__panel { bottom: calc(var(--mascot-size) + 10px); } }
 @media (prefers-reduced-motion: reduce) { .sofia-mascot, .sofia-mascot * { animation: none !important; transition: none !important; } }

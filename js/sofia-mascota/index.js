@@ -7,11 +7,22 @@ import { createInactivityMonitor } from "./mascotaInactivity.js";
 import { renderMascotState } from "./mascotaController.js";
 
 export function initializeSofiaMascot() {
-  if (document.body.dataset.sofiaMascot !== "enabled") return null;
+  console.debug("[SOFÍA Mascota] initializeSofiaMascot ejecutada");
+  if (!document.body) {
+    console.warn("[SOFÍA Mascota] Montaje cancelado: document.body no disponible");
+    return null;
+  }
+  if (document.body.dataset.sofiaMascot !== "enabled") {
+    console.debug("[SOFÍA Mascota] Montaje cancelado: marca no habilitada", { value: document.body.dataset.sofiaMascot });
+    return null;
+  }
   const existing = document.getElementById("sofiaMascot");
-  if (existing?.dataset.mounted === "true") return existing;
+  if (existing) {
+    console.debug("[SOFÍA Mascota] Ya existe un contenedor", existing);
+    return existing;
+  }
   const preferences = { ...DEFAULT_PREFERENCES, ...loadPreferences() };
-  const root = existing || document.createElement("aside");
+  const root = document.createElement("div");
   root.id = "sofiaMascot";
   root.className = "sofia-mascot";
   root.dataset.mounted = "true";
@@ -38,6 +49,10 @@ export function initializeSofiaMascot() {
   const stopInactivity = createInactivityMonitor({ isProcessing: () => ["thinking", "reading", "pattern-detection"].includes(stateMachine.getState()), onSleep: () => stateMachine.setState(MASCOT_STATES.SLEEPING, { source: "inactivity" }) });
   const onVisibility = () => renderMascotState({ root, button, message, state: stateMachine.getState(), previousState: stateMachine.getState(), source: "visibility", preferences });
   document.addEventListener("visibilitychange", onVisibility);
+  console.debug("[SOFÍA Mascota] Contenedor montado", { connected: root.isConnected, rect: root.getBoundingClientRect() });
+  const styles = getComputedStyle(root);
+  console.debug("[SOFÍA Mascota] Inspección DOM", { exists: true, connected: root.isConnected, className: root.className, state: root.dataset.state });
+  console.debug("[SOFÍA Mascota] Estilos calculados", { display: styles.display, visibility: styles.visibility, opacity: styles.opacity, position: styles.position, zIndex: styles.zIndex, width: styles.width, height: styles.height, pointerEvents: styles.pointerEvents });
   console.debug("[SOFÍA Mascota] Montaje.");
   root._sofiaMascotDestroy = () => { stopEvents(); stopInactivity(); interactions.destroy(); interactions.close(); stateMachine.destroy(); document.removeEventListener("visibilitychange", onVisibility); root.remove(); console.debug("[SOFÍA Mascota] Desmontaje."); };
   return root;

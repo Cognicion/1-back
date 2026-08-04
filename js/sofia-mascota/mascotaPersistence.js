@@ -6,8 +6,19 @@ const VALID_SIZES = new Set(["small", "medium", "large"]);
 export function loadPreferences() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return { ...DEFAULT_PREFERENCES };
+    if (!raw) {
+      const preferences = { ...DEFAULT_PREFERENCES };
+      console.debug("[SOFÍA Mascota] Preferencias cargadas", { preferences, source: "defaults" });
+      return preferences;
+    }
     const parsed = JSON.parse(raw);
+    if (parsed?.enabled === false) {
+      console.warn("[SOFÍA Mascota] Preferencia enabled=false detectada; se restablece temporalmente a true para validar el montaje.");
+      const { enabled: _ignored, ...otherPreferences } = parsed;
+      const preferences = { ...DEFAULT_PREFERENCES, ...otherPreferences, enabled: true };
+      console.debug("[SOFÍA Mascota] Preferencias cargadas", { preferences, source: "safe-migration" });
+      return preferences;
+    }
     const preferences = {
       ...DEFAULT_PREFERENCES,
       ...parsed,
@@ -16,7 +27,7 @@ export function loadPreferences() {
       position: VALID_POSITIONS.has(parsed.position) ? parsed.position : DEFAULT_PREFERENCES.position,
       size: VALID_SIZES.has(parsed.size) ? parsed.size : DEFAULT_PREFERENCES.size
     };
-    console.debug("[SOFÍA Mascota]", { preferencesRecovered: preferences });
+    console.debug("[SOFÍA Mascota] Preferencias cargadas", { preferences, source: "storage" });
     return preferences;
   } catch (error) {
     console.warn("[SOFÍA Mascota] Preferencias corruptas; se restauran valores por defecto.", error);
