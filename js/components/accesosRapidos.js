@@ -5,10 +5,11 @@ const PAGINAS_SIN_ACCESOS_RAPIDOS = new Set([
   "index.html",
   "login.html",
   "registro.html",
-  "recuperar.html"
+  "recuperar.html",
+  "consentimiento-beta.html",
+  "aviso-privacidad.html"
 ]);
 let eventosGlobalesConfigurados = false;
-let inicializacionProgramada = false;
 
 export const OPCIONES_ACCESOS_RAPIDOS = Object.freeze([
   { value: "dashboard.html", label: "Dashboard", keywords: "inicio panel principal" },
@@ -220,34 +221,55 @@ function renderizarResultados(contenedor, texto = "") {
 }
 
 function crearContenedorAutomatico() {
-  let barra = document.querySelector("[data-accesos-rapidos-global]");
-  if (!barra) {
-    barra = document.createElement("div");
-    barra.className = "accesos-rapidos-global";
-    barra.dataset.accesosRapidosGlobal = "true";
-    document.body.prepend(barra);
+  const targetGlobal = document.querySelector("[data-accesos-rapidos][data-global-header-access]") ||
+    document.querySelector("[data-global-app-header] [data-accesos-rapidos]");
+  if (targetGlobal) {
+    const header = targetGlobal.closest("[data-global-app-header]");
+    const legacyBar = targetGlobal.closest("[data-accesos-rapidos-global]");
+    if (header && legacyBar) {
+      const actions = header.querySelector(".global-header-actions") || header;
+      actions.append(targetGlobal);
+      legacyBar.remove();
+      console.debug("[GLOBAL HEADER] Disparador global restaurado dentro del encabezado");
+    }
+    targetGlobal.dataset.accesosGlobal = "true";
+    return targetGlobal;
   }
 
-  let contenedor = document.querySelector("[data-accesos-rapidos]");
-  if (!contenedor) {
-    contenedor = document.createElement("div");
-    contenedor.dataset.accesosRapidos = "";
-    contenedor.dataset.accesosAuto = "true";
-  }
+  console.debug("[GLOBAL HEADER] Disparador global no encontrado; no se crea fallback flotante");
+  return null;
+}
 
-  contenedor.dataset.accesosGlobal = "true";
-  barra.appendChild(contenedor);
+function conservarUnicoContenedorAccesos() {
+  const contenedores = [...document.querySelectorAll("[data-accesos-rapidos]")];
+  if (!contenedores.length) return null;
+  const global = contenedores.find((contenedor) => contenedor.closest("[data-global-app-header]"));
+  const canonico = global || contenedores.find((contenedor) => contenedor.dataset.accesosAuto === "true") || contenedores[0];
+  canonico.dataset.globalQuickAccess = global ? "true" : "false";
+  contenedores.filter((contenedor) => contenedor !== canonico).forEach((duplicado) => {
+    duplicado.closest("[data-accesos-rapidos-global]")?.remove();
+    duplicado.remove();
+    console.debug("[GLOBAL HEADER] Disparador duplicado retirado", { origen: "accesos-rapidos" });
+  });
+  document.querySelectorAll("[data-accesos-rapidos-global]").forEach((barra) => {
+    if (!barra.contains(canonico)) barra.remove();
+  });
+  return canonico;
 }
 
 function renderizar(contenedor) {
   if (contenedor.dataset.accesosInicializados === "true") return;
   contenedor.parentElement?.classList.add("nav-accesos-rapidos");
   contenedor.classList.add("accesos-rapidos");
+  const esGlobal = contenedor.dataset.globalQuickAccess === "true" || Boolean(contenedor.closest("[data-global-app-header]"));
+  contenedor.dataset.globalQuickAccess = String(esGlobal);
+  if (esGlobal) contenedor.dataset.globalQuickAccessTrigger = "true";
+  else contenedor.dataset.legacyQuickAccessTrigger = "true";
   contenedor.innerHTML = `
-    <button class="accesos-rapidos-toggle" type="button" data-acceso-toggle aria-expanded="false">
+    <button class="accesos-rapidos-toggle" type="button" data-acceso-toggle aria-expanded="false" aria-controls="global-quick-access-panel">
       <span aria-hidden="true">⚡</span> Accesos rápidos
     </button>
-    <div class="accesos-rapidos-panel" data-acceso-panel aria-hidden="true">
+    <div id="global-quick-access-panel" class="accesos-rapidos-panel" data-acceso-panel data-quick-access-panel aria-hidden="true">
       <strong class="titulo-secundario">Mis accesos</strong>
       <ul class="accesos-rapidos-guardados" data-acceso-guardados></ul>
       <label>
@@ -324,7 +346,17 @@ export function inicializarAccesosRapidos(root = document) {
   configurarEventosGlobalesAccesos();
   asegurarEstilos();
   crearContenedorAutomatico();
-  root.querySelectorAll("[data-accesos-rapidos]").forEach(renderizar);
+  const canonico = conservarUnicoContenedorAccesos();
+  if (!canonico) return;
+  if (canonico.closest("[data-global-app-header]")) {
+    console.debug("[GLOBAL HEADER] Panel adoptado", { selector: "[data-quick-access-panel]" });
+  }
+  renderizar(canonico);
+  console.debug("[GLOBAL HEADER] Accesos rápidos únicos confirmados", {
+    triggers: document.querySelectorAll("[data-global-quick-access-trigger]").length,
+    panels: document.querySelectorAll("[data-quick-access-panel]").length,
+    global: Boolean(canonico.closest("[data-global-app-header]"))
+  });
 }
 
 function configurarEventosGlobalesAccesos() {
@@ -341,24 +373,4 @@ function configurarEventosGlobalesAccesos() {
     if (event.key !== "Escape") return;
     document.querySelectorAll("[data-accesos-rapidos].abierto").forEach(cerrarPanel);
   });
-}
-
-function ejecutarCuandoEsteDisponible(callback) {
-  if ("requestIdleCallback" in window) {
-    window.requestIdleCallback(callback, { timeout: 1800 });
-    return;
-  }
-  window.setTimeout(callback, 650);
-}
-
-function programarInicializacionAccesosRapidos() {
-  if (inicializacionProgramada) return;
-  inicializacionProgramada = true;
-  ejecutarCuandoEsteDisponible(() => inicializarAccesosRapidos());
-}
-
-if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", programarInicializacionAccesosRapidos, { once: true });
-} else {
-  programarInicializacionAccesosRapidos();
 }

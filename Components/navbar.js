@@ -1,5 +1,4 @@
 import { auth } from "../firebase.js";
-import { inicializarAccesosRapidos } from "../js/components/accesosRapidos.js";
 
 import {
     onAuthStateChanged,
@@ -30,8 +29,6 @@ onAuthStateChanged(auth, (user) => {
                 👨‍⚕️ Panel médico
             </a>
 
-            <div data-accesos-rapidos></div>
-
             <button id="btnVolver">
 
                 ← Regresar
@@ -49,8 +46,6 @@ onAuthStateChanged(auth, (user) => {
     </nav>
 
     `;
-
-    inicializarAccesosRapidos(navbar);
 
     document
         .getElementById("btnVolver")

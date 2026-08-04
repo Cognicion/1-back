@@ -25,7 +25,8 @@ export const PAGE_HEADER_REGISTRY = Object.freeze({
 });
 
 export const PUBLIC_PAGES = Object.freeze(new Set([
-  "index", "login", "registro", "recuperar", "consentimiento", "privacidad", "terminos"
+  "index", "login", "registro", "recuperar", "consentimiento", "consentimiento-beta",
+  "privacidad", "aviso-privacidad", "terminos"
 ]));
 
 export function pageIdFromLocation(location = window.location) {
