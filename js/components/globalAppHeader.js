@@ -143,7 +143,7 @@ export function updateGlobalHeader({ title, description, context } = {}) {
   if (titleNode) titleNode.textContent = safeContext ? `${nextTitle} · ${safeContext}` : nextTitle;
   if (descriptionNode && description) descriptionNode.textContent = description;
   state.context = safeContext;
-  log("Título dinámico actualizado", { title: nextTitle, context: safeContext || undefined });
+  log("Título dinámico actualizado", { title: nextTitle, hasContext: Boolean(safeContext) });
   return true;
 }
 
