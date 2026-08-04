@@ -82,9 +82,21 @@
   <section class="card">
     <div id="calendario" class="calendario"></div>
   </section>
+
+  <section class="card calendar-integration-card" aria-labelledby="googleCalendarTitle">
+    <div class="calendar-integration-header">
+      <div><h2 id="googleCalendarTitle">Google Calendar</h2><p id="googleCalendarStatus" class="ayuda">Cargando estado de sincronización...</p></div>
+      <button id="googleCalendarConnect" type="button">Conectar Google Calendar</button>
+    </div>
+    <div id="googleCalendarControls" hidden>
+      <label>Calendario de destino<select id="googleCalendarSelect"><option value="">Cargando calendarios...</option></select></label>
+      <div class="calendar-integration-actions"><button id="googleCalendarSync" type="button">Sincronizar ahora</button><button id="googleCalendarRetry" type="button">Reintentar errores</button><button id="googleCalendarDisconnect" type="button">Desconectar</button></div>
+      <p class="ayuda">Solo se envían datos generales de la cita. No se incluyen notas clínicas ni diagnóstico.</p>
+    </div>
+  </section>
 </main>
 
-<script type="module" src="js/agenda.js?v=20260719-admin-universal-modules"></script>
+<script type="module" src="js/agenda.js?v=20260803-calendar"></script>
   <script type="module" src="js/components/accesosRapidos.js"></script>
   <script type="module" src="js/reportes.js"></script>
 </body>

@@ -215,6 +215,14 @@ button:hover {
   font-size: 12px;
 }
 
+.calendar-integration-header,
+.calendar-integration-actions { display: flex; gap: 12px; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+.calendar-integration-card label { max-width: 520px; margin-top: 18px; }
+.calendar-integration-actions { justify-content: flex-start; margin-top: 18px; }
+.calendar-integration-actions button:last-child { background: transparent; border: 1px solid rgba(220,100,100,.55); }
+html[data-theme="light"] .calendar-integration-card, html[data-theme="light"] .cita, html[data-theme="light"] .dia { color: #183027; background: rgba(255,255,255,.92); }
+html[data-theme="light"] input, html[data-theme="light"] select, html[data-theme="light"] textarea { background: #fff; color: #183027; }
+
 @media (max-width: 900px) {
   .header,
   .agenda-hero,

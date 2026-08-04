@@ -4,6 +4,8 @@ import { registrarEventoAuditoria } from "./services/auditoria.js";
 import { iniciarMonitoreoSesion } from "./services/sesion.js";
 import { obtenerNombrePacienteParaMostrar } from "./utils/nombresPacientes.js";
 import { canUseMedicalAgenda } from "./utils/roles.js?v=20260719-admin-universal-modules";
+import { createPendingCalendarSync } from "./integrations/calendar/calendarSyncStatus.js";
+import { sincronizarCitaConGoogle, obtenerEstadoGoogleCalendar, iniciarConexionGoogleCalendar, listarCalendariosGoogle, seleccionarCalendarioGoogle, sincronizarGoogleAhora, desconectarGoogleCalendar } from "./integrations/calendar/calendarSyncService.js";
 
 import {
   onAuthStateChanged
@@ -47,6 +49,7 @@ onAuthStateChanged(auth, async (user) => {
   document.body.classList.remove("bloqueado");
   await cargarPacientes();
   await cargarCitas();
+  inicializarGoogleCalendar();
 });
 
 async function cargarPacientes() {
@@ -92,10 +95,12 @@ formCita.addEventListener("submit", async (e) => {
     notas: document.getElementById("notasCita").value.trim(),
     estado: "programada",
     creadoPor: medicoUid,
-    fechaCreacion: new Date().toISOString()
+    fechaCreacion: new Date().toISOString(),
+    calendarSync: createPendingCalendarSync()
   };
 
-  await addDoc(collection(db, "usuarios", medicoUid, "agenda"), datosCita);
+  const citaRef = await addDoc(collection(db, "usuarios", medicoUid, "agenda"), datosCita);
+  sincronizarCitaConGoogle(citaRef.id).catch((error) => console.warn("[CALENDAR_SYNC] creación pendiente", error?.code || error?.message));
   await registrarEventoAgenda("crear_cita", "El medico creo una cita en agenda.", {
     pacienteUid: pacienteId,
     pacienteNombre: paciente?.nombre || "",
@@ -122,6 +127,8 @@ function renderizarCitas() {
       ${cita.notas ? `<p>Notas: ${escaparHTML(cita.notas)}</p>` : ""}
       <div class="acciones">
         <button data-completar="${cita.id}">Marcar atendida</button>
+        <button data-editar="${cita.id}">Editar fecha/hora</button>
+        <button data-cancelar="${cita.id}">Cancelar</button>
         <button data-eliminar="${cita.id}">Eliminar</button>
       </div>
     </article>
@@ -133,6 +140,7 @@ function renderizarCitas() {
         estado: "atendida",
         fechaAtencion: new Date().toISOString()
       });
+      sincronizarCitaConGoogle(btn.dataset.completar).catch((error) => console.warn("[CALENDAR_SYNC] actualización pendiente", error?.code || error?.message));
       await registrarEventoAgenda("marcar_cita_atendida", "El medico marco una cita como atendida.", {
         detalles: { citaId: btn.dataset.completar }
       });
@@ -143,10 +151,34 @@ function renderizarCitas() {
   listaCitas.querySelectorAll("[data-eliminar]").forEach((btn) => {
     btn.addEventListener("click", async () => {
       if (!confirm("Eliminar esta cita?")) return;
-      await deleteDoc(doc(db, "usuarios", medicoUid, "agenda", btn.dataset.eliminar));
+      const citaId = btn.dataset.eliminar;
+      sincronizarCitaConGoogle(citaId, "delete").catch((error) => console.warn("[CALENDAR_SYNC] limpieza pendiente", error?.code || error?.message));
+      await deleteDoc(doc(db, "usuarios", medicoUid, "agenda", citaId));
       await registrarEventoAgenda("eliminar_cita", "El medico elimino una cita de agenda.", {
         detalles: { citaId: btn.dataset.eliminar }
       });
+      await cargarCitas();
+    });
+  });
+
+  listaCitas.querySelectorAll("[data-cancelar]").forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      const citaId = btn.dataset.cancelar;
+      await updateDoc(doc(db, "usuarios", medicoUid, "agenda", citaId), { estado: "cancelada", calendarSync: createPendingCalendarSync() });
+      sincronizarCitaConGoogle(citaId).catch((error) => console.warn("[CALENDAR_SYNC] cancelación pendiente", error?.code || error?.message));
+      await cargarCitas();
+    });
+  });
+
+  listaCitas.querySelectorAll("[data-editar]").forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      const cita = citas.find((item) => item.id === btn.dataset.editar);
+      if (!cita) return;
+      const fecha = prompt("Nueva fecha (AAAA-MM-DD):", cita.fecha || "");
+      const hora = prompt("Nueva hora (HH:MM):", cita.hora || "");
+      if (!fecha || !hora) return;
+      await updateDoc(doc(db, "usuarios", medicoUid, "agenda", cita.id), { fecha, hora, calendarSync: createPendingCalendarSync() });
+      sincronizarCitaConGoogle(cita.id).catch((error) => console.warn("[CALENDAR_SYNC] edición pendiente", error?.code || error?.message));
       await cargarCitas();
     });
   });
@@ -168,6 +200,32 @@ function mostrarBloqueoAgenda(mensaje) {
     `;
   }
   if (calendario) calendario.innerHTML = "";
+}
+
+async function inicializarGoogleCalendar() {
+  const status = document.getElementById("googleCalendarStatus");
+  const connect = document.getElementById("googleCalendarConnect");
+  const controls = document.getElementById("googleCalendarControls");
+  try {
+    const state = await obtenerEstadoGoogleCalendar();
+    if (!state.connected) {
+      status.textContent = "No conectado.";
+      connect.onclick = async () => { const result = await iniciarConexionGoogleCalendar(); window.location.href = result.authorizationUrl; };
+      return;
+    }
+    status.textContent = state.googleAccountEmail ? `Conectado como ${state.googleAccountEmail}. Estado: ${state.syncStatus}.` : `Conectado. Estado: ${state.syncStatus}.`;
+    connect.textContent = "Cambiar cuenta";
+    connect.onclick = async () => { const result = await iniciarConexionGoogleCalendar(); window.location.href = result.authorizationUrl; };
+    controls.hidden = false;
+    const select = document.getElementById("googleCalendarSelect");
+    const calendars = await listarCalendariosGoogle();
+    select.innerHTML = calendars.calendars.map((calendar) => `<option value="${escaparHTML(calendar.id)}" ${calendar.id === state.calendarId ? "selected" : ""}>${escaparHTML(calendar.summary)}${calendar.primary ? " (principal)" : ""}</option>`).join("") || "<option value=\"\">Sin calendarios escribibles</option>";
+    select.onchange = async () => { if (!select.value) return; select.disabled = true; try { await seleccionarCalendarioGoogle(select.value); status.textContent = "Calendario seleccionado."; } catch { status.textContent = "No se pudo seleccionar el calendario."; } finally { select.disabled = false; } };
+    const sync = async () => { status.textContent = "Sincronizando..."; try { await sincronizarGoogleAhora(); status.textContent = "Sincronización completada."; } catch { status.textContent = "Error de sincronización. Puedes reintentar."; } };
+    document.getElementById("googleCalendarSync").onclick = sync;
+    document.getElementById("googleCalendarRetry").onclick = sync;
+    document.getElementById("googleCalendarDisconnect").onclick = async () => { if (!confirm("¿Desconectar Google Calendar? Las citas locales se conservarán.")) return; const deleteRemote = confirm("¿También deseas eliminar los eventos ya creados en Google?"); await desconectarGoogleCalendar(deleteRemote); controls.hidden = true; status.textContent = "Desconectado."; };
+  } catch (error) { status.textContent = "No se pudo consultar Google Calendar."; console.warn("[CALENDAR_SYNC] estado", error?.code || error?.message); }
 }
 
 function renderizarCalendario() {

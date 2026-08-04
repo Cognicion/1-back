@@ -5,6 +5,7 @@ const admin = require("firebase-admin");
 const { runSegmentClinicalConversation } = require("./segmentationHandler");
 const { runGenerateStructuredNoteFromDictation } = require("./noteGenerationHandler");
 const { discoverTextPatterns } = require("./patternDiscoveryHandler");
+const calendar = require("./calendar/googleCalendar");
 
 const OPENAI_API_KEY = defineSecret("OPENAI_API_KEY");
 if (!admin.apps.length) admin.initializeApp();
@@ -346,3 +347,5 @@ exports.generateStructuredNoteFromDictation = onCall(
     });
   }
 );
+
+Object.assign(exports, calendar);
