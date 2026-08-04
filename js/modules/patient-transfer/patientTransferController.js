@@ -1,5 +1,5 @@
 import { getAuthenticatedUserOnce, getUserProfileOnce } from "../../services/authContextService.js";
-import { TRANSFER_STATUS, resetPatientTransferState, setPatientTransferFiles, setPatientTransferGroups, setPatientTransferResults, setPatientTransferStatus } from "./patientTransferState.js";
+import { TRANSFER_STATUS, resetPatientTransferState, setPatientTransferExecutionState, setPatientTransferFiles, setPatientTransferGroups, setPatientTransferResults, setPatientTransferStatus } from "./patientTransferState.js";
 import { validateTransferDocxFile } from "./docx/docxValidator.js";
 import { calculateDocxHash, calculateNormalizedTextHash } from "./docx/docxHashService.js";
 import { extractDocx } from "./docx/docxExtractor.js";
@@ -22,6 +22,7 @@ import {
   renderTransferFailure,
   renderTransferResults,
   setPatientTransferMessage,
+  setPatientTransferVisualStatus,
   setTransferSavingState,
   showPatientTransferError,
   isTransferSaving,
@@ -151,15 +152,42 @@ async function analyzeOneFile(item, user) {
   renderTransferFiles(selectedFiles);
 
   const { fields, conflicts } = parsePatientFields(blocks, item.id);
+  console.info("[docx-import] patient-fields:parsed", {
+    fileId: item.id,
+    detectedFieldCount: Object.values(fields).filter((field) => String(field?.value || "").trim()).length,
+    conflictCount: conflicts.length
+  });
+  console.info("[patient-transfer] clinical-sections:start", { fileId: item.id, blockCount: blocks.length });
   const sectionsResult = parseClinicalSections(blocks);
+  console.info("[patient-transfer] clinical-sections:headings-found", {
+    fileId: item.id,
+    headings: sectionsResult.encabezados.map(({ key, position }) => ({ key, position }))
+  });
+  console.info("[patient-transfer] clinical-sections:result", {
+    fileId: item.id,
+    sections: Object.fromEntries(Object.entries(sectionsResult.secciones).map(([key, value]) => [key, Boolean(value)]))
+  });
   const metadata = parseNoteMetadata({ text: fullText, sections: sectionsResult.secciones, fields });
   const clinicalAnalysis = analyzeDocumentClinically({ fullText, blocks });
+  console.info("[patient-transfer] clinical-text:available", {
+    fileId: item.id,
+    hasText: Boolean(fullText.trim()),
+    sectionKeys: Object.keys(sectionsResult.secciones).filter((key) => sectionsResult.secciones[key])
+  });
+  console.info("[patient-transfer] diagnosis-parser:start", { fileId: item.id });
+  console.info("[patient-transfer] diagnosis-parser:sections", { fileId: item.id, sections: ["diagnosticos", "analisis", "subjetivo"].filter((key) => sectionsResult.secciones[key]) });
+  console.info("[patient-transfer] treatment-parser:start", { fileId: item.id });
+  console.info("[patient-transfer] treatment-parser:sections", { fileId: item.id, sections: ["tratamiento", "plan", "subjetivo"].filter((key) => sectionsResult.secciones[key]) });
   const clinicalCandidates = extractClinicalCandidates({
     id: item.id,
     sections: sectionsResult.secciones,
     blocks,
     fullText
   });
+  console.info("[patient-transfer] diagnoses:detected", { fileId: item.id, count: clinicalCandidates.diagnoses.length });
+  console.info("[patient-transfer] treatments:detected", { fileId: item.id, count: clinicalCandidates.treatments.length });
+  console.info("[patient-transfer] diagnosis-parser:candidates", { fileId: item.id, count: clinicalCandidates.diagnoses.length, rules: [...new Set(clinicalCandidates.diagnoses.map((item) => item.detectionRule))] });
+  console.info("[patient-transfer] treatment-parser:candidates", { fileId: item.id, count: clinicalCandidates.treatments.length, sections: [...new Set(clinicalCandidates.treatments.map((item) => item.sourceSection))] });
   const vitalSignsCandidates = extractVitalSignsCandidates(blocks);
   const duplicateStatus = duplicate ? "exact_duplicate" : sameBatch ? "duplicate_in_batch" : "nuevo";
 
@@ -167,7 +195,7 @@ async function analyzeOneFile(item, user) {
   item.statusLabel = duplicate ? "Ya importado" : "Procesado correctamente";
   item.error = "";
 
-  return {
+  const documentCandidate = {
     id: item.id,
     file: item.file,
     hash,
@@ -180,6 +208,7 @@ async function analyzeOneFile(item, user) {
     fullText,
     sections: sectionsResult.secciones,
     sectionsFound: sectionsResult.encontradas,
+    sectionHeadings: sectionsResult.encabezados,
     metadata,
     clinicalAnalysis,
     vitalSignsCandidates,
@@ -189,6 +218,9 @@ async function analyzeOneFile(item, user) {
     duplicateStatus,
     duplicateStatusLabel: duplicate ? "Ya importado" : sameBatch ? "Duplicado en esta carga" : "Nuevo"
   };
+  console.assert(Array.isArray(documentCandidate.diagnosisCandidates), "diagnosisCandidates must be an array");
+  console.assert(Array.isArray(documentCandidate.treatmentCandidates), "treatmentCandidates must be an array");
+  return documentCandidate;
 }
 
 async function analyzeSelectedFiles() {
@@ -219,13 +251,29 @@ async function analyzeSelectedFiles() {
       : { ...group, candidates };
   }));
   analyzedGroups = setPatientTransferGroups(groups);
+  console.info("[docx-import] patient-fields:state-updated", {
+    groupCount: groups.length,
+    documentCount: documents.length
+  });
+  console.info("[patient-transfer] review-state:updated", { groupCount: groups.length, documentCount: documents.length });
+  setPatientTransferExecutionState({
+    transferOperationId: groups[0]?.documents?.[0]?.transferOperationId || "",
+    lastCompletedStage: "awaiting_review"
+  });
   setPatientTransferStatus(TRANSFER_STATUS.AWAITING_REVIEW);
+  setPatientTransferVisualStatus(TRANSFER_STATUS.AWAITING_REVIEW);
   renderTransferFiles(selectedFiles);
   renderDetectedGroups(analyzedGroups);
+  console.info("[docx-import] patient-fields:rendered", { groupCount: analyzedGroups.length });
+  console.info("[patient-transfer] review-ui:rendered", { groupCount: analyzedGroups.length });
+  console.info("[patient-transfer] clinical-candidates:rendered", {
+    diagnoses: analyzedGroups.reduce((total, group) => total + group.documents.reduce((count, doc) => count + doc.diagnosisCandidates.length, 0), 0),
+    treatments: analyzedGroups.reduce((total, group) => total + group.documents.reduce((count, doc) => count + doc.treatmentCandidates.length, 0), 0)
+  });
   setPatientTransferMessage("Revision lista. Confirme antes de guardar.", 100);
 }
 
-async function saveReviewedTransfer() {
+async function saveReviewedTransfer({ reuseReviewedGroups = false } = {}) {
   if (isTransferSaving()) return;
   if (!analyzedGroups.length) {
     showPatientTransferError("Analiza los documentos antes de confirmar.");
@@ -235,7 +283,7 @@ async function saveReviewedTransfer() {
   const profile = user ? await getUserProfileOnce(user.uid) : null;
   if (!user) throw new Error("No se pudo identificar al usuario.");
 
-  const reviewedGroups = readTransferReview(analyzedGroups);
+  const reviewedGroups = reuseReviewedGroups ? analyzedGroups : readTransferReview(analyzedGroups);
   const blocking = reviewedGroups.find((group) =>
     !group.omitted && group.action === "associate" && !group.selectedPatientId
   );
@@ -255,19 +303,43 @@ async function saveReviewedTransfer() {
   const confirmed = window.confirm(`Resumen del traspaso\n\nPacientes nuevos: ${summary.newPatients}\nPacientes existentes: ${summary.existingPatients}\nNotas que se crearan: ${summary.notes}\nArchivos omitidos: ${summary.omittedFiles}\nPosibles duplicados: ${summary.possibleDuplicates}\nCampos pendientes: ${summary.pendingFields}\n\n¿Confirmar traspaso?`);
   if (!confirmed) return;
 
+  analyzedGroups = reviewedGroups;
+  setPatientTransferGroups(analyzedGroups);
   setTransferSavingState(true);
   setPatientTransferStatus(TRANSFER_STATUS.SAVING);
+  setPatientTransferVisualStatus(TRANSFER_STATUS.SAVING);
+  setPatientTransferExecutionState({
+    transferOperationId: reviewedGroups[0]?.documents?.[0]?.transferOperationId || "",
+    isSaving: true,
+    lastCompletedStage: "reviewed"
+  });
   setPatientTransferMessage("Guardando traspaso...", 5);
   try {
     setPatientTransferMessage("Validacion completada. Creando paciente...", 15);
     const results = await saveTransferredGroups({
       groups: reviewedGroups,
       user: { ...profile, uid: user.uid, email: user.email },
-      onProgress: ({ message, progress }) => setPatientTransferMessage(message, progress)
+      onProgress: ({ stage, message, progress }) => {
+        setPatientTransferExecutionState({ lastCompletedStage: stage || "saving" });
+        setPatientTransferMessage(message, progress);
+      }
     });
     setPatientTransferResults(results);
     const hasFailures = results.some((item) => item.status === "failed" || item.status === "partially_completed");
-    setPatientTransferStatus(hasFailures ? TRANSFER_STATUS.PARTIALLY_COMPLETED : TRANSFER_STATUS.COMPLETED);
+    const finalStatus = hasFailures ? TRANSFER_STATUS.PARTIALLY_COMPLETED : TRANSFER_STATUS.COMPLETED;
+    const firstResult = results[0] || {};
+    setPatientTransferStatus(finalStatus);
+    setPatientTransferVisualStatus(finalStatus);
+    setPatientTransferExecutionState({
+      transferOperationId: firstResult.transferOperationId || reviewedGroups[0]?.documents?.[0]?.transferOperationId || "",
+      patientId: firstResult.patientId || "",
+      noteIds: (firstResult.documents || []).map((item) => item.noteId).filter(Boolean),
+      diagnosisIds: firstResult.diagnosisIds || [],
+      treatmentIds: firstResult.treatmentIds || [],
+      vitalSignIds: firstResult.vitalSignRecordIds || [],
+      sourceDocumentPath: firstResult.documents?.find((item) => item.storagePath)?.storagePath || "",
+      lastCompletedStage: finalStatus
+    });
     setPatientTransferMessage(hasFailures ? "Traspaso no completado." : "Traspaso completado.", hasFailures ? 85 : 100);
     console.info("[patient-transfer] render-result:start", { results: results.length });
     renderTransferResults(results);
@@ -280,11 +352,14 @@ async function saveReviewedTransfer() {
       message: error?.message || String(error)
     });
     setPatientTransferStatus(TRANSFER_STATUS.FAILED);
+    setPatientTransferVisualStatus(TRANSFER_STATUS.FAILED);
+    setPatientTransferExecutionState({ isSaving: false, lastCompletedStage: error?.stage || "failed" });
     setPatientTransferMessage("Traspaso no completado.", 85);
     showPatientTransferError(error?.message || String(error));
     renderTransferFailure(error);
   } finally {
     setTransferSavingState(false);
+    setPatientTransferExecutionState({ isSaving: false });
   }
 }
 
@@ -296,6 +371,7 @@ function resetAndOpen() {
   renderTransferFiles(selectedFiles);
   renderDetectedGroups([]);
   setPatientTransferMessage("Esperando documentos...", 0);
+  setPatientTransferVisualStatus(TRANSFER_STATUS.CREATED);
   showPatientTransferError("");
 }
 
@@ -338,6 +414,17 @@ export function initializePatientTransfer() {
   });
 
   root.addEventListener("click", (event) => {
+    if (event.target.closest("[data-transfer-retry]")) {
+      saveReviewedTransfer({ reuseReviewedGroups: true }).catch((error) => showPatientTransferError(error.message || String(error)));
+      return;
+    }
+    if (event.target.closest("[data-transfer-back-review]")) {
+      setPatientTransferStatus(TRANSFER_STATUS.AWAITING_REVIEW);
+      setPatientTransferVisualStatus(TRANSFER_STATUS.AWAITING_REVIEW);
+      renderDetectedGroups(analyzedGroups);
+      setPatientTransferMessage("Revisión lista. Confirme antes de guardar.", 100);
+      return;
+    }
     if (event.target.closest("[data-transfer-close-result]")) {
       closePatientTransferView();
       return;

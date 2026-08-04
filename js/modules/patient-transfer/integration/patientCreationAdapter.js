@@ -49,6 +49,7 @@ export function buildPatientPayload(fields = {}, user = {}) {
       diasEstancia: fields.diasEstancia || ""
     },
     origenTraspasoPacientesDocx: true,
+    transferOperationId: fields.transferOperationId || "",
     creadoPor: user.uid || "",
     ownerUid: user.uid || "",
     createdByUid: user.uid || "",

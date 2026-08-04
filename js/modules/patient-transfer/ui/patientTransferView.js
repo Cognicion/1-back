@@ -36,8 +36,8 @@ function ensureRoot() {
       <header class="patient-transfer-header">
         <div>
           <p>Importacion documental</p>
-          <h2 id="patientTransferTitle">Traspasar pacientes</h2>
-          <span>Cargue notas clinicas previas en formato DOCX para crear pacientes y agregar sus antecedentes documentales a COGNICION.</span>
+          <h2 id="patientTransferTitle">Importar pacientes y notas externas</h2>
+          <span>Cargue notas clínicas externas para crear pacientes nuevos o agregar notas a pacientes existentes.</span>
           <small>La informacion detectada debera revisarse antes de guardarse.</small>
         </div>
         <button type="button" data-transfer-close aria-label="Cerrar">Cerrar</button>
@@ -83,6 +83,10 @@ export function setPatientTransferMessage(message = "", progress = 0) {
   const modal = ensureRoot();
   modal.querySelector("[data-transfer-status]").textContent = message;
   modal.querySelector("[data-transfer-progress]").value = progress;
+}
+
+export function setPatientTransferVisualStatus(status = "idle") {
+  ensureRoot().dataset.transferStatus = status;
 }
 
 export function showPatientTransferError(message = "") {
@@ -170,13 +174,17 @@ function renderExtractionDebug(doc) {
 
 function renderDiagnosisCandidates(doc) {
   const candidates = doc.diagnosisCandidates || [];
-  if (!candidates.length) return "";
+  if (!candidates.length) return `
+    <section class="patient-transfer-candidates">
+      <h4>Diagnosticos detectados</h4>
+      <p>No se detectaron diagnosticos explicitos en este documento.</p>
+    </section>`;
   return `
     <section class="patient-transfer-candidates">
       <h4>Diagnosticos detectados</h4>
       ${candidates.map((candidate) => `
         <article>
-          <label><input type="checkbox" data-transfer-dx-include="${doc.id}:${candidate.id}"> Incluir</label>
+          <label><input type="checkbox" data-transfer-dx-include="${doc.id}:${candidate.id}" ${candidate.selectedForImport ? "checked" : ""}> Incluir</label>
           <input data-transfer-dx-name="${doc.id}:${candidate.id}" value="${escapeHtml(candidate.normalizedLabel || candidate.rawText || "")}" placeholder="Diagnostico">
           <input data-transfer-dx-code="${doc.id}:${candidate.id}" value="${escapeHtml(candidate.code || "")}" placeholder="Codigo">
           <select data-transfer-dx-system="${doc.id}:${candidate.id}">
@@ -186,20 +194,24 @@ function renderDiagnosisCandidates(doc) {
             ${["Confirmado", "Probable", "A descartar", "Diferencial", "En seguimiento", "Antecedente", "Remision", "Descartado"].map((item) => option(item, item, item === candidate.statusSuggestion)).join("")}
           </select>
           <label><input type="checkbox" data-transfer-dx-principal="${doc.id}:${candidate.id}"> Principal</label>
-          <small>Fuente: ${escapeHtml(candidate.sourceSection || "")} - ${escapeHtml(candidate.rawText || "")}</small>
+          <small>Fuente: ${escapeHtml(candidate.sourceSection || "")} · ${escapeHtml(candidate.temporality || "")} · ${escapeHtml(candidate.rawText || "")}</small>
         </article>`).join("")}
     </section>`;
 }
 
 function renderTreatmentCandidates(doc) {
   const candidates = doc.treatmentCandidates || [];
-  if (!candidates.length) return "";
+  if (!candidates.length) return `
+    <section class="patient-transfer-candidates">
+      <h4>Tratamientos detectados</h4>
+      <p>No se detectaron tratamientos explicitos.</p>
+    </section>`;
   return `
     <section class="patient-transfer-candidates">
       <h4>Tratamientos detectados</h4>
       ${candidates.map((candidate) => `
         <article>
-          <label><input type="checkbox" data-transfer-tx-include="${doc.id}:${candidate.id}"> Incluir</label>
+          <label><input type="checkbox" data-transfer-tx-include="${doc.id}:${candidate.id}" ${candidate.selectedForImport ? "checked" : ""}> Incluir</label>
           <input data-transfer-tx-name="${doc.id}:${candidate.id}" value="${escapeHtml(candidate.medicationName || "")}" placeholder="Medicamento">
           <input data-transfer-tx-dose="${doc.id}:${candidate.id}" value="${escapeHtml(candidate.dose || "")}" placeholder="Dosis">
           <input data-transfer-tx-unit="${doc.id}:${candidate.id}" value="${escapeHtml(candidate.doseUnit || "")}" placeholder="Unidad">
@@ -208,7 +220,7 @@ function renderTreatmentCandidates(doc) {
           <select data-transfer-tx-status="${doc.id}:${candidate.id}">
             ${["Inicia", "Continua", "Aumenta", "Disminuye", "Suspende", "Pendiente traer", "Antecedente", "Otro"].map((item) => option(item, item, item === candidate.statusSuggestion)).join("")}
           </select>
-          <small>Fuente: ${escapeHtml(candidate.sourceSection || "")} - ${escapeHtml(candidate.sourceText || "")}</small>
+          <small>Fuente: ${escapeHtml(candidate.sourceSection || "")} · ${escapeHtml(candidate.temporality || "")} · ${escapeHtml(candidate.sourceText || "")}</small>
         </article>`).join("")}
     </section>`;
 }
@@ -239,6 +251,23 @@ function renderVitalSignsCandidates(doc) {
     </section>`;
 }
 
+function renderClinicalSections(doc) {
+  const sections = doc.sections || {};
+  const campos = [
+    ["Subjetivo", "subjetivo"], ["Objetivo", "objetivo"], ["Examen mental", "examenMental"],
+    ["Análisis", "analisis"], ["Diagnósticos", "diagnosticos"], ["Tratamiento", "tratamiento"],
+    ["Plan", "plan"], ["Pronóstico", "pronostico"], ["Destino", "destino"]
+  ];
+  return `
+    <section class="patient-transfer-clinical-sections">
+      <h4>Secciones clínicas</h4>
+      ${campos.map(([label, key]) => `
+        <label>${label}
+          <textarea readonly>${escapeHtml(sections[key] || (key === "analisis" ? "No se detectó una sección de análisis explícita." : ""))}</textarea>
+        </label>`).join("")}
+    </section>`;
+}
+
 function renderDocument(doc, groups = [], currentGroupId = "") {
   const selected = doc.confirmedType?.key || doc.metadata?.suggestedType?.key || "tipo_no_reconocido";
   return `
@@ -264,6 +293,7 @@ function renderDocument(doc, groups = [], currentGroupId = "") {
         <span>${Object.keys(doc.sections || {}).length ? Object.keys(doc.sections).join(", ") : "Sin secciones reconocidas"}</span>
       </div>
       ${renderVitalSignsCandidates(doc)}
+      ${renderClinicalSections(doc)}
       ${renderDiagnosisCandidates(doc)}
       ${renderTreatmentCandidates(doc)}
       ${renderExtractionDebug(doc)}
@@ -321,6 +351,7 @@ export function readTransferReview(groups = []) {
       const diagnosisCandidates = (doc.diagnosisCandidates || []).map((candidate) => ({
         ...candidate,
         include: modal.querySelector(`[data-transfer-dx-include="${doc.id}:${candidate.id}"]`)?.checked || false,
+        selectedForImport: modal.querySelector(`[data-transfer-dx-include="${doc.id}:${candidate.id}"]`)?.checked || false,
         normalizedLabel: modal.querySelector(`[data-transfer-dx-name="${doc.id}:${candidate.id}"]`)?.value?.trim() || candidate.normalizedLabel || "",
         code: modal.querySelector(`[data-transfer-dx-code="${doc.id}:${candidate.id}"]`)?.value?.trim() || "",
         codingSystem: modal.querySelector(`[data-transfer-dx-system="${doc.id}:${candidate.id}"]`)?.value || "",
@@ -331,6 +362,7 @@ export function readTransferReview(groups = []) {
       const treatmentCandidates = (doc.treatmentCandidates || []).map((candidate) => ({
         ...candidate,
         include: modal.querySelector(`[data-transfer-tx-include="${doc.id}:${candidate.id}"]`)?.checked || false,
+        selectedForImport: modal.querySelector(`[data-transfer-tx-include="${doc.id}:${candidate.id}"]`)?.checked || false,
         medicationName: modal.querySelector(`[data-transfer-tx-name="${doc.id}:${candidate.id}"]`)?.value?.trim() || "",
         dose: modal.querySelector(`[data-transfer-tx-dose="${doc.id}:${candidate.id}"]`)?.value?.trim() || "",
         doseUnit: modal.querySelector(`[data-transfer-tx-unit="${doc.id}:${candidate.id}"]`)?.value?.trim() || "",
@@ -385,7 +417,7 @@ export function renderTransferResults(results = []) {
       <h3>Resultado final</h3>
       ${results.map((result) => `
         <article class="patient-transfer-result ${result.status}">
-          <strong>${result.status === "completed" ? "Traspaso completado" : "Traspaso no completado"}</strong>
+          <strong>${result.status === "completed" ? "Traspaso completado" : result.status === "partially_completed" ? "Traspaso parcialmente completado" : "Traspaso no completado"}</strong>
           <span>Notas: ${result.notesCreated || 0} creadas / ${result.notesExisting || 0} ya existentes</span>
           <span>Signos vitales: ${result.vitalSignsCreated || 0} registrados / Somatometria: ${result.anthropometryCreated || 0}</span>
           <span>Diagnosticos: ${result.diagnosesCreated || 0} registrados / ${result.diagnosesOmitted || 0} omitidos</span>
@@ -396,6 +428,9 @@ export function renderTransferResults(results = []) {
           ${result.stage ? `<span>Etapa: ${escapeHtml(result.stage)}</span>` : ""}
           ${result.error ? `<small>${escapeHtml(result.error)}</small>` : ""}
           ${result.patientId ? `<a href="paciente.html?id=${encodeURIComponent(result.patientId)}" target="_blank" rel="noopener">Abrir expediente</a>` : ""}
+          ${result.patientId ? `<a href="paciente.html?id=${encodeURIComponent(result.patientId)}#diagnosticos" target="_blank" rel="noopener">Ver diagnósticos</a>` : ""}
+          ${result.patientId ? `<a href="paciente.html?id=${encodeURIComponent(result.patientId)}#tratamientos" target="_blank" rel="noopener">Ver tratamiento</a>` : ""}
+          ${result.status !== "completed" ? `<button type="button" data-transfer-retry>Reintentar</button><button type="button" data-transfer-back-review>Volver a revisión</button>` : ""}
           <button type="button" data-transfer-import-another>Importar otro paciente</button>
           <button type="button" data-transfer-close-result>Cerrar</button>
         </article>`).join("")}
@@ -408,6 +443,10 @@ export function renderTransferFailure(error) {
       <h3>Traspaso no completado</h3>
       <p>Etapa: ${escapeHtml(error?.stage || "guardado")}</p>
       <p>Motivo: ${escapeHtml(error?.message || String(error || "Error desconocido"))}</p>
+      <p>Detalle técnico: ${escapeHtml(error?.message || String(error || "Error desconocido"))}</p>
+      <button type="button" data-transfer-retry>Reintentar</button>
+      <button type="button" data-transfer-back-review>Volver a revisión</button>
+      <button type="button" data-transfer-close-result>Cerrar</button>
     </section>
   `);
 }

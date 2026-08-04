@@ -30,11 +30,13 @@ for (const file of expectedFiles) {
 }
 
 const medico = read("js/medico.js");
-assert.match(medico, /btnTraspasarPacientes/, "medico.js registra el boton Traspasar pacientes");
+assert.match(medico, /btnImportarDocxPaciente/, "medico.js registra el unico boton de importacion DOCX");
 assert.match(medico, /import\("\.\/modules\/patient-transfer\/index\.js"\)/, "el modulo se carga con lazy loading");
+assert.doesNotMatch(medico, /modules\/importacionDocx\/docxImportController/, "medico.js no abre el importador local simplificado");
 
 const html = read("medico.html");
-assert.match(html, /Traspasar pacientes/, "medico.html muestra la accion Traspasar pacientes");
+assert.match(html, /id="btnImportarDocxPaciente"/, "medico.html conserva el boton unico de importacion");
+assert.doesNotMatch(html, /btnTraspasarPacientes/, "medico.html no conserva un segundo boton de traspaso");
 assert.match(html, /patient-transfer\.css/, "medico.html carga estilos del modulo");
 
 const controller = read("js/modules/patient-transfer/patientTransferController.js");
