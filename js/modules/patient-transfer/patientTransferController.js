@@ -7,8 +7,11 @@ import { normalizeDocxBlocks, normalizedBlocksToText } from "./docx/docxBlockNor
 import { parsePatientFields, fieldValues } from "./parsing/patientFieldParser.js";
 import { parseClinicalSections } from "./parsing/clinicalSectionParser.js";
 import { extractClinicalCandidates } from "./parsing/clinicalCandidateParser.js";
+import { detectMultipleClinicalNotes, expandSegmentedDocumentsForPersistence, mergeClinicalSegments, segmentClinicalNotes, splitClinicalSegment } from "./parsing/clinicalNoteSegmenter.js?v=20260804-segmentation-debug-v1";
 import { extractVitalSignsCandidates } from "./parsing/vitalSignsParser.js";
 import { parseNoteMetadata } from "./parsing/noteMetadataParser.js";
+import { preserveManualSubjectiveEdits, updateSubjectiveSegmentValue } from "./state/subjectiveSegmentState.js";
+import { initializeFileMultipleNotesMode, MULTIPLE_NOTES_MODES, normalizeMultipleNotesMode, updateFileMultipleNotesMode } from "./state/multipleNotesModeState.js";
 import { groupDocumentsByPatient } from "./parsing/documentGroupingService.js";
 import { analyzeDocumentClinically } from "./integration/clinicalAnalysisAdapter.js";
 import { findDuplicateImport, findExistingPatientCandidates, saveTransferredGroups } from "./patientTransferRepository.js";
@@ -32,6 +35,132 @@ import {
 let initialized = false;
 let selectedFiles = [];
 let analyzedGroups = [];
+
+function enrichNoteSegments(document, segments = []) {
+  const enriched = segments.map((segment) => {
+    const metadata = parseNoteMetadata({ text: segment.rawText, sections: segment.sections, fields: document.fields || {} });
+    const candidates = extractClinicalCandidates({
+      id: document.id,
+      sourceNoteId: segment.id,
+      sections: segment.sections,
+      blocks: segment.blocks,
+      fullText: segment.rawText
+    });
+    const sections = { ...(segment.sections || {}) };
+    if (!sections.diagnosticos && candidates.diagnoses.length) {
+      sections.diagnosticos = [...new Set(candidates.diagnoses.map((candidate) => candidate.rawText).filter(Boolean))].join("\n");
+    }
+    if (!sections.tratamiento && !sections.medicamentos && candidates.treatments.length) {
+      sections.medicamentos = [...new Set(candidates.treatments.map((candidate) => candidate.sourceText).filter(Boolean))].join("\n");
+    }
+    const vitalSignsCandidates = (document.vitalSignsCandidates || []).filter((candidate) => {
+      const sourceIndex = candidate.sourceLocation?.blockIndex;
+      return Number.isInteger(sourceIndex) && sourceIndex >= segment.startBlockIndex && sourceIndex < segment.endBlockIndex;
+    });
+    const enrichedSegment = {
+      ...segment,
+      sections,
+      metadata: {
+        ...metadata,
+        documentDate: segment.date || metadata.documentDate,
+        documentHour: segment.time || metadata.documentHour
+      },
+      confirmedType: segment.confirmedType || metadata.suggestedType,
+      diagnosisCandidates: candidates.diagnoses,
+      treatmentCandidates: candidates.treatments,
+      vitalSignsCandidates
+    };
+    console.info("[patient-transfer] note-segment:enriched", {
+      noteId: enrichedSegment.id,
+      date: enrichedSegment.metadata.documentDate,
+      time: enrichedSegment.metadata.documentHour,
+      vitalSigns: vitalSignsCandidates.length,
+      diagnoses: candidates.diagnoses.length,
+      treatments: candidates.treatments.length,
+      sections: Object.keys(sections).filter((key) => Boolean(sections[key]))
+    });
+    return enrichedSegment;
+  });
+
+  if (enriched.length && !enriched.some((segment) => segment.vitalSignsCandidates.length)) {
+    enriched[0] = { ...enriched[0], vitalSignsCandidates: document.vitalSignsCandidates || [] };
+  }
+  return enriched;
+}
+
+function applySegmentsToDocument(document, rawSegments = []) {
+  const noteSegments = preserveManualSubjectiveEdits(
+    enrichNoteSegments(document, rawSegments),
+    document.noteSegments || []
+  );
+  const primary = noteSegments[0] || {};
+  return {
+    ...document,
+    noteSegments,
+    sections: primary.sections || document.sections || {},
+    diagnosisCandidates: primary.diagnosisCandidates || [],
+    treatmentCandidates: primary.treatmentCandidates || []
+  };
+}
+
+function previousDocumentsByHash() {
+  return new Map(analyzedGroups.flatMap((group) => group.documents || [])
+    .filter((document) => document.hash)
+    .map((document) => [document.hash, document]));
+}
+
+function preserveReviewedSubjectives(nextDocument, previousDocument) {
+  if (!previousDocument) return nextDocument;
+  const noteSegments = preserveManualSubjectiveEdits(nextDocument.noteSegments || [], previousDocument.noteSegments || []);
+  const primary = noteSegments[0];
+  return {
+    ...nextDocument,
+    noteSegments,
+    sections: primary?.sections || nextDocument.sections
+  };
+}
+
+function updateSubjectiveFromInput(event) {
+  const input = event.target.closest?.('[data-section-key="subjetivo"][data-note-id][data-transfer-document-id]');
+  if (!input) return false;
+  const noteId = input.dataset.noteId;
+  const documentId = input.dataset.transferDocumentId;
+  analyzedGroups = analyzedGroups.map((group) => ({
+    ...group,
+    documents: group.documents.map((document) => {
+      if (document.id !== documentId) return document;
+      const noteSegments = updateSubjectiveSegmentValue(document.noteSegments || [], noteId, input.value);
+      const updatedSegment = noteSegments.find((segment) => segment.id === noteId);
+      if (updatedSegment) {
+        console.info("[patient-transfer] subjective:state-assigned", {
+          noteId,
+          date: updatedSegment.metadata?.documentDate || updatedSegment.date || "",
+          time: updatedSegment.metadata?.documentHour || updatedSegment.time || "",
+          segmentStartBlock: updatedSegment.startBlockIndex ?? null,
+          segmentEndBlock: updatedSegment.endBlockIndex ?? null,
+          segmentBlockCount: (updatedSegment.blocks || []).length,
+          segmentRawTextLength: String(updatedSegment.rawText || "").length,
+          subjectiveStartBlock: updatedSegment.subjectiveExtraction?.startBlockIndex ?? null,
+          subjectiveEndBlock: updatedSegment.subjectiveExtraction?.endBlockIndex ?? null,
+          subjectiveLength: updatedSegment.sections?.subjetivo?.length || 0,
+          manuallyEdited: updatedSegment.subjectiveManuallyEdited
+        });
+      }
+      return { ...document, noteSegments };
+    })
+  }));
+  setPatientTransferGroups(analyzedGroups);
+  return true;
+}
+
+function updateDocumentById(documentId, updater) {
+  analyzedGroups = analyzedGroups.map((group) => ({
+    ...group,
+    documents: group.documents.map((document) => document.id === documentId ? updater(document) : document)
+  }));
+  setPatientTransferGroups(analyzedGroups);
+  renderDetectedGroups(analyzedGroups);
+}
 
 function fileId(file, index) {
   return `file-${Date.now()}-${index}-${Math.random().toString(16).slice(2)}`;
@@ -105,6 +234,13 @@ function moveDocumentToGroup(documentId = "", targetGroupId = "") {
   renderDetectedGroups(analyzedGroups);
 }
 
+function expandSegmentedGroupsForSave(groups = []) {
+  return groups.map((group) => ({
+    ...group,
+    documents: expandSegmentedDocumentsForPersistence(group.documents)
+  }));
+}
+
 function addFiles(files = []) {
   const existingNames = new Set(selectedFiles.map((item) => `${item.file.name}:${item.file.size}`));
   const next = [...selectedFiles];
@@ -112,7 +248,12 @@ function addFiles(files = []) {
     const key = `${file.name}:${file.size}`;
     if (existingNames.has(key)) return;
     existingNames.add(key);
-    next.push({ id: fileId(file, index), file, status: "pending", statusLabel: "Pendiente" });
+    next.push(initializeFileMultipleNotesMode({
+      id: fileId(file, index),
+      file,
+      status: "pending",
+      statusLabel: "Pendiente"
+    }));
   });
   selectedFiles = next;
   setPatientTransferFiles(selectedFiles);
@@ -189,13 +330,20 @@ async function analyzeOneFile(item, user) {
   console.info("[patient-transfer] diagnosis-parser:candidates", { fileId: item.id, count: clinicalCandidates.diagnoses.length, rules: [...new Set(clinicalCandidates.diagnoses.map((item) => item.detectionRule))] });
   console.info("[patient-transfer] treatment-parser:candidates", { fileId: item.id, count: clinicalCandidates.treatments.length, sections: [...new Set(clinicalCandidates.treatments.map((item) => item.sourceSection))] });
   const vitalSignsCandidates = extractVitalSignsCandidates(blocks);
+  const multipleNotesDetection = detectMultipleClinicalNotes({
+    blocks,
+    fullText,
+    headings: sectionsResult.encabezados
+  });
+  const multipleNotesMode = normalizeMultipleNotesMode(item.multipleNotesMode);
   const duplicateStatus = duplicate ? "exact_duplicate" : sameBatch ? "duplicate_in_batch" : "nuevo";
 
   item.status = duplicate ? "warning" : "ok";
   item.statusLabel = duplicate ? "Ya importado" : "Procesado correctamente";
   item.error = "";
+  item.needsReanalysis = false;
 
-  const documentCandidate = {
+  let documentCandidate = {
     id: item.id,
     file: item.file,
     hash,
@@ -214,10 +362,53 @@ async function analyzeOneFile(item, user) {
     vitalSignsCandidates,
     diagnosisCandidates: clinicalCandidates.diagnoses,
     treatmentCandidates: clinicalCandidates.treatments,
+    multipleNotesMode,
+    containsMultipleNotes: multipleNotesMode === MULTIPLE_NOTES_MODES.MULTIPLE,
+    segmentationNeedsReanalysis: false,
+    probableMultipleNotes: multipleNotesDetection.probableMultipleNotes,
+    multipleNotesReasons: multipleNotesDetection.reasons,
+    proposedNoteBoundaries: multipleNotesDetection.proposedNoteBoundaries,
+    noteSegments: [],
     duplicate,
     duplicateStatus,
     duplicateStatusLabel: duplicate ? "Ya importado" : sameBatch ? "Duplicado en esta carga" : "Nuevo"
   };
+  const selectedSegments = segmentClinicalNotes({
+    blocks,
+    fullText,
+    multipleNotesMode,
+    proposedBoundaries: multipleNotesDetection.proposedNoteBoundaries,
+    documentId: item.id
+  });
+  const automaticallyDetectedSegments = multipleNotesMode === MULTIPLE_NOTES_MODES.SINGLE
+    ? segmentClinicalNotes({
+        blocks,
+        fullText,
+        multipleNotesMode: MULTIPLE_NOTES_MODES.AUTO,
+        proposedBoundaries: multipleNotesDetection.proposedNoteBoundaries,
+        documentId: item.id
+      })
+    : selectedSegments;
+  documentCandidate = applySegmentsToDocument({
+    ...documentCandidate,
+    detectedNoteSummaries: automaticallyDetectedSegments.map((segment) => ({
+      id: segment.id,
+      date: segment.date || "",
+      time: segment.time || "",
+      noteType: segment.noteType || "Nota clínica"
+    }))
+  }, selectedSegments);
+  documentCandidate.containsMultipleNotes = documentCandidate.noteSegments.length > 1;
+  console.info(
+    "[patient-transfer] note-segments:stored",
+    JSON.stringify({
+      documentId: documentCandidate.id,
+      count: documentCandidate.noteSegments.length,
+      ids: documentCandidate.noteSegments.map((segment) => segment.id),
+      dates: documentCandidate.noteSegments.map((segment) => segment.date),
+      times: documentCandidate.noteSegments.map((segment) => segment.time)
+    }, null, 2)
+  );
   console.assert(Array.isArray(documentCandidate.diagnosisCandidates), "diagnosisCandidates must be an array");
   console.assert(Array.isArray(documentCandidate.treatmentCandidates), "treatmentCandidates must be an array");
   return documentCandidate;
@@ -233,11 +424,12 @@ async function analyzeSelectedFiles() {
 
   setPatientTransferStatus(TRANSFER_STATUS.VALIDATING);
   showPatientTransferError("");
+  const previousDocuments = previousDocumentsByHash();
   const documents = [];
   for (let index = 0; index < selectedFiles.length; index += 1) {
     setPatientTransferMessage(`Procesando ${index + 1} de ${selectedFiles.length}`, Math.round((index / selectedFiles.length) * 90));
     const document = await analyzeOneFile(selectedFiles[index], user);
-    if (document) documents.push(document);
+    if (document) documents.push(preserveReviewedSubjectives(document, previousDocuments.get(document.hash)));
     await yieldToBrowser();
   }
 
@@ -267,8 +459,8 @@ async function analyzeSelectedFiles() {
   console.info("[docx-import] patient-fields:rendered", { groupCount: analyzedGroups.length });
   console.info("[patient-transfer] review-ui:rendered", { groupCount: analyzedGroups.length });
   console.info("[patient-transfer] clinical-candidates:rendered", {
-    diagnoses: analyzedGroups.reduce((total, group) => total + group.documents.reduce((count, doc) => count + doc.diagnosisCandidates.length, 0), 0),
-    treatments: analyzedGroups.reduce((total, group) => total + group.documents.reduce((count, doc) => count + doc.treatmentCandidates.length, 0), 0)
+    diagnoses: analyzedGroups.reduce((total, group) => total + group.documents.reduce((count, doc) => count + (doc.noteSegments || [doc]).reduce((segmentCount, segment) => segmentCount + (segment.diagnosisCandidates || []).length, 0), 0), 0),
+    treatments: analyzedGroups.reduce((total, group) => total + group.documents.reduce((count, doc) => count + (doc.noteSegments || [doc]).reduce((segmentCount, segment) => segmentCount + (segment.treatmentCandidates || []).length, 0), 0), 0)
   });
   setPatientTransferMessage("Revision lista. Confirme antes de guardar.", 100);
 }
@@ -279,11 +471,20 @@ async function saveReviewedTransfer({ reuseReviewedGroups = false } = {}) {
     showPatientTransferError("Analiza los documentos antes de confirmar.");
     return;
   }
+  const pendingSegmentation = analyzedGroups.some((group) => (group.documents || [])
+    .some((document) => document.segmentationNeedsReanalysis));
+  if (pendingSegmentation) {
+    showPatientTransferError("La forma de segmentación cambió. Vuelva a analizar el documento antes de confirmar.");
+    return;
+  }
   const user = await getAuthenticatedUserOnce();
   const profile = user ? await getUserProfileOnce(user.uid) : null;
   if (!user) throw new Error("No se pudo identificar al usuario.");
 
-  const reviewedGroups = reuseReviewedGroups ? analyzedGroups : readTransferReview(analyzedGroups);
+  // La revisión se sincroniza en cada interacción; al confirmar no se vuelve a
+  // reconstruir desde el DOM para evitar perder selecciones durante un render.
+  const reviewedGroups = analyzedGroups;
+  const persistenceGroups = expandSegmentedGroupsForSave(reviewedGroups);
   const blocking = reviewedGroups.find((group) =>
     !group.omitted && group.action === "associate" && !group.selectedPatientId
   );
@@ -293,18 +494,16 @@ async function saveReviewedTransfer({ reuseReviewedGroups = false } = {}) {
   }
 
   const summary = {
-    newPatients: reviewedGroups.filter((group) => !group.omitted && group.action === "create").length,
-    existingPatients: reviewedGroups.filter((group) => !group.omitted && group.action === "associate").length,
-    notes: reviewedGroups.reduce((total, group) => total + (group.omitted ? 0 : group.documents.filter((doc) => !doc.omitted && doc.duplicateStatus === "nuevo").length), 0),
-    omittedFiles: reviewedGroups.reduce((total, group) => total + group.documents.filter((doc) => doc.omitted || doc.duplicateStatus !== "nuevo").length, 0),
-    possibleDuplicates: reviewedGroups.reduce((total, group) => total + group.documents.filter((doc) => doc.duplicateStatus !== "nuevo").length, 0),
+    newPatients: persistenceGroups.filter((group) => !group.omitted && group.action === "create").length,
+    existingPatients: persistenceGroups.filter((group) => !group.omitted && group.action === "associate").length,
+    notes: persistenceGroups.reduce((total, group) => total + (group.omitted ? 0 : group.documents.filter((doc) => !doc.omitted && doc.duplicateStatus === "nuevo").length), 0),
+    omittedFiles: persistenceGroups.reduce((total, group) => total + group.documents.filter((doc) => doc.omitted || doc.duplicateStatus !== "nuevo").length, 0),
+    possibleDuplicates: persistenceGroups.reduce((total, group) => total + group.documents.filter((doc) => doc.duplicateStatus !== "nuevo").length, 0),
     pendingFields: reviewedGroups.reduce((total, group) => total + Object.values(group.confirmedFields || {}).filter((value) => !value).length, 0)
   };
   const confirmed = window.confirm(`Resumen del traspaso\n\nPacientes nuevos: ${summary.newPatients}\nPacientes existentes: ${summary.existingPatients}\nNotas que se crearan: ${summary.notes}\nArchivos omitidos: ${summary.omittedFiles}\nPosibles duplicados: ${summary.possibleDuplicates}\nCampos pendientes: ${summary.pendingFields}\n\n¿Confirmar traspaso?`);
   if (!confirmed) return;
 
-  analyzedGroups = reviewedGroups;
-  setPatientTransferGroups(analyzedGroups);
   setTransferSavingState(true);
   setPatientTransferStatus(TRANSFER_STATUS.SAVING);
   setPatientTransferVisualStatus(TRANSFER_STATUS.SAVING);
@@ -317,7 +516,7 @@ async function saveReviewedTransfer({ reuseReviewedGroups = false } = {}) {
   try {
     setPatientTransferMessage("Validacion completada. Creando paciente...", 15);
     const results = await saveTransferredGroups({
-      groups: reviewedGroups,
+      groups: persistenceGroups,
       user: { ...profile, uid: user.uid, email: user.email },
       onProgress: ({ stage, message, progress }) => {
         setPatientTransferExecutionState({ lastCompletedStage: stage || "saving" });
@@ -375,6 +574,64 @@ function resetAndOpen() {
   showPatientTransferError("");
 }
 
+function syncReviewedGroupsFromView() {
+  if (!analyzedGroups.length) return;
+  analyzedGroups = readTransferReview(analyzedGroups);
+  setPatientTransferGroups(analyzedGroups);
+
+  const counts = analyzedGroups.reduce((total, group) => group.documents.reduce((documentTotal, doc) => {
+    const owners = doc.noteSegments?.length ? doc.noteSegments : [doc];
+    const diagnoses = owners.reduce((count, owner) => count + (owner.diagnosisCandidates || []).length, 0);
+    const treatments = owners.reduce((count, owner) => count + (owner.treatmentCandidates || []).length, 0);
+    return {
+      diagnosisCandidatesDetected: documentTotal.diagnosisCandidatesDetected + diagnoses,
+      diagnosisCandidatesRendered: documentTotal.diagnosisCandidatesRendered + diagnoses,
+      treatmentCandidatesDetected: documentTotal.treatmentCandidatesDetected + treatments,
+      treatmentCandidatesRendered: documentTotal.treatmentCandidatesRendered + treatments
+    };
+  }, total), {
+    diagnosisCandidatesDetected: 0,
+    diagnosisCandidatesRendered: 0,
+    treatmentCandidatesDetected: 0,
+    treatmentCandidatesRendered: 0
+  });
+
+  console.info("[patient-transfer] review-state:updated", counts);
+}
+
+function setFileMultipleNotesMode(documentId, value, { afterAnalysis = false } = {}) {
+  const multipleNotesMode = normalizeMultipleNotesMode(value);
+  selectedFiles = updateFileMultipleNotesMode(selectedFiles, documentId, multipleNotesMode)
+    .map((item) => item.id === documentId && afterAnalysis
+      ? { ...item, needsReanalysis: true, status: "pending", statusLabel: "Pendiente de reanálisis" }
+      : item);
+  setPatientTransferFiles(selectedFiles);
+  renderTransferFiles(selectedFiles);
+
+  if (!afterAnalysis) return;
+  updateDocumentById(documentId, (document) => ({
+    ...document,
+    multipleNotesMode,
+    segmentationNeedsReanalysis: true
+  }));
+  setPatientTransferMessage("La forma de segmentación cambió. Vuelva a analizar el documento.", 100);
+  showPatientTransferError("La forma de segmentación cambió. Vuelva a analizar el documento.");
+}
+
+function splitDocumentSegment(documentId, segmentId) {
+  updateDocumentById(documentId, (document) => applySegmentsToDocument(
+    { ...document, containsMultipleNotes: true },
+    splitClinicalSegment(document.noteSegments || [], segmentId)
+  ));
+}
+
+function mergeDocumentSegment(documentId, segmentId) {
+  updateDocumentById(documentId, (document) => {
+    const segments = mergeClinicalSegments(document.noteSegments || [], segmentId);
+    return applySegmentsToDocument({ ...document, containsMultipleNotes: segments.length > 1 }, segments);
+  });
+}
+
 export function initializePatientTransfer() {
   if (initialized) return { openPatientTransfer: resetAndOpen };
   initialized = true;
@@ -414,6 +671,29 @@ export function initializePatientTransfer() {
   });
 
   root.addEventListener("click", (event) => {
+    const keepSingleButton = event.target.closest("[data-transfer-keep-single]");
+    if (keepSingleButton) {
+      syncReviewedGroupsFromView();
+      setFileMultipleNotesMode(keepSingleButton.dataset.transferKeepSingle, MULTIPLE_NOTES_MODES.SINGLE, { afterAnalysis: true });
+      return;
+    }
+    const reviewDivisionsButton = event.target.closest("[data-transfer-review-divisions]");
+    if (reviewDivisionsButton) {
+      document.getElementById(`transfer-note-segments-${reviewDivisionsButton.dataset.transferReviewDivisions}`)?.scrollIntoView({ behavior: "smooth", block: "start" });
+      return;
+    }
+    const splitButton = event.target.closest("[data-transfer-split-segment]");
+    if (splitButton) {
+      syncReviewedGroupsFromView();
+      splitDocumentSegment(splitButton.dataset.transferDocumentId, splitButton.dataset.transferSplitSegment);
+      return;
+    }
+    const mergeButton = event.target.closest("[data-transfer-merge-segment]");
+    if (mergeButton) {
+      syncReviewedGroupsFromView();
+      mergeDocumentSegment(mergeButton.dataset.transferDocumentId, mergeButton.dataset.transferMergeSegment);
+      return;
+    }
     if (event.target.closest("[data-transfer-retry]")) {
       saveReviewedTransfer({ reuseReviewedGroups: true }).catch((error) => showPatientTransferError(error.message || String(error)));
       return;
@@ -441,11 +721,34 @@ export function initializePatientTransfer() {
   });
 
   root.addEventListener("change", (event) => {
+    const fileMode = event.target.closest("[data-transfer-file-multiple-mode]");
+    if (fileMode) {
+      const documentId = fileMode.dataset.transferFileMultipleMode;
+      const alreadyAnalyzed = analyzedGroups.some((group) => (group.documents || [])
+        .some((document) => document.id === documentId));
+      if (alreadyAnalyzed) syncReviewedGroupsFromView();
+      setFileMultipleNotesMode(documentId, fileMode.value, { afterAnalysis: alreadyAnalyzed });
+      return;
+    }
+    const reviewMode = event.target.closest("[data-transfer-review-multiple-mode]");
+    if (reviewMode) {
+      syncReviewedGroupsFromView();
+      setFileMultipleNotesMode(reviewMode.dataset.transferReviewMultipleMode, reviewMode.value, { afterAnalysis: true });
+      return;
+    }
     const targetSelect = event.target.closest("[data-transfer-document-target]");
-    if (targetSelect) moveDocumentToGroup(targetSelect.dataset.transferDocumentTarget, targetSelect.value);
+    if (targetSelect) {
+      moveDocumentToGroup(targetSelect.dataset.transferDocumentTarget, targetSelect.value);
+      return;
+    }
+    syncReviewedGroupsFromView();
   });
 
-  root.addEventListener("input", syncPatientNameInputs);
+  root.addEventListener("input", (event) => {
+    syncPatientNameInputs(event);
+    if (updateSubjectiveFromInput(event)) return;
+    syncReviewedGroupsFromView();
+  });
 
   return { openPatientTransfer: resetAndOpen };
 }

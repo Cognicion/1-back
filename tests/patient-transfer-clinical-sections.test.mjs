@@ -13,10 +13,27 @@ const result = parseClinicalSections([
 ]);
 
 assert.equal(result.secciones.subjetivo, "Paciente refiere mejoría parcial.");
-assert.equal(result.secciones.objetivo, "Sin datos de dificultad respiratoria.");
+assert.equal(result.secciones.physicalNeurologicalExam, "Sin datos de dificultad respiratoria.");
 assert.equal(result.secciones.examenMental, "Orientada en las tres esferas.");
 assert.equal(result.secciones.analisis, "", "no inventa análisis si no hay encabezado");
 assert.equal(result.secciones.diagnosticos, "F32.2 Episodio depresivo grave.");
-assert.deepEqual(result.encontradas, ["subjetivo", "objetivo", "examenMental", "diagnosticos"]);
+assert.deepEqual(result.encontradas, ["subjetivo", "physicalNeurologicalExam", "examenMental", "diagnosticos"]);
+
+const inline = parseClinicalSections([
+  { type: "paragraph", text: "MOTIVO DE LA ATENCIÓN: Riesgo suicida. Refiere tristeza.", source: { blockIndex: 0 } },
+  { type: "paragraph", text: "EXPLORACIÓN FÍSICA: Cráneo normocéfalo.", source: { blockIndex: 1 } },
+  { type: "paragraph", text: "EXAMEN MENTAL: Alerta y orientada.", source: { blockIndex: 2 } },
+  { type: "paragraph", text: "FUNDAMENTO DE DIAGNÓSTICO Y TRATAMIENTO: Cuadro compatible con depresión.", source: { blockIndex: 3 } },
+  { type: "paragraph", text: "INDICACIONES: Continuar vigilancia y tratamiento.", source: { blockIndex: 4 } },
+  { type: "paragraph", text: "MEDICAMENTOS: Sertralina 50 mg cada 24 horas.", source: { blockIndex: 5 } }
+]);
+
+assert.match(inline.secciones.subjetivo, /Riesgo suicida/);
+assert.doesNotMatch(inline.secciones.subjetivo, /Cráneo normocéfalo/, "Subjetivo termina en el siguiente encabezado");
+assert.equal(inline.secciones.physicalNeurologicalExam, "Cráneo normocéfalo.");
+assert.equal(inline.secciones.examenMental, "Alerta y orientada.");
+assert.match(inline.secciones.analisis, /Cuadro compatible/);
+assert.match(inline.secciones.plan, /Continuar vigilancia/);
+assert.match(inline.secciones.medicamentos, /Sertralina 50 mg/);
 
 console.log("patient-transfer-clinical-sections.test.mjs OK");
