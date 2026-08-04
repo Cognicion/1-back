@@ -53,4 +53,39 @@ assert.equal(medications.length, 4, "separa listas farmacológicas y medicamento
 assert.equal(medications.filter((item) => item.statusSuggestion === "Antecedente").length, 3);
 assert.equal(medications.find((item) => item.medicationName.toLowerCase() === "sertralina")?.dose, "50");
 
+const groupedDiagnoses = detectDiagnosisCandidates({
+  documentId: "lists",
+  sourceNoteId: "lists-note-1",
+  sections: { diagnosticos: "F32.2 / F41.1 / Z91.5" },
+  fullText: "DIAGNÓSTICOS: F32.2 / F41.1 / Z91.5"
+});
+assert.equal(groupedDiagnoses.length, 3, "separa códigos diagnósticos consecutivos");
+assert.equal(new Set(groupedDiagnoses.map((item) => item.diagnosticGroupId)).size, 1, "conserva el bloque diagnóstico de origen");
+
+const namedDiagnosisList = detectDiagnosisCandidates({
+  documentId: "named-list",
+  sourceNoteId: "named-list-note-1",
+  sections: { diagnosticos: "Trastorno depresivo, ansiedad generalizada y consumo perjudicial de alcohol" }
+});
+assert.equal(namedDiagnosisList.length, 3, "separa diagnósticos nominales agrupados");
+
+const repeatedMedication = detectTreatmentCandidates({
+  documentId: "repeat",
+  sourceNoteId: "repeat-note-1",
+  sections: {},
+  fullText: "Refiere uso previo de paroxetina. Posteriormente continuó con paroxetina."
+});
+assert.equal(repeatedMedication.length, 1, "agrupa medicamentos repetidos sin encabezado");
+assert.equal(repeatedMedication[0].sourceOccurrences, 2);
+assert.equal(repeatedMedication[0].detectionRule, "repeated-medication");
+
+const repeatedDiagnosis = detectDiagnosisCandidates({
+  documentId: "repeat-dx",
+  sourceNoteId: "repeat-dx-note-1",
+  fullText: "Durante la evolución se menciona trastorno depresivo. En seguimiento continúa el trastorno depresivo."
+});
+assert.equal(repeatedDiagnosis.length, 1, "detecta conceptos diagnósticos repetidos de forma conservadora");
+assert.equal(repeatedDiagnosis[0].sourceOccurrences, 2);
+assert.equal(repeatedDiagnosis[0].selectedForImport, false);
+
 console.log("patient-transfer-clinical-candidates.test.mjs OK");

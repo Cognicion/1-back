@@ -268,6 +268,95 @@ function renderClinicalSections(doc) {
     </section>`;
 }
 
+function segmentControlKey(doc, segment, candidate) {
+  return `${doc.id}:${segment.id}:${candidate.id}`;
+}
+
+function renderSegmentDiagnosisCandidates(doc, segment) {
+  const candidates = segment.diagnosisCandidates || [];
+  return `
+    <section class="patient-transfer-candidates">
+      <h4>Diagnósticos detectados</h4>
+      ${candidates.length ? candidates.map((candidate) => {
+        const key = segmentControlKey(doc, segment, candidate);
+        return `<article>
+          <label><input type="checkbox" data-transfer-dx-include="${key}" ${candidate.selectedForImport ? "checked" : ""}> Incluir</label>
+          <input data-transfer-dx-name="${key}" value="${escapeHtml(candidate.normalizedLabel || candidate.rawText || "")}" placeholder="Diagnóstico">
+          <input data-transfer-dx-code="${key}" value="${escapeHtml(candidate.code || "")}" placeholder="Código">
+          <select data-transfer-dx-system="${key}">${["", "CIE-10", "CIE-11", "DSM-5"].map((item) => option(item, item || "Sin sistema", item === (candidate.codingSystem || ""))).join("")}</select>
+          <select data-transfer-dx-status="${key}">${["Confirmado", "Probable", "A descartar", "Diferencial", "En seguimiento", "Antecedente", "Remisión", "Descartado"].map((item) => option(item, item, item === candidate.statusSuggestion)).join("")}</select>
+          <label><input type="checkbox" data-transfer-dx-principal="${key}" ${candidate.principal ? "checked" : ""}> Principal</label>
+          <small>Nota: ${escapeHtml(segment.id)} · Fuente: ${escapeHtml(candidate.sourceSection || "")} · ${escapeHtml(candidate.temporality || "")} · ${candidate.sourceOccurrences || 1} aparición(es) · ${escapeHtml(candidate.rawText || "")}</small>
+        </article>`;
+      }).join("") : "<p>No se detectaron diagnósticos explícitos en esta nota.</p>"}
+    </section>`;
+}
+
+function renderSegmentTreatmentCandidates(doc, segment) {
+  const candidates = segment.treatmentCandidates || [];
+  return `
+    <section class="patient-transfer-candidates">
+      <h4>Tratamientos detectados</h4>
+      ${candidates.length ? candidates.map((candidate) => {
+        const key = segmentControlKey(doc, segment, candidate);
+        return `<article>
+          <label><input type="checkbox" data-transfer-tx-include="${key}" ${candidate.selectedForImport ? "checked" : ""}> Incluir</label>
+          <input data-transfer-tx-name="${key}" value="${escapeHtml(candidate.medicationName || "")}" placeholder="Medicamento">
+          <input data-transfer-tx-dose="${key}" value="${escapeHtml(candidate.dose || "")}" placeholder="Dosis">
+          <input data-transfer-tx-unit="${key}" value="${escapeHtml(candidate.doseUnit || "")}" placeholder="Unidad">
+          <input data-transfer-tx-route="${key}" value="${escapeHtml(candidate.route || "")}" placeholder="Vía">
+          <input data-transfer-tx-frequency="${key}" value="${escapeHtml(candidate.frequencyRaw || "")}" placeholder="Frecuencia">
+          <select data-transfer-tx-status="${key}">${["Inicia", "Continúa", "Aumenta", "Disminuye", "Suspende", "Antecedente", "Otro"].map((item) => option(item, item, item === candidate.statusSuggestion)).join("")}</select>
+          <small>Nota: ${escapeHtml(segment.id)} · Fuente: ${escapeHtml(candidate.sourceSection || "")} · ${escapeHtml(candidate.temporality || "")} · ${candidate.sourceOccurrences || 1} aparición(es) · ${escapeHtml(candidate.sourceText || "")}</small>
+        </article>`;
+      }).join("") : "<p>No se detectaron tratamientos explícitos en esta nota.</p>"}
+    </section>`;
+}
+
+function renderSegmentClinicalSections(doc, segment) {
+  const fields = [
+    ["Subjetivo / Evolución / Padecimiento actual", "subjetivo"],
+    ["Objetivo / Exploración", "objetivo"],
+    ["Examen mental", "examenMental"],
+    ["Análisis / Comentario / Fundamento", "analisis"],
+    ["Plan / Indicaciones", "plan"],
+    ["Diagnósticos", "diagnosticos"],
+    ["Tratamiento", "tratamiento"],
+    ["Medicamentos", "medicamentos"],
+    ["Pronóstico", "pronostico"],
+    ["Destino", "destino"]
+  ];
+  return `<section class="patient-transfer-clinical-sections">
+    <h4>Secciones clínicas</h4>
+    ${fields.map(([label, key]) => `<label>${label}<textarea data-transfer-section="${doc.id}:${segment.id}:${key}">${escapeHtml(segment.sections?.[key] || "")}</textarea></label>`).join("")}
+  </section>`;
+}
+
+function renderNoteSegment(doc, segment, index) {
+  const selected = segment.confirmedType?.key || segment.metadata?.suggestedType?.key || "tipo_no_reconocido";
+  return `<article class="patient-transfer-note-segment" data-transfer-segment="${segment.id}">
+    <header>
+      <div><strong>Nota ${index + 1}</strong><small>Bloques ${segment.startBlockIndex}–${segment.endBlockIndex}</small></div>
+      <div>
+        <button type="button" data-transfer-split-segment="${segment.id}" data-transfer-document-id="${doc.id}">Dividir aquí</button>
+        ${index < (doc.noteSegments || []).length - 1 ? `<button type="button" data-transfer-merge-segment="${segment.id}" data-transfer-document-id="${doc.id}">Unir con la siguiente</button>` : ""}
+        <label><input type="checkbox" data-transfer-omit-segment="${doc.id}:${segment.id}" ${segment.omitted ? "checked" : ""}> Omitir nota</label>
+      </div>
+    </header>
+    <div class="patient-transfer-note-grid">
+      <label>Fecha<input type="text" data-transfer-segment-date="${doc.id}:${segment.id}" value="${escapeHtml(segment.metadata?.documentDate || segment.date || "")}" placeholder="DD/MM/AAAA"></label>
+      <label>Hora<input type="time" data-transfer-segment-time="${doc.id}:${segment.id}" value="${escapeHtml(segment.metadata?.documentHour || segment.time || "")}"></label>
+      <label>Tipo<select data-transfer-segment-type="${doc.id}:${segment.id}">
+        ${NOTE_TYPE_RULES.map((rule) => option(rule.key, rule.label, rule.key === selected)).join("")}
+        ${option("tipo_no_reconocido", "Tipo no reconocido", selected === "tipo_no_reconocido")}
+      </select></label>
+    </div>
+    ${renderSegmentClinicalSections(doc, segment)}
+    ${renderSegmentDiagnosisCandidates(doc, segment)}
+    ${renderSegmentTreatmentCandidates(doc, segment)}
+  </article>`;
+}
+
 function renderDocument(doc, groups = [], currentGroupId = "") {
   const selected = doc.confirmedType?.key || doc.metadata?.suggestedType?.key || "tipo_no_reconocido";
   return `
@@ -288,14 +377,23 @@ function renderDocument(doc, groups = [], currentGroupId = "") {
         </label>
         <label><input type="checkbox" data-transfer-omit-doc="${doc.id}" ${doc.omitted ? "checked" : ""}> Omitir archivo</label>
       </div>
+      <div class="patient-transfer-multiple-notes">
+        <label><input type="checkbox" data-transfer-multiple-notes="${doc.id}" ${doc.containsMultipleNotes ? "checked" : ""}> ¿Este archivo contiene más de una nota?</label>
+        <small>Actívela cuando el documento incluya varias evoluciones, notas de ingreso, seguimientos o registros de fechas distintas.</small>
+        ${doc.probableMultipleNotes ? `<div class="patient-transfer-warning">
+          <p>Se detectaron varias notas posibles en este archivo.</p>
+          <button type="button" data-transfer-analyze-multiple="${doc.id}">Analizar como varias notas</button>
+          <button type="button" data-transfer-keep-single="${doc.id}">Mantener como una sola</button>
+        </div>` : ""}
+      </div>
       <div class="patient-transfer-sections">
         <strong>Secciones encontradas</strong>
         <span>${Object.keys(doc.sections || {}).length ? Object.keys(doc.sections).join(", ") : "Sin secciones reconocidas"}</span>
       </div>
       ${renderVitalSignsCandidates(doc)}
-      ${renderClinicalSections(doc)}
-      ${renderDiagnosisCandidates(doc)}
-      ${renderTreatmentCandidates(doc)}
+      <section class="patient-transfer-note-segments">
+        ${(doc.noteSegments || []).map((segment, index) => renderNoteSegment(doc, segment, index)).join("")}
+      </section>
       ${renderExtractionDebug(doc)}
       <textarea readonly>${escapeHtml(doc.fullText || "")}</textarea>
     </details>`;
@@ -308,7 +406,7 @@ export function renderDetectedGroups(groups = []) {
   modal.querySelector("[data-transfer-review]").innerHTML = groups.length ? `
     <section class="patient-transfer-summary">
       <h3>Resumen del traspaso</h3>
-      <p>Pacientes probables: ${groups.length} · Notas: ${groups.reduce((total, group) => total + group.documents.length, 0)} · Con conflictos: ${groups.filter((group) => group.ambiguous).length}</p>
+      <p>Pacientes probables: ${groups.length} · Notas: ${groups.reduce((total, group) => total + group.documents.reduce((count, doc) => count + Math.max(1, (doc.noteSegments || []).filter((segment) => !segment.omitted).length), 0), 0)} · Con conflictos: ${groups.filter((group) => group.ambiguous).length}</p>
     </section>
     ${groups.map((group, index) => `
       <article class="patient-transfer-group">
@@ -391,13 +489,71 @@ export function readTransferReview(groups = []) {
           }
         };
       });
+      const noteSegments = (doc.noteSegments || []).map((segment) => {
+        const prefix = `${doc.id}:${segment.id}`;
+        const segmentSections = Object.fromEntries(Object.keys(segment.sections || {}).map((key) => [
+          key,
+          modal.querySelector(`[data-transfer-section="${prefix}:${key}"]`)?.value ?? segment.sections[key] ?? ""
+        ]));
+        const segmentDiagnoses = (segment.diagnosisCandidates || []).map((candidate) => {
+          const key = `${prefix}:${candidate.id}`;
+          const checked = modal.querySelector(`[data-transfer-dx-include="${key}"]`)?.checked || false;
+          return {
+            ...candidate,
+            include: checked,
+            selectedForImport: checked,
+            normalizedLabel: modal.querySelector(`[data-transfer-dx-name="${key}"]`)?.value?.trim() || candidate.normalizedLabel || "",
+            code: modal.querySelector(`[data-transfer-dx-code="${key}"]`)?.value?.trim() || "",
+            codingSystem: modal.querySelector(`[data-transfer-dx-system="${key}"]`)?.value || "",
+            statusSuggestion: modal.querySelector(`[data-transfer-dx-status="${key}"]`)?.value || candidate.statusSuggestion,
+            principal: modal.querySelector(`[data-transfer-dx-principal="${key}"]`)?.checked || false,
+            confirmedByDoctor: checked
+          };
+        });
+        const segmentTreatments = (segment.treatmentCandidates || []).map((candidate) => {
+          const key = `${prefix}:${candidate.id}`;
+          const checked = modal.querySelector(`[data-transfer-tx-include="${key}"]`)?.checked || false;
+          return {
+            ...candidate,
+            include: checked,
+            selectedForImport: checked,
+            medicationName: modal.querySelector(`[data-transfer-tx-name="${key}"]`)?.value?.trim() || candidate.medicationName || "",
+            dose: modal.querySelector(`[data-transfer-tx-dose="${key}"]`)?.value?.trim() || "",
+            doseUnit: modal.querySelector(`[data-transfer-tx-unit="${key}"]`)?.value?.trim() || "",
+            route: modal.querySelector(`[data-transfer-tx-route="${key}"]`)?.value?.trim() || "",
+            frequencyRaw: modal.querySelector(`[data-transfer-tx-frequency="${key}"]`)?.value?.trim() || "",
+            statusSuggestion: modal.querySelector(`[data-transfer-tx-status="${key}"]`)?.value || candidate.statusSuggestion,
+            confirmedByDoctor: checked
+          };
+        });
+        const segmentTypeKey = modal.querySelector(`[data-transfer-segment-type="${prefix}"]`)?.value || segment.confirmedType?.key || "tipo_no_reconocido";
+        const segmentType = NOTE_TYPE_RULES.find((item) => item.key === segmentTypeKey) || { key: "tipo_no_reconocido", label: "Tipo no reconocido" };
+        return {
+          ...segment,
+          omitted: modal.querySelector(`[data-transfer-omit-segment="${prefix}"]`)?.checked || false,
+          sections: segmentSections,
+          metadata: {
+            ...(segment.metadata || {}),
+            documentDate: modal.querySelector(`[data-transfer-segment-date="${prefix}"]`)?.value || "",
+            documentHour: modal.querySelector(`[data-transfer-segment-time="${prefix}"]`)?.value || ""
+          },
+          confirmedType: segmentType,
+          diagnosisCandidates: segmentDiagnoses,
+          treatmentCandidates: segmentTreatments,
+          vitalSignsCandidates: (segment.vitalSignsCandidates || []).map((segmentVital) => vitalSignsCandidates.find((item) => item.id === segmentVital.id) || segmentVital)
+        };
+      });
+      const primarySegment = noteSegments[0];
       return {
         ...doc,
         omitted: modal.querySelector(`[data-transfer-omit-doc="${doc.id}"]`)?.checked || false,
+        containsMultipleNotes: modal.querySelector(`[data-transfer-multiple-notes="${doc.id}"]`)?.checked || false,
         confirmedType: rule,
         vitalSignsCandidates,
-        diagnosisCandidates,
-        treatmentCandidates
+        noteSegments,
+        sections: primarySegment?.sections || doc.sections,
+        diagnosisCandidates: primarySegment?.diagnosisCandidates || diagnosisCandidates,
+        treatmentCandidates: primarySegment?.treatmentCandidates || treatmentCandidates
       };
     });
     return {

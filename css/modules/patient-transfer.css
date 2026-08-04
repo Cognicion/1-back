@@ -300,6 +300,47 @@
 .patient-transfer-clinical-sections h4 { margin: 0; color: #e0f2fe; }
 .patient-transfer-clinical-sections textarea { min-height: 72px; resize: vertical; }
 
+.patient-transfer-multiple-notes,
+.patient-transfer-note-segment {
+  display: grid;
+  gap: 10px;
+  margin: 12px 0;
+  padding: 12px;
+  border: 1px solid rgba(56, 189, 248, .24);
+  border-radius: 12px;
+  background: rgba(2, 6, 23, .28);
+}
+
+.patient-transfer-multiple-notes small,
+.patient-transfer-note-segment small {
+  color: #93a4ba;
+}
+
+.patient-transfer-note-segment > header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.patient-transfer-note-segment > header > div {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.patient-transfer-note-segment button {
+  padding: 7px 10px;
+}
+
+@media (max-width: 700px) {
+  .patient-transfer-note-segment > header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}
+
 .patient-transfer-actions {
   position: sticky;
   bottom: 0;

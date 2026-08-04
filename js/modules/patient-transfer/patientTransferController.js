@@ -7,6 +7,7 @@ import { normalizeDocxBlocks, normalizedBlocksToText } from "./docx/docxBlockNor
 import { parsePatientFields, fieldValues } from "./parsing/patientFieldParser.js";
 import { parseClinicalSections } from "./parsing/clinicalSectionParser.js";
 import { extractClinicalCandidates } from "./parsing/clinicalCandidateParser.js";
+import { detectMultipleClinicalNotes, expandSegmentedDocumentsForPersistence, mergeClinicalSegments, segmentClinicalNotes, splitClinicalSegment } from "./parsing/clinicalNoteSegmenter.js";
 import { extractVitalSignsCandidates } from "./parsing/vitalSignsParser.js";
 import { parseNoteMetadata } from "./parsing/noteMetadataParser.js";
 import { groupDocumentsByPatient } from "./parsing/documentGroupingService.js";
@@ -32,6 +33,100 @@ import {
 let initialized = false;
 let selectedFiles = [];
 let analyzedGroups = [];
+
+function normalizedCandidateKey(value = "") {
+  return String(value || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/\s+/g, " ").trim();
+}
+
+function aggregateCandidatesAcrossSegments(segments = [], property = "") {
+  const seen = new Map();
+  return segments.map((segment) => ({
+    ...segment,
+    [property]: (segment[property] || []).filter((candidate) => {
+      const key = property === "diagnosisCandidates"
+        ? `${candidate.codingSystem || ""}:${candidate.code || normalizedCandidateKey(candidate.normalizedName)}:${candidate.statusSuggestion || ""}`
+        : `${candidate.medicationId || normalizedCandidateKey(candidate.medicationName)}:${candidate.dose || ""}:${candidate.frequencyRaw || ""}:${candidate.statusSuggestion || ""}`;
+      const existing = seen.get(key);
+      if (!existing) {
+        seen.set(key, candidate);
+        return true;
+      }
+      existing.sourceOccurrences = (existing.sourceOccurrences || 1) + (candidate.sourceOccurrences || 1);
+      existing.sourceNoteIds = [...new Set([...(existing.sourceNoteIds || [existing.sourceNoteId]), ...(candidate.sourceNoteIds || [candidate.sourceNoteId])].filter(Boolean))];
+      existing.sourceFragments = [...new Set([...(existing.sourceFragments || []), ...(candidate.sourceFragments || [])])];
+      if (existing.sourceNoteIds.length > 1) {
+        existing.detectionRule = property === "diagnosisCandidates" ? "repeated-diagnostic-concept" : "repeated-medication";
+      }
+      return false;
+    })
+  }));
+}
+
+function enrichNoteSegments(document, segments = []) {
+  const enriched = segments.map((segment, index) => {
+    const metadata = parseNoteMetadata({ text: segment.rawText, sections: segment.sections, fields: document.fields || {} });
+    const candidates = extractClinicalCandidates({
+      id: document.id,
+      sourceNoteId: segment.id,
+      sections: segment.sections,
+      blocks: segment.blocks,
+      fullText: segment.rawText
+    });
+    const sections = { ...(segment.sections || {}) };
+    if (!sections.diagnosticos && candidates.diagnoses.length) {
+      sections.diagnosticos = [...new Set(candidates.diagnoses.map((candidate) => candidate.rawText).filter(Boolean))].join("\n");
+    }
+    if (!sections.tratamiento && !sections.medicamentos && candidates.treatments.length) {
+      sections.medicamentos = [...new Set(candidates.treatments.map((candidate) => candidate.sourceText).filter(Boolean))].join("\n");
+    }
+    const vitalSignsCandidates = (document.vitalSignsCandidates || []).filter((candidate) => {
+      const sourceIndex = candidate.sourceLocation?.blockIndex;
+      return Number.isInteger(sourceIndex) && sourceIndex >= segment.startBlockIndex && sourceIndex < segment.endBlockIndex;
+    });
+    return {
+      ...segment,
+      sections,
+      metadata: {
+        ...metadata,
+        documentDate: segment.date || metadata.documentDate,
+        documentHour: segment.time || metadata.documentHour
+      },
+      confirmedType: segment.confirmedType || metadata.suggestedType,
+      diagnosisCandidates: candidates.diagnoses,
+      treatmentCandidates: candidates.treatments,
+      vitalSignsCandidates
+    };
+  });
+
+  if (enriched.length && !enriched.some((segment) => segment.vitalSignsCandidates.length)) {
+    enriched[0] = { ...enriched[0], vitalSignsCandidates: document.vitalSignsCandidates || [] };
+  }
+  return aggregateCandidatesAcrossSegments(
+    aggregateCandidatesAcrossSegments(enriched, "diagnosisCandidates"),
+    "treatmentCandidates"
+  );
+}
+
+function applySegmentsToDocument(document, rawSegments = []) {
+  const noteSegments = enrichNoteSegments(document, rawSegments);
+  const primary = noteSegments[0] || {};
+  return {
+    ...document,
+    noteSegments,
+    sections: primary.sections || document.sections || {},
+    diagnosisCandidates: primary.diagnosisCandidates || [],
+    treatmentCandidates: primary.treatmentCandidates || []
+  };
+}
+
+function updateDocumentById(documentId, updater) {
+  analyzedGroups = analyzedGroups.map((group) => ({
+    ...group,
+    documents: group.documents.map((document) => document.id === documentId ? updater(document) : document)
+  }));
+  setPatientTransferGroups(analyzedGroups);
+  renderDetectedGroups(analyzedGroups);
+}
 
 function fileId(file, index) {
   return `file-${Date.now()}-${index}-${Math.random().toString(16).slice(2)}`;
@@ -103,6 +198,13 @@ function moveDocumentToGroup(documentId = "", targetGroupId = "") {
   analyzedGroups = analyzedGroups.map(normalizeGroupAfterMove);
   setPatientTransferGroups(analyzedGroups);
   renderDetectedGroups(analyzedGroups);
+}
+
+function expandSegmentedGroupsForSave(groups = []) {
+  return groups.map((group) => ({
+    ...group,
+    documents: expandSegmentedDocumentsForPersistence(group.documents)
+  }));
 }
 
 function addFiles(files = []) {
@@ -189,13 +291,18 @@ async function analyzeOneFile(item, user) {
   console.info("[patient-transfer] diagnosis-parser:candidates", { fileId: item.id, count: clinicalCandidates.diagnoses.length, rules: [...new Set(clinicalCandidates.diagnoses.map((item) => item.detectionRule))] });
   console.info("[patient-transfer] treatment-parser:candidates", { fileId: item.id, count: clinicalCandidates.treatments.length, sections: [...new Set(clinicalCandidates.treatments.map((item) => item.sourceSection))] });
   const vitalSignsCandidates = extractVitalSignsCandidates(blocks);
+  const multipleNotesDetection = detectMultipleClinicalNotes({
+    blocks,
+    fullText,
+    headings: sectionsResult.encabezados
+  });
   const duplicateStatus = duplicate ? "exact_duplicate" : sameBatch ? "duplicate_in_batch" : "nuevo";
 
   item.status = duplicate ? "warning" : "ok";
   item.statusLabel = duplicate ? "Ya importado" : "Procesado correctamente";
   item.error = "";
 
-  const documentCandidate = {
+  let documentCandidate = {
     id: item.id,
     file: item.file,
     hash,
@@ -214,10 +321,22 @@ async function analyzeOneFile(item, user) {
     vitalSignsCandidates,
     diagnosisCandidates: clinicalCandidates.diagnoses,
     treatmentCandidates: clinicalCandidates.treatments,
+    containsMultipleNotes: false,
+    probableMultipleNotes: multipleNotesDetection.probableMultipleNotes,
+    multipleNotesReasons: multipleNotesDetection.reasons,
+    proposedNoteBoundaries: multipleNotesDetection.proposedNoteBoundaries,
+    noteSegments: [],
     duplicate,
     duplicateStatus,
     duplicateStatusLabel: duplicate ? "Ya importado" : sameBatch ? "Duplicado en esta carga" : "Nuevo"
   };
+  documentCandidate = applySegmentsToDocument(documentCandidate, segmentClinicalNotes({
+    blocks,
+    fullText,
+    manualMultipleNotes: false,
+    proposedBoundaries: multipleNotesDetection.proposedNoteBoundaries,
+    documentId: item.id
+  }));
   console.assert(Array.isArray(documentCandidate.diagnosisCandidates), "diagnosisCandidates must be an array");
   console.assert(Array.isArray(documentCandidate.treatmentCandidates), "treatmentCandidates must be an array");
   return documentCandidate;
@@ -267,8 +386,8 @@ async function analyzeSelectedFiles() {
   console.info("[docx-import] patient-fields:rendered", { groupCount: analyzedGroups.length });
   console.info("[patient-transfer] review-ui:rendered", { groupCount: analyzedGroups.length });
   console.info("[patient-transfer] clinical-candidates:rendered", {
-    diagnoses: analyzedGroups.reduce((total, group) => total + group.documents.reduce((count, doc) => count + doc.diagnosisCandidates.length, 0), 0),
-    treatments: analyzedGroups.reduce((total, group) => total + group.documents.reduce((count, doc) => count + doc.treatmentCandidates.length, 0), 0)
+    diagnoses: analyzedGroups.reduce((total, group) => total + group.documents.reduce((count, doc) => count + (doc.noteSegments || [doc]).reduce((segmentCount, segment) => segmentCount + (segment.diagnosisCandidates || []).length, 0), 0), 0),
+    treatments: analyzedGroups.reduce((total, group) => total + group.documents.reduce((count, doc) => count + (doc.noteSegments || [doc]).reduce((segmentCount, segment) => segmentCount + (segment.treatmentCandidates || []).length, 0), 0), 0)
   });
   setPatientTransferMessage("Revision lista. Confirme antes de guardar.", 100);
 }
@@ -286,6 +405,7 @@ async function saveReviewedTransfer({ reuseReviewedGroups = false } = {}) {
   // La revisión se sincroniza en cada interacción; al confirmar no se vuelve a
   // reconstruir desde el DOM para evitar perder selecciones durante un render.
   const reviewedGroups = analyzedGroups;
+  const persistenceGroups = expandSegmentedGroupsForSave(reviewedGroups);
   const blocking = reviewedGroups.find((group) =>
     !group.omitted && group.action === "associate" && !group.selectedPatientId
   );
@@ -295,18 +415,16 @@ async function saveReviewedTransfer({ reuseReviewedGroups = false } = {}) {
   }
 
   const summary = {
-    newPatients: reviewedGroups.filter((group) => !group.omitted && group.action === "create").length,
-    existingPatients: reviewedGroups.filter((group) => !group.omitted && group.action === "associate").length,
-    notes: reviewedGroups.reduce((total, group) => total + (group.omitted ? 0 : group.documents.filter((doc) => !doc.omitted && doc.duplicateStatus === "nuevo").length), 0),
-    omittedFiles: reviewedGroups.reduce((total, group) => total + group.documents.filter((doc) => doc.omitted || doc.duplicateStatus !== "nuevo").length, 0),
-    possibleDuplicates: reviewedGroups.reduce((total, group) => total + group.documents.filter((doc) => doc.duplicateStatus !== "nuevo").length, 0),
+    newPatients: persistenceGroups.filter((group) => !group.omitted && group.action === "create").length,
+    existingPatients: persistenceGroups.filter((group) => !group.omitted && group.action === "associate").length,
+    notes: persistenceGroups.reduce((total, group) => total + (group.omitted ? 0 : group.documents.filter((doc) => !doc.omitted && doc.duplicateStatus === "nuevo").length), 0),
+    omittedFiles: persistenceGroups.reduce((total, group) => total + group.documents.filter((doc) => doc.omitted || doc.duplicateStatus !== "nuevo").length, 0),
+    possibleDuplicates: persistenceGroups.reduce((total, group) => total + group.documents.filter((doc) => doc.duplicateStatus !== "nuevo").length, 0),
     pendingFields: reviewedGroups.reduce((total, group) => total + Object.values(group.confirmedFields || {}).filter((value) => !value).length, 0)
   };
   const confirmed = window.confirm(`Resumen del traspaso\n\nPacientes nuevos: ${summary.newPatients}\nPacientes existentes: ${summary.existingPatients}\nNotas que se crearan: ${summary.notes}\nArchivos omitidos: ${summary.omittedFiles}\nPosibles duplicados: ${summary.possibleDuplicates}\nCampos pendientes: ${summary.pendingFields}\n\n¿Confirmar traspaso?`);
   if (!confirmed) return;
 
-  analyzedGroups = reviewedGroups;
-  setPatientTransferGroups(analyzedGroups);
   setTransferSavingState(true);
   setPatientTransferStatus(TRANSFER_STATUS.SAVING);
   setPatientTransferVisualStatus(TRANSFER_STATUS.SAVING);
@@ -319,7 +437,7 @@ async function saveReviewedTransfer({ reuseReviewedGroups = false } = {}) {
   try {
     setPatientTransferMessage("Validacion completada. Creando paciente...", 15);
     const results = await saveTransferredGroups({
-      groups: reviewedGroups,
+      groups: persistenceGroups,
       user: { ...profile, uid: user.uid, email: user.email },
       onProgress: ({ stage, message, progress }) => {
         setPatientTransferExecutionState({ lastCompletedStage: stage || "saving" });
@@ -382,12 +500,17 @@ function syncReviewedGroupsFromView() {
   analyzedGroups = readTransferReview(analyzedGroups);
   setPatientTransferGroups(analyzedGroups);
 
-  const counts = analyzedGroups.reduce((total, group) => group.documents.reduce((documentTotal, doc) => ({
-    diagnosisCandidatesDetected: documentTotal.diagnosisCandidatesDetected + (doc.diagnosisCandidates || []).length,
-    diagnosisCandidatesRendered: documentTotal.diagnosisCandidatesRendered + (doc.diagnosisCandidates || []).length,
-    treatmentCandidatesDetected: documentTotal.treatmentCandidatesDetected + (doc.treatmentCandidates || []).length,
-    treatmentCandidatesRendered: documentTotal.treatmentCandidatesRendered + (doc.treatmentCandidates || []).length
-  }), total), {
+  const counts = analyzedGroups.reduce((total, group) => group.documents.reduce((documentTotal, doc) => {
+    const owners = doc.noteSegments?.length ? doc.noteSegments : [doc];
+    const diagnoses = owners.reduce((count, owner) => count + (owner.diagnosisCandidates || []).length, 0);
+    const treatments = owners.reduce((count, owner) => count + (owner.treatmentCandidates || []).length, 0);
+    return {
+      diagnosisCandidatesDetected: documentTotal.diagnosisCandidatesDetected + diagnoses,
+      diagnosisCandidatesRendered: documentTotal.diagnosisCandidatesRendered + diagnoses,
+      treatmentCandidatesDetected: documentTotal.treatmentCandidatesDetected + treatments,
+      treatmentCandidatesRendered: documentTotal.treatmentCandidatesRendered + treatments
+    };
+  }, total), {
     diagnosisCandidatesDetected: 0,
     diagnosisCandidatesRendered: 0,
     treatmentCandidatesDetected: 0,
@@ -395,6 +518,33 @@ function syncReviewedGroupsFromView() {
   });
 
   console.info("[patient-transfer] review-state:updated", counts);
+}
+
+function setDocumentMultipleNotes(documentId, enabled) {
+  updateDocumentById(documentId, (document) => {
+    const segments = segmentClinicalNotes({
+      blocks: document.blocks,
+      fullText: document.fullText,
+      manualMultipleNotes: enabled,
+      proposedBoundaries: document.proposedNoteBoundaries || [],
+      documentId: document.id
+    });
+    return applySegmentsToDocument({ ...document, containsMultipleNotes: enabled }, segments);
+  });
+}
+
+function splitDocumentSegment(documentId, segmentId) {
+  updateDocumentById(documentId, (document) => applySegmentsToDocument(
+    { ...document, containsMultipleNotes: true },
+    splitClinicalSegment(document.noteSegments || [], segmentId)
+  ));
+}
+
+function mergeDocumentSegment(documentId, segmentId) {
+  updateDocumentById(documentId, (document) => {
+    const segments = mergeClinicalSegments(document.noteSegments || [], segmentId);
+    return applySegmentsToDocument({ ...document, containsMultipleNotes: segments.length > 1 }, segments);
+  });
 }
 
 export function initializePatientTransfer() {
@@ -436,6 +586,30 @@ export function initializePatientTransfer() {
   });
 
   root.addEventListener("click", (event) => {
+    const analyzeMultipleButton = event.target.closest("[data-transfer-analyze-multiple]");
+    if (analyzeMultipleButton) {
+      syncReviewedGroupsFromView();
+      setDocumentMultipleNotes(analyzeMultipleButton.dataset.transferAnalyzeMultiple, true);
+      return;
+    }
+    const keepSingleButton = event.target.closest("[data-transfer-keep-single]");
+    if (keepSingleButton) {
+      syncReviewedGroupsFromView();
+      setDocumentMultipleNotes(keepSingleButton.dataset.transferKeepSingle, false);
+      return;
+    }
+    const splitButton = event.target.closest("[data-transfer-split-segment]");
+    if (splitButton) {
+      syncReviewedGroupsFromView();
+      splitDocumentSegment(splitButton.dataset.transferDocumentId, splitButton.dataset.transferSplitSegment);
+      return;
+    }
+    const mergeButton = event.target.closest("[data-transfer-merge-segment]");
+    if (mergeButton) {
+      syncReviewedGroupsFromView();
+      mergeDocumentSegment(mergeButton.dataset.transferDocumentId, mergeButton.dataset.transferMergeSegment);
+      return;
+    }
     if (event.target.closest("[data-transfer-retry]")) {
       saveReviewedTransfer({ reuseReviewedGroups: true }).catch((error) => showPatientTransferError(error.message || String(error)));
       return;
@@ -463,6 +637,12 @@ export function initializePatientTransfer() {
   });
 
   root.addEventListener("change", (event) => {
+    const multipleToggle = event.target.closest("[data-transfer-multiple-notes]");
+    if (multipleToggle) {
+      syncReviewedGroupsFromView();
+      setDocumentMultipleNotes(multipleToggle.dataset.transferMultipleNotes, multipleToggle.checked);
+      return;
+    }
     const targetSelect = event.target.closest("[data-transfer-document-target]");
     if (targetSelect) {
       moveDocumentToGroup(targetSelect.dataset.transferDocumentTarget, targetSelect.value);

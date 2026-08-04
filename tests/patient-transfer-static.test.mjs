@@ -16,6 +16,8 @@ const expectedFiles = [
   "js/modules/patient-transfer/docx/docxHashService.js",
   "js/modules/patient-transfer/parsing/patientFieldParser.js",
   "js/modules/patient-transfer/parsing/clinicalSectionParser.js",
+  "js/modules/patient-transfer/parsing/clinicalSectionConfig.js",
+  "js/modules/patient-transfer/parsing/clinicalNoteSegmenter.js",
   "js/modules/patient-transfer/parsing/noteMetadataParser.js",
   "js/modules/patient-transfer/parsing/documentGroupingService.js",
   "js/modules/patient-transfer/integration/clinicalAnalysisAdapter.js",
@@ -40,6 +42,7 @@ assert.doesNotMatch(html, /btnTraspasarPacientes/, "medico.html no conserva un s
 assert.match(html, /patient-transfer\.css/, "medico.html carga estilos del modulo");
 
 const controller = read("js/modules/patient-transfer/patientTransferController.js");
+const transferView = read("js/modules/patient-transfer/ui/patientTransferView.js");
 assert.match(controller, /window\.confirm/, "la persistencia exige confirmacion medica");
 assert.match(controller, /validateTransferDocxFile/, "el flujo valida DOCX antes de extraer");
 assert.match(controller, /extractDocx/, "el flujo extrae DOCX estructuralmente");
@@ -47,6 +50,13 @@ assert.match(controller, /analyzeDocumentClinically/, "el flujo delega analisis 
 assert.match(controller, /groupDocumentsByPatient/, "el flujo agrupa documentos por paciente probable");
 assert.match(controller, /function syncReviewedGroupsFromView/, "los cambios de revisión se sincronizan al estado central");
 assert.match(controller, /const reviewedGroups = analyzedGroups;/, "el guardado usa el estado central ya sincronizado");
+assert.match(controller, /expandSegmentedGroupsForSave/, "la persistencia crea una nota por segmento confirmado");
+assert.match(controller, /setDocumentMultipleNotes/, "la revisión permite activar múltiples notas");
+assert.match(transferView, /data-transfer-multiple-notes/, "la vista muestra la casilla de múltiples notas");
+assert.match(transferView, /data-transfer-split-segment/, "la vista permite dividir segmentos");
+assert.match(transferView, /data-transfer-merge-segment/, "la vista permite unir segmentos");
+assert.match(transferView, /renderSegmentDiagnosisCandidates/, "la vista renderiza diagnósticos por nota");
+assert.match(transferView, /renderSegmentTreatmentCandidates/, "la vista renderiza tratamientos por nota");
 
 const validator = read("js/modules/patient-transfer/docx/docxValidator.js");
 assert.match(validator, /ZIP_SIGNATURE/, "valida firma real de archivo ZIP/DOCX");
