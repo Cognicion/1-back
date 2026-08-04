@@ -49,41 +49,125 @@ function diagnosisName(line = "", code = "") {
   return value.replace(/\b(?:diagnosticad[oa]\s+en\s+\d{4}|en\s+\d{4})\b.*$/i, "").replace(/^\s*[-:–]+/, "").replace(/\s+/g, " ").trim();
 }
 
+export function splitDiagnosticCodes(text = "") {
+  return [...String(text || "").matchAll(/[A-Z]\d{2}(?:\.\d{1,2})?/gi)]
+    .map((match) => match[0].toUpperCase().replace(/\s+/g, ""));
+}
+
+function cleanDiagnosisName(value = "", codes = []) {
+  let result = String(value || "");
+  codes.forEach((code) => { result = result.replace(new RegExp(code.replace(".", "\\."), "ig"), " "); });
+  return result
+    .replace(/\b(?:cie[- ]?10|cie[- ]?11|icd[- ]?10|diagn[oó]sticos?|impresi[oó]n diagn[oó]stica)\b\s*[:|\-]?/gi, " ")
+    .replace(/\b(?:se agrega|se descarta|a descartar|probable|en remisi[oó]n)\b/gi, " ")
+    .replace(/^\s*[-:|–—.]+|[-:|–—.]+\s*$/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function diagnosisCandidate({ name, code = "", rawText, section, documentId, sourceLocation = {}, requiresReview = false, detectionRule = "diagnosis-block" }) {
+  const status = statusForDiagnosis(rawText || name);
+  const system = codingSystem(code, rawText || "");
+  return {
+    id: `${documentId || "doc"}-dx-${section}-${sourceLocation.lineIndex ?? sourceLocation.rowIndex ?? 0}-${code || normalizeText(name).slice(0, 24)}`,
+    rawText: rawText || name,
+    diagnosisName: name,
+    normalizedDiagnosisName: normalizeText(name),
+    normalizedName: name,
+    normalizedLabel: name,
+    code: code || null,
+    system,
+    codingSystem: system,
+    status,
+    statusSuggestion: status,
+    isPrimary: false,
+    principal: false,
+    temporality: status === "Antecedente" ? "historical" : "current",
+    negated: /\b(?:niega|sin antecedente|se descarto|se descarta)\b/i.test(rawText || ""),
+    sourceSection: section,
+    sourceHeading: section,
+    sourceText: rawText || name,
+    sourceLocation: { documentId, ...sourceLocation },
+    evidence: rawText || name,
+    confidence: code ? (requiresReview ? "medium" : "high") : "medium",
+    requiresReview: Boolean(requiresReview || !code),
+    detectionRule,
+    selectedForImport: false,
+    include: false,
+    confirmedByDoctor: false
+  };
+}
+
+export function parseDiagnosisBlock({ text = "", section = "diagnosticos", documentId = "", sourceLocation = {}, explicit = false } = {}) {
+  const rows = String(text || "").split(/\r?\n/).map((row) => row.trim()).filter(Boolean);
+  const results = [];
+  const rowCodes = rows.map((row) => splitDiagnosticCodes(row));
+  const plainRows = rows.filter((row, index) => !rowCodes[index].length && cleanDiagnosisName(row).length >= 3);
+  const codeOnlyRows = rows.filter((row, index) => rowCodes[index].length === 1 && !cleanDiagnosisName(row, rowCodes[index]).length);
+  if (explicit && plainRows.length && codeOnlyRows.length && plainRows.length === codeOnlyRows.length) {
+    const firstCodeRow = rowCodes.findIndex((codes) => codes.length);
+    const lastPlainRow = rows.reduce((last, row, index) => (!rowCodes[index].length && cleanDiagnosisName(row).length >= 3 ? index : last), -1);
+    if (firstCodeRow > lastPlainRow) {
+      plainRows.forEach((row, index) => results.push(diagnosisCandidate({
+        name: cleanDiagnosisName(row),
+        rawText: `${row} | ${codeOnlyRows[index]}`,
+        code: splitDiagnosticCodes(codeOnlyRows[index])[0],
+        section,
+        documentId,
+        sourceLocation: { ...sourceLocation, rowIndex: index },
+        detectionRule: "diagnosis-columns-paired"
+      })));
+      return results;
+    }
+  }
+  rows.forEach((row, rowIndex) => {
+    const codes = splitDiagnosticCodes(row);
+    const name = cleanDiagnosisName(row, codes);
+    const looksLikeHeader = /^(?:diagn[oó]sticos?|cie[- ]?10|cie[- ]?11|sistema)$/i.test(name);
+    if (looksLikeHeader) return;
+    if (codes.length === 1) {
+      if (name.length >= 3) results.push(diagnosisCandidate({ name, code: codes[0], rawText: row, section, documentId, sourceLocation: { ...sourceLocation, rowIndex }, detectionRule: "diagnosis-code-pair" }));
+      else results.push(diagnosisCandidate({ name: "", code: codes[0], rawText: row, section, documentId, sourceLocation: { ...sourceLocation, rowIndex }, requiresReview: true, detectionRule: "unpaired-diagnosis-code" }));
+      return;
+    }
+    if (codes.length > 1) {
+      console.info("[patient-transfer] diagnosis:unpaired", JSON.stringify({ documentId, namesCount: name ? 1 : 0, codesCount: codes.length, rowIndex }));
+      if (name.length >= 3) results.push(diagnosisCandidate({ name, rawText: row, section, documentId, sourceLocation: { ...sourceLocation, rowIndex }, requiresReview: true, detectionRule: "multiple-unpaired-diagnosis-codes" }));
+      return;
+    }
+    if (explicit && name.length >= 3 && !/^(?:plan|tratamiento|medicamentos|indicaciones)$/i.test(name)) {
+      results.push(diagnosisCandidate({ name, rawText: row, section, documentId, sourceLocation: { ...sourceLocation, rowIndex }, requiresReview: true, detectionRule: "diagnosis-without-code" }));
+    }
+  });
+  return results;
+}
+
 export function detectDiagnosisCandidates({ sections = {}, fullText = "", sourceBlocks = [], documentId = "" } = {}) {
-  const sources = sourceEntries(sections, fullText, ["diagnosticos", "analisis", "subjetivo"]);
   const candidates = [];
   const seen = new Set();
-  sources.forEach(({ section, text }) => splitLines(text).forEach(({ text: line, index }) => {
-    const code = line.match(/\b(?:[A-Z]\d{2}(?:\.\d{1,2})?|\d[A-Z][0-9A-Z]{2,})\b/i)?.[0] || "";
-    const explicit = Boolean(code || /(?:diagn[oó]stico\s+de|diagnosticad[oa]|cuenta\s+con\s+diagn[oó]stico|antecedente\s+de|probable|a\s+descartar)/i.test(line));
-    if (!explicit && section !== "diagnosticos") return;
-    const normalizedName = diagnosisName(line, code);
-    if (!normalizedName || normalizedName.length < 3) return;
-    const negated = /\b(?:niega|sin antecedente|se descarto|se descarta)\b/i.test(line);
-    const key = `${normalizeText(code)}:${normalizeText(normalizedName)}`;
-    if (seen.has(key)) return;
+  const addCandidates = (items) => items.forEach((candidate) => {
+    const key = `${normalizeText(candidate.code || "")}:${candidate.normalizedDiagnosisName}`;
+    if (!candidate.diagnosisName || seen.has(key)) return;
     seen.add(key);
-    candidates.push({
-      id: `${documentId || "doc"}-dx-${section}-${index}`,
-      rawText: line,
-      normalizedName,
-      normalizedLabel: normalizedName,
-      code: code || null,
-      codingSystem: codingSystem(code, line),
-      statusSuggestion: statusForDiagnosis(line),
-      temporality: statusForDiagnosis(line) === "Antecedente" ? "historical" : "current",
-      negated,
-      sourceSection: section,
-      sourceLocation: { documentId, lineIndex: index },
-      sourceBlockIndex: sourceBlocks[index]?.source?.blockIndex ?? null,
-      startOffset: fullText ? fullText.indexOf(line) : -1,
-      endOffset: fullText ? fullText.indexOf(line) + line.length : -1,
-      detectionRule: code ? "codigo-clinico" : "frase-diagnostica-explicita",
-      selectedForImport: false,
-      include: false,
-      confirmedByDoctor: false
+    candidates.push(candidate);
+  });
+  sourceBlocks.filter((block) => block.type === "table").forEach((block) => {
+    (block.rows || []).forEach((row, rowIndex) => {
+      const rowText = row.join(" | ");
+      if (splitDiagnosticCodes(rowText).length && /diagn[oó]stico|cie[- ]?10|cie[- ]?11/i.test(rowText) || splitDiagnosticCodes(rowText).length === 1) {
+        addCandidates(parseDiagnosisBlock({ text: rowText, section: "diagnosticos", documentId, sourceLocation: { tableIndex: block.source?.tableIndex, blockIndex: block.source?.blockIndex, rowIndex }, explicit: true }));
+      }
     });
-  }));
+  });
+  sourceEntries(sections, fullText, ["diagnosticos", "analisis", "subjetivo"]).forEach(({ section, text }) => {
+    const explicit = section === "diagnosticos";
+    addCandidates(parseDiagnosisBlock({ text, section, documentId, explicit }));
+    splitLines(text).forEach(({ text: line, index }) => {
+      if (!/(?:diagn[oó]stico\s+de|diagnosticad[oa]|cuenta\s+con\s+diagn[oó]stico|antecedente\s+de|probable|a\s+descartar)/i.test(line)) return;
+      addCandidates(parseDiagnosisBlock({ text: line, section, documentId, sourceLocation: { lineIndex: index }, explicit: true }));
+    });
+  });
+  console.info("[patient-transfer] diagnosis:paired", JSON.stringify({ noteId: documentId, candidatesCount: candidates.length, pairedCount: candidates.filter((item) => item.code).length, unpairedCount: candidates.filter((item) => !item.code || item.requiresReview).length }));
   return candidates;
 }
 

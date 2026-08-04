@@ -1,6 +1,7 @@
 import { FIELD_RULES, NOTE_TYPE_RULES } from "../../importacionDocx/docxImportConfig.js";
 import { construirNombreCompletoPaciente } from "../../../utils/nombresPacientes.js";
-import { parseMedicationSchedules } from "../parsing/clinicalCandidateParser.js";
+import { parseMedicationSchedules } from "../parsing/clinicalCandidateParser.js?v=20260804-duplicate-diagnosis-v1";
+import { buildPatientMatchExplanation } from "../parsing/patientDuplicateMatcher.js";
 
 let root = null;
 
@@ -173,15 +174,42 @@ function renderDuplicateWarning(group) {
   const matches = group.possibleMatches || group.candidates || [];
   const strongest = matches[0];
   if (!strongest) return "";
-  const high = ["muy_alta", "alta"].includes(strongest.level);
-  const resolution = group.duplicateResolution?.action || "pending";
-  const matched = (strongest.matchedFields || []).map((field) => `<li>✓ ${escapeHtml(field.label)}${field.candidateValue ? `: ${escapeHtml(field.candidateValue)}` : ""}</li>`).join("");
-  const conflicts = (strongest.conflictingFields || []).map((field) => `<li>• ${escapeHtml(field.label)}: dato del documento ${escapeHtml(field.candidateValue)} / registrado ${escapeHtml(field.existingValue)}</li>`).join("");
+  const explanation = buildPatientMatchExplanation(strongest);
+  const high = ["muy_alta", "alta"].includes(explanation.level);
+  const resolution = group.selectedResolution || null;
+  const matched = explanation.matchedFields.map((field) => `<li>✓ ${escapeHtml(field.label)}${field.candidateValue ? `: ${escapeHtml(field.candidateValue)}` : ""}</li>`).join("");
+  const conflicts = explanation.conflictingFields.map((field) => `<li>• ${escapeHtml(field.label)}: dato del documento ${escapeHtml(field.candidateValue)} / registrado ${escapeHtml(field.existingValue)}</li>`).join("");
+  const documentFields = group.confirmedFields || group.fields || {};
+  const existingFields = strongest.patient || {};
+  const comparisonFields = [
+    ["Nombre completo", documentFields.nombre || documentFields.nombreCompleto, existingFields.nombreCompleto || existingFields.nombre || strongest.name],
+    ["Nombres", documentFields.nombres, existingFields.nombres],
+    ["Apellido paterno", documentFields.apellidoPaterno, existingFields.apellidoPaterno],
+    ["Apellido materno", documentFields.apellidoMaterno, existingFields.apellidoMaterno],
+    ["Fecha de nacimiento", documentFields.fechaNacimiento, existingFields.fechaNacimiento],
+    ["Expediente", documentFields.expediente, existingFields.expediente || existingFields.numeroExpediente],
+    ["CURP", documentFields.curp, existingFields.curp],
+    ["Sexo", documentFields.sexo, existingFields.sexo],
+    ["Género", documentFields.genero, existingFields.genero || existingFields.identidadGenero],
+    ["Institución", documentFields.institucion, existingFields.institucion || existingFields.institucionPaciente],
+    ["Servicio", documentFields.servicio, existingFields.servicio],
+    ["Cama", documentFields.cama, existingFields.cama]
+  ];
+  const comparisonTable = comparisonFields.map(([label, candidateValue, existingValue]) => {
+    const left = candidateValue?.value ?? candidateValue ?? "";
+    const right = existingValue || "";
+    const marker = left && right ? (String(left).trim().toLowerCase() === String(right).trim().toLowerCase() ? "✓" : "⚠") : "—";
+    return `<tr><th>${escapeHtml(label)}</th><td>${marker} ${escapeHtml(left || "No disponible")}</td><td>${escapeHtml(right || "No disponible")}</td></tr>`;
+  }).join("");
   return `<section class="patient-transfer-warning patient-transfer-duplicate-warning" aria-label="Posible coincidencia de paciente">
-    <strong>${high ? `POSIBLE COINCIDENCIA ${strongest.level === "muy_alta" ? "MUY ALTA" : "ALTA"}` : "POSIBLE COINCIDENCIA PARCIAL"}</strong>
+    <strong>${high ? `POSIBLE COINCIDENCIA ${explanation.levelLabel.toUpperCase()}` : "POSIBLE COINCIDENCIA PARCIAL"}</strong>
+    <p>${escapeHtml(explanation.summary)}</p>
     <p>Paciente existente: <b>${escapeHtml(strongest.name || strongest.patient?.nombreCompleto || "Paciente registrado")}</b></p>
     ${matched ? `<p>Coincidencias:</p><ul>${matched}</ul>` : ""}
     ${conflicts ? `<p>Diferencias:</p><ul>${conflicts}</ul>` : "<p>Diferencias: ninguna detectada.</p>"}
+    <p><b>Nivel:</b> ${escapeHtml(explanation.levelLabel)}${strongest.score ? ` · Puntaje: ${strongest.score}` : ""}</p>
+    <p><b>Recomendación:</b> ${explanation.recommendedAction === "link-existing" ? "Es probable que sea el mismo paciente." : "Revise los datos antes de decidir."}</p>
+    <details><summary>Comparar datos</summary><table class="patient-transfer-data-table"><thead><tr><th>Campo</th><th>Dato del documento</th><th>Dato registrado</th></tr></thead><tbody>${comparisonTable}</tbody></table></details>
     <fieldset class="patient-transfer-duplicate-resolution">
       <legend>Decisión para este paciente</legend>
       <label><input type="radio" name="duplicate-resolution-${group.id}" value="link-existing" data-transfer-duplicate-resolution="${group.id}" data-patient-id="${escapeHtml(strongest.patientId || strongest.id || "")}" ${resolution === "link-existing" ? "checked" : ""}> Asociar las notas al paciente existente</label>
@@ -230,29 +258,17 @@ function renderExtractionDebug(doc) {
 
 function renderDiagnosisCandidates(doc) {
   const candidates = doc.diagnosisCandidates || [];
-  if (!candidates.length) return `
-    <section class="patient-transfer-candidates">
-      <h4>Diagnosticos detectados</h4>
-      <p>No se detectaron diagnosticos explicitos en este documento.</p>
-    </section>`;
-  return `
-    <section class="patient-transfer-candidates">
-      <h4>Diagnosticos detectados</h4>
-      ${candidates.map((candidate) => `
-        <article>
-          <label><input type="checkbox" data-transfer-dx-include="${doc.id}:${candidate.id}" ${candidate.selectedForImport ? "checked" : ""}> Incluir</label>
-          <input data-transfer-dx-name="${doc.id}:${candidate.id}" value="${escapeHtml(candidate.normalizedLabel || candidate.rawText || "")}" placeholder="Diagnostico">
-          <input data-transfer-dx-code="${doc.id}:${candidate.id}" value="${escapeHtml(candidate.code || "")}" placeholder="Codigo">
-          <select data-transfer-dx-system="${doc.id}:${candidate.id}">
-            ${["", "CIE-10", "CIE-11", "DSM-5"].map((item) => option(item, item || "Sin sistema", item === (candidate.codingSystem || ""))).join("")}
-          </select>
-          <select data-transfer-dx-status="${doc.id}:${candidate.id}">
-            ${["Confirmado", "Probable", "A descartar", "Diferencial", "En seguimiento", "Antecedente", "Remision", "Descartado"].map((item) => option(item, item, item === candidate.statusSuggestion)).join("")}
-          </select>
-          <label><input type="checkbox" data-transfer-dx-principal="${doc.id}:${candidate.id}"> Principal</label>
-          <small>Fuente: ${escapeHtml(candidate.sourceSection || "")} · ${escapeHtml(candidate.temporality || "")} · ${escapeHtml(candidate.rawText || "")}</small>
-        </article>`).join("")}
-    </section>`;
+  const emptyDiagnosisMessage = "No se detectaron diagnosticos explicitos";
+  return `<section class="patient-transfer-candidates"><h4>Diagnósticos detectados</h4>${candidates.length ? candidates.map((candidate) => `
+    <article>
+      <label><input type="checkbox" data-transfer-dx-include="${doc.id}:${candidate.id}" ${candidate.selectedForImport ? "checked" : ""}> Incluir</label>
+      <textarea rows="2" data-transfer-dx-name="${doc.id}:${candidate.id}" title="${escapeHtml(candidate.diagnosisName || candidate.normalizedLabel || candidate.rawText || "")}" placeholder="Diagnóstico">${escapeHtml(candidate.diagnosisName || candidate.normalizedLabel || candidate.rawText || "")}</textarea>
+      <input data-transfer-dx-code="${doc.id}:${candidate.id}" value="${escapeHtml(candidate.code || "")}" placeholder="Código">
+      <select data-transfer-dx-system="${doc.id}:${candidate.id}">${["", "CIE-10", "CIE-11", "DSM-5"].map((item) => option(item, item || "Sin sistema", item === (candidate.system || candidate.codingSystem || ""))).join("")}</select>
+      <select data-transfer-dx-status="${doc.id}:${candidate.id}">${["Confirmado", "Probable", "A descartar", "Diferencial", "En seguimiento", "Antecedente", "Remisión", "Descartado"].map((item) => option(item, item, item === (candidate.status || candidate.statusSuggestion))).join("")}</select>
+      <label><input type="checkbox" data-transfer-dx-principal="${doc.id}:${candidate.id}" ${candidate.isPrimary || candidate.principal ? "checked" : ""}> Principal</label>
+      <small>Fuente: ${escapeHtml(candidate.sourceSection || "")} · ${escapeHtml(candidate.temporality || "")} · ${escapeHtml(candidate.rawText || "")}</small>
+    </article>`).join("") : "<p>No se detectaron diagnósticos explícitos en este documento.</p>"}</section>`;
 }
 
 function renderTreatmentCandidates(doc) {
@@ -353,6 +369,25 @@ function renderSegmentVitalSigns(doc, segment) {
 }
 
 function renderSegmentDiagnosisCandidates(doc, segment) {
+  const candidates = segment.diagnosisCandidates || [];
+  console.info("[patient-transfer] diagnosis:rendered", JSON.stringify({ noteId: segment.id, candidatesCount: candidates.length }));
+  return `<section class="patient-transfer-candidates"><h4>Diagnósticos detectados</h4>${candidates.length ? `<div class="patient-transfer-table-scroll"><table class="patient-transfer-data-table">
+    <thead><tr><th>Incluir</th><th>Diagnóstico</th><th>Código</th><th>Sistema</th><th>Estado</th><th>Principal</th><th>Fecha</th><th>Fuente</th></tr></thead><tbody>${candidates.map((candidate) => {
+      const key = segmentControlKey(doc, segment, candidate);
+      return `<tr>
+        <td><input aria-label="Incluir diagnóstico" type="checkbox" data-transfer-dx-include="${key}" ${candidate.selectedForImport ? "checked" : ""}></td>
+        <td><textarea rows="2" data-transfer-dx-name="${key}" title="${escapeHtml(candidate.diagnosisName || candidate.normalizedLabel || candidate.rawText || "")}" placeholder="Diagnóstico">${escapeHtml(candidate.diagnosisName || candidate.normalizedLabel || candidate.rawText || "")}</textarea></td>
+        <td><input data-transfer-dx-code="${key}" value="${escapeHtml(candidate.code || "")}" placeholder="Código"></td>
+        <td><select aria-label="Sistema diagnóstico" data-transfer-dx-system="${key}">${["", "CIE-10", "CIE-11", "DSM-5"].map((item) => option(item, item || "Sin sistema", item === (candidate.system || candidate.codingSystem || ""))).join("")}</select></td>
+        <td><select data-transfer-dx-status="${key}">${["Confirmado", "Probable", "A descartar", "Diferencial", "En seguimiento", "Antecedente", "Remisión", "Descartado"].map((item) => option(item, item, item === (candidate.status || candidate.statusSuggestion))).join("")}</select></td>
+        <td><input aria-label="Diagnóstico principal" type="checkbox" data-transfer-dx-principal="${key}" ${candidate.isPrimary || candidate.principal ? "checked" : ""}></td>
+        <td>${escapeHtml(segment.metadata?.documentDate || segment.date || "")}</td>
+        <td><details><summary>Ver fuente</summary><small>${escapeHtml(candidate.rawText || "")} · ${escapeHtml(candidate.detectionRule || "")}</small></details></td>
+      </tr>`;
+    }).join("")}</tbody></table></div>` : "<p>No se detectaron diagnósticos explícitos en esta nota.</p>"}</section>`;
+}
+
+function renderSegmentDiagnosisCandidatesLegacy(doc, segment) {
   const candidates = segment.diagnosisCandidates || [];
   return `
     <section class="patient-transfer-candidates">
@@ -576,7 +611,8 @@ export function readTransferReview(groups = []) {
   return groups.map((group) => {
     const actionControl = modal.querySelector(`[data-transfer-action="${group.id}"]:checked`)?.value || "create";
     const duplicateControl = modal.querySelector(`[data-transfer-duplicate-resolution="${group.id}"]:checked`);
-    const duplicateAction = duplicateControl?.value || group.duplicateResolution?.action || "";
+    const selectedResolution = duplicateControl?.value || group.selectedResolution || null;
+    const duplicateAction = selectedResolution || "";
     const selectedPatientId = duplicateAction === "link-existing"
       ? duplicateControl?.dataset.patientId || group.duplicateResolution?.matchedPatientId || ""
       : modal.querySelector(`[data-transfer-existing="${group.id}"]`)?.value || "";
@@ -597,11 +633,15 @@ export function readTransferReview(groups = []) {
         ...candidate,
         include: modal.querySelector(`[data-transfer-dx-include="${doc.id}:${candidate.id}"]`)?.checked || false,
         selectedForImport: modal.querySelector(`[data-transfer-dx-include="${doc.id}:${candidate.id}"]`)?.checked || false,
+        diagnosisName: modal.querySelector(`[data-transfer-dx-name="${doc.id}:${candidate.id}"]`)?.value?.trim() || candidate.diagnosisName || candidate.normalizedLabel || "",
         normalizedLabel: modal.querySelector(`[data-transfer-dx-name="${doc.id}:${candidate.id}"]`)?.value?.trim() || candidate.normalizedLabel || "",
-        code: modal.querySelector(`[data-transfer-dx-code="${doc.id}:${candidate.id}"]`)?.value?.trim() || "",
+        code: modal.querySelector(`[data-transfer-dx-code="${doc.id}:${candidate.id}"]`)?.value?.trim() || candidate.code || "",
         codingSystem: modal.querySelector(`[data-transfer-dx-system="${doc.id}:${candidate.id}"]`)?.value || "",
+        system: modal.querySelector(`[data-transfer-dx-system="${doc.id}:${candidate.id}"]`)?.value || candidate.system || candidate.codingSystem || "",
         statusSuggestion: modal.querySelector(`[data-transfer-dx-status="${doc.id}:${candidate.id}"]`)?.value || candidate.statusSuggestion,
+        status: modal.querySelector(`[data-transfer-dx-status="${doc.id}:${candidate.id}"]`)?.value || candidate.status || candidate.statusSuggestion,
         principal: modal.querySelector(`[data-transfer-dx-principal="${doc.id}:${candidate.id}"]`)?.checked || false,
+        isPrimary: modal.querySelector(`[data-transfer-dx-principal="${doc.id}:${candidate.id}"]`)?.checked || false,
         confirmedByDoctor: modal.querySelector(`[data-transfer-dx-include="${doc.id}:${candidate.id}"]`)?.checked || false
       }));
       const treatmentCandidates = (doc.treatmentCandidates || []).map((candidate) => ({
@@ -659,10 +699,14 @@ export function readTransferReview(groups = []) {
             include: checked,
             selectedForImport: checked,
             normalizedLabel: modal.querySelector(`[data-transfer-dx-name="${key}"]`)?.value?.trim() || candidate.normalizedLabel || "",
-            code: modal.querySelector(`[data-transfer-dx-code="${key}"]`)?.value?.trim() || "",
+            diagnosisName: modal.querySelector(`[data-transfer-dx-name="${key}"]`)?.value?.trim() || candidate.diagnosisName || candidate.normalizedLabel || "",
+            code: modal.querySelector(`[data-transfer-dx-code="${key}"]`)?.value?.trim() || candidate.code || "",
             codingSystem: modal.querySelector(`[data-transfer-dx-system="${key}"]`)?.value || "",
+            system: modal.querySelector(`[data-transfer-dx-system="${key}"]`)?.value || candidate.system || candidate.codingSystem || "",
             statusSuggestion: modal.querySelector(`[data-transfer-dx-status="${key}"]`)?.value || candidate.statusSuggestion,
+            status: modal.querySelector(`[data-transfer-dx-status="${key}"]`)?.value || candidate.status || candidate.statusSuggestion,
             principal: modal.querySelector(`[data-transfer-dx-principal="${key}"]`)?.checked || false,
+            isPrimary: modal.querySelector(`[data-transfer-dx-principal="${key}"]`)?.checked || false,
             confirmedByDoctor: checked
           };
         });
@@ -725,6 +769,8 @@ export function readTransferReview(groups = []) {
       ...group,
       action,
       selectedPatientId,
+      selectedResolution,
+      selectedExistingPatientId: duplicateAction === "link-existing" ? selectedPatientId : null,
       duplicateResolution: duplicateControl ? {
         ...(group.duplicateResolution || {}),
         action: duplicateAction,

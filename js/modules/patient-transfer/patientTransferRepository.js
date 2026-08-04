@@ -334,7 +334,11 @@ export async function saveTransferredGroups({ groups = [], user, onProgress = nu
 
       if (group.action === "create") {
         if (!patientId) {
-          const resolution = group.duplicateResolution || {};
+          const resolution = {
+            ...(group.duplicateResolution || {}),
+            action: group.selectedResolution || group.duplicateResolution?.action || null,
+            matchedPatientId: group.selectedExistingPatientId || group.duplicateResolution?.matchedPatientId || ""
+          };
           if (resolution.action === "link-existing") {
             patientId = resolution.matchedPatientId || group.selectedPatientId || "";
             traceTransfer("duplicate-resolution", { authUid: user.uid, transferOperationId: operationId, resolution: "link-existing", patientId: Boolean(patientId) });

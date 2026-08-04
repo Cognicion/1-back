@@ -50,6 +50,34 @@ function addMatch(list, label, candidateValue, existingValue, score) {
   list.push({ label, candidateValue: String(candidateValue || ""), existingValue: String(existingValue || ""), score });
 }
 
+export function buildPatientMatchExplanation(match = {}) {
+  const levelLabels = { muy_alta: "Muy alta", alta: "Alta", media: "Media", baja: "Baja" };
+  const matchedFields = (match.matchedFields || []).map((field) => ({
+    field: field.label,
+    label: field.label,
+    candidateValue: field.candidateValue,
+    existingValue: field.existingValue
+  }));
+  const conflictingFields = (match.conflictingFields || []).map((field) => ({
+    field: field.label,
+    label: field.label,
+    candidateValue: field.candidateValue,
+    existingValue: field.existingValue
+  }));
+  const summary = matchedFields.length
+    ? `Coinciden ${matchedFields.map((field) => field.label.toLowerCase()).join(" y ")}.`
+    : "Revise los datos antes de decidir.";
+  return {
+    title: "Posible paciente ya registrado",
+    level: match.level || "baja",
+    levelLabel: levelLabels[match.level] || "Baja",
+    summary,
+    matchedFields,
+    conflictingFields,
+    recommendedAction: ["muy_alta", "alta"].includes(match.level) ? "link-existing" : null
+  };
+}
+
 export function findPossiblePatientMatches(candidate = {}, existingPatients = []) {
   const candidateData = candidate.values || candidate;
   const candidateName = readField(candidateData, "nombreCompleto", "nombre", "name");

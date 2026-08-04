@@ -7,7 +7,7 @@ import { normalizeDocxBlocks, normalizedBlocksToText } from "./docx/docxBlockNor
 import { parsePatientFields, fieldValues } from "./parsing/patientFieldParser.js";
 import { resolvePatientIdentity } from "./parsing/patientIdentityResolver.js";
 import { parseClinicalSections } from "./parsing/clinicalSectionParser.js";
-import { extractClinicalCandidates } from "./parsing/clinicalCandidateParser.js";
+import { extractClinicalCandidates } from "./parsing/clinicalCandidateParser.js?v=20260804-duplicate-diagnosis-v1";
 import { detectMultipleClinicalNotes, expandSegmentedDocumentsForPersistence, mergeClinicalSegments, segmentClinicalNotes, splitClinicalSegment } from "./parsing/clinicalNoteSegmenter.js?v=20260804-segmentation-debug-v1";
 import { extractVitalSignsCandidates } from "./parsing/vitalSignsParser.js";
 import { parseNoteMetadata } from "./parsing/noteMetadataParser.js";
@@ -473,8 +473,12 @@ async function analyzeSelectedFiles() {
       ...group,
       candidates,
       possibleMatches: candidates,
+      highestMatch: strongest,
+      recommendedResolution: strongest && ["muy_alta", "alta"].includes(strongest.level) ? "link-existing" : null,
+      selectedResolution: null,
+      selectedExistingPatientId: null,
       duplicateResolution: strongest ? {
-        action: "pending",
+        action: null,
         matchedPatientId: strongest.patientId || strongest.id || "",
         score: strongest.score,
         level: strongest.level,
@@ -539,19 +543,19 @@ async function saveReviewedTransfer({ reuseReviewedGroups = false } = {}) {
     if (group.omitted) return false;
     const strongest = (group.possibleMatches || group.candidates || [])[0];
     return strongest && ["muy_alta", "alta"].includes(strongest.level)
-      && !["link-existing", "create-new", "omit"].includes(group.duplicateResolution?.action);
+      && !["link-existing", "create-new", "omit"].includes(group.selectedResolution);
   });
   if (duplicatePending) {
     showPatientTransferError("Resuelve la posible coincidencia del paciente: asociar, crear de todas formas u omitir.");
     return;
   }
-  const createDespiteMatch = reviewedGroups.find((group) => group.duplicateResolution?.action === "create-new" && !group.omitted);
+  const createDespiteMatch = reviewedGroups.find((group) => group.selectedResolution === "create-new" && !group.omitted);
   if (createDespiteMatch && !window.confirm("Se detectó un posible duplicado. ¿Desea crear otro expediente de todas formas?")) return;
   console.info("[patient-transfer] duplicate-resolution", JSON.stringify(reviewedGroups.map((group) => ({
     groupId: group.id,
-    action: group.duplicateResolution?.action || "none",
-    matchedPatientIdPresent: Boolean(group.duplicateResolution?.matchedPatientId),
-    score: group.duplicateResolution?.score || 0
+    action: group.selectedResolution || "none",
+    matchedPatientIdPresent: Boolean(group.selectedExistingPatientId),
+    score: group.highestMatch?.score || group.duplicateResolution?.score || 0
   }))));
 
   const summary = {

@@ -203,7 +203,8 @@ function inicializarImportacionDocxLazy() {
   document.getElementById("btnImportarDocxPaciente")?.addEventListener("click", async () => {
     try {
       if (!traspasoPacientesPromise) {
-        traspasoPacientesPromise = import("./modules/patient-transfer/index.js?v=20260804-segmentation-debug-v1");
+        // Marcador histórico de cache: import("./modules/patient-transfer/index.js?v=20260804-segmentation-debug-v1")
+        traspasoPacientesPromise = import("./modules/patient-transfer/index.js?v=20260804-duplicate-diagnosis-v1");
       }
       const modulo = await traspasoPacientesPromise;
       modulo.openPatientTransfer();
