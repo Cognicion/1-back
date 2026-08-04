@@ -14,6 +14,13 @@ import {
 
 export const MEDICAMENTOS = [
   {
+    nombre: "Clobenzorex",
+    clase: "Estimulante anorexigeno",
+    dosisHabitual: "30-60 mg/dia segun formulacion; confirmar ficha tecnica local",
+    notas: "Anorexigeno simpaticomimetico/profarmaco de anfetamina; uso corto y vigilancia cardiovascular, neuropsiquiatrica y de dependencia.",
+    presentaciones: ["capsulas de 30 mg", "tabletas de liberacion prolongada de 60 mg"]
+  },
+  {
     nombre: "Sertralina",
     clase: "ISRS",
     dosisHabitual: "50-200 mg/dia",
