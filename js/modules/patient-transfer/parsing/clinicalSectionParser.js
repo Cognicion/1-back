@@ -1,5 +1,6 @@
 import { flattenNormalizedBlocks } from "../docx/docxBlockNormalizer.js";
 import { CLINICAL_SECTION_ALIASES, CLINICAL_SECTION_KEYS } from "./clinicalSectionConfig.js";
+import { parseSubjectiveSection } from "./subjectiveSectionParser.js";
 
 export const SECTION_RULES = CLINICAL_SECTION_ALIASES;
 
@@ -119,7 +120,7 @@ function splitPlanAndMedications(secciones) {
 }
 
 /** Separa cada segmento usando todos los encabezados, sin recurrir a rawText como respaldo. */
-export function parseClinicalSections(blocks = []) {
+export function parseClinicalSections(blocks = [], { noteSegment = {} } = {}) {
   const secciones = Object.fromEntries(CLINICAL_SECTION_KEYS.map((key) => [key, ""]));
   const encabezados = [];
   const lines = flattenedLines(blocks);
@@ -175,6 +176,12 @@ export function parseClinicalSections(blocks = []) {
     encabezados.at(-1).end = Math.max(...lines.map((line) => line.source?.blockIndex ?? line.position), 0) + 1;
   }
   splitPlanAndMedications(secciones);
+  const subjectiveExtraction = parseSubjectiveSection({
+    noteSegment: { ...noteSegment, blocks },
+    headings: encabezados,
+    sectionAliases: CLINICAL_SECTION_ALIASES
+  });
+  secciones.subjetivo = subjectiveExtraction.text || "";
 
   encabezados.forEach((heading, index) => {
     console.info("[patient-transfer] clinical-heading", {
@@ -186,5 +193,10 @@ export function parseClinicalSections(blocks = []) {
     });
   });
 
-  return { secciones, encontradas: [...new Set(encabezados.map((item) => item.key))], encabezados };
+  return {
+    secciones,
+    encontradas: [...new Set(encabezados.map((item) => item.key))],
+    encabezados,
+    subjectiveExtraction
+  };
 }

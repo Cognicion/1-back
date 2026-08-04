@@ -107,17 +107,31 @@ function createSegment(documentId, blocks, index) {
   const first = blocks[0];
   const last = blocks.at(-1);
   const metadata = metadataForSegment(rawText);
+  const id = `${documentId}-note-${index + 1}`;
+  const startBlockIndex = blockIndex(first, 0);
+  const endBlockIndex = blockIndex(last, blocks.length - 1) + 1;
+  const parsedSections = parseClinicalSections(blocks, {
+    noteSegment: {
+      id,
+      date: metadata.date,
+      time: metadata.time,
+      startBlockIndex,
+      endBlockIndex,
+      rawText
+    }
+  });
   return {
-    id: `${documentId}-note-${index + 1}`,
-    startBlockIndex: blockIndex(first, 0),
-    endBlockIndex: blockIndex(last, blocks.length - 1) + 1,
+    id,
+    startBlockIndex,
+    endBlockIndex,
     rawText,
     date: metadata.date,
     time: metadata.time,
     noteType: metadata.noteType,
     sourcePages: [...new Set(blocks.map((block) => block.source?.pageIndex).filter(Number.isInteger))],
     blocks,
-    sections: parseClinicalSections(blocks).secciones,
+    sections: parsedSections.secciones,
+    subjectiveExtraction: parsedSections.subjectiveExtraction,
     diagnosisCandidates: [],
     treatmentCandidates: [],
     omitted: false

@@ -348,9 +348,20 @@ function renderSegmentTreatmentCandidates(doc, segment) {
 
 function renderSegmentClinicalSections(doc, segment) {
   const fieldGroup = (fields) => `<section class="patient-transfer-clinical-sections">${fields.map(([label, key]) => `<label>${label}<textarea data-transfer-section="${doc.id}:${segment.id}:${key}" placeholder="No se detectó esta sección.">${escapeHtml(segment.sections?.[key] || "")}</textarea></label>`).join("")}</section>`;
+  const subjectiveSource = segment.subjectiveExtraction?.sourceLabel || "";
+  console.info("[patient-transfer] subjective:rendered", {
+    noteId: segment.id,
+    date: segment.metadata?.documentDate || segment.date || "",
+    time: segment.metadata?.documentHour || segment.time || "",
+    matchedHeading: segment.subjectiveExtraction?.matchedHeading || "",
+    nextHeading: segment.subjectiveExtraction?.nextHeading || "",
+    startBlockIndex: segment.subjectiveExtraction?.startBlockIndex ?? null,
+    endBlockIndex: segment.subjectiveExtraction?.endBlockIndex ?? null,
+    characterLength: (segment.sections?.subjetivo || "").length
+  });
   return `<h4>Secciones clínicas</h4>
+    <section class="patient-transfer-clinical-sections"><label>Subjetivo / evolución<textarea data-transfer-section="${doc.id}:${segment.id}:subjetivo" placeholder="No se detectó una sección de Subjetivo / Evolución.">${escapeHtml(segment.sections?.subjetivo || "")}</textarea>${subjectiveSource ? `<small>Fuente: ${escapeHtml(subjectiveSource)}</small>` : ""}</label></section>
     ${fieldGroup([
-      ["Subjetivo / evolución / padecimiento actual", "subjetivo"],
       ["Exploración física / neurológica", "physicalNeurologicalExam"],
       ["Examen mental", "examenMental"],
       ["Análisis / comentario", "analisis"]
