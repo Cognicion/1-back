@@ -153,21 +153,17 @@ function findFirstBoundaryInsideText(value = "", aliases = []) {
         !next ||
         /[\s:;|()[\]\-]/u.test(next);
 
-      if (validStart && validEnd) {
-        const originalStart =
-          normalized.characters[position]?.start ?? 0;
+      const originalStart = normalized.characters[position]?.start ?? 0;
+      const originalEnd = normalized.characters[position + candidate.canonical.length - 1]?.end ?? originalStart;
+      const headingText = normalized.source.slice(originalStart, originalEnd).trim();
+      const hasHeadingDelimiter = /^\s*[:：]/u.test(normalized.source.slice(originalEnd));
 
-        const originalEnd =
-          normalized.characters[
-            position + candidate.canonical.length - 1
-          ]?.end ?? originalStart;
+      if (validStart && validEnd && (isUppercaseHeading(headingText) || hasHeadingDelimiter)) {
 
         if (!earliest || originalStart < earliest.start) {
           earliest = {
             alias: candidate.alias,
-            headingText: normalized.source
-              .slice(originalStart, originalEnd)
-              .trim(),
+            headingText,
             start: originalStart,
             end: originalEnd
           };
@@ -251,18 +247,6 @@ export function parseSubjectiveSection({ noteSegment = {}, headings = [], sectio
   void headings;
   const blocks = noteSegment.blocks || [];
   const records = lineRecords(blocks);
-
-console.log(
-  "NOTE",
-  noteSegment.date,
-  noteSegment.time,
-  records.length
-);
-
-records.forEach((record, i) => {
-  console.log(i, record.text.substring(0, 80));
-});
-
 
   const subjectiveAliases = sectionAliases.subjetivo || CLINICAL_SECTION_ALIASES.subjetivo;
   const noteId = noteSegment.id || "";
@@ -430,14 +414,6 @@ if (!boundaryFoundInStartLine) {
   }
 }
 
-
-    const nestedSubjective = matchHeadingAtLineStart(record.text, subjectiveAliases);
-    if (nestedSubjective) {
-      if (nestedSubjective.inlineContent) contentParts.push(nestedSubjective.inlineContent);
-      continue;
-    }
-    contentParts.push(record.text);
-  }
 
   const firstContentRecord = records[startMatch ? startRecordIndex + 1 : startRecordIndex] || records[startRecordIndex];
   const boundaryRecord = records[endRecordIndex];

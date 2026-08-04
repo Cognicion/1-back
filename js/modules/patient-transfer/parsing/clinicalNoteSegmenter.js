@@ -4,10 +4,10 @@
   import { assignParsedSubjective } from "../state/subjectiveSegmentState.js";
 
 
-console.log(
-  "🔥 clinicalNoteSegmenter.js CARGADO",
-  new Date().toISOString()
-);
+console.info("[patient-transfer] clinical-note-segmenter:loaded", {
+  moduleUrl: import.meta.url,
+  buildMarker: "patient-transfer-segmentation-debug-v1"
+});
 
   const DATE_PATTERN =  /\b(?:[0-3]?\d[\/-][01]?\d[\/-](?:19|20)?\d{2}|(?:19|20)\d{2}-[01]\d-[0-3]\d)\b/;
   const TIME_PATTERN = /\b(?:[01]?\d|2[0-3]):[0-5]\d\b/;
@@ -21,11 +21,20 @@ console.log(
   }
 
   function noteTitle(text = "") {
-    const normalized = normalizeClinicalHeading(String(text).split(/[:\n]/)[0]);
-    return NOTE_START_ALIASES.find((alias) => {
-      const normalizedAlias = normalizeClinicalHeading(alias);
-      return normalized === normalizedAlias || normalized.startsWith(`${normalizedAlias} `);
-    }) || "";
+    const aliases = NOTE_START_ALIASES
+      .map((alias) => ({ alias, normalized: normalizeClinicalHeading(alias) }))
+      .sort((a, b) => b.normalized.length - a.normalized.length);
+    const candidates = String(text || "")
+      .replace(/\u00a0/g, " ")
+      .split(/[\n|]/)
+      .map((value) => normalizeClinicalHeading(value))
+      .filter(Boolean);
+
+    for (const candidate of candidates) {
+      const match = aliases.find(({ normalized }) => candidate === normalized || candidate.startsWith(normalized));
+      if (match) return match.alias;
+    }
+    return "";
   }
 
   function clinicalDate(text = "") {
@@ -52,6 +61,17 @@ console.log(
       const text = blockText(block);
       const title = noteTitle(text);
       const date = clinicalDate(text);
+      if (/nota de (?:ingreso|evolucion)/.test(normalizeClinicalHeading(text))) {
+        console.info(
+          "[patient-transfer] note-title-check",
+          JSON.stringify({
+            index,
+            blockIndex: blockIndex(block, index),
+            preview: text.slice(0, 150),
+            detectedTitle: title
+          }, null, 2)
+        );
+      }
       if (date) {
         dateValues.add(date);
         if (!firstClinicalDate) firstClinicalDate = date;
@@ -84,12 +104,7 @@ console.log(
       .filter((boundary) => boundary.blockIndex >= 0)
       .map((boundary) => [boundary.blockIndex, boundary])).values()]
       .sort((a, b) => a.blockIndex - b.blockIndex);
-    const uniqueBoundaries = sortedBoundaries.reduce((result, boundary) => {
-      const previous = result.at(-1);
-      if (previous && boundary.blockIndex - previous.blockIndex <= 2) return result;
-      result.push(boundary);
-      return result;
-    }, []);
+    const uniqueBoundaries = sortedBoundaries;
     return {
       probableMultipleNotes: reasons.size > 0 && (uniqueBoundaries.length > 0 || dateValues.size > 1),
       reasons: [...reasons],
@@ -189,125 +204,72 @@ console.log(
   }
 
   export function segmentClinicalNotes({
-  blocks = [],
-  fullText = "",
-  manualMultipleNotes = false,
-  proposedBoundaries = [],
-  documentId = "doc"
-} = {}) {
-  void manualMultipleNotes;
+    blocks = [],
+    fullText = "",
+    manualMultipleNotes = false,
+    multipleNotesMode,
+    proposedBoundaries = [],
+    documentId = "doc"
+  } = {}) {
+    const mode = ["auto", "single", "multiple"].includes(multipleNotesMode)
+      ? multipleNotesMode
+      : manualMultipleNotes === true ? "multiple" : "auto";
+    const detectedBoundaries = proposedBoundaries.length
+      ? proposedBoundaries
+      : detectMultipleClinicalNotes({ blocks, fullText }).proposedNoteBoundaries;
+    let boundaries = mode === "single"
+      ? []
+      : [...new Set(detectedBoundaries
+          .map((item) => Number(item.blockIndex ?? item))
+          .filter((value) => Number.isInteger(value) && value >= 0))]
+          .sort((a, b) => a - b);
 
-  const detectedBoundaries = proposedBoundaries.length
-    ? proposedBoundaries
-    : detectMultipleClinicalNotes({
-        blocks,
-        fullText
-      }).proposedNoteBoundaries;
-
-  let boundaries = [
-    ...new Set(
-      detectedBoundaries
-        .map((item) => Number(item.blockIndex ?? item))
-        .filter(
-          (value) =>
-            Number.isInteger(value) &&
-            value >= 0
-        )
-    )
-  ].sort((a, b) => a - b);
-
-  const firstTitleBlock = blocks.find(
-    (block) => noteTitle(blockText(block))
-  );
-
-  const firstTitleBlockIndex = firstTitleBlock
-    ? blockIndex(
-        firstTitleBlock,
-        blocks.indexOf(firstTitleBlock)
-      )
-    : null;
-
-  if (
-    Number.isInteger(firstTitleBlockIndex) &&
-    boundaries[0] === firstTitleBlockIndex
-  ) {
-    boundaries = boundaries.slice(1);
-  }
-
-  console.info(
-  "[patient-transfer] segmentation:boundaries",
-  JSON.stringify(
-    {
-      documentId,
-      receivedBoundaries: proposedBoundaries,
-      detectedBoundaries,
-      boundariesUsed: boundaries,
-      blockCount: blocks.length
-    },
-    null,
-    2
-  )
-);
-
-  if (!boundaries.length) {
-    console.info(
-      "[patient-transfer] segmentation:single",
-      {
-        documentId,
-        blockCount: blocks.length
-      }
-    );  
-
-    return [
-      createSegment(documentId, blocks, 0)
-    ];
-  }
-
- //
-
-
-  const groups = [];
-  let current = [];
-
-  blocks.forEach((block, index) => {
-    const indexValue = blockIndex(block, index);
-
-    if (
-      current.length &&
-      boundaries.includes(indexValue)
-    ) {
-      groups.push(current);
-      current = [];
+    const firstTitleBlock = blocks.find((block) => noteTitle(blockText(block)));
+    const firstTitleBlockIndex = firstTitleBlock
+      ? blockIndex(firstTitleBlock, blocks.indexOf(firstTitleBlock))
+      : null;
+    if (Number.isInteger(firstTitleBlockIndex) && boundaries[0] === firstTitleBlockIndex) {
+      boundaries = boundaries.slice(1);
     }
 
-    current.push(block);
-  });
-
-  if (current.length) {
-    groups.push(current);
-  }
-
-console.info(
-  "[patient-transfer] segmentation:completed",
-  JSON.stringify(
-    {
-      documentId,
-      proposedBoundaries,
-      boundaries,
-      segmentCount: groups.length,
-      segmentSizes: groups.map((group) => group.length)
-    },
-    null,
-    2
-  )
-);
-
-  return groups
-    .filter((group) => group.length)
-    .map((group, index) =>
-      createSegment(documentId, group, index)
+    console.info(
+      "[patient-transfer] segmentation:boundaries",
+      JSON.stringify({
+        documentId,
+        multipleNotesMode: mode,
+        receivedBoundaries: proposedBoundaries,
+        detectedBoundaries,
+        boundariesUsed: boundaries,
+        blockCount: blocks.length
+      }, null, 2)
     );
-}
+
+    const groups = [];
+    let current = [];
+    blocks.forEach((block, index) => {
+      const indexValue = blockIndex(block, index);
+      if (current.length && boundaries.includes(indexValue)) {
+        groups.push(current);
+        current = [];
+      }
+      current.push(block);
+    });
+    if (current.length) groups.push(current);
+
+    const nonEmptyGroups = groups.filter((group) => group.length);
+    console.info(
+      "[patient-transfer] segmentation:completed",
+      JSON.stringify({
+        documentId,
+        multipleNotesMode: mode,
+        segmentCount: nonEmptyGroups.length,
+        segmentSizes: nonEmptyGroups.map((group) => group.length),
+        segmentStarts: nonEmptyGroups.map((group, index) => blockIndex(group[0], index))
+      }, null, 2)
+    );
+
+    return nonEmptyGroups.map((group, index) => createSegment(documentId, group, index));
+  }
 
   export function splitClinicalSegment(segments = [], segmentId = "") {
     const output = [];

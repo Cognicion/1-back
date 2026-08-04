@@ -7,7 +7,7 @@ import { normalizeDocxBlocks, normalizedBlocksToText } from "./docx/docxBlockNor
 import { parsePatientFields, fieldValues } from "./parsing/patientFieldParser.js";
 import { parseClinicalSections } from "./parsing/clinicalSectionParser.js";
 import { extractClinicalCandidates } from "./parsing/clinicalCandidateParser.js";
-import { detectMultipleClinicalNotes, expandSegmentedDocumentsForPersistence, mergeClinicalSegments, segmentClinicalNotes, splitClinicalSegment } from "./parsing/clinicalNoteSegmenter.js";
+import { detectMultipleClinicalNotes, expandSegmentedDocumentsForPersistence, mergeClinicalSegments, segmentClinicalNotes, splitClinicalSegment } from "./parsing/clinicalNoteSegmenter.js?v=20260804-segmentation-debug-v1";
 import { extractVitalSignsCandidates } from "./parsing/vitalSignsParser.js";
 import { parseNoteMetadata } from "./parsing/noteMetadataParser.js";
 import { preserveManualSubjectiveEdits, updateSubjectiveSegmentValue } from "./state/subjectiveSegmentState.js";
@@ -399,6 +399,16 @@ async function analyzeOneFile(item, user) {
     }))
   }, selectedSegments);
   documentCandidate.containsMultipleNotes = documentCandidate.noteSegments.length > 1;
+  console.info(
+    "[patient-transfer] note-segments:stored",
+    JSON.stringify({
+      documentId: documentCandidate.id,
+      count: documentCandidate.noteSegments.length,
+      ids: documentCandidate.noteSegments.map((segment) => segment.id),
+      dates: documentCandidate.noteSegments.map((segment) => segment.date),
+      times: documentCandidate.noteSegments.map((segment) => segment.time)
+    }, null, 2)
+  );
   console.assert(Array.isArray(documentCandidate.diagnosisCandidates), "diagnosisCandidates must be an array");
   console.assert(Array.isArray(documentCandidate.treatmentCandidates), "treatmentCandidates must be an array");
   return documentCandidate;

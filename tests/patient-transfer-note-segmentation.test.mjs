@@ -20,8 +20,8 @@ assert.equal(detection.probableMultipleNotes, true);
 assert.ok(detection.reasons.includes("multiple-clinical-dates"));
 assert.ok(detection.reasons.includes("repeated-note-heading"));
 
-const single = segmentClinicalNotes({ blocks, manualMultipleNotes: false, proposedBoundaries: detection.proposedNoteBoundaries, documentId: "doc" });
-assert.equal(single.length, 1, "sin confirmación manual conserva una sola nota");
+const automaticLegacyCall = segmentClinicalNotes({ blocks, manualMultipleNotes: false, proposedBoundaries: detection.proposedNoteBoundaries, documentId: "doc" });
+assert.equal(automaticLegacyCall.length, 2, "la ausencia de confirmación manual conserva la detección automática");
 
 const multiple = segmentClinicalNotes({ blocks, manualMultipleNotes: true, proposedBoundaries: detection.proposedNoteBoundaries, documentId: "doc" });
 assert.equal(multiple.length, 2, "la opción manual aplica las divisiones propuestas");
@@ -32,6 +32,8 @@ assert.equal(multiple[1].date, "02/08/2026");
 
 const automatic = segmentClinicalNotes({ blocks, multipleNotesMode: "auto", proposedBoundaries: detection.proposedNoteBoundaries, documentId: "doc-auto" });
 assert.equal(automatic.length, 2, "el modo automático usa los límites detectados");
+const automaticWithoutProposal = segmentClinicalNotes({ blocks, multipleNotesMode: "auto", proposedBoundaries: [], documentId: "doc-auto-fallback" });
+assert.equal(automaticWithoutProposal.length, 2, "el modo automático detecta límites cuando no fueron proporcionados");
 
 const explicitSingle = segmentClinicalNotes({ blocks, multipleNotesMode: "single", proposedBoundaries: detection.proposedNoteBoundaries, documentId: "doc-single" });
 assert.equal(explicitSingle.length, 1, "una sola nota ignora deliberadamente los límites detectados");
@@ -54,6 +56,16 @@ const independentModes = updateFileMultipleNotesMode(
 assert.deepEqual(independentModes.map((item) => item.multipleNotesMode), ["auto", "multiple", "single"], "cada DOCX conserva un modo independiente");
 assert.equal(independentModes[1].containsMultipleNotes, true);
 assert.equal(independentModes[0].containsMultipleNotes, false);
+
+const tableTitleBlocks = [
+  { type: "table", rows: [["Institución", "NOTA DE INGRESO AL SERVICIO DE OBSERVACIÓN"]], source: { blockIndex: 0 } },
+  { type: "paragraph", text: "Fecha: 03/08/2026 Hora: 08:00", source: { blockIndex: 1 } },
+  { type: "table", rows: [["Institución", "NOTA DE EVOLUCION AL SERVICIO DE OBSERVACIÓN"]], source: { blockIndex: 2 } },
+  { type: "paragraph", text: "Fecha: 03/08/2026 Hora: 12:00", source: { blockIndex: 3 } }
+];
+const tableTitleDetection = detectMultipleClinicalNotes({ blocks: tableTitleBlocks });
+assert.equal(tableTitleDetection.explicitNoteCount, 2, "reconoce títulos con y sin acento dentro de tablas");
+assert.equal(segmentClinicalNotes({ blocks: tableTitleBlocks, multipleNotesMode: "auto", documentId: "doc-table" }).length, 2);
 
 const joined = mergeClinicalSegments(multiple, multiple[0].id);
 assert.equal(joined.length, 1, "permite unir notas contiguas");

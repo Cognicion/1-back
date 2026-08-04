@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
 import { detectDiagnosisCandidates, detectTreatmentCandidates } from "../js/modules/patient-transfer/parsing/clinicalCandidateParser.js";
-import { detectMultipleClinicalNotes, segmentClinicalNotes } from "../js/modules/patient-transfer/parsing/clinicalNoteSegmenter.js";
+import { detectMultipleClinicalNotes, expandSegmentedDocumentsForPersistence, segmentClinicalNotes } from "../js/modules/patient-transfer/parsing/clinicalNoteSegmenter.js";
+import { groupDocumentsByPatient } from "../js/modules/patient-transfer/parsing/documentGroupingService.js";
+import { countTransferNotes } from "../js/modules/patient-transfer/ui/patientTransferView.js";
 import { extractVitalSignsCandidates } from "../js/modules/patient-transfer/parsing/vitalSignsParser.js";
 
 let blockIndex = 0;
@@ -54,6 +56,23 @@ const segments = segmentClinicalNotes({ blocks, manualMultipleNotes: true, propo
 assert.equal(segments.length, 5, "separó las cinco notas por título explícito");
 assert.deepEqual(segments.map((segment) => segment.date), noteDefinitions.map((note) => note.date));
 assert.deepEqual(segments.map((segment) => segment.time), noteDefinitions.map((note) => note.time));
+assert.deepEqual(segments.map((segment) => segment.startBlockIndex), detection.proposedNoteBoundaries.map((boundary) => boundary.blockIndex), "el primer título inicia la primera nota y los cuatro restantes crean divisiones");
+
+const grouped = groupDocumentsByPatient([{
+  id: "ana-document",
+  fields: {
+    nombre: { value: "ARELLANO FRANCO ANA LIZBETH" },
+    expediente: { value: "ANA-LIZBETH" }
+  },
+  conflicts: [],
+  noteSegments: segments
+}]);
+assert.equal(grouped.length, 1, "las cinco notas permanecen bajo un solo paciente");
+assert.equal(grouped[0].documents[0].noteSegments.length, 5);
+assert.equal(countTransferNotes(grouped), 5, "el resumen muestra cinco notas segmentadas");
+const persistenceNotes = expandSegmentedDocumentsForPersistence(grouped[0].documents);
+assert.equal(persistenceNotes.length, 5, "la persistencia recibe cinco notas independientes");
+assert.equal(new Set(persistenceNotes.map((note) => note.id)).size, 5, "cada nota persistible conserva identidad propia");
 
 const allVitals = extractVitalSignsCandidates(blocks);
 assert.equal(allVitals.length, 5);

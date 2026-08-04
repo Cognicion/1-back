@@ -465,6 +465,14 @@ function renderDocument(doc, groups = [], currentGroupId = "") {
     </details>`;
 }
 
+export function countTransferNotes(groups = []) {
+  return groups.reduce((total, group) => group.omitted ? total : total + (group.documents || []).reduce((count, doc) => {
+    if (doc.omitted) return count;
+    const activeSegments = (doc.noteSegments || []).filter((segment) => !segment.omitted);
+    return count + ((doc.noteSegments || []).length ? activeSegments.length : 1);
+  }, 0), 0);
+}
+
 export function renderDetectedGroups(groups = []) {
   const modal = ensureRoot();
   const saveButton = modal.querySelector("[data-transfer-save]");
@@ -472,7 +480,7 @@ export function renderDetectedGroups(groups = []) {
   modal.querySelector("[data-transfer-review]").innerHTML = groups.length ? `
     <section class="patient-transfer-summary">
       <h3>Resumen del traspaso</h3>
-      <p>Pacientes probables: ${groups.length} · Notas: ${groups.reduce((total, group) => total + group.documents.reduce((count, doc) => count + Math.max(1, (doc.noteSegments || []).filter((segment) => !segment.omitted).length), 0), 0)} · Con conflictos: ${groups.filter((group) => group.ambiguous).length}</p>
+      <p>Pacientes probables: ${groups.length} · Notas: ${countTransferNotes(groups)} · Con conflictos: ${groups.filter((group) => group.ambiguous).length}</p>
     </section>
     ${groups.map((group, index) => `
       <article class="patient-transfer-group">
