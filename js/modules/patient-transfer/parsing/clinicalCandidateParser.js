@@ -88,57 +88,210 @@ export function detectDiagnosisCandidates({ sections = {}, fullText = "", source
 }
 
 const medicationNames = [...new Set(MEDICAMENTOS.map((item) => String(item.nombre || "").trim()).filter(Boolean))];
+const PRESENTATIONS = ["tabletas", "tableta", "comprimidos", "comprimido", "capsulas", "capsula", "jarabe", "solucion", "suspension", "gotas", "polvo", "ampolla", "vial", "parche", "spray", "inhalador", "crema", "unguento", "supositorio"];
 
 function escapeRegex(value = "") { return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); }
 
-function medicationMentions(line = "") {
-  const found = medicationNames.filter((name) => new RegExp(`\\b${escapeRegex(name)}\\b`, "i").test(line));
-  return [...new Set(found)];
+export function parseClinicalQuantity(value = "") {
+  const source = String(value || "").trim().toLowerCase().replace(",", ".");
+  const fractions = { "¼": 0.25, "½": 0.5, "¾": 0.75, "⅓": 1 / 3, "⅔": 2 / 3, "⅛": 0.125, "⅜": 0.375, "⅝": 0.625, "⅞": 0.875 };
+  if (fractions[source] != null) return fractions[source];
+  const mixed = source.match(/^(\d+)\s*([¼½¾⅓⅔⅛⅜⅝⅞])$/);
+  if (mixed) return Number(mixed[1]) + fractions[mixed[2]];
+  const ascii = source.match(/^(\d+)\s*\/\s*(\d+)$/);
+  if (ascii && Number(ascii[2])) return Number(ascii[1]) / Number(ascii[2]);
+  const mixedAscii = source.match(/^(\d+)\s+(\d+)\s*\/\s*(\d+)$/);
+  if (mixedAscii && Number(mixedAscii[3])) return Number(mixedAscii[1]) + Number(mixedAscii[2]) / Number(mixedAscii[3]);
+  const number = Number(source);
+  return Number.isFinite(number) ? number : null;
 }
 
-function medicationCandidate({ name, line, index, section, documentId, fullText }) {
-  const match = new RegExp(`\\b${escapeRegex(name)}\\b([^\n;]*)`, "i").exec(line);
-  const detail = match?.[1] || "";
-  const dose = detail.match(/\b(\d+(?:[.,]\d+)?|1\/2)\s*(mg|g|mcg|µg|ml|mL|tabletas?|c[aá]psulas?|gotas?)\b/i);
-  const route = detail.match(/\b(v[ií]a oral|oral|vo|sublingual|intramuscular|intravenosa|t[oó]pica|inhalada)\b/i)?.[1] || "";
-  const frequency = detail.match(/\b(cada\s+\d+\s*horas?|al d[ií]a|por la noche|por la ma[nñ]ana|1-0-1|prn|diario)\b/i)?.[1] || "";
-  const catalogItem = medicamentoPorTexto(name);
+export function parseMedicationStrength(text = "") {
+  const match = String(text || "").match(/(\d+(?:[.,]\d+)?|[¼½¾⅓⅔⅛⅜⅝⅞]|\d+\s*\/\s*\d+)\s*(mg|g|mcg|µg|ug|ml|ui|%)(?:\s*\/\s*(\d+(?:[.,]\d+)?|[¼½¾⅓⅔⅛⅜⅝⅞]|\d+\s*\/\s*\d+)\s*(mg|g|mcg|µg|ug|ml|ui))?/i);
+  if (!match) return { strengthValue: null, strengthUnit: "", strengthPerValue: null, strengthPerUnit: "", rawStrength: "" };
   return {
-    id: `${documentId || "doc"}-tx-${section}-${index}-${normalizeText(name)}`,
+    strengthValue: parseClinicalQuantity(match[1]),
+    strengthUnit: match[2].toLowerCase().replace("ug", "mcg").replace("µg", "mcg"),
+    strengthPerValue: match[3] ? parseClinicalQuantity(match[3]) : null,
+    strengthPerUnit: match[4]?.toLowerCase().replace("ug", "mcg").replace("µg", "mcg") || "",
+    rawStrength: match[0]
+  };
+}
+
+function presentationFromText(text = "") {
+  const value = normalizeText(text);
+  return PRESENTATIONS.find((item) => new RegExp(`\\b${escapeRegex(item)}\\b`, "i").test(value)) || "";
+}
+
+function normalizeTime(value = "") {
+  const clean = String(value || "").toLowerCase().replace(/\s+/g, "").replace(/h(?:oras?)?$/, "");
+  if (!/^\d{1,4}(?::\d{1,2})?$/.test(clean)) return "";
+  const [rawHour, rawMinute = "0"] = clean.includes(":") ? clean.split(":") : [clean, "0"];
+  const hour = Number(rawHour);
+  const minute = Number(rawMinute);
+  if (hour > 23 || minute > 59) return "";
+  return `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`;
+}
+
+export function parseMedicationSchedules(text = "") {
+  const source = normalizeText(text);
+  const timePattern = /\b(\d{1,4}:\d{1,2}\s*h?|\d{1,4}\s*(?:h|horas?))\b/gi;
+  const schedules = [];
+  let match;
+  while ((match = timePattern.exec(source))) {
+    const time = normalizeTime(match[1]);
+    if (!time) continue;
+    const before = source.slice(Math.max(0, match.index - 50), match.index);
+    const quantityMatches = [...before.matchAll(/(\d+(?:[.,]\d+)?|[¼½¾⅓⅔⅛⅜⅝⅞]|\d+\s*\/\s*\d+)\s*(?:de\s+)?(tabletas?|capsulas?|comprimidos?|ml|mililitros|cucharadas?|cucharaditas?|vasos?|gotas?)/gi)];
+    const nonContainerQuantities = quantityMatches.filter((item) => !/^vaso/i.test(item[2]));
+    let quantityMatch = (nonContainerQuantities.length ? nonContainerQuantities : quantityMatches).at(-1);
+    if (!quantityMatch) {
+      const after = source.slice(match.index + match[0].length, match.index + match[0].length + 45);
+      quantityMatch = after.match(/^[\s·:,-]*(\d+(?:[.,]\d+)?|[¼½¾⅓⅔⅛⅜⅝⅞]|\d+\s*\/\s*\d+)\s*(?:de\s+)?(tabletas?|capsulas?|comprimidos?|ml|mililitros|cucharadas?|cucharaditas?|vasos?|gotas?)/i);
+    }
+    schedules.push({
+      time,
+      quantity: quantityMatch ? parseClinicalQuantity(quantityMatch[1]) : null,
+      administrationUnit: quantityMatch ? normalizeText(quantityMatch[2]) : "",
+      rawText: source.slice(Math.max(0, match.index - 35), Math.min(source.length, match.index + match[0].length + 5)).trim()
+    });
+  }
+  return schedules.filter((item, index, all) => all.findIndex((other) => other.time === item.time && other.quantity === item.quantity) === index);
+}
+
+function routeFromText(text = "") {
+  const value = normalizeText(text);
+  const routes = [[/via\s+oral|\boral\b|\bvo\b/, "oral"], [/sublingual/, "sublingual"], [/intramuscular|\bim\b/, "intramuscular"], [/intravenosa|\biv\b/, "intravenosa"], [/subcutanea|\bsc\b/, "subcutanea"], [/inhalada|inhalado/, "inhalada"], [/topica/, "topica"], [/rectal/, "rectal"], [/transdermica/, "transdermica"], [/intranasal/, "intranasal"], [/oftalmica/, "oftalmica"], [/otica/, "otica"]];
+  return routes.find(([pattern]) => pattern.test(value))?.[1] || "";
+}
+
+function frequencyFromText(text = "") {
+  const value = normalizeText(text);
+  return value.match(/\b(?:\d+\s+veces?\s+al\s+dia|cada\s+\d+\s*horas?|\d+\s+vez\s+al\s+dia|por\s+la\s+(?:manana|noche)|al\s+acostarse|prn|en\s+caso\s+necesario|dosis\s+unica|1-0-1|diario)\b/i)?.[0] || "";
+}
+
+function actionFromText(text = "") {
+  const value = normalizeText(text);
+  if (/cambia\s+presentacion/.test(value)) return "Cambia presentación";
+  if (/suspend/.test(value)) return "Suspende";
+  if (/\b(?:inicia|inicio|iniciar)\b/.test(value)) return "Inicia";
+  if (/\b(?:aumenta|aumento|aumentar)\b/.test(value)) return "Aumenta";
+  if (/\b(?:disminuye|disminuyo|disminuir|reduce|redujo)\b/.test(value)) return "Disminuye";
+  if (/\b(?:antecedente|recibio|previamente|previo|en\s+\d{4}|manejo\s+a\s+base)\b/.test(value)) return "Antecedente";
+  return "Continúa";
+}
+
+export function splitMedicationItems(text = "", medicationCatalog = MEDICAMENTOS) {
+  const names = [...new Set(medicationCatalog.map((item) => String(item.nombre || "").trim()).filter(Boolean))].sort((a, b) => b.length - a.length);
+  const markers = /(?:^|\s)([a-z]|\d+)[.)](?:-|\s)*(?=[A-Za-zÁÉÍÓÚáéíóúÑñ])/g;
+  const marked = [];
+  let match;
+  while ((match = markers.exec(String(text || "")))) marked.push(match.index + (match[0].startsWith(" ") ? 1 : 0));
+  const chunks = marked.length ? marked.map((start, index) => String(text).slice(start, marked[index + 1] ?? String(text).length).replace(/^\s*[a-z\d]+[.)]\s*/i, "").trim()).filter(Boolean) : [String(text || "").trim()];
+  const output = [];
+  chunks.forEach((chunk) => {
+    const positions = names.map((name) => ({ name, index: chunk.toLowerCase().indexOf(String(name).toLowerCase()) })).filter((item) => item.index >= 0).sort((a, b) => a.index - b.index);
+    if (positions.length <= 1) { if (chunk) output.push(chunk); return; }
+    positions.forEach((item, index) => {
+      let value = chunk.slice(item.index, positions[index + 1]?.index ?? chunk.length).replace(/^[,;\s]+/, "").trim();
+      if (index < positions.length - 1) {
+        const sentenceBoundary = value.lastIndexOf(". ");
+        if (sentenceBoundary >= 0) value = value.slice(0, sentenceBoundary + 1).trim();
+      }
+      if (value) output.push(value);
+    });
+  });
+  const result = output.length ? output : chunks;
+  console.info("[patient-transfer] medication:item-split", JSON.stringify({ itemCount: result.length, itemLengths: result.map((item) => item.length) }));
+  return result;
+}
+
+function medicationMentions(line = "", catalog = MEDICAMENTOS) {
+  const names = [...new Set(catalog.map((item) => String(item.nombre || "").trim()).filter(Boolean))];
+  return names.filter((name) => new RegExp(`\\b${escapeRegex(name)}\\b`, "i").test(line));
+}
+
+function inferManualMedicationName(item = "") {
+  if (!/(?:tabletas?|capsulas?|jarabe|polvo|solucion|suspension|gotas?|\d+\s*(?:mg|g|ml|mcg|µg)|via\s+oral|tomar|administrar)/i.test(item)) return "";
+  const match = String(item).match(/^([A-Za-zÁÉÍÓÚáéíóúÑñ]+(?:\s+[A-Za-zÁÉÍÓÚáéíóúÑñ]+){0,3})(?=\s+(?:tabletas?|capsulas?|jarabe|polvo|solucion|suspension|gotas?|\d)|\s*$)/i);
+  const value = match?.[1]?.trim() || "";
+  if (/^(?:tomar|administrar|aplicar|via|oral|se|inicia|continua|suspender|suspendido)$/i.test(value)) return "";
+  return value;
+}
+
+function medicationCandidate({ name, line, index, section, documentId, fullText, date = "" }) {
+  const catalogItem = medicamentoPorTexto(name);
+  const lowerLine = String(line || "").toLowerCase();
+  const nameStart = lowerLine.indexOf(String(name || "").toLowerCase());
+  const detail = nameStart >= 0 ? String(line).slice(nameStart) : String(line || "");
+  const strength = parseMedicationStrength(detail);
+  const frequency = frequencyFromText(detail);
+  const schedule = parseMedicationSchedules(detail);
+  const action = actionFromText(line);
+  const statusSuggestion = action === "Continúa" ? statusForTreatment(line) : action;
+  const administration = normalizeText(detail).match(/(?:tomar|administrar|aplicar)\s+(\d+(?:[.,]\d+)?|[¼½¾⅓⅔⅛⅜⅝⅞]|\d+\s*\/\s*\d+)\s*(?:de\s+)?(tabletas?|capsulas?|comprimidos?|ml|cucharadas?|cucharaditas?|vasos?|gotas?)/i);
+  const itemName = String(catalogItem?.nombre || name || "").replace(/\s+/g, " ").trim();
+  const candidate = {
+    id: `${documentId || "doc"}-tx-${section}-${index}-${normalizeText(itemName)}-${normalizeText(action)}`,
     medicationId: catalogItem?.id || catalogItem?.nombre || "",
-    medicationName: catalogItem?.nombre || name,
-    genericName: catalogItem?.nombre || name,
-    dose: dose?.[1]?.replace(",", ".") || "",
-    doseUnit: dose?.[2] || "",
-    route,
+    medicationName: itemName,
+    normalizedMedicationName: normalizeText(itemName),
+    genericName: catalogItem?.nombre || itemName,
+    presentation: presentationFromText(detail),
+    strengthValue: strength.strengthValue,
+    strengthUnit: strength.strengthUnit,
+    strengthPerValue: strength.strengthPerValue,
+    strengthPerUnit: strength.strengthPerUnit,
+    administrationQuantity: administration ? parseClinicalQuantity(administration[1]) : (schedule[0]?.quantity ?? null),
+    administrationUnit: administration ? normalizeText(administration[2]) : (schedule[0]?.administrationUnit || ""),
+    dose: strength.strengthValue == null ? "" : String(strength.strengthValue),
+    doseUnit: strength.strengthUnit || "",
+    route: routeFromText(detail),
     frequencyRaw: frequency,
-    schedule: frequency,
+    schedule,
+    scheduleText: schedule.map((item) => `${item.time}${item.quantity != null ? ` · ${item.quantity} ${item.administrationUnit}` : ""}`).join("; "),
     duration: detail.match(/\bdurante\s+[^,.;]+/i)?.[0] || "",
-    statusSuggestion: statusForTreatment(line),
-    temporality: statusForTreatment(line) === "Antecedente" ? "historical" : "current",
+    action,
+    statusSuggestion,
+    temporality: statusSuggestion === "Antecedente" ? "historical" : "current",
+    date,
     sourceText: line,
     sourceSection: section,
+    evidence: { strength: strength.rawStrength, route: routeFromText(detail), frequency, scheduleCount: schedule.length },
+    confidence: strength.rawStrength || schedule.length || frequency ? "high" : "medium",
     sourceLocation: { documentId, lineIndex: index },
     selectedForImport: false,
     include: false,
     confirmedByDoctor: false
   };
+  console.info("[patient-transfer] medication:strength", JSON.stringify({ noteId: documentId, medicationName: candidate.medicationName, strength: candidate.strengthValue, strengthUnit: candidate.strengthUnit, perValue: candidate.strengthPerValue, perUnit: candidate.strengthPerUnit }));
+  console.info("[patient-transfer] medication:route", JSON.stringify({ noteId: documentId, medicationName: candidate.medicationName, route: candidate.route }));
+  console.info("[patient-transfer] medication:frequency", JSON.stringify({ noteId: documentId, medicationName: candidate.medicationName, frequency: candidate.frequencyRaw }));
+  console.info("[patient-transfer] medication:schedule", JSON.stringify({ noteId: documentId, medicationName: candidate.medicationName, schedulesCount: candidate.schedule.length }));
+  console.info("[patient-transfer] medication:candidate", JSON.stringify({ noteId: documentId, medicationName: candidate.medicationName, sourceLength: line.length, strength: candidate.strengthValue, route: candidate.route, frequency: candidate.frequencyRaw, schedulesCount: candidate.schedule.length, action: candidate.action }));
+  return candidate;
 }
 
-export function detectTreatmentCandidates({ sections = {}, fullText = "", sourceBlocks = [], medicationCatalog = MEDICAMENTOS, documentId = "" } = {}) {
+export function detectTreatmentCandidates({ sections = {}, fullText = "", sourceBlocks = [], medicationCatalog = MEDICAMENTOS, documentId = "", date = "" } = {}) {
   void sourceBlocks;
-  void medicationCatalog;
-  const sources = sourceEntries(sections, fullText, ["tratamiento", "plan", "subjetivo"]);
+  const sources = sourceEntries(sections, fullText, ["tratamiento", "medicamentos", "plan", "subjetivo"]);
   const candidates = [];
   const seen = new Set();
-  sources.forEach(({ section, text }) => splitLines(text).forEach(({ text: line, index }) => {
-    if (/\b(?:niega|sin uso de|no usa|no toma)\b/i.test(line)) return;
-    medicationMentions(line).forEach((name) => {
-      const candidate = medicationCandidate({ name, line, index, section, documentId, fullText });
-      const key = `${normalizeText(candidate.medicationName)}:${normalizeText(candidate.dose)}:${section}:${index}`;
-      if (seen.has(key)) return;
-      seen.add(key);
-      candidates.push(candidate);
+  sources.forEach(({ section, text }) => String(text).split(/\n/).map((value, index) => ({ text: value.trim(), index })).filter(({ text: value }) => value.length >= 3).forEach(({ text: sourceLine, index: lineIndex }) => {
+    splitMedicationItems(sourceLine, medicationCatalog).forEach((item, itemIndex) => {
+      if (/\b(?:niega|sin uso de|no usa|no toma)\b/i.test(item)) return;
+      const names = medicationMentions(item, medicationCatalog);
+      const resolvedNames = names.length ? names : [inferManualMedicationName(item)].filter(Boolean);
+      const itemStart = sourceLine.toLowerCase().indexOf(String(item).toLowerCase());
+      const clauseStart = itemStart >= 0 ? Math.max(sourceLine.lastIndexOf(".", itemStart - 1), sourceLine.lastIndexOf(";", itemStart - 1)) + 1 : 0;
+      const contextualItem = itemStart >= 0 ? `${sourceLine.slice(clauseStart, itemStart)}${item}` : item;
+      resolvedNames.forEach((name) => {
+        const candidate = medicationCandidate({ name, line: contextualItem, index: lineIndex * 100 + itemIndex, section, documentId, fullText, date });
+        const key = [candidate.normalizedMedicationName, candidate.action, candidate.date, candidate.sourceSection, candidate.strengthValue, candidate.frequencyRaw, candidate.scheduleText].join(":");
+        if (seen.has(key)) return;
+        seen.add(key);
+        candidates.push(candidate);
+      });
     });
   }));
   return candidates;
@@ -147,6 +300,6 @@ export function detectTreatmentCandidates({ sections = {}, fullText = "", source
 export function extractClinicalCandidates(document = {}) {
   return {
     diagnoses: detectDiagnosisCandidates({ sections: document.sections, fullText: document.fullText, sourceBlocks: document.blocks, documentId: document.id }),
-    treatments: detectTreatmentCandidates({ sections: document.sections, fullText: document.fullText, sourceBlocks: document.blocks, documentId: document.id })
+    treatments: detectTreatmentCandidates({ sections: document.sections, fullText: document.fullText, sourceBlocks: document.blocks, documentId: document.id, date: document.date || document.metadata?.documentDate || "" })
   };
 }

@@ -1,5 +1,6 @@
 import { FIELD_RULES, NOTE_TYPE_RULES } from "../../importacionDocx/docxImportConfig.js";
 import { construirNombreCompletoPaciente } from "../../../utils/nombresPacientes.js";
+import { parseMedicationSchedules } from "../parsing/clinicalCandidateParser.js";
 
 let root = null;
 
@@ -14,6 +15,13 @@ function option(value, label, selected = false) {
 
 function escapeHtml(value = "") {
   return String(value).replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[char]));
+}
+
+function formatMedicationSchedule(schedule = []) {
+  const quantityLabel = (value) => ({ 0.25: "¼", 0.5: "½", 0.75: "¾" }[value] || value);
+  return Array.isArray(schedule) && schedule.length
+    ? schedule.map((item) => `${item.time}${item.quantity != null ? ` · ${quantityLabel(item.quantity)} ${item.administrationUnit || ""}` : ""}`).join("; ")
+    : "";
 }
 
 function debugEnabled() {
@@ -238,12 +246,16 @@ function renderTreatmentCandidates(doc) {
         <article>
           <label><input type="checkbox" data-transfer-tx-include="${doc.id}:${candidate.id}" ${candidate.selectedForImport ? "checked" : ""}> Incluir</label>
           <input data-transfer-tx-name="${doc.id}:${candidate.id}" value="${escapeHtml(candidate.medicationName || "")}" placeholder="Medicamento">
-          <input data-transfer-tx-dose="${doc.id}:${candidate.id}" value="${escapeHtml(candidate.dose || "")}" placeholder="Dosis">
-          <input data-transfer-tx-unit="${doc.id}:${candidate.id}" value="${escapeHtml(candidate.doseUnit || "")}" placeholder="Unidad">
+          <input data-transfer-tx-presentation="${doc.id}:${candidate.id}" value="${escapeHtml(candidate.presentation || "")}" placeholder="Presentación">
+          <input data-transfer-tx-strength="${doc.id}:${candidate.id}" value="${escapeHtml(candidate.strengthValue ?? candidate.dose ?? "")}" placeholder="Concentración">
+          <input data-transfer-tx-strength-unit="${doc.id}:${candidate.id}" value="${escapeHtml(candidate.strengthUnit || candidate.doseUnit || "")}" placeholder="Unidad">
+          <input data-transfer-tx-admin-quantity="${doc.id}:${candidate.id}" value="${escapeHtml(candidate.administrationQuantity ?? "")}" placeholder="Cantidad">
+          <input data-transfer-tx-admin-unit="${doc.id}:${candidate.id}" value="${escapeHtml(candidate.administrationUnit || "")}" placeholder="Unidad">
           <input data-transfer-tx-route="${doc.id}:${candidate.id}" value="${escapeHtml(candidate.route || "")}" placeholder="Via">
           <input data-transfer-tx-frequency="${doc.id}:${candidate.id}" value="${escapeHtml(candidate.frequencyRaw || "")}" placeholder="Frecuencia">
+          <input data-transfer-tx-schedule="${doc.id}:${candidate.id}" value="${escapeHtml(candidate.scheduleText || formatMedicationSchedule(candidate.schedule))}" placeholder="Horario">
           <select data-transfer-tx-status="${doc.id}:${candidate.id}">
-            ${["Inicia", "Continua", "Aumenta", "Disminuye", "Suspende", "Pendiente traer", "Antecedente", "Otro"].map((item) => option(item, item, item === candidate.statusSuggestion)).join("")}
+            ${["Inicia", "Continua", "Continúa", "Aumenta", "Disminuye", "Suspende", "Cambia presentación", "Pendiente traer", "Antecedente", "Otro"].map((item) => option(item, item, item === (candidate.action || candidate.statusSuggestion))).join("")}
           </select>
           <small>Fuente: ${escapeHtml(candidate.sourceSection || "")} · ${escapeHtml(candidate.temporality || "")} · ${escapeHtml(candidate.sourceText || "")}</small>
         </article>`).join("")}
@@ -344,17 +356,20 @@ function renderSegmentTreatmentCandidates(doc, segment) {
     <section class="patient-transfer-candidates">
       <h4>Medicamentos detectados</h4>
       ${candidates.length ? `<div class="patient-transfer-table-scroll"><table class="patient-transfer-data-table">
-        <thead><tr><th>Incluir</th><th>Medicamento</th><th>Presentación</th><th>Dosis</th><th>Vía</th><th>Frecuencia</th><th>Horario</th><th>Acción</th><th>Fecha</th><th>Fuente</th></tr></thead><tbody>${candidates.map((candidate) => {
+        <thead><tr><th>Incluir</th><th>Medicamento</th><th>Presentación</th><th>Concentración</th><th>Dosis por toma</th><th>Vía</th><th>Frecuencia</th><th>Horario</th><th>Acción</th><th>Fecha</th><th>Fuente</th></tr></thead><tbody>${candidates.map((candidate) => {
         const key = segmentControlKey(doc, segment, candidate);
+        const scheduleText = formatMedicationSchedule(candidate.schedule) || candidate.scheduleText || "";
+        console.info("[patient-transfer] medication:rendered", JSON.stringify({ noteId: segment.id, medicationName: candidate.medicationName, strength: candidate.strengthValue ?? candidate.dose ?? null, route: candidate.route || "", frequency: candidate.frequencyRaw || "", schedulesCount: Array.isArray(candidate.schedule) ? candidate.schedule.length : 0, action: candidate.action || candidate.statusSuggestion || "" }));
         return `<tr>
           <td><input aria-label="Incluir medicamento" type="checkbox" data-transfer-tx-include="${key}" ${candidate.selectedForImport ? "checked" : ""}></td>
           <td><input data-transfer-tx-name="${key}" value="${escapeHtml(candidate.medicationName || "")}" placeholder="Medicamento"></td>
-          <td>${escapeHtml(candidate.presentation || "—")}</td>
-          <td><input data-transfer-tx-dose="${key}" value="${escapeHtml(candidate.dose || "")}" placeholder="Dosis"><input data-transfer-tx-unit="${key}" value="${escapeHtml(candidate.doseUnit || "")}" placeholder="Unidad"></td>
+          <td><input data-transfer-tx-presentation="${key}" value="${escapeHtml(candidate.presentation || "")}" placeholder="Presentación"></td>
+          <td><input data-transfer-tx-strength="${key}" value="${escapeHtml(candidate.strengthValue ?? candidate.dose ?? "")}" placeholder="Concentración"><input data-transfer-tx-strength-unit="${key}" value="${escapeHtml(candidate.strengthUnit || candidate.doseUnit || "")}" placeholder="Unidad"></td>
+          <td><input data-transfer-tx-admin-quantity="${key}" value="${escapeHtml(candidate.administrationQuantity ?? "")}" placeholder="Cantidad"><input data-transfer-tx-admin-unit="${key}" value="${escapeHtml(candidate.administrationUnit || "")}" placeholder="Unidad"></td>
           <td><input data-transfer-tx-route="${key}" value="${escapeHtml(candidate.route || "")}" placeholder="Vía"></td>
           <td><input data-transfer-tx-frequency="${key}" value="${escapeHtml(candidate.frequencyRaw || "")}" placeholder="Frecuencia"></td>
-          <td>${escapeHtml(candidate.schedule || "—")}</td>
-          <td><select data-transfer-tx-status="${key}">${["Inicia", "Continúa", "Aumenta", "Disminuye", "Suspende", "Antecedente", "Otro"].map((item) => option(item, item, item === candidate.statusSuggestion)).join("")}</select></td>
+          <td><input data-transfer-tx-schedule="${key}" value="${escapeHtml(scheduleText)}" placeholder="08:00 · 1 tableta"></td>
+          <td><select data-transfer-tx-status="${key}">${["Inicia", "Continúa", "Aumenta", "Disminuye", "Suspende", "Cambia presentación", "Antecedente", "Otro"].map((item) => option(item, item, item === (candidate.action || candidate.statusSuggestion))).join("")}</select></td>
           <td>${escapeHtml(segment.metadata?.documentDate || segment.date || "")}</td>
           <td><details><summary>Ver fuente</summary><small>${escapeHtml(candidate.sourceText || "")}</small></details></td>
         </tr>`;
@@ -565,10 +580,18 @@ export function readTransferReview(groups = []) {
         include: modal.querySelector(`[data-transfer-tx-include="${doc.id}:${candidate.id}"]`)?.checked || false,
         selectedForImport: modal.querySelector(`[data-transfer-tx-include="${doc.id}:${candidate.id}"]`)?.checked || false,
         medicationName: modal.querySelector(`[data-transfer-tx-name="${doc.id}:${candidate.id}"]`)?.value?.trim() || "",
-        dose: modal.querySelector(`[data-transfer-tx-dose="${doc.id}:${candidate.id}"]`)?.value?.trim() || "",
-        doseUnit: modal.querySelector(`[data-transfer-tx-unit="${doc.id}:${candidate.id}"]`)?.value?.trim() || "",
+        presentation: modal.querySelector(`[data-transfer-tx-presentation="${doc.id}:${candidate.id}"]`)?.value?.trim() || candidate.presentation || "",
+        strengthValue: modal.querySelector(`[data-transfer-tx-strength="${doc.id}:${candidate.id}"]`)?.value?.trim() || candidate.strengthValue || "",
+        strengthUnit: modal.querySelector(`[data-transfer-tx-strength-unit="${doc.id}:${candidate.id}"]`)?.value?.trim() || candidate.strengthUnit || candidate.doseUnit || "",
+        administrationQuantity: modal.querySelector(`[data-transfer-tx-admin-quantity="${doc.id}:${candidate.id}"]`)?.value?.trim() || candidate.administrationQuantity || "",
+        administrationUnit: modal.querySelector(`[data-transfer-tx-admin-unit="${doc.id}:${candidate.id}"]`)?.value?.trim() || candidate.administrationUnit || "",
+        dose: modal.querySelector(`[data-transfer-tx-strength="${doc.id}:${candidate.id}"]`)?.value?.trim() || candidate.dose || "",
+        doseUnit: modal.querySelector(`[data-transfer-tx-strength-unit="${doc.id}:${candidate.id}"]`)?.value?.trim() || candidate.doseUnit || "",
         route: modal.querySelector(`[data-transfer-tx-route="${doc.id}:${candidate.id}"]`)?.value?.trim() || "",
         frequencyRaw: modal.querySelector(`[data-transfer-tx-frequency="${doc.id}:${candidate.id}"]`)?.value?.trim() || "",
+        scheduleText: modal.querySelector(`[data-transfer-tx-schedule="${doc.id}:${candidate.id}"]`)?.value?.trim() || candidate.scheduleText || "",
+        schedule: modal.querySelector(`[data-transfer-tx-schedule="${doc.id}:${candidate.id}"]`) ? parseMedicationSchedules(modal.querySelector(`[data-transfer-tx-schedule="${doc.id}:${candidate.id}"]`).value) : (candidate.schedule || []),
+        action: modal.querySelector(`[data-transfer-tx-status="${doc.id}:${candidate.id}"]`)?.value || candidate.action || candidate.statusSuggestion,
         statusSuggestion: modal.querySelector(`[data-transfer-tx-status="${doc.id}:${candidate.id}"]`)?.value || candidate.statusSuggestion,
         confirmedByDoctor: modal.querySelector(`[data-transfer-tx-include="${doc.id}:${candidate.id}"]`)?.checked || false
       }));
@@ -622,10 +645,18 @@ export function readTransferReview(groups = []) {
             include: checked,
             selectedForImport: checked,
             medicationName: modal.querySelector(`[data-transfer-tx-name="${key}"]`)?.value?.trim() || candidate.medicationName || "",
-            dose: modal.querySelector(`[data-transfer-tx-dose="${key}"]`)?.value?.trim() || "",
-            doseUnit: modal.querySelector(`[data-transfer-tx-unit="${key}"]`)?.value?.trim() || "",
+            presentation: modal.querySelector(`[data-transfer-tx-presentation="${key}"]`)?.value?.trim() || candidate.presentation || "",
+            strengthValue: modal.querySelector(`[data-transfer-tx-strength="${key}"]`)?.value?.trim() || candidate.strengthValue || "",
+            strengthUnit: modal.querySelector(`[data-transfer-tx-strength-unit="${key}"]`)?.value?.trim() || candidate.strengthUnit || candidate.doseUnit || "",
+            administrationQuantity: modal.querySelector(`[data-transfer-tx-admin-quantity="${key}"]`)?.value?.trim() || candidate.administrationQuantity || "",
+            administrationUnit: modal.querySelector(`[data-transfer-tx-admin-unit="${key}"]`)?.value?.trim() || candidate.administrationUnit || "",
+            dose: modal.querySelector(`[data-transfer-tx-strength="${key}"]`)?.value?.trim() || candidate.dose || "",
+            doseUnit: modal.querySelector(`[data-transfer-tx-strength-unit="${key}"]`)?.value?.trim() || candidate.doseUnit || "",
             route: modal.querySelector(`[data-transfer-tx-route="${key}"]`)?.value?.trim() || "",
             frequencyRaw: modal.querySelector(`[data-transfer-tx-frequency="${key}"]`)?.value?.trim() || "",
+            scheduleText: modal.querySelector(`[data-transfer-tx-schedule="${key}"]`)?.value?.trim() || candidate.scheduleText || "",
+            schedule: modal.querySelector(`[data-transfer-tx-schedule="${key}"]`) ? parseMedicationSchedules(modal.querySelector(`[data-transfer-tx-schedule="${key}"]`).value) : (candidate.schedule || []),
+            action: modal.querySelector(`[data-transfer-tx-status="${key}"]`)?.value || candidate.action || candidate.statusSuggestion,
             statusSuggestion: modal.querySelector(`[data-transfer-tx-status="${key}"]`)?.value || candidate.statusSuggestion,
             confirmedByDoctor: checked
           };

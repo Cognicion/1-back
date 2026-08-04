@@ -44,7 +44,8 @@ function enrichNoteSegments(document, segments = []) {
       sourceNoteId: segment.id,
       sections: segment.sections,
       blocks: segment.blocks,
-      fullText: segment.rawText
+      fullText: segment.rawText,
+      date: segment.date || segment.metadata?.documentDate || ""
     });
     const sections = { ...(segment.sections || {}) };
     if (!sections.diagnosticos && candidates.diagnoses.length) {
@@ -323,7 +324,8 @@ async function analyzeOneFile(item, user) {
     id: item.id,
     sections: sectionsResult.secciones,
     blocks,
-    fullText
+    fullText,
+    date: metadata.documentDate || ""
   });
   console.info("[patient-transfer] diagnoses:detected", { fileId: item.id, count: clinicalCandidates.diagnoses.length });
   console.info("[patient-transfer] treatments:detected", { fileId: item.id, count: clinicalCandidates.treatments.length });

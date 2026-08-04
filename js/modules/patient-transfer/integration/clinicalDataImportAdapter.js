@@ -15,13 +15,16 @@ function diagnosisKey(candidate = {}) {
   ].filter(Boolean).join(":");
 }
 
-function treatmentKey(candidate = {}) {
+function treatmentKey(candidate = {}, context = {}) {
   return [
-    normalizeKey(candidate.medicationName),
-    normalizeKey(candidate.dose),
-    normalizeKey(candidate.doseUnit),
-    normalizeKey(candidate.frequencyRaw),
-    normalizeKey(candidate.statusSuggestion)
+    normalizeKey(candidate.normalizedMedicationName || candidate.medicationName || candidate.medicamento || candidate.nombreMedicamento),
+    normalizeKey(candidate.action || candidate.accionFarmacologica || candidate.statusSuggestion || candidate.estado),
+    normalizeKey(candidate.date || candidate.fechaInicio || context.date),
+    normalizeKey(candidate.sourceSection),
+    normalizeKey(candidate.strengthValue ?? candidate.dosisValor ?? candidate.dose),
+    normalizeKey(candidate.strengthUnit || candidate.dosisUnidad || candidate.doseUnit),
+    normalizeKey(candidate.frequencyRaw || candidate.frecuencia),
+    normalizeKey(candidate.scheduleText || candidate.horario || JSON.stringify(candidate.schedule || candidate.horarios || []))
   ].filter(Boolean).join(":");
 }
 
@@ -53,15 +56,28 @@ function diagnosisPayload(candidate = {}, context = {}) {
 }
 
 function treatmentPayload(candidate = {}, context = {}) {
-  const estado = candidate.statusSuggestion || "Continúa";
+  const estado = candidate.action || candidate.statusSuggestion || "Continúa";
+  const strengthValue = candidate.strengthValue ?? candidate.dose ?? "";
+  const strengthUnit = candidate.strengthUnit || candidate.doseUnit || "";
+  const schedule = Array.isArray(candidate.schedule) ? candidate.schedule : [];
   return {
     medicamento: candidate.medicationName || "",
     nombreMedicamento: candidate.medicationName || "",
-    dosis: [candidate.dose, candidate.doseUnit].filter(Boolean).join(" "),
-    dosisValor: candidate.dose || "",
-    dosisUnidad: candidate.doseUnit || "",
+    presentacion: candidate.presentation || "",
+    dosis: [strengthValue, strengthUnit].filter(Boolean).join(" "),
+    dosisValor: strengthValue,
+    dosisUnidad: strengthUnit,
+    concentracionValor: strengthValue,
+    concentracionUnidad: strengthUnit,
+    concentracionPorValor: candidate.strengthPerValue ?? null,
+    concentracionPorUnidad: candidate.strengthPerUnit || "",
+    cantidadPorToma: candidate.administrationQuantity ?? null,
+    unidadAdministracion: candidate.administrationUnit || "",
     via: candidate.route || "",
     frecuencia: candidate.frequencyRaw || "",
+    horarios: schedule,
+    horario: candidate.scheduleText || "",
+    accionFarmacologica: candidate.action || estado,
     estado,
     fechaInicio: context.date || new Date().toISOString().slice(0, 10),
     indicacion: "",
@@ -72,7 +88,7 @@ function treatmentPayload(candidate = {}, context = {}) {
     sourceFileHash: context.sourceFileHash,
     sourceNoteId: context.noteId,
     sourceDocumentName: context.fileName || "",
-    importCandidateKey: treatmentKey(candidate),
+    importCandidateKey: treatmentKey(candidate, context),
     sourceSection: candidate.sourceSection || "",
     sourceLocation: candidate.sourceLocation || null,
     _auditoria: {

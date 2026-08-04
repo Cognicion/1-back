@@ -54,6 +54,11 @@ assert.match(adapter, /apellidoPaterno/, "payload de paciente incluye apellido p
 assert.match(adapter, /apellidoMaterno/, "payload de paciente incluye apellido materno");
 assert.match(adapter, /nombreCompleto/, "payload de paciente mantiene nombre completo compatible");
 
+const clinicalAdapter = read("js/modules/patient-transfer/integration/clinicalDataImportAdapter.js");
+assert.match(clinicalAdapter, /horarios: schedule/, "persistencia conserva horarios estructurados");
+assert.match(clinicalAdapter, /cantidadPorToma/, "persistencia conserva cantidad por toma");
+assert.match(clinicalAdapter, /presentacion/, "persistencia conserva presentacion");
+
 const controller = read("js/modules/patient-transfer/patientTransferController.js");
 const transferState = read("js/modules/patient-transfer/patientTransferState.js");
 assert.match(controller, /transferOperationId: `docx_\$\{hash\}`/, "el operationId se crea desde el analisis del hash");
