@@ -3,6 +3,12 @@
   import { normalizeClinicalHeading, parseClinicalSections } from "./clinicalSectionParser.js";
   import { assignParsedSubjective } from "../state/subjectiveSegmentState.js";
 
+
+console.log(
+  "🔥 clinicalNoteSegmenter.js CARGADO",
+  new Date().toISOString()
+);
+
   const DATE_PATTERN =  /\b(?:[0-3]?\d[\/-][01]?\d[\/-](?:19|20)?\d{2}|(?:19|20)\d{2}-[01]\d-[0-3]\d)\b/;
   const TIME_PATTERN = /\b(?:[01]?\d|2[0-3]):[0-5]\d\b/;
 
