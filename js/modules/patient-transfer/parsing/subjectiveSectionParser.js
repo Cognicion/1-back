@@ -27,6 +27,19 @@ const VITAL_SIGN_LABELS = Object.freeze([
   "imc"
 ]);
 
+const SUBJECTIVE_CONTAMINANTS = Object.freeze([
+  "NOTA DE EVOLUCIÓN",
+  "NOTA DE INGRESO",
+  "EXPLORACIÓN FÍSICA",
+  "EXAMEN MENTAL",
+  "DIAGNÓSTICO CIE-10",
+  "PLAN TERAPÉUTICO",
+  "COMENTARIO Y/O ANÁLISIS",
+  "PRONÓSTICO",
+  "DESTINO",
+  "CÉD. PROF."
+]);
+
 function canonicalizeWithMap(value = "") {
   const source = String(value || "").replace(/\u00a0/g, " ").trim();
   const characters = [];
@@ -120,6 +133,7 @@ function lineRecords(blocks = []) {
       records.push({
         text: line,
         blockIndex: Number.isInteger(block.source?.blockIndex) ? block.source.blockIndex : fallbackIndex,
+        localBlockIndex: fallbackIndex,
         blockType: block.type,
         lineIndex,
         startOffset,
@@ -176,7 +190,15 @@ export function parseSubjectiveSection({ noteSegment = {}, headings = [], sectio
   const records = lineRecords(blocks);
   const subjectiveAliases = sectionAliases.subjetivo || CLINICAL_SECTION_ALIASES.subjetivo;
   const noteId = noteSegment.id || "";
-  const traceBase = { noteId, date: noteSegment.date || "", time: noteSegment.time || "" };
+  const traceBase = {
+    noteId,
+    date: noteSegment.date || "",
+    time: noteSegment.time || "",
+    segmentStartBlock: noteSegment.startBlockIndex ?? null,
+    segmentEndBlock: noteSegment.endBlockIndex ?? null,
+    segmentBlockCount: blocks.length,
+    segmentRawTextLength: String(noteSegment.rawText || "").length
+  };
   console.info("[patient-transfer] subjective:start", traceBase);
 
   let startRecordIndex = -1;
@@ -210,12 +232,20 @@ export function parseSubjectiveSection({ noteSegment = {}, headings = [], sectio
       sourceLabel: "",
       startBlockIndex: null,
       endBlockIndex: null,
+      localStartBlockIndex: null,
+      localEndBlockIndex: null,
       startOffset: null,
       endOffset: null,
       nextHeading: "",
       detectionMethod: "not-detected"
     };
-    console.info("[patient-transfer] subjective:parsed", { ...traceBase, characterLength: 0, detectionMethod: empty.detectionMethod });
+    console.info("[patient-transfer] subjective:parsed", {
+      ...traceBase,
+      subjectiveStartBlock: null,
+      subjectiveEndBlock: null,
+      subjectiveLength: 0,
+      detectionMethod: empty.detectionMethod
+    });
     return empty;
   }
 
@@ -248,6 +278,8 @@ export function parseSubjectiveSection({ noteSegment = {}, headings = [], sectio
     matchedHeading: startMatch?.headingText || "",
     startBlockIndex: startMatch ? records[startRecordIndex].blockIndex : firstContentRecord?.blockIndex ?? null,
     endBlockIndex: boundaryRecord?.blockIndex ?? (noteSegment.endBlockIndex ?? (lastContentRecord?.blockIndex != null ? lastContentRecord.blockIndex + 1 : null)),
+    localStartBlockIndex: startMatch ? records[startRecordIndex].localBlockIndex : firstContentRecord?.localBlockIndex ?? null,
+    localEndBlockIndex: boundaryRecord?.localBlockIndex ?? blocks.length,
     startOffset: startMatch ? records[startRecordIndex].endOffset : firstContentRecord?.startOffset ?? null,
     endOffset: boundaryRecord?.startOffset ?? lastContentRecord?.endOffset ?? null,
     nextHeading,
@@ -271,11 +303,32 @@ export function parseSubjectiveSection({ noteSegment = {}, headings = [], sectio
     ...traceBase,
     matchedHeading: result.matchedHeading,
     nextHeading: result.nextHeading,
-    startBlockIndex: result.startBlockIndex,
-    endBlockIndex: result.endBlockIndex,
-    characterLength: result.text.length,
+    subjectiveStartBlock: result.startBlockIndex,
+    subjectiveEndBlock: result.endBlockIndex,
+    localSubjectiveStartBlock: result.localStartBlockIndex,
+    localSubjectiveEndBlock: result.localEndBlockIndex,
+    subjectiveLength: result.text.length,
     detectionMethod: result.detectionMethod
   });
   return result;
 }
 
+export function assertSubjectiveIsolation(noteSegments = []) {
+  const sectionReferences = new Set();
+  noteSegments.forEach((segment) => {
+    if (sectionReferences.has(segment.sections)) {
+      throw new Error(`Subjetivo no aislado: ${segment.id || "nota-sin-id"} comparte el objeto sections.`);
+    }
+    sectionReferences.add(segment.sections);
+    const text = String(segment.sections?.subjetivo || "");
+    const normalizedText = canonicalize(text).toUpperCase();
+    SUBJECTIVE_CONTAMINANTS.forEach((term) => {
+      const normalizedTerm = canonicalize(term).toUpperCase();
+      const position = normalizedText.indexOf(normalizedTerm);
+      if (position >= 0) {
+        throw new Error(`Subjetivo contaminado: noteId=${segment.id || "nota-sin-id"}; término=${term}; posición=${position}.`);
+      }
+    });
+  });
+  return true;
+}

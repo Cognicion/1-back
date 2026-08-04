@@ -1,6 +1,7 @@
 import { normalizedBlocksToText } from "../docx/docxBlockNormalizer.js";
 import { NOTE_START_ALIASES } from "./clinicalSectionConfig.js";
 import { normalizeClinicalHeading, parseClinicalSections } from "./clinicalSectionParser.js";
+import { assignParsedSubjective } from "../state/subjectiveSegmentState.js";
 
 const DATE_PATTERN = /\b(?:[0-3]?\d[\/-][01]?\d[\/-](?:19|20)?\d{2}|(?:19|20)\d{2}-[01]\d-[0-3]\d)\b/;
 const TIME_PATTERN = /\b(?:[01]?\d|2[0-3]):[0-5]\d\b/;
@@ -102,15 +103,34 @@ function metadataForSegment(rawText = "") {
   };
 }
 
+function isolateSegmentBlocks(blocks = []) {
+  return blocks.map((block) => ({
+    ...block,
+    source: { ...(block.source || {}) },
+    rawRuns: Array.isArray(block.rawRuns) ? [...block.rawRuns] : block.rawRuns,
+    rows: Array.isArray(block.rows) ? block.rows.map((row) => [...row]) : block.rows
+  }));
+}
+
 function createSegment(documentId, blocks, index) {
-  const rawText = normalizedBlocksToText(blocks);
-  const first = blocks[0];
-  const last = blocks.at(-1);
+  const segmentBlocks = isolateSegmentBlocks(blocks);
+  const rawText = normalizedBlocksToText(segmentBlocks);
+  const first = segmentBlocks[0];
+  const last = segmentBlocks.at(-1);
   const metadata = metadataForSegment(rawText);
   const id = `${documentId}-note-${index + 1}`;
   const startBlockIndex = blockIndex(first, 0);
   const endBlockIndex = blockIndex(last, blocks.length - 1) + 1;
-  const parsedSections = parseClinicalSections(blocks, {
+  console.info("[patient-transfer] segment:blocks-sliced", {
+    noteId: id,
+    date: metadata.date,
+    time: metadata.time,
+    segmentStartBlock: startBlockIndex,
+    segmentEndBlock: endBlockIndex,
+    segmentBlockCount: segmentBlocks.length,
+    segmentRawTextLength: rawText.length
+  });
+  const parsedSections = parseClinicalSections(segmentBlocks, {
     noteSegment: {
       id,
       date: metadata.date,
@@ -120,7 +140,7 @@ function createSegment(documentId, blocks, index) {
       rawText
     }
   });
-  return {
+  const baseSegment = {
     id,
     startBlockIndex,
     endBlockIndex,
@@ -129,13 +149,35 @@ function createSegment(documentId, blocks, index) {
     time: metadata.time,
     noteType: metadata.noteType,
     sourcePages: [...new Set(blocks.map((block) => block.source?.pageIndex).filter(Number.isInteger))],
-    blocks,
-    sections: parsedSections.secciones,
-    subjectiveExtraction: parsedSections.subjectiveExtraction,
+    blocks: segmentBlocks,
+    sections: { ...parsedSections.secciones },
     diagnosisCandidates: [],
     treatmentCandidates: [],
     omitted: false
   };
+  const segment = assignParsedSubjective(baseSegment, parsedSections.subjectiveExtraction);
+  console.info("[patient-transfer] segment:created", {
+    noteId: id,
+    date: metadata.date,
+    time: metadata.time,
+    segmentStartBlock: startBlockIndex,
+    segmentEndBlock: endBlockIndex,
+    segmentBlockCount: segmentBlocks.length,
+    segmentRawTextLength: rawText.length
+  });
+  console.info("[patient-transfer] subjective:state-assigned", {
+    noteId: id,
+    date: metadata.date,
+    time: metadata.time,
+    segmentStartBlock: startBlockIndex,
+    segmentEndBlock: endBlockIndex,
+    segmentBlockCount: segmentBlocks.length,
+    segmentRawTextLength: rawText.length,
+    subjectiveStartBlock: segment.subjectiveExtraction?.startBlockIndex ?? null,
+    subjectiveEndBlock: segment.subjectiveExtraction?.endBlockIndex ?? null,
+    subjectiveLength: segment.sections.subjetivo.length
+  });
+  return segment;
 }
 
 export function segmentClinicalNotes({ blocks = [], fullText = "", manualMultipleNotes = false, proposedBoundaries = [], documentId = "doc" } = {}) {

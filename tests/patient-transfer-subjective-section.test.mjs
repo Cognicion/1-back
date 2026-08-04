@@ -1,7 +1,9 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { parseSubjectiveSection } from "../js/modules/patient-transfer/parsing/subjectiveSectionParser.js";
+import { assertSubjectiveIsolation } from "../js/modules/patient-transfer/parsing/subjectiveSectionParser.js";
 import { detectMultipleClinicalNotes, segmentClinicalNotes } from "../js/modules/patient-transfer/parsing/clinicalNoteSegmenter.js";
+import { assignParsedSubjective, preserveManualSubjectiveEdits, updateSubjectiveSegmentValue } from "../js/modules/patient-transfer/state/subjectiveSegmentState.js";
 
 const paragraph = (text, blockIndex) => ({ type: "paragraph", text, rawRuns: [text], source: { blockIndex } });
 const table = (rows, blockIndex) => ({ type: "table", rows, source: { blockIndex, tableIndex: blockIndex } });
@@ -79,14 +81,43 @@ const segments = segmentClinicalNotes({
 });
 assert.equal(segments.length, 5, "genera cinco segmentos");
 assert.deepEqual(segments.map((segment) => segment.time), noteTimes, "no fusiona horas del mismo día");
+assert.equal(new Set(segments.map((segment) => segment.sections)).size, 5, "cada nota tiene un objeto sections independiente");
+assert.equal(new Set(segments.map((segment) => segment.blocks)).size, 5, "cada nota tiene un arreglo blocks independiente");
+assert.ok(segments.every((segment) => !fiveNoteBlocks.includes(segment.blocks[0])), "cada segmento contiene copias aisladas de los bloques fuente");
 segments.forEach((segment, index) => {
   assert.equal(segment.sections.subjetivo, `Subjetivo exclusivo ${index + 1}.`, `Subjetivo independiente ${index + 1}`);
   assert.doesNotMatch(segment.sections.subjetivo, /EXPLORACIÓN|EXAMEN MENTAL|DIAGNÓSTICO|PLAN|ANÁLISIS|NOTA DE /, `nota ${index + 1} no invade otras secciones`);
 });
+assert.equal(assertSubjectiveIsolation(segments), true, "los cinco Subjetivos están aislados");
+
+const editedSegments = updateSubjectiveSegmentValue(segments, segments[2].id, "Edición manual exclusiva.");
+assert.equal(editedSegments[2].sections.subjetivo, "Edición manual exclusiva.");
+assert.equal(editedSegments[2].subjectiveManuallyEdited, true);
+assert.equal(editedSegments[1], segments[1], "editar una nota no modifica las demás");
+assert.equal(editedSegments[3], segments[3], "la siguiente nota conserva su referencia y valor");
+
+const reparsed = segments.map((segment) => assignParsedSubjective({ ...segment, sections: { ...segment.sections } }, segment.subjectiveExtraction));
+const preserved = preserveManualSubjectiveEdits(reparsed, editedSegments);
+assert.equal(preserved[2].sections.subjetivo, "Edición manual exclusiva.", "reanálisis conserva la edición manual");
+assert.equal(preserved[1].sections.subjetivo, segments[1].sections.subjetivo, "reanálisis reemplaza, no concatena, el resultado automático");
+
+assert.throws(() => assertSubjectiveIsolation([{ ...segments[0], sections: { ...segments[0].sections, subjetivo: "Relato. PLAN TERAPÉUTICO: contenido" } }]), /noteId=.*término=PLAN TERAPÉUTICO.*posición=/, "la aserción informa nota, término y posición");
+assert.throws(() => assertSubjectiveIsolation([
+  { ...segments[0], sections: segments[0].sections },
+  { ...segments[1], sections: segments[0].sections }
+]), /comparte el objeto sections/, "detecta referencias sections compartidas");
 
 const viewSource = await readFile(new URL("../js/modules/patient-transfer/ui/patientTransferView.js", import.meta.url), "utf8");
-assert.match(viewSource, /segment\.sections\?\.subjetivo \|\| ""/, "el render usa el estado central editado");
+assert.match(viewSource, /segment\.sections\?\.subjetivo \?\? ""/, "el render usa el estado central editado");
 assert.doesNotMatch(viewSource, /sections\?\.subjetivo\s*\|\|\s*(?:segment\.)?rawText/, "el render no repone el texto completo");
 assert.match(viewSource, /Subjetivo \/ evolución/, "la etiqueta visible fue localizada");
+assert.match(viewSource, /data-note-id="\$\{segment\.id\}"/, "cada textarea se vincula a un noteId único");
+assert.match(viewSource, /data-section-key="subjetivo"/, "el control identifica exclusivamente la sección Subjetivo");
+assert.doesNotMatch(viewSource, /allSegments.*join|combinedSubjective|fullText.*subjetivo|rawText.*subjetivo/i, "el render no concatena segmentos ni usa texto completo");
+assert.doesNotMatch(viewSource, /function renderClinicalSections\(doc\)/, "se retiró el render documental legado que leía doc.sections.subjetivo");
+
+const controllerSource = await readFile(new URL("../js/modules/patient-transfer/patientTransferController.js", import.meta.url), "utf8");
+assert.doesNotMatch(controllerSource, /subjetivo\s*\+=/, "el estado nunca acumula Subjetivo con +=");
+assert.match(controllerSource, /updateSubjectiveSegmentValue\(document\.noteSegments \|\| \[\], noteId, input\.value\)/, "el listener actualiza solo el noteId activo");
 
 console.log("patient-transfer-subjective-section.test.mjs OK");

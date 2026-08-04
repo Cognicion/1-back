@@ -10,6 +10,7 @@ import { extractClinicalCandidates } from "./parsing/clinicalCandidateParser.js"
 import { detectMultipleClinicalNotes, expandSegmentedDocumentsForPersistence, mergeClinicalSegments, segmentClinicalNotes, splitClinicalSegment } from "./parsing/clinicalNoteSegmenter.js";
 import { extractVitalSignsCandidates } from "./parsing/vitalSignsParser.js";
 import { parseNoteMetadata } from "./parsing/noteMetadataParser.js";
+import { preserveManualSubjectiveEdits, updateSubjectiveSegmentValue } from "./state/subjectiveSegmentState.js";
 import { groupDocumentsByPatient } from "./parsing/documentGroupingService.js";
 import { analyzeDocumentClinically } from "./integration/clinicalAnalysisAdapter.js";
 import { findDuplicateImport, findExistingPatientCandidates, saveTransferredGroups } from "./patientTransferRepository.js";
@@ -87,7 +88,10 @@ function enrichNoteSegments(document, segments = []) {
 }
 
 function applySegmentsToDocument(document, rawSegments = []) {
-  const noteSegments = enrichNoteSegments(document, rawSegments);
+  const noteSegments = preserveManualSubjectiveEdits(
+    enrichNoteSegments(document, rawSegments),
+    document.noteSegments || []
+  );
   const primary = noteSegments[0] || {};
   return {
     ...document,
@@ -96,6 +100,56 @@ function applySegmentsToDocument(document, rawSegments = []) {
     diagnosisCandidates: primary.diagnosisCandidates || [],
     treatmentCandidates: primary.treatmentCandidates || []
   };
+}
+
+function previousDocumentsByHash() {
+  return new Map(analyzedGroups.flatMap((group) => group.documents || [])
+    .filter((document) => document.hash)
+    .map((document) => [document.hash, document]));
+}
+
+function preserveReviewedSubjectives(nextDocument, previousDocument) {
+  if (!previousDocument) return nextDocument;
+  const noteSegments = preserveManualSubjectiveEdits(nextDocument.noteSegments || [], previousDocument.noteSegments || []);
+  const primary = noteSegments[0];
+  return {
+    ...nextDocument,
+    noteSegments,
+    sections: primary?.sections || nextDocument.sections
+  };
+}
+
+function updateSubjectiveFromInput(event) {
+  const input = event.target.closest?.('[data-section-key="subjetivo"][data-note-id][data-transfer-document-id]');
+  if (!input) return false;
+  const noteId = input.dataset.noteId;
+  const documentId = input.dataset.transferDocumentId;
+  analyzedGroups = analyzedGroups.map((group) => ({
+    ...group,
+    documents: group.documents.map((document) => {
+      if (document.id !== documentId) return document;
+      const noteSegments = updateSubjectiveSegmentValue(document.noteSegments || [], noteId, input.value);
+      const updatedSegment = noteSegments.find((segment) => segment.id === noteId);
+      if (updatedSegment) {
+        console.info("[patient-transfer] subjective:state-assigned", {
+          noteId,
+          date: updatedSegment.metadata?.documentDate || updatedSegment.date || "",
+          time: updatedSegment.metadata?.documentHour || updatedSegment.time || "",
+          segmentStartBlock: updatedSegment.startBlockIndex ?? null,
+          segmentEndBlock: updatedSegment.endBlockIndex ?? null,
+          segmentBlockCount: (updatedSegment.blocks || []).length,
+          segmentRawTextLength: String(updatedSegment.rawText || "").length,
+          subjectiveStartBlock: updatedSegment.subjectiveExtraction?.startBlockIndex ?? null,
+          subjectiveEndBlock: updatedSegment.subjectiveExtraction?.endBlockIndex ?? null,
+          subjectiveLength: updatedSegment.sections?.subjetivo?.length || 0,
+          manuallyEdited: updatedSegment.subjectiveManuallyEdited
+        });
+      }
+      return { ...document, noteSegments };
+    })
+  }));
+  setPatientTransferGroups(analyzedGroups);
+  return true;
 }
 
 function updateDocumentById(documentId, updater) {
@@ -332,11 +386,12 @@ async function analyzeSelectedFiles() {
 
   setPatientTransferStatus(TRANSFER_STATUS.VALIDATING);
   showPatientTransferError("");
+  const previousDocuments = previousDocumentsByHash();
   const documents = [];
   for (let index = 0; index < selectedFiles.length; index += 1) {
     setPatientTransferMessage(`Procesando ${index + 1} de ${selectedFiles.length}`, Math.round((index / selectedFiles.length) * 90));
     const document = await analyzeOneFile(selectedFiles[index], user);
-    if (document) documents.push(document);
+    if (document) documents.push(preserveReviewedSubjectives(document, previousDocuments.get(document.hash)));
     await yieldToBrowser();
   }
 
@@ -633,6 +688,7 @@ export function initializePatientTransfer() {
 
   root.addEventListener("input", (event) => {
     syncPatientNameInputs(event);
+    if (updateSubjectiveFromInput(event)) return;
     syncReviewedGroupsFromView();
   });
 

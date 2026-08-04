@@ -251,21 +251,12 @@ function renderVitalSignsCandidates(doc) {
     </section>`;
 }
 
-function renderClinicalSections(doc) {
-  const sections = doc.sections || {};
-  const campos = [
-    ["Subjetivo", "subjetivo"], ["Objetivo", "objetivo"], ["Examen mental", "examenMental"],
-    ["Análisis", "analisis"], ["Diagnósticos", "diagnosticos"], ["Tratamiento", "tratamiento"],
-    ["Plan", "plan"], ["Pronóstico", "pronostico"], ["Destino", "destino"]
-  ];
-  return `
-    <section class="patient-transfer-clinical-sections">
-      <h4>Secciones clínicas</h4>
-      ${campos.map(([label, key]) => `
-        <label>${label}
-          <textarea readonly>${escapeHtml(sections[key] || (key === "analisis" ? "No se detectó una sección de análisis explícita." : ""))}</textarea>
-        </label>`).join("")}
-    </section>`;
+function safeControlToken(value = "") {
+  return String(value || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9_-]+/g, "-");
+}
+
+function subjectiveControlId(documentId = "", noteId = "") {
+  return `patient-transfer-subjective-${safeControlToken(documentId)}-${safeControlToken(noteId)}`;
 }
 
 function segmentControlKey(doc, segment, candidate) {
@@ -349,18 +340,10 @@ function renderSegmentTreatmentCandidates(doc, segment) {
 function renderSegmentClinicalSections(doc, segment) {
   const fieldGroup = (fields) => `<section class="patient-transfer-clinical-sections">${fields.map(([label, key]) => `<label>${label}<textarea data-transfer-section="${doc.id}:${segment.id}:${key}" placeholder="No se detectó esta sección.">${escapeHtml(segment.sections?.[key] || "")}</textarea></label>`).join("")}</section>`;
   const subjectiveSource = segment.subjectiveExtraction?.sourceLabel || "";
-  console.info("[patient-transfer] subjective:rendered", {
-    noteId: segment.id,
-    date: segment.metadata?.documentDate || segment.date || "",
-    time: segment.metadata?.documentHour || segment.time || "",
-    matchedHeading: segment.subjectiveExtraction?.matchedHeading || "",
-    nextHeading: segment.subjectiveExtraction?.nextHeading || "",
-    startBlockIndex: segment.subjectiveExtraction?.startBlockIndex ?? null,
-    endBlockIndex: segment.subjectiveExtraction?.endBlockIndex ?? null,
-    characterLength: (segment.sections?.subjetivo || "").length
-  });
+  const subjectiveId = subjectiveControlId(doc.id, segment.id);
+  const subjectiveText = segment.sections?.subjetivo ?? "";
   return `<h4>Secciones clínicas</h4>
-    <section class="patient-transfer-clinical-sections"><label>Subjetivo / evolución<textarea data-transfer-section="${doc.id}:${segment.id}:subjetivo" placeholder="No se detectó una sección de Subjetivo / Evolución.">${escapeHtml(segment.sections?.subjetivo || "")}</textarea>${subjectiveSource ? `<small>Fuente: ${escapeHtml(subjectiveSource)}</small>` : ""}</label></section>
+    <section class="patient-transfer-clinical-sections"><label for="${subjectiveId}">Subjetivo / evolución</label><textarea id="${subjectiveId}" data-transfer-section="${doc.id}:${segment.id}:subjetivo" data-transfer-document-id="${doc.id}" data-note-id="${segment.id}" data-section-key="subjetivo" placeholder="No se detectó una sección de Subjetivo / Evolución.">${escapeHtml(subjectiveText)}</textarea>${subjectiveSource ? `<small>Fuente: ${escapeHtml(subjectiveSource)}</small>` : subjectiveText ? "" : "<small>No se detectó Subjetivo / evolución.</small>"}</section>
     ${fieldGroup([
       ["Exploración física / neurológica", "physicalNeurologicalExam"],
       ["Examen mental", "examenMental"],
@@ -478,6 +461,35 @@ export function renderDetectedGroups(groups = []) {
         <div class="patient-transfer-field-grid">${renderFields(group)}</div>
         <div class="patient-transfer-documents">${group.documents.map((doc) => renderDocument(doc, groups, group.id)).join("")}</div>
       </article>`).join("")}` : "";
+  collectRenderedSubjectiveMetrics(groups).forEach((metrics) => {
+    console.info("[patient-transfer] subjective:rendered", metrics);
+    console.assert(
+      metrics.subjectiveLength === metrics.renderedLength,
+      `Longitud de Subjetivo distinta en ${metrics.noteId}: estado=${metrics.subjectiveLength}, render=${metrics.renderedLength}`
+    );
+  });
+}
+
+export function collectRenderedSubjectiveMetrics(groups = []) {
+  const modal = ensureRoot();
+  return groups.flatMap((group) => (group.documents || []).flatMap((document) =>
+    (document.noteSegments || []).map((segment) => {
+      const textarea = modal.querySelector(`#${subjectiveControlId(document.id, segment.id)}`);
+      return {
+        noteId: segment.id,
+        date: segment.metadata?.documentDate || segment.date || "",
+        time: segment.metadata?.documentHour || segment.time || "",
+        segmentStartBlock: segment.startBlockIndex ?? null,
+        segmentEndBlock: segment.endBlockIndex ?? null,
+        segmentBlockCount: (segment.blocks || []).length,
+        segmentRawTextLength: String(segment.rawText || "").length,
+        subjectiveStartBlock: segment.subjectiveExtraction?.startBlockIndex ?? null,
+        subjectiveEndBlock: segment.subjectiveExtraction?.endBlockIndex ?? null,
+        subjectiveLength: String(segment.sections?.subjetivo ?? "").length,
+        renderedLength: String(textarea?.value ?? "").length
+      };
+    })
+  ));
 }
 
 export function readTransferReview(groups = []) {
