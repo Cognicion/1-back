@@ -27,9 +27,21 @@ export function initializeSofiaMascot() {
   root.className = "sofia-mascot";
   root.dataset.mounted = "true";
   root.innerHTML = `<button class="sofia-mascot__button" type="button" aria-label="SOFÍA está inactiva"><span class="sofia-mascot__sprite" aria-hidden="true"><i class="sofia-mascot__brain"></i><i class="sofia-mascot__glasses"></i><i class="sofia-mascot__eyes"></i><i class="sofia-mascot__arm sofia-mascot__arm--left"></i><i class="sofia-mascot__arm sofia-mascot__arm--right"></i><i class="sofia-mascot__leg sofia-mascot__leg--left"></i><i class="sofia-mascot__leg sofia-mascot__leg--right"></i></span></button><section class="sofia-mascot__panel" hidden role="dialog" aria-labelledby="sofiaMascotTitle"><div class="sofia-mascot__panel-head"><h2 id="sofiaMascotTitle">Estado de SOFÍA</h2><button class="sofia-mascot__close" type="button" aria-label="Cerrar panel">×</button></div><p class="sofia-mascot__status" aria-live="polite"></p><p class="sofia-mascot__message" id="sofiaMascotMessage"></p><div class="sofia-mascot__settings"><button type="button" data-mascot-setting="animations">Animaciones</button><button type="button" data-mascot-setting="size" data-value="small">Pequeña</button><button type="button" data-mascot-setting="size" data-value="medium">Mediana</button><button type="button" data-mascot-setting="size" data-value="large">Grande</button><button type="button" data-mascot-setting="position" data-value="bottom-left">Izquierda</button><button type="button" data-mascot-setting="position" data-value="bottom-right">Derecha</button><button type="button" data-mascot-setting="enabled">Ocultar</button></div></section><p class="sofia-mascot__sr-message" id="sofiaMascotLiveMessage"></p>`;
+  root.innerHTML = `<button class="sofia-mascot__button" type="button" aria-label="Abrir estado de SOFÍA"><img class="sofia-mascot__image" src="./assets/sofia-mascota/sofia-brain-idle.webp" alt="" aria-hidden="true"><span class="sofia-mascot__fallback" aria-hidden="true" hidden></span></button><section class="sofia-mascot__panel" hidden role="dialog" aria-labelledby="sofiaMascotTitle"><div class="sofia-mascot__panel-head"><h2 id="sofiaMascotTitle">Estado de SOFÍA</h2><button class="sofia-mascot__close" type="button" aria-label="Cerrar panel">×</button></div><p class="sofia-mascot__status" aria-live="polite"></p><p class="sofia-mascot__message" id="sofiaMascotMessage"></p><div class="sofia-mascot__settings"><button type="button" data-mascot-setting="animations">Animaciones</button><button type="button" data-mascot-setting="size" data-value="small">Pequeña</button><button type="button" data-mascot-setting="size" data-value="medium">Mediana</button><button type="button" data-mascot-setting="size" data-value="large">Grande</button><button type="button" data-mascot-setting="position" data-value="bottom-left">Izquierda</button><button type="button" data-mascot-setting="position" data-value="bottom-right">Derecha</button><button type="button" data-mascot-setting="enabled">Ocultar</button></div></section><p class="sofia-mascot__sr-message" id="sofiaMascotLiveMessage"></p>`;
   if (!existing) document.body.appendChild(root);
   const button = root.querySelector(".sofia-mascot__button");
   const panel = root.querySelector(".sofia-mascot__panel");
+  const image = root.querySelector(".sofia-mascot__image");
+  const fallback = root.querySelector(".sofia-mascot__fallback");
+  image.addEventListener("load", () => { image.hidden = false; fallback.hidden = true; console.debug("[SOFÍA Mascota] Asset visual cargado."); }, { once: true });
+  image.addEventListener("error", () => { image.hidden = true; fallback.hidden = false; console.warn("[SOFÍA Mascota] Asset visual no pudo cargarse; se usa fallback."); }, { once: true });
+  const logButtonStyles = (state) => { const styles = getComputedStyle(button); console.debug("[SOFÍA Mascota] Estilos botón", { state, backgroundColor: styles.backgroundColor, backgroundImage: styles.backgroundImage, boxShadow: styles.boxShadow }); };
+  const onButtonEnter = () => logButtonStyles("hover");
+  const onButtonFocus = () => logButtonStyles("focus");
+  const onButtonDown = () => logButtonStyles("active");
+  button.addEventListener("pointerenter", onButtonEnter);
+  button.addEventListener("focus", onButtonFocus);
+  button.addEventListener("pointerdown", onButtonDown);
   const message = root.querySelector(".sofia-mascot__message");
   const status = root.querySelector(".sofia-mascot__status");
   const stateMachine = createMascotStateMachine(({ nextState, previousState, source }) => {
@@ -54,6 +66,6 @@ export function initializeSofiaMascot() {
   console.debug("[SOFÍA Mascota] Inspección DOM", { exists: true, connected: root.isConnected, className: root.className, state: root.dataset.state });
   console.debug("[SOFÍA Mascota] Estilos calculados", { display: styles.display, visibility: styles.visibility, opacity: styles.opacity, position: styles.position, zIndex: styles.zIndex, width: styles.width, height: styles.height, pointerEvents: styles.pointerEvents });
   console.debug("[SOFÍA Mascota] Montaje.");
-  root._sofiaMascotDestroy = () => { stopEvents(); stopInactivity(); interactions.destroy(); interactions.close(); stateMachine.destroy(); document.removeEventListener("visibilitychange", onVisibility); root.remove(); console.debug("[SOFÍA Mascota] Desmontaje."); };
+  root._sofiaMascotDestroy = () => { stopEvents(); stopInactivity(); interactions.destroy(); interactions.close(); stateMachine.destroy(); document.removeEventListener("visibilitychange", onVisibility); button.removeEventListener("pointerenter", onButtonEnter); button.removeEventListener("focus", onButtonFocus); button.removeEventListener("pointerdown", onButtonDown); root.remove(); console.debug("[SOFÍA Mascota] Desmontaje."); };
   return root;
 }
