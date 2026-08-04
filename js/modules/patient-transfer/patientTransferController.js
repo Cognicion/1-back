@@ -5,6 +5,7 @@ import { calculateDocxHash, calculateNormalizedTextHash } from "./docx/docxHashS
 import { extractDocx } from "./docx/docxExtractor.js";
 import { normalizeDocxBlocks, normalizedBlocksToText } from "./docx/docxBlockNormalizer.js";
 import { parsePatientFields, fieldValues } from "./parsing/patientFieldParser.js";
+import { resolvePatientIdentity } from "./parsing/patientIdentityResolver.js";
 import { parseClinicalSections } from "./parsing/clinicalSectionParser.js";
 import { extractClinicalCandidates } from "./parsing/clinicalCandidateParser.js";
 import { detectMultipleClinicalNotes, expandSegmentedDocumentsForPersistence, mergeClinicalSegments, segmentClinicalNotes, splitClinicalSegment } from "./parsing/clinicalNoteSegmenter.js?v=20260804-segmentation-debug-v1";
@@ -294,6 +295,34 @@ async function analyzeOneFile(item, user) {
   renderTransferFiles(selectedFiles);
 
   const { fields, conflicts } = parsePatientFields(blocks, item.id);
+  console.info("[patient-transfer] patient-identity:start", JSON.stringify({ documentId: item.id }));
+  const patientIdentity = resolvePatientIdentity(fields);
+  console.info("[patient-transfer] patient-identity:field", JSON.stringify({
+    documentId: item.id,
+    hasName: Boolean(patientIdentity.nombreCompleto),
+    hasBirthDate: Boolean(patientIdentity.fechaNacimiento),
+    hasRecordNumber: Boolean(patientIdentity.expediente),
+    sourceFields: patientIdentity.sourceFields
+  }));
+  if (patientIdentity.identifiable) {
+    console.info("[patient-transfer] patient-identity:resolved", JSON.stringify({
+      documentId: item.id,
+      hasName: true,
+      hasBirthDate: Boolean(patientIdentity.fechaNacimiento),
+      hasRecordNumber: Boolean(patientIdentity.expediente),
+      identityConfidence: patientIdentity.identityConfidence,
+      sourceFields: patientIdentity.sourceFields
+    }));
+  } else {
+    console.info("[patient-transfer] patient-identity:failed", JSON.stringify({
+      documentId: item.id,
+      hasName: Boolean(patientIdentity.nombreCompleto),
+      hasBirthDate: Boolean(patientIdentity.fechaNacimiento),
+      hasRecordNumber: Boolean(patientIdentity.expediente),
+      identityConfidence: patientIdentity.identityConfidence,
+      sourceFields: patientIdentity.sourceFields
+    }));
+  }
   console.info("[docx-import] patient-fields:parsed", {
     fileId: item.id,
     detectedFieldCount: Object.values(fields).filter((field) => String(field?.value || "").trim()).length,
@@ -422,7 +451,7 @@ async function analyzeSelectedFiles() {
     return;
   }
   const user = await getAuthenticatedUserOnce();
-  if (!user) throw new Error("No se pudo identificar al usuario.");
+  if (!user) throw new Error("No se pudo identificar al usuario autenticado.");
 
   setPatientTransferStatus(TRANSFER_STATUS.VALIDATING);
   showPatientTransferError("");
@@ -481,7 +510,7 @@ async function saveReviewedTransfer({ reuseReviewedGroups = false } = {}) {
   }
   const user = await getAuthenticatedUserOnce();
   const profile = user ? await getUserProfileOnce(user.uid) : null;
-  if (!user) throw new Error("No se pudo identificar al usuario.");
+  if (!user) throw new Error("No se pudo identificar al usuario autenticado.");
 
   // La revisión se sincroniza en cada interacción; al confirmar no se vuelve a
   // reconstruir desde el DOM para evitar perder selecciones durante un render.

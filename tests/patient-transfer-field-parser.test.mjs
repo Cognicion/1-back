@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
-import { parsePatientFields, fieldValues, extractLabeledFieldsFromText } from "../js/modules/patient-transfer/parsing/patientFieldParser.js";
+import { parsePatientFields, fieldValues, extractLabeledFieldsFromText, extractAdministrativeField } from "../js/modules/patient-transfer/parsing/patientFieldParser.js";
+import { resolvePatientIdentity } from "../js/modules/patient-transfer/parsing/patientIdentityResolver.js";
 import { buildFullPatientName, suggestPatientNameParts } from "../js/modules/patient-transfer/parsing/patientNameParser.js";
 import { sugerirTipoNota } from "../js/modules/importacionDocx/noteTypeDetector.js";
 
@@ -143,5 +144,31 @@ assert.equal(arellano.fields.alergias.conflict, false);
 
 const fechaTruncada = parsePatientFields([{ type: "paragraph", text: "Fecha de nacimiento: 02/03/198 Edad: 37", source: { blockIndex: 0 } }], "fecha-truncada");
 assert.equal(fieldValues(fechaTruncada.fields).fechaNacimiento, "");
+
+const ismeraiHeader = "Nombre del paciente: Ismerai Hernandez García\u00a0\u00a0 Fecha de nacimiento: 08/04/1999\u00a0\u00a0 Edad: 27 AÑOS\u00a0\u00a0 Cama: 8\u00a0\u00a0 Expediente: 197805\u00a0\u00a0 Sexo: Mujer Género: femenino-cis\u00a0\u00a0 Servicio: Observación\u00a0\u00a0 Alergias: Negado\u00a0\u00a0 Fecha: 30/06/2026\u00a0\u00a0 Hora: 17:26 H\u00a0\u00a0 Días estancia: 5";
+const ismerai = parsePatientFields([{ type: "paragraph", text: ismeraiHeader, source: { blockIndex: 1 } }], "ismerai");
+const ismeraiValues = fieldValues(ismerai.fields);
+assert.equal(ismeraiValues.nombre, "Ismerai Hernandez García");
+assert.equal(ismeraiValues.nombres, "Ismerai");
+assert.equal(ismeraiValues.apellidoPaterno, "Hernandez");
+assert.equal(ismeraiValues.apellidoMaterno, "García");
+assert.equal(ismeraiValues.fechaNacimiento, "08/04/1999");
+assert.equal(ismeraiValues.expediente, "197805");
+assert.equal(ismeraiValues.hora, "17:26");
+const ismeraiIdentity = resolvePatientIdentity(ismerai.fields);
+assert.equal(ismeraiIdentity.identityConfidence, "high");
+assert.equal(ismeraiIdentity.identifiable, true);
+assert.equal(ismeraiIdentity.normalizedName, "ISMERAI HERNANDEZ GARCIA");
+const sameLineName = extractAdministrativeField({
+  text: ismeraiHeader,
+  aliases: ["nombre del paciente"],
+  nextFieldAliases: ["fecha de nacimiento", "edad", "expediente"]
+});
+assert.equal(sameLineName.value, "Ismerai Hernandez García");
+
+const aliasName = parsePatientFields([{ type: "paragraph", text: "Nombre del derechohabiente: Ana Pérez López Fecha de nacimiento: 01/01/2000", source: { blockIndex: 0 } }], "alias-name");
+assert.equal(fieldValues(aliasName.fields).nombre, "Ana Pérez López");
+
+console.log("patient-transfer-field-parser.identity.test.mjs OK");
 
 console.log("patient-transfer-field-parser.test.mjs OK");

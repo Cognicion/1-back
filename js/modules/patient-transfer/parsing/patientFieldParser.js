@@ -171,6 +171,35 @@ function sliceOriginalByOffsets(original = "", start = 0, end = original.length)
   return original.slice(Math.max(0, start), Math.max(start, end));
 }
 
+/**
+ * Extrae un campo administrativo delimitado por la siguiente etiqueta conocida.
+ * Mantiene el texto original para que la revisión pueda editarlo sin perder
+ * acentos ni la forma en que apareció en el documento.
+ */
+export function extractAdministrativeField({ text = "", aliases = [], nextFieldAliases = [] } = {}) {
+  const definitions = [
+    { key: "requested", label: "requested", labels: aliases },
+    { key: "next", label: "next", labels: nextFieldAliases }
+  ];
+  const matches = locateFieldLabels(text, definitions);
+  const current = matches.find((match) => match.fieldKey === "requested");
+  if (!current) return null;
+  const next = matches.find((match) => match.start > current.start);
+  const rawValue = cleanFieldValue(
+    sliceOriginalByOffsets(text, current.end, next?.start ?? text.length),
+    "",
+    current.label
+  );
+  return rawValue ? {
+    rawValue,
+    value: cleanExtractedFieldValue(rawValue),
+    start: current.start,
+    end: next?.start ?? text.length,
+    nextField: next?.normalizedLabel || null,
+    detectionRule: "administrative-field-delimited"
+  } : null;
+}
+
 export function extractLabeledFieldsFromText(text = "", definitions = PATIENT_FIELD_DEFINITIONS) {
   const matches = locateFieldLabels(text, definitions);
   return matches.map((match, index) => {

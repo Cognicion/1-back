@@ -1,3 +1,5 @@
+import { resolvePatientIdentity } from "./patientIdentityResolver.js";
+
 function normalize(value = "") {
   return String(value)
     .normalize("NFD")
@@ -61,8 +63,12 @@ export function groupDocumentsByPatient(documents = []) {
     group.conflicts.push(...(doc.conflicts || []));
   });
 
-  return [...groupsByKey.values()].map((group) => ({
-    ...group,
-    ambiguous: group.conflicts.length > 0 || !group.fields.nombre?.value
-  }));
+  return [...groupsByKey.values()].map((group) => {
+    const identity = resolvePatientIdentity(group.fields);
+    return {
+      ...group,
+      patientIdentity: identity,
+      ambiguous: group.conflicts.length > 0 || !identity.identifiable
+    };
+  });
 }

@@ -502,7 +502,7 @@ export function renderDetectedGroups(groups = []) {
         <header>
           <div>
             <p>Paciente probable ${index + 1}</p>
-            <h3>${escapeHtml(group.fields?.nombre?.value || "Paciente sin nombre detectado")}</h3>
+            <h3>${escapeHtml(group.fields?.nombre?.value || (group.fields?.expediente?.value ? "Paciente identificado por expediente" : "Paciente sin nombre detectado"))}</h3>
             <span>${group.fields?.expediente?.value ? `Expediente: ${escapeHtml(group.fields.expediente.value)}` : "Sin expediente detectado"}</span>
           </div>
           <label><input type="checkbox" data-transfer-omit-group="${group.id}" ${group.omitted ? "checked" : ""}> Omitir paciente</label>
