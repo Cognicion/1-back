@@ -229,15 +229,19 @@
   }
 
   console.info(
-    "[patient-transfer] segmentation:boundaries",
+  "[patient-transfer] segmentation:boundaries",
+  JSON.stringify(
     {
       documentId,
       receivedBoundaries: proposedBoundaries,
       detectedBoundaries,
       boundariesUsed: boundaries,
       blockCount: blocks.length
-    }
-  );
+    },
+    null,
+    2
+  )
+);
 
   if (!boundaries.length) {
     console.info(
@@ -277,13 +281,20 @@
     groups.push(current);
   }
 
-  console.info("[patient-transfer] segmentation:completed", {
-    documentId,
-    proposedBoundaries,
-    boundaries,
-    segmentCount: groups.length,
-    segmentSizes: groups.map((group) => group.length)
-  });
+console.info(
+  "[patient-transfer] segmentation:completed",
+  JSON.stringify(
+    {
+      documentId,
+      proposedBoundaries,
+      boundaries,
+      segmentCount: groups.length,
+      segmentSizes: groups.map((group) => group.length)
+    },
+    null,
+    2
+  )
+);
 
   return groups
     .filter((group) => group.length)
