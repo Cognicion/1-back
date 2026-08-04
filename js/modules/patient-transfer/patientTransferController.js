@@ -283,7 +283,9 @@ async function saveReviewedTransfer({ reuseReviewedGroups = false } = {}) {
   const profile = user ? await getUserProfileOnce(user.uid) : null;
   if (!user) throw new Error("No se pudo identificar al usuario.");
 
-  const reviewedGroups = reuseReviewedGroups ? analyzedGroups : readTransferReview(analyzedGroups);
+  // La revisión se sincroniza en cada interacción; al confirmar no se vuelve a
+  // reconstruir desde el DOM para evitar perder selecciones durante un render.
+  const reviewedGroups = analyzedGroups;
   const blocking = reviewedGroups.find((group) =>
     !group.omitted && group.action === "associate" && !group.selectedPatientId
   );
@@ -375,6 +377,26 @@ function resetAndOpen() {
   showPatientTransferError("");
 }
 
+function syncReviewedGroupsFromView() {
+  if (!analyzedGroups.length) return;
+  analyzedGroups = readTransferReview(analyzedGroups);
+  setPatientTransferGroups(analyzedGroups);
+
+  const counts = analyzedGroups.reduce((total, group) => group.documents.reduce((documentTotal, doc) => ({
+    diagnosisCandidatesDetected: documentTotal.diagnosisCandidatesDetected + (doc.diagnosisCandidates || []).length,
+    diagnosisCandidatesRendered: documentTotal.diagnosisCandidatesRendered + (doc.diagnosisCandidates || []).length,
+    treatmentCandidatesDetected: documentTotal.treatmentCandidatesDetected + (doc.treatmentCandidates || []).length,
+    treatmentCandidatesRendered: documentTotal.treatmentCandidatesRendered + (doc.treatmentCandidates || []).length
+  }), total), {
+    diagnosisCandidatesDetected: 0,
+    diagnosisCandidatesRendered: 0,
+    treatmentCandidatesDetected: 0,
+    treatmentCandidatesRendered: 0
+  });
+
+  console.info("[patient-transfer] review-state:updated", counts);
+}
+
 export function initializePatientTransfer() {
   if (initialized) return { openPatientTransfer: resetAndOpen };
   initialized = true;
@@ -442,10 +464,17 @@ export function initializePatientTransfer() {
 
   root.addEventListener("change", (event) => {
     const targetSelect = event.target.closest("[data-transfer-document-target]");
-    if (targetSelect) moveDocumentToGroup(targetSelect.dataset.transferDocumentTarget, targetSelect.value);
+    if (targetSelect) {
+      moveDocumentToGroup(targetSelect.dataset.transferDocumentTarget, targetSelect.value);
+      return;
+    }
+    syncReviewedGroupsFromView();
   });
 
-  root.addEventListener("input", syncPatientNameInputs);
+  root.addEventListener("input", (event) => {
+    syncPatientNameInputs(event);
+    syncReviewedGroupsFromView();
+  });
 
   return { openPatientTransfer: resetAndOpen };
 }

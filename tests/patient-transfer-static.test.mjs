@@ -45,6 +45,8 @@ assert.match(controller, /validateTransferDocxFile/, "el flujo valida DOCX antes
 assert.match(controller, /extractDocx/, "el flujo extrae DOCX estructuralmente");
 assert.match(controller, /analyzeDocumentClinically/, "el flujo delega analisis clinico al motor central");
 assert.match(controller, /groupDocumentsByPatient/, "el flujo agrupa documentos por paciente probable");
+assert.match(controller, /function syncReviewedGroupsFromView/, "los cambios de revisión se sincronizan al estado central");
+assert.match(controller, /const reviewedGroups = analyzedGroups;/, "el guardado usa el estado central ya sincronizado");
 
 const validator = read("js/modules/patient-transfer/docx/docxValidator.js");
 assert.match(validator, /ZIP_SIGNATURE/, "valida firma real de archivo ZIP/DOCX");
