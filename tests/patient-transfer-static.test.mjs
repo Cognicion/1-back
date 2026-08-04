@@ -57,6 +57,11 @@ assert.match(transferView, /data-transfer-split-segment/, "la vista permite divi
 assert.match(transferView, /data-transfer-merge-segment/, "la vista permite unir segmentos");
 assert.match(transferView, /renderSegmentDiagnosisCandidates/, "la vista renderiza diagnósticos por nota");
 assert.match(transferView, /renderSegmentTreatmentCandidates/, "la vista renderiza tratamientos por nota");
+assert.match(transferView, /Exploración física \/ neurológica/, "la vista usa el nombre clínico solicitado");
+assert.match(transferView, /patient-transfer-vitals-table/, "los signos vitales se presentan en tabla compacta");
+assert.match(transferView, /index === 0 \? "open" : ""/, "solo la primera nota inicia expandida");
+assert.match(transferView, /Ver texto original/, "el texto fuente queda en un panel contraíble independiente");
+assert.doesNotMatch(transferView, /<textarea readonly>\$\{escapeHtml\(doc\.fullText/, "el texto completo no se repite al final del documento");
 
 const validator = read("js/modules/patient-transfer/docx/docxValidator.js");
 assert.match(validator, /ZIP_SIGNATURE/, "valida firma real de archivo ZIP/DOCX");

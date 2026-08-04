@@ -13,6 +13,7 @@ export function normalizeClinicalHeading(value = "") {
     .trim()
     .toLowerCase();
 }
+
 const ORDERED_ALIASES = Object.freeze(
   Object.entries(CLINICAL_SECTION_ALIASES)
     .flatMap(([key, aliases]) => aliases.map((alias) => ({ key, alias, normalized: normalizeClinicalHeading(alias) })))
@@ -20,13 +21,13 @@ const ORDERED_ALIASES = Object.freeze(
 );
 
 function isUppercaseHeading(value = "") {
-  const letters = String(value).replace(/[^A-Za-zÁÉÍÓÚÜÑáéíóúüñ]/g, "");
+  const letters = String(value).replace(/[^\p{L}]/gu, "");
   return letters.length >= 3 && letters === letters.toUpperCase();
 }
 
 function matchHeadingPart(rawHeading = "") {
   const normalized = normalizeClinicalHeading(rawHeading);
-  if (!normalized || normalized.length > 140) return null;
+  if (!normalized || normalized.length > 180) return null;
   return ORDERED_ALIASES.find(({ normalized: alias }) => normalized === alias) || null;
 }
 
@@ -50,10 +51,43 @@ export function detectClinicalHeading(text = "") {
   }
 
   const exact = matchHeadingPart(raw);
-  if (exact && (raw.length <= 80 || isUppercaseHeading(raw))) {
+  if (exact && (raw.length <= 100 || isUppercaseHeading(raw))) {
     return { key: exact.key, alias: exact.alias, headingText: raw, inlineContent: "", delimiter: "" };
   }
   return null;
+}
+
+function headingMarkers(text = "") {
+  const raw = String(text || "");
+  const normalized = raw.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+  const markers = [];
+
+  ORDERED_ALIASES.forEach((entry) => {
+    let offset = 0;
+    while ((offset = normalized.indexOf(entry.normalized, offset)) >= 0) {
+      const before = offset === 0 ? "" : normalized[offset - 1];
+      const afterIndex = offset + entry.normalized.length;
+      const after = normalized.slice(afterIndex).match(/^\s*/)?.[0] || "";
+      const delimiterIndex = afterIndex + after.length;
+      const hasColon = /[:：]/.test(raw[delimiterIndex] || "");
+      const atBoundary = offset === 0 || /[\s|.)-]/.test(before);
+      const headingText = raw.slice(offset, afterIndex);
+      const looksLikeTitle = isUppercaseHeading(headingText) || offset === 0;
+      if (atBoundary && hasColon && looksLikeTitle) {
+        markers.push({
+          ...entry,
+          start: offset,
+          contentStart: delimiterIndex + 1,
+          headingText
+        });
+      }
+      offset = afterIndex || offset + 1;
+    }
+  });
+
+  return markers
+    .sort((a, b) => a.start - b.start || b.normalized.length - a.normalized.length)
+    .filter((marker, index, all) => index === 0 || marker.start >= all[index - 1].contentStart);
 }
 
 function flattenedLines(blocks = []) {
@@ -67,7 +101,24 @@ function flattenedLines(blocks = []) {
   );
 }
 
-/** Separa por todos los encabezados delimitados y conserva texto y posiciones originales. */
+function appendSection(secciones, key, value = "") {
+  const clean = String(value || "").trim();
+  if (!key || !clean) return;
+  secciones[key] = [secciones[key], clean].filter(Boolean).join("\n");
+}
+
+function splitPlanAndMedications(secciones) {
+  if (!secciones.plan) return;
+  const marker = /(?:^|\n|\s)6\s*[.)-]+\s*medicamentos\b/i.exec(secciones.plan);
+  if (!marker) return;
+  const markerText = marker[0];
+  const contentStart = marker.index + markerText.length;
+  const medicationText = secciones.plan.slice(contentStart).trim();
+  secciones.plan = secciones.plan.slice(0, marker.index).trim();
+  if (medicationText) secciones.medicamentos = [secciones.medicamentos, medicationText].filter(Boolean).join("\n");
+}
+
+/** Separa cada segmento usando todos los encabezados, sin recurrir a rawText como respaldo. */
 export function parseClinicalSections(blocks = []) {
   const secciones = Object.fromEntries(CLINICAL_SECTION_KEYS.map((key) => [key, ""]));
   const encabezados = [];
@@ -75,32 +126,56 @@ export function parseClinicalSections(blocks = []) {
   let currentKey = "";
 
   lines.forEach((line) => {
-    const heading = detectClinicalHeading(line.text);
-    if (heading) {
+    const markers = headingMarkers(line.text);
+    if (!markers.length) {
+      const exact = detectClinicalHeading(line.text);
+      if (exact) {
+        const previous = encabezados.at(-1);
+        if (previous) previous.end = line.source?.blockIndex ?? line.position;
+        currentKey = exact.key;
+        encabezados.push({
+          key: exact.key,
+          alias: exact.alias,
+          heading: exact.headingText,
+          position: line.position,
+          start: line.source?.blockIndex ?? line.position,
+          end: null,
+          source: line.source || {},
+          inlineContent: exact.inlineContent
+        });
+        appendSection(secciones, currentKey, exact.inlineContent);
+        return;
+      }
+      appendSection(secciones, currentKey, line.text);
+      return;
+    }
+
+    appendSection(secciones, currentKey, line.text.slice(0, markers[0].start));
+    markers.forEach((marker, markerIndex) => {
       const previous = encabezados.at(-1);
       if (previous) previous.end = line.source?.blockIndex ?? line.position;
-      currentKey = heading.key;
+      currentKey = marker.key;
+      const end = markers[markerIndex + 1]?.start ?? line.text.length;
+      const inlineContent = line.text.slice(marker.contentStart, end).trim();
       encabezados.push({
-        key: heading.key,
-        alias: heading.alias,
-        heading: heading.headingText,
+        key: marker.key,
+        alias: marker.alias,
+        heading: marker.headingText,
         position: line.position,
         start: line.source?.blockIndex ?? line.position,
         end: null,
         source: line.source || {},
-        inlineContent: heading.inlineContent
+        inlineContent
       });
-      if (heading.inlineContent) {
-        secciones[currentKey] = [secciones[currentKey], heading.inlineContent].filter(Boolean).join("\n");
-      }
-      return;
-    }
-    if (currentKey) secciones[currentKey] = [secciones[currentKey], line.text].filter(Boolean).join("\n");
+      appendSection(secciones, currentKey, inlineContent);
+    });
   });
 
   if (encabezados.length) {
     encabezados.at(-1).end = Math.max(...lines.map((line) => line.source?.blockIndex ?? line.position), 0) + 1;
   }
+  splitPlanAndMedications(secciones);
+
   encabezados.forEach((heading, index) => {
     console.info("[patient-transfer] clinical-heading", {
       heading: heading.heading,
@@ -111,5 +186,5 @@ export function parseClinicalSections(blocks = []) {
     });
   });
 
-  return { secciones, encontradas: encabezados.map((item) => item.key), encabezados };
+  return { secciones, encontradas: [...new Set(encabezados.map((item) => item.key))], encabezados };
 }

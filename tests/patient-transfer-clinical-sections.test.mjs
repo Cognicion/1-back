@@ -13,11 +13,11 @@ const result = parseClinicalSections([
 ]);
 
 assert.equal(result.secciones.subjetivo, "Paciente refiere mejoría parcial.");
-assert.equal(result.secciones.objetivo, "Sin datos de dificultad respiratoria.");
+assert.equal(result.secciones.physicalNeurologicalExam, "Sin datos de dificultad respiratoria.");
 assert.equal(result.secciones.examenMental, "Orientada en las tres esferas.");
 assert.equal(result.secciones.analisis, "", "no inventa análisis si no hay encabezado");
 assert.equal(result.secciones.diagnosticos, "F32.2 Episodio depresivo grave.");
-assert.deepEqual(result.encontradas, ["subjetivo", "objetivo", "examenMental", "diagnosticos"]);
+assert.deepEqual(result.encontradas, ["subjetivo", "physicalNeurologicalExam", "examenMental", "diagnosticos"]);
 
 const inline = parseClinicalSections([
   { type: "paragraph", text: "MOTIVO DE LA ATENCIÓN: Riesgo suicida. Refiere tristeza.", source: { blockIndex: 0 } },
@@ -30,7 +30,7 @@ const inline = parseClinicalSections([
 
 assert.match(inline.secciones.subjetivo, /Riesgo suicida/);
 assert.doesNotMatch(inline.secciones.subjetivo, /Cráneo normocéfalo/, "Subjetivo termina en el siguiente encabezado");
-assert.equal(inline.secciones.objetivo, "Cráneo normocéfalo.");
+assert.equal(inline.secciones.physicalNeurologicalExam, "Cráneo normocéfalo.");
 assert.equal(inline.secciones.examenMental, "Alerta y orientada.");
 assert.match(inline.secciones.analisis, /Cuadro compatible/);
 assert.match(inline.secciones.plan, /Continuar vigilancia/);

@@ -34,36 +34,8 @@ let initialized = false;
 let selectedFiles = [];
 let analyzedGroups = [];
 
-function normalizedCandidateKey(value = "") {
-  return String(value || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/\s+/g, " ").trim();
-}
-
-function aggregateCandidatesAcrossSegments(segments = [], property = "") {
-  const seen = new Map();
-  return segments.map((segment) => ({
-    ...segment,
-    [property]: (segment[property] || []).filter((candidate) => {
-      const key = property === "diagnosisCandidates"
-        ? `${candidate.codingSystem || ""}:${candidate.code || normalizedCandidateKey(candidate.normalizedName)}:${candidate.statusSuggestion || ""}`
-        : `${candidate.medicationId || normalizedCandidateKey(candidate.medicationName)}:${candidate.dose || ""}:${candidate.frequencyRaw || ""}:${candidate.statusSuggestion || ""}`;
-      const existing = seen.get(key);
-      if (!existing) {
-        seen.set(key, candidate);
-        return true;
-      }
-      existing.sourceOccurrences = (existing.sourceOccurrences || 1) + (candidate.sourceOccurrences || 1);
-      existing.sourceNoteIds = [...new Set([...(existing.sourceNoteIds || [existing.sourceNoteId]), ...(candidate.sourceNoteIds || [candidate.sourceNoteId])].filter(Boolean))];
-      existing.sourceFragments = [...new Set([...(existing.sourceFragments || []), ...(candidate.sourceFragments || [])])];
-      if (existing.sourceNoteIds.length > 1) {
-        existing.detectionRule = property === "diagnosisCandidates" ? "repeated-diagnostic-concept" : "repeated-medication";
-      }
-      return false;
-    })
-  }));
-}
-
 function enrichNoteSegments(document, segments = []) {
-  const enriched = segments.map((segment, index) => {
+  const enriched = segments.map((segment) => {
     const metadata = parseNoteMetadata({ text: segment.rawText, sections: segment.sections, fields: document.fields || {} });
     const candidates = extractClinicalCandidates({
       id: document.id,
@@ -83,7 +55,7 @@ function enrichNoteSegments(document, segments = []) {
       const sourceIndex = candidate.sourceLocation?.blockIndex;
       return Number.isInteger(sourceIndex) && sourceIndex >= segment.startBlockIndex && sourceIndex < segment.endBlockIndex;
     });
-    return {
+    const enrichedSegment = {
       ...segment,
       sections,
       metadata: {
@@ -96,15 +68,22 @@ function enrichNoteSegments(document, segments = []) {
       treatmentCandidates: candidates.treatments,
       vitalSignsCandidates
     };
+    console.info("[patient-transfer] note-segment:enriched", {
+      noteId: enrichedSegment.id,
+      date: enrichedSegment.metadata.documentDate,
+      time: enrichedSegment.metadata.documentHour,
+      vitalSigns: vitalSignsCandidates.length,
+      diagnoses: candidates.diagnoses.length,
+      treatments: candidates.treatments.length,
+      sections: Object.keys(sections).filter((key) => Boolean(sections[key]))
+    });
+    return enrichedSegment;
   });
 
   if (enriched.length && !enriched.some((segment) => segment.vitalSignsCandidates.length)) {
     enriched[0] = { ...enriched[0], vitalSignsCandidates: document.vitalSignsCandidates || [] };
   }
-  return aggregateCandidatesAcrossSegments(
-    aggregateCandidatesAcrossSegments(enriched, "diagnosisCandidates"),
-    "treatmentCandidates"
-  );
+  return enriched;
 }
 
 function applySegmentsToDocument(document, rawSegments = []) {
@@ -296,6 +275,7 @@ async function analyzeOneFile(item, user) {
     fullText,
     headings: sectionsResult.encabezados
   });
+  const splitExplicitNotes = multipleNotesDetection.explicitNoteCount > 1;
   const duplicateStatus = duplicate ? "exact_duplicate" : sameBatch ? "duplicate_in_batch" : "nuevo";
 
   item.status = duplicate ? "warning" : "ok";
@@ -321,7 +301,7 @@ async function analyzeOneFile(item, user) {
     vitalSignsCandidates,
     diagnosisCandidates: clinicalCandidates.diagnoses,
     treatmentCandidates: clinicalCandidates.treatments,
-    containsMultipleNotes: false,
+    containsMultipleNotes: splitExplicitNotes,
     probableMultipleNotes: multipleNotesDetection.probableMultipleNotes,
     multipleNotesReasons: multipleNotesDetection.reasons,
     proposedNoteBoundaries: multipleNotesDetection.proposedNoteBoundaries,
@@ -333,7 +313,7 @@ async function analyzeOneFile(item, user) {
   documentCandidate = applySegmentsToDocument(documentCandidate, segmentClinicalNotes({
     blocks,
     fullText,
-    manualMultipleNotes: false,
+    manualMultipleNotes: splitExplicitNotes,
     proposedBoundaries: multipleNotesDetection.proposedNoteBoundaries,
     documentId: item.id
   }));

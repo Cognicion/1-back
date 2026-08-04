@@ -139,12 +139,20 @@ function textoDeNodo(nodo) {
   return reconstruirTextoRuns(runsDeNodo(nodo));
 }
 
+function textoDeCelda(celda) {
+  const parrafos = [...celda.children]
+    .filter((nodo) => nodo.localName === "p")
+    .map((nodo) => textoDeNodo(nodo))
+    .filter(Boolean);
+  return parrafos.length ? parrafos.join("\n") : textoDeNodo(celda);
+}
+
 function extraerTabla(tabla) {
   return [...tabla.children]
     .filter((nodo) => nodo.localName === "tr")
     .map((fila) => [...fila.children]
       .filter((nodo) => nodo.localName === "tc")
-      .map((celda) => textoDeNodo(celda)));
+      .map((celda) => textoDeCelda(celda)));
 }
 
 function bloqueDesdeNodo(nodo, origen) {

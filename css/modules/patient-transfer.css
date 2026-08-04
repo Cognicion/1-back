@@ -316,6 +316,34 @@
   color: #93a4ba;
 }
 
+.patient-transfer-note-segment > summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  cursor: pointer;
+  list-style: none;
+}
+
+.patient-transfer-note-segment > summary::-webkit-details-marker {
+  display: none;
+}
+
+.patient-transfer-note-segment > summary::before {
+  content: "▶";
+  color: #38bdf8;
+}
+
+.patient-transfer-note-segment[open] > summary::before {
+  content: "▼";
+}
+
+.patient-transfer-note-segment > summary span {
+  margin-left: auto;
+  color: #93a4ba;
+  font-size: 12px;
+}
+
 .patient-transfer-note-segment > header {
   display: flex;
   align-items: center;
@@ -334,7 +362,78 @@
   padding: 7px 10px;
 }
 
+.patient-transfer-table-scroll {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.patient-transfer-data-table {
+  width: 100%;
+  min-width: 920px;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.patient-transfer-data-table th,
+.patient-transfer-data-table td {
+  padding: 6px;
+  border-bottom: 1px solid rgba(148, 163, 184, .18);
+  text-align: left;
+  vertical-align: top;
+}
+
+.patient-transfer-data-table th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: #0f172a;
+  color: #bae6fd;
+}
+
+.patient-transfer-data-table input,
+.patient-transfer-data-table select {
+  min-width: 84px;
+  padding: 6px 7px;
+}
+
+.patient-transfer-data-table input[type="checkbox"] {
+  width: auto;
+  min-width: 0;
+}
+
+.patient-transfer-vitals-table {
+  min-width: 1050px;
+}
+
+.patient-transfer-vitals-table input:not([type="checkbox"]) {
+  width: 74px;
+  min-width: 64px;
+}
+
+.patient-transfer-original-text {
+  margin-top: 12px;
+  padding: 10px;
+  border: 1px solid rgba(148, 163, 184, .18);
+  border-radius: 10px;
+}
+
+.patient-transfer-original-text summary {
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.patient-transfer-original-text pre {
+  max-height: 280px;
+  overflow: auto;
+  white-space: pre-wrap;
+}
+
 @media (max-width: 700px) {
+  .patient-transfer-note-segment > summary {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
   .patient-transfer-note-segment > header {
     align-items: stretch;
     flex-direction: column;

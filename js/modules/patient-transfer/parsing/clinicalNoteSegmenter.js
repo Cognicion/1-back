@@ -15,11 +15,18 @@ function blockIndex(block = {}, fallback = 0) {
 
 function noteTitle(text = "") {
   const normalized = normalizeClinicalHeading(String(text).split(/[:\n]/)[0]);
-  return NOTE_START_ALIASES.find((alias) => normalized === normalizeClinicalHeading(alias)) || "";
+  return NOTE_START_ALIASES.find((alias) => {
+    const normalizedAlias = normalizeClinicalHeading(alias);
+    return normalized === normalizedAlias || normalized.startsWith(`${normalizedAlias} `);
+  }) || "";
 }
 
 function clinicalDate(text = "") {
-  return String(text || "").match(DATE_PATTERN)?.[0] || "";
+  const raw = String(text || "");
+  const labelled = raw.match(new RegExp(`\\bfecha\\s*:?\\s*(${DATE_PATTERN.source})`, "i"))?.[1];
+  const value = labelled || raw.match(DATE_PATTERN)?.[0] || "";
+  const match = value.match(/^(\d{1,2})[\/-](\d{1,2})[\/-](\d{4})$/);
+  return match ? `${match[1].padStart(2, "0")}/${match[2].padStart(2, "0")}/${match[3]}` : value;
 }
 
 function clinicalTime(text = "") {
@@ -32,6 +39,7 @@ export function detectMultipleClinicalNotes({ blocks = [], fullText = "", headin
   const dateValues = new Set(dates.filter(Boolean));
   const headingCounts = new Map();
   let firstClinicalDate = "";
+  let explicitNoteCount = 0;
 
   blocks.forEach((block, index) => {
     const text = blockText(block);
@@ -45,6 +53,7 @@ export function detectMultipleClinicalNotes({ blocks = [], fullText = "", headin
       }
     }
     if (title) {
+      explicitNoteCount += 1;
       boundaries.push({ blockIndex: blockIndex(block, index), reason: "repeated-note-heading", label: title });
     }
   });
@@ -52,7 +61,7 @@ export function detectMultipleClinicalNotes({ blocks = [], fullText = "", headin
 
   if (dateValues.size > 1) reasons.add("multiple-clinical-dates");
   if (boundaries.length > 1) reasons.add("repeated-note-heading");
-  if (["subjetivo", "objetivo", "analisis", "plan"].some((key) => (headingCounts.get(key) || 0) > 1)) {
+  if (["subjetivo", "physicalNeurologicalExam", "analisis", "plan"].some((key) => (headingCounts.get(key) || 0) > 1)) {
     reasons.add("repeated-clinical-headings");
     if (boundaries.length <= 1) {
       const repeatedStarts = headings.filter((heading) => heading.key === "subjetivo").slice(1);
@@ -60,8 +69,12 @@ export function detectMultipleClinicalNotes({ blocks = [], fullText = "", headin
     }
   }
 
-  const sortedBoundaries = [...new Map(boundaries
-    .filter((boundary) => boundary.blockIndex > 0)
+  // Los títulos explícitos son límites más confiables que fechas narrativas, de nacimiento o de tratamientos.
+  const boundaryPool = explicitNoteCount > 1
+    ? boundaries.filter((boundary) => boundary.reason === "repeated-note-heading")
+    : boundaries;
+  const sortedBoundaries = [...new Map(boundaryPool
+    .filter((boundary) => boundary.blockIndex >= 0)
     .map((boundary) => [boundary.blockIndex, boundary])).values()]
     .sort((a, b) => a.blockIndex - b.blockIndex);
   const uniqueBoundaries = sortedBoundaries.reduce((result, boundary) => {
@@ -74,7 +87,8 @@ export function detectMultipleClinicalNotes({ blocks = [], fullText = "", headin
     probableMultipleNotes: reasons.size > 0 && (uniqueBoundaries.length > 0 || dateValues.size > 1),
     reasons: [...reasons],
     proposedNoteBoundaries: uniqueBoundaries,
-    detectedDates: [...dateValues]
+    detectedDates: [...dateValues],
+    explicitNoteCount
   };
 }
 
@@ -112,9 +126,12 @@ function createSegment(documentId, blocks, index) {
 
 export function segmentClinicalNotes({ blocks = [], fullText = "", manualMultipleNotes = false, proposedBoundaries = [], documentId = "doc" } = {}) {
   void fullText;
-  const boundaries = manualMultipleNotes
-    ? [...new Set(proposedBoundaries.map((item) => Number(item.blockIndex ?? item)).filter((value) => Number.isInteger(value) && value > 0))].sort((a, b) => a - b)
+  let boundaries = manualMultipleNotes
+    ? [...new Set(proposedBoundaries.map((item) => Number(item.blockIndex ?? item)).filter((value) => Number.isInteger(value) && value >= 0))].sort((a, b) => a - b)
     : [];
+  // El primer título identifica la primera nota; no debe crear un segmento de preámbulo independiente.
+  const firstTitleBlock = blocks.find((block) => noteTitle(blockText(block)))?.source?.blockIndex;
+  if (Number.isInteger(firstTitleBlock) && boundaries[0] === firstTitleBlock) boundaries = boundaries.slice(1);
   if (!boundaries.length) return [createSegment(documentId, blocks, 0)];
 
   const groups = [];

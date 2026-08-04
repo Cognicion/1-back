@@ -15,21 +15,20 @@ export const CLINICAL_SECTION_ALIASES = Object.freeze({
     "evolución",
     "subjetivo"
   ],
-  objetivo: [
+  physicalNeurologicalExam: [
     "objetivo / exploración física",
     "exploración física y neurológica",
-    "resultados de estudios diagnósticos",
+    "exploración física / neurológica",
     "exploración neurológica",
     "exploración física",
-    "resultados de estudios",
     "examen físico",
-    "signos vitales",
-    "somatometría",
-    "laboratorios",
     "objetivo"
   ],
   examenMental: ["exploración psicopatológica", "examen mental", "estado mental"],
   analisis: [
+    "comentario y/o análisis clínico y fundamentación diagnóstica y terapéutica",
+    "comentario y análisis clínico y fundamentación diagnóstica y terapéutica",
+    "fundamentación diagnóstica y terapéutica",
     "fundamento de diagnóstico y tratamiento",
     "fundamento diagnóstico y terapéutico",
     "comentario y análisis clínico",
@@ -44,6 +43,8 @@ export const CLINICAL_SECTION_ALIASES = Object.freeze({
     "análisis"
   ],
   diagnosticos: [
+    "diagnóstico | cie-10",
+    "diagnósticos | cie-10",
     "diagnósticos de ingreso",
     "diagnósticos de egreso",
     "impresión diagnóstica",
@@ -51,23 +52,23 @@ export const CLINICAL_SECTION_ALIASES = Object.freeze({
     "diagnóstico",
     "dx"
   ],
-  tratamiento: [
-    "tratamiento farmacológico",
-    "tratamiento actual",
-    "tratamiento"
+  tratamiento: ["tratamiento farmacológico", "tratamiento actual", "tratamiento"],
+  medicamentos: ["esquema farmacológico", "medicación actual", "medicamentos", "medicación"],
+  plan: [
+    "plan terapéutico (medidas generales y tratamiento farmacológico)",
+    "plan terapéutico",
+    "plan de manejo",
+    "indicaciones",
+    "manejo",
+    "plan"
   ],
-  medicamentos: [
-    "esquema farmacológico",
-    "medicación actual",
-    "medicamentos",
-    "medicación"
-  ],
-  plan: ["plan terapéutico", "plan de manejo", "indicaciones", "manejo", "plan"],
   pronostico: ["pronóstico"],
   destino: ["destino"]
 });
 
 export const NOTE_START_ALIASES = Object.freeze([
+  "nota de evolución al servicio de observación",
+  "nota de ingreso al servicio de observación",
   "nota de evolución",
   "nota de ingreso",
   "nota de egreso",
