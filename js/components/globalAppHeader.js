@@ -3,7 +3,7 @@ import { getPageHeader, isPublicPage, pageIdFromLocation } from "./pageHeaderReg
 
 const DEBUG_PREFIX = "[GLOBAL HEADER]";
 const RECENT_KEY = "cognicion.globalHeader.featureRecent";
-const PHASE_ONE = new Set(["dashboard", "medico"]);
+const MIGRATED_PAGES = new Set(["dashboard", "medico", "paciente", "nota", "historia"]);
 let stylesPromise;
 
 function log(message, data) { console.debug(`${DEBUG_PREFIX} ${message}`, data ?? ""); }
@@ -31,7 +31,43 @@ function saveRecent(ids) { try { sessionStorage.setItem(RECENT_KEY, JSON.stringi
 function findHeader(pageId) {
   if (pageId === "dashboard") return document.querySelector("body > header, header") || null;
   if (pageId === "medico") return document.querySelector("header.header-medico") || null;
+  if (pageId === "paciente") return document.querySelector(".topbar") || null;
+  if (pageId === "nota") return document.querySelector(".barra-superior") || null;
+  if (pageId === "historia") {
+    let header = document.querySelector("[data-global-header-host]");
+    if (!header) {
+      header = document.createElement("header");
+      header.dataset.globalHeaderHost = "true";
+      document.body.prepend(header);
+      log("Encabezado global creado para página sin barra compatible", { pageId });
+    }
+    return header;
+  }
   return null;
+}
+
+function ensureBranding(header, pageId) {
+  if (header.querySelector("[data-global-header-branding]")) return;
+  const existingLogo = header.querySelector("img.logo-mini, img.logo-header, img[alt*='Cogn']");
+  const branding = document.createElement("div");
+  branding.className = "global-header-branding";
+  branding.dataset.globalHeaderBranding = "true";
+  if (!existingLogo) {
+    const logo = document.createElement("img");
+    logo.src = "assets/favicon-cognicion.png";
+    logo.alt = "Cognición";
+    logo.width = 44;
+    logo.height = 44;
+    logo.decoding = "async";
+    branding.append(logo);
+  }
+  const identity = document.createElement("div");
+  identity.className = "global-header-identity";
+  identity.innerHTML = `<strong data-global-header-title></strong><span data-global-header-description></span>`;
+  branding.append(identity);
+  const insertionPoint = existingLogo?.nextSibling || header.firstChild;
+  header.insertBefore(branding, insertionPoint || null);
+  log("Encabezado existente adoptado", { pageId });
 }
 
 function ensureDiscovery(header) {
@@ -61,16 +97,78 @@ function ensureMedicoActions(header) {
   header.append(actions);
 }
 
+function ensureGlobalActions(header, pageId) {
+  if (pageId === "dashboard" || header.querySelector("[data-accesos-rapidos]")) return;
+  const actions = document.createElement("div");
+  actions.className = "global-header-actions";
+  actions.innerHTML = `<div data-accesos-rapidos data-global-header-access></div>`;
+  header.append(actions);
+}
+
 function updateIdentity(header, page) {
   header.dataset.globalAppHeader = "true";
   header.classList.add("global-app-header");
   header.setAttribute("role", "banner");
   header.setAttribute("aria-label", `Encabezado de ${page.title}`);
   header.style.setProperty("--global-header-height", `${Math.ceil(header.getBoundingClientRect().height || 96)}px`);
-  const title = header.querySelector("h1, .brand-name");
-  const description = header.querySelector("p, .brand-subtitle");
-  if (title && !title.dataset.globalHeaderDynamic) { title.textContent = page.title; title.dataset.globalHeaderDynamic = "true"; }
-  if (description && !description.dataset.globalHeaderDynamic) { description.textContent = page.description; description.dataset.globalHeaderDynamic = "true"; }
+  const title = header.querySelector("[data-global-header-title]") || header.querySelector(".brand-name");
+  const description = header.querySelector("[data-global-header-description]") || header.querySelector(".brand-subtitle");
+  if (title) { title.textContent = page.title; title.dataset.globalHeaderDynamic = "true"; }
+  if (description) { description.textContent = page.description; description.dataset.globalHeaderDynamic = "true"; }
+}
+
+function isPrivacyEnabled() {
+  return document.documentElement.dataset.privacy === "true" ||
+    document.body?.dataset.privacy === "true" ||
+    document.body?.classList.contains("modo-privacidad");
+}
+
+function cleanContext(value = "") {
+  const text = String(value || "").replace(/\s+/g, " ").trim();
+  if (!text || /^(cargando|selecciona un paciente|paciente seleccionado|historia clínica|no se pudieron|no se pudo|acceso no autorizado|paciente no)/i.test(text)) return "";
+  if (isPrivacyEnabled()) {
+    log("Privacidad aplicada");
+    return "Paciente seleccionado";
+  }
+  return text;
+}
+
+export function updateGlobalHeader({ title, description, context } = {}) {
+  const state = globalThis.__cognicionGlobalHeader;
+  if (!state?.header) return false;
+  const titleNode = state.header.querySelector("[data-global-header-title]") || state.header.querySelector(".brand-name");
+  const descriptionNode = state.header.querySelector("[data-global-header-description]") || state.header.querySelector(".brand-subtitle");
+  const nextTitle = title || state.baseTitle;
+  const safeContext = cleanContext(context);
+  if (titleNode) titleNode.textContent = safeContext ? `${nextTitle} · ${safeContext}` : nextTitle;
+  if (descriptionNode && description) descriptionNode.textContent = description;
+  state.context = safeContext;
+  log("Título dinámico actualizado", { title: nextTitle, context: safeContext || undefined });
+  return true;
+}
+
+if (typeof window !== "undefined") window.updateGlobalHeader = updateGlobalHeader;
+
+function createContextController(pageId) {
+  const selectors = {
+    paciente: ["#nombrePaciente"],
+    nota: ["#nombrePacienteNota"],
+    historia: ["#nombrePaciente", "#datosPaciente"]
+  }[pageId] || [];
+  let lastContext = "";
+  const refresh = () => {
+    const context = selectors.map((selector) => document.querySelector(selector)?.textContent || "")
+      .map(cleanContext).find(Boolean) || "";
+    if (context === lastContext) return;
+    lastContext = context;
+    updateGlobalHeader({ context });
+    if (context) log("Contexto de paciente recibido", { pageId });
+  };
+  const observer = new MutationObserver(refresh);
+  if (!document.body) return () => {};
+  observer.observe(document.body, { childList: true, characterData: true, subtree: true });
+  refresh();
+  return () => observer.disconnect();
 }
 
 function createDiscoveryController(discovery, page, pageId) {
@@ -142,7 +240,7 @@ function createDiscoveryController(discovery, page, pageId) {
 export async function mountGlobalAppHeader() {
   if (globalThis.__cognicionGlobalHeader?.destroy) return globalThis.__cognicionGlobalHeader;
   const pageId = pageIdFromLocation();
-  if (isPublicPage(pageId) || !PHASE_ONE.has(pageId)) {
+  if (isPublicPage(pageId) || !MIGRATED_PAGES.has(pageId)) {
     log("Página fuera de la fase actual", { pageId });
     return null;
   }
@@ -151,6 +249,8 @@ export async function mountGlobalAppHeader() {
   const header = findHeader(pageId);
   if (!header) { console.warn(`${DEBUG_PREFIX} Error: encabezado existente no encontrado`, { pageId }); return null; }
   const page = getPageHeader(pageId);
+  if (["paciente", "nota", "historia"].includes(pageId)) ensureBranding(header, pageId);
+  ensureGlobalActions(header, pageId);
   updateIdentity(header, page);
   if (pageId === "medico") ensureMedicoActions(header);
   const discovery = ensureDiscovery(header);
@@ -161,21 +261,25 @@ export async function mountGlobalAppHeader() {
   resizeObserver?.observe(header);
   document.documentElement.style.setProperty("--global-header-height", `${Math.ceil(header.getBoundingClientRect().height || 96)}px`);
   const destroyDiscovery = createDiscoveryController(discovery, page, pageId);
+  let destroyContext = () => {};
   const destroy = () => {
     destroyDiscovery();
+    destroyContext();
     resizeObserver?.disconnect();
     header.removeAttribute("data-global-app-header");
     header.classList.remove("global-app-header");
     delete globalThis.__cognicionGlobalHeader;
     log("Encabezado destruido", { pageId });
   };
-  globalThis.__cognicionGlobalHeader = { header, pageId, destroy };
+  globalThis.__cognicionGlobalHeader = { header, pageId, destroy, baseTitle: page.title };
+  destroyContext = createContextController(pageId);
   log("Página detectada", { pageId });
   log("Título aplicado", { title: page.title });
-  if (pageId === "medico" && header.querySelector("[data-accesos-rapidos]")) {
+  if (header.querySelector("[data-accesos-rapidos]")) {
     import("./accesosRapidos.js").then(({ inicializarAccesosRapidos }) => inicializarAccesosRapidos(header)).catch((error) => console.warn(`${DEBUG_PREFIX} Error en Accesos rápidos`, error));
     log("Accesos rápidos conectados");
   }
+  log("Barra contextual preservada", { pageId });
   return globalThis.__cognicionGlobalHeader;
 }
 
