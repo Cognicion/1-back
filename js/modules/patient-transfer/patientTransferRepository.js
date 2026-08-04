@@ -1,14 +1,16 @@
 import { db } from "../../firebase.js";
 import { obtenerStorage } from "../../services/firebaseAppService.js";
 import { registrarEventoAuditoria, resumenError } from "../../services/auditoria.js";
-import { obtenerNombrePacienteParaMostrar, normalizarTextoBusquedaPaciente } from "../../utils/nombresPacientes.js";
+import { obtenerNombrePacienteParaMostrar } from "../../utils/nombresPacientes.js";
 import { DOCX_IMPORT_CONFIG } from "../importacionDocx/docxImportConfig.js";
 import { createTransferredPatient } from "./integration/patientCreationAdapter.js";
 import { buildImportedNotePayload, createTransferredNote } from "./integration/noteCreationAdapter.js";
 import { createImportedDiagnoses, createImportedTreatments } from "./integration/clinicalDataImportAdapter.js";
 import { vitalSignsToNotePayload } from "./parsing/vitalSignsParser.js";
 import { construirActualizacionSignosVitalesDesdeNota } from "../../services/signosVitalesNotas.js";
+import { listarPacientes } from "../../services/usuarios.js";
 import { withPatientTransferTimeout } from "./patientTransferTimeout.js";
+import { findPossiblePatientMatches } from "./parsing/patientDuplicateMatcher.js";
 import {
   addDoc,
   collection,
@@ -71,23 +73,26 @@ function safeFileName(name = "documento.docx") {
   return String(name).replace(/[^\w.\-]+/g, "_").slice(0, 140) || "documento.docx";
 }
 
-function valueMatches(fieldValue = "", candidateValue = "") {
-  return normalizarTextoBusquedaPaciente(fieldValue) === normalizarTextoBusquedaPaciente(candidateValue);
-}
-
 function patientSummary(docSnap) {
   const data = docSnap.data();
   return {
     id: docSnap.id,
     name: obtenerNombrePacienteParaMostrar(data),
+    patient: data,
+    nombreCompleto: data.nombreCompleto || data.nombre || "",
+    nombres: data.nombres || "",
+    apellidoPaterno: data.apellidoPaterno || "",
+    apellidoMaterno: data.apellidoMaterno || "",
     expediente: data.expediente || data.numeroExpediente || data.datosInstitucionales?.expediente || "",
     curp: data.curp || data.datosInstitucionales?.curp || "",
-    fechaNacimiento: data.fechaNacimiento || data.datosInstitucionales?.fechaNacimiento || ""
+    fechaNacimiento: data.fechaNacimiento || data.datosInstitucionales?.fechaNacimiento || "",
+    edad: data.edad || "",
+    sexo: data.sexo || "",
+    genero: data.genero || data.identidadGenero || "",
+    institucion: data.institucion || data.institucionPaciente || data.datosInstitucionales?.institucion || "",
+    servicio: data.servicio || data.servicioInstitucional || "",
+    cama: data.cama || ""
   };
-}
-
-function normalizeRecordNumber(value = "") {
-  return normalizarTextoBusquedaPaciente(value).replace(/[^a-z0-9]+/g, "");
 }
 
 function transferOperationIdForGroup(group = {}) {
@@ -104,35 +109,24 @@ function lockRef(userUid, operationId) {
 }
 
 export async function findExistingPatientCandidates(fields = {}, userUid = "") {
-  const users = collection(db, "usuarios");
-  const descriptors = [];
-  if (fields.curp) descriptors.push(query(users, where("curp", "==", fields.curp), limit(5)));
-  if (fields.expediente) {
-    descriptors.push(query(users, where("expediente", "==", fields.expediente), limit(5)));
-    descriptors.push(query(users, where("numeroExpediente", "==", fields.expediente), limit(5)));
-  }
-  if (fields.nombre) descriptors.push(query(users, where("nombreCompleto", "==", fields.nombre), limit(5)));
-  if (!descriptors.length || !userUid) return [];
-
-  const settled = await Promise.allSettled(descriptors.map((descriptor) => getDocs(descriptor)));
-  const candidates = new Map();
-  settled.forEach((result) => {
-    if (result.status !== "fulfilled") return;
-    result.value.forEach((docSnap) => {
-      const data = docSnap.data();
-      const authorized = data.ownerUid === userUid || data.medicoUid === userUid || data.medicoTratanteUid === userUid || data.medicosAutorizados?.includes?.(userUid);
-      if (!authorized) return;
-      const candidate = patientSummary(docSnap);
-      const score = [
-        fields.curp && valueMatches(fields.curp, candidate.curp),
-        fields.expediente && normalizeRecordNumber(fields.expediente) === normalizeRecordNumber(candidate.expediente),
-        fields.nombre && valueMatches(fields.nombre, candidate.name),
-        fields.fechaNacimiento && fields.fechaNacimiento === candidate.fechaNacimiento
-      ].filter(Boolean).length;
-      candidates.set(docSnap.id, { ...candidate, score });
-    });
-  });
-  return [...candidates.values()].sort((a, b) => b.score - a.score || a.name.localeCompare(b.name, "es"));
+  console.info("[patient-transfer] duplicate-search:start", JSON.stringify({
+    userUidPresent: Boolean(userUid),
+    hasName: Boolean(fields.nombre),
+    hasRecord: Boolean(fields.expediente),
+    hasBirthDate: Boolean(fields.fechaNacimiento),
+    hasCurp: Boolean(fields.curp)
+  }));
+  if (!userUid) return [];
+  const patientSnapshot = await listarPacientes(userUid);
+  const candidates = new Map((patientSnapshot?.docs || []).map((docSnap) => [docSnap.id, patientSummary(docSnap)]));
+  const matches = findPossiblePatientMatches(fields, [...candidates.values()]);
+  console.info("[patient-transfer] duplicate-search:result", JSON.stringify({
+    candidateCount: candidates.size,
+    matchCount: matches.length,
+    highestScore: matches[0]?.score || 0,
+    levels: matches.map((match) => match.level)
+  }));
+  return matches;
 }
 
 async function acquireTransferOperation({ user, group, operationId }) {
@@ -297,6 +291,11 @@ export async function saveTransferredGroups({ groups = [], user, onProgress = nu
     const operationId = transferOperationIdForGroup(group);
     let transferRef = transferOperationRef(user.uid, operationId);
     try {
+      console.info("[patient-transfer] persistence:start", JSON.stringify({
+        operationId,
+        groupId: group.id,
+        notesExpected: group.documents.filter((item) => !item.omitted && item.duplicateStatus === "nuevo").length
+      }));
       const documentsToSave = group.documents.filter((item) => !item.omitted && item.duplicateStatus === "nuevo");
       if (!documentsToSave.length) {
         results.push({ groupId: group.id, status: "completed", patientId: "", patientName: group.confirmedFields?.nombre || "", patientCreated: false, notesCreated: 0, notesExisting: 0, duplicatesAvoided: group.documents.length, documents: [] });
@@ -335,28 +334,43 @@ export async function saveTransferredGroups({ groups = [], user, onProgress = nu
 
       if (group.action === "create") {
         if (!patientId) {
-          stage = "patient_check_existing";
-          traceTransfer("patient-check-existing", { authUid: user.uid, transferOperationId: operationId, patientName: group.confirmedFields?.nombre || "", expediente: group.confirmedFields?.expediente || "" });
-          const candidates = await timed("patient-existing-query", () => findExistingPatientCandidates(group.confirmedFields, user.uid), TIMEOUTS.query);
-          const strong = candidates.find((candidate) => candidate.score >= 2);
-          if (strong) {
-            patientId = strong.id;
-            traceTransfer("patient-existing-found", { authUid: user.uid, patientId, score: strong.score });
-            await updateTransferImportRecord({ transferRef, user, group, patientId, documentResults, status: "patient_created", lastCompletedStage: "patient_reused" });
+          const resolution = group.duplicateResolution || {};
+          if (resolution.action === "link-existing") {
+            patientId = resolution.matchedPatientId || group.selectedPatientId || "";
+            traceTransfer("duplicate-resolution", { authUid: user.uid, transferOperationId: operationId, resolution: "link-existing", patientId: Boolean(patientId) });
+          } else if (resolution.action === "omit") {
+            results.push({ groupId: group.id, status: "omitted", patientId: "", notesCreated: 0, duplicateResolution: "omit" });
+            continue;
+          } else {
+            const strongest = (group.possibleMatches || group.candidates || [])[0];
+            if (strongest && ["muy_alta", "alta"].includes(strongest.level) && resolution.action !== "create-new") {
+              const error = new Error("Resuelve la posible coincidencia antes de crear el paciente.");
+              error.stage = "duplicate_resolution";
+              throw error;
+            }
           }
         }
         if (!patientId) {
           stage = "creating_patient";
           onProgress?.({ stage, message: "Creando paciente...", progress: 30 });
-          traceTransfer("create-patient-start", { operation: "crearPacienteProvisional", authUid: user.uid, role: user.rol || "", patientName: group.confirmedFields?.nombre || "", transferOperationId: operationId });
+          console.info("[patient-transfer] patient:create:start", JSON.stringify({ operationId, groupId: group.id, patientCreated: false }));
           const patientRef = await timed("create-patient", () => createTransferredPatient({ ...group.confirmedFields, transferOperationId: operationId }, user), TIMEOUTS.createPatient);
-          patientId = patientRef.id;
+          patientId = patientRef?.id || patientRef?.patientId || "";
+          if (!patientId) throw new Error("El paciente no devolvió un identificador válido.");
           patientCreated = true;
-          traceTransfer("create-patient-success", { operation: "crearPacienteProvisional", authUid: user.uid, patientId, transferOperationId: operationId });
+          console.info("[patient-transfer] patient:create:success", JSON.stringify({ operationId, patientCreated: true, patientIdPresent: true }));
+          const createdPatient = await timed("verify-patient", () => getDoc(doc(db, "usuarios", patientId)), TIMEOUTS.query);
+          if (!createdPatient.exists()) throw new Error("El paciente fue creado pero no pudo verificarse en el expediente del médico.");
+          console.info("[patient-transfer] patient:verify", JSON.stringify({ operationId, patientIdPresent: true, exists: true }));
           await updateTransferImportRecord({ transferRef, user, group, patientId, documentResults, status: "patient_created", lastCompletedStage: "patient_created" });
         }
       }
       if (!patientId) throw new Error("Selecciona un paciente existente o confirma crear uno nuevo.");
+      if (group.action === "associate") {
+        const existingPatient = await timed("verify-existing-patient", () => getDoc(doc(db, "usuarios", patientId)), TIMEOUTS.query);
+        if (!existingPatient.exists()) throw new Error("El paciente existente seleccionado no pudo verificarse.");
+        console.info("[patient-transfer] patient:verify", JSON.stringify({ operationId, patientIdPresent: true, exists: true, reused: true }));
+      }
 
       stage = "creating_transfer_record";
       onProgress?.({ stage, message: "Preparando registro de traspaso...", progress: 35 });
@@ -393,6 +407,7 @@ export async function saveTransferredGroups({ groups = [], user, onProgress = nu
           user
         });
         traceTransfer("create-note-start", { authUid: user.uid, transferOperationId: operationId, patientId, noteId: noteImportKey });
+        console.info("[patient-transfer] note:create", JSON.stringify({ operationId, patientIdPresent: true, noteIndex: documentResults.length }));
         const note = await timed(`create-note-${documentResults.length + 1}`, () => createTransferredNote(patientId, {
           ...notePayload,
           transferOperationId: operationId,
@@ -610,7 +625,14 @@ export async function saveTransferredGroups({ groups = [], user, onProgress = nu
         duplicatesAvoided: 0,
         documents: documentResults
       });
+      console.info("[patient-transfer] persistence:completed", JSON.stringify({ operationId, patientIdPresent: Boolean(patientId), notesCreated: documentResults.filter((item) => item.duplicateStatus !== "note_existing").length }));
     } catch (error) {
+      console.info("[patient-transfer] persistence:failed", JSON.stringify({
+        operationId,
+        stage: error?.stage || stage,
+        patientIdPresent: Boolean(patientId),
+        notesCreated: documentResults.filter((item) => item.duplicateStatus !== "note_existing").length
+      }));
       traceTransfer(stage || "failed", {
         operation: "firebase-write",
         authUid: user.uid,

@@ -468,10 +468,22 @@ async function analyzeSelectedFiles() {
   let groups = groupDocumentsByPatient(documents);
   groups = await Promise.all(groups.map(async (group) => {
     const candidates = await findExistingPatientCandidates(fieldValues(group.fields), user.uid);
-    const strongCandidate = candidates.find((candidate) => candidate.score >= 2);
-    return strongCandidate
-      ? { ...group, candidates, action: "associate", selectedPatientId: strongCandidate.id }
-      : { ...group, candidates };
+    const strongest = candidates[0] || null;
+    return {
+      ...group,
+      candidates,
+      possibleMatches: candidates,
+      duplicateResolution: strongest ? {
+        action: "pending",
+        matchedPatientId: strongest.patientId || strongest.id || "",
+        score: strongest.score,
+        level: strongest.level,
+        matchedFields: strongest.matchedFields,
+        conflictingFields: strongest.conflictingFields
+      } : null,
+      action: group.action === "omit" ? "omit" : "create",
+      selectedPatientId: ""
+    };
   }));
   analyzedGroups = setPatientTransferGroups(groups);
   console.info("[docx-import] patient-fields:state-updated", {
@@ -523,6 +535,24 @@ async function saveReviewedTransfer({ reuseReviewedGroups = false } = {}) {
     showPatientTransferError("Selecciona el paciente existente antes de asociar notas.");
     return;
   }
+  const duplicatePending = reviewedGroups.find((group) => {
+    if (group.omitted) return false;
+    const strongest = (group.possibleMatches || group.candidates || [])[0];
+    return strongest && ["muy_alta", "alta"].includes(strongest.level)
+      && !["link-existing", "create-new", "omit"].includes(group.duplicateResolution?.action);
+  });
+  if (duplicatePending) {
+    showPatientTransferError("Resuelve la posible coincidencia del paciente: asociar, crear de todas formas u omitir.");
+    return;
+  }
+  const createDespiteMatch = reviewedGroups.find((group) => group.duplicateResolution?.action === "create-new" && !group.omitted);
+  if (createDespiteMatch && !window.confirm("Se detectó un posible duplicado. ¿Desea crear otro expediente de todas formas?")) return;
+  console.info("[patient-transfer] duplicate-resolution", JSON.stringify(reviewedGroups.map((group) => ({
+    groupId: group.id,
+    action: group.duplicateResolution?.action || "none",
+    matchedPatientIdPresent: Boolean(group.duplicateResolution?.matchedPatientId),
+    score: group.duplicateResolution?.score || 0
+  }))));
 
   const summary = {
     newPatients: persistenceGroups.filter((group) => !group.omitted && group.action === "create").length,

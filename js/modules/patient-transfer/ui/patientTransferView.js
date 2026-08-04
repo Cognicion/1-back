@@ -169,6 +169,29 @@ function renderCandidateSelect(group) {
     </label>`;
 }
 
+function renderDuplicateWarning(group) {
+  const matches = group.possibleMatches || group.candidates || [];
+  const strongest = matches[0];
+  if (!strongest) return "";
+  const high = ["muy_alta", "alta"].includes(strongest.level);
+  const resolution = group.duplicateResolution?.action || "pending";
+  const matched = (strongest.matchedFields || []).map((field) => `<li>✓ ${escapeHtml(field.label)}${field.candidateValue ? `: ${escapeHtml(field.candidateValue)}` : ""}</li>`).join("");
+  const conflicts = (strongest.conflictingFields || []).map((field) => `<li>• ${escapeHtml(field.label)}: dato del documento ${escapeHtml(field.candidateValue)} / registrado ${escapeHtml(field.existingValue)}</li>`).join("");
+  return `<section class="patient-transfer-warning patient-transfer-duplicate-warning" aria-label="Posible coincidencia de paciente">
+    <strong>${high ? `POSIBLE COINCIDENCIA ${strongest.level === "muy_alta" ? "MUY ALTA" : "ALTA"}` : "POSIBLE COINCIDENCIA PARCIAL"}</strong>
+    <p>Paciente existente: <b>${escapeHtml(strongest.name || strongest.patient?.nombreCompleto || "Paciente registrado")}</b></p>
+    ${matched ? `<p>Coincidencias:</p><ul>${matched}</ul>` : ""}
+    ${conflicts ? `<p>Diferencias:</p><ul>${conflicts}</ul>` : "<p>Diferencias: ninguna detectada.</p>"}
+    <fieldset class="patient-transfer-duplicate-resolution">
+      <legend>Decisión para este paciente</legend>
+      <label><input type="radio" name="duplicate-resolution-${group.id}" value="link-existing" data-transfer-duplicate-resolution="${group.id}" data-patient-id="${escapeHtml(strongest.patientId || strongest.id || "")}" ${resolution === "link-existing" ? "checked" : ""}> Asociar las notas al paciente existente</label>
+      <label><input type="radio" name="duplicate-resolution-${group.id}" value="create-new" data-transfer-duplicate-resolution="${group.id}" ${resolution === "create-new" ? "checked" : ""}> Crear un paciente nuevo de todas formas</label>
+      <label><input type="radio" name="duplicate-resolution-${group.id}" value="omit" data-transfer-duplicate-resolution="${group.id}" ${resolution === "omit" ? "checked" : ""}> Omitir este paciente</label>
+    </fieldset>
+    ${strongest.patientId || strongest.id ? `<a href="paciente.html?id=${encodeURIComponent(strongest.patientId || strongest.id)}" target="_blank" rel="noopener">Ver expediente existente</a>` : ""}
+  </section>`;
+}
+
 function renderFields(group) {
   return FIELD_RULES.map((rule) => {
     const field = group.fields?.[rule.key];
@@ -508,6 +531,7 @@ export function renderDetectedGroups(groups = []) {
           <label><input type="checkbox" data-transfer-omit-group="${group.id}" ${group.omitted ? "checked" : ""}> Omitir paciente</label>
         </header>
         ${group.ambiguous ? `<div class="patient-transfer-warning">Datos incompletos o contradictorios. Revise antes de guardar.</div>` : ""}
+        ${renderDuplicateWarning(group)}
         <div class="patient-transfer-mode">
           <label><input type="radio" name="transfer-action-${group.id}" value="create" data-transfer-action="${group.id}" ${group.action !== "associate" ? "checked" : ""}> Crear paciente</label>
           <label><input type="radio" name="transfer-action-${group.id}" value="associate" data-transfer-action="${group.id}" ${group.action === "associate" ? "checked" : ""}> Asociar a paciente existente</label>
@@ -550,8 +574,13 @@ export function collectRenderedSubjectiveMetrics(groups = []) {
 export function readTransferReview(groups = []) {
   const modal = ensureRoot();
   return groups.map((group) => {
-    const action = modal.querySelector(`[data-transfer-action="${group.id}"]:checked`)?.value || "create";
-    const selectedPatientId = modal.querySelector(`[data-transfer-existing="${group.id}"]`)?.value || "";
+    const actionControl = modal.querySelector(`[data-transfer-action="${group.id}"]:checked`)?.value || "create";
+    const duplicateControl = modal.querySelector(`[data-transfer-duplicate-resolution="${group.id}"]:checked`);
+    const duplicateAction = duplicateControl?.value || group.duplicateResolution?.action || "";
+    const selectedPatientId = duplicateAction === "link-existing"
+      ? duplicateControl?.dataset.patientId || group.duplicateResolution?.matchedPatientId || ""
+      : modal.querySelector(`[data-transfer-existing="${group.id}"]`)?.value || "";
+    const action = duplicateAction === "link-existing" ? "associate" : duplicateAction === "omit" ? "omit" : actionControl;
     const confirmedFields = {};
     FIELD_RULES.forEach((rule) => {
       confirmedFields[rule.key] = modal.querySelector(`[data-transfer-field="${group.id}:${rule.key}"]`)?.value?.trim() || "";
@@ -696,6 +725,12 @@ export function readTransferReview(groups = []) {
       ...group,
       action,
       selectedPatientId,
+      duplicateResolution: duplicateControl ? {
+        ...(group.duplicateResolution || {}),
+        action: duplicateAction,
+        matchedPatientId: duplicateControl.dataset.patientId || group.duplicateResolution?.matchedPatientId || "",
+        resolvedAt: new Date().toISOString()
+      } : group.duplicateResolution || null,
       confirmedFields,
       omitted: modal.querySelector(`[data-transfer-omit-group="${group.id}"]`)?.checked || false,
       documents
