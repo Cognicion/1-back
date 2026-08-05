@@ -1,37 +1,46 @@
 import { detectDiagnosisCandidates, parseDiagnosisCandidates } from "../parsers/diagnosisParser.js";
 import { validateDiagnosis } from "../validators/diagnosisValidator.js";
+import { EntityFactory } from "../engine/EntityFactory.js";
 
-/** Convierte candidatos nativos MIDC al contrato legacy consumido por patient-transfer. */
+function asClinicalEntity(candidate = {}) {
+  return candidate.entityType && candidate.value !== undefined && candidate.identity
+    ? candidate
+    : EntityFactory.fromCandidate(candidate);
+}
+
+/** Convierte una ClinicalEntity al contrato legacy consumido por patient-transfer. */
 export function toLegacyDiagnosisCandidate(candidate = {}) {
+  const entity = asClinicalEntity(candidate);
+  const source = entity.value || {};
   const value = {
-    id: candidate.id,
-    rawText: candidate.evidence?.[0]?.rawText || candidate.diagnosisName || "",
-    diagnosisName: candidate.diagnosisName || "",
-    normalizedDiagnosisName: candidate.normalizedDiagnosis || "",
-    normalizedName: candidate.diagnosisName || "",
-    normalizedLabel: candidate.diagnosisName || "",
-    code: candidate.code || null,
-    system: candidate.system || "",
-    codingSystem: candidate.system || "",
-    status: candidate.status || "Confirmado",
-    statusSuggestion: candidate.status || "Confirmado",
-    isPrimary: Boolean(candidate.isPrimary),
-    principal: Boolean(candidate.isPrimary),
-    temporality: candidate.status === "Antecedente" ? "historical" : "current",
-    negated: candidate.status === "Descartado",
-    sourceSection: candidate.metadata?.sourceSection || "diagnosticos",
-    sourceHeading: candidate.evidence?.[0]?.heading || candidate.metadata?.sourceSection || "diagnosticos",
-    sourceText: candidate.evidence?.[0]?.rawText || candidate.diagnosisName || "",
-    sourceLocation: { documentId: candidate.evidence?.[0]?.documentId || "", blockIndex: candidate.evidence?.[0]?.block ?? null, startOffset: candidate.evidence?.[0]?.offsetStart ?? null, endOffset: candidate.evidence?.[0]?.offsetEnd ?? null },
-    evidence: candidate.evidence?.[0]?.rawText || "",
-    confidence: candidate.confidence === "HIGH" ? "high" : candidate.confidence === "MEDIUM" ? "medium" : candidate.confidence === "LOW" ? "low" : "not-detected",
-    requiresReview: Boolean(candidate.requiresReview),
-    detectionRule: candidate.metadata?.detectionRule || "midc-diagnosis-parser",
+    id: entity.id,
+    rawText: entity.evidence?.[0]?.rawText || source.diagnosisName || "",
+    diagnosisName: source.diagnosisName || "",
+    normalizedDiagnosisName: source.normalizedDiagnosis || entity.normalizedValue || "",
+    normalizedName: source.diagnosisName || "",
+    normalizedLabel: source.diagnosisName || "",
+    code: source.code || null,
+    system: source.system || "",
+    codingSystem: source.system || "",
+    status: entity.status || source.status || "Confirmado",
+    statusSuggestion: entity.status || source.status || "Confirmado",
+    isPrimary: Boolean(source.isPrimary),
+    principal: Boolean(source.isPrimary),
+    temporality: entity.status === "Antecedente" ? "historical" : "current",
+    negated: entity.status === "Descartado",
+    sourceSection: entity.metadata?.sourceSection || "diagnosticos",
+    sourceHeading: entity.evidence?.[0]?.heading || entity.metadata?.sourceSection || "diagnosticos",
+    sourceText: entity.evidence?.[0]?.rawText || source.diagnosisName || "",
+    sourceLocation: { documentId: entity.evidence?.[0]?.documentId || "", blockIndex: entity.evidence?.[0]?.block ?? null, startOffset: entity.evidence?.[0]?.offsetStart ?? null, endOffset: entity.evidence?.[0]?.offsetEnd ?? null },
+    evidence: entity.evidence?.[0]?.rawText || "",
+    confidence: entity.confidence === "HIGH" ? "high" : entity.confidence === "MEDIUM" ? "medium" : entity.confidence === "LOW" ? "low" : "not-detected",
+    requiresReview: Boolean(source.requiresReview || entity.metadata?.validation?.valid === false),
+    detectionRule: entity.metadata?.detectionRule || "midc-diagnosis-parser",
     selectedForImport: false,
     include: false,
     confirmedByDoctor: false,
-    parser: candidate.metadata?.parser || "midc.diagnosisParser",
-    parserVersion: candidate.parserVersion || "1.0"
+    parser: entity.metadata?.parser || "midc.diagnosisParser",
+    parserVersion: source.parserVersion || entity.version?.parserVersion || "1.0"
   };
   const validation = validateDiagnosis(value);
   if (!validation.valid) value.requiresReview = true;
@@ -43,7 +52,7 @@ export function adaptDiagnosisCandidates(args = {}) {
 }
 
 export function adaptDiagnosisParser(args = {}) {
-  return parseDiagnosisCandidates(args);
+  return detectDiagnosisCandidates(args).map((candidate) => EntityFactory.fromCandidate(candidate));
 }
 
 export function adaptDiagnosisBlock(args = {}) {

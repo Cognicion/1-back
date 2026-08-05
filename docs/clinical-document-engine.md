@@ -126,3 +126,42 @@ El candidato nativo conserva `presentation`, `strength`, `strengthUnit`, `streng
 `MedicationAdapter` valida y transforma los candidatos al contrato legacy consumido por `patient-transfer`. `detectTreatmentCandidates()` delega al adapter; por ello la interfaz, persistencia, Panel Médico y Firebase permanecen sin cambios. El parser legacy anterior queda como implementación histórica compatible, no como ruta activa.
 
 La confianza es determinista: nombre con concentración, vía y frecuencia explícitas recibe `HIGH`; nombre con concentración recibe `MEDIUM`; nombre sin esos datos recibe `LOW` y revisión. La validación se ejecuta en el adapter para mantener separado el parser del contrato de salida.
+
+## Fase 5 - Clinical Entity Engine (CEE)
+
+El CEE administra la representación clínica común sin conocer persistencia, Firebase ni la interfaz. Su entrada es cualquier candidato MIDC y su salida es una `ClinicalEntity` con identidad, versión, evidencia, relaciones y metadatos.
+
+```mermaid
+flowchart LR
+  A[ClinicalCandidate] --> B[EntityFactory]
+  B --> C[EntityNormalizer]
+  C --> D[EntityValidationEngine]
+  D --> E[EntityRegistry]
+  E --> F[EntityMatcher / Deduplicator]
+  E --> G[RelationshipEngine]
+  E --> H[DiagnosisAdapter / MedicationAdapter]
+  H --> I[Contrato legacy]
+```
+
+### Componentes
+
+- `ClinicalEntity`: clase base para diagnosis, medication y los tipos futuros soportados.
+- `ClinicalIdentity`: identidad estable por código o nombre normalizado, sin depender únicamente del texto visible.
+- `ClinicalVersion`: número de versión, parserVersion y tipo de cambio.
+- `ClinicalHistory`: historial en memoria para creación, cambios, normalización y fusiones; aún no persiste.
+- `EntityFactory`: única conversión de `ClinicalCandidate` a `ClinicalEntity`.
+- `EntityNormalizer`: reutiliza normalizadores MIDC existentes.
+- `EntityValidationEngine`: delega en `DiagnosisValidator`, `MedicationValidator` y validadores futuros.
+- `EntityMatcher` y `EntityDeduplicator`: matching determinista común y deduplicación en memoria.
+- `EntityRelationshipEngine`: relaciones como `presenta` y `tratadoCon`, preparadas pero no activas en producción.
+- `ClinicalEntityEngine`: orquesta creación, normalización, validación, registro y relaciones.
+
+Los adapters de Diagnóstico y Medicamentos aceptan candidatos por compatibilidad y los convierten inmediatamente mediante `EntityFactory`; el contrato legacy que consume `patient-transfer` no cambia. El CEE no se conecta todavía a persistencia ni modifica el Panel Médico.
+
+### Tipos soportados
+
+`diagnosis`, `medication`, `vitalSign`, `laboratory`, `study`, `patient`, `treatment`, `allergy`, `scale`, `clinicalEvent`, `procedure` y `consultation` están soportados por el modelo base. Solo Diagnóstico y Medicamentos tienen parsers activos en esta fase.
+
+### Migración futura
+
+La Fase 6 migrará Signos Vitales, la Fase 7 Laboratorios, la Fase 8 Escalas y la Fase 9 Timeline. Cada migración debe conservar un adapter, pruebas de contrato y rollback. Persistencia, Firebase, Panel Médico y SOFÍA quedan fuera de esta fase.

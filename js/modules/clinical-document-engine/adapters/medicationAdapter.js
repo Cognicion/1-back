@@ -1,43 +1,52 @@
 import { detectMedicationCandidates, parseMedicationCandidates } from "../parsers/medicationParser.js";
 import { validateMedication } from "../validators/medicationValidator.js";
+import { EntityFactory } from "../engine/EntityFactory.js";
 
-/** Convierte el candidato nativo al contrato consumido por patient-transfer. */
+function asClinicalEntity(candidate = {}) {
+  return candidate.entityType && candidate.value !== undefined && candidate.identity
+    ? candidate
+    : EntityFactory.fromCandidate(candidate);
+}
+
+/** Convierte una ClinicalEntity al contrato legacy consumido por patient-transfer. */
 export function toLegacyMedicationCandidate(candidate = {}) {
+  const entity = asClinicalEntity(candidate);
+  const source = entity.value || {};
   const legacy = {
-    id: candidate.id,
-    medicationId: candidate.medicationId || candidate.medicationName || "",
-    medicationName: candidate.medicationName || "",
-    normalizedMedicationName: candidate.normalizedMedicationName || "",
-    genericName: candidate.genericName || candidate.medicationName || "",
-    presentation: candidate.presentation || "",
-    strengthValue: candidate.strength ?? null,
-    strengthUnit: candidate.strengthUnit || "",
-    strengthPerValue: candidate.strengthPerValue ?? null,
-    strengthPerUnit: candidate.strengthPerUnit || "",
-    administrationQuantity: candidate.administrationQuantity ?? null,
-    administrationUnit: candidate.administrationUnit || "",
-    dose: candidate.strength == null ? "" : String(candidate.strength),
-    doseUnit: candidate.strengthUnit || "",
-    route: candidate.route || "",
-    frequency: candidate.frequency || "",
-    frequencyRaw: candidate.frequencyRaw || "",
-    schedule: Array.isArray(candidate.schedule) ? candidate.schedule.map((item) => ({ ...item, administrationUnit: item.administrationUnit || item.unit || "" })) : [],
-    scheduleText: (candidate.schedule || []).map((item) => `${item.time}${item.quantity != null ? ` · ${item.quantity} ${item.unit || ""}` : ""}`).join("; "),
-    action: candidate.action || "Continúa",
-    statusSuggestion: candidate.status || candidate.action || "Continúa",
-    temporality: candidate.status === "Antecedente" ? "historical" : "current",
-    date: candidate.date || "",
-    sourceText: candidate.metadata?.rawMedicationText || candidate.evidence?.[0]?.rawText || "",
-    rawMedicationText: candidate.metadata?.rawMedicationText || candidate.evidence?.[0]?.rawText || "",
-    sourceSection: candidate.metadata?.sourceSection || "tratamiento",
-    evidence: candidate.evidence?.[0] || {},
-    confidence: candidate.confidence === "HIGH" ? "high" : candidate.confidence === "MEDIUM" ? "medium" : candidate.confidence === "LOW" ? "low" : "not-detected",
-    requiresReview: Boolean(candidate.requiresReview),
+    id: entity.id,
+    medicationId: source.medicationId || source.medicationName || "",
+    medicationName: source.medicationName || "",
+    normalizedMedicationName: source.normalizedMedicationName || entity.normalizedValue || "",
+    genericName: source.genericName || source.medicationName || "",
+    presentation: source.presentation || "",
+    strengthValue: source.strength ?? null,
+    strengthUnit: source.strengthUnit || "",
+    strengthPerValue: source.strengthPerValue ?? null,
+    strengthPerUnit: source.strengthPerUnit || "",
+    administrationQuantity: source.administrationQuantity ?? null,
+    administrationUnit: source.administrationUnit || "",
+    dose: source.strength == null ? "" : String(source.strength),
+    doseUnit: source.strengthUnit || "",
+    route: source.route || "",
+    frequency: source.frequency || "",
+    frequencyRaw: source.frequencyRaw || "",
+    schedule: Array.isArray(source.schedule) ? source.schedule.map((item) => ({ ...item, administrationUnit: item.administrationUnit || item.unit || "" })) : [],
+    scheduleText: (source.schedule || []).map((item) => `${item.time}${item.quantity != null ? ` · ${item.quantity} ${item.unit || ""}` : ""}`).join("; "),
+    action: source.action || "Continúa",
+    statusSuggestion: entity.status || source.status || source.action || "Continúa",
+    temporality: entity.status === "Antecedente" ? "historical" : "current",
+    date: source.date || "",
+    sourceText: entity.metadata?.rawMedicationText || entity.evidence?.[0]?.rawText || "",
+    rawMedicationText: entity.metadata?.rawMedicationText || entity.evidence?.[0]?.rawText || "",
+    sourceSection: entity.metadata?.sourceSection || "tratamiento",
+    evidence: entity.evidence?.[0] || {},
+    confidence: entity.confidence === "HIGH" ? "high" : entity.confidence === "MEDIUM" ? "medium" : entity.confidence === "LOW" ? "low" : "not-detected",
+    requiresReview: Boolean(source.requiresReview || entity.metadata?.validation?.valid === false),
     selectedForImport: false,
     include: false,
     confirmedByDoctor: false,
     parser: "midc.medicationParser",
-    parserVersion: candidate.parserVersion || "1.0"
+    parserVersion: source.parserVersion || entity.version?.parserVersion || "1.0"
   };
   const validation = validateMedication(legacy);
   if (!validation.valid) legacy.requiresReview = true;
@@ -49,7 +58,7 @@ export function adaptMedicationCandidates(args = {}) {
 }
 
 export function adaptMedicationParser(args = {}) {
-  return detectMedicationCandidates(args);
+  return detectMedicationCandidates(args).map((candidate) => EntityFactory.fromCandidate(candidate));
 }
 
 export function adaptMedicationBlock(args = {}) {
