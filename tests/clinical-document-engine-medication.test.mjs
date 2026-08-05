@@ -1,0 +1,31 @@
+import assert from "node:assert/strict";
+import { parseMedicationCandidates, detectMedicationCandidates } from "../js/modules/clinical-document-engine/parsers/medicationParser.js";
+import { toLegacyMedicationCandidate } from "../js/modules/clinical-document-engine/adapters/medicationAdapter.js";
+
+const text = "a) Sertralina, tabletas de 50 mg. Tomar vía oral 1 vez al día. 1 tableta a las 08:00\nb) Pregabalina 75 mg cápsulas, tomar vía oral, una vez al día, una cápsula a las 22 hrs\nc) Espironolactona tabletas 100 mg. Vía oral. Tomar 1 vez al día. 1 tableta a las 15:00h\nd) Colchicina 1 mg vía oral 1 vez al día a las 15:00\ne) Yasmin 3mg/0.03mg vía oral 1 vez al día a las 22:00\nf) Lactobacilos polvo vía oral 2 veces al día, 1 sobre a las 08:00 y 1 sobre a las 15:00";
+const candidates = parseMedicationCandidates({ text, section: "medicamentos", documentId: "anon-doc", noteId: "anon-note" });
+assert.equal(candidates.length, 6);
+const sertralina = candidates.find((candidate) => candidate.medicationName.toLowerCase() === "sertralina");
+assert.equal(sertralina.presentation, "tabletas");
+assert.equal(sertralina.strength, 50);
+assert.equal(sertralina.route, "oral");
+assert.equal(sertralina.frequency, "onceDaily");
+assert.equal(sertralina.schedule[0].time, "08:00");
+assert.equal(sertralina.schedule[0].quantity, 1);
+const pregabalina = candidates.find((candidate) => candidate.medicationName.toLowerCase() === "pregabalina");
+assert.equal(pregabalina.schedule[0].time, "22:00");
+assert.equal(pregabalina.schedule[0].quantity, 1);
+const lactobacilos = candidates.find((candidate) => candidate.medicationName.toLowerCase() === "lactobacilos");
+assert.equal(lactobacilos.schedule.length, 2);
+assert.deepEqual(lactobacilos.schedule.map((item) => item.time), ["08:00", "15:00"]);
+const historical = parseMedicationCandidates({ text: "Antecedente de clonazepam", section: "subjetivo", documentId: "anon" })[0];
+assert.equal(historical.action, "Antecedente");
+assert.equal(historical.strength, null);
+assert.equal(historical.schedule.length, 0);
+const legacy = toLegacyMedicationCandidate(sertralina);
+assert.equal(legacy.dose, "50");
+assert.equal(legacy.schedule[0].time, "08:00");
+const detected = detectMedicationCandidates({ sections: { medicamentos: "Sertralina 50 mg vía oral 1 vez al día" }, documentId: "anon" });
+assert.equal(detected.length, 1);
+
+console.log("clinical-document-engine-medication: ok");

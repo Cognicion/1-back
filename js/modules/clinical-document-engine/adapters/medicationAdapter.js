@@ -1,10 +1,57 @@
-import { detectTreatmentCandidates } from "../../patient-transfer/parsing/clinicalCandidateParser.js";
-import { evaluateConfidence, requiresReviewForConfidence } from "../confidence/confidenceEngine.js";
-import { ClinicalCandidate } from "../core/ClinicalCandidate.js";
+import { detectMedicationCandidates, parseMedicationCandidates } from "../parsers/medicationParser.js";
+import { validateMedication } from "../validators/medicationValidator.js";
 
-export function adaptMedicationParser({ sections = {}, fullText = "", sourceBlocks = [], medicationCatalog, documentId = "", noteId = "", date = "" } = {}) {
-  return detectTreatmentCandidates({ sections, fullText, sourceBlocks, medicationCatalog, documentId, date }).map((candidate) => {
-    const confidence = evaluateConfidence({ table: candidate.detectionRule === "medication-list", explicitHeading: Boolean(candidate.sourceSection), freeText: !candidate.dose && !candidate.strengthValue });
-    return new ClinicalCandidate({ id: candidate.id || `${noteId}-medication`, type: "medication", value: candidate, confidence, requiresReview: requiresReviewForConfidence(confidence), warnings: candidate.dose || candidate.strengthValue ? [] : ["missing-dose"], evidence: [candidate.sourceText || candidate.rawText], metadata: { noteId, sourceSection: candidate.sourceSection } });
-  });
+/** Convierte el candidato nativo al contrato consumido por patient-transfer. */
+export function toLegacyMedicationCandidate(candidate = {}) {
+  const legacy = {
+    id: candidate.id,
+    medicationId: candidate.medicationId || candidate.medicationName || "",
+    medicationName: candidate.medicationName || "",
+    normalizedMedicationName: candidate.normalizedMedicationName || "",
+    genericName: candidate.genericName || candidate.medicationName || "",
+    presentation: candidate.presentation || "",
+    strengthValue: candidate.strength ?? null,
+    strengthUnit: candidate.strengthUnit || "",
+    strengthPerValue: candidate.strengthPerValue ?? null,
+    strengthPerUnit: candidate.strengthPerUnit || "",
+    administrationQuantity: candidate.administrationQuantity ?? null,
+    administrationUnit: candidate.administrationUnit || "",
+    dose: candidate.strength == null ? "" : String(candidate.strength),
+    doseUnit: candidate.strengthUnit || "",
+    route: candidate.route || "",
+    frequency: candidate.frequency || "",
+    frequencyRaw: candidate.frequencyRaw || "",
+    schedule: Array.isArray(candidate.schedule) ? candidate.schedule.map((item) => ({ ...item, administrationUnit: item.administrationUnit || item.unit || "" })) : [],
+    scheduleText: (candidate.schedule || []).map((item) => `${item.time}${item.quantity != null ? ` · ${item.quantity} ${item.unit || ""}` : ""}`).join("; "),
+    action: candidate.action || "Continúa",
+    statusSuggestion: candidate.status || candidate.action || "Continúa",
+    temporality: candidate.status === "Antecedente" ? "historical" : "current",
+    date: candidate.date || "",
+    sourceText: candidate.metadata?.rawMedicationText || candidate.evidence?.[0]?.rawText || "",
+    rawMedicationText: candidate.metadata?.rawMedicationText || candidate.evidence?.[0]?.rawText || "",
+    sourceSection: candidate.metadata?.sourceSection || "tratamiento",
+    evidence: candidate.evidence?.[0] || {},
+    confidence: candidate.confidence === "HIGH" ? "high" : candidate.confidence === "MEDIUM" ? "medium" : candidate.confidence === "LOW" ? "low" : "not-detected",
+    requiresReview: Boolean(candidate.requiresReview),
+    selectedForImport: false,
+    include: false,
+    confirmedByDoctor: false,
+    parser: "midc.medicationParser",
+    parserVersion: candidate.parserVersion || "1.0"
+  };
+  const validation = validateMedication(legacy);
+  if (!validation.valid) legacy.requiresReview = true;
+  return legacy;
+}
+
+export function adaptMedicationCandidates(args = {}) {
+  return detectMedicationCandidates(args).map(toLegacyMedicationCandidate);
+}
+
+export function adaptMedicationParser(args = {}) {
+  return detectMedicationCandidates(args);
+}
+
+export function adaptMedicationBlock(args = {}) {
+  return parseMedicationCandidates(args).map(toLegacyMedicationCandidate);
 }

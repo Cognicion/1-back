@@ -1,5 +1,6 @@
 import { MEDICAMENTOS, MEDICAMENTOS_MAESTROS, medicamentoPorTexto } from "../../../data/medicamentos.js";
 import { adaptDiagnosisBlock, adaptDiagnosisCandidates } from "../../clinical-document-engine/adapters/diagnosisAdapter.js";
+import { adaptMedicationBlock, adaptMedicationCandidates } from "../../clinical-document-engine/adapters/medicationAdapter.js";
 
 function normalizeText(value = "") {
   return String(value || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, " ").trim().toLowerCase();
@@ -464,7 +465,7 @@ function medicationCandidate({ name, line, contextText = line, index, section, d
   return candidate;
 }
 
-export function detectTreatmentCandidates({ sections = {}, fullText = "", sourceBlocks = [], medicationCatalog = MEDICAMENTOS, documentId = "", date = "" } = {}) {
+function detectTreatmentCandidatesLegacy({ sections = {}, fullText = "", sourceBlocks = [], medicationCatalog = MEDICAMENTOS, documentId = "", date = "" } = {}) {
   void sourceBlocks;
   const sources = sourceEntries(sections, fullText, ["tratamiento", "medicamentos", "plan", "subjetivo"]);
   const candidates = [];
@@ -512,6 +513,10 @@ export function detectTreatmentCandidates({ sections = {}, fullText = "", source
     });
   }));
   return candidates;
+}
+
+export function detectTreatmentCandidates(args = {}) {
+  return adaptMedicationCandidates(args);
 }
 
 export function extractClinicalCandidates(document = {}) {

@@ -101,6 +101,28 @@ Ahora: `clinical-document-engine/parsers/diagnosisParser.js` delimita, estructur
 
 ### Fases siguientes
 
-Diagnósticos queda como primer parser nativo. Medicamentos, signos vitales y persistencia no se migran en esta fase.
+Diagnósticos y Medicamentos quedan como parsers nativos. Signos vitales y persistencia no se migran en esta fase.
 
 Fases posteriores: PDF, OCR, Dictado y consumidores analíticos se documentan, pero no se implementan aquí.
+
+## Fase 4 - Migración de Medicamentos
+
+`parsers/medicationParser.js` es el parser nativo MIDC de medicamentos. Recibe cada bloque de Plan/Tratamiento, usa `splitMedicationItems()` antes de interpretar y produce un `ClinicalCandidate` por medicamento. El nombre, presentación, concentración, cantidad por administración, vía, frecuencia, acción y `schedule` se obtienen exclusivamente del ítem aislado; nunca se consulta el texto del medicamento siguiente.
+
+```mermaid
+flowchart LR
+  A[Bloque Plan Terapéutico] --> B[Boundary / splitMedicationItems]
+  B --> C[Medication Parser MIDC]
+  C --> D[Normalizadores]
+  D --> E[Confidence Engine]
+  E --> F[ClinicalCandidate medication]
+  F --> G[Medication Validator]
+  G --> H[MedicationAdapter]
+  H --> I[Contrato legacy]
+```
+
+El candidato nativo conserva `presentation`, `strength`, `strengthUnit`, `strengthPerValue`, `strengthPerUnit`, `administrationQuantity`, `administrationUnit`, `route`, `frequency`, `frequencyRaw`, `schedule`, `action`, `status`, `evidence` y `metadata`. Los horarios son objetos estructurados `{ time, quantity, unit }`; el adapter agrega `administrationUnit` y `scheduleText` únicamente para compatibilidad.
+
+`MedicationAdapter` valida y transforma los candidatos al contrato legacy consumido por `patient-transfer`. `detectTreatmentCandidates()` delega al adapter; por ello la interfaz, persistencia, Panel Médico y Firebase permanecen sin cambios. El parser legacy anterior queda como implementación histórica compatible, no como ruta activa.
+
+La confianza es determinista: nombre con concentración, vía y frecuencia explícitas recibe `HIGH`; nombre con concentración recibe `MEDIUM`; nombre sin esos datos recibe `LOW` y revisión. La validación se ejecuta en el adapter para mantener separado el parser del contrato de salida.
