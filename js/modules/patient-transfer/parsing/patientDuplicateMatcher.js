@@ -4,22 +4,15 @@ function valueOf(value) {
 
 export function normalizePatientName(value = "") {
   return String(valueOf(value) || "")
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/\u00a0/g, " ")
-    .toUpperCase()
-    .replace(/[^A-Z0-9]+/g, " ")
-    .trim()
-    .replace(/\s+/g, " ");
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\u00a0/g, " ")
+    .toUpperCase().replace(/[^A-Z0-9]+/g, " ").trim().replace(/\s+/g, " ");
 }
 
 export function normalizeRecordNumber(value = "") {
   return String(valueOf(value) || "").toUpperCase().replace(/[^A-Z0-9]/g, "");
 }
 
-export function normalizeCurp(value = "") {
-  return normalizeRecordNumber(value);
-}
+export function normalizeCurp(value = "") { return normalizeRecordNumber(value); }
 
 export function normalizeBirthDate(value = "") {
   const raw = String(valueOf(value) || "").trim().replace(/\u00a0/g, " ");
@@ -28,8 +21,7 @@ export function normalizeBirthDate(value = "") {
   const match = raw.match(/^(\d{1,2})[\/-](\d{1,2})[\/-](\d{2,4})$/);
   if (!match) return normalizePatientName(raw).replace(/ /g, "");
   const [, day, month, year] = match;
-  const fullYear = year.length === 2 ? `20${year}` : year;
-  return `${fullYear}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
+  return `${year.length === 2 ? `20${year}` : year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
 }
 
 function readField(source = {}, ...keys) {
@@ -41,8 +33,7 @@ function readField(source = {}, ...keys) {
 }
 
 function same(a, b, normalizer) {
-  const left = normalizer(a);
-  const right = normalizer(b);
+  const left = normalizer(a); const right = normalizer(b);
   return Boolean(left && right && left === right);
 }
 
@@ -52,104 +43,91 @@ function addMatch(list, label, candidateValue, existingValue, score) {
 
 export function buildPatientMatchExplanation(match = {}) {
   const levelLabels = { muy_alta: "Muy alta", alta: "Alta", media: "Media", baja: "Baja" };
-  const matchedFields = (match.matchedFields || []).map((field) => ({
-    field: field.label,
-    label: field.label,
-    candidateValue: field.candidateValue,
-    existingValue: field.existingValue
-  }));
-  const conflictingFields = (match.conflictingFields || []).map((field) => ({
-    field: field.label,
-    label: field.label,
-    candidateValue: field.candidateValue,
-    existingValue: field.existingValue
-  }));
+  const matchedFields = (match.matchedFields || []).map((field) => ({ ...field, field: field.label }));
+  const conflictingFields = (match.conflictingFields || []).map((field) => ({ ...field, field: field.label }));
   const summary = matchedFields.length
     ? `Coinciden ${matchedFields.map((field) => field.label.toLowerCase()).join(" y ")}.`
     : "Revise los datos antes de decidir.";
   return {
-    title: "Posible paciente ya registrado",
+    title: "Posible paciente coincidente",
     level: match.level || "baja",
     levelLabel: levelLabels[match.level] || "Baja",
     summary,
     matchedFields,
     conflictingFields,
-    recommendedAction: ["muy_alta", "alta"].includes(match.level) ? "link-existing" : null
+    recommendedAction: match.level === "muy_alta" ? "link-existing" : null
   };
 }
 
 export function findPossiblePatientMatches(candidate = {}, existingPatients = []) {
   const candidateData = candidate.values || candidate;
-  const candidateName = readField(candidateData, "nombreCompleto", "nombre", "name");
-  const candidateNombres = readField(candidateData, "nombres");
-  const candidatePaterno = readField(candidateData, "apellidoPaterno");
-  const candidateMaterno = readField(candidateData, "apellidoMaterno");
-  const candidateCurp = readField(candidateData, "curp");
-  const candidateRecord = readField(candidateData, "expediente", "numeroExpediente");
-  const candidateBirth = readField(candidateData, "fechaNacimiento");
-  const candidateAge = readField(candidateData, "edad");
-  const candidateSex = readField(candidateData, "sexo");
-  const candidateGender = readField(candidateData, "genero", "identidadGenero");
-  const candidateInstitution = readField(candidateData, "institucion", "institucionPaciente");
-  const candidateService = readField(candidateData, "servicio", "servicioInstitucional");
-  const candidateBed = readField(candidateData, "cama");
+  const fields = (data) => ({
+    name: readField(data, "nombreCompleto", "nombre", "name"),
+    nombres: readField(data, "nombres"),
+    paterno: readField(data, "apellidoPaterno"),
+    materno: readField(data, "apellidoMaterno"),
+    curp: readField(data, "curp"),
+    record: readField(data, "expediente", "numeroExpediente"),
+    birth: readField(data, "fechaNacimiento"),
+    age: readField(data, "edad"),
+    sex: readField(data, "sexo"),
+    gender: readField(data, "genero", "identidadGenero"),
+    institution: readField(data, "institucion", "institucionPaciente"),
+    service: readField(data, "servicio", "servicioInstitucional"),
+    bed: readField(data, "cama")
+  });
+  const candidateFields = fields(candidateData);
 
   return existingPatients.map((existing) => {
     const data = existing.patient || existing;
-    const existingName = readField(data, "nombreCompleto", "nombre", "name");
-    const existingNombres = readField(data, "nombres");
-    const existingPaterno = readField(data, "apellidoPaterno");
-    const existingMaterno = readField(data, "apellidoMaterno");
-    const existingCurp = readField(data, "curp");
-    const existingRecord = readField(data, "expediente", "numeroExpediente");
-    const existingBirth = readField(data, "fechaNacimiento");
-    const existingAge = readField(data, "edad");
-    const existingSex = readField(data, "sexo");
-    const existingGender = readField(data, "genero", "identidadGenero");
-    const existingInstitution = readField(data, "institucion", "institucionPaciente");
-    const existingService = readField(data, "servicio", "servicioInstitucional");
-    const existingBed = readField(data, "cama");
+    const current = fields(data);
     const matchedFields = [];
     const conflictingFields = [];
     let score = 0;
+    const curpSame = same(candidateFields.curp, current.curp, normalizeCurp);
+    const recordSame = same(candidateFields.record, current.record, normalizeRecordNumber);
+    const nameSame = same(candidateFields.name, current.name, normalizePatientName);
+    const birthSame = same(candidateFields.birth, current.birth, normalizeBirthDate);
+    const institutionSame = same(candidateFields.institution, current.institution, normalizePatientName);
 
-    if (same(candidateCurp, existingCurp, normalizeCurp)) { score += 100; addMatch(matchedFields, "CURP", candidateCurp, existingCurp, 100); }
-    else if (candidateCurp && existingCurp) { score -= 100; conflictingFields.push({ label: "CURP", candidateValue: candidateCurp, existingValue: existingCurp, penalty: -100 }); }
-    const recordSame = same(candidateRecord, existingRecord, normalizeRecordNumber);
-    const institutionSame = same(candidateInstitution, existingInstitution, normalizePatientName);
-    if (recordSame) {
-      score += 80;
-      addMatch(matchedFields, "Expediente", candidateRecord, existingRecord, 80);
-    } else if (candidateRecord && existingRecord && institutionSame) {
-      score -= 30;
-      conflictingFields.push({ label: "Expediente", candidateValue: candidateRecord, existingValue: existingRecord, penalty: -30 });
+    if (curpSame) { score += 100; addMatch(matchedFields, "CURP", candidateFields.curp, current.curp, 100); }
+    else if (candidateFields.curp && current.curp) { score -= 100; conflictingFields.push({ label: "CURP", candidateValue: candidateFields.curp, existingValue: current.curp, penalty: -100 }); }
+    if (recordSame) { score += 90; addMatch(matchedFields, "Expediente", candidateFields.record, current.record, 90); }
+    else if (candidateFields.record && current.record && institutionSame) { score -= 40; conflictingFields.push({ label: "Expediente", candidateValue: candidateFields.record, existingValue: current.record, penalty: -40 }); }
+    if (nameSame && birthSame) {
+      score += 80; addMatch(matchedFields, "Nombre completo", candidateFields.name, current.name, 60); addMatch(matchedFields, "Fecha de nacimiento", candidateFields.birth, current.birth, 40);
+    } else {
+      if (nameSame) { score += 60; addMatch(matchedFields, "Nombre completo", candidateFields.name, current.name, 60); }
+      else if (candidateFields.name && current.name) { score -= 40; conflictingFields.push({ label: "Nombre completo", candidateValue: candidateFields.name, existingValue: current.name, penalty: -40 }); }
+      if (birthSame) { score += 40; addMatch(matchedFields, "Fecha de nacimiento", candidateFields.birth, current.birth, 40); }
+      else if (candidateFields.birth && current.birth) { score -= 60; conflictingFields.push({ label: "Fecha de nacimiento", candidateValue: candidateFields.birth, existingValue: current.birth, penalty: -60 }); }
     }
-    if (same(candidateBirth, existingBirth, normalizeBirthDate)) { score += 50; addMatch(matchedFields, "Fecha de nacimiento", candidateBirth, existingBirth, 50); }
-    else if (candidateBirth && existingBirth) { score -= 60; conflictingFields.push({ label: "Fecha de nacimiento", candidateValue: candidateBirth, existingValue: existingBirth, penalty: -60 }); }
-    if (same(candidateName, existingName, normalizePatientName)) { score += 50; addMatch(matchedFields, "Nombre completo", candidateName, existingName, 50); }
-    if (same(candidatePaterno, existingPaterno, normalizePatientName)) { score += 20; addMatch(matchedFields, "Apellido paterno", candidatePaterno, existingPaterno, 20); }
-    if (same(candidateMaterno, existingMaterno, normalizePatientName)) { score += 20; addMatch(matchedFields, "Apellido materno", candidateMaterno, existingMaterno, 20); }
-    if (same(candidateNombres, existingNombres, normalizePatientName)) { score += 20; addMatch(matchedFields, "Nombres", candidateNombres, existingNombres, 20); }
-    if (same(candidateSex, existingSex, normalizePatientName)) { score += 5; addMatch(matchedFields, "Sexo", candidateSex, existingSex, 5); }
-    if (same(candidateGender, existingGender, normalizePatientName)) { score += 5; addMatch(matchedFields, "Género", candidateGender, existingGender, 5); }
-    if (candidateAge && existingAge && Number(candidateAge) === Number(existingAge)) { score += 5; addMatch(matchedFields, "Edad", candidateAge, existingAge, 5); }
-    if (candidateInstitution && existingInstitution && institutionSame) addMatch(matchedFields, "Institución", candidateInstitution, existingInstitution, 0);
-    if (same(candidateService, existingService, normalizePatientName)) addMatch(matchedFields, "Servicio", candidateService, existingService, 0);
-    if (same(candidateBed, existingBed, normalizeRecordNumber)) addMatch(matchedFields, "Cama", candidateBed, existingBed, 0);
+    const simpleMatches = [
+      ["Apellido paterno", candidateFields.paterno, current.paterno, normalizePatientName, 20],
+      ["Apellido materno", candidateFields.materno, current.materno, normalizePatientName, 20],
+      ["Nombres", candidateFields.nombres, current.nombres, normalizePatientName, 20],
+      ["Sexo", candidateFields.sex, current.sex, normalizePatientName, 5],
+      ["Género", candidateFields.gender, current.gender, normalizePatientName, 5],
+      ["Servicio", candidateFields.service, current.service, normalizePatientName, 3],
+      ["Institución", candidateFields.institution, current.institution, normalizePatientName, 3],
+      ["Cama", candidateFields.bed, current.bed, normalizeRecordNumber, 1]
+    ];
+    for (const [label, left, right, normalizer, weight] of simpleMatches) {
+      if (left && right && same(left, right, normalizer)) { score += weight; addMatch(matchedFields, label, left, right, weight); }
+      else if (left && right) conflictingFields.push({ label, candidateValue: left, existingValue: right });
+    }
+    if (candidateFields.age && current.age && Number(candidateFields.age) === Number(current.age)) { score += 5; addMatch(matchedFields, "Edad", candidateFields.age, current.age, 5); }
+    else if (candidateFields.age && current.age) conflictingFields.push({ label: "Edad", candidateValue: candidateFields.age, existingValue: current.age });
 
-    const veryHigh = Boolean((candidateCurp && same(candidateCurp, existingCurp, normalizeCurp)) || (recordSame && institutionSame) || (same(candidateName, existingName, normalizePatientName) && same(candidateBirth, existingBirth, normalizeBirthDate)));
-    const high = veryHigh || Boolean((recordSame && !candidateInstitution) || (same(candidateName, existingName, normalizePatientName) && candidateAge && existingAge && Number(candidateAge) === Number(existingAge)) || (same(candidateNombres, existingNombres, normalizePatientName) && same(candidatePaterno, existingPaterno, normalizePatientName) && same(candidateMaterno, existingMaterno, normalizePatientName)));
-    const level = veryHigh ? "muy_alta" : high ? "alta" : score >= 40 ? "media" : matchedFields.length ? "baja" : "ninguna";
+    const strongEvidence = Boolean(curpSame || recordSame || nameSame || (nameSame && birthSame));
+    const veryHigh = Boolean(curpSame || (recordSame && institutionSame) || (nameSame && birthSame));
+    const high = Boolean(!veryHigh && (recordSame || nameSame) && score >= 40);
+    const level = !matchedFields.length ? "ninguna" : !strongEvidence ? "baja" : veryHigh ? "muy_alta" : high ? "alta" : "media";
     return {
-      id: existing.id || existing.patientId || "",
-      patientId: existing.id || existing.patientId || "",
-      patient: data,
-      name: existing.name || existingName,
-      expediente: existingRecord,
-      score,
-      level,
-      matchedFields,
-      conflictingFields
+      id: existing.id || existing.patientId || "", patientId: existing.id || existing.patientId || "", patient: data,
+      name: existing.name || current.name, expediente: current.record, score, level, strongEvidence,
+      showAlert: ["media", "alta", "muy_alta"].includes(level), matchedFields, conflictingFields
     };
-  }).filter((match) => match.patientId && match.matchedFields.length).sort((a, b) => b.score - a.score || a.name.localeCompare(b.name, "es"));
+  }).filter((match) => match.patientId && match.matchedFields.length)
+    .sort((a, b) => b.score - a.score || a.name.localeCompare(b.name, "es"));
 }

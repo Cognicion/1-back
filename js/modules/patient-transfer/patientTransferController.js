@@ -468,13 +468,15 @@ async function analyzeSelectedFiles() {
   let groups = groupDocumentsByPatient(documents);
   groups = await Promise.all(groups.map(async (group) => {
     const candidates = await findExistingPatientCandidates(fieldValues(group.fields), user.uid);
-    const strongest = candidates[0] || null;
+    const strongest = candidates.find((match) => match.showAlert) || candidates[0] || null;
     return {
       ...group,
       candidates,
       possibleMatches: candidates,
       highestMatch: strongest,
-      recommendedResolution: strongest && ["muy_alta", "alta"].includes(strongest.level) ? "link-existing" : null,
+      recommendedResolution: strongest?.level === "muy_alta"
+        ? "link-existing"
+        : strongest?.level === "alta" ? "review" : null,
       selectedResolution: null,
       selectedExistingPatientId: null,
       duplicateResolution: strongest ? {

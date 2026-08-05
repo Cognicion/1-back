@@ -172,10 +172,9 @@ function renderCandidateSelect(group) {
 
 function renderDuplicateWarning(group) {
   const matches = group.possibleMatches || group.candidates || [];
-  const strongest = matches[0];
+  const strongest = matches.find((match) => match.showAlert !== false && ["media", "alta", "muy_alta"].includes(match.level));
   if (!strongest) return "";
   const explanation = buildPatientMatchExplanation(strongest);
-  const high = ["muy_alta", "alta"].includes(explanation.level);
   const resolution = group.selectedResolution || null;
   const matched = explanation.matchedFields.map((field) => `<li>✓ ${escapeHtml(field.label)}${field.candidateValue ? `: ${escapeHtml(field.candidateValue)}` : ""}</li>`).join("");
   const conflicts = explanation.conflictingFields.map((field) => `<li>• ${escapeHtml(field.label)}: dato del documento ${escapeHtml(field.candidateValue)} / registrado ${escapeHtml(field.existingValue)}</li>`).join("");
@@ -201,14 +200,18 @@ function renderDuplicateWarning(group) {
     const marker = left && right ? (String(left).trim().toLowerCase() === String(right).trim().toLowerCase() ? "✓" : "⚠") : "—";
     return `<tr><th>${escapeHtml(label)}</th><td>${marker} ${escapeHtml(left || "No disponible")}</td><td>${escapeHtml(right || "No disponible")}</td></tr>`;
   }).join("");
-  return `<section class="patient-transfer-warning patient-transfer-duplicate-warning" aria-label="Posible coincidencia de paciente">
-    <strong>${high ? `POSIBLE COINCIDENCIA ${explanation.levelLabel.toUpperCase()}` : "POSIBLE COINCIDENCIA PARCIAL"}</strong>
+  const tone = `patient-transfer-duplicate-warning--${explanation.level}`;
+  const recommendation = explanation.recommendedAction === "link-existing"
+    ? "Es probable que sea el mismo paciente; revise y seleccione una decisión."
+    : "No se recomienda asociar automáticamente. Revise los datos antes de decidir.";
+  return `<section class="patient-transfer-warning patient-transfer-duplicate-warning ${tone}" aria-label="Posible coincidencia de paciente">
+    <strong>${explanation.level === "muy_alta" ? "POSIBLE COINCIDENCIA MUY ALTA" : `POSIBLE COINCIDENCIA ${explanation.levelLabel.toUpperCase()}`}</strong>
     <p>${escapeHtml(explanation.summary)}</p>
-    <p>Paciente existente: <b>${escapeHtml(strongest.name || strongest.patient?.nombreCompleto || "Paciente registrado")}</b></p>
+    <p>Paciente posiblemente coincidente: <b>${escapeHtml(strongest.name || strongest.patient?.nombreCompleto || "Paciente encontrado durante la búsqueda")}</b></p>
     ${matched ? `<p>Coincidencias:</p><ul>${matched}</ul>` : ""}
-    ${conflicts ? `<p>Diferencias:</p><ul>${conflicts}</ul>` : "<p>Diferencias: ninguna detectada.</p>"}
+    ${conflicts ? `<p>Diferencias:</p><ul>${conflicts}</ul>` : "<p>Diferencias: no se detectaron campos contradictorios entre los datos disponibles.</p>"}
     <p><b>Nivel:</b> ${escapeHtml(explanation.levelLabel)}${strongest.score ? ` · Puntaje: ${strongest.score}` : ""}</p>
-    <p><b>Recomendación:</b> ${explanation.recommendedAction === "link-existing" ? "Es probable que sea el mismo paciente." : "Revise los datos antes de decidir."}</p>
+    <p><b>Recomendación:</b> ${recommendation}</p>
     <details><summary>Comparar datos</summary><table class="patient-transfer-data-table"><thead><tr><th>Campo</th><th>Dato del documento</th><th>Dato registrado</th></tr></thead><tbody>${comparisonTable}</tbody></table></details>
     <fieldset class="patient-transfer-duplicate-resolution">
       <legend>Decisión para este paciente</legend>

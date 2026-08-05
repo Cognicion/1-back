@@ -132,6 +132,24 @@
   color: #fde68a;
 }
 
+.patient-transfer-duplicate-warning--media {
+  border-color: rgba(250, 204, 21, .58);
+  background: rgba(113, 63, 18, .36);
+  color: #fef08a;
+}
+
+.patient-transfer-duplicate-warning--alta {
+  border-color: rgba(249, 115, 22, .62);
+  background: rgba(124, 45, 18, .4);
+  color: #fed7aa;
+}
+
+.patient-transfer-duplicate-warning--muy_alta {
+  border-color: rgba(239, 68, 68, .7);
+  background: rgba(127, 29, 29, .46);
+  color: #fecaca;
+}
+
 .patient-transfer-file-list {
   display: grid;
   gap: 10px;
