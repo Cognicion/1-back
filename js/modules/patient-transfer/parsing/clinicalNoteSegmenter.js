@@ -11,6 +11,7 @@ console.info("[patient-transfer] clinical-note-segmenter:loaded", {
 
   const DATE_PATTERN =  /\b(?:[0-3]?\d[\/-][01]?\d[\/-](?:19|20)?\d{2}|(?:19|20)\d{2}-[01]\d-[0-3]\d)\b/;
   const TIME_PATTERN = /\b(?:[01]?\d|2[0-3]):[0-5]\d\b/;
+  const NOTE_BOUNDARY_SCORE_THRESHOLD = 80;
 
   function blockText(block = {}) {
     return block.type === "table" ? (block.rows || []).map((row) => row.join(" | ")).join("\n") : String(block.text || "");
@@ -49,21 +50,48 @@ console.info("[patient-transfer] clinical-note-segmenter:loaded", {
     return String(text || "").match(TIME_PATTERN)?.[0] || "";
   }
 
+  function scoreNoteBoundaryCandidate(text = "", title = "") {
+    const raw = String(text || "");
+    const normalized = normalizeClinicalHeading(raw);
+    const signals = [];
+    let score = 0;
+    const add = (label, value) => {
+      score += value;
+      signals.push({ label, value });
+    };
+
+    if (title) add("note-title", 100);
+    if (DATE_PATTERN.test(raw)) add("date", 20);
+    if (/\bhora\s*:\s*(?:[01]?\d|2[0-3]):[0-5]\d\b/i.test(raw)) add("time", 10);
+    if (/\bexpediente\s*:/i.test(raw)) add("record-number", 20);
+    if (/\bnombre(?:\s+del\s+paciente)?\s*:/i.test(raw)) add("patient-name", 10);
+    if (/\bservicio\s*:/i.test(raw)) add("service", 10);
+    if (/\bcama\s*:/i.test(raw)) add("bed", 10);
+    if (/\b(?:subjetivo|motivo\s+de\s+atencion|motivo\s+de\s+ingreso|padecimiento\s+actual)\b/i.test(normalized)) add("subjective", 10);
+
+    if (/\bfecha\s+de\s+nacimiento\b|\bnacimiento\b/i.test(raw)) add("birth-date", -100);
+    if (/(?:^|\s)(?:ultimo|\u00faltimo)\s+(?:internamiento|ingreso)\b|\binternamiento\s+previo\b|\bingreso\s+previo\b/i.test(raw)) add("previous-admission", -80);
+    if (/\begreso\s+previo\b|\begreso\s+voluntario\b/i.test(raw)) add("previous-discharge", -80);
+    if (/\bhistoria\s+clinica\b/i.test(normalized) && /\b(?:refiere|presenta|cuenta\s+con|se\s+trata\s+de)\b/i.test(normalized)) add("narrative-history", -60);
+
+    return { score, signals };
+  }
+
   export function detectMultipleClinicalNotes({ blocks = [], fullText = "", headings = [], dates = [] } = {}) {
     const reasons = new Set();
     const boundaries = [];
     const dateValues = new Set(dates.filter(Boolean));
-    const headingCounts = new Map();
-    let firstClinicalDate = "";
     let explicitNoteCount = 0;
 
     blocks.forEach((block, index) => {
       const text = blockText(block);
       const title = noteTitle(text);
-      const labelledClinicalDate = String(text || "").match(
-        new RegExp(`\\bfecha\\s*:\\s*(${DATE_PATTERN.source})`, "i")
-      )?.[1] || "";
-      const date = labelledClinicalDate ? clinicalDate(text) : "";
+      const datesInBlock = [...String(text || "").matchAll(new RegExp(DATE_PATTERN.source, "g"))]
+        .map((match) => clinicalDate(match[0]))
+        .filter(Boolean);
+      const { score, signals } = scoreNoteBoundaryCandidate(text, title);
+      const isCandidate = Boolean(title) || datesInBlock.length > 0;
+      const accepted = isCandidate && score >= NOTE_BOUNDARY_SCORE_THRESHOLD;
       if (/nota de (?:ingreso|evolucion)/.test(normalizeClinicalHeading(text))) {
         console.info(
           "[patient-transfer] note-title-check",
@@ -75,41 +103,38 @@ console.info("[patient-transfer] clinical-note-segmenter:loaded", {
           }, null, 2)
         );
       }
-      if (date) {
-        dateValues.add(date);
-        if (!firstClinicalDate) firstClinicalDate = date;
-        else if (date !== firstClinicalDate && /\b(?:fecha|nota|evoluci[oó]n|ingreso)\b/i.test(text)) {
-          boundaries.push({ blockIndex: blockIndex(block, index), reason: "multiple-clinical-dates", label: date });
-        }
+      datesInBlock.forEach((date) => dateValues.add(date));
+      if (isCandidate) {
+        console.info(
+          "[patient-transfer] segmentation:boundary-score",
+          JSON.stringify({
+            blockIndex: blockIndex(block, index),
+            score,
+            threshold: NOTE_BOUNDARY_SCORE_THRESHOLD,
+            accepted,
+            hasNoteTitle: Boolean(title),
+            dates: datesInBlock,
+            signals
+          }, null, 2)
+        );
       }
-      if (title) {
+      if (title && accepted) {
         explicitNoteCount += 1;
         boundaries.push({ blockIndex: blockIndex(block, index), reason: "repeated-note-heading", label: title });
       }
     });
-    headings.forEach((heading) => headingCounts.set(heading.key, (headingCounts.get(heading.key) || 0) + 1));
 
-    if (dateValues.size > 1) reasons.add("multiple-clinical-dates");
+    if (dateValues.size > 1 && explicitNoteCount > 1) reasons.add("multiple-clinical-dates");
     if (boundaries.length > 1) reasons.add("repeated-note-heading");
-    if (["subjetivo", "physicalNeurologicalExam", "analisis", "plan"].some((key) => (headingCounts.get(key) || 0) > 1)) {
-      reasons.add("repeated-clinical-headings");
-      if (boundaries.length <= 1) {
-        const repeatedStarts = headings.filter((heading) => heading.key === "subjetivo").slice(1);
-        repeatedStarts.forEach((heading) => boundaries.push({ blockIndex: heading.start, reason: "repeated-clinical-headings", label: heading.heading }));
-      }
-    }
 
-    // Los títulos explícitos son límites más confiables que fechas narrativas, de nacimiento o de tratamientos.
-    const boundaryPool = explicitNoteCount > 1
-      ? boundaries.filter((boundary) => boundary.reason === "repeated-note-heading")
-      : boundaries;
-    const sortedBoundaries = [...new Map(boundaryPool
+    // Una fecha sin estructura de nota nunca propone por sí sola una división.
+    const sortedBoundaries = [...new Map(boundaries
       .filter((boundary) => boundary.blockIndex >= 0)
       .map((boundary) => [boundary.blockIndex, boundary])).values()]
       .sort((a, b) => a.blockIndex - b.blockIndex);
     const uniqueBoundaries = sortedBoundaries;
     return {
-      probableMultipleNotes: reasons.size > 0 && (uniqueBoundaries.length > 0 || dateValues.size > 1),
+      probableMultipleNotes: uniqueBoundaries.length > 1,
       reasons: [...reasons],
       proposedNoteBoundaries: uniqueBoundaries,
       detectedDates: [...dateValues],

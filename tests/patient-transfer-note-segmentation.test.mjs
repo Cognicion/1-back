@@ -67,6 +67,23 @@ const tableTitleDetection = detectMultipleClinicalNotes({ blocks: tableTitleBloc
 assert.equal(tableTitleDetection.explicitNoteCount, 2, "reconoce títulos con y sin acento dentro de tablas");
 assert.equal(segmentClinicalNotes({ blocks: tableTitleBlocks, multipleNotesMode: "auto", documentId: "doc-table" }).length, 2);
 
+const brianDateReferences = [
+  { type: "paragraph", text: "NOTA DE INGRESO AL SERVICIO DE OBSERVACIÓN", source: { blockIndex: 0 } },
+  { type: "paragraph", text: "Nombre del paciente: BRIAN EFRAIN CEGUEDA VALDEZ Fecha de nacimiento: 28/06/2001 Cama: 03 Expediente: 179517", source: { blockIndex: 1 } },
+  { type: "paragraph", text: "Fecha: 04/08/2026 Hora: 21:45 H Días estancia: PRIMERAS HORAS", source: { blockIndex: 2 } },
+  { type: "paragraph", text: "MOTIIVO DE INGRESO: RIESGO SUICIDA. Se trata de Brian de 25 años.", source: { blockIndex: 3 } },
+  { type: "paragraph", text: "Último internamiento 17/07/26 15:30, con egreso voluntario.", source: { blockIndex: 4 } },
+  { type: "paragraph", text: "EXPLORACIÓN FÍSICA Y NEUROLÓGICA", source: { blockIndex: 5 } }
+];
+const brianDetection = detectMultipleClinicalNotes({
+  blocks: brianDateReferences,
+  dates: ["28/06/2001", "04/08/2026", "17/07/26"]
+});
+assert.equal(brianDetection.explicitNoteCount, 1);
+assert.equal(brianDetection.probableMultipleNotes, false, "fechas de nacimiento e internamientos previos no generan notas");
+assert.deepEqual(brianDetection.proposedNoteBoundaries.map((boundary) => boundary.blockIndex), [0]);
+assert.equal(segmentClinicalNotes({ blocks: brianDateReferences, multipleNotesMode: "auto", documentId: "brian" }).length, 1);
+
 const joined = mergeClinicalSegments(multiple, multiple[0].id);
 assert.equal(joined.length, 1, "permite unir notas contiguas");
 
