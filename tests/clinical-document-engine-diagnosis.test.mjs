@@ -25,6 +25,23 @@ assert.deepEqual(anaTableCandidates.map(({ diagnosisName, code, system, status }
 assert.ok(anaTableCandidates.every((candidate) => !/SE AGREGA|SE DESCARTA/i.test(candidate.diagnosisName)));
 assert.ok(anaTableCandidates.every((candidate) => candidate.evidence[0].block === 14));
 
+const narrativeAfterDiagnosis = parseDiagnosisCandidates({
+  documentId: "anon-narrative-boundary",
+  noteId: "anon-note-1",
+  explicit: true,
+  text: "Trastorno depresivo recurrente | F33.2\nAna Lizbeth, mujer de la cuarta década de la vida quien refiere persistencia de ideas de muerte y acude a valoración."
+});
+assert.equal(narrativeAfterDiagnosis.length, 1);
+assert.equal(narrativeAfterDiagnosis[0].diagnosisName, "Trastorno depresivo recurrente");
+assert.doesNotMatch(narrativeAfterDiagnosis.map((candidate) => candidate.diagnosisName).join(" "), /Ana Lizbeth|Paciente|Mujer|Se trata de/i);
+
+const narrativeOnly = detectDiagnosisCandidates({
+  documentId: "anon-narrative-only",
+  noteId: "anon-note-2",
+  sections: { subjetivo: "Se trata de Ana Lizbeth, paciente que refiere persistencia de sintomatología depresiva y acude a valoración." }
+});
+assert.equal(narrativeOnly.length, 0);
+
 const candidates = parseDiagnosisCandidates({
   documentId: "anon-doc",
   noteId: "anon-note",

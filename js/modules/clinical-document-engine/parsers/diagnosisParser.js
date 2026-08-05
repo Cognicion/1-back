@@ -83,6 +83,38 @@ function isolateBlock(text = "") {
 const STATUS_TOKEN = /\b(?:SE\s+AGREGA|SE\s+DESCARTA|A\s+DESCARTAR|PROBABLE|ANTECEDENTE|EN\s+REMISI[ÓO]N|REMISI[ÓO]N|CONFIRMADO)\b/gi;
 const EXCLUDED_DIAGNOSIS_TEXT = /^(?:riesgo\s+suicida|riesgo\s+de\s+ca[ií]da|conducta\s+autolesiva|vigilancia|dieta|alergias?|medicamentos?|signos\s+vitales?|resultados?\s+de\s+estudios?|comentario(?:\s+cl[ií]nico)?|an[aá]lisis|pron[oó]stico|destino)$/i;
 
+function isNarrativeClinicalText(text = "") {
+  const value = String(text || "").replace(/\s+/g, " ").trim();
+  if (!value) return false;
+  if (/^(?:se trata de|paciente\b|hombre\b|mujer\b|masculino\b|femenin[ao]\b|cuenta con\b)/i.test(value)) return true;
+  if (/^[A-ZÁÉÍÓÚÑ][^.!?]{0,80},\s/.test(value)) return true;
+  return value.length >= 80 && /\b(?:refiere|cuenta con|inici[oó]|presenta|acude|comenta|menciona)\b/i.test(value);
+}
+
+function startsWithDiagnosticName(text = "") {
+  return /^(?:trastorno\b|episodio\b|distimia\b|soporte\s+familiar\b|c(?:o|ó|Ã³|�)nyuge\s+o\s+pareja\b|obesidad\b|tabaco\b|alcohol\b)/i.test(String(text || "").trim());
+}
+
+function isNarrativeIdentityOpening(text = "") {
+  const value = String(text || "").replace(/\s+/g, " ").trim();
+  return /^(?:se trata de|paciente\b|hombre\b|mujer\b|masculino\b|femenin[ao]\b)/i.test(value)
+    || /^[A-ZÁÉÍÓÚÑ][^.!?]{0,80},\s/.test(value);
+}
+
+function isExplicitNarrativeDiagnosis(text = "") {
+  const value = String(text || "");
+  return /\bdiagn[oó]stico\b/i.test(value) && !isNarrativeIdentityOpening(value);
+}
+
+function logNarrativeBoundary({ documentId, noteId, text, reason }) {
+  clinicalImportLogger.info("diagnosisParser:narrativeBoundary", JSON.stringify({
+    documentId,
+    noteId,
+    textInitial: String(text || "").replace(/\s+/g, " ").trim().slice(0, 80),
+    reason
+  }));
+}
+
 function tokenizeDiagnosisBlock(text = "") {
   const source = isolateBlock(text);
   const matches = [
@@ -253,6 +285,17 @@ export function parseDiagnosisCandidates({ text = "", section = "diagnosticos", 
     }
     if (!rowText) return;
     const codes = splitDiagnosticCodes(rowText);
+    if (!codes.length && !rowStatus && isNarrativeClinicalText(rowText) && !startsWithDiagnosticName(rowText) && !isExplicitNarrativeDiagnosis(rowText)) {
+      logNarrativeBoundary({
+        documentId,
+        noteId,
+        text: rowText,
+        reason: candidates.length ? "narrative-after-diagnosis" : "narrative-without-diagnostic-structure"
+      });
+      discardedCount += 1;
+      state = candidates.length ? "FINALIZE_DIAGNOSIS" : "WAITING_DIAGNOSIS";
+      return;
+    }
     const codeOnly = codes.length === 1 && /^[A-Z]\d{2}(?:\.\d{1,2})?$/i.test(rowText.trim());
     const name = codeOnly ? "" : normalizeDiagnosis(rowText, codes);
     if (!name && !codes.length) { discardedCount += 1; return; }
