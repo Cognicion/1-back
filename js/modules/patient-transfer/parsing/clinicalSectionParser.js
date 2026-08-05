@@ -1,6 +1,6 @@
 import { flattenNormalizedBlocks } from "../docx/docxBlockNormalizer.js";
-import { CLINICAL_SECTION_ALIASES, CLINICAL_SECTION_KEYS } from "./clinicalSectionConfig.js";
-import { parseSubjectiveSection } from "./subjectiveSectionParser.js";
+import { CLINICAL_SECTION_ALIASES, CLINICAL_SECTION_KEYS, MENTAL_EXAM_BOUNDARY_ALIASES } from "./clinicalSectionConfig.js";
+import { findFirstBoundaryInsideText, parseSubjectiveSection } from "./subjectiveSectionParser.js";
 
 export const SECTION_RULES = CLINICAL_SECTION_ALIASES;
 
@@ -119,6 +119,35 @@ function splitPlanAndMedications(secciones) {
   if (medicationText) secciones.medicamentos = [secciones.medicamentos, medicationText].filter(Boolean).join("\n");
 }
 
+function clampMentalExam(secciones, encabezados, lines, noteSegment = {}) {
+  const mentalHeading = encabezados.find((heading) => heading.key === "examenMental");
+  if (!mentalHeading || !secciones.examenMental) return;
+  const mentalStartPosition = mentalHeading.position ?? -1;
+  let boundary = null;
+  for (const line of lines) {
+    if ((line.position ?? -1) < mentalStartPosition) continue;
+    const match = findFirstBoundaryInsideText(line.text, MENTAL_EXAM_BOUNDARY_ALIASES);
+    if (match) {
+      boundary = { ...match, line };
+      break;
+    }
+  }
+  if (!boundary) return;
+  const before = secciones.examenMental;
+  const inlineBoundary = findFirstBoundaryInsideText(before, MENTAL_EXAM_BOUNDARY_ALIASES);
+  if (!inlineBoundary) return;
+  secciones.examenMental = before.slice(0, inlineBoundary.start).trim();
+  const trace = {
+    noteId: noteSegment.id || "",
+    startBlock: mentalHeading.start ?? null,
+    endBlock: boundary.line.source?.blockIndex ?? boundary.line.position ?? null,
+    matchedBoundary: boundary.alias,
+    length: secciones.examenMental.length
+  };
+  console.info("[patient-transfer] mental-exam:boundary-found", trace);
+  return trace;
+}
+
 /** Separa cada segmento usando todos los encabezados, sin recurrir a rawText como respaldo. */
 export function parseClinicalSections(blocks = [], { noteSegment = {} } = {}) {
   const secciones = Object.fromEntries(CLINICAL_SECTION_KEYS.map((key) => [key, ""]));
@@ -176,6 +205,18 @@ export function parseClinicalSections(blocks = [], { noteSegment = {} } = {}) {
     encabezados.at(-1).end = Math.max(...lines.map((line) => line.source?.blockIndex ?? line.position), 0) + 1;
   }
   splitPlanAndMedications(secciones);
+  console.info("[patient-transfer] mental-exam:start", {
+    noteId: noteSegment.id || "",
+    startBlock: encabezados.find((heading) => heading.key === "examenMental")?.start ?? null
+  });
+  const mentalBoundary = clampMentalExam(secciones, encabezados, lines, noteSegment);
+  console.info("[patient-transfer] mental-exam:parsed", {
+    noteId: noteSegment.id || "",
+    startBlock: encabezados.find((heading) => heading.key === "examenMental")?.start ?? null,
+    endBlock: mentalBoundary?.endBlock ?? encabezados.find((heading) => heading.key === "examenMental")?.end ?? null,
+    matchedBoundary: mentalBoundary?.matchedBoundary || "",
+    length: secciones.examenMental.length
+  });
   const subjectiveExtraction = parseSubjectiveSection({
     noteSegment: { ...noteSegment, blocks },
     headings: encabezados,

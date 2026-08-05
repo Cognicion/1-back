@@ -78,3 +78,22 @@ export const NOTE_START_ALIASES = Object.freeze([
 ]);
 
 export const CLINICAL_SECTION_KEYS = Object.freeze(Object.keys(CLINICAL_SECTION_ALIASES));
+
+// Límites reutilizados por los extractores que deben terminar antes de otra sección clínica.
+export const MENTAL_EXAM_BOUNDARY_ALIASES = Object.freeze([
+  "resultados relevantes de los estudios de diagnostico",
+  "resultados relevantes de los estudios",
+  "resultados de los estudios",
+  "estudios de diagnostico",
+  "diagnosticos de acuerdo a cie-10",
+  "diagnostico cie-10",
+  "diagnostico",
+  "plan terapeutico",
+  "tratamiento farmacologico",
+  "comentario y/o analisis",
+  "analisis clinico",
+  "pronostico",
+  "destino",
+  "nota de evolucion",
+  "nota de ingreso"
+]);

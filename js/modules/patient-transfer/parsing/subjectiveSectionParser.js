@@ -122,7 +122,7 @@ function matchHeadingAtLineStart(value = "", aliases = []) {
   return null;
 }
 
-function findFirstBoundaryInsideText(value = "", aliases = []) {
+export function findFirstBoundaryInsideText(value = "", aliases = []) {
   const normalized = canonicalizeWithMap(value);
   let earliest = null;
 

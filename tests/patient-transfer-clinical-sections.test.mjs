@@ -36,4 +36,25 @@ assert.match(inline.secciones.analisis, /Cuadro compatible/);
 assert.match(inline.secciones.plan, /Continuar vigilancia/);
 assert.match(inline.secciones.medicamentos, /Sertralina 50 mg/);
 
+const mentalInlineBoundary = parseClinicalSections([
+  { type: "paragraph", text: "EXAMEN MENTAL: Moderada advertencia del padecimiento. Proyección a futuro no estructurada. RESULTADOS RELEVANTES DE LOS ESTUDIOS DE DIAGNÓSTICO EKG... DIAGNÓSTICOS DE ACUERDO A CIE-10... PLAN TERAPÉUTICO", source: { blockIndex: 10 } }
+], { noteSegment: { id: "mental-inline" } });
+assert.equal(
+  mentalInlineBoundary.secciones.examenMental,
+  "Moderada advertencia del padecimiento. Proyección a futuro no estructurada."
+);
+assert.doesNotMatch(mentalInlineBoundary.secciones.examenMental, /RESULTADOS|EKG|DIAGNÓSTICOS|PLAN TERAPÉUTICO/);
+
+const mentalBlockBoundary = parseClinicalSections([
+  { type: "paragraph", text: "EXAMEN MENTAL", source: { blockIndex: 20 } },
+  { type: "paragraph", text: "Moderada advertencia del padecimiento. Proyección a futuro no estructurada.", source: { blockIndex: 21 } },
+  { type: "paragraph", text: "RESULTADOS RELEVANTES DE LOS ESTUDIOS", source: { blockIndex: 22 } },
+  { type: "paragraph", text: "EKG...", source: { blockIndex: 23 } }
+], { noteSegment: { id: "mental-block" } });
+assert.equal(
+  mentalBlockBoundary.secciones.examenMental,
+  "Moderada advertencia del padecimiento. Proyección a futuro no estructurada."
+);
+assert.doesNotMatch(mentalBlockBoundary.secciones.examenMental, /RESULTADOS|EKG/);
+
 console.log("patient-transfer-clinical-sections.test.mjs OK");
