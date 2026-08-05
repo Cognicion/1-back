@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { detectDiagnosisCandidates, parseDiagnosisCandidates } from "../js/modules/clinical-document-engine/parsers/diagnosisParser.js";
+import { toLegacyDiagnosisCandidate } from "../js/modules/clinical-document-engine/adapters/diagnosisAdapter.js";
 import { validateDiagnosis } from "../js/modules/clinical-document-engine/validators/diagnosisValidator.js";
 
 const anaTable = {
@@ -112,5 +113,34 @@ const excluded = detectDiagnosisCandidates({
 });
 assert.deepEqual(excluded.map((candidate) => candidate.diagnosisName), ["Trastorno depresivo"]);
 assert.doesNotMatch(excluded.map((candidate) => candidate.diagnosisName).join(" "), /riesgo|vigilancia|autolesiva|comentario/i);
+
+const multiCodeTable = detectDiagnosisCandidates({
+  documentId: "anon-brian",
+  noteId: "brian-note-1",
+  sourceBlocks: [{
+    type: "table",
+    source: { tableIndex: 4, blockIndex: 14 },
+    rows: [
+      ["DIAGNOSTICO", "CIE-10"],
+      ["Discapacidad intelectual leve", "F70.1"],
+      ["Episodio depresivo grave", "F32.1"],
+      ["Intoxicacion aguda a alcohol", "F10.0"],
+      ["Lesion autoinfligida por objeto cortante", "X78, S517 + S117"],
+      ["Historia personal de autolesiones", "Z91.5"],
+      ["Historia personal de incumplimiento", "Z91.1"],
+      ["Soporte familiar inadecuado", "Z63.2"]
+    ]
+  }]
+});
+assert.equal(multiCodeTable.length, 7);
+const injury = multiCodeTable[3];
+assert.equal(injury.code, "X78");
+assert.deepEqual(injury.codes, ["X78", "S517", "S117"]);
+assert.equal(injury.metadata.codeEvidence.length, 3);
+assert.deepEqual(multiCodeTable.slice(4).map((candidate) => candidate.code), ["Z91.5", "Z91.1", "Z63.2"]);
+const legacyInjury = toLegacyDiagnosisCandidate(injury);
+assert.equal(legacyInjury.code, "X78");
+assert.deepEqual(legacyInjury.codes, ["X78", "S517", "S117"]);
+assert.equal(legacyInjury.codeEvidence.length, 3);
 
 console.log("clinical-document-engine-diagnosis: ok");

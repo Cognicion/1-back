@@ -20,6 +20,10 @@ export function toLegacyDiagnosisCandidate(candidate = {}) {
     normalizedName: source.diagnosisName || "",
     normalizedLabel: source.diagnosisName || "",
     code: source.code || null,
+    codes: Array.isArray(source.codes) && source.codes.length
+      ? [...source.codes]
+      : source.code ? [source.code] : [],
+    codeEvidence: entity.metadata?.codeEvidence || [],
     system: source.system || "",
     codingSystem: source.system || "",
     status: entity.status || source.status || "Confirmado",

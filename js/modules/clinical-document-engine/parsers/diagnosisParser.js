@@ -25,7 +25,7 @@ function diagnosisStatus(text = "") {
 }
 
 export function splitDiagnosticCodes(text = "") {
-  return [...String(text || "").matchAll(/[A-Z]\d{2}(?:\.\d{1,2})?/gi)].map((match) => normalizeDiagnosticCode(match[0])).filter(Boolean);
+  return [...String(text || "").matchAll(/[A-Z]\d{2,3}(?:\.\d{1,2})?/gi)].map((match) => normalizeDiagnosticCode(match[0])).filter(Boolean);
 }
 
 // Algunos DOCX conservan varias entradas dentro de una misma celda de tabla
@@ -60,7 +60,7 @@ function normalizeDiagnosis(value = "", codes = []) {
 function detectSystem(code = "", context = "") {
   if (/\b(?:dsm[- ]?5)\b/i.test(context)) return "DSM-5";
   if (/\bcie[- ]?11\b/i.test(context) || /^\d[A-Z]\d{2,3}$/i.test(code)) return "CIE-11";
-  if (/\b(?:cie[- ]?10|icd[- ]?10)\b/i.test(context) || /^[A-Z]\d{2}(?:\.\d{1,2})?$/.test(code)) return "CIE-10";
+  if (/\b(?:cie[- ]?10|icd[- ]?10)\b/i.test(context) || /^[A-Z]\d{2,3}(?:\.\d{1,2})?$/.test(code)) return "CIE-10";
   return "";
 }
 
@@ -119,7 +119,7 @@ function tokenizeDiagnosisBlock(text = "") {
   const source = isolateBlock(text);
   const matches = [
     ...[...source.matchAll(STATUS_TOKEN)].map((match) => ({ type: "STATUS", value: match[0], index: match.index, end: match.index + match[0].length })),
-    ...[...source.matchAll(/[A-Z]\s*\d{2}(?:\.\d{1,2})?/gi)].map((match) => ({ type: "CODE", value: match[0], index: match.index, end: match.index + match[0].length }))
+    ...[...source.matchAll(/[A-Z]\s*\d{2,3}(?:\.\d{1,2})?/gi)].map((match) => ({ type: "CODE", value: match[0], index: match.index, end: match.index + match[0].length }))
   ].sort((a, b) => a.index - b.index || a.end - b.end);
   const tokens = [];
   let cursor = 0;
@@ -176,24 +176,38 @@ function statusValue(text = "") {
   return "";
 }
 
-function createDiagnosisCandidate({ name, code = "", status, rawText, section, documentId, noteId, sourceLocation = {}, requiresReview = false, detectionRule }) {
-  const system = detectSystem(code, rawText);
-  const confidence = evaluateConfidence({ table: sourceLocation.tableIndex != null, explicitHeading: section === "diagnosticos" && Boolean(code), freeText: !code });
+function createDiagnosisCandidate({ name, code = "", codes = [], status, rawText, section, documentId, noteId, sourceLocation = {}, requiresReview = false, detectionRule }) {
+  const normalizedCodes = [...new Set([code, ...codes].map((value) => normalizeDiagnosticCode(value)).filter(Boolean))];
+  const primaryCode = normalizedCodes[0] || "";
+  const system = detectSystem(primaryCode, rawText);
+  const confidence = evaluateConfidence({ table: sourceLocation.tableIndex != null, explicitHeading: section === "diagnosticos" && Boolean(primaryCode), freeText: !primaryCode });
   const candidate = new ClinicalCandidate({
-    id: `${documentId || "doc"}-dx-${noteId || "note"}-${sourceLocation.rowIndex ?? sourceLocation.lineIndex ?? 0}-${code || normalizeClinicalComparisonText(name).slice(0, 24)}`,
+    id: `${documentId || "doc"}-dx-${noteId || "note"}-${sourceLocation.rowIndex ?? sourceLocation.lineIndex ?? 0}-${primaryCode || normalizeClinicalComparisonText(name).slice(0, 24)}`,
     type: "diagnosis",
     value: null,
     confidence,
     requiresReview: Boolean(requiresReview || requiresReviewForConfidence(confidence)),
-    warnings: code ? [] : ["missing-code"],
+    warnings: primaryCode ? [] : ["missing-code"],
     evidence: [new ClinicalEvidence({ documentId, block: sourceLocation.blockIndex ?? null, offsetStart: sourceLocation.startOffset ?? null, offsetEnd: sourceLocation.endOffset ?? null, heading: section, rawText, confidence })],
-    metadata: { noteId, sourceSection: section, detectionRule, parserVersion: VERSION }
+    metadata: {
+      noteId,
+      sourceSection: section,
+      detectionRule,
+      parserVersion: VERSION,
+      codeEvidence: normalizedCodes.map((value) => ({
+        code: value,
+        blockIndex: sourceLocation.blockIndex ?? null,
+        paragraphIndex: sourceLocation.rowIndex ?? sourceLocation.lineIndex ?? null,
+        rawText: rawText || ""
+      }))
+    }
   });
   Object.assign(candidate, {
     candidateType: "diagnosis",
     diagnosisName: name,
     normalizedDiagnosis: normalizeClinicalComparisonText(name),
-    code: code || null,
+    code: primaryCode || null,
+    codes: normalizedCodes,
     system,
     status,
     isPrimary: false,
@@ -296,7 +310,7 @@ export function parseDiagnosisCandidates({ text = "", section = "diagnosticos", 
       state = candidates.length ? "FINALIZE_DIAGNOSIS" : "WAITING_DIAGNOSIS";
       return;
     }
-    const codeOnly = codes.length === 1 && /^[A-Z]\d{2}(?:\.\d{1,2})?$/i.test(rowText.trim());
+    const codeOnly = codes.length === 1 && /^[A-Z]\d{2,3}(?:\.\d{1,2})?$/i.test(rowText.trim());
     const name = codeOnly ? "" : normalizeDiagnosis(rowText, codes);
     if (!name && !codes.length) { discardedCount += 1; return; }
     if (EXCLUDED_DIAGNOSIS_TEXT.test(name) || /^plan\s+terap/i.test(name) || /^(?:diagn[oó]sticos?|cie[- ]?10|cie[- ]?11|sistema)$/i.test(name)) {
@@ -320,7 +334,7 @@ export function parseDiagnosisCandidates({ text = "", section = "diagnosticos", 
     if (codes.length === 1 && !name) {
       const nextRow = rows[rowIndex + 1]?.text || "";
       const nextCodes = splitDiagnosticCodes(nextRow);
-      const nextIsCodeOnly = nextCodes.length === 1 && /^[A-Z]\d{2}(?:\.\d{1,2})?$/i.test(nextRow.trim());
+      const nextIsCodeOnly = nextCodes.length === 1 && /^[A-Z]\d{2,3}(?:\.\d{1,2})?$/i.test(nextRow.trim());
       const codeCountInBlock = splitDiagnosticCodes(text).length;
       clinicalImportLogger.info("diagnosisParser:code-context", JSON.stringify({ documentId, noteId, rowIndex, pendingNames: pendingNames.length, nextIsCodeOnly, codeCountInBlock }));
       if (pendingNames.length === 1 && nextIsCodeOnly && codeCountInBlock > pendingNames.length) {
@@ -375,6 +389,28 @@ export function detectDiagnosisCandidates({ sections = {}, fullText = "", source
       const codes = splitDiagnosticCodes(codeColumn || rowText);
       const names = splitDiagnosisNameColumn(row[0] || "", codes.length);
       const location = { tableIndex: block.source?.tableIndex, blockIndex: block.source?.blockIndex, rowIndex };
+      if (names.length === 1 && codes.length) {
+        hasStructuredDiagnosisTable = true;
+        const [candidate] = parseDiagnosisCandidates({
+          text: `${names[0]} | ${codes[0]}`,
+          section: "diagnosticos",
+          documentId,
+          noteId,
+          sourceLocation: location,
+          explicit: true
+        });
+        if (candidate) {
+          candidate.codes = [...new Set(codes)];
+          candidate.metadata.codeEvidence = candidate.codes.map((code) => ({
+            code,
+            blockIndex: location.blockIndex ?? null,
+            paragraphIndex: rowIndex,
+            rawText: codeColumn || rowText
+          }));
+          add([candidate]);
+        }
+        return;
+      }
       if (codes.length && names.length === codes.length) {
         hasStructuredDiagnosisTable = true;
         names.forEach((name, index) => {

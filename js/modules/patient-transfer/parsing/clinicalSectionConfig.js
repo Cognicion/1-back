@@ -10,6 +10,7 @@ export const CLINICAL_SECTION_ALIASES = Object.freeze({
     "motivo de atención",
     "motivo de consulta",
     "motivo de ingreso",
+    "motiivo de ingreso",
     "enfermedad actual",
     "interrogatorio",
     "evolución",
@@ -22,9 +23,17 @@ export const CLINICAL_SECTION_ALIASES = Object.freeze({
     "exploración neurológica",
     "exploración física",
     "examen físico",
+    "examen neurológico",
+    "examen neurologico",
     "objetivo"
   ],
   examenMental: ["exploración psicopatológica", "examen mental", "estado mental"],
+  resultadosEstudios: [
+    "resultados relevantes de los estudios de diagnóstico",
+    "resultados relevantes de los estudios",
+    "resultados de los estudios",
+    "estudios de diagnóstico"
+  ],
   analisis: [
     "comentario y/o análisis clínico y fundamentación diagnóstica y terapéutica",
     "comentario y análisis clínico y fundamentación diagnóstica y terapéutica",
@@ -43,6 +52,8 @@ export const CLINICAL_SECTION_ALIASES = Object.freeze({
     "análisis"
   ],
   diagnosticos: [
+    "diagnósticos de acuerdo a cie-10 (primario y comorbilidades)",
+    "diagnósticos de acuerdo a cie-10",
     "diagnóstico | cie-10",
     "diagnósticos | cie-10",
     "diagnósticos de ingreso",

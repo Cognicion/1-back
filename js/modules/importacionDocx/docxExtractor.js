@@ -136,15 +136,52 @@ function reconstruirTextoRuns(runs = []) {
 }
 
 function textoDeNodo(nodo) {
+  const paragraphs = [...nodo.children].filter((child) => child.localName === "p");
+  if (paragraphs.length > 1) {
+    return paragraphs
+      .map((paragraph) => reconstruirTextoRuns(runsDeNodo(paragraph)))
+      .filter(Boolean)
+      .join("\n")
+      .trim();
+  }
   return reconstruirTextoRuns(runsDeNodo(nodo));
 }
 
 function extraerTabla(tabla) {
-  return [...tabla.children]
+  const rows = [...tabla.children]
     .filter((nodo) => nodo.localName === "tr")
     .map((fila) => [...fila.children]
       .filter((nodo) => nodo.localName === "tc")
       .map((celda) => textoDeNodo(celda)));
+
+  const header = rows[0]?.map((value) => String(value || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase()) || [];
+  if (!header.some((value) => /diagnostico/.test(value)) || !header.some((value) => /cie[- ]?10/.test(value))) return rows;
+
+  const codePattern = /[A-Z]\d{2,3}(?:\.\d{1,2})?/gi;
+  const expanded = [rows[0]];
+  rows.slice(1).forEach((row) => {
+    const names = String(row[0] || "").split(/\r?\n/).map((value) => value.trim()).filter(Boolean);
+    const codeGroups = String(row[1] || "").split(/\r?\n/).map((value) => [...value.matchAll(codePattern)].map((match) => match[0].toUpperCase())).filter((group) => group.length);
+    if (!names.length || !codeGroups.length || names.length < codeGroups.length) {
+      expanded.push(row);
+      return;
+    }
+
+    let groupIndex = 0;
+    let carry = [];
+    names.forEach((name, nameIndex) => {
+      const group = carry.length ? carry.splice(0) : (codeGroups[groupIndex++] || []);
+      const namesRemaining = names.length - nameIndex - 1;
+      const groupsRemaining = codeGroups.length - groupIndex;
+      const spillCount = namesRemaining === 0
+        ? group.length
+        : Math.max(1, group.length - Math.max(1, namesRemaining - groupsRemaining));
+      const assigned = group.slice(0, spillCount || group.length);
+      carry = group.slice(assigned.length);
+      expanded.push([name, assigned.join(", ")]);
+    });
+  });
+  return expanded;
 }
 
 function bloqueDesdeNodo(nodo, origen) {

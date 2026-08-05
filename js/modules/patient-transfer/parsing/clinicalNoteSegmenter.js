@@ -60,7 +60,10 @@ console.info("[patient-transfer] clinical-note-segmenter:loaded", {
     blocks.forEach((block, index) => {
       const text = blockText(block);
       const title = noteTitle(text);
-      const date = clinicalDate(text);
+      const labelledClinicalDate = String(text || "").match(
+        new RegExp(`\\bfecha\\s*:\\s*(${DATE_PATTERN.source})`, "i")
+      )?.[1] || "";
+      const date = labelledClinicalDate ? clinicalDate(text) : "";
       if (/nota de (?:ingreso|evolucion)/.test(normalizeClinicalHeading(text))) {
         console.info(
           "[patient-transfer] note-title-check",
