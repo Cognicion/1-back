@@ -1,4 +1,5 @@
 import { MEDICAMENTOS, MEDICAMENTOS_MAESTROS, medicamentoPorTexto } from "../../../data/medicamentos.js";
+import { adaptDiagnosisBlock, adaptDiagnosisCandidates } from "../../clinical-document-engine/adapters/diagnosisAdapter.js";
 
 function normalizeText(value = "") {
   return String(value || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, " ").trim().toLowerCase();
@@ -100,7 +101,7 @@ function diagnosisCandidate({ name, code = "", rawText, section, documentId, sou
   };
 }
 
-function parseDiagnosisBlockLegacy({ text = "", section = "diagnosticos", documentId = "", sourceLocation = {}, explicit = false } = {}) {
+function parseDiagnosisBlockLegacyHistorical({ text = "", section = "diagnosticos", documentId = "", sourceLocation = {}, explicit = false } = {}) {
   const rows = String(text || "").split(/\r?\n/).map((row) => row.trim()).filter(Boolean);
   const results = [];
   const rowCodes = rows.map((row) => splitDiagnosticCodes(row));
@@ -169,7 +170,7 @@ function diagnosisRows(text = "") {
     .filter(Boolean);
 }
 
-export function parseDiagnosisBlock({ text = "", section = "diagnosticos", documentId = "", sourceLocation = {}, explicit = false } = {}) {
+function parseDiagnosisBlockLegacy({ text = "", section = "diagnosticos", documentId = "", sourceLocation = {}, explicit = false } = {}) {
   const rows = diagnosisRows(text);
   const results = [];
   const pendingNames = [];
@@ -229,7 +230,11 @@ export function parseDiagnosisBlock({ text = "", section = "diagnosticos", docum
   return results;
 }
 
-export function detectDiagnosisCandidates({ sections = {}, fullText = "", sourceBlocks = [], documentId = "" } = {}) {
+export function parseDiagnosisBlock(args = {}) {
+  return adaptDiagnosisBlock(args);
+}
+
+function detectDiagnosisCandidatesLegacy({ sections = {}, fullText = "", sourceBlocks = [], documentId = "" } = {}) {
   const candidates = [];
   const seen = new Set();
   const addCandidates = (items) => items.forEach((candidate) => {
@@ -256,6 +261,10 @@ export function detectDiagnosisCandidates({ sections = {}, fullText = "", source
   });
   console.info("[patient-transfer] diagnosis:paired", JSON.stringify({ noteId: documentId, candidatesCount: candidates.length, pairedCount: candidates.filter((item) => item.code).length, unpairedCount: candidates.filter((item) => !item.code || item.requiresReview).length }));
   return candidates;
+}
+
+export function detectDiagnosisCandidates(args = {}) {
+  return adaptDiagnosisCandidates(args);
 }
 
 const medicationNames = [...new Set(MEDICAMENTOS.map((item) => String(item.nombre || "").trim()).filter(Boolean))];

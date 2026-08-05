@@ -69,4 +69,38 @@ Los adapters importan únicamente parsers existentes de `patient-transfer`. El i
 5. Integrar el resultado en revisión sin cambiar el contrato de persistencia.
 6. Migrar persistencia únicamente después de pruebas de contrato e idempotencia.
 
+## Fase 3 — Migración de Diagnósticos
+
+`parsers/diagnosisParser.js` es el parser nativo MIDC. Su flujo es:
+
+```mermaid
+flowchart LR
+  A[Bloque diagnóstico] --> B[Boundary Engine]
+  B --> C[Filas estructuradas]
+  C --> D[Nombre + código + estado]
+  D --> E[Normalizadores]
+  E --> F[Confidence Engine]
+  F --> G[ClinicalCandidate]
+  G --> H[DiagnosisAdapter]
+  H --> I[Contrato legacy]
+```
+
+El parser devuelve candidatos `ClinicalCandidate` con `candidateType: "diagnosis"`, `diagnosisName`, `normalizedDiagnosis`, `code`, `system`, `status`, `isPrimary`, `confidence`, `requiresReview`, `evidence` y `metadata`. No devuelve arreglos independientes de nombres, códigos o estados.
+
+`DiagnosisAdapter` transforma esos candidatos al contrato que todavía consume `patient-transfer`. La interfaz, persistencia y Firebase no se modifican. El parser legacy permanece como compatibilidad histórica, pero la ruta `detectDiagnosisCandidates()` delega al parser MIDC y el flujo visible recibe el mismo esquema legacy mediante el adapter.
+
+La evidencia conserva documento, nota, bloque, offsets, encabezado, texto original y versión del parser. Los códigos adyacentes reciben confianza `HIGH`; nombres sin código requieren revisión; códigos concatenados no se asignan por desplazamiento y quedan sin código para revisión.
+
+Se soportan CIE-10, CIE-11 y DSM-5 en el modelo; solo CIE-10 continúa siendo persistible por las reglas existentes.
+
+### Comparación
+
+Antes: `clinicalCandidateParser.parseDiagnosisBlock()` separaba y construía directamente el objeto legacy; el adapter MIDC envolvía posteriormente ese resultado.
+
+Ahora: `clinical-document-engine/parsers/diagnosisParser.js` delimita, estructura, normaliza, empareja, clasifica confianza y crea `ClinicalCandidate`; `adapters/diagnosisAdapter.js` es la única traducción hacia el contrato legacy.
+
+### Fases siguientes
+
+Diagnósticos queda como primer parser nativo. Medicamentos, signos vitales y persistencia no se migran en esta fase.
+
 Fases posteriores: PDF, OCR, Dictado y consumidores analíticos se documentan, pero no se implementan aquí.

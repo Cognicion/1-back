@@ -1,10 +1,51 @@
-import { detectDiagnosisCandidates } from "../../patient-transfer/parsing/clinicalCandidateParser.js";
-import { evaluateConfidence, requiresReviewForConfidence } from "../confidence/confidenceEngine.js";
-import { ClinicalCandidate } from "../core/ClinicalCandidate.js";
+import { detectDiagnosisCandidates, parseDiagnosisCandidates } from "../parsers/diagnosisParser.js";
+import { validateDiagnosis } from "../validators/diagnosisValidator.js";
 
-export function adaptDiagnosisParser({ sections = {}, fullText = "", sourceBlocks = [], documentId = "", noteId = "" } = {}) {
-  return detectDiagnosisCandidates({ sections, fullText, sourceBlocks, documentId }).map((candidate) => {
-    const confidence = evaluateConfidence({ table: candidate.detectionRule === "diagnosis-entry-near-code", explicitHeading: candidate.sourceSection === "diagnosticos", freeText: candidate.sourceSection !== "diagnosticos" });
-    return new ClinicalCandidate({ id: candidate.id || `${noteId}-diagnosis`, type: "diagnosis", value: candidate, confidence, requiresReview: candidate.requiresReview || requiresReviewForConfidence(confidence), warnings: candidate.code ? [] : ["missing-code"], evidence: [candidate.sourceText || candidate.rawText], metadata: { noteId, sourceSection: candidate.sourceSection } });
-  });
+/** Convierte candidatos nativos MIDC al contrato legacy consumido por patient-transfer. */
+export function toLegacyDiagnosisCandidate(candidate = {}) {
+  const value = {
+    id: candidate.id,
+    rawText: candidate.evidence?.[0]?.rawText || candidate.diagnosisName || "",
+    diagnosisName: candidate.diagnosisName || "",
+    normalizedDiagnosisName: candidate.normalizedDiagnosis || "",
+    normalizedName: candidate.diagnosisName || "",
+    normalizedLabel: candidate.diagnosisName || "",
+    code: candidate.code || null,
+    system: candidate.system || "",
+    codingSystem: candidate.system || "",
+    status: candidate.status || "Confirmado",
+    statusSuggestion: candidate.status || "Confirmado",
+    isPrimary: Boolean(candidate.isPrimary),
+    principal: Boolean(candidate.isPrimary),
+    temporality: candidate.status === "Antecedente" ? "historical" : "current",
+    negated: candidate.status === "Descartado",
+    sourceSection: candidate.metadata?.sourceSection || "diagnosticos",
+    sourceHeading: candidate.evidence?.[0]?.heading || candidate.metadata?.sourceSection || "diagnosticos",
+    sourceText: candidate.evidence?.[0]?.rawText || candidate.diagnosisName || "",
+    sourceLocation: { documentId: candidate.evidence?.[0]?.documentId || "", blockIndex: candidate.evidence?.[0]?.block ?? null, startOffset: candidate.evidence?.[0]?.offsetStart ?? null, endOffset: candidate.evidence?.[0]?.offsetEnd ?? null },
+    evidence: candidate.evidence?.[0]?.rawText || "",
+    confidence: candidate.confidence === "HIGH" ? "high" : candidate.confidence === "MEDIUM" ? "medium" : candidate.confidence === "LOW" ? "low" : "not-detected",
+    requiresReview: Boolean(candidate.requiresReview),
+    detectionRule: candidate.metadata?.detectionRule || "midc-diagnosis-parser",
+    selectedForImport: false,
+    include: false,
+    confirmedByDoctor: false,
+    parser: candidate.metadata?.parser || "midc.diagnosisParser",
+    parserVersion: candidate.parserVersion || "1.0"
+  };
+  const validation = validateDiagnosis(value);
+  if (!validation.valid) value.requiresReview = true;
+  return value;
+}
+
+export function adaptDiagnosisCandidates(args = {}) {
+  return detectDiagnosisCandidates(args).map(toLegacyDiagnosisCandidate);
+}
+
+export function adaptDiagnosisParser(args = {}) {
+  return parseDiagnosisCandidates(args);
+}
+
+export function adaptDiagnosisBlock(args = {}) {
+  return parseDiagnosisCandidates(args).map(toLegacyDiagnosisCandidate);
 }
