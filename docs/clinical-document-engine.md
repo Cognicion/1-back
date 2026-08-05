@@ -230,6 +230,29 @@ flowchart LR
 
 El mapa de dependencias está en `docs/midc-dependency-map.md` y la clasificación legacy en `docs/legacy-map.md`.
 
+## Fase 8 - Treatment Plan Parser
+
+`parsers/treatmentPlanParser.js` interpreta el bloque Plan Terapéutico como indicaciones independientes. Usa el Boundary Engine para localizar el inicio y los límites, separa incisos numerados o concatenados y clasifica dieta, cuidados, monitorización, riesgos, alergias, estudios, interconsultas, psicoterapia, seguimiento y otras indicaciones.
+
+Cada resultado es un `ClinicalCandidate` con `candidateType: "treatmentPlanInstruction"`, orden, prioridad, confianza y `ClinicalEvidence`. `TreatmentPlanValidator` revisa tipos, texto, prioridades, riesgos y órdenes duplicadas. `TreatmentPlanAdapter` convierte las entidades a la estructura compatible con la revisión actual.
+
+El subbloque de medicamentos se delega a `parsers/medicationParser.js`; el Plan no vuelve a interpretar dosis, vías, frecuencias ni horarios. Los medicamentos retornan por `MedicationAdapter`, conservando evidencia y `parserVersion` propios.
+
+```mermaid
+flowchart LR
+  A[Plan terapéutico] --> B[Boundary Engine]
+  B --> C[Treatment Plan Parser]
+  C --> D[ClinicalCandidate por indicación]
+  C --> E[Medication Parser MIDC]
+  D --> F[ClinicalEntityEngine]
+  E --> F
+  F --> G[Validators y Confidence Engine]
+  G --> H[TreatmentPlanAdapter]
+  H --> I[Revisión y contrato legacy]
+```
+
+La integración se limita al estado de revisión: cada nota conserva `treatmentPlanCandidates` y la vista los agrupa, permite incluir/excluir, editar texto y cambiar categoría. No se modifican persistencia, Firebase, Panel Médico ni los contratos existentes.
+
 ## Estado oficial
 
 **MIDC v1 ESTABLE.** Toda nueva funcionalidad documental debe construirse sobre MIDC y CEE, manteniendo adapters cuando exista un consumidor legacy. Laboratorios, escalas, OCR, PDF, timeline, SOFÍA y relaciones clínicas activas quedan fuera de v1.

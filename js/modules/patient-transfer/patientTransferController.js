@@ -15,6 +15,7 @@ import { preserveManualSubjectiveEdits, updateSubjectiveSegmentValue } from "./s
 import { initializeFileMultipleNotesMode, MULTIPLE_NOTES_MODES, normalizeMultipleNotesMode, updateFileMultipleNotesMode } from "./state/multipleNotesModeState.js";
 import { groupDocumentsByPatient } from "./parsing/documentGroupingService.js";
 import { analyzeDocumentClinically } from "./integration/clinicalAnalysisAdapter.js";
+import { adaptTreatmentPlan } from "../clinical-document-engine/adapters/treatmentPlanAdapter.js";
 import { findDuplicateImport, findExistingPatientCandidates, saveTransferredGroups } from "./patientTransferRepository.js";
 import {
   closePatientTransferView,
@@ -47,6 +48,16 @@ function enrichNoteSegments(document, segments = []) {
       blocks: segment.blocks,
       fullText: segment.rawText,
       date: segment.date || segment.metadata?.documentDate || ""
+    }, { includeTreatments: false });
+    const planText = [segment.sections?.plan, segment.sections?.tratamiento, segment.sections?.medicamentos]
+      .filter(Boolean).join("\n");
+    const treatmentPlan = adaptTreatmentPlan({
+      text: planText,
+      documentId: document.id,
+      noteId: segment.id,
+      date: segment.date || segment.metadata?.documentDate || "",
+      time: segment.time || segment.metadata?.documentHour || "",
+      sourceHeading: "PLAN TERAPÉUTICO"
     });
     const sections = { ...(segment.sections || {}) };
     if (!sections.diagnosticos && candidates.diagnoses.length) {
@@ -69,7 +80,8 @@ function enrichNoteSegments(document, segments = []) {
       },
       confirmedType: segment.confirmedType || metadata.suggestedType,
       diagnosisCandidates: candidates.diagnoses,
-      treatmentCandidates: candidates.treatments,
+      treatmentCandidates: treatmentPlan.medicationCandidates,
+      treatmentPlanCandidates: treatmentPlan.instructions,
       vitalSignsCandidates
     };
     console.info("[patient-transfer] note-segment:enriched", {
@@ -101,7 +113,8 @@ function applySegmentsToDocument(document, rawSegments = []) {
     noteSegments,
     sections: primary.sections || document.sections || {},
     diagnosisCandidates: primary.diagnosisCandidates || [],
-    treatmentCandidates: primary.treatmentCandidates || []
+    treatmentCandidates: primary.treatmentCandidates || [],
+    treatmentPlanCandidates: primary.treatmentPlanCandidates || []
   };
 }
 
@@ -355,11 +368,11 @@ async function analyzeOneFile(item, user) {
     blocks,
     fullText,
     date: metadata.documentDate || ""
-  });
+  }, { includeTreatments: false });
   console.info("[patient-transfer] diagnoses:detected", { fileId: item.id, count: clinicalCandidates.diagnoses.length });
-  console.info("[patient-transfer] treatments:detected", { fileId: item.id, count: clinicalCandidates.treatments.length });
+  console.info("[patient-transfer] treatments:detected", { fileId: item.id, count: 0, delegatedToTreatmentPlan: true });
   console.info("[patient-transfer] diagnosis-parser:candidates", { fileId: item.id, count: clinicalCandidates.diagnoses.length, rules: [...new Set(clinicalCandidates.diagnoses.map((item) => item.detectionRule))] });
-  console.info("[patient-transfer] treatment-parser:candidates", { fileId: item.id, count: clinicalCandidates.treatments.length, sections: [...new Set(clinicalCandidates.treatments.map((item) => item.sourceSection))] });
+  console.info("[patient-transfer] treatment-parser:candidates", { fileId: item.id, count: 0, delegatedToTreatmentPlan: true });
   const vitalSignsCandidates = extractVitalSignsCandidates(blocks);
   const multipleNotesDetection = detectMultipleClinicalNotes({
     blocks,
@@ -392,7 +405,8 @@ async function analyzeOneFile(item, user) {
     clinicalAnalysis,
     vitalSignsCandidates,
     diagnosisCandidates: clinicalCandidates.diagnoses,
-    treatmentCandidates: clinicalCandidates.treatments,
+    treatmentCandidates: [],
+    treatmentPlanCandidates: [],
     multipleNotesMode,
     containsMultipleNotes: multipleNotesMode === MULTIPLE_NOTES_MODES.MULTIPLE,
     segmentationNeedsReanalysis: false,

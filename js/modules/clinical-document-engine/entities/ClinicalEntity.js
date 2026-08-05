@@ -3,7 +3,7 @@ import { ClinicalVersion } from "./ClinicalVersion.js";
 
 export const ENTITY_TYPES = Object.freeze([
   "diagnosis", "medication", "vitalSign", "laboratory", "study", "patient",
-  "treatment", "allergy", "scale", "clinicalEvent", "procedure", "consultation"
+  "treatment", "treatmentPlanInstruction", "allergy", "scale", "clinicalEvent", "procedure", "consultation"
 ]);
 
 function copy(value) {

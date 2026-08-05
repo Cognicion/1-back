@@ -176,6 +176,7 @@ console.info("[patient-transfer] clinical-note-segmenter:loaded", {
       sections: { ...parsedSections.secciones },
       diagnosisCandidates: [],
       treatmentCandidates: [],
+      treatmentPlanCandidates: [],
       omitted: false
     };
     const segment = assignParsedSubjective(baseSegment, parsedSections.subjectiveExtraction);
@@ -317,6 +318,7 @@ console.info("[patient-transfer] clinical-note-segmenter:loaded", {
         confirmedType: segment.confirmedType,
         diagnosisCandidates: segment.diagnosisCandidates,
         treatmentCandidates: segment.treatmentCandidates,
+        treatmentPlanCandidates: segment.treatmentPlanCandidates,
         vitalSignsCandidates: segment.vitalSignsCandidates,
         sourceDocumentIndex: index,
         sourceNoteSegmentId: segment.id

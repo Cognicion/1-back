@@ -438,6 +438,55 @@ function renderSegmentTreatmentCandidates(doc, segment) {
     </section>`;
 }
 
+const TREATMENT_PLAN_TYPE_LABELS = {
+  diet: "Dieta",
+  nursingCare: "Cuidados de enfermeria",
+  monitoring: "Vigilancia y monitorizacion",
+  suicideRiskPrecautions: "Precauciones por riesgo suicida",
+  selfHarmPrecautions: "Conducta autolesiva",
+  fallRisk: "Riesgo de caida",
+  allergies: "Alergias",
+  medications: "Medicamentos",
+  laboratoryOrders: "Laboratorios",
+  imagingOrders: "Imagenologia",
+  consultations: "Interconsultas",
+  procedures: "Procedimientos",
+  activity: "Actividad",
+  hydration: "Hidratacion",
+  isolation: "Aislamiento",
+  restraints: "Contencion",
+  psychotherapy: "Psicoterapia",
+  psychoeducation: "Psicoeducacion",
+  dischargePlanning: "Plan de egreso",
+  followUp: "Seguimiento",
+  otherInstruction: "Otras indicaciones"
+};
+
+function renderSegmentTreatmentPlanCandidates(doc, segment) {
+  const candidates = segment.treatmentPlanCandidates || [];
+  const groups = candidates.reduce((result, candidate) => {
+    const key = candidate.instructionType || "otherInstruction";
+    (result[key] ||= []).push(candidate);
+    return result;
+  }, {});
+  return `<section class="patient-transfer-candidates patient-transfer-treatment-plan">
+    <h4>Plan terapéutico detectado</h4>
+    ${candidates.length ? Object.entries(groups).map(([type, items]) => `<div class="patient-transfer-plan-group">
+      <h5>${escapeHtml(TREATMENT_PLAN_TYPE_LABELS[type] || type)}</h5>
+      ${items.map((candidate) => {
+        const key = `${doc.id}:${segment.id}:${candidate.id}`;
+        return `<label class="patient-transfer-plan-item">
+          <input type="checkbox" data-transfer-plan-include="${key}" ${candidate.include || candidate.selectedForImport ? "checked" : ""}>
+          <select data-transfer-plan-type="${key}">${Object.entries(TREATMENT_PLAN_TYPE_LABELS).map(([value, label]) => option(value, label, value === type)).join("")}</select>
+          <textarea rows="2" data-transfer-plan-text="${key}">${escapeHtml(candidate.text || candidate.value || "")}</textarea>
+          <small>Confianza: ${escapeHtml(candidate.confidence || "not-detected")} · ${escapeHtml(candidate.evidence?.[0]?.sourceHeading || "Plan terapéutico")}</small>
+          <details><summary>Ver fuente</summary><small>${escapeHtml(candidate.evidence?.[0]?.rawText || candidate.text || "")}</small></details>
+        </label>`;
+      }).join("")}
+    </div>`).join("") : "<p>No se detectaron indicaciones estructuradas.</p>"}
+  </section>`;
+}
+
 function renderSegmentClinicalSections(doc, segment) {
   const fieldGroup = (fields) => `<section class="patient-transfer-clinical-sections">${fields.map(([label, key]) => `<label>${label}<textarea data-transfer-section="${doc.id}:${segment.id}:${key}" placeholder="No se detectó esta sección.">${escapeHtml(segment.sections?.[key] || "")}</textarea></label>`).join("")}</section>`;
   const subjectiveSource = segment.subjectiveExtraction?.sourceLabel || "";
@@ -453,6 +502,7 @@ function renderSegmentClinicalSections(doc, segment) {
     ${fieldGroup([["Diagnósticos", "diagnosticos"]])}
     ${renderSegmentDiagnosisCandidates(doc, segment)}
     ${fieldGroup([["Plan / indicaciones", "plan"], ["Medicamentos", "medicamentos"]])}
+    ${renderSegmentTreatmentPlanCandidates(doc, segment)}
     ${renderSegmentTreatmentCandidates(doc, segment)}
     ${fieldGroup([["Pronóstico", "pronostico"], ["Destino", "destino"]])}`;
 }
@@ -739,6 +789,18 @@ export function readTransferReview(groups = []) {
             confirmedByDoctor: checked
           };
         });
+        const segmentTreatmentPlanCandidates = (segment.treatmentPlanCandidates || []).map((candidate) => {
+          const key = `${prefix}:${candidate.id}`;
+          const checked = modal.querySelector(`[data-transfer-plan-include="${key}"]`)?.checked || false;
+          return {
+            ...candidate,
+            include: checked,
+            selectedForImport: checked,
+            instructionType: modal.querySelector(`[data-transfer-plan-type="${key}"]`)?.value || candidate.instructionType || "otherInstruction",
+            text: modal.querySelector(`[data-transfer-plan-text="${key}"]`)?.value?.trim() || "",
+            value: modal.querySelector(`[data-transfer-plan-text="${key}"]`)?.value?.trim() || ""
+          };
+        });
         const segmentTypeKey = modal.querySelector(`[data-transfer-segment-type="${prefix}"]`)?.value || segment.confirmedType?.key || "tipo_no_reconocido";
         const segmentType = NOTE_TYPE_RULES.find((item) => item.key === segmentTypeKey) || { key: "tipo_no_reconocido", label: "Tipo no reconocido" };
         return {
@@ -753,6 +815,7 @@ export function readTransferReview(groups = []) {
           confirmedType: segmentType,
           diagnosisCandidates: segmentDiagnoses,
           treatmentCandidates: segmentTreatments,
+          treatmentPlanCandidates: segmentTreatmentPlanCandidates,
           vitalSignsCandidates: (segment.vitalSignsCandidates || []).map((segmentVital) => vitalSignsCandidates.find((item) => item.id === segmentVital.id) || segmentVital)
         };
       });
@@ -767,7 +830,8 @@ export function readTransferReview(groups = []) {
         noteSegments,
         sections: primarySegment?.sections || doc.sections,
         diagnosisCandidates: primarySegment?.diagnosisCandidates || diagnosisCandidates,
-        treatmentCandidates: primarySegment?.treatmentCandidates || treatmentCandidates
+        treatmentCandidates: primarySegment?.treatmentCandidates || treatmentCandidates,
+        treatmentPlanCandidates: primarySegment?.treatmentPlanCandidates || doc.treatmentPlanCandidates || []
       };
     });
     return {
