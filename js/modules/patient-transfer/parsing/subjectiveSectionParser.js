@@ -1,4 +1,5 @@
 import { CLINICAL_SECTION_ALIASES, NOTE_START_ALIASES } from "./clinicalSectionConfig.js";
+import { findFirstBoundary as findSharedFirstBoundary } from "./clinicalBoundaryEngine.js";
 
 const SUBJECTIVE_BOUNDARY_ALIASES = Object.freeze([
   ...CLINICAL_SECTION_ALIASES.physicalNeurologicalExam,
@@ -122,7 +123,7 @@ function matchHeadingAtLineStart(value = "", aliases = []) {
   return null;
 }
 
-export function findFirstBoundaryInsideText(value = "", aliases = []) {
+function findFirstBoundaryInsideTextLegacy(value = "", aliases = []) {
   const normalized = canonicalizeWithMap(value);
   let earliest = null;
 
@@ -177,6 +178,11 @@ export function findFirstBoundaryInsideText(value = "", aliases = []) {
   }
 
   return earliest;
+}
+
+/** Compatibilidad pública: el motor común es ahora la única implementación activa. */
+export function findFirstBoundaryInsideText(value = "", aliases = []) {
+  return findSharedFirstBoundary(value, aliases);
 }
 
 
