@@ -59,6 +59,10 @@ function enrichNoteSegments(document, segments = []) {
       time: segment.time || segment.metadata?.documentHour || "",
       sourceHeading: "PLAN TERAPÉUTICO"
     });
+    console.info("[patient-transfer] medicationAdapter:output-count", JSON.stringify({
+      noteId: segment.id,
+      count: treatmentPlan.medicationCandidates.length
+    }));
     const sections = { ...(segment.sections || {}) };
     if (!sections.diagnosticos && candidates.diagnoses.length) {
       sections.diagnosticos = [...new Set(candidates.diagnoses.map((candidate) => candidate.rawText).filter(Boolean))].join("\n");

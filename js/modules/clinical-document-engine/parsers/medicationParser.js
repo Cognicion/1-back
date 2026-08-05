@@ -50,7 +50,7 @@ function createCandidate({ item, itemIndex, section, documentId, noteId, date, c
   const detail = nameIndex >= 0 ? item.slice(nameIndex) : item;
   const strength = parseMedicationStrength(detail);
   const schedule = parseMedicationSchedules(detail);
-  const frequency = normalizeMedicationFrequency(detail);
+  const frequency = normalizeMedicationFrequency(detail.replace(/\b(1|una)\s+veces\b/i, "$1 vez"));
   const administration = administrationFromText(detail, schedule);
   const presentation = normalizeMedicationPresentation(detail);
   const route = normalizeMedicationRoute(detail);
@@ -99,6 +99,7 @@ function createCandidate({ item, itemIndex, section, documentId, noteId, date, c
 export function parseMedicationCandidates({ text = "", section = "tratamiento", documentId = "", noteId = "", date = "", medicationCatalog = MEDICAMENTOS } = {}) {
   clinicalImportLogger.info("medicationParser:start", JSON.stringify({ documentId, noteId, section, sourceLength: String(text || "").length }));
   const items = splitMedicationItems(text, medicationCatalog);
+  clinicalImportLogger.info("medicationParser:input-count", JSON.stringify({ documentId, noteId, count: items.length }));
   const candidates = items.filter((item) => !/\b(?:niega|sin\s+uso\s+de|no\s+usa|no\s+toma)\b/i.test(item)).map((item, itemIndex) => {
     const candidate = createCandidate({ item, itemIndex, section, documentId, noteId, date, catalog: medicationCatalog });
     if (candidate && new RegExp(`\\b(?:niega|sin\\s+uso\\s+de|no\\s+usa|no\\s+toma)\\b[^.]{0,80}\\b${candidate.medicationName.replace(/[.*+?^${}()|[\\]\\]/g, "\\\\$&")}\\b`, "i").test(text)) return null;
@@ -130,6 +131,7 @@ export function parseMedicationCandidates({ text = "", section = "tratamiento", 
     return leftPosition - rightPosition;
   });
   candidates.forEach((candidate) => clinicalImportLogger.info("medicationParser:item", JSON.stringify({ documentId, noteId, candidateId: candidate.id, medicationName: candidate.medicationName, confidence: candidate.confidence, schedulesCount: candidate.schedule.length })));
+  clinicalImportLogger.info("medicationParser:output-count", JSON.stringify({ documentId, noteId, count: candidates.length }));
   clinicalImportLogger.info("medicationParser:finished", JSON.stringify({ documentId, noteId, itemCount: items.length, candidateCount: candidates.length }));
   return candidates;
 }

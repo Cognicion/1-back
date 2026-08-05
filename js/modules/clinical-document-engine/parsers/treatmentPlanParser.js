@@ -8,6 +8,8 @@ import { parseMedicationCandidates } from "./medicationParser.js";
 import { clinicalImportLogger } from "../utils/logger.js";
 
 const VERSION = "1.0";
+const MEDICATION_SUBSECTION_HEADING = /(?:^|\n)\s*(?:(?:\d+)\s*[.)-]\s*)?(?:medicamentos|medicaci[oó]n|tratamiento farmacol[oó]gico|f[aá]rmacos)\b[^\n]*/gi;
+const NEXT_PRIMARY_PLAN_ITEM = /\n\s*\d+\s*[.)-]\s*(?=[A-ZÁÉÍÓÚÑ])/g;
 const PRIORITY_RULES = [["urgent", /\burgente\b/i], ["immediate", /\binmediata?\b/i], ["continuous", /\bcontinua|estrecha|vigilancia continua\b/i], ["perShift", /por turno/i], ["daily", /\bdiaria?|cada d[ií]a\b/i], ["asNeeded", /\bprn\b|en caso necesario/i], ["discharge", /al egreso/i]];
 
 export function splitTreatmentPlanItems(text = "") {
@@ -19,9 +21,34 @@ export function splitTreatmentPlanItems(text = "") {
   const inlineNumeric = /[ \t]+(\d+[.)-])(?=[ \t]*[A-ZÁÉÍÓÚÑ])/g;
   while ((match = inlineNumeric.exec(source))) starts.push(match.index + 1);
   if (!starts.length) return source.split(/\n+/).map((item) => item.trim()).filter(Boolean);
-  const chunks = starts.map((start, index) => source.slice(start, starts[index + 1] ?? source.length).replace(/^\s*(?:(?:\d+|[a-z])[.)-]|\*|-)+\s*/i, "").trim()).filter(Boolean);
+  const orderedStarts = [...new Set([0, ...starts])].sort((left, right) => left - right);
+  const chunks = orderedStarts.map((start, index) => source.slice(start, orderedStarts[index + 1] ?? source.length).replace(/^\s*(?:(?:\d+|[a-z])[.)-]|\*|-)+\s*/i, "").trim()).filter(Boolean);
   return mergeMedicationPlanItems(chunks);
   return starts.map((start, index) => source.slice(start, starts[index + 1] ?? source.length).replace(/^\s*(?:(?:\d+|[a-z])[.)-]|•|\*|-)+\s*/i, "").trim()).filter(Boolean);
+}
+
+function extractMedicationSubsections(text = "") {
+  const source = String(text || "").replace(/\r/g, "");
+  const headings = [];
+  let match;
+  while ((match = MEDICATION_SUBSECTION_HEADING.exec(source))) {
+    headings.push({
+      start: match.index,
+      contentStart: match.index + match[0].length,
+      heading: match[0].trim()
+    });
+  }
+  return headings.map((heading, index) => {
+    const nextHeadingStart = headings[index + 1]?.start ?? source.length;
+    const remaining = source.slice(heading.contentStart, nextHeadingStart);
+    const nextPrimary = NEXT_PRIMARY_PLAN_ITEM.exec(remaining);
+    NEXT_PRIMARY_PLAN_ITEM.lastIndex = 0;
+    const inlineSubitem = heading.heading.match(/\b[a-z][.)]\s+(.+)$/i)?.[1] || "";
+    const inlineAfterColon = heading.heading.includes(":") ? heading.heading.slice(heading.heading.indexOf(":") + 1).trim() : "";
+    const inlineValue = inlineSubitem || inlineAfterColon;
+    const value = [inlineValue, remaining.slice(0, nextPrimary?.index ?? remaining.length).trim()].filter(Boolean).join("\n");
+    return { heading: heading.heading, value };
+  }).filter((item) => item.value);
 }
 
 function mergeMedicationPlanItems(items = []) {
@@ -80,9 +107,12 @@ export function parseTreatmentPlan({ text = "", documentId = "", noteId = "", da
   const items = mergeMedicationPlanItems(splitTreatmentPlanItems(source));
   clinicalImportLogger.info("treatmentPlanParser:block", JSON.stringify({ documentId, noteId, bounded: Boolean(bounded.start), itemCount: items.length, boundary: bounded.boundary?.alias || "" }));
   const candidates = items.map((item, index) => createInstruction({ text: item, order: index + 1, documentId, noteId, date, time, sourceHeading, block: blockIndex, startOffset: null, endOffset: null, explicit: Boolean(bounded.start) })).filter(Boolean);
-  const medicationText = candidates.filter((candidate) => candidate.instructionType === "medications").map((candidate) => candidate.text).join("\n");
+  const medicationSubsections = extractMedicationSubsections(source);
+  medicationSubsections.forEach((item) => clinicalImportLogger.info("treatmentPlanParser:medication-heading", JSON.stringify({ documentId, noteId, heading: item.heading.slice(0, 80) })));
+  const medicationText = medicationSubsections.map((item) => item.value).join("\n");
+  clinicalImportLogger.info("treatmentPlanParser:medication-block", JSON.stringify({ documentId, noteId, subsectionCount: medicationSubsections.length, sourceLength: medicationText.length }));
   const medicationCandidates = medicationText ? parseMedicationCandidates({ text: medicationText, section: "plan", documentId, noteId, date }) : [];
-  if (medicationCandidates.length) clinicalImportLogger.info("treatmentPlanParser:delegated-medications", JSON.stringify({ documentId, noteId, count: medicationCandidates.length }));
+  clinicalImportLogger.info("treatmentPlanParser:delegated-medications", JSON.stringify({ documentId, noteId, inputCount: medicationSubsections.length, count: medicationCandidates.length }));
   candidates.forEach((candidate) => clinicalImportLogger.info("treatmentPlanParser:item", JSON.stringify({ documentId, noteId, id: candidate.id, instructionType: candidate.instructionType, order: candidate.order })));
   clinicalImportLogger.info("treatmentPlanParser:finished", JSON.stringify({ documentId, noteId, count: candidates.length, medicationCount: medicationCandidates.length }));
   return { candidates, medicationCandidates, bounded };

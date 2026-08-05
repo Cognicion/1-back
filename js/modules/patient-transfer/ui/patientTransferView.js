@@ -413,6 +413,10 @@ function renderSegmentDiagnosisCandidatesLegacy(doc, segment) {
 
 function renderSegmentTreatmentCandidates(doc, segment) {
   const candidates = segment.treatmentCandidates || [];
+  console.info("[patient-transfer] medications-rendered", JSON.stringify({
+    noteId: segment.id,
+    count: candidates.length
+  }));
   return `
     <section class="patient-transfer-candidates">
       <h4>Medicamentos detectados</h4>

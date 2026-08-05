@@ -51,6 +51,27 @@ assert.equal(adapted.instructions.length, result.candidates.length);
 assert.equal(adapted.instructions[0].entityType, "treatmentPlanInstruction");
 assert.ok(adapted.instructions.every((item) => item.evidence.rawText));
 
+const brianMedicationPlan = `6. MEDICAMENTOS:
+a. OLANZAPINA 10 mg tabletas. Tomar 1 vez al dia. Tomar 1 tableta por via oral a las 22 horas
+b. Sertralina 50 mg tabletas. Tomar 1 veces al dia. Tomar 1 tableta a las 08 horas
+c. Paracetamol 500 mg tabletas. Administrar via oral, 3 veces al dia:
+   - 1 tableta 08:00
+   - 1 tableta a las 15:00
+   - 1 tableta a las 22:00 h
+7. Reportar eventualidades.`;
+const brianMedicationResult = parseTreatmentPlan({ text: brianMedicationPlan, documentId: "brian", noteId: "brian-note", date: "04/08/2026" });
+assert.deepEqual(brianMedicationResult.medicationCandidates.map((item) => item.medicationName), ["Olanzapina", "Sertralina", "Paracetamol"]);
+assert.equal(brianMedicationResult.medicationCandidates[0].strength, 10);
+assert.equal(brianMedicationResult.medicationCandidates[0].route, "oral");
+assert.equal(brianMedicationResult.medicationCandidates[0].frequencyRaw, "1 vez al dia");
+assert.equal(brianMedicationResult.medicationCandidates[1].frequencyRaw, "1 vez al dia");
+assert.equal(brianMedicationResult.medicationCandidates[2].strength, 500);
+assert.equal(brianMedicationResult.medicationCandidates[2].schedule.length, 3);
+assert.ok(brianMedicationResult.medicationCandidates.every((item) => !/reportar eventualidades/i.test(item.metadata.rawMedicationText)));
+const brianMedicationAdapted = adaptTreatmentPlan({ text: brianMedicationPlan, documentId: "brian", noteId: "brian-note", date: "04/08/2026" });
+assert.deepEqual(brianMedicationAdapted.medicationCandidates.map((item) => item.medicationName), ["Olanzapina", "Sertralina", "Paracetamol"]);
+assert.deepEqual(brianMedicationAdapted.medicationCandidates.map((item) => item.schedule.length), [1, 1, 3]);
+
 const iterations = 100;
 const started = performance.now();
 for (let i = 0; i < iterations; i += 1) parseTreatmentPlan({ text: source, documentId: "perf", noteId: String(i), sourceHeading: "PLAN TERAPÉUTICO" });
