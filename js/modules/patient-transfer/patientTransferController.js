@@ -16,6 +16,7 @@ import { initializeFileMultipleNotesMode, MULTIPLE_NOTES_MODES, normalizeMultipl
 import { groupDocumentsByPatient } from "./parsing/documentGroupingService.js";
 import { analyzeDocumentClinically } from "./integration/clinicalAnalysisAdapter.js";
 import { adaptTreatmentPlan } from "../clinical-document-engine/adapters/treatmentPlanAdapter.js";
+import { resolveMedicationCandidatesAgainstCatalog } from "../clinical-document-engine/resolvers/medicationCatalogResolver.js";
 import { findDuplicateImport, findExistingPatientCandidates, saveTransferredGroups } from "./patientTransferRepository.js";
 import {
   closePatientTransferView,
@@ -37,6 +38,24 @@ import {
 let initialized = false;
 let selectedFiles = [];
 let analyzedGroups = [];
+
+function resolveReviewedMedicationCandidates(groups = []) {
+  return groups.map((group) => ({
+    ...group,
+    documents: (group.documents || []).map((document) => {
+      const noteSegments = (document.noteSegments || []).map((segment) => ({
+        ...segment,
+        treatmentCandidates: resolveMedicationCandidatesAgainstCatalog(segment.treatmentCandidates || [])
+      }));
+      const primary = noteSegments[0];
+      return {
+        ...document,
+        noteSegments,
+        treatmentCandidates: primary?.treatmentCandidates || resolveMedicationCandidatesAgainstCatalog(document.treatmentCandidates || [])
+      };
+    })
+  }));
+}
 
 function enrichNoteSegments(document, segments = []) {
   const enriched = segments.map((segment) => {
@@ -548,10 +567,18 @@ async function saveReviewedTransfer({ reuseReviewedGroups = false } = {}) {
   const profile = user ? await getUserProfileOnce(user.uid) : null;
   if (!user) throw new Error("No se pudo identificar al usuario autenticado.");
 
-  // La revisión se sincroniza en cada interacción; al confirmar no se vuelve a
-  // reconstruir desde el DOM para evitar perder selecciones durante un render.
+  syncReviewedGroupsFromView();
   const reviewedGroups = analyzedGroups;
   const persistenceGroups = expandSegmentedGroupsForSave(reviewedGroups);
+  const treatmentCounts = persistenceGroups.reduce((total, group) => group.documents.reduce((count, document) => ({
+    detected: count.detected + (document.treatmentCandidates || []).length,
+    selected: count.selected + (document.treatmentCandidates || []).filter((candidate) => candidate.include || candidate.selectedForImport).length
+  }), total), { detected: 0, selected: 0 });
+  console.info("[patient-transfer] persist:selected-count", JSON.stringify(treatmentCounts));
+  if (treatmentCounts.detected && !treatmentCounts.selected) {
+    showPatientTransferError("Se detectaron medicamentos, pero ninguno fue seleccionado para importar.");
+    return;
+  }
   const blocking = reviewedGroups.find((group) =>
     !group.omitted && group.action === "associate" && !group.selectedPatientId
   );
@@ -661,7 +688,7 @@ function resetAndOpen() {
 
 function syncReviewedGroupsFromView() {
   if (!analyzedGroups.length) return;
-  analyzedGroups = readTransferReview(analyzedGroups);
+  analyzedGroups = resolveReviewedMedicationCandidates(readTransferReview(analyzedGroups));
   setPatientTransferGroups(analyzedGroups);
 
   const counts = analyzedGroups.reduce((total, group) => group.documents.reduce((documentTotal, doc) => {

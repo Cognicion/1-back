@@ -4,8 +4,10 @@ import { ClinicalCandidate } from "../core/ClinicalCandidate.js";
 import { ClinicalEvidence } from "../core/ClinicalEvidence.js";
 import { evaluateConfidence, requiresReviewForConfidence } from "../confidence/confidenceEngine.js";
 import { normalizeClinicalComparisonText } from "../normalizers/textNormalizer.js";
+import { splitMedicationItems } from "../normalizers/medicationNormalizer.js";
 import { parseMedicationCandidates } from "./medicationParser.js";
 import { clinicalImportLogger } from "../utils/logger.js";
+import { MEDICAMENTOS } from "../../../data/medicamentos.js";
 
 const VERSION = "1.0";
 const MEDICATION_SUBSECTION_HEADING = /(?:^|\n)\s*(?:(?:\d+)\s*[.)-]\s*)?(?:medicamentos|medicaci[oó]n|tratamiento farmacol[oó]gico|f[aá]rmacos)\b[^\n]*/gi;
@@ -27,6 +29,19 @@ export function splitTreatmentPlanItems(text = "") {
   return starts.map((start, index) => source.slice(start, starts[index + 1] ?? source.length).replace(/^\s*(?:(?:\d+|[a-z])[.)-]|•|\*|-)+\s*/i, "").trim()).filter(Boolean);
 }
 
+function truncateAtNextPrimaryPlanItem(value = "") {
+  const source = String(value || "");
+  const nextPrimary = NEXT_PRIMARY_PLAN_ITEM.exec(source);
+  NEXT_PRIMARY_PLAN_ITEM.lastIndex = 0;
+  return source.slice(0, nextPrimary?.index ?? source.length).trim();
+}
+
+function looksLikeMedicationPrescription(item = "") {
+  const source = normalizeClinicalComparisonText(item);
+  return /\b\d+(?:[.,]\d+)?\s*(?:mg|g|mcg|ug|ml|ui|%)\b/.test(source)
+    && /\b(?:tabletas?|comprimidos?|capsulas?|jarabe|solucion|suspension|polvo|gotas?|ampolla|vial|parche|spray|inhalador|crema|unguento|supositorio)\b/.test(source);
+}
+
 function extractMedicationSubsections(text = "") {
   const source = String(text || "").replace(/\r/g, "");
   const headings = [];
@@ -38,17 +53,26 @@ function extractMedicationSubsections(text = "") {
       heading: match[0].trim()
     });
   }
-  return headings.map((heading, index) => {
+  const extracted = headings.map((heading, index) => {
     const nextHeadingStart = headings[index + 1]?.start ?? source.length;
     const remaining = source.slice(heading.contentStart, nextHeadingStart);
-    const nextPrimary = NEXT_PRIMARY_PLAN_ITEM.exec(remaining);
-    NEXT_PRIMARY_PLAN_ITEM.lastIndex = 0;
     const inlineSubitem = heading.heading.match(/\b[a-z][.)]\s+(.+)$/i)?.[1] || "";
     const inlineAfterColon = heading.heading.includes(":") ? heading.heading.slice(heading.heading.indexOf(":") + 1).trim() : "";
     const inlineValue = inlineSubitem || inlineAfterColon;
-    const value = [inlineValue, remaining.slice(0, nextPrimary?.index ?? remaining.length).trim()].filter(Boolean).join("\n");
+    const value = truncateAtNextPrimaryPlanItem([inlineValue, remaining].filter(Boolean).join("\n"));
     return { heading: heading.heading, value };
   }).filter((item) => item.value);
+
+  if (extracted.length) return extracted;
+
+  // El extractor de secciones puede consumir el encabezado "MEDICAMENTOS" y
+  // entregar solamente su contenido. Recuperamos el subbloque desde el texto
+  // completo del Plan sin volver a interpretar la prescripción.
+  const prescriptionItems = splitMedicationItems(source, MEDICAMENTOS)
+    .map((item) => truncateAtNextPrimaryPlanItem(item))
+    .filter(looksLikeMedicationPrescription);
+  if (!prescriptionItems.length) return [];
+  return [{ heading: "MEDICAMENTOS (encabezado consumido)", value: prescriptionItems.join("\n"), recovered: true }];
 }
 
 function mergeMedicationPlanItems(items = []) {
@@ -108,11 +132,14 @@ export function parseTreatmentPlan({ text = "", documentId = "", noteId = "", da
   clinicalImportLogger.info("treatmentPlanParser:block", JSON.stringify({ documentId, noteId, bounded: Boolean(bounded.start), itemCount: items.length, boundary: bounded.boundary?.alias || "" }));
   const candidates = items.map((item, index) => createInstruction({ text: item, order: index + 1, documentId, noteId, date, time, sourceHeading, block: blockIndex, startOffset: null, endOffset: null, explicit: Boolean(bounded.start) })).filter(Boolean);
   const medicationSubsections = extractMedicationSubsections(source);
-  medicationSubsections.forEach((item) => clinicalImportLogger.info("treatmentPlanParser:medication-heading", JSON.stringify({ documentId, noteId, heading: item.heading.slice(0, 80) })));
+  medicationSubsections.forEach((item) => clinicalImportLogger.info("treatmentPlanParser:medication-heading", JSON.stringify({ documentId, noteId, found: true, recovered: Boolean(item.recovered), heading: item.heading.slice(0, 80) })));
   const medicationText = medicationSubsections.map((item) => item.value).join("\n");
+  const delegatedItems = medicationText
+    ? splitMedicationItems(medicationText, MEDICAMENTOS).map((item) => truncateAtNextPrimaryPlanItem(item)).filter(looksLikeMedicationPrescription)
+    : [];
   clinicalImportLogger.info("treatmentPlanParser:medication-block", JSON.stringify({ documentId, noteId, subsectionCount: medicationSubsections.length, sourceLength: medicationText.length }));
-  const medicationCandidates = medicationText ? parseMedicationCandidates({ text: medicationText, section: "plan", documentId, noteId, date }) : [];
-  clinicalImportLogger.info("treatmentPlanParser:delegated-medications", JSON.stringify({ documentId, noteId, inputCount: medicationSubsections.length, count: medicationCandidates.length }));
+  const medicationCandidates = delegatedItems.length ? parseMedicationCandidates({ text: delegatedItems.join("\n"), section: "plan", documentId, noteId, date }) : [];
+  clinicalImportLogger.info("treatmentPlanParser:delegated-medications", JSON.stringify({ documentId, noteId, inputCount: delegatedItems.length, count: medicationCandidates.length }));
   candidates.forEach((candidate) => clinicalImportLogger.info("treatmentPlanParser:item", JSON.stringify({ documentId, noteId, id: candidate.id, instructionType: candidate.instructionType, order: candidate.order })));
   clinicalImportLogger.info("treatmentPlanParser:finished", JSON.stringify({ documentId, noteId, count: candidates.length, medicationCount: medicationCandidates.length }));
   return { candidates, medicationCandidates, bounded };

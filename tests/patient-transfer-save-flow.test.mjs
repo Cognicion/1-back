@@ -58,6 +58,8 @@ const clinicalAdapter = read("js/modules/patient-transfer/integration/clinicalDa
 assert.match(clinicalAdapter, /horarios: schedule/, "persistencia conserva horarios estructurados");
 assert.match(clinicalAdapter, /cantidadPorToma/, "persistencia conserva cantidad por toma");
 assert.match(clinicalAdapter, /presentacion/, "persistencia conserva presentacion");
+assert.match(clinicalAdapter, /catalogMedicationId/, "persistencia conserva el vínculo farmacológico con el catálogo");
+assert.match(clinicalAdapter, /persist:firestore-write/, "persistencia deja una traza resumida por tratamiento creado");
 
 const controller = read("js/modules/patient-transfer/patientTransferController.js");
 const transferState = read("js/modules/patient-transfer/patientTransferState.js");
@@ -65,6 +67,7 @@ assert.match(controller, /transferOperationId: `docx_\$\{hash\}`/, "el operation
 assert.match(controller, /try \{[\s\S]*saveTransferredGroups[\s\S]*catch/, "el guardado principal usa try/catch");
 assert.match(controller, /finally \{[\s\S]*setTransferSavingState\(false\)/, "el guardado principal siempre libera saving en finally");
 assert.match(controller, /isTransferSaving\(\)/, "evita doble confirmacion");
+assert.match(controller, /syncReviewedGroupsFromView\(\);[\s\S]*persist:selected-count/, "sincroniza la revisión antes del guardado y valida la selección farmacológica");
 assert.match(controller, /render-result:start/, "traza inicio de render final");
 assert.match(controller, /render-result:success/, "traza exito de render final");
 assert.match(controller, /setPatientTransferExecutionState\(\{[\s\S]*isSaving: true/, "guarda saving en el estado central antes de persistir");

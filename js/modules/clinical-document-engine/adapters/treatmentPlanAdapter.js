@@ -3,6 +3,7 @@ import { EntityNormalizer } from "../engine/EntityNormalizer.js";
 import { EntityValidationEngine } from "../engine/EntityValidationEngine.js";
 import { parseTreatmentPlan } from "../parsers/treatmentPlanParser.js";
 import { toLegacyMedicationCandidate } from "./medicationAdapter.js";
+import { resolveMedicationCandidatesAgainstCatalog } from "../resolvers/medicationCatalogResolver.js";
 
 const normalizer = new EntityNormalizer();
 const validator = new EntityValidationEngine();
@@ -40,7 +41,8 @@ export function adaptTreatmentPlanCandidates(candidates = []) {
 
 export function adaptTreatmentPlan(args = {}) {
   const result = parseTreatmentPlan(args);
-  return { ...result, instructions: adaptTreatmentPlanCandidates(result.candidates), medicationCandidates: result.medicationCandidates.map(toLegacyMedicationCandidate) };
+  const resolvedMedicationCandidates = resolveMedicationCandidatesAgainstCatalog(result.medicationCandidates);
+  return { ...result, instructions: adaptTreatmentPlanCandidates(result.candidates), medicationCandidates: resolvedMedicationCandidates.map(toLegacyMedicationCandidate) };
 }
 
 export class TreatmentPlanAdapter {

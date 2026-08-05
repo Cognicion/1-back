@@ -170,6 +170,26 @@ function renderCandidateSelect(group) {
     </label>`;
 }
 
+function medicationCatalogStatusLabel(candidate = {}) {
+  const labels = {
+    exact: "Coincidencia exacta",
+    high: "Coincidencia probable",
+    medium: "Varias coincidencias",
+    low: "Coincidencia débil",
+    none: "No encontrado"
+  };
+  return labels[candidate.catalogMatchStatus] || labels.none;
+}
+
+function medicationCatalogOptions(candidate = {}) {
+  const alternatives = Array.isArray(candidate.catalogAlternatives) ? candidate.catalogAlternatives : [];
+  const selectedId = candidate.catalogMedicationId || "";
+  return [
+    option("", "Ninguno / medicamento no catalogado", !selectedId),
+    ...alternatives.map((item) => option(item.id, item.genericName || item.name || item.id, item.id === selectedId))
+  ].join("");
+}
+
 function renderDuplicateWarning(group) {
   const matches = group.possibleMatches || group.candidates || [];
   const strongest = matches.find((match) => match.showAlert !== false && ["media", "alta", "muy_alta"].includes(match.level));
@@ -421,13 +441,14 @@ function renderSegmentTreatmentCandidates(doc, segment) {
     <section class="patient-transfer-candidates">
       <h4>Medicamentos detectados</h4>
       ${candidates.length ? `<div class="patient-transfer-table-scroll"><table class="patient-transfer-data-table">
-        <thead><tr><th>Incluir</th><th>Medicamento</th><th>Presentación</th><th>Concentración</th><th>Dosis por toma</th><th>Vía</th><th>Frecuencia</th><th>Horario</th><th>Acción</th><th>Fecha</th><th>Fuente</th></tr></thead><tbody>${candidates.map((candidate) => {
+        <thead><tr><th>Incluir</th><th>Medicamento</th><th>Catálogo</th><th>Presentación</th><th>Concentración</th><th>Dosis por toma</th><th>Vía</th><th>Frecuencia</th><th>Horario</th><th>Acción</th><th>Fecha</th><th>Fuente</th></tr></thead><tbody>${candidates.map((candidate) => {
         const key = segmentControlKey(doc, segment, candidate);
         const scheduleText = formatMedicationSchedule(candidate.schedule) || candidate.scheduleText || "";
         console.info("[patient-transfer] medication:rendered", JSON.stringify({ noteId: segment.id, medicationName: candidate.medicationName, strength: candidate.strengthValue ?? candidate.dose ?? null, route: candidate.route || "", frequency: candidate.frequencyRaw || "", schedulesCount: Array.isArray(candidate.schedule) ? candidate.schedule.length : 0, action: candidate.action || candidate.statusSuggestion || "" }));
         return `<tr>
           <td><input aria-label="Incluir medicamento" type="checkbox" data-transfer-tx-include="${key}" ${candidate.selectedForImport ? "checked" : ""}></td>
           <td><input data-transfer-tx-name="${key}" value="${escapeHtml(candidate.medicationName || "")}" placeholder="Medicamento"></td>
+          <td><small>${escapeHtml(medicationCatalogStatusLabel(candidate))}${candidate.catalogPresentationMatch === false ? " · Presentación por revisar" : ""}</small><select data-transfer-tx-catalog="${key}" data-initial-value="${escapeHtml(candidate.catalogMedicationId || "")}" data-catalog-original-name="${escapeHtml(candidate.medicationName || "")}" aria-label="Medicamento del catálogo">${medicationCatalogOptions(candidate)}</select><small>Se vinculará con el catálogo para interacciones y advertencias.</small></td>
           <td><input data-transfer-tx-presentation="${key}" value="${escapeHtml(candidate.presentation || "")}" placeholder="Presentación"></td>
           <td><input data-transfer-tx-strength="${key}" value="${escapeHtml(candidate.strengthValue ?? candidate.dose ?? "")}" placeholder="Concentración"><input data-transfer-tx-strength-unit="${key}" value="${escapeHtml(candidate.strengthUnit || candidate.doseUnit || "")}" placeholder="Unidad"></td>
           <td><input data-transfer-tx-admin-quantity="${key}" value="${escapeHtml(candidate.administrationQuantity ?? "")}" placeholder="Cantidad"><input data-transfer-tx-admin-unit="${key}" value="${escapeHtml(candidate.administrationUnit || "")}" placeholder="Unidad"></td>
@@ -467,7 +488,8 @@ const TREATMENT_PLAN_TYPE_LABELS = {
 };
 
 function renderSegmentTreatmentPlanCandidates(doc, segment) {
-  const candidates = segment.treatmentPlanCandidates || [];
+  const candidates = (segment.treatmentPlanCandidates || []).filter((candidate) => candidate.instructionType !== "medications");
+  const delegatedMedicationCount = (segment.treatmentCandidates || []).length;
   const groups = candidates.reduce((result, candidate) => {
     const key = candidate.instructionType || "otherInstruction";
     (result[key] ||= []).push(candidate);
@@ -475,6 +497,7 @@ function renderSegmentTreatmentPlanCandidates(doc, segment) {
   }, {});
   return `<section class="patient-transfer-candidates patient-transfer-treatment-plan">
     <h4>Plan terapéutico detectado</h4>
+    ${delegatedMedicationCount ? `<p>${delegatedMedicationCount} medicamento${delegatedMedicationCount === 1 ? "" : "s"} delegado${delegatedMedicationCount === 1 ? "" : "s"} al parser farmacológico. Revise la tabla “Medicamentos detectados”.</p>` : ""}
     ${candidates.length ? Object.entries(groups).map(([type, items]) => `<div class="patient-transfer-plan-group">
       <h5>${escapeHtml(TREATMENT_PLAN_TYPE_LABELS[type] || type)}</h5>
       ${items.map((candidate) => {
@@ -665,6 +688,14 @@ export function collectRenderedSubjectiveMetrics(groups = []) {
 
 export function readTransferReview(groups = []) {
   const modal = ensureRoot();
+  const reviewedCatalogMedicationId = (key, candidate, medicationName) => {
+    const control = modal.querySelector(`[data-transfer-tx-catalog="${key}"]`);
+    if (!control) return candidate.catalogMedicationId || null;
+    const selectionChanged = control.value !== (control.dataset.initialValue || "");
+    return selectionChanged || medicationName === (control.dataset.catalogOriginalName || "")
+      ? (control.value || null)
+      : null;
+  };
   return groups.map((group) => {
     const actionControl = modal.querySelector(`[data-transfer-action="${group.id}"]:checked`)?.value || "create";
     const duplicateControl = modal.querySelector(`[data-transfer-duplicate-resolution="${group.id}"]:checked`);
@@ -703,11 +734,15 @@ export function readTransferReview(groups = []) {
         isPrimary: modal.querySelector(`[data-transfer-dx-principal="${doc.id}:${candidate.id}"]`)?.checked || false,
         confirmedByDoctor: modal.querySelector(`[data-transfer-dx-include="${doc.id}:${candidate.id}"]`)?.checked || false
       }));
-      const treatmentCandidates = (doc.treatmentCandidates || []).map((candidate) => ({
+      const treatmentCandidates = (doc.treatmentCandidates || []).map((candidate) => {
+        const key = `${doc.id}:${candidate.id}`;
+        const medicationName = modal.querySelector(`[data-transfer-tx-name="${key}"]`)?.value?.trim() || "";
+        return {
         ...candidate,
         include: modal.querySelector(`[data-transfer-tx-include="${doc.id}:${candidate.id}"]`)?.checked || false,
         selectedForImport: modal.querySelector(`[data-transfer-tx-include="${doc.id}:${candidate.id}"]`)?.checked || false,
-        medicationName: modal.querySelector(`[data-transfer-tx-name="${doc.id}:${candidate.id}"]`)?.value?.trim() || "",
+        medicationName,
+        catalogMedicationId: reviewedCatalogMedicationId(key, candidate, medicationName),
         presentation: modal.querySelector(`[data-transfer-tx-presentation="${doc.id}:${candidate.id}"]`)?.value?.trim() || candidate.presentation || "",
         strengthValue: modal.querySelector(`[data-transfer-tx-strength="${doc.id}:${candidate.id}"]`)?.value?.trim() || candidate.strengthValue || "",
         strengthUnit: modal.querySelector(`[data-transfer-tx-strength-unit="${doc.id}:${candidate.id}"]`)?.value?.trim() || candidate.strengthUnit || candidate.doseUnit || "",
@@ -722,7 +757,8 @@ export function readTransferReview(groups = []) {
         action: modal.querySelector(`[data-transfer-tx-status="${doc.id}:${candidate.id}"]`)?.value || candidate.action || candidate.statusSuggestion,
         statusSuggestion: modal.querySelector(`[data-transfer-tx-status="${doc.id}:${candidate.id}"]`)?.value || candidate.statusSuggestion,
         confirmedByDoctor: modal.querySelector(`[data-transfer-tx-include="${doc.id}:${candidate.id}"]`)?.checked || false
-      }));
+      };
+      });
       const vitalSignsCandidates = (doc.vitalSignsCandidates || []).map((candidate) => {
         const key = `${doc.id}:${candidate.id}`;
         const pa = modal.querySelector(`[data-transfer-vitals-pa="${key}"]`)?.value?.trim() || "";
@@ -772,11 +808,13 @@ export function readTransferReview(groups = []) {
         const segmentTreatments = (segment.treatmentCandidates || []).map((candidate) => {
           const key = `${prefix}:${candidate.id}`;
           const checked = modal.querySelector(`[data-transfer-tx-include="${key}"]`)?.checked || false;
+          const medicationName = modal.querySelector(`[data-transfer-tx-name="${key}"]`)?.value?.trim() || candidate.medicationName || "";
           return {
             ...candidate,
             include: checked,
             selectedForImport: checked,
-            medicationName: modal.querySelector(`[data-transfer-tx-name="${key}"]`)?.value?.trim() || candidate.medicationName || "",
+            medicationName,
+            catalogMedicationId: reviewedCatalogMedicationId(key, candidate, medicationName),
             presentation: modal.querySelector(`[data-transfer-tx-presentation="${key}"]`)?.value?.trim() || candidate.presentation || "",
             strengthValue: modal.querySelector(`[data-transfer-tx-strength="${key}"]`)?.value?.trim() || candidate.strengthValue || "",
             strengthUnit: modal.querySelector(`[data-transfer-tx-strength-unit="${key}"]`)?.value?.trim() || candidate.strengthUnit || candidate.doseUnit || "",

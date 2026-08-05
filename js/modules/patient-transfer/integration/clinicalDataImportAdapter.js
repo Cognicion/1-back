@@ -17,7 +17,7 @@ function diagnosisKey(candidate = {}) {
 
 function treatmentKey(candidate = {}, context = {}) {
   return [
-    normalizeKey(candidate.normalizedMedicationName || candidate.medicationName || candidate.medicamento || candidate.nombreMedicamento),
+    normalizeKey(candidate.catalogMedicationId || candidate.medicationId || candidate.normalizedMedicationName || candidate.medicationName || candidate.medicamento || candidate.nombreMedicamento),
     normalizeKey(candidate.action || candidate.accionFarmacologica || candidate.statusSuggestion || candidate.estado),
     normalizeKey(candidate.date || candidate.fechaInicio || context.date),
     normalizeKey(candidate.sourceSection),
@@ -61,8 +61,16 @@ function treatmentPayload(candidate = {}, context = {}) {
   const strengthUnit = candidate.strengthUnit || candidate.doseUnit || "";
   const schedule = Array.isArray(candidate.schedule) ? candidate.schedule : [];
   return {
+    medicationId: candidate.catalogMedicationId || candidate.medicationId || "",
+    catalogMedicationId: candidate.catalogMedicationId || null,
+    catalogMatchStatus: candidate.catalogMatchStatus || "none",
+    catalogMatchScore: candidate.catalogMatchScore ?? 0,
+    catalogMatchMethod: candidate.catalogMatchMethod || "none",
+    catalogPresentationMatch: candidate.catalogPresentationMatch ?? null,
+    requiresCatalogReview: Boolean(candidate.requiresCatalogReview),
     medicamento: candidate.medicationName || "",
     nombreMedicamento: candidate.medicationName || "",
+    genericName: candidate.genericName || candidate.medicationName || "",
     presentacion: candidate.presentation || "",
     dosis: [strengthValue, strengthUnit].filter(Boolean).join(" "),
     dosisValor: strengthValue,
@@ -91,6 +99,7 @@ function treatmentPayload(candidate = {}, context = {}) {
     importCandidateKey: treatmentKey(candidate, context),
     sourceSection: candidate.sourceSection || "",
     sourceLocation: candidate.sourceLocation || null,
+    evidence: candidate.evidence || null,
     _auditoria: {
       usuarioUid: context.user?.uid || "",
       usuarioNombre: context.user?.nombre || context.user?.email || "",
@@ -174,6 +183,11 @@ export async function createImportedTreatments(patientId, candidates = [], conte
     const ref = await crearTratamiento(patientId, payload);
     seen.add(key);
     created.push({ id: ref.id, ...payload });
+    console.info("[patient-transfer] persist:firestore-write", JSON.stringify({
+      candidateId: candidate.id || "",
+      catalogLinked: Boolean(payload.catalogMedicationId),
+      created: true
+    }));
   }
 
   console.info("[patient-transfer] treatments:persist-success", { patientId, created: created.length, existing: existing.length });

@@ -1,6 +1,7 @@
 import { detectMedicationCandidates, parseMedicationCandidates } from "../parsers/medicationParser.js";
 import { validateMedication } from "../validators/medicationValidator.js";
 import { EntityFactory } from "../engine/EntityFactory.js";
+import { resolveMedicationAgainstCatalog } from "../resolvers/medicationCatalogResolver.js";
 
 function asClinicalEntity(candidate = {}) {
   return candidate.entityType && candidate.value !== undefined && candidate.identity
@@ -14,10 +15,17 @@ export function toLegacyMedicationCandidate(candidate = {}) {
   const source = entity.value || {};
   const legacy = {
     id: entity.id,
-    medicationId: source.medicationId || source.medicationName || "",
+    medicationId: source.catalogMedicationId || source.medicationId || source.medicationName || "",
     medicationName: source.medicationName || "",
     normalizedMedicationName: source.normalizedMedicationName || entity.normalizedValue || "",
     genericName: source.genericName || source.medicationName || "",
+    catalogMedicationId: source.catalogMedicationId || null,
+    catalogMatchStatus: source.catalogMatchStatus || "none",
+    catalogMatchScore: source.catalogMatchScore ?? 0,
+    catalogMatchMethod: source.catalogMatchMethod || "none",
+    catalogAlternatives: Array.isArray(source.catalogAlternatives) ? source.catalogAlternatives : [],
+    catalogPresentationMatch: source.catalogPresentationMatch ?? null,
+    requiresCatalogReview: Boolean(source.requiresCatalogReview),
     presentation: source.presentation || "",
     strengthValue: source.strength ?? null,
     strengthUnit: source.strengthUnit || "",
@@ -39,7 +47,7 @@ export function toLegacyMedicationCandidate(candidate = {}) {
     sourceText: entity.metadata?.rawMedicationText || entity.evidence?.[0]?.rawText || "",
     rawMedicationText: entity.metadata?.rawMedicationText || entity.evidence?.[0]?.rawText || "",
     sourceSection: entity.metadata?.sourceSection || "tratamiento",
-    evidence: entity.evidence?.[0] || {},
+    evidence: { ...(entity.evidence?.[0] || {}), noteId: entity.metadata?.noteId || "" },
     confidence: entity.confidence === "HIGH" ? "high" : entity.confidence === "MEDIUM" ? "medium" : entity.confidence === "LOW" ? "low" : "not-detected",
     requiresReview: Boolean(source.requiresReview || entity.metadata?.validation?.valid === false),
     selectedForImport: false,
@@ -54,7 +62,7 @@ export function toLegacyMedicationCandidate(candidate = {}) {
 }
 
 export function adaptMedicationCandidates(args = {}) {
-  return detectMedicationCandidates(args).map(toLegacyMedicationCandidate);
+  return detectMedicationCandidates(args).map((candidate) => resolveMedicationAgainstCatalog(candidate)).map(toLegacyMedicationCandidate);
 }
 
 export function adaptMedicationParser(args = {}) {
@@ -62,5 +70,5 @@ export function adaptMedicationParser(args = {}) {
 }
 
 export function adaptMedicationBlock(args = {}) {
-  return parseMedicationCandidates(args).map(toLegacyMedicationCandidate);
+  return parseMedicationCandidates(args).map((candidate) => resolveMedicationAgainstCatalog(candidate)).map(toLegacyMedicationCandidate);
 }
