@@ -23,6 +23,12 @@ const candidate = {
 
 assert.equal(normalizePatientName("Ismerai Hernández García"), "ISMERAI HERNANDEZ GARCIA");
 assert.equal(normalizeRecordNumber("197 805"), "197805");
+assert.equal(normalizeRecordNumber("198 141"), "198141");
+assert.equal(normalizeRecordNumber("198-141"), "198141");
+assert.equal(normalizeRecordNumber("198.141"), "198141");
+assert.equal(normalizeRecordNumber(" 198  141\u00a0"), "198141");
+assert.equal(normalizeRecordNumber("AB 12-34"), "AB1234");
+assert.equal(normalizeRecordNumber("001 245"), "001245");
 assert.equal(normalizeBirthDate("08/04/1999"), "1999-04-08");
 
 const [strong] = findPossiblePatientMatches(candidate, [{
@@ -64,5 +70,8 @@ const visibleDifference = findPossiblePatientMatches({ nombre: "Ana López", ser
   id: "patient-existing-5", nombre: "Ana López", servicio: "Hospitalización"
 }]);
 assert.ok(visibleDifference[0].conflictingFields.some((field) => field.label === "Servicio"));
+
+const differentlyFormattedRecord = findPossiblePatientMatches({ expediente: "198 141" }, [{ id: "patient-existing-6", expediente: "198-141" }]);
+assert.equal(differentlyFormattedRecord[0].matchedFields[0].label, "Expediente");
 
 console.log("patient-transfer-duplicate-matcher: ok");

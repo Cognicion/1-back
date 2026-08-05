@@ -10,7 +10,7 @@ import { vitalSignsToNotePayload } from "./parsing/vitalSignsParser.js";
 import { construirActualizacionSignosVitalesDesdeNota } from "../../services/signosVitalesNotas.js";
 import { listarPacientes } from "../../services/usuarios.js";
 import { withPatientTransferTimeout } from "./patientTransferTimeout.js";
-import { findPossiblePatientMatches } from "./parsing/patientDuplicateMatcher.js";
+import { findPossiblePatientMatches, normalizeRecordNumber } from "./parsing/patientDuplicateMatcher.js";
 import {
   addDoc,
   collection,
@@ -83,7 +83,7 @@ function patientSummary(docSnap) {
     nombres: data.nombres || "",
     apellidoPaterno: data.apellidoPaterno || "",
     apellidoMaterno: data.apellidoMaterno || "",
-    expediente: data.expediente || data.numeroExpediente || data.datosInstitucionales?.expediente || "",
+    expediente: normalizeRecordNumber(data.expediente || data.numeroExpediente || data.datosInstitucionales?.expediente),
     curp: data.curp || data.datosInstitucionales?.curp || "",
     fechaNacimiento: data.fechaNacimiento || data.datosInstitucionales?.fechaNacimiento || "",
     edad: data.edad || "",

@@ -1,4 +1,5 @@
 import { resolvePatientIdentity } from "./patientIdentityResolver.js";
+import { normalizeRecordNumber } from "./patientDuplicateMatcher.js";
 
 function normalize(value = "") {
   return String(value)
@@ -14,7 +15,7 @@ function valueOf(doc, key) {
 }
 
 function groupKeyForDocument(doc) {
-  const expediente = normalize(valueOf(doc, "expediente"));
+  const expediente = normalizeRecordNumber(valueOf(doc, "expediente"));
   if (expediente) return `exp:${expediente}`;
   const curp = normalize(valueOf(doc, "curp"));
   if (curp) return `curp:${curp}`;
@@ -34,7 +35,10 @@ function mergeFields(groupFields = {}, docFields = {}, conflicts = []) {
       next[key] = field;
       return;
     }
-    if (normalize(next[key].value) !== normalize(field.value)) {
+    const valuesMatch = key === "expediente"
+      ? normalizeRecordNumber(next[key].value) === normalizeRecordNumber(field.value)
+      : normalize(next[key].value) === normalize(field.value);
+    if (!valuesMatch) {
       conflicts.push({ key, current: next[key], incoming: field });
     }
   });

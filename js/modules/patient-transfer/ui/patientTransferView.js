@@ -1,7 +1,7 @@
 import { FIELD_RULES, NOTE_TYPE_RULES } from "../../importacionDocx/docxImportConfig.js";
 import { construirNombreCompletoPaciente } from "../../../utils/nombresPacientes.js";
 import { parseMedicationSchedules } from "../parsing/clinicalCandidateParser.js?v=20260804-duplicate-diagnosis-v1";
-import { buildPatientMatchExplanation } from "../parsing/patientDuplicateMatcher.js";
+import { buildPatientMatchExplanation, normalizeRecordNumber } from "../parsing/patientDuplicateMatcher.js";
 
 let root = null;
 
@@ -622,7 +622,9 @@ export function readTransferReview(groups = []) {
     const action = duplicateAction === "link-existing" ? "associate" : duplicateAction === "omit" ? "omit" : actionControl;
     const confirmedFields = {};
     FIELD_RULES.forEach((rule) => {
-      confirmedFields[rule.key] = modal.querySelector(`[data-transfer-field="${group.id}:${rule.key}"]`)?.value?.trim() || "";
+      const rawValue = modal.querySelector(`[data-transfer-field="${group.id}:${rule.key}"]`)?.value?.trim() || "";
+      confirmedFields[rule.key] = rule.key === "expediente" ? normalizeRecordNumber(rawValue) : rawValue;
+      if (rule.key === "expediente") confirmedFields.expedienteOriginal = rawValue;
     });
     confirmedFields.nombre = construirNombreCompletoPaciente({
       nombres: confirmedFields.nombres,
@@ -831,6 +833,10 @@ export function syncPatientNameInputs(event) {
   const input = event.target.closest("[data-transfer-field]");
   if (!input) return;
   const [groupId, key] = String(input.dataset.transferField || "").split(":");
+  if (key === "expediente") {
+    input.value = normalizeRecordNumber(input.value);
+    return;
+  }
   if (!groupId || !["nombres", "apellidoPaterno", "apellidoMaterno"].includes(key)) return;
   const modal = ensureRoot();
   const fullNameInput = modal.querySelector(`[data-transfer-field="${groupId}:nombre"]`);

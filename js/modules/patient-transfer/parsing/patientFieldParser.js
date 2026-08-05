@@ -86,7 +86,7 @@ function parseAge(value = "") {
 }
 
 function parseRecordNumber(value = "") {
-  return cleanExtractedFieldValue(value);
+  return normalizeRecordNumber(value);
 }
 
 function parseDocumentTime(value = "") {
@@ -299,6 +299,7 @@ function candidateToField(candidate, alternatives = [], conflict = false) {
   return {
     value: candidate.normalizedValue,
     rawValue: candidate.rawValue,
+    ...(candidate.fieldKey === "expediente" ? { expedienteOriginal: candidate.rawValue } : {}),
     normalizedValue: candidate.normalizedValue,
     detectionMethod: candidate.detectionRule,
     sourceFileId: candidate.sourceFileId,
@@ -467,3 +468,4 @@ export function fieldValues(fields = {}) {
 }
 
 export { FIELD_RULES };
+import { normalizeRecordNumber } from "./patientDuplicateMatcher.js";

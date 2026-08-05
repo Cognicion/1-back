@@ -9,7 +9,14 @@ export function normalizePatientName(value = "") {
 }
 
 export function normalizeRecordNumber(value = "") {
-  return String(valueOf(value) || "").toUpperCase().replace(/[^A-Z0-9]/g, "");
+  return String(valueOf(value) || "")
+    .replace(/\u00a0/g, " ")
+    .trim()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[\s\-–—._/]+/g, "")
+    .toUpperCase()
+    .replace(/[^A-Z0-9]/g, "");
 }
 
 export function normalizeCurp(value = "") { return normalizeRecordNumber(value); }

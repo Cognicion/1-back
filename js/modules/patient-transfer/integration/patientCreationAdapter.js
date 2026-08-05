@@ -1,11 +1,13 @@
 import { crearPacienteProvisional } from "../../../services/usuarios.js?v=20260729-imc-payload-fix";
 import { construirNombreCompletoPaciente } from "../../../utils/nombresPacientes.js";
+import { normalizeRecordNumber } from "../parsing/patientDuplicateMatcher.js";
 
 export function buildPatientPayload(fields = {}, user = {}) {
   const nombres = String(fields.nombres || "").trim().replace(/\s+/g, " ");
   const apellidoPaterno = String(fields.apellidoPaterno || "").trim().replace(/\s+/g, " ");
   const apellidoMaterno = String(fields.apellidoMaterno || "").trim().replace(/\s+/g, " ");
   const name = construirNombreCompletoPaciente({ nombres, apellidoPaterno, apellidoMaterno }) || fields.nombre || "Paciente importado sin nombre";
+  const expediente = normalizeRecordNumber(fields.expediente || fields.numeroExpediente);
   return {
     nombre: name,
     nombreCompleto: name,
@@ -22,8 +24,8 @@ export function buildPatientPayload(fields = {}, user = {}) {
     institucion: fields.institucion || "",
     servicioInstitucional: fields.servicio || "",
     servicio: fields.servicio || "",
-    expediente: fields.expediente || "",
-    numeroExpediente: fields.expediente || "",
+    expediente,
+    numeroExpediente: expediente,
     cama: fields.cama || "",
     genero: fields.genero || "",
     alergias: fields.alergias || "",
@@ -42,7 +44,7 @@ export function buildPatientPayload(fields = {}, user = {}) {
       curp: fields.curp || "",
       institucionPaciente: fields.institucion || "",
       servicioInstitucional: fields.servicio || "",
-      expediente: fields.expediente || "",
+      expediente,
       cama: fields.cama || "",
       genero: fields.genero || "",
       alergias: fields.alergias || "",

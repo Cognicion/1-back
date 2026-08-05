@@ -14,7 +14,8 @@ const candidates = extractLabeledFieldsFromText(headerText);
 assert.equal(candidates.find((item) => item.fieldKey === "nombre")?.normalizedValue, "FILEMON CECILIO ARTEAGA BALTAZAR");
 assert.equal(candidates.find((item) => item.fieldKey === "fechaNacimiento")?.normalizedValue, "22/11/1947");
 assert.equal(candidates.find((item) => item.fieldKey === "edad")?.normalizedValue, "78");
-assert.equal(candidates.find((item) => item.fieldKey === "expediente")?.normalizedValue, "198 150");
+assert.equal(candidates.find((item) => item.fieldKey === "expediente")?.normalizedValue, "198150");
+assert.equal(candidates.find((item) => item.fieldKey === "expediente")?.rawValue, "198 150");
 assert.equal(candidates.find((item) => item.fieldKey === "cama")?.normalizedValue, "01");
 assert.equal(candidates.find((item) => item.fieldKey === "fecha")?.normalizedValue, "02/08/2026");
 assert.equal(candidates.find((item) => item.fieldKey === "hora")?.normalizedValue, "20:50");
@@ -53,7 +54,7 @@ assert.deepEqual(values, {
   apellidoMaterno: "BALTAZAR",
   fechaNacimiento: "22/11/1947",
   edad: "78",
-  expediente: "198 150",
+  expediente: "198150",
   cama: "01",
   fecha: "02/08/2026",
   hora: "20:50",
@@ -132,7 +133,7 @@ assert.equal(arellanoValues.apellidoMaterno, "FRANCO");
 assert.equal(arellano.fields.nombre.nameSplit.ruleApplied, "institutional-paternal-maternal-given");
 assert.equal(arellanoValues.fechaNacimiento, "02/03/1989");
 assert.equal(arellanoValues.edad, "37");
-assert.equal(arellanoValues.expediente, "198 141");
+assert.equal(arellanoValues.expediente, "198141");
 assert.equal(arellanoValues.cama, "02");
 assert.equal(arellanoValues.fecha, "31/07/2026");
 assert.equal(arellanoValues.hora, "21:00");
@@ -154,6 +155,7 @@ assert.equal(ismeraiValues.apellidoPaterno, "Hernandez");
 assert.equal(ismeraiValues.apellidoMaterno, "García");
 assert.equal(ismeraiValues.fechaNacimiento, "08/04/1999");
 assert.equal(ismeraiValues.expediente, "197805");
+assert.equal(ismerai.fields.expediente.expedienteOriginal, "197805");
 assert.equal(ismeraiValues.hora, "17:26");
 const ismeraiIdentity = resolvePatientIdentity(ismerai.fields);
 assert.equal(ismeraiIdentity.identityConfidence, "high");

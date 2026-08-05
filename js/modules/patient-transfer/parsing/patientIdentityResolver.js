@@ -1,4 +1,5 @@
 import { fieldValues, normalizeLabelForMatching } from "./patientFieldParser.js";
+import { normalizeRecordNumber } from "./patientDuplicateMatcher.js";
 
 export function normalizePatientIdentityValue(value = "") {
   return String(value || "")
@@ -13,7 +14,7 @@ export function normalizePatientIdentityValue(value = "") {
 export function resolvePatientIdentity(fields = {}) {
   const values = fieldValues(fields);
   const nombreCompleto = String(values.nombre || "").trim();
-  const expediente = String(values.expediente || "").replace(/\s+/g, " ").trim();
+  const expediente = normalizeRecordNumber(values.expediente);
   const fechaNacimiento = String(values.fechaNacimiento || "").trim();
   const edad = String(values.edad || "").trim();
   const servicio = String(values.servicio || "").trim();
