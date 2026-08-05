@@ -20,6 +20,7 @@ import { resolveMedicationCandidatesAgainstCatalog } from "../clinical-document-
 import { findDuplicateImport, findExistingPatientCandidates, saveTransferredGroups } from "./patientTransferRepository.js";
 import {
   closePatientTransferView,
+  applyBulkCandidateSelection,
   getPatientTransferRoot,
   openPatientTransferView,
   readTransferReview,
@@ -32,6 +33,7 @@ import {
   setTransferSavingState,
   showPatientTransferError,
   isTransferSaving,
+  syncBulkSelectionControls,
   syncPatientNameInputs
 } from "./ui/patientTransferView.js";
 
@@ -690,6 +692,7 @@ function syncReviewedGroupsFromView() {
   if (!analyzedGroups.length) return;
   analyzedGroups = resolveReviewedMedicationCandidates(readTransferReview(analyzedGroups));
   setPatientTransferGroups(analyzedGroups);
+  syncBulkSelectionControls(analyzedGroups);
 
   const counts = analyzedGroups.reduce((total, group) => group.documents.reduce((documentTotal, doc) => {
     const owners = doc.noteSegments?.length ? doc.noteSegments : [doc];
@@ -709,6 +712,27 @@ function syncReviewedGroupsFromView() {
   });
 
   console.info("[patient-transfer] review-state:updated", counts);
+}
+
+function selectAllCandidatesInSegment(control) {
+  const selected = Boolean(control.checked);
+  syncReviewedGroupsFromView();
+  const candidateType = control.dataset.candidateType || "";
+  const result = applyBulkCandidateSelection(analyzedGroups, {
+    documentId: control.dataset.documentId || "",
+    noteId: control.dataset.noteId || "",
+    candidateType,
+    selected
+  });
+  analyzedGroups = result.groups;
+  setPatientTransferGroups(analyzedGroups);
+  renderDetectedGroups(analyzedGroups);
+  console.info(`[patient-transfer] ${candidateType === "diagnosis" ? "select-all-diagnoses" : "select-all-treatments"}`, {
+    documentId: control.dataset.documentId || "",
+    noteId: control.dataset.noteId || "",
+    selected,
+    affectedCount: result.affectedCount
+  });
 }
 
 function setFileMultipleNotesMode(documentId, value, { afterAnalysis = false } = {}) {
@@ -833,6 +857,11 @@ export function initializePatientTransfer() {
   });
 
   root.addEventListener("change", (event) => {
+    const selectAll = event.target.closest("[data-transfer-select-all]");
+    if (selectAll) {
+      selectAllCandidatesInSegment(selectAll);
+      return;
+    }
     const fileMode = event.target.closest("[data-transfer-file-multiple-mode]");
     if (fileMode) {
       const documentId = fileMode.dataset.transferFileMultipleMode;

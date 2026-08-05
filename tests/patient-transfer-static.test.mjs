@@ -72,6 +72,12 @@ assert.match(transferView, /data-transfer-split-segment/, "la vista permite divi
 assert.match(transferView, /data-transfer-merge-segment/, "la vista permite unir segmentos");
 assert.match(transferView, /renderSegmentDiagnosisCandidates/, "la vista renderiza diagnósticos por nota");
 assert.match(transferView, /renderSegmentTreatmentCandidates/, "la vista renderiza tratamientos por nota");
+assert.match(transferView, /data-transfer-select-all/, "cada sección por nota expone su control de inclusión masiva");
+assert.match(transferView, /data-document-id=/, "el control maestro identifica el documento estable");
+assert.match(transferView, /data-note-id=/, "el control maestro identifica la nota estable");
+assert.match(transferView, /data-candidate-type=/, "el control maestro identifica la sección clínica");
+assert.match(controller, /applyBulkCandidateSelection/, "el controlador actualiza el estado central al seleccionar todos");
+assert.match(controller, /patient-transfer\] \$\{candidateType === "diagnosis" \? "select-all-diagnoses" : "select-all-treatments"\}/, "el controlador conserva trazas resumidas de selección masiva");
 assert.match(transferView, /Exploración física \/ neurológica/, "la vista usa el nombre clínico solicitado");
 assert.match(transferView, /patient-transfer-vitals-table/, "los signos vitales se presentan en tabla compacta");
 assert.match(transferView, /index === 0 \? "open" : ""/, "solo la primera nota inicia expandida");
