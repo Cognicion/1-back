@@ -43,4 +43,24 @@ assert.equal(unpaired.length, 1);
 assert.equal(unpaired[0].code, null);
 assert.equal(unpaired[0].requiresReview, true);
 
+const structured = parseDiagnosisBlock({
+  text: "DIAGNÓSTICOS DE ACUERDO A CIE-10:\nTrastorno depresivo recurrente, episodio actual grave sin síntomas psicóticos | F33.2\nSE AGREGA\nDistimia | F34.1\nSoporte familiar inadecuado | Z63.2\nCOMENTARIO Y/O ANÁLISIS CLÍNICO\nPaciente femenina en la cuarta década.",
+  explicit: true,
+  documentId: "structured"
+});
+assert.equal(structured.length, 3);
+assert.deepEqual(structured.map((item) => item.code), ["F33.2", "F34.1", "Z63.2"]);
+assert.equal(structured[0].status, "Se agrega");
+assert.equal(structured[1].diagnosisName, "Distimia");
+assert.doesNotMatch(structured.map((item) => item.diagnosisName).join(" "), /Paciente femenina/);
+
+const bounded = parseDiagnosisBlock({
+  text: "DIAGNÓSTICOS | CIE-10\nTrastorno depresivo F43.1F33.2F34.1\nPLAN TERAPÉUTICO\nPaciente femenina en la cuarta década.",
+  explicit: true,
+  documentId: "bounded"
+});
+assert.equal(bounded.length, 1);
+assert.equal(bounded[0].code, null);
+assert.equal(bounded[0].requiresReview, true);
+
 console.log("patient-transfer-diagnosis-parser: ok");

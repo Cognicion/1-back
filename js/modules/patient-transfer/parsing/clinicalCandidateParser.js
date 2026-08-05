@@ -12,9 +12,11 @@ function splitLines(text = "") {
 
 function statusForDiagnosis(text = "") {
   const value = normalizeText(text);
+  if (/\bse agrega\b/.test(value)) return "Se agrega";
   if (/\b(?:se descarto|se descarta|niega antecedente|sin antecedente)\b/.test(value)) return "Descartado";
   if (/\ba descartar\b/.test(value)) return "A descartar";
   if (/\bprobable\b/.test(value)) return "Probable";
+  if (/\ben remision\b/.test(value)) return "Remisi\u00f3n";
   if (/\ben remision\b/.test(value)) return "Remisión";
   if (/\b(?:antecedente|diagnosticad[oa].*\ben\s+\d{4}\b)\b/.test(value)) return "Antecedente";
   return "Confirmado";
@@ -65,8 +67,8 @@ function cleanDiagnosisName(value = "", codes = []) {
     .trim();
 }
 
-function diagnosisCandidate({ name, code = "", rawText, section, documentId, sourceLocation = {}, requiresReview = false, detectionRule = "diagnosis-block" }) {
-  const status = statusForDiagnosis(rawText || name);
+function diagnosisCandidate({ name, code = "", rawText, section, documentId, sourceLocation = {}, requiresReview = false, detectionRule = "diagnosis-block", statusOverride = "" }) {
+  const status = statusOverride || statusForDiagnosis(rawText || name);
   const system = codingSystem(code, rawText || "");
   return {
     id: `${documentId || "doc"}-dx-${section}-${sourceLocation.lineIndex ?? sourceLocation.rowIndex ?? 0}-${code || normalizeText(name).slice(0, 24)}`,
@@ -98,7 +100,7 @@ function diagnosisCandidate({ name, code = "", rawText, section, documentId, sou
   };
 }
 
-export function parseDiagnosisBlock({ text = "", section = "diagnosticos", documentId = "", sourceLocation = {}, explicit = false } = {}) {
+function parseDiagnosisBlockLegacy({ text = "", section = "diagnosticos", documentId = "", sourceLocation = {}, explicit = false } = {}) {
   const rows = String(text || "").split(/\r?\n/).map((row) => row.trim()).filter(Boolean);
   const results = [];
   const rowCodes = rows.map((row) => splitDiagnosticCodes(row));
@@ -139,6 +141,91 @@ export function parseDiagnosisBlock({ text = "", section = "diagnosticos", docum
       results.push(diagnosisCandidate({ name, rawText: row, section, documentId, sourceLocation: { ...sourceLocation, rowIndex }, requiresReview: true, detectionRule: "diagnosis-without-code" }));
     }
   });
+  return results;
+}
+
+const DIAGNOSIS_START_PATTERN = /\bdiagn[oó]sticos?(?:\s+de\s+acuerdo\s+a\s+cie[- ]?10)?\b|\bimpresi[oó]n\s+diagn[oó]stica\b/i;
+const DIAGNOSIS_END_PATTERN = /\b(?:plan\s+terap[eé]utico|tratamiento\s+farmacol[oó]gico|medicamentos|comentario\s+y\/o\s+an[aá]lisis|an[aá]lisis|pron[oó]stico|destino|nota\s+de\s+(?:evoluci[oó]n|ingreso))\b/i;
+const STATUS_ONLY_PATTERN = /^(?:se\s+agrega|se\s+descarta|probable|confirmado|antecedente|remisi[oó]n|en\s+remisi[oó]n|a\s+descartar)$/i;
+
+function isolateDiagnosisBlock(text = "") {
+  const source = String(text || "");
+  const start = source.search(DIAGNOSIS_START_PATTERN);
+  if (start < 0) return source.trim();
+  const marker = source.slice(start).match(DIAGNOSIS_START_PATTERN)?.[0] || "";
+  let contentStart = start + marker.length;
+  const lineEnd = source.indexOf("\n", contentStart);
+  const colon = source.indexOf(":", contentStart);
+  if (colon >= 0 && (lineEnd < 0 || colon < lineEnd)) contentStart = colon + 1;
+  const content = source.slice(contentStart);
+  const end = content.search(DIAGNOSIS_END_PATTERN);
+  return (end >= 0 ? content.slice(0, end) : content).trim();
+}
+
+function diagnosisRows(text = "") {
+  return isolateDiagnosisBlock(text)
+    .split(/\r?\n|(?<=;)\s*/)
+    .map((row) => row.replace(/^\s*(?:\d+|[a-z])[.)-]\s*/i, "").trim())
+    .filter(Boolean);
+}
+
+export function parseDiagnosisBlock({ text = "", section = "diagnosticos", documentId = "", sourceLocation = {}, explicit = false } = {}) {
+  const rows = diagnosisRows(text);
+  const results = [];
+  const pendingNames = [];
+  let discardedCount = 0;
+  console.info("[patient-transfer] diagnosis:block", JSON.stringify({ documentId, section, rowCount: rows.length, explicit }));
+
+  rows.forEach((row, rowIndex) => {
+    const codes = splitDiagnosticCodes(row);
+    const name = cleanDiagnosisName(row, codes).replace(/\s+/g, " ").trim();
+    if (STATUS_ONLY_PATTERN.test(row.trim())) {
+      const previous = pendingNames.at(-1) || results.at(-1);
+      if (previous) {
+        const status = statusForDiagnosis(row);
+        previous.status = status;
+        previous.statusSuggestion = status;
+        previous.temporality = status === "Antecedente" ? "historical" : "current";
+        console.info("[patient-transfer] diagnosis:entry-status", JSON.stringify({ documentId, rowIndex, status }));
+      }
+      return;
+    }
+    if (!name && !codes.length) { discardedCount += 1; return; }
+    if (/^(?:diagn[oó]sticos?|cie[- ]?10|cie[- ]?11|sistema)(?:\s*\|\s*(?:cie[- ]?10|cie[- ]?11))?$/i.test(name)) { discardedCount += 1; return; }
+    const hasDiagnosticContext = /(?:diagn[oó]stic|cie[- ]?(?:10|11)|antecedente\s+de|probable|a\s+descartar|se\s+(?:agrega|descarta))/i.test(row);
+    if (!explicit && !hasDiagnosticContext) { discardedCount += 1; return; }
+    const status = statusForDiagnosis(row);
+    if (codes.length === 1 && name.length >= 3) {
+      const candidate = diagnosisCandidate({ name, code: codes[0], rawText: row, section, documentId, sourceLocation: { ...sourceLocation, rowIndex }, statusOverride: status, detectionRule: "diagnosis-entry-near-code" });
+      results.push(candidate);
+      console.info("[patient-transfer] diagnosis:entry", JSON.stringify({ documentId, rowIndex, hasCode: true, status: candidate.status }));
+      return;
+    }
+    if (codes.length === 1 && !name) {
+      const pending = pendingNames.shift();
+      if (pending) {
+        const candidate = diagnosisCandidate({ name: pending.name, code: codes[0], rawText: `${pending.rawText} | ${row}`, section, documentId, sourceLocation: { ...sourceLocation, rowIndex: pending.rowIndex }, statusOverride: pending.status, detectionRule: "diagnosis-columns-paired" });
+        results.push(candidate);
+        console.info("[patient-transfer] diagnosis:paired", JSON.stringify({ documentId, rowIndex, hasCode: true }));
+      } else discardedCount += 1;
+      return;
+    }
+    if (codes.length > 1) {
+      if (name.length >= 3) results.push(diagnosisCandidate({ name, rawText: row, section, documentId, sourceLocation: { ...sourceLocation, rowIndex }, requiresReview: true, detectionRule: "multiple-unpaired-diagnosis-codes", statusOverride: status }));
+      else discardedCount += 1;
+      console.info("[patient-transfer] diagnosis:unpaired", JSON.stringify({ documentId, rowIndex, codesCount: codes.length, hasName: Boolean(name) }));
+      return;
+    }
+    if (explicit && name.length >= 3 && !/^(?:plan|tratamiento|medicamentos|indicaciones)$/i.test(name)) pendingNames.push({ name, rawText: row, rowIndex, status });
+    else discardedCount += 1;
+  });
+
+  if (pendingNames.length && explicit) pendingNames.forEach((pending) => {
+    const candidate = diagnosisCandidate({ name: pending.name, rawText: pending.rawText, section, documentId, sourceLocation: { ...sourceLocation, rowIndex: pending.rowIndex }, requiresReview: true, statusOverride: pending.status, detectionRule: "diagnosis-without-code" });
+    results.push(candidate);
+    console.info("[patient-transfer] diagnosis:entry", JSON.stringify({ documentId, rowIndex: pending.rowIndex, hasCode: false, status: candidate.status }));
+  });
+  console.info("[patient-transfer] diagnosis:finished", JSON.stringify({ documentId, detectedCount: results.length, pairedCount: results.filter((item) => item.code).length, discardedCount }));
   return results;
 }
 
