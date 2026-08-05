@@ -521,7 +521,7 @@ export function detectTreatmentCandidates(args = {}) {
 
 export function extractClinicalCandidates(document = {}, { includeTreatments = true } = {}) {
   return {
-    diagnoses: detectDiagnosisCandidates({ sections: document.sections, fullText: document.fullText, sourceBlocks: document.blocks, documentId: document.id }),
+    diagnoses: detectDiagnosisCandidates({ sections: document.sections, fullText: document.fullText, sourceBlocks: document.blocks, documentId: document.id, noteId: document.sourceNoteId || document.noteId || "" }),
     treatments: includeTreatments ? detectTreatmentCandidates({ sections: document.sections, fullText: document.fullText, sourceBlocks: document.blocks, documentId: document.id, date: document.date || document.metadata?.documentDate || "" }) : []
   };
 }
