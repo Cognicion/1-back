@@ -450,7 +450,8 @@ export async function saveTransferredGroups({ groups = [], user, onProgress = nu
 
         stage = "creating_diagnoses";
         onProgress?.({ stage, message: "Registrando diagnosticos confirmados...", progress: 58 });
-        const diagnosisResult = await timed(`create-diagnoses-${documentResults.length + 1}`, () => createImportedDiagnoses(patientId, document.diagnosisCandidates || [], {
+        const diagnosisCandidates = document.diagnosisCandidates || [];
+        const diagnosisResult = await timed(`create-diagnoses-${documentResults.length + 1}`, () => createImportedDiagnoses(patientId, diagnosisCandidates, {
           transferOperationId: operationId,
           sourceFileHash: document.hash,
           noteId: note.notaId || note.id || noteImportKey,
@@ -461,10 +462,19 @@ export async function saveTransferredGroups({ groups = [], user, onProgress = nu
         diagnosesCreated += diagnosisResult.created.length;
         diagnosesOmitted += diagnosisResult.omitted;
         diagnosisIds.push(...diagnosisResult.created.map((item) => item.id).filter(Boolean));
+        console.info("[patient-transfer] persist:firestore-write", JSON.stringify({
+          operationId,
+          entityType: "diagnosis",
+          detected: diagnosisCandidates.length,
+          created: diagnosisResult.created.length,
+          existing: diagnosisResult.existing.length,
+          omitted: diagnosisResult.omitted
+        }));
 
         stage = "creating_treatments";
         onProgress?.({ stage, message: "Registrando tratamientos confirmados...", progress: 64 });
-        const treatmentResult = await timed(`create-treatments-${documentResults.length + 1}`, () => createImportedTreatments(patientId, document.treatmentCandidates || [], {
+        const treatmentCandidates = document.treatmentCandidates || [];
+        const treatmentResult = await timed(`create-treatments-${documentResults.length + 1}`, () => createImportedTreatments(patientId, treatmentCandidates, {
           transferOperationId: operationId,
           sourceFileHash: document.hash,
           noteId: note.notaId || note.id || noteImportKey,
@@ -475,6 +485,14 @@ export async function saveTransferredGroups({ groups = [], user, onProgress = nu
         treatmentsCreated += treatmentResult.created.length;
         treatmentsOmitted += treatmentResult.omitted;
         treatmentIds.push(...treatmentResult.created.map((item) => item.id).filter(Boolean));
+        console.info("[patient-transfer] persist:firestore-write", JSON.stringify({
+          operationId,
+          entityType: "treatment",
+          detected: treatmentCandidates.length,
+          created: treatmentResult.created.length,
+          existing: treatmentResult.existing.length,
+          omitted: treatmentResult.omitted
+        }));
 
         stage = "uploading_source";
         onProgress?.({ stage, message: `Guardando documento original ${documentResults.length + 1}...`, progress: 70 });

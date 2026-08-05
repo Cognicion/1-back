@@ -65,6 +65,10 @@ assert.match(controller, /transferOperationId: `docx_\$\{hash\}`/, "el operation
 assert.match(controller, /try \{[\s\S]*saveTransferredGroups[\s\S]*catch/, "el guardado principal usa try/catch");
 assert.match(controller, /finally \{[\s\S]*setTransferSavingState\(false\)/, "el guardado principal siempre libera saving en finally");
 assert.match(controller, /isTransferSaving\(\)/, "evita doble confirmacion");
+assert.match(controller, /syncReviewedGroupsFromView\(\);[\s\S]*persist:review-sync[\s\S]*expandSegmentedGroupsForSave/, "la confirmacion sincroniza la revision visible antes de expandir para persistencia");
+assert.match(controller, /persist:selected-count/, "el controlador registra la cantidad de candidatos clinicos seleccionados");
+assert.match(controller, /Se detectaron candidatos cl.nicos, pero ninguno fue seleccionado para importar\./, "bloquea el guardado silencioso cuando no hay candidatos clinicos seleccionados");
+assert.match(repository, /persist:firestore-write/, "el repository registra el resultado de cada escritura clinica en Firestore");
 assert.match(controller, /render-result:start/, "traza inicio de render final");
 assert.match(controller, /render-result:success/, "traza exito de render final");
 assert.match(controller, /setPatientTransferExecutionState\(\{[\s\S]*isSaving: true/, "guarda saving en el estado central antes de persistir");

@@ -256,6 +256,25 @@ function expandSegmentedGroupsForSave(groups = []) {
   }));
 }
 
+function summarizePersistenceCandidateSelection(groups = []) {
+  return groups.reduce((summary, group) => {
+    if (group.omitted || group.action === "omit") return summary;
+    const documents = (group.documents || []).filter((document) => !document.omitted && document.duplicateStatus === "nuevo");
+    documents.forEach((document) => {
+      const diagnoses = document.diagnosisCandidates || [];
+      const treatments = document.treatmentCandidates || [];
+      summary.diagnoses.detected += diagnoses.length;
+      summary.diagnoses.selected += diagnoses.filter((candidate) => candidate.selectedForImport === true || candidate.include === true).length;
+      summary.treatments.detected += treatments.length;
+      summary.treatments.selected += treatments.filter((candidate) => candidate.selectedForImport === true || candidate.include === true).length;
+    });
+    return summary;
+  }, {
+    diagnoses: { detected: 0, selected: 0 },
+    treatments: { detected: 0, selected: 0 }
+  });
+}
+
 function addFiles(files = []) {
   const existingNames = new Set(selectedFiles.map((item) => `${item.file.name}:${item.file.size}`));
   const next = [...selectedFiles];
@@ -534,6 +553,10 @@ async function saveReviewedTransfer({ reuseReviewedGroups = false } = {}) {
     showPatientTransferError("Analiza los documentos antes de confirmar.");
     return;
   }
+  syncReviewedGroupsFromView();
+  console.info("[patient-transfer] persist:review-sync", JSON.stringify({
+    groups: analyzedGroups.length
+  }));
   const pendingSegmentation = analyzedGroups.some((group) => (group.documents || [])
     .some((document) => document.segmentationNeedsReanalysis));
   if (pendingSegmentation) {
@@ -544,10 +567,21 @@ async function saveReviewedTransfer({ reuseReviewedGroups = false } = {}) {
   const profile = user ? await getUserProfileOnce(user.uid) : null;
   if (!user) throw new Error("No se pudo identificar al usuario autenticado.");
 
-  // La revisión se sincroniza en cada interacción; al confirmar no se vuelve a
-  // reconstruir desde el DOM para evitar perder selecciones durante un render.
   const reviewedGroups = analyzedGroups;
   const persistenceGroups = expandSegmentedGroupsForSave(reviewedGroups);
+  const candidateSelection = summarizePersistenceCandidateSelection(persistenceGroups);
+  const selectedClinicalCandidates = candidateSelection.diagnoses.selected + candidateSelection.treatments.selected;
+  console.info("[patient-transfer] persist:selected-count", JSON.stringify({
+    diagnosesSelected: candidateSelection.diagnoses.selected,
+    treatmentsSelected: candidateSelection.treatments.selected,
+    totalSelected: selectedClinicalCandidates
+  }));
+  console.info("[patient-transfer] persist:diagnosis-count", JSON.stringify(candidateSelection.diagnoses));
+  console.info("[patient-transfer] persist:treatment-count", JSON.stringify(candidateSelection.treatments));
+  if ((candidateSelection.diagnoses.detected + candidateSelection.treatments.detected) > 0 && selectedClinicalCandidates === 0) {
+    showPatientTransferError("Se detectaron candidatos clínicos, pero ninguno fue seleccionado para importar.");
+    return;
+  }
   const blocking = reviewedGroups.find((group) =>
     !group.omitted && group.action === "associate" && !group.selectedPatientId
   );
