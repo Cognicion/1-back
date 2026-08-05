@@ -399,6 +399,7 @@ export function getBulkSelectionState(candidates = [], candidateType = "", noteO
  */
 export function applyBulkCandidateSelection(groups = [], { documentId = "", noteId = "", candidateType = "", selected = false } = {}) {
   let affectedCount = 0;
+  let candidateCount = 0;
   const updatedGroups = (groups || []).map((group) => ({
     ...group,
     documents: (group.documents || []).map((document) => {
@@ -409,6 +410,7 @@ export function applyBulkCandidateSelection(groups = [], { documentId = "", note
           if (segment.id !== noteId || segment.omitted || document.omitted || group.omitted) return segment;
           const candidates = candidatesForType(segment, candidateType);
           if (!candidates.length) return segment;
+          candidateCount += candidates.length;
           const updatedCandidates = candidates.map((candidate) => {
             if (!isTransferCandidateSelectable(candidate, candidateType)) return candidate;
             affectedCount += 1;
@@ -426,7 +428,7 @@ export function applyBulkCandidateSelection(groups = [], { documentId = "", note
       };
     })
   }));
-  return { groups: updatedGroups, affectedCount };
+  return { groups: updatedGroups, candidateCount, affectedCount };
 }
 
 export function syncBulkSelectionControls(groups = []) {
@@ -460,7 +462,15 @@ function renderBulkSelectionControl(doc, segment, candidateType, label) {
   const help = candidateType === "diagnosis"
     ? "Selecciona todos los diagnósticos de esta nota"
     : "Selecciona todos los tratamientos de esta nota";
-  return `<label for="${escapeHtml(controlId)}" title="${help}"><input id="${escapeHtml(controlId)}" type="checkbox" data-transfer-select-all data-document-id="${escapeHtml(doc.id)}" data-note-id="${escapeHtml(segment.id)}" data-candidate-type="${candidateType}" ${state.checked ? "checked" : ""} ${state.disabled ? "disabled" : ""}> ${label}</label>`;
+  console.info("[patient-transfer] select-all-render", {
+    documentId: doc.id,
+    noteId: segment.id,
+    candidateType,
+    selected: state.checked,
+    candidateCount: candidates.length,
+    affectedCount: 0
+  });
+  return `<label for="${escapeHtml(controlId)}" title="${help}"><input id="${escapeHtml(controlId)}" type="checkbox" data-action="toggle-all-candidates" data-transfer-select-all data-document-id="${escapeHtml(doc.id)}" data-note-id="${escapeHtml(segment.id)}" data-candidate-type="${candidateType}" ${state.checked ? "checked" : ""} ${state.disabled ? "disabled" : ""}> ${label}</label>`;
 }
 
 function renderSegmentVitalSigns(doc, segment) {

@@ -73,10 +73,14 @@ assert.match(transferView, /data-transfer-merge-segment/, "la vista permite unir
 assert.match(transferView, /renderSegmentDiagnosisCandidates/, "la vista renderiza diagnósticos por nota");
 assert.match(transferView, /renderSegmentTreatmentCandidates/, "la vista renderiza tratamientos por nota");
 assert.match(transferView, /data-transfer-select-all/, "cada sección por nota expone su control de inclusión masiva");
+assert.match(transferView, /data-action="toggle-all-candidates"/, "el control maestro declara una acción explícita para delegación de eventos");
 assert.match(transferView, /data-document-id=/, "el control maestro identifica el documento estable");
 assert.match(transferView, /data-note-id=/, "el control maestro identifica la nota estable");
 assert.match(transferView, /data-candidate-type=/, "el control maestro identifica la sección clínica");
 assert.match(controller, /applyBulkCandidateSelection/, "el controlador actualiza el estado central al seleccionar todos");
+assert.match(controller, /toggleAllCandidates/, "el listener delegado invoca una función única para la selección masiva");
+assert.match(controller, /select-all-debug/, "el listener registra el estado del checkbox antes de aplicar la selección");
+assert.match(controller, /event\.target\.closest\("\[data-action='toggle-all-candidates'\]"\)\) return;/, "el evento input no debe restaurar el checkbox maestro antes de change");
 assert.match(controller, /patient-transfer\] \$\{candidateType === "diagnosis" \? "select-all-diagnoses" : "select-all-treatments"\}/, "el controlador conserva trazas resumidas de selección masiva");
 assert.match(transferView, /Exploración física \/ neurológica/, "la vista usa el nombre clínico solicitado");
 assert.match(transferView, /patient-transfer-vitals-table/, "los signos vitales se presentan en tabla compacta");

@@ -1,4 +1,4 @@
-import { crearPacienteProvisional } from "../../../services/usuarios.js?v=20260729-imc-payload-fix";
+import { crearPacienteProvisional } from "../../../services/usuarios.js";
 import { construirNombreCompletoPaciente } from "../../../utils/nombresPacientes.js";
 import { normalizeRecordNumber } from "../parsing/patientDuplicateMatcher.js";
 

@@ -1,4 +1,4 @@
-import { listarPacientes } from "./services/usuarios.js?v=20260718-patient-access";
+import { listarPacientes } from "./services/usuarios.js";
 import { getAuthenticatedUserOnce, getUserProfileOnce } from "./services/authContextService.js";
 import { iniciarMonitoreoSesion } from "./services/sesion.js";
 import { aplicarAparienciaGuardada, sincronizarAparienciaUsuario } from "./services/apariencia.js";
@@ -44,6 +44,7 @@ let cachePacientesMedico = {
   datos: [],
   ultimaCarga: 0
 };
+let versionSolicitudPacientes = 0;
 const STORAGE_ORDEN_PACIENTES = "cognicion.medico.ordenPacientes";
 let ordenPacientesActual = cargarPreferenciaOrdenPacientes();
 const STORAGE_FILTRO_CARPETA = "cognicion.medico.filtroCarpeta";
@@ -214,8 +215,19 @@ function inicializarImportacionDocxLazy() {
     }
   });
 
-  window.addEventListener("cognicion:patient-transfer-completed", () => {
-    if (uidMedicoActual) cargarPacientes(uidMedicoActual, { forzar: true });
+  window.addEventListener("cognicion:patient-transfer-completed", (event) => {
+    const detail = event.detail || {};
+    const results = detail.results || [];
+    console.info("[medical-panel] refresh-start", {
+      patientIds: detail.patientIds || results.map((item) => item.patientId).filter(Boolean),
+      created: detail.createdCount ?? results.filter((item) => item.patientCreated).length,
+      forced: true
+    });
+    if (uidMedicoActual) {
+      cargarPacientes(uidMedicoActual, { forzar: true }).catch((error) => {
+        console.warn("[medical-panel] refresh-failed", { code: error?.code || error?.name || "unknown" });
+      });
+    }
   });
 }
 
@@ -856,6 +868,7 @@ function inicializarCarpetasInlineColapsables() {
 }
 
 async function cargarPacientes(uidMedico, opciones = {}) {
+  const versionSolicitud = ++versionSolicitudPacientes;
   const lista = document.getElementById("listaPacientes");
   if (!opciones.silencioso && lista) lista.innerHTML = "Verificando acceso...";
 
@@ -872,6 +885,7 @@ async function cargarPacientes(uidMedico, opciones = {}) {
       ahora - cachePacientesMedico.ultimaCarga < TTL_CACHE_PACIENTES_MS;
 
     if (cacheVigente) {
+      if (versionSolicitud !== versionSolicitudPacientes) return;
       pacientesGlobal = [...cachePacientesMedico.datos];
       if (!opciones.conservarPagina) reiniciarPaginacionPacientes();
       actualizarVistaPacientesCargados();
@@ -879,7 +893,13 @@ async function cargarPacientes(uidMedico, opciones = {}) {
     }
 
     if (!opciones.silencioso && lista) lista.innerHTML = "Cargando pacientes autorizados...";
-    const snapshot = await listarPacientes(uidMedico);
+    const snapshot = await listarPacientes(uidMedico, { forzar: Boolean(opciones.forzar) });
+    console.info("[medical-panel] query-result", {
+      queryCount: snapshot.size || 0,
+      forced: Boolean(opciones.forzar)
+    });
+
+    if (versionSolicitud !== versionSolicitudPacientes) return;
 
     pacientesGlobal = deduplicarPacientes(snapshot.docs
       .map((docPaciente) => ({
@@ -898,6 +918,7 @@ async function cargarPacientes(uidMedico, opciones = {}) {
     if (!opciones.conservarPagina) reiniciarPaginacionPacientes();
     actualizarVistaPacientesCargados();
   } catch (error) {
+    if (versionSolicitud !== versionSolicitudPacientes) return;
     console.error("No se pudo cargar la lista de pacientes:", error);
     if (lista) {
       lista.innerHTML = "No se pudo cargar la lista de pacientes. Usa Actualizar para intentar de nuevo.";
@@ -1454,6 +1475,10 @@ function mostrarPacientes(pacientes) {
   const lista = document.getElementById("listaPacientes");
   lista.innerHTML = "";
   const pacientesUnicos = deduplicarPacientes(pacientes);
+  console.info("[medical-panel] patient-rendered", {
+    rendered: pacientesUnicos.length,
+    patientIds: pacientesUnicos.map((paciente) => paciente.id).filter(Boolean)
+  });
 
   if (pacientesUnicos.length === 0) {
     lista.innerHTML = `
@@ -1555,23 +1580,33 @@ function mostrarPacientes(pacientes) {
 function filtrarPacientes() {
   const buscador = document.getElementById("buscadorPacientes");
   const texto = buscador ? normalizarTextoBusquedaPaciente(buscador.value) : "";
+  const filteredReasons = { archived: 0, folder: 0, attention: 0, search: 0 };
 
   const filtrados = pacientesGlobal.filter((paciente) => {
-    if (pacienteArchivadoParaMedico(paciente) !== mostrarPacientesArchivados) return false;
+    if (pacienteArchivadoParaMedico(paciente) !== mostrarPacientesArchivados) {
+      filteredReasons.archived += 1;
+      return false;
+    }
 
     const carpetasPaciente = obtenerCarpetasPaciente(paciente);
     const coincideCarpeta = !filtroCarpetaActual ||
       (filtroCarpetaActual === "__sin_carpeta__" && carpetasPaciente.length === 0) ||
       carpetasPaciente.includes(filtroCarpetaActual);
 
-    if (!coincideCarpeta) return false;
+    if (!coincideCarpeta) {
+      filteredReasons.folder += 1;
+      return false;
+    }
 
     const categoriasAtencion = obtenerCategoriasAtencion(paciente);
     const coincideFiltroAtencion = [...categoriasAtencion].some((categoria) =>
       filtrosAtencionActuales.has(categoria)
     );
 
-    if (!coincideFiltroAtencion) return false;
+    if (!coincideFiltroAtencion) {
+      filteredReasons.attention += 1;
+      return false;
+    }
 
     const nombre = textoBusquedaPaciente(paciente);
     const cama = obtenerCamaPaciente(paciente).toLowerCase();
@@ -1584,7 +1619,9 @@ function filtrarPacientes() {
     const resumenMedicamentos = obtenerResumenMedicamentosDosisDia(paciente);
     const medicamentos = resumenMedicamentos.medicamentos.join(" ").toLowerCase();
     const dosisDia = resumenMedicamentos.dosis.join(" ").toLowerCase();
-    return [nombre, cama, fechaIngreso, medicoAdscrito, residente, atencion, carpeta, diagnostico, medicamentos, dosisDia].some((valor) => valor.includes(texto));
+    const matchesSearch = [nombre, cama, fechaIngreso, medicoAdscrito, residente, atencion, carpeta, diagnostico, medicamentos, dosisDia].some((valor) => valor.includes(texto));
+    if (!matchesSearch) filteredReasons.search += 1;
+    return matchesSearch;
   });
 
   const ordenados = deduplicarPacientes(ordenarPacientes(filtrados));
@@ -1592,6 +1629,11 @@ function filtrarPacientes() {
   mostrarPacientes(pacientesPagina);
   renderizarGraficasMedico(ordenados);
   actualizarBotonCargarMasPacientes(ordenados.length);
+  console.info("[medical-panel] patient-filtered", {
+    queryCount: pacientesGlobal.length,
+    filteredCount: ordenados.length,
+    filteredReason: filteredReasons
+  });
 }
 
 function cargarPreferenciaOrdenPacientes() {

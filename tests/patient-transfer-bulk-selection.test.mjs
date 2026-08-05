@@ -62,6 +62,7 @@ const diagnosesSelected = applyBulkCandidateSelection(groups, {
   selected: true
 });
 assert.equal(diagnosesSelected.affectedCount, 2);
+assert.equal(diagnosesSelected.candidateCount, 2);
 assert.ok(diagnosesSelected.groups[0].documents[0].noteSegments[0].diagnosisCandidates.every((candidate) => candidate.include && candidate.selectedForImport));
 assert.equal(diagnosesSelected.groups[0].documents[0].noteSegments[1].diagnosisCandidates[0].include, undefined, "no selecciona diagnósticos de otra nota");
 assert.deepEqual(diagnosesSelected.groups[0].documents[0].noteSegments[0].diagnosisCandidates[0].codes, ["F33.2"], "conserva códigos múltiples");
@@ -81,6 +82,7 @@ const treatmentsSelected = applyBulkCandidateSelection(groups, {
   selected: true
 });
 assert.equal(treatmentsSelected.affectedCount, 1, "no selecciona tratamientos que requieren resolución de catálogo");
+assert.equal(treatmentsSelected.candidateCount, 2);
 const selectedMedication = treatmentsSelected.groups[0].documents[0].noteSegments[0].treatmentCandidates[0];
 assert.equal(selectedMedication.include, true);
 assert.equal(selectedMedication.catalogMedicationId, "olanzapina", "conserva la identidad del catálogo");

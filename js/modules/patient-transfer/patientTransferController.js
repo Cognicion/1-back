@@ -657,7 +657,22 @@ async function saveReviewedTransfer({ reuseReviewedGroups = false } = {}) {
     console.info("[patient-transfer] render-result:start", { results: results.length });
     renderTransferResults(results);
     console.info("[patient-transfer] render-result:success", { results: results.length });
-    window.dispatchEvent(new CustomEvent("cognicion:patient-transfer-completed", { detail: { results } }));
+    const completedEventDetail = {
+      results,
+      patientIds: results.map((item) => item.patientId).filter(Boolean),
+      createdPatientIds: results.filter((item) => item.patientCreated).map((item) => item.patientId).filter(Boolean),
+      associatedPatientIds: results.filter((item) => item.patientId && !item.patientCreated).map((item) => item.patientId),
+      createdCount: results.filter((item) => item.patientCreated).length,
+      operationId: firstResult.transferOperationId || reviewedGroups[0]?.documents?.[0]?.transferOperationId || "",
+      completedAt: new Date().toISOString()
+    };
+    console.info("[patient-transfer] completed-event", {
+      patientIds: completedEventDetail.patientIds,
+      createdCount: completedEventDetail.createdCount,
+      completedCount: results.filter((item) => item.status === "completed").length,
+      operationId: completedEventDetail.operationId
+    });
+    window.dispatchEvent(new CustomEvent("cognicion:patient-transfer-completed", { detail: completedEventDetail }));
   } catch (error) {
     console.error("[patient-transfer] save:failed", {
       stage: error?.stage || "save",
@@ -714,7 +729,7 @@ function syncReviewedGroupsFromView() {
   console.info("[patient-transfer] review-state:updated", counts);
 }
 
-function selectAllCandidatesInSegment(control) {
+function toggleAllCandidates(control) {
   const selected = Boolean(control.checked);
   syncReviewedGroupsFromView();
   const candidateType = control.dataset.candidateType || "";
@@ -727,11 +742,18 @@ function selectAllCandidatesInSegment(control) {
   analyzedGroups = result.groups;
   setPatientTransferGroups(analyzedGroups);
   renderDetectedGroups(analyzedGroups);
-  console.info(`[patient-transfer] ${candidateType === "diagnosis" ? "select-all-diagnoses" : "select-all-treatments"}`, {
+  const trace = {
     documentId: control.dataset.documentId || "",
     noteId: control.dataset.noteId || "",
+    candidateType,
     selected,
+    candidateCount: result.candidateCount,
     affectedCount: result.affectedCount
+  };
+  console.info("[patient-transfer] select-all-click", trace);
+  console.info("[patient-transfer] select-all-state", trace);
+  console.info(`[patient-transfer] ${candidateType === "diagnosis" ? "select-all-diagnoses" : "select-all-treatments"}`, {
+    ...trace
   });
 }
 
@@ -857,9 +879,21 @@ export function initializePatientTransfer() {
   });
 
   root.addEventListener("change", (event) => {
-    const selectAll = event.target.closest("[data-transfer-select-all]");
+    const selectAll = event.target.closest("[data-action='toggle-all-candidates']");
     if (selectAll) {
-      selectAllCandidatesInSegment(selectAll);
+      console.info("[patient-transfer] select-all-debug", {
+        eventType: event.type,
+        checked: Boolean(event.target.checked),
+        dataset: {
+          documentId: selectAll.dataset.documentId || "",
+          noteId: selectAll.dataset.noteId || "",
+          candidateType: selectAll.dataset.candidateType || ""
+        },
+        candidateType: selectAll.dataset.candidateType || "",
+        noteId: selectAll.dataset.noteId || "",
+        documentId: selectAll.dataset.documentId || ""
+      });
+      toggleAllCandidates(selectAll);
       return;
     }
     const fileMode = event.target.closest("[data-transfer-file-multiple-mode]");
@@ -886,6 +920,10 @@ export function initializePatientTransfer() {
   });
 
   root.addEventListener("input", (event) => {
+    // El navegador emite `input` antes de `change` al marcar un checkbox. Si la
+    // sincronización genérica se ejecuta aquí, repinta este control desde el
+    // estado anterior y `change` pierde el nuevo valor de `checked`.
+    if (event.target.closest("[data-action='toggle-all-candidates']")) return;
     syncPatientNameInputs(event);
     if (updateSubjectiveFromInput(event)) return;
     syncReviewedGroupsFromView();
