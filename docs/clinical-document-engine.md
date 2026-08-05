@@ -184,3 +184,52 @@ flowchart LR
 Las tablas reciben confianza `HIGH` y el texto libre `MEDIUM`. `VitalSignsAdapter` crea las `ClinicalEntity`, ejecuta normalización y validación, reconstruye el objeto legacy `vitalSigns` y conserva el cálculo histórico de IMC derivado de peso y talla. Los valores imposibles quedan marcados para revisión mediante `vitalSignValidator`; el parser no valida rangos.
 
 La ruta legacy `patient-transfer/parsing/vitalSignsParser.js` queda como adaptador temporal. Sus funciones públicas y el payload de nota no cambian, por lo que la interfaz, persistencia, Firebase y Panel Médico permanecen intactos.
+
+## MIDC v1 - Arquitectura estable
+
+El contrato estable queda dividido en cuatro capas: `ClinicalDocument` contiene bloques y metadatos; `ClinicalNote` contiene secciones y candidatos; `ClinicalCandidate` representa una detección con confianza y evidencia; `ClinicalEntity` representa la entidad clínica normalizada, versionada e identificable. `ClinicalEvidence` conserva la trazabilidad de documento, nota, página, bloque, offsets, encabezado y texto fuente. `ClinicalImportResult` agrupa documentos, notas, candidatos, advertencias y revisión.
+
+```mermaid
+flowchart LR
+  A[Documento] --> B[ClinicalDocument]
+  B --> C[ClinicalNote]
+  C --> D[ClinicalSection]
+  C --> E[Diagnosis / Medication / Vital Parser]
+  E --> F[ClinicalCandidate]
+  F --> G[ClinicalEntityEngine]
+  G --> H[ClinicalEntity]
+  H --> I[Adapters]
+  I --> J[Contrato legacy]
+```
+
+### Contratos definitivos
+
+| Modelo | Responsabilidad | Campos esenciales |
+|---|---|---|
+| `ClinicalDocument` | Documento fuente | `id`, `rawText`, `blocks`, `metadata`, `notes`, `evidence` |
+| `ClinicalNote` | Nota delimitada | `id`, `metadata`, `rawText`, `sections`, `candidates`, `evidence` |
+| `ClinicalSection` | Texto clínico delimitado | `key`, `value`, `rawText`, `evidence`, `confidence`, `requiresReview` |
+| `ClinicalCandidate` | Detección parser | `id`, `type`, `value`, `confidence`, `requiresReview`, `evidence`, `metadata` |
+| `ClinicalEntity` | Representación clínica | `id`, `entityType`, `value`, `normalizedValue`, `status`, `confidence`, `evidence`, `relationships`, `metadata`, `version`, `createdAt`, `updatedAt` |
+| `ClinicalEvidence` | Trazabilidad | `documentId`, `page`, `block`, `offsetStart`, `offsetEnd`, `heading`, `rawText`, `confidence` |
+| `ClinicalImportResult` | Resultado agrupado | `document`, `notes`, `candidates`, `warnings`, `confidence`, `requiresReview` |
+| `ClinicalMetadata` | Identidad documental | `documentId`, `noteId`, `date`, `time`, `type`, `source` |
+
+### Auditoría de consolidación
+
+- No se eliminaron módulos legacy sin demostrar inactividad.
+- No se detectaron dependencias circulares en la ruta MIDC.
+- Los aliases de secciones viven en `boundaries/boundaryAliases.js`; los aliases administrativos y algunos de compatibilidad permanecen fuera porque pertenecen al importador de pacientes.
+- Los normalizadores de texto, fechas, horas, expediente, nombre, diagnóstico y medicamento tienen una fuente MIDC. Las funciones equivalentes en parsers legacy se clasifican como compatibilidad y no se fusionaron a ciegas.
+- Los adapters contienen traducción de modelos y, únicamente en VitalSignsAdapter, la agregación necesaria para conservar el contrato legacy `vitalSigns` y el cálculo histórico de IMC.
+- El logger mantiene eventos operativos MIDC; las trazas de diagnóstico de los parsers se conservan porque son útiles para regresión y no imprimen notas completas.
+
+### Regresión y rendimiento
+
+`tests/clinical-document-engine-regression.test.mjs` cubre el flujo documento → nota → secciones → candidatos → entidades → adapters → contrato legacy. El mismo test mide 100 interpretaciones sintéticas, tiempo promedio, cantidad de entidades y RSS del proceso. No se aplican optimizaciones en esta fase; las métricas quedan como línea base.
+
+El mapa de dependencias está en `docs/midc-dependency-map.md` y la clasificación legacy en `docs/legacy-map.md`.
+
+## Estado oficial
+
+**MIDC v1 ESTABLE.** Toda nueva funcionalidad documental debe construirse sobre MIDC y CEE, manteniendo adapters cuando exista un consumidor legacy. Laboratorios, escalas, OCR, PDF, timeline, SOFÍA y relaciones clínicas activas quedan fuera de v1.
