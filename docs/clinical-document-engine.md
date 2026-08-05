@@ -165,3 +165,22 @@ Los adapters de Diagnóstico y Medicamentos aceptan candidatos por compatibilida
 ### Migración futura
 
 La Fase 6 migrará Signos Vitales, la Fase 7 Laboratorios, la Fase 8 Escalas y la Fase 9 Timeline. Cada migración debe conservar un adapter, pruebas de contrato y rollback. Persistencia, Firebase, Panel Médico y SOFÍA quedan fuera de esta fase.
+
+## Fase 6 - VitalSigns Parser
+
+`parsers/vitalSignsParser.js` convierte cada medición en un candidato MIDC independiente con `candidateType: "vitalSign"`. Una tabla no se representa como un único objeto: presión arterial, temperatura, frecuencias, saturación, glucemia, peso, talla e IMC conservan su propio `vitalType`, valor, unidad, fecha, hora y evidencia.
+
+```mermaid
+flowchart LR
+  A[Tabla o texto] --> B[VitalSigns Parser MIDC]
+  B --> C[ClinicalCandidate por medición]
+  C --> D[EntityFactory]
+  D --> E[EntityNormalizer]
+  E --> F[EntityValidationEngine]
+  F --> G[VitalSignsAdapter]
+  G --> H[Contrato legacy vitalSigns]
+```
+
+Las tablas reciben confianza `HIGH` y el texto libre `MEDIUM`. `VitalSignsAdapter` crea las `ClinicalEntity`, ejecuta normalización y validación, reconstruye el objeto legacy `vitalSigns` y conserva el cálculo histórico de IMC derivado de peso y talla. Los valores imposibles quedan marcados para revisión mediante `vitalSignValidator`; el parser no valida rangos.
+
+La ruta legacy `patient-transfer/parsing/vitalSignsParser.js` queda como adaptador temporal. Sus funciones públicas y el payload de nota no cambian, por lo que la interfaz, persistencia, Firebase y Panel Médico permanecen intactos.

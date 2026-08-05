@@ -11,6 +11,10 @@ export class ClinicalIdentity {
   static fromEntity(entity = {}) {
     const source = entity.value || {};
     const type = entity.entityType || "entity";
+    if (type === "vitalSign") {
+      const vitalKey = `${source.vitalType || "unknown"}:${JSON.stringify(source.value)}`;
+      return new ClinicalIdentity({ entityType: type, key: `${type}:${vitalKey}`, fields: { vitalType: source.vitalType || "", value: source.value } });
+    }
     const code = normalizeDiagnosticCode(source.code || entity.code || "");
     const name = normalizeClinicalComparisonText(source.normalizedDiagnosis || source.normalizedMedicationName || source.diagnosisName || source.medicationName || entity.normalizedValue || "");
     const key = code ? `${type}:code:${code}` : `${type}:name:${name}`;

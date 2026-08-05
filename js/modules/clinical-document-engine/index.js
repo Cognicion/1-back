@@ -24,6 +24,7 @@ export { normalizeMedicationName, normalizeMedicationPresentation, normalizeMedi
 export { validateClinicalResult } from "./validators/clinicalValidator.js";
 export { validateDiagnosis } from "./validators/diagnosisValidator.js";
 export { validateMedication } from "./validators/medicationValidator.js";
+export { validateVitalSign } from "./validators/vitalSignValidator.js";
 export { validatePatient } from "./validators/patientValidator.js";
 export { ClinicalEntityEngine } from "./engine/ClinicalEntityEngine.js";
 export { EntityFactory } from "./engine/EntityFactory.js";
@@ -41,7 +42,9 @@ export { adaptMedicationParser } from "./adapters/medicationAdapter.js";
 export { parseMedicationCandidates, detectMedicationCandidates } from "./parsers/medicationParser.js";
 export { adaptMedicationCandidates, adaptMedicationBlock, toLegacyMedicationCandidate } from "./adapters/medicationAdapter.js";
 export { parseDiagnosisCandidates, parseDiagnosisBlock, detectDiagnosisCandidates } from "./parsers/diagnosisParser.js";
+export { parseVitalSigns, parseVitalSignsTable, parseVitalSignsText, extractVitalSignCandidates } from "./parsers/vitalSignsParser.js";
 export { adaptDiagnosisCandidates, adaptDiagnosisBlock, toLegacyDiagnosisCandidate } from "./adapters/diagnosisAdapter.js";
+export { VitalSignsAdapter, adaptVitalSignsCandidates, adaptVitalSignsParser, toLegacyVitalSignsCandidate } from "./adapters/vitalSignsAdapter.js";
 export { createParserContext } from "./utils/parserContext.js";
 export { createParserResult } from "./utils/parserResult.js";
 export { logger, clinicalImportLogger } from "./utils/logger.js";
