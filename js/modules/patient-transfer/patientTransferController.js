@@ -17,7 +17,7 @@ import { groupDocumentsByPatient } from "./parsing/documentGroupingService.js";
 import { analyzeDocumentClinically } from "./integration/clinicalAnalysisAdapter.js";
 import { adaptTreatmentPlan } from "../clinical-document-engine/adapters/treatmentPlanAdapter.js";
 import { resolveMedicationCandidatesAgainstCatalog } from "../clinical-document-engine/resolvers/medicationCatalogResolver.js";
-import { findDuplicateImport, findExistingPatientCandidates, saveTransferredGroups } from "./patientTransferRepository.js?v=20260805-persistence-trace-v1";
+import { findDuplicateImport, findExistingPatientCandidates, saveTransferredGroups } from "./patientTransferRepository.js";
 import {
   closePatientTransferView,
   applyBulkCandidateSelection,
@@ -35,7 +35,7 @@ import {
   isTransferSaving,
   syncBulkSelectionControls,
   syncPatientNameInputs
-} from "./ui/patientTransferView.js?v=20260805-persistence-trace-v1";
+} from "./ui/patientTransferView.js";
 
 let initialized = false;
 let selectedFiles = [];
@@ -572,28 +572,6 @@ async function saveReviewedTransfer({ reuseReviewedGroups = false } = {}) {
   syncReviewedGroupsFromView();
   const reviewedGroups = analyzedGroups;
   const persistenceGroups = expandSegmentedGroupsForSave(reviewedGroups);
-  const expansionMetrics = persistenceGroups.reduce((total, group) => {
-    const sourceDocuments = group.documents || [];
-    const reviewedGroup = reviewedGroups.find((item) => item.id === group.id);
-    const reviewedDocuments = reviewedGroup?.documents || [];
-    return {
-      sourceDocuments: total.sourceDocuments + reviewedDocuments.length,
-      segments: total.segments + reviewedDocuments.reduce((count, document) => count + (document.noteSegments || []).length, 0),
-      activeSegments: total.activeSegments + reviewedDocuments.reduce((count, document) => count + (document.noteSegments || []).filter((segment) => !segment.omitted).length, 0),
-      expandedDocuments: total.expandedDocuments + sourceDocuments.length
-    };
-  }, { sourceDocuments: 0, segments: 0, activeSegments: 0, expandedDocuments: 0 });
-  console.info("[patient-transfer] persist:expanded-documents", {
-    groupCount: persistenceGroups.length,
-    ...expansionMetrics,
-    documents: persistenceGroups.flatMap((group) => (group.documents || []).map((document) => ({
-      documentId: document.id,
-      sourceNoteSegmentId: document.sourceNoteSegmentId || "",
-      omitted: Boolean(group.omitted || document.omitted),
-      duplicateStatus: document.duplicateStatus || "",
-      action: group.action || ""
-    })))
-  });
   const treatmentCounts = persistenceGroups.reduce((total, group) => group.documents.reduce((count, document) => ({
     detected: count.detected + (document.treatmentCandidates || []).length,
     selected: count.selected + (document.treatmentCandidates || []).filter((candidate) => candidate.include || candidate.selectedForImport).length
