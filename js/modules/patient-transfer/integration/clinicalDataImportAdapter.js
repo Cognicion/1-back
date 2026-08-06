@@ -1,5 +1,5 @@
 import { db } from "../../../firebase.js";
-import { actualizarUsuario, obtenerUsuario } from "../../../services/usuarios.js?v=20260729-imc-payload-fix";
+import { actualizarUsuario, obtenerUsuario } from "../../../services/usuarios.js";
 import { crearTratamiento, listarTratamientos } from "../../../services/tratamientos.js";
 import { normalizarTextoBusquedaPaciente } from "../../../utils/nombresPacientes.js";
 

@@ -1,4 +1,4 @@
-import { listarPacientes } from "./services/usuarios.js?v=20260718-patient-access";
+import { listarPacientes } from "./services/usuarios.js";
 import { getAuthenticatedUserOnce, getUserProfileOnce } from "./services/authContextService.js";
 import { iniciarMonitoreoSesion } from "./services/sesion.js";
 import { aplicarAparienciaGuardada, sincronizarAparienciaUsuario } from "./services/apariencia.js";
@@ -44,6 +44,7 @@ let cachePacientesMedico = {
   datos: [],
   ultimaCarga: 0
 };
+let versionSolicitudPacientes = 0;
 const STORAGE_ORDEN_PACIENTES = "cognicion.medico.ordenPacientes";
 let ordenPacientesActual = cargarPreferenciaOrdenPacientes();
 const STORAGE_FILTRO_CARPETA = "cognicion.medico.filtroCarpeta";
@@ -215,7 +216,11 @@ function inicializarImportacionDocxLazy() {
   });
 
   window.addEventListener("cognicion:patient-transfer-completed", () => {
-    if (uidMedicoActual) cargarPacientes(uidMedicoActual, { forzar: true });
+    if (uidMedicoActual) {
+      cargarPacientes(uidMedicoActual, { forzar: true }).catch((error) => {
+        console.warn("No se pudo refrescar el Panel Médico después del traspaso:", error);
+      });
+    }
   });
 }
 
@@ -856,6 +861,7 @@ function inicializarCarpetasInlineColapsables() {
 }
 
 async function cargarPacientes(uidMedico, opciones = {}) {
+  const versionSolicitud = ++versionSolicitudPacientes;
   const lista = document.getElementById("listaPacientes");
   if (!opciones.silencioso && lista) lista.innerHTML = "Verificando acceso...";
 
@@ -872,6 +878,7 @@ async function cargarPacientes(uidMedico, opciones = {}) {
       ahora - cachePacientesMedico.ultimaCarga < TTL_CACHE_PACIENTES_MS;
 
     if (cacheVigente) {
+      if (versionSolicitud !== versionSolicitudPacientes) return;
       pacientesGlobal = [...cachePacientesMedico.datos];
       if (!opciones.conservarPagina) reiniciarPaginacionPacientes();
       actualizarVistaPacientesCargados();
@@ -879,7 +886,9 @@ async function cargarPacientes(uidMedico, opciones = {}) {
     }
 
     if (!opciones.silencioso && lista) lista.innerHTML = "Cargando pacientes autorizados...";
-    const snapshot = await listarPacientes(uidMedico);
+    const snapshot = await listarPacientes(uidMedico, { forzar: Boolean(opciones.forzar) });
+
+    if (versionSolicitud !== versionSolicitudPacientes) return;
 
     pacientesGlobal = deduplicarPacientes(snapshot.docs
       .map((docPaciente) => ({
@@ -898,6 +907,7 @@ async function cargarPacientes(uidMedico, opciones = {}) {
     if (!opciones.conservarPagina) reiniciarPaginacionPacientes();
     actualizarVistaPacientesCargados();
   } catch (error) {
+    if (versionSolicitud !== versionSolicitudPacientes) return;
     console.error("No se pudo cargar la lista de pacientes:", error);
     if (lista) {
       lista.innerHTML = "No se pudo cargar la lista de pacientes. Usa Actualizar para intentar de nuevo.";
