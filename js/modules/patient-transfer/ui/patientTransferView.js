@@ -2,6 +2,10 @@ import { FIELD_RULES, NOTE_TYPE_RULES } from "../../importacionDocx/docxImportCo
 import { construirNombreCompletoPaciente } from "../../../utils/nombresPacientes.js";
 import { parseMedicationSchedules } from "../parsing/clinicalCandidateParser.js?v=20260804-duplicate-diagnosis-v1";
 import { buildPatientMatchExplanation, normalizeRecordNumber } from "../parsing/patientDuplicateMatcher.js";
+import {
+  mapLegacyDuplicateResolution,
+  normalizeDuplicateDetectionStatus
+} from "../persistence/documentPersistenceEligibility.js";
 
 let root = null;
 
@@ -750,8 +754,9 @@ export function renderDetectedGroups(groups = []) {
         </header>
         ${group.ambiguous ? `<div class="patient-transfer-warning">Datos incompletos o contradictorios. Revise antes de guardar.</div>` : ""}
         ${renderDuplicateWarning(group)}
+        ${group.action === "unresolved" ? `<div class="patient-transfer-warning">El documento ya fue detectado durante una importación previa. Seleccione cómo desea continuar.</div>` : ""}
         <div class="patient-transfer-mode">
-          <label><input type="radio" name="transfer-action-${group.id}" value="create" data-transfer-action="${group.id}" ${group.action !== "associate" ? "checked" : ""}> Crear paciente</label>
+          <label><input type="radio" name="transfer-action-${group.id}" value="create" data-transfer-action="${group.id}" ${group.action === "create" ? "checked" : ""}> Crear paciente</label>
           <label><input type="radio" name="transfer-action-${group.id}" value="associate" data-transfer-action="${group.id}" ${group.action === "associate" ? "checked" : ""}> Asociar a paciente existente</label>
         </div>
         ${renderCandidateSelect(group)}
@@ -801,14 +806,17 @@ export function readTransferReview(groups = []) {
       : null;
   };
   return groups.map((group) => {
-    const actionControl = modal.querySelector(`[data-transfer-action="${group.id}"]:checked`)?.value || "create";
+    const actionControl = modal.querySelector(`[data-transfer-action="${group.id}"]:checked`)?.value || "";
     const duplicateControl = modal.querySelector(`[data-transfer-duplicate-resolution="${group.id}"]:checked`);
     const selectedResolution = duplicateControl?.value || group.selectedResolution || null;
     const duplicateAction = selectedResolution || "";
+    const groupOmitted = modal.querySelector(`[data-transfer-omit-group="${group.id}"]`)?.checked || false;
     const selectedPatientId = duplicateAction === "link-existing"
       ? duplicateControl?.dataset.patientId || group.duplicateResolution?.matchedPatientId || ""
       : modal.querySelector(`[data-transfer-existing="${group.id}"]`)?.value || "";
-    const action = duplicateAction === "link-existing" ? "associate" : duplicateAction === "omit" ? "omit" : actionControl;
+    const action = groupOmitted
+      ? "omit"
+      : duplicateAction === "link-existing" ? "associate" : duplicateAction === "omit" ? "omit" : actionControl || "unresolved";
     const confirmedFields = {};
     FIELD_RULES.forEach((rule) => {
       const rawValue = modal.querySelector(`[data-transfer-field="${group.id}:${rule.key}"]`)?.value?.trim() || "";
@@ -980,6 +988,19 @@ export function readTransferReview(groups = []) {
         treatmentPlanCandidates: primarySegment?.treatmentPlanCandidates || doc.treatmentPlanCandidates || []
       };
     });
+    const resolvedDocuments = documents.map((document) => ({
+      ...document,
+      duplicateDetectionStatus: normalizeDuplicateDetectionStatus(
+        document.duplicateDetectionStatus ?? document.duplicateStatus
+      ),
+      duplicateResolution: mapLegacyDuplicateResolution({
+        resolution: document.duplicateResolution === "unresolved" ? "" : document.duplicateResolution,
+        selectedResolution,
+        action,
+        omitted: Boolean(groupOmitted || document.omitted)
+      }),
+      matchedPatientId: selectedPatientId || document.matchedPatientId || ""
+    }));
     return {
       ...group,
       action,
@@ -993,8 +1014,8 @@ export function readTransferReview(groups = []) {
         resolvedAt: new Date().toISOString()
       } : group.duplicateResolution || null,
       confirmedFields,
-      omitted: modal.querySelector(`[data-transfer-omit-group="${group.id}"]`)?.checked || false,
-      documents
+      omitted: groupOmitted,
+      documents: resolvedDocuments
     };
   });
 }

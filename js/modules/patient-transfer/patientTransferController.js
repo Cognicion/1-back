@@ -19,6 +19,12 @@ import { adaptTreatmentPlan } from "../clinical-document-engine/adapters/treatme
 import { resolveMedicationCandidatesAgainstCatalog } from "../clinical-document-engine/resolvers/medicationCatalogResolver.js";
 import { findDuplicateImport, findExistingPatientCandidates, saveTransferredGroups } from "./patientTransferRepository.js";
 import {
+  DUPLICATE_DETECTION_STATUS,
+  DUPLICATE_RESOLUTION,
+  isDocumentEligibleForPersistence,
+  normalizeDuplicateDetectionStatus
+} from "./persistence/documentPersistenceEligibility.js";
+import {
   closePatientTransferView,
   applyBulkCandidateSelection,
   getPatientTransferRoot,
@@ -281,6 +287,15 @@ function expandSegmentedGroupsForSave(groups = []) {
   }));
 }
 
+function persistenceEligibilityForDocument(group = {}, document = {}) {
+  return isDocumentEligibleForPersistence(document, {
+    action: group.action,
+    selectedResolution: group.selectedResolution,
+    matchedPatientId: group.selectedPatientId || group.selectedExistingPatientId || group.duplicateResolution?.matchedPatientId || "",
+    omitted: group.omitted
+  });
+}
+
 function addFiles(files = []) {
   const existingNames = new Set(selectedFiles.map((item) => `${item.file.name}:${item.file.size}`));
   const next = [...selectedFiles];
@@ -405,7 +420,15 @@ async function analyzeOneFile(item, user) {
     headings: sectionsResult.encabezados
   });
   const multipleNotesMode = normalizeMultipleNotesMode(item.multipleNotesMode);
-  const duplicateStatus = duplicate ? "exact_duplicate" : sameBatch ? "duplicate_in_batch" : "nuevo";
+  const duplicateDetectionStatus = normalizeDuplicateDetectionStatus(
+    duplicate?.duplicateStatus || (sameBatch ? "duplicate_in_batch" : "none")
+  );
+  const duplicateResolution = duplicateDetectionStatus === DUPLICATE_DETECTION_STATUS.NONE
+    ? DUPLICATE_RESOLUTION.CREATE_NEW
+    : DUPLICATE_RESOLUTION.UNRESOLVED;
+  const duplicateStatus = duplicateDetectionStatus === DUPLICATE_DETECTION_STATUS.NONE
+    ? "nuevo"
+    : duplicateDetectionStatus;
 
   item.status = duplicate ? "warning" : "ok";
   item.statusLabel = duplicate ? "Ya importado" : "Procesado correctamente";
@@ -441,6 +464,9 @@ async function analyzeOneFile(item, user) {
     noteSegments: [],
     duplicate,
     duplicateStatus,
+    duplicateDetectionStatus,
+    duplicateResolution,
+    matchedPatientId: duplicate?.patientId || duplicate?.pacienteId || "",
     duplicateStatusLabel: duplicate ? "Ya importado" : sameBatch ? "Duplicado en esta carga" : "Nuevo"
   };
   const selectedSegments = segmentClinicalNotes({
@@ -526,7 +552,11 @@ async function analyzeSelectedFiles() {
         matchedFields: strongest.matchedFields,
         conflictingFields: strongest.conflictingFields
       } : null,
-      action: group.action === "omit" ? "omit" : "create",
+      action: group.action === "omit"
+        ? "omit"
+        : group.documents.some((document) => document.duplicateResolution === DUPLICATE_RESOLUTION.UNRESOLVED)
+          ? "unresolved"
+          : "create",
       selectedPatientId: ""
     };
   }));
@@ -571,7 +601,60 @@ async function saveReviewedTransfer({ reuseReviewedGroups = false } = {}) {
 
   syncReviewedGroupsFromView();
   const reviewedGroups = analyzedGroups;
+  reviewedGroups.forEach((group) => (group.documents || []).forEach((document) => {
+    const eligibility = persistenceEligibilityForDocument(group, document);
+    console.info("[patient-transfer] duplicate-resolution:decision", {
+      detectionStatus: eligibility.detectionStatus,
+      resolution: eligibility.resolution,
+      eligible: eligibility.eligible,
+      reason: eligibility.reason
+    });
+  }));
+  const reviewedDocuments = reviewedGroups.flatMap((group) => group.documents || []);
+  console.info("[patient-transfer] persistence-audit:analyzed-groups", {
+    groups: reviewedGroups.length,
+    documents: reviewedDocuments.length,
+    noteSegments: reviewedDocuments.reduce((total, document) => total + (document.noteSegments || []).length, 0),
+    omittedDocuments: reviewedDocuments.filter((document) => document.omitted).length,
+    duplicateStatuses: [...new Set(reviewedDocuments.map((document) => document.duplicateStatus ?? null))]
+  });
   const persistenceGroups = expandSegmentedGroupsForSave(reviewedGroups);
+  const expandedDocuments = persistenceGroups.flatMap((group) => group.documents || []);
+  console.info("[patient-transfer] persistence-audit:expanded-documents", {
+    sourceDocuments: reviewedDocuments.length,
+    expandedDocuments: expandedDocuments.length,
+    expandedNotes: expandedDocuments.filter((document) => document.sourceNoteSegmentId).length,
+    fieldComparison: reviewedGroups.flatMap((group) => (group.documents || []).map((document, documentIndex) => ({
+      documentIndex,
+      original: {
+        duplicateStatus: document.duplicateStatus ?? null,
+        omitted: Boolean(document.omitted),
+        action: document.action ?? group.action ?? null,
+        include: document.include ?? null
+      },
+      expanded: (persistenceGroups.find((item) => item.id === group.id)?.documents || [])
+        .filter((expanded) => expanded.id === document.id || expanded.id.startsWith(`${document.id}:`))
+        .map((expanded) => ({
+          duplicateStatus: expanded.duplicateStatus ?? null,
+          omitted: Boolean(expanded.omitted),
+          action: expanded.action ?? group.action ?? null,
+          include: expanded.include ?? null
+        }))
+    })))
+  });
+  console.info("[patient-transfer] persistence-audit:before-save", {
+    groupsReceived: persistenceGroups.length,
+    documentsReceived: expandedDocuments.length,
+    documentsWithNotes: expandedDocuments.filter((document) => Boolean(document.sourceNoteSegmentId)).length,
+    notesReceived: expandedDocuments.length
+  });
+  const unresolvedPersistence = persistenceGroups.flatMap((group) => (group.documents || []).map((document) =>
+    persistenceEligibilityForDocument(group, document)
+  )).find((item) => ["duplicate-resolution-required", "missing-existing-patient", "invalid-resolution"].includes(item.reason));
+  if (unresolvedPersistence) {
+    showPatientTransferError("Resuelva el documento duplicado: crear un paciente nuevo, asociar a uno existente u omitir.");
+    return;
+  }
   const treatmentCounts = persistenceGroups.reduce((total, group) => group.documents.reduce((count, document) => ({
     detected: count.detected + (document.treatmentCandidates || []).length,
     selected: count.selected + (document.treatmentCandidates || []).filter((candidate) => candidate.include || candidate.selectedForImport).length
@@ -582,7 +665,11 @@ async function saveReviewedTransfer({ reuseReviewedGroups = false } = {}) {
     return;
   }
   const blocking = reviewedGroups.find((group) =>
-    !group.omitted && group.action === "associate" && !group.selectedPatientId
+    !group.omitted
+      && group.action === "associate"
+      && !group.selectedPatientId
+      && !group.selectedExistingPatientId
+      && !(group.documents || []).some((document) => document.matchedPatientId)
   );
   if (blocking) {
     showPatientTransferError("Selecciona el paciente existente antes de asociar notas.");
@@ -610,9 +697,9 @@ async function saveReviewedTransfer({ reuseReviewedGroups = false } = {}) {
   const summary = {
     newPatients: persistenceGroups.filter((group) => !group.omitted && group.action === "create").length,
     existingPatients: persistenceGroups.filter((group) => !group.omitted && group.action === "associate").length,
-    notes: persistenceGroups.reduce((total, group) => total + (group.omitted ? 0 : group.documents.filter((doc) => !doc.omitted && doc.duplicateStatus === "nuevo").length), 0),
-    omittedFiles: persistenceGroups.reduce((total, group) => total + group.documents.filter((doc) => doc.omitted || doc.duplicateStatus !== "nuevo").length, 0),
-    possibleDuplicates: persistenceGroups.reduce((total, group) => total + group.documents.filter((doc) => doc.duplicateStatus !== "nuevo").length, 0),
+    notes: persistenceGroups.reduce((total, group) => total + group.documents.filter((document) => persistenceEligibilityForDocument(group, document).eligible).length, 0),
+    omittedFiles: persistenceGroups.reduce((total, group) => total + group.documents.filter((document) => persistenceEligibilityForDocument(group, document).reason === "omitted").length, 0),
+    possibleDuplicates: persistenceGroups.reduce((total, group) => total + group.documents.filter((document) => normalizeDuplicateDetectionStatus(document.duplicateDetectionStatus ?? document.duplicateStatus) !== DUPLICATE_DETECTION_STATUS.NONE).length, 0),
     pendingFields: reviewedGroups.reduce((total, group) => total + Object.values(group.confirmedFields || {}).filter((value) => !value).length, 0)
   };
   const confirmed = window.confirm(`Resumen del traspaso\n\nPacientes nuevos: ${summary.newPatients}\nPacientes existentes: ${summary.existingPatients}\nNotas que se crearan: ${summary.notes}\nArchivos omitidos: ${summary.omittedFiles}\nPosibles duplicados: ${summary.possibleDuplicates}\nCampos pendientes: ${summary.pendingFields}\n\n¿Confirmar traspaso?`);
@@ -640,19 +727,23 @@ async function saveReviewedTransfer({ reuseReviewedGroups = false } = {}) {
     persistenceGroups.forEach((group) => {
       const result = results.find((item) => item.groupId === group.id);
       const documents = group.documents || [];
+      const eligibility = documents.map((document) => persistenceEligibilityForDocument(group, document));
       console.info("[patient-transfer] save-result", {
         groupId: group.id,
         documentsReceived: documents.length,
-        eligibleDocuments: documents.filter((item) => !item.omitted && item.duplicateStatus === "nuevo").length,
-        omittedDocuments: documents.filter((item) => item.omitted).length,
-        duplicateExcludedDocuments: documents.filter((item) => !item.omitted && item.duplicateStatus !== "nuevo").length,
+        eligibleDocuments: eligibility.filter((item) => item.eligible).length,
+        omittedDocuments: eligibility.filter((item) => item.reason === "omitted").length,
+        duplicateExcludedDocuments: eligibility.filter((item) => !item.eligible && item.reason !== "omitted").length,
         duplicateStatuses: [...new Set(documents.map((item) => item.duplicateStatus || "missing"))],
         patientCreated: Boolean(result?.patientCreated),
         patientIdPresent: Boolean(result?.patientId)
       });
     });
     setPatientTransferResults(results);
-    const hasFailures = results.some((item) => item.status === "failed" || item.status === "partially_completed");
+    const noPersistenceResult = results.length > 0 && results.every((item) =>
+      !item.patientCreated && !item.patientId && Number(item.notesCreated || 0) === 0
+    );
+    const hasFailures = noPersistenceResult || results.some((item) => item.status === "failed" || item.status === "partially_completed");
     const finalStatus = hasFailures ? TRANSFER_STATUS.PARTIALLY_COMPLETED : TRANSFER_STATUS.COMPLETED;
     const firstResult = results[0] || {};
     setPatientTransferStatus(finalStatus);
@@ -667,9 +758,20 @@ async function saveReviewedTransfer({ reuseReviewedGroups = false } = {}) {
       sourceDocumentPath: firstResult.documents?.find((item) => item.storagePath)?.storagePath || "",
       lastCompletedStage: finalStatus
     });
-    setPatientTransferMessage(hasFailures ? "Traspaso no completado." : "Traspaso completado.", hasFailures ? 85 : 100);
+    setPatientTransferMessage(
+      noPersistenceResult
+        ? "No se creó ningún paciente ni ninguna nota. Revise la resolución de duplicados."
+        : hasFailures ? "Traspaso no completado." : "Traspaso completado.",
+      hasFailures ? 85 : 100
+    );
     console.info("[patient-transfer] render-result:start", { results: results.length });
-    renderTransferResults(results);
+    renderTransferResults(noPersistenceResult
+      ? results.map((item) => ({
+          ...item,
+          status: "failed",
+          error: "No se creó ningún paciente ni ninguna nota. Revise la resolución de duplicados."
+        }))
+      : results);
     console.info("[patient-transfer] render-result:success", { results: results.length });
     console.info("[patient-transfer] completed-event", {
       patientIdsCount: results.filter((item) => item.patientId).length,

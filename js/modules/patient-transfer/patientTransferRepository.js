@@ -12,6 +12,10 @@ import { listarPacientes } from "../../services/usuarios.js";
 import { withPatientTransferTimeout } from "./patientTransferTimeout.js";
 import { findPossiblePatientMatches, normalizeRecordNumber } from "./parsing/patientDuplicateMatcher.js";
 import {
+  DUPLICATE_RESOLUTION,
+  isDocumentEligibleForPersistence
+} from "./persistence/documentPersistenceEligibility.js";
+import {
   addDoc,
   collection,
   doc,
@@ -272,7 +276,70 @@ export async function saveTransferredGroups({ groups = [], user, onProgress = nu
       continue;
     }
 
-    let patientId = group.selectedPatientId || "";
+    const documentEligibility = (group.documents || []).map((document, documentIndex) => ({
+      document,
+      documentIndex,
+      ...isDocumentEligibleForPersistence(document, {
+        action: group.action,
+        selectedResolution: group.selectedResolution,
+        matchedPatientId: group.selectedPatientId || group.selectedExistingPatientId || group.duplicateResolution?.matchedPatientId || "",
+        omitted: group.omitted
+      })
+    }));
+    documentEligibility.forEach((item) => {
+      console.info("[patient-transfer] persistence:eligibility", {
+        detectionStatus: item.detectionStatus,
+        resolution: item.resolution,
+        eligible: item.eligible,
+        reason: item.reason
+      });
+    });
+    const unresolvedDocument = documentEligibility.find((item) =>
+      ["duplicate-resolution-required", "missing-existing-patient", "invalid-resolution"].includes(item.reason)
+    );
+    if (unresolvedDocument) {
+      results.push({
+        groupId: group.id,
+        status: "blocked",
+        reason: unresolvedDocument.reason,
+        patientId: "",
+        patientCreated: false,
+        notesCreated: 0,
+        documents: []
+      });
+      continue;
+    }
+    const eligibleDocuments = documentEligibility.filter((item) => item.eligible);
+    const resolutions = [...new Set(eligibleDocuments.map((item) => item.resolution))];
+    if (resolutions.length > 1) {
+      results.push({
+        groupId: group.id,
+        status: "blocked",
+        reason: "mixed-duplicate-resolutions",
+        patientId: "",
+        patientCreated: false,
+        notesCreated: 0,
+        documents: []
+      });
+      continue;
+    }
+    if (!eligibleDocuments.length) {
+      results.push({
+        groupId: group.id,
+        status: "omitted",
+        reason: "no-eligible-documents",
+        patientId: "",
+        patientCreated: false,
+        notesCreated: 0,
+        documents: []
+      });
+      continue;
+    }
+    const persistenceResolution = resolutions[0];
+    const effectiveAction = persistenceResolution === DUPLICATE_RESOLUTION.ASSOCIATE_EXISTING ? "associate" : "create";
+    let patientId = effectiveAction === "associate"
+      ? group.selectedPatientId || group.selectedExistingPatientId || eligibleDocuments[0].document.matchedPatientId || ""
+      : "";
     let patientCreated = false;
     let stage = "pending";
     const documentResults = [];
@@ -294,13 +361,30 @@ export async function saveTransferredGroups({ groups = [], user, onProgress = nu
       console.info("[patient-transfer] persistence:start", JSON.stringify({
         operationId,
         groupId: group.id,
-        notesExpected: group.documents.filter((item) => !item.omitted && item.duplicateStatus === "nuevo").length
+        notesExpected: eligibleDocuments.length
       }));
-      const documentsToSave = group.documents.filter((item) => !item.omitted && item.duplicateStatus === "nuevo");
-      if (!documentsToSave.length) {
-        results.push({ groupId: group.id, status: "completed", patientId: "", patientName: group.confirmedFields?.nombre || "", patientCreated: false, notesCreated: 0, notesExisting: 0, duplicatesAvoided: group.documents.length, documents: [] });
-        continue;
-      }
+      console.info("[patient-transfer] persistence-audit:before-filter", {
+        groupId: group.id,
+        documentsBeforeFilter: group.documents.length,
+        duplicateStatuses: group.documents.map((item) => item.duplicateStatus ?? null),
+        omittedFlags: group.documents.map((item) => Boolean(item.omitted)),
+        actions: group.documents.map((item) => item.action ?? group.action ?? null)
+      });
+      const documentsToSave = eligibleDocuments.map((item) => item.document);
+      console.info("[patient-transfer] persistence-audit:after-filter", {
+        groupId: group.id,
+        documentsAfterFilter: documentsToSave.length
+      });
+      documentEligibility.filter((item) => !item.eligible).forEach((item) => {
+        console.warn("[patient-transfer] persistence-audit:document-skipped", {
+          groupId: group.id,
+          documentIndex: item.documentIndex,
+          omitted: Boolean(item.document.omitted),
+          duplicateStatus: item.document.duplicateStatus ?? null,
+          action: item.document.action ?? group.action ?? null,
+          skipReason: item.reason
+        });
+      });
 
       const operation = await acquireTransferOperation({ user, group, operationId });
       transferRef = operation.ref;
@@ -332,7 +416,7 @@ export async function saveTransferredGroups({ groups = [], user, onProgress = nu
         traceTransfer("reuse-patient", { authUid: user.uid, transferOperationId: operationId, patientId });
       }
 
-      if (group.action === "create") {
+      if (effectiveAction === "create") {
         if (!patientId) {
           const resolution = {
             ...(group.duplicateResolution || {}),
@@ -374,7 +458,7 @@ export async function saveTransferredGroups({ groups = [], user, onProgress = nu
         }
       }
       if (!patientId) throw new Error("Selecciona un paciente existente o confirma crear uno nuevo.");
-      if (group.action === "associate") {
+      if (effectiveAction === "associate") {
         const existingPatient = await timed("verify-existing-patient", () => getDoc(doc(db, "usuarios", patientId)), TIMEOUTS.query);
         if (!existingPatient.exists()) throw new Error("El paciente existente seleccionado no pudo verificarse.");
         console.info("[patient-transfer] patient:verify", JSON.stringify({ operationId, patientIdPresent: true, exists: true, reused: true }));
