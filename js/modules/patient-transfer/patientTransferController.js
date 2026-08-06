@@ -584,7 +584,18 @@ async function analyzeSelectedFiles() {
 }
 
 async function saveReviewedTransfer({ reuseReviewedGroups = false } = {}) {
-  if (isTransferSaving()) return;
+  console.info("[patient-transfer] save-review-enter", {
+    groupsCount: analyzedGroups.length
+  });
+  if (isTransferSaving()) {
+    console.warn("[patient-transfer] save-blocked", {
+      reason: "save-already-in-progress",
+      unresolvedCount: 0,
+      missingPatientCount: 0
+    });
+    showPatientTransferError("El traspaso ya se está guardando. Espere a que termine.");
+    return;
+  }
   if (!analyzedGroups.length) {
     showPatientTransferError("Analiza los documentos antes de confirmar.");
     return;
@@ -601,11 +612,26 @@ async function saveReviewedTransfer({ reuseReviewedGroups = false } = {}) {
 
   syncReviewedGroupsFromView();
   const reviewedGroups = analyzedGroups;
+  const reviewedEligibility = reviewedGroups.flatMap((group) => (group.documents || []).map((document) =>
+    persistenceEligibilityForDocument(group, document)
+  ));
+  const resolutionCounts = reviewedEligibility.reduce((counts, item) => ({
+    unresolvedCount: counts.unresolvedCount + (item.resolution === DUPLICATE_RESOLUTION.UNRESOLVED ? 1 : 0),
+    createNewCount: counts.createNewCount + (item.resolution === DUPLICATE_RESOLUTION.CREATE_NEW ? 1 : 0),
+    associateCount: counts.associateCount + (item.resolution === DUPLICATE_RESOLUTION.ASSOCIATE_EXISTING ? 1 : 0),
+    omitCount: counts.omitCount + (item.resolution === DUPLICATE_RESOLUTION.OMIT ? 1 : 0)
+  }), { unresolvedCount: 0, createNewCount: 0, associateCount: 0, omitCount: 0 });
+  console.info("[patient-transfer] review-synced", {
+    documentsCount: reviewedEligibility.length,
+    ...resolutionCounts
+  });
   reviewedGroups.forEach((group) => (group.documents || []).forEach((document) => {
     const eligibility = persistenceEligibilityForDocument(group, document);
     console.info("[patient-transfer] duplicate-resolution:decision", {
       detectionStatus: eligibility.detectionStatus,
       resolution: eligibility.resolution,
+      action: document.action ?? group.action ?? "unresolved",
+      matchedPatientIdPresent: eligibility.matchedPatientIdPresent,
       eligible: eligibility.eligible,
       reason: eligibility.reason
     });
@@ -652,7 +678,21 @@ async function saveReviewedTransfer({ reuseReviewedGroups = false } = {}) {
     persistenceEligibilityForDocument(group, document)
   )).find((item) => ["duplicate-resolution-required", "missing-existing-patient", "invalid-resolution"].includes(item.reason));
   if (unresolvedPersistence) {
+    const missingPatientCount = reviewedEligibility.filter((item) => item.reason === "missing-existing-patient").length;
+    console.warn("[patient-transfer] save-blocked", {
+      reason: unresolvedPersistence.reason,
+      unresolvedCount: resolutionCounts.unresolvedCount,
+      missingPatientCount
+    });
     showPatientTransferError("Resuelva el documento duplicado: crear un paciente nuevo, asociar a uno existente u omitir.");
+    const unresolvedGroup = reviewedGroups.find((group) => (group.documents || []).some((document) =>
+      !persistenceEligibilityForDocument(group, document).eligible
+    ));
+    const resolutionControl = unresolvedGroup
+      ? getPatientTransferRoot().querySelector(`[data-transfer-duplicate-resolution="${unresolvedGroup.id}"]`)
+      : null;
+    resolutionControl?.scrollIntoView({ behavior: "smooth", block: "center" });
+    resolutionControl?.focus({ preventScroll: true });
     return;
   }
   const treatmentCounts = persistenceGroups.reduce((total, group) => group.documents.reduce((count, document) => ({
@@ -661,6 +701,11 @@ async function saveReviewedTransfer({ reuseReviewedGroups = false } = {}) {
   }), total), { detected: 0, selected: 0 });
   console.info("[patient-transfer] persist:selected-count", JSON.stringify(treatmentCounts));
   if (treatmentCounts.detected && !treatmentCounts.selected) {
+    console.warn("[patient-transfer] save-blocked", {
+      reason: "no-treatments-selected",
+      unresolvedCount: 0,
+      missingPatientCount: 0
+    });
     showPatientTransferError("Se detectaron medicamentos, pero ninguno fue seleccionado para importar.");
     return;
   }
@@ -672,6 +717,11 @@ async function saveReviewedTransfer({ reuseReviewedGroups = false } = {}) {
       && !(group.documents || []).some((document) => document.matchedPatientId)
   );
   if (blocking) {
+    console.warn("[patient-transfer] save-blocked", {
+      reason: "missing-existing-patient",
+      unresolvedCount: 0,
+      missingPatientCount: 1
+    });
     showPatientTransferError("Selecciona el paciente existente antes de asociar notas.");
     return;
   }
@@ -682,7 +732,16 @@ async function saveReviewedTransfer({ reuseReviewedGroups = false } = {}) {
       && !["link-existing", "create-new", "omit"].includes(group.selectedResolution);
   });
   if (duplicatePending) {
+    console.warn("[patient-transfer] save-blocked", {
+      reason: "duplicate-resolution-required",
+      unresolvedCount: 1,
+      missingPatientCount: 0
+    });
     showPatientTransferError("Resuelve la posible coincidencia del paciente: asociar, crear de todas formas u omitir.");
+    const resolutionControl = getPatientTransferRoot()
+      .querySelector(`[data-transfer-duplicate-resolution="${duplicatePending.id}"]`);
+    resolutionControl?.scrollIntoView({ behavior: "smooth", block: "center" });
+    resolutionControl?.focus({ preventScroll: true });
     return;
   }
   const createDespiteMatch = reviewedGroups.find((group) => group.selectedResolution === "create-new" && !group.omitted);
@@ -781,6 +840,11 @@ async function saveReviewedTransfer({ reuseReviewedGroups = false } = {}) {
     });
     window.dispatchEvent(new CustomEvent("cognicion:patient-transfer-completed", { detail: { results } }));
   } catch (error) {
+    console.error("[patient-transfer] save-error", {
+      name: error?.name || "Error",
+      code: error?.code || "unknown",
+      message: error?.message || String(error)
+    });
     console.error("[patient-transfer] save:failed", {
       stage: error?.stage || "save",
       code: error?.code || error?.name || "unknown",
@@ -795,6 +859,28 @@ async function saveReviewedTransfer({ reuseReviewedGroups = false } = {}) {
   } finally {
     setTransferSavingState(false);
     setPatientTransferExecutionState({ isSaving: false });
+  }
+}
+
+async function handleConfirmTransferClick(event) {
+  const button = event.currentTarget;
+  console.info("[patient-transfer] confirm-click", {
+    buttonDisabled: Boolean(button?.disabled),
+    groupsCount: analyzedGroups.length
+  });
+  try {
+    await saveReviewedTransfer();
+  } catch (error) {
+    console.error("[patient-transfer] save-error", {
+      name: error?.name || "Error",
+      code: error?.code || "unknown",
+      message: error?.message || String(error)
+    });
+    setTransferSavingState(false);
+    setPatientTransferExecutionState({ isSaving: false, lastCompletedStage: error?.stage || "failed" });
+    setPatientTransferStatus(TRANSFER_STATUS.FAILED);
+    setPatientTransferVisualStatus(TRANSFER_STATUS.FAILED);
+    showPatientTransferError(error?.message || String(error));
   }
 }
 
@@ -919,7 +1005,7 @@ export function initializePatientTransfer() {
   });
   root.querySelector("[data-transfer-select]")?.addEventListener("click", () => input?.click());
   root.querySelector("[data-transfer-analyze]")?.addEventListener("click", () => analyzeSelectedFiles().catch((error) => showPatientTransferError(error.message || String(error))));
-  root.querySelector("[data-transfer-save]")?.addEventListener("click", () => saveReviewedTransfer().catch((error) => showPatientTransferError(error.message || String(error))));
+  root.querySelector("[data-transfer-save]")?.addEventListener("click", handleConfirmTransferClick);
 
   input?.addEventListener("change", (event) => addFiles(event.target.files || []));
   dropzone?.addEventListener("dragover", (event) => {
