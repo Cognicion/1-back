@@ -576,20 +576,6 @@
   color: #e0f2fe;
 }
 
-.patient-transfer-candidates-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-}
-
-.patient-transfer-candidates-header > label {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  white-space: nowrap;
-}
-
 .patient-transfer-candidates article {
   display: grid;
   grid-template-columns: minmax(90px, .6fr) repeat(4, minmax(110px, 1fr));

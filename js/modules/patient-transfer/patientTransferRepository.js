@@ -365,13 +365,8 @@ export async function saveTransferredGroups({ groups = [], user, onProgress = nu
           console.info("[patient-transfer] patient:create:success", JSON.stringify({ operationId, patientCreated: true, patientIdPresent: true }));
           const createdPatient = await timed("verify-patient", () => getDoc(doc(db, "usuarios", patientId)), TIMEOUTS.query);
           if (!createdPatient.exists()) throw new Error("El paciente fue creado pero no pudo verificarse en el expediente del médico.");
-           console.info("[patient-transfer] patient:verify", JSON.stringify({ operationId, patientIdPresent: true, exists: true }));
-           console.info("[patient-transfer] patient-created", JSON.stringify({
-             operationId,
-             patientId,
-             created: true
-           }));
-           await updateTransferImportRecord({ transferRef, user, group, patientId, documentResults, status: "patient_created", lastCompletedStage: "patient_created" });
+          console.info("[patient-transfer] patient:verify", JSON.stringify({ operationId, patientIdPresent: true, exists: true }));
+          await updateTransferImportRecord({ transferRef, user, group, patientId, documentResults, status: "patient_created", lastCompletedStage: "patient_created" });
         }
       }
       if (!patientId) throw new Error("Selecciona un paciente existente o confirma crear uno nuevo.");

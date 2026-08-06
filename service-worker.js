@@ -1,4 +1,4 @@
-const CACHE_VERSION = "20260805-apuntes-v4.02";
+const CACHE_VERSION = "20260802-biocellular-pixels-v1";
 const STATIC_CACHE = `cognicion-static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `cognicion-runtime-${CACHE_VERSION}`;
 

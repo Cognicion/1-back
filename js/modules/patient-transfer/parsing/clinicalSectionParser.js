@@ -148,31 +148,6 @@ function clampMentalExam(secciones, encabezados, lines, noteSegment = {}) {
   return trace;
 }
 
-const DESTINATION_FOOTER_BOUNDARIES = Object.freeze([
-  { pattern: /(?:^|\n)\s*(?:dr\.|dra\.|m[eé]dico adscrito|m[eé]dica residente)(?=\s|$)/i, reason: "medical-signature" },
-  { pattern: /(?:^|\n)\s*(?:c[eé]d\.?|c[eé]dula|firma|nombre,?\s*firma\s+y\s*c[eé]dula)(?=\s|$)/i, reason: "signature-or-license" },
-  { pattern: /(?:^|\n)\s*(?:secretar[ií]a de salud|comisi[oó]n nacional|hospital psiqui[aá]trico|conasama|p[aá]gina siguiente|pie institucional)(?=\s|$)/i, reason: "institutional-footer" }
-]);
-
-function clampDestination(secciones, noteSegment = {}) {
-  const source = String(secciones.destino || "").trim();
-  if (!source) return null;
-  const boundary = DESTINATION_FOOTER_BOUNDARIES
-    .map((item) => ({ ...item, match: item.pattern.exec(source) }))
-    .filter((item) => item.match)
-    .sort((left, right) => left.match.index - right.match.index)[0];
-  if (!boundary) return null;
-  const boundaryStart = boundary.match.index + (boundary.match[0].startsWith("\n") ? 1 : 0);
-  secciones.destino = source.slice(0, boundaryStart).trim();
-  const trace = {
-    noteId: noteSegment.id || "",
-    pattern: boundary.match[0].trim(),
-    reason: boundary.reason
-  };
-  console.info("[patient-transfer] destinationParser:boundary", trace);
-  return trace;
-}
-
 /** Separa cada segmento usando todos los encabezados, sin recurrir a rawText como respaldo. */
 export function parseClinicalSections(blocks = [], { noteSegment = {} } = {}) {
   const secciones = Object.fromEntries(CLINICAL_SECTION_KEYS.map((key) => [key, ""]));
@@ -230,7 +205,6 @@ export function parseClinicalSections(blocks = [], { noteSegment = {} } = {}) {
     encabezados.at(-1).end = Math.max(...lines.map((line) => line.source?.blockIndex ?? line.position), 0) + 1;
   }
   splitPlanAndMedications(secciones);
-  clampDestination(secciones, noteSegment);
   console.info("[patient-transfer] mental-exam:start", {
     noteId: noteSegment.id || "",
     startBlock: encabezados.find((heading) => heading.key === "examenMental")?.start ?? null
