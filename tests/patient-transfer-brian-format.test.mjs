@@ -40,6 +40,10 @@ paragraph("COMENTARIO Y/O ANÁLISIS CLÍNICO Y FUNDAMENTACIÓN DIAGNÓSTICA Y TE
 paragraph("Análisis clínico exclusivo.");
 paragraph("PRONÓSTICO: Reservado para la vida y la función.");
 paragraph("DESTINO: INGRESA AL SERVICIO DE OBSERVACIÓN");
+paragraph("Dr. PROFESIONAL ANONIMIZADO");
+paragraph("Médico Adscrito a Urgencias.");
+paragraph("Céd. Prof. 00000000.");
+paragraph("SECRETARÍA DE SALUD");
 
 const detection = detectMultipleClinicalNotes({ blocks });
 assert.equal(detection.proposedNoteBoundaries.length, 1);
@@ -53,7 +57,8 @@ assert.match(segment.sections.resultadosEstudios, /Electrocardiograma/);
 assert.match(segment.sections.examenMental, /pensamiento organizado/);
 assert.match(segment.sections.analisis, /Análisis clínico exclusivo/);
 assert.match(segment.sections.pronostico, /Reservado/);
-assert.match(segment.sections.destino, /INGRESA AL SERVICIO/);
+assert.equal(segment.sections.destino, "INGRESA AL SERVICIO DE OBSERVACIÓN");
+assert.doesNotMatch(segment.sections.destino, /Dr\.|Céd\.|SECRETARÍA/i);
 
 const candidates = extractClinicalCandidates({
   id: "brian",
