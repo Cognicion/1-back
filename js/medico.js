@@ -215,7 +215,13 @@ function inicializarImportacionDocxLazy() {
     }
   });
 
-  window.addEventListener("cognicion:patient-transfer-completed", () => {
+  window.addEventListener("cognicion:patient-transfer-completed", (event) => {
+    const results = Array.isArray(event.detail?.results) ? event.detail.results : [];
+    console.info("[medical-panel] refresh-start", {
+      patientIdsCount: results.filter((item) => item.patientId).length,
+      createdCount: results.filter((item) => item.patientCreated).length,
+      forced: true
+    });
     if (uidMedicoActual) {
       cargarPacientes(uidMedicoActual, { forzar: true }).catch((error) => {
         console.warn("No se pudo refrescar el Panel Médico después del traspaso:", error);
@@ -887,6 +893,10 @@ async function cargarPacientes(uidMedico, opciones = {}) {
 
     if (!opciones.silencioso && lista) lista.innerHTML = "Cargando pacientes autorizados...";
     const snapshot = await listarPacientes(uidMedico, { forzar: Boolean(opciones.forzar) });
+    console.info("[medical-panel] query-result", {
+      queryCount: snapshot.size || 0,
+      forced: Boolean(opciones.forzar)
+    });
 
     if (versionSolicitud !== versionSolicitudPacientes) return;
 
@@ -1464,6 +1474,9 @@ function mostrarPacientes(pacientes) {
   const lista = document.getElementById("listaPacientes");
   lista.innerHTML = "";
   const pacientesUnicos = deduplicarPacientes(pacientes);
+  console.info("[medical-panel] patient-rendered", {
+    rendered: pacientesUnicos.length
+  });
 
   if (pacientesUnicos.length === 0) {
     lista.innerHTML = `
@@ -1598,6 +1611,10 @@ function filtrarPacientes() {
   });
 
   const ordenados = deduplicarPacientes(ordenarPacientes(filtrados));
+  console.info("[medical-panel] patient-filtered", {
+    queryCount: pacientesGlobal.length,
+    filteredCount: ordenados.length
+  });
   const pacientesPagina = ordenados.slice(0, pacientesVisiblesLimite);
   mostrarPacientes(pacientesPagina);
   renderizarGraficasMedico(ordenados);

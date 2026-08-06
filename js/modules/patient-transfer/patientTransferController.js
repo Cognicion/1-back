@@ -637,6 +637,20 @@ async function saveReviewedTransfer({ reuseReviewedGroups = false } = {}) {
         setPatientTransferMessage(message, progress);
       }
     });
+    persistenceGroups.forEach((group) => {
+      const result = results.find((item) => item.groupId === group.id);
+      const documents = group.documents || [];
+      console.info("[patient-transfer] save-result", {
+        groupId: group.id,
+        documentsReceived: documents.length,
+        eligibleDocuments: documents.filter((item) => !item.omitted && item.duplicateStatus === "nuevo").length,
+        omittedDocuments: documents.filter((item) => item.omitted).length,
+        duplicateExcludedDocuments: documents.filter((item) => !item.omitted && item.duplicateStatus !== "nuevo").length,
+        duplicateStatuses: [...new Set(documents.map((item) => item.duplicateStatus || "missing"))],
+        patientCreated: Boolean(result?.patientCreated),
+        patientIdPresent: Boolean(result?.patientId)
+      });
+    });
     setPatientTransferResults(results);
     const hasFailures = results.some((item) => item.status === "failed" || item.status === "partially_completed");
     const finalStatus = hasFailures ? TRANSFER_STATUS.PARTIALLY_COMPLETED : TRANSFER_STATUS.COMPLETED;
@@ -657,6 +671,12 @@ async function saveReviewedTransfer({ reuseReviewedGroups = false } = {}) {
     console.info("[patient-transfer] render-result:start", { results: results.length });
     renderTransferResults(results);
     console.info("[patient-transfer] render-result:success", { results: results.length });
+    console.info("[patient-transfer] completed-event", {
+      patientIdsCount: results.filter((item) => item.patientId).length,
+      createdCount: results.filter((item) => item.patientCreated).length,
+      associatedCount: results.filter((item) => item.patientId && !item.patientCreated).length,
+      operationIdPresent: Boolean(firstResult.transferOperationId || reviewedGroups[0]?.documents?.[0]?.transferOperationId)
+    });
     window.dispatchEvent(new CustomEvent("cognicion:patient-transfer-completed", { detail: { results } }));
   } catch (error) {
     console.error("[patient-transfer] save:failed", {
