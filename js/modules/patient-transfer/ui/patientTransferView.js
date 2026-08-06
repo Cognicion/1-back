@@ -362,6 +362,109 @@ function segmentControlKey(doc, segment, candidate) {
   return `${doc.id}:${segment.id}:${candidate.id}`;
 }
 
+function candidatesForType(segment = {}, candidateType = "") {
+  return candidateType === "diagnosis"
+    ? (segment.diagnosisCandidates || [])
+    : candidateType === "treatment"
+      ? (segment.treatmentCandidates || [])
+      : [];
+}
+
+export function isTransferCandidateSelectable(candidate = {}, candidateType = "") {
+  if (!candidate || candidate.omitted || candidate.invalidated || candidate.isImportable === false || candidate.importable === false || candidate.discardedByUser) {
+    return false;
+  }
+  return candidateType !== "treatment" || !candidate.requiresCatalogReview;
+}
+
+export function getBulkSelectionState(candidates = [], candidateType = "", noteOmitted = false) {
+  const selectable = (candidates || []).filter((candidate) => isTransferCandidateSelectable(candidate, candidateType));
+  const selectedCount = selectable.filter((candidate) => candidate.include || candidate.selectedForImport).length;
+  return {
+    checked: selectable.length > 0 && selectedCount === selectable.length,
+    indeterminate: selectedCount > 0 && selectedCount < selectable.length,
+    disabled: Boolean(noteOmitted) || !selectable.length,
+    selectableCount: selectable.length,
+    selectedCount
+  };
+}
+
+export function applyBulkCandidateSelection(groups = [], { documentId = "", noteId = "", candidateType = "", selected = false } = {}) {
+  let affectedCount = 0;
+  let candidateCount = 0;
+  const updatedGroups = (groups || []).map((group) => ({
+    ...group,
+    documents: (group.documents || []).map((document) => {
+      if (document.id !== documentId) return document;
+      return {
+        ...document,
+        noteSegments: (document.noteSegments || []).map((segment) => {
+          if (segment.id !== noteId || segment.omitted || document.omitted || group.omitted) return segment;
+          const candidates = candidatesForType(segment, candidateType);
+          if (!candidates.length) return segment;
+          candidateCount += candidates.length;
+          const updatedCandidates = candidates.map((candidate) => {
+            if (!isTransferCandidateSelectable(candidate, candidateType)) return candidate;
+            affectedCount += 1;
+            return {
+              ...candidate,
+              include: selected,
+              selectedForImport: selected,
+              confirmedByDoctor: selected
+            };
+          });
+          return candidateType === "diagnosis"
+            ? { ...segment, diagnosisCandidates: updatedCandidates }
+            : { ...segment, treatmentCandidates: updatedCandidates };
+        })
+      };
+    })
+  }));
+  return { groups: updatedGroups, candidateCount, affectedCount };
+}
+
+export function syncBulkSelectionControls(groups = []) {
+  if (!root) return;
+  root.querySelectorAll("[data-transfer-select-all]").forEach((control) => {
+    const documentId = control.dataset.documentId || "";
+    const noteId = control.dataset.noteId || "";
+    const candidateType = control.dataset.candidateType || "";
+    let owner = null;
+    let document = null;
+    for (const group of groups || []) {
+      document = (group.documents || []).find((item) => item.id === documentId) || null;
+      if (document) {
+        owner = group;
+        break;
+      }
+    }
+    const segment = document?.noteSegments?.find((item) => item.id === noteId);
+    if (!segment) return;
+    const state = getBulkSelectionState(candidatesForType(segment, candidateType), candidateType, Boolean(owner?.omitted || document?.omitted || segment.omitted));
+    control.checked = state.checked;
+    control.indeterminate = state.indeterminate;
+    control.disabled = state.disabled;
+  });
+}
+
+function renderBulkSelectionControl(doc, segment, candidateType, label) {
+  const candidates = candidatesForType(segment, candidateType);
+  const state = getBulkSelectionState(candidates, candidateType, segment.omitted || doc.omitted);
+  const controlId = `transfer-select-all-${doc.id}-${segment.id}-${candidateType}`;
+  const help = candidateType === "diagnosis"
+    ? "Selecciona todos los diagnósticos de esta nota"
+    : "Selecciona todos los tratamientos de esta nota";
+  console.info("[patient-transfer] select-all-render", {
+    documentId: doc.id,
+    noteId: segment.id,
+    candidateType,
+    selected: state.checked,
+    candidateCount: candidates.length,
+    affectedCount: 0
+  });
+  return `<label for="${escapeHtml(controlId)}" title="${help}"><input id="${escapeHtml(controlId)}" type="checkbox" data-action="toggle-all-candidates" data-transfer-select-all data-document-id="${escapeHtml(doc.id)}" data-note-id="${escapeHtml(segment.id)}" data-candidate-type="${candidateType}" ${state.checked ? "checked" : ""} ${state.disabled ? "disabled" : ""}> ${label}</label>`;
+}
+
 function renderSegmentVitalSigns(doc, segment) {
   const candidates = segment.vitalSignsCandidates || [];
   if (!candidates.length) return `<section class="patient-transfer-candidates"><h4>Signos vitales y somatometría</h4><p>No se detectaron signos vitales en esta nota.</p></section>`;
@@ -394,7 +497,7 @@ function renderSegmentVitalSigns(doc, segment) {
 function renderSegmentDiagnosisCandidates(doc, segment) {
   const candidates = segment.diagnosisCandidates || [];
   console.info("[patient-transfer] diagnosis:rendered", JSON.stringify({ noteId: segment.id, candidatesCount: candidates.length }));
-  return `<section class="patient-transfer-candidates"><h4>Diagnósticos detectados</h4>${candidates.length ? `<div class="patient-transfer-table-scroll"><table class="patient-transfer-data-table">
+  return `<section class="patient-transfer-candidates"><div class="patient-transfer-candidates-header"><h4>Diagnósticos detectados</h4>${renderBulkSelectionControl(doc, segment, "diagnosis", "Incluir todos")}</div>${candidates.length ? `<div class="patient-transfer-table-scroll"><table class="patient-transfer-data-table">
     <thead><tr><th>Incluir</th><th>Diagnóstico</th><th>Código</th><th>Sistema</th><th>Estado</th><th>Principal</th><th>Fecha</th><th>Fuente</th></tr></thead><tbody>${candidates.map((candidate) => {
       const key = segmentControlKey(doc, segment, candidate);
       return `<tr>
@@ -439,7 +542,7 @@ function renderSegmentTreatmentCandidates(doc, segment) {
   }));
   return `
     <section class="patient-transfer-candidates">
-      <h4>Medicamentos detectados</h4>
+      <div class="patient-transfer-candidates-header"><h4>Medicamentos detectados</h4>${renderBulkSelectionControl(doc, segment, "treatment", "Incluir todos")}</div>
       ${candidates.length ? `<div class="patient-transfer-table-scroll"><table class="patient-transfer-data-table">
         <thead><tr><th>Incluir</th><th>Medicamento</th><th>Catálogo</th><th>Presentación</th><th>Concentración</th><th>Dosis por toma</th><th>Vía</th><th>Frecuencia</th><th>Horario</th><th>Acción</th><th>Fecha</th><th>Fuente</th></tr></thead><tbody>${candidates.map((candidate) => {
         const key = segmentControlKey(doc, segment, candidate);
@@ -662,6 +765,7 @@ export function renderDetectedGroups(groups = []) {
       `Longitud de Subjetivo distinta en ${metrics.noteId}: estado=${metrics.subjectiveLength}, render=${metrics.renderedLength}`
     );
   });
+  syncBulkSelectionControls(groups);
 }
 
 export function collectRenderedSubjectiveMetrics(groups = []) {

@@ -20,6 +20,7 @@ import { resolveMedicationCandidatesAgainstCatalog } from "../clinical-document-
 import { findDuplicateImport, findExistingPatientCandidates, saveTransferredGroups } from "./patientTransferRepository.js";
 import {
   closePatientTransferView,
+  applyBulkCandidateSelection,
   getPatientTransferRoot,
   openPatientTransferView,
   readTransferReview,
@@ -32,6 +33,7 @@ import {
   setTransferSavingState,
   showPatientTransferError,
   isTransferSaving,
+  syncBulkSelectionControls,
   syncPatientNameInputs
 } from "./ui/patientTransferView.js";
 
@@ -690,6 +692,7 @@ function syncReviewedGroupsFromView() {
   if (!analyzedGroups.length) return;
   analyzedGroups = resolveReviewedMedicationCandidates(readTransferReview(analyzedGroups));
   setPatientTransferGroups(analyzedGroups);
+  syncBulkSelectionControls(analyzedGroups);
 
   const counts = analyzedGroups.reduce((total, group) => group.documents.reduce((documentTotal, doc) => {
     const owners = doc.noteSegments?.length ? doc.noteSegments : [doc];
@@ -709,6 +712,32 @@ function syncReviewedGroupsFromView() {
   });
 
   console.info("[patient-transfer] review-state:updated", counts);
+}
+
+function toggleAllCandidates(control) {
+  const selected = Boolean(control.checked);
+  syncReviewedGroupsFromView();
+  const candidateType = control.dataset.candidateType || "";
+  const result = applyBulkCandidateSelection(analyzedGroups, {
+    documentId: control.dataset.documentId || "",
+    noteId: control.dataset.noteId || "",
+    candidateType,
+    selected
+  });
+  analyzedGroups = result.groups;
+  setPatientTransferGroups(analyzedGroups);
+  renderDetectedGroups(analyzedGroups);
+  const trace = {
+    documentId: control.dataset.documentId || "",
+    noteId: control.dataset.noteId || "",
+    candidateType,
+    selected,
+    candidateCount: result.candidateCount,
+    affectedCount: result.affectedCount
+  };
+  console.info("[patient-transfer] select-all-click", trace);
+  console.info("[patient-transfer] select-all-state", trace);
+  console.info(`[patient-transfer] ${candidateType === "diagnosis" ? "select-all-diagnoses" : "select-all-treatments"}`, trace);
 }
 
 function setFileMultipleNotesMode(documentId, value, { afterAnalysis = false } = {}) {
@@ -833,6 +862,23 @@ export function initializePatientTransfer() {
   });
 
   root.addEventListener("change", (event) => {
+    const selectAll = event.target.closest("[data-action='toggle-all-candidates']");
+    if (selectAll) {
+      console.info("[patient-transfer] select-all-debug", {
+        eventType: event.type,
+        checked: Boolean(event.target.checked),
+        dataset: {
+          documentId: selectAll.dataset.documentId || "",
+          noteId: selectAll.dataset.noteId || "",
+          candidateType: selectAll.dataset.candidateType || ""
+        },
+        candidateType: selectAll.dataset.candidateType || "",
+        noteId: selectAll.dataset.noteId || "",
+        documentId: selectAll.dataset.documentId || ""
+      });
+      toggleAllCandidates(selectAll);
+      return;
+    }
     const fileMode = event.target.closest("[data-transfer-file-multiple-mode]");
     if (fileMode) {
       const documentId = fileMode.dataset.transferFileMultipleMode;
@@ -857,6 +903,7 @@ export function initializePatientTransfer() {
   });
 
   root.addEventListener("input", (event) => {
+    if (event.target.closest("[data-action='toggle-all-candidates']")) return;
     syncPatientNameInputs(event);
     if (updateSubjectiveFromInput(event)) return;
     syncReviewedGroupsFromView();
