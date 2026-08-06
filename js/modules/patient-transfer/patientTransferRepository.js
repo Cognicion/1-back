@@ -268,6 +268,11 @@ export async function saveTransferredGroups({ groups = [], user, onProgress = nu
   const results = [];
   for (const group of groups) {
     if (group.omitted || group.action === "omit") {
+      console.info("[patient-transfer] persist:skip-reason", {
+        groupId: group.id,
+        reason: group.omitted ? "group-omitted" : "action-omit",
+        documentCount: (group.documents || []).length
+      });
       results.push({ groupId: group.id, status: "omitted", patientId: "", notesCreated: 0 });
       continue;
     }
@@ -291,12 +296,35 @@ export async function saveTransferredGroups({ groups = [], user, onProgress = nu
     const operationId = transferOperationIdForGroup(group);
     let transferRef = transferOperationRef(user.uid, operationId);
     try {
+      const allDocuments = group.documents || [];
+      const documentsToSave = allDocuments.filter((item) => !item.omitted && item.duplicateStatus === "nuevo");
+      const skippedDocuments = allDocuments.filter((item) => item.omitted || item.duplicateStatus !== "nuevo");
+      skippedDocuments.forEach((item) => {
+        console.info("[patient-transfer] persist:skip-reason", {
+          groupId: group.id,
+          documentId: item.id || "",
+          sourceNoteSegmentId: item.sourceNoteSegmentId || "",
+          reason: item.omitted ? "document-omitted" : "duplicate-status",
+          duplicateStatus: item.duplicateStatus || ""
+        });
+      });
+      console.info("[patient-transfer] persist:notes-after-filter", {
+        operationId,
+        groupId: group.id,
+        documentsReceived: allDocuments.length,
+        notesAfterFilter: documentsToSave.length,
+        notesFiltered: skippedDocuments.length
+      });
+      console.info("[patient-transfer] persist:notes-expected", {
+        operationId,
+        groupId: group.id,
+        notesExpected: documentsToSave.length
+      });
       console.info("[patient-transfer] persistence:start", JSON.stringify({
         operationId,
         groupId: group.id,
-        notesExpected: group.documents.filter((item) => !item.omitted && item.duplicateStatus === "nuevo").length
+        notesExpected: documentsToSave.length
       }));
-      const documentsToSave = group.documents.filter((item) => !item.omitted && item.duplicateStatus === "nuevo");
       if (!documentsToSave.length) {
         results.push({ groupId: group.id, status: "completed", patientId: "", patientName: group.confirmedFields?.nombre || "", patientCreated: false, notesCreated: 0, notesExisting: 0, duplicatesAvoided: group.documents.length, documents: [] });
         continue;

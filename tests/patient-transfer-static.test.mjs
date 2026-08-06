@@ -34,7 +34,7 @@ for (const file of expectedFiles) {
 
 const medico = read("js/medico.js");
 assert.match(medico, /btnImportarDocxPaciente/, "medico.js registra el unico boton de importacion DOCX");
-assert.match(medico, /import\("\.\/modules\/patient-transfer\/index\.js\?v=20260804-segmentation-debug-v1"\)/, "el módulo activo se carga con lazy loading y versión explícita");
+assert.match(medico, /import\("\.\/modules\/patient-transfer\/index\.js\?v=20260805-persistence-trace-v1"\)/, "el módulo activo se carga con lazy loading y versión explícita");
 assert.doesNotMatch(medico, /modules\/importacionDocx\/docxImportController/, "medico.js no abre el importador local simplificado");
 
 const html = read("medico.html");
@@ -56,7 +56,7 @@ assert.match(controller, /const reviewedGroups = analyzedGroups;/, "el guardado 
 assert.match(controller, /expandSegmentedGroupsForSave/, "la persistencia crea una nota por segmento confirmado");
 assert.match(controller, /setFileMultipleNotesMode/, "la revisión actualiza el modo por archivo en el estado central");
 assert.match(controller, /multipleNotesMode/, "el controlador envía el modo explícito al segmentador");
-assert.match(transferIndex, /patientTransferController\.js\?v=20260804-segmentation-debug-v1/, "el índice fuerza la carga del controlador publicado");
+assert.match(transferIndex, /patientTransferController\.js\?v=20260805-persistence-trace-v1/, "el índice fuerza la carga del controlador publicado");
 assert.match(controller, /clinicalNoteSegmenter\.js\?v=20260804-segmentation-debug-v1/, "el controlador fuerza la carga del segmentador publicado");
 assert.match(segmenter, /patient-transfer-segmentation-debug-v1/, "el segmentador expone un marcador verificable de compilación");
 assert.match(segmenter, /\[patient-transfer\] segmentation:boundaries/, "el segmentador registra los límites usados");
@@ -103,6 +103,10 @@ assert.match(patientAdapter, /crearPacienteProvisional/, "reutiliza creacion exi
 assert.match(noteAdapter, /guardarBorradorNotaClinica/, "reutiliza creacion existente de notas");
 assert.match(repository, /createTransferredPatient/, "el repository usa el adaptador de pacientes");
 assert.match(repository, /createTransferredNote/, "el repository usa el adaptador de notas");
+assert.match(controller, /persist:expanded-documents/, "la expansión de segmentos deja una traza resumida antes de persistir");
+assert.match(repository, /persist:notes-after-filter/, "la persistencia informa el resultado del filtro de notas");
+assert.match(repository, /persist:notes-expected/, "la persistencia informa las notas esperadas");
+assert.match(repository, /persist:skip-reason/, "la persistencia explica cada nota descartada");
 assert.match(repository, /registrarEventoAuditoria/, "registra auditoria");
 assert.match(repository, /uploadBytes/, "conserva archivo original en Storage");
 assert.match(repository, /findExistingPatientCandidates/, "busca coincidencias existentes antes de crear");

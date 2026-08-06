@@ -1,4 +1,4 @@
-import { initializePatientTransfer } from "./patientTransferController.js?v=20260804-duplicate-diagnosis-v1";
+import { initializePatientTransfer } from "./patientTransferController.js?v=20260805-persistence-trace-v1";
 // Marcador histórico de cache: patientTransferController.js?v=20260804-segmentation-debug-v1
 
 export function openPatientTransfer() {
