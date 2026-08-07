@@ -805,6 +805,10 @@ async function handleConfirmTransferClick() {
   try {
     await saveReviewedTransfer();
   } catch (error) {
+    setTransferSavingState(false);
+    setPatientTransferExecutionState({ isSaving: false, lastCompletedStage: error?.stage || "failed" });
+    setPatientTransferStatus(TRANSFER_STATUS.FAILED);
+    setPatientTransferVisualStatus(TRANSFER_STATUS.FAILED);
     showPatientTransferError(error?.message || String(error));
   }
 }
