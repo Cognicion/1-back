@@ -584,7 +584,10 @@ async function analyzeSelectedFiles() {
 }
 
 async function saveReviewedTransfer({ reuseReviewedGroups = false } = {}) {
-  if (isTransferSaving()) return;
+  if (isTransferSaving()) {
+    showPatientTransferError("El traspaso ya se está guardando. Espere a que termine.");
+    return;
+  }
   if (!analyzedGroups.length) {
     showPatientTransferError("Analiza los documentos antes de confirmar.");
     return;
