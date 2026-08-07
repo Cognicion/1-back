@@ -656,6 +656,14 @@ async function saveReviewedTransfer({ reuseReviewedGroups = false } = {}) {
   )).find((item) => ["duplicate-resolution-required", "missing-existing-patient", "invalid-resolution"].includes(item.reason));
   if (unresolvedPersistence) {
     showPatientTransferError("Resuelva el documento duplicado: crear un paciente nuevo, asociar a uno existente u omitir.");
+    const unresolvedGroup = reviewedGroups.find((group) => (group.documents || []).some((document) =>
+      persistenceEligibilityForDocument(group, document).resolution === DUPLICATE_RESOLUTION.UNRESOLVED
+    ));
+    const resolutionControl = unresolvedGroup
+      ? getPatientTransferRoot().querySelector(`[data-transfer-duplicate-resolution="${unresolvedGroup.id}"]`)
+      : null;
+    resolutionControl?.scrollIntoView({ behavior: "smooth", block: "center" });
+    resolutionControl?.focus({ preventScroll: true });
     return;
   }
   const treatmentCounts = persistenceGroups.reduce((total, group) => group.documents.reduce((count, document) => ({
