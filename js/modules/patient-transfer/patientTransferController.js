@@ -801,6 +801,14 @@ async function saveReviewedTransfer({ reuseReviewedGroups = false } = {}) {
   }
 }
 
+async function handleConfirmTransferClick() {
+  try {
+    await saveReviewedTransfer();
+  } catch (error) {
+    showPatientTransferError(error?.message || String(error));
+  }
+}
+
 function resetAndOpen() {
   resetPatientTransferState();
   selectedFiles = [];
@@ -922,7 +930,7 @@ export function initializePatientTransfer() {
   });
   root.querySelector("[data-transfer-select]")?.addEventListener("click", () => input?.click());
   root.querySelector("[data-transfer-analyze]")?.addEventListener("click", () => analyzeSelectedFiles().catch((error) => showPatientTransferError(error.message || String(error))));
-  root.querySelector("[data-transfer-save]")?.addEventListener("click", () => saveReviewedTransfer().catch((error) => showPatientTransferError(error.message || String(error))));
+  root.querySelector("[data-transfer-save]")?.addEventListener("click", handleConfirmTransferClick);
 
   input?.addEventListener("change", (event) => addFiles(event.target.files || []));
   dropzone?.addEventListener("dragover", (event) => {
