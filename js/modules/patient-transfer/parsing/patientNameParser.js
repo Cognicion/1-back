@@ -13,6 +13,13 @@ export const NAME_PARTICLES = Object.freeze([
   "santa"
 ]);
 
+export const PATIENT_NAME_SOURCE_FORMATS = Object.freeze({
+  HOSPITAL_SURNAMES_FIRST: "hospital_surnames_first",
+  NAMES_FIRST: "names_first",
+  ALREADY_STRUCTURED: "already_structured",
+  UNKNOWN: "unknown"
+});
+
 const HONORIFIC_PREFIXES = /^(dr|dra|lic|sr|sra|paciente)\.?\s+/i;
 const SUFFIXES = new Set(["jr", "jr.", "ii", "iii"]);
 const COMMON_SECOND_GIVEN_NAMES = new Set([
@@ -29,6 +36,23 @@ const COMMON_SECOND_GIVEN_NAMES = new Set([
   "maria",
   "maría"
 ]);
+const COMMON_GIVEN_NAMES = new Set([
+  "ana",
+  "antonio",
+  "brian",
+  "carlos",
+  "cecilio",
+  "efrain",
+  "fernanda",
+  "fernando",
+  "filemon",
+  "guadalupe",
+  "ismerai",
+  "jose",
+  "juan",
+  "luis",
+  "maria"
+]);
 
 function cleanName(value = "") {
   return String(value || "").trim().replace(/\s+/g, " ");
@@ -44,6 +68,90 @@ function isSuffix(token = "") {
 
 function tokenKey(token = "") {
   return normalizarTextoBusquedaPaciente(token);
+}
+
+function normalizeSourceFormat(options = {}) {
+  const value = String(options.sourceFormat || options.nameOrder || "").trim().toLowerCase();
+  if ([PATIENT_NAME_SOURCE_FORMATS.HOSPITAL_SURNAMES_FIRST, "paternal-maternal-given"].includes(value)) {
+    return PATIENT_NAME_SOURCE_FORMATS.HOSPITAL_SURNAMES_FIRST;
+  }
+  if ([PATIENT_NAME_SOURCE_FORMATS.NAMES_FIRST, "given-paternal-maternal"].includes(value)) {
+    return PATIENT_NAME_SOURCE_FORMATS.NAMES_FIRST;
+  }
+  if (value === PATIENT_NAME_SOURCE_FORMATS.ALREADY_STRUCTURED) return value;
+  return PATIENT_NAME_SOURCE_FORMATS.UNKNOWN;
+}
+
+function consumeSurnameFromStart(tokens = [], startIndex = 0) {
+  if (startIndex >= tokens.length) return { value: "", nextIndex: startIndex };
+  const first = tokenKey(tokens[startIndex]);
+  const second = tokenKey(tokens[startIndex + 1]);
+  let nextIndex = startIndex + 1;
+
+  if (first === "de" && ["la", "las", "los"].includes(second) && tokens[startIndex + 2]) {
+    nextIndex = startIndex + 3;
+  } else if (["de", "del", "la", "las", "los", "san", "santa"].includes(first) && tokens[startIndex + 1]) {
+    nextIndex = startIndex + 2;
+  }
+
+  return {
+    value: tokens.slice(startIndex, nextIndex).join(" "),
+    nextIndex
+  };
+}
+
+function hospitalNameParts(tokens = [], originalValue = "") {
+  const commaParts = stripPrefixForAnalysis(originalValue).split(",").map(cleanName).filter(Boolean);
+  let paternal;
+  let maternal;
+  let nombres;
+  if (commaParts.length === 2) {
+    const surnameTokens = commaParts[0].split(/\s+/).filter(Boolean);
+    paternal = consumeSurnameFromStart(surnameTokens, 0);
+    maternal = consumeSurnameFromStart(surnameTokens, paternal.nextIndex);
+    nombres = commaParts[1];
+    if (maternal.nextIndex !== surnameTokens.length) return null;
+  } else {
+    paternal = consumeSurnameFromStart(tokens, 0);
+    maternal = consumeSurnameFromStart(tokens, paternal.nextIndex);
+    nombres = tokens.slice(maternal.nextIndex).join(" ");
+  }
+  if (!paternal.value || !maternal.value || !nombres) return null;
+  return {
+    nombres,
+    apellidoPaterno: paternal.value,
+    apellidoMaterno: maternal.value,
+    confidence: "medium",
+    requiresReview: true,
+    ruleApplied: "institutional-paternal-maternal-given",
+    nameOrder: "paternal-maternal-given",
+    sourceFormat: PATIENT_NAME_SOURCE_FORMATS.HOSPITAL_SURNAMES_FIRST,
+    originalValue,
+    normalizedForMatching: normalizarTextoBusquedaPaciente(originalValue)
+  };
+}
+
+function hasStructuredNameEvidence(evidence = {}) {
+  return ["paragraph-multi-label", "table-label-adjacent-cell", "table-multi-label"]
+    .includes(String(evidence.detectionMethod || ""));
+}
+
+export function inferStructuredPatientNameFormat(fullName = "", evidence = {}) {
+  if (evidence.alreadyStructured) return PATIENT_NAME_SOURCE_FORMATS.ALREADY_STRUCTURED;
+  if (!hasStructuredNameEvidence(evidence)) return PATIENT_NAME_SOURCE_FORMATS.UNKNOWN;
+
+  const analysisValue = stripPrefixForAnalysis(fullName);
+  if (analysisValue.includes(",")) return PATIENT_NAME_SOURCE_FORMATS.HOSPITAL_SURNAMES_FIRST;
+  const tokens = analysisValue.split(/\s+/).filter(Boolean);
+  if (tokens.length < 3) return PATIENT_NAME_SOURCE_FORMATS.UNKNOWN;
+  if (COMMON_GIVEN_NAMES.has(tokenKey(tokens[0]))) return PATIENT_NAME_SOURCE_FORMATS.NAMES_FIRST;
+
+  const hospitalParts = hospitalNameParts(tokens, analysisValue);
+  const firstHospitalGivenName = hospitalParts?.nombres?.split(/\s+/)[0] || "";
+  if (COMMON_GIVEN_NAMES.has(tokenKey(firstHospitalGivenName))) {
+    return PATIENT_NAME_SOURCE_FORMATS.HOSPITAL_SURNAMES_FIRST;
+  }
+  return PATIENT_NAME_SOURCE_FORMATS.UNKNOWN;
 }
 
 function takeCompoundPaternal(tokens = [], paternalStart) {
@@ -66,6 +174,7 @@ export function suggestPatientNameParts(fullName = "", options = {}) {
   const analysisValue = stripPrefixForAnalysis(originalValue);
   let tokens = analysisValue.split(/\s+/).filter(Boolean);
   while (tokens.length && isSuffix(tokens[tokens.length - 1])) tokens = tokens.slice(0, -1);
+  const sourceFormat = normalizeSourceFormat(options);
 
   if (!tokens.length) {
     return { nombres: "", apellidoPaterno: "", apellidoMaterno: "", confidence: "low", requiresReview: true, ruleApplied: "ambiguous-name", originalValue };
@@ -76,15 +185,19 @@ export function suggestPatientNameParts(fullName = "", options = {}) {
   if (tokens.length === 2) {
     return { nombres: tokens[0], apellidoPaterno: tokens[1], apellidoMaterno: "", confidence: "low", requiresReview: true, ruleApplied: "single-surname-only", originalValue };
   }
-  if (options.nameOrder === "paternal-maternal-given" && tokens.length >= 3) {
+  if (sourceFormat === PATIENT_NAME_SOURCE_FORMATS.HOSPITAL_SURNAMES_FIRST && tokens.length >= 3) {
+    const hospitalParts = hospitalNameParts(tokens, originalValue);
+    if (hospitalParts) return hospitalParts;
+  }
+  if (sourceFormat === PATIENT_NAME_SOURCE_FORMATS.UNKNOWN && options.preserveAmbiguous) {
     return {
-      nombres: tokens.slice(2).join(" "),
-      apellidoPaterno: tokens[0],
-      apellidoMaterno: tokens[1],
-      confidence: "medium",
+      nombres: originalValue,
+      apellidoPaterno: "",
+      apellidoMaterno: "",
+      confidence: "low",
       requiresReview: true,
-      ruleApplied: "institutional-paternal-maternal-given",
-      nameOrder: "paternal-maternal-given",
+      ruleApplied: "ambiguous-source-order",
+      sourceFormat: PATIENT_NAME_SOURCE_FORMATS.UNKNOWN,
       originalValue,
       normalizedForMatching: normalizarTextoBusquedaPaciente(originalValue)
     };
@@ -128,5 +241,12 @@ export function buildNameFieldsFromExplicitParts(fields = {}) {
   const apellidoMaterno = fields.apellidoMaterno?.value || "";
   const nombreCompleto = buildFullPatientName({ nombres, apellidoPaterno, apellidoMaterno });
   if (!nombreCompleto) return {};
-  return { nombres, apellidoPaterno, apellidoMaterno, nombreCompleto, nombreSource: "explicit-separated-fields" };
+  return {
+    nombres,
+    apellidoPaterno,
+    apellidoMaterno,
+    nombreCompleto,
+    nombreSource: "explicit-separated-fields",
+    sourceFormat: PATIENT_NAME_SOURCE_FORMATS.ALREADY_STRUCTURED
+  };
 }

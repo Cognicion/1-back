@@ -1,7 +1,12 @@
 import assert from "node:assert/strict";
 import { parsePatientFields, fieldValues, extractLabeledFieldsFromText, extractAdministrativeField } from "../js/modules/patient-transfer/parsing/patientFieldParser.js";
 import { resolvePatientIdentity } from "../js/modules/patient-transfer/parsing/patientIdentityResolver.js";
-import { buildFullPatientName, suggestPatientNameParts } from "../js/modules/patient-transfer/parsing/patientNameParser.js";
+import {
+  buildFullPatientName,
+  inferStructuredPatientNameFormat,
+  PATIENT_NAME_SOURCE_FORMATS,
+  suggestPatientNameParts
+} from "../js/modules/patient-transfer/parsing/patientNameParser.js";
 import { sugerirTipoNota } from "../js/modules/importacionDocx/noteTypeDetector.js";
 
 const headerText = [
@@ -115,6 +120,7 @@ const separated = parsePatientFields([
 ], "separado");
 assert.equal(separated.fields.nombre.value, "FILEMON CECILIO ARTEAGA BALTAZAR");
 assert.equal(separated.fields.nombre.nameSplit.nombreSource, "explicit-separated-fields");
+assert.equal(separated.fields.nombre.nameSplit.sourceFormat, PATIENT_NAME_SOURCE_FORMATS.ALREADY_STRUCTURED);
 
 const type = sugerirTipoNota({ textoPlano: `NOTA DE INGRESO AL SERVICIO DE OBSERVACIÓN\n${headerText}`, secciones: { objetivo: "x", examenMental: "x", tratamiento: "x" } });
 assert.equal(type.key, "nota_ingreso");
@@ -126,11 +132,12 @@ const arellanoHeader = [
 ].join("\n");
 const arellano = parsePatientFields([{ type: "paragraph", text: arellanoHeader, rawRuns: [], source: { blockIndex: 1 } }], "arellano");
 const arellanoValues = fieldValues(arellano.fields);
-assert.equal(arellanoValues.nombre, "ANA LIZBETH ARELLANO FRANCO");
+assert.equal(arellanoValues.nombre, "ARELLANO FRANCO ANA LIZBETH");
 assert.equal(arellanoValues.nombres, "ANA LIZBETH");
 assert.equal(arellanoValues.apellidoPaterno, "ARELLANO");
 assert.equal(arellanoValues.apellidoMaterno, "FRANCO");
 assert.equal(arellano.fields.nombre.nameSplit.ruleApplied, "institutional-paternal-maternal-given");
+assert.equal(arellano.fields.nombre.nameSplit.sourceFormat, PATIENT_NAME_SOURCE_FORMATS.HOSPITAL_SURNAMES_FIRST);
 assert.equal(arellanoValues.fechaNacimiento, "02/03/1989");
 assert.equal(arellanoValues.edad, "37");
 assert.equal(arellanoValues.expediente, "198141");
@@ -142,6 +149,82 @@ assert.equal(arellanoValues.genero, "FEMENINO-CIS");
 assert.equal(arellanoValues.servicio, "OBSERVACIÓN");
 assert.equal(arellanoValues.alergias, "LÁTEX");
 assert.equal(arellano.fields.alergias.conflict, false);
+
+const brianHospital = parsePatientFields([{
+  type: "paragraph",
+  text: "Nombre completo del paciente: CEGUEDA VALDEZ BRIAN EFRAIN Fecha de nacimiento: 28/06/2001 Edad: 25 AÑOS",
+  source: { blockIndex: 1, origin: "body" }
+}], "brian-hospital");
+const brianHospitalValues = fieldValues(brianHospital.fields);
+assert.equal(brianHospitalValues.nombre, "CEGUEDA VALDEZ BRIAN EFRAIN");
+assert.equal(brianHospitalValues.nombres, "BRIAN EFRAIN");
+assert.equal(brianHospitalValues.apellidoPaterno, "CEGUEDA");
+assert.equal(brianHospitalValues.apellidoMaterno, "VALDEZ");
+assert.equal(brianHospitalValues.edad, "25");
+assert.equal(brianHospitalValues.fechaNacimiento, "28/06/2001");
+assert.equal(brianHospital.fields.nombre.nameSplit.sourceFormat, PATIENT_NAME_SOURCE_FORMATS.HOSPITAL_SURNAMES_FIRST);
+
+const brianNamesFirst = parsePatientFields([{
+  type: "paragraph",
+  text: "Nombre del paciente: BRIAN EFRAIN CEGUEDA VALDEZ Fecha de nacimiento: 28/06/2001 Edad: 25 AÑOS",
+  source: { blockIndex: 1, origin: "body" }
+}], "brian-names-first");
+const brianNamesFirstValues = fieldValues(brianNamesFirst.fields);
+assert.equal(brianNamesFirstValues.nombre, "BRIAN EFRAIN CEGUEDA VALDEZ");
+assert.equal(brianNamesFirstValues.nombres, "BRIAN EFRAIN");
+assert.equal(brianNamesFirstValues.apellidoPaterno, "CEGUEDA");
+assert.equal(brianNamesFirstValues.apellidoMaterno, "VALDEZ");
+assert.equal(brianNamesFirst.fields.nombre.nameSplit.sourceFormat, PATIENT_NAME_SOURCE_FORMATS.NAMES_FIRST);
+
+const threeTokenHospital = parsePatientFields([{
+  type: "paragraph",
+  text: "Nombre completo del paciente: PEREZ LOPEZ JUAN Edad: 40",
+  source: { blockIndex: 1, origin: "body" }
+}], "three-token-hospital");
+assert.equal(fieldValues(threeTokenHospital.fields).nombres, "JUAN");
+assert.equal(fieldValues(threeTokenHospital.fields).apellidoPaterno, "PEREZ");
+assert.equal(fieldValues(threeTokenHospital.fields).apellidoMaterno, "LOPEZ");
+
+const compoundHospital = parsePatientFields([{
+  type: "paragraph",
+  text: "Nombre completo del paciente: DE LA CRUZ PEREZ JUAN CARLOS Edad: 30",
+  source: { blockIndex: 1, origin: "body" }
+}], "compound-hospital");
+assert.equal(fieldValues(compoundHospital.fields).nombre, "DE LA CRUZ PEREZ JUAN CARLOS");
+assert.equal(fieldValues(compoundHospital.fields).nombres, "JUAN CARLOS");
+assert.equal(fieldValues(compoundHospital.fields).apellidoPaterno, "DE LA CRUZ");
+assert.equal(fieldValues(compoundHospital.fields).apellidoMaterno, "PEREZ");
+
+const commaHospital = parsePatientFields([{
+  type: "paragraph",
+  text: "Nombre completo del paciente: CEGUEDA VALDEZ, BRIAN EFRAIN Edad: 25",
+  source: { blockIndex: 1, origin: "body" }
+}], "comma-hospital");
+assert.equal(fieldValues(commaHospital.fields).nombre, "CEGUEDA VALDEZ, BRIAN EFRAIN");
+assert.equal(fieldValues(commaHospital.fields).nombres, "BRIAN EFRAIN");
+assert.equal(fieldValues(commaHospital.fields).apellidoPaterno, "CEGUEDA");
+assert.equal(fieldValues(commaHospital.fields).apellidoMaterno, "VALDEZ");
+
+const ambiguousName = parsePatientFields([{
+  type: "paragraph",
+  text: "Nombre completo del paciente: ALFA BETA GAMMA DELTA Edad: 30",
+  source: { blockIndex: 1, origin: "body" }
+}], "ambiguous-name");
+const ambiguousValues = fieldValues(ambiguousName.fields);
+assert.equal(ambiguousValues.nombre, "ALFA BETA GAMMA DELTA");
+assert.equal(ambiguousValues.nombres, "ALFA BETA GAMMA DELTA");
+assert.equal(ambiguousValues.apellidoPaterno, undefined);
+assert.equal(ambiguousValues.apellidoMaterno, undefined);
+assert.equal(ambiguousName.fields.nombre.nameSplit.ruleApplied, "ambiguous-source-order");
+assert.equal(ambiguousName.fields.nombre.nameSplit.requiresReview, true);
+
+assert.equal(inferStructuredPatientNameFormat("CEGUEDA VALDEZ BRIAN EFRAIN", {
+  detectionMethod: "paragraph-multi-label"
+}), PATIENT_NAME_SOURCE_FORMATS.HOSPITAL_SURNAMES_FIRST);
+assert.equal(inferStructuredPatientNameFormat("BRIAN EFRAIN CEGUEDA VALDEZ", {
+  detectionMethod: "paragraph-multi-label"
+}), PATIENT_NAME_SOURCE_FORMATS.NAMES_FIRST);
+assert.equal(inferStructuredPatientNameFormat("CEGUEDA VALDEZ BRIAN EFRAIN"), PATIENT_NAME_SOURCE_FORMATS.UNKNOWN);
 
 const fechaTruncada = parsePatientFields([{ type: "paragraph", text: "Fecha de nacimiento: 02/03/198 Edad: 37", source: { blockIndex: 0 } }], "fecha-truncada");
 assert.equal(fieldValues(fechaTruncada.fields).fechaNacimiento, "");

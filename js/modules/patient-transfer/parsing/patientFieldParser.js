@@ -1,5 +1,11 @@
 import { FIELD_RULES } from "../../importacionDocx/docxImportConfig.js";
-import { buildFullPatientName, buildNameFieldsFromExplicitParts, suggestPatientNameParts } from "./patientNameParser.js";
+import {
+  buildFullPatientName,
+  buildNameFieldsFromExplicitParts,
+  inferStructuredPatientNameFormat,
+  PATIENT_NAME_SOURCE_FORMATS,
+  suggestPatientNameParts
+} from "./patientNameParser.js";
 
 const DEBUG_FLAG = "cognicion.debug.patientTransfer";
 
@@ -316,6 +322,7 @@ function candidateToField(candidate, alternatives = [], conflict = false) {
     alternatives,
     conflict,
     nameSplit: candidate.nameSplit || null,
+    sourceLabel: candidate.label || "",
     confirmed: false
   };
 }
@@ -336,16 +343,12 @@ function syntheticNameField({ key, value, source, ruleApplied, confidence = "med
   };
 }
 
-function inferNameOrder(fields = {}) {
-  const source = `${fields.nombre?.rawValue || ""} ${fields.nombre?.sourceFileId || ""}`;
-  const value = fields.nombre?.value || "";
-  const tokens = value.split(/\s+/).filter(Boolean);
-  const commonGiven = new Set(["ana", "cecilio", "filemon", "josé", "jose", "juan", "luis", "maria", "maría"]);
-  const uppercaseRatio = value ? value.replace(/[^A-Za-zÁÉÍÓÚÜÑáéíóúüñ]/g, "").split("").filter((char) => char === char.toUpperCase()).length / Math.max(1, value.replace(/[^A-Za-zÁÉÍÓÚÜÑáéíóúüñ]/g, "").length) : 0;
-  const firstLooksGiven = commonGiven.has(normalizeLabelForMatching(tokens[0]));
-  const secondLooksGiven = commonGiven.has(normalizeLabelForMatching(tokens[1]));
-  if (tokens.length >= 4 && uppercaseRatio > 0.85 && !(firstLooksGiven && secondLooksGiven)) return "paternal-maternal-given";
-  return "unknown";
+function inferNameSourceFormat(fields = {}) {
+  return inferStructuredPatientNameFormat(fields.nombre?.value || "", {
+    detectionMethod: fields.nombre?.detectionMethod || "",
+    sourceType: fields.nombre?.sourceLocation?.sourceType || "",
+    sourceLabel: fields.nombre?.sourceLabel || ""
+  });
 }
 
 function resolveNameFields(fields = {}) {
@@ -364,8 +367,14 @@ function resolveNameFields(fields = {}) {
 
   const fullName = fields.nombre?.value || "";
   if (!fullName) return fields;
-  const nameOrder = inferNameOrder(fields);
-  const suggestion = suggestPatientNameParts(fullName, { nameOrder });
+  const sourceFormat = inferNameSourceFormat(fields);
+  const suggestion = {
+    ...suggestPatientNameParts(fullName, {
+      sourceFormat,
+      preserveAmbiguous: sourceFormat === PATIENT_NAME_SOURCE_FORMATS.UNKNOWN
+    }),
+    sourceFormat
+  };
   if (!fields.nombres && suggestion.nombres) {
     fields.nombres = syntheticNameField({
       key: "nombres",
@@ -398,11 +407,14 @@ function resolveNameFields(fields = {}) {
   }
   fields.nombre.nameSplit = suggestion;
   fields.nombre.confidence = fields.nombre.confidence || "media";
-  fields.nombre.value = buildFullPatientName({
-    nombres: fields.nombres?.value || "",
-    apellidoPaterno: fields.apellidoPaterno?.value || "",
-    apellidoMaterno: fields.apellidoMaterno?.value || ""
-  }) || fullName;
+  fields.nombre.value = sourceFormat === PATIENT_NAME_SOURCE_FORMATS.HOSPITAL_SURNAMES_FIRST
+    || sourceFormat === PATIENT_NAME_SOURCE_FORMATS.UNKNOWN
+    ? fullName
+    : buildFullPatientName({
+        nombres: fields.nombres?.value || "",
+        apellidoPaterno: fields.apellidoPaterno?.value || "",
+        apellidoMaterno: fields.apellidoMaterno?.value || ""
+      }) || fullName;
   return fields;
 }
 
