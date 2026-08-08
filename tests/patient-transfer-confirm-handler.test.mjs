@@ -3,7 +3,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
 const source = readFileSync(join(process.cwd(), "js/modules/patient-transfer/patientTransferController.js"), "utf8");
-const handlerStart = source.indexOf("async function handleConfirmTransferClick()");
+const handlerStart = source.indexOf("async function handleConfirmTransferClick");
 const handlerEnd = source.indexOf("\n\nfunction resetAndOpen", handlerStart);
 
 assert.ok(handlerStart >= 0 && handlerEnd > handlerStart, "existe el handler nombrado de confirmacion");
@@ -15,7 +15,9 @@ const createHandler = ({
   setPatientTransferExecutionState = () => {},
   setPatientTransferStatus = () => {},
   setPatientTransferVisualStatus = () => {},
-  showPatientTransferError = () => {}
+  showPatientTransferError = () => {},
+  isTransferSaving = () => false,
+  analyzedGroups = []
 }) => new Function(
   "saveReviewedTransfer",
   "setTransferSavingState",
@@ -23,6 +25,8 @@ const createHandler = ({
   "setPatientTransferStatus",
   "setPatientTransferVisualStatus",
   "showPatientTransferError",
+  "isTransferSaving",
+  "analyzedGroups",
   "TRANSFER_STATUS",
   `return (${handlerSource});`
 )(
@@ -32,6 +36,8 @@ const createHandler = ({
   setPatientTransferStatus,
   setPatientTransferVisualStatus,
   showPatientTransferError,
+  isTransferSaving,
+  analyzedGroups,
   { FAILED: "failed" }
 );
 

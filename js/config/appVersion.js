@@ -1,4 +1,4 @@
 /** Fuente única de verdad para versiones visibles de documentos Cognición. */
 // deployment marker: 2026-08-06-pages-retry-1
-export const APP_VERSION = "1.51";
+export const APP_VERSION = "1.52";
 export const HISTORIA_CLINICA_EXPORT_VERSION = APP_VERSION;
