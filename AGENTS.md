@@ -1,5 +1,29 @@
 Proyecto: COGNICIÓN LABS / PROYECTO COGNICION / 1-back
 
+## Reglas operativas permanentes del repositorio
+
+### RESTRICCIÓN ABSOLUTA: NO USAR GIT WORKTREES EN ESTE REPOSITORIO
+
+- Trabajar directamente en el repositorio principal y en `main`. No crear ni usar `git worktree`, directorios paralelos, ni copias del repositorio para aislar, publicar, fusionar o recuperar cambios.
+- Antes de editar o confirmar, ejecutar `git status` e identificar cambios de la tarea actual y cambios preexistentes. Preservar siempre los preexistentes; si no puede trabajarse con seguridad, detenerse y reportar el conflicto.
+- Usar staging explícito por ruta (`git add -- <rutas>`). Nunca usar `git add .`, `git add -A` ni una selección que pueda incluir cambios ajenos. Revisar `git diff`, `git diff --cached` y `git diff --check` antes de cada commit.
+
+### Publicación y verificación por defecto
+
+- POR DEFECTO, LOS CAMBIOS FUNCIONALES SE PUBLICAN EN `origin/main` Y SE VERIFICAN EN `cognicionlabs.com`, SALVO INSTRUCCIÓN EXPRESA DEL USUARIO.
+- El flujo normal es: cambio localizado -> pruebas -> staging selectivo -> commit -> `push origin/main` -> GitHub Pages -> verificación en producción.
+- Una tarea funcional no termina solo con pruebas locales o commit: debe comprobarse el SHA publicado, el workflow de Pages, la respuesta de producción y que los archivos modificados sean los realmente servidos.
+- Si JavaScript está afectado por caché, verificar la cadena HTML -> import -> query/version marker -> módulo solicitado -> módulo servido. No asumir que el despliegue está activo solo porque el commit existe en GitHub.
+- Una instrucción concreta del usuario puede indicar no publicar, no hacer commit, no hacer push o realizar solo auditoría. La prohibición de worktrees solo puede levantarse con una revocación explícita.
+
+### Cambios, bugs y datos clínicos
+
+- Mantener cambios localizados: identificar origen -> transformación -> estado -> consumidor -> renderizado o persistencia antes de modificar. Preservar APIs, ES Modules, lazy loading, Single Source of Truth y separación lógica/presentación; no hacer refactors ajenos.
+- Para bugs: reproducir -> instrumentar si hace falta -> demostrar la causa -> aplicar el cambio mínimo -> probar -> publicar -> reproducir en producción. No corregir varias hipótesis simultáneas.
+- Mantener trazas temporales hasta validación manual cuando sean necesarias. Nunca registrar nombres, CURP, expedientes, textos clínicos, diagnósticos, medicamentos, IDs reales, rutas Firestore ni otra información sensible.
+- Antes de cambiar Firebase, datos o un flujo clínico, identificar fuente de datos -> transformación -> persistencia -> recuperación -> renderizado. No modificar esquemas, reglas, permisos, rutas ni persistencia sin necesidad demostrada y no duplicar una fuente de verdad existente.
+- Todo cambio funcional visible importante debe incrementar la versión vigente: leer primero la versión real del repositorio y reportar versión anterior -> nueva.
+
 Contexto:
 Este proyecto desarrolla un laboratorio clínico/farmacológico para evaluar medicamentos, diagnósticos, interacciones, contraindicaciones, precauciones, comorbilidades y alertas clínicas. El sistema debe ser útil para práctica clínica, pero sin inventar datos ni presentar reglas incompletas como si fueran definitivas.
 
