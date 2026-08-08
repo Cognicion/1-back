@@ -13,8 +13,9 @@ import { withPatientTransferTimeout } from "./patientTransferTimeout.js";
 import { findPossiblePatientMatches, normalizeRecordNumber } from "./parsing/patientDuplicateMatcher.js";
 import {
   DUPLICATE_RESOLUTION,
-  isDocumentEligibleForPersistence
-} from "./persistence/documentPersistenceEligibility.js";
+  isDocumentEligibleForPersistence,
+  resolveAssociationTargetPatientId
+} from "./persistence/documentPersistenceEligibility.js?v=20260808-association-target-v1";
 import {
   addDoc,
   collection,
@@ -99,9 +100,19 @@ function patientSummary(docSnap) {
   };
 }
 
-function transferOperationIdForGroup(group = {}) {
+function opaquePatientScope(patientId = "") {
+  let hash = 2166136261;
+  for (const character of String(patientId || "")) {
+    hash ^= character.charCodeAt(0);
+    hash = Math.imul(hash, 16777619);
+  }
+  return (hash >>> 0).toString(36);
+}
+
+function transferOperationIdForGroup(group = {}, targetPatientId = "") {
   const firstDocument = group.documents?.find((item) => item.hash || item.textHash);
-  return firstDocument?.transferOperationId || (firstDocument?.hash ? `docx_${firstDocument.hash}` : `docx_${firstDocument?.textHash || group.id}`);
+  const baseOperationId = firstDocument?.transferOperationId || (firstDocument?.hash ? `docx_${firstDocument.hash}` : `docx_${firstDocument?.textHash || group.id}`);
+  return targetPatientId ? `${baseOperationId}_associate_${opaquePatientScope(targetPatientId)}` : baseOperationId;
 }
 
 function transferOperationRef(userUid, operationId) {
@@ -337,9 +348,14 @@ export async function saveTransferredGroups({ groups = [], user, onProgress = nu
     }
     const persistenceResolution = resolutions[0];
     const effectiveAction = persistenceResolution === DUPLICATE_RESOLUTION.ASSOCIATE_EXISTING ? "associate" : "create";
-    let patientId = effectiveAction === "associate"
-      ? group.selectedPatientId || group.selectedExistingPatientId || eligibleDocuments[0].document.matchedPatientId || ""
+    const targetPatientId = effectiveAction === "associate"
+      ? resolveAssociationTargetPatientId({
+        selectedPatientId: group.selectedPatientId,
+        selectedExistingPatientId: group.selectedExistingPatientId,
+        matchedPatientId: eligibleDocuments[0].document.matchedPatientId
+      })
       : "";
+    let patientId = targetPatientId;
     let patientCreated = false;
     let stage = "pending";
     const documentResults = [];
@@ -357,7 +373,7 @@ export async function saveTransferredGroups({ groups = [], user, onProgress = nu
     const anthropometryRecordIds = [];
     let sourceSaved = false;
     let auditRegistered = false;
-    const operationId = transferOperationIdForGroup(group);
+    const operationId = transferOperationIdForGroup(group, targetPatientId);
     let transferRef = transferOperationRef(user.uid, operationId);
     try {
       console.info("[patient-transfer] persistence:start", JSON.stringify({
@@ -390,6 +406,18 @@ export async function saveTransferredGroups({ groups = [], user, onProgress = nu
 
       const operation = await acquireTransferOperation({ user, group, operationId });
       transferRef = operation.ref;
+      if (effectiveAction === "associate") {
+        console.info("patient-transfer:association-selected", {
+          mode: "associate_existing",
+          hasTargetPatient: Boolean(targetPatientId),
+          hasOperationPatient: Boolean(operation.data?.patientId),
+          sameTargetAsOperation: Boolean(operation.data?.patientId) && operation.data.patientId === targetPatientId
+        });
+        console.info("patient-transfer:target-patient-resolved", {
+          mode: "associate_existing",
+          hasTargetPatient: Boolean(patientId)
+        });
+      }
       const resumingCompletedOperation = operation.data?.status === "completed";
       if (resumingCompletedOperation) {
         console.info("patient-transfer:persist-resume", {
@@ -398,7 +426,7 @@ export async function saveTransferredGroups({ groups = [], user, onProgress = nu
           recordedNotes: operation.data?.noteIds?.length || 0
         });
       }
-      if (operation.data?.patientId) {
+      if (operation.data?.patientId && effectiveAction !== "associate") {
         patientId = operation.data.patientId;
         traceTransfer("reuse-patient", { authUid: user.uid, transferOperationId: operationId, patientId });
       }
@@ -450,6 +478,12 @@ export async function saveTransferredGroups({ groups = [], user, onProgress = nu
         if (!existingPatient.exists()) throw new Error("El paciente existente seleccionado no pudo verificarse.");
         console.info("[patient-transfer] patient:verify", JSON.stringify({ operationId, patientIdPresent: true, exists: true, reused: true }));
       }
+      console.info("patient-transfer:persistence-target", {
+        mode: effectiveAction === "associate" ? "associate_existing" : "create_new",
+        hasTargetPatient: Boolean(patientId),
+        hasSourcePatient: Boolean(operation.data?.patientId),
+        sameTargetAsSource: Boolean(operation.data?.patientId) && operation.data.patientId === patientId
+      });
 
       console.info("patient-transfer:persist-demographics-start", { patientCreated, associated: effectiveAction === "associate" });
       if (effectiveAction === "associate") {

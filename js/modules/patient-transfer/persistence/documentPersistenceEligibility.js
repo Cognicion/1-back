@@ -42,6 +42,16 @@ export function mapLegacyDuplicateResolution({
   return DUPLICATE_RESOLUTION.UNRESOLVED;
 }
 
+export function resolveAssociationTargetPatientId({
+  selectedPatientId = "",
+  selectedExistingPatientId = "",
+  matchedPatientId = ""
+} = {}) {
+  return [selectedPatientId, selectedExistingPatientId, matchedPatientId]
+    .map((value) => String(value || "").trim())
+    .find(Boolean) || "";
+}
+
 export function isDocumentEligibleForPersistence(document = {}, context = {}) {
   const detectionStatus = normalizeDuplicateDetectionStatus(
     document.duplicateDetectionStatus ?? document.duplicateStatus
