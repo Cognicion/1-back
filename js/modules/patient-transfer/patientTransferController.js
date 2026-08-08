@@ -17,7 +17,7 @@ import { groupDocumentsByPatient } from "./parsing/documentGroupingService.js";
 import { analyzeDocumentClinically } from "./integration/clinicalAnalysisAdapter.js";
 import { adaptTreatmentPlan } from "../clinical-document-engine/adapters/treatmentPlanAdapter.js";
 import { resolveMedicationCandidatesAgainstCatalog } from "../clinical-document-engine/resolvers/medicationCatalogResolver.js";
-import { findDuplicateImport, findExistingPatientCandidates, saveTransferredGroups } from "./patientTransferRepository.js";
+import { findDuplicateImport, findExistingPatientCandidates, saveTransferredGroups } from "./patientTransferRepository.js?v=20260808-persistence-domains-v1";
 import {
   DUPLICATE_DETECTION_STATUS,
   DUPLICATE_RESOLUTION,
@@ -589,6 +589,7 @@ async function saveReviewedTransfer({ reuseReviewedGroups = false } = {}) {
     reuseReviewedGroups: Boolean(reuseReviewedGroups),
     saving: isTransferSaving()
   });
+  console.info("patient-transfer:confirm-start", { groupsCount: analyzedGroups.length });
   if (isTransferSaving()) {
     showPatientTransferError("El traspaso ya se está guardando. Espere a que termine.");
     console.info("patient-transfer:save-reviewed-return", { reason: "saving-already-active" });
@@ -613,6 +614,20 @@ async function saveReviewedTransfer({ reuseReviewedGroups = false } = {}) {
   const syncSummary = syncReviewedGroupsFromView();
   console.info("patient-transfer:sync-reviewed-complete", syncSummary);
   const reviewedGroups = analyzedGroups;
+  const reviewedSegments = reviewedGroups.flatMap((group) => (group.documents || [])
+    .flatMap((document) => document.noteSegments?.length ? document.noteSegments : [document]));
+  console.info("patient-transfer:review-state", {
+    demographics: reviewedGroups.some((group) => Object.values(group.confirmedFields || {}).some(Boolean)),
+    vitalSigns: reviewedSegments.reduce((count, segment) => count + (segment.vitalSignsCandidates || []).filter((candidate) => candidate.include).length, 0),
+    anthropometry: reviewedSegments.some((segment) => (segment.vitalSignsCandidates || []).some((candidate) => {
+      const vital = candidate.vitalSigns || {};
+      return [vital.weight?.value, vital.height?.value, vital.bmi?.value, vital.bmiCalculated?.value].some((value) => Number.isFinite(Number(value)));
+    })),
+    diagnoses: reviewedSegments.reduce((count, segment) => count + (segment.diagnosisCandidates || []).filter((candidate) => candidate.include || candidate.selectedForImport).length, 0),
+    treatments: reviewedSegments.reduce((count, segment) => count + (segment.treatmentCandidates || []).filter((candidate) => candidate.include || candidate.selectedForImport).length, 0),
+    indications: reviewedSegments.reduce((count, segment) => count + (segment.treatmentPlanCandidates || []).filter((candidate) => candidate.include || candidate.selectedForImport).length, 0),
+    notes: reviewedSegments.filter((segment) => !segment.omitted).length
+  });
   reviewedGroups.forEach((group) => (group.documents || []).forEach((document) => {
     const eligibility = persistenceEligibilityForDocument(group, document);
     console.info("[patient-transfer] duplicate-resolution:decision", {
@@ -632,6 +647,14 @@ async function saveReviewedTransfer({ reuseReviewedGroups = false } = {}) {
   });
   const persistenceGroups = expandSegmentedGroupsForSave(reviewedGroups);
   const expandedDocuments = persistenceGroups.flatMap((group) => group.documents || []);
+  console.info("patient-transfer:payload-built", {
+    patientFields: [...new Set(persistenceGroups.flatMap((group) => Object.keys(group.confirmedFields || {}).filter((key) => Boolean(group.confirmedFields?.[key]))))],
+    vitalSignsCount: expandedDocuments.reduce((count, document) => count + (document.vitalSignsCandidates || []).filter((candidate) => candidate.include).length, 0),
+    diagnosesCount: expandedDocuments.reduce((count, document) => count + (document.diagnosisCandidates || []).filter((candidate) => candidate.include || candidate.selectedForImport).length, 0),
+    treatmentsCount: expandedDocuments.reduce((count, document) => count + (document.treatmentCandidates || []).filter((candidate) => candidate.include || candidate.selectedForImport).length, 0),
+    indicationsCount: expandedDocuments.reduce((count, document) => count + (document.treatmentPlanCandidates || []).filter((candidate) => candidate.include || candidate.selectedForImport).length, 0),
+    notesCount: expandedDocuments.length
+  });
   console.info("[patient-transfer] persistence-audit:expanded-documents", {
     sourceDocuments: reviewedDocuments.length,
     expandedDocuments: expandedDocuments.length,
@@ -829,6 +852,12 @@ async function saveReviewedTransfer({ reuseReviewedGroups = false } = {}) {
       createdCount: results.filter((item) => item.patientCreated).length,
       associatedCount: results.filter((item) => item.patientId && !item.patientCreated).length,
       operationIdPresent: Boolean(firstResult.transferOperationId || reviewedGroups[0]?.documents?.[0]?.transferOperationId)
+    });
+    console.info("patient-transfer:confirm-complete", {
+      groups: results.length,
+      notes: results.reduce((count, result) => count + Number(result.notesCreated || 0), 0),
+      diagnoses: results.reduce((count, result) => count + Number(result.diagnosesCreated || 0), 0),
+      treatments: results.reduce((count, result) => count + Number(result.treatmentsCreated || 0), 0)
     });
     window.dispatchEvent(new CustomEvent("cognicion:patient-transfer-completed", { detail: { results } }));
   } catch (error) {

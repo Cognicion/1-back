@@ -2,6 +2,7 @@ import { db } from "../../../firebase.js";
 import { actualizarUsuario, obtenerUsuario } from "../../../services/usuarios.js";
 import { crearTratamiento, listarTratamientos } from "../../../services/tratamientos.js";
 import { normalizarTextoBusquedaPaciente } from "../../../utils/nombresPacientes.js";
+import { collection, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 function normalizeKey(value = "") {
   return normalizarTextoBusquedaPaciente(value).replace(/[^a-z0-9]+/g, "");
@@ -31,9 +32,13 @@ function treatmentKey(candidate = {}, context = {}) {
 function diagnosisPayload(candidate = {}, context = {}) {
   const id = `imported-${context.transferOperationId}-${context.index}`;
   const estadoClinico = candidate.statusSuggestion || "Confirmado";
+  const codes = [...new Set((Array.isArray(candidate.codes) ? candidate.codes : [candidate.code])
+    .map((code) => String(code || "").trim())
+    .filter(Boolean))];
   return {
     id,
-    codigo: candidate.code || "",
+    codigo: candidate.code || codes[0] || "",
+    codes,
     catalogo: candidate.codingSystem || "",
     nombre: candidate.normalizedLabel || candidate.rawText || "Diagnóstico importado",
     texto: candidate.rawText || "",
@@ -192,4 +197,61 @@ export async function createImportedTreatments(patientId, candidates = [], conte
 
   console.info("[patient-transfer] treatments:persist-success", { patientId, created: created.length, existing: existing.length });
   return { created, existing, omitted: candidates.length - selected.length };
+}
+
+function instructionText(candidate = {}) {
+  return String(candidate.text || candidate.value || candidate.rawText || "").trim();
+}
+
+function indicationKey(candidate = {}) {
+  return normalizeKey(`${candidate.instructionType || "otherInstruction"}:${instructionText(candidate)}`);
+}
+
+function importedIndicationsPayload(candidates = [], context = {}) {
+  const selected = candidates
+    .filter((candidate) => candidate.selectedForImport === true || candidate.include === true)
+    .map((candidate) => ({
+      instructionType: candidate.instructionType || "otherInstruction",
+      text: instructionText(candidate),
+      key: indicationKey(candidate)
+    }))
+    .filter((candidate) => candidate.text);
+  const byType = (type) => selected.filter((candidate) => candidate.instructionType === type).map((candidate) => candidate.text).join("\n");
+  return {
+    formato: "cognicion",
+    servicio: context.service || "",
+    fecha: context.date || new Date().toISOString().slice(0, 10),
+    hora: context.time || "",
+    dieta: byType("diet"),
+    cuidados: byType("nursingCare"),
+    alergiasIndicaciones: byType("allergies"),
+    riesgoCaida: byType("fallRisk"),
+    vigilancia: ["monitoring", "suicideRiskPrecautions", "selfHarmPrecautions"]
+      .flatMap((type) => selected.filter((candidate) => candidate.instructionType === type).map((candidate) => candidate.text))
+      .join("\n"),
+    eventualidades: byType("otherInstruction"),
+    indicaciones: selected.map((candidate) => candidate.text).join("\n"),
+    items: selected,
+    origenImportacionDocx: true,
+    imported: true,
+    transferOperationId: context.transferOperationId || "",
+    sourceFileHash: context.sourceFileHash || "",
+    sourceNoteId: context.noteId || "",
+    importCandidateKeys: selected.map((candidate) => candidate.key)
+  };
+}
+
+export async function createImportedIndications(patientId, candidates = [], context = {}) {
+  const payload = importedIndicationsPayload(candidates, context);
+  if (!payload.items.length) return { created: false, omitted: candidates.length };
+  const indicationId = `imported-${context.transferOperationId || "transfer"}-${context.noteId || "note"}`
+    .replace(/[^a-zA-Z0-9_-]+/g, "-");
+  const indicationRef = doc(collection(db, "usuarios", patientId, "indicaciones"), indicationId);
+  const current = await getDoc(indicationRef);
+  await setDoc(indicationRef, {
+    ...(current.exists() ? current.data() : {}),
+    ...payload,
+    fechaCreacion: current.exists() ? current.data().fechaCreacion || new Date().toISOString() : new Date().toISOString()
+  }, { merge: true });
+  return { created: !current.exists(), existing: current.exists(), omitted: candidates.length - payload.items.length, id: indicationId };
 }
