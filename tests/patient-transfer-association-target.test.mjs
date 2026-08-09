@@ -29,7 +29,8 @@ assert.match(repository, /doc\(db, "usuarios", patientId, "notasMedicas", noteIm
 assert.match(repository, /createImportedDiagnoses\(patientId/);
 assert.match(repository, /createImportedTreatments\(patientId/);
 assert.match(repository, /createImportedIndications\(patientId/);
-assert.match(repository, /setDoc\(doc\(db, "usuarios", patientId\), next/);
+assert.match(repository, /const patientRef = doc\(db, "usuarios", patientId\)/);
+assert.match(repository, /await setDoc\(patientRef, next, \{ merge: true \}\)/);
 assert.match(repository, /patient-transfer:association-selected/);
 assert.match(repository, /patient-transfer:persistence-target/);
 

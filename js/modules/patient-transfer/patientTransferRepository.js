@@ -21,6 +21,7 @@ import {
   collection,
   doc,
   getDoc,
+  getDocFromServer,
   getDocs,
   limit,
   query,
@@ -66,6 +67,40 @@ function vitalSignsPresence(payload = {}) {
     hasTemperature: payload.temperatura !== "" && payload.temperatura !== null && payload.temperatura !== undefined,
     hasSpO2: payload.saturacionO2 !== "" && payload.saturacionO2 !== null && payload.saturacionO2 !== undefined
   };
+}
+
+function technicalFingerprint(value = "") {
+  const text = String(value || "");
+  if (!text) return "";
+  let hash = 2166136261;
+  for (let index = 0; index < text.length; index += 1) {
+    hash ^= text.charCodeAt(index);
+    hash = Math.imul(hash, 16777619);
+  }
+  return `fp-${(hash >>> 0).toString(16).padStart(8, "0")}`;
+}
+
+function firebaseRuntimeInfo() {
+  return {
+    projectId: String(db?.app?.options?.projectId || ""),
+    appName: String(db?.app?.name || "")
+  };
+}
+
+function patientVitalSignsPresence(patient = {}) {
+  const current = patient.signosVitales || {};
+  const institutional = patient.datosInstitucionales || {};
+  return vitalSignsPresence({
+    presionArterial: patient.presionArterial ?? current.presionArterial ?? institutional.presionArterial,
+    frecuenciaCardiaca: patient.frecuenciaCardiaca ?? current.frecuenciaCardiaca ?? institutional.frecuenciaCardiaca,
+    frecuenciaRespiratoria: patient.frecuenciaRespiratoria ?? current.frecuenciaRespiratoria ?? institutional.frecuenciaRespiratoria,
+    temperatura: patient.temperatura ?? current.temperatura ?? institutional.temperatura,
+    saturacionO2: patient.saturacionO2 ?? patient.saturacionOxigeno ?? current.saturacionO2 ?? current.saturacionOxigeno
+  });
+}
+
+function patientVitalHistoryCount(patient = {}) {
+  return VITAL_SIGN_FIELDS.reduce((count, field) => count + (Array.isArray(patient.historialSignosVitales?.[field]) ? patient.historialSignosVitales[field].length : 0), 0);
 }
 
 function vitalSignsFieldsForDocument(document = {}, confirmedFields = {}) {
@@ -306,6 +341,7 @@ async function updateTransferImportRecord({ transferRef, user, group, patientId,
 }
 
 export async function saveTransferredGroups({ groups = [], user, onProgress = null }) {
+  console.info("patient-transfer:firebase-runtime", firebaseRuntimeInfo());
   const results = [];
   for (const group of groups) {
     if (group.omitted || group.action === "omit") {
@@ -510,6 +546,10 @@ export async function saveTransferredGroups({ groups = [], user, onProgress = nu
         hasSourcePatient: Boolean(operation.data?.patientId),
         sameTargetAsSource: Boolean(operation.data?.patientId) && operation.data.patientId === patientId
       });
+      console.info("patient-transfer:target-runtime", {
+        mode: effectiveAction === "associate" ? "associate_existing" : "create_new",
+        targetFingerprint: technicalFingerprint(patientId)
+      });
 
       console.info("patient-transfer:persist-demographics-start", { patientCreated, associated: effectiveAction === "associate" });
       if (effectiveAction === "associate") {
@@ -612,7 +652,43 @@ export async function saveTransferredGroups({ groups = [], user, onProgress = nu
                 createdBy: user.uid
               });
               if (!next) return null;
-              await setDoc(doc(db, "usuarios", patientId), next, { merge: true });
+              const patientRef = doc(db, "usuarios", patientId);
+              const writesRootCurrent = VITAL_SIGN_FIELDS.some((field) => next[field] !== "" && next[field] !== null && next[field] !== undefined);
+              const writesSignosVitales = VITAL_SIGN_FIELDS.some((field) => next.signosVitales?.[field] !== "" && next.signosVitales?.[field] !== null && next.signosVitales?.[field] !== undefined);
+              const writesHistory = VITAL_SIGN_FIELDS.some((field) => Array.isArray(next.historialSignosVitales?.[field]) && next.historialSignosVitales[field].length > 0);
+              console.info("patient-transfer:vitals-write-destination", {
+                ...firebaseRuntimeInfo(),
+                targetFingerprint: technicalFingerprint(patientId),
+                writesRootCurrent,
+                writesSignosVitales,
+                writesHistory
+              });
+              await setDoc(patientRef, next, { merge: true });
+              console.info("patient-transfer:vitals-write-result", {
+                rootUpdateSucceeded: writesRootCurrent,
+                historyUpdateSucceeded: writesHistory
+              });
+              try {
+                const writtenPatient = await getDocFromServer(patientRef);
+                console.info("patient-transfer:vitals-read-after-write", {
+                  exists: writtenPatient.exists(),
+                  ...patientVitalSignsPresence(writtenPatient.exists() ? writtenPatient.data() : {}),
+                  historyCount: patientVitalHistoryCount(writtenPatient.exists() ? writtenPatient.data() : {}),
+                  readSucceeded: true
+                });
+              } catch (error) {
+                console.warn("patient-transfer:vitals-read-after-write", {
+                  exists: false,
+                  hasPA: false,
+                  hasFC: false,
+                  hasFR: false,
+                  hasTemperature: false,
+                  hasSpO2: false,
+                  historyCount: 0,
+                  readSucceeded: false,
+                  errorCode: error?.code || error?.name || "unknown"
+                });
+              }
               return next;
             }, TIMEOUTS.createVitals);
             if (!update) {

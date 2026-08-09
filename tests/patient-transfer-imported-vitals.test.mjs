@@ -66,7 +66,8 @@ fields.forEach((field) => {
   assert.match(patientView, new RegExp(`rutas: \\["${field}"`), `paciente.html consume ${field}`);
   assert.match(repository, new RegExp(`"${field}"`), `el repositorio conserva ${field}`);
 });
-assert.match(repository, /setDoc\(doc\(db, "usuarios", patientId\), next, \{ merge: true \}\)/, "la escritura de SV usa el patientId destino resuelto");
+assert.match(repository, /const patientRef = doc\(db, "usuarios", patientId\)/, "la referencia de SV usa el patientId destino resuelto");
+assert.match(repository, /await setDoc\(patientRef, next, \{ merge: true \}\)/, "la escritura de SV usa la referencia del paciente destino");
 assert.match(transferView, /includeControl \? includeControl\.checked : candidate\.include !== false/, "la sincronizacion conserva la seleccion si el control ya no esta en el DOM");
 
 console.log("patient-transfer-imported-vitals.test.mjs OK");

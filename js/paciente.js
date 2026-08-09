@@ -159,6 +159,42 @@ let uidPaciente = "";
 let datosPacienteActual = null;
 let medicoActualDatos = {};
 let rolUsuarioActual = "";
+
+function technicalFingerprint(value = "") {
+  const text = String(value || "");
+  if (!text) return "";
+  let hash = 2166136261;
+  for (let index = 0; index < text.length; index += 1) {
+    hash ^= text.charCodeAt(index);
+    hash = Math.imul(hash, 16777619);
+  }
+  return `fp-${(hash >>> 0).toString(16).padStart(8, "0")}`;
+}
+
+function firebaseRuntimeInfo() {
+  return {
+    projectId: String(db?.app?.options?.projectId || ""),
+    appName: String(db?.app?.name || "")
+  };
+}
+
+function patientVitalSignsPresence(patient = {}) {
+  const current = patient.signosVitales || {};
+  const institutional = patient.datosInstitucionales || {};
+  return {
+    hasPA: Boolean(patient.presionArterial ?? current.presionArterial ?? institutional.presionArterial),
+    hasFC: Boolean(patient.frecuenciaCardiaca ?? current.frecuenciaCardiaca ?? institutional.frecuenciaCardiaca),
+    hasFR: Boolean(patient.frecuenciaRespiratoria ?? current.frecuenciaRespiratoria ?? institutional.frecuenciaRespiratoria),
+    hasTemperature: Boolean(patient.temperatura ?? current.temperatura ?? institutional.temperatura),
+    hasSpO2: Boolean(patient.saturacionO2 ?? patient.saturacionOxigeno ?? current.saturacionO2 ?? current.saturacionOxigeno)
+  };
+}
+
+function patientVitalHistoryCount(patient = {}) {
+  return ["presionArterial", "frecuenciaCardiaca", "frecuenciaRespiratoria", "temperatura", "saturacionO2"]
+    .reduce((count, field) => count + (Array.isArray(patient.historialSignosVitales?.[field]) ? patient.historialSignosVitales[field].length : 0), 0);
+}
+
 let permisosFormatosUsuarioActual = {};
 let tratamientosCache = [];
 let tratamientosCacheCargado = false;
@@ -2606,6 +2642,10 @@ function iniciarCargaExpedientePaciente() {
     if (!uidPaciente && rolUsuarioActual === "paciente") {
       uidPaciente = user.uid;
     }
+    console.info("patient:vitals-firebase-runtime", firebaseRuntimeInfo());
+    console.info("patient:vitals-reader-target", {
+      targetFingerprint: technicalFingerprint(uidPaciente)
+    });
     try {
       permisosFormatosUsuarioActual = await obtenerPermisosFormatosUsuario(user.uid, medicoActualDatos);
     } catch (error) {
@@ -2822,6 +2862,17 @@ async function cargarDatosPaciente() {
       console.warn("No se pudo encontrar el paciente en la lista autorizada.", fallbackError);
     }
     if (!datos) {
+      console.info("patient:vitals-read", {
+        ...firebaseRuntimeInfo(),
+        targetFingerprint: technicalFingerprint(uidPaciente),
+        documentExists: false,
+        hasPA: false,
+        hasFC: false,
+        hasFR: false,
+        hasTemperature: false,
+        hasSpO2: false,
+        historyCount: 0
+      });
       ponerTexto("nombrePaciente", "Paciente no encontrado");
       return;
     }
@@ -2838,6 +2889,14 @@ async function cargarDatosPaciente() {
     document.body.classList.add("bloqueado");
     throw new Error("patient_access_denied");
   }
+
+  console.info("patient:vitals-read", {
+    ...firebaseRuntimeInfo(),
+    targetFingerprint: technicalFingerprint(uidPaciente),
+    documentExists: true,
+    ...patientVitalSignsPresence(datos),
+    historyCount: patientVitalHistoryCount(datos)
+  });
 
   ponerTexto("nombrePaciente", obtenerNombrePacienteParaMostrar(datos) || "Paciente sin nombre");
   actualizarAvisoFormatoNombrePaciente(datos);
